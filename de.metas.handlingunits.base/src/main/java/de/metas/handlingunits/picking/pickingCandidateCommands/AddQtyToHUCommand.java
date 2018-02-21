@@ -31,6 +31,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
@@ -207,7 +208,8 @@ public class AddQtyToHUCommand
 	private boolean isOverdelivery()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final BigDecimal qtytoDeliver = shipmentSchedule.getQtyToDeliver().subtract(shipmentSchedule.getQtyPickList());
+		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlanned(shipmentSchedule);
+		final BigDecimal qtytoDeliver =  shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned); 
 
 		if (qtyCU.compareTo(qtytoDeliver) > 0)
 		{
