@@ -65,11 +65,12 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
-	public BigDecimal convertQty(final I_M_Product product, final BigDecimal qty, final I_C_UOM uomFrom, final I_C_UOM uomTo)
+	public BigDecimal convertQty(
+			final I_M_Product product,
+			final BigDecimal qty,
+			@NonNull final I_C_UOM uomFrom,
+			@NonNull final I_C_UOM uomTo)
 	{
-		Check.assumeNotNull(uomFrom, "uomFrom not null");
-		Check.assumeNotNull(uomTo, "uomTo not null");
-
 		if (qty.signum() == 0)
 		{
 			return roundToUOMPrecisionIfPossible(qty, uomTo);
@@ -235,11 +236,8 @@ public class UOMConversionBL implements IUOMConversionBL
 		//
 		// If result is null throw an exception
 		// NOTE: we check the result first and then we gather more debug info
-		if (result == null)
-		{
-			Check.errorIf(true, "Failed to convert Qty={} of product={} from UOM={} to UOM={}",
-					qty, product.getValue(), uomFrom.getName(), uomTo.getName());
-		}
+		Check.errorIf(result == null, "Failed to convert Qty={} of product={} from UOM={} to UOM={}",
+				qty, product.getValue(), uomFrom.getName(), uomTo.getName());
 
 		return result;
 

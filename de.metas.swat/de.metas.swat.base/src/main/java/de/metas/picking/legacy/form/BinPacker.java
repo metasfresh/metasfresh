@@ -10,18 +10,17 @@ package de.metas.picking.legacy.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -39,13 +38,15 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.model.I_M_PackagingContainer;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.exception.NoContainerException;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
+import de.metas.picking.terminal.Utils;
+import de.metas.quantity.Quantity;
 
 /**
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
@@ -54,6 +55,7 @@ public class BinPacker implements IBinPacker
 
 	private static final Logger logger = LogManager.getLogger(BinPacker.class);
 
+	@Override
 	public void pack(final Properties ctx, final PackingTreeModel model, final String trxName)
 	{
 		final DefaultMutableTreeNode unallocRoot = model.getUnPackedItems();
@@ -61,7 +63,7 @@ public class BinPacker implements IBinPacker
 
 		final List<DefaultMutableTreeNode> unallocNodes = mkSortedListBigToSmall(unallocRoot);
 		final List<DefaultMutableTreeNode> availBins = mkSortedListBigToSmall(availBinRoot);
-		final List<DefaultMutableTreeNode> usedBins = new ArrayList<DefaultMutableTreeNode>();
+		final List<DefaultMutableTreeNode> usedBins = new ArrayList<>();
 
 		while (!unallocNodes.isEmpty())
 		{
@@ -72,13 +74,13 @@ public class BinPacker implements IBinPacker
 			alloc(unallocNodes, usedBins, model, trxName);
 		}
 	}
-	
+
 	/**
 	 * Sums up the volume and weight of all items still unpacked, selects a bin from <code>availBins</code> and updates
 	 * <code>model</code> accordingly.
-	 * 
+	 *
 	 * If there is no bin large enough for the summed up weight and volume, the largest bin available is added.
-	 * 
+	 *
 	 * @param unallocNodes
 	 * @param availBins
 	 * @param usedBins
@@ -93,8 +95,7 @@ public class BinPacker implements IBinPacker
 			final PackingTreeModel model, final String trxName)
 	{
 
-		logger
-				.debug("Computing the overall volume and weight we still need to cover");
+		logger.debug("Computing the overall volume and weight we still need to cover");
 
 		BigDecimal unallocVolumeSum = BigDecimal.ZERO;
 		BigDecimal unallocWeightSum = BigDecimal.ZERO;
@@ -105,12 +106,13 @@ public class BinPacker implements IBinPacker
 		{
 
 			final LegacyPackingItem pi = getPI(currentNode);
-			final BigDecimal volSingle = pi.retrieveVolumeSingle(trxName);
+			final BigDecimal volSingle = Utils.convertToItemUOM(pi, pi.retrieveVolumeSingle(trxName));
 			final BigDecimal weightSingle = pi.retrieveWeightSingle(trxName);
-			unallocVolumeSum = unallocVolumeSum.add(pi.getQtySum().multiply(
-					volSingle));
-			unallocWeightSum = unallocWeightSum.add(pi.getQtySum().multiply(
-					weightSingle));
+
+			final BigDecimal qtySum = Utils.convertToItemUOM(pi, pi.getQtySum());
+
+			unallocVolumeSum = unallocVolumeSum.add(qtySum.multiply(volSingle));
+			unallocWeightSum = unallocWeightSum.add(qtySum.multiply(weightSingle));
 
 			if (unallocVolumeMax.compareTo(volSingle) < 0)
 			{
@@ -127,8 +129,7 @@ public class BinPacker implements IBinPacker
 
 		removeUnavailableBins(availBins, unallocVolumeMax, unallocWeightMax);
 
-		final DefaultMutableTreeNode nexBinToUseNode = findBinNode(availBins,
-				unallocVolumeSum, unallocWeightSum);
+		final DefaultMutableTreeNode nexBinToUseNode = findBinNode(availBins, unallocVolumeSum, unallocWeightSum);
 		final AvailableBins foundBin = getBin(nexBinToUseNode);
 
 		foundBin.setQtyAvail(foundBin.getQtyAvail() - 1);
@@ -138,8 +139,7 @@ public class BinPacker implements IBinPacker
 		final UsedBin newPack = new UsedBin(ctx, foundPC, trxName);
 		logger.info("Adding " + newPack);
 
-		final DefaultMutableTreeNode newPackNode = new DefaultMutableTreeNode(
-				newPack);
+		final DefaultMutableTreeNode newPackNode = new DefaultMutableTreeNode(newPack);
 		usedBins.add(newPackNode);
 		model.insertNodeInto(newPackNode, model.getUsedBins(), model
 				.getUsedBins().getChildCount());
@@ -151,7 +151,7 @@ public class BinPacker implements IBinPacker
 			final PackingTreeModel model,
 			final String trxName)
 	{
-		final Set<DefaultMutableTreeNode> packedNodes = new HashSet<DefaultMutableTreeNode>();
+		final Set<DefaultMutableTreeNode> packedNodes = new HashSet<>();
 
 		sortUsedBins(usedBins, trxName);
 		Iterator<DefaultMutableTreeNode> itUsedBinNodes = usedBins.iterator();
@@ -174,16 +174,18 @@ public class BinPacker implements IBinPacker
 			final BigDecimal freeVolume = maxVolume.subtract(usedVolume);
 
 			final LegacyPackingItem unpackedPi = getPI(packedNode);
-			final BigDecimal singleVol = unpackedPi.retrieveVolumeSingle(trxName);
+			final BigDecimal singleVol = Utils.convertToItemUOM(unpackedPi, unpackedPi.retrieveVolumeSingle(trxName));
 
-			final BigDecimal binFreeQty;
+			final Quantity binFreeQty;
 			if (singleVol.signum() > 0)
 			{
-				binFreeQty = freeVolume.divide(singleVol, BigDecimal.ROUND_FLOOR).setScale(0, BigDecimal.ROUND_FLOOR);
+				binFreeQty = Quantity.of(
+						freeVolume.divide(singleVol, BigDecimal.ROUND_FLOOR).setScale(0, BigDecimal.ROUND_FLOOR),
+						unpackedPi.getC_UOM());
 			}
 			else
 			{
-				binFreeQty = new BigDecimal(Long.MAX_VALUE);
+				binFreeQty = Quantity.infinite(unpackedPi.getC_UOM());
 			}
 			if (binFreeQty.signum() <= 0)
 			{
@@ -191,7 +193,7 @@ public class BinPacker implements IBinPacker
 				break;
 			}
 
-			final BigDecimal requiredQty = unpackedPi.getQtySum();
+			final Quantity requiredQty = unpackedPi.getQtySum();
 			if (binFreeQty.compareTo(requiredQty) >= 0)
 			{
 				// the pl fits completely into our bin
@@ -207,7 +209,7 @@ public class BinPacker implements IBinPacker
 			{
 				// split the current item and move a part into a new item to be
 				// located in our bin
-				final Map<I_M_ShipmentSchedule, BigDecimal> qtysToTransfer = unpackedPi.subtract(binFreeQty);
+				final Map<I_M_ShipmentSchedule, Quantity> qtysToTransfer = unpackedPi.subtract(binFreeQty);
 				final LegacyPackingItem newPi = new LegacyPackingItem(qtysToTransfer, trxName);
 
 				final DefaultMutableTreeNode newItemNode = new DefaultMutableTreeNode(newPi);
@@ -224,7 +226,7 @@ public class BinPacker implements IBinPacker
 	}
 
 	/**
-	 * 
+	 *
 	 * @param unallocRoot
 	 * @return list with the biggest first
 	 */
@@ -237,28 +239,24 @@ public class BinPacker implements IBinPacker
 
 	/**
 	 * sort the used bins according to their free volume. The one with the biggest free volume comes first.
-	 * 
+	 *
 	 * @param nodes
 	 * @param trxName
 	 */
 	private void sortUsedBins(final List<DefaultMutableTreeNode> nodes, final String trxName)
 	{
-		Collections.sort(nodes, new Comparator<DefaultMutableTreeNode>()
-		{
-			public int compare(final DefaultMutableTreeNode o1, final DefaultMutableTreeNode o2)
-			{
-				final BigDecimal usedVol1 = PackingTreeModel.getUsedVolume(o1, trxName);
-				final BigDecimal usedVol2 = PackingTreeModel.getUsedVolume(o2, trxName);
-				final BigDecimal freeVol1 = getPack(o1).getPackagingContainer().getMaxVolume().subtract(usedVol1);
-				final BigDecimal freeVol2 = getPack(o2).getPackagingContainer().getMaxVolume().subtract(usedVol2);
+		Collections.sort(nodes, (o1, o2) -> {
+			final BigDecimal usedVol1 = PackingTreeModel.getUsedVolume(o1, trxName);
+			final BigDecimal usedVol2 = PackingTreeModel.getUsedVolume(o2, trxName);
+			final BigDecimal freeVol1 = getPack(o1).getPackagingContainer().getMaxVolume().subtract(usedVol1);
+			final BigDecimal freeVol2 = getPack(o2).getPackagingContainer().getMaxVolume().subtract(usedVol2);
 
-				return freeVol2.compareTo(freeVol1);
-			}
+			return freeVol2.compareTo(freeVol1);
 		});
 	}
 
 	/**
-	 * 
+	 *
 	 * @param unallocNodes
 	 * @param factor
 	 *            if factor is <0, the nodes are sorted in reverse order
@@ -266,22 +264,23 @@ public class BinPacker implements IBinPacker
 	private void sortList(final List<DefaultMutableTreeNode> unallocNodes, final int factor)
 	{
 		Collections.sort(unallocNodes, new Comparator<DefaultMutableTreeNode>()
-				{
-					@SuppressWarnings("unchecked")
-					public int compare(DefaultMutableTreeNode o1, DefaultMutableTreeNode o2)
-					{
-						final Comparable p1 = (Comparable)o1.getUserObject();
-						final Comparable p2 = (Comparable)o2.getUserObject();
-						return p1.compareTo(p2) * factor;
-					}
-				});
+		{
+			@Override
+			@SuppressWarnings("unchecked")
+			public int compare(DefaultMutableTreeNode o1, DefaultMutableTreeNode o2)
+			{
+				final Comparable p1 = (Comparable)o1.getUserObject();
+				final Comparable p2 = (Comparable)o2.getUserObject();
+				return p1.compareTo(p2) * factor;
+			}
+		});
 	}
 
 	@SuppressWarnings("unchecked")
 	private List<DefaultMutableTreeNode> mkList(
 			final DefaultMutableTreeNode unallocRoot)
 	{
-		final List<DefaultMutableTreeNode> unallocNodes = new ArrayList<DefaultMutableTreeNode>(
+		final List<DefaultMutableTreeNode> unallocNodes = new ArrayList<>(
 				unallocRoot.getChildCount());
 
 		final Enumeration<DefaultMutableTreeNode> unallocEnum = unallocRoot
@@ -313,10 +312,10 @@ public class BinPacker implements IBinPacker
 			final BigDecimal requiredVolume, final BigDecimal requiredWeigth)
 	{
 
-		final Set<DefaultMutableTreeNode> nodesToRemove = new HashSet<DefaultMutableTreeNode>();
+		final Set<DefaultMutableTreeNode> nodesToRemove = new HashSet<>();
 
-		boolean insufficientVolume = false;
-		boolean insufficientWeight = false;
+		final boolean insufficientVolume = false;
+		final boolean insufficientWeight = false;
 
 		for (final DefaultMutableTreeNode binNode : availBins)
 		{
@@ -355,7 +354,7 @@ public class BinPacker implements IBinPacker
 	}
 
 	/**
-	 * 
+	 *
 	 * @param availBins
 	 *            the bins to choose from. This method asserts that they are sorted in descending order.
 	 * @param vol

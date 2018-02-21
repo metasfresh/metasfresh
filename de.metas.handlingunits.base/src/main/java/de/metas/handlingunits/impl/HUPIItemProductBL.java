@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,16 +37,18 @@ import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import lombok.NonNull;
 
 public class HUPIItemProductBL implements IHUPIItemProductBL
 {
 	@Override
-	public List<I_M_HU_PI_Item_Product> getCompatibleItemDefProducts(final I_M_HU_PI_Version version, final I_M_Product product)
+	public List<I_M_HU_PI_Item_Product> getCompatibleItemDefProducts(
+			@NonNull final I_M_HU_PI_Version version,
+			@NonNull final I_M_Product product)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final List<I_M_HU_PI_Item_Product> result = new ArrayList<I_M_HU_PI_Item_Product>();
@@ -59,7 +60,9 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 		for (final I_M_HU_PI_Item itemDef : itemDefs)
 		{
 			Check.assume(X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemDef.getItemType()), "{} item type is Material", itemDef);
-			final I_M_HU_PI_Item_Product itemProduct = Services.get(IHUPIItemProductDAO.class).retrievePIMaterialItemProduct(itemDef, product, SystemTime.asDate());
+
+			final I_M_HU_PI_Item_Product itemProduct = Services.get(IHUPIItemProductDAO.class)
+					.retrievePIMaterialItemProduct(itemDef, product, SystemTime.asDate());
 			if (itemProduct != null && itemProduct.getM_HU_PI_Item_Product_ID() > 0)
 			{
 				result.add(itemProduct);
@@ -67,13 +70,6 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 		}
 
 		return result;
-	}
-
-	@Override
-	public I_M_HU_PI_Item_Product getCompatibleItemDefProduct(final I_M_HU_PI_Version version, final I_M_Product product)
-	{
-		final List<I_M_HU_PI_Item_Product> compatiblePIItemProducts = getCompatibleItemDefProducts(version, product);
-		return compatiblePIItemProducts.get(0); // FIXME criteria
 	}
 
 	private List<I_M_HU_PI_Item> getNestedMaterialPIItems(final List<I_M_HU_PI_Item> itemDefs)
@@ -119,16 +115,6 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	public boolean isVirtualHUPIItemProduct(final I_M_HU_PI_Item_Product piip)
 	{
 		return piip.getM_HU_PI_Item_Product_ID() == HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID;
-	}
-
-	@Override
-	public boolean isCompatibleProduct(final I_M_HU hu, final I_M_Product product)
-	{
-		Check.assumeNotNull(hu, "hu not null");
-		Check.assumeNotNull(product, "product not null");
-
-		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
-		return isCompatibleProduct(piVersion, product);
 	}
 
 	@Override

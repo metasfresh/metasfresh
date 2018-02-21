@@ -13,18 +13,17 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -49,11 +48,12 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -68,13 +68,14 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Aggregates given {@link IShipmentScheduleWithHU}s (see {@link #add(IShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
@@ -107,14 +108,14 @@ import de.metas.logging.LogManager;
 	private Object attributesAggregationKey = null;
 	private int orderLineId = -1;
 	private I_C_UOM uom = null;
+
 	private BigDecimal qtyEntered = BigDecimal.ZERO;
 	// note that we maintain both QtyEntered and MovementQty to avoid rounding/conversion issues
 	private BigDecimal movementQty = BigDecimal.ZERO;
 
-	//
-	// Candidates which were added to this builder
-	private final List<IShipmentScheduleWithHU> candidates = new ArrayList<>();
-	private final List<IShipmentScheduleWithHU> candidatesRO = Collections.unmodifiableList(candidates);
+	/** Candidates which were added to this builder */
+	private final List<ShipmentScheduleWithHU> candidates = new ArrayList<>();
+
 
 	/** Loading Units(LUs)/Transport Units(TUs) to assign to the shipment line that will be created */
 	private final Set<HUTopLevel> husToAssign = new TreeSet<>();
@@ -123,7 +124,7 @@ import de.metas.logging.LogManager;
 	//
 	// Manual packing materials related:
 	private boolean manualPackingMaterial = false;
-	private int manualPackingMaterial_QtyTU = 0;
+
 	private I_M_HU_PI_Item_Product manualPackingMaterial_huPIItemProduct = null;
 	private final Set<Integer> manualPackingMaterial_seenShipmentScheduleIds = new HashSet<>();
 
@@ -131,10 +132,8 @@ import de.metas.logging.LogManager;
 	 *
 	 * @param shipment shipment on which the new shipment line will be created
 	 */
-	public ShipmentLineBuilder(final I_M_InOut shipment)
+	public ShipmentLineBuilder(@NonNull final I_M_InOut shipment)
 	{
-		super();
-		Check.assumeNotNull(shipment, "shipment not null");
 		currentShipment = shipment;
 	}
 
@@ -169,7 +168,7 @@ import de.metas.logging.LogManager;
 	 * @param candidate
 	 * @return true if we can append to current shipment line
 	 */
-	public boolean canAdd(final IShipmentScheduleWithHU candidate)
+	public boolean canAdd(final ShipmentScheduleWithHU candidate)
 	{
 		// If there were no candidates added so far, obviously we allow our first candidate
 		if (isEmpty())
@@ -178,7 +177,7 @@ import de.metas.logging.LogManager;
 		}
 
 		// Check: HU context
-		if(!Objects.equals(huContext, candidate.getHUContext()))
+		if (!Objects.equals(huContext, candidate.getHUContext()))
 		{
 			return false;
 		}
@@ -190,13 +189,13 @@ import de.metas.logging.LogManager;
 		}
 
 		// Check: ASI
-		if(attributeSetInstanceId != candidate.getM_AttributeSetInstance_ID())
+		if (attributeSetInstanceId != candidate.getM_AttributeSetInstance_ID())
 		{
 			return false;
 		}
 
 		// Check: same attributes aggregation key
-		if(!Objects.equals(this.attributesAggregationKey, candidate.getAttributesAggregationKey()))
+		if (!Objects.equals(this.attributesAggregationKey, candidate.getAttributesAggregationKey()))
 		{
 			return false;
 		}
@@ -212,9 +211,8 @@ import de.metas.logging.LogManager;
 		return true;
 	}
 
-	public void add(final IShipmentScheduleWithHU candidate)
+	public void add(@NonNull final ShipmentScheduleWithHU candidate)
 	{
-		Check.assumeNotNull(candidate, "candidate not null");
 		if (isEmpty())
 		{
 			init(candidate);
@@ -227,7 +225,7 @@ import de.metas.logging.LogManager;
 	 *
 	 * @param candidate
 	 */
-	private void init(final IShipmentScheduleWithHU candidate)
+	private void init(final ShipmentScheduleWithHU candidate)
 	{
 		Check.assume(isEmpty(), "builder shall be empty");
 
@@ -245,7 +243,7 @@ import de.metas.logging.LogManager;
 		orderLineId = candidate.getC_OrderLine_ID();
 	}
 
-	private void append(final IShipmentScheduleWithHU candidate)
+	private void append(final ShipmentScheduleWithHU candidate)
 	{
 		Check.assume(canAdd(candidate), "candidate {} can be added to shipment line builder", candidate);
 
@@ -265,7 +263,7 @@ import de.metas.logging.LogManager;
 				qtyToAdd, // Qty
 				qtyToAddUOM, // From UOM
 				uom // To UOM
-				);
+		);
 
 		qtyEntered = qtyEntered.add(qtyToAddConverted);
 
@@ -282,10 +280,8 @@ import de.metas.logging.LogManager;
 	 * Gets LU or TU (if LU was not found) from candidate and append it to {@link #husToAssign} set.
 	 *
 	 * When we will generate the shipment line, we will link those HUs to the generated shipment line (see {@link #createShipmentLine()}).
-	 *
-	 * @param candidate
 	 */
-	private void appendHUsFromCandidate(final IShipmentScheduleWithHU candidate)
+	private void appendHUsFromCandidate(@NonNull final ShipmentScheduleWithHU candidate)
 	{
 		I_M_HU topLevelHU = null;
 
@@ -319,14 +315,11 @@ import de.metas.logging.LogManager;
 			husToAssign.add(huToAssign);
 		}
 
-		//
-		// Sum up QtyTU from shipment schedule (in case we are no generating HUs)
+		// Sum up QtyTU from shipment schedule (in case we are not generating HUs)
 		// Make sure we are not considering a shipment schedule more than once.
 		final int shipmentScheduleId = candidate.getM_ShipmentSchedule().getM_ShipmentSchedule_ID();
 		if (manualPackingMaterial_seenShipmentScheduleIds.add(shipmentScheduleId))
 		{
-			final int qtyTU = candidate.getM_ShipmentSchedule().getQtyToDeliver_TU().intValue();
-			manualPackingMaterial_QtyTU = manualPackingMaterial_QtyTU + qtyTU;
 			manualPackingMaterial_huPIItemProduct = Services.get(IHUShipmentScheduleBL.class).getM_HU_PI_Item_Product(candidate.getM_ShipmentSchedule());
 		}
 	}
@@ -377,27 +370,21 @@ import de.metas.logging.LogManager;
 		shipmentLine.setC_UOM(uom);
 		shipmentLine.setQtyEntered(qtyEntered);
 
-		//
-		// Set MovementQty by converting QtyEntered to stocking UOM
+		// Set MovementQty
 		{
 			// Don't do conversions. The movementQty which we summed up already contains exactly what we need (in the stocking-UOM!)
-			// final I_C_UOM storageUOM = productBL.getStockingUOM(product);
-			// final BigDecimal movementQty = uomConversionBL.convertQty(product,
-			// qtyEntered,
-			// uom, // From UOM
-			// storageUOM // To UOM
-			// );
 			shipmentLine.setQtyCU_Calculated(movementQty);
 			shipmentLine.setMovementQty(movementQty);
 		}
 
-		//
-		// Update packing materials info
+		// Update packing materials info, if there is "one" info
 		shipmentLine.setIsManualPackingMaterial(manualPackingMaterial);
-		shipmentLine.setQtyTU_Override(BigDecimal.valueOf(manualPackingMaterial_QtyTU));
-		shipmentLine.setM_HU_PI_Item_Product_Override(manualPackingMaterial_huPIItemProduct);
-		shipmentLine.setM_HU_PI_Item_Product_Calculated(manualPackingMaterial_huPIItemProduct); // FIXME: figure out how to actually fetch it from collected HUs, but for now it's fine because it
-																								// covers most of the cases
+		if (manualPackingMaterial)
+		{
+			// https://github.com/metasfresh/metasfresh/issues/3503
+			shipmentLine.setM_HU_PI_Item_Product_Override(manualPackingMaterial_huPIItemProduct);
+			shipmentLine.setM_HU_PI_Item_Product_Calculated(manualPackingMaterial_huPIItemProduct);
+		}
 
 		//
 		// Save Shipment Line
@@ -405,7 +392,7 @@ import de.metas.logging.LogManager;
 
 		//
 		// Notify candidates that we have a shipment line
-		for (final IShipmentScheduleWithHU candidate : getCandidates())
+		for (final ShipmentScheduleWithHU candidate : getCandidates())
 		{
 			candidate.setM_InOutLine(shipmentLine);
 		}
@@ -451,38 +438,34 @@ import de.metas.logging.LogManager;
 		//
 		// Transfer attributes from HU to receipt line's ASI
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(huContext);
-		executor.run(new IHUContextProcessor()
-		{
-			@Override
-			public IMutableAllocationResult process(final IHUContext huContext)
-			{
-				final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
-				final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
-				final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(hu);
-				final IAttributeStorage receiptLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(shipmentLine);
+		executor.run((IHUContextProcessor)huContext -> {
 
-				final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
-				final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
+			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
+			final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
+			final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(hu);
+			final IAttributeStorage receiptLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(shipmentLine);
 
-				final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
-						.setProduct(product)
-						.setQty(shipmentLine.getMovementQty())
-						.setUOM(product.getC_UOM())
-						.setAttributeStorageFrom(huAttributeStorageFrom)
-						.setAttributeStorageTo(receiptLineAttributeStorageTo)
-						.setHUStorageFrom(huStorageFrom);
+			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
+			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
 
-				final IHUAttributeTransferRequest request = requestBuilder.create();
-				trxAttributesBuilder.transferAttributes(request);
+			final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
+					.setProduct(product)
+					.setQty(shipmentLine.getMovementQty())
+					.setUOM(product.getC_UOM())
+					.setAttributeStorageFrom(huAttributeStorageFrom)
+					.setAttributeStorageTo(receiptLineAttributeStorageTo)
+					.setHUStorageFrom(huStorageFrom);
 
-				return NULL_RESULT;
-			}
+			final IHUAttributeTransferRequest request = requestBuilder.create();
+			trxAttributesBuilder.transferAttributes(request);
+
+			return IHUContextProcessor.NULL_RESULT;
 		});
 	}
 
-	public List<IShipmentScheduleWithHU> getCandidates()
+	public List<ShipmentScheduleWithHU> getCandidates()
 	{
-		return candidatesRO;
+		return ImmutableList.copyOf(candidates);
 	}
 
 	/**

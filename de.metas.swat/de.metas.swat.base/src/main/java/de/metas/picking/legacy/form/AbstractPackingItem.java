@@ -35,14 +35,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Predicate;
 import java.util.Properties;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -52,22 +54,20 @@ import org.compiere.util.Util;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /**
  * Item to be packed.
  *
  * Inside contains a mapping of {@link I_M_ShipmentSchedule} to qtys that need to be packed.
- *
- * @author cg
- *
  */
 public abstract class AbstractPackingItem implements IPackingItem
 {
 	private static final int GROUPINGKEY_ToBeGenerated = Integer.MIN_VALUE;
 
 	private final ArrayList<I_M_ShipmentSchedule> sched;
-	private final IdentityHashMap<I_M_ShipmentSchedule, BigDecimal> sched2qty;
+	private final IdentityHashMap<I_M_ShipmentSchedule, Quantity> sched2qty;
 
 	private final int groupingKey;
 	private I_M_Product product; // lazy
@@ -77,24 +77,24 @@ public abstract class AbstractPackingItem implements IPackingItem
 
 	/**
 	 * See {@link #AbstractPackingItem(Map, int)}.
-	 * 
+	 *
 	 * @param scheds2Qtys
 	 */
-	protected AbstractPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys)
+	protected AbstractPackingItem(final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys)
 	{
 		this(scheds2Qtys, GROUPINGKEY_ToBeGenerated);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param scheds2Qtys this instance's {@link #getShipmentSchedules()} will return the schedules in the order they were retunred by the given map's {@link Map#entrySet()} implementation.
 	 *            So, if you care for that order, then I suggest to call this constructor with an {@link LinkedHashMap} or similar.
 	 * @param groupingKey
 	 */
-	public AbstractPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final int groupingKey)
+	public AbstractPackingItem(final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys, final int groupingKey)
 	{
 		Check.assumeNotEmpty(scheds2Qtys, "scheds2Qtys not empty");
-		sched2qty = new IdentityHashMap<I_M_ShipmentSchedule, BigDecimal>(scheds2Qtys);
+		sched2qty = new IdentityHashMap<>(scheds2Qtys);
 
 		sched = new ArrayList<>();
 		for (final I_M_ShipmentSchedule schedule : scheds2Qtys.keySet())
@@ -240,13 +240,13 @@ public abstract class AbstractPackingItem implements IPackingItem
 	}
 
 	@Override
-	public final BigDecimal getQtySum()
+	public final Quantity getQtySum()
 	{
-		BigDecimal qtySum = BigDecimal.ZERO;
+		Quantity qtySum = Quantity.zero(getC_UOM());
 
-		for (final Entry<I_M_ShipmentSchedule, BigDecimal> e : sched2qty.entrySet())
+		for (final Entry<I_M_ShipmentSchedule, Quantity> e : sched2qty.entrySet())
 		{
-			final BigDecimal qty = e.getValue();
+			final Quantity qty = e.getValue();
 			qtySum = qtySum.add(qty);
 		}
 
@@ -254,16 +254,10 @@ public abstract class AbstractPackingItem implements IPackingItem
 	}
 
 	@Override
-	public final void setQtyForSched(final I_M_ShipmentSchedule sched, final BigDecimal qty)
+	public final void setQtyForSched(
+			@NonNull final I_M_ShipmentSchedule sched,
+			@NonNull final Quantity qty)
 	{
-		if (qty == null)
-		{
-			throw new IllegalArgumentException("Param 'qty' may not be null. Item: " + this);
-		}
-		if (sched == null)
-		{
-			throw new IllegalArgumentException("Param 'sched' may not be null. Item: " + this);
-		}
 		if (!sched2qty.containsKey(sched))
 		{
 			throw new IllegalArgumentException(sched + " must be added to this item first. Item: " + this);
@@ -282,21 +276,27 @@ public abstract class AbstractPackingItem implements IPackingItem
 	}
 
 	@Override
-	public final BigDecimal computeWeight()
+	public final BigDecimal computeWeightInProductUOM()
 	{
 		BigDecimal computedWeight = BigDecimal.ZERO;
 
+		final BigDecimal weightPerUnit = retrieveWeightSingle(ITrx.TRXNAME_None);
+
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		for (final I_M_ShipmentSchedule sched : getShipmentSchedules())
 		{
-			computedWeight = computedWeight.add(retrieveWeightSingle(ITrx.TRXNAME_None).multiply(getQtyForSched(sched)));
+			final Quantity qtyForSched = getQtyForSched(sched);
+			final BigDecimal qtyInProductUOM = uomConversionBL
+					.convertQtyToProductUOM(IUOMConversionContext.of(getM_Product()), qtyForSched.getQty(), qtyForSched.getUOM());
+			computedWeight = computedWeight.add(weightPerUnit.multiply(qtyInProductUOM));
 		}
 		return computedWeight;
 	}
 
 	@Override
-	public final BigDecimal retrieveVolumeSingle(final String trxName)
+	public final Quantity retrieveVolumeSingle(final String trxName)
 	{
-		return getM_Product().getVolume();
+		return Quantity.of(getM_Product().getVolume(), getM_Product().getC_UOM());
 	}
 
 	@Override
@@ -331,51 +331,51 @@ public abstract class AbstractPackingItem implements IPackingItem
 	@Override
 	public final void addSingleSched(final I_M_ShipmentSchedule sched)
 	{
-		addSchedules(Collections.singletonMap(sched, BigDecimal.ZERO));
+		addSchedules(Collections.singletonMap(sched, Quantity.zero(getC_UOM())));
 	}
 
 	@Override
-	public final BigDecimal getQtyForSched(final I_M_ShipmentSchedule sched)
+	public final Quantity getQtyForSched(final I_M_ShipmentSchedule sched)
 	{
 		return sched2qty.get(sched);
 	}
 
 	@Override
-	public final Map<I_M_ShipmentSchedule, BigDecimal> getQtys()
+	public final Map<I_M_ShipmentSchedule, Quantity> getQtys()
 	{
-		final LinkedHashMap<I_M_ShipmentSchedule, BigDecimal> result = new LinkedHashMap<>();
+		final LinkedHashMap<I_M_ShipmentSchedule, Quantity> result = new LinkedHashMap<>();
 		sched.stream().forEach(s -> result.put(s, sched2qty.get(s)));
 		return result;
 	}
 
 	@Override
-	public final Map<I_M_ShipmentSchedule, BigDecimal> subtract(final BigDecimal subtrahent)
+	public final Map<I_M_ShipmentSchedule, Quantity> subtract(final Quantity subtrahent)
 	{
 		final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate = null; // no filter, i.e. accept all
 		return subtract(subtrahent, acceptShipmentSchedulePredicate);
 	}
 
 	@Override
-	public final Map<I_M_ShipmentSchedule, BigDecimal> subtract(
-			@NonNull final BigDecimal subtrahent, 
+	public final Map<I_M_ShipmentSchedule, Quantity> subtract(
+			@NonNull final Quantity subtrahent,
 			@Nullable final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
-		final Map<I_M_ShipmentSchedule, BigDecimal> result = new HashMap<I_M_ShipmentSchedule, BigDecimal>();
+		final Map<I_M_ShipmentSchedule, Quantity> result = new HashMap<>();
 
 		//
 		// Qty that needs to be subtracted
-		BigDecimal qtyToSubtract = subtrahent;
+		Quantity qtyToSubtract = subtrahent;
 		boolean allowRemainingQtyToSubtract = false;
 
 		//
 		// Create a copy of sched2qty and work on it
 		// Later, after everything is validated we will copy it back.
 		// We are doing this because we want to avoid inconsistencies in case an exception popups
-		final IdentityHashMap<I_M_ShipmentSchedule, BigDecimal> sched2qtyCopy = new IdentityHashMap<I_M_ShipmentSchedule, BigDecimal>(sched2qty);
+		final IdentityHashMap<I_M_ShipmentSchedule, Quantity> sched2qtyCopy = new IdentityHashMap<>(sched2qty);
 
 		//
 		// Iterate all schedule/qty entries and subtract requested qty
-		for (final Iterator<Entry<I_M_ShipmentSchedule, BigDecimal>> it = sched2qtyCopy.entrySet().iterator(); it.hasNext();)
+		for (final Iterator<Entry<I_M_ShipmentSchedule, Quantity>> it = sched2qtyCopy.entrySet().iterator(); it.hasNext();)
 		{
 			//
 			// If there is no qty to subtract, stop here
@@ -386,7 +386,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 
 			//
 			// Fetch current schedule/qty
-			final Entry<I_M_ShipmentSchedule, BigDecimal> schedAndQty = it.next();
+			final Entry<I_M_ShipmentSchedule, Quantity> schedAndQty = it.next();
 			final I_M_ShipmentSchedule sched = schedAndQty.getKey();
 
 			//
@@ -406,8 +406,8 @@ public abstract class AbstractPackingItem implements IPackingItem
 				continue;
 			}
 
-			final BigDecimal schedQty = schedAndQty.getValue();
-			final BigDecimal schedQtySubtracted;
+			final Quantity schedQty = schedAndQty.getValue();
+			final Quantity schedQtySubtracted;
 
 			//
 			// Current qtyToSubtract is bigger then current schedule's available Qty
@@ -422,7 +422,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 			else
 			{
 				schedQtySubtracted = qtyToSubtract;
-				final BigDecimal schedQtyRemaining = schedQty.subtract(schedQtySubtracted);
+				final Quantity schedQtyRemaining = schedQty.subtract(schedQtySubtracted);
 				schedAndQty.setValue(schedQtyRemaining);
 			}
 
@@ -467,13 +467,15 @@ public abstract class AbstractPackingItem implements IPackingItem
 	}
 
 	@Override
-	public final void addSchedules(final Map<I_M_ShipmentSchedule, BigDecimal> toAdd)
+	public final void addSchedules(final Map<I_M_ShipmentSchedule, Quantity> toAdd)
 	{
 		final boolean removeExistingOnes = false;
 		addSchedules(toAdd, removeExistingOnes);
 	}
 
-	private final void addSchedules(final Map<I_M_ShipmentSchedule, BigDecimal> toAdd, final boolean removeExistingOnes)
+	private final void addSchedules(
+			@NonNull final Map<I_M_ShipmentSchedule, Quantity> toAdd,
+			final boolean removeExistingOnes)
 	{
 		//
 		// Make sure we are allowed to add those shipment schedules
@@ -496,20 +498,20 @@ public abstract class AbstractPackingItem implements IPackingItem
 
 		//
 		// Add shipment schedules
-		for (final Entry<I_M_ShipmentSchedule, BigDecimal> schedAndQtyToAdd : toAdd.entrySet())
+		for (final Entry<I_M_ShipmentSchedule, Quantity> schedAndQtyToAdd : toAdd.entrySet())
 		{
 			final I_M_ShipmentSchedule schedToAdd = schedAndQtyToAdd.getKey();
 			if (schedToAdd == null)
 			{
 				continue;
 			}
-			final BigDecimal qtyToAdd = schedAndQtyToAdd.getValue();
+			final Quantity qtyToAdd = schedAndQtyToAdd.getValue();
 			if (qtyToAdd == null)
 			{
 				continue;
 			}
 
-			final BigDecimal qty = sched2qty.get(schedToAdd);
+			final Quantity qty = sched2qty.get(schedToAdd);
 			if (qty == null)
 			{
 				// don't invoke addSched because we might have been called by addSched ourselves
@@ -518,7 +520,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 			}
 			else
 			{
-				final BigDecimal qtyNew = qty.add(qtyToAdd);
+				final Quantity qtyNew = qty.add(qtyToAdd);
 				sched2qty.put(schedToAdd, qtyNew);
 			}
 		}
@@ -527,14 +529,14 @@ public abstract class AbstractPackingItem implements IPackingItem
 	@Override
 	public final void addSchedules(final IPackingItem packingItem)
 	{
-		final Map<I_M_ShipmentSchedule, BigDecimal> toAdd = packingItem.getQtys();
+		final Map<I_M_ShipmentSchedule, Quantity> toAdd = packingItem.getQtys();
 		addSchedules(toAdd);
 	}
 
 	@Override
 	public final void setSchedules(final IPackingItem packingItem)
 	{
-		final Map<I_M_ShipmentSchedule, BigDecimal> toAdd = packingItem.getQtys();
+		final Map<I_M_ShipmentSchedule, Quantity> toAdd = packingItem.getQtys();
 		final boolean removeExistingOnes = true;
 		addSchedules(toAdd, removeExistingOnes);
 	}

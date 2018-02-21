@@ -83,8 +83,8 @@ public class M_InOutLine
 			// Calculate and set QtyEntered(CU) from M_HU_PI_Item_Product and QtyEnteredTU(aka QtyPacks)
 			final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 			final InOutLineHUPackingAware packingAware = new InOutLineHUPackingAware(shipmentLine);
-			final int qtyTU = packingAware.getQtyPacks().intValueExact();
-			huPackingAwareBL.setQty(packingAware, qtyTU);
+			final int qtyTU = packingAware.getQtyTU().intValueExact();
+			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyTU);
 		}
 	}
 
@@ -141,7 +141,7 @@ public class M_InOutLine
 		}
 
 		final IHUPackingAware packingAware = new InOutLineHUPackingAware(inOutLine);
-		Services.get(IHUPackingAwareBL.class).setQtyPacks(packingAware);
+		Services.get(IHUPackingAwareBL.class).setQtyTU(packingAware);
 		packingAware.setQty(packingAware.getQty());
 	}
 
@@ -166,8 +166,8 @@ public class M_InOutLine
 		}
 
 		final IHUPackingAware packingAware = new InOutLineHUPackingAware(inOutLine);
-		final Integer qtyPacks = packingAware.getQtyPacks().intValue();
-		Services.get(IHUPackingAwareBL.class).setQty(packingAware, qtyPacks);
+		final Integer qtyPacks = packingAware.getQtyTU().intValue();
+		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks);
 
 	}
 }

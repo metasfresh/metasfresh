@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.picking.terminal;
 
@@ -13,18 +13,17 @@ package de.metas.picking.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.awt.Font;
@@ -51,7 +50,7 @@ import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 
 /**
  * @author cg
- * 
+ *
  */
 public class BoxLayout extends KeyLayout
 {
@@ -111,7 +110,7 @@ public class BoxLayout extends KeyLayout
 	@Override
 	public void addKey(ITerminalKey key)
 	{
-		List<ITerminalKey> list = new ArrayList<>(keys);
+		final List<ITerminalKey> list = new ArrayList<>(keys);
 		Collections.copy(list, keys);
 		((BoxKey)key).setBoxNo(getBoxesNo() + 1);
 		list.add(key);
@@ -122,11 +121,11 @@ public class BoxLayout extends KeyLayout
 
 	public void removeKey(ITerminalKey key)
 	{
-		List<ITerminalKey> list = new ArrayList<>(keys);
+		final List<ITerminalKey> list = new ArrayList<>(keys);
 		Collections.copy(list, keys);
 		list.remove(key);
 		int i = 1;
-		for (ITerminalKey tk : list)
+		for (final ITerminalKey tk : list)
 		{
 			((BoxKey)tk).setBoxNo(i);
 			i++;
@@ -141,7 +140,7 @@ public class BoxLayout extends KeyLayout
 	{
 		final Map<Integer, DefaultMutableTreeNode> results = ((AbstractPackageTerminalPanel)getBasePanel()).getBoxes();
 
-		List<ITerminalKey> list = new ArrayList<>();
+		final List<ITerminalKey> list = new ArrayList<>();
 		for (int i = 0; i < results.size(); i++)
 		{
 			final UsedBin usedBin = (UsedBin)results.get(i + 1).getUserObject();
@@ -156,7 +155,7 @@ public class BoxLayout extends KeyLayout
 			final String tableName = I_M_PackagingContainer.Table_Name;
 			final int idValue = Integer.parseInt(container.getM_Product_ID() + "" + (i + 1));
 			key.setName(container.getName());
-			
+
 			final BoxKey tk = new BoxKey(getTerminalContext(), key, tableName, idValue);
 			if (usedBin.isReady())
 			{
@@ -185,28 +184,29 @@ public class BoxLayout extends KeyLayout
 
 	public BoxKey getBoxKey(DefaultMutableTreeNode node)
 	{
-		for (ITerminalKey key : getKeys())
+		for (final ITerminalKey key : getKeys())
 		{
-			BoxKey boxKey = (BoxKey)key;
+			final BoxKey boxKey = (BoxKey)key;
 			if (boxKey.getNode() == node)
 				return boxKey;
 		}
 		return null;
 	}
 
-	
 	public BigDecimal getVolumeSumContainer(I_M_PackagingContainer container, int boxNo)
 	{
 		final PackingItemsMap packItems = getPackageItems().getPackItems();
-		List<IPackingItem> products = packItems.get(boxNo);
+		final List<IPackingItem> products = packItems.get(boxNo);
 		if (products == null || products.size() == 0)
 			return null;
 
 		volumeSumContainer = BigDecimal.ZERO;
-		for (IPackingItem pi : products)
+		for (final IPackingItem pi : products)
 		{
-			final BigDecimal volSingle = pi.retrieveVolumeSingle(null);
-			volumeSumContainer = volumeSumContainer.add(pi.getQtySum().multiply(volSingle));
+			final BigDecimal volSingle = Utils.convertToItemUOM(pi, pi.retrieveVolumeSingle(null));
+			final BigDecimal qtySum = Utils.convertToItemUOM(pi, pi.getQtySum());
+
+			volumeSumContainer = volumeSumContainer.add(qtySum.multiply(volSingle));
 		}
 
 		return volumeSumContainer;
@@ -217,20 +217,22 @@ public class BoxLayout extends KeyLayout
 		final AbstractPackageTerminalPanel packageItem = (AbstractPackageTerminalPanel)getBasePanel();
 		return packageItem;
 	}
-	
+
 	public BigDecimal getWeightSumContainer(I_M_PackagingContainer container, int boxNo)
 	{
 		final PackingItemsMap packItems = getPackageItems().getPackItems();
-		List<IPackingItem> products = packItems.get(boxNo);
+		final List<IPackingItem> products = packItems.get(boxNo);
 		if (products == null || products.size() == 0)
 			return null;
 
 		weightSumContainer = BigDecimal.ZERO;
 
-		for (IPackingItem pi : products)
+		for (final IPackingItem pi : products)
 		{
 			final BigDecimal weightSingle = pi.retrieveWeightSingle(null);
-			weightSumContainer = weightSumContainer.add(pi.getQtySum().multiply(weightSingle));
+			final BigDecimal qtySum = Utils.convertToItemUOM(pi, pi.getQtySum());
+
+			weightSumContainer = weightSumContainer.add(qtySum.multiply(weightSingle));
 		}
 
 		return weightSumContainer;
@@ -239,13 +241,13 @@ public class BoxLayout extends KeyLayout
 	public PackingStates getContainerState(I_M_PackagingContainer container, int boxNo)
 	{
 		final PackingItemsMap packItems = getPackageItems().getPackItems();
-		List<IPackingItem> products = packItems.get(boxNo);
+		final List<IPackingItem> products = packItems.get(boxNo);
 		if (products == null || products.size() == 0)
 			return null;
-		
+
 		if (products.size() > 0)
 			return PackingStates.partiallypacked;
-			
+
 		/// don't care anymore about volume and weight
 
 		BigDecimal volumeMin = BigDecimal.ZERO;
@@ -255,12 +257,14 @@ public class BoxLayout extends KeyLayout
 		weightSumContainer = BigDecimal.ZERO;
 		volumeSumContainer = BigDecimal.ZERO;
 
-		for (IPackingItem pi : products)
+		for (final IPackingItem pi : products)
 		{
-			final BigDecimal volSingle = pi.retrieveVolumeSingle(null);
+			final BigDecimal volSingle = Utils.convertToItemUOM(pi, pi.retrieveVolumeSingle(null));
 			final BigDecimal weightSingle = pi.retrieveWeightSingle(null);
-			weightSumContainer = weightSumContainer.add(pi.getQtySum().multiply(weightSingle));
-			volumeSumContainer = volumeSumContainer.add(pi.getQtySum().multiply(volSingle));
+			final BigDecimal qtySum = Utils.convertToItemUOM(pi, pi.getQtySum());
+
+			weightSumContainer = weightSumContainer.add(qtySum.multiply(weightSingle));
+			volumeSumContainer = volumeSumContainer.add(qtySum.multiply(volSingle));
 
 			if (volumeMax.compareTo(volSingle) < 0)
 			{
@@ -283,10 +287,10 @@ public class BoxLayout extends KeyLayout
 
 		PackingStates state = PackingStates.packed;
 
-		if ((container.getMaxVolume().compareTo(volumeMax.add(volumeSumContainer)) >= 0 
+		if ((container.getMaxVolume().compareTo(volumeMax.add(volumeSumContainer)) >= 0
 				|| container.getMaxVolume().compareTo(volumeMin.add(volumeSumContainer)) >= 0)
-				&& (container.getMaxWeight().compareTo(weightMax.add(weightSumContainer)) >= 0 
-				|| container.getMaxWeight().compareTo(weightMin.add(weightSumContainer)) >= 0))
+				&& (container.getMaxWeight().compareTo(weightMax.add(weightSumContainer)) >= 0
+						|| container.getMaxWeight().compareTo(weightMin.add(weightSumContainer)) >= 0))
 		{
 			if (weightSumContainer.compareTo(BigDecimal.ZERO) == 0)
 				state = PackingStates.unpacked;
@@ -317,10 +321,10 @@ public class BoxLayout extends KeyLayout
 
 	public void checkKeyState()
 	{
-		List<ITerminalKey> list = getKeys();
-		for (ITerminalKey key : list)
+		final List<ITerminalKey> list = getKeys();
+		for (final ITerminalKey key : list)
 		{
-			BoxKey bk = (BoxKey)key;
+			final BoxKey bk = (BoxKey)key;
 			PackingStates state = null;
 			if (bk.getStatus().getName().equals(PackingStates.ready.name()))
 			{

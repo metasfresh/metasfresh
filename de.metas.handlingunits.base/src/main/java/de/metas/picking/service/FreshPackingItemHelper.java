@@ -1,12 +1,13 @@
 package de.metas.picking.service;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 import org.adempiere.util.Check;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -76,7 +77,7 @@ public final class FreshPackingItemHelper
 	 * @param scheds2Qtys
 	 * @return
 	 */
-	public static IFreshPackingItem create(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys)
+	public static IFreshPackingItem create(@NonNull final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys)
 	{
 		return new TransactionalFreshPackingItem(scheds2Qtys);
 	}

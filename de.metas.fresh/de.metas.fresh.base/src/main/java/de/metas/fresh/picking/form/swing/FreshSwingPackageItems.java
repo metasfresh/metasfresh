@@ -40,6 +40,7 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalButton;
@@ -76,6 +77,9 @@ import de.metas.picking.terminal.IPackingStateAggregator;
 import de.metas.picking.terminal.ProductLayout;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.SwingPackageBoxesItems;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /**
  * Contains: Picking Slots and products Products are not shown in this panel, but in the main panel
@@ -107,14 +111,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	private ITerminalButton bHUEditor;
 
 	private PickingSlotKey selectedPickingSlotKey;
-	private final PropertyChangeListener selectedPickingSlotKeyListener = new PropertyChangeListener()
-	{
-		@Override
-		public void propertyChange(final PropertyChangeEvent evt)
-		{
-			onSelectedPickingSlotKeyChanged();
-		}
-	};
+	private final PropertyChangeListener selectedPickingSlotKeyListener = evt -> onSelectedPickingSlotKeyChanged();
 
 	public FreshSwingPackageItems(final FreshSwingPackageTerminalPanel basePanel)
 	{
@@ -159,14 +156,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		{
 			bCloseCurrentHU = createButtonAction(FreshSwingPackageItems.ACTION_CloseCurrentHU, null, 17f);
 			bCloseCurrentHU.setEnabled(false);
-			bCloseCurrentHU.addListener(new PropertyChangeListener()
-			{
-				@Override
-				public void propertyChange(final PropertyChangeEvent evt)
-				{
-					onCloseCurrentHU();
-				}
-			});
+			bCloseCurrentHU.addListener(evt -> onCloseCurrentHU());
 		}
 	}
 
@@ -301,7 +291,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				throw new AdempiereException(FreshSwingPackageItems.ERR_NO_OPEN_HU_FOUND);
 			}
 			final IFreshPackingItem unallocPackingItem = selectedProduct.getUnAllocatedPackingItem();
-			packItemToHU(unallocPackingItem, newQty, hu);
+			packItemToHU(unallocPackingItem, Quantity.of(newQty, unallocPackingItem.getC_UOM()), hu);
 
 			//
 			// reset the qty field
@@ -313,7 +303,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			{
 				onDistributeQtyToNewHUs();
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				// NOTE: we are catching, showing to user and consume the exception here,
 				// because at the end we want to refresh keys, status etc because it might be that we created some HUs but not all.
@@ -333,7 +323,6 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			}
 
 			final BigDecimal allocQty = selectedProduct.getQty();
-
 			final BigDecimal qtyToRemove = getQty();
 
 			if (qtyToRemove.signum() == 0)
@@ -351,8 +340,11 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 			//
 			// Remote Qty from HU
+			// there was no explicit assumption about the UOM of qtyToRemove. I now assume stockingUOM.
+			final I_C_UOM stockingUOM = Services.get(IProductBL.class).getStockingUOM(selectedProduct.getM_Product());
+
 			final IPackingItem pckItem = selectedProduct.getPackingItem();
-			removeProductQty(pckItem, selectedPickingSlotKey.getM_HU(), qtyToRemove);
+			removeProductQty(pckItem, selectedPickingSlotKey.getM_HU(), Quantity.of(qtyToRemove, stockingUOM));
 
 			// FIXME: reset the qty field, remove button etc
 		}
@@ -494,10 +486,11 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		}
 	}
 
-	private void packItemToHU(final IFreshPackingItem itemToPack, final BigDecimal qtyToPack, final I_M_HU targetHU)
+	private void packItemToHU(
+			final IFreshPackingItem itemToPack,
+			final Quantity qtyToPack,
+			@NonNull final I_M_HU targetHU)
 	{
-		Check.assumeNotNull(targetHU, "targetHU not null");
-
 		//
 		// Find out which are the available HUs from which we can take
 		final FreshProductKey productKey = getSelectedProduct();
@@ -533,7 +526,10 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		selectedPickingSlotKey.allocateDynamicPickingSlotIfPossible(itemToPack.getC_BPartner_ID(), itemToPack.getC_BPartner_Location_ID());
 	}
 
-	private void removeProductQty(final IPackingItem pckItem, final I_M_HU hu, final BigDecimal qtyToRemove)
+	private void removeProductQty(
+			final IPackingItem pckItem,
+			final I_M_HU hu,
+			final Quantity qtyToRemove)
 	{
 		final FreshSwingPackageTerminalPanel terminalPanel = getPackageTerminalPanel();
 
@@ -582,7 +578,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				//
 				// take out qtyToRemove from our packing item
 				final Properties ctx = getTerminalContext().getCtx();
-				final Map<I_M_ShipmentSchedule, BigDecimal> qtyToRemoveAlloc = itemPackedNew.subtract(qtyToRemove);
+				final Map<I_M_ShipmentSchedule, Quantity> qtyToRemoveAlloc = itemPackedNew.subtract(qtyToRemove);
 				packingService.removeProductQtyFromHU(ctx, hu, qtyToRemoveAlloc);
 
 				// if all qty is packed, no need to store the current item
@@ -806,7 +802,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			protected void loadQtyToHU(final I_M_HU hu, final BigDecimal qty)
 			{
 				final IFreshPackingItem itemToPack = productKey.getUnAllocatedPackingItem();
-				packItemToHU(itemToPack, qty, hu);
+				packItemToHU(itemToPack, Quantity.of(qty, itemToPack.getC_UOM()), hu);
 			}
 
 			/** Close picking slot current HU */
