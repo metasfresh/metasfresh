@@ -103,7 +103,6 @@ public class PackagingDAO implements IPackagingDAO
 	{
 		final I_M_Packageable_V packageableEntry = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Packageable_V.class)
-				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, sched.getM_ShipmentSchedule_ID())
 				.create()
