@@ -733,3 +733,73 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000098, SeqNo=27, Updated=now(), UpdatedBy=1
 UPDATE AD_TreeNodeMM SET Parent_ID=1000098, SeqNo=28, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540901 AND AD_Tree_ID=10
 ;
 
+-- 2018-02-21T07:30:27.957
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-02-21 07:30:27','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Active',Description='',Help='' WHERE AD_Field_ID=562777 AND AD_Language='en_US'
+;
+
+-- 2018-02-21T07:30:39.689
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-02-21 07:30:39','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Client',Description='',Help='' WHERE AD_Field_ID=562775 AND AD_Language='en_US'
+;
+
+-- 2018-02-21T07:30:54.450
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-02-21 07:30:54','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Organisation',Description='',Help='' WHERE AD_Field_ID=562776 AND AD_Language='en_US'
+;
+
+-- 2018-02-21T07:31:14.652
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-02-21 07:31:14','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Active',Description='',Help='' WHERE AD_Field_ID=562768 AND AD_Language='en_US'
+;
+
+-- 2018-02-21T07:31:25.667
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-02-21 07:31:25','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Organisation',Description='',Help='' WHERE AD_Field_ID=562767 AND AD_Language='en_US'
+;
+
+-- 2018-02-21T07:31:35.006
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-02-21 07:31:35','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Client',Description='',Help='' WHERE AD_Field_ID=562766 AND AD_Language='en_US'
+;
+
+-- 2018-02-21T07:32:03.392
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-02-21 07:32:03','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Description' WHERE AD_Field_ID=562774 AND AD_Language='en_US'
+;
+
+-- 2018-02-21T07:32:37.648
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-02-21 07:32:37','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='SeqNo',Description='',Help='' WHERE AD_Field_ID=562782 AND AD_Language='en_US'
+;
+
+-- 2018-02-21T07:32:52.355
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-02-21 07:32:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Column',Description='',Help='' WHERE AD_Field_ID=562780 AND AD_Language='en_US'
+;
+
+-- 2018-02-21T07:34:31.304
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='CSV Feld Trenner',Updated=TO_TIMESTAMP('2018-02-21 07:34:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562772
+;
+
+-- 2018-02-21T07:34:58.224
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='CSV Feld Textzeichen',Updated=TO_TIMESTAMP('2018-02-21 07:34:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562773
+;
+
+-- 2018-02-21T07:35:10.914
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Dezimalzeichen',Updated=TO_TIMESTAMP('2018-02-21 07:35:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562785
+;
+
+-- 2018-02-21T07:35:33.927
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Nummer Gruppen Trenner',Updated=TO_TIMESTAMP('2018-02-21 07:35:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562784
+;
+
+-- 2018-02-21T07:35:49.821
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Format Muster',Updated=TO_TIMESTAMP('2018-02-21 07:35:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562783
+;
+
