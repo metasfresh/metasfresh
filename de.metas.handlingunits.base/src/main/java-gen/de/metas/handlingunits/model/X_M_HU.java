@@ -14,7 +14,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -854929727L;
+	private static final long serialVersionUID = 2008069057L;
 
     /** Standard Constructor */
     public X_M_HU (Properties ctx, int M_HU_ID, String trxName)
@@ -23,7 +23,6 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
       /** if (M_HU_ID == 0)
         {
 			setHUStatus (null); // 'P'
-			setIsCompressedVHU (false); // N
 			setM_HU_ID (0);
 			setM_HU_PI_Version_ID (0);
 			setValue (null);
@@ -328,8 +327,8 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 		set_ValueFromPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class, M_HU_PI_Item_Product);
 	}
 
-	/** Set Packvorschrift-Produkt Zuordnung.
-		@param M_HU_PI_Item_Product_ID Packvorschrift-Produkt Zuordnung	  */
+	/** Set Packvorschrift.
+		@param M_HU_PI_Item_Product_ID Packvorschrift	  */
 	@Override
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
 	{
@@ -339,8 +338,8 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
 	}
 
-	/** Get Packvorschrift-Produkt Zuordnung.
-		@return Packvorschrift-Produkt Zuordnung	  */
+	/** Get Packvorschrift.
+		@return Packvorschrift	  */
 	@Override
 	public int getM_HU_PI_Item_Product_ID () 
 	{
@@ -433,21 +432,17 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
 	}
 
-	/** Set Produkt-Kategorie.
+	/** Set Produkt Kategorie.
 		@param M_Product_Category_ID 
 		Kategorie eines Produktes
-
-
 	  */
 	@Override
 	public void setM_Product_Category_ID (int M_Product_Category_ID)
 	{
 		throw new IllegalArgumentException ("M_Product_Category_ID is virtual column");	}
 
-	/** Get Produkt-Kategorie.
+	/** Get Produkt Kategorie.
 		@return Kategorie eines Produktes
-
-
 	  */
 	@Override
 	public int getM_Product_Category_ID () 

@@ -14,7 +14,7 @@ public class X_M_PickingSlot_Trx extends org.compiere.model.PO implements I_M_Pi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -463548198L;
+	private static final long serialVersionUID = -968489584L;
 
     /** Standard Constructor */
     public X_M_PickingSlot_Trx (Properties ctx, int M_PickingSlot_Trx_ID, String trxName)
@@ -132,18 +132,6 @@ public class X_M_PickingSlot_Trx extends org.compiere.model.PO implements I_M_Pi
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.picking.model.I_M_PickingSlot getM_PickingSlot() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_PickingSlot_ID, de.metas.picking.model.I_M_PickingSlot.class);
-	}
-
-	@Override
-	public void setM_PickingSlot(de.metas.picking.model.I_M_PickingSlot M_PickingSlot)
-	{
-		set_ValueFromPO(COLUMNNAME_M_PickingSlot_ID, de.metas.picking.model.I_M_PickingSlot.class, M_PickingSlot);
 	}
 
 	/** Set Picking Slot.

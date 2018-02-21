@@ -14,7 +14,7 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -488667486L;
+	private static final long serialVersionUID = 593846462L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Attribute (Properties ctx, int M_HU_PI_Attribute_ID, String trxName)
@@ -47,18 +47,6 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public de.metas.javaclasses.model.I_AD_JavaClass getAggregationStrategy_JavaClass() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AggregationStrategy_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class);
-	}
-
-	@Override
-	public void setAggregationStrategy_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass AggregationStrategy_JavaClass)
-	{
-		set_ValueFromPO(COLUMNNAME_AggregationStrategy_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class, AggregationStrategy_JavaClass);
-	}
 
 	/** Set Aggregation Strategy.
 		@param AggregationStrategy_JavaClass_ID Aggregation Strategy	  */
@@ -117,18 +105,6 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.javaclasses.model.I_AD_JavaClass getHU_TansferStrategy_JavaClass() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_HU_TansferStrategy_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class);
-	}
-
-	@Override
-	public void setHU_TansferStrategy_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass HU_TansferStrategy_JavaClass)
-	{
-		set_ValueFromPO(COLUMNNAME_HU_TansferStrategy_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class, HU_TansferStrategy_JavaClass);
 	}
 
 	/** Set HU Transfer Attribute Strategy.
@@ -401,18 +377,6 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.javaclasses.model.I_AD_JavaClass getSplitterStrategy_JavaClass() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_SplitterStrategy_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class);
-	}
-
-	@Override
-	public void setSplitterStrategy_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass SplitterStrategy_JavaClass)
-	{
-		set_ValueFromPO(COLUMNNAME_SplitterStrategy_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class, SplitterStrategy_JavaClass);
 	}
 
 	/** Set Splitter Strategy.
