@@ -21,6 +21,9 @@ Here come the actual release notes:
     * New Window for Compensation group maintenance.
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1394](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1394) Quickactions not loaded after using barcode/ std. filter in HU editor in Manufacturing Order
+    * Fixes a Bug that let the Quickactions Buttons dissappear after setting filter criteria.
   * [#1585](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1585) Date recording with keys leads to error
     * Fixes a Bug that occurred when trying to record a date via keyboard instead of calendar widget.
 
