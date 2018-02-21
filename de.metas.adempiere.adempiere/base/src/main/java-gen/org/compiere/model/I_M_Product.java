@@ -397,6 +397,31 @@ public interface I_M_Product
     public static final String COLUMNNAME_GroupCompensationType = "GroupCompensationType";
 
 	/**
+	 * Set Min. Garantie-Tage.
+	 * Minumum number of guarantee days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGuaranteeDaysMin (int GuaranteeDaysMin);
+
+	/**
+	 * Get Min. Garantie-Tage.
+	 * Minumum number of guarantee days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getGuaranteeDaysMin();
+
+    /** Column definition for GuaranteeDaysMin */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_GuaranteeDaysMin = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "GuaranteeDaysMin", null);
+    /** Column name GuaranteeDaysMin */
+    public static final String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
+
+	/**
 	 * Set Kommentar/Hilfe.
 	 * Comment or Hint
 	 *
@@ -936,8 +961,8 @@ public interface I_M_Product
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
-	 * Set Produkt-Kategorie.
-	 * Category of a Product
+	 * Set Produkt Kategorie.
+	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -946,8 +971,8 @@ public interface I_M_Product
 	public void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
-	 * Get Produkt-Kategorie.
-	 * Category of a Product
+	 * Get Produkt Kategorie.
+	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
