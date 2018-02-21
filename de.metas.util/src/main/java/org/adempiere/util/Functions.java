@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.Function;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -95,7 +96,7 @@ public final class Functions
 	public static final <T, R> MemoizingFunction<T, R> memoizingLastCall(final Function<T, R> delegate)
 	{
 		final Function<T, T> keyFunction = input -> input;
-		return new MemoizingLastCallFunction<T, R, T>(delegate, keyFunction);
+		return new MemoizingLastCallFunction<>(delegate, keyFunction);
 	}
 
 	/**
@@ -119,6 +120,9 @@ public final class Functions
 		 * @return memorized value or <code>null</code>
 		 */
 		R peek(final T input);
+
+		/** Forget all cached values */
+		void forget();
 	}
 
 	private static class MemoizingFunctionWithKeyExtractor<T, R, K> implements MemoizingFunction<T, R>
@@ -155,6 +159,12 @@ public final class Functions
 		public R peek(final T input)
 		{
 			return values.get(keyFunction.apply(input));
+		}
+		
+		@Override
+		public void forget()
+		{
+			values.clear();
 		}
 	}
 
@@ -244,6 +254,22 @@ public final class Functions
 			finally
 			{
 				readLock.unlock();
+			}
+		}
+		
+		@Override
+		public void forget()
+		{
+			final WriteLock writeLock = lock.writeLock();
+			writeLock.lock();
+			try
+			{
+				lastKey = null;
+				lastValue = null;
+			}
+			finally
+			{
+				writeLock.unlock();
 			}
 		}
 	}
