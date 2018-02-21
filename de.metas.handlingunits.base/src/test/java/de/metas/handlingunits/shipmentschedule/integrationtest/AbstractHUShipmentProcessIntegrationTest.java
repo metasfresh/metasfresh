@@ -63,7 +63,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.logging.LogManager;
@@ -355,11 +355,11 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		//
 		// When matching expectations, sort the candidates so that they have the same indexes as the aggregated HUs
 		//
-		final List<IShipmentScheduleWithHU> candidatesSorted = new ArrayList<>(huShippingFacade.getCandidates());
-		Collections.sort(candidatesSorted, new Comparator<IShipmentScheduleWithHU>()
+		final List<ShipmentScheduleWithHU> candidatesSorted = new ArrayList<>(huShippingFacade.getCandidates());
+		Collections.sort(candidatesSorted, new Comparator<ShipmentScheduleWithHU>()
 		{
 			@Override
-			public int compare(final IShipmentScheduleWithHU schedWithHU1, final IShipmentScheduleWithHU schedWithHU2)
+			public int compare(final ShipmentScheduleWithHU schedWithHU1, final ShipmentScheduleWithHU schedWithHU2)
 			{
 				final int index1 = getIndex(schedWithHU1);
 				final int index2 = getIndex(schedWithHU2);
@@ -369,7 +369,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 				return index1 - index2;
 			}
 
-			private int getIndex(final IShipmentScheduleWithHU schedWithHU)
+			private int getIndex(final ShipmentScheduleWithHU schedWithHU)
 			{
 				int index = afterAggregation_HUs.indexOf(schedWithHU.getM_LU_HU());
 				if (index < 0)

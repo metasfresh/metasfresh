@@ -10,12 +10,12 @@ package de.metas.quantity;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,20 +30,22 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 
+import lombok.NonNull;
+
 /**
  * Immutable Quantity.
- * 
+ *
  * Besides quantity value ({@link #getQty()}) and it's uom ({@link #getUOM()} this object contains also source quantity/uom.
- * 
+ *
  * The actual meaning of source quantity/uom depends on who constructs the {@link Quantity} object but the general meaning is: the quantity/uom in some source or internal UOM.
- * 
+ *
  * e.g. when you ask a storage to allocate a quantity/uom that method could return a quantity object containing how much was allocated (in requested UOM), but the source quantity/uom is the quantity
  * in storage's UOM.
- * 
+ *
  * @author tsa
  *
  */
-public final class Quantity
+public final class Quantity implements Comparable<Quantity>
 {
 	public static final Quantity of(final BigDecimal qty, final I_C_UOM uom)
 	{
@@ -66,7 +68,7 @@ public final class Quantity
 
 	/**
 	 * Constructs a quantity object without source quantity/uom. More preciselly, source quantity/uom will be set so same values as quantity/uom.
-	 * 
+	 *
 	 * @param qty
 	 * @param uom
 	 */
@@ -75,18 +77,15 @@ public final class Quantity
 		this(qty, uom, qty, uom);
 	}
 
-	public Quantity(final BigDecimal qty, final I_C_UOM uom, final BigDecimal sourceQty, final I_C_UOM sourceUOM)
+	public Quantity(
+			@NonNull final BigDecimal qty,
+			@NonNull final I_C_UOM uom,
+			@NonNull final BigDecimal sourceQty,
+			@NonNull final I_C_UOM sourceUOM)
 	{
-		Check.assumeNotNull(qty, "qty not null");
 		this.qty = qty;
-
-		Check.assumeNotNull(uom, "uom not null");
 		this.uom = uom;
-
-		Check.assumeNotNull(sourceQty, "qtySource not null");
 		this.sourceQty = sourceQty;
-
-		Check.assumeNotNull(sourceUOM, "uomSource not null");
 		this.sourceUom = sourceUOM;
 	}
 
@@ -129,7 +128,7 @@ public final class Quantity
 
 	/**
 	 * Checks if <code>this</code> quantity equals with <code>other</code>, not considering the source (i.e. {@link #getSourceQty()}, {@link #getSourceUOM()}).
-	 * 
+	 *
 	 * @param other
 	 * @return true if they are equal
 	 */
@@ -151,9 +150,9 @@ public final class Quantity
 
 	/**
 	 * Checks if this quantity and given quantity are equal when comparing the current values (i.e. {@link #getQty()}, {@link #getUOM()}).
-	 * 
+	 *
 	 * NOTE: quantities will be compared by using {@link BigDecimal#compareTo(BigDecimal)} instead of {@link BigDecimal#equals(Object)}.
-	 * 
+	 *
 	 * @param quantity
 	 * @return true if current Qty/UOM are comparable equal.
 	 */
@@ -203,7 +202,7 @@ public final class Quantity
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if quantity value is infinite
 	 */
 	public boolean isInfinite()
@@ -212,7 +211,7 @@ public final class Quantity
 	}
 
 	/**
-	 * 
+	 *
 	 * @return quantity's UOM; never return null
 	 */
 	public I_C_UOM getUOM()
@@ -229,7 +228,7 @@ public final class Quantity
 	}
 
 	/**
-	 * 
+	 *
 	 * @param uom
 	 * @return a new {@link Quantity} object
 	 */
@@ -251,7 +250,7 @@ public final class Quantity
 	}
 
 	/**
-	 * 
+	 *
 	 * @param sourceQty
 	 * @return a new {@link Quantity} object
 	 */
@@ -265,7 +264,7 @@ public final class Quantity
 	}
 
 	/**
-	 * 
+	 *
 	 * @return source quatity's UOM
 	 */
 	public I_C_UOM getSourceUOM()
@@ -282,7 +281,7 @@ public final class Quantity
 	}
 
 	/**
-	 * 
+	 *
 	 * @param sourceUom
 	 * @return a new {@link Quantity} object
 	 */
@@ -305,7 +304,7 @@ public final class Quantity
 	}
 
 	/**
-	 * 
+	 *
 	 * @return ZERO quantity (but preserve UOMs)
 	 */
 	public Quantity toZero()
@@ -345,7 +344,7 @@ public final class Quantity
 	}
 
 	/**
-	 * 
+	 *
 	 * @param condition
 	 * @return negated quantity if <code>condition</code> is true; else return this
 	 */
@@ -361,9 +360,9 @@ public final class Quantity
 
 	/**
 	 * Calculates the Weighted Average between this Quantity and a previous given average.
-	 * 
+	 *
 	 * i.e. Current Weighted Avg = (<code>previousAverage</code> * <code>previousAverageWeight</code> + this quantity) / (<code>previousAverageWeight</code> + 1)
-	 * 
+	 *
 	 * @param previousAverage
 	 * @param previousAverageWeight
 	 * @return weighted average
@@ -388,9 +387,9 @@ public final class Quantity
 
 	/**
 	 * Interchange current Qty/UOM with source Qty/UOM.
-	 * 
+	 *
 	 * e.g. If your quantity is "5kg (source: 5000g)" then this method will return "5000g (source: 5kg)"
-	 * 
+	 *
 	 * @return a new instance with current Qty/UOM and source Qty/UOM interchanged.
 	 */
 	public Quantity switchToSource()
@@ -410,9 +409,9 @@ public final class Quantity
 
 	/**
 	 * Checks if current quantity zero.
-	 * 
+	 *
 	 * This is just a convenient method for checking if the {@link #signum()} is zero.
-	 * 
+	 *
 	 * @return true if {@link #signum()} is zero.
 	 */
 	public boolean isZero()
@@ -422,20 +421,18 @@ public final class Quantity
 
 	/**
 	 * Adds given quantity and returns the result.
-	 * 
+	 *
 	 * @param qtyToAdd
 	 * @return new {@link Quantity}
 	 * @throws QuantitiesUOMNotMatchingExpection if this quantity and qtyToAdd are not UOM compatible
 	 */
-	public Quantity add(final Quantity qtyToAdd)
+	public Quantity add(@NonNull final Quantity qtyToAdd)
 	{
-		Check.assumeNotNull(qtyToAdd, "qtyToAdd not null");
 		if (qtyToAdd.isZero())
 		{
 			return this;
 		}
 
-		//
 		// Get QtyToAdd value (mandatory)
 		final BigDecimal qtyToAdd_Value;
 		final int uomId = this.getC_UOM_ID();
@@ -494,22 +491,19 @@ public final class Quantity
 		return new Quantity(qtyNew_Value, qtyNew_UOM, qtyNew_SourceValue, qtyNew_SourceUOM);
 	}
 
-	public Quantity subtract(final Quantity qtyToRemove)
+	public Quantity subtract(@NonNull final Quantity qtyToRemove)
 	{
-		Check.assumeNotNull(qtyToRemove, "qtyToRemove not null");
 		final Quantity qtyToAdd = qtyToRemove.negate();
 		return add(qtyToAdd);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param qtyToCompare
 	 * @return minimum of <code>this</code> and <code>qtyToCompare</code>
 	 */
-	public Quantity min(final Quantity qtyToCompare)
+	public Quantity min(@NonNull final Quantity qtyToCompare)
 	{
-		Check.assumeNotNull(qtyToCompare, "qtyToCompare not null");
-
 		final Quantity diff = this.subtract(qtyToCompare);
 		if (diff.signum() >= 0)
 		{
@@ -519,5 +513,12 @@ public final class Quantity
 		{
 			return qtyToCompare;
 		}
+	}
+
+	@Override
+	public int compareTo(@NonNull final Quantity quantity)
+	{
+		final Quantity diff = this.subtract(quantity);
+		return diff.signum();
 	}
 }

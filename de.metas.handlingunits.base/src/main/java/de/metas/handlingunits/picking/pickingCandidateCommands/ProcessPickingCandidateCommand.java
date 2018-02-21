@@ -36,6 +36,7 @@ import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -64,9 +65,9 @@ import lombok.Singular;
 
 /**
  * Process picking candidate.
- * 
+ *
  * The status will be changed from InProgress to Processed.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -148,7 +149,7 @@ public class ProcessPickingCandidateCommand
 
 	private IFreshPackingItem createItemToPack(final int huId)
 	{
-		final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new IdentityHashMap<>();
+		final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys = new IdentityHashMap<>();
 
 		final List<I_M_Picking_Candidate> pickingCandidates = getPickingCandidatesForHUId(huId);
 		for (final I_M_Picking_Candidate pc : pickingCandidates)
@@ -156,7 +157,7 @@ public class ProcessPickingCandidateCommand
 			final int shipmentScheduleId = pc.getM_ShipmentSchedule_ID();
 			final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
 			final BigDecimal qty = pc.getQtyPicked();
-			scheds2Qtys.put(shipmentSchedule, qty);
+			scheds2Qtys.put(shipmentSchedule, Quantity.of(qty, pc.getC_UOM()));
 		}
 
 		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(scheds2Qtys);

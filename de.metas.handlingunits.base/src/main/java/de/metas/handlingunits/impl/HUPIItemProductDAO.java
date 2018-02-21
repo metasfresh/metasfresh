@@ -30,6 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -51,7 +53,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -119,14 +120,11 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 	@Override
 	public I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(
-			final I_M_HU_PI_Item itemDef,
-			final I_C_BPartner partner,
-			final I_M_Product product,
-			final Date date)
+			@NonNull final I_M_HU_PI_Item itemDef,
+			@Nullable final I_C_BPartner partner,
+			@NonNull final I_M_Product product,
+			@Nullable final Date date)
 	{
-		Preconditions.checkNotNull(itemDef, "Param 'itemDef' may not be null");
-		Preconditions.checkNotNull(product, "Param 'product' may not be null");
-
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
 		if (partner != null)
 		{
@@ -549,8 +547,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	@Override
-	public List<I_M_HU_PI_Item_Product> retrieveTUs(final Properties ctx, 
-			final I_M_Product cuProduct, 
+	public List<I_M_HU_PI_Item_Product> retrieveTUs(final Properties ctx,
+			final I_M_Product cuProduct,
 			final I_C_BPartner bpartner)
 	{
 		//

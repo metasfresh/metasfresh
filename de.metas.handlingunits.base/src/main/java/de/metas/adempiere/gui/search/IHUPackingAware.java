@@ -82,10 +82,10 @@ public interface IHUPackingAware
 	void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPiItemProduct);
 
 	/** @return Qty Packs (aka Qty TU). */
-	BigDecimal getQtyPacks();
+	BigDecimal getQtyTU();
 
 	/** @param qtyPacks Qty Packs (aka Qty TU). */
-	void setQtyPacks(final BigDecimal qtyPacks);
+	void setQtyTU(final BigDecimal qtyPacks);
 
 	void setC_BPartner(I_C_BPartner partner);
 

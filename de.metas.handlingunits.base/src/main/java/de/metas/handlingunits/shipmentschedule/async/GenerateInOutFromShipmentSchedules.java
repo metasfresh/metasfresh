@@ -73,7 +73,6 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
@@ -122,7 +121,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage_NOTUSED, final String localTrxName_NOTUSED)
 	{
 		// Create candidates
-		final List<IShipmentScheduleWithHU> candidates = retrieveCandidates();
+		final List<ShipmentScheduleWithHU> candidates = retrieveCandidates();
 		if (candidates.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
@@ -182,11 +181,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 * @param trxName
 	 * @return
 	 */
-	private final List<IShipmentScheduleWithHU> retrieveCandidates()
+	private final List<ShipmentScheduleWithHU> retrieveCandidates()
 	{
 		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 
-		final List<IShipmentScheduleWithHU> candidates = new ArrayList<>();
+		final List<ShipmentScheduleWithHU> candidates = new ArrayList<>();
 		final Iterator<I_M_ShipmentSchedule> schedules = retriveShipmentSchedules();
 		while (schedules.hasNext())
 		{
@@ -205,7 +204,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				throw WorkpackageSkipRequestException.createWithTimeout("Shipment schedule needs to be updated first: " + schedule, 10000);
 			}
 
-			final List<IShipmentScheduleWithHU> scheduleCandidates = createCandidates(huContext, schedule);
+			final List<ShipmentScheduleWithHU> scheduleCandidates = createCandidates(huContext, schedule);
 			candidates.addAll(scheduleCandidates);
 		}
 
@@ -259,7 +258,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 *
 	 * @return one single candidate if there are no {@link I_M_ShipmentSchedule_QtyPicked} for the given schedule. One candidate per {@link I_M_ShipmentSchedule_QtyPicked} otherwise.
 	 */
-	private List<IShipmentScheduleWithHU> createCandidates(final IHUContext huContext,
+	private List<ShipmentScheduleWithHU> createCandidates(
+			final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		//
@@ -289,8 +289,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 			// There are no picked qtys for the given shipment schedule, so we will ship as is (without any handling units)
 			final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
-			final IShipmentScheduleWithHU candidate = //
-					ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(schedule, qtyToDeliver, huContext);
+			final ShipmentScheduleWithHU candidate = //
+					ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(schedule, qtyToDeliver);
 
 			return Collections.singletonList(candidate);
 		}
@@ -304,7 +304,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		//
 		// Iterate all QtyPicked records and create candidates from them
-		final List<IShipmentScheduleWithHU> candidates = new ArrayList<>(qtyPickedRecords.size());
+		final List<ShipmentScheduleWithHU> candidates = new ArrayList<>(qtyPickedRecords.size());
 		for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked qtyPickedRecord : qtyPickedRecords)
 		{
 			final I_M_ShipmentSchedule_QtyPicked qtyPickedRecordHU = InterfaceWrapperHelper.create(qtyPickedRecord, I_M_ShipmentSchedule_QtyPicked.class);
@@ -329,7 +329,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 			//
 			// Create ShipmentSchedule+HU candidate and add it to our list
-			final IShipmentScheduleWithHU candidate = //
+			final ShipmentScheduleWithHU candidate = //
 					ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(qtyPickedRecordHU, huContext);
 			candidates.add(candidate);
 		}
@@ -564,7 +564,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	{
 		Check.assumeNotNull(schedule, "schedule not null");
 
-		final I_M_HU_LUTU_Configuration lutuConfiguration = huShipmentScheduleBL.getM_HU_LUTU_Configuration(schedule);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = huShipmentScheduleBL.deriveM_HU_LUTU_Configuration(schedule);
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		lutuConfigurationFactory.save(lutuConfiguration);
 

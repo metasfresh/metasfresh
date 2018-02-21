@@ -157,15 +157,15 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public BigDecimal getQtyPacks()
+	public BigDecimal getQtyTU()
 	{
 		return olCand.getQtyItemCapacity();
 	}
 
 	@Override
-	public void setQtyPacks(final BigDecimal qtyPacks)
+	public void setQtyTU(final BigDecimal qtyPacks)
 	{
-		values.setQtyPacks(qtyPacks);
+		values.setQtyTU(qtyPacks);
 	}
 
 	@Override

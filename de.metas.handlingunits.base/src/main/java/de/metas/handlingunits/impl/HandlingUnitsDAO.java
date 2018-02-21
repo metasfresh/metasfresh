@@ -12,12 +12,12 @@ import java.math.BigDecimal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -191,7 +191,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		return VIRTUAL_HU_PI_ID;
 	}
-	
+
 	@Override
 	public int getVirtual_HU_PI_Version_ID()
 	{
@@ -374,10 +374,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final I_C_BPartner partner)
+	public List<I_M_HU_PI_Item> retrievePIItems(
+			@NonNull final I_M_HU_PI_Version version,
+			@Nullable final I_C_BPartner partner)
 	{
-		Check.assumeNotNull(version, "version not null");
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
 		final String trxName = InterfaceWrapperHelper.getTrxName(version);
 		final int huPIVersionId = version.getM_HU_PI_Version_ID();
@@ -951,7 +951,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.map(id -> InterfaceWrapperHelper.load(id, I_M_Warehouse.class))
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	@Override
 	public List<org.compiere.model.I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(final List<I_M_HU> hus)
 	{
@@ -973,7 +973,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.stream()
 				.map(org.compiere.model.I_M_Warehouse::getM_Warehouse_ID)
 				.collect(ImmutableSet.toImmutableSet());
-		
+
 		 final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId)
 				 .stream()
 				 .filter(warehouse -> !huWarehouseIds.contains(warehouse.getM_Warehouse_ID()))

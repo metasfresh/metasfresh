@@ -162,13 +162,13 @@ public class InvoiceLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public BigDecimal getQtyPacks()
+	public BigDecimal getQtyTU()
 	{
 		return invoiceLine.getQtyEnteredTU();
 	}
 
 	@Override
-	public void setQtyPacks(final BigDecimal qtyPacks)
+	public void setQtyTU(final BigDecimal qtyPacks)
 	{
 		invoiceLine.setQtyEnteredTU(qtyPacks);
 	}
