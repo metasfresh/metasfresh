@@ -1,15 +1,15 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { updateUri } from "../actions/AppActions";
-import { getWindowBreadcrumb } from "../actions/MenuActions";
+import { updateUri } from '../actions/AppActions';
+import { getWindowBreadcrumb } from '../actions/MenuActions';
 import {
   selectTableItems,
-  setLatestNewDocument
-} from "../actions/WindowActions";
-import Container from "../components/Container";
-import DocumentList from "../components/app/DocumentList";
+  setLatestNewDocument,
+} from '../actions/WindowActions';
+import Container from '../components/Container';
+import DocumentList from '../components/app/DocumentList';
 
 const mapStateToProps = state => ({
   modal: state.windowHandler.modal,
@@ -19,14 +19,14 @@ const mapStateToProps = state => ({
   includedView: state.listHandler.includedView,
   processStatus: state.appHandler.processStatus,
   breadcrumb: state.menuHandler.breadcrumb,
-  pathname: state.routing.locationBeforeTransitions.pathname
+  pathname: state.routing.locationBeforeTransitions.pathname,
 });
 
 class DocList extends Component {
   state = {
-    modalTitle: "",
-    modalDescription: "",
-    notfound: false
+    modalTitle: '',
+    modalDescription: '',
+    notfound: false,
   };
 
   static propTypes = {
@@ -38,7 +38,7 @@ class DocList extends Component {
     modal: PropTypes.object.isRequired,
     rawModal: PropTypes.object.isRequired,
     indicator: PropTypes.string.isRequired,
-    processStatus: PropTypes.string.isRequired
+    processStatus: PropTypes.string.isRequired,
   };
 
   componentDidMount = () => {
@@ -51,7 +51,7 @@ class DocList extends Component {
         selectTableItems({
           windowType,
           viewId: query.viewId,
-          ids: [latestNewDocument]
+          ids: [latestNewDocument],
         })
       );
       dispatch(setLatestNewDocument(null));
@@ -97,7 +97,7 @@ class DocList extends Component {
       rawModal,
       indicator,
       processStatus,
-      includedView
+      includedView,
     } = this.props;
     const { modalTitle, notfound, modalDescription } = this.state;
     let refRowIds = [];
@@ -127,8 +127,7 @@ class DocList extends Component {
         setModalDescription={this.setModalDescription}
         modalDescription={modalDescription}
         showIndicator={!modal.visible && !rawModal.visible}
-        masterDocumentList={this.masterDocumentList}
-      >
+        masterDocumentList={this.masterDocumentList}>
         <div className="document-lists-wrapper">
           <DocumentList
             ref={element => {

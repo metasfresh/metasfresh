@@ -1,10 +1,10 @@
-import axios from "axios";
-import counterpart from "counterpart";
-import { push, replace } from "react-router-redux";
-import SockJs from "sockjs-client";
+import axios from 'axios';
+import counterpart from 'counterpart';
+import { push, replace } from 'react-router-redux';
+import SockJs from 'sockjs-client';
 
-import Stomp from "stompjs/lib/stomp.min.js";
-import Moment from "moment";
+import Stomp from 'stompjs/lib/stomp.min.js';
+import Moment from 'moment';
 
 import {
   ACTIVATE_TAB,
@@ -26,6 +26,7 @@ import {
   PATCH_FAILURE,
   PATCH_REQUEST,
   PATCH_SUCCESS,
+  REMOVE_TABLE_ITEMS_SELECTION,
   SELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
   SORT_TAB,
@@ -42,35 +43,24 @@ import {
   OPEN_FILTER_BOX,
   CLOSE_FILTER_BOX,
   ALLOW_OUTSIDE_CLICK,
-  DISABLE_OUTSIDE_CLICK
-} from "../constants/ActionTypes";
+  DISABLE_OUTSIDE_CLICK,
+} from '../constants/ActionTypes';
 
 import {
   addNotification,
   setNotificationProgress,
   setProcessPending,
-  setProcessSaved
-} from "./AppActions";
-import { getData, initLayout, openFile, patchRequest } from "./GenericActions";
-import { setListIncludedView } from "./ListActions";
-import { getWindowBreadcrumb } from "./MenuActions";
+  setProcessSaved,
+} from './AppActions';
+import { getData, initLayout, openFile, patchRequest } from './GenericActions';
+import { setListIncludedView } from './ListActions';
+import { getWindowBreadcrumb } from './MenuActions';
 
 export function setLatestNewDocument(id) {
   return {
     type: SET_LATEST_NEW_DOCUMENT,
     id: id
   };
-}
-
-export function discardNewDocument({ windowType, documentId } = {}) {
-  return axios.post(
-    config.API_URL +
-      "/window/" +
-      windowType +
-      "/" +
-      documentId +
-      "/discardChanges"
-  );
 }
 
 export function openRawModal(windowType, viewId) {
@@ -236,7 +226,7 @@ export function updateRowProperty(property, item, tabid, rowid, scope) {
     item,
     tabid,
     rowid,
-    scope
+    scope,
   };
 }
 
@@ -244,7 +234,7 @@ export function updateDataIncludedTabsInfo(scope, includedTabsInfo) {
   return {
     type: UPDATE_DATA_INCLUDED_TABS_INFO,
     scope,
-    includedTabsInfo
+    includedTabsInfo,
   };
 }
 
@@ -254,23 +244,8 @@ export function addNewRow(item, tabid, rowid, scope) {
     item: item,
     tabid: tabid,
     rowid: rowid,
-    scope: scope
+    scope: scope,
   };
-}
-
-export function discardNewRow({ windowType, documentId, tabId, rowId } = {}) {
-  return axios.post(
-    config.API_URL +
-      "/window/" +
-      windowType +
-      "/" +
-      documentId +
-      "/" +
-      tabId +
-      "/" +
-      rowId +
-      "/discardChanges"
-  );
 }
 
 export function deleteRow(tabid, rowid, scope) {
@@ -278,7 +253,7 @@ export function deleteRow(tabid, rowid, scope) {
     type: DELETE_ROW,
     tabid: tabid,
     rowid: rowid,
-    scope: scope
+    scope: scope,
   };
 }
 
@@ -287,7 +262,7 @@ export function updateDataFieldProperty(property, item, scope) {
     type: UPDATE_DATA_FIELD_PROPERTY,
     property: property,
     item: item,
-    scope: scope
+    scope: scope,
   };
 }
 
@@ -298,14 +273,14 @@ export function updateRowFieldProperty(property, item, tabid, rowid, scope) {
     item: item,
     tabid: tabid,
     rowid: rowid,
-    scope: scope
+    scope: scope,
   };
 }
 
 export function noConnection(status) {
   return {
     type: NO_CONNECTION,
-    status: status
+    status: status,
   };
 }
 
@@ -340,19 +315,19 @@ export function openModal(
     parentViewId,
     parentViewSelectedIds,
     childViewId,
-    childViewSelectedIds
+    childViewSelectedIds,
   };
 }
 
 export function closeProcessModal() {
   return {
-    type: CLOSE_PROCESS_MODAL
+    type: CLOSE_PROCESS_MODAL,
   };
 }
 
 export function closeModal() {
   return {
-    type: CLOSE_MODAL
+    type: CLOSE_MODAL,
   };
 }
 
@@ -360,7 +335,7 @@ export function updateModal(rowId, dataId) {
   return {
     type: UPDATE_MODAL,
     rowId,
-    dataId
+    dataId,
   };
 }
 
@@ -369,16 +344,23 @@ export function updateModal(rowId, dataId) {
 export function indicatorState(state) {
   return {
     type: CHANGE_INDICATOR_STATE,
-    state: state
+    state: state,
   };
 }
 
 //SELECT ON TABLE
 
+export function removeSelectedTableItems({ windowType, viewId }) {
+  return {
+    type: REMOVE_TABLE_ITEMS_SELECTION,
+    payload: { windowType, viewId },
+  };
+}
+
 export function selectTableItems({ ids, windowType, viewId }) {
   return {
     type: SELECT_TABLE_ITEMS,
-    payload: { ids, windowType, viewId }
+    payload: { ids, windowType, viewId },
   };
 }
 
@@ -389,15 +371,15 @@ export function selectTableItems({ ids, windowType, viewId }) {
  */
 export function createWindow(
   windowType,
-  docId = "NEW",
+  docId = 'NEW',
   tabId,
   rowId,
   isModal = false,
   isAdvanced
 ) {
   return dispatch => {
-    if (docId == "new") {
-      docId = "NEW";
+    if (docId == 'new') {
+      docId = 'NEW';
     }
 
     // this chain is really important,
@@ -408,11 +390,11 @@ export function createWindow(
       if (!response) {
         return;
       }
-      if (docId == "NEW" && !isModal) {
+      if (docId == 'NEW' && !isModal) {
         dispatch(setLatestNewDocument(response.data[0].id));
         // redirect immedietely
         return dispatch(
-          replace("/window/" + windowType + "/" + response.data[0].id)
+          replace(`/window/${windowType}/${response.data[0].id}`)
         );
       }
 
@@ -424,7 +406,7 @@ export function createWindow(
         }
       });
 
-      if (docId === "NEW") {
+      if (docId === 'NEW') {
         dispatch(updateModal(null, response.data[0].id));
       }
 
@@ -443,9 +425,9 @@ export function createWindow(
       );
 
       if (isModal) {
-        if (rowId === "NEW") {
+        if (rowId === 'NEW') {
           dispatch(
-            mapDataToState(response.data, false, "NEW", docId, windowType)
+            mapDataToState(response.data, false, 'NEW', docId, windowType)
           );
           dispatch(updateStatus(response.data));
           dispatch(updateModal(response.data[0].rowId));
@@ -454,7 +436,7 @@ export function createWindow(
         dispatch(getWindowBreadcrumb(windowType));
       }
 
-      initLayout("window", windowType, tabId, null, null, isAdvanced)
+      initLayout('window', windowType, tabId, null, null, isAdvanced)
         .then(response =>
           dispatch(initLayoutSuccess(response.data, getScope(isModal)))
         )
@@ -485,27 +467,6 @@ function initTabs(layout, windowType, docId, isModal) {
         }
       });
   };
-}
-
-export function getTab(tabId, windowType, docId, orderBy) {
-  return getData(
-    "window",
-    windowType,
-    docId,
-    tabId,
-    null,
-    null,
-    null,
-    null,
-    orderBy
-  ).then(
-    res =>
-      res.data &&
-      res.data.map(row => ({
-        ...row,
-        fieldsByName: parseToDisplay(row.fieldsByName)
-      }))
-  );
 }
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
@@ -863,31 +824,6 @@ export function attachFileAction(windowType, docId, data) {
   };
 }
 
-//ZOOM INTO
-export function getZoomIntoWindow(
-  entity,
-  windowId,
-  docId,
-  tabId,
-  rowId,
-  field
-) {
-  return axios.get(
-    config.API_URL +
-      "/" +
-      entity +
-      "/" +
-      windowId +
-      (docId ? "/" + docId : "") +
-      (tabId ? "/" + tabId : "") +
-      (rowId ? "/" + rowId : "") +
-      "/field" +
-      "/" +
-      field +
-      "/zoomInto?showError=true"
-  );
-}
-
 // PROCESS ACTIONS
 
 export function createProcess({
@@ -1072,6 +1008,90 @@ export function handleProcessResponse(response, type, id) {
   };
 }
 
+export function deleteLocal(tabid, rowsid, scope, response) {
+  return dispatch => {
+    for (let rowid of rowsid) {
+      dispatch(deleteRow(tabid, rowid, scope));
+    }
+    dispatch(updateStatus(response.data));
+  };
+}
+// END PROCESS ACTIONS
+
+// API CALLS
+
+//ZOOM INTO
+export function getZoomIntoWindow(
+  entity,
+  windowId,
+  docId,
+  tabId,
+  rowId,
+  field
+) {
+  return axios.get(
+    config.API_URL +
+      "/" +
+      entity +
+      "/" +
+      windowId +
+      (docId ? "/" + docId : "") +
+      (tabId ? "/" + tabId : "") +
+      (rowId ? "/" + rowId : "") +
+      "/field" +
+      "/" +
+      field +
+      "/zoomInto?showError=true"
+  );
+}
+
+export function discardNewRow({ windowType, documentId, tabId, rowId } = {}) {
+  return axios.post(
+    config.API_URL +
+      "/window/" +
+      windowType +
+      "/" +
+      documentId +
+      "/" +
+      tabId +
+      "/" +
+      rowId +
+      "/discardChanges"
+  );
+}
+
+export function discardNewDocument({ windowType, documentId } = {}) {
+  return axios.post(
+    config.API_URL +
+      '/window/' +
+      windowType +
+      '/' +
+      documentId +
+      '/discardChanges'
+  );
+}
+
+export function getTab(tabId, windowType, docId, orderBy) {
+  return getData(
+    "window",
+    windowType,
+    docId,
+    tabId,
+    null,
+    null,
+    null,
+    null,
+    orderBy
+  ).then(
+    res =>
+      res.data &&
+      res.data.map(row => ({
+        ...row,
+        fieldsByName: parseToDisplay(row.fieldsByName)
+      }))
+  );
+}
+
 function getProcessData({
   processId,
   viewId,
@@ -1132,15 +1152,6 @@ export function startProcess(processType, pinstanceId) {
   );
 }
 
-export function deleteLocal(tabid, rowsid, scope, response) {
-  return dispatch => {
-    for (let rowid of rowsid) {
-      dispatch(deleteRow(tabid, rowid, scope));
-    }
-    dispatch(updateStatus(response.data));
-  };
-}
-// END PROCESS ACTIONS
 
 // UTILITIES
 

@@ -1,4 +1,4 @@
-import update from "react-addons-update";
+import update from 'react-addons-update';
 
 import {
   ACTIVATE_TAB,
@@ -25,6 +25,7 @@ import {
   PATCH_REQUEST,
   PATCH_RESET,
   PATCH_SUCCESS,
+  REMOVE_TABLE_ITEMS_SELECTION,
   SELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
   SORT_TAB,
@@ -37,14 +38,14 @@ import {
   UPDATE_MODAL,
   UPDATE_ROW_FIELD_PROPERTY,
   UPDATE_ROW_PROPERTY,
-  UPDATE_ROW_STATUS
-} from "../constants/ActionTypes";
+  UPDATE_ROW_STATUS,
+} from '../constants/ActionTypes';
 
 const initialState = {
   connectionError: false,
   modal: {
     visible: false,
-    type: "",
+    type: '',
     dataId: null,
     tabId: null,
     rowId: null,
@@ -52,8 +53,8 @@ const initialState = {
     layout: {},
     data: {},
     rowData: {},
-    modalTitle: "",
-    modalType: "",
+    modalTitle: '',
+    modalType: '',
     isAdvanced: false,
     viewDocumentIds: null,
     childViewId: null,
@@ -63,16 +64,16 @@ const initialState = {
     triggerField: null,
     saveStatus: {},
     validStatus: {},
-    includedTabsInfo: {}
+    includedTabsInfo: {},
   },
   rawModal: {
     visible: false,
     windowType: null,
-    viewId: null
+    viewId: null,
   },
   master: {
     layout: {
-      activeTab: null
+      activeTab: null,
     },
     data: [],
     rowData: {},
@@ -80,9 +81,9 @@ const initialState = {
     validStatus: {},
     includedTabsInfo: {},
     docId: undefined,
-    websocket: null
+    websocket: null,
   },
-  indicator: "saved",
+  indicator: 'saved',
   allowShortcut: true,
   allowOutsideClick: true,
   latestNewDocument: null,
@@ -90,11 +91,11 @@ const initialState = {
   selections: {},
   patches: {
     requests: {
-      length: 0
+      length: 0,
     },
-    success: true
+    success: true,
   },
-  filter: {}
+  filter: {},
 };
 
 export const NO_SELECTION = [];
@@ -103,17 +104,24 @@ export const getSelection = ({ state, windowType, viewId }) => {
 
   return (windowTypeSelections && windowTypeSelections[viewId]) || NO_SELECTION;
 };
+export const getSelectionDirect = (selections, windowType, viewId) => {
+  const windowTypeSelections = selections[windowType];
+
+  return (windowTypeSelections && windowTypeSelections[viewId]) || NO_SELECTION;
+};
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
     case NO_CONNECTION:
-      return Object.assign({}, state, {
-        connectionError: action.status
-      });
-
+      return {
+        ...state,
+        connectionError: action.status,
+      };
     case OPEN_MODAL:
-      return Object.assign({}, state, {
-        modal: Object.assign({}, state.modal, {
+      return {
+        ...state,
+        modal: {
+          ...state.modal,
           visible: true,
           type: action.windowType,
           dataId: action.dataId,
@@ -128,38 +136,45 @@ export default function windowHandler(state = initialState, action) {
           parentViewId: action.parentViewId,
           parentViewSelectedIds: action.parentViewSelectedIds,
           childViewId: action.childViewId,
-          childViewSelectedIds: action.childViewSelectedIds
-        })
-      });
-
+          childViewSelectedIds: action.childViewSelectedIds,
+        },
+      };
     case UPDATE_MODAL:
-      return Object.assign({}, state, {
-        modal: Object.assign({}, state.modal, {
+      return {
+        ...state,
+        modal: {
+          ...state.modal,
           rowId: action.rowId,
-          dataId: action.dataId
-        })
-      });
-
+          dataId: action.dataId,
+        },
+      };
     case CLOSE_PROCESS_MODAL:
-      if (state.modal.modalType === "process") {
-        return Object.assign({}, state, {
-          modal: Object.assign({}, state.modal, initialState.modal)
-        });
+      if (state.modal.modalType === 'process') {
+        return {
+          ...state,
+          modal: {
+            ...state.modal,
+            ...initialState.modal,
+          },
+        };
       }
       return state;
-
     case CLOSE_MODAL:
-      return Object.assign({}, state, {
-        modal: Object.assign({}, state.modal, initialState.modal)
-      });
+      return {
+        ...state,
+        modal: {
+          ...state.modal,
+          ...initialState.modal,
+        },
+      };
 
     // SCOPED ACTIONS
 
     case INIT_LAYOUT_SUCCESS:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
-          layout: action.layout
-        })
+          layout: action.layout,
+        }),
       });
 
     case INIT_DATA_SUCCESS:
@@ -173,19 +188,19 @@ export default function windowHandler(state = initialState, action) {
           standardActions: new Set(action.standardActions),
           validStatus: action.validStatus,
           includedTabsInfo: action.includedTabsInfo,
-          websocket: action.websocket
-        })
+          websocket: action.websocket,
+        }),
       });
-
     case CLEAR_MASTER_DATA:
-      return Object.assign({}, state, {
-        master: Object.assign({}, state.master, {
+      return {
+        ...state,
+        master: {
+          ...state.master,
           data: {},
           rowData: {},
-          docId: undefined
-        })
-      });
-
+          docId: undefined,
+        },
+      };
     case SORT_TAB:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
@@ -197,52 +212,47 @@ export default function windowHandler(state = initialState, action) {
                       orderBy: [
                         {
                           fieldName: action.field,
-                          ascending: action.asc
-                        }
-                      ]
+                          ascending: action.asc,
+                        },
+                      ],
                     })
                   : tab
-            )
-          })
-        })
+            ),
+          }),
+        }),
       });
-
     case ACTIVATE_TAB:
       return update(state, {
         [action.scope]: {
           layout: {
-            activeTab: { $set: action.tabId }
-          }
-        }
+            activeTab: { $set: action.tabId },
+          },
+        },
       });
-
     case UNSELECT_TAB:
       return update(state, {
         [action.scope]: {
           layout: {
-            activeTab: { $set: null }
-          }
-        }
+            activeTab: { $set: null },
+          },
+        },
       });
-
     case ADD_ROW_DATA:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
-          rowData: Object.assign({}, state[action.scope].rowData, action.data)
-        })
+          rowData: Object.assign({}, state[action.scope].rowData, action.data),
+        }),
       });
-
     case ADD_NEW_ROW:
       return update(state, {
         [action.scope]: {
           rowData: {
             [action.tabid]: {
-              $push: [action.item]
-            }
-          }
-        }
+              $push: [action.item],
+            },
+          },
+        },
       });
-
     case DELETE_ROW:
       return update(state, {
         [action.scope]: {
@@ -250,12 +260,11 @@ export default function windowHandler(state = initialState, action) {
             [action.tabid]: {
               $set: state[action.scope].rowData[action.tabid].filter(
                 item => item.rowId !== action.rowid
-              )
-            }
-          }
-        }
+              ),
+            },
+          },
+        },
       });
-
     case UPDATE_DATA_FIELD_PROPERTY:
       return update(state, {
         [action.scope]: {
@@ -265,18 +274,17 @@ export default function windowHandler(state = initialState, action) {
                 {},
                 state[action.scope].data[action.property],
                 action.item
-              )
-            }
-          }
-        }
+              ),
+            },
+          },
+        },
       });
-
     case UPDATE_DATA_PROPERTY: {
       let value;
 
-      if (typeof action.value === "string") {
+      if (typeof action.value === 'string') {
         value = action.value;
-      } else if (action.property === "standardActions") {
+      } else if (action.property === 'standardActions') {
         // TODO: Evaluate if standardActions of type Set
         // is worth this extra check
         value = new Set(action.value);
@@ -291,9 +299,9 @@ export default function windowHandler(state = initialState, action) {
       return update(state, {
         [action.scope]: {
           [action.property]: {
-            $set: value
-          }
-        }
+            $set: value,
+          },
+        },
       });
     }
 
@@ -316,27 +324,24 @@ export default function windowHandler(state = initialState, action) {
                     item.rowId === rowid
                       ? {
                           ...scRowData[index],
-
                           fieldsByName: {
                             ...scRowData[index].fieldsByName,
-
                             [property]: {
                               ...scRowData[index].fieldsByName[property],
-                              ...action.item
-                            }
-                          }
+                              ...action.item,
+                            },
+                          },
                         }
                       : item
-                )
-              }
-            }
-          }
+                ),
+              },
+            },
+          },
         });
       } else {
         return state;
       }
     }
-
     case UPDATE_ROW_PROPERTY:
       return update(state, {
         [action.scope]: {
@@ -347,15 +352,14 @@ export default function windowHandler(state = initialState, action) {
                   item.rowId === action.rowid
                     ? {
                         ...state[action.scope].rowData[action.tabid][index],
-                        [action.property]: action.item
+                        [action.property]: action.item,
                       }
                     : item
-              )
-            }
-          }
-        }
+              ),
+            },
+          },
+        },
       });
-
     case UPDATE_ROW_STATUS:
       return update(state, {
         [action.scope]: {
@@ -366,26 +370,23 @@ export default function windowHandler(state = initialState, action) {
                   item.rowId === action.rowid
                     ? { $set: action.saveStatus }
                     : item
-              )
-            }
-          }
-        }
+              ),
+            },
+          },
+        },
       });
-
     case UPDATE_DATA_VALID_STATUS:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
-          validStatus: action.validStatus
-        })
+          validStatus: action.validStatus,
+        }),
       });
-
     case UPDATE_DATA_SAVE_STATUS:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
-          saveStatus: action.saveStatus
-        })
+          saveStatus: action.saveStatus,
+        }),
       });
-
     case UPDATE_DATA_INCLUDED_TABS_INFO:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
@@ -400,16 +401,17 @@ export default function windowHandler(state = initialState, action) {
                 : {}
             );
             return result;
-          }, {})
-        })
+          }, {}),
+        }),
       });
     // END OF SCOPED ACTIONS
 
     // INDICATOR ACTIONS
     case CHANGE_INDICATOR_STATE:
-      return Object.assign({}, state, {
-        indicator: action.state
-      });
+      return {
+        ...state,
+        indicator: action.state,
+      };
 
     // END OF INDICATOR ACTIONS
 
@@ -418,83 +420,98 @@ export default function windowHandler(state = initialState, action) {
 
       return {
         ...state,
-
         selections: {
           ...state.selections,
-
           [windowType]: {
             ...state.selections[windowType],
+            [viewId]: ids,
+          },
+        },
+      };
+    }
 
-            [viewId]: ids
-          }
-        }
+    case REMOVE_TABLE_ITEMS_SELECTION: {
+      const { windowType, viewId } = action.payload;
+      const windowSelections = { ...state.selections[windowType] };
+
+      delete state.selections[windowType];
+      delete windowSelections[viewId];
+
+      return {
+        ...state,
+        selections: {
+          ...state.selections,
+          [windowType]: { ...windowSelections },
+        },
       };
     }
 
     // LATEST NEW DOCUMENT CACHE
     case SET_LATEST_NEW_DOCUMENT:
-      return Object.assign({}, state, {
-        latestNewDocument: action.id
-      });
+      return {
+        ...state,
+        latestNewDocument: action.id,
+      };
 
     // RAW Modal
     case CLOSE_RAW_MODAL:
-      return Object.assign({}, state, {
-        rawModal: Object.assign({}, state.rawModal, {
+      return {
+        ...state,
+        rawModal: {
+          ...state.rawModal,
           visible: false,
           type: null,
-          viewId: null
-        })
-      });
-
+          viewId: null,
+        },
+      };
     case OPEN_RAW_MODAL:
-      return Object.assign({}, state, {
-        rawModal: Object.assign({}, state.rawModal, {
+      return {
+        ...state,
+        rawModal: {
+          ...state.rawModal,
           visible: true,
           type: action.windowType,
-          viewId: action.viewId
-        })
-      });
-
+          viewId: action.viewId,
+        },
+      };
     case OPEN_FILTER_BOX:
-      return Object.assign({}, state, {
-        filter: Object.assign({}, state.filter, {
+      return {
+        ...state,
+        filter: {
+          ...state.filter,
           visible: true,
-          boundingRect: action.boundingRect
-        })
-      });
-
+          boundingRect: action.boundingRect,
+        },
+      };
     case CLOSE_FILTER_BOX:
-      return Object.assign({}, state, {
-        filter: Object.assign({}, state.filter, {
+      return {
+        ...state,
+        filter: {
+          ...state.filter,
           visible: false,
-          boundingRect: null
-        })
-      });
+          boundingRect: null,
+        },
+      };
     case ALLOW_OUTSIDE_CLICK:
       return {
         ...state,
-        allowOutsideClick: true
+        allowOutsideClick: true,
       };
-
     case DISABLE_OUTSIDE_CLICK:
       return {
         ...state,
-        allowOutsideClick: false
+        allowOutsideClick: false,
       };
-
     case ALLOW_SHORTCUT:
       return {
         ...state,
-        allowShortcut: true
+        allowShortcut: true,
       };
-
     case DISABLE_SHORTCUT:
       return {
         ...state,
-        allowShortcut: false
+        allowShortcut: false,
       };
-
     case PATCH_REQUEST:
       return {
         ...state,
@@ -503,11 +520,10 @@ export default function windowHandler(state = initialState, action) {
           requests: {
             ...state.patches.requests,
             [action.symbol]: action.options,
-            length: state.patches.requests.length + 1
-          }
-        }
+            length: state.patches.requests.length + 1,
+          },
+        },
       };
-
     case PATCH_SUCCESS: {
       const requests = { ...state.patches.requests };
 
@@ -522,11 +538,10 @@ export default function windowHandler(state = initialState, action) {
         ...state,
         patches: {
           ...state.patches,
-          requests
-        }
+          requests,
+        },
       };
     }
-
     case PATCH_FAILURE: {
       const requests = { ...state.patches.requests };
 
@@ -542,23 +557,21 @@ export default function windowHandler(state = initialState, action) {
         patches: {
           ...state.patches,
           requests,
-          success: false
-        }
+          success: false,
+        },
       };
     }
-
     case PATCH_RESET:
       return {
         ...state,
         patches: {
           ...state.patches,
           requests: {
-            length: 0
+            length: 0,
           },
-          success: true
-        }
+          success: true,
+        },
       };
-
     default:
       return state;
   }
