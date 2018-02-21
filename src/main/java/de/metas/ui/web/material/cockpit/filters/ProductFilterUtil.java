@@ -37,12 +37,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -69,8 +69,8 @@ class ProductFilterUtil
 				.setOperator(Operator.LIKE_I);
 
 		final DocumentFilterParamDescriptor.Builder productCategoryParameter = DocumentFilterParamDescriptor.builder()
-				.setFieldName(I_MD_Cockpit.COLUMNNAME_M_Product_Category_ID)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_M_Product_Category_ID))
+				.setFieldName(I_M_Product.COLUMNNAME_M_Product_Category_ID)
+				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_M_Product_Category_ID))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Product_Category.Table_Name).provideForScope(LookupScope.DocumentFilter))
 				.setOperator(Operator.EQUAL);

@@ -2,6 +2,7 @@ package de.metas.ui.web.material.cockpit;
 
 import java.util.stream.Stream;
 
+import org.compiere.model.I_M_Product;
 import org.compiere.util.CacheMgt;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +47,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 {
 
-	private IViewsIndexStorage defaultViewsRepositoryStorage = new DefaultViewsRepositoryStorage();;
+	private final IViewsIndexStorage defaultViewsRepositoryStorage = new DefaultViewsRepositoryStorage();;
 
 	public MaterialCockpitViewsIndexStorage()
 	{
@@ -55,6 +56,10 @@ public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 			return 0;
 		});
 		CacheMgt.get().addCacheResetListener(I_MD_Stock.Table_Name, cacheInvalidateRequest -> {
+			streamAllViews().forEach(IView::invalidateAll);
+			return 0;
+		});
+		CacheMgt.get().addCacheResetListener(I_M_Product.Table_Name, cacheInvalidateRequest -> {
 			streamAllViews().forEach(IView::invalidateAll);
 			return 0;
 		});

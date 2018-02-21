@@ -84,7 +84,7 @@ public class MaterialCockpitRow implements IViewRow
 	private final String productName;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
-			captionKey = I_MD_Cockpit.COLUMNNAME_M_Product_Category_ID, //
+			captionKey = I_M_Product.COLUMNNAME_M_Product_Category_ID, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30) })
 	@Getter // note that we use the getter for testing
 	private final String productCategoryOrSubRowName;

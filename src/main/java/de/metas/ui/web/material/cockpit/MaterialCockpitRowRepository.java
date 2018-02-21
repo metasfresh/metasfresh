@@ -58,7 +58,7 @@ import lombok.NonNull;
 public class MaterialCockpitRowRepository
 {
 	private final transient CCache<Integer, List<I_M_Product>> orgIdToproducts = CCache.newCache(
-			"MaterialCockpitRowRepository#" + I_M_Product.Table_Name,
+			I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_AD_Org_ID,
 			10, // initial size
 			CCache.EXPIREMINUTES_Never);
 
