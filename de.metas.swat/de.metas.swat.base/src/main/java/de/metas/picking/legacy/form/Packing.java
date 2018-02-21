@@ -314,9 +314,6 @@ public abstract class Packing extends MvcGenForm
 		final IPackingDetailsModel detailsModel;
 		try
 		{
-			// lock our affected shipment schedules
-			lockShipmentSchedules(ctx, olsAndScheds);
-
 			// prepare our "problem" description
 			final Collection<IPackingItem> unallocatedLines = createUnallocatedLines(olsAndScheds, displayNonItems);
 
@@ -332,19 +329,7 @@ public abstract class Packing extends MvcGenForm
 			}
 
 			detailsModel = createPackingDetailsModel(ctx, rows, unallocatedLines, nonItemScheds);
-
-			if (model.isPOSMode())
-			{
-				markAsProcessed();
-				return;
 			}
-
-			if (detailsModel.getValidState() == PackingDetailsMd.STATE_INVALID)
-			{
-				markAsProcessed();
-				return;
-			}
-		}
 		catch (final Throwable t)
 		{
 			unlockShipmentSchedules();
@@ -475,32 +460,10 @@ public abstract class Packing extends MvcGenForm
 	}
 
 	/**
-	 * Lock given shipment schedules
-	 *
-	 * @param ctx
-	 * @param olsAndScheds
-	 */
-	private void lockShipmentSchedules(final Properties ctx, final List<OlAndSched> olsAndScheds)
-	{
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(String localTrxName)
-			{
-				shipmentSchedulePA.createLocksForShipmentRun(olsAndScheds,
-						adPInstanceId,  // AD_PInstance_ID
-						Env.getAD_User_ID(ctx),
-						localTrxName);
-			}
-		});
-	}
-
-	/**
 	 * Unlock all shipment schedules which were locked in {@link #createPackingDetails(Properties, int)}
 	 */
 	public void unlockShipmentSchedules()
 	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adUserId = Env.getAD_User_ID(ctx);
 
 		trxManager.run(new TrxRunnable()
@@ -512,31 +475,9 @@ public abstract class Packing extends MvcGenForm
 
 				shipmentScheduleUpdater.updateShipmentSchedule(
 						ctx,
-						adClientId,
 						adUserId,
 						adPInstanceId,
 						updateOnlyLocked,
-						localTrxName);
-				shipmentSchedulePA.deleteUnprocessedLocksForShipmentRun(
-						adPInstanceId,
-						adUserId,
-						localTrxName); // 02217
-			}
-		});
-	}
-
-	public void markAsProcessed()
-	{
-		final int adUserId = Env.getAD_User_ID(ctx);
-
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(String localTrxName)
-			{
-				shipmentSchedulePA.markLocksForShipmentRunProcessed(
-						adPInstanceId,  // AD_PInstance_ID
-						adUserId,
 						localTrxName);
 			}
 		});

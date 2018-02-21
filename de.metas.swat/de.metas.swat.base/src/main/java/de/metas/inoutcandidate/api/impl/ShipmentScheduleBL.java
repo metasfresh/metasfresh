@@ -405,15 +405,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		// * try to allocate the QtyOnHand
 		for (final OlAndSched olAndSched : lines)
 		{
-			// final I_C_OrderLine orderLine = olAndSched.getOl();
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
 			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
 
-			// final I_C_Order order = co.retrieveAndCacheOrder(orderLine, trxName);
 			final String deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(sched);
-
-			// logger.debug("check: {} - DeliveryRule={}", order, deliveryRule);
-			// logger.debug("check: {}", orderLine);
 
 			final boolean ruleManual = DELIVERYRULE_Manual.equals(deliveryRule);
 

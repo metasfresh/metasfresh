@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.picking.terminal.form.swing;
 
@@ -13,12 +13,12 @@ package de.metas.picking.terminal.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,15 +33,11 @@ import java.util.Map;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
-import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.LegacyPackingItem;
@@ -50,9 +46,9 @@ import de.metas.picking.terminal.PickingOKPanel;
 
 /**
  * Packing window (second window)
- * 
+ *
  * @author cg
- * 
+ *
  */
 public abstract class AbstractPackageTerminal implements FormPanel
 {
@@ -111,12 +107,12 @@ public abstract class AbstractPackageTerminal implements FormPanel
 		panel = createPackageTerminalPanel();
 		panel.init(WindowNo, frame);
 		this.frame = frame;
-		
+
 		// Set second frame's dimension to be maximum of our resolution
 		// see 05863 Fenster Kommissionierung - bessere Ausnutzung Knopfefelder fur Textausgabe (102244669218)
-		frame.setMinimumSize(new Dimension(1024, 740)); 
+		frame.setMinimumSize(new Dimension(1024, 740));
 		frame.setMaximumSize(new Dimension(1024, 740));
-		
+
 	}
 
 	@Override
@@ -140,16 +136,6 @@ public abstract class AbstractPackageTerminal implements FormPanel
 				frame.dispose();
 				frame = null;
 			}
-
-			Services.get(IShipmentSchedulePA.class) // 02217
-					.deleteUnprocessedLocksForShipmentRun(0, Env.getAD_User_ID(Env.getCtx()), ITrx.TRXNAME_None);
-
-			// NOTE: don't dispose it's parent panel
-			// if (pickingOKPanel != null)
-			// {
-			// pickingOKPanel.dispose();
-			// pickingOKPanel = null; // 05749: protect from future execution
-			// }
 		}
 		finally
 		{
@@ -168,7 +154,7 @@ public abstract class AbstractPackageTerminal implements FormPanel
 
 	/**
 	 * Get Picking Window (first window)
-	 * 
+	 *
 	 * @return picking window
 	 */
 	public FormFrame getPickingFrame()
@@ -185,7 +171,7 @@ public abstract class AbstractPackageTerminal implements FormPanel
 	{
 		return packItems;
 	}
-	
+
 	protected final void setPackingItems(PackingItemsMap packItems)
 	{
 		this.packItems = packItems;
@@ -195,7 +181,7 @@ public abstract class AbstractPackageTerminal implements FormPanel
 
 	/**
 	 * gets the number of unpacked item fot a certain product
-	 * 
+	 *
 	 * @param pck
 	 * @return
 	 */
@@ -203,7 +189,7 @@ public abstract class AbstractPackageTerminal implements FormPanel
 
 	public boolean isUnpacked(LegacyPackingItem pck)
 	{
-		BigDecimal qty = getQtyUnpacked(pck);
+		final BigDecimal qty = getQtyUnpacked(pck);
 		if (qty.compareTo(BigDecimal.ZERO) > 0)
 			return true;
 		return false;
@@ -213,7 +199,7 @@ public abstract class AbstractPackageTerminal implements FormPanel
 	{
 		return availBoxes;
 	}
-	
+
 	protected final void setAvailableBoxes(final List<DefaultMutableTreeNode> availBoxes)
 	{
 		this.availBoxes = availBoxes;
@@ -223,7 +209,7 @@ public abstract class AbstractPackageTerminal implements FormPanel
 	{
 		return boxes;
 	}
-	
+
 	protected final void setBoxes(Map<Integer, DefaultMutableTreeNode> boxes)
 	{
 		this.boxes = boxes;
