@@ -137,9 +137,9 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 			logger.warn("Invalid Qty={} for {}", huPackingAware.getQty(), huPackingAware);
 			throw new AdempiereException("Qty shall be greather than zero"); // TODO trl
 		}
-		if (huPackingAware.getQtyPacks() == null || huPackingAware.getQtyPacks().signum() <= 0)
+		if (huPackingAware.getQtyTU() == null || huPackingAware.getQtyTU().signum() <= 0)
 		{
-			logger.warn("Invalid QtyTU={} for {}", huPackingAware.getQtyPacks(), huPackingAware);
+			logger.warn("Invalid QtyTU={} for {}", huPackingAware.getQtyTU(), huPackingAware);
 			throw new AdempiereException("QtyTU shall be greather than zero"); // TODO trl
 		}
 		return huPackingAware;
