@@ -13,3 +13,8 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-02-21 14:10:30','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',MsgText='Eine Überlieferung ist nicht erlaubt.' WHERE AD_Message_ID=544647 AND AD_Language='de_CH'
 ;
 
+-- 2018-02-21T15:09:50.382
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Eine Überlieferung ist nicht erlaubt.',Updated=TO_TIMESTAMP('2018-02-21 15:09:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544647
+;
+

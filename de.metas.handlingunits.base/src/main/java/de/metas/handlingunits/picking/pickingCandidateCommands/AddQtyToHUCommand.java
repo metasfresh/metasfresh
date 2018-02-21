@@ -113,7 +113,7 @@ public class AddQtyToHUCommand
 
 		if (overdeliveryError)
 		{
-			throw new AdempiereException(Services.get(IMsgBL.class).parseTranslation(getCtx(shipmentSchedule), MSG_WEBUI_Picking_OverdeliveryNotAllowed));
+			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(shipmentSchedule), MSG_WEBUI_Picking_OverdeliveryNotAllowed));
 		}
 
 		final I_M_Product product = shipmentSchedule.getM_Product();
@@ -212,8 +212,8 @@ public class AddQtyToHUCommand
 	private boolean isOverdelivery()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlanned(shipmentSchedule);
-		final BigDecimal qtytoDeliver = shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned);
+		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentSchedule);
+		final BigDecimal qtytoDeliver =shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned == null? BigDecimal.ZERO : qtyPickedPlanned);
 
 		return qtyCU.compareTo(qtytoDeliver) > 0;
 	}

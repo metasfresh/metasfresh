@@ -44,7 +44,7 @@ public interface IPackagingDAO extends ISingletonService
 	 * The QtyPickedPlanned is the qty that was picked, but not yet processed.
 	 * 
 	 * @param sched
-	 * @return The current PtyPickedPlanned for the given schedule
+	 * @return The current PtyPickedPlanned for the given schedule if found, null otherwise
 	 */
-	BigDecimal retrieveQtyPickedPlanned(I_M_ShipmentSchedule sched);
+	BigDecimal retrieveQtyPickedPlannedOrNull(I_M_ShipmentSchedule sched);
 }
