@@ -1,6 +1,7 @@
 package de.metas.ui.web;
 
 import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -67,6 +68,8 @@ public class WebRestApiApplication
 		{
 			System.setProperty("PropertyFile", "./metasfresh.properties");
 		}
+
+		AdempiereException.enableCaptureLanguageOnConstructionTime(); // because usually at the time the message is (lazy) parsed the user session context is no longer available.
 
 		// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.WEBUI);
