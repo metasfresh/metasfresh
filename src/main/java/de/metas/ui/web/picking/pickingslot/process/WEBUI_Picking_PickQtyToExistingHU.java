@@ -129,8 +129,15 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		}
 
 		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
-		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlanned(shipmentSchedule);
-		return shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned);
+		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentSchedule);
+		if (qtyPickedPlanned == null)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		final BigDecimal qtyToPick = shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned);
+
+		return qtyToPick.signum() > 0 ? qtyToPick : BigDecimal.ZERO;
 	}
 
 }

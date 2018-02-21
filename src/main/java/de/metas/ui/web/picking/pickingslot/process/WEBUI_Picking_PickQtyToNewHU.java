@@ -74,7 +74,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 {
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
-	
+
 	@Autowired
 	private PickingConfigRepository pickingConfigRepo;
 
@@ -129,7 +129,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		if (qtyCU.signum() > 0)
 		{
 			final boolean isAllowOverdelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
-			
+
 			pickingCandidateService.addQtyToHU()
 					.qtyCU(qtyCU)
 					.targetHUId(hu.getM_HU_ID())
@@ -182,11 +182,16 @@ public class WEBUI_Picking_PickQtyToNewHU
 		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
-			// return shipmentSchedule.getQtyToDeliver(); // TODO: get the "better" value from teo, when it's available
 
-			// qty to deliver - picked qty)
-			final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlanned(shipmentSchedule);
-			return shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned); 
+			final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentSchedule);
+			if (qtyPickedPlanned == null)
+			{
+				return BigDecimal.ZERO;
+			}
+
+			final BigDecimal qtyToPick = shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned);
+
+			return qtyToPick.signum() > 0 ? qtyToPick : BigDecimal.ZERO;
 
 		}
 		else if (Objects.equals(PARAM_M_HU_PI_Item_Product_ID, parameter.getColumnName()))
