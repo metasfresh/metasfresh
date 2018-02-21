@@ -182,7 +182,7 @@ public interface I_M_ProductPrice
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set isAttributeDependant.
+	 * Set Attributabhängig.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -191,7 +191,7 @@ public interface I_M_ProductPrice
 	public void setIsAttributeDependant (boolean IsAttributeDependant);
 
 	/**
-	 * Get isAttributeDependant.
+	 * Get Attributabhängig.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -230,6 +230,56 @@ public interface I_M_ProductPrice
     public static final String COLUMNNAME_IsDefault = "IsDefault";
 
 	/**
+	 * Set Discount Editable.
+	 * Allow user to change the discount
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsDiscountEditable (boolean IsDiscountEditable);
+
+	/**
+	 * Get Discount Editable.
+	 * Allow user to change the discount
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isDiscountEditable();
+
+    /** Column definition for IsDiscountEditable */
+    public static final org.adempiere.model.ModelColumn<I_M_ProductPrice, Object> COLUMN_IsDiscountEditable = new org.adempiere.model.ModelColumn<I_M_ProductPrice, Object>(I_M_ProductPrice.class, "IsDiscountEditable", null);
+    /** Column name IsDiscountEditable */
+    public static final String COLUMNNAME_IsDiscountEditable = "IsDiscountEditable";
+
+	/**
+	 * Set Price Editable.
+	 * Allow user to change the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPriceEditable (boolean IsPriceEditable);
+
+	/**
+	 * Get Price Editable.
+	 * Allow user to change the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPriceEditable();
+
+    /** Column definition for IsPriceEditable */
+    public static final org.adempiere.model.ModelColumn<I_M_ProductPrice, Object> COLUMN_IsPriceEditable = new org.adempiere.model.ModelColumn<I_M_ProductPrice, Object>(I_M_ProductPrice.class, "IsPriceEditable", null);
+    /** Column name IsPriceEditable */
+    public static final String COLUMNNAME_IsPriceEditable = "IsPriceEditable";
+
+	/**
 	 * Set Saison Fix Preis.
 	 *
 	 * <br>Type: YesNo
@@ -253,8 +303,8 @@ public interface I_M_ProductPrice
     public static final String COLUMNNAME_IsSeasonFixedPrice = "IsSeasonFixedPrice";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -263,8 +313,8 @@ public interface I_M_ProductPrice
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -314,7 +364,7 @@ public interface I_M_ProductPrice
 	 * Set Version Preisliste.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -324,7 +374,7 @@ public interface I_M_ProductPrice
 	 * Get Version Preisliste.
 	 * Identifies a unique instance of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

@@ -14,8 +14,13 @@ Here come the actual release notes:
 **release for week 2018-09**
 
 ## Features
+* metasfresh
+  * [#3515](https://github.com/metasfresh/metasfresh/issues/3515) Webui: Pimp Compensation Group Schema window
+    * New Window for Compensation group maintenance.
 
 ## Fixes
+  * [#1585](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1585) Date recording with keys leads to error
+    * Fixes a Bug that occurred when trying to record a date via keyboard instead of calendar widget.
 
 # metasfresh 5.45 (2018-08)
 **release for week 2018-08**
@@ -58,6 +63,7 @@ Here come the actual release notes:
   * [#3465](https://github.com/metasfresh/metasfresh/issues/3465) Window Role Tab User Access shows non systemusers
   * [#3486](https://github.com/metasfresh/metasfresh/issues/3486) Material Disposition automatic entries missing for DD/ PP Orders
   * [#3499](https://github.com/metasfresh/metasfresh/issues/3499) Cannot create manual invoice
+  * [#3521](https://github.com/metasfresh/metasfresh/issues/3521) Exception with CreditStatus in some data constellations
 
 * metasfresh-webui-api
   * [#846](https://github.com/metasfresh/metasfresh-webui-api/issues/846) Cache issue in shipment schedules subtab

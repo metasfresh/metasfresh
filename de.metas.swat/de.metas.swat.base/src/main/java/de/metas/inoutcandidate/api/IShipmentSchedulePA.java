@@ -1,28 +1,5 @@
 package de.metas.inoutcandidate.api;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Iterator;
@@ -34,6 +11,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
@@ -129,14 +107,9 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 * <b>IMPORTANT:</b> even if a shipment schedule is locked (by a <code>T_Lock</code>) record, then that schedule is still retrieved and its <code>M_SipmentSchedule_Recompute</code> record is
 	 * marked with the given <code>adPinstanceId</code>.
 	 *
-	 * @param adClientId the method returns only shipment schedules and order lines that have the given AD_Client_ID.
-	 * @param adPinstanceId
-	 * @param retrieveOnlyLocked: if <code>true</code>, then return only the invalid records that are also referenced by a <code>M_ShipmentSchedule_ShipmentRun</code> record whose
-	 *            <code>AD_PInstance_ID</code> is the given <code>adPinstanceId</code>.
-	 * @param trxName
 	 * @return the {@link I_C_OrderLine}s contained in the {@link OlAndSched} instances are {@link MOrderLine}s.
 	 */
-	List<OlAndSched> retrieveInvalid(int adClientId, int adPinstanceId, boolean retrieveOnlyLocked, String trxName);
+	List<OlAndSched> retrieveInvalid(int adPinstanceId, String trxName);
 
 	/**
 	 * Returns <code>true</code> if there is a <code>M_ShipmentSchedule_Recompute</code> record pointing at the given <code>sched</code>.
@@ -213,13 +186,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	/** Untag M_ShipmentSchedule_Recompute records which were tagged with given tag */
 	void releaseRecomputeMarker(int adPInstanceId, String trxName);
 
-	/**
-	 * @return a list of M_ShipmentSchedule_IDs which are in M_ShipmentSchedule_ShipmentRun and there are flagged as processed
-	 */
-	List<Integer> retrieveProcessedShipmentRunIds(String trxName);
-
-	void deleteProcessedShipmentRunIds(List<Integer> processedShipmentRunIds, String trxName);
-
 	void setIsDiplayedForProduct(int productId, boolean displayed, String trxName);
 
 	/**
@@ -230,43 +196,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 * @param trxName
 	 */
 	void deleteSchedulesWithOutOl(String trxName);
-
-	void markLocksForShipmentRunProcessed(int adPInstanceId, int adUserId, String trxName);
-
-	/**
-	 * For the given <code>olsAndSchedsToProcess</code>, this method attempts to insert pointer-records into <code>M_ShipmentSchedule_ShipmentRun</code>. As the table has a unique-constraint on its
-	 * <code>M_ShipmentSchedule_ID</code> column, this may fail if a concurrent invocation (from another host) was quicker to commit.
-	 *
-	 * @param olsAndSchedsToLock
-	 * @param adPinstanceId
-	 * @param adUserId
-	 * @param trxName not used
-	 * @throws SQLException
-	 */
-	List<OlAndSched> createLocksForShipmentRun(List<OlAndSched> olsAndSchedsToLock, int adPInstanceId, int adUserId, String trxName);
-
-	void updateInOutGentColumnPInstanceId(int adPinstanceId, int adUserId, String trxName);
-
-	/**
-	 * Method deletes existing unprocessed lock for a shipment run. Intended use is if the run has been canceled before anything has happened.
-	 *
-	 * @param adPInstanceId
-	 * @param adUserId
-	 * @param trxName
-	 * @return the number of deleted records
-	 */
-	int deleteUnprocessedLocksForShipmentRun(int adPInstanceId, int adUserId, String trxName);
-
-	/**
-	 * Method deletes all lock for a shipment run.
-	 *
-	 * Intended use is if the run failed and we want to "revert" everything.
-	 *
-	 * @param adPInstanceId
-	 * @param adUserId
-	 * @return the number of deleted records
-	 */
-	int deleteLocksForShipmentRun(int adPInstanceId, int adUserId);
 
 	/**
 	 * Mass update DeliveryDate_Override
@@ -303,7 +232,7 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	/**
 	 * Retrieve all the Shipment Schedules that the given invoice candidate is based on.
-	 * 
+	 *
 	 * @param candidate
 	 * @return
 	 */
@@ -311,9 +240,11 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	/**
 	 * Retrieve all the SHipment Schedules that the given inout line is based on
-	 * 
+	 *
 	 * @param inoutLine
 	 * @return
 	 */
 	Set<I_M_ShipmentSchedule> retrieveForInOutLine(de.metas.inout.model.I_M_InOutLine inoutLine);
+
+	void deleteAllForReference(TableRecordReference referencedRecord);
 }

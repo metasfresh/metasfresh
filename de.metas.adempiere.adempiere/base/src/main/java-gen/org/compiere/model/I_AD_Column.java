@@ -746,6 +746,31 @@ public interface I_AD_Column
     public static final String COLUMNNAME_IsEncrypted = "IsEncrypted";
 
 	/**
+	 * Set GenericZoom Quellspalte.
+	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsGenericZoomOrigin (boolean IsGenericZoomOrigin);
+
+	/**
+	 * Get GenericZoom Quellspalte.
+	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isGenericZoomOrigin();
+
+    /** Column definition for IsGenericZoomOrigin */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_IsGenericZoomOrigin = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "IsGenericZoomOrigin", null);
+    /** Column name IsGenericZoomOrigin */
+    public static final String COLUMNNAME_IsGenericZoomOrigin = "IsGenericZoomOrigin";
+
+	/**
 	 * Set Identifier.
 	 * This column is part of the record identifier
 	 *

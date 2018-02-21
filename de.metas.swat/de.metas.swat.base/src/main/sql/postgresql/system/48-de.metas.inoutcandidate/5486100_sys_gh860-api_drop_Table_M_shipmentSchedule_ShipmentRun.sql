@@ -1,5 +1,5 @@
-DROP VIEW IF EXISTS M_Packageable_V;
 
+DROP VIEW IF EXISTS M_Packageable_V;
 CREATE OR REPLACE VIEW M_Packageable_V AS
 SELECT
 	--
@@ -76,3 +76,6 @@ WHERE
 	AND s.QtyToDeliver > 0
 	AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)
 ;
+
+
+SELECT public.db_alter_table('M_ShipmentSchedule_ShipmentRun','DROP TABLE M_ShipmentSchedule_ShipmentRun');

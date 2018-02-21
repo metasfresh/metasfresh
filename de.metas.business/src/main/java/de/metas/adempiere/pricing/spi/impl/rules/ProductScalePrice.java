@@ -132,7 +132,8 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		//
 		//
 
-		int m_pp_C_UOM_ID = scalePrice.getM_ProductPrice().getC_UOM_ID();
+		final I_M_ProductPrice productPrice = scalePrice.getM_ProductPrice();
+		int m_pp_C_UOM_ID = productPrice.getC_UOM_ID();
 		m_PriceStd = scalePrice.getPriceStd();
 		m_PriceList = scalePrice.getPriceList();
 		m_PriceLimit = scalePrice.getPriceLimit();
@@ -147,7 +148,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 
 		if (m_M_PriceList_Version_ID <= 0)
 		{
-			m_M_PriceList_Version_ID = scalePrice.getM_ProductPrice().getM_PriceList_Version_ID();
+			m_M_PriceList_Version_ID = productPrice.getM_PriceList_Version_ID();
 		}
 
 		// TODO handle bom-prices for products that don't have a price themselves.
@@ -161,6 +162,8 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		result.setPriceList(m_PriceList);
 		result.setPriceLimit(m_PriceLimit);
 		result.setC_Currency_ID(m_C_Currency_ID);
+		result.setPriceEditable(productPrice.isPriceEditable());
+		result.setDiscountEditable(productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(m_enforcePriceLimit);
 		result.setTaxIncluded(m_isTaxIncluded);
 		result.setCalculated(true);

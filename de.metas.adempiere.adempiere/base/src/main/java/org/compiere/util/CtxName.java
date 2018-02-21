@@ -4,13 +4,17 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
+
 /**
  * Immutable Context Name. Use the methods for {@link CtxNames} to obtain instances.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -28,12 +32,14 @@ public final class CtxName
 
 	private Integer _hashcode; // lazy
 
-	/* package */ CtxName(final String name, final List<String> modifiers, final String defaultValue)
+	/* package */ CtxName(
+			@NonNull final String name,
+			@Nullable final List<String> modifiers,
+			@Nullable final String defaultValue)
 	{
-		super();
 		if (Check.isEmpty(name))
 		{
-			throw new IllegalArgumentException("Name must be not empty");
+			throw new IllegalArgumentException("Name may be not empty");
 		}
 
 		this.name = name;

@@ -221,6 +221,7 @@ public class M_ShipmentSchedule
 					I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override,
 					I_M_ShipmentSchedule.COLUMNNAME_DeliveryRule_Override,
 					I_M_ShipmentSchedule.COLUMNNAME_BPartnerAddress_Override,
+					I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,
 					I_M_ShipmentSchedule.COLUMNNAME_IsClosed
 			})
 	public void invalidate(final I_M_ShipmentSchedule schedule)

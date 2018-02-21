@@ -45,6 +45,7 @@ import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.PO;
@@ -1648,20 +1649,27 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public int update(final IQueryUpdater<T> queryUpdater)
 	{
 		final Iterator<T> records = iterate(modelClass, true); // guaranteed=true
-		int countUpdated = 0;
-		while (records.hasNext())
+		try
 		{
-			final T record = records.next();
-			final boolean updated = queryUpdater.update(record);
-			if (updated)
+			int countUpdated = 0;
+			while (records.hasNext())
 			{
-				InterfaceWrapperHelper.save(record);
-				countUpdated++;
-			}
+				final T record = records.next();
+				final boolean updated = queryUpdater.update(record);
+				if (updated)
+				{
+					InterfaceWrapperHelper.save(record);
+					countUpdated++;
+				}
 
+			}
+			return countUpdated;
+		}
+		finally
+		{
+			IteratorUtils.closeQuietly(records);
 		}
 
-		return countUpdated;
 	}
 
 	private final int updateSql(final ISqlQueryUpdater<T> sqlQueryUpdater)

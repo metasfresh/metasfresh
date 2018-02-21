@@ -1,10 +1,10 @@
-package org.compiere.model;
+package org.adempiere.ad.dao.model;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,19 +13,18 @@ package org.compiere.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface I_T_Query_Selection
+public interface I_T_Query_Selection_ToDelete
 {
-	String Table_Name = "T_Query_Selection";
+	String Table_Name = "T_Query_Selection_ToDelete";
 	String COLUMNNAME_UUID = "UUID";
-	String COLUMNNAME_Record_ID = "Record_ID";
-	String COLUMNNAME_Line = "Line";
+	String COLUMNNAME_Executor_UUID = "Executor_UUID";
 }

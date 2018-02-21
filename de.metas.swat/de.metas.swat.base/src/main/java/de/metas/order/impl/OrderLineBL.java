@@ -80,7 +80,6 @@ public class OrderLineBL implements IOrderLineBL
 
 	private final Set<Integer> ignoredOlIds = new HashSet<>();
 
-	public static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
 	public static final String CTX_DiscountSchema = "DiscountSchema";
 
 	private static final String MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = "de.metas.order.CounterDocMissingMappedProduct";
@@ -170,6 +169,9 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setC_Currency_ID(pricingResult.getC_Currency_ID());
 		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // task 06942
 		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
+
+		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
+		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 
 		updateLineNetAmt(orderLine, qtyEntered, factor);
 	}
@@ -295,11 +297,35 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public BigDecimal subtractDiscount(final BigDecimal baseAmount, final BigDecimal discount, final int precision)
 	{
-		BigDecimal multiplier = Env.ONEHUNDRED.subtract(discount);
-		multiplier = multiplier.divide(Env.ONEHUNDRED, precision * 3, RoundingMode.HALF_UP);
-
+		final BigDecimal multiplier = Env.ONEHUNDRED.subtract(discount).divide(Env.ONEHUNDRED, precision * 3, RoundingMode.HALF_UP);
 		final BigDecimal result = baseAmount.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
 		return result;
+	}
+
+	@Override
+	public BigDecimal calculateDiscountFromPrices(final BigDecimal priceEntered, final BigDecimal priceActual, final int precision)
+	{
+		if (priceEntered.signum() == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		BigDecimal discount = priceEntered.subtract(priceActual)
+				.divide(priceEntered, 12, RoundingMode.HALF_UP)
+				.multiply(Env.ONEHUNDRED);
+		if (discount.scale() > 2)
+		{
+			discount = discount.setScale(2, BigDecimal.ROUND_HALF_UP);
+		}
+
+		return discount;
+	}
+
+	@Override
+	public BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(final BigDecimal priceActual, final BigDecimal discount, final int precision)
+	{
+		final BigDecimal multiplier = Env.ONEHUNDRED.add(discount).divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
+		return priceActual.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
 	}
 
 	@Override
@@ -637,11 +663,14 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // task 06942
 		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
 
+		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
+		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
+		orderLine.setEnforcePriceLimit(pricingResult.isEnforcePriceLimit());
+
 		//
 		// UI
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final int WindowNo = GridTabWrapper.getWindowNo(orderLine);
-		Env.setContext(ctx, WindowNo, CTX_EnforcePriceLimit, pricingResult.isEnforcePriceLimit());
 		Env.setContext(ctx, WindowNo, CTX_DiscountSchema, pricingResult.isUsesDiscountSchema());
 	}
 
