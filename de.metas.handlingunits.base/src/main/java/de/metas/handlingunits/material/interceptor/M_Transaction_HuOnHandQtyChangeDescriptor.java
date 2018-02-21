@@ -71,6 +71,13 @@ public class M_Transaction_HuOnHandQtyChangeDescriptor
 		return createHUDescriptorsForModel(transaction.getM_MovementLine(), deleted);
 	}
 
+	public List<HUOnHandQtyChangeDescriptor> createHuDescriptorsForInventoryLine(
+			@NonNull final I_M_Transaction transaction,
+			final boolean deleted)
+	{
+		return createHUDescriptorsForModel(transaction.getM_InventoryLine(), deleted);
+	}
+
 	private static List<HUOnHandQtyChangeDescriptor> createHUDescriptorsForModel(
 			@NonNull final Object huReferencedModel,
 			final boolean deleted)
