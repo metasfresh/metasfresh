@@ -1,4 +1,9 @@
 
+CREATE INDEX IF NOT EXISTS m_shipmentschedule_ad_table_id
+  ON public.m_shipmentschedule
+  USING btree
+  (ad_table_id);
+
 --
 -- Update m_shipmentschedule records whose referenced C_SubscriptionProgress records are already gone
 -- Note: we can't delete them, because they are already referenced from e.g. ShipmentScheduleQtyPicked, M_HU_Trace etc

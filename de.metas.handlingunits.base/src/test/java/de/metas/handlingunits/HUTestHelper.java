@@ -97,7 +97,6 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.impl.MTransactionAllocationSourceDestination;
 import de.metas.handlingunits.allocation.transfer.IHUJoinBL;
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
@@ -1708,8 +1707,7 @@ public class HUTestHelper
 
 	/**
 	 * This method creates one or many HU(s) and distributes the products and Qtys of the given transaction document (e.g. material receipt) among those instances' material-HU-items. The method also
-	 * creates a {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} which references the given transactionDoc. The trx-hdr has a one line for every
-	 * {@link org.compiere.model.I_M_TransactionAllocation} of the given transaction doc and one line for every created {@link de.metas.handlingunits.model.I_M_HU_Item}.
+	 * creates a {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} which references the given transactionDoc.
 	 *
 	 * @param incomingTrxDoc the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
 	 * @param huPI
@@ -1884,15 +1882,9 @@ public class HUTestHelper
 	public void joinHUs(final IHUContext huContext, final I_M_HU loadingUnit, final I_M_HU... tradingUnits)
 	{
 		trxBL.createHUContextProcessorExecutor(huContext)
-				.run(new IHUContextProcessor()
-				{
-
-					@Override
-					public IMutableAllocationResult process(IHUContext huContextLocal)
-					{
-						joinHUs(huContextLocal, loadingUnit, Arrays.asList(tradingUnits));
-						return NULL_RESULT;
-					}
+				.run((IHUContextProcessor)huContextLocal -> {
+					joinHUs(huContextLocal, loadingUnit, Arrays.asList(tradingUnits));
+					return IHUContextProcessor.NULL_RESULT;
 				});
 	}
 

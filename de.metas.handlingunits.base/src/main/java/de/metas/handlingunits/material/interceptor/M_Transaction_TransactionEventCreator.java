@@ -343,7 +343,7 @@ public class M_Transaction_TransactionEventCreator
 					.directMovementWarehouse(directMovementWarehouse)
 					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();
-		}
+}
 		else
 		{
 			event = TransactionCreatedEvent.builder()

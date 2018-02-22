@@ -51,7 +51,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_MatchPO;
-import org.compiere.model.I_M_Production;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
@@ -81,7 +80,7 @@ public class LettersValidator implements ModelValidator
 {
 	private int m_AD_Client_ID = -1;
 
-	private static Map<ArrayKey, Set<MADBoilerPlateVar>> s_cacheVars = new HashMap<ArrayKey, Set<MADBoilerPlateVar>>();
+	private static Map<ArrayKey, Set<MADBoilerPlateVar>> s_cacheVars = new HashMap<>();
 
 	@Override
 	public int getAD_Client_ID()
@@ -99,8 +98,8 @@ public class LettersValidator implements ModelValidator
 
 		engine.addModelChange(I_C_DunningRunEntry.Table_Name, this);
 		//
-		TreeSet<String> tableNames = new TreeSet<String>();
-		for (MADBoilerPlateVarEval timing : MADBoilerPlateVarEval.getAll(Env.getCtx()))
+		final TreeSet<String> tableNames = new TreeSet<>();
+		for (final MADBoilerPlateVarEval timing : MADBoilerPlateVarEval.getAll(Env.getCtx()))
 		{
 			final I_C_DocType dt = timing.getC_DocType();
 			if (dt == null || dt.getC_DocType_ID() <= 0)
@@ -113,7 +112,7 @@ public class LettersValidator implements ModelValidator
 			Set<MADBoilerPlateVar> list = s_cacheVars.get(key);
 			if (list == null)
 			{
-				list = new TreeSet<MADBoilerPlateVar>();
+				list = new TreeSet<>();
 			}
 			final MADBoilerPlateVar var = MADBoilerPlateVar.get(timing.getCtx(), timing.getAD_BoilerPlate_Var_ID());
 			list.add(var);
@@ -121,7 +120,7 @@ public class LettersValidator implements ModelValidator
 			tableNames.add(tableName);
 		}
 		//
-		for (String tableName : tableNames)
+		for (final String tableName : tableNames)
 		{
 			engine.addDocValidate(tableName, this);
 		}
@@ -139,7 +138,7 @@ public class LettersValidator implements ModelValidator
 		if (I_C_DunningRunEntry.Table_Name.equals(po.get_TableName())
 				&& TYPE_BEFORE_NEW == type)
 		{
-			I_C_DunningRunEntry dre = InterfaceWrapperHelper.create(po, I_C_DunningRunEntry.class);
+			final I_C_DunningRunEntry dre = InterfaceWrapperHelper.create(po, I_C_DunningRunEntry.class);
 			setDunningRunEntryNote(dre);
 		}
 		return null;
@@ -148,13 +147,13 @@ public class LettersValidator implements ModelValidator
 	@Override
 	public String docValidate(PO po, int timing)
 	{
-		Set<MADBoilerPlateVar> vars = getVars(po, timing);
+		final Set<MADBoilerPlateVar> vars = getVars(po, timing);
 		if (vars == null || vars.isEmpty())
 			return null;
 		//
-		for (MColumn c : MTable.get(po.getCtx(), po.get_Table_ID()).getColumns(false))
+		for (final MColumn c : MTable.get(po.getCtx(), po.get_Table_ID()).getColumns(false))
 		{
-			I_AD_Column column = InterfaceWrapperHelper.create(c, I_AD_Column.class);
+			final I_AD_Column column = InterfaceWrapperHelper.create(c, I_AD_Column.class);
 			if (column.isAdvancedText())
 			{
 				parseField(po, column.getColumnName(), vars);
@@ -164,7 +163,7 @@ public class LettersValidator implements ModelValidator
 		return null;
 	}
 
-	private static final Map<String, String> s_mapDocBaseTypeToTableName = new HashMap<String, String>(20);
+	private static final Map<String, String> s_mapDocBaseTypeToTableName = new HashMap<>(20);
 	static
 	{
 		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_GLJournal, I_GL_Journal.Table_Name);
@@ -186,7 +185,6 @@ public class LettersValidator implements ModelValidator
 		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_BankStatement, I_C_BankStatement.Table_Name);
 		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_CashJournal, I_C_Cash.Table_Name);
 		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_PaymentAllocation, I_C_AllocationHdr.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_MaterialProduction, I_M_Production.Table_Name);
 		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_MatchInvoice, I_M_MatchInv.Table_Name);
 		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_MatchPO, I_M_MatchPO.Table_Name);
 		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_ProjectIssue, I_C_ProjectIssue.Table_Name);
@@ -227,15 +225,15 @@ public class LettersValidator implements ModelValidator
 
 	private static Set<MADBoilerPlateVar> getVars(PO po, int timing)
 	{
-		int AD_Client_ID = Env.getAD_Client_ID(po.getCtx());
-		String tableName = po.get_TableName();
-		int C_DocType_ID = getC_DocType_ID(po);
-		String evalTime = getEvalTime(timing);
-		ArrayKey key = new ArrayKey(AD_Client_ID, tableName, C_DocType_ID, evalTime);
+		final int AD_Client_ID = Env.getAD_Client_ID(po.getCtx());
+		final String tableName = po.get_TableName();
+		final int C_DocType_ID = getC_DocType_ID(po);
+		final String evalTime = getEvalTime(timing);
+		final ArrayKey key = new ArrayKey(AD_Client_ID, tableName, C_DocType_ID, evalTime);
 
 		Set<MADBoilerPlateVar> vars = s_cacheVars.get(key);
 		if (vars == null)
-			vars = new TreeSet<MADBoilerPlateVar>();
+			vars = new TreeSet<>();
 		return vars;
 	}
 
@@ -275,7 +273,7 @@ public class LettersValidator implements ModelValidator
 			final String refName = MADBoilerPlate.getTagName(m);
 			//
 			MADBoilerPlateVar var = null;
-			for (MADBoilerPlateVar v : vars)
+			for (final MADBoilerPlateVar v : vars)
 			{
 				if (refName.equals(v.getValue().trim()))
 				{
@@ -308,7 +306,7 @@ public class LettersValidator implements ModelValidator
 
 		final I_C_DunningLevel dl = dre.getC_DunningLevel();
 		final MBPartner bp = MBPartner.get(ctx, dre.getC_BPartner_ID());
-		String adLanguage = bp.getAD_Language();
+		final String adLanguage = bp.getAD_Language();
 		final String text;
 		if (adLanguage != null)
 		{

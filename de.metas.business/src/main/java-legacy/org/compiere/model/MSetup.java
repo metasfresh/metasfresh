@@ -44,10 +44,10 @@ import de.metas.logging.MetasfreshLastError;
  *
  * @author Jorg Janke
  * @version $Id: MSetup.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * 			<li>FR [ 1795384 ] Setup: create default accounts records is too rigid
- * 
+ *
  * @deprecated Scheduled to be removed because we are not using it
  */
 @Deprecated
@@ -68,16 +68,16 @@ public final class MSetup
 	/**	Logger			*/
 	protected Logger	log = LogManager.getLogger(getClass());
 
-	private Trx				m_trx = Trx.get(Trx.createTrxName("Setup"), true);
-	private Properties      m_ctx;
-	private String          m_lang;
-	private int             m_WindowNo;
+	private final Trx				m_trx = Trx.get(Trx.createTrxName("Setup"), true);
+	private final Properties      m_ctx;
+	private final String          m_lang;
+	private final int             m_WindowNo;
 	private StringBuffer    m_info;
 	//
 	private String          m_clientName;
 //	private String          m_orgName;
 	//
-	private String          m_stdColumns = "AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy";
+	private final String          m_stdColumns = "AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy";
 	private String          m_stdValues;
 	private String          m_stdValuesOrg;
 	//
@@ -113,7 +113,7 @@ public final class MSetup
 	{
 		log.info(clientName);
 		m_trx.start();
-		
+
 		//  info header
 		m_info = new StringBuffer();
 		//  Standard columns
@@ -133,14 +133,14 @@ public final class MSetup
 		m_client.setName(m_clientName);
 		if (!m_client.save())
 		{
-			String err = "Client NOT created";
+			final String err = "Client NOT created";
 			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
 			return false;
 		}
-		int AD_Client_ID = m_client.getAD_Client_ID();
+		final int AD_Client_ID = m_client.getAD_Client_ID();
 		Env.setContext(m_ctx, m_WindowNo, "AD_Client_ID", AD_Client_ID);
 		Env.setContext(m_ctx, "#AD_Client_ID", AD_Client_ID);
 
@@ -152,18 +152,18 @@ public final class MSetup
 		//	Setup Sequences
 		if (!MSequence.checkClientSequences (m_ctx, AD_Client_ID, m_trx.getTrxName()))
 		{
-			String err = "Sequences NOT created";
+			final String err = "Sequences NOT created";
 			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
 			return false;
 		}
-		
+
 		//  Trees and Client Info
 		if (!m_client.setupClientInfo(m_lang))
 		{
-			String err = "Client Info NOT created";
+			final String err = "Client Info NOT created";
 			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
@@ -181,7 +181,7 @@ public final class MSetup
 		m_org = new MOrg (m_client, name);
 		if (!m_org.save())
 		{
-			String err = "Organization NOT created";
+			final String err = "Organization NOT created";
 			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
@@ -207,12 +207,12 @@ public final class MSetup
 		admin.setPreferenceType(X_AD_Role.PREFERENCETYPE_Client);
 		admin.setIsShowAcct(true);
 		InterfaceWrapperHelper.save(admin);
-		
+
 		//	OrgAccess x, 0
 		Services.get(IUserRolePermissionsDAO.class).createOrgAccess(admin.getAD_Role_ID(), Env.CTXVALUE_AD_Org_ID_System);
 		//  OrgAccess x,y
 		Services.get(IUserRolePermissionsDAO.class).createOrgAccess(admin.getAD_Role_ID(), m_org.getAD_Org_ID());
-		
+
 		//  Info - Admin Role
 		m_info.append(Msg.translate(m_lang, "AD_Role_ID")).append("=").append(name).append("\n");
 
@@ -222,10 +222,10 @@ public final class MSetup
 		user.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_System);
 		user.setName(name);
 		InterfaceWrapperHelper.save(user);
-		
+
 		//  OrgAccess x,y
 		Services.get(IUserRolePermissionsDAO.class).createOrgAccess(user.getAD_Role_ID(), m_org.getAD_Org_ID());
-		
+
 		//  Info - Client Role
 		m_info.append(Msg.translate(m_lang, "AD_Role_ID")).append("=").append(name).append("\n");
 
@@ -247,7 +247,7 @@ public final class MSetup
 		no = DB.executeUpdate(sql, m_trx.getTrxName());
 		if (no != 1)
 		{
-			String err = "Admin User NOT inserted - " + AD_User_Name;
+			final String err = "Admin User NOT inserted - " + AD_User_Name;
 			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
@@ -270,7 +270,7 @@ public final class MSetup
 		no = DB.executeUpdate(sql, m_trx.getTrxName());
 		if (no != 1)
 		{
-			String err = "Org User NOT inserted - " + AD_User_U_Name;
+			final String err = "Org User NOT inserted - " + AD_User_U_Name;
 			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
@@ -302,12 +302,12 @@ public final class MSetup
 			log.error("UserRole OrgUser+Org NOT inserted");
 
 		//	Processors
-		MAcctProcessor ap = new MAcctProcessor(m_client, AD_User_ID);
+		final MAcctProcessor ap = new MAcctProcessor(m_client, AD_User_ID);
 		ap.save();
-		
-		MRequestProcessor rp = new MRequestProcessor (m_client, AD_User_ID);
+
+		final MRequestProcessor rp = new MRequestProcessor (m_client, AD_User_ID);
 		rp.save();
-		
+
 		log.info("fini");
 		return true;
 	}   //  createClient
@@ -354,7 +354,7 @@ public final class MSetup
 		m_calendar = new MCalendar(m_client);
 		if (!m_calendar.save())
 		{
-			String err = "Calendar NOT inserted";
+			final String err = "Calendar NOT inserted";
 			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
@@ -369,23 +369,23 @@ public final class MSetup
 
 		//	Create Account Elements
 		name = m_clientName + " " + Msg.translate(m_lang, "Account_ID");
-		MElement element = new MElement (m_client, name, 
+		final MElement element = new MElement (m_client, name,
 			MElement.ELEMENTTYPE_Account, m_AD_Tree_Account_ID);
 		if (!element.save())
 		{
-			String err = "Acct Element NOT inserted";
+			final String err = "Acct Element NOT inserted";
 			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
 			return false;
 		}
-		int C_Element_ID = element.getC_Element_ID();
+		final int C_Element_ID = element.getC_Element_ID();
 		m_info.append(Msg.translate(m_lang, "C_Element_ID")).append("=").append(name).append("\n");
 
 		//	Create Account Values
 		m_nap = new NaturalAccountMap(m_ctx, m_trx.getTrxName());
-		String errMsg = m_nap.parseFile(AccountingFile);
+		final String errMsg = m_nap.parseFile(AccountingFile);
 		if (errMsg.length() != 0)
 		{
 			log.error(errMsg);
@@ -398,7 +398,7 @@ public final class MSetup
 			m_info.append(Msg.translate(m_lang, "C_ElementValue_ID")).append(" # ").append(m_nap.size()).append("\n");
 		else
 		{
-			String err = "Acct Element Values NOT inserted";
+			final String err = "Acct Element Values NOT inserted";
 			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
@@ -406,7 +406,7 @@ public final class MSetup
 			return false;
 		}
 
-		int C_ElementValue_ID = m_nap.getC_ElementValue_ID("DEFAULT_ACCT");
+		final int C_ElementValue_ID = m_nap.getC_ElementValue_ID("DEFAULT_ACCT");
 		log.debug("C_ElementValue_ID=" + C_ElementValue_ID);
 
 		/**
@@ -415,7 +415,7 @@ public final class MSetup
 		m_as = new MAcctSchema (m_client, currency);
 		if (!m_as.save())
 		{
-			String err = "AcctSchema NOT inserted";
+			final String err = "AcctSchema NOT inserted";
 			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
@@ -439,12 +439,12 @@ public final class MSetup
 		ResultSet rs = null;
 		try
 		{
-			int AD_Client_ID = m_client.getAD_Client_ID();
+			final int AD_Client_ID = m_client.getAD_Client_ID();
 			stmt = DB.prepareStatement(sql2, m_trx.getTrxName());
 			rs = stmt.executeQuery();
 			while (rs.next())
 			{
-				String ElementType = rs.getString(1);
+				final String ElementType = rs.getString(1);
 				name = rs.getString(2);
 				//
 				String IsMandatory = null;
@@ -530,7 +530,7 @@ public final class MSetup
 				}
 			}
 		}
-		catch (SQLException e1)
+		catch (final SQLException e1)
 		{
 			log.error("Elements", e1);
 			m_info.append(e1.getMessage());
@@ -551,8 +551,8 @@ public final class MSetup
 			createAccountingRecord(X_C_AcctSchema_GL.Table_Name);
 			createAccountingRecord(X_C_AcctSchema_Default.Table_Name);
 		}
-		catch (Exception e) {
-			String err = e.getLocalizedMessage();
+		catch (final Exception e) {
+			final String err = e.getLocalizedMessage();
 			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
@@ -562,112 +562,110 @@ public final class MSetup
 
 		//  GL Categories
 		createGLCategory("Standard", MGLCategory.CATEGORYTYPE_Manual, true);
-		int GL_None = createGLCategory("None", MGLCategory.CATEGORYTYPE_Document, false);
-		int GL_GL = createGLCategory("Manual", MGLCategory.CATEGORYTYPE_Manual, false);
-		int GL_ARI = createGLCategory("AR Invoice", MGLCategory.CATEGORYTYPE_Document, false);
-		int GL_ARR = createGLCategory("AR Receipt", MGLCategory.CATEGORYTYPE_Document, false);
-		int GL_MM = createGLCategory("Material Management", MGLCategory.CATEGORYTYPE_Document, false);
-		int GL_API = createGLCategory("AP Invoice", MGLCategory.CATEGORYTYPE_Document, false);
-		int GL_APP = createGLCategory("AP Payment", MGLCategory.CATEGORYTYPE_Document, false);
-		int GL_CASH = createGLCategory("Cash/Payments", MGLCategory.CATEGORYTYPE_Document, false);
+		final int GL_None = createGLCategory("None", MGLCategory.CATEGORYTYPE_Document, false);
+		final int GL_GL = createGLCategory("Manual", MGLCategory.CATEGORYTYPE_Manual, false);
+		final int GL_ARI = createGLCategory("AR Invoice", MGLCategory.CATEGORYTYPE_Document, false);
+		final int GL_ARR = createGLCategory("AR Receipt", MGLCategory.CATEGORYTYPE_Document, false);
+		final int GL_MM = createGLCategory("Material Management", MGLCategory.CATEGORYTYPE_Document, false);
+		final int GL_API = createGLCategory("AP Invoice", MGLCategory.CATEGORYTYPE_Document, false);
+		final int GL_APP = createGLCategory("AP Payment", MGLCategory.CATEGORYTYPE_Document, false);
+		final int GL_CASH = createGLCategory("Cash/Payments", MGLCategory.CATEGORYTYPE_Document, false);
 
 		//	Base DocumentTypes
-		int ii = createDocType("GL Journal", Msg.getElement(m_ctx, "GL_Journal_ID"), 
+		final int ii = createDocType("GL Journal", Msg.getElement(m_ctx, "GL_Journal_ID"),
 			MDocType.DOCBASETYPE_GLJournal, null, 0, 0, 1000, GL_GL);
 		if (ii == 0)
 		{
-			String err = "Document Type not created";
+			final String err = "Document Type not created";
 			m_info.append(err);
 			m_trx.rollback();
 			m_trx.close();
 			return false;
 		}
-		createDocType("GL Journal Batch", Msg.getElement(m_ctx, "GL_JournalBatch_ID"), 
+		createDocType("GL Journal Batch", Msg.getElement(m_ctx, "GL_JournalBatch_ID"),
 			MDocType.DOCBASETYPE_GLJournal, null, 0, 0, 100, GL_GL);
 		//	MDocType.DOCBASETYPE_GLDocument
 		//
-		int DT_I = createDocType("AR Invoice", Msg.getElement(m_ctx, "C_Invoice_ID", true), 
+		final int DT_I = createDocType("AR Invoice", Msg.getElement(m_ctx, "C_Invoice_ID", true),
 			MDocType.DOCBASETYPE_ARInvoice, null, 0, 0, 100000, GL_ARI);
-		int DT_II = createDocType("AR Invoice Indirect", Msg.getElement(m_ctx, "C_Invoice_ID", true), 
+		final int DT_II = createDocType("AR Invoice Indirect", Msg.getElement(m_ctx, "C_Invoice_ID", true),
 			MDocType.DOCBASETYPE_ARInvoice, null, 0, 0, 150000, GL_ARI);
-		int DT_IC = createDocType("AR Credit Memo", Msg.getMsg(m_ctx, "CreditMemo"), 
+		final int DT_IC = createDocType("AR Credit Memo", Msg.getMsg(m_ctx, "CreditMemo"),
 			MDocType.DOCBASETYPE_ARCreditMemo, null, 0, 0, 170000, GL_ARI);
 		//	MDocType.DOCBASETYPE_ARProFormaInvoice
-		
-		createDocType("AP Invoice", Msg.getElement(m_ctx, "C_Invoice_ID", false), 
+
+		createDocType("AP Invoice", Msg.getElement(m_ctx, "C_Invoice_ID", false),
 			MDocType.DOCBASETYPE_APInvoice, null, 0, 0, 0, GL_API);
-		int DT_IPC = createDocType("AP CreditMemo", Msg.getMsg(m_ctx, "CreditMemo"), 
+		final int DT_IPC = createDocType("AP CreditMemo", Msg.getMsg(m_ctx, "CreditMemo"),
 			MDocType.DOCBASETYPE_APCreditMemo, null, 0, 0, 0, GL_API);
-		createDocType("Match Invoice", Msg.getElement(m_ctx, "M_MatchInv_ID", false), 
+		createDocType("Match Invoice", Msg.getElement(m_ctx, "M_MatchInv_ID", false),
 			MDocType.DOCBASETYPE_MatchInvoice, null, 0, 0, 390000, GL_API);
-		
-		createDocType("AR Receipt", Msg.getElement(m_ctx, "C_Payment_ID", true), 
+
+		createDocType("AR Receipt", Msg.getElement(m_ctx, "C_Payment_ID", true),
 			MDocType.DOCBASETYPE_ARReceipt, null, 0, 0, 0, GL_ARR);
-		createDocType("AP Payment", Msg.getElement(m_ctx, "C_Payment_ID", false), 
+		createDocType("AP Payment", Msg.getElement(m_ctx, "C_Payment_ID", false),
 			MDocType.DOCBASETYPE_APPayment, null, 0, 0, 0, GL_APP);
-		createDocType("Allocation", "Allocation", 
+		createDocType("Allocation", "Allocation",
 			MDocType.DOCBASETYPE_PaymentAllocation, null, 0, 0, 490000, GL_CASH);
 
-		int DT_S  = createDocType("MM Shipment", "Delivery Note", 
+		final int DT_S  = createDocType("MM Shipment", "Delivery Note",
 			MDocType.DOCBASETYPE_MaterialDelivery, null, 0, 0, 500000, GL_MM);
-		int DT_SI = createDocType("MM Shipment Indirect", "Delivery Note", 
+		final int DT_SI = createDocType("MM Shipment Indirect", "Delivery Note",
 			MDocType.DOCBASETYPE_MaterialDelivery, null, 0, 0, 550000, GL_MM);
-		int DT_VRM = createDocType("MM Vendor Return", "Vendor Returns", 
+		final int DT_VRM = createDocType("MM Vendor Return", "Vendor Returns",
 	            MDocType.DOCBASETYPE_MaterialDelivery, null, 0, 0, 590000, GL_MM);
-		
-		createDocType("MM Receipt", "Vendor Delivery", 
+
+		createDocType("MM Receipt", "Vendor Delivery",
 			MDocType.DOCBASETYPE_MaterialReceipt, null, 0, 0, 0, GL_MM);
-		int DT_RM = createDocType("MM Returns", "Customer Returns", 
+		final int DT_RM = createDocType("MM Returns", "Customer Returns",
 			MDocType.DOCBASETYPE_MaterialReceipt, null, 0, 0, 570000, GL_MM);
-		
-		createDocType("Purchase Order", Msg.getElement(m_ctx, "C_Order_ID", false), 
+
+		createDocType("Purchase Order", Msg.getElement(m_ctx, "C_Order_ID", false),
 			MDocType.DOCBASETYPE_PurchaseOrder, null, 0, 0, 800000, GL_None);
-		createDocType("Match PO", Msg.getElement(m_ctx, "M_MatchPO_ID", false), 
+		createDocType("Match PO", Msg.getElement(m_ctx, "M_MatchPO_ID", false),
 			MDocType.DOCBASETYPE_MatchPO, null, 0, 0, 890000, GL_None);
-		createDocType("Purchase Requisition", Msg.getElement(m_ctx, "M_Requisition_ID", false), 
+		createDocType("Purchase Requisition", Msg.getElement(m_ctx, "M_Requisition_ID", false),
 			MDocType.DOCBASETYPE_PurchaseRequisition, null, 0, 0, 900000, GL_None);
 		createDocType("Vendor Return Material", "Vendor Return Material Authorization",
-		    MDocType.DOCBASETYPE_PurchaseOrder, MDocType.DOCSUBTYPE_ReturnMaterial, DT_VRM, 
+		    MDocType.DOCBASETYPE_PurchaseOrder, MDocType.DOCSUBTYPE_ReturnMaterial, DT_VRM,
 		    DT_IPC, 990000, GL_MM);
-		        
-		createDocType("Bank Statement", Msg.getElement(m_ctx, "C_BankStatemet_ID", true), 
+
+		createDocType("Bank Statement", Msg.getElement(m_ctx, "C_BankStatemet_ID", true),
 			MDocType.DOCBASETYPE_BankStatement, null, 0, 0, 700000, GL_CASH);
 		createDocType("Cash Journal", Msg.getElement(m_ctx, "C_Cash_ID", true),
 			MDocType.DOCBASETYPE_CashJournal, null, 0, 0, 750000, GL_CASH);
-		
+
 		createDocType("Material Movement", Msg.getElement(m_ctx, "M_Movement_ID", false),
 			MDocType.DOCBASETYPE_MaterialMovement, null, 0, 0, 610000, GL_MM);
-		createDocType("Physical Inventory", Msg.getElement(m_ctx, "M_Inventory_ID", false), 
+		createDocType("Physical Inventory", Msg.getElement(m_ctx, "M_Inventory_ID", false),
 			MDocType.DOCBASETYPE_MaterialPhysicalInventory, null, 0, 0, 620000, GL_MM);
-		createDocType("Material Production", Msg.getElement(m_ctx, "M_Production_ID", false), 
-			MDocType.DOCBASETYPE_MaterialProduction, null, 0, 0, 630000, GL_MM);
-		createDocType("Project Issue", Msg.getElement(m_ctx, "C_ProjectIssue_ID", false), 
+		createDocType("Project Issue", Msg.getElement(m_ctx, "C_ProjectIssue_ID", false),
 			MDocType.DOCBASETYPE_ProjectIssue, null, 0, 0, 640000, GL_MM);
 
 		//  Order Entry
-		createDocType("Binding offer", "Quotation", 
-			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_Quotation, 
+		createDocType("Binding offer", "Quotation",
+			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_Quotation,
 			0, 0, 10000, GL_None);
-		createDocType("Non binding offer", "Proposal", 
-			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_Proposal, 
+		createDocType("Non binding offer", "Proposal",
+			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_Proposal,
 			0, 0, 20000, GL_None);
-		createDocType("Prepay Order", "Prepay Order", 
-			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_PrepayOrder, 
+		createDocType("Prepay Order", "Prepay Order",
+			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_PrepayOrder,
 			DT_S, DT_I, 30000, GL_None);
-		createDocType("Return Material", "Return Material Authorization", 
-			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_ReturnMaterial, 
+		createDocType("Return Material", "Return Material Authorization",
+			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_ReturnMaterial,
 			DT_RM, DT_IC, 30000, GL_None);
-		createDocType("Standard Order", "Order Confirmation", 
-			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_StandardOrder, 
+		createDocType("Standard Order", "Order Confirmation",
+			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_StandardOrder,
 			DT_S, DT_I, 50000, GL_None);
-		createDocType("Credit Order", "Order Confirmation", 
-			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_OnCreditOrder, 
+		createDocType("Credit Order", "Order Confirmation",
+			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_OnCreditOrder,
 			DT_SI, DT_I, 60000, GL_None);   //  RE
-		createDocType("Warehouse Order", "Order Confirmation", 
-			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_WarehouseOrder, 
+		createDocType("Warehouse Order", "Order Confirmation",
+			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_WarehouseOrder,
 			DT_S, DT_I,	70000, GL_None);    //  LS
-		int DT = createDocType("POS Order", "Order Confirmation", 
-			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_POSOrder, 
+		final int DT = createDocType("POS Order", "Order Confirmation",
+			MDocType.DOCBASETYPE_SalesOrder, MDocType.DOCSUBTYPE_POSOrder,
 			DT_SI, DT_II, 80000, GL_None);    // Bar
 		//	POS As Default for window SO
 		createPreference("C_DocTypeTarget_ID", String.valueOf(DT), 143);
@@ -680,7 +678,7 @@ public final class MSetup
 		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
 		{
-			String err = "ClientInfo not updated";
+			final String err = "ClientInfo not updated";
 			log.error(err);
 			m_info.append(err);
 			m_trx.rollback();
@@ -695,15 +693,15 @@ public final class MSetup
 		log.info("fini");
 		return true;
 	}   //  createAccounting
-	
+
 	private void createAccountingRecord(String tableName) throws Exception
 	{
-		MTable table = MTable.get(m_ctx, tableName);
-		PO acct = table.getPO(0, m_trx.getTrxName());
-		
-		MColumn[] cols = table.getColumns(false);
-		for (MColumn c : cols) {
-			String columnName = c.getColumnName();
+		final MTable table = MTable.get(m_ctx, tableName);
+		final PO acct = table.getPO(0, m_trx.getTrxName());
+
+		final MColumn[] cols = table.getColumns(false);
+		for (final MColumn c : cols) {
+			final String columnName = c.getColumnName();
 			if (c.isStandardColumn()) {
 			}
 			else if (DisplayType.Account == c.getAD_Reference_ID()) {
@@ -728,26 +726,26 @@ public final class MSetup
 	 * Get Account ID for key
 	 * @param key key
 	 * @return C_ValidCombination_ID
-	 * @throws AdempiereUserError 
+	 * @throws AdempiereUserError
 	 */
 	private Integer getAcct (String key) throws AdempiereUserError
 	{
 		log.debug(key);
 		//  Element
-		int C_ElementValue_ID = m_nap.getC_ElementValue_ID(key.toUpperCase());
+		final int C_ElementValue_ID = m_nap.getC_ElementValue_ID(key.toUpperCase());
 		if (C_ElementValue_ID == 0)
 		{
 			throw new AdempiereUserError("Account not defined: " + key);
 		}
 
-		MAccount vc = MAccount.getDefault(m_as, true);	//	optional null
+		final MAccount vc = MAccount.getDefault(m_as, true);	//	optional null
 		vc.setAD_Org_ID(0);		//	will be overwritten
 		vc.setAccount_ID(C_ElementValue_ID);
 		if (!vc.save())
 		{
 			throw new AdempiereUserError("Not Saved - Key=" + key + ", C_ElementValue_ID=" + C_ElementValue_ID);
 		}
-		int C_ValidCombination_ID = vc.getC_ValidCombination_ID();
+		final int C_ValidCombination_ID = vc.getC_ValidCombination_ID();
 		if (C_ValidCombination_ID == 0)
 		{
 			throw new AdempiereUserError("No account - Key=" + key + ", C_ElementValue_ID=" + C_ElementValue_ID);
@@ -764,7 +762,7 @@ public final class MSetup
 	 */
 	private int createGLCategory (String Name, String CategoryType, boolean isDefault)
 	{
-		MGLCategory cat = new MGLCategory (m_ctx, 0, m_trx.getTrxName());
+		final MGLCategory cat = new MGLCategory (m_ctx, 0, m_trx.getTrxName());
 		cat.setName(Name);
 		cat.setCategoryType(CategoryType);
 		cat.setIsDefault(isDefault);
@@ -804,8 +802,8 @@ public final class MSetup
 				return 0;
 			}
 		}
-		
-		MDocType dt = new MDocType (m_ctx, DocBaseType, Name, m_trx.getTrxName());
+
+		final MDocType dt = new MDocType (m_ctx, DocBaseType, Name, m_trx.getTrxName());
 		if (PrintName != null && PrintName.length() > 0)
 			dt.setPrintName(PrintName);	//	Defaults to Name
 		if (DocSubType != null)
@@ -833,7 +831,7 @@ public final class MSetup
 		return dt.getC_DocType_ID();
 	}   //  createDocType
 
-	
+
 	/**************************************************************************
 	 *  Create Default main entities.
 	 *  - Dimensions & BPGroup, Prod Category)
@@ -855,17 +853,17 @@ public final class MSetup
 			m_trx.close();
 			return false;
 		}
-		log.info("C_Country_ID=" + C_Country_ID 
+		log.info("C_Country_ID=" + C_Country_ID
 			+ ", City=" + City + ", C_Region_ID=" + C_Region_ID);
 		m_info.append("\n----\n");
 		//
-		String defaultName = Msg.translate(m_lang, "Standard");
-		String defaultEntry = "'" + defaultName + "',";
+		final String defaultName = Msg.translate(m_lang, "Standard");
+		final String defaultEntry = "'" + defaultName + "',";
 		StringBuffer sqlCmd = null;
 		int no = 0;
 
 		//	Create Marketing Channel/Campaign
-		int C_Channel_ID = getNextID(getAD_Client_ID(), "C_Channel");
+		final int C_Channel_ID = getNextID(getAD_Client_ID(), "C_Channel");
 		sqlCmd = new StringBuffer("INSERT INTO C_Channel ");
 		sqlCmd.append("(C_Channel_ID,Name,");
 		sqlCmd.append(m_stdColumns).append(") VALUES (");
@@ -874,7 +872,7 @@ public final class MSetup
 		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
 			log.error("Channel NOT inserted");
-		int C_Campaign_ID = getNextID(getAD_Client_ID(), "C_Campaign");
+		final int C_Campaign_ID = getNextID(getAD_Client_ID(), "C_Campaign");
 		sqlCmd = new StringBuffer("INSERT INTO C_Campaign ");
 		sqlCmd.append("(C_Campaign_ID,C_Channel_ID,").append(m_stdColumns).append(",");
 		sqlCmd.append(" Value,Name,Costs) VALUES (");
@@ -898,7 +896,7 @@ public final class MSetup
 		}
 
 		//	Create Sales Region
-		int C_SalesRegion_ID = getNextID(getAD_Client_ID(), "C_SalesRegion");
+		final int C_SalesRegion_ID = getNextID(getAD_Client_ID(), "C_SalesRegion");
 		sqlCmd = new StringBuffer ("INSERT INTO C_SalesRegion ");
 		sqlCmd.append("(C_SalesRegion_ID,").append(m_stdColumns).append(",");
 		sqlCmd.append(" Value,Name,IsSummary) VALUES (");
@@ -925,7 +923,7 @@ public final class MSetup
 		 *  Business Partner
 		 */
 		//  Create BP Group
-		MBPGroup bpg = new MBPGroup (m_ctx, 0, m_trx.getTrxName());
+		final MBPGroup bpg = new MBPGroup (m_ctx, 0, m_trx.getTrxName());
 		bpg.setValue(defaultName);
 		bpg.setName(defaultName);
 		bpg.setIsDefault(true);
@@ -935,7 +933,7 @@ public final class MSetup
 			log.error("BP Group NOT inserted");
 
 		//	Create BPartner
-		MBPartner bp = new MBPartner (m_ctx, 0, m_trx.getTrxName());
+		final MBPartner bp = new MBPartner (m_ctx, 0, m_trx.getTrxName());
 		bp.setValue(defaultName);
 		bp.setName(defaultName);
 		bp.setBPGroup(bpg);
@@ -944,9 +942,9 @@ public final class MSetup
 		else
 			log.error("BPartner NOT inserted");
 		//  Location for Standard BP
-		MLocation bpLoc = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
+		final MLocation bpLoc = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
 		bpLoc.save();
-		MBPartnerLocation bpl = new MBPartnerLocation(bp);
+		final MBPartnerLocation bpl = new MBPartnerLocation(bp);
 		bpl.setC_Location_ID(bpLoc.getC_Location_ID());
 		if (!bpl.save())
 			log.error("BP_Location (Standard) NOT inserted");
@@ -964,7 +962,7 @@ public final class MSetup
 		 *  Product
 		 */
 		//  Create Product Category
-		MProductCategory pc = new MProductCategory(m_ctx, 0, m_trx.getTrxName());
+		final MProductCategory pc = new MProductCategory(m_ctx, 0, m_trx.getTrxName());
 		pc.setValue(defaultName);
 		pc.setName(defaultName);
 		pc.setIsDefault(true);
@@ -974,10 +972,10 @@ public final class MSetup
 			log.error("Product Category NOT inserted");
 
 		//  UOM (EA)
-		int C_UOM_ID = 100;
+		final int C_UOM_ID = 100;
 
 		//  TaxCategory
-		int C_TaxCategory_ID = getNextID(getAD_Client_ID(), "C_TaxCategory");
+		final int C_TaxCategory_ID = getNextID(getAD_Client_ID(), "C_TaxCategory");
 		sqlCmd = new StringBuffer ("INSERT INTO C_TaxCategory ");
 		sqlCmd.append("(C_TaxCategory_ID,").append(m_stdColumns).append(",");
 		sqlCmd.append(" Name,IsDefault) VALUES (");
@@ -991,7 +989,7 @@ public final class MSetup
 			log.error("TaxCategory NOT inserted");
 
 		//  Tax - Zero Rate
-		MTax tax = new MTax (m_ctx, "Standard", Env.ZERO, C_TaxCategory_ID, m_trx.getTrxName());
+		final MTax tax = new MTax (m_ctx, "Standard", Env.ZERO, C_TaxCategory_ID, m_trx.getTrxName());
 		tax.setIsDefault(true);
 		if (tax.save())
 			m_info.append(Msg.translate(m_lang, "C_Tax_ID"))
@@ -1000,7 +998,7 @@ public final class MSetup
 			log.error("Tax NOT inserted");
 
 		//	Create Product
-		MProduct product = new MProduct (m_ctx, 0, m_trx.getTrxName());
+		final MProduct product = new MProduct (m_ctx, 0, m_trx.getTrxName());
 		product.setValue(defaultName);
 		product.setName(defaultName);
 		product.setC_UOM_ID(C_UOM_ID);
@@ -1023,7 +1021,7 @@ public final class MSetup
 		 *  Location, Warehouse, Locator
 		 */
 		//  Location (Company)
-		MLocation loc = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
+		final MLocation loc = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
 		loc.save();
 		sqlCmd = new StringBuffer ("UPDATE AD_OrgInfo SET C_Location_ID=");
 		sqlCmd.append(loc.getC_Location_ID()).append(" WHERE AD_Org_ID=").append(getAD_Org_ID());
@@ -1033,7 +1031,7 @@ public final class MSetup
 		createPreference("C_Country_ID", String.valueOf(C_Country_ID), 0);
 
 		//  Default Warehouse
-		MWarehouse wh = new MWarehouse(m_ctx, 0, m_trx.getTrxName());
+		final MWarehouse wh = new MWarehouse(m_ctx, 0, m_trx.getTrxName());
 		wh.setValue(defaultName);
 		wh.setName(defaultName);
 		wh.setC_Location_ID(loc.getC_Location_ID());
@@ -1041,7 +1039,7 @@ public final class MSetup
 			log.error("Warehouse NOT inserted");
 
 		//   Locator
-		MLocator locator = new MLocator(wh, defaultName);
+		final MLocator locator = new MLocator(wh, defaultName);
 		locator.setIsDefault(true);
 		if (!locator.save())
 			log.error("Locator NOT inserted");
@@ -1058,7 +1056,7 @@ public final class MSetup
 		no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
 		{
-			String err = "ClientInfo not updated";
+			final String err = "ClientInfo not updated";
 			log.error(err);
 			m_info.append(err);
 			return false;
@@ -1087,14 +1085,14 @@ public final class MSetup
 //		if (!plv.save())
 //			log.error("PriceList_Version NOT inserted");
 //		//  ProductPrice
-//		MProductPrice pp = new MProductPrice(plv, product.getM_Product_ID(), 
+//		MProductPrice pp = new MProductPrice(plv, product.getM_Product_ID(),
 //			Env.ONE, Env.ONE, Env.ONE);
 //		if (!pp.save())
 //			log.error("ProductPrice NOT inserted");
 
 
 		//	Create Sales Rep for Client-User
-		MBPartner bpCU = new MBPartner (m_ctx, 0, m_trx.getTrxName());
+		final MBPartner bpCU = new MBPartner (m_ctx, 0, m_trx.getTrxName());
 		bpCU.setValue(AD_User_U_Name);
 		bpCU.setName(AD_User_U_Name);
 		bpCU.setBPGroup(bpg);
@@ -1105,9 +1103,9 @@ public final class MSetup
 		else
 			log.error("SalesRep (User) NOT inserted");
 		//  Location for Client-User
-		MLocation bpLocCU = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
+		final MLocation bpLocCU = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
 		bpLocCU.save();
-		MBPartnerLocation bplCU = new MBPartnerLocation(bpCU);
+		final MBPartnerLocation bplCU = new MBPartnerLocation(bpCU);
 		bplCU.setC_Location_ID(bpLocCU.getC_Location_ID());
 		if (!bplCU.save())
 			log.error("BP_Location (User) NOT inserted");
@@ -1120,7 +1118,7 @@ public final class MSetup
 
 
 		//	Create Sales Rep for Client-Admin
-		MBPartner bpCA = new MBPartner (m_ctx, 0, m_trx.getTrxName());
+		final MBPartner bpCA = new MBPartner (m_ctx, 0, m_trx.getTrxName());
 		bpCA.setValue(AD_User_Name);
 		bpCA.setName(AD_User_Name);
 		bpCA.setBPGroup(bpg);
@@ -1131,9 +1129,9 @@ public final class MSetup
 		else
 			log.error("SalesRep (Admin) NOT inserted");
 		//  Location for Client-Admin
-		MLocation bpLocCA = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
+		final MLocation bpLocCA = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
 		bpLocCA.save();
-		MBPartnerLocation bplCA = new MBPartnerLocation(bpCA);
+		final MBPartnerLocation bplCA = new MBPartnerLocation(bpCA);
 		bplCA.setC_Location_ID(bpLocCA.getC_Location_ID());
 		if (!bplCA.save())
 			log.error("BP_Location (Admin) NOT inserted");
@@ -1146,7 +1144,7 @@ public final class MSetup
 
 
 		//  Payment Term
-		int C_PaymentTerm_ID = getNextID(getAD_Client_ID(), "C_PaymentTerm");
+		final int C_PaymentTerm_ID = getNextID(getAD_Client_ID(), "C_PaymentTerm");
 		sqlCmd = new StringBuffer ("INSERT INTO C_PaymentTerm ");
 		sqlCmd.append("(C_PaymentTerm_ID,").append(m_stdColumns).append(",");
 		sqlCmd.append("Value,Name,NetDays,GraceDays,DiscountDays,Discount,DiscountDays2,Discount2,IsDefault) VALUES (");
@@ -1172,7 +1170,7 @@ public final class MSetup
 		 */
 
 		//	Create Default Project
-		int C_Project_ID = getNextID(getAD_Client_ID(), "C_Project");
+		final int C_Project_ID = getNextID(getAD_Client_ID(), "C_Project");
 		sqlCmd = new StringBuffer ("INSERT INTO C_Project ");
 		sqlCmd.append("(C_Project_ID,").append(m_stdColumns).append(",");
 		sqlCmd.append(" Value,Name,C_Currency_ID,IsSummary) VALUES (");
@@ -1196,7 +1194,7 @@ public final class MSetup
 		}
 
 		//  CashBook
-		MCashBook cb = new MCashBook(m_ctx, 0, m_trx.getTrxName());
+		final MCashBook cb = new MCashBook(m_ctx, 0, m_trx.getTrxName());
 		cb.setName(defaultName);
 		cb.setC_Currency_ID(C_Currency_ID);
 		if (cb.save())
@@ -1204,7 +1202,7 @@ public final class MSetup
 		else
 			log.error("CashBook NOT inserted");
 		//
-		boolean success = m_trx.commit();
+		final boolean success = m_trx.commit();
 		m_trx.close();
 		log.info("finish");
 		return success;
@@ -1218,8 +1216,8 @@ public final class MSetup
 	 */
 	private void createPreference (String Attribute, String Value, int AD_Window_ID)
 	{
-		int AD_Preference_ID = getNextID(getAD_Client_ID(), "AD_Preference");
-		StringBuffer sqlCmd = new StringBuffer ("INSERT INTO AD_Preference ");
+		final int AD_Preference_ID = getNextID(getAD_Client_ID(), "AD_Preference");
+		final StringBuffer sqlCmd = new StringBuffer ("INSERT INTO AD_Preference ");
 		sqlCmd.append("(AD_Preference_ID,").append(m_stdColumns).append(",");
 		sqlCmd.append("Attribute,Value,AD_Window_ID) VALUES (");
 		sqlCmd.append(AD_Preference_ID).append(",").append(m_stdValues).append(",");
@@ -1228,12 +1226,12 @@ public final class MSetup
 			sqlCmd.append("NULL)");
 		else
 			sqlCmd.append(AD_Window_ID).append(")");
-		int no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
+		final int no = DB.executeUpdate(sqlCmd.toString(), m_trx.getTrxName());
 		if (no != 1)
 			log.error("Preference NOT inserted - " + Attribute);
 	}   //  createPreference
 
-	
+
 	/**************************************************************************
 	 * 	Get Next ID
 	 * 	@param AD_Client_ID client
@@ -1242,7 +1240,7 @@ public final class MSetup
 	 */
 	private int getNextID (int AD_Client_ID, String TableName)
 	{
-		//	TODO: Exception 
+		//	TODO: Exception
 		return DB.getNextID (AD_Client_ID, TableName, m_trx.getTrxName());
 	}	//	getNextID
 
@@ -1286,6 +1284,6 @@ public final class MSetup
 		try {
 			m_trx.rollback();
 			m_trx.close();
-		} catch (Exception e) {}
+		} catch (final Exception e) {}
 	}
 }   //  MSetup
