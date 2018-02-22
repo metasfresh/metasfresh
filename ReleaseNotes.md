@@ -45,13 +45,21 @@ Here come the actual release notes:
   * [#3246](https://github.com/metasfresh/metasfresh/issues/3246) Barcode Search in Handling Unit Editor takes too long
     * Improved Performance in handling Unit Editor when searching via Barcode Filter and Default Filter Handling Unit Value.
   * [#3409](https://github.com/metasfresh/metasfresh/issues/3409) Distribution Order/ Movement after Material Receipt
+    * Adds an automatism Functionality to Product Plannung. Allows to automatically create Distribution Orders to bring received goods to their locators after material receipt.
   * [#3414](https://github.com/metasfresh/metasfresh/issues/3414) Credit Limit check in Sales Order
+    * New Functionality in Sales Order, now checking the customers credit limit when completing the Order.
   * [#3437](https://github.com/metasfresh/metasfresh/issues/3437) MSV3 handle deviating response from remote MSV3 server
+    * Improved communication between MSV3 Server and response presentation to the user.
   * [#3451](https://github.com/metasfresh/metasfresh/issues/3451) Extract esb code into dedicated repo
+    * Internal housekeeping improvement, moving the code for enterprise service bus to dedicated repository.
   * [#3457](https://github.com/metasfresh/metasfresh/issues/3457) Improve performance around update_trl_tables_on_ad_element_trl_update
+    * Performance Improvement of the Translation update mechanisms.
   * [#3481](https://github.com/metasfresh/metasfresh/issues/3481) Force refreshing virtual column CreditLimitIndicator from C_BPartner
+    * Now allowing a just in time refresh of the credit limit indicator in Business Partner Window.
   * [#3483](https://github.com/metasfresh/metasfresh/issues/3483) Default Value for process create order from quotation
+    * Adds default parms to the create order from quotation process/ action.
   * [#3490](https://github.com/metasfresh/metasfresh/issues/3490) Paperless Credit Limit approval
+    * Improved workflow for the credit limit approval. Now the responsible user receives a notification as soon a credit limit shall be approved.
   * [#3502](https://github.com/metasfresh/metasfresh/issues/3502) Default Filter Improvements
     * Adds various Filter criteria to default window filter lists.
   * [#3505](https://github.com/metasfresh/metasfresh/issues/3505) Improvement of Procurement Candidates
@@ -60,7 +68,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#851](https://github.com/metasfresh/metasfresh-webui-api/issues/851) Virtual field from header doc shall be refreshed when one of the included row is changed
-
+    * Just-in-time update of the windows content for Virtual columns.
   * [#853](https://github.com/metasfresh/metasfresh-webui-api/issues/853) Automatic group creation in sales order lines
     * New automatic grouping functionality in sales orderlines.
   * [#854](https://github.com/metasfresh/metasfresh-webui-api/issues/854) If the window is missing from menu render it's name in breadcrumb
