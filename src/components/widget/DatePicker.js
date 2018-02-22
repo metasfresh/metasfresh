@@ -1,12 +1,12 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import TetheredDateTime from "./TetheredDateTime";
-import { addNotification } from "../../actions/AppActions";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import TetheredDateTime from './TetheredDateTime';
+import { addNotification } from '../../actions/AppActions';
 import {
   allowOutsideClick,
-  disableOutsideClick
-} from "../../actions/WindowActions";
+  disableOutsideClick,
+} from '../../actions/WindowActions';
 
 const propTypes = {
   dispatch: PropTypes.func.isRequired,
@@ -14,7 +14,7 @@ const propTypes = {
   patch: PropTypes.func,
   field: PropTypes.string,
   value: PropTypes.any,
-  isOpenDatePicker: PropTypes.bool
+  isOpenDatePicker: PropTypes.bool,
 };
 
 class DatePicker extends Component {
@@ -22,7 +22,7 @@ class DatePicker extends Component {
     super(props);
     this.state = {
       open: false,
-      cache: null
+      cache: null,
     };
   }
 
@@ -43,13 +43,13 @@ class DatePicker extends Component {
     try {
       if (
         JSON.stringify(cache) !==
-        (date !== "" ? JSON.stringify(date && date.toDate()) : "")
+        (date !== '' ? JSON.stringify(date && date.toDate()) : '')
       ) {
         patch(date);
       }
     } catch (error) {
       dispatch(
-        addNotification(field, `${field} has an invalid date.`, 5000, "error")
+        addNotification(field, `${field} has an invalid date.`, 5000, 'error')
       );
     }
 
@@ -62,7 +62,7 @@ class DatePicker extends Component {
     const { value, dispatch } = this.props;
     this.setState({
       cache: value,
-      open: true
+      open: true,
     });
     dispatch(disableOutsideClick());
   };
@@ -70,7 +70,7 @@ class DatePicker extends Component {
   handleClose = () => {
     const { dispatch } = this.props;
     this.setState({
-      open: false
+      open: false,
     });
     dispatch(allowOutsideClick());
   };

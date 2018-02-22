@@ -176,6 +176,9 @@ class TableCell extends Component {
         )
       : null;
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
+    const isDateField = TableCell.DATE_FIELD_FORMATS[item.widgetType]
+      ? TableCell.getDateFormat(item.widgetType)
+      : false;
 
     return (
       <td
@@ -201,6 +204,7 @@ class TableCell extends Component {
           <MasterWidget
             {...item}
             entity={mainTable ? 'window' : entity}
+            dateFormat={isDateField}
             dataId={mainTable ? null : docId}
             widgetData={widgetData}
             windowType={type}
