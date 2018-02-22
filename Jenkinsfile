@@ -108,13 +108,13 @@ node('agent && linux')
 				else
 				{
 					// now create and publish some docker images
-					createAndPublishDockerImage(
+					createAndPublishDockerImage_nexus(
 						'metasfresh-material-dispo-dev', // publishRepositoryName
 						'de.metas.material/dispo-service',  // dockerModuleDir
 						MF_UPSTREAM_BRANCH, // dockerBranchName
 						MF_VERSION // dockerVersionSuffix
 					)
-					createAndPublishDockerImage(
+					createAndPublishDockerImage_nexus(
 						'metasfresh-report-dev', // dockerRepositoryName
 						'de.metas.report/report-service',  // dockerModuleDir
 						MF_UPSTREAM_BRANCH, // dockerBranchName
