@@ -66,7 +66,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
       	withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
         {
-            stage('Set versions and build metasfresh-admin')
+            stage('Set versions and build')
             {
 							// update the parent pom version
       				mvnUpdateParentPomVersion mvnConf
@@ -78,18 +78,18 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 							sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
 							sh "cp target/metasfresh-admin-${MF_VERSION}.jar src/main/docker/metasfresh-admin.jar" // copy the file so it can be handled by the docker build
+						}
 
-							createAndPublishDockerImage_nexus(
-								'metasfresh-admin', // dockerRepositoryName
-								'',  // dockerModuleDir
-								MF_UPSTREAM_BRANCH, // dockerBranchName
-								MF_VERSION // dockerVersionSuffix
-							)
-							/*
-							docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
+						stage('Build docker image')
+						{
+							def app
+  						docker.withRegistry('https://nexus.metasfresh.com:6000/v2/', 'nexus.metasfresh.com_jenkins')
 							{
-								def app = docker.build 'metasfresh/metasfresh-admin', 'src/main/docker';
+								app = docker.build 'metasfresh/metasfresh-admin', 'src/main/docker';
+							}
 
+							docker.withRegistry('https://nexus.metasfresh.com:6001/v2/', 'nexus.metasfresh.com_jenkins')
+							{
 								def misc = new de.metas.jenkins.Misc();
 								app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
 								app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${MF_VERSION}");
@@ -100,7 +100,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 									app.push misc.mkDockerTag('latest');
 								}
 							}
-							*/
             } // stage
 		   } // withMaven
 		}
