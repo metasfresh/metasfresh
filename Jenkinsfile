@@ -78,6 +78,14 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 							sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
 							sh "cp target/metasfresh-admin-${MF_VERSION}.jar src/main/docker/metasfresh-admin.jar" // copy the file so it can be handled by the docker build
+
+							createAndPublishDockerImage_nexus(
+								'metasfresh-admin', // dockerRepositoryName
+								'',  // dockerModuleDir
+								MF_UPSTREAM_BRANCH, // dockerBranchName
+								MF_VERSION // dockerVersionSuffix
+							)
+							/*
 							docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 							{
 								def app = docker.build 'metasfresh/metasfresh-admin', 'src/main/docker';
@@ -92,6 +100,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 									app.push misc.mkDockerTag('latest');
 								}
 							}
+							*/
             } // stage
 		   } // withMaven
 		}
