@@ -97,7 +97,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
 		final String publishedDockerImageName =
-			createAndPublishDockerImage(
+			createAndPublishDockerImage_nexus(
 					'metasfresh-webui-api-dev', // dockerRepositoryName
 					'.',  // dockerModuleDir
 					MF_UPSTREAM_BRANCH, // dockerBranchName
