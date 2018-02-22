@@ -16,7 +16,7 @@
           "singleQuote": true,
           "trailingComma": "es5",
           "bracketSpacing": true,
-          "jsxBracketSameLine": true,
+          "jsxBracketSameLine": false,
           "parser": "flow"
         }],
         "react/prop-types": "warn",
