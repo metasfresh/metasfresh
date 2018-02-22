@@ -95,8 +95,11 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#846](https://github.com/metasfresh/metasfresh-webui-api/issues/846) Cache issue in shipment schedules subtab
+    * Fixes a cache issue in a shipment shedules included subtab.
   * [#847](https://github.com/metasfresh/metasfresh-webui-api/issues/847) Error in picking terminal
+    * Fixes a Bug that occurred in Picking terminal when picking a large amount of Handling Units.
   * [#848](https://github.com/metasfresh/metasfresh-webui-api/issues/848) Sorting by Virtual Column manually in webui throws error
+    * Fixes the possibility to order by for virtaual column in grid view.
 
 * metasfresh-webui-frontend
   * [#1592](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1592) Added subrow is still/again not shown in the frontend
