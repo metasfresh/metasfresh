@@ -167,7 +167,7 @@ import lombok.NonNull;
 	{
 		final String tableName = gridTabVO.getTableName();
 
-		final DetailId detailId = DetailId.fromTabNoOrNull(gridTabVO.getTabNo());
+		final DetailId detailId = parentTabVO == null ? null : DetailId.fromAD_Tab_ID(gridTabVO.getAD_Tab_ID());
 
 		//
 		// Entity Data binding

@@ -16,7 +16,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.ui.web.window.controller.Execution;
-import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import lombok.NonNull;
 
@@ -128,13 +127,6 @@ public final class DocumentFieldAsCalloutField implements ICalloutField, IProces
 	public int getWindowNo()
 	{
 		return getDocument().getWindowNo();
-	}
-
-	@Override
-	public int getTabNo()
-	{
-		final DetailId detailId = getDocument().getEntityDescriptor().getDetailId();
-		return DetailId.getTabNo(detailId);
 	}
 
 	@Override
