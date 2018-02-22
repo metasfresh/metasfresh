@@ -57,12 +57,8 @@ public interface I_C_POS_HUEditor_Filter
 	 */
 	public int getAD_JavaClass_ID();
 
-	public de.metas.javaclasses.model.I_AD_JavaClass getAD_JavaClass();
-
-	public void setAD_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass AD_JavaClass);
-
     /** Column definition for AD_JavaClass_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, de.metas.javaclasses.model.I_AD_JavaClass> COLUMN_AD_JavaClass_ID = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, de.metas.javaclasses.model.I_AD_JavaClass>(I_C_POS_HUEditor_Filter.class, "AD_JavaClass_ID", de.metas.javaclasses.model.I_AD_JavaClass.class);
+    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_AD_JavaClass_ID = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "AD_JavaClass_ID", null);
     /** Column name AD_JavaClass_ID */
     public static final String COLUMNNAME_AD_JavaClass_ID = "AD_JavaClass_ID";
 

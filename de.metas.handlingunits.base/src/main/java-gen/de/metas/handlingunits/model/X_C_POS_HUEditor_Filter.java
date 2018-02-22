@@ -14,7 +14,7 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -947840637L;
+	private static final long serialVersionUID = -748303681L;
 
     /** Standard Constructor */
     public X_C_POS_HUEditor_Filter (Properties ctx, int C_POS_HUEditor_Filter_ID, String trxName)
@@ -43,18 +43,6 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public de.metas.javaclasses.model.I_AD_JavaClass getAD_JavaClass() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class);
-	}
-
-	@Override
-	public void setAD_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass AD_JavaClass)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class, AD_JavaClass);
-	}
 
 	/** Set AD_JavaClass.
 		@param AD_JavaClass_ID AD_JavaClass	  */

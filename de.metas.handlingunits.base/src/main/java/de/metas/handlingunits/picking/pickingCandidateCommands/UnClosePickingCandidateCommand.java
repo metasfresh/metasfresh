@@ -1,8 +1,11 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 
+import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
@@ -64,13 +67,15 @@ class UnClosePickingCandidateCommand
 					.setParameter("pickingCandidate", pickingCandidate);
 		}
 
-		if (huPickingSlotDAO.isPickingRackSystem(pickingCandidate.getM_PickingSlot_ID()))
+		final int pickingSlotId = pickingCandidate.getM_PickingSlot_ID();
+		if (huPickingSlotDAO.isPickingRackSystem(pickingSlotId))
 		{
 			throw new AdempiereException("Unclosing a picking candidate when picking slot is a rack system is not allowed")
-					.setParameter("M_PickingSlot_ID", pickingCandidate.getM_PickingSlot_ID())
+					.setParameter("M_PickingSlot_ID", pickingSlotId)
 					.setParameter("pickingCandidate", pickingCandidate);
 		}
 
-		huPickingSlotBL.removeFromPickingSlotQueue(pickingCandidate.getM_PickingSlot(), pickingCandidate.getM_HU());
+		final I_M_PickingSlot pickingSlot = load(pickingSlotId, I_M_PickingSlot.class);
+		huPickingSlotBL.removeFromPickingSlotQueue(pickingSlot, pickingCandidate.getM_HU());
 	}
 }

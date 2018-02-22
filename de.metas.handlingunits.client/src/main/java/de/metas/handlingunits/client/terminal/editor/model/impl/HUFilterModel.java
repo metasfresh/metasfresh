@@ -1,5 +1,7 @@
 package de.metas.handlingunits.client.terminal.editor.model.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.client
@@ -43,12 +45,11 @@ import de.metas.javaclasses.model.I_AD_JavaClass;
 
 	public HUFilterModel(final I_C_POS_HUEditor_Filter filter)
 	{
-		super();
-
 		Check.assumeNotNull(filter, "filter not null");
 		this.filter = filter;
 
-		final I_AD_JavaClass jc = filter.getAD_JavaClass();
+		final int javaClassId = filter.getAD_JavaClass_ID();
+		final I_AD_JavaClass jc = loadOutOfTrx(javaClassId, I_AD_JavaClass.class);
 		huKeyFilter = javaClassBL.newInstance(jc);
 	}
 

@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
@@ -31,6 +32,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
@@ -63,6 +65,8 @@ import lombok.NonNull;
 public class AddQtyToHUCommand
 {
 	private static final Logger logger = LogManager.getLogger(AddQtyToHUCommand.class);
+
+	public static final String MSG_WEBUI_Picking_OverdeliveryNotAllowed = "M_Picking_Config_OverdeliveryNotAllowed";
 
 	private final PickingCandidateRepository pickingCandidateRepository;
 
@@ -109,7 +113,7 @@ public class AddQtyToHUCommand
 
 		if (overdeliveryError)
 		{
-			throw new AdempiereException("Overdelivery not allowed for shipment schedule").setParameter("ShipmentSchedule", shipmentSchedule);
+			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(shipmentSchedule), MSG_WEBUI_Picking_OverdeliveryNotAllowed));
 		}
 
 		final I_M_Product product = shipmentSchedule.getM_Product();
@@ -208,8 +212,8 @@ public class AddQtyToHUCommand
 	private boolean isOverdelivery()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlanned(shipmentSchedule);
-		final BigDecimal qtytoDeliver =  shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned); 
+		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentSchedule);
+		final BigDecimal qtytoDeliver =shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned == null? BigDecimal.ZERO : qtyPickedPlanned);
 
 		return qtyCU.compareTo(qtytoDeliver) > 0;
 	}

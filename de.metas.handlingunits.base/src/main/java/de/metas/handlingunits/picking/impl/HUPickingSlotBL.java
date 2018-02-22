@@ -326,7 +326,7 @@ public class HUPickingSlotBL
 		if (pickingSlotHU == null)
 		{
 			pickingSlotHU = InterfaceWrapperHelper.newInstance(I_M_PickingSlot_HU.class, huContext);
-			pickingSlotHU.setM_PickingSlot(pickingSlot);
+			pickingSlotHU.setM_PickingSlot_ID(pickingSlot.getM_PickingSlot_ID());
 			pickingSlotHU.setM_HU(hu);
 		}
 

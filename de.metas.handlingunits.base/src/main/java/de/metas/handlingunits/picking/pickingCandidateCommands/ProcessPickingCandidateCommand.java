@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.IdentityHashMap;
@@ -152,7 +154,8 @@ public class ProcessPickingCandidateCommand
 		final List<I_M_Picking_Candidate> pickingCandidates = getPickingCandidatesForHUId(huId);
 		for (final I_M_Picking_Candidate pc : pickingCandidates)
 		{
-			final I_M_ShipmentSchedule shipmentSchedule = pc.getM_ShipmentSchedule();
+			final int shipmentScheduleId = pc.getM_ShipmentSchedule_ID();
+			final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
 			final BigDecimal qty = pc.getQtyPicked();
 			scheds2Qtys.put(shipmentSchedule, Quantity.of(qty, pc.getC_UOM()));
 		}

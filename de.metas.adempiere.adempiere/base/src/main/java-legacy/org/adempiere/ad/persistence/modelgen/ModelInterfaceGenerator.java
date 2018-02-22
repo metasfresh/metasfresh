@@ -60,7 +60,6 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IColumnBL;
-
 import de.metas.logging.LogManager;
 
 /**
@@ -471,7 +470,7 @@ public class ModelInterfaceGenerator
 	}
 
 	/** Import classes */
-	private Collection<String> s_importClasses = new TreeSet<String>();
+	private Collection<String> s_importClasses = new TreeSet<>();
 
 	/**
 	 * Add class name to class import list
@@ -724,7 +723,7 @@ public class ModelInterfaceGenerator
 
 	public static String getReferenceClassName(final ColumnInfo columnInfo)
 	{
-		final int AD_Table_ID = columnInfo.getAD_Table_ID();
+		final int columnTableId = columnInfo.getAD_Table_ID();
 		final String columnName = columnInfo.getColumnName();
 		final int displayType = columnInfo.getDisplayType();
 		final int AD_Reference_ID = columnInfo.getAD_Reference_ID();
@@ -732,16 +731,16 @@ public class ModelInterfaceGenerator
 		String referenceClassName = null;
 		//
 		if (displayType == DisplayType.TableDir
-				|| (displayType == DisplayType.Search && AD_Reference_ID == 0))
+				|| (displayType == DisplayType.Search && AD_Reference_ID <= 0))
 		{
-			String refTableName = MQuery.getZoomTableName(columnName); // teo_sarca: BF [ 1817768 ] Isolate hardcoded table direct columns
+			final String refTableName = MQuery.getZoomTableName(columnName); // teo_sarca: BF [ 1817768 ] Isolate hardcoded table direct columns
 			referenceClassName = "I_" + refTableName;
 
-			MTable table = MTable.get(Env.getCtx(), refTableName);
-			if (table != null)
+			final MTable refTable = MTable.get(Env.getCtx(), refTableName);
+			if (refTable != null)
 			{
-				String entityType = table.getEntityType();
-				String modelpackage = getModelPackage(entityType);
+				final String refEntityType = refTable.getEntityType();
+				String modelpackage = getModelPackage(refEntityType);
 				if (modelpackage == null)
 				{
 					modelpackage = getModelPackageForClassName(referenceClassName);
@@ -750,7 +749,7 @@ public class ModelInterfaceGenerator
 				{
 					referenceClassName = modelpackage + "." + referenceClassName;
 				}
-				if (!isGenerateModelGetterForEntity(AD_Table_ID, entityType))
+				if (!isGenerateModelGetterForEntity(columnTableId, refEntityType))
 				{
 					referenceClassName = null;
 				}
@@ -758,29 +757,28 @@ public class ModelInterfaceGenerator
 			else
 			{
 				throw new RuntimeException("No table found for refTableName=" + refTableName
-						+ "; Method params: AD_Table_ID=" + AD_Table_ID + "; columnName=" + columnName + "; displayType=" + displayType + "; AD_Reference_ID=" + AD_Reference_ID);
+						+ "; Method params: AD_Table_ID=" + columnTableId + "; columnName=" + columnName + "; displayType=" + displayType + "; AD_Reference_ID=" + AD_Reference_ID);
 			}
 		}
 		else if (displayType == DisplayType.Table
 				|| (displayType == DisplayType.Search && AD_Reference_ID > 0))
 		{
 			// TODO: HARDCODED: do not generate model getter for GL_DistributionLine.Account_ID
-			if (AD_Table_ID == 707 && columnName.equals("Account_ID"))
+			if (columnTableId == 707 && columnName.equals("Account_ID"))
 				return null;
 			//
 
-			final Optional<TableReferenceInfo> tableReferenceInfoOrNull = columnInfo.getTableReferenceInfo();
-			if (tableReferenceInfoOrNull.isPresent())
+			final TableReferenceInfo tableReferenceInfo = columnInfo.getTableReferenceInfo().orNull();
+			if (tableReferenceInfo != null)
 			{
-				final TableReferenceInfo tableReferenceInfo = tableReferenceInfoOrNull.get();
 				final String refTableName = tableReferenceInfo.getRefTableName();
-				final String entityType = tableReferenceInfo.getEntityType();
+				final String refTableEntityType = tableReferenceInfo.getEntityType();
 				final int refDisplayType = tableReferenceInfo.getRefDisplayType();
 				final boolean refIsKey = tableReferenceInfo.isKey();
 				if (refDisplayType == DisplayType.ID || refIsKey)
 				{
 					referenceClassName = "I_" + refTableName;
-					String modelpackage = getModelPackage(entityType);
+					String modelpackage = getModelPackage(refTableEntityType);
 					if (modelpackage == null)
 					{
 						modelpackage = getModelPackageForClassName(referenceClassName);
@@ -789,7 +787,7 @@ public class ModelInterfaceGenerator
 					{
 						referenceClassName = modelpackage + "." + referenceClassName;
 					}
-					if (!isGenerateModelGetterForEntity(AD_Table_ID, entityType))
+					if (!isGenerateModelGetterForEntity(columnTableId, refTableEntityType))
 					{
 						referenceClassName = null;
 					}
