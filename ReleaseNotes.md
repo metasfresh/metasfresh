@@ -74,18 +74,24 @@ Here come the actual release notes:
   * [#854](https://github.com/metasfresh/metasfresh-webui-api/issues/854) If the window is missing from menu render it's name in breadcrumb
     * Window Breadcrumb improvement, now showing the windoowname of windows that were reached via zoom and are not in menu yet.
 
-  * metasfresh-webui-frontend
-    * [#1596](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1596) Add Enzyme to test setup
+* metasfresh-webui-frontend
+  * [#1596](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1596) Add Enzyme to test setup
+    * Extending our Test Framework with Enzyme.
 
 ## Fixes
 * metasfresh
   * [#3216](https://github.com/metasfresh/metasfresh/issues/3216) Invoice candidate: The isRecompute flag is not reseted on N ever
+    * Fix for invoice Candidates, now not recomputing anymore when candidates are processed.
   * [#3357](https://github.com/metasfresh/metasfresh/issues/3357) SQL Exception in Window Entity Type
     * Fixes a SQL Exception that occurred in Entity Type window.
   * [#3465](https://github.com/metasfresh/metasfresh/issues/3465) Window Role Tab User Access shows non systemusers
+    * Fixes the Subtab for Tab User Access in Role window. Now only showing available Systemusers.
   * [#3486](https://github.com/metasfresh/metasfresh/issues/3486) Material Disposition automatic entries missing for DD/ PP Orders
+    * Fixes the creation of Distribution and Manufacturing Orders in material Disposition.
   * [#3499](https://github.com/metasfresh/metasfresh/issues/3499) Cannot create manual invoice
+    * Fixes the functionality to create manual Invoices.
   * [#3521](https://github.com/metasfresh/metasfresh/issues/3521) Exception with CreditStatus in some data constellations
+    * Minor Bugfixes for the new credit status functionality.
 
 * metasfresh-webui-api
   * [#846](https://github.com/metasfresh/metasfresh-webui-api/issues/846) Cache issue in shipment schedules subtab
