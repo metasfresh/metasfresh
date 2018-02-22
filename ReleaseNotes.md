@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Fixes a Bug that let the Quickactions Buttons dissappear after setting filter criteria.
   * [#1585](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1585) Date recording with keys leads to error
     * Fixes a Bug that occurred when trying to record a date via keyboard instead of calendar widget.
+  * [#1604](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1604) Date Range Picker shows wrong day of the week
+    * Fixes the shown day of week in date range picker.
 
 # metasfresh 5.45 (2018-08)
 **release for week 2018-08**
