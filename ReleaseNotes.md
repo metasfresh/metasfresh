@@ -63,6 +63,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#3216](https://github.com/metasfresh/metasfresh/issues/3216) Invoice candidate: The isRecompute flag is not reseted on N ever
   * [#3357](https://github.com/metasfresh/metasfresh/issues/3357) SQL Exception in Window Entity Type
     * Fixes a SQL Exception that occurred in Entity Type window.
   * [#3465](https://github.com/metasfresh/metasfresh/issues/3465) Window Role Tab User Access shows non systemusers
