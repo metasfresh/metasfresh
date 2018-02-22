@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.Objects;
 import java.util.Optional;
@@ -192,7 +193,8 @@ public class CandidateRepositoryWriteService
 
 		candidateRecord.setStorageAttributesKey(computeStorageAttributesKeyToStore(materialDescriptor));
 
-		candidateRecord.setQty(candidate.getQuantity().stripTrailingZeros());
+		final BigDecimal quantity = candidate.getQuantity();
+		candidateRecord.setQty(stripZerosAfterTheDigit(quantity));
 		candidateRecord.setDateProjected(new Timestamp(materialDescriptor.getDate().getTime()));
 
 		final int orderId = Optional.ofNullable(candidate.getDemandDetail())
@@ -235,6 +237,16 @@ public class CandidateRepositoryWriteService
 		{
 			candidateRecord.setMD_Candidate_Status(candidate.getStatus().toString());
 		}
+	}
+
+	private BigDecimal stripZerosAfterTheDigit(final BigDecimal quantity)
+	{
+		final BigDecimal stripTrailingZeros = quantity.stripTrailingZeros();
+		if (stripTrailingZeros.scale() < 0)
+		{
+			return stripTrailingZeros.setScale(0, RoundingMode.UNNECESSARY);
+		}
+		return stripTrailingZeros;
 	}
 
 	@NonNull
