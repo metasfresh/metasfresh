@@ -128,10 +128,39 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 		// because currently the frontend then load *this* view's data into the pickingSlotView
 		// invalidateView();
 
-		invalidateParentView();  // parent view is the picking view (M_Packageable_V); need to invalidate it in order to update frontend's qtyPicked
+		invalidatePickingSlotsView();
+		invalidatePackablesView();
 
 		// After this process finished successfully go back to the picking slots view
 		getResult().setWebuiIncludedViewIdToOpen(getPickingSlotView().getViewId().getViewId());
+	}
+	
+	protected final void invalidatePickingSlotsView()
+	{
+		final PickingSlotView pickingSlotsView = getPickingSlotViewOrNull();
+		if(pickingSlotsView == null)
+		{
+			return;
+		}
+
+		invalidateView(pickingSlotsView.getViewId());
+	}
+	
+	protected final void invalidatePackablesView()
+	{
+		final PickingSlotView pickingSlotsView = getPickingSlotViewOrNull();
+		if(pickingSlotsView == null)
+		{
+			return;
+		}
+		
+		final ViewId packablesViewId = pickingSlotsView.getParentViewId();
+		if(packablesViewId == null)
+		{
+			return;
+		}
+		
+		invalidateView(packablesViewId);
 	}
 
 	protected final void addHUIdToCurrentPickingSlot(final int huId)

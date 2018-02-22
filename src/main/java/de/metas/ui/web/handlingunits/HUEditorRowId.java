@@ -43,13 +43,16 @@ import lombok.NonNull;
 @Immutable
 public final class HUEditorRowId
 {
-	public static HUEditorRowId ofTopLevelHU(final int huId)
+	public static HUEditorRowId ofTopLevelHU(final int topLevelHUId)
 	{
-		final int topLevelHUId = -1;
 		final int storageProductId = -1;
 		final String json = null; // to be computed when needed
 		final DocumentId documentId = null; // to be computed when needed
-		return new HUEditorRowId(huId, topLevelHUId, storageProductId, json, documentId);
+
+		return new HUEditorRowId(topLevelHUId,
+				-1, //  topLevelHUId parameter
+				storageProductId,
+				json, documentId);
 	}
 
 	public static HUEditorRowId ofHU(final int huId, final int topLevelHUId)
@@ -293,7 +296,7 @@ public final class HUEditorRowId
 
 		return huId;
 	}
-	
+
 	public int getStorageProductId()
 	{
 		return storageProductId;

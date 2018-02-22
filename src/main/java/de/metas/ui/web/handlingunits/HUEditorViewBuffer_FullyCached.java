@@ -265,7 +265,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		/** "rowId" to "parent's rowId" mapping */
 		private final ImmutableMap<HUEditorRowId, HUEditorRowId> rowId2parentId;
 
-		public IndexedHUEditorRows(final List<HUEditorRow> rows)
+		public IndexedHUEditorRows(@NonNull final List<HUEditorRow> rows)
 		{
 			this.rows = ImmutableList.copyOf(rows);
 

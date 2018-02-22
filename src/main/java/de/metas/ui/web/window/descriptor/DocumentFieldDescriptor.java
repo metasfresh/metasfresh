@@ -35,6 +35,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -650,6 +651,13 @@ public final class DocumentFieldDescriptor
 					final T valueConv = (T)dateRange;
 					return valueConv;
 				}
+			}
+			else if(Password.class == targetType)
+			{
+				final Password password = Password.ofNullableString(value.toString());
+				@SuppressWarnings("unchecked")
+				final T valueConv = (T)password;
+				return valueConv;
 			}
 		}
 		catch (final Exception e)

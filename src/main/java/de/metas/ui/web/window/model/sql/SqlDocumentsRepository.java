@@ -42,6 +42,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
@@ -810,6 +811,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				final Map<String, Object> map = (Map<String, Object>)value;
 				final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
 				return lookupValue == null ? null : lookupValue.getIdAsString();
+			}
+			else if(Password.class.isAssignableFrom(valueClass))
+			{
+				final Password password = (Password)value;
+				return password.getAsString();
 			}
 		}
 		else if (Timestamp.class.equals(targetClass))
