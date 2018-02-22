@@ -84,7 +84,6 @@ public class M_Transaction_TransactionEventCreator
 		{
 			result.add(createEventForInventoryLine(transaction, deleted));
 		}
-		}
 		return result.build();
 	}
 
