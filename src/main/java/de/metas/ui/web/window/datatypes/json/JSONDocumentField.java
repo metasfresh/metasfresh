@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.model.DocumentFieldChange;
 import de.metas.ui.web.window.model.DocumentValidStatus;
@@ -82,7 +83,7 @@ public final class JSONDocumentField implements Serializable
 
 		return jsonField;
 	}
-
+	
 	public static final JSONDocumentField idField(final Object jsonValue)
 	{
 		final String reason = null; // N/A
@@ -243,6 +244,15 @@ public final class JSONDocumentField implements Serializable
 		value = JSONNullValue.wrapIfNull(jsonValue);
 		valueReason = reason;
 		return this;
+	}
+	
+	/* package */ void unboxPasswordField()
+	{
+		final Object value = this.value;
+		if(value instanceof Password)
+		{
+			this.value = ((Password)value).getAsString();
+		}
 	}
 
 	public JSONDocumentField setWidgetType(final JSONLayoutWidgetType widgetType)

@@ -9,6 +9,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -344,7 +345,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				return columnSql + " AS " + columnName;
 			}
 			//
-			// Regular table column 
+			// Regular table column
 			else
 			{
 				return getTableName() + "." + columnSql + " AS " + columnName;
@@ -410,6 +411,10 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			else if (java.lang.String.class == valueClass)
 			{
 				return DocumentFieldValueLoaders.toString(sqlColumnName, encrypted);
+			}
+			else if (Password.class == valueClass)
+			{
+				return DocumentFieldValueLoaders.toPassword(sqlColumnName, encrypted);
 			}
 			else if (java.lang.Integer.class == valueClass)
 			{

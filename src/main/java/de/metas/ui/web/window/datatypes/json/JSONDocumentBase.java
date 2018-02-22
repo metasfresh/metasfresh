@@ -80,6 +80,9 @@ public abstract class JSONDocumentBase
 	/** Any other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
+	@JsonIgnore
+	private boolean unboxPasswordFields = false;
+
 	protected JSONDocumentBase(final DocumentPath documentPath)
 	{
 		if (documentPath == null)
@@ -141,25 +144,31 @@ public abstract class JSONDocumentBase
 				.add("rowId", rowId)
 				.toString();
 	}
-	
+
+	@JsonIgnore
+	protected final void setUnboxPasswordFields()
+	{
+		this.unboxPasswordFields = true;
+	}
+
 	@JsonIgnore
 	public WindowId getWindowId()
 	{
 		return windowId;
 	}
-	
+
 	@JsonIgnore
 	public DocumentId getId()
 	{
 		return id;
 	}
-	
+
 	@JsonIgnore
 	public String getTabId()
 	{
 		return tabId;
 	}
-	
+
 	@JsonIgnore
 	public DocumentId getRowId()
 	{
@@ -191,12 +200,17 @@ public abstract class JSONDocumentBase
 
 	public final void setFields(final Collection<JSONDocumentField> fields)
 	{
-		this.fieldsByName = fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField());
+		setFields(fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField()));
 	}
 
-	public final void setFields(final Map<String, JSONDocumentField> fieldsByName)
+	protected final void setFields(final Map<String, JSONDocumentField> fieldsByName)
 	{
 		this.fieldsByName = fieldsByName;
+
+		if (unboxPasswordFields && fieldsByName != null && !fieldsByName.isEmpty())
+		{
+			fieldsByName.forEach((fieldName, field) -> field.unboxPasswordField());
+		}
 	}
 
 	@JsonIgnore

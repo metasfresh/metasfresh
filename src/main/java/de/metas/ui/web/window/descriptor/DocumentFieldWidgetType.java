@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.Password;
 
 /*
  * #%L
@@ -40,7 +41,7 @@ public enum DocumentFieldWidgetType
 	Text(LayoutAlign.Left, String.class, DisplayType.Text) //
 	, LongText(LayoutAlign.Left, String.class, DisplayType.TextLong) //
 	, URL(LayoutAlign.Left, String.class, DisplayType.URL) //
-	, Password(LayoutAlign.Left, String.class, DisplayType.Text) //
+	, Password(LayoutAlign.Left, Password.class, DisplayType.Text) //
 
 	//
 	// Dates
