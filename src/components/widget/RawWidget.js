@@ -250,7 +250,8 @@ class RawWidget extends Component {
       allowShowPassword,
       onBlurWidget,
       defaultValue,
-      isOpenDatePicker
+      isOpenDatePicker,
+      dateFormat
     } = this.props;
     const widgetValue = data || widgetData[0].value;
     const { isEdited } = this.state;
@@ -307,7 +308,7 @@ class RawWidget extends Component {
                 key={1}
                 field={fields[0].field}
                 timeFormat={false}
-                dateFormat={true}
+                dateFormat={dateFormat || true}
                 isOpenDatePicker={isOpenDatePicker}
                 inputProps={{
                   placeholder: fields[0].emptyText,
@@ -365,8 +366,8 @@ class RawWidget extends Component {
             <div className={this.getClassNames({ icon: true })}>
               <DatePicker
                 field={fields[0].field}
-                timeFormat={true}
-                dateFormat={true}
+                timeFormat={dateFormat ? false : true}
+                dateFormat={dateFormat || true}
                 inputProps={{
                   placeholder: fields[0].emptyText,
                   disabled: widgetData[0].readonly || disabled,
@@ -414,7 +415,7 @@ class RawWidget extends Component {
             <DatePicker
               field={fields[0].field}
               timeFormat={true}
-              dateFormat={false}
+              dateFormat={dateFormat || true}
               inputProps={{
                 placeholder: fields[0].emptyText,
                 disabled: widgetData[0].readonly || disabled,
