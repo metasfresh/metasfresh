@@ -307,12 +307,14 @@ public final class JSONDocument extends JSONDocumentBase
 	private JSONDocument(final DocumentPath documentPath)
 	{
 		super(documentPath);
+		setUnboxPasswordFields();
 		this.websocketEndpoint = buildWebsocketEndpointOrNull(getWindowId(), getId());
 	}
 
 	private JSONDocument(final WindowId windowId, final DocumentId id, final String tabId, final DocumentId rowId)
 	{
 		super(windowId, id, tabId, rowId);
+		setUnboxPasswordFields();
 		this.websocketEndpoint = null; // NOTE: this constructor is used when creating websocket events and there we don't need the websocket endpoint
 	}
 

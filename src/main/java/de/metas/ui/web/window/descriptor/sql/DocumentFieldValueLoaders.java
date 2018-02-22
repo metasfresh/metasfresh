@@ -18,6 +18,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import lombok.Value;
@@ -61,6 +62,18 @@ public final class DocumentFieldValueLoaders
 		else
 		{
 			return new StringDocumentFieldValueLoader(sqlColumnName);
+		}
+	}
+
+	public static final DocumentFieldValueLoader toPassword(final String sqlColumnName, final boolean encrypted)
+	{
+		if (encrypted)
+		{
+			return new EncryptedPasswordDocumentFieldValueLoader(sqlColumnName);
+		}
+		else
+		{
+			return new PasswordDocumentFieldValueLoader(sqlColumnName);
 		}
 	}
 
@@ -161,6 +174,37 @@ public final class DocumentFieldValueLoaders
 		{
 			final String value = rs.getString(sqlColumnName);
 			return decrypt(value);
+		}
+	}
+
+	@Value
+	private static final class PasswordDocumentFieldValueLoader implements DocumentFieldValueLoader
+	{
+		private final String sqlColumnName;
+
+		@Override
+		public Password retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		{
+			final String value = rs.getString(sqlColumnName);
+			return Password.ofNullableString(value);
+		}
+	}
+
+	@Value
+	private static final class EncryptedPasswordDocumentFieldValueLoader implements DocumentFieldValueLoader
+	{
+		private final String sqlColumnName;
+
+		@Override
+		public Password retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor) throws SQLException
+		{
+			final String value = rs.getString(sqlColumnName);
+			final Object valueDecrypted = decrypt(value);
+			if (valueDecrypted == null)
+			{
+				return null;
+			}
+			return Password.ofNullableString(valueDecrypted.toString());
 		}
 	}
 
