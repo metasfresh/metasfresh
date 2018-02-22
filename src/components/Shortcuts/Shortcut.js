@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
-import { Component } from 'react';
+import { PureComponent } from 'react';
 
 import keymap from '../../shortcuts/keymap';
 
-export default class Shortcut extends Component {
+export default class Shortcut extends PureComponent {
   static contextTypes = {
     shortcuts: PropTypes.shape({
       subscribe: PropTypes.func.isRequired,
@@ -16,19 +16,25 @@ export default class Shortcut extends Component {
     handler: PropTypes.func.isRequired,
   };
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      name: props.name,
+      handler: props.handler,
+    };
+  }
+
   componentWillMount() {
     const { subscribe } = this.context.shortcuts;
-    const { name, handler } = this.props;
-
-    this.name = name;
-    this.handler = handler;
+    const { name, handler } = this.state;
 
     subscribe(name, handler);
   }
 
   componentWillUnmount() {
     const { unsubscribe } = this.context.shortcuts;
-    const { name, handler } = this;
+    const { name, handler } = this.state;
 
     unsubscribe(name, handler);
   }

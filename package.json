@@ -133,6 +133,7 @@
     "redux": "~3.7.2",
     "redux-thunk": "~2.2.0",
     "sockjs-client": "1.0.0",
-    "stompjs": "~2.3.3"
+    "stompjs": "~2.3.3",
+    "why-did-you-update": "^0.1.1"
   }
 }
