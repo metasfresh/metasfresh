@@ -171,6 +171,13 @@ import com.google.common.collect.ImmutableMap;
 
 		return this;
 	}
+	
+	@Override
+	public IQueryBuilder<T> addFiltersUnboxed(final ICompositeQueryFilter<T> compositeFilter)
+	{
+		filters.addFiltersUnboxed(compositeFilter);
+		return this;
+	}
 
 	@Override
 	public ICompositeQueryFilter<T> getCompositeFilter()

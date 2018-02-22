@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.interfaces.I_C_OrderLine;
@@ -52,6 +53,13 @@ public interface IOrderLineBL extends ISingletonService
 	 * @return
 	 */
 	<T extends I_C_OrderLine> T createOrderLine(org.compiere.model.I_C_Order order, final Class<T> orderLineClass);
+
+	/**
+	 * Set Defaults from Order. Does not set C_Order_ID. Also invoked by the createOrderLine methods
+	 *
+	 * @param order order
+	 */
+	void setOrder(org.compiere.model.I_C_OrderLine ol, I_C_Order order);
 
 	void setPrices(I_C_OrderLine ol);
 
@@ -110,6 +118,10 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, int precision);
 
+	BigDecimal calculateDiscountFromPrices(BigDecimal priceEntered, BigDecimal priceActual, int precision);
+
+	BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(BigDecimal priceActual, BigDecimal discount, int precision);
+
 	/**
 	 * Retrieves the {@code M_ProductPrice} for the given {@code orderLine}'s {@code M_Product_ID} and {@code M_PriceList_Version_ID} and returns that pp's {@code C_TaxCategory_ID}.
 	 * <p>
@@ -128,7 +140,7 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	int getC_TaxCategory_ID(org.compiere.model.I_C_OrderLine orderLine);
 
-	void updatePrices(I_C_OrderLine orderLine);
+	void updatePrices(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Sets the product ID and optionally also the UOM.

@@ -34,9 +34,6 @@ import org.eevolution.model.I_PP_MRP;
  */
 public interface IMRPCreateSupplyRequest extends de.metas.material.planning.IMaterialRequest
 {
-	/** @return MRP executor which is running */
-	IMRPExecutor getMRPExecutor();
-	
 	/**
 	 * Gets single MRP Demand Record that needs to be allocated.
 	 * 

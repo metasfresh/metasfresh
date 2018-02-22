@@ -272,7 +272,7 @@ public interface I_RV_HU_Quantities
     public static final String COLUMNNAME_M_HU_PI_Item_Product = "M_HU_PI_Item_Product";
 
 	/**
-	 * Set Produkt-Kategorie.
+	 * Set Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: TableDir
@@ -282,7 +282,7 @@ public interface I_RV_HU_Quantities
 	public void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
-	 * Get Produkt-Kategorie.
+	 * Get Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: TableDir
@@ -430,8 +430,8 @@ public interface I_RV_HU_Quantities
     public static final String COLUMNNAME_QtyOnHand = "QtyOnHand";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Bestellte Menge
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -440,8 +440,8 @@ public interface I_RV_HU_Quantities
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Bestellte Menge
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -455,8 +455,8 @@ public interface I_RV_HU_Quantities
     public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set Reservierte Menge.
-	 * Reservierte Menge
+	 * Set Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -465,8 +465,8 @@ public interface I_RV_HU_Quantities
 	public void setQtyReserved (java.math.BigDecimal QtyReserved);
 
 	/**
-	 * Get Reservierte Menge.
-	 * Reservierte Menge
+	 * Get Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

@@ -82,6 +82,8 @@ public interface IQueryBuilder<T>
 	 * @return
 	 */
 	IQueryBuilder<T> filter(IQueryFilter<T> filter);
+	
+	IQueryBuilder<T> addFiltersUnboxed(ICompositeQueryFilter<T> compositeFilter);
 
 	IQueryBuilder<T> filterByClientId();
 

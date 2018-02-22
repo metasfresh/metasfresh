@@ -10,12 +10,12 @@ package de.metas.handlingunits.shipmentschedule.async;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,7 +30,7 @@ import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
@@ -45,10 +45,10 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  * @author tsa
  *
  */
-public class ShipmentScheduleWithHUComparator implements Comparator<IShipmentScheduleWithHU>
+public class ShipmentScheduleWithHUComparator implements Comparator<ShipmentScheduleWithHU>
 {
 	private final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder = Services.get(IShipmentScheduleBL.class).mkShipmentHeaderAggregationKeyBuilder();
-	private final IAggregationKeyBuilder<IShipmentScheduleWithHU> huShipmentScheduleKeyBuilder = Services.get(IHUShipmentScheduleBL.class).mkHUShipmentScheduleHeaderAggregationKeyBuilder();
+	private final IAggregationKeyBuilder<ShipmentScheduleWithHU> huShipmentScheduleKeyBuilder = Services.get(IHUShipmentScheduleBL.class).mkHUShipmentScheduleHeaderAggregationKeyBuilder();
 
 	public ShipmentScheduleWithHUComparator()
 	{
@@ -56,7 +56,7 @@ public class ShipmentScheduleWithHUComparator implements Comparator<IShipmentSch
 	}
 
 	@Override
-	public int compare(final IShipmentScheduleWithHU o1, final IShipmentScheduleWithHU o2)
+	public int compare(final ShipmentScheduleWithHU o1, final ShipmentScheduleWithHU o2)
 	{
 		if (o1 == o2)
 		{
@@ -110,7 +110,7 @@ public class ShipmentScheduleWithHUComparator implements Comparator<IShipmentSch
 		return 0;
 	}
 
-	private final int getM_ShipmentSchedule_ID(final IShipmentScheduleWithHU schedWithHU)
+	private final int getM_ShipmentSchedule_ID(final ShipmentScheduleWithHU schedWithHU)
 	{
 		if (schedWithHU == null)
 		{
@@ -132,7 +132,7 @@ public class ShipmentScheduleWithHUComparator implements Comparator<IShipmentSch
 		return shipmentScheduleId;
 	}
 
-	private final String getAggregationKey(final IShipmentScheduleWithHU schedWithHU)
+	private final String getAggregationKey(final ShipmentScheduleWithHU schedWithHU)
 	{
 		if (schedWithHU == null)
 		{
@@ -166,7 +166,7 @@ public class ShipmentScheduleWithHUComparator implements Comparator<IShipmentSch
 			}
 			aggregationKey.append(huShipmentScheduleAggregationKey);
 		}
-		
+
 		//
 		// Shipment line aggregation key
 		{
@@ -177,12 +177,12 @@ public class ShipmentScheduleWithHUComparator implements Comparator<IShipmentSch
 			}
 			aggregationKey.append(attributesAggregationKey);
 		}
-		
+
 
 		return aggregationKey.toString();
 	}
 
-	private final int getM_HU_ID(final IShipmentScheduleWithHU schedWithHU)
+	private final int getM_HU_ID(final ShipmentScheduleWithHU schedWithHU)
 	{
 		if (schedWithHU == null)
 		{

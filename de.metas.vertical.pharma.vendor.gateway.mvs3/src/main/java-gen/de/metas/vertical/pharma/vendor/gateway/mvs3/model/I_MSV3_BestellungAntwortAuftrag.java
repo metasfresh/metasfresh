@@ -69,6 +69,35 @@ public interface I_MSV3_BestellungAntwortAuftrag
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Bestellung.
+	 * Bestellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderPO_ID (int C_OrderPO_ID);
+
+	/**
+	 * Get Bestellung.
+	 * Bestellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderPO_ID();
+
+	public org.compiere.model.I_C_Order getC_OrderPO();
+
+	public void setC_OrderPO(org.compiere.model.I_C_Order C_OrderPO);
+
+    /** Column definition for C_OrderPO_ID */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_BestellungAntwortAuftrag, org.compiere.model.I_C_Order> COLUMN_C_OrderPO_ID = new org.adempiere.model.ModelColumn<I_MSV3_BestellungAntwortAuftrag, org.compiere.model.I_C_Order>(I_MSV3_BestellungAntwortAuftrag.class, "C_OrderPO_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_OrderPO_ID */
+    public static final String COLUMNNAME_C_OrderPO_ID = "C_OrderPO_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *

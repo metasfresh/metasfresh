@@ -41,6 +41,8 @@ begin
 		, M_AttributeSetInstance_ID
 		--
 		, IsDefault
+		, IsPriceEditable
+		, IsDiscountEditable
 		, IsHUPrice -- FIXME: this shall be part of de.metas.handlingunits.base module
 		, M_HU_PI_Item_Product_ID -- FIXME: this shall be part of de.metas.handlingunits.base module
 		--
@@ -76,6 +78,8 @@ begin
 		, s.M_AttributeSetInstance_ID
 		--
 		, s.IsDefault
+		, s.IsPriceEditable
+		, s.IsDiscountEditable
 		, s.IsHUPrice -- FIXME: this shall be part of de.metas.handlingunits.base module
 		, s.M_HU_PI_Item_Product_ID -- FIXME: this shall be part of de.metas.handlingunits.base module
 		--

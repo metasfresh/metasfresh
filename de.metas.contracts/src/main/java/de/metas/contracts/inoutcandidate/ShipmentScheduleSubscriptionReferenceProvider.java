@@ -2,6 +2,7 @@ package de.metas.contracts.inoutcandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +52,9 @@ public class ShipmentScheduleSubscriptionReferenceProvider implements ShipmentSc
 	public ShipmentScheduleReferencedLine provideFor(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final I_C_SubscriptionProgress subscriptionLine = load(sched.getRecord_ID(), I_C_SubscriptionProgress.class);
+		Check.errorIf(subscriptionLine == null,
+				"Unable to load the referenced C_SubscriptionProgress for M_ShipmentSchedule_ID={}; M_ShipmentSchedule.Record_ID={}",
+				sched.getM_ShipmentSchedule_ID(), sched.getRecord_ID());
 
 		return ShipmentScheduleReferencedLine.builder()
 				.groupId(subscriptionLine.getC_Flatrate_Term_ID())

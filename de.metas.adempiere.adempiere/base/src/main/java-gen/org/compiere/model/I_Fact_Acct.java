@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -59,7 +43,7 @@ public interface I_Fact_Acct
 	public int getA_Asset_ID();
 
     /** Column definition for A_Asset_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_A_Asset_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "A_Asset_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_A_Asset_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "A_Asset_ID", null);
     /** Column name A_Asset_ID */
     public static final String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
 
@@ -84,11 +68,11 @@ public interface I_Fact_Acct
 	public int getAccount_ID();
 
 //	public org.compiere.model.I_C_ElementValue getAccount();
-//
+
 //	public void setAccount(org.compiere.model.I_C_ElementValue Account);
 
     /** Column definition for Account_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue> COLUMN_Account_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue>(I_Fact_Acct.class, "Account_ID", org.compiere.model.I_C_ElementValue.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue> COLUMN_Account_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Account_ID", org.compiere.model.I_C_ElementValue.class);
     /** Column name Account_ID */
     public static final String COLUMNNAME_Account_ID = "Account_ID";
 
@@ -105,7 +89,7 @@ public interface I_Fact_Acct
 	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Client>(I_Fact_Acct.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -134,7 +118,7 @@ public interface I_Fact_Acct
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Org>(I_Fact_Acct.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -163,7 +147,7 @@ public interface I_Fact_Acct
 	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
 
     /** Column definition for AD_OrgTrx_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Org>(I_Fact_Acct.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_OrgTrx_ID */
     public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
@@ -192,7 +176,7 @@ public interface I_Fact_Acct
 	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
 
     /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Table>(I_Fact_Acct.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
     /** Column name AD_Table_ID */
     public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
@@ -217,7 +201,7 @@ public interface I_Fact_Acct
 	public java.math.BigDecimal getAmtAcctCr();
 
     /** Column definition for AmtAcctCr */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_AmtAcctCr = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "AmtAcctCr", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_AmtAcctCr = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AmtAcctCr", null);
     /** Column name AmtAcctCr */
     public static final String COLUMNNAME_AmtAcctCr = "AmtAcctCr";
 
@@ -242,7 +226,7 @@ public interface I_Fact_Acct
 	public java.math.BigDecimal getAmtAcctDr();
 
     /** Column definition for AmtAcctDr */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_AmtAcctDr = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "AmtAcctDr", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_AmtAcctDr = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AmtAcctDr", null);
     /** Column name AmtAcctDr */
     public static final String COLUMNNAME_AmtAcctDr = "AmtAcctDr";
 
@@ -267,7 +251,7 @@ public interface I_Fact_Acct
 	public java.math.BigDecimal getAmtSourceCr();
 
     /** Column definition for AmtSourceCr */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_AmtSourceCr = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "AmtSourceCr", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_AmtSourceCr = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AmtSourceCr", null);
     /** Column name AmtSourceCr */
     public static final String COLUMNNAME_AmtSourceCr = "AmtSourceCr";
 
@@ -292,7 +276,7 @@ public interface I_Fact_Acct
 	public java.math.BigDecimal getAmtSourceDr();
 
     /** Column definition for AmtSourceDr */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_AmtSourceDr = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "AmtSourceDr", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_AmtSourceDr = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AmtSourceDr", null);
     /** Column name AmtSourceDr */
     public static final String COLUMNNAME_AmtSourceDr = "AmtSourceDr";
 
@@ -321,7 +305,7 @@ public interface I_Fact_Acct
 	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
 
     /** Column definition for C_AcctSchema_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_AcctSchema>(I_Fact_Acct.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
     /** Column name C_AcctSchema_ID */
     public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
@@ -350,7 +334,7 @@ public interface I_Fact_Acct
 	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
 
     /** Column definition for C_Activity_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Activity>(I_Fact_Acct.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
     /** Column name C_Activity_ID */
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
@@ -379,7 +363,7 @@ public interface I_Fact_Acct
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_BPartner>(I_Fact_Acct.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -408,7 +392,7 @@ public interface I_Fact_Acct
 	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign);
 
     /** Column definition for C_Campaign_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Campaign>(I_Fact_Acct.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
     /** Column name C_Campaign_ID */
     public static final String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
@@ -437,7 +421,7 @@ public interface I_Fact_Acct
 	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
 
     /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Currency>(I_Fact_Acct.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -466,7 +450,7 @@ public interface I_Fact_Acct
 	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
 
     /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_DocType>(I_Fact_Acct.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
     /** Column name C_DocType_ID */
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
@@ -495,7 +479,7 @@ public interface I_Fact_Acct
 	public void setC_LocFrom(org.compiere.model.I_C_Location C_LocFrom);
 
     /** Column definition for C_LocFrom_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Location> COLUMN_C_LocFrom_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Location>(I_Fact_Acct.class, "C_LocFrom_ID", org.compiere.model.I_C_Location.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Location> COLUMN_C_LocFrom_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_LocFrom_ID", org.compiere.model.I_C_Location.class);
     /** Column name C_LocFrom_ID */
     public static final String COLUMNNAME_C_LocFrom_ID = "C_LocFrom_ID";
 
@@ -524,7 +508,7 @@ public interface I_Fact_Acct
 	public void setC_LocTo(org.compiere.model.I_C_Location C_LocTo);
 
     /** Column definition for C_LocTo_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Location> COLUMN_C_LocTo_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Location>(I_Fact_Acct.class, "C_LocTo_ID", org.compiere.model.I_C_Location.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Location> COLUMN_C_LocTo_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_LocTo_ID", org.compiere.model.I_C_Location.class);
     /** Column name C_LocTo_ID */
     public static final String COLUMNNAME_C_LocTo_ID = "C_LocTo_ID";
 
@@ -532,7 +516,7 @@ public interface I_Fact_Acct
 	 * Set Periode.
 	 * Period of the Calendar
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -542,7 +526,7 @@ public interface I_Fact_Acct
 	 * Get Periode.
 	 * Period of the Calendar
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -553,7 +537,7 @@ public interface I_Fact_Acct
 	public void setC_Period(org.compiere.model.I_C_Period C_Period);
 
     /** Column definition for C_Period_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Period>(I_Fact_Acct.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
     /** Column name C_Period_ID */
     public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
 
@@ -582,7 +566,7 @@ public interface I_Fact_Acct
 	public void setC_Project(org.compiere.model.I_C_Project C_Project);
 
     /** Column definition for C_Project_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Project>(I_Fact_Acct.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
     /** Column name C_Project_ID */
     public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
@@ -611,7 +595,7 @@ public interface I_Fact_Acct
 	public void setC_ProjectPhase(org.compiere.model.I_C_ProjectPhase C_ProjectPhase);
 
     /** Column definition for C_ProjectPhase_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ProjectPhase> COLUMN_C_ProjectPhase_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ProjectPhase>(I_Fact_Acct.class, "C_ProjectPhase_ID", org.compiere.model.I_C_ProjectPhase.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ProjectPhase> COLUMN_C_ProjectPhase_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_ProjectPhase_ID", org.compiere.model.I_C_ProjectPhase.class);
     /** Column name C_ProjectPhase_ID */
     public static final String COLUMNNAME_C_ProjectPhase_ID = "C_ProjectPhase_ID";
 
@@ -640,39 +624,9 @@ public interface I_Fact_Acct
 	public void setC_ProjectTask(org.compiere.model.I_C_ProjectTask C_ProjectTask);
 
     /** Column definition for C_ProjectTask_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ProjectTask> COLUMN_C_ProjectTask_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ProjectTask>(I_Fact_Acct.class, "C_ProjectTask_ID", org.compiere.model.I_C_ProjectTask.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ProjectTask> COLUMN_C_ProjectTask_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_ProjectTask_ID", org.compiere.model.I_C_ProjectTask.class);
     /** Column name C_ProjectTask_ID */
     public static final String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
-
-	/**
-	 * Get Erstellt.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Erstellt durch.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_User>(I_Fact_Acct.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Vertriebsgebiet.
@@ -699,7 +653,7 @@ public interface I_Fact_Acct
 	public void setC_SalesRegion(org.compiere.model.I_C_SalesRegion C_SalesRegion);
 
     /** Column definition for C_SalesRegion_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_SalesRegion>(I_Fact_Acct.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
     /** Column name C_SalesRegion_ID */
     public static final String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
 
@@ -728,7 +682,7 @@ public interface I_Fact_Acct
 	public void setC_SubAcct(org.compiere.model.I_C_SubAcct C_SubAcct);
 
     /** Column definition for C_SubAcct_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_SubAcct> COLUMN_C_SubAcct_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_SubAcct>(I_Fact_Acct.class, "C_SubAcct_ID", org.compiere.model.I_C_SubAcct.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_SubAcct> COLUMN_C_SubAcct_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_SubAcct_ID", org.compiere.model.I_C_SubAcct.class);
     /** Column name C_SubAcct_ID */
     public static final String COLUMNNAME_C_SubAcct_ID = "C_SubAcct_ID";
 
@@ -757,7 +711,7 @@ public interface I_Fact_Acct
 	public void setC_Tax(org.compiere.model.I_C_Tax C_Tax);
 
     /** Column definition for C_Tax_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Tax>(I_Fact_Acct.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
     /** Column name C_Tax_ID */
     public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
@@ -786,9 +740,66 @@ public interface I_Fact_Acct
 	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
     /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_UOM>(I_Fact_Acct.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_ID */
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Counterpart Accounting Fact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCounterpart_Fact_Acct_ID (int Counterpart_Fact_Acct_ID);
+
+	/**
+	 * Get Counterpart Accounting Fact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCounterpart_Fact_Acct_ID();
+
+	public org.compiere.model.I_Fact_Acct getCounterpart_Fact_Acct();
+
+	public void setCounterpart_Fact_Acct(org.compiere.model.I_Fact_Acct Counterpart_Fact_Acct);
+
+    /** Column definition for Counterpart_Fact_Acct_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_Fact_Acct> COLUMN_Counterpart_Fact_Acct_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Counterpart_Fact_Acct_ID", org.compiere.model.I_Fact_Acct.class);
+    /** Column name Counterpart_Fact_Acct_ID */
+    public static final String COLUMNNAME_Counterpart_Fact_Acct_ID = "Counterpart_Fact_Acct_ID";
+
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Wechselkurs.
@@ -811,7 +822,7 @@ public interface I_Fact_Acct
 	public java.math.BigDecimal getCurrencyRate();
 
     /** Column definition for CurrencyRate */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_CurrencyRate = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "CurrencyRate", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_CurrencyRate = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "CurrencyRate", null);
     /** Column name CurrencyRate */
     public static final String COLUMNNAME_CurrencyRate = "CurrencyRate";
 
@@ -836,7 +847,7 @@ public interface I_Fact_Acct
 	public java.sql.Timestamp getDateAcct();
 
     /** Column definition for DateAcct */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "DateAcct", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "DateAcct", null);
     /** Column name DateAcct */
     public static final String COLUMNNAME_DateAcct = "DateAcct";
 
@@ -861,7 +872,7 @@ public interface I_Fact_Acct
 	public java.sql.Timestamp getDateTrx();
 
     /** Column definition for DateTrx */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DateTrx = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "DateTrx", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DateTrx = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "DateTrx", null);
     /** Column name DateTrx */
     public static final String COLUMNNAME_DateTrx = "DateTrx";
 
@@ -884,13 +895,12 @@ public interface I_Fact_Acct
 	public java.lang.String getDescription();
 
     /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "Description", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Document BaseType.
-	 * Logical type of document
+	 * Set Dokument Basis Typ.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -899,8 +909,7 @@ public interface I_Fact_Acct
 	public void setDocBaseType (java.lang.String DocBaseType);
 
 	/**
-	 * Get Document BaseType.
-	 * Logical type of document
+	 * Get Dokument Basis Typ.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -909,7 +918,7 @@ public interface I_Fact_Acct
 	public java.lang.String getDocBaseType();
 
     /** Column definition for DocBaseType */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DocBaseType = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "DocBaseType", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DocBaseType = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "DocBaseType", null);
     /** Column name DocBaseType */
     public static final String COLUMNNAME_DocBaseType = "DocBaseType";
 
@@ -934,12 +943,12 @@ public interface I_Fact_Acct
 	public java.lang.String getDocStatus();
 
     /** Column definition for DocStatus */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "DocStatus", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "DocStatus", null);
     /** Column name DocStatus */
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -949,7 +958,7 @@ public interface I_Fact_Acct
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -959,7 +968,7 @@ public interface I_Fact_Acct
 	public java.lang.String getDocumentNo();
 
     /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "DocumentNo", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "DocumentNo", null);
     /** Column name DocumentNo */
     public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
@@ -982,7 +991,7 @@ public interface I_Fact_Acct
 	public int getFact_Acct_ID();
 
     /** Column definition for Fact_Acct_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Fact_Acct_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "Fact_Acct_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Fact_Acct_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Fact_Acct_ID", null);
     /** Column name Fact_Acct_ID */
     public static final String COLUMNNAME_Fact_Acct_ID = "Fact_Acct_ID";
 
@@ -1011,7 +1020,7 @@ public interface I_Fact_Acct
 	public void setGL_Budget(org.compiere.model.I_GL_Budget GL_Budget);
 
     /** Column definition for GL_Budget_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_GL_Budget> COLUMN_GL_Budget_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_GL_Budget>(I_Fact_Acct.class, "GL_Budget_ID", org.compiere.model.I_GL_Budget.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_GL_Budget> COLUMN_GL_Budget_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "GL_Budget_ID", org.compiere.model.I_GL_Budget.class);
     /** Column name GL_Budget_ID */
     public static final String COLUMNNAME_GL_Budget_ID = "GL_Budget_ID";
 
@@ -1040,7 +1049,7 @@ public interface I_Fact_Acct
 	public void setGL_Category(org.compiere.model.I_GL_Category GL_Category);
 
     /** Column definition for GL_Category_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_GL_Category> COLUMN_GL_Category_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_GL_Category>(I_Fact_Acct.class, "GL_Category_ID", org.compiere.model.I_GL_Category.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_GL_Category> COLUMN_GL_Category_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "GL_Category_ID", org.compiere.model.I_GL_Category.class);
     /** Column name GL_Category_ID */
     public static final String COLUMNNAME_GL_Category_ID = "GL_Category_ID";
 
@@ -1065,7 +1074,7 @@ public interface I_Fact_Acct
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -1090,7 +1099,7 @@ public interface I_Fact_Acct
 	public int getLine_ID();
 
     /** Column definition for Line_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Line_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "Line_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Line_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Line_ID", null);
     /** Column name Line_ID */
     public static final String COLUMNNAME_Line_ID = "Line_ID";
 
@@ -1119,7 +1128,7 @@ public interface I_Fact_Acct
 	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
 
     /** Column definition for M_Locator_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_M_Locator>(I_Fact_Acct.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
@@ -1148,7 +1157,7 @@ public interface I_Fact_Acct
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_M_Product>(I_Fact_Acct.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -1173,7 +1182,7 @@ public interface I_Fact_Acct
 	public java.lang.String getPostingType();
 
     /** Column definition for PostingType */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_PostingType = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "PostingType", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_PostingType = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "PostingType", null);
     /** Column name PostingType */
     public static final String COLUMNNAME_PostingType = "PostingType";
 
@@ -1198,7 +1207,7 @@ public interface I_Fact_Acct
 	public java.math.BigDecimal getQty();
 
     /** Column definition for Qty */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "Qty", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Qty", null);
     /** Column name Qty */
     public static final String COLUMNNAME_Qty = "Qty";
 
@@ -1223,7 +1232,7 @@ public interface I_Fact_Acct
 	public int getRecord_ID();
 
     /** Column definition for Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "Record_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Record_ID", null);
     /** Column name Record_ID */
     public static final String COLUMNNAME_Record_ID = "Record_ID";
 
@@ -1248,7 +1257,7 @@ public interface I_Fact_Acct
 	public int getSubLine_ID();
 
     /** Column definition for SubLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_SubLine_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "SubLine_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_SubLine_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "SubLine_ID", null);
     /** Column name SubLine_ID */
     public static final String COLUMNNAME_SubLine_ID = "SubLine_ID";
 
@@ -1263,7 +1272,7 @@ public interface I_Fact_Acct
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -1278,7 +1287,7 @@ public interface I_Fact_Acct
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_User>(I_Fact_Acct.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
@@ -1307,7 +1316,7 @@ public interface I_Fact_Acct
 	public void setUser1(org.compiere.model.I_C_ElementValue User1);
 
     /** Column definition for User1_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue>(I_Fact_Acct.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
     /** Column name User1_ID */
     public static final String COLUMNNAME_User1_ID = "User1_ID";
 
@@ -1336,7 +1345,7 @@ public interface I_Fact_Acct
 	public void setUser2(org.compiere.model.I_C_ElementValue User2);
 
     /** Column definition for User2_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue>(I_Fact_Acct.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
     /** Column name User2_ID */
     public static final String COLUMNNAME_User2_ID = "User2_ID";
 
@@ -1361,7 +1370,7 @@ public interface I_Fact_Acct
 	public int getUserElement1_ID();
 
     /** Column definition for UserElement1_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_UserElement1_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "UserElement1_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_UserElement1_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "UserElement1_ID", null);
     /** Column name UserElement1_ID */
     public static final String COLUMNNAME_UserElement1_ID = "UserElement1_ID";
 
@@ -1386,7 +1395,7 @@ public interface I_Fact_Acct
 	public int getUserElement2_ID();
 
     /** Column definition for UserElement2_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_UserElement2_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "UserElement2_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_UserElement2_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "UserElement2_ID", null);
     /** Column name UserElement2_ID */
     public static final String COLUMNNAME_UserElement2_ID = "UserElement2_ID";
 
@@ -1409,7 +1418,7 @@ public interface I_Fact_Acct
 	public java.lang.String getVATCode();
 
     /** Column definition for VATCode */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_VATCode = new org.adempiere.model.ModelColumn<I_Fact_Acct, Object>(I_Fact_Acct.class, "VATCode", null);
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_VATCode = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "VATCode", null);
     /** Column name VATCode */
     public static final String COLUMNNAME_VATCode = "VATCode";
 }

@@ -1,29 +1,5 @@
 package de.metas.picking.service.impl;
 
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
@@ -50,13 +26,13 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingHandler;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemsMap;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 public class PackingService implements IPackingService
@@ -67,36 +43,39 @@ public class PackingService implements IPackingService
 	private static final String ERR_CANNOT_FULLY_UNLOAD_RESULT = "@CannotFullyUnload@ {} @ResultIs@ {}";
 
 	@Override
-	public void removeProductQtyFromHU(final Properties ctx, final I_M_HU hu, final Map<I_M_ShipmentSchedule, BigDecimal> schedules2qty)
+	public void removeProductQtyFromHU(
+			final Properties ctx,
+			final I_M_HU hu,
+			final Map<I_M_ShipmentSchedule, Quantity> schedules2qty)
 	{
-		Services.get(ITrxManager.class).run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
+		Services.get(ITrxManager.class).run((TrxRunnable)localTrxName -> {
+
+			final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, localTrxName);
+			final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+
+			for (final Map.Entry<I_M_ShipmentSchedule, Quantity> e : schedules2qty.entrySet())
 			{
-				final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, localTrxName);
-				final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+				final I_M_ShipmentSchedule schedule = e.getKey();
+				final Quantity qtyToRemove = e.getValue();
 
-				for (final Map.Entry<I_M_ShipmentSchedule, BigDecimal> e : schedules2qty.entrySet())
-				{
-					final I_M_ShipmentSchedule schedule = e.getKey();
-					final BigDecimal qtyToRemove = e.getValue();
-
-					removeProductQtyFromHU(huContext, hu, schedule, qtyToRemove);
-				}
+				removeProductQtyFromHU(huContext, hu, schedule, qtyToRemove);
 			}
 		});
 	}
 
-	private void removeProductQtyFromHU(final IHUContext huContext, final I_M_HU hu, final I_M_ShipmentSchedule schedule, final BigDecimal qtyToRemove)
+	private void removeProductQtyFromHU(
+			final IHUContext huContext,
+			final I_M_HU hu,
+			final I_M_ShipmentSchedule schedule,
+			final Quantity qtyToRemove)
 	{
 		//
 		// Allocation Request
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
 				schedule.getM_Product(),
-				qtyToRemove,
-				Services.get(IShipmentScheduleBL.class).getUomOfProduct(schedule), // uom
+				qtyToRemove.getQty(),
+				qtyToRemove.getUOM(),
 				SystemTime.asDate(),
 				schedule // reference model
 				);
@@ -134,7 +113,7 @@ public class PackingService implements IPackingService
 	public void packItem(
 			@NonNull final IPackingContext packingContext,
 			@NonNull final IFreshPackingItem itemToPack,
-			@NonNull final BigDecimal qtyToPack,
+			@NonNull final Quantity qtyToPack,
 			@NonNull final IPackingHandler packingHandler)
 	{
 		final int key = packingContext.getPackingItemsMapKey();
@@ -153,16 +132,9 @@ public class PackingService implements IPackingService
 		// => itemToPackRemaining will be added back to unpacked items
 		// => itemPacked will be added to packed items
 		{
-			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate = new Predicate<I_M_ShipmentSchedule>()
-			{
+			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate = //
+					shipmentSchedule ->  packingHandler.isPackingAllowedForShipmentSchedule(shipmentSchedule);
 
-				@Override
-				public boolean test(final I_M_ShipmentSchedule shipmentSchedule)
-				{
-					return packingHandler.isPackingAllowedForShipmentSchedule(shipmentSchedule);
-				}
-			};
-			
 			final IFreshPackingItem itemToPackRemaining = itemToPack.copy();
 			final IFreshPackingItem itemPacked = itemToPackRemaining.subtractToPackingItem(qtyToPack, acceptShipmentSchedulePredicate);
 

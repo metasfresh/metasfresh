@@ -10,18 +10,17 @@ package de.metas.handlingunits.tourplanning.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -64,7 +63,9 @@ public final class HUShipmentScheduleDeliveryDayHandler extends DeliveryDayHandl
 
 		//
 		// Get underlying shipment schedule
-		final I_M_ShipmentSchedule huShipmentSchedule = shipmentScheduleDeliveryDayBL.getShipmentScheduleOrNull(deliveryDayAllocable, I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule huShipmentSchedule = shipmentScheduleDeliveryDayBL
+				.getShipmentScheduleOrNull(deliveryDayAllocable, I_M_ShipmentSchedule.class);
+
 		if (huShipmentSchedule == null)
 		{
 			// not applicable for our model

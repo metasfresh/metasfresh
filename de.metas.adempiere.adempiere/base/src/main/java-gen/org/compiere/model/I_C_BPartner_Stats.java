@@ -146,6 +146,38 @@ public interface I_C_BPartner_Stats
     public static final String COLUMNNAME_C_BPartner_Stats_ID = "C_BPartner_Stats_ID";
 
 	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getC_Currency_ID();
+
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	@Deprecated
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_C_Currency>(I_C_BPartner_Stats.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -176,6 +208,31 @@ public interface I_C_BPartner_Stats
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCreditLimitIndicator (java.lang.String CreditLimitIndicator);
+
+	/**
+	 * Get Credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCreditLimitIndicator();
+
+    /** Column definition for CreditLimitIndicator */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_CreditLimitIndicator = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "CreditLimitIndicator", null);
+    /** Column name CreditLimitIndicator */
+    public static final String COLUMNNAME_CreditLimitIndicator = "CreditLimitIndicator";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -201,29 +258,27 @@ public interface I_C_BPartner_Stats
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Kreditstatus.
-	 * Kreditstatus des Geschäftspartners
+	 * Set Offene Posten.
 	 *
-	 * <br>Type: List
+	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSOCreditStatus (java.lang.String SOCreditStatus);
+	public void setOpenItems (java.math.BigDecimal OpenItems);
 
 	/**
-	 * Get Kreditstatus.
-	 * Kreditstatus des Geschäftspartners
+	 * Get Offene Posten.
 	 *
-	 * <br>Type: List
+	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getSOCreditStatus();
+	public java.math.BigDecimal getOpenItems();
 
-    /** Column definition for SOCreditStatus */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_SOCreditStatus = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "SOCreditStatus", null);
-    /** Column name SOCreditStatus */
-    public static final String COLUMNNAME_SOCreditStatus = "SOCreditStatus";
+    /** Column definition for OpenItems */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_OpenItems = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "OpenItems", null);
+    /** Column name OpenItems */
+    public static final String COLUMNNAME_OpenItems = "OpenItems";
 
 	/**
 	 * Set Kredit gewährt.
@@ -251,29 +306,29 @@ public interface I_C_BPartner_Stats
     public static final String COLUMNNAME_SO_CreditUsed = "SO_CreditUsed";
 
 	/**
-	 * Set Offener Saldo.
-	 * Gesamt der offenen Beträge in primärer Buchführungswährung
+	 * Set Kreditstatus.
+	 * Kreditstatus des Geschäftspartners
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setTotalOpenBalance (java.math.BigDecimal TotalOpenBalance);
+	public void setSOCreditStatus (java.lang.String SOCreditStatus);
 
 	/**
-	 * Get Offener Saldo.
-	 * Gesamt der offenen Beträge in primärer Buchführungswährung
+	 * Get Kreditstatus.
+	 * Kreditstatus des Geschäftspartners
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getTotalOpenBalance();
+	public java.lang.String getSOCreditStatus();
 
-    /** Column definition for TotalOpenBalance */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_TotalOpenBalance = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "TotalOpenBalance", null);
-    /** Column name TotalOpenBalance */
-    public static final String COLUMNNAME_TotalOpenBalance = "TotalOpenBalance";
+    /** Column definition for SOCreditStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_SOCreditStatus = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "SOCreditStatus", null);
+    /** Column name SOCreditStatus */
+    public static final String COLUMNNAME_SOCreditStatus = "SOCreditStatus";
 
 	/**
 	 * Get Aktualisiert.

@@ -119,7 +119,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 			Loggables.get().addLog(createInvoiceResultsSummary);
 
 			// invalidate them all at once
-			invoiceCandDAO.invalidateCands(candidatesOfPackage, localTrxName);
+			invoiceCandDAO.invalidateCands(candidatesOfPackage);
 		}
 
 		//

@@ -31,6 +31,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.adempiere.ad.dao.model.I_T_Query_Selection;
+import org.adempiere.ad.dao.model.I_T_Query_Selection_ToDelete;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.logger.IMigrationLoggerContext;
 import org.adempiere.ad.migration.model.I_AD_Migration;
@@ -134,7 +136,8 @@ public class MigrationLogger implements IMigrationLogger
 				"T_REPORTSTATEMENT",
 				"T_SELECTION",
 				"T_SELECTION2",
-				"T_QUERY_SELECTION",
+				I_T_Query_Selection.Table_Name.toUpperCase(),
+				I_T_Query_Selection_ToDelete.Table_Name.toUpperCase(),
 				"T_SPOOL",
 				"T_TRANSACTION",
 				"T_TRIALBALANCE",

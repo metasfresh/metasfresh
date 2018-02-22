@@ -24,6 +24,8 @@ select
 	, pp.IsAttributeDependant
 	, pp.M_AttributeSetInstance_ID
 	, pp.IsDefault
+	, pp.IsPriceEditable
+	, pp.IsDiscountEditable
 	, pp.IsHUPrice -- FIXME: this shall be part of de.metas.handlingunits.base module
 	, pp.M_HU_PI_Item_Product_ID -- FIXME: this shall be part of de.metas.handlingunits.base module
 	--
@@ -67,6 +69,8 @@ from (
 		, source_pp.IsAttributeDependant
 		, (case when source_pp.IsAttributeDependant='Y' then source_pp.M_AttributeSetInstance_ID else null end) as M_AttributeSetInstance_ID
 		, source_pp.IsDefault
+		, source_pp.IsPriceEditable
+		, source_pp.IsDiscountEditable
 		, source_pp.IsHUPrice -- FIXME: this shall be part of de.metas.handlingunits.base module
 		, source_pp.M_HU_PI_Item_Product_ID -- FIXME: this shall be part of de.metas.handlingunits.base module
 	--

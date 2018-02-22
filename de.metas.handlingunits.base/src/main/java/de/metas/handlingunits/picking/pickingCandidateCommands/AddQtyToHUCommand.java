@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
@@ -31,6 +32,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.i18n.IMsgBL;
+import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
@@ -63,17 +66,21 @@ public class AddQtyToHUCommand
 {
 	private static final Logger logger = LogManager.getLogger(AddQtyToHUCommand.class);
 
+	public static final String MSG_WEBUI_Picking_OverdeliveryNotAllowed = "M_Picking_Config_OverdeliveryNotAllowed";
+
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final BigDecimal qtyCU;
 	private final int targetHUId;
 	private final int pickingSlotId;
 	private final int shipmentScheduleId;
+	private final boolean isAllowOverdelivery;
 
 	@Builder
 	private AddQtyToHUCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final BigDecimal qtyCU,
+			final boolean isAllowOverdelivery,
 			final int targetHUId,
 			final int pickingSlotId,
 			final int shipmentScheduleId)
@@ -91,6 +98,7 @@ public class AddQtyToHUCommand
 		this.targetHUId = targetHUId;
 		this.pickingSlotId = pickingSlotId;
 		this.shipmentScheduleId = shipmentScheduleId;
+		this.isAllowOverdelivery = isAllowOverdelivery;
 
 	}
 
@@ -99,7 +107,15 @@ public class AddQtyToHUCommand
 	 */
 	public Quantity performAndGetQtyPicked()
 	{
+
 		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final boolean overdeliveryError = !isAllowOverdelivery && isOverdelivery();
+
+		if (overdeliveryError)
+		{
+			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(shipmentSchedule), MSG_WEBUI_Picking_OverdeliveryNotAllowed));
+		}
+
 		final I_M_Product product = shipmentSchedule.getM_Product();
 
 		final I_M_Picking_Candidate candidate = pickingCandidateRepository.getCreateCandidate(targetHUId, pickingSlotId, shipmentScheduleId);
@@ -191,5 +207,14 @@ public class AddQtyToHUCommand
 		candidate.setQtyPicked(qtyNew.getQty());
 		candidate.setC_UOM(qtyNew.getUOM());
 		pickingCandidateRepository.save(candidate);
+	}
+
+	private boolean isOverdelivery()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentSchedule);
+		final BigDecimal qtytoDeliver =shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned == null? BigDecimal.ZERO : qtyPickedPlanned);
+
+		return qtyCU.compareTo(qtytoDeliver) > 0;
 	}
 }

@@ -59,7 +59,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -70,12 +70,13 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import lombok.NonNull;
 
 /**
- * Create Shipments from {@link IShipmentScheduleWithHU} records.
+ * Create Shipments from {@link ShipmentScheduleWithHU} records.
  *
  * @author tsa
  *
  */
-public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFromShipmentScheduleWithHU, ITrxItemChunkProcessor<IShipmentScheduleWithHU, InOutGenerateResult>
+public class InOutProducerFromShipmentScheduleWithHU
+		implements IInOutProducerFromShipmentScheduleWithHU, ITrxItemChunkProcessor<ShipmentScheduleWithHU, InOutGenerateResult>
 {
 	//
 	// Services
@@ -90,7 +91,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 
 	private final InOutGenerateResult result;
 	private final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder;
-	private final IAggregationKeyBuilder<IShipmentScheduleWithHU> huShipmentScheduleKeyBuilder;
+	private final IAggregationKeyBuilder<ShipmentScheduleWithHU> huShipmentScheduleKeyBuilder;
 
 	private ITrxItemProcessorContext processorCtx;
 	private ITrxItemExceptionHandler trxItemExceptionHandler = FailTrxItemExceptionHandler.instance;
@@ -101,12 +102,12 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	/**
 	 * All candidates for {@link #currentShipment}
 	 */
-	private List<IShipmentScheduleWithHU> currentCandidates;
+	private List<ShipmentScheduleWithHU> currentCandidates;
 
 	/**
 	 * Last processed item
 	 */
-	private IShipmentScheduleWithHU lastItem;
+	private ShipmentScheduleWithHU lastItem;
 
 	//
 	// 07113: constant to know if the document shall be completed or not.
@@ -136,7 +137,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@Override
-	public InOutGenerateResult createShipments(final List<IShipmentScheduleWithHU> candidates)
+	public InOutGenerateResult createShipments(final List<ShipmentScheduleWithHU> candidates)
 	{
 		final InOutProcessedEventBus shipmentGeneratedNotifications = InOutProcessedEventBus.newInstance()
 				.queueEventsUntilCurrentTrxCommit();
@@ -145,7 +146,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		{
 			final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 			final InOutGenerateResult result = trxItemProcessorExecutorService
-					.<IShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
+					.<ShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
 					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.setProcessor(this)
 					.setExceptionHandler(trxItemExceptionHandler)
@@ -169,7 +170,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 
 	}
 
-	private static String extractSourceInfo(final List<IShipmentScheduleWithHU> candidates)
+	private static String extractSourceInfo(final List<ShipmentScheduleWithHU> candidates)
 	{
 		return candidates.stream()
 				.map(candidate -> extractSourceInfo(candidate))
@@ -177,9 +178,9 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 				.collect(Collectors.joining(", "));
 	}
 
-	private static String extractSourceInfo(final IShipmentScheduleWithHU candidate)
+	private static String extractSourceInfo(final ShipmentScheduleWithHU candidate)
 	{
-		I_M_HU luHU = candidate.getM_LU_HU();
+		final I_M_HU luHU = candidate.getM_LU_HU();
 		if (luHU != null)
 		{
 			return luHU.getValue();
@@ -196,7 +197,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@Override
-	public boolean isSameChunk(final IShipmentScheduleWithHU item)
+	public boolean isSameChunk(final ShipmentScheduleWithHU item)
 	{
 		Check.assumeNotNull(item, "Param item' is not null");
 
@@ -215,7 +216,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@Override
-	public void newChunk(final IShipmentScheduleWithHU sched)
+	public void newChunk(final ShipmentScheduleWithHU sched)
 	{
 		currentShipment = getCreateShipmentHeader(sched);
 		currentShipmentLineBuilder = null;
@@ -228,7 +229,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	 * @param candidate
 	 * @return shipment (header)
 	 */
-	private I_M_InOut getCreateShipmentHeader(final IShipmentScheduleWithHU candidate)
+	private I_M_InOut getCreateShipmentHeader(final ShipmentScheduleWithHU candidate)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
@@ -276,13 +277,13 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	/**
-	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL#getOpenShipmentOrNull(IShipmentScheduleWithHU)}
+	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL#getOpenShipmentOrNull(ShipmentScheduleWithHU)}
 	 *
 	 * @param candidate
 	 * @param movementDate
 	 * @return shipment
 	 */
-	private I_M_InOut createShipmentHeader(final IShipmentScheduleWithHU candidate, final Timestamp movementDate)
+	private I_M_InOut createShipmentHeader(final ShipmentScheduleWithHU candidate, final Timestamp movementDate)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
@@ -375,7 +376,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		{
 			currentShipmentLineBuilder.createShipmentLine();
 
-			final List<IShipmentScheduleWithHU> candidates = currentShipmentLineBuilder.getCandidates();
+			final List<ShipmentScheduleWithHU> candidates = currentShipmentLineBuilder.getCandidates();
 			currentCandidates.addAll(candidates);
 		}
 
@@ -421,7 +422,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 
 			//
 			// Iterate all candidates which were added on this shipment and notify them about the generated shipment
-			for (final IShipmentScheduleWithHU candidate : currentCandidates)
+			for (final ShipmentScheduleWithHU candidate : currentCandidates)
 			{
 				candidate.setM_InOut(currentShipment);
 			}
@@ -429,7 +430,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 			//
 			// Iterate all candidates and update shipment schedule's HU related Qtys
 			final Set<Integer> seenM_ShipmentSchedule_IDs = new HashSet<>();
-			for (final IShipmentScheduleWithHU candidate : currentCandidates)
+			for (final ShipmentScheduleWithHU candidate : currentCandidates)
 			{
 				final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 				final int shipmentScheduleId = shipmentSchedule.getM_ShipmentSchedule_ID();
@@ -439,12 +440,10 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 					continue;
 				}
 
-				huShipmentScheduleBL.updateHUDeliveryQuantities(shipmentSchedule);
-
 				// save the shipment schedule using current transaction
 				InterfaceWrapperHelper.save(shipmentSchedule, processorCtx.getTrxName());
 			}
-			Loggables.get().addLog("Shipment {0} was created;\nIShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
+			Loggables.get().addLog("Shipment {0} was created;\nShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
 		}
 		else
 		{
@@ -491,14 +490,14 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@Override
-	public void process(final IShipmentScheduleWithHU item) throws Exception
+	public void process(final ShipmentScheduleWithHU item) throws Exception
 	{
 		updateShipmentDate(currentShipment, item);
 		createUpdateShipmentLine(item);
 		lastItem = item;
 	}
 
-	private void updateShipmentDate(@NonNull final I_M_InOut shipment, @NonNull final IShipmentScheduleWithHU candidate)
+	private void updateShipmentDate(@NonNull final I_M_InOut shipment, @NonNull final ShipmentScheduleWithHU candidate)
 	{
 		final I_M_ShipmentSchedule schedule = candidate.getM_ShipmentSchedule();
 		final Timestamp candidateShipmentDate = calculateShipmentDate(schedule, shipmentDateToday);
@@ -541,7 +540,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		return false;
 	}
 
-	private void createUpdateShipmentLine(final IShipmentScheduleWithHU candidate)
+	private void createUpdateShipmentLine(final ShipmentScheduleWithHU candidate)
 	{
 		//
 		// If we cannot add this "candidate" to current shipment line builder

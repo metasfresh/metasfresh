@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 799612071L;
+	private static final long serialVersionUID = 733124775L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -335,6 +335,28 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getGroupCompensationType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationType);
+	}
+
+	/** Set Min. Garantie-Tage.
+		@param GuaranteeDaysMin 
+		Minumum number of guarantee days
+	  */
+	@Override
+	public void setGuaranteeDaysMin (int GuaranteeDaysMin)
+	{
+		set_Value (COLUMNNAME_GuaranteeDaysMin, Integer.valueOf(GuaranteeDaysMin));
+	}
+
+	/** Get Min. Garantie-Tage.
+		@return Minumum number of guarantee days
+	  */
+	@Override
+	public int getGuaranteeDaysMin () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_GuaranteeDaysMin);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Kommentar/Hilfe.
@@ -888,9 +910,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
 	}
 
-	/** Set Produkt-Kategorie.
+	/** Set Produkt Kategorie.
 		@param M_Product_Category_ID 
-		Category of a Product
+		Kategorie eines Produktes
 	  */
 	@Override
 	public void setM_Product_Category_ID (int M_Product_Category_ID)
@@ -901,8 +923,8 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
 	}
 
-	/** Get Produkt-Kategorie.
-		@return Category of a Product
+	/** Get Produkt Kategorie.
+		@return Kategorie eines Produktes
 	  */
 	@Override
 	public int getM_Product_Category_ID () 

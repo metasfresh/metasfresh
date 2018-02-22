@@ -6,7 +6,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_Payment;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -39,10 +39,10 @@ import de.metas.dlm.model.IDLMAware;
 
 public class MigratorServiceTests
 {
-	@BeforeClass
-	public static final void staticInit()
+	@Before
+	public void init()
 	{
-		AdempiereTestHelper.get().staticInit();
+		AdempiereTestHelper.get().init();
 	}
 
 	/**

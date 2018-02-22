@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.fresh.picking.form.swing;
 
@@ -13,18 +13,17 @@ package de.metas.fresh.picking.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -67,12 +66,13 @@ import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.SwingPickingOKPanel;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel;
+import de.metas.quantity.Quantity;
 
 /**
  * Picking First Window Panel, where basically the shipment schedules that sahll be picked can be selectedfor the next window.
- * 
+ *
  * @author cg
- * 
+ *
  */
 public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 {
@@ -90,7 +90,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 
 	// task fresh_06982
 	private static final String ACTION_DDOrder = "FreshSwingPickingOKPanel_DDOrder";
-	
+
 	public FreshSwingPickingOKPanel(final SwingPickingTerminalPanel basePanel)
 	{
 		super(basePanel);
@@ -140,17 +140,22 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 		final Collection<IPackingItem> unallocatedLines = new ArrayList<>();
 		final Map<ArrayKey, IPackingItem> key2Sched = new HashMap<>();
 
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+
 		for (final OlAndSched oldAndSched : olsAndScheds)
 		{
 			final I_M_ShipmentSchedule sched = oldAndSched.getSched();
 			if (sched.isDisplayed() || displayNonItems)
 			{
-				final BigDecimal qtyToDeliverTarget = Services.get(IShipmentScheduleEffectiveBL.class).getQtyToDeliver(sched);
-				
+				final BigDecimal qtyToDeliverTarget = shipmentScheduleEffectiveBL.getQtyToDeliver(sched);
+
 				// task 08153: these code-lines are obsolete now, because the sched's qtyToDeliver(_Override) has the qtyPicked already factored in
 				// final BigDecimal qtyPicked = shipmentScheduleAllocBL.getQtyPicked(sched);
 				// final BigDecimal qtyToDeliver = qtyToDeliverTarget.subtract(qtyPicked == null ? BigDecimal.ZERO : qtyPicked);
-				final Map<I_M_ShipmentSchedule, BigDecimal> schedWithQty = Collections.singletonMap(sched, qtyToDeliverTarget);
+				final Map<I_M_ShipmentSchedule, Quantity> schedWithQty = Collections.singletonMap(
+						sched,
+						Quantity.of(qtyToDeliverTarget, shipmentScheduleBL.getUomOfProduct(sched)));
 
 				final ArrayKey key = Services.get(IShipmentScheduleBL.class).mkKeyForGrouping(sched, true);
 
@@ -178,7 +183,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	{
 		Check.assumeInstanceOf(detailsModel, FreshPackingDetailsMd.class, "detailsModel");
 		final FreshPackingDetailsMd packingDetailsModel = (FreshPackingDetailsMd)detailsModel;
-				
+
 		final FreshSwingPackageTerminal packageTerminal = new FreshSwingPackageTerminal(this, packingDetailsModel);
 		return packageTerminal;
 	}
@@ -252,7 +257,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 		 * FIXME find a better solution..maybe by introducing column AD_Window.InternalName?<br>
 		 * <br>
 		 * Open dynamic window
-		 * 
+		 *
 		 * @param AD_Window_ID
 		 */
 		private void openDynamicWindow(final int AD_Window_ID)

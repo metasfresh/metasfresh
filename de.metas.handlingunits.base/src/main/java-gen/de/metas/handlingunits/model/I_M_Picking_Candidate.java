@@ -220,12 +220,8 @@ public interface I_M_Picking_Candidate
 	 */
 	public int getM_PickingSlot_ID();
 
-	public de.metas.picking.model.I_M_PickingSlot getM_PickingSlot();
-
-	public void setM_PickingSlot(de.metas.picking.model.I_M_PickingSlot M_PickingSlot);
-
     /** Column definition for M_PickingSlot_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, de.metas.picking.model.I_M_PickingSlot> COLUMN_M_PickingSlot_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, de.metas.picking.model.I_M_PickingSlot>(I_M_Picking_Candidate.class, "M_PickingSlot_ID", de.metas.picking.model.I_M_PickingSlot.class);
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_M_PickingSlot_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "M_PickingSlot_ID", null);
     /** Column name M_PickingSlot_ID */
     public static final String COLUMNNAME_M_PickingSlot_ID = "M_PickingSlot_ID";
 
@@ -247,37 +243,10 @@ public interface I_M_Picking_Candidate
 	 */
 	public int getM_ShipmentSchedule_ID();
 
-	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule();
-
-	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule);
-
     /** Column definition for M_ShipmentSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, de.metas.inoutcandidate.model.I_M_ShipmentSchedule>(I_M_Picking_Candidate.class, "M_ShipmentSchedule_ID", de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "M_ShipmentSchedule_ID", null);
     /** Column name M_ShipmentSchedule_ID */
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
-
-    /**
-	 * Set Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setStatus (java.lang.String Status);
-
-	/**
-	 * Get Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getStatus();
-
-    /** Column definition for Status */
-    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_Status = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "Status", null);
-    /** Column name Status */
-    public static final String COLUMNNAME_Status = "Status";
 
 	/**
 	 * Set Qty Picked.
@@ -301,7 +270,30 @@ public interface I_M_Picking_Candidate
     public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_QtyPicked = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "QtyPicked", null);
     /** Column name QtyPicked */
     public static final String COLUMNNAME_QtyPicked = "QtyPicked";
-    
+
+	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setStatus (java.lang.String Status);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStatus();
+
+    /** Column definition for Status */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_Status = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "Status", null);
+    /** Column name Status */
+    public static final String COLUMNNAME_Status = "Status";
+
 	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde

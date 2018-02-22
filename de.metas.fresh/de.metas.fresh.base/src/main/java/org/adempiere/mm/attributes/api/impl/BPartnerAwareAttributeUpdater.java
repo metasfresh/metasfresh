@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,7 +44,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 
 /**
  * Creates/Updates model's {@link I_M_AttributeInstance}s based on {@link IBPartnerAware}.
- * 
+ *
  * @author tsa
  *
  */
@@ -78,7 +78,7 @@ public class BPartnerAwareAttributeUpdater
 		{
 			return;
 		}
-		
+
 		final IBPartnerAware bpartnerAware = getBPartnerAwareFactory().createBPartnerAware(sourceModel);
 		if (bpartnerAware == null)
 		{
@@ -106,7 +106,7 @@ public class BPartnerAwareAttributeUpdater
 		//
 		// Get M_Attribute, if applies to our product
 		final I_M_Product product = asiAware.getM_Product();
-		Check.assumeNotNull(product, "Product is null");
+		Check.assumeNotNull(product, "Product is not null");
 		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(product, attributeId);
 		if (attribute == null)
 		{
@@ -223,7 +223,7 @@ public class BPartnerAwareAttributeUpdater
 
 	/**
 	 * Sets if we shall copy the attribute even if it's a sales transaction (i.e. IsSOTrx=true)
-	 * 
+	 *
 	 * @param forceApplyForSOTrx
 	 */
 	public final BPartnerAwareAttributeUpdater setForceApplyForSOTrx(final boolean forceApplyForSOTrx)

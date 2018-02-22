@@ -10,18 +10,17 @@ package de.metas.picking.terminal.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -47,8 +46,9 @@ import de.metas.picking.terminal.BoxKey;
 import de.metas.picking.terminal.BoxLayout;
 import de.metas.picking.terminal.ProductKey;
 import de.metas.picking.terminal.ProductLayout;
+import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
-
+import de.metas.quantity.Quantity;
 
 /**
  * @author cg
@@ -58,7 +58,7 @@ import de.metas.picking.terminal.Utils.PackingStates;
 public class QtyListener implements PropertyChangeListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private final SwingPackageBoxesItems swingPackageBoxesItems;
 
@@ -67,10 +67,9 @@ public class QtyListener implements PropertyChangeListener
 	 */
 	public QtyListener(final SwingPackageBoxesItems swingPackageBoxesItems)
 	{
-		super();
 		this.swingPackageBoxesItems = swingPackageBoxesItems;
 	}
-	
+
 	public SwingPackageBoxesItems getPackageBoxesItems()
 	{
 		return swingPackageBoxesItems;
@@ -84,7 +83,7 @@ public class QtyListener implements PropertyChangeListener
 		// NOTE: Implementing classes do NOT necessarily call super.propertyChange()!!!
 		// Please do not assume that customer-specific overrides will call it
 		//
-		
+
 		// If new value is null or value not changed, we keep the old package and do nothing
 		if (evt.getNewValue() == null || evt.getNewValue().equals(evt.getOldValue()) || BigDecimal.ZERO.equals(evt.getOldValue()))
 		{
@@ -93,7 +92,7 @@ public class QtyListener implements PropertyChangeListener
 		//
 		final IPackingDetailsModel model = getPackageTerminalPanel().getModel();
 
-		BoxKey selected = (BoxKey)((TerminalKeyPanel)this.swingPackageBoxesItems.getPickingSlotsKeyLayoutPanel()).getSelectedKey();
+		final BoxKey selected = (BoxKey)((TerminalKeyPanel)this.swingPackageBoxesItems.getPickingSlotsKeyLayoutPanel()).getSelectedKey();
 
 		if (selected != null)
 		{
@@ -103,7 +102,7 @@ public class QtyListener implements PropertyChangeListener
 		{
 			return;
 		}
-		
+
 		final boolean deleteBin;
 		if (PackingStates.open.name().equals(selected.getStatus().getName()) || PackingStates.closed.name().equals(selected.getStatus().getName()))
 		{
@@ -116,7 +115,7 @@ public class QtyListener implements PropertyChangeListener
 		BigDecimal oldQty = (BigDecimal)evt.getOldValue();
 		// if the user is using numpad, then the old value is null and also the all algorithm changes
 		boolean isUsingNumPad = false;
-		ProductKey selectedProduct = (ProductKey)((TerminalKeyPanel)this.swingPackageBoxesItems.getProductsKeyLayoutPanel()).getSelectedKey();
+		final ProductKey selectedProduct = (ProductKey)((TerminalKeyPanel)this.swingPackageBoxesItems.getProductsKeyLayoutPanel()).getSelectedKey();
 		if (oldQty == null)
 		{
 			oldQty = selectedProduct.getQty();
@@ -127,9 +126,9 @@ public class QtyListener implements PropertyChangeListener
 			newQty = new BigDecimal((Long)evt.getNewValue());
 		else
 			newQty = (BigDecimal)evt.getNewValue();
-		BigDecimal qty = oldQty.subtract(newQty);
+		final BigDecimal qty = oldQty.subtract(newQty);
 		// cg: task 03006 : we need to restrict the quantity the user can input
-		BigDecimal unpackedQty = getPackageTerminalPanel().getParent().getQtyUnpacked(selectedProduct.getPackingItem());
+		final BigDecimal unpackedQty = getPackageTerminalPanel().getParent().getQtyUnpacked(selectedProduct.getPackingItem());
 
 		final PackingTreeModel packingTreeModel = model.getPackingTreeModel();
 		BigDecimal packedQty = packingTreeModel.getQtyPackingItem(selectedProduct.getPackingItem(), this.swingPackageBoxesItems.oldUsedBin);
@@ -137,7 +136,12 @@ public class QtyListener implements PropertyChangeListener
 		DefaultMutableTreeNode node = null;
 		if (true == isUsingNumPad) // logic for when the user uses numpad
 		{
-			if (this.swingPackageBoxesItems.checkMaxQty(packedQty, unpackedQty, newQty, qty, selectedProduct.getBoxNo() != PackingItemsMap.KEY_UnpackedItems))
+			if (this.swingPackageBoxesItems.checkMaxQty(
+					packedQty,
+					unpackedQty,
+					newQty,
+					qty,
+					selectedProduct.getBoxNo() != PackingItemsMap.KEY_UnpackedItems))
 			{
 				this.swingPackageBoxesItems.warn("Max.Qty");
 				return;
@@ -149,14 +153,14 @@ public class QtyListener implements PropertyChangeListener
 				// case when we pop into the box
 				if (qty.signum() > 0)
 				{
-					Enumeration<DefaultMutableTreeNode> en = packingTreeModel.getUnPackedItems().children();
+					final Enumeration<DefaultMutableTreeNode> en = packingTreeModel.getUnPackedItems().children();
 					searchNode: while (en.hasMoreElements())
 					{
-						DefaultMutableTreeNode currentChild = en.nextElement();
-						Object userObj = currentChild.getUserObject();
+						final DefaultMutableTreeNode currentChild = en.nextElement();
+						final Object userObj = currentChild.getUserObject();
 						if (userObj instanceof LegacyPackingItem)
 						{
-							LegacyPackingItem pack = (LegacyPackingItem)userObj;
+							final LegacyPackingItem pack = (LegacyPackingItem)userObj;
 							if (this.swingPackageBoxesItems.getPck() == pack && this.swingPackageBoxesItems.getPck().getProductId() == pack.getProductId())
 							{
 								this.swingPackageBoxesItems.setPck(pack);
@@ -165,16 +169,30 @@ public class QtyListener implements PropertyChangeListener
 							}
 						}
 					}
-					//
-					packingTreeModel.movePackItem(node, this.swingPackageBoxesItems.oldUsedBin, qty);
+
+					final LegacyPackingItem packingItem = (LegacyPackingItem)node.getUserObject();
+					packingTreeModel.movePackItem(
+							node,
+							this.swingPackageBoxesItems.oldUsedBin,
+							Quantity.of(qty, packingItem.getC_UOM()));
 				}
 				// case when we pop out from the box
 				else
 				{
 					node = packingTreeModel.findPackingItemNode(this.swingPackageBoxesItems.oldUsedBin, this.swingPackageBoxesItems.getPck());
-					packingTreeModel.removePackedItem(Env.getCtx(), node, this.swingPackageBoxesItems.oldUsedBin, qty.abs(), deleteBin);
+
+					final LegacyPackingItem pack = (LegacyPackingItem)node.getUserObject();
+					packingTreeModel.removePackedItem(
+							Env.getCtx(),
+							node,
+							this.swingPackageBoxesItems.oldUsedBin,
+							Quantity.of(qty.abs(), pack.getC_UOM()),
+							deleteBin);
+
 					if (packedQty.equals(qty.abs()))
+					{
 						packedQty = BigDecimal.ZERO;
+					}
 				}
 
 			}
@@ -184,14 +202,14 @@ public class QtyListener implements PropertyChangeListener
 				// the case when we put all the products into the box
 				if (newQty.abs().compareTo(unpackedQty.add(packedQty)) == 0)
 				{
-					Enumeration<DefaultMutableTreeNode> en = packingTreeModel.getUnPackedItems().children();
+					final Enumeration<DefaultMutableTreeNode> en = packingTreeModel.getUnPackedItems().children();
 					searchNode: while (en.hasMoreElements())
 					{
-						DefaultMutableTreeNode currentChild = en.nextElement();
-						Object userObj = currentChild.getUserObject();
+						final DefaultMutableTreeNode currentChild = en.nextElement();
+						final Object userObj = currentChild.getUserObject();
 						if (userObj instanceof LegacyPackingItem)
 						{
-							LegacyPackingItem pack = (LegacyPackingItem)userObj;
+							final LegacyPackingItem pack = (LegacyPackingItem)userObj;
 							if (this.swingPackageBoxesItems.getPck().getProductId() == pack.getProductId())
 							{
 								this.swingPackageBoxesItems.setPck(pack);
@@ -200,12 +218,23 @@ public class QtyListener implements PropertyChangeListener
 							}
 						}
 					}
-					packingTreeModel.movePackItem(node, this.swingPackageBoxesItems.oldUsedBin, qty.abs());
+					final LegacyPackingItem packingItem = (LegacyPackingItem)node.getUserObject();
+					packingTreeModel.movePackItem(
+							node,
+							this.swingPackageBoxesItems.oldUsedBin,
+							Quantity.of(qty.abs(), packingItem.getC_UOM()));
 				}
 				else
 				{
 					node = packingTreeModel.findPackingItemNode(this.swingPackageBoxesItems.oldUsedBin, this.swingPackageBoxesItems.getPck());
-					packingTreeModel.removePackedItem(Env.getCtx(), node, this.swingPackageBoxesItems.oldUsedBin, qty, deleteBin);
+
+					final LegacyPackingItem pack = (LegacyPackingItem)node.getUserObject();
+					packingTreeModel.removePackedItem(
+							Env.getCtx(),
+							node,
+							this.swingPackageBoxesItems.oldUsedBin,
+							Quantity.of(qty, pack.getC_UOM()),
+							deleteBin);
 				}
 			}
 		}
@@ -215,14 +244,14 @@ public class QtyListener implements PropertyChangeListener
 			// case when we pop into the box
 			if (qty.signum() < 0)
 			{
-				Enumeration<DefaultMutableTreeNode> en = packingTreeModel.getUnPackedItems().children();
+				final Enumeration<DefaultMutableTreeNode> en = packingTreeModel.getUnPackedItems().children();
 				searchNode: while (en.hasMoreElements())
 				{
-					DefaultMutableTreeNode currentChild = en.nextElement();
-					Object userObj = currentChild.getUserObject();
+					final DefaultMutableTreeNode currentChild = en.nextElement();
+					final Object userObj = currentChild.getUserObject();
 					if (userObj instanceof LegacyPackingItem)
 					{
-						LegacyPackingItem pack = (LegacyPackingItem)userObj;
+						final LegacyPackingItem pack = (LegacyPackingItem)userObj;
 						if (this.swingPackageBoxesItems.getPck() == pack && this.swingPackageBoxesItems.getPck().getProductId() == pack.getProductId())
 						{
 							this.swingPackageBoxesItems.setPck(pack);
@@ -231,14 +260,25 @@ public class QtyListener implements PropertyChangeListener
 						}
 					}
 				}
-				packingTreeModel.movePackItem(node, this.swingPackageBoxesItems.oldUsedBin, qty.negate());
+				final LegacyPackingItem packingItem = (LegacyPackingItem)node.getUserObject();
+				packingTreeModel.movePackItem(
+						node,
+						this.swingPackageBoxesItems.oldUsedBin,
+						Quantity.of(qty.negate(), packingItem.getC_UOM()));
 			}
 
 			// case when we pop out from the box
 			else
 			{
 				node = packingTreeModel.findPackingItemNode(this.swingPackageBoxesItems.oldUsedBin, this.swingPackageBoxesItems.getPck());
-				packingTreeModel.removePackedItem(Env.getCtx(), node, this.swingPackageBoxesItems.oldUsedBin, qty, deleteBin);
+
+				final LegacyPackingItem pack = (LegacyPackingItem)node.getUserObject();
+				packingTreeModel.removePackedItem(
+						Env.getCtx(),
+						node,
+						this.swingPackageBoxesItems.oldUsedBin,
+						Quantity.of(qty, pack.getC_UOM()),
+						deleteBin);
 			}
 		}
 
@@ -254,7 +294,7 @@ public class QtyListener implements PropertyChangeListener
 			getPackageTerminalPanel().getPickingData().setReadOnly(true);
 			resetBoxes = true;
 			//
-			ProductLayout prodLayout = this.swingPackageBoxesItems.getProductsKeyLayout();
+			final ProductLayout prodLayout = this.swingPackageBoxesItems.getProductsKeyLayout();
 			prodLayout.setSelectedBox(null);
 			getPackageTerminalPanel().refresh(false, resetBoxes, true);
 		}
@@ -263,13 +303,13 @@ public class QtyListener implements PropertyChangeListener
 			//
 			getPackageTerminalPanel().refresh(false, resetBoxes, true);
 			// get selected key
-			TerminalKeyPanel keypanel = (TerminalKeyPanel)this.swingPackageBoxesItems.getProductsKeyLayoutPanel();
-			ProductKey pkey = this.swingPackageBoxesItems.getSelectedProduct();
-			for (ITerminalKey key : keypanel.getKeys())
+			final TerminalKeyPanel keypanel = (TerminalKeyPanel)this.swingPackageBoxesItems.getProductsKeyLayoutPanel();
+			final ProductKey pkey = this.swingPackageBoxesItems.getSelectedProduct();
+			for (final ITerminalKey key : keypanel.getKeys())
 			{
 				if (key instanceof ProductKey)
 				{
-					ProductKey productKey = (ProductKey)key;
+					final ProductKey productKey = (ProductKey)key;
 					if (pkey != null && pkey.getBoxNo() == productKey.getBoxNo() && pkey.getValue().equals(productKey.getValue()))
 					{
 						keypanel.onKeySelected(productKey);
@@ -289,10 +329,13 @@ public class QtyListener implements PropertyChangeListener
 						{
 							desc = "";
 						}
-						((SwingPackageDataPanel)getPackageTerminalPanel().getPickingData()).setDataValues(product.getValue() + " (" + product.getName() + ")",
-								pi.getQtySum().toString(),
-								pi.getQtySum().multiply(product.getVolume()).toString(),
-								pi.computeWeight().toString(),
+
+						final SwingPackageDataPanel swingPackageDataPanel = (SwingPackageDataPanel)getPackageTerminalPanel().getPickingData();
+						swingPackageDataPanel.setDataValues(
+								product.getValue() + " (" + product.getName() + ")",
+								Utils.convertToItemUOM(pi, pi.getQtySum()).toString(),
+								Utils.convertToItemUOM(pi, pi.getQtySum()).multiply(product.getVolume()).toString(),
+								pi.computeWeightInProductUOM().toString(),
 								productHasNoWeightInfo,
 								desc);
 					}
@@ -301,14 +344,14 @@ public class QtyListener implements PropertyChangeListener
 		}
 
 		// get selected key
-		TerminalKeyPanel keypanel = (TerminalKeyPanel)this.swingPackageBoxesItems.getPickingSlotsKeyLayoutPanel();
+		final TerminalKeyPanel keypanel = (TerminalKeyPanel)this.swingPackageBoxesItems.getPickingSlotsKeyLayoutPanel();
 		if (keypanel.getKeys() != null)
 		{
-			for (ITerminalKey key : keypanel.getKeys())
+			for (final ITerminalKey key : keypanel.getKeys())
 			{
 				if (key instanceof BoxKey)
 				{
-					BoxKey boxKey = (BoxKey)key;
+					final BoxKey boxKey = (BoxKey)key;
 					if (resetBoxes)
 						continue;
 					if (selected.getBoxNo() == boxKey.getBoxNo() && selected.getValue().equals(boxKey.getValue()))
@@ -321,12 +364,12 @@ public class QtyListener implements PropertyChangeListener
 		((BoxLayout)this.swingPackageBoxesItems.getPickingSlotsKeyLayout()).checkKeyState();
 		getPackageTerminalPanel().getPickingData().getbSave().setEnabled(false);
 	}
-	
+
 	private SwingPackageTerminalPanel getPackageTerminalPanel()
 	{
 		return (SwingPackageTerminalPanel)this.swingPackageBoxesItems.getPackageTerminalPanel();
 	}
-	
+
 	private ITerminalTree getTree()
 	{
 		final SwingPackageTerminalPanel packingPanel = getPackageTerminalPanel();

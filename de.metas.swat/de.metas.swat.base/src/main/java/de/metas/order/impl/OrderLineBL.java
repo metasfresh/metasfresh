@@ -1,5 +1,8 @@
 package de.metas.order.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -42,7 +45,6 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Location;
@@ -51,8 +53,6 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Shipper;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
 import org.compiere.model.X_C_OrderLine;
@@ -80,7 +80,6 @@ public class OrderLineBL implements IOrderLineBL
 
 	private final Set<Integer> ignoredOlIds = new HashSet<>();
 
-	public static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
 	public static final String CTX_DiscountSchema = "DiscountSchema";
 
 	private static final String MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = "de.metas.order.CounterDocMissingMappedProduct";
@@ -170,6 +169,9 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setC_Currency_ID(pricingResult.getC_Currency_ID());
 		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // task 06942
 		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
+
+		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
+		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 
 		updateLineNetAmt(orderLine, qtyEntered, factor);
 	}
@@ -295,11 +297,35 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public BigDecimal subtractDiscount(final BigDecimal baseAmount, final BigDecimal discount, final int precision)
 	{
-		BigDecimal multiplier = Env.ONEHUNDRED.subtract(discount);
-		multiplier = multiplier.divide(Env.ONEHUNDRED, precision * 3, RoundingMode.HALF_UP);
-
+		final BigDecimal multiplier = Env.ONEHUNDRED.subtract(discount).divide(Env.ONEHUNDRED, precision * 3, RoundingMode.HALF_UP);
 		final BigDecimal result = baseAmount.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
 		return result;
+	}
+
+	@Override
+	public BigDecimal calculateDiscountFromPrices(final BigDecimal priceEntered, final BigDecimal priceActual, final int precision)
+	{
+		if (priceEntered.signum() == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		BigDecimal discount = priceEntered.subtract(priceActual)
+				.divide(priceEntered, 12, RoundingMode.HALF_UP)
+				.multiply(Env.ONEHUNDRED);
+		if (discount.scale() > 2)
+		{
+			discount = discount.setScale(2, BigDecimal.ROUND_HALF_UP);
+		}
+
+		return discount;
+	}
+
+	@Override
+	public BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(final BigDecimal priceActual, final BigDecimal discount, final int precision)
+	{
+		final BigDecimal multiplier = Env.ONEHUNDRED.add(discount).divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
+		return priceActual.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
 	}
 
 	@Override
@@ -407,7 +433,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		//
 		// Don't calculate the discount in case we are dealing with a percentage discount compensation group line (task 3149)
-		if(orderLine.isGroupCompensationLine()
+		if (orderLine.isGroupCompensationLine()
 				&& X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount.equals(orderLine.getGroupCompensationType())
 				&& X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent.equals(orderLine.getGroupCompensationAmtType()))
 		{
@@ -466,9 +492,9 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public I_C_OrderLine createOrderLine(final org.compiere.model.I_C_Order order)
 	{
-		final MOrderLine olPO = new MOrderLine((MOrder)LegacyAdapters.convertToPO(order));
-
-		final I_C_OrderLine ol = InterfaceWrapperHelper.create(olPO, I_C_OrderLine.class);
+		final I_C_OrderLine ol = newInstance(I_C_OrderLine.class, order);
+		ol.setC_Order(order);
+		setOrder(ol, order);
 
 		if (order.isSOTrx() && order.isDropShip())
 		{
@@ -484,6 +510,33 @@ public class OrderLineBL implements IOrderLineBL
 			ol.setAD_User_ID(AD_User_ID);
 		}
 		return ol;
+	}
+
+	@Override
+	public void setOrder(final org.compiere.model.I_C_OrderLine ol, final org.compiere.model.I_C_Order order)
+	{
+		ol.setAD_Org_ID(order.getAD_Org_ID());
+		final boolean isDropShip = order.isDropShip();
+		final int C_BPartner_ID = isDropShip && order.getDropShip_BPartner_ID() > 0 ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
+		ol.setC_BPartner_ID(C_BPartner_ID);
+
+		final int C_BPartner_Location_ID = isDropShip && order.getDropShip_Location_ID() > 0 ? order.getDropShip_Location_ID() : order.getC_BPartner_Location_ID();
+		ol.setC_BPartner_Location_ID(C_BPartner_Location_ID);
+
+		// metas: begin: copy AD_User_ID
+		final de.metas.interfaces.I_C_OrderLine oline = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
+		final int AD_User_ID = isDropShip && order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
+		oline.setAD_User_ID(AD_User_ID);
+		// metas: end
+
+		oline.setM_PriceList_Version_ID(0); // the current PLV might be add or'd with the new order's PL.
+
+		ol.setM_Warehouse_ID(order.getM_Warehouse_ID());
+		ol.setDateOrdered(order.getDateOrdered());
+		ol.setDatePromised(order.getDatePromised());
+		ol.setC_Currency_ID(order.getC_Currency_ID());
+
+		// Don't set Activity, etc as they are overwrites
 	}
 
 	@Override
@@ -524,7 +577,13 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updatePrices(final I_C_OrderLine orderLine)
+	public void updatePrices(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final I_C_OrderLine orderLineToUse = create(orderLine, I_C_OrderLine.class);
+		updatePrices0(orderLineToUse);
+	}
+
+	private void updatePrices0(final I_C_OrderLine orderLine)
 	{
 		// FIXME refactor and/or keep in sync with #setPricesIfNotIgnored
 
@@ -604,11 +663,14 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // task 06942
 		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
 
+		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
+		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
+		orderLine.setEnforcePriceLimit(pricingResult.isEnforcePriceLimit());
+
 		//
 		// UI
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final int WindowNo = GridTabWrapper.getWindowNo(orderLine);
-		Env.setContext(ctx, WindowNo, CTX_EnforcePriceLimit, pricingResult.isEnforcePriceLimit());
 		Env.setContext(ctx, WindowNo, CTX_DiscountSchema, pricingResult.isUsesDiscountSchema());
 	}
 

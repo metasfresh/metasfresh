@@ -21,8 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;

@@ -13,15 +13,14 @@ package de.metas.data.export.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -29,15 +28,16 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.slf4j.Logger;
+
 import de.metas.data.export.api.IExportDataDestination;
 import de.metas.data.export.api.IExportDataSource;
 import de.metas.data.export.api.IExporter;
 import de.metas.data.export.api.IExporterMonitor;
+import de.metas.logging.LogManager;
 
 /**
  * Abstract implementation of {@link IExporter} which take care about statistic information and status.
@@ -134,11 +134,11 @@ public abstract class AbstractExporter implements IExporter
 			// Init dataDestination
 			// NOTE: make sure we are doing this as first thing, because if anything fails, we need to close this "destination"
 			dataDestination = createDataDestination(out);
-			
+
 			// Init status
 			error = null;
 			setExportStatus(ExportStatus.Running);
-			
+
 			monitor.exportStarted(this);
 
 			while (dataSource.hasNext())

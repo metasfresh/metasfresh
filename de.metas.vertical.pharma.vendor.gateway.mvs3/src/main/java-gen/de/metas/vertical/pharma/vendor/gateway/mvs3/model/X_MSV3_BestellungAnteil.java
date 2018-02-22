@@ -14,7 +14,7 @@ public class X_MSV3_BestellungAnteil extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1648789263L;
+	private static final long serialVersionUID = -2101837388L;
 
     /** Standard Constructor */
     public X_MSV3_BestellungAnteil (Properties ctx, int MSV3_BestellungAnteil_ID, String trxName)
@@ -44,6 +44,40 @@ public class X_MSV3_BestellungAnteil extends org.compiere.model.PO implements I_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLinePO() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLinePO_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLinePO(org.compiere.model.I_C_OrderLine C_OrderLinePO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLinePO_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLinePO);
+	}
+
+	/** Set Bestellposition.
+		@param C_OrderLinePO_ID Bestellposition	  */
+	@Override
+	public void setC_OrderLinePO_ID (int C_OrderLinePO_ID)
+	{
+		if (C_OrderLinePO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderLinePO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderLinePO_ID, Integer.valueOf(C_OrderLinePO_ID));
+	}
+
+	/** Get Bestellposition.
+		@return Bestellposition	  */
+	@Override
+	public int getC_OrderLinePO_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLinePO_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set MSV3_BestellungAnteil.
 		@param MSV3_BestellungAnteil_ID MSV3_BestellungAnteil	  */

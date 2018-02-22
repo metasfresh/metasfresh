@@ -216,15 +216,22 @@ public class HUShipmentPackingMaterialLinesBuilder
 		configurable = false;
 	}
 
-	private void linkInOutLineToPackingMaterialLine(@NonNull final InOutLineHUPackingMaterialCollectorSource  source, @NonNull final I_M_InOutLine packingMaterialLine)
+	private void linkInOutLineToPackingMaterialLine(
+			@NonNull final InOutLineHUPackingMaterialCollectorSource source,
+			@NonNull final I_M_InOutLine packingMaterialLine)
 	{
 		final I_M_InOutLine sourceIol = source.getM_InOutLine();
 		if (sourceIol.getM_HU_PI_Item_Product_Override() == null)
 		{
 			return;
 		}
-		final I_M_HU_PI_Version huPiVersion = sourceIol.getM_HU_PI_Item_Product_Override().getM_HU_PI_Item().getM_HU_PI_Version();
-		final I_M_HU_PackingMaterial packingMaterial = Services.get(IHandlingUnitsDAO.class).retrievePackingMaterial(huPiVersion, sourceIol.getM_InOut().getC_BPartner());
+		final I_M_HU_PI_Version huPiVersion = sourceIol
+				.getM_HU_PI_Item_Product_Override()
+				.getM_HU_PI_Item()
+				.getM_HU_PI_Version();
+
+		final I_M_HU_PackingMaterial packingMaterial = Services.get(IHandlingUnitsDAO.class)
+				.retrievePackingMaterial(huPiVersion, sourceIol.getM_InOut().getC_BPartner());
 		if (packingMaterial != null && packingMaterial.getM_Product_ID() == packingMaterialLine.getM_Product_ID())
 		{
 			sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
@@ -246,35 +253,30 @@ public class HUShipmentPackingMaterialLinesBuilder
 	}
 
 	/**
-	 * Collect TU packing materials from shipment line
-	 *
-	 * @param packingMaterialsCollector
-	 * @param shipmentLine
+	 * Collect TU packing materials from the given {@code huPackingMaterialCollectorSource} into our internal {@link HUPackingMaterialsCollector}.
 	 */
-	private final void collectHUs(final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
+	private final void collectHUs(@NonNull final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
-		Check.assume(huPackingMaterialCollectorSource instanceof InOutLineHUPackingMaterialCollectorSource, huPackingMaterialCollectorSource + "must be a instance of " + InOutLineHUPackingMaterialCollectorSource.class);
+		Check.assume(huPackingMaterialCollectorSource instanceof InOutLineHUPackingMaterialCollectorSource,
+				"The given huPackingMaterialCollectorSource needs to be instanceof {}; huPackingMaterialCollectorSource={}",
+				InOutLineHUPackingMaterialCollectorSource.class, huPackingMaterialCollectorSource);
 
-		Check.assume(packingMaterialsCollector.getCountTUs() == 0, "At this point CountTUs shall be zero: {}", packingMaterialsCollector);
+		Check.assume(packingMaterialsCollector.getCountTUs() == 0,
+				"At this point CountTUs shall be zero: packingMaterialsCollector={}", packingMaterialsCollector);
 
 		final boolean initializeOverrides = isUpdateOverrideValues();
 
-		//
 		// Collect packing materials from assigned TUs
 		// NOTE: we are doing this because we also want to explicitly count them
 		// If we would fetch all HUs it could be to count more TUs than there are actually assigned to this particular inout line
 		final HUPackingMaterialsCollector packingMaterialsCollectorFromHUs = packingMaterialsCollector.splitNew();
 
-		final InOutLineHUPackingMaterialCollectorSource shipmentLineSource = (InOutLineHUPackingMaterialCollectorSource) huPackingMaterialCollectorSource;
+		final InOutLineHUPackingMaterialCollectorSource shipmentLineSource = (InOutLineHUPackingMaterialCollectorSource)huPackingMaterialCollectorSource;
 		final I_M_InOutLine shipmentLine = shipmentLineSource.getM_InOutLine();
 
 		final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(shipmentLine);
 		packingMaterialsCollectorFromHUs.addTUHUsRecursively(tuAssignmentsQuery);
 		final int countTUs_Calculated = packingMaterialsCollectorFromHUs.getAndResetCountTUs();
-
-
-
-
 
 		//
 		// Collect TU packing materials from overrides

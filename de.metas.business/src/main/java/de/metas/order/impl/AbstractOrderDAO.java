@@ -28,13 +28,15 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
+import org.compiere.util.Env;
 
-import de.metas.adempiere.util.CacheModel;
+import de.metas.adempiere.util.CacheCtx;
+import de.metas.adempiere.util.CacheTrx;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import lombok.NonNull;
@@ -48,14 +50,37 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_C_OrderLine.Table_Name + "#via#" + I_C_OrderLine.COLUMNNAME_C_Order_ID)
 	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(
-			@NonNull @CacheModel final I_C_Order order, 
+			@NonNull final I_C_Order order,
+			@NonNull final Class<T> clazz)
+	{
+		Properties ctx = InterfaceWrapperHelper.getCtx(order);
+		String trxName = InterfaceWrapperHelper.getTrxName(order);
+		final int orderId = order.getC_Order_ID();
+		final List<T> orderLines = retrieveOrderLines(ctx, orderId, trxName, clazz);
+
+		orderLines.forEach(orderLine -> orderLine.setC_Order(order));
+		return orderLines;
+	}
+	
+	@Override
+	public List<I_C_OrderLine> retrieveOrderLines(final int orderId)
+	{
+		return retrieveOrderLines(Env.getCtx(), orderId, ITrx.TRXNAME_ThreadInherited, I_C_OrderLine.class);
+	}
+
+
+	// tsa: commented out because it's not safe to cache the list of order lines and return it without even cloning.
+	// @Cached(cacheName = I_C_OrderLine.Table_Name + "#via#" + I_C_OrderLine.COLUMNNAME_C_Order_ID) 
+	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(
+			@CacheCtx final Properties ctx,
+			final int orderId,
+			@CacheTrx final String trxName,
 			@NonNull final Class<T> clazz)
 	{
 		final List<T> orderLines = Services.get(IQueryBL.class)
-				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
-				.addEqualsFilter(I_C_OrderLine.COLUMN_C_Order_ID, order.getC_Order_ID())
+				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, ctx, trxName)
+				.addEqualsFilter(I_C_OrderLine.COLUMN_C_Order_ID, orderId)
 				.orderBy()
 				.addColumn(org.compiere.model.I_C_OrderLine.COLUMN_Line)
 				.addColumn(org.compiere.model.I_C_OrderLine.COLUMN_C_OrderLine_ID)
@@ -63,11 +88,6 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.create()
 				.list(clazz);
 
-		// Optimization: set parent
-		for (final T orderLine : orderLines)
-		{
-			orderLine.setC_Order(order);
-		}
 		return orderLines;
 	}
 
@@ -121,13 +141,10 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 
 	private IQueryBuilder<I_M_InOut> retrieveInOutsQuery(final I_C_Order order)
 	{
-		final IQueryBuilder<I_M_InOut> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, order)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, order)
 				.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
 				.filterByClientId()
-				.addOnlyActiveRecordsFilter();
-		queryBuilder.orderBy()
-				.addColumn(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID, false); // asc=false
-
-		return queryBuilder;
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID);
 	}
 }

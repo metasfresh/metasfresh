@@ -70,19 +70,11 @@ public interface IHUPackingAwareBL extends ISingletonService
 	}
 
 	/**
-	 * Checks if given {@link IHUPackingAware} is valid and completely defined.
-	 *
-	 * @param record
-	 * @return true if is valid
-	 */
-	boolean isValid(IHUPackingAware record);
-
-	/**
-	 * Calls {@link #calculateQtyPacks(IHUPackingAware)}. Note: doesn't save.
+	 * Calls {@link #calculateQtyTU(IHUPackingAware)}. Note: doesn't save.
 	 *
 	 * @param record
 	 */
-	void setQtyPacks(IHUPackingAware record);
+	void setQtyTU(IHUPackingAware record);
 
 	/**
 	 * Computes the number of TUs required for the given <code>huPackingWare</code>.
@@ -90,7 +82,7 @@ public interface IHUPackingAwareBL extends ISingletonService
 	 * @param huPackingWare
 	 * @return
 	 */
-	BigDecimal calculateQtyPacks(IHUPackingAware huPackingWare);
+	BigDecimal calculateQtyTU(IHUPackingAware huPackingWare);
 
 	/**
 	 * Sets Qty CU.
@@ -98,9 +90,7 @@ public interface IHUPackingAwareBL extends ISingletonService
 	 * @param record
 	 * @param qtyPacks aka Qty TUs
 	 */
-	void setQty(IHUPackingAware record, int qtyPacks);
-
-	boolean isValidQty(IHUPackingAware record);
+	void setQtyCUFromQtyTU(IHUPackingAware record, int qtyPacks);
 
 	/**
 	 * This method verifies if the qtyCU given as parameter fits the qtyPacks. If it does, the record will not be updated.

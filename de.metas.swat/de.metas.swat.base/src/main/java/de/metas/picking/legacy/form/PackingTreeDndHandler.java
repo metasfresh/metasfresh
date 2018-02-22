@@ -10,12 +10,12 @@ package de.metas.picking.legacy.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,10 +32,6 @@ import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -46,9 +42,14 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.picking.terminal.Utils;
 
 /**
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009 0022 G61)</a>"
  */
@@ -59,7 +60,7 @@ final class PackingTreeDndHandler extends DropTargetAdapter
 
 	private final JTree tree;
 
-	private final Set<IPackingTreeListener> packingTreeListeners = new HashSet<IPackingTreeListener>();
+	private final Set<IPackingTreeListener> packingTreeListeners = new HashSet<>();
 
 	public PackingTreeDndHandler(final JTree tree)
 	{
@@ -76,8 +77,9 @@ final class PackingTreeDndHandler extends DropTargetAdapter
 	 * Figure out what the action should do with the tree and whether it is legal. If it was, and we need an additional
 	 * quantity parameter, display a pop-up with a text field. Finally notify the registered
 	 * {@link IPackingTreeListener} instances.
-	 * 
+	 *
 	 */
+	@Override
 	public void drop(final DropTargetDropEvent dtde)
 	{
 
@@ -167,7 +169,8 @@ final class PackingTreeDndHandler extends DropTargetAdapter
 						finishDrop(dtde, true);
 					}
 				};
-				showPopup(position, handler, pi.getQtySum().intValue());
+				final BigDecimal qtySum = Utils.convertToItemUOM(pi, pi.getQtySum());
+				showPopup(position, handler, qtySum.intValue());
 
 			}
 			else if (newParent.getUserObject() instanceof UsedBin)
@@ -184,7 +187,8 @@ final class PackingTreeDndHandler extends DropTargetAdapter
 						finishDrop(dtde, true);
 					}
 				};
-				showPopup(position, handler, pi.getQtySum().intValue());
+				final BigDecimal qtySum = Utils.convertToItemUOM(pi, pi.getQtySum());
+				showPopup(position, handler, qtySum.intValue());
 			}
 		}
 		finishDrop(dtde, false);
@@ -276,9 +280,9 @@ final class PackingTreeDndHandler extends DropTargetAdapter
 
 	/**
 	 * Action listener for the pop-up's text field
-	 * 
+	 *
 	 * @author ts
-	 * 
+	 *
 	 */
 	private static abstract class QtyEnteredHandler implements ActionListener
 	{
@@ -291,6 +295,7 @@ final class PackingTreeDndHandler extends DropTargetAdapter
 			this.popup = popup;
 		}
 
+		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
 
@@ -304,7 +309,7 @@ final class PackingTreeDndHandler extends DropTargetAdapter
 				popup.setVisible(false);
 
 			}
-			catch (NumberFormatException ex)
+			catch (final NumberFormatException ex)
 			{
 				logger.info("Invalid input: " + text);
 				textField.setText("");
@@ -313,7 +318,7 @@ final class PackingTreeDndHandler extends DropTargetAdapter
 
 		/**
 		 * Implementors notify the registered {@link IPackingTreeListener}s by invoking the appropriate fire* method.
-		 * 
+		 *
 		 * @param qty
 		 *            the quantity parameter we got from the text field.
 		 */

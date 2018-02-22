@@ -14,7 +14,7 @@ public class X_MSV3_BestellungAntwortAuftrag extends org.compiere.model.PO imple
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1702629910L;
+	private static final long serialVersionUID = 1781439913L;
 
     /** Standard Constructor */
     public X_MSV3_BestellungAntwortAuftrag (Properties ctx, int MSV3_BestellungAntwortAuftrag_ID, String trxName)
@@ -44,6 +44,43 @@ public class X_MSV3_BestellungAntwortAuftrag extends org.compiere.model.PO imple
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_Order getC_OrderPO() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderPO_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_OrderPO(org.compiere.model.I_C_Order C_OrderPO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderPO_ID, org.compiere.model.I_C_Order.class, C_OrderPO);
+	}
+
+	/** Set Bestellung.
+		@param C_OrderPO_ID 
+		Bestellung
+	  */
+	@Override
+	public void setC_OrderPO_ID (int C_OrderPO_ID)
+	{
+		if (C_OrderPO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderPO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderPO_ID, Integer.valueOf(C_OrderPO_ID));
+	}
+
+	/** Get Bestellung.
+		@return Bestellung
+	  */
+	@Override
+	public int getC_OrderPO_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderPO_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** 
 	 * MSV3_Auftragsart AD_Reference_ID=540825

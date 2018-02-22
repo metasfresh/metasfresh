@@ -49,7 +49,7 @@ public class ReplicationException extends AdempiereException
 	protected String buildMessage()
 	{
 		final StringBuilder sb = new StringBuilder();
-		sb.append(Services.get(IMsgBL.class).translate(getCtx(), adMessage));
+		sb.append(Services.get(IMsgBL.class).translate(getADLanguage(), adMessage));
 		
 		appendParameters(sb);
 		

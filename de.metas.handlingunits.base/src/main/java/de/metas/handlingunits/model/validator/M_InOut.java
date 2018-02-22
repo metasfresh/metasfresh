@@ -29,14 +29,15 @@ import java.util.TreeSet;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -47,6 +48,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
+import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
@@ -58,7 +60,8 @@ import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 
-@Validator(I_M_InOut.class)
+@Interceptor(I_M_InOut.class)
+@Component
 public class M_InOut
 {
 	@Init
@@ -340,6 +343,42 @@ public class M_InOut
 
 	}
 
+	/**
+	 * Generate DD_Orders from receipt (if needed).
+	 * 
+	 * @param inout
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void generateDDOrders(final I_M_InOut inout)
+	{
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+		final IInOutDDOrderBL inOutDDOrderBL = Services.get(IInOutDDOrderBL.class);
 
+		// We are generating movements only for receipts
+		if (inout.isSOTrx())
+		{
+			return;
+		}
+
+		// Don't generate movements for a reversal document
+		if (Services.get(IInOutBL.class).isReversal(inout))
+		{
+			return;
+		}
+
+		final List<I_M_InOutLine> linesAll = inoutDAO.retrieveLines(inout, I_M_InOutLine.class);
+
+		for (final I_M_InOutLine inOutLine : linesAll)
+		{
+			if (inOutLine.isPackagingMaterial())
+			{
+				// nothing to do
+				continue;
+			}
+
+			inOutDDOrderBL.createDDOrderForInOutLine(inOutLine);
+
+		}
+	}
 
 }

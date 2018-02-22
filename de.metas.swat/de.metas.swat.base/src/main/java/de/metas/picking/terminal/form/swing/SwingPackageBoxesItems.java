@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.picking.terminal.form.swing;
 
@@ -13,18 +13,17 @@ package de.metas.picking.terminal.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Event;
 import java.awt.event.KeyEvent;
@@ -66,6 +65,7 @@ import de.metas.picking.terminal.ProductKey;
 import de.metas.picking.terminal.ProductLayout;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
+import de.metas.quantity.Quantity;
 
 /**
  * Contains:
@@ -74,11 +74,13 @@ import de.metas.picking.terminal.Utils.PackingStates;
  * <li>Action buttons: Pack qty (Hinzuf), Unpack qty etc
  * <li>product keys layout: {@link #getProductsKeyLayout()}
  * <li>picking slot keys layout: {@link #getPickingSlotsKeyLayout()}
- * 
+ *
  * @author cg
- * 
+ *
  */
-public class SwingPackageBoxesItems extends TerminalSubPanel implements PropertyChangeListener
+public class SwingPackageBoxesItems
+		extends TerminalSubPanel
+		implements PropertyChangeListener
 {
 	protected static final String ERR_NO_PRODUCT_SELECTED = "@NoProductSelected@";
 	protected static final String ERR_NO_BOX_SELECTED = "@NoBoxSelected@";
@@ -119,7 +121,7 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 	}
 
 	/**
-	 * 
+	 *
 	 * @return button size constraints; never return null
 	 */
 	protected String getButtonSize()
@@ -467,7 +469,11 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 						}
 					}
 				}
-				packingTreeModel.movePackItem(node, oldUsedBin, selectedProduct.getQty());
+				final LegacyPackingItem packingItem = (LegacyPackingItem)node.getUserObject();
+				packingTreeModel.movePackItem(
+						node,
+						oldUsedBin,
+						Quantity.of(selectedProduct.getQty(), packingItem.getC_UOM()));
 			}
 		}
 		else if (SwingPackageBoxesItems.ACTION_Remove.equals(evt.getNewValue()))
@@ -485,7 +491,14 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 			else
 			{
 				final DefaultMutableTreeNode node = packingTreeModel.findPackingItemNode(oldUsedBin, pck);
-				packingTreeModel.removePackedItem(Env.getCtx(), node, oldUsedBin, selectedProduct.getQty(), deleteBin);
+				final LegacyPackingItem pack = (LegacyPackingItem)node.getUserObject();
+
+				packingTreeModel.removePackedItem(
+						Env.getCtx(),
+						node,
+						oldUsedBin,
+						Quantity.of(selectedProduct.getQty(), pack.getC_UOM()),
+						deleteBin);
 				((SwingPackageTerminalPanel)terminalPanel).refresh(false, true, true);
 			}
 		}
@@ -544,13 +557,13 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 
 	/**
 	 * Sets qty field from given qty string.
-	 * 
+	 *
 	 * NOTE: this method
 	 * <ul>
 	 * <li>will set the quantity only if the string is not null
 	 * <li>will not fire change events
 	 * </ul>
-	 * 
+	 *
 	 * @param qty
 	 */
 	public final void setQtyData(final String qty)
@@ -569,9 +582,9 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 
 	/**
 	 * Sets qty field using the value provided by given supplier.
-	 * 
+	 *
 	 * In case supplier fails, ZERO will be set and the exception will be propagated.
-	 * 
+	 *
 	 * @param qtySupplier
 	 */
 	public final void setQty(final Supplier<BigDecimal> qtySupplier)
@@ -594,9 +607,9 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 
 	/**
 	 * Sets given quantity to quantity field.
-	 * 
+	 *
 	 * NOTE: it will also fire the change event.
-	 * 
+	 *
 	 * @param qty
 	 */
 	public final void setQty(final BigDecimal qty)
@@ -614,6 +627,7 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 
 	/**
 	 * Sets the entire qty field (actual number field, plus button, minus button) to be read-only or editable.
+	 *
 	 * @param readOnly
 	 * @see #setQtyFieldReadOnly(boolean, boolean, boolean)
 	 */
@@ -621,10 +635,10 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 	{
 		getQtyField().setEditable(!readOnly);
 	}
-	
+
 	/**
 	 * Sets the qty field components to be readonly or not
-	 * 
+	 *
 	 * @param plus set read-only state for plus button
 	 * @param minus set read-only state for minus button
 	 * @param field set read-only state for field
@@ -636,7 +650,6 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 		qtyField.setPlusRO(plus);
 		qtyField.setNumberRO(field);
 	}
-
 
 	/**
 	 * @return the quantity field; never returns null
@@ -672,7 +685,7 @@ public class SwingPackageBoxesItems extends TerminalSubPanel implements Property
 
 	/**
 	 * Check maximum quantity permitted into number pad
-	 * 
+	 *
 	 * @param packedQty - quantity packed from that item
 	 * @param unpackedQty - quantity unpacked from that item
 	 * @param newQty - quantity entered

@@ -64,7 +64,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvent
 public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequiredEvent>
 {
-	private final DDOrderAdvisedOrCreatedEventCreator dDOrderAdvisedOrCreatedEventCreator;
+	private final DDOrderAdvisedOrCreatedEventCreator ddOrderAdvisedOrCreatedEventCreator;
 
 	private final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator;
 
@@ -78,7 +78,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 			@NonNull final PostMaterialEventService fireMaterialEventService,
 			@NonNull final EventLogUserService eventLogUserService			)
 	{
-		this.dDOrderAdvisedOrCreatedEventCreator = dDOrderAdvisedOrCreatedEventCreator;
+		this.ddOrderAdvisedOrCreatedEventCreator = dDOrderAdvisedOrCreatedEventCreator;
 		this.ppOrderAdvisedEventCreator = ppOrderAdvisedEventCreator;
 		this.postMaterialEventService = fireMaterialEventService;
 		this.eventLogUserService = eventLogUserService;
@@ -116,7 +116,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 				eventLogUserService.newLogEntry(this.getClass())
 						.message(message)
-						.storeEntry();
+						.createAndStore();
 			});
 		}
 	}
@@ -126,7 +126,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		final IMutableMRPContext mrpContext = mkMRPContext(supplyRequiredDescriptor);
 
 		final List<MaterialEvent> events = new ArrayList<>();
-		events.addAll(dDOrderAdvisedOrCreatedEventCreator.createDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext));
+		events.addAll(ddOrderAdvisedOrCreatedEventCreator.createDDOrderAdvisedEvents(supplyRequiredDescriptor, mrpContext));
 		events.addAll(ppOrderAdvisedEventCreator.createPPOrderAdvisedEvents(supplyRequiredDescriptor, mrpContext));
 
 		events.forEach(e -> postMaterialEventService.postEventNow(e));

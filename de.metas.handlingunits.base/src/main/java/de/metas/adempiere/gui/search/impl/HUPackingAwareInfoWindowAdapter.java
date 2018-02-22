@@ -182,14 +182,14 @@ import de.metas.product.IProductBL;
 	}
 
 	@Override
-	public BigDecimal getQtyPacks()
+	public BigDecimal getQtyTU()
 	{
 		final BigDecimal qty = infoWindow.getValue(rowIndexModel, IHUPackingAware.COLUMNNAME_QtyPacks);
 		return qty;
 	}
 
 	@Override
-	public void setQtyPacks(final BigDecimal qtyPacks)
+	public void setQtyTU(final BigDecimal qtyPacks)
 	{
 		infoWindow.setValueByColumnName(IHUPackingAware.COLUMNNAME_QtyPacks, rowIndexModel, qtyPacks);
 	}

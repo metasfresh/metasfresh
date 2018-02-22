@@ -26,7 +26,7 @@ package de.metas.inoutcandidate.api.impl;
 import org.adempiere.util.agg.key.AbstractHeaderAggregationKeyBuilder;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inoutcandidate.agg.key.impl.HUShipmentScheduleKeyValueHandler;
 
 /**
@@ -35,7 +35,7 @@ import de.metas.inoutcandidate.agg.key.impl.HUShipmentScheduleKeyValueHandler;
 
  * @see HUShipmentScheduleKeyValueHandler for which properties go into the key.
  */
-public class HUShipmentScheduleHeaderAggregationKeyBuilder extends AbstractHeaderAggregationKeyBuilder<IShipmentScheduleWithHU>
+public class HUShipmentScheduleHeaderAggregationKeyBuilder extends AbstractHeaderAggregationKeyBuilder<ShipmentScheduleWithHU>
 {
 	public static final String REGISTRATION_KEY = I_M_ShipmentSchedule_QtyPicked.Table_Name;
 

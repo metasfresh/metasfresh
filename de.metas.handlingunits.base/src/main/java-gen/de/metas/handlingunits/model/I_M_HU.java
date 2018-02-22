@@ -359,7 +359,7 @@ public interface I_M_HU
     public static final String COLUMNNAME_M_HU_LUTU_Configuration_ID = "M_HU_LUTU_Configuration_ID";
 
 	/**
-	 * Set Packvorschrift-Produkt Zuordnung.
+	 * Set Packvorschrift.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -368,7 +368,7 @@ public interface I_M_HU
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
 
 	/**
-	 * Get Packvorschrift-Produkt Zuordnung.
+	 * Get Packvorschrift.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -442,7 +442,7 @@ public interface I_M_HU
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
-	 * Set Produkt-Kategorie.
+	 * Set Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: Search
@@ -454,7 +454,7 @@ public interface I_M_HU
 	public void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
-	 * Get Produkt-Kategorie.
+	 * Get Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: Search

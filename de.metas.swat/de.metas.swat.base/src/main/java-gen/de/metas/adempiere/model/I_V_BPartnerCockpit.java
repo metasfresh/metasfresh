@@ -26,12 +26,12 @@ package de.metas.adempiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,11 +40,11 @@ package de.metas.adempiere.model;
 
 
 /** Generated Interface for V_BPartnerCockpit
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  *  @version Release 3.5.4a#464
  */
 @SuppressWarnings("javadoc")
-public interface I_V_BPartnerCockpit 
+public interface I_V_BPartnerCockpit
 {
 
     /** TableName=V_BPartnerCockpit */
@@ -55,7 +55,7 @@ public interface I_V_BPartnerCockpit
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -1115,32 +1115,6 @@ public interface I_V_BPartnerCockpit
 
 	/** Get Search Location */
 	public java.lang.String getSearch_Location();
-
-    /** Column name SO_CreditAvailable */
-    public static final String COLUMNNAME_SO_CreditAvailable = "SO_CreditAvailable";
-
-	/** Set Credit Available.
-	  * Available Credit based on Credit Limit (not Total Open Balance) and Credit Used
-	  */
-	public void setSO_CreditAvailable (java.math.BigDecimal SO_CreditAvailable);
-
-	/** Get Credit Available.
-	  * Available Credit based on Credit Limit (not Total Open Balance) and Credit Used
-	  */
-	public java.math.BigDecimal getSO_CreditAvailable();
-
-    /** Column name SO_CreditLimit */
-    public static final String COLUMNNAME_SO_CreditLimit = "SO_CreditLimit";
-
-	/** Set Kreditlimit.
-	  * Höchstsumme für Aussenstände
-	  */
-	public void setSO_CreditLimit (java.math.BigDecimal SO_CreditLimit);
-
-	/** Get Kreditlimit.
-	  * Höchstsumme für Aussenstände
-	  */
-	public java.math.BigDecimal getSO_CreditLimit();
 
     /** Column name SO_CreditUsed */
     public static final String COLUMNNAME_SO_CreditUsed = "SO_CreditUsed";

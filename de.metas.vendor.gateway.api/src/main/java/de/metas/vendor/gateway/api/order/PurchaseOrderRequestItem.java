@@ -28,5 +28,7 @@ import lombok.Value;
 @Value
 public class PurchaseOrderRequestItem
 {
+	int purchaseCandidateId;
+
 	ProductAndQuantity productAndQuantity;
 }

@@ -25,8 +25,11 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -42,6 +45,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  *
@@ -70,9 +74,16 @@ public class ZoomInfoFactory
 
 		int getAD_Table_ID();
 
-		String getKeyColumnName();
-
-		List<String> getKeyColumnNames();
+		/**
+		 * The name of the column from which the zoom originates.<br>
+		 * In other words, the name of the column for which the system tries to load {@link IZoomProvider}s.
+		 *
+		 * Example: when looking for zoom-targets from a {@code C_Order} window, then this is {@code C_Order_ID}.
+		 *
+		 * @return The name of the single ID column which has {@link I_AD_Column#COLUMN_IsGenericZoomOrigin} {@code ='Y'}.
+		 *         May also return {@code null}. In this case, expect no exception, but also no zoom providers to be created.
+		 */
+		String getKeyColumnNameOrNull();
 
 		int getRecord_ID();
 
@@ -106,23 +117,41 @@ public class ZoomInfoFactory
 
 		private final PO po;
 		private final int adWindowId;
-		private final List<String> keyColumnNames;
+		private final String keyColumnName;
 
-		private POZoomSource(final PO po, final int adWindowId)
+		private POZoomSource(@NonNull final PO po, final int adWindowId)
 		{
-			Check.assumeNotNull(po, "Parameter po is not null");
 			this.po = po;
 			this.adWindowId = adWindowId;
 
+			this.keyColumnName = extractKeyColumnNameOrNull(po);
+		}
+
+		private static String extractKeyColumnNameOrNull(@NonNull final PO po)
+		{
 			final String[] keyColumnNamesArr = po.get_KeyColumns();
 			if (keyColumnNamesArr == null)
 			{
-				keyColumnNames = ImmutableList.of();
+				return null;
 			}
-			else
+
+			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
+			final ArrayList<String> eligibleKeyColumnNames = new ArrayList<>();
+			for (int i = 0; i < keyColumnNamesArr.length; i++)
 			{
-				keyColumnNames = ImmutableList.copyOf(keyColumnNamesArr);
+				final I_AD_Column column = adTableDAO.retrieveColumn(po.get_TableName(), keyColumnNamesArr[i]);
+				if (column.isGenericZoomOrigin())
+				{
+					eligibleKeyColumnNames.add(keyColumnNamesArr[i]);
+				}
 			}
+
+			if (eligibleKeyColumnNames.size() != 1)
+			{
+				return null;
+			}
+			return eligibleKeyColumnNames.get(0);
 		}
 
 		@Override
@@ -158,19 +187,9 @@ public class ZoomInfoFactory
 		}
 
 		@Override
-		public String getKeyColumnName()
+		public String getKeyColumnNameOrNull()
 		{
-			if (keyColumnNames.size() != 1)
-			{
-				return null;
-			}
-			return keyColumnNames.get(0);
-		}
-
-		@Override
-		public List<String> getKeyColumnNames()
-		{
-			return keyColumnNames;
+			return keyColumnName;
 		}
 
 		@Override
@@ -253,7 +272,11 @@ public class ZoomInfoFactory
 	@SuppressWarnings("serial")
 	public static final class ZoomInfo implements Serializable
 	{
-		public static final ZoomInfo of(final String zoomInfoId, final int windowId, final MQuery query, final ITranslatableString destinationDisplay)
+		public static final ZoomInfo of(
+				@NonNull final String zoomInfoId,
+				final int windowId,
+				@NonNull final MQuery query,
+				@NonNull final ITranslatableString destinationDisplay)
 		{
 			return new ZoomInfo(zoomInfoId, windowId, query, destinationDisplay);
 		}
@@ -263,20 +286,19 @@ public class ZoomInfoFactory
 		private final MQuery _query;
 		private final int _windowId;
 
-		private ZoomInfo(final String zoomInfoId, final int windowId, final MQuery query, final ITranslatableString destinationDisplay)
+		private ZoomInfo(
+				@NonNull final String zoomInfoId,
+				final int windowId,
+				@NonNull final MQuery query,
+				@NonNull final ITranslatableString destinationDisplay)
 		{
-			super();
-
 			Check.assumeNotEmpty(zoomInfoId, "zoomInfoId is not empty");
 			_zoomInfoId = zoomInfoId;
 
 			Check.assume(windowId > 0, "windowId > 0");
 			_windowId = windowId;
 
-			Check.assumeNotNull(query, "Parameter query is not null");
 			_query = query;
-
-			Check.assumeNotNull(destinationDisplay, "destinationDisplay is not null");
 			_destinationDisplay = destinationDisplay;
 		}
 
@@ -479,7 +501,7 @@ public class ZoomInfoFactory
 
 	/**
 	 * Disable the {@link FactAcctZoomProvider} (which is enabled by default
-	 * 
+	 *
 	 * @deprecated Needed only for Swing
 	 */
 	@Deprecated

@@ -80,7 +80,10 @@ public class M_Transaction_TransactionEventCreator
 		{
 			result.add(createEventForMovementLine(transaction, deleted));
 		}
-
+		else if (transaction.getM_InventoryLine_ID() > 0)
+		{
+			result.add(createEventForInventoryLine(transaction, deleted));
+		}
 		return result.build();
 	}
 
@@ -266,7 +269,9 @@ public class M_Transaction_TransactionEventCreator
 		return event;
 	}
 
-	private MaterialEvent createEventForMovementLine(I_M_Transaction transaction, boolean deleted)
+	private MaterialEvent createEventForMovementLine(
+			@NonNull final I_M_Transaction transaction,
+			final boolean deleted)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(extractTransactionWarehouseId(transaction));
 
@@ -306,6 +311,46 @@ public class M_Transaction_TransactionEventCreator
 					.directMovementWarehouse(directMovementWarehouse)
 					.ddOrderId(ddOrderId)
 					.ddOrderLineId(movementLine.getDD_OrderLine_ID())
+					.huOnHandQtyChangeDescriptors(huDescriptors)
+					.build();
+		}
+
+		return event;
+	}
+
+	private MaterialEvent createEventForInventoryLine(
+			@NonNull final I_M_Transaction transaction,
+			final boolean deleted)
+	{
+		final boolean directMovementWarehouse = isDirectMovementWarehouse(extractTransactionWarehouseId(transaction));
+
+		final EventDescriptor eventDescriptor = EventDescriptor.createNew(transaction);
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(
+				transaction,
+				transaction.getMovementQty());
+
+		final List<HUOnHandQtyChangeDescriptor> huDescriptors = //
+				M_Transaction_HuOnHandQtyChangeDescriptor.INSTANCE.createHuDescriptorsForInventoryLine(transaction, deleted);
+
+		final AbstractTransactionEvent event;
+
+		if (deleted)
+		{
+			event = TransactionDeletedEvent.builder()
+					.eventDescriptor(eventDescriptor)
+					.transactionId(transaction.getM_Transaction_ID())
+					.materialDescriptor(materialDescriptor)
+					.directMovementWarehouse(directMovementWarehouse)
+					.huOnHandQtyChangeDescriptors(huDescriptors)
+					.build();
+}
+		else
+		{
+			event = TransactionCreatedEvent.builder()
+					.eventDescriptor(eventDescriptor)
+					.transactionId(transaction.getM_Transaction_ID())
+					.materialDescriptor(materialDescriptor)
+					.directMovementWarehouse(directMovementWarehouse)
 					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();
 		}

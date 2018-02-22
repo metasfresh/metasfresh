@@ -382,8 +382,8 @@ public interface I_MD_Cockpit_DocumentDetail
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Bestellte Menge
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -392,8 +392,8 @@ public interface I_MD_Cockpit_DocumentDetail
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Bestellte Menge
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -407,8 +407,8 @@ public interface I_MD_Cockpit_DocumentDetail
     public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set Reservierte Menge.
-	 * Reservierte Menge
+	 * Set Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -417,8 +417,8 @@ public interface I_MD_Cockpit_DocumentDetail
 	public void setQtyReserved (java.math.BigDecimal QtyReserved);
 
 	/**
-	 * Get Reservierte Menge.
-	 * Reservierte Menge
+	 * Get Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

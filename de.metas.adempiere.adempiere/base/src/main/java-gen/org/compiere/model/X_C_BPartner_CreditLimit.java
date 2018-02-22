@@ -15,7 +15,7 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1068906034L;
+	private static final long serialVersionUID = 760573499L;
 
     /** Standard Constructor */
     public X_C_BPartner_CreditLimit (Properties ctx, int C_BPartner_CreditLimit_ID, String trxName)
@@ -24,9 +24,9 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
       /** if (C_BPartner_CreditLimit_ID == 0)
         {
 			setAmount (BigDecimal.ZERO);
-			setApprovedBy_ID (0); // @CreatedBy@
 			setC_BPartner_CreditLimit_ID (0);
-			setType (null);
+			setC_CreditLimit_Type_ID (0);
+			setIsApproved (false); // N
         } */
     }
 
@@ -161,6 +161,40 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 	}
 
 	@Override
+	public org.compiere.model.I_C_CreditLimit_Type getC_CreditLimit_Type() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CreditLimit_Type_ID, org.compiere.model.I_C_CreditLimit_Type.class);
+	}
+
+	@Override
+	public void setC_CreditLimit_Type(org.compiere.model.I_C_CreditLimit_Type C_CreditLimit_Type)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CreditLimit_Type_ID, org.compiere.model.I_C_CreditLimit_Type.class, C_CreditLimit_Type);
+	}
+
+	/** Set Credit Limit Type.
+		@param C_CreditLimit_Type_ID Credit Limit Type	  */
+	@Override
+	public void setC_CreditLimit_Type_ID (int C_CreditLimit_Type_ID)
+	{
+		if (C_CreditLimit_Type_ID < 1) 
+			set_Value (COLUMNNAME_C_CreditLimit_Type_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CreditLimit_Type_ID, Integer.valueOf(C_CreditLimit_Type_ID));
+	}
+
+	/** Get Credit Limit Type.
+		@return Credit Limit Type	  */
+	@Override
+	public int getC_CreditLimit_Type_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_CreditLimit_Type_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
@@ -212,51 +246,29 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateFrom);
 	}
 
-	/** Set Datum bis.
-		@param DateTo 
-		Enddatum eines Abschnittes
+	/** Set Freigegeben.
+		@param IsApproved 
+		Zeigt an, ob dieser Beleg eine Freigabe braucht
 	  */
 	@Override
-	public void setDateTo (java.sql.Timestamp DateTo)
+	public void setIsApproved (boolean IsApproved)
 	{
-		set_Value (COLUMNNAME_DateTo, DateTo);
+		set_Value (COLUMNNAME_IsApproved, Boolean.valueOf(IsApproved));
 	}
 
-	/** Get Datum bis.
-		@return Enddatum eines Abschnittes
+	/** Get Freigegeben.
+		@return Zeigt an, ob dieser Beleg eine Freigabe braucht
 	  */
 	@Override
-	public java.sql.Timestamp getDateTo () 
+	public boolean isApproved () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTo);
-	}
-
-	/** 
-	 * Type AD_Reference_ID=540830
-	 * Reference name: CreditLimit_Type
-	 */
-	public static final int TYPE_AD_Reference_ID=540830;
-	/** Ins = 2_Ins */
-	public static final String TYPE_Ins = "2_Ins";
-	/** Man = 1_Man */
-	public static final String TYPE_Man = "1_Man";
-	/** Set Art.
-		@param Type 
-		Type of Validation (SQL, Java Script, Java Language)
-	  */
-	@Override
-	public void setType (java.lang.String Type)
-	{
-
-		set_Value (COLUMNNAME_Type, Type);
-	}
-
-	/** Get Art.
-		@return Type of Validation (SQL, Java Script, Java Language)
-	  */
-	@Override
-	public java.lang.String getType () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Type);
+		Object oo = get_Value(COLUMNNAME_IsApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }

@@ -1,6 +1,5 @@
 package de.metas.picking.service;
 
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -10,6 +9,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -50,7 +50,7 @@ public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem
 
 	private final FreshPackingItem root;
 
-	TransactionalFreshPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys)
+	TransactionalFreshPackingItem(final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys)
 	{
 		super();
 		id = nextId.incrementAndGet();

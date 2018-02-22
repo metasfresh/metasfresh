@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.picking.legacy.form;
 
@@ -13,18 +13,17 @@ package de.metas.picking.legacy.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -34,9 +33,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.picking.terminal.Utils;
+import de.metas.quantity.Quantity;
 
 /**
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
@@ -60,18 +61,20 @@ public class LegacyPackingItem extends AbstractPackingItem implements Comparable
 		}
 	}
 
-	public LegacyPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final String trxName)
+	public LegacyPackingItem(final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys, final String trxName)
 	{
 		super(scheds2Qtys);
 		this.trxName = trxName;
 	}
 
-	public LegacyPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final int groupingKey, final String trxName)
+	public LegacyPackingItem(
+			final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys,
+			final int groupingKey,
+			final String trxName)
 	{
 		super(scheds2Qtys, groupingKey);
-		this.trxName  = trxName;
+		this.trxName = trxName;
 	}
-
 
 	@Override
 	public String toString()
@@ -108,8 +111,12 @@ public class LegacyPackingItem extends AbstractPackingItem implements Comparable
 	public int compareTo(final LegacyPackingItem o)
 	{
 		final String trxName = getTrxName();
-		final BigDecimal volOther = o.getQtySum().multiply(o.retrieveVolumeSingle(trxName));
-		final BigDecimal volThis = getQtySum().multiply(retrieveVolumeSingle(trxName));
+
+		final BigDecimal volOther = Utils.convertToItemUOM(o, o.getQtySum())
+				.multiply(Utils.convertToItemUOM(o, o.retrieveVolumeSingle(trxName)));
+
+		final BigDecimal volThis = Utils.convertToItemUOM(this, getQtySum())
+				.multiply(Utils.convertToItemUOM(this, retrieveVolumeSingle(trxName)));
 
 		return volThis.compareTo(volOther);
 	}

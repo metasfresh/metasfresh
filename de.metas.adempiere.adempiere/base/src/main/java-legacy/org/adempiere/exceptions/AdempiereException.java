@@ -29,6 +29,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.util.Env;
+import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
@@ -162,8 +163,23 @@ public class AdempiereException extends RuntimeException
 		}
 	}
 
+	/**
+	 * If enabled, the language used to translate the error message is captured when the exception is constructed.
+	 * 
+	 * If is NOT enabled, the language used to translate the error message is acquired when the message is translated.
+	 */
+	public static final void enableCaptureLanguageOnConstructionTime()
+	{
+		AdempiereException.captureLanguageOnConstructionTime = true;
+	}
+
+	private static boolean captureLanguageOnConstructionTime = false;
+
 	private boolean parseTranslation = true;
+	/** Build message but not translated */
 	private String _messageBuilt = null;
+	private final String adLanguage;
+	private ValueNamePair _translatedLocalizedMessage = null;
 
 	private Integer adIssueId = null;
 	private boolean userNotified = false;
@@ -185,12 +201,14 @@ public class AdempiereException extends RuntimeException
 	public AdempiereException(final String message)
 	{
 		super(message);
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 	}
 
-	public AdempiereException(final String language, final String adMessage, final Object[] params)
+	public AdempiereException(final String adLanguage, final String adMessage, final Object[] params)
 	{
-		super(Services.get(IMsgBL.class).getMsg(language, adMessage, params));
-		setParameter("AD_Language", language);
+		super(Services.get(IMsgBL.class).getMsg(adLanguage, adMessage, params));
+		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
+		setParameter("AD_Language", adLanguage);
 		setParameter("AD_Message", adMessage);
 	}
 
@@ -210,6 +228,7 @@ public class AdempiereException extends RuntimeException
 	public AdempiereException(final Throwable cause)
 	{
 		super(cause);
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 	}
 
 	/**
@@ -219,31 +238,53 @@ public class AdempiereException extends RuntimeException
 	public AdempiereException(final String message, final Throwable cause)
 	{
 		super(message, cause);
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+	}
+
+	private final String getOriginalLocalizedMessage()
+	{
+		return super.getLocalizedMessage();
 	}
 
 	@Override
 	public final String getLocalizedMessage()
 	{
-		String msg = super.getLocalizedMessage();
-
-		if (parseTranslation)
+		if (!parseTranslation)
 		{
-			if (Language.isBaseLanguageSet())
-			{
-				try
-				{
-					msg = Services.get(IMsgBL.class).parseTranslation(getCtx(), msg);
-				}
-				catch (Throwable e)
-				{
-					// don't fail while building the actual exception
-					addSuppressed(e);
-					// e.printStackTrace();
-				}
-			}
+			return getOriginalLocalizedMessage();
 		}
 
-		return msg;
+		if (!Language.isBaseLanguageSet())
+		{
+			return getOriginalLocalizedMessage();
+		}
+
+		try
+		{
+			final String adLanguage = getADLanguage();
+			return translateOriginalLocalizedMessage(adLanguage);
+		}
+		catch (final Throwable ex)
+		{
+			// don't fail while building the actual exception
+			ex.printStackTrace();
+			return getOriginalLocalizedMessage();
+		}
+	}
+
+	// NOTE: i think we don't have to synchronize this method because usually is called by same thread
+	// NOTE: it's OK to cache by last used language because in 99% of the cases only one language is used.
+	private String translateOriginalLocalizedMessage(final String adLanguage)
+	{
+		ValueNamePair translatedLocalizedMessage = this._translatedLocalizedMessage;
+		if (translatedLocalizedMessage == null || !translatedLocalizedMessage.getValue().equals(adLanguage))
+		{
+			final String msg = getOriginalLocalizedMessage();
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			final String msgTrl = msgBL.parseTranslation(adLanguage, msg);
+			this._translatedLocalizedMessage = translatedLocalizedMessage = ValueNamePair.of(adLanguage, msgTrl);
+		}
+		return translatedLocalizedMessage.getName();
 	}
 
 	@Override
@@ -297,11 +338,12 @@ public class AdempiereException extends RuntimeException
 	protected final void resetMessageBuilt()
 	{
 		this._messageBuilt = null;
+		this._translatedLocalizedMessage = null;
 	}
 
-	protected Properties getCtx()
+	protected final String getADLanguage()
 	{
-		return Env.getCtx();
+		return adLanguage != null ? adLanguage : Env.getAD_Language();
 	}
 
 	/**
@@ -438,12 +480,12 @@ public class AdempiereException extends RuntimeException
 		// NOTE: we consider it as issue reported even if the AD_Issue_ID <= 0
 		return adIssueId != null;
 	}
-	
+
 	public final boolean isUserNotified()
 	{
 		return userNotified;
 	}
-	
+
 	public final AdempiereException markUserNotified()
 	{
 		userNotified = true;

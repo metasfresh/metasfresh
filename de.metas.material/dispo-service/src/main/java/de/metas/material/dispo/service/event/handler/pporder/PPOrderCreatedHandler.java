@@ -108,7 +108,7 @@ public final class PPOrderCreatedHandler
 		{
 			eventLogUserService.newLogEntry(this.getClass())
 					.message("The given ppOrderCreatedEvent has no groupId, so it was created by a user and not via material-dispo. Going to create new candidate records.")
-					.storeEntry();
+					.createAndStore();
 			return CandidatesQuery.FALSE;
 		}
 

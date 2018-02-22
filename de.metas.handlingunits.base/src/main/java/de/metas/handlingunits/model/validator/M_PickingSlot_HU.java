@@ -50,7 +50,7 @@ public class M_PickingSlot_HU
 		final boolean isUserAction = InterfaceWrapperHelper.isUIAction(pickingSlotHU);
 
 		final IHUPickingSlotBL pickingSlotBL = Services.get(IHUPickingSlotBL.class);
-		final I_M_PickingSlot pickingSlot = pickingSlotHU.getM_PickingSlot();
+		final I_M_PickingSlot pickingSlot = InterfaceWrapperHelper.load(pickingSlotHU.getM_PickingSlot_ID(), I_M_PickingSlot.class);
 		final I_M_HU hu = pickingSlotHU.getM_HU();
 
 		if (isUserAction)
@@ -74,7 +74,7 @@ public class M_PickingSlot_HU
 		final boolean isUserAction = InterfaceWrapperHelper.isUIAction(pickingSlotHU);
 
 		final IHUPickingSlotBL pickingSlotBL = Services.get(IHUPickingSlotBL.class);
-		final I_M_PickingSlot pickingSlot = pickingSlotHU.getM_PickingSlot();
+		final I_M_PickingSlot pickingSlot = InterfaceWrapperHelper.load(pickingSlotHU.getM_PickingSlot_ID(), I_M_PickingSlot.class);
 		final I_M_HU hu = pickingSlotHU.getM_HU();
 		if (isUserAction)
 		{

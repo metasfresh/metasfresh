@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.agg.key.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,7 +32,7 @@ import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.shipping.model.I_M_ShippingPackage;
 
 /**
@@ -40,14 +40,14 @@ import de.metas.shipping.model.I_M_ShippingPackage;
  *
  * @author al
  */
-public class HUShipmentScheduleKeyValueHandler implements IAggregationKeyValueHandler<IShipmentScheduleWithHU>
+public class HUShipmentScheduleKeyValueHandler implements IAggregationKeyValueHandler<ShipmentScheduleWithHU>
 {
 	private static final String VERSION = "1";
 
 	@Override
-	public List<Object> getValues(final IShipmentScheduleWithHU schedWithHU)
+	public List<Object> getValues(final ShipmentScheduleWithHU schedWithHU)
 	{
-		final List<Object> values = new ArrayList<Object>();
+		final List<Object> values = new ArrayList<>();
 
 		values.add(VERSION);
 
@@ -74,7 +74,7 @@ public class HUShipmentScheduleKeyValueHandler implements IAggregationKeyValueHa
 		// Services
 		final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 
-		final List<Object> values = new ArrayList<Object>();
+		final List<Object> values = new ArrayList<>();
 
 		final List<I_M_ShippingPackage> shippingPackages = huShipperTransportationBL.getShippingPackagesForHU(hu);
 		for (final I_M_ShippingPackage shippingPackage : shippingPackages)

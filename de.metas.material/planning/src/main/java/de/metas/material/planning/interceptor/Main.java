@@ -4,8 +4,6 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.model.I_AD_Client;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -36,7 +34,6 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		engine.addModelValidator(M_Product.INSTANCE, client);
 		engine.addModelValidator(S_Resource.INSTANCE, client);
 	}
 }

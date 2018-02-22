@@ -64,7 +64,7 @@ public class DBForeignKeyConstraintException extends DBException
 		// Detail: Key (c_bpartner_id)=(2000037) is still referenced from table "pp_mrp".
 		//
 
-		return Services.get(IMsgBL.class).getMsg(getCtx(), AD_Message)
+		return Services.get(IMsgBL.class).getMsg(getADLanguage(), AD_Message)
 				+ "\n\n" + super.buildMessage();
 	}
 

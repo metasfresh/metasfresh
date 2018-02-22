@@ -332,7 +332,8 @@ public class Doc_Invoice extends Doc
 		//
 		final List<Fact> facts = new ArrayList<>();
 		// create Fact Header
-		Fact fact = new Fact(this, as, Fact.POST_Actual);
+		Fact fact = new Fact(this, as, Fact.POST_Actual)
+				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 
 		// Cash based accounting
 		if (!as.isAccrual())

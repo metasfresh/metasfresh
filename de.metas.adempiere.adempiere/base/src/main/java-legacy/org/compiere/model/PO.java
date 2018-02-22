@@ -47,7 +47,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.IModelCacheInvalidationService;
 import org.adempiere.ad.dao.cache.ModelCacheInvalidationTiming;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
@@ -2291,7 +2291,7 @@ public abstract class PO
 	{
 		final PO po = InterfaceWrapperHelper.getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
-		setClientOrg(po);
+		setClientOrg(po.getAD_Client_ID(), po.getAD_Org_ID());
 	}
 
 	/**
@@ -3955,7 +3955,8 @@ public abstract class PO
 		// Create cache invalidation request
 		// (we have to do it here, before we reset all fields)
 		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		final CacheInvalidateRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName() ? cacheInvalidationService.createRequest(this, ModelCacheInvalidationTiming.DELETE)
+		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName() ?
+				cacheInvalidationService.createRequest(this, ModelCacheInvalidationTiming.DELETE)
 				: null;
 
 		//
