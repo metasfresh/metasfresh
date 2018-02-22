@@ -42,8 +42,8 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -397,7 +397,10 @@ public class CandidateChangeHandlerTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(materialDescr)
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleIdForDemandDetail, 0))
+				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
+						shipmentScheduleIdForDemandDetail,
+						0,
+						0))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
@@ -418,7 +421,10 @@ public class CandidateChangeHandlerTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(supplyMaterialDescriptor)
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleIdForDemandDetail, 0))
+				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
+						shipmentScheduleIdForDemandDetail,
+						0,
+						0))
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);

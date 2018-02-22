@@ -31,7 +31,7 @@ import de.metas.event.model.I_AD_EventLog_Entry;
 
 public class Main extends AbstractModuleInterceptor
 {
-	public static Main INSTANCE = new Main();
+	public static final Main INSTANCE = new Main();
 
 	private Main()
 	{

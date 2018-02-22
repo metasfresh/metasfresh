@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
@@ -191,8 +192,20 @@ public class CandidateRepositoryWriteService
 
 		candidateRecord.setStorageAttributesKey(computeStorageAttributesKeyToStore(materialDescriptor));
 
-		candidateRecord.setQty(candidate.getQuantity());
+		candidateRecord.setQty(candidate.getQuantity().stripTrailingZeros());
 		candidateRecord.setDateProjected(new Timestamp(materialDescriptor.getDate().getTime()));
+
+		final int orderId = Optional.ofNullable(candidate.getDemandDetail())
+				.map(DemandDetail::getOrderId).orElse(0);
+		candidateRecord.setC_Order_ID(orderId);
+
+		final int forecastId = Optional.ofNullable(candidate.getDemandDetail())
+				.map(DemandDetail::getForecastId).orElse(0);
+		candidateRecord.setM_Forecast_ID(forecastId);
+
+		final int shipmentScheduleId = Optional.ofNullable(candidate.getDemandDetail())
+				.map(DemandDetail::getShipmentScheduleId).orElse(0);
+		candidateRecord.setM_ShipmentSchedule_ID(shipmentScheduleId);
 
 		if (candidate.getBusinessCase() != null)
 		{

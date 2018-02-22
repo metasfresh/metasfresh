@@ -72,7 +72,7 @@ public class ForecastCreatedHandler implements MaterialEventHandler<ForecastCrea
 
 		for (final ForecastLine forecastLine : forecast.getForecastLines())
 		{
-			complementBuilderFromForecastLine(candidateBuilder, forecastLine);
+			complementBuilderFromForecastLine(candidateBuilder, forecast, forecastLine);
 
 			final Candidate demandCandidate = candidateBuilder.build();
 			candidateChangeHandler.onCandidateNewOrChange(demandCandidate);
@@ -81,10 +81,13 @@ public class ForecastCreatedHandler implements MaterialEventHandler<ForecastCrea
 
 	private void complementBuilderFromForecastLine(
 			@NonNull final CandidateBuilder candidateBuilder,
+			@NonNull final Forecast forecast,
 			@NonNull final ForecastLine forecastLine)
 	{
 		candidateBuilder
 				.materialDescriptor(forecastLine.getMaterialDescriptor())
-				.demandDetail(DemandDetail.forForecastLineId(forecastLine.getForecastLineId()));
+				.demandDetail(DemandDetail.forForecastLineId(
+						forecastLine.getForecastLineId(),
+						forecast.getForecastId()));
 	}
 }
