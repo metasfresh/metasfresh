@@ -127,11 +127,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 			}
 		}
 
-		final BigDecimal delta = parentStockCandidateWithIdAndDelta.getQuantity();
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
-				parentStockCandidateWithIdAndDelta.getMaterialDescriptor(),
-				parentStockCandidateWithIdAndDelta.getGroupId(),
-				delta);
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(parentStockCandidateWithIdAndDelta);
 
 		// set the stock candidate as parent for the supply candidate
 		// the return value would have qty=0, but in the repository we updated the parent-ID

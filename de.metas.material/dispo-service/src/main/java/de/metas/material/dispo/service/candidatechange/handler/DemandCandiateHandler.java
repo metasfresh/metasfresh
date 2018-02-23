@@ -11,11 +11,11 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.PostMaterialEventService;
@@ -129,14 +129,11 @@ public class DemandCandiateHandler implements CandidateHandler
 			}
 		}
 
-		candidateRepositoryWriteService.updateCandidateById(childStockWithDemand
-				.withParentId(demandCandidateWithId.getId()));
+		candidateRepositoryWriteService
+				.updateCandidateById(childStockWithDemand.withParentId(demandCandidateWithId.getId()));
 
-		final BigDecimal delta = childStockWithDemandDelta.getQuantity();
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
-				childStockWithDemandDelta.getMaterialDescriptor(),
-				childStockWithDemandDelta.getGroupId(),
-				delta);
+		stockCandidateService
+				.applyDeltaToMatchingLaterStockCandidates(childStockWithDemandDelta);
 
 		final Candidate demandCandidateToReturn;
 

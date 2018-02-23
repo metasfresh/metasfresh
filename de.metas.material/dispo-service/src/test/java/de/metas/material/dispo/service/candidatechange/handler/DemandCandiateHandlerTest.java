@@ -66,7 +66,7 @@ import mockit.Verifications;
  * #L%
  */
 
-public class DemandCandiateCangeHandlerTest
+public class DemandCandiateHandlerTest
 {
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
