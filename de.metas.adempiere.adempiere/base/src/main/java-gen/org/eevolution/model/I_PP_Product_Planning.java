@@ -257,29 +257,6 @@ public interface I_PP_Product_Planning
     public static final String COLUMNNAME_IsAttributeDependant = "IsAttributeDependant";
 
 	/**
-	 * Set IsCreateDistributionOrder.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsCreateDistributionOrder (boolean IsCreateDistributionOrder);
-
-	/**
-	 * Get IsCreateDistributionOrder.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isCreateDistributionOrder();
-
-    /** Column definition for IsCreateDistributionOrder */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsCreateDistributionOrder = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsCreateDistributionOrder", null);
-    /** Column name IsCreateDistributionOrder */
-    public static final String COLUMNNAME_IsCreateDistributionOrder = "IsCreateDistributionOrder";
-
-	/**
 	 * Set Beleg erstellen.
 	 * Legt fest, ob das System die betreffenden Belege (z.B. Produktionsaufträge) gegebenenfalls direkt erstellen soll.
 	 *

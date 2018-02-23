@@ -15,7 +15,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -867348890L;
+	private static final long serialVersionUID = 99375460L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (Properties ctx, int PP_Product_Planning_ID, String trxName)
@@ -24,7 +24,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
       /** if (PP_Product_Planning_ID == 0)
         {
 			setIsAttributeDependant (false); // N
-			setIsCreateDistributionOrder (false); // N
 			setIsCreatePlan (true); // Y
 			setIsDocComplete (false); // N
 			setIsPickDirectlyIfFeasible (false); // N
@@ -192,29 +191,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public boolean isAttributeDependant () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAttributeDependant);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set IsCreateDistributionOrder.
-		@param IsCreateDistributionOrder IsCreateDistributionOrder	  */
-	@Override
-	public void setIsCreateDistributionOrder (boolean IsCreateDistributionOrder)
-	{
-		set_Value (COLUMNNAME_IsCreateDistributionOrder, Boolean.valueOf(IsCreateDistributionOrder));
-	}
-
-	/** Get IsCreateDistributionOrder.
-		@return IsCreateDistributionOrder	  */
-	@Override
-	public boolean isCreateDistributionOrder () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsCreateDistributionOrder);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
