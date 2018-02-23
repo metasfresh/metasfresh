@@ -15,7 +15,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1813059886L;
+	private static final long serialVersionUID = -1071216943L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (Properties ctx, int M_ReceiptSchedule_ID, String trxName)
@@ -957,6 +957,32 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public java.sql.Timestamp getMovementDate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
+	}
+
+	/** 
+	 * OnMaterialReceiptWithDestWarehouse AD_Reference_ID=540835
+	 * Reference name: OnMaterialReceiptWithDestWarehouse_List
+	 */
+	public static final int ONMATERIALRECEIPTWITHDESTWAREHOUSE_AD_Reference_ID=540835;
+	/** CreateMovement = M */
+	public static final String ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement = "M";
+	/** Create Distribution Order = D */
+	public static final String ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder = "D";
+	/** Set OnMaterialReceiptWithDestWarehouse.
+		@param OnMaterialReceiptWithDestWarehouse OnMaterialReceiptWithDestWarehouse	  */
+	@Override
+	public void setOnMaterialReceiptWithDestWarehouse (java.lang.String OnMaterialReceiptWithDestWarehouse)
+	{
+
+		set_Value (COLUMNNAME_OnMaterialReceiptWithDestWarehouse, OnMaterialReceiptWithDestWarehouse);
+	}
+
+	/** Get OnMaterialReceiptWithDestWarehouse.
+		@return OnMaterialReceiptWithDestWarehouse	  */
+	@Override
+	public java.lang.String getOnMaterialReceiptWithDestWarehouse () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_OnMaterialReceiptWithDestWarehouse);
 	}
 
 	/** 

@@ -895,6 +895,29 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
+	 * Set OnMaterialReceiptWithDestWarehouse.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setOnMaterialReceiptWithDestWarehouse (java.lang.String OnMaterialReceiptWithDestWarehouse);
+
+	/**
+	 * Get OnMaterialReceiptWithDestWarehouse.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getOnMaterialReceiptWithDestWarehouse();
+
+    /** Column definition for OnMaterialReceiptWithDestWarehouse */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_OnMaterialReceiptWithDestWarehouse = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "OnMaterialReceiptWithDestWarehouse", null);
+    /** Column name OnMaterialReceiptWithDestWarehouse */
+    public static final String COLUMNNAME_OnMaterialReceiptWithDestWarehouse = "OnMaterialReceiptWithDestWarehouse";
+
+	/**
 	 * Set Priorität.
 	 * Priority of a document
 	 *
