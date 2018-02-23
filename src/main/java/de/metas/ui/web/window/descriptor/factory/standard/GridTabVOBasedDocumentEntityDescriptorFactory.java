@@ -569,10 +569,19 @@ import lombok.NonNull;
 
 	private static final LabelsLookup createLabelsLookup(final I_AD_UI_Element labelsUIElement, final String tableName)
 	{
-		final String linkColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
-		
 		final I_AD_Tab labelsTab = labelsUIElement.getLabels_Tab();
 		final String labelsTableName = labelsTab.getAD_Table().getTableName();
+
+		final String linkColumnName;
+		if(labelsTab.getParent_Column_ID() > 0)
+		{
+			linkColumnName = labelsTab.getParent_Column().getColumnName();
+		}
+		else
+		{
+			linkColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+		}
+
 		final String labelsLinkColumnName;
 		if (labelsTab.getAD_Column_ID() > 0)
 		{

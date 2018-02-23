@@ -122,7 +122,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(labelsTableName, PlainContextAware.newWithThreadInheritedTrx())
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(labelsLinkColumnName, linkId); // parent link
+				.addEqualsFilter(getLabelsLinkColumnName(), linkId); // parent link
 	}
 
 	@Override
