@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
@@ -76,12 +78,12 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	 */
 	protected AbstractCustomView(
 			@NonNull final ViewId viewId,
-			@NonNull final ITranslatableString description,
+			@Nullable final ITranslatableString description,
 			@NonNull final IRowsData<T> rowsData,
 			@NonNull final DocumentFilterDescriptorsProvider viewFilterDescriptors)
 	{
 		this.viewId = viewId;
-		this.description = description;
+		this.description = description != null ? description : ITranslatableString.empty();
 
 		this.rowsData = rowsData;
 		

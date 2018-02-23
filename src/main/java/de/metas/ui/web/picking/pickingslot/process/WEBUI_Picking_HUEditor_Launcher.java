@@ -14,8 +14,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotView;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
@@ -50,7 +48,7 @@ import lombok.NonNull;
  * 
  * @author metas-dev <dev@metasfresh.com>
  */
-public class WEBUI_Picking_HUEditor_Launcher extends ViewBasedProcessTemplate
+public class WEBUI_Picking_HUEditor_Launcher extends PickingSlotViewBasedProcess
 {
 	@Autowired
 	private IViewsRepository viewsRepo;
@@ -105,17 +103,5 @@ public class WEBUI_Picking_HUEditor_Launcher extends ViewBasedProcessTemplate
 						.addStickyFilters(HUIdsFilterHelper.createFilter(availableHUIdsToPick))
 						.build());
 		return husToPickView;
-	}
-
-	@Override
-	protected PickingSlotView getView()
-	{
-		return PickingSlotView.cast(super.getView());
-	}
-
-	@Override
-	protected PickingSlotRow getSingleSelectedRow()
-	{
-		return PickingSlotRow.cast(super.getSingleSelectedRow());
 	}
 }

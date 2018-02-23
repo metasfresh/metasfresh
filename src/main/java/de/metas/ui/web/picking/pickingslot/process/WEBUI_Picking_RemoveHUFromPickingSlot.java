@@ -6,11 +6,9 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
  * #%L
@@ -43,9 +41,7 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_RemoveHUFromPickingSlot
-		extends ViewBasedProcessTemplate
-		implements IProcessPrecondition
+public class WEBUI_Picking_RemoveHUFromPickingSlot extends PickingSlotViewBasedProcess
 {
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
@@ -63,7 +59,7 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
-		
+
 		if (pickingSlotRow.isProcessed())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
@@ -80,17 +76,11 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot
 
 		return MSG_OK;
 	}
-	
+
 	@Override
 	protected void postProcess(final boolean success)
 	{
-		invalidateView(); // picking slots view (right side)
-		invalidateParentView(); // packageables view (left side)
-	}
-
-	@Override
-	protected PickingSlotRow getSingleSelectedRow()
-	{
-		return PickingSlotRow.cast(super.getSingleSelectedRow());
+		invalidatePickingSlotsView(); // right side
+		invalidatePackablesView(); // left side
 	}
 }

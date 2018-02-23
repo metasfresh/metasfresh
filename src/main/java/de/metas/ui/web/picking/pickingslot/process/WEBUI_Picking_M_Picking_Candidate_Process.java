@@ -12,11 +12,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
  * #%L
@@ -28,12 +26,12 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,16 +45,14 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * <li>the HU is associated with its shipment schedule (changes QtyPicked and QtyToDeliver)</li>
  * <li>The HU is added to its picking slot's picking-slot-queue</li>
  * </ul>
- * 
+ *
  * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
  * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_M_Picking_Candidate_Process
-		extends ViewBasedProcessTemplate
-		implements IProcessPrecondition
+public class WEBUI_Picking_M_Picking_Candidate_Process extends PickingSlotViewBasedProcess
 {
 
 	@Autowired
@@ -100,16 +96,18 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 
 		pickingCandidateService.processForHUIds(ImmutableList.of(rowToProcess.getHuId()), rowToProcess.getPickingSlotId(), OptionalInt.empty());
 
-		invalidateView();
-		invalidateParentView();
-
 		return MSG_OK;
 	}
 
 	@Override
-	protected PickingSlotRow getSingleSelectedRow()
+	protected void postProcess(final boolean success)
 	{
-		return PickingSlotRow.cast(super.getSingleSelectedRow());
+		if (!success)
+		{
+			return;
+		}
+		
+		invalidatePickingSlotsView();
+		invalidatePackablesView();
 	}
-
 }

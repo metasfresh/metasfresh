@@ -8,6 +8,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 
@@ -45,6 +46,8 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 	{
 		return new PackageableRowsData(rowsSupplier);
 	}
+
+	public static final PackageableRowsData EMPTY = new PackageableRowsData(ImmutableList::of);
 
 	private final ExtendedMemorizingSupplier<Map<DocumentId, PackageableRow>> topLevelRows;
 

@@ -1,6 +1,5 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -16,7 +15,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -89,9 +87,8 @@ public class PackageableViewRepository
 				.provideForScope(LookupScope.DocumentField)));
 	}
 
-	public List<PackageableRow> retrieveRowsByIds(final ViewId viewId, final Collection<DocumentId> rowIds)
+	private List<PackageableRow> retrieveRowsByShipmentScheduleIds(final ViewId viewId, final Set<Integer> shipmentScheduleIds)
 	{
-		final Set<Integer> shipmentScheduleIds = rowIds.stream().map(DocumentId::toInt).collect(ImmutableSet.toImmutableSet());
 		if (shipmentScheduleIds.isEmpty())
 		{
 			return ImmutableList.of();
@@ -124,10 +121,14 @@ public class PackageableViewRepository
 
 	public PackageableRowsData createRowsData(
 			@NonNull final ViewId viewId,
-			@NonNull final Collection<Integer> filterOnlyIds)
+			@NonNull final Set<Integer> shipmentScheduleIds)
 	{
-		// this is never null, empty means "no restriction"
-		final Set<DocumentId> rowIds = filterOnlyIds.stream().map(DocumentId::of).collect(ImmutableSet.toImmutableSet());
-		return PackageableRowsData.ofSupplier(() -> retrieveRowsByIds(viewId, rowIds));
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return PackageableRowsData.EMPTY;
+		}
+
+		final Set<Integer> shipmentScheduleIdsCopy = ImmutableSet.copyOf(shipmentScheduleIds);
+		return PackageableRowsData.ofSupplier(() -> retrieveRowsByShipmentScheduleIds(viewId, shipmentScheduleIdsCopy));
 	}
 }
