@@ -15,7 +15,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 99375460L;
+	private static final long serialVersionUID = 1436579589L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (Properties ctx, int PP_Product_Planning_ID, String trxName)
@@ -487,6 +487,32 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * OnMaterialReceiptWithDestWarehouse AD_Reference_ID=540835
+	 * Reference name: OnMaterialReceiptWithDestWarehouse_List
+	 */
+	public static final int ONMATERIALRECEIPTWITHDESTWAREHOUSE_AD_Reference_ID=540835;
+	/** CreateMovement = M */
+	public static final String ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement = "M";
+	/** Create Distribution Order = D */
+	public static final String ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder = "D";
+	/** Set OnMaterialReceiptWithDestWarehouse.
+		@param OnMaterialReceiptWithDestWarehouse OnMaterialReceiptWithDestWarehouse	  */
+	@Override
+	public void setOnMaterialReceiptWithDestWarehouse (java.lang.String OnMaterialReceiptWithDestWarehouse)
+	{
+
+		set_Value (COLUMNNAME_OnMaterialReceiptWithDestWarehouse, OnMaterialReceiptWithDestWarehouse);
+	}
+
+	/** Get OnMaterialReceiptWithDestWarehouse.
+		@return OnMaterialReceiptWithDestWarehouse	  */
+	@Override
+	public java.lang.String getOnMaterialReceiptWithDestWarehouse () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_OnMaterialReceiptWithDestWarehouse);
 	}
 
 	@Override
