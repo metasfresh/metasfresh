@@ -77,7 +77,7 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 	@Builder
 	private PackageableView(
 			@NonNull final ViewId viewId,
-			@NonNull final ITranslatableString description,
+			@Nullable final ITranslatableString description,
 			@NonNull final IRowsData<PackageableRow> rowsData,
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{

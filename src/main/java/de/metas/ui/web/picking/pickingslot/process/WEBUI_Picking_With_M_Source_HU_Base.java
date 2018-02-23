@@ -10,9 +10,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotView;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
  * #%L
@@ -42,8 +39,7 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-/* package */abstract class WEBUI_Picking_With_M_Source_HU_Base
-		extends ViewBasedProcessTemplate
+/* package */abstract class WEBUI_Picking_With_M_Source_HU_Base extends PickingSlotViewBasedProcess
 {
 	protected final boolean checkSourceHuPrecondition()
 	{
@@ -58,17 +54,5 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 		final List<I_M_HU> sourceHUs = huPickingSlotBL.retrieveAvailableSourceHUs(query);
 		return !sourceHUs.isEmpty();
-	}
-
-	@Override
-	protected final PickingSlotView getView()
-	{
-		return PickingSlotView.cast(super.getView());
-	}
-
-	@Override
-	protected final PickingSlotRow getSingleSelectedRow()
-	{
-		return PickingSlotRow.cast(super.getSingleSelectedRow());
 	}
 }

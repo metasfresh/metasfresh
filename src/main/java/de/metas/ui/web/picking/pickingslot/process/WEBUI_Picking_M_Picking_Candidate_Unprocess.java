@@ -7,11 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
  * #%L
@@ -49,9 +47,7 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_M_Picking_Candidate_Unprocess
-		extends ViewBasedProcessTemplate
-		implements IProcessPrecondition
+public class WEBUI_Picking_M_Picking_Candidate_Unprocess extends PickingSlotViewBasedProcess
 {
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
@@ -95,14 +91,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Unprocess
 			return;
 		}
 
-		invalidateView();
-		invalidateParentView();
+		invalidatePickingSlotsView();
+		invalidatePackablesView();
 	}
-
-	@Override
-	protected PickingSlotRow getSingleSelectedRow()
-	{
-		return PickingSlotRow.cast(super.getSingleSelectedRow());
-	}
-
 }

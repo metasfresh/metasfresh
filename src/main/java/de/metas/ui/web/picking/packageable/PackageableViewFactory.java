@@ -1,9 +1,12 @@
 package de.metas.ui.web.picking.packageable;
 
+import java.util.Set;
+
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -102,16 +105,22 @@ public class PackageableViewFactory implements IViewFactory
 			throw new IllegalArgumentException("Invalid request's windowId: " + request);
 		}
 
-		final IRowsData<PackageableRow> rowsData = pickingViewRepo.createRowsData(
-				request.getViewId(),
-				request.getFilterOnlyIds());
+		final Set<Integer> shipmentScheduleIds = extractShipmentScheduleIds(request);
+		final IRowsData<PackageableRow> rowsData = pickingViewRepo.createRowsData(viewId, shipmentScheduleIds);
 
 		return PackageableView.builder()
 				.viewId(viewId)
-				.description(ITranslatableString.empty())
 				.rowsData(rowsData)
 				.pickingCandidateService(pickingCandidateService)
 				.build();
+	}
+	
+	private static Set<Integer> extractShipmentScheduleIds(final CreateViewRequest request)
+	{
+		return request.getFilterOnlyIds()
+				.stream()
+				.filter(shipmentScheduleId -> shipmentScheduleId > 0)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 }

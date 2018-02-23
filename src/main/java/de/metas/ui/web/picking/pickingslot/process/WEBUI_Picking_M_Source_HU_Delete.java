@@ -3,10 +3,8 @@ package de.metas.ui.web.picking.pickingslot.process;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_SOURCE_HU;
 
 import de.metas.handlingunits.sourcehu.SourceHUsService;
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
  * #%L
@@ -30,10 +28,9 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * #L%
  */
 
-public class WEBUI_Picking_M_Source_HU_Delete
-		extends ViewBasedProcessTemplate
-		implements IProcessPrecondition
+public class WEBUI_Picking_M_Source_HU_Delete extends PickingSlotViewBasedProcess
 {
+	private boolean sourceWasDeleted = false;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -58,20 +55,24 @@ public class WEBUI_Picking_M_Source_HU_Delete
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
 		final int huId = rowToProcess.getHuId();
 
-		// unselect the row we just deleted the record of, to avoid an 'EntityNotFoundException'
-		final boolean sourceWasDeleted = SourceHUsService.get().deleteSourceHuMarker(huId);
-		if (sourceWasDeleted)
-		{
-			getView().invalidateAll();
-		}
-		invalidateView();
+		this.sourceWasDeleted = SourceHUsService.get().deleteSourceHuMarker(huId);
 
 		return MSG_OK;
 	}
 
 	@Override
-	protected PickingSlotRow getSingleSelectedRow()
+	protected void postProcess(final boolean success)
 	{
-		return PickingSlotRow.cast(super.getSingleSelectedRow());
+		if (!success)
+		{
+			return;
+		}
+
+		if (sourceWasDeleted)
+		{
+			// unselect the row we just deleted the record of, to avoid an 'EntityNotFoundException'
+			invalidatePickingSlotsView();
+		}
 	}
+
 }
