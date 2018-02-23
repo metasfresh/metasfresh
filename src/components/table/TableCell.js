@@ -19,6 +19,7 @@ class TableCell extends PureComponent {
       JSON.stringify(widgetData[0].value) !==
         JSON.stringify(nextProps.widgetData[0].value)
     ) {
+      console.log('update')
       updateRow();
     }
   }

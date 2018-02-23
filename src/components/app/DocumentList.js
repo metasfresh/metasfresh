@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
+import { Map, List } from 'immutable';
 
 import {
   closeListIncludedView,
@@ -210,10 +211,13 @@ class DocumentList extends Component {
   connectWebSocket = viewId => {
     const { windowType } = this.props;
     connectWS.call(this, `/view/${viewId}`, msg => {
+      console.log('WS call')
       const { fullyChanged, changedIds } = msg;
       if (changedIds) {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
+            console.log('getViewRowsByIds')
+
             const rows = mergeRows({
               toRows: [...this.state.data.result],
               fromRows: [...response.data],
@@ -353,11 +357,14 @@ class DocumentList extends Component {
             },
             () => {
               if (viewId && !isNewFilter) {
+                console.log(1)
                 this.browseView();
               } else {
                 if (viewId) {
+                  console.log(2);
                   this.filterView();
                 } else {
+                  console.log(3);
                   this.createView();
                 }
               }
@@ -413,6 +420,7 @@ class DocumentList extends Component {
       refTabId,
       refRowIds,
     }).then(response => {
+      console.log('createView response: ', response)
       this.mounted &&
         this.setState(
           {
@@ -431,6 +439,7 @@ class DocumentList extends Component {
     const { page, sort, filters, viewId } = this.state;
 
     filterViewRequest(windowType, viewId, filters).then(response => {
+      console.log('filterView response: ', response)
       this.mounted &&
         this.setState(
           {
@@ -476,6 +485,7 @@ class DocumentList extends Component {
       pageLength: this.pageLength,
       orderBy: sortingQuery,
     }).then(response => {
+      console.log('getData: ', response)
       const selection = getSelectionDirect(selections, windowType, viewId);
       const forceSelection =
         (type === 'includedView' || isIncluded) &&
@@ -484,6 +494,10 @@ class DocumentList extends Component {
         response.data.result.length > 0 &&
         (selection.length === 0 ||
           !this.doesSelectionExist({
+            // data: {
+            //   ...response.data,
+            //   result: List(response.data.result),
+            // },
             data: response.data,
             selected: selection,
           }));
@@ -497,11 +511,17 @@ class DocumentList extends Component {
         pageColumnInfosByFieldName,
         response.data.result
       );
+      const result = List(response.data.result)
+      result.hashCode()
 
       if (this.mounted) {
         this.setState(
           {
-            data: response.data,
+            // data: response.data,
+            data: {
+              ...response.data,
+              result,
+            },
             pageColumnInfosByFieldName: pageColumnInfosByFieldName,
             filters: response.data.filters,
           },
@@ -614,6 +634,8 @@ class DocumentList extends Component {
     forceClose,
   } = {}) => {
     const { dispatch } = this.props;
+
+    console.log('DocumentList showIncludedViewOnSelect')
 
     this.setState(
       {

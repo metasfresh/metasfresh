@@ -1,4 +1,5 @@
 import update from 'immutability-helper';
+// import { is } from 'immutable';
 import * as _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -69,6 +70,15 @@ class Table extends Component {
     }
   }
 
+  shouldComponentUpdate(nextProps) {
+    let isDataChanged = nextProps.rowData === this.props.rowData;
+    if (!isDataChanged) {
+      return false
+    }
+
+    return true;
+  }
+
   componentDidUpdate(prevProps, prevState) {
     const {
       dispatch,
@@ -90,6 +100,7 @@ class Table extends Component {
     if (!_.isEqual(prevState.rows, rows)) {
       if (isModal && !hasIncluded) {
         if (rows) {
+          console.log('dupa1')
           let firstRow = rows[0];
 
           if (firstRow) {
@@ -111,8 +122,9 @@ class Table extends Component {
 
     if (
       !_.isEqual(prevProps.defaultSelected, defaultSelected) ||
-      (prevProps.refreshSelection !== refreshSelection && refreshSelection)
+      (refreshSelection && prevProps.refreshSelection !== refreshSelection)
     ) {
+      console.log('dupa2')
       this.setState({
         selected: defaultSelected,
       });
@@ -129,6 +141,41 @@ class Table extends Component {
       );
     }
 
+// <<<<<<< HEAD
+//     if (
+//       !_.isEqual(prevProps.rowData, rowData) ||
+//       prevProps.rowData !== rowData
+//     ) {
+// =======
+//     // Perf.start()
+//     // console.time("test immutable");
+//     // let test1 = is(prevProps.rowData, rowData)
+//     // // Perf.stop()
+//     // console.timeEnd("test immutable");
+
+//     // // Perf.start()
+//     // console.time("test lodash");
+//     // let test2 = _.isEqual(prevProps.rowData, rowData);
+//     // // Perf.stop()
+//     // console.timeEnd("test lodash");
+
+//     console.time("test immutable 2");
+//     let test3 = prevProps.rowData === rowData;
+//     console.timeEnd("test immutable 2");
+    
+//     // console.log('IMMUTABLE: ', test1, test2, test3);
+//     // if (!is(prevProps.rowData, rowData)) {
+//     if (!test3) {
+//     // if (!_.isEqual(prevProps.rowData, rowData)) { //|| (prevProps.rowData !== rowData)) {
+//       console.log('dupa3: ', prevProps.rowData, rowData)
+// >>>>>>> - [tmp] moving to Immutable data for table rows #1615
+//       this.getIndentData();
+//     }
+
+//     if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
+//       console.log('dupa4')
+//       this.getIndentData(true);
+//     }
     if (
       !_.isEqual(prevProps.rowData, rowData) ||
       prevProps.rowData !== rowData
@@ -376,6 +423,8 @@ class Table extends Component {
   deselectAllProducts = cb => {
     const { dispatch, tabInfo, type, viewId } = this.props;
 
+    console.log('deselectAllProducts po co to zaznacza ? ', tabInfo)
+
     this.setState(
       {
         selected: [],
@@ -384,6 +433,7 @@ class Table extends Component {
     );
 
     if (tabInfo) {
+      
       dispatch(
         selectTableItems({
           windowType: type,
@@ -438,8 +488,11 @@ class Table extends Component {
         }
       }
 
+      console.log('whatishapenin ?')
+
       this.deselectAllProducts();
       if (showIncludedViewOnSelect) {
+        console.log('showincludedwhatever ?')
         showIncludedViewOnSelect({
           showIncludedView: false,
           windowType,
