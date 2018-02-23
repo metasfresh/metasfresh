@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
-import de.metas.ui.web.material.adapter.AvailableStockAdapter;
+import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.quickinput.QuickInputConstants;
@@ -66,7 +66,7 @@ import lombok.NonNull;
 public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	@Autowired
-	private AvailableStockAdapter availableStockService;
+	private AvailableToPromiseAdapter availableToPromiseAdapter;
 
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
@@ -121,7 +121,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 						.bpartnerParamName(I_M_Forecast.COLUMNNAME_C_BPartner_ID)
 						.pricingDateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
 						.availableStockDateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
-						.availableStockService(availableStockService)
+						.availableToPromiseAdapter(availableToPromiseAdapter)
 						.build())
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)

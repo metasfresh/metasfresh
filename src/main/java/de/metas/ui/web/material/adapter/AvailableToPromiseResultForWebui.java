@@ -47,12 +47,12 @@ import lombok.Value;
  */
 
 @Value
-public class AvailableStockResultForWebui
+public class AvailableToPromiseResultForWebui
 {
 	private final List<Group> groups;
 
 	@Builder
-	private AvailableStockResultForWebui(@Singular final List<Group> groups)
+	private AvailableToPromiseResultForWebui(@Singular final List<Group> groups)
 	{
 		Check.assumeNotEmpty(groups, "groups is not empty");
 		this.groups = groups;

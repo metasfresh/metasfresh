@@ -16,12 +16,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.ui.web.material.adapter.AvailableStockAdapter;
-import de.metas.ui.web.material.adapter.AvailableStockResultForWebui.Group;
-import de.metas.ui.web.material.adapter.AvailableStockResultForWebui.Group.Type;
+import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;
+import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.Type;
 
 /*
  * #%L
@@ -45,7 +43,7 @@ import de.metas.ui.web.material.adapter.AvailableStockResultForWebui.Group.Type;
  * #L%t
  */
 
-public class AvailableStockServiceTests
+public class AvailableToPromiseAdapterTests
 {
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
@@ -53,17 +51,17 @@ public class AvailableStockServiceTests
 
 	private AttributesTestHelper attributesTestHelper;
 
-	private AvailableStockAdapter availableStockService;
+	private AvailableToPromiseAdapter availableToPromiseAdapter;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		final StockRepository stockRepository = new StockRepository();
+		final AvailableToPromiseRepository stockRepository = new AvailableToPromiseRepository();
 
 		attributesTestHelper = new AttributesTestHelper();
 
-		availableStockService = new AvailableStockAdapter(stockRepository);
+		availableToPromiseAdapter = new AvailableToPromiseAdapter(stockRepository);
 	}
 
 	@Test
@@ -77,7 +75,7 @@ public class AvailableStockServiceTests
 
 		// invoke the method under test
 		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
-		final List<I_M_AttributeValue> result = availableStockService.extractAttributeSetFromStorageAttributesKey(attributesKey);
+		final List<I_M_AttributeValue> result = availableToPromiseAdapter.extractAttributeSetFromStorageAttributesKey(attributesKey);
 
 		assertThat(result).hasSize(2);
 
@@ -95,14 +93,14 @@ public class AvailableStockServiceTests
 	@Test
 	public void extractType_all()
 	{
-		final Group.Type type = availableStockService.extractType(AttributesKey.ALL);
+		final Group.Type type = availableToPromiseAdapter.extractType(AttributesKey.ALL);
 		assertThat(type).isSameAs(Type.ALL_STORAGE_KEYS);
 	}
 
 	@Test
 	public void extractType_other()
 	{
-		final Group.Type type = availableStockService.extractType(AttributesKey.OTHER);
+		final Group.Type type = availableToPromiseAdapter.extractType(AttributesKey.OTHER);
 		assertThat(type).isSameAs(Type.OTHER_STORAGE_KEYS);
 	}
 
@@ -110,7 +108,7 @@ public class AvailableStockServiceTests
 	public void extractType_attributeSet()
 	{
 		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(12345);
-		final Group.Type type = availableStockService.extractType(attributesKey);
+		final Group.Type type = availableToPromiseAdapter.extractType(attributesKey);
 		assertThat(type).isSameAs(Type.ATTRIBUTE_SET);
 	}
 
