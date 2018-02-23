@@ -532,6 +532,29 @@ public interface I_M_Product_PlanningSchema
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set OnMaterialReceiptWithDestWarehouse.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setOnMaterialReceiptWithDestWarehouse (java.lang.String OnMaterialReceiptWithDestWarehouse);
+
+	/**
+	 * Get OnMaterialReceiptWithDestWarehouse.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getOnMaterialReceiptWithDestWarehouse();
+
+    /** Column definition for OnMaterialReceiptWithDestWarehouse */
+    public static final org.adempiere.model.ModelColumn<I_M_Product_PlanningSchema, Object> COLUMN_OnMaterialReceiptWithDestWarehouse = new org.adempiere.model.ModelColumn<I_M_Product_PlanningSchema, Object>(I_M_Product_PlanningSchema.class, "OnMaterialReceiptWithDestWarehouse", null);
+    /** Column name OnMaterialReceiptWithDestWarehouse */
+    public static final String COLUMNNAME_OnMaterialReceiptWithDestWarehouse = "OnMaterialReceiptWithDestWarehouse";
+
+	/**
 	 * Set Planner.
 	 *
 	 * <br>Type: Table
