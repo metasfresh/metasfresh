@@ -211,3 +211,45 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=559455 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
+
+-- 2018-02-23T10:05:55.346
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2018-02-23 10:05:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559440
+;
+
+-- 2018-02-23T10:06:03.004
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2018-02-23 10:06:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559439
+;
+
+-- 2018-02-23T10:06:13.406
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2018-02-23 10:06:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559437
+;
+
+-- 2018-02-23T10:06:15.556
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2018-02-23 10:06:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559448
+;
+
+-- 2018-02-23T10:06:19.075
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2018-02-23 10:06:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559438
+;
+
+-- 2018-02-23T10:06:20.153
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2018-02-23 10:06:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559443
+;
+
+-- 2018-02-23T10:06:21.027
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2018-02-23 10:06:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559442
+;
+
+-- 2018-02-23T10:06:23.391
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2018-02-23 10:06:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559444
+;
+
+
