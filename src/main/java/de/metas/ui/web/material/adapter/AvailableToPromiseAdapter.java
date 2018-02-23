@@ -15,16 +15,16 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.repository.StockQuery;
-import de.metas.material.dispo.commons.repository.StockRepository;
-import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.ResultGroup;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
-import de.metas.ui.web.material.adapter.AvailableStockResultForWebui.AvailableStockResultForWebuiBuilder;
-import de.metas.ui.web.material.adapter.AvailableStockResultForWebui.Group;
-import de.metas.ui.web.material.adapter.AvailableStockResultForWebui.Group.GroupBuilder;
-import de.metas.ui.web.material.adapter.AvailableStockResultForWebui.Group.Type;
+import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.AvailableToPromiseResultForWebuiBuilder;
+import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;
+import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.GroupBuilder;
+import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.Type;
 import lombok.NonNull;
 
 /*
@@ -50,22 +50,22 @@ import lombok.NonNull;
  */
 
 @Service
-public class AvailableStockAdapter
+public class AvailableToPromiseAdapter
 {
-	private final StockRepository stockRepository;
+	private final AvailableToPromiseRepository stockRepository;
 
-	public AvailableStockAdapter(@NonNull final StockRepository stockRepository)
+	public AvailableToPromiseAdapter(@NonNull final AvailableToPromiseRepository stockRepository)
 	{
 		this.stockRepository = stockRepository;
 	}
 
 	@NonNull
-	public AvailableStockResultForWebui retrieveAvailableStock(@NonNull final StockQuery query)
+	public AvailableToPromiseResultForWebui retrieveAvailableStock(@NonNull final AvailableToPromiseQuery query)
 	{
-		final de.metas.material.dispo.commons.repository.StockResult commonsAvailableStock = //
+		final de.metas.material.dispo.commons.repository.AvailableToPromiseResult commonsAvailableStock = //
 				stockRepository.retrieveAvailableStock(query);
 
-		final AvailableStockResultForWebuiBuilder clientResultBuilder = AvailableStockResultForWebui.builder();
+		final AvailableToPromiseResultForWebuiBuilder clientResultBuilder = AvailableToPromiseResultForWebui.builder();
 
 		final List<ResultGroup> commonsResultGroups = commonsAvailableStock.getResultGroups();
 		for (final ResultGroup commonsResultGroup : commonsResultGroups)

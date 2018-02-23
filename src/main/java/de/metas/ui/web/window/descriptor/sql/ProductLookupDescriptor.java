@@ -38,15 +38,15 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.NumberTranslatableString;
-import de.metas.material.dispo.commons.repository.StockQuery;
-import de.metas.material.dispo.commons.repository.StockQuery.StockQueryBuilder;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
-import de.metas.ui.web.material.adapter.AvailableStockAdapter;
-import de.metas.ui.web.material.adapter.AvailableStockResultForWebui;
-import de.metas.ui.web.material.adapter.AvailableStockResultForWebui.Group;
+import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
+import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui;
+import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -111,7 +111,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private final Set<CtxName> ctxNamesNeededForQuery;
 
-	private final AvailableStockAdapter availableStockService;
+	private final AvailableToPromiseAdapter availableToPromiseAdapter;
 
 	private static final String ATTRIBUTE_ASI = "asi";
 
@@ -120,13 +120,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final String bpartnerParamName,
 			@NonNull final String pricingDateParamName,
 			@NonNull final String availableStockDateParamName,
-			@NonNull final AvailableStockAdapter availableStockService)
+			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter)
 	{
 		this.param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		this.param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
 
 		this.param_AvailableStockDate = CtxNames.ofNameAndDefaultValue(availableStockDateParamName, "NULL");
-		this.availableStockService = availableStockService;
+		this.availableToPromiseAdapter = availableToPromiseAdapter;
 
 		this.ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_AD_Org_ID);
 	}
@@ -140,7 +140,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		this.param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
 
 		this.param_AvailableStockDate = null;
-		this.availableStockService = null;
+		this.availableToPromiseAdapter = null;
 
 		this.ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
 	}
@@ -199,7 +199,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			final LookupValuesList unexplodedLookupValues = LookupValuesList.fromCollection(valuesById.values());
 
 			final Date stockdateOrNull = getEffectiveStockDateOrNull(evalCtx);
-			if (stockdateOrNull == null || availableStockService == null)
+			if (stockdateOrNull == null || availableToPromiseAdapter == null)
 			{
 				return unexplodedLookupValues;
 			}
@@ -493,14 +493,15 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return productLookupValues;
 		}
 
-		final StockQueryBuilder stockQueryBuilder = StockQuery.builder();
-		addStorageAttributeKeysToQueryBuilder(stockQueryBuilder);
+		final AvailableToPromiseQueryBuilder atpQueryBuilder = AvailableToPromiseQuery.builder();
+		addStorageAttributeKeysToQueryBuilder(atpQueryBuilder);
 
-		stockQueryBuilder.productIds(productLookupValues.getKeysAsInt());
-		stockQueryBuilder.date(dateOrNull);
+		atpQueryBuilder.productIds(productLookupValues.getKeysAsInt());
+		atpQueryBuilder.date(dateOrNull);
 
 		// invoke the query
-		final AvailableStockResultForWebui availableStock = availableStockService.retrieveAvailableStock(stockQueryBuilder.build());
+		final AvailableToPromiseResultForWebui availableStock = //
+				availableToPromiseAdapter.retrieveAvailableStock(atpQueryBuilder.build());
 		final List<Group> availableStockGroups = availableStock.getGroups();
 
 		// process the query's result into those explodedProductValues
@@ -519,7 +520,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		return stockQueryActivated;
 	}
 
-	private void addStorageAttributeKeysToQueryBuilder(@NonNull final StockQueryBuilder stockQueryBuilder)
+	private void addStorageAttributeKeysToQueryBuilder(@NonNull final AvailableToPromiseQueryBuilder stockQueryBuilder)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());

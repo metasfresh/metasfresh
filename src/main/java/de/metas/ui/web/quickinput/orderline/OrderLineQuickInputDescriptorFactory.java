@@ -20,7 +20,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.material.adapter.AvailableStockAdapter;
+import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.quickinput.QuickInputConstants;
@@ -67,7 +67,7 @@ import lombok.NonNull;
 /* package */ final class OrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	@Autowired
-	private AvailableStockAdapter availableStockService;
+	private AvailableToPromiseAdapter availableToPromiseAdapter;
 
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
@@ -155,7 +155,7 @@ import lombok.NonNull;
 					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
 					.availableStockDateParamName(I_C_Order.COLUMNNAME_PreparationDate)
-					.availableStockService(availableStockService)
+					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.build();
 		}
 		else
@@ -165,7 +165,7 @@ import lombok.NonNull;
 					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
 					.availableStockDateParamName(I_C_Order.COLUMNNAME_DatePromised)
-					.availableStockService(availableStockService)
+					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.build();
 		}
 		return productLookupDescriptor;
