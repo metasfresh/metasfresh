@@ -58,6 +58,7 @@ public class SupplyRequiredEventCreatorTest
 						.warehouseId(WAREHOUSE_ID)
 						.build())
 				.build();
+
 		final SupplyRequiredEvent result = SupplyRequiredEventCreator.createSupplyRequiredEvent(demandCandidate, BigDecimal.TEN);
 		assertThat(result).isNotNull();
 		assertThat(result.getEventDescriptor().getClientId()).isEqualTo(20);

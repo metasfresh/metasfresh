@@ -176,10 +176,10 @@ public class StockCandidateServiceTests
 	@Test
 	public void addOrUpdateStock_with_non_chronological_updates()
 	{
-		invokeAddOrUpdateStock(t1, "10");
-		invokeAddOrUpdateStock(t4, "2");
-		invokeAddOrUpdateStock(t3, "-3");
-		invokeAddOrUpdateStock(t2, "-4");
+		invokeAddOrUpdateStock(t1, "10"); // (t1 => 10)
+		invokeAddOrUpdateStock(t4, "2");  // (t1 => 10),                        (t4 => 12)
+		invokeAddOrUpdateStock(t3, "-3"); // (t1 => 10),            (t3 =>  7), (t4 =>  9)
+		invokeAddOrUpdateStock(t2, "-4"); // (t1 => 10), (t2 => 6), (t3 =>  3), (t4 =>  5)
 
 		final List<I_MD_Candidate> records = DispoTestUtils.sortByDateProjected(DispoTestUtils.retrieveAllRecords());
 		assertThat(records).hasSize(4);
@@ -206,9 +206,9 @@ public class StockCandidateServiceTests
 	 * Similar to {@link #testUpdateStockDifferentTimes()}, but two invocations have the same timestamp.
 	 */
 	@Test
-	@Ignore("stockCandidateService can't do this thing alone as of now. It needs to be driven my demandCandidateHAndler and supplyCandidateHandler")
+	@Ignore("stockCandidateService can't do this thing alone as of now. It needs to be driven my demandCandidateHandler and supplyCandidateHandler")
 	// TODO 3034 refactor&fix
-	public void addOrUpdateStock_With_Overlapping_Time()
+	public void addOrUpdateStock_with_overlapping_time()
 	{
 		{
 			invokeAddOrUpdateStock(t1, "10");
@@ -293,15 +293,10 @@ public class StockCandidateServiceTests
 
 		final Candidate stockCandidateToPersist = stockCandidateService.createStockCandidate(stockCandidate);
 
-		// final Candidate persistedStockCandidateWithDelta =
-		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(stockCandidateToPersist);
+		final Candidate persistendStockCandidate = candidateRepositoryCommands
+				.addOrUpdateOverwriteStoredSeqNo(stockCandidateToPersist);
 
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
-				stockCandidate.getMaterialDescriptor(),
-				stockCandidate.getGroupId(),
-				// new BigDecimal(qty)
-				// we need to use the persisted candidate's delta in case an existing candidate was changed, but not in case a new candidate was created
-				// persistedStockCandidateWithDelta.getQuantity()
-				new BigDecimal(qty));
+		final Candidate persistendStockCandidateWithDelta = persistendStockCandidate.withQuantity(new BigDecimal(qty));
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(persistendStockCandidateWithDelta);
 	}
 }

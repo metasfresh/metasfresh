@@ -24,7 +24,7 @@ import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -75,7 +75,7 @@ public class ShipmentScheduleCreatedHandlerTests
 
 	private ShipmentScheduleCreatedHandler shipmentScheduleEventHandler;
 
-	private StockRepository stockRepository;
+	private AvailableToPromiseRepository stockRepository;
 
 	@Before
 	public void init()
@@ -86,7 +86,7 @@ public class ShipmentScheduleCreatedHandlerTests
 
 		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		stockRepository = new StockRepository();
+		stockRepository = new AvailableToPromiseRepository();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new DemandCandiateHandler(

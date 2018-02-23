@@ -29,7 +29,7 @@ import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -90,7 +90,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 	private PPOrderAdvisedHandler ppOrderAdvisedHandler;
 
-	private StockRepository stockRepository;
+	private AvailableToPromiseRepository stockRepository;
 
 	private PPOrderCreatedHandler ppOrderCreatedHandler;
 
@@ -105,7 +105,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				candidateRepositoryRetrieval,
 				candidateRepositoryWriteService);
 
-		stockRepository = new StockRepository();
+		stockRepository = new AvailableToPromiseRepository();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryWriteService, stockCandidateService),

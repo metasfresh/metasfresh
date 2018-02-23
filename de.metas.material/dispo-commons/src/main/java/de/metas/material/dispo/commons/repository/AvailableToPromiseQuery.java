@@ -41,11 +41,11 @@ import lombok.Value;
  */
 
 @Value
-public class StockQuery
+public class AvailableToPromiseQuery
 {
-	public static StockQuery forMaterialDescriptor(@NonNull final MaterialDescriptor materialDescriptor)
+	public static AvailableToPromiseQuery forMaterialDescriptor(@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		return StockQuery.builder()
+		return AvailableToPromiseQuery.builder()
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.date(materialDescriptor.getDate())
 				.productId(materialDescriptor.getProductId())
@@ -64,7 +64,7 @@ public class StockQuery
 	private final int bpartnerId;
 
 	@Builder(toBuilder = true)
-	private StockQuery(
+	private AvailableToPromiseQuery(
 			@Singular final Set<Integer> warehouseIds,
 			final Date date,
 			@Singular final List<Integer> productIds,
@@ -91,7 +91,7 @@ public class StockQuery
 		}
 	}
 
-	public StockQuery withDate(@NonNull final Date newDate)
+	public AvailableToPromiseQuery withDate(@NonNull final Date newDate)
 	{
 		if (Objects.equals(this.date, newDate))
 		{
@@ -112,8 +112,8 @@ public class StockQuery
 
 	public static boolean isBPartnerMatching(final int bpartnerId, final int bpartnerIdToMatch)
 	{
-		return bpartnerId == StockQuery.BPARTNER_ID_ANY
-				|| (bpartnerId == StockQuery.BPARTNER_ID_NONE && bpartnerIdToMatch <= 0)
+		return bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY
+				|| (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE && bpartnerIdToMatch <= 0)
 				|| (bpartnerId == bpartnerIdToMatch);
 	}
 

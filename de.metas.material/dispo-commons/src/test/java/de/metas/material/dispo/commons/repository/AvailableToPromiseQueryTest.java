@@ -24,13 +24,13 @@ import org.junit.Test;
  * #L%
  */
 
-public class StockQueryTest
+public class AvailableToPromiseQueryTest
 {
 
 	@Test(expected = RuntimeException.class)
 	public void builder_throw_ex_if_not_complete()
 	{
-		StockQuery.builder().build();
+		AvailableToPromiseQuery.builder().build();
 	}
 
 }

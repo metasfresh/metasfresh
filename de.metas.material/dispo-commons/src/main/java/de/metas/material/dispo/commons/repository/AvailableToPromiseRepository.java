@@ -22,8 +22,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRequest;
-import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -54,10 +54,10 @@ import lombok.Value;
  */
 
 @Service
-public class StockRepository
+public class AvailableToPromiseRepository
 {
 	@NonNull
-	public BigDecimal retrieveAvailableStockQtySum(@NonNull final StockMultiQuery multiQuery)
+	public BigDecimal retrieveAvailableStockQtySum(@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
 		return retrieveAvailableStock(multiQuery)
 				.getResultGroups()
@@ -65,11 +65,11 @@ public class StockRepository
 	}
 
 	@NonNull
-	public StockResult retrieveAvailableStock(@NonNull StockMultiQuery multiQuery)
+	public AvailableToPromiseResult retrieveAvailableStock(@NonNull AvailableToPromiseMultiQuery multiQuery)
 	{
-		final StockResult result = multiQuery.isAddToPredefinedBuckets()
-				? StockResult.createEmptyWithPredefinedBuckets(multiQuery)
-				: StockResult.createEmpty();
+		final AvailableToPromiseResult result = multiQuery.isAddToPredefinedBuckets()
+				? AvailableToPromiseResult.createEmptyWithPredefinedBuckets(multiQuery)
+				: AvailableToPromiseResult.createEmpty();
 
 		final IQuery<I_MD_Candidate_Stock_v> dbQuery = createDBQueryForMaterialQueryOrNull(multiQuery);
 		if (dbQuery == null)
@@ -93,17 +93,17 @@ public class StockRepository
 		return result;
 	}
 
-	public StockResult retrieveAvailableStock(@NonNull StockQuery query)
+	public AvailableToPromiseResult retrieveAvailableStock(@NonNull AvailableToPromiseQuery query)
 	{
-		return retrieveAvailableStock(StockMultiQuery.of(query));
+		return retrieveAvailableStock(AvailableToPromiseMultiQuery.of(query));
 	}
 
-	private IQuery<I_MD_Candidate_Stock_v> createDBQueryForMaterialQueryOrNull(@NonNull final StockMultiQuery multiQuery)
+	private IQuery<I_MD_Candidate_Stock_v> createDBQueryForMaterialQueryOrNull(@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
 		final MemoizingFunction<Date, Timestamp> maxDateLessOrEqualFunction //
 				= Functions.memoizing(date -> retrieveMaxDateLessOrEqual(date));
 
-		final UnaryOperator<StockQuery> setStockQueryDataParameter = //
+		final UnaryOperator<AvailableToPromiseQuery> setStockQueryDataParameter = //
 				stockQuery -> {
 					final Timestamp latestDateOrNull = maxDateLessOrEqualFunction.apply(stockQuery.getDate());
 					if (latestDateOrNull == null)
@@ -113,8 +113,8 @@ public class StockRepository
 					return stockQuery.withDate(latestDateOrNull);
 				};
 
-		final Function<StockQuery, IQuery<I_MD_Candidate_Stock_v>> createDbQueryForSingleStockQuery = //
-				stockQuery -> StockRepositorySqlHelper
+		final Function<AvailableToPromiseQuery, IQuery<I_MD_Candidate_Stock_v>> createDbQueryForSingleStockQuery = //
+				stockQuery -> AvailableToPromiseSqlHelper
 						.createDBQueryForStockQuery(stockQuery)
 						.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
 						.create();
@@ -153,7 +153,7 @@ public class StockRepository
 	{
 		final int bPpartnerIdForRequest = stockRecord.getC_BPartner_ID() > 0
 				? stockRecord.getC_BPartner_ID()
-				: StockQuery.BPARTNER_ID_NONE;
+				: AvailableToPromiseQuery.BPARTNER_ID_NONE;
 
 		return AddToResultGroupRequest.builder()
 				.productId(stockRecord.getM_Product_ID())

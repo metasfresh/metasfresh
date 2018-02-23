@@ -38,11 +38,11 @@ import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
-import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
@@ -77,6 +77,8 @@ import mockit.Mocked;
 
 public class CandidateChangeHandlerTests
 {
+	private static final BigDecimal THREE = new BigDecimal("3");
+
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
@@ -90,7 +92,7 @@ public class CandidateChangeHandlerTests
 
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
-	private StockRepository stockRepository;
+	private AvailableToPromiseRepository stockRepository;
 
 	private CandidateChangeService candidateChangeHandler;
 
@@ -109,7 +111,7 @@ public class CandidateChangeHandlerTests
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		stockRepository = new StockRepository();
+		stockRepository = new AvailableToPromiseRepository();
 		stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands);
@@ -225,12 +227,15 @@ public class CandidateChangeHandlerTests
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.date(t2)
-				.quantity(BigDecimal.ZERO) // doesn't matter
+				.quantity(THREE)
 				.build();
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
-				materialDescriptor,
-				earlierCandidate.getGroupId(),
-				new BigDecimal("3"));
+		final Candidate candidateWithDelta = Candidate.builder()
+				.type(CandidateType.STOCK)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescriptor(materialDescriptor)
+				.groupId(earlierCandidate.getGroupId()).build();
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(candidateWithDelta);
 
 		// assert that every stock record got some groupId
 		assertThat(DispoTestUtils.retrieveAllRecords()).allSatisfy(r -> assertThatModel(r).hasValueGreaterThanZero(I_MD_Candidate.COLUMN_MD_Candidate_GroupId));

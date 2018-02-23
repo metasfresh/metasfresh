@@ -88,7 +88,7 @@ public class CandidateRepositoryWriteService
 		return addOrUpdate(candidate, true);
 	}
 
-	public Candidate updateCandidate(@NonNull final Candidate candidate)
+	public Candidate updateCandidateById(@NonNull final Candidate candidate)
 	{
 		Check.errorIf(candidate.getId() <= 0, "The candidate parameter needs to have Id>0; candidate={}", candidate);
 		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());

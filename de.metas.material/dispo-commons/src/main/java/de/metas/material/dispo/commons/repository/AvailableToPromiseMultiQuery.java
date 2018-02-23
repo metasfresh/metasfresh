@@ -35,26 +35,26 @@ import lombok.Value;
  */
 
 @Value
-public class StockMultiQuery
+public class AvailableToPromiseMultiQuery
 {
-	public static StockMultiQuery forDescriptorAndAllPossibleBPartnerIds(@NonNull final MaterialDescriptor materialDescriptor)
+	public static AvailableToPromiseMultiQuery forDescriptorAndAllPossibleBPartnerIds(@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		final StockQuery bPartnerQuery = StockQuery.forMaterialDescriptor(materialDescriptor);
+		final AvailableToPromiseQuery bPartnerQuery = AvailableToPromiseQuery.forMaterialDescriptor(materialDescriptor);
 
-		final StockMultiQueryBuilder multiQueryBuilder = StockMultiQuery.builder()
+		final AvailableToPromiseMultiQueryBuilder multiQueryBuilder = AvailableToPromiseMultiQuery.builder()
 				.addToPredefinedBuckets(false)
 				.query(bPartnerQuery);
 
-		if (bPartnerQuery.getBpartnerId() != StockQuery.BPARTNER_ID_ANY
-				&& bPartnerQuery.getBpartnerId() != StockQuery.BPARTNER_ID_NONE)
+		if (bPartnerQuery.getBpartnerId() != AvailableToPromiseQuery.BPARTNER_ID_ANY
+				&& bPartnerQuery.getBpartnerId() != AvailableToPromiseQuery.BPARTNER_ID_NONE)
 		{
-			final StockQuery noPartnerQuery = bPartnerQuery.toBuilder().bpartnerId(StockQuery.BPARTNER_ID_NONE).build();
+			final AvailableToPromiseQuery noPartnerQuery = bPartnerQuery.toBuilder().bpartnerId(AvailableToPromiseQuery.BPARTNER_ID_NONE).build();
 			multiQueryBuilder.query(noPartnerQuery);
 		}
 		return multiQueryBuilder.build();
 	}
 
-	public static final StockMultiQuery of(@NonNull final StockQuery query)
+	public static final AvailableToPromiseMultiQuery of(@NonNull final AvailableToPromiseQuery query)
 	{
 		return builder()
 				.query(query)
@@ -62,14 +62,14 @@ public class StockMultiQuery
 				.build();
 	}
 
-	private final Set<StockQuery> queries;
+	private final Set<AvailableToPromiseQuery> queries;
 
 	private static final boolean DEFAULT_addToPredefinedBuckets = true;
 	private final boolean addToPredefinedBuckets;
 
 	@Builder
-	private StockMultiQuery(
-			@NonNull @Singular final ImmutableSet<StockQuery> queries,
+	private AvailableToPromiseMultiQuery(
+			@NonNull @Singular final ImmutableSet<AvailableToPromiseQuery> queries,
 			final Boolean addToPredefinedBuckets)
 	{
 		Check.assumeNotEmpty(queries, "queries is not empty");
