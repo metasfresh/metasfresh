@@ -37,7 +37,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-02-22T11:55:50.870
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559439,1876,0,10,540949,'BPValue',TO_TIMESTAMP('2018-02-22 11:55:50','YYYY-MM-DD HH24:MI:SS'),100,'Sponsor-Nr.','de.metas.inout',40,'Suchschl�ssel f�r den Gesch�ftspartner','Y','Y','N','N','N','N','N','N','N','N','Y','Nr.',TO_TIMESTAMP('2018-02-22 11:55:50','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559439,1876,0,10,540949,'BPValue',TO_TIMESTAMP('2018-02-22 11:55:50','YYYY-MM-DD HH24:MI:SS'),100,'Sponsor-Nr.','de.metas.inout',40,'Suchschlüssel für den Geschäftspartner','Y','Y','N','N','N','N','N','N','N','N','Y','Nr.',TO_TIMESTAMP('2018-02-22 11:55:50','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2018-02-22T11:55:50.880
@@ -57,7 +57,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-02-22T11:55:51.060
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559441,512,0,10,540949,'Postal',TO_TIMESTAMP('2018-02-22 11:55:50','YYYY-MM-DD HH24:MI:SS'),100,'Postleitzahl','de.metas.inout',10,'"PLZ" bezeichnet die Postleitzahl f�r diese Adresse oder dieses Postfach.','Y','Y','N','N','N','N','N','N','N','N','Y','PLZ',TO_TIMESTAMP('2018-02-22 11:55:50','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559441,512,0,10,540949,'Postal',TO_TIMESTAMP('2018-02-22 11:55:50','YYYY-MM-DD HH24:MI:SS'),100,'Postleitzahl','de.metas.inout',10,'"PLZ" bezeichnet die Postleitzahl für diese Adresse oder dieses Postfach.','Y','Y','N','N','N','N','N','N','N','N','Y','PLZ',TO_TIMESTAMP('2018-02-22 11:55:50','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2018-02-22T11:55:51.060
@@ -67,7 +67,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-02-22T11:55:51.140
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559442,1675,0,10,540949,'ProductValue',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,'Schl�ssel des Produktes','de.metas.inout',40,'Y','Y','N','N','N','N','N','N','N','N','Y','Produktschl�ssel',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559442,1675,0,10,540949,'ProductValue',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,'Schlüssel des Produktes','de.metas.inout',40,'Y','Y','N','N','N','N','N','N','N','N','Y','Produktschlüssel',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2018-02-22T11:55:51.140
@@ -107,7 +107,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-02-22T11:55:51.491
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559446,215,0,19,540949,'C_UOM_ID',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,'Ma�einheit','de.metas.inout',10,'Eine eindeutige (nicht monet�re) Ma�einheit','Y','Y','N','N','N','N','N','N','N','N','Y','Ma�einheit',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559446,215,0,19,540949,'C_UOM_ID',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,'Maßeinheit','de.metas.inout',10,'Eine eindeutige (nicht monetäre) Maßeinheit','Y','Y','N','N','N','N','N','N','N','N','Y','Maßeinheit',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2018-02-22T11:55:51.501
@@ -117,7 +117,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-02-22T11:55:51.581
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559447,526,0,29,540949,'Qty',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,'Menge','de.metas.inout',131089,'Menge bezeichnet die Anzahl eines bestimmten Produktes oder Artikels f�r dieses Dokument.','Y','Y','N','N','N','N','N','N','N','N','Y','Menge',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559447,526,0,29,540949,'Qty',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,'Menge','de.metas.inout',131089,'Menge bezeichnet die Anzahl eines bestimmten Produktes oder Artikels für dieses Dokument.','Y','Y','N','N','N','N','N','N','N','N','Y','Menge',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2018-02-22T11:55:51.581
@@ -127,7 +127,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-02-22T11:55:51.661
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559448,1915,0,10,540949,'Manufacturer',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,'Hersteller des Produktes','de.metas.inout',200,'Der Hersteller des Produktes (genutzt, wenn abweichend von Gesch�ftspartner / Lieferant).','Y','Y','N','N','N','N','N','N','N','N','Y','Hersteller',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559448,1915,0,10,540949,'Manufacturer',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,'Hersteller des Produktes','de.metas.inout',200,'Der Hersteller des Produktes (genutzt, wenn abweichend von Geschäftspartner / Lieferant).','Y','Y','N','N','N','N','N','N','N','N','Y','Hersteller',TO_TIMESTAMP('2018-02-22 11:55:51','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2018-02-22T11:55:51.661
@@ -170,7 +170,7 @@ UPDATE AD_Column SET IsKey='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2018-02-2
 
 -- 2018-02-22T15:43:41.558
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559452,102,0,19,540949,'AD_Client_ID',TO_TIMESTAMP('2018-02-22 15:43:41','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.','de.metas.inout',10,'Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','Y','N','N','N','N','N','N','N','N','N','Mandant',TO_TIMESTAMP('2018-02-22 15:43:41','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559452,102,0,19,540949,'AD_Client_ID',TO_TIMESTAMP('2018-02-22 15:43:41','YYYY-MM-DD HH24:MI:SS'),100,'Mandant fÃ¼r diese Installation.','de.metas.inout',10,'Ein Mandant ist eine Firma oder eine juristische Person. Sie kÃ¶nnen keine Daten Ã¼ber Mandanten hinweg verwenden. .','Y','Y','N','N','N','N','N','N','N','N','N','Mandant',TO_TIMESTAMP('2018-02-22 15:43:41','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2018-02-22T15:43:41.569
@@ -180,7 +180,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-02-22T15:43:41.664
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559453,113,0,19,540949,'AD_Org_ID',TO_TIMESTAMP('2018-02-22 15:43:41','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','de.metas.inout',10,'Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','Y','N','N','N','N','N','N','N','N','N','Sektion',TO_TIMESTAMP('2018-02-22 15:43:41','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559453,113,0,19,540949,'AD_Org_ID',TO_TIMESTAMP('2018-02-22 15:43:41','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','de.metas.inout',10,'Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie kÃ¶nnen Daten Ã¼ber Organisationen hinweg gemeinsam verwenden.','Y','Y','N','N','N','N','N','N','N','N','N','Sektion',TO_TIMESTAMP('2018-02-22 15:43:41','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2018-02-22T15:43:41.668
