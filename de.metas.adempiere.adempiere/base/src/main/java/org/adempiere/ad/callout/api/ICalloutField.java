@@ -79,8 +79,6 @@ public interface ICalloutField
 
 	int getWindowNo();
 
-	int getTabNo();
-
 	/**
 	 * @return true if we are currently creating this record by copying (with or without details) from another record
 	 */

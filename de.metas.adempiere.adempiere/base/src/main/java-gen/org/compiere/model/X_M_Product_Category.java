@@ -15,7 +15,7 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2050048807L;
+	private static final long serialVersionUID = 1997853992L;
 
     /** Standard Constructor */
     public X_M_Product_Category (Properties ctx, int M_Product_Category_ID, String trxName)
@@ -124,6 +124,40 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
+	public de.metas.order.model.I_C_CompensationGroup_Schema getC_CompensationGroup_Schema() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CompensationGroup_Schema_ID, de.metas.order.model.I_C_CompensationGroup_Schema.class);
+	}
+
+	@Override
+	public void setC_CompensationGroup_Schema(de.metas.order.model.I_C_CompensationGroup_Schema C_CompensationGroup_Schema)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CompensationGroup_Schema_ID, de.metas.order.model.I_C_CompensationGroup_Schema.class, C_CompensationGroup_Schema);
+	}
+
+	/** Set Compensation Group Schema.
+		@param C_CompensationGroup_Schema_ID Compensation Group Schema	  */
+	@Override
+	public void setC_CompensationGroup_Schema_ID (int C_CompensationGroup_Schema_ID)
+	{
+		if (C_CompensationGroup_Schema_ID < 1) 
+			set_Value (COLUMNNAME_C_CompensationGroup_Schema_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CompensationGroup_Schema_ID, Integer.valueOf(C_CompensationGroup_Schema_ID));
+	}
+
+	/** Get Compensation Group Schema.
+		@return Compensation Group Schema	  */
+	@Override
+	public int getC_CompensationGroup_Schema_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_CompensationGroup_Schema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
@@ -174,6 +208,28 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Min. Garantie-Tage.
+		@param GuaranteeDaysMin 
+		Mindestanzahl Garantie-Tage
+	  */
+	@Override
+	public void setGuaranteeDaysMin (int GuaranteeDaysMin)
+	{
+		set_Value (COLUMNNAME_GuaranteeDaysMin, Integer.valueOf(GuaranteeDaysMin));
+	}
+
+	/** Get Min. Garantie-Tage.
+		@return Mindestanzahl Garantie-Tage
+	  */
+	@Override
+	public int getGuaranteeDaysMin () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_GuaranteeDaysMin);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Standard.
@@ -314,9 +370,9 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 		return ii.intValue();
 	}
 
-	/** Set Produkt-Kategorie.
+	/** Set Produkt Kategorie.
 		@param M_Product_Category_ID 
-		Category of a Product
+		Kategorie eines Produktes
 	  */
 	@Override
 	public void setM_Product_Category_ID (int M_Product_Category_ID)
@@ -327,8 +383,8 @@ public class X_M_Product_Category extends org.compiere.model.PO implements I_M_P
 			set_ValueNoCheck (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
 	}
 
-	/** Get Produkt-Kategorie.
-		@return Category of a Product
+	/** Get Produkt Kategorie.
+		@return Kategorie eines Produktes
 	  */
 	@Override
 	public int getM_Product_Category_ID () 

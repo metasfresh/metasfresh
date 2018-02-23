@@ -278,7 +278,7 @@ public interface I_M_HU_PI_Item_Product
     public static final String COLUMNNAME_M_HU_PI_Item_ID = "M_HU_PI_Item_ID";
 
 	/**
-	 * Set Packvorschrift-Produkt Zuordnung.
+	 * Set Packvorschrift.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -287,7 +287,7 @@ public interface I_M_HU_PI_Item_Product
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
 
 	/**
-	 * Get Packvorschrift-Produkt Zuordnung.
+	 * Get Packvorschrift.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

@@ -20,12 +20,20 @@ Here come the actual release notes:
   * [#3515](https://github.com/metasfresh/metasfresh/issues/3515) Webui: Pimp Compensation Group Schema window
     * New Window for Compensation group maintenance.
 
+* metasfresh-webui-frontend
+  * [#1554](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1554) Action Parm modal Overlay focus missing n 1st Field
+    * Improves the behavior of focused List widgets. Now the drop-down list is only opened if the user presses arrow-down.
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#1394](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1394) Quickactions not loaded after using barcode/ std. filter in HU editor in Manufacturing Order
     * Fixes a Bug that let the Quickactions Buttons dissappear after setting filter criteria.
+  * [#1567](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1567) Create purchase orders: Date promised format
+    * Fixes the date/ time format in create puchase orders modal overlay in sales order.
   * [#1585](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1585) Date recording with keys leads to error
     * Fixes a Bug that occurred when trying to record a date via keyboard instead of calendar widget.
+  * [#1604](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1604) Date Range Picker shows wrong day of the week
+    * Fixes the shown day of week in date range picker.
 
 # metasfresh 5.45 (2018-08)
 **release for week 2018-08**
@@ -63,6 +71,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#3216](https://github.com/metasfresh/metasfresh/issues/3216) Invoice candidate: The isRecompute flag is not reseted on N ever
   * [#3357](https://github.com/metasfresh/metasfresh/issues/3357) SQL Exception in Window Entity Type
     * Fixes a SQL Exception that occurred in Entity Type window.
   * [#3465](https://github.com/metasfresh/metasfresh/issues/3465) Window Role Tab User Access shows non systemusers

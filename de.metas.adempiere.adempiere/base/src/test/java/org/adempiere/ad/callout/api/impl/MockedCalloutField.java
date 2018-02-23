@@ -127,7 +127,6 @@ public class MockedCalloutField implements ICalloutField
 	private Object oldValue;
 	private Object model;
 	private int windowNo = 0;
-	private int tabNo = 0;
 	private boolean recordCopyingMode = false;
 
 	private MockedCalloutField()
@@ -248,17 +247,6 @@ public class MockedCalloutField implements ICalloutField
 	public void setWindowNo(final int windowNo)
 	{
 		this.windowNo = windowNo;
-	}
-
-	@Override
-	public int getTabNo()
-	{
-		return tabNo;
-	}
-
-	public void setTabNo(final int tabNo)
-	{
-		this.tabNo = tabNo;
 	}
 
 	@Override

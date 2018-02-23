@@ -26,12 +26,12 @@ package org.eevolution.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -93,14 +93,14 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
  *
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>Original contributor of Manufacturing Standard Cost <li>FR [ 2520591 ] Support multiples calendar for Org
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  * @version $Id: MPPCostCollector.java,v 1.1 2004/06/19 02:10:34 vpj-cd Exp $
  */
 public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, IDocumentLine
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 5529730708956719853L;
 
@@ -111,7 +111,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 
 	/**
 	 * Create & Complete Cost Collector
-	 * 
+	 *
 	 * @param order
 	 * @param M_Product_ID
 	 * @param M_Locator_ID
@@ -155,7 +155,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 
 	/**
 	 * Create & Complete Cost Collector
-	 * 
+	 *
 	 * @param context
 	 * @param order
 	 * @param M_Product_ID
@@ -194,7 +194,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			)
 	{
 		// FIXME: make sure we are running in trasaction
-		
+
 		final int docTypeId_ToUse;
 		if (docTypeId > 0)
 		{
@@ -313,7 +313,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	 */
 	public void addDescription(String description)
 	{
-		String desc = getDescription();
+		final String desc = getDescription();
 		if (desc == null)
 			setDescription(description);
 		else
@@ -322,7 +322,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 
 	public void setC_DocTypeTarget_ID(String docBaseType)
 	{
-		MDocType[] doc = MDocType.getOfDocBaseType(getCtx(), docBaseType);
+		final MDocType[] doc = MDocType.getOfDocBaseType(getCtx(), docBaseType);
 		if (doc == null)
 		{
 			throw new DocTypeNotFoundException(docBaseType, "");
@@ -340,7 +340,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		if (get_ID() == 0)
 			return;
 		final String sql = "UPDATE PP_Cost_Collector SET Processed=? WHERE PP_Cost_Collector_ID=?";
-		int noLine = DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
+		final int noLine = DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
 		log.debug("setProcessed - " + processed + " - Lines=" + noLine);
 	}	// setProcessed
 
@@ -389,7 +389,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		// Operation Activity
 		if (isActivityControl())
 		{
-			MPPOrderNode activity = getPP_Order_Node();
+			final MPPOrderNode activity = getPP_Order_Node();
 			if (MPPOrderNode.DOCACTION_Complete.equals(activity.getDocStatus()))
 			{
 				throw new ActivityProcessedException(activity);
@@ -430,14 +430,14 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			// report all activity previews to milestone activity
 			if (activity.isMilestone())
 			{
-				MPPOrderWorkflow order_workflow = activity.getMPPOrderWorkflow();
+				final MPPOrderWorkflow order_workflow = activity.getMPPOrderWorkflow();
 				order_workflow.closeActivities(activity, getMovementDate(), true);
 			}
 		}
 		// Issue
 		else if (isIssue())
 		{
-			MProduct product = getM_Product();
+			final MProduct product = getM_Product();
 			if (getM_AttributeSetInstance_ID() == 0 && product.isASIMandatory(false))
 			{
 				throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + product.getValue());
@@ -446,7 +446,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		// Receipt
 		else if (isReceipt())
 		{
-			MProduct product = getM_Product();
+			final MProduct product = getM_Product();
 			if (getM_AttributeSetInstance_ID() == 0 && product.isASIMandatory(true))
 			{
 				throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + product.getValue());
@@ -487,7 +487,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		// Re-Check
 		if (!m_justPrepared)
 		{
-			String status = prepareIt();
+			final String status = prepareIt();
 			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
@@ -576,7 +576,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 				// * reversing to a milestone activity
 				throw new LiberoException("Reversing an Activity Control is not supported");
 			}
-			MPPOrderNode activity = getPP_Order_Node();
+			final MPPOrderNode activity = getPP_Order_Node();
 			if (activity.isProcessed())
 			{
 				throw new ActivityProcessedException(activity);
@@ -588,8 +588,8 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 				// Collection<MOrderLine> olines = new Query(getCtx(), MOrderLine.Table_Name, whereClause, get_TrxName())
 				// .setParameters(new Object[]{get_ID()})
 				// .list();
-				String DocStatus = MPPOrderNode.DOCSTATUS_Completed;
-				StringBuffer msg = new StringBuffer("The quantity do not is complete for next Purchase Order : ");
+				final String DocStatus = MPPOrderNode.DOCSTATUS_Completed;
+				final StringBuffer msg = new StringBuffer("The quantity do not is complete for next Purchase Order : ");
 				// for (MOrderLine oline : olines)
 				// {
 				// if(oline.getQtyDelivered().compareTo(oline.getQtyOrdered()) < 0)
@@ -646,7 +646,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		// Usage Variance (resource)
 		else if (isCostCollectorType(COSTCOLLECTORTYPE_UsegeVariance) && getPP_Order_Node_ID() > 0)
 		{
-			MPPOrderNode activity = getPP_Order_Node();
+			final MPPOrderNode activity = getPP_Order_Node();
 			activity.setDurationReal(activity.getDurationReal() + getDurationReal().intValueExact());
 			activity.setSetupTimeReal(activity.getSetupTimeReal() + getSetupTimeReal().intValueExact());
 			activity.saveEx();
@@ -782,7 +782,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			if (m_processMsg != null)
 				return false;
 		}
-		
+
 		//
 		// Update status of this document:
 		// NOTE: we need to do this AFTER we are firing the AFTER events because in case some of the interceptors are failing
@@ -809,7 +809,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	@Override
 	public String getSummary()
 	{
-		StringBuffer sb = new StringBuffer();
+		final StringBuffer sb = new StringBuffer();
 		sb.append(getDescription());
 		return sb.toString();
 	}
@@ -843,10 +843,10 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	{
 		try
 		{
-			File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
+			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
 			return createPDF(temp);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error("Could not create PDF - " + e.getMessage());
 		}
@@ -891,7 +891,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 
 	/**
 	 * Get Duration Base in Seconds
-	 * 
+	 *
 	 * @return duration unit in seconds
 	 * @see MPPOrderWorkflow#getDurationBaseSec()
 	 */
@@ -905,10 +905,10 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	 */
 	public Timestamp getDateStart()
 	{
-		double duration = getDurationReal().doubleValue();
+		final double duration = getDurationReal().doubleValue();
 		if (duration != 0)
 		{
-			long durationMillis = (long)(getDurationReal().doubleValue() * getDurationBaseSec() * 1000.0);
+			final long durationMillis = (long)(getDurationReal().doubleValue() * getDurationBaseSec() * 1000.0);
 			return new Timestamp(getMovementDate().getTime() - durationMillis);
 		}
 		else
@@ -927,26 +927,26 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 
 	/**
 	 * Create Purchase Order (in case of Subcontracting)
-	 * 
+	 *
 	 * @param activity
 	 */
 	private String createPO(MPPOrderNode activity)
 	{
 		String msg = "";
-		HashMap<Integer, MOrder> orders = new HashMap<>();
+		final HashMap<Integer, MOrder> orders = new HashMap<>();
 		//
-		String whereClause = I_PP_Order_Node_Product.COLUMNNAME_PP_Order_Node_ID + "=?"
+		final String whereClause = I_PP_Order_Node_Product.COLUMNNAME_PP_Order_Node_ID + "=?"
 				+ " AND " + I_PP_Order_Node_Product.COLUMNNAME_IsSubcontracting + "=?";
-		Collection<I_PP_Order_Node_Product> subcontracts = new Query(getCtx(), I_PP_Order_Node_Product.Table_Name, whereClause, get_TrxName())
+		final Collection<I_PP_Order_Node_Product> subcontracts = new Query(getCtx(), I_PP_Order_Node_Product.Table_Name, whereClause, get_TrxName())
 				.setParameters(new Object[] { activity.get_ID(), true })
 				.setOnlyActiveRecords(true)
 				.list(I_PP_Order_Node_Product.class);
 
-		for (I_PP_Order_Node_Product subcontract : subcontracts)
+		for (final I_PP_Order_Node_Product subcontract : subcontracts)
 		{
 			//
 			// If Product is not Purchased or is not Service, then it is not a subcontracting candidate [SKIP]
-			MProduct product = MProduct.get(getCtx(), subcontract.getM_Product_ID());
+			final MProduct product = MProduct.get(getCtx(), subcontract.getM_Product_ID());
 			if (!product.isPurchased() || !MProduct.PRODUCTTYPE_Service.equals(product.getProductType()))
 				throw new LiberoException("The Product: " + product.getName() + " Do not is Purchase or Service Type");
 
@@ -954,11 +954,11 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			// Find Vendor and Product PO data
 			int C_BPartner_ID = activity.getC_BPartner_ID();
 
-			
-			//FRESH-334: Make sure the BP_Product if of the product's org or org * 
+
+			//FRESH-334: Make sure the BP_Product if of the product's org or org *
 			final int orgId = product.getAD_Org_ID();
 			final int productId = product.getM_Product_ID();
-			
+
 			final List<I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, productId, orgId);
 
 			I_C_BPartner_Product partnerProduct = null;
@@ -984,15 +984,15 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			}
 			//
 			// Calculate Lead Time
-			Timestamp today = new Timestamp(System.currentTimeMillis());
-			Timestamp datePromised = TimeUtil.addDays(today, partnerProduct.getDeliveryTime_Promised());
+			final Timestamp today = new Timestamp(System.currentTimeMillis());
+			final Timestamp datePromised = TimeUtil.addDays(today, partnerProduct.getDeliveryTime_Promised());
 			//
 			// Get/Create Purchase Order Header
 			MOrder order = orders.get(C_BPartner_ID);
 			if (order == null)
 			{
 				order = new MOrder(getCtx(), 0, get_TrxName());
-				MBPartner vendor = MBPartner.get(getCtx(), C_BPartner_ID);
+				final MBPartner vendor = MBPartner.get(getCtx(), C_BPartner_ID);
 				order.setAD_Org_ID(getAD_Org_ID());
 				order.setBPartner(vendor);
 				order.setIsSOTrx(false);
@@ -1026,7 +1026,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			{
 				QtyOrdered = partnerProduct.getOrder_Pack().multiply(QtyOrdered.divide(partnerProduct.getOrder_Pack(), 0, BigDecimal.ROUND_UP));
 			}
-			MOrderLine oline = new MOrderLine(order);
+			final MOrderLine oline = new MOrderLine(order);
 			oline.setM_Product_ID(product.getM_Product_ID());
 			oline.setDescription(activity.getDescription());
 			oline.setM_Warehouse_ID(getM_Warehouse_ID());
@@ -1085,21 +1085,21 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		if (isReceipt())
 			return MTransaction.MOVEMENTTYPE_WorkOrderPlus;
 		else if (isIssue())
-			return MTransaction.MOVEMENTTYPE_WorkOrder_;
+			return MTransaction.MOVEMENTTYPE_WorkOrderMinus;
 		else
 			return null;
 	}
 
 	/**
 	 * Check if CostCollectorType is equal with any of provided types
-	 * 
+	 *
 	 * @param types
 	 * @return
 	 */
 	public boolean isCostCollectorType(String... types)
 	{
-		String type = getCostCollectorType();
-		for (String t : types)
+		final String type = getCostCollectorType();
+		for (final String t : types)
 		{
 			if (type.equals(t))
 				return true;
@@ -1111,7 +1111,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	{
 		final String whereClause = I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID + "=?"
 				+ " AND " + I_PP_Order_BOMLine.COLUMNNAME_IssueMethod + "=?";
-		boolean isFloorStock = new Query(getCtx(), I_PP_Order_BOMLine.Table_Name, whereClause, get_TrxName())
+		final boolean isFloorStock = new Query(getCtx(), I_PP_Order_BOMLine.Table_Name, whereClause, get_TrxName())
 				.setOnlyActiveRecords(true)
 				.setParameters(new Object[] { getPP_Order_BOMLine_ID(), X_PP_Order_BOMLine.ISSUEMETHOD_FloorStock })
 				.match();
@@ -1120,7 +1120,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 
 	/**
 	 * set Is SubContracting
-	 * 
+	 *
 	 * @param PP_Order_Node_ID
 	 **/
 	private static void setIsSubcontracting(final I_PP_Cost_Collector cc, int PP_Order_Node_ID)

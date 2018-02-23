@@ -278,7 +278,7 @@ public final class Msg
 	 * @param adMessage - Message Key
 	 * @return translated text
 	 */
-	private static String getMsg(final String adLanguage, final String adMessage)
+	public static String getMsg(final String adLanguage, final String adMessage)
 	{
 		return getMessage(adLanguage, adMessage).getMsgTextAndTip();
 	}
@@ -394,15 +394,15 @@ public final class Msg
 	/**
 	 * Get clear text for AD_Message with parameters
 	 * 
-	 * @param ad_language Language
+	 * @param adLanguage Language
 	 * @param AD_Message Message key
 	 * @param args MessageFormat arguments
 	 * @return translated text
 	 * @see java.text.MessageFormat for formatting options
 	 */
-	public static String getMsg(final String ad_language, final String AD_Message, final Object[] args)
+	public static String getMsg(final String adLanguage, final String AD_Message, final Object[] args)
 	{
-		final String msg = getMsg(ad_language, AD_Message);
+		final String msg = getMsg(adLanguage, AD_Message);
 		String retStr = msg;
 		try
 		{
@@ -704,13 +704,13 @@ public final class Msg
 	 * 
 	 * If checking AD_Element, the SO terminology is used.
 	 * 
-	 * @param ad_language Language
+	 * @param adLanguage Language
 	 * @param text Text - MsgText or Element Name
 	 * @return translated text or original text if not found
 	 */
-	public static String translate(final String ad_language, final String text)
+	public static String translate(final String adLanguage, final String text)
 	{
-		return translate(ad_language, true, text);
+		return translate(adLanguage, true, text);
 	}	// translate
 
 	/**
@@ -772,6 +772,17 @@ public final class Msg
 	 */
 	public static String parseTranslation(final Properties ctx, final String text)
 	{
+		final String adLanguage = Env.getAD_Language(ctx);
+		return parseTranslation(adLanguage, text);
+	}
+	
+	/**
+	 * Translate elements enclosed in "@" (at sign)
+	 * 
+	 * @return translated text or original text if not found
+	 */
+	public static String parseTranslation(final String adLanguage, final String text)
+	{
 		if (text == null || text.length() == 0)
 		{
 			return text;
@@ -803,7 +814,7 @@ public final class Msg
 			else
 			{
 				// metas: end
-				outStr.append(translate(ctx, token));			// replace context
+				outStr.append(translate(adLanguage, token));			// replace context
 			}
 
 			inStr = inStr.substring(j + 1, inStr.length());	// from second @

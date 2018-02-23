@@ -334,7 +334,7 @@ public interface I_M_HU_Snapshot
     public static final String COLUMNNAME_M_HU_LUTU_Configuration_ID = "M_HU_LUTU_Configuration_ID";
 
 	/**
-	 * Set Packvorschrift-Produkt Zuordnung.
+	 * Set Packvorschrift.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -343,7 +343,7 @@ public interface I_M_HU_Snapshot
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
 
 	/**
-	 * Get Packvorschrift-Produkt Zuordnung.
+	 * Get Packvorschrift.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
