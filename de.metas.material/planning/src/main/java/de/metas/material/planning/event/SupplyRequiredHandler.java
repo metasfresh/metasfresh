@@ -142,13 +142,13 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
-		final I_S_Resource plant = productPlanningDAO.findPlant(Env.getCtx(),
+		final I_S_Resource plant = productPlanningDAO.findPlant(
 				eventDescr.getOrgId(),
 				warehouse,
 				materialDescr.getProductId(),
 				materialDescr.getAttributeSetInstanceId());
 
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(Env.getCtx(),
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(
 				eventDescr.getOrgId(),
 				materialDescr.getWarehouseId(),
 				plant.getS_Resource_ID(),

@@ -26,7 +26,6 @@ package org.eevolution.api.impl;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -206,7 +205,6 @@ public class DDOrderBL implements IDDOrderBL
 
 		//
 		// Search for Warehouse's Plant
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ddOrderLine);
 		final int adOrgId = ddOrderLine.getAD_Org_ID();
 		final I_M_Locator locatorFrom = ddOrderLine.getM_Locator();
 		Check.assumeNotNull(locatorFrom, "locatorFrom not null");
@@ -215,7 +213,6 @@ public class DDOrderBL implements IDDOrderBL
 		try
 		{
 			final I_S_Resource plantFrom = Services.get(IProductPlanningDAO.class).findPlant(
-					ctx, 
 					adOrgId, 
 					warehouseFrom, 
 					ddOrderLine.getM_Product_ID(), 

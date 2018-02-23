@@ -1,7 +1,5 @@
 package de.metas.inoutcandidate.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-
 import java.sql.Timestamp;
 
 /*
@@ -230,13 +228,11 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 		final int productId = orderLine.getM_Product_ID();
-		final Properties ctx = getCtx(orderLine);
 		final int orgId = orderLine.getAD_Org_ID();
 		final int asiId = orderLine.getM_AttributeSetInstance_ID();
 
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(
-				ctx //
-				, orgId //
+				 orgId //
 				, 0  // M_Warehouse_ID
 				, 0  // S_Resource_ID
 				, productId //
