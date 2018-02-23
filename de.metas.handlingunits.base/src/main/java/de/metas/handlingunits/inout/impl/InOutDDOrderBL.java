@@ -1,11 +1,9 @@
 package de.metas.handlingunits.inout.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -60,14 +58,17 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
-	public void createDDOrderForInOutLine(final I_M_InOutLine inOutLine)
+	public I_DD_Order createDDOrderForInOutLine(final I_M_InOutLine inOutLine)
 	{
 		final List<I_M_ReceiptSchedule> rsForInOutLine = Services.get(IReceiptScheduleDAO.class).retrieveRsForInOutLine(inOutLine);
+
+		I_DD_Order ddOrderHeader = null;
+
 		for (final I_M_ReceiptSchedule rs : rsForInOutLine)
 		{
 			if (isCreateDDOrder(rs))
 			{
-				final I_DD_Order ddOrderHeader = createDDOrderHeader(inOutLine);
+				ddOrderHeader = createDDOrderHeader(inOutLine);
 
 				createDDOrderLine(ddOrderHeader, inOutLine, rs);
 
@@ -76,6 +77,8 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 				break;
 			}
 		}
+
+		return ddOrderHeader;
 	}
 
 	private boolean isCreateDDOrder(final I_M_ReceiptSchedule rs)
@@ -87,13 +90,11 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 	{
 
 		final int productId = inOutLine.getM_Product_ID();
-		final Properties ctx = getCtx(inOutLine);
 		final int orgId = inOutLine.getAD_Org_ID();
 		final int asiId = inOutLine.getM_AttributeSetInstance_ID();
 
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(
-				ctx //
-				, orgId //
+				orgId //
 				, 0  // M_Warehouse_ID
 				, 0  // S_Resource_ID
 				, productId,//

@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.product.model.I_M_Product_PlanningSchema;
+import de.metas.product.model.X_M_Product_PlanningSchema;
 
 /*
  * #%L
@@ -146,6 +147,7 @@ public class ProductPlanningSchemaBLTest
 		assertThat(networkDistribution1).isEqualTo(productPlanning.getDD_NetworkDistribution());
 		assertThat(product1).isEqualTo(productPlanning.getM_Product());
 		assertThat(schema1.getM_Product_PlanningSchema_ID()).isEqualTo(productPlanning.getM_Product_PlanningSchema_ID());
+		assertThat(productPlanning.getOnMaterialReceiptWithDestWarehouse()).isEqualTo(X_M_Product_PlanningSchema.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder);
 
 	}
 
@@ -223,6 +225,7 @@ public class ProductPlanningSchemaBLTest
 		schema.setDD_NetworkDistribution(nwDist);
 		schema.setM_Warehouse(wh);
 		schema.setM_ProductPlanningSchema_Selector(selector);
+		schema.setOnMaterialReceiptWithDestWarehouse(X_M_Product_PlanningSchema.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder);
 		save(schema);
 		return schema;
 
