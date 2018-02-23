@@ -65,6 +65,7 @@ Here come the actual release notes:
   * [#3505](https://github.com/metasfresh/metasfresh/issues/3505) Improvement of Procurement Candidates
     * Usability Improvement of the procurement Planning window. Rearranged fields for better visibility.
   * [#3508](https://github.com/metasfresh/metasfresh/issues/3508) Implement DATEV export window
+    * New window and Fucntionality in WebUI that allows to export the Accountings in metasfresh to Datev.
 
 * metasfresh-webui-api
   * [#851](https://github.com/metasfresh/metasfresh-webui-api/issues/851) Virtual field from header doc shall be refreshed when one of the included row is changed
@@ -72,7 +73,7 @@ Here come the actual release notes:
   * [#853](https://github.com/metasfresh/metasfresh-webui-api/issues/853) Automatic group creation in sales order lines
     * New automatic grouping functionality in sales orderlines.
   * [#854](https://github.com/metasfresh/metasfresh-webui-api/issues/854) If the window is missing from menu render it's name in breadcrumb
-    * Window Breadcrumb improvement, now showing the windoowname of windows that were reached via zoom and are not in menu yet.
+    * Window Breadcrumb improvement, now showing the windowname of windows that were reached via zoom and are not in menu yet.
 
 * metasfresh-webui-frontend
   * [#1596](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1596) Add Enzyme to test setup
@@ -99,7 +100,7 @@ Here come the actual release notes:
   * [#847](https://github.com/metasfresh/metasfresh-webui-api/issues/847) Error in picking terminal
     * Fixes a Bug that occurred in Picking terminal when picking a large amount of Handling Units.
   * [#848](https://github.com/metasfresh/metasfresh-webui-api/issues/848) Sorting by Virtual Column manually in webui throws error
-    * Fixes the possibility to order by for virtaual column in grid view.
+    * Fixes the possibility to order by for virtual column in grid view.
 
 * metasfresh-webui-frontend
   * [#1592](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1592) Added subrow is still/again not shown in the frontend
