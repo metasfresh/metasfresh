@@ -54,7 +54,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
  * #L%
  */
 
-public class SupplyCandiateCangeHandlerTest
+public class SupplyCandiateHandlerTest
 {
 
 	/** Watches the current tests and dumps the database to console in case of failure */

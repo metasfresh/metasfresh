@@ -18,8 +18,8 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.StockMultiQuery;
-import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 import mockit.Expectations;
@@ -119,14 +119,14 @@ public class RepositoryTestHelper
 	}
 
 	public static void setupMockedRetrieveAvailableStock(
-			@NonNull final StockRepository stockRepository,
+			@NonNull final AvailableToPromiseRepository stockRepository,
 			@NonNull final MaterialDescriptor materialDescriptor,
 			@NonNull final String quantity)
 	{
 		// @formatter:off
 		new Expectations(CandidateRepositoryRetrieval.class)
 		{{
-			final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
+			final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 			stockRepository.retrieveAvailableStockQtySum(query);
 			minTimes = 0;
 			result = new BigDecimal(quantity);

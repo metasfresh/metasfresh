@@ -48,8 +48,14 @@ import lombok.experimental.Wither;
 @Wither
 public final class CandidatesQuery
 {
+	/**
+	 * Use this constant as parent-ID to indicate that the parent-ID shall not be considered in the query.
+	 */
 	public static final int UNSPECIFIED_PARENT_ID = -1;
 
+	/**
+	 * Use this constant as ID to indicate that the ID shall not be considered in the query.
+	 */
 	public static final int UNSPECIFIED_ID = -1;
 
 	/**
@@ -71,7 +77,7 @@ public final class CandidatesQuery
 
 		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery
 				.ofDistributionDetailOrNull(candidate.getDistributionDetail());
-		
+
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
 				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(candidate.getMaterialDescriptor()))
 				.matchExactStorageAttributesKey(true)

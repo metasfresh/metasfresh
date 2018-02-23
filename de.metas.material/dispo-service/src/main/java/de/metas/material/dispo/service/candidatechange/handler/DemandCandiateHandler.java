@@ -11,11 +11,11 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.StockMultiQuery;
-import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.PostMaterialEventService;
@@ -49,7 +49,7 @@ public class DemandCandiateHandler implements CandidateHandler
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
 
-	private final StockRepository stockRepository;
+	private final AvailableToPromiseRepository stockRepository;
 
 	private final PostMaterialEventService materialEventService;
 
@@ -61,7 +61,7 @@ public class DemandCandiateHandler implements CandidateHandler
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
 			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final StockRepository stockRepository,
+			@NonNull final AvailableToPromiseRepository stockRepository,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepository;
@@ -129,14 +129,11 @@ public class DemandCandiateHandler implements CandidateHandler
 			}
 		}
 
-		candidateRepositoryWriteService.updateCandidate(childStockWithDemand
-				.withParentId(demandCandidateWithId.getId()));
+		candidateRepositoryWriteService
+				.updateCandidateById(childStockWithDemand.withParentId(demandCandidateWithId.getId()));
 
-		final BigDecimal delta = childStockWithDemandDelta.getQuantity();
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
-				childStockWithDemandDelta.getMaterialDescriptor(),
-				childStockWithDemandDelta.getGroupId(),
-				delta);
+		stockCandidateService
+				.applyDeltaToMatchingLaterStockCandidates(childStockWithDemandDelta);
 
 		final Candidate demandCandidateToReturn;
 
@@ -201,7 +198,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	private void fireSupplyRequiredEventIfQtyBelowZero(@NonNull final Candidate demandCandidateWithId)
 	{
-		final StockMultiQuery query = StockMultiQuery
+		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
 				.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
 
 		final BigDecimal availableQuantityAfterDemandWasApplied = stockRepository.retrieveAvailableStockQtySum(query);

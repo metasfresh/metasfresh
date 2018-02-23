@@ -90,14 +90,14 @@ public class RepositoryCommonsTest
 	@Test
 	public void mkQueryBuilder_with_any_bpartner_id()
 	{
-		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(StockQuery.BPARTNER_ID_ANY);
+		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(AvailableToPromiseQuery.BPARTNER_ID_ANY);
 		assertThat(compositeFilter).hasNoFilterRegarding(I_MD_Candidate.COLUMN_C_BPartner_ID);
 	}
 
 	@Test
 	public void mkQueryBuilder_with_none_bpartner_id()
 	{
-		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(StockQuery.BPARTNER_ID_NONE);
+		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(AvailableToPromiseQuery.BPARTNER_ID_NONE);
 		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, null);
 	}
 

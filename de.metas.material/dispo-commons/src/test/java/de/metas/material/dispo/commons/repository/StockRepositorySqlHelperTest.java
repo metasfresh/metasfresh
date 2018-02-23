@@ -73,10 +73,10 @@ public class StockRepositorySqlHelperTest
 	public void createDBQuery_for_simple_stock_query()
 	{
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor();
-		final StockQuery query = StockQuery.forMaterialDescriptor(materialDescriptor);
+		final AvailableToPromiseQuery query = AvailableToPromiseQuery.forMaterialDescriptor(materialDescriptor);
 		// MaterialQuery(warehouseIds=[51], date=Thu Nov 30 13:25:21 EET 2017, productIds=[24], storageAttributesKeys=[1§&§2], bpartnerId=-1)
 
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForStockQuery(query);
+		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQuery(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID, WAREHOUSE_ID);
@@ -91,14 +91,14 @@ public class StockRepositorySqlHelperTest
 	@Test
 	public void createDBQuery_multiple_products()
 	{
-		final StockQuery query = StockQuery.builder()
+		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productId(10)
 				.productId(20)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.date(NOW)
 				.build();
 
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForStockQuery(query);
+		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQuery(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
@@ -114,14 +114,14 @@ public class StockRepositorySqlHelperTest
 	@Test
 	public void createDBQuery_multiple_storageAttributesKeys()
 	{
-		final StockQuery query = StockQuery.builder()
+		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
 				.date(NOW)
 				.build();
 
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForStockQuery(query);
+		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQuery(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
@@ -139,7 +139,7 @@ public class StockRepositorySqlHelperTest
 	@Test
 	public void createDBQuery_multiple_storageAttributesKeys_including_OtherKeys()
 	{
-		final StockQuery query = StockQuery.builder()
+		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
@@ -148,7 +148,7 @@ public class StockRepositorySqlHelperTest
 				.build();
 
 		// invoke the method under test
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForStockQuery(query);
+		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = AvailableToPromiseSqlHelper.createDBQueryForStockQuery(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
