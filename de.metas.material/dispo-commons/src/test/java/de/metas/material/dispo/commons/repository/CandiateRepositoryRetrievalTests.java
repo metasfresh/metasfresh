@@ -356,7 +356,7 @@ public class CandiateRepositoryRetrievalTests
 
 	/**
 	 * Verifies that demand details are also used as filter criterion
-	 * If this one fails, i recommend to first check if {@link #retrieve_with_DemandDetail()} works
+	 * If this one fails, i recommend to first check if {@link #retrieve_with_id_and_demandDetail()} works
 	 */
 	@Test
 	public void retrieveExact_with_demandDetail_filtered()
@@ -385,7 +385,7 @@ public class CandiateRepositoryRetrievalTests
 				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(
 						cand
 								.withId(0)
-								.withDemandDetail(DemandDetail.forForecastLineId(74)),
+								.withDemandDetail(DemandDetail.forForecastLineId(74, 84)),
 						false));
 
 		assertThat(expectedRecordWithoutDemandDetails).isNotNull();
@@ -499,7 +499,7 @@ public class CandiateRepositoryRetrievalTests
 		createCandiateRecordWithShipmentScheduleId(35);
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(25, -1))
+				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(25, -1, -1))
 				.build();
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 
@@ -523,11 +523,11 @@ public class CandiateRepositoryRetrievalTests
 	@Test
 	public void retrieveMatches_by_forecastLineId()
 	{
-		final I_MD_Candidate candidateRecord = createCandiateRecordWithForecastLineId(25);
-		createCandiateRecordWithForecastLineId(35);
+		final I_MD_Candidate candidateRecord = createCandiateRecordWithForecastLineId(25, 26);
+		createCandiateRecordWithForecastLineId(35, 36);
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.demandDetail(DemandDetail.forForecastLineId(25))
+				.demandDetail(DemandDetail.forForecastLineId(25, 35))
 				.build();
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 
@@ -539,9 +539,14 @@ public class CandiateRepositoryRetrievalTests
 
 	}
 
-	private static I_MD_Candidate createCandiateRecordWithForecastLineId(final int forecastLineId)
+	private static I_MD_Candidate createCandiateRecordWithForecastLineId(
+			final int forecastLineId,
+			final int forecastId)
 	{
 		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
+		candidateRecord.setM_Forecast_ID(forecastId);
+		save(candidateRecord);
+
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = newInstance(I_MD_Candidate_Demand_Detail.class);
 		demandDetailRecord.setMD_Candidate(candidateRecord);
 		demandDetailRecord.setM_ForecastLine_ID(forecastLineId);

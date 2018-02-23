@@ -184,7 +184,10 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 	private Candidate createCandidateForShipmentSchedule(final AbstractTransactionEvent event, final Entry<Integer, BigDecimal> shipmentScheduleId2Qty)
 	{
-		final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleId2Qty.getKey(), -1);
+		final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(
+				shipmentScheduleId2Qty.getKey(),
+				-1,
+				-1);
 
 		final CandidatesQuery query = CandidatesQuery.builder().type(CandidateType.DEMAND)
 				.demandDetail(demandDetail) // only search via demand detail ..the product and warehouse will also match, but e.g. the date probably won't!

@@ -242,7 +242,9 @@ public class TransactionCreatedHandlerTests
 						.quantity(new BigDecimal("63"))
 						.date(SystemTime.asTimestamp())
 						.build())
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(SHIPMENT_SCHEDULE_ID, -1))
+				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(SHIPMENT_SCHEDULE_ID,
+						-1,
+						-1))
 				.build();
 
 		// @formatter:off

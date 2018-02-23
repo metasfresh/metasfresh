@@ -36,6 +36,7 @@ import lombok.Value;
 @Builder
 public class ForecastLine
 {
+
 	private int forecastLineId;
 
 	MaterialDescriptor materialDescriptor;
@@ -45,7 +46,12 @@ public class ForecastLine
 			@JsonProperty("forecastLineId") final int forecastLineId,
 			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor)
 	{
-		this.forecastLineId = checkIdGreaterThanZero("forecastLineId", forecastLineId);
+		this.forecastLineId = forecastLineId;
 		this.materialDescriptor = materialDescriptor;
+	}
+
+	public void validate()
+	{
+		checkIdGreaterThanZero("forecastLineId", forecastLineId);
 	}
 }
