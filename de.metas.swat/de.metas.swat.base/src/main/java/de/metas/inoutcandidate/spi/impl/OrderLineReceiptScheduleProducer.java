@@ -48,6 +48,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.model.X_PP_Product_Planning;
 
 import com.google.common.base.MoreObjects;
 
@@ -66,6 +67,9 @@ import de.metas.material.planning.IProductPlanningDAO;
  */
 public class OrderLineReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 {
+
+	private final static String DEFAULT_OnMaterialReceiptWithDestWarehouse = X_PP_Product_Planning.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement;
+
 	@Override
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
 	{
@@ -211,9 +215,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		final String headerAggregationKey = receiptScheduleBL.getHeaderAggregationKeyBuilder().buildKey(receiptSchedule);
 		receiptSchedule.setHeaderAggregationKey(headerAggregationKey);
 
-		// #3409
-		final boolean isCreateDDOrder = isCreateDDOrder(line);
-		receiptSchedule.setIsCreateDistributionOrder(isCreateDDOrder);
+		// #3549
+		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(getOnMaterialReceiptWithDestWarehouse(line));
 
 		//
 		// Save & return
@@ -221,8 +224,9 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		return receiptSchedule;
 	}
 
-	private boolean isCreateDDOrder(final I_C_OrderLine orderLine)
+	private String getOnMaterialReceiptWithDestWarehouse(final I_C_OrderLine orderLine)
 	{
+
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 		final int productId = orderLine.getM_Product_ID();
@@ -241,10 +245,12 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		if (productPlanning == null)
 		{
 			// fallback to old behaviour -> a movement is created instead of dd_Order
-			return false;
+			return DEFAULT_OnMaterialReceiptWithDestWarehouse;
 		}
+		
+		final String onMaterialReceiptWithDestWarehouse = productPlanning.getOnMaterialReceiptWithDestWarehouse();
 
-		return productPlanning.isCreateDistributionOrder();
+		return Check.isEmpty(onMaterialReceiptWithDestWarehouse) ? DEFAULT_OnMaterialReceiptWithDestWarehouse : onMaterialReceiptWithDestWarehouse;
 
 	}
 
