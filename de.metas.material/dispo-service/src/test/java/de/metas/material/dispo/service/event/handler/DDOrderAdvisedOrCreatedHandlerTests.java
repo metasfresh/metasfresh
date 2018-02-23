@@ -30,7 +30,7 @@ import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -111,7 +111,7 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 	@Mocked
 	private PostMaterialEventService postMaterialEventService;
 
-	private StockRepository stockRepository;
+	private AvailableToPromiseRepository stockRepository;
 
 	@Before
 	public void init()
@@ -122,7 +122,7 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
-		stockRepository = new StockRepository();
+		stockRepository = new AvailableToPromiseRepository();
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryCommands);

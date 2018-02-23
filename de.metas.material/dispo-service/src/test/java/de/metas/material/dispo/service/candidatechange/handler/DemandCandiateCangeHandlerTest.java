@@ -28,8 +28,8 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.StockMultiQuery;
-import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -81,7 +81,7 @@ public class DemandCandiateCangeHandlerTest
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	@Mocked
-	private StockRepository stockRepository;
+	private AvailableToPromiseRepository stockRepository;
 
 	@Before
 	public void init()
@@ -155,7 +155,7 @@ public class DemandCandiateCangeHandlerTest
 			@NonNull final String quantity,
 			@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
+		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 
 		// @formatter:off
 		new Expectations()

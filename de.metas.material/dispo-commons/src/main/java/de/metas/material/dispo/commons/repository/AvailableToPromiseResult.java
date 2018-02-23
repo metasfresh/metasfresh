@@ -50,19 +50,19 @@ import lombok.Value;
  */
 
 @Data
-public class StockResult
+public class AvailableToPromiseResult
 {
-	public static StockResult createEmpty()
+	public static AvailableToPromiseResult createEmpty()
 	{
-		return new StockResult(new ArrayList<>());
+		return new AvailableToPromiseResult(new ArrayList<>());
 	}
 
 	@NonNull
-	public static StockResult createEmptyWithPredefinedBuckets(@NonNull final StockMultiQuery multiQuery)
+	public static AvailableToPromiseResult createEmptyWithPredefinedBuckets(@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
 		final ImmutableList.Builder<ResultGroup> resultBuilder = ImmutableList.builder();
 
-		for (final StockQuery query : multiQuery.getQueries())
+		for (final AvailableToPromiseQuery query : multiQuery.getQueries())
 		{
 			final List<IPair<AttributesKey, Predicate<AttributesKey>>> storageAttributesKeysAndMatchers = extractStorageAttributesKeyAndMatchers(query);
 
@@ -93,10 +93,10 @@ public class StockResult
 			}
 		}
 
-		return new StockResult(resultBuilder.build());
+		return new AvailableToPromiseResult(resultBuilder.build());
 	}
 
-	private static final List<IPair<AttributesKey, Predicate<AttributesKey>>> extractStorageAttributesKeyAndMatchers(@NonNull final StockQuery query)
+	private static final List<IPair<AttributesKey, Predicate<AttributesKey>>> extractStorageAttributesKeyAndMatchers(@NonNull final AvailableToPromiseQuery query)
 	{
 		final List<AttributesKey> storageAttributesKeys = query.getStorageAttributesKeys();
 		if (storageAttributesKeys.isEmpty())
@@ -186,8 +186,8 @@ public class StockResult
 
 			this.qty = qty == null ? BigDecimal.ZERO : qty;
 
-			if (bpartnerId == StockQuery.BPARTNER_ID_ANY
-					|| bpartnerId == StockQuery.BPARTNER_ID_NONE
+			if (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY
+					|| bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE
 					|| bpartnerId > 0)
 			{
 				this.bpartnerId = bpartnerId;
@@ -237,7 +237,7 @@ public class StockResult
 
 		private boolean isBPartnerMatching(final int bpartnerIdToMatch)
 		{
-			return StockQuery.isBPartnerMatching(bpartnerId, bpartnerIdToMatch);
+			return AvailableToPromiseQuery.isBPartnerMatching(bpartnerId, bpartnerIdToMatch);
 		}
 
 		private boolean isStorageAttributesKeyMatching(final AttributesKey storageAttributesKeyToMatch)
@@ -269,7 +269,7 @@ public class StockResult
 			this.warehouseId = warehouseId;
 			this.productId = productId;
 			this.storageAttributesKey = storageAttributesKey;
-			if (bpartnerId > 0 || bpartnerId == StockQuery.BPARTNER_ID_NONE)
+			if (bpartnerId > 0 || bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
 			{
 				this.bpartnerId = bpartnerId;
 			}

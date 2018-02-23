@@ -42,7 +42,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
-import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
@@ -90,7 +90,7 @@ public class CandidateChangeHandlerTests
 
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
-	private StockRepository stockRepository;
+	private AvailableToPromiseRepository stockRepository;
 
 	private CandidateChangeService candidateChangeHandler;
 
@@ -109,7 +109,7 @@ public class CandidateChangeHandlerTests
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		stockRepository = new StockRepository();
+		stockRepository = new AvailableToPromiseRepository();
 		stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands);

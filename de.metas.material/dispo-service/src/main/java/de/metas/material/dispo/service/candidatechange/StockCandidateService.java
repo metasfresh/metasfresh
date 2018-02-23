@@ -193,7 +193,7 @@ public class StockCandidateService
 		for (final Candidate candidate : candidatesToUpdate)
 		{
 			final BigDecimal newQty = candidate.getQuantity().add(delta);
-			candidateRepositoryWriteService.updateCandidate(candidate
+			candidateRepositoryWriteService.updateCandidateById(candidate
 					.withQuantity(newQty)
 					.withGroupId(groupId));
 		}

@@ -100,13 +100,13 @@ public class MaterialDescriptorQuery
 
 		if (bPartnerId == null)
 		{
-			this.bPartnerId = StockQuery.BPARTNER_ID_ANY;
+			this.bPartnerId = AvailableToPromiseQuery.BPARTNER_ID_ANY;
 		}
 		else if (bPartnerId == 0)
 		{
-			this.bPartnerId = StockQuery.BPARTNER_ID_NONE;
+			this.bPartnerId = AvailableToPromiseQuery.BPARTNER_ID_NONE;
 		}
-		else if (bPartnerId > 0 || bPartnerId == StockQuery.BPARTNER_ID_ANY || bPartnerId == StockQuery.BPARTNER_ID_NONE)
+		else if (bPartnerId > 0 || bPartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY || bPartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
 		{
 			this.bPartnerId = bPartnerId;
 		}

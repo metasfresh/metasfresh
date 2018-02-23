@@ -32,7 +32,7 @@ import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.dispo.commons.repository.StockQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.process.JavaProcess;
 
 public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
@@ -71,7 +71,7 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		//
 		// Also show the Storage Query
 		{
-			final StockQuery materialQuery = storagesContainer.getMaterialQuery(shipmentSchedule);
+			final AvailableToPromiseQuery materialQuery = storagesContainer.getMaterialQuery(shipmentSchedule);
 			addLog("------------------------------------------------------------");
 			addLog("Storage Query:");
 			addLog(String.valueOf(materialQuery));

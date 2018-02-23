@@ -19,9 +19,9 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRequest;
-import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
-import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.commons.AttributesKey;
 
@@ -47,7 +47,7 @@ import de.metas.material.event.commons.AttributesKey;
  * #L%
  */
 
-public class StockResultTest
+public class AvailableToPromiseResultTest
 {
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.ofAttributeValueIds(1, 2, 3);
@@ -74,15 +74,16 @@ public class StockResultTest
 	@Test
 	public void createEmptyResultForQuery()
 	{
-		final StockMultiQuery query = StockMultiQuery.of(StockQuery.builder()
-				.productId(20)
-				.productId(10)
-				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY_OTHER)
-				.date(NOW)
-				.build());
+		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
+				.of(AvailableToPromiseQuery.builder()
+						.productId(20)
+						.productId(10)
+						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY_OTHER)
+						.date(NOW)
+						.build());
 
-		final List<ResultGroup> emptyResults = StockResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
+		final List<ResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
 
 		assertThat(emptyResults).hasSize(4);
 
@@ -110,12 +111,12 @@ public class StockResultTest
 	@Test
 	public void createEmptyResultForQuery_NoStrorageAttributesKey()
 	{
-		final StockMultiQuery query = StockMultiQuery.of(StockQuery.builder()
+		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.of(AvailableToPromiseQuery.builder()
 				.productId(10)
 				.date(NOW)
 				.build());
 
-		final List<ResultGroup> emptyResults = StockResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
+		final List<ResultGroup> emptyResults = AvailableToPromiseResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
 
 		assertThat(emptyResults).hasSize(1);
 
@@ -141,7 +142,7 @@ public class StockResultTest
 				.warehouseId(100)
 				.bpartnerId(200)
 				.build();
-		final StockResult stockResult = new StockResult(ImmutableList.of(emptyResult1, emptyResult2));
+		final AvailableToPromiseResult stockResult = new AvailableToPromiseResult(ImmutableList.of(emptyResult1, emptyResult2));
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 				.productId(PRODUCT_ID)
@@ -224,14 +225,14 @@ public class StockResultTest
 	{
 		final I_MD_Candidate_Stock_v stockRecord = createStockRecord(WAREHOUSE_ID);
 
-		final StockResult result = new StockResult(ImmutableList.of(
+		final AvailableToPromiseResult result = new AvailableToPromiseResult(ImmutableList.of(
 				ResultGroup.builder()
 						.productId(PRODUCT_ID)
 						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-						.bpartnerId(StockQuery.BPARTNER_ID_ANY)
+						.bpartnerId(AvailableToPromiseQuery.BPARTNER_ID_ANY)
 						.build()));
 
-		final AddToResultGroupRequest resultAddRequest = StockRepository.createAddToResultGroupRequest(stockRecord);
+		final AddToResultGroupRequest resultAddRequest = AvailableToPromiseRepository.createAddToResultGroupRequest(stockRecord);
 		result.addQtyToAllMatchingGroups(resultAddRequest);
 
 		final ResultGroup singleElement = ListUtils.singleElement(result.getResultGroups());
