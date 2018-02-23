@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 
-class TableHeader extends Component {
+class TableHeader extends PureComponent {
   constructor(props) {
     super(props);
 
