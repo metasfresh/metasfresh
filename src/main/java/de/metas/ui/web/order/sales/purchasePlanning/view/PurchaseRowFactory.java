@@ -76,8 +76,13 @@ public class PurchaseRowFactory
 		}
 		final String uom = createUOMLookupValueForProductId(product.getKeyAsInt());
 
+		final int processedPurchaseCandidateId = purchaseCandidate.isProcessed() ? purchaseCandidate.getPurchaseCandidateId() : 0;
+
 		return PurchaseRow.builder()
-				.rowId(PurchaseRowId.lineId(purchaseCandidate.getSalesOrderLineId(), bpartnerId))
+				.rowId(PurchaseRowId.lineId(
+						purchaseCandidate.getSalesOrderLineId(),
+						bpartnerId,
+						processedPurchaseCandidateId))
 				.salesOrderId(purchaseCandidate.getSalesOrderId())
 				.rowType(PurchaseRowType.LINE)
 				.product(product)
@@ -179,8 +184,8 @@ public class PurchaseRowFactory
 			return JSONLookupValue.unknown(productId);
 		}
 
-		String productValueEffective = !Check.isEmpty(productValue, true) ? productValue.trim() : product.getValue();
-		String productNameEffective = !Check.isEmpty(productName, true) ? productName.trim() : product.getName();
+		final String productValueEffective = !Check.isEmpty(productValue, true) ? productValue.trim() : product.getValue();
+		final String productNameEffective = !Check.isEmpty(productName, true) ? productName.trim() : product.getName();
 		final String displayName = productValueEffective + "_" + productNameEffective;
 		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
 	}

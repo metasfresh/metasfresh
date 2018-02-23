@@ -106,9 +106,9 @@ class PurchaseRowsCollection
 		}
 	}
 
-	private PurchaseRow getToplevelRowById(@NonNull final PurchaseRowId rowId) throws EntityNotFoundException
+	private PurchaseRow getToplevelRowById(@NonNull final PurchaseRowId topLevelRowId)
 	{
-		final PurchaseRow topLevelRow = topLevelRowsById.get(rowId);
+		final PurchaseRow topLevelRow = topLevelRowsById.get(topLevelRowId);
 		if (topLevelRow != null)
 		{
 			return topLevelRow;
@@ -116,7 +116,7 @@ class PurchaseRowsCollection
 
 		throw new EntityNotFoundException("topLevelRow not found")
 				.appendParametersToMessage()
-				.setParameter("rowId", rowId);
+				.setParameter("topLevelRowId", topLevelRowId);
 	}
 
 	public Stream<? extends IViewRow> streamTopLevelRowsByIds(@NonNull final DocumentIdsSelection rowIds)

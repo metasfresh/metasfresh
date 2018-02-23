@@ -13,6 +13,7 @@ import com.google.common.base.Splitter;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -46,22 +47,22 @@ public final class PurchaseRowId
 {
 	public static PurchaseRowId groupId(final int salesOrderLineId)
 	{
-		return new PurchaseRowId(
-				salesOrderLineId,
-				-1, // vendorBPartnerId
-				null, // availabilityType
-				null, // availabilityDistinguisher
-				null);  // documentId
+		return PurchaseRowId.builder()
+				.salesOrderLineId(salesOrderLineId)
+				.vendorBPartnerId(-1)
+				.build();
 	}
 
-	public static PurchaseRowId lineId(final int salesOrderLineId, final int vendorBPartnerId)
+	public static PurchaseRowId lineId(
+			final int salesOrderLineId,
+			final int vendorBPartnerId,
+			final int processedPurchaseCandidateId)
 	{
-		return new PurchaseRowId(
-				salesOrderLineId,
-				vendorBPartnerId,
-				null, // availabilityType
-				null, // availabilityDistinguisher
-				null); // documentId
+		return PurchaseRowId.builder()
+				.salesOrderLineId(salesOrderLineId)
+				.vendorBPartnerId(vendorBPartnerId)
+				.processedPurchaseCandidateId(processedPurchaseCandidateId)
+				.build();
 	}
 
 	public PurchaseRowId withAvailability(
@@ -71,12 +72,13 @@ public final class PurchaseRowId
 		Check.errorUnless(this.isLineRowId(),
 				"The method withAvailabilityId may only be invoked on a line row id; this={}", this);
 
-		return new PurchaseRowId(
-				salesOrderLineId,
-				vendorBPartnerId,
-				availabilityType,
-				availabilityDistinguisher,
-				null); // documentId
+		return PurchaseRowId.builder()
+				.salesOrderLineId(salesOrderLineId)
+				.vendorBPartnerId(vendorBPartnerId)
+				.processedPurchaseCandidateId(processedPurchaseCandidateId)
+				.availabilityType(availabilityType)
+				.availabilityDistinguisher(availabilityDistinguisher)
+				.build();
 	}
 
 	public static PurchaseRowId fromDocumentId(final DocumentId documentId)
@@ -96,7 +98,7 @@ public final class PurchaseRowId
 	{
 		final List<String> parts = PARTS_SPLITTER.splitToList(json);
 		final int partsCount = parts.size();
-		if (partsCount < 1 || partsCount == 3 || partsCount > 4)
+		if (partsCount < 1 || partsCount == 4 || partsCount > 5)
 		{
 			throw new AdempiereException("Invalid format: " + json);
 		}
@@ -105,17 +107,19 @@ public final class PurchaseRowId
 		{
 			final int salesOrderLineId = Integer.parseInt(parts.get(0));
 			final int vendorBPartnerId = partsCount >= 2 ? Integer.parseInt(parts.get(1)) : -1;
-			final Type availabilityType = partsCount >= 3 ? Type.valueOf(parts.get(2)) : null;
-			final String availabilityDistinguisher = partsCount >= 4 ? parts.get(3) : null;
+			final int processedPurchaseCandidateId = partsCount >= 3 ? Integer.parseInt(parts.get(2)) : -1;
+			final Type availabilityType = partsCount >= 4 ? Type.valueOf(parts.get(3)) : null;
+			final String availabilityDistinguisher = partsCount >= 5 ? parts.get(4) : null;
 
-			return new PurchaseRowId(
-					salesOrderLineId,
-					vendorBPartnerId,
-					availabilityType,
-					availabilityDistinguisher,
-					documentId);
+			return PurchaseRowId.builder()
+					.salesOrderLineId(salesOrderLineId)
+					.vendorBPartnerId(vendorBPartnerId)
+					.processedPurchaseCandidateId(processedPurchaseCandidateId)
+					.availabilityType(availabilityType)
+					.availabilityDistinguisher(availabilityDistinguisher).build();
+
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Cannot convert '" + json + "' to " + PurchaseRowId.class, ex);
 		}
@@ -141,9 +145,13 @@ public final class PurchaseRowId
 
 	private transient DocumentId _documentId; // lazy
 
+	private final int processedPurchaseCandidateId;
+
+	@Builder
 	private PurchaseRowId(
 			final int salesOrderLineId,
 			final int vendorBPartnerId,
+			final int processedPurchaseCandidateId,
 			final Type availabilityType,
 			final String availabilityDistinguisher,
 			final DocumentId documentId)
@@ -159,7 +167,9 @@ public final class PurchaseRowId
 				PARTS_SEPARATOR, availabilityDistinguisher);
 
 		this.salesOrderLineId = salesOrderLineId;
-		this.vendorBPartnerId = vendorBPartnerId > 0 ? vendorBPartnerId : -1;
+		this.vendorBPartnerId = vendorBPartnerId > 0 ? vendorBPartnerId : 0;
+		this.processedPurchaseCandidateId = processedPurchaseCandidateId > 0 ? processedPurchaseCandidateId : 0;
+
 		this.availabilityType = availabilityType;
 		this.availabilityDistinguisher = availabilityDistinguisher;
 
@@ -172,10 +182,13 @@ public final class PurchaseRowId
 		{
 			final StringBuilder sb = new StringBuilder();
 			sb.append(salesOrderLineId);
-			if (vendorBPartnerId > 0)
+			if (vendorBPartnerId > 0 || processedPurchaseCandidateId > 0)
 			{
 				sb.append(PARTS_SEPARATOR);
 				sb.append(vendorBPartnerId);
+
+				sb.append(PARTS_SEPARATOR);
+				sb.append(processedPurchaseCandidateId);
 			}
 			if (availabilityType != null)
 			{
@@ -197,11 +210,8 @@ public final class PurchaseRowId
 		}
 		else
 		{
-			return new PurchaseRowId(salesOrderLineId,
-					-1, // vendorBPartnerId
-					null, // availabilityType
-					null, // availabilityDistinguisher
-					null); // documentId
+			return PurchaseRowId.builder()
+					.salesOrderLineId(salesOrderLineId).build();
 		}
 	}
 
@@ -213,25 +223,30 @@ public final class PurchaseRowId
 		}
 		else
 		{
-			return new PurchaseRowId(salesOrderLineId, vendorBPartnerId,
-					null, // availabilityType
-					null, // availabilityDistinguisher
-					null); // documentId
+			return PurchaseRowId.builder()
+					.salesOrderLineId(salesOrderLineId)
+					.vendorBPartnerId(vendorBPartnerId)
+					.processedPurchaseCandidateId(processedPurchaseCandidateId).build();
 		}
 	}
 
 	public boolean isGroupRowId()
 	{
-		return vendorBPartnerId <= 0;
+		return (vendorBPartnerId <= 0 && processedPurchaseCandidateId <= 0);
 	}
 
 	public boolean isLineRowId()
 	{
-		return vendorBPartnerId > 0 && availabilityType == null;
+		return (vendorBPartnerId > 0 || processedPurchaseCandidateId > 0) && availabilityType == null;
 	}
 
 	public boolean isAvailabilityRowId()
 	{
 		return availabilityType != null;
+	}
+
+	public int getProcessedPurchaseCandidateId()
+	{
+		return processedPurchaseCandidateId;
 	}
 }

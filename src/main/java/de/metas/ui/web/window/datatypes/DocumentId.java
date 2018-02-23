@@ -46,7 +46,7 @@ public abstract class DocumentId implements Serializable
 	public static final transient String DOCUMENT_ID_PREFIX = "D";
 
 	private static final transient int NEW_ID = -1;
-	
+
 	/**
 	 * If {@link DocumentId#of(String)} is called with this string, then {@link DocumentId#isNew()} will return {@code true}.
 	 */
@@ -54,8 +54,8 @@ public abstract class DocumentId implements Serializable
 	public static final transient DocumentId NEW = new IntDocumentId(NEW_ID);
 
 	/**
-	 * Attempts to parse the given {@code idStr} into an integer and return an {@link IntDocumentId}. If the parsing fails, it returns a {@link StringDocumentId} instead. 
-	 * 
+	 * Attempts to parse the given {@code idStr} into an integer and return an {@link IntDocumentId}. If the parsing fails, it returns a {@link StringDocumentId} instead.
+	 *
 	 * @param idStr might represent an integer or a string, but may not be empty or {@code null}.
 	 * @return
 	 */
@@ -176,7 +176,7 @@ public abstract class DocumentId implements Serializable
 	{
 		return isInt() ? toInt() : fallbackValue;
 	}
-	
+
 	public <X extends Throwable> int toIntOrThrow(@NonNull final Supplier<? extends X> exceptionSupplier) throws X
 	{
 		if(isInt())
@@ -258,7 +258,6 @@ public abstract class DocumentId implements Serializable
 
 		private StringDocumentId(final String idStr)
 		{
-			super();
 			Check.assumeNotEmpty(idStr, "idStr is not empty");
 			this.idStr = idStr;
 		}
