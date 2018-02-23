@@ -24,7 +24,7 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -90,7 +90,7 @@ public class SupplyProposalEvaluatorTests
 	private PostMaterialEventService postMaterialEventService;
 
 
-	private StockRepository stockRepository;
+	private AvailableToPromiseRepository stockRepository;
 
 	@Before
 	public void init()
@@ -106,7 +106,7 @@ public class SupplyProposalEvaluatorTests
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands);
 
-		stockRepository = new StockRepository();
+		stockRepository = new AvailableToPromiseRepository();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService),

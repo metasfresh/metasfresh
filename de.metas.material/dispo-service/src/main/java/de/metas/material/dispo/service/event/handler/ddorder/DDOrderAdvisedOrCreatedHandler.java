@@ -159,11 +159,11 @@ public class DDOrderAdvisedOrCreatedHandler
 			if (expectedSeqNoForDemandCandidate != seqNoOfDemand)
 			{
 				// update/override the SeqNo of both supplyCandidate and supplyCandidate's stock candidate.
-				candidateRepositoryWrite.updateCandidate(supplyCandidateWithId.withSeqNo(seqNoOfDemand - 1));
+				candidateRepositoryWrite.updateCandidateById(supplyCandidateWithId.withSeqNo(seqNoOfDemand - 1));
 
 				final Candidate parentOfSupplyCandidate = candidateRepositoryRetrieval
 						.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateWithId.getParentId()));
-				candidateRepositoryWrite.updateCandidate(parentOfSupplyCandidate.withSeqNo(seqNoOfDemand - 2));
+				candidateRepositoryWrite.updateCandidateById(parentOfSupplyCandidate.withSeqNo(seqNoOfDemand - 2));
 			}
 
 			if (event.isAdvisedToCreateDDrder())

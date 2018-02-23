@@ -119,21 +119,6 @@ public class StockCandidateService
 				.build();
 	}
 
-	private CandidatesQuery createStockQueryBuilderWithDateOperator(
-			@NonNull final Candidate candidate,
-			@NonNull final DateOperator dateOperator)
-	{
-		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
-				.forDescriptor(candidate.getMaterialDescriptor(), dateOperator);
-
-		return CandidatesQuery.builder()
-				.materialDescriptorQuery(materialDescriptorQuery)
-				.type(CandidateType.STOCK)
-				.matchExactStorageAttributesKey(true)
-				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
-				.build();
-	}
-
 	/**
 	 * Updates the qty of the given candidate.
 	 * Differs from {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)} in that
@@ -163,39 +148,65 @@ public class StockCandidateService
 	}
 
 	/**
-	 * Selects all stock candidates which have the same product and locator but a later timestamp than the one from the given {@code segment}.
+	 * Selects all stock candidates which have the same product and locator but a later timestamp than the one from the given {@code materialDescriptor}.
 	 * Iterate them and add the given {@code delta} to their quantity.
 	 * <p>
-	 * That's it for now :-). Don't alter those stock candidates' children or parents.
 	 *
-	 * @param productDescriptor the product to match against
-	 * @param warehouseId the warehouse ID to match against
-	 * @param date the date to match against (i.e. everything after this date shall be a match)
+	 * @param materialDescriptor the product to match against
 	 * @param groupId the groupId to set to every stock record that we matched
 	 * @param delta the quantity (positive or negative) to add to every stock record that we matched
 	 */
 	public void applyDeltaToMatchingLaterStockCandidates(
-			@NonNull final MaterialDescriptor materialDescriptor,
-			@NonNull final Integer groupId,
-			@NonNull final BigDecimal delta)
+			@NonNull final Candidate stockWithDelta)
 	{
-		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
-				.forDescriptor(materialDescriptor, DateOperator.AFTER);
-
-		final CandidatesQuery query = CandidatesQuery.builder()
-				.type(CandidateType.STOCK)
-				.materialDescriptorQuery(materialDescriptorQuery)
-				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
-				.matchExactStorageAttributesKey(true)
-				.build();
+		final CandidatesQuery query = createStockQueryBuilderWithDateOperator(
+				stockWithDelta,
+				DateOperator.AT_OR_AFTER);
 
 		final List<Candidate> candidatesToUpdate = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 		for (final Candidate candidate : candidatesToUpdate)
 		{
+			final boolean sameDateButLowerSeqNo = //
+					candidate.getDate().equals(stockWithDelta.getDate())
+							&& candidate.getSeqNo() <= stockWithDelta.getSeqNo();
+			if (sameDateButLowerSeqNo)
+			{
+				continue;
+			}
+
+			final BigDecimal delta = stockWithDelta.getQuantity();
 			final BigDecimal newQty = candidate.getQuantity().add(delta);
-			candidateRepositoryWriteService.updateCandidate(candidate
+			candidateRepositoryWriteService.updateCandidateById(candidate
 					.withQuantity(newQty)
-					.withGroupId(groupId));
+					.withGroupId(stockWithDelta.getGroupId()));
 		}
+	}
+
+	private CandidatesQuery createStockQueryBuilderWithDateOperator(
+			@NonNull final Candidate candidate,
+			@NonNull final DateOperator dateOperator)
+	{
+		final MaterialDescriptorQuery materialDescriptorQuery = //
+				createMaterialDescriptorQueryWithoutBPartner(candidate.getMaterialDescriptor(), dateOperator);
+
+		return CandidatesQuery.builder()
+				.materialDescriptorQuery(materialDescriptorQuery)
+				.type(CandidateType.STOCK)
+				.matchExactStorageAttributesKey(true)
+				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
+				.build();
+	}
+
+	private MaterialDescriptorQuery createMaterialDescriptorQueryWithoutBPartner(final MaterialDescriptor materialDescriptor, final DateOperator dateoperator)
+	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				// .bPartnerId(bPartnerId) // don't filter by bpartner because ATP changes affect all of them
+				.date(materialDescriptor.getDate())
+				.dateOperator(dateoperator)
+				.productId(materialDescriptor.getProductId())
+				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
+				.warehouseId(materialDescriptor.getWarehouseId())
+				.build();
+		return materialDescriptorQuery;
 	}
 }

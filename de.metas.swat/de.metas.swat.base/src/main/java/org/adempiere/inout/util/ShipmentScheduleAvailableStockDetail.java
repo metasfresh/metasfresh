@@ -25,7 +25,7 @@ package org.adempiere.inout.util;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import de.metas.material.dispo.commons.repository.StockResult;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResult;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,7 +39,7 @@ import lombok.ToString;
 @Getter
 public class ShipmentScheduleAvailableStockDetail
 {
-	public static ShipmentScheduleAvailableStockDetail of(final StockResult.ResultGroup result)
+	public static ShipmentScheduleAvailableStockDetail of(final AvailableToPromiseResult.ResultGroup result)
 	{
 		return builder()
 				.productId(result.getProductId())

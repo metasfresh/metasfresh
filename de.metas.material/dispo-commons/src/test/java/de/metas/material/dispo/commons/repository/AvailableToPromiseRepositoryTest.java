@@ -46,7 +46,7 @@ import de.metas.material.event.commons.AttributesKey;
  * #L%
  */
 
-public class StockRepositoryTest
+public class AvailableToPromiseRepositoryTest
 {
 	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 
@@ -76,9 +76,9 @@ public class StockRepositoryTest
 
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor();
 
-		final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
+		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 
-		final BigDecimal result = new StockRepository().retrieveAvailableStockQtySum(query);
+		final BigDecimal result = new AvailableToPromiseRepository().retrieveAvailableStockQtySum(query);
 		assertThat(result).isEqualByComparingTo("20");
 	}
 
