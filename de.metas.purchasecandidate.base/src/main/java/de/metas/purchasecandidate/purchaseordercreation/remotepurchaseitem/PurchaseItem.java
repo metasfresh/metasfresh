@@ -37,4 +37,6 @@ public interface PurchaseItem
 	ITableRecordReference getTransactionReference();
 
 	int getPurchaseCandidateId();
+
+	int getPurchaseItemId();
 }

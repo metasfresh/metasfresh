@@ -59,6 +59,9 @@ public class PurchaseOrderItem implements PurchaseItem
 	}
 
 	@Getter
+	private final int purchaseItemId;
+
+	@Getter
 	private final ITableRecordReference transactionReference;
 
 	@Getter
@@ -82,20 +85,28 @@ public class PurchaseOrderItem implements PurchaseItem
 	@Getter
 	private int purchaseOrderLineId;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private PurchaseOrderItem(
+			final int purchaseItemId,
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final BigDecimal purchasedQty,
 			@NonNull final Date datePromised,
 			@NonNull final String remotePurchaseOrderId,
-			@Nullable final ITableRecordReference transactionReference)
+			@Nullable final ITableRecordReference transactionReference,
+			final int purchaseOrderId,
+			final int purchaseOrderLineId)
 	{
+		this.purchaseItemId = purchaseItemId;
+
 		this.purchaseCandidate = purchaseCandidate;
 		this.purchaseCandidateId = purchaseCandidate.getPurchaseCandidateId();
 
 		this.purchasedQty = purchasedQty;
 		this.datePromised = datePromised;
 		this.remotePurchaseOrderId = remotePurchaseOrderId;
+
+		this.purchaseOrderLineId = purchaseOrderLineId;
+		this.purchaseOrderId = purchaseOrderId;
 
 		final boolean remotePurchaseExists = !Objects.equal(remotePurchaseOrderId, NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 		Check.errorIf(remotePurchaseExists && transactionReference == null,
