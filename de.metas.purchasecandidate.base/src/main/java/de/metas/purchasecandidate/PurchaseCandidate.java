@@ -31,6 +31,7 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.experimental.Delegate;
 
 /*
@@ -163,7 +164,7 @@ public class PurchaseCandidate
 	 */
 	public void markProcessed()
 	{
-		if(state.isProcessed())
+		if (state.isProcessed())
 		{
 			return;
 		}
@@ -327,4 +328,5 @@ public class PurchaseCandidate
 				.map(PurchaseOrderItem::getPurchasedQty)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
+
 }

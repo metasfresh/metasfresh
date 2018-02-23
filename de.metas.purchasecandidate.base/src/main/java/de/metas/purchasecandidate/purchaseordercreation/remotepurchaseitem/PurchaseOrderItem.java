@@ -50,7 +50,7 @@ import lombok.ToString;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@ToString
+@ToString(exclude = "purchaseCandidate") // exclude purchaseCandidate to avoid stacktrace, since purchaseCandidate can hold a reference to this
 public class PurchaseOrderItem implements PurchaseItem
 {
 	public static PurchaseOrderItem cast(final PurchaseItem purchaseItem)
@@ -66,6 +66,9 @@ public class PurchaseOrderItem implements PurchaseItem
 
 	@Getter
 	private final PurchaseCandidate purchaseCandidate;
+
+	@Getter
+	private final int purchaseCandidateId;
 
 	@Getter
 	private final BigDecimal purchasedQty;
@@ -88,6 +91,8 @@ public class PurchaseOrderItem implements PurchaseItem
 			@Nullable final ITableRecordReference transactionReference)
 	{
 		this.purchaseCandidate = purchaseCandidate;
+		this.purchaseCandidateId = purchaseCandidate.getPurchaseCandidateId();
+
 		this.purchasedQty = purchasedQty;
 		this.datePromised = datePromised;
 		this.remotePurchaseOrderId = remotePurchaseOrderId;
@@ -97,12 +102,6 @@ public class PurchaseOrderItem implements PurchaseItem
 				"If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
 				remotePurchaseOrderId);
 		this.transactionReference = transactionReference;
-	}
-
-	@Override
-	public int getPurchaseCandidateId()
-	{
-		return purchaseCandidate.getPurchaseCandidateId();
 	}
 
 	public int getProductId()
