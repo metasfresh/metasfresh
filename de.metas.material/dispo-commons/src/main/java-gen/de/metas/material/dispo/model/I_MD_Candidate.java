@@ -103,10 +103,8 @@ public interface I_MD_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setC_Order_ID (int C_Order_ID);
 
 	/**
@@ -115,16 +113,12 @@ public interface I_MD_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public int getC_Order_ID();
 
-	@Deprecated
 	public org.compiere.model.I_C_Order getC_Order();
 
-	@Deprecated
 	public void setC_Order(org.compiere.model.I_C_Order C_Order);
 
     /** Column definition for C_Order_ID */
@@ -387,10 +381,8 @@ public interface I_MD_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setM_Forecast_ID (int M_Forecast_ID);
 
 	/**
@@ -399,16 +391,12 @@ public interface I_MD_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public int getM_Forecast_ID();
 
-	@Deprecated
 	public org.compiere.model.I_M_Forecast getM_Forecast();
 
-	@Deprecated
 	public void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast);
 
     /** Column definition for M_Forecast_ID */
@@ -450,10 +438,8 @@ public interface I_MD_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false (lazy loading)
 	 */
-	@Deprecated
 	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
 
 	/**
@@ -461,10 +447,8 @@ public interface I_MD_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false (lazy loading)
 	 */
-	@Deprecated
 	public int getM_ShipmentSchedule_ID();
 
     /** Column definition for M_ShipmentSchedule_ID */

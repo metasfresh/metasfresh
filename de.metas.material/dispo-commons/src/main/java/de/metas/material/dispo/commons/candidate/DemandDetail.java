@@ -9,6 +9,7 @@ import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -34,22 +35,27 @@ import lombok.Value;
  * #L%
  */
 @Value
+@Builder
 public class DemandDetail
 {
 	public static DemandDetail forDocumentDescriptor(
 			final int shipmentScheduleId,
 			@NonNull final DocumentLineDescriptor documentDescriptor)
 	{
+		final int orderId;
 		final int orderLineId;
 		final int subscriptionProgressId;
 		if (documentDescriptor instanceof OrderLineDescriptor)
 		{
-			orderLineId = ((OrderLineDescriptor)documentDescriptor).getOrderLineId();
+			final OrderLineDescriptor orderLineDescriptor = (OrderLineDescriptor)documentDescriptor;
+			orderLineId = orderLineDescriptor.getOrderLineId();
+			orderId = orderLineDescriptor.getOrderId();
 			subscriptionProgressId = -1;
 		}
 		else if (documentDescriptor instanceof SubscriptionLineDescriptor)
 		{
-			orderLineId = -1;
+			orderLineId = 0;
+			orderId = 0;
 			subscriptionProgressId = ((SubscriptionLineDescriptor)documentDescriptor).getSubscriptionProgressId();
 		}
 		else
@@ -59,11 +65,11 @@ public class DemandDetail
 			return null;
 		}
 
-		return new DemandDetail(
-				-1,
-				shipmentScheduleId,
-				orderLineId,
-				subscriptionProgressId);
+		return DemandDetail.builder()
+				.shipmentScheduleId(shipmentScheduleId)
+				.orderLineId(orderLineId)
+				.orderId(orderId)
+				.subscriptionProgressId(subscriptionProgressId).build();
 	}
 
 	public static DemandDetail createOrNull(
@@ -73,49 +79,68 @@ public class DemandDetail
 		{
 			return null;
 		}
-		return new DemandDetail(
-				supplyRequiredDescriptor.getForecastLineId(),
-				supplyRequiredDescriptor.getShipmentScheduleId(),
-				supplyRequiredDescriptor.getOrderLineId(),
-				supplyRequiredDescriptor.getSubscriptionProgressId());
+		return DemandDetail.builder()
+				.forecastLineId(supplyRequiredDescriptor.getForecastLineId())
+				.shipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
+				.orderLineId(supplyRequiredDescriptor.getOrderLineId())
+				.subscriptionProgressId(supplyRequiredDescriptor.getSubscriptionProgressId()).build();
 	}
 
 	public static DemandDetail forDemandDetailRecord(
 			@NonNull final I_MD_Candidate_Demand_Detail demandDetailRecord)
 	{
-		return new DemandDetail(
-				demandDetailRecord.getM_ForecastLine_ID(),
-				demandDetailRecord.getM_ShipmentSchedule_ID(),
-				demandDetailRecord.getC_OrderLine_ID(),
-				demandDetailRecord.getC_SubscriptionProgress_ID());
+		return DemandDetail.builder()
+				.forecastLineId(demandDetailRecord.getM_ForecastLine_ID())
+				.shipmentScheduleId(demandDetailRecord.getM_ShipmentSchedule_ID())
+				.orderLineId(demandDetailRecord.getC_OrderLine_ID())
+				.subscriptionProgressId(demandDetailRecord.getC_SubscriptionProgress_ID()).build();
 	}
 
 	public static DemandDetail forShipmentScheduleIdAndOrderLineId(
 			final int shipmentScheduleId,
-			final int orderLineId)
+			final int orderLineId,
+			final int orderId)
 	{
-		return new DemandDetail(-1, shipmentScheduleId, orderLineId, -1);
+		return DemandDetail.builder()
+				.shipmentScheduleId(shipmentScheduleId)
+				.orderLineId(orderLineId)
+				.orderId(orderId).build();
 	}
 
-	public static DemandDetail forOrderLineIdOrNull(int salesOrderLineId)
+	public static DemandDetail forForecastLineId(
+			final int forecastLineId,
+			final int forecastId)
 	{
-		if (salesOrderLineId <= 0)
-		{
-			return null;
-		}
-		return new DemandDetail(-1, -1, salesOrderLineId, -1);
+		return DemandDetail.builder()
+				.forecastLineId(forecastLineId)
+				.forecastId(forecastId).build();
 	}
 
-	public static DemandDetail forForecastLineId(final int forecastLineId)
-	{
-		return new DemandDetail(forecastLineId, -1, -1, -1);
-	}
+	int forecastId;
 
 	int forecastLineId;
 
 	int shipmentScheduleId;
 
+	int orderId;
+
 	int orderLineId;
 
 	int subscriptionProgressId;
+
+	private DemandDetail(
+			final int forecastId,
+			final int forecastLineId,
+			final int shipmentScheduleId,
+			final int orderId,
+			final int orderLineId,
+			final int subscriptionProgressId)
+	{
+		this.forecastId = forecastId;
+		this.forecastLineId = forecastLineId;
+		this.shipmentScheduleId = shipmentScheduleId;
+		this.orderId = orderId;
+		this.orderLineId = orderLineId;
+		this.subscriptionProgressId = subscriptionProgressId;
+	}
 }

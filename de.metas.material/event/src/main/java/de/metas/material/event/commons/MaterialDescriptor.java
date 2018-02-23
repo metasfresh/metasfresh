@@ -37,7 +37,9 @@ import lombok.experimental.FieldDefaults;
  * #L%
  */
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(
+		exclude = "quantity", // ignore quantity to avoid trouble comparing e.g. 10 with 10.0 with 1E+1
+		callSuper = true)
 @ToString(callSuper = true)
 public class MaterialDescriptor extends ProductDescriptor
 {

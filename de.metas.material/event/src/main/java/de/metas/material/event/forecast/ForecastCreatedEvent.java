@@ -33,11 +33,15 @@ import lombok.Value;
 public class ForecastCreatedEvent implements MaterialEvent
 {
 	public static final String TYPE = "ForecastCreatedEvent";
-	
+
 	@NonNull
 	Forecast forecast;
 
 	@NonNull
 	EventDescriptor eventDescriptor;
 
+	public void validate()
+	{
+		forecast.validate();
+	}
 }
