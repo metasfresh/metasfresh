@@ -24,6 +24,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
@@ -55,13 +57,12 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * #L%
  */
 
-public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements IProcessPrecondition, IProcessParametersCallout
+public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements IProcessPrecondition, IProcessParametersCallout, IProcessDefaultParametersProvider
 {
-
-	private static final String MSG_InvalidProduct = "de.metas.ui.web.picking.husToPick.process.WEBUI_HUsToPick_PickCU.InvalidProduct";
-
 	// services
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
+
+	private static final String MSG_InvalidProduct = "de.metas.ui.web.picking.husToPick.process.WEBUI_HUsToPick_PickCU.InvalidProduct";
 
 	private static final String PARAM_M_Product_ID = "M_Product_ID";
 	/**
@@ -71,10 +72,11 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	@Param(parameterName = PARAM_M_Product_ID, mandatory = false)
 	private int scannedProductId;
 
+	private static final String PARAM_QtyCU = "QtyCU";
 	/**
 	 * Qty CU to be picked
 	 */
-	@Param(parameterName = "QtyCU", mandatory = true)
+	@Param(parameterName = PARAM_QtyCU, mandatory = true)
 	private BigDecimal qtyCU;
 
 	private transient I_M_Product _shipmentScheduleProduct; // lazy
@@ -103,6 +105,25 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	}
 
 	@Override
+	public Object getParameterDefaultValue(IProcessDefaultParameter parameter)
+	{
+		if (PARAM_M_Product_ID.equals(parameter.getColumnName()))
+		{
+			// For now, according to https://github.com/metasfresh/metasfresh-webui-api/issues/876,
+			// we are setting the "scanned product" field to the right value.
+			return getShipmentScheduleProduct().getM_Product_ID();
+		}
+		else if (PARAM_QtyCU.equals(parameter.getColumnName()))
+		{
+			return getSingleSelectedRow().getQtyCU();
+		}
+		else
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
+	}
+
+	@Override
 	public void onParameterChanged(final String parameterName)
 	{
 		if (PARAM_M_Product_ID.equals(parameterName))
@@ -117,7 +138,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	{
 		if (qtyCU == null || qtyCU.signum() <= 0)
 		{
-			throw new FillMandatoryException("QtyCU");
+			throw new FillMandatoryException(PARAM_QtyCU);
 		}
 
 		pickCUs();
