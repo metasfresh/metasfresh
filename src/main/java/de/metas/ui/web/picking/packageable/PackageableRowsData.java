@@ -47,6 +47,11 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 		return new PackageableRowsData(rowsSupplier);
 	}
 
+	public static PackageableRowsData cast(final IRowsData<PackageableRow> rowsData)
+	{
+		return (PackageableRowsData)rowsData;
+	}
+
 	public static final PackageableRowsData EMPTY = new PackageableRowsData(ImmutableList::of);
 
 	private final ExtendedMemorizingSupplier<Map<DocumentId, PackageableRow>> topLevelRows;
