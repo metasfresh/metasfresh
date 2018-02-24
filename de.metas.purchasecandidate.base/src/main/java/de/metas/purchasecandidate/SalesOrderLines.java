@@ -18,6 +18,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_C_OrderLine;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -60,7 +61,7 @@ public class SalesOrderLines
 {
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 
-	private ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> salesOrderLineWithCandidates //
+	private final ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> salesOrderLineWithCandidates //
 			= ExtendedMemorizingSupplier.of(() -> loadOrCreatePurchaseCandidates0());
 
 	private final ImmutableList<Integer> salesOrderLineIds;
@@ -80,14 +81,13 @@ public class SalesOrderLines
 
 		final Map<Integer, I_C_OrderLine> salesOrderLineId2Line = deriveOrderLineId2OrderLine();
 
-		//
 		// add pre-existing purchase candidates to the result
 		final ImmutableListMultimap<Integer, PurchaseCandidate> salesOrderLineId2PreExistingPurchaseCandidates = //
 				purchaseCandidateRepository
 						.streamAllBySalesOrderLineIds(salesOrderLineIds)
 						.collect(GuavaCollectors.toImmutableListMultimap(PurchaseCandidate::getSalesOrderLineId));
 
-		for (int salesOrderLineId : salesOrderLineId2PreExistingPurchaseCandidates.keySet())
+		for (final int salesOrderLineId : salesOrderLineId2PreExistingPurchaseCandidates.keySet())
 		{
 			resultBuilder.putAll(
 					salesOrderLineId2Line.get(salesOrderLineId),
@@ -95,10 +95,10 @@ public class SalesOrderLines
 		}
 
 		final Set<Integer> alreadySeenVendorProductInfoIds = salesOrderLineId2PreExistingPurchaseCandidates.values().stream()
+				.filter(Predicates.not(PurchaseCandidate::isProcessed))
 				.map(purchaseCandidate -> purchaseCandidate.getVendorProductInfo().getBPartnerProductId())
 				.collect(ImmutableSet.toImmutableSet());
 
-		//
 		// create and add new purchase candidates
 		for (final I_C_OrderLine salesOrderLine : salesOrderLineId2Line.values())
 		{

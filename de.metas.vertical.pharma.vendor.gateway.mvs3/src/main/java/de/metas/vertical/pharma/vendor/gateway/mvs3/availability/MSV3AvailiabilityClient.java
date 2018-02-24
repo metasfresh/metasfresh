@@ -29,7 +29,6 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitAnfrage
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitAnfragenResponse;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitAnteil;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitDefektgrund;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitRueckmeldungTyp;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitsanfrageEinzelne;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitsanfrageEinzelne.Artikel;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitsanfrageEinzelneAntwort;
@@ -210,7 +209,9 @@ public class MSV3AvailiabilityClient extends MSV3ClientBase
 
 		final XMLGregorianCalendar lieferzeitpunkt = singleAnteil.getLieferzeitpunkt();
 
-		final Type type = VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR.equals(singleAnteil.getTyp()) ? Type.NOT_AVAILABLE : Type.AVAILABLE;
+		// if we can't get a datePromised, then we assume the item as not available
+		//final Type type = VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR.equals(singleAnteil.getTyp()) ? Type.NOT_AVAILABLE : Type.AVAILABLE;
+		final Type type = lieferzeitpunkt == null ? Type.NOT_AVAILABLE : Type.AVAILABLE;
 
 		final StringBuilder availabilityText = createAvailabilityText(singleAnteil);
 
