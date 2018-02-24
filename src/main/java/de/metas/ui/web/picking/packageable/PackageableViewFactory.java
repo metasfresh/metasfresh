@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.ui.web.picking.PickingConstants;
-import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -106,7 +105,7 @@ public class PackageableViewFactory implements IViewFactory
 		}
 
 		final Set<Integer> shipmentScheduleIds = extractShipmentScheduleIds(request);
-		final IRowsData<PackageableRow> rowsData = pickingViewRepo.createRowsData(viewId, shipmentScheduleIds);
+		final PackageableRowsData rowsData = pickingViewRepo.createRowsData(viewId, shipmentScheduleIds);
 
 		return PackageableView.builder()
 				.viewId(viewId)

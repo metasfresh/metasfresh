@@ -78,12 +78,18 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 	private PackageableView(
 			@NonNull final ViewId viewId,
 			@Nullable final ITranslatableString description,
-			@NonNull final IRowsData<PackageableRow> rowsData,
+			@NonNull final PackageableRowsData rowsData,
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		super(viewId, description, rowsData, NullDocumentFilterDescriptorsProvider.instance);
 
 		this.pickingCandidateService = pickingCandidateService;
+	}
+
+	@Override
+	public IRowsData<PackageableRow> getRowsData()
+	{
+		return PackageableRowsData.cast(super.getRowsData());
 	}
 
 	@Override
