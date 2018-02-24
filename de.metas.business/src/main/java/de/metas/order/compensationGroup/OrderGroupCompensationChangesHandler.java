@@ -1,8 +1,10 @@
 package de.metas.order.compensationGroup;
 
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_OrderLine;
+import org.springframework.stereotype.Component;
 
-import lombok.Builder;
+import de.metas.order.compensationGroup.OrderGroupRepository.OrderLinesStorage;
 import lombok.NonNull;
 
 /*
@@ -27,14 +29,18 @@ import lombok.NonNull;
  * #L%
  */
 
+@Component
 public class OrderGroupCompensationChangesHandler
 {
 	private final OrderGroupRepository groupsRepo;
+	private final GroupTemplateRepository groupTemplateRepo;
 
-	@Builder
-	private OrderGroupCompensationChangesHandler(@NonNull final OrderGroupRepository groupsRepo)
+	public OrderGroupCompensationChangesHandler(
+			@NonNull final OrderGroupRepository groupsRepo,
+			@NonNull final GroupTemplateRepository groupTemplateRepo)
 	{
 		this.groupsRepo = groupsRepo;
+		this.groupTemplateRepo = groupTemplateRepo;
 	}
 
 	public void onOrderLineChanged(final I_C_OrderLine orderLine)
@@ -44,10 +50,46 @@ public class OrderGroupCompensationChangesHandler
 			return;
 		}
 
-		final GroupId groupId = groupsRepo.extractGroupId(orderLine);
+		final GroupId groupId = OrderGroupRepository.extractGroupId(orderLine);
 		final Group group = groupsRepo.retrieveGroup(groupId);
-		group.updateAllPercentageLines();
-		groupsRepo.saveGroup(group);
+		if (group.getGroupTemplateId() > 0 && !orderLine.isGroupCompensationLine())
+		{
+			final GroupTemplate groupTemplate = groupTemplateRepo.getById(group.getGroupTemplateId());
+			groupsRepo.prepareNewGroup()
+					.groupTemplate(groupTemplate)
+					.recreateGroup(group);
+		}
+		else
+		{
+			group.updateAllPercentageLines();
+			groupsRepo.saveGroup(group);
+		}
+	}
+	
+	public void recreateGroupOnRegularOrderLineChanged(final I_C_OrderLine orderLine)
+	{
+		if (!isEligible(orderLine))
+		{
+			return;
+		}
+		
+		// skip if not regular line
+		if(orderLine.isGroupCompensationLine())
+		{
+			return;
+		}
+		
+		final GroupId groupId = OrderGroupRepository.extractGroupId(orderLine);
+		final Group group = groupsRepo.retrieveGroup(groupId);
+		if (group.getGroupTemplateId() <= 0)
+		{
+			return;
+		}
+		
+		final GroupTemplate groupTemplate = groupTemplateRepo.getById(group.getGroupTemplateId());
+		groupsRepo.prepareNewGroup()
+				.groupTemplate(groupTemplate)
+				.recreateGroup(group);
 	}
 
 	private boolean isEligible(final I_C_OrderLine orderLine)
@@ -83,7 +125,7 @@ public class OrderGroupCompensationChangesHandler
 
 	private void onCompensationLineDeleted(final I_C_OrderLine compensationLine)
 	{
-		final GroupId groupId = groupsRepo.extractGroupId(compensationLine);
+		final GroupId groupId = OrderGroupRepository.extractGroupId(compensationLine);
 		final Group group = groupsRepo.retrieveGroupIfExists(groupId);
 
 		// If no group found => nothing to do
@@ -102,5 +144,20 @@ public class OrderGroupCompensationChangesHandler
 			group.updateAllPercentageLines();
 			groupsRepo.saveGroup(group);
 		}
+	}
+
+	public void updateCompensationLineNoSave(final I_C_OrderLine orderLine)
+	{
+		final Group group = groupsRepo.createPartialGroupFromCompensationLine(orderLine);
+		group.updateAllPercentageLines();
+
+		final OrderLinesStorage orderLinesStorage = groupsRepo.createNotSaveableSingleOrderLineStorage(orderLine);
+		groupsRepo.saveGroup(group, orderLinesStorage);
+
+	}
+
+	public IQueryBuilder<I_C_OrderLine> retrieveGroupOrderLinesQuery(final GroupId groupId)
+	{
+		return groupsRepo.retrieveGroupOrderLinesQuery(groupId);
 	}
 }

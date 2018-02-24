@@ -53,6 +53,8 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -68,6 +70,7 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
@@ -988,8 +991,24 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		// Create storage query
-		final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
+		
+		final List<I_M_Warehouse> warehouses;
+		{
+			final I_M_Warehouse shipmentScheduleWarehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
+			final WarehousePickingGroup warehouseGroup = Services.get(IWarehouseDAO.class).getWarehousePickingGroupContainingWarehouseId(shipmentScheduleWarehouse.getM_Warehouse_ID());
+			if(warehouseGroup == null)
+			{
+				warehouses = ImmutableList.of(shipmentScheduleWarehouse);
+			}
+			else
+			{
+				warehouses = warehouseGroup.getWarehouseIds()
+						.stream()
+						.map(warehouseId -> InterfaceWrapperHelper.loadOutOfTrx(warehouseId, I_M_Warehouse.class))
+						.collect(ImmutableList.toImmutableList());
+			}
+		}
 
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
@@ -997,7 +1016,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
 
 		storageQuery.addProduct(sched.getM_Product());
-		storageQuery.addWarehouse(warehouse);
+		warehouses.forEach(storageQuery::addWarehouse);
 		storageQuery.addPartner(bpartner);
 
 		// Add query attributes
