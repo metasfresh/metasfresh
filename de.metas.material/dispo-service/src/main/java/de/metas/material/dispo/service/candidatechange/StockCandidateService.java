@@ -79,14 +79,17 @@ public class StockCandidateService
 			final CandidatesQuery stockQuery = createStockQueryBuilderWithDateOperator(candidate, DateOperator.BEFORE_OR_AT);
 			previousStockOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(stockQuery);
 		}
-		// TODO i know from the unit tests this kindof works, but i need to better understand it
+
 		final BigDecimal newQty;
 		if (previousStockOrNull == null)
 		{
 			newQty = candidate.getQuantity();
 		}
-		else if (previousStockOrNull.getDate().before(candidate.getDate()))
+		else if (previousStockOrNull.getDate().before(candidate.getDate())
+				|| previousStockOrNull.getSeqNo() < candidate.getSeqNo())
 		{
+			// since we do have an *earlier* stock candidate, we base our new candidate's qty on the former candidate
+			// TODO: i'm pretty sure there is just one, so we might drop this summing..
 			final CandidatesQuery stockQuery = createStockQueryBuilderWithDateOperator(previousStockOrNull, DateOperator.AT);
 			final BigDecimal previousQuantity = candidateRepositoryRetrieval
 					.retrieveOrderedByDateAndSeqNo(stockQuery).stream().map(Candidate::getQuantity)
@@ -96,7 +99,8 @@ public class StockCandidateService
 		}
 		else
 		{
-			// previousStockOrNull has the same date as the given "candidate"
+			// previousStockOrNull has the same date as the given "candidate", but a bigger SeqNo.
+			// Therefore we consider it "after"
 			newQty = candidate.getQuantity();
 		}
 
