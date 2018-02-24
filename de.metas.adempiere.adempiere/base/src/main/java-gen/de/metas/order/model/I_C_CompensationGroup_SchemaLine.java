@@ -69,6 +69,31 @@ public interface I_C_CompensationGroup_SchemaLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Break Value.
+	 * Low Value of trade discount break level
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBreakValue (java.math.BigDecimal BreakValue);
+
+	/**
+	 * Get Break Value.
+	 * Low Value of trade discount break level
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getBreakValue();
+
+    /** Column definition for BreakValue */
+    public static final org.adempiere.model.ModelColumn<I_C_CompensationGroup_SchemaLine, Object> COLUMN_BreakValue = new org.adempiere.model.ModelColumn<I_C_CompensationGroup_SchemaLine, Object>(I_C_CompensationGroup_SchemaLine.class, "BreakValue", null);
+    /** Column name BreakValue */
+    public static final String COLUMNNAME_BreakValue = "BreakValue";
+
+	/**
 	 * Set Compensation Group Schema.
 	 *
 	 * <br>Type: Search
@@ -117,6 +142,29 @@ public interface I_C_CompensationGroup_SchemaLine
     public static final org.adempiere.model.ModelColumn<I_C_CompensationGroup_SchemaLine, Object> COLUMN_C_CompensationGroup_SchemaLine_ID = new org.adempiere.model.ModelColumn<I_C_CompensationGroup_SchemaLine, Object>(I_C_CompensationGroup_SchemaLine.class, "C_CompensationGroup_SchemaLine_ID", null);
     /** Column name C_CompensationGroup_SchemaLine_ID */
     public static final String COLUMNNAME_C_CompensationGroup_SchemaLine_ID = "C_CompensationGroup_SchemaLine_ID";
+
+	/**
+	 * Set Gesamtauftragsrabatt %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCompleteOrderDiscount (java.math.BigDecimal CompleteOrderDiscount);
+
+	/**
+	 * Get Gesamtauftragsrabatt %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getCompleteOrderDiscount();
+
+    /** Column definition for CompleteOrderDiscount */
+    public static final org.adempiere.model.ModelColumn<I_C_CompensationGroup_SchemaLine, Object> COLUMN_CompleteOrderDiscount = new org.adempiere.model.ModelColumn<I_C_CompensationGroup_SchemaLine, Object>(I_C_CompensationGroup_SchemaLine.class, "CompleteOrderDiscount", null);
+    /** Column name CompleteOrderDiscount */
+    public static final String COLUMNNAME_CompleteOrderDiscount = "CompleteOrderDiscount";
 
 	/**
 	 * Get Erstellt.
@@ -201,6 +249,58 @@ public interface I_C_CompensationGroup_SchemaLine
     public static final org.adempiere.model.ModelColumn<I_C_CompensationGroup_SchemaLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_CompensationGroup_SchemaLine, org.compiere.model.I_M_Product>(I_C_CompensationGroup_SchemaLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSeqNo (int SeqNo);
+
+	/**
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSeqNo();
+
+    /** Column definition for SeqNo */
+    public static final org.adempiere.model.ModelColumn<I_C_CompensationGroup_SchemaLine, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_C_CompensationGroup_SchemaLine, Object>(I_C_CompensationGroup_SchemaLine.class, "SeqNo", null);
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
+	 * Set Art.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setType (java.lang.String Type);
+
+	/**
+	 * Get Art.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getType();
+
+    /** Column definition for Type */
+    public static final org.adempiere.model.ModelColumn<I_C_CompensationGroup_SchemaLine, Object> COLUMN_Type = new org.adempiere.model.ModelColumn<I_C_CompensationGroup_SchemaLine, Object>(I_C_CompensationGroup_SchemaLine.class, "Type", null);
+    /** Column name Type */
+    public static final String COLUMNNAME_Type = "Type";
 
 	/**
 	 * Get Aktualisiert.
