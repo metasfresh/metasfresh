@@ -127,7 +127,7 @@ public class PurchaseRowsLoaderTest
 
 		final PurchaseRowsLoader loader = PurchaseRowsLoader.builder()
 				.salesOrderLines(salesOrderLines)
-				.purchaseRowsFactory(new PurchaseRowFactory())
+				.purchaseRowFactory(new PurchaseRowFactory())
 				.viewSupplier(() -> null)
 				.build();
 

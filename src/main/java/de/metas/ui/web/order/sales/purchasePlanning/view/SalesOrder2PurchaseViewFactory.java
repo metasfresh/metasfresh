@@ -78,7 +78,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 
 	// services
 	private final PurchaseCandidateRepository purchaseCandidatesRepo;
-	private final PurchaseRowFactory purchaseRowsFactory;
+	private final PurchaseRowFactory purchaseRowFactory;
 
 	private final CCache<ArrayKey, ViewLayout> viewLayoutCache = //
 			CCache.newCache(SalesOrder2PurchaseViewFactory.class + "#ViewLayout", 1, 0);
@@ -91,10 +91,10 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 
 	public SalesOrder2PurchaseViewFactory(
 			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo,
-			@NonNull final PurchaseRowFactory purchaseRowsFactory)
+			@NonNull final PurchaseRowFactory purchaseRowFactory)
 	{
 		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
-		this.purchaseRowsFactory = purchaseRowsFactory;
+		this.purchaseRowFactory = purchaseRowFactory;
 	}
 
 	@Override
@@ -192,7 +192,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 						.purchaseCandidateRepository(purchaseCandidatesRepo)
 						.build())
 				.viewSupplier(() -> this.getByIdOrNull(viewId)) // needed for async stuff
-				.purchaseRowsFactory(purchaseRowsFactory)
+				.purchaseRowFactory(purchaseRowFactory)
 				.build();
 
 		final PurchaseRowsSupplier rowsSupplier = () -> {

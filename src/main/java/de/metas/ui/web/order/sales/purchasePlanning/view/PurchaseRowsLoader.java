@@ -52,12 +52,12 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString(exclude = { "purchaseRowsFactory", "viewSupplier" })
+@ToString(exclude = { "purchaseRowFactory", "viewSupplier" })
 class PurchaseRowsLoader
 {
 	// parameters
 	private final SalesOrderLines salesOrderLines;
-	private final PurchaseRowFactory purchaseRowsFactory;
+	private final PurchaseRowFactory purchaseRowFactory;
 	private final Supplier<IView> viewSupplier;
 
 	private ImmutableMap<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRow;
@@ -66,17 +66,17 @@ class PurchaseRowsLoader
 	private PurchaseRowsLoader(
 			@NonNull final SalesOrderLines salesOrderLines,
 			@NonNull final Supplier<IView> viewSupplier,
-			@NonNull final PurchaseRowFactory purchaseRowsFactory)
+			@NonNull final PurchaseRowFactory purchaseRowFactory)
 	{
 		this.salesOrderLines = salesOrderLines;
 		this.viewSupplier = viewSupplier;
-		this.purchaseRowsFactory = purchaseRowsFactory;
+		this.purchaseRowFactory = purchaseRowFactory;
 	}
 
 	public List<PurchaseRow> load()
 	{
 		final ImmutableList.Builder<PurchaseRow> result = ImmutableList.builder();
-		ImmutableMap.Builder<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRowBuilder = ImmutableMap.builder();
+		final ImmutableMap.Builder<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRowBuilder = ImmutableMap.builder();
 
 		for (final SalesOrderLineWithCandidates salesOrderLineWithCandidates : salesOrderLines.getSalesOrderLinesWithCandidates())
 		{
@@ -85,7 +85,7 @@ class PurchaseRowsLoader
 			final ImmutableList.Builder<PurchaseRow> rows = ImmutableList.builder();
 			for (final PurchaseCandidate purchaseCandidate : salesOrderLineWithCandidates.getPurchaseCandidates())
 			{
-				final PurchaseRow candidateRow = purchaseRowsFactory
+				final PurchaseRow candidateRow = purchaseRowFactory
 						.rowFromPurchaseCandidateBuilder()
 						.purchaseCandidate(purchaseCandidate)
 						.vendorProductInfo(purchaseCandidate.getVendorProductInfo())
@@ -97,7 +97,7 @@ class PurchaseRowsLoader
 			}
 
 			final PurchaseRow groupRow = //
-					purchaseRowsFactory.createGroupRow(salesOrderLine, rows.build());
+					purchaseRowFactory.createGroupRow(salesOrderLine, rows.build());
 			result.add(groupRow);
 		}
 
@@ -153,7 +153,7 @@ class PurchaseRowsLoader
 
 			for (final AvailabilityResult availabilityResult : entry.getValue())
 			{
-				final PurchaseRow availabilityResultRow = purchaseRowsFactory.rowFromAvailabilityResultBuilder()
+				final PurchaseRow availabilityResultRow = purchaseRowFactory.rowFromAvailabilityResultBuilder()
 						.parentRow(purchaseRowToAugment)
 						.availabilityResult(availabilityResult).build();
 
@@ -183,7 +183,7 @@ class PurchaseRowsLoader
 			{
 				final PurchaseRow purchaseRowToAugment = purchaseCandidate2purchaseRow.get(purchaseCandidate2throwable.getKey());
 
-				final PurchaseRow availabilityResultRow = purchaseRowsFactory
+				final PurchaseRow availabilityResultRow = purchaseRowFactory
 						.rowFromThrowableBuilder()
 						.parentRow(purchaseRowToAugment)
 						.throwable(purchaseCandidate2throwable.getValue())

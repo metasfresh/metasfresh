@@ -32,50 +32,83 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 public class PurchaseRowIdTest
 {
 	@Test
-	public void groupId_toDocumentId()
+	public void groupId()
 	{
-		final DocumentId documentId = PurchaseRowId.groupId(20).toDocumentId();
+		final PurchaseRowId rowId = PurchaseRowId.groupId(20);
+
+		final DocumentId documentId = rowId.toDocumentId();
 		assertThat(documentId.toString()).isEqualTo("20");
+
+		assertThat(rowId.isGroupRowId()).isTrue();
+		assertThat(rowId.isLineRowId()).isFalse();
+		assertThat(rowId.isAvailabilityRowId()).isFalse();
 	}
 
 	@Test
-	public void lineId_toDocumentId()
+	public void lineId()
 	{
-		final DocumentId documentId = PurchaseRowId.lineId(30, 40).toDocumentId();
-		assertThat(documentId.toString()).isEqualTo("30" + PurchaseRowId.PARTS_SEPARATOR + "40");
+		lineId_performWithParams("30", "40", "50");
+		lineId_performWithParams("30", "40", "0");
+	}
+
+	private void lineId_performWithParams(
+			final String salesOrderLineId,
+			final String vendorBPartnerId,
+			final String processedPurchaseCandidateId)
+	{
+		final PurchaseRowId rowId = PurchaseRowId.lineId(
+				Integer.parseInt(salesOrderLineId),
+				Integer.parseInt(vendorBPartnerId),
+				Integer.parseInt(processedPurchaseCandidateId));
+
+		final DocumentId documentId = rowId.toDocumentId();
+		assertThat(documentId.toString()).isEqualTo(salesOrderLineId
+				+ PurchaseRowId.PARTS_SEPARATOR + vendorBPartnerId
+				+ PurchaseRowId.PARTS_SEPARATOR + processedPurchaseCandidateId);
+
+		assertThat(rowId.isGroupRowId()).isFalse();
+		assertThat(rowId.isLineRowId()).isTrue();
+		assertThat(rowId.isAvailabilityRowId()).isFalse();
 	}
 
 	@Test
 	public void withAvailability()
 	{
-		final PurchaseRowId lineId = PurchaseRowId.lineId(10, 20);
-		final PurchaseRowId availabilityId = lineId.withAvailability(Type.AVAILABLE, "someString");
+		final PurchaseRowId rowId = PurchaseRowId.lineId(10, 20, 30);
+		final PurchaseRowId availabilityRowId = rowId.withAvailability(Type.AVAILABLE, "someString");
 
-		assertThat(lineId.toDocumentId()).isNotEqualTo(availabilityId.toDocumentId());
-		assertThat(availabilityId.toDocumentId().toString())
+		assertThat(rowId.toDocumentId()).isNotEqualTo(availabilityRowId.toDocumentId());
+		assertThat(availabilityRowId.toDocumentId().toString())
 				.isEqualTo("10"
 						+ PurchaseRowId.PARTS_SEPARATOR + "20"
+						+ PurchaseRowId.PARTS_SEPARATOR + "30"
 						+ PurchaseRowId.PARTS_SEPARATOR + Type.AVAILABLE.toString()
 						+ PurchaseRowId.PARTS_SEPARATOR + "someString");
+
+		assertThat(availabilityRowId.isGroupRowId()).isFalse();
+		assertThat(availabilityRowId.isLineRowId()).isFalse();
+		assertThat(availabilityRowId.isAvailabilityRowId()).isTrue();
 	}
 
 	@Test
 	public void fromDocumentId_Available()
 	{
-		final DocumentId documentId = DocumentId.ofString("1000007-2156423-AVAILABLE-11");
+		final DocumentId documentId = DocumentId.ofString("1000007-2156423-0-AVAILABLE-11");
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(documentId);
 		assertThat(purchaseRowId.getSalesOrderLineId()).isEqualTo(1000007);
 		assertThat(purchaseRowId.getVendorBPartnerId()).isEqualTo(2156423);
+		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(0);
 		assertThat(purchaseRowId.getAvailabilityType()).isEqualTo(Type.AVAILABLE);
 	}
 
 	@Test
 	public void fromDocumentId_NotAvailable()
 	{
-		final DocumentId documentId = DocumentId.ofString("1000007-2156423-NOT_AVAILABLE-11");
+		final DocumentId documentId = DocumentId.ofString("1000007-2156423-32311-NOT_AVAILABLE-11");
 		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(documentId);
 		assertThat(purchaseRowId.getSalesOrderLineId()).isEqualTo(1000007);
 		assertThat(purchaseRowId.getVendorBPartnerId()).isEqualTo(2156423);
+		assertThat(purchaseRowId.getProcessedPurchaseCandidateId()).isEqualTo(32311);
 		assertThat(purchaseRowId.getAvailabilityType()).isEqualTo(Type.NOT_AVAILABLE);
 	}
 }
