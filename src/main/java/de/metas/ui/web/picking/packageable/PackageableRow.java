@@ -216,4 +216,26 @@ public final class PackageableRow implements IViewRow
 	{
 		return shipmentScheduleId;
 	}
+
+	public int getProductId()
+	{
+		return product != null ? product.getIdAsInt() : -1;
+	}
+
+	public BigDecimal getQtyToDeliver()
+	{
+		return qtyToDeliver != null ? qtyToDeliver : BigDecimal.ZERO;
+	}
+
+	public BigDecimal getQtyPickedPlanned()
+	{
+		return qtyPickedPlanned != null ? qtyPickedPlanned : BigDecimal.ZERO;
+	}
+
+	public BigDecimal getQtyToDeliverWithoutPlanned()
+	{
+		final BigDecimal qtyToDeliverMinusPlanned = getQtyToDeliver().subtract(getQtyPickedPlanned());
+		return qtyToDeliverMinusPlanned.signum() > 0 ? qtyToDeliverMinusPlanned : BigDecimal.ZERO;
+	}
+
 }
