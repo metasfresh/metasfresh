@@ -17,6 +17,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
+import de.metas.ui.web.picking.packageable.PackageableRow;
+import de.metas.ui.web.picking.packageable.PackageableView;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -112,6 +114,25 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 		return pickingSlotsView;
 	}
 
+	protected final PackageableRow getSingleSelectedPackageableRow()
+	{
+		final PickingSlotView pickingSlotView = getPickingSlotView();
+		final ViewId packageablesViewId = pickingSlotView.getParentViewId();
+		if (packageablesViewId == null)
+		{
+			throw new AdempiereException("Packageables view is not available");
+		}
+
+		final DocumentId packageableRowId = pickingSlotView.getParentRowId();
+		if (packageableRowId == null)
+		{
+			throw new AdempiereException("There is no single packageable row selected");
+		}
+
+		final PackageableView packageableView = PackageableView.cast(viewsRepo.getView(packageablesViewId));
+		return packageableView.getById(packageableRowId);
+	}
+
 	protected PickingSlotRow getPickingSlotRow()
 	{
 		final HUEditorView huView = getView();
@@ -134,32 +155,32 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 		// After this process finished successfully go back to the picking slots view
 		getResult().setWebuiIncludedViewIdToOpen(getPickingSlotView().getViewId().getViewId());
 	}
-	
+
 	protected final void invalidatePickingSlotsView()
 	{
 		final PickingSlotView pickingSlotsView = getPickingSlotViewOrNull();
-		if(pickingSlotsView == null)
+		if (pickingSlotsView == null)
 		{
 			return;
 		}
 
 		invalidateView(pickingSlotsView.getViewId());
 	}
-	
+
 	protected final void invalidatePackablesView()
 	{
 		final PickingSlotView pickingSlotsView = getPickingSlotViewOrNull();
-		if(pickingSlotsView == null)
+		if (pickingSlotsView == null)
 		{
 			return;
 		}
-		
+
 		final ViewId packablesViewId = pickingSlotsView.getParentViewId();
-		if(packablesViewId == null)
+		if (packablesViewId == null)
 		{
 			return;
 		}
-		
+
 		invalidateView(packablesViewId);
 	}
 
