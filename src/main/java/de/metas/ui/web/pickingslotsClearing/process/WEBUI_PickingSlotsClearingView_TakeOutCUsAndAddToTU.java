@@ -8,8 +8,13 @@ import java.util.List;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
@@ -59,30 +64,35 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 	@Param(parameterName = PARAM_QtyCU)
 	private BigDecimal qtyCU;
 
+	private static final String PARAM_IsAllQty = "IsAllQty";
+	@Param(parameterName = PARAM_IsAllQty)
+	private boolean isAllQty;
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		//
 		// Validate the picking slots clearing selected row (left side)
-		if (!isSingleSelectedPickingSlotRow())
+		// i.e. the ones which we will Take Out
+		final List<PickingSlotRow> pickingSlotRows = getSelectedPickingSlotRows();
+		if (pickingSlotRows.isEmpty())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select one and only one picking slots HU");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select some picking slots CUs");
 		}
-		final PickingSlotRow pickingSlotRow = getSingleSelectedPickingSlotRow();
-		if (!pickingSlotRow.isPickedHURow())
+		for (final PickingSlotRow pickingSlotRow : pickingSlotRows)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select an HU");
-		}
-		if (!pickingSlotRow.isTU())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select a TU");
+			if (!pickingSlotRow.isCU())
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("select a CU");
+			}
 		}
 
 		//
 		// Validate the packing HUs selected row (right side)
+		// i.e. the HU where we will pack to
 		if (!isSingleSelectedPackingHUsRow())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select one and only one HU to pack to");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select one and only one TU to pack to");
 		}
 		final HUEditorRow packingHURow = getSingleSelectedPackingHUsRow();
 		if (!packingHURow.isTU())
@@ -97,10 +107,19 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		if (PARAM_QtyCU.equals(parameter.getColumnName()))
+		if (PARAM_IsAllQty.equals(parameter.getColumnName()))
 		{
-			final I_M_HU fromHU = getSingleSelectedPickingSlotTopLevelHU();
-			return retrieveQtyCU(fromHU);
+			return getSelectedPickingSlotRows().size() > 1;
+		}
+		else if (PARAM_QtyCU.equals(parameter.getColumnName()))
+		{
+			final List<PickingSlotRow> pickingSlotRows = getSelectedPickingSlotRows();
+			if (pickingSlotRows.size() != 1)
+			{
+				return DEFAULT_VALUE_NOTAVAILABLE;
+			}
+
+			return pickingSlotRows.get(0).getHuQtyCU();
 		}
 		else
 		{
@@ -111,26 +130,34 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 	@Override
 	protected String doIt()
 	{
-		if (qtyCU == null || qtyCU.signum() <= 0)
-		{
-			throw new FillMandatoryException(PARAM_QtyCU);
-		}
-
-		final I_M_HU fromTU = getSourceTU();
-		final IAllocationSource source = HUListAllocationSourceDestination.of(fromTU)
+		final List<I_M_HU> fromCUs = getSourceCUs();
+		final IAllocationSource source = HUListAllocationSourceDestination.of(fromCUs)
 				.setDestroyEmptyHUs(true);
 
 		final IAllocationDestination destination = HUListAllocationSourceDestination.of(getTargetTU());
 
-		final List<Integer> huIdsDestroyedCollector = new ArrayList<>();
-
-		HULoader.of(source, destination)
+		final HULoader huLoader = HULoader.of(source, destination)
 				.setAllowPartialUnloads(false)
-				.setAllowPartialLoads(false)
-				.load(prepareUnloadRequest(fromTU, qtyCU)
-						.setForceQtyAllocation(true)
-						.addEmptyHUListener(EmptyHUListener.doBeforeDestroyed(hu -> huIdsDestroyedCollector.add(hu.getM_HU_ID())))
-						.create());
+				.setAllowPartialLoads(false);
+
+		//
+		// Unload CU/CUs and Load to selected TU
+		final List<Integer> huIdsDestroyedCollector = new ArrayList<>();
+		if (fromCUs.size() == 1)
+		{
+			huLoader.load(prepareUnloadRequest(fromCUs.get(0), getQtyCU())
+					.setForceQtyAllocation(true)
+					.addEmptyHUListener(EmptyHUListener.doBeforeDestroyed(hu -> huIdsDestroyedCollector.add(hu.getM_HU_ID())))
+					.create());
+		}
+		else
+		{
+			final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+			final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
+			huContext.addEmptyHUListener(EmptyHUListener.doBeforeDestroyed(hu -> huIdsDestroyedCollector.add(hu.getM_HU_ID())));
+
+			huLoader.unloadAllFromSource(huContext);
+		}
 
 		// Remove from picking slots all destroyed HUs
 		pickingCandidateService.inactivateForHUIds(huIdsDestroyedCollector);
@@ -151,11 +178,32 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 		getPackingHUsView().invalidateAll();
 	}
 
-	private I_M_HU getSourceTU()
+	private BigDecimal getQtyCU()
 	{
-		final PickingSlotRow huRow = getSingleSelectedPickingSlotRow();
-		Check.assume(huRow.isTU(), "row {} shall be a TU", huRow);
-		return load(huRow.getHuId(), I_M_HU.class);
+		if (isAllQty)
+		{
+			return getSingleSelectedPickingSlotRow().getHuQtyCU();
+		}
+		else
+		{
+			final BigDecimal qtyCU = this.qtyCU;
+			if (qtyCU == null || qtyCU.signum() <= 0)
+			{
+				throw new FillMandatoryException(PARAM_QtyCU);
+			}
+			return qtyCU;
+		}
+	}
+
+	private List<I_M_HU> getSourceCUs()
+	{
+		return getSelectedPickingSlotRows()
+				.stream()
+				.peek(huRow -> Check.assume(huRow.isCU(), "row {} shall be a CU", huRow))
+				.map(PickingSlotRow::getHuId)
+				.distinct()
+				.map(huId -> load(huId, I_M_HU.class))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private I_M_HU getTargetTU()
