@@ -21,7 +21,6 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessDefaultParameter;
@@ -32,7 +31,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.IProductBL;
 import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotView;
+import de.metas.ui.web.picking.packageable.PackageableRow;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
@@ -79,7 +78,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	@Param(parameterName = PARAM_QtyCU, mandatory = true)
 	private BigDecimal qtyCU;
 
-	private transient I_M_Product _shipmentScheduleProduct; // lazy
+	private transient I_M_Product _productToPack; // lazy
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -105,17 +104,24 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	}
 
 	@Override
-	public Object getParameterDefaultValue(IProcessDefaultParameter parameter)
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
 		if (PARAM_M_Product_ID.equals(parameter.getColumnName()))
 		{
 			// For now, according to https://github.com/metasfresh/metasfresh-webui-api/issues/876,
 			// we are setting the "scanned product" field to the right value.
-			return getShipmentScheduleProduct().getM_Product_ID();
+			final PackageableRow packageableRow = getSingleSelectedPackageableRow();
+			return packageableRow.getProductId();
 		}
 		else if (PARAM_QtyCU.equals(parameter.getColumnName()))
 		{
-			return getSingleSelectedRow().getQtyCU();
+			final PackageableRow packageableRow = getSingleSelectedPackageableRow();
+			final BigDecimal qtyToDeliver = packageableRow.getQtyToDeliverWithoutPlanned();
+
+			final HUEditorRow huRow = getSingleSelectedRow();
+			final BigDecimal huQty = huRow.getQtyCU();
+
+			return qtyToDeliver.min(huQty);
 		}
 		else
 		{
@@ -136,45 +142,58 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	@Override
 	protected String doIt() throws Exception
 	{
+		pickCUs();
+
+		return MSG_OK;
+	}
+
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		if (!success)
+		{
+			return;
+		}
+
+		invalidateAndGoBackToPickingSlotsView();
+	}
+
+	private BigDecimal getQtyCU()
+	{
 		if (qtyCU == null || qtyCU.signum() <= 0)
 		{
 			throw new FillMandatoryException(PARAM_QtyCU);
 		}
-
-		pickCUs();
-
-		invalidateAndGoBackToPickingSlotsView();
-		return MSG_OK;
+		return qtyCU;
 	}
 
 	private I_M_Product getProduct()
 	{
-		final I_M_Product shipmentScheduleProduct = getShipmentScheduleProduct();
+		final I_M_Product productToPack = getProductToPack();
 
 		//
 		// Assert scanned product is matching the shipment schedule product.
 		// NOTE: scannedProductId might be not set, in case we deactivate the process parameter.
-		if (scannedProductId > 0 && scannedProductId != shipmentScheduleProduct.getM_Product_ID())
+		if (scannedProductId > 0 && scannedProductId != productToPack.getM_Product_ID())
 		{
 			final I_M_Product scannedProduct = loadOutOfTrx(scannedProductId, I_M_Product.class);
 			final String scannedProductStr = scannedProduct != null ? scannedProduct.getName() : "?";
-			final String expectedProductStr = shipmentScheduleProduct.getName();
+			final String expectedProductStr = productToPack.getName();
 			throw new AdempiereException(MSG_InvalidProduct, new Object[] { scannedProductStr, expectedProductStr });
 		}
 
-		return shipmentScheduleProduct;
+		return productToPack;
 	}
 
-	private I_M_Product getShipmentScheduleProduct()
+	private I_M_Product getProductToPack()
 	{
-		if (_shipmentScheduleProduct == null)
+		if (_productToPack == null)
 		{
-			final PickingSlotView pickingSlotsView = getPickingSlotView();
-			final I_M_ShipmentSchedule currentShipmentSchedule = pickingSlotsView.getCurrentShipmentSchedule();
-			final int shipmentScheduleProductId = currentShipmentSchedule.getM_Product_ID();
-			_shipmentScheduleProduct = loadOutOfTrx(shipmentScheduleProductId, I_M_Product.class);
+			final PackageableRow packageableRow = getSingleSelectedPackageableRow();
+			final int productId = packageableRow.getProductId();
+			_productToPack = loadOutOfTrx(productId, I_M_Product.class);
 		}
-		return _shipmentScheduleProduct;
+		return _productToPack;
 	}
 
 	private void pickCUs()
@@ -189,7 +208,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 				.requestProvider(huContext -> AllocationUtils.createAllocationRequestBuilder()
 						.setHUContext(huContext)
 						.setProduct(product)
-						.setQuantity(qtyCU, uom)
+						.setQuantity(getQtyCU(), uom)
 						.setDate(date)
 						.setFromReferencedModel(null) // N/A
 						.setForceQtyAllocation(false)
