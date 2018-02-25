@@ -404,6 +404,17 @@ public final class PickingSlotRow implements IViewRow
 	{
 		return isPickedHURow() && getType().isTU();
 	}
+	
+	public boolean isCU()
+	{
+		return isPickedHURow() && getType().isCU();
+	}
+	
+	public boolean isCUOrStorage()
+	{
+		return isPickedHURow() && getType().isCUOrStorage();
+	}
+
 
 	/**
 	 * 

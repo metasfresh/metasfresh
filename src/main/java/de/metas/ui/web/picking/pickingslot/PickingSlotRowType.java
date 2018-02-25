@@ -62,4 +62,15 @@ public class PickingSlotRowType implements IViewRowType
 	{
 		return huEditorRowType != null && huEditorRowType == HUEditorRowType.TU;
 	}
+
+	public boolean isCU()
+	{
+		return huEditorRowType != null && huEditorRowType == HUEditorRowType.VHU;
+	}
+
+	public boolean isCUOrStorage()
+	{
+		return huEditorRowType != null
+				&& (huEditorRowType == HUEditorRowType.VHU || huEditorRowType == HUEditorRowType.HUStorage);
+	}
 }
