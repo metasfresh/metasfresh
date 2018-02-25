@@ -115,12 +115,17 @@ public final class PickingSlotRowsCollection
 
 	public PickingSlotRow getRootRowWhichIncludes(@NonNull final PickingSlotRowId rowId)
 	{
-		final PickingSlotRow rootRowId = getRowsIndex().getRootRow(rowId);
-		if (rootRowId == null)
+		final PickingSlotRow rootRow = getRowsIndex().getRootRow(rowId);
+		if (rootRow == null)
 		{
 			throw new AdempiereException("No root row found which includes " + rowId);
 		}
-		return rootRowId;
+		return rootRow;
+	}
+
+	public PickingSlotRowId getRootRowIdWhichIncludes(@NonNull final PickingSlotRowId rowId)
+	{
+		return getRowsIndex().getRootRowId(rowId);
 	}
 
 	private static final PickingSlotRow assertRowNotNull(final PickingSlotRowId pickingSlotRowId, final PickingSlotRow pickingSlotRow)
@@ -174,13 +179,19 @@ public final class PickingSlotRowsCollection
 
 		public PickingSlotRow getRootRow(final PickingSlotRowId rowId)
 		{
-			final PickingSlotRowId rootRowId = rowId2rootRowId.get(rowId);
+			final PickingSlotRowId rootRowId = getRootRowId(rowId);
 			if (rootRowId == null)
 			{
 				return null;
 			}
 			return getRow(rootRowId);
 		}
+		
+		public PickingSlotRowId getRootRowId(final PickingSlotRowId rowId)
+		{
+			return rowId2rootRowId.get(rowId);
+		}
+
 
 		public long size()
 		{
