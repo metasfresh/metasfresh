@@ -185,9 +185,19 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 		return rows.getById(rowId);
 	}
 
+	public PickingSlotRow getById(@NonNull final PickingSlotRowId rowId) throws EntityNotFoundException
+	{
+		return getById(rowId.toDocumentId());
+	}
+
 	public PickingSlotRow getRootRowWhichIncludesRowId(final PickingSlotRowId rowId)
 	{
 		return rows.getRootRowWhichIncludes(rowId);
+	}
+
+	public PickingSlotRowId getRootRowIdWhichIncludesRowId(final PickingSlotRowId rowId)
+	{
+		return rows.getRootRowIdWhichIncludes(rowId);
 	}
 
 	@Override

@@ -20,9 +20,10 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewRepository;
-import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutHU;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU;
+import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutHU;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU;
+import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutMultiHUsAndAddToNewHU;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutTUAndAddToLU;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
@@ -147,6 +148,7 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU.class),
 				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutTUAndAddToLU.class),
 				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU.class),
+				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutMultiHUsAndAddToNewHU.class),
 				createProcessDescriptor(de.metas.ui.web.process.adprocess.WEBUI_TestParentChildViewParams.class));
 	}
 

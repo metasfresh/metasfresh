@@ -1,23 +1,37 @@
 package de.metas.ui.web.pickingslotsClearing.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
+import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRowId;
 import de.metas.ui.web.pickingslotsClearing.PickingSlotsClearingView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -80,6 +94,24 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		return fromHU;
 	}
 
+	protected final List<PickingSlotRow> getSelectedPickingSlotRows()
+	{
+		return streamSelectedRows()
+				.map(PickingSlotRow::cast)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	protected final List<I_M_HU> getSelectedPickingSlotTopLevelHUs()
+	{
+		return getSelectedPickingSlotRows()
+				.stream()
+				.peek(huRow -> Check.assume(huRow.isTopLevelHU(), "row {} shall be a top level HU", huRow))
+				.map(huRow -> huRow.getHuId())
+				.distinct()
+				.map(huId -> InterfaceWrapperHelper.load(huId, I_M_HU.class))
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	protected final BigDecimal retrieveQtyCU(@NonNull final I_M_HU hu)
 	{
 		final IHUContext huContext = huContextFactory.createMutableHUContext();
@@ -97,10 +129,27 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 	}
 
 	/** @return the actual picking slow row (the top level row) */
-	protected final PickingSlotRow getRootSelectedPickingSlotRow()
+	protected final PickingSlotRow getRootRowForSelectedPickingSlotRows()
 	{
-		final PickingSlotRow row = getSingleSelectedPickingSlotRow();
-		return getPickingSlotsClearingView().getRootRowWhichIncludesRowId(row.getPickingSlotRowId());
+		final Set<PickingSlotRowId> rootRowIds = getRootRowIdsForSelectedPickingSlotRows();
+		Check.assumeNotEmpty(rootRowIds, "rootRowIds is not empty");
+		if (rootRowIds.size() > 1)
+		{
+			throw new AdempiereException("Select rows from one picking slot");
+		}
+		final PickingSlotRowId rootRowId = rootRowIds.iterator().next();
+
+		final PickingSlotsClearingView pickingSlotsClearingView = getPickingSlotsClearingView();
+		return pickingSlotsClearingView.getById(rootRowId);
+	}
+
+	protected final Set<PickingSlotRowId> getRootRowIdsForSelectedPickingSlotRows()
+	{
+		final PickingSlotsClearingView pickingSlotsClearingView = getPickingSlotsClearingView();
+		return getSelectedPickingSlotRows()
+				.stream()
+				.map(row -> pickingSlotsClearingView.getRootRowIdWhichIncludesRowId(row.getPickingSlotRowId()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	protected final HUEditorView getPackingHUsView()
@@ -148,6 +197,26 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 				.setDateAsToday()
 				.setFromReferencedModel(null)
 				.setForceQtyAllocation(false);
+	}
+
+	protected final IHUProducerAllocationDestination createNewHUProducer(final PickingSlotRow pickingRow, final I_M_HU_PI targetHUPI)
+	{
+		final int bpartnerId = pickingRow.getBPartnerId();
+		final I_C_BPartner bpartner = bpartnerId > 0 ? load(bpartnerId, I_C_BPartner.class) : null;
+		final int bpartnerLocationId = pickingRow.getBPartnerLocationId();
+
+		final int locatorId = pickingRow.getPickingSlotLocatorId();
+		final I_M_Locator locator = load(locatorId, I_M_Locator.class);
+		if (!locator.isAfterPickingLocator())
+		{
+			throw new AdempiereException("Picking slot's locator is not an after picking locator: " + locator.getValue());
+		}
+
+		return HUProducerDestination.of(targetHUPI)
+				.setC_BPartner(bpartner)
+				.setC_BPartner_Location_ID(bpartnerLocationId)
+				.setM_Locator(locator)
+				.setHUStatus(X_M_HU.HUSTATUS_Picked);
 	}
 
 }

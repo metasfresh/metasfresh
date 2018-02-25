@@ -103,7 +103,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends PickingSlotsCleari
 
 		//
 		// Make sure the HU has the BPartner/Location of the picking slot
-		final PickingSlotRow pickingSlotRow = getRootSelectedPickingSlotRow();
+		final PickingSlotRow pickingSlotRow = getRootRowForSelectedPickingSlotRows();
 		if (pickingSlotRow.getBPartnerId() > 0)
 		{
 			hu.setC_BPartner_ID(pickingSlotRow.getBPartnerId());
