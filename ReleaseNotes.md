@@ -19,6 +19,8 @@ Here come the actual release notes:
     * New Windows for accounting export and export formats in webui.
   * [#3515](https://github.com/metasfresh/metasfresh/issues/3515) Webui: Pimp Compensation Group Schema window
     * New Window for Compensation group maintenance.
+  * [#3534](https://github.com/metasfresh/metasfresh/issues/3534) Webui Window Design: Create window for Picking Config
+    * New Window for Picking group Configuration.
 
 * metasfresh-webui-frontend
   * [#1554](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1554) Action Parm modal Overlay focus missing n 1st Field
