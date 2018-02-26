@@ -992,11 +992,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		// Create storage query
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
-		
+
 		final List<I_M_Warehouse> warehouses;
 		{
 			final I_M_Warehouse shipmentScheduleWarehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
-			final WarehousePickingGroup warehouseGroup = Services.get(IWarehouseDAO.class).getWarehousePickingGroupContainingWarehouseId(shipmentScheduleWarehouse.getM_Warehouse_ID());
+			Check.assumeNotNull(shipmentScheduleWarehouse, "The given shipmentSchedule references a warehouse; shipmentSchedule={}", sched);
+
+			final WarehousePickingGroup warehouseGroup = Services.get(IWarehouseDAO.class)
+					.getWarehousePickingGroupContainingWarehouseId(shipmentScheduleWarehouse.getM_Warehouse_ID());
 			if(warehouseGroup == null)
 			{
 				warehouses = ImmutableList.of(shipmentScheduleWarehouse);
