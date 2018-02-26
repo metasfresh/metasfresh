@@ -145,6 +145,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 		prodPlanning.setM_AttributeSetInstance_ID(0);
 		prodPlanning.setAD_Org_ID(0);
 		prodPlanning.setIsAttributeDependant(false);
+		prodPlanning.setOnMaterialReceiptWithDestWarehouse(onmaterialreceiptwithdestwarehouse);
 
 		save(prodPlanning);
 		return prodPlanning;

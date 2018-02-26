@@ -243,16 +243,7 @@ public class DDOrderBL implements IDDOrderBL
 		final I_M_Locator locatorTo = movementLine.getM_LocatorTo();
 		final int warehouseToId = locatorTo.getM_Warehouse_ID();
 
-		if (warehouseToId == warehouseInTransitId)
-		{
-			// Movement-Shipment
-			return false;
-		}
-		else
-		{
-			// Movement-Receipt
-			return true;
-		}
+		return warehouseToId != warehouseInTransitId;
 	}
 
 	/**
