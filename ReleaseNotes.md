@@ -24,6 +24,7 @@ Here come the actual release notes:
   * [#3516](https://github.com/metasfresh/metasfresh/issues/3516) Price/ Discount Change restrictions Order/ Invoice Pharma
   * [#3532](https://github.com/metasfresh/metasfresh/issues/3532) New Window for Shipment Statistics
   * [#3534](https://github.com/metasfresh/metasfresh/issues/3534) Webui Window Design: Create window for Picking Config
+    * New Window for Picking group Configuration.
   * [#3537](https://github.com/metasfresh/metasfresh/issues/3537) Remove legacy M_Production code
   * [#3555](https://github.com/metasfresh/metasfresh/issues/3555) Automatic Group Discount Calculation
   * [#3557](https://github.com/metasfresh/metasfresh/issues/3557) Respect Picking Group Selection in Picking HU Editor
