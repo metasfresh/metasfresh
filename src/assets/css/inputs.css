@@ -663,7 +663,7 @@ input:checked + .input-slider:before {
     border-bottom: none;   
 }
 .input-dropdown-container.select-dropdown.focused {
-    border-bottom: 1px solid #C9D5DC;
+    border-bottom: 1px solid #4b5b64;
 }
 .input-dropdown-container.select-dropdown.opened {
     border-bottom: none;
