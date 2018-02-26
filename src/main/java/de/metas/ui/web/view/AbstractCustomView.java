@@ -29,6 +29,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderBys;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -62,10 +63,12 @@ import lombok.NonNull;
  */
 public abstract class AbstractCustomView<T extends IViewRow> implements IView
 {
+	@Getter
 	private final ViewId viewId;
+	@Getter
 	private final ITranslatableString description;
 
-	@Getter
+	@Getter(AccessLevel.PROTECTED)
 	private final IRowsData<T> rowsData;
 
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
@@ -86,20 +89,8 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		this.description = description != null ? description : ITranslatableString.empty();
 
 		this.rowsData = rowsData;
-		
+
 		this.viewFilterDescriptors = viewFilterDescriptors;
-	}
-
-	@Override
-	public final ViewId getViewId()
-	{
-		return viewId;
-	}
-
-	@Override
-	public final ITranslatableString getDescription()
-	{
-		return description;
 	}
 
 	@Override
@@ -300,10 +291,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 
 	protected Stream<DocumentId> extractDocumentIdsToInvalidate(final TableRecordReference recordRef)
 	{
-		return rowsData.getTableRecordReference2rows()
-				.get(recordRef)
-				.stream()
-				.map(IViewRow::getId);
+		return rowsData.streamDocumentIdsToInvalidate(recordRef);
 	}
 
 	private static class RowsDataTool
@@ -340,13 +328,21 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	{
 		Map<DocumentId, T> getDocumentId2TopLevelRows();
 
+		ListMultimap<TableRecordReference, T> getTableRecordReference2rows();
+
+		void invalidateAll();
+
 		default Map<DocumentId, T> getDocumentId2AllRows()
 		{
 			return RowsDataTool.extractAllRows(getDocumentId2TopLevelRows().values());
 		}
 
-		ListMultimap<TableRecordReference, T> getTableRecordReference2rows();
-
-		void invalidateAll();
+		default Stream<DocumentId> streamDocumentIdsToInvalidate(@NonNull final TableRecordReference recordRef)
+		{
+			return getTableRecordReference2rows()
+					.get(recordRef)
+					.stream()
+					.map(IViewRow::getId);
+		}
 	}
 }
