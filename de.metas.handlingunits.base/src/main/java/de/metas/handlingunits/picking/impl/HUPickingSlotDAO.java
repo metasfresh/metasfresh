@@ -164,6 +164,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 				.createQueryBuilder(I_M_PickingSlot_HU.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_PickingSlot_HU.COLUMN_M_PickingSlot_ID, pickingSlotIds)
+				.orderBy(I_M_PickingSlot_HU.COLUMN_M_PickingSlot_HU_ID)
 				.create()
 				.stream(I_M_PickingSlot_HU.class)
 				.forEach(pickingSlotHU -> pickingSlotId2huIds.put(pickingSlotHU.getM_PickingSlot_ID(), pickingSlotHU.getM_HU_ID()));
