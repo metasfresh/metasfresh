@@ -103,3 +103,15 @@ INSERT INTO t_alter_column values('c_creditlimit_type','SeqNo','NUMERIC(10)',nul
 UPDATE C_CreditLimit_Type SET SeqNo=1 WHERE SeqNo IS NULL
 ;
 
+
+-- 2018-02-26T14:21:33.296
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=559473
+;
+
+-- 2018-02-26T14:21:33.312
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Column WHERE AD_Column_ID=559473
+;
+
+

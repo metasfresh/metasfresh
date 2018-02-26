@@ -15,7 +15,7 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1491704732L;
+	private static final long serialVersionUID = 760573499L;
 
     /** Standard Constructor */
     public X_C_BPartner_CreditLimit (Properties ctx, int C_BPartner_CreditLimit_ID, String trxName)
@@ -270,26 +270,5 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 			return "Y".equals(oo);
 		}
 		return false;
-	}
-
-	/** Set Reihenfolge.
-		@param SeqNo 
-		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
-	@Override
-	public void setSeqNo (int SeqNo)
-	{
-		throw new IllegalArgumentException ("SeqNo is virtual column");	}
-
-	/** Get Reihenfolge.
-		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
-	@Override
-	public int getSeqNo () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 }
