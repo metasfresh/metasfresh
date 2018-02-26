@@ -10,6 +10,16 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.47 (2018-09)
+**release for week 2018-09**
+
+## Features
+* metasfresh
+  * [#3540](https://github.com/metasfresh/metasfresh/issues/3540) WebUI: Show GuaranteeDaysMin on Product and Product Category windows
+    * Improved Product and Product Category windows, added new field for Min. Guarantee Days ad part of the best before management.
+
+
+
 # metasfresh 5.46 (2018-09)
 **release for week 2018-09**
 
