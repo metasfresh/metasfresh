@@ -137,7 +137,7 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 		productPlanning.setAD_Workflow_ID(schema.getAD_Workflow_ID());
 		productPlanning.setDD_NetworkDistribution_ID(schema.getDD_NetworkDistribution_ID());
 		productPlanning.setIsPickDirectlyIfFeasible(schema.isPickDirectlyIfFeasible());
-		productPlanning.setIsCreateDistributionOrder(schema.isCreateDistributionOrder());
+		productPlanning.setOnMaterialReceiptWithDestWarehouse(schema.getOnMaterialReceiptWithDestWarehouse());
 
 		save(productPlanning);
 	}
