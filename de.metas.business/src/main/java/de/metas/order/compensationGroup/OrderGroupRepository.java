@@ -8,6 +8,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -66,9 +67,9 @@ public class OrderGroupRepository implements GroupRepository
 
 	private final ImmutableList<OrderGroupRepositoryAdvisor> advisors;
 
-	public OrderGroupRepository(final List<OrderGroupRepositoryAdvisor> advisors)
+	public OrderGroupRepository(final Optional<List<OrderGroupRepositoryAdvisor>> advisors)
 	{
-		this.advisors = ImmutableList.copyOf(advisors);
+		this.advisors = ImmutableList.copyOf(advisors.orElse(ImmutableList.of()));
 	}
 
 	public static GroupId extractGroupId(final I_C_OrderLine orderLine)
@@ -138,7 +139,7 @@ public class OrderGroupRepository implements GroupRepository
 	private Group createGroupFromOrderLines(final List<I_C_OrderLine> groupOrderLines)
 	{
 		Check.assumeNotEmpty(groupOrderLines, "groupOrderLines is not empty");
-		
+
 		final GroupId groupId = extractSingleGroupId(groupOrderLines);
 
 		final I_C_OrderLine groupFirstOrderLine = groupOrderLines.get(0);

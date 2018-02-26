@@ -23,6 +23,7 @@ package de.metas.order.model.interceptor;
  */
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -39,8 +40,6 @@ import org.compiere.model.CalloutOrder;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
@@ -72,8 +71,8 @@ public class C_OrderLine
 		if (groupChangesHandler == null)
 		{
 			groupChangesHandler = new OrderGroupCompensationChangesHandler(
-					new OrderGroupRepository(ImmutableList.of()),
-					new GroupTemplateRepository(ImmutableList.of()));
+					new OrderGroupRepository(Optional.empty()),
+					new GroupTemplateRepository(Optional.empty()));
 		}
 	};
 
@@ -95,14 +94,9 @@ public class C_OrderLine
 				.createQueryBuilder(I_C_OrderLine.class, orderLine)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Link_OrderLine_ID, orderLine.getC_OrderLine_ID())
 				.create()
-				.update(new IQueryUpdater<I_C_OrderLine>()
-				{
-					@Override
-					public boolean update(final I_C_OrderLine ol)
-					{
-						ol.setLink_OrderLine(null);
-						return MODEL_UPDATED;
-					}
+				.update(ol -> {
+					ol.setLink_OrderLine(null);
+					return IQueryUpdater.MODEL_UPDATED;
 				});
 
 		// FRESH-386
@@ -110,14 +104,9 @@ public class C_OrderLine
 				.createQueryBuilder(I_C_OrderLine.class, orderLine)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Ref_OrderLine_ID, orderLine.getC_OrderLine_ID()) // ref_orderline_id is used with counter docs
 				.create()
-				.update(new IQueryUpdater<I_C_OrderLine>()
-				{
-					@Override
-					public boolean update(final I_C_OrderLine ol)
-					{
-						ol.setRef_OrderLine(null);
-						return MODEL_UPDATED;
-					}
+				.update(ol -> {
+					ol.setRef_OrderLine(null);
+					return IQueryUpdater.MODEL_UPDATED;
 				});
 
 	}

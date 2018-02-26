@@ -3,6 +3,7 @@ package de.metas.order.compensationGroup;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -30,12 +31,12 @@ import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,9 +51,12 @@ public class GroupTemplateRepository
 
 	private final Map<String, GroupMatcherFactory> groupMatcherFactoriesByType;
 
-	public GroupTemplateRepository(final List<GroupMatcherFactory> groupMatcherFactories)
+	public GroupTemplateRepository(final Optional<List<GroupMatcherFactory>> groupMatcherFactories)
 	{
-		this.groupMatcherFactoriesByType = Maps.uniqueIndex(groupMatcherFactories, GroupMatcherFactory::getAppliesToLineType);
+		final List<GroupMatcherFactory> groupMatcherFactoriesToUse = groupMatcherFactories.orElse(ImmutableList.of());
+		this.groupMatcherFactoriesByType = Maps.uniqueIndex(
+				groupMatcherFactoriesToUse,
+				GroupMatcherFactory::getAppliesToLineType);
 	}
 
 	public GroupTemplate getById(final int groupTemplateId)
