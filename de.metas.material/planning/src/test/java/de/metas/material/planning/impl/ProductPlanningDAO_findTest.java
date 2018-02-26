@@ -18,7 +18,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Before;
 import org.junit.Rule;
@@ -217,7 +216,7 @@ public class ProductPlanningDAO_findTest
 
 	private I_PP_Product_Planning invokeFindMethodWithASI(final int attributeSetInstanceId)
 	{
-		final I_PP_Product_Planning result = new ProductPlanningDAO().find(Env.getCtx(),
+		final I_PP_Product_Planning result = new ProductPlanningDAO().find(
 				warehouse.getAD_Org_ID(),
 				warehouse.getM_Warehouse_ID(),
 				plant.getS_Resource_ID(),

@@ -654,29 +654,6 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_IsBPartnerAddress_Override = "IsBPartnerAddress_Override";
 
 	/**
-	 * Set IsCreateDistributionOrder.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsCreateDistributionOrder (boolean IsCreateDistributionOrder);
-
-	/**
-	 * Get IsCreateDistributionOrder.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isCreateDistributionOrder();
-
-    /** Column definition for IsCreateDistributionOrder */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_IsCreateDistributionOrder = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "IsCreateDistributionOrder", null);
-    /** Column name IsCreateDistributionOrder */
-    public static final String COLUMNNAME_IsCreateDistributionOrder = "IsCreateDistributionOrder";
-
-	/**
 	 * Set Verpackungsmaterial.
 	 *
 	 * <br>Type: YesNo
@@ -918,6 +895,29 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
+	 * Set OnMaterialReceiptWithDestWarehouse.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setOnMaterialReceiptWithDestWarehouse (java.lang.String OnMaterialReceiptWithDestWarehouse);
+
+	/**
+	 * Get OnMaterialReceiptWithDestWarehouse.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getOnMaterialReceiptWithDestWarehouse();
+
+    /** Column definition for OnMaterialReceiptWithDestWarehouse */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_OnMaterialReceiptWithDestWarehouse = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "OnMaterialReceiptWithDestWarehouse", null);
+    /** Column name OnMaterialReceiptWithDestWarehouse */
+    public static final String COLUMNNAME_OnMaterialReceiptWithDestWarehouse = "OnMaterialReceiptWithDestWarehouse";
+
+	/**
 	 * Set Priorität.
 	 * Priority of a document
 	 *
@@ -1037,8 +1037,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_QtyMovedWithIssues = "QtyMovedWithIssues";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Bestellte Menge
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1047,8 +1047,8 @@ public interface I_M_ReceiptSchedule
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Bestellte Menge
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

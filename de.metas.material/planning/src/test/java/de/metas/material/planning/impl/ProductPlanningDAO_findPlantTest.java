@@ -53,7 +53,6 @@ public class ProductPlanningDAO_findPlantTest
 		final int attributeSetInstanceId = AttributeConstants.M_AttributeSetInstance_ID_None;
 
 		final I_S_Resource plantActual = productPlanningDAO.findPlant(
-				context.getCtx(),
 				adOrgId,
 				warehouse,
 				productId,
@@ -80,7 +79,6 @@ public class ProductPlanningDAO_findPlantTest
 		createProductPlanningWithPlant(org, warehouse, product);
 
 		final I_S_Resource plantActual = productPlanningDAO.findPlant(
-				context.getCtx(),
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
@@ -105,7 +103,7 @@ public class ProductPlanningDAO_findPlantTest
 		final int productId = -1; // N/A
 
 		// shall throw exception
-		productPlanningDAO.findPlant(context.getCtx(), adOrgId, warehouse, productId, AttributeConstants.M_AttributeSetInstance_ID_None);
+		productPlanningDAO.findPlant(adOrgId, warehouse, productId, AttributeConstants.M_AttributeSetInstance_ID_None);
 	}
 
 	/**
@@ -125,7 +123,6 @@ public class ProductPlanningDAO_findPlantTest
 		final I_S_Resource plantExpected = productPlanning.getS_Resource();
 
 		final I_S_Resource plantActual = productPlanningDAO.findPlant(
-				context.getCtx(),
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
@@ -146,7 +143,6 @@ public class ProductPlanningDAO_findPlantTest
 		createProductPlanningWithPlant(org, warehouse, product);
 
 		productPlanningDAO.findPlant(
-				context.getCtx(),
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
@@ -169,7 +165,6 @@ public class ProductPlanningDAO_findPlantTest
 		createProductPlanning(org, warehouse, product, null);
 
 		final I_S_Resource plantActual = productPlanningDAO.findPlant(
-				context.getCtx(),
 				org.getAD_Org_ID(),
 				warehouse,
 				product.getM_Product_ID(),
