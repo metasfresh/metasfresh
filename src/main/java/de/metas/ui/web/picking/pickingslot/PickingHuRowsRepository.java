@@ -212,6 +212,7 @@ import lombok.NonNull;
 		queryBuilder.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
 
 		return queryBuilder
+				.orderBy(I_M_Picking_Candidate.COLUMNNAME_M_Picking_Candidate_ID)
 				.create()
 				.list();
 	}
