@@ -15,16 +15,36 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3430](https://github.com/metasfresh/metasfresh/issues/3430) Best before Date evaluating process/ action
+  * [#3503](https://github.com/metasfresh/metasfresh/issues/3503) Use correct picking quantities in shipment
   * [#3513](https://github.com/metasfresh/metasfresh/issues/3513) Webui: Pimp DATEV windows
     * New Windows for accounting export and export formats in webui.
   * [#3515](https://github.com/metasfresh/metasfresh/issues/3515) Webui: Pimp Compensation Group Schema window
     * New Window for Compensation group maintenance.
+  * [#3516](https://github.com/metasfresh/metasfresh/issues/3516) Price/ Discount Change restrictions Order/ Invoice Pharma
+  * [#3532](https://github.com/metasfresh/metasfresh/issues/3532) New Window for Shipment Statistics
+  * [#3534](https://github.com/metasfresh/metasfresh/issues/3534) Webui Window Design: Create window for Picking Config
+    * New Window for Picking group Configuration.
+  * [#3537](https://github.com/metasfresh/metasfresh/issues/3537) Remove legacy M_Production code
+  * [#3555](https://github.com/metasfresh/metasfresh/issues/3555) Automatic Group Discount Calculation
+  * [#3557](https://github.com/metasfresh/metasfresh/issues/3557) Respect Picking Group Selection in Picking HU Editor
+
+* metasfresh-webui-api
+  * [#820](https://github.com/metasfresh/metasfresh-webui-api/issues/820) Picking Terminal: Detailed Picking Issues
+  * [#857](https://github.com/metasfresh/metasfresh-webui-api/issues/857) Material Cockpit additional Filter criteria
+  * [#876](https://github.com/metasfresh/metasfresh-webui-api/issues/876) Preset Product and Qty in Process/ Action Pick CU
+  * [#870](https://github.com/metasfresh/metasfresh-webui-api/issues/870) Extend Attribute / Label Feature to support tab link columns / Foreign Key
+  * [#877](https://github.com/metasfresh/metasfresh-webui-api/issues/877) Picking tray Clearing action: Take out and add to new/ existing HU
 
 * metasfresh-webui-frontend
   * [#1554](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1554) Action Parm modal Overlay focus missing n 1st Field
     * Improves the behavior of focused List widgets. Now the drop-down list is only opened if the user presses arrow-down.
 
 ## Fixes
+* metasfresh
+  * [#3452](https://github.com/metasfresh/metasfresh/issues/3452) Material Receipt candidates serial No - TU-CU case
+  * [#3520](https://github.com/metasfresh/metasfresh/issues/3520) Workpackage with error for Update Invalid Shipment Schedules
+
 * metasfresh-webui-frontend
   * [#1394](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1394) Quickactions not loaded after using barcode/ std. filter in HU editor in Manufacturing Order
     * Fixes a Bug that let the Quickactions Buttons dissappear after setting filter criteria.
@@ -34,6 +54,15 @@ Here come the actual release notes:
     * Fixes a Bug that occurred when trying to record a date via keyboard instead of calendar widget.
   * [#1604](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1604) Date Range Picker shows wrong day of the week
     * Fixes the shown day of week in date range picker.
+
+* metasfresh-webui-api
+  * [#856](https://github.com/metasfresh/metasfresh-webui-api/issues/856) t_query_selection grows huge when importing products or partners massively
+  * [#859](https://github.com/metasfresh/metasfresh-webui-api/issues/859) Navigation Menu shown duplicated for Windows not in Menu
+  * [#860](https://github.com/metasfresh/metasfresh-webui-api/issues/860) Shipment disposition does not update when you complete the order
+  * [#863](https://github.com/metasfresh/metasfresh-webui-api/issues/863) fix available stock (ATP) display in sales order
+  * [#869](https://github.com/metasfresh/metasfresh-webui-api/issues/869) Sometimes the error message is in German even if I am logged in with English
+  * [#871](https://github.com/metasfresh/metasfresh-webui-api/issues/871) Error when selecting tabs in bpartner window
+  * [#872](https://github.com/metasfresh/metasfresh-webui-api/issues/872) Don't show passwords in grid view
 
 # metasfresh 5.45 (2018-08)
 **release for week 2018-08**

@@ -1,3 +1,45 @@
+--
+-- order MD_Candidate records by Date DESC, SeqNo DESC, GroupId
+--
+-- 2018-02-24T20:48:36.108
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SortNo=NULL,Updated=TO_TIMESTAMP('2018-02-24 20:48:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563010
+;
+
+-- 2018-02-24T20:48:57.382
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SortNo=NULL,Updated=TO_TIMESTAMP('2018-02-24 20:48:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563011
+;
+
+-- 2018-02-24T20:49:03.405
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SortNo=-2.000000000000,Updated=TO_TIMESTAMP('2018-02-24 20:49:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558151
+;
+
+-- 2018-02-24T20:49:11.011
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SortNo=3.000000000000,Updated=TO_TIMESTAMP('2018-02-24 20:49:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558148
+;
+
+-- 2018-02-24T20:49:31.174
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SortNo=-1.000000000000,Updated=TO_TIMESTAMP('2018-02-24 20:49:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558126
+;
+
+--
+-- create a supporting index for Qty_AvailableToPromise
+--
+CREATE INDEX IF NOT EXISTS md_candidate_md_candidate_parent_id
+  ON public.md_candidate
+  USING btree
+  (md_candidate_parent_id)
+  WHERE isactive = 'Y'::bpchar AND md_candidate_type::text = 'STOCK'::text;
+COMMENT ON INDEX public.md_candidate_stock_v_perf
+  IS 'This index has the purpose of supporting the sql column Qty_AvailableToPromise which selects the STOCK childrent of a given record.';
+  
+--
+-- revise the MD_Candidate_Stock view
+--
 
 DROP VIEW IF EXISTS public.MD_Candidate_Stock_v;
 CREATE OR REPLACE VIEW public.MD_Candidate_Stock_v AS 
@@ -43,7 +85,6 @@ Note that those Qtys and StorageAttributesKeys can be from MD_Candidate whose Da
 if they were not yet superseeded by more recent values';
 
 DROP INDEX IF EXISTS md_candidate_stock_v_perf;
-
 CREATE INDEX md_candidate_stock_v_perf
   ON public.md_candidate
   USING btree
@@ -54,3 +95,12 @@ COMMENT ON INDEX public.md_candidate_stock_v_perf
 in finding the latest DateProjected for a given product-id, warehouse-id, partner-id and StorageAttributesKey-(like-)expression.
 
 Note: the Qty column is in so that hopefully MD_Candidate_Stock_v can be done by the DBMS using index-only-scans.';
+
+--
+-- unrelated fix: make MD_Cockpit_DocumentDetail.QtyOrdered updatable
+--
+-- 2018-02-24T20:56:54.982
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsUpdateable='Y',Updated=TO_TIMESTAMP('2018-02-24 20:56:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558518
+;
+

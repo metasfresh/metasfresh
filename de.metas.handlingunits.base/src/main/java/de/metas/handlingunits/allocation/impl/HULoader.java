@@ -38,6 +38,7 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
@@ -52,8 +53,8 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.exceptions.HULoadException;
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
@@ -85,8 +86,9 @@ public class HULoader
 
 	//
 	// Services that we use
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private HULoader(final IAllocationSource source, final IAllocationDestination destination)
@@ -584,6 +586,12 @@ public class HULoader
 
 		final IHUAttributeTransferRequest request = requestBuilder.create();
 		trxAttributesBuilder.transferAttributes(request);
+	}
+
+	public void unloadAllFromSource()
+	{
+		final IHUContext huContextInitial = huContextFactory.createMutableHUContext();
+		unloadAllFromSource(huContextInitial);
 	}
 
 	public void unloadAllFromSource(final IHUContext huContextInitial)

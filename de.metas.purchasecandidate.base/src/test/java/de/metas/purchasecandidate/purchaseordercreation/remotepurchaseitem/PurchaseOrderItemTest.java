@@ -1,10 +1,14 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import org.adempiere.util.lang.ITableRecordReference;
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.time.SystemTime;
+import org.junit.Test;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
-import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
+import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 
 /*
  * #%L
@@ -28,15 +32,21 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewa
  * #L%
  */
 
-/**
- * Instances of this interface are returned by {@link VendorGatewayInvoker} and are processed by {@link PurchaseOrderFromItemsAggregator}.
- * They are created via {@link PurchaseCandidate#createErrorItem()} and {@link PurchaseCandidate#createOrderItem()}.
- */
-public interface PurchaseItem
+public class PurchaseOrderItemTest
 {
-	ITableRecordReference getTransactionReference();
+	@Test
+	public void toString_without_StackOverflowError()
+	{
+		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(20);
 
-	int getPurchaseCandidateId();
+		final PurchaseOrderItem purchaseOrderItem = purchaseCandidate.createOrderItem()
+				.purchasedQty(TEN)
+				.datePromised(SystemTime.asTimestamp())
+				.transactionReference(TableRecordReference.of("sometable", 40))
+				.remotePurchaseOrderId("remotePurchaseOrderId")
+				.buildAndAddToParent();
 
-	int getPurchaseItemId();
+		assertThat(purchaseOrderItem.toString()).isNotBlank();
+	}
+
 }

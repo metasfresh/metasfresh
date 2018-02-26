@@ -108,7 +108,7 @@ public class PurchaseCandidate
 
 		this.purchaseCandidateId = purchaseCandidateId;
 
-		this.identifier = PurchaseCandidateImmutableFields.builder()
+		identifier = PurchaseCandidateImmutableFields.builder()
 				.orgId(orgId)
 				.productId(productId)
 				.salesOrderId(salesOrderId)
@@ -118,38 +118,38 @@ public class PurchaseCandidate
 				.vendorProductInfo(vendorProductInfo)
 				.warehouseId(warehouseId).build();
 
-		this.state = PurchaseCandidateState.builder()
+		state = PurchaseCandidateState.builder()
 				.locked(locked)
 				.processed(processed).build();
 
 		this.qtyToPurchase = qtyToPurchase;
-		this.qtyToPurchaseInitial = qtyToPurchase;
+		qtyToPurchaseInitial = qtyToPurchase;
 		this.dateRequired = dateRequired;
-		this.dateRequiredInitial = dateRequired;
+		dateRequiredInitial = dateRequired;
 
 		final ImmutableListMultimap<Boolean, PurchaseItem> purchaseItemsByType;
 		purchaseItemsByType = Multimaps.index(purchaseItems, purchaseItem -> purchaseItem instanceof PurchaseOrderItem);
 
-		this.purchaseOrderItems = purchaseItemsByType.get(true).stream()
+		purchaseOrderItems = purchaseItemsByType.get(true).stream()
 				.map(PurchaseOrderItem::cast).collect(toCollection(ArrayList::new));
-		this.purchaseErrorItems = purchaseItemsByType.get(false).stream()
+		purchaseErrorItems = purchaseItemsByType.get(false).stream()
 				.map(PurchaseErrorItem::cast).collect(toCollection(ArrayList::new));
 	}
 
 	private PurchaseCandidate(@NonNull final PurchaseCandidate from)
 	{
-		this.purchaseCandidateId = from.purchaseCandidateId;
+		purchaseCandidateId = from.purchaseCandidateId;
 
-		this.qtyToPurchase = from.qtyToPurchase;
-		this.qtyToPurchaseInitial = from.qtyToPurchaseInitial;
-		this.dateRequired = from.dateRequired;
-		this.dateRequiredInitial = from.dateRequiredInitial;
+		qtyToPurchase = from.qtyToPurchase;
+		qtyToPurchaseInitial = from.qtyToPurchaseInitial;
+		dateRequired = from.dateRequired;
+		dateRequiredInitial = from.dateRequiredInitial;
 
-		this.identifier = from.identifier;
-		this.state = from.state.createCopy();
+		identifier = from.identifier;
+		state = from.state.createCopy();
 
-		this.purchaseErrorItems = from.purchaseErrorItems;
-		this.purchaseOrderItems = from.purchaseOrderItems;
+		purchaseErrorItems = from.purchaseErrorItems;
+		purchaseOrderItems = from.purchaseOrderItems;
 	}
 
 	public PurchaseCandidate copy()
@@ -163,7 +163,7 @@ public class PurchaseCandidate
 	 */
 	public void markProcessed()
 	{
-		if(state.isProcessed())
+		if (state.isProcessed())
 		{
 			return;
 		}
@@ -190,7 +190,7 @@ public class PurchaseCandidate
 
 	public void markSaved(final int C_PurchaseCandidate_ID)
 	{
-		this.purchaseCandidateId = C_PurchaseCandidate_ID;
+		purchaseCandidateId = C_PurchaseCandidate_ID;
 
 		state.markSaved();
 
@@ -229,11 +229,6 @@ public class PurchaseCandidate
 		return productAndQuantity;
 	}
 
-	public ErrorItemBuilder createErrorItem()
-	{
-		return new ErrorItemBuilder(this);
-	}
-
 	public static final class ErrorItemBuilder
 	{
 		private final PurchaseCandidate parent;
@@ -242,26 +237,32 @@ public class PurchaseCandidate
 		private ErrorItemBuilder(@NonNull final PurchaseCandidate parent)
 		{
 			this.parent = parent;
-			this.innerBuilder = PurchaseErrorItem.builder()
+			innerBuilder = PurchaseErrorItem.builder()
 					.purchaseCandidateId(parent.getPurchaseCandidateId())
 					.orgId(parent.getOrgId());
 		}
 
-		public ErrorItemBuilder transactionReference(ITableRecordReference transactionReference)
+		public ErrorItemBuilder purchaseItemId(final int purchaseItemId)
 		{
-			this.innerBuilder.transactionReference(transactionReference);
+			innerBuilder.purchaseItemId(purchaseItemId);
 			return this;
 		}
 
-		public ErrorItemBuilder throwable(Throwable throwable)
+		public ErrorItemBuilder transactionReference(final ITableRecordReference transactionReference)
 		{
-			this.innerBuilder.throwable(throwable);
+			innerBuilder.transactionReference(transactionReference);
 			return this;
 		}
 
-		public ErrorItemBuilder issue(I_AD_Issue issue)
+		public ErrorItemBuilder throwable(final Throwable throwable)
 		{
-			this.innerBuilder.issue(issue);
+			innerBuilder.throwable(throwable);
+			return this;
+		}
+
+		public ErrorItemBuilder issue(final I_AD_Issue issue)
+		{
+			innerBuilder.issue(issue);
 			return this;
 		}
 
@@ -273,9 +274,9 @@ public class PurchaseCandidate
 		}
 	}
 
-	public OrderItemBuilder createOrderItem()
+	public ErrorItemBuilder createErrorItem()
 	{
-		return new OrderItemBuilder(this);
+		return new ErrorItemBuilder(this);
 	}
 
 	public static final class OrderItemBuilder
@@ -287,6 +288,12 @@ public class PurchaseCandidate
 		{
 			this.parent = parent;
 			innerBuilder = PurchaseOrderItem.builder().purchaseCandidate(parent);
+		}
+
+		public OrderItemBuilder purchaseItemId(final int purchaseItemId)
+		{
+			innerBuilder.purchaseItemId(purchaseItemId);
+			return this;
 		}
 
 		public OrderItemBuilder datePromised(@NonNull final Date datePromised)
@@ -319,6 +326,26 @@ public class PurchaseCandidate
 			parent.purchaseOrderItems.add(newItem);
 			return newItem;
 		}
+	}
+
+	public OrderItemBuilder createOrderItem()
+	{
+		return new OrderItemBuilder(this);
+	}
+
+	/**
+	 * Intended to be used by the persistence layer
+	 */
+	public void addLoadedPurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)
+	{
+		Check.errorIf(this.getPurchaseCandidateId() <= 0,
+				"This instance needs to have purchaseCandidateId>0; this={}", this);
+
+		Check.errorIf(purchaseOrderItem.getPurchaseCandidateId() != this.getPurchaseCandidateId(),
+				"The given purchaseOrderItem's purchaseCandidateId needs to be equan to this instance's id; purchaseOrderItem={}; this={}",
+				purchaseOrderItem, this);
+
+		purchaseOrderItems.add(purchaseOrderItem);
 	}
 
 	public BigDecimal getPurchasedQty()

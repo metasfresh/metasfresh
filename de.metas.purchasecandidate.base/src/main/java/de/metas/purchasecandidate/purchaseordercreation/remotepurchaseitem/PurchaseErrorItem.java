@@ -39,6 +39,8 @@ public class PurchaseErrorItem implements PurchaseItem
 		return (PurchaseErrorItem)purchaseItem;
 	}
 
+	int purchaseItemId;
+
 	ITableRecordReference transactionReference;
 
 	int purchaseCandidateId;
@@ -51,12 +53,15 @@ public class PurchaseErrorItem implements PurchaseItem
 
 	@Builder
 	private PurchaseErrorItem(
+			final int purchaseItemId,
 			@Nullable final Throwable throwable,
 			@Nullable final I_AD_Issue issue,
 			final int purchaseCandidateId,
 			final int orgId,
 			@Nullable final ITableRecordReference transactionReference)
 	{
+		this.purchaseItemId = purchaseItemId;
+
 		Check.assume(purchaseCandidateId > 0, "Given parameter purchaseCandidateId > 0");
 		Check.assume(orgId > 0, "Given parameter orgId > 0");
 		Check.assume(issue != null || throwable != null, "At least one of the given issue or thorwable need to be non-null");

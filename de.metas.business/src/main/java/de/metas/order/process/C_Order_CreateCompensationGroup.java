@@ -87,7 +87,7 @@ public class C_Order_CreateCompensationGroup extends JavaProcess implements IPro
 	{
 		groupsRepo.prepareNewGroup()
 				.linesToGroup(getSelectedIncludedRecordIds(I_C_OrderLine.class))
-				.newGroupTemplate(createNewGroupTemplate())
+				.groupTemplate(createNewGroupTemplate())
 				.createGroup();
 
 		return MSG_OK;
