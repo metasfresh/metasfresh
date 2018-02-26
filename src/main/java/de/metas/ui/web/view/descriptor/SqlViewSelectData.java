@@ -59,6 +59,7 @@ public class SqlViewSelectData
 	public static final String COLUMNNAME_Paging_SeqNo_OneBased = "_sel_SeqNo";
 	private static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
 	public static final String COLUMNNAME_Paging_Parent_ID = "_sel_Parent_ID";
+	public static final String COLUMNNAME_IsRecordMissing = "_sel_IsRecordMissing";
 
 	private static final CtxName PLACEHOLDER_Paging_Record_IDs = CtxNames.parse("_sel_Record_IDs");
 
@@ -178,6 +179,7 @@ public class SqlViewSelectData
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo_OneBased)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
+				.append("\n , (case when " + sqlTableName + "." + sqlKeyColumnName + " is null then 'Y' else 'N' end) AS " + COLUMNNAME_IsRecordMissing)
 				.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
 				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + ")")
 				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
@@ -260,6 +262,7 @@ public class SqlViewSelectData
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo_OneBased)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
+				.append("\n , (case when " + sqlTableName + "." + sqlKeyColumnName + " is null then 'Y' else 'N' end) AS " + COLUMNNAME_IsRecordMissing)
 				//
 				.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
 				.append("\n   INNER JOIN " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl on (sl.UUID=sel.UUID and sl.Record_ID=sel.Record_ID)")
@@ -270,6 +273,7 @@ public class SqlViewSelectData
 				//
 				.append("\n   GROUP BY ")
 				.append("\n   sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line)
+				.append("\n , " + sqlTableName + "." + sqlKeyColumnName)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID)
 				.append("\n , " + Joiner.on("\n , ").join(sqlGroupBys))
@@ -319,6 +323,7 @@ public class SqlViewSelectData
 				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
 				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + " AS " + SqlViewSelectData.COLUMNNAME_Paging_UUID)
 				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID + " AS " + SqlViewSelectData.COLUMNNAME_Paging_Record_ID)
+				.append("\n , (case when " + sqlTableName + "." + sqlKeyColumnName + " is null then 'Y' else 'N' end) AS " + COLUMNNAME_IsRecordMissing)
 				.append("\n   FROM " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl")
 				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")")
 				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437

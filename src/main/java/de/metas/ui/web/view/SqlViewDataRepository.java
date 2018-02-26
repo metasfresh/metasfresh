@@ -19,6 +19,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -298,8 +299,14 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	private ViewRow.Builder loadViewRow(final ResultSet rs, final WindowId windowId, final String adLanguage) throws SQLException
 	{
+		final boolean isRecordMissing = DisplayType.toBoolean(rs.getString(SqlViewSelectData.COLUMNNAME_IsRecordMissing));
+		if(isRecordMissing)
+		{
+			return null;
+		}
+		
 		final ViewRow.Builder viewRowBuilder = ViewRow.builder(windowId);
-
+		
 		final int parentIdInt = rs.getInt(SqlViewSelectData.COLUMNNAME_Paging_Parent_ID);
 		if (!rs.wasNull())
 		{
