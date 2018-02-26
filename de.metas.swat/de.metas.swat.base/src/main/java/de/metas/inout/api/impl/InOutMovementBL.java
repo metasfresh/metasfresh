@@ -50,6 +50,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.interfaces.I_M_MovementLine;
 
@@ -103,20 +104,20 @@ public class InOutMovementBL implements IInOutMovementBL
 			// #3409 make sure the line is not for ddOrder
 			boolean isForDDOrder = false;
 			final List<I_M_ReceiptSchedule> rsForInOutLine = Services.get(IReceiptScheduleDAO.class).retrieveRsForInOutLine(inOutLine);
-			for(final I_M_ReceiptSchedule rs : rsForInOutLine)
+			for (final I_M_ReceiptSchedule rs : rsForInOutLine)
 			{
-				if(rs.isCreateDistributionOrder())
+				if (isCreateDistributionOrder(rs))
 				{
 					isForDDOrder = true;
 					break;
 				}
 			}
-			
-			if(isForDDOrder)
+
+			if (isForDDOrder)
 			{
 				continue;
 			}
-			
+
 			//
 			// Fetch the target warehouse
 			final I_M_Warehouse warehouseTarget;
@@ -179,13 +180,18 @@ public class InOutMovementBL implements IInOutMovementBL
 		return movements;
 	}
 
+	private boolean isCreateDistributionOrder(final I_M_ReceiptSchedule rs)
+	{
+		return X_M_ReceiptSchedule.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder.equals(rs.getOnMaterialReceiptWithDestWarehouse());
+	}
+
 	private I_M_Movement generateMovement(final I_M_InOut inOut, final boolean moveToInOutWarehouse, final I_M_Warehouse warehouse, final List<I_M_InOutLine> lines)
 	{
 		Check.assume(!lines.isEmpty(), "lines not empty");
 
 		final I_M_Movement movement = generateMovementHeader(inOut);
 
-		generateMovementLines(movement, moveToInOutWarehouse,  warehouse, lines);
+		generateMovementLines(movement, moveToInOutWarehouse, warehouse, lines);
 
 		Services.get(IDocumentBL.class).processEx(movement, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
@@ -219,7 +225,7 @@ public class InOutMovementBL implements IInOutMovementBL
 
 		for (final I_M_InOutLine inoutLine : inoutLines)
 		{
-			generateMovementLine(movement, moveToInOutWarehouse,  locator, inoutLine);
+			generateMovementLine(movement, moveToInOutWarehouse, locator, inoutLine);
 		}
 	}
 
@@ -247,16 +253,14 @@ public class InOutMovementBL implements IInOutMovementBL
 			movementLine.setM_LocatorTo(inoutLineFrom.getM_Locator());
 		}
 		else
-			// move from inout warehouse
+		// move from inout warehouse
 		{
 			movementLine.setM_Locator_ID(inoutLineFrom.getM_Locator_ID());
 			movementLine.setM_LocatorTo(locator);
 		}
-		
 
 		InterfaceWrapperHelper.save(movementLine);
 
-		
 		Services.get(IMovementBL.class).setC_Activities(movementLine);
 		return movementLine;
 	}

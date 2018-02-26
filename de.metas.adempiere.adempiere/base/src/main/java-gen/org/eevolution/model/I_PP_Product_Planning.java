@@ -257,29 +257,6 @@ public interface I_PP_Product_Planning
     public static final String COLUMNNAME_IsAttributeDependant = "IsAttributeDependant";
 
 	/**
-	 * Set IsCreateDistributionOrder.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsCreateDistributionOrder (boolean IsCreateDistributionOrder);
-
-	/**
-	 * Get IsCreateDistributionOrder.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isCreateDistributionOrder();
-
-    /** Column definition for IsCreateDistributionOrder */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsCreateDistributionOrder = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsCreateDistributionOrder", null);
-    /** Column name IsCreateDistributionOrder */
-    public static final String COLUMNNAME_IsCreateDistributionOrder = "IsCreateDistributionOrder";
-
-	/**
 	 * Set Beleg erstellen.
 	 * Legt fest, ob das System die betreffenden Belege (z.B. Produktionsaufträge) gegebenenfalls direkt erstellen soll.
 	 *
@@ -534,6 +511,29 @@ public interface I_PP_Product_Planning
     public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_Warehouse>(I_PP_Product_Planning.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set OnMaterialReceiptWithDestWarehouse.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setOnMaterialReceiptWithDestWarehouse (java.lang.String OnMaterialReceiptWithDestWarehouse);
+
+	/**
+	 * Get OnMaterialReceiptWithDestWarehouse.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getOnMaterialReceiptWithDestWarehouse();
+
+    /** Column definition for OnMaterialReceiptWithDestWarehouse */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_OnMaterialReceiptWithDestWarehouse = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "OnMaterialReceiptWithDestWarehouse", null);
+    /** Column name OnMaterialReceiptWithDestWarehouse */
+    public static final String COLUMNNAME_OnMaterialReceiptWithDestWarehouse = "OnMaterialReceiptWithDestWarehouse";
 
 	/**
 	 * Set Planner.

@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -91,7 +90,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		// Product's warehouse: 2
 		final I_C_Order order1 = createOrder(warehouse1);
 		final I_C_OrderLine order1_line1_product1_wh1 = createOrderLine(order1, product3_wh2);
-		
+
 		//
 		// Call producer to generate the schedule from order's line
 		final IReceiptScheduleProducer rsProducer = Services.get(IReceiptScheduleProducerFactory.class)
@@ -103,7 +102,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		// Check produced schedules count: it shall be only one
 		Assert.assertEquals("Only one receipt schedule shall be produced", 1, schedules.size());
 		final I_M_ReceiptSchedule schedule = schedules.get(0);
-		
+
 		//
 		// Check Schedule's Warehouses
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_ID",
@@ -121,7 +120,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		// Guard agaist testing error
 		Assert.assertFalse("M_ReceiptSchedule M_Warehouse_ID != M_Warehouse_Dest_ID: " + schedule,
 				schedule.getM_Warehouse_ID() == schedule.getM_Warehouse_Dest_ID());
-		
+
 		//
 		// Generate Receipt
 		final InOutGenerateResult receiptGenerateResult = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
@@ -136,7 +135,6 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		List<org.compiere.model.I_M_InOutLine> receiptLines = Services.get(IInOutDAO.class).retrieveLines(receipt);
 		final I_M_InOutLine receiptLine1 = InterfaceWrapperHelper.create(receiptLines.get(0), I_M_InOutLine.class);
 
-		//
 		// Check receipt's warehouse
 		Assert.assertEquals("Invalid M_InOut.M_Warehouse_ID",
 				order1.getM_Warehouse(),
@@ -302,7 +300,8 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 
 	}
 
-	private I_M_InOut createReceipt(final I_M_Locator receiptLocator)
+	
+	public I_M_InOut createReceipt(final I_M_Locator receiptLocator)
 	{
 
 		final I_M_Warehouse destinationWarehouse = createWarehouse("Destination Warehouse");
@@ -322,7 +321,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		return receipt;
 	}
 
-	private I_M_InOutLine createReceiptLine(final String productName,
+	public I_M_InOutLine createReceiptLine(final String productName,
 			final I_M_Locator locator,
 			final I_M_InOut receipt,
 			final BigDecimal qty,
@@ -338,7 +337,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		line.setIsInDispute(isInDispute);
 		line.setM_InOut_ID(receipt.getM_InOut_ID());
 		line.setM_Locator_ID(locator.getM_Locator_ID());
-		
+
 		// NOTE: we are apply this "warehouseForIssues" rule here, because it is not anymore a generic rule
 		// but a rule only for particular receipt generation
 		if (line.isInDispute())
