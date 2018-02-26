@@ -125,6 +125,8 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 				//
 				.setHasAttributesSupport(false)
 				.setHasTreeSupport(true)
+				.setTreeCollapsible(true)
+				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_AllCollapsed)
 				//
 				.addElementsFromViewRowClass(PurchaseRow.class, viewDataType)
 				//
