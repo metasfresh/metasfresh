@@ -1,10 +1,13 @@
 -- 2018-02-26T07:47:32.709
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,Description,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540388,'M_HU.IsActive = ''Y'' AND M_HU.HUSatus = ''A'' /* active */
+-- edited to only select if it wasn't yet there
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,Description,EntityType,IsActive,Name,Type,Updated,UpdatedBy) 
+SELECT 0,0,540388,'M_HU.IsActive = ''Y'' AND M_HU.HUSatus = ''A'' /* active */
 AND COALESCE(M_HU.M_HU_Item_Parent,0)<=0 /* toplevel */
 AND M_HU.Locator_ID = @M_Locator_ID@
 AND EXISTS (select 1 from M_HU_Storage hus where hus.IsActive = ''Y'' AND hus.M_HU_ID = M_HU.M_HU_ID AND hus.M_Product_ID = @M_Product_ID@)
-',TO_TIMESTAMP('2018-02-26 07:47:32','YYYY-MM-DD HH24:MI:SS'),100,'Filters for top level HUs with status "active" and a given @M_Locator_ID@ and @M_Product_ID@','de.metas.handlingunits','Y','M_HU_Toplevel active with @M_Product_ID@ and @M_Locator_ID@','S',TO_TIMESTAMP('2018-02-26 07:47:32','YYYY-MM-DD HH24:MI:SS'),100)
+',TO_TIMESTAMP('2018-02-26 07:47:32','YYYY-MM-DD HH24:MI:SS'),100,'Filters for top level HUs with status "active" and a given @M_Locator_ID@ and @M_Product_ID@','de.metas.handlingunits','Y','M_HU_Toplevel active with @M_Product_ID@ and @M_Locator_ID@','S',TO_TIMESTAMP('2018-02-26 07:47:32','YYYY-MM-DD HH24:MI:SS'),100
+WHERE NOT EXISTS (select 1 from AD_Val_Rule where AD_Val_Rule_ID=540388)
 ;
 
 -- 2018-02-26T07:48:12.623
@@ -30,7 +33,6 @@ UPDATE AD_Val_Rule SET Name='M_HU_Toplevel active with @M_Product_ID@ and @M_Loc
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Val_Rule SET Description='Filters for top level HUs with status "active" and a given @M_Locator_ID@ and @M_Product_ID@',Updated=TO_TIMESTAMP('2018-02-26 08:04:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540388
 ;
-
 
 --
 -- unrelated: fix SQL error in rule M_HU_Toplevel active
