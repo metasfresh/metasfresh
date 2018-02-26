@@ -18,6 +18,10 @@ Here come the actual release notes:
   * [#3540](https://github.com/metasfresh/metasfresh/issues/3540) WebUI: Show GuaranteeDaysMin on Product and Product Category windows
     * Improved Product and Product Category windows, added new field for Min. Guarantee Days ad part of the best before management.
 
+* metasfresh-webui-frontend
+  * [#1620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1620) List widgets with focus shall have dark grey color underline
+    * Improved focus indicator line for list widgets.
+
 
 
 # metasfresh 5.46 (2018-09)
