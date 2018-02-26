@@ -33,7 +33,7 @@ import {
   selectTableItems,
   removeSelectedTableItems,
 } from '../../actions/WindowActions';
-import { getSelectionDirect } from '../../reducers/windowHandler';
+import { getSelection, getSelectionDirect } from '../../reducers/windowHandler';
 import BlankPage from '../BlankPage';
 import DataLayoutWrapper from '../DataLayoutWrapper';
 import Filters from '../filters/Filters';
@@ -56,6 +56,9 @@ class DocumentList extends Component {
     // from @connect
     dispatch: PropTypes.func.isRequired,
     selections: PropTypes.object.isRequired,
+    childSelected: PropTypes.array.isRequired,
+    parentSelected: PropTypes.array.isRequired,
+    selected: PropTypes.array.isRequired,
   };
 
   static contextTypes = {
@@ -195,6 +198,15 @@ class DocumentList extends Component {
     return !!nextState.layout && !!nextState.data;
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    const { setModalDescription } = this.props;
+    const { data } = this.state;
+
+    if (prevState.data !== data && setModalDescription) {
+      setModalDescription(data.description);
+    }
+  }
+
   connectWebSocket = viewId => {
     const { windowType } = this.props;
     connectWS.call(this, `/view/${viewId}`, msg => {
@@ -239,15 +251,6 @@ class DocumentList extends Component {
     });
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    const { setModalDescription } = this.props;
-    const { data } = this.state;
-
-    if (prevState.data !== data && setModalDescription) {
-      setModalDescription(data.description);
-    }
-  }
-
   updateQuickActions = childSelection => {
     if (this.quickActionsComponent) {
       this.quickActionsComponent.updateActions(childSelection);
@@ -257,18 +260,25 @@ class DocumentList extends Component {
   /**
    * load supportAttribute of the selected row from the table
    */
-  loadSupportAttributeFlag = () => {
-    const { selected } = this.getSelected();
+  loadSupportAttributeFlag = ({ selected }) => {
     const { data } = this.state;
     if (!data) {
       return;
     }
     const rows = getRowsData(data.result);
+
     if (selected.length === 1) {
       const selectedRow = rows.find(row => row.id === selected[0]);
+
       this.supportAttribute = selectedRow && selectedRow.supportAttributes;
+      this.setState({
+        supportAttribute: selectedRow && selectedRow.supportAttributes,
+      });
     } else {
       this.supportAttribute = false;
+      this.setState({
+        supportAttribute: false,
+      });
     }
   };
 
@@ -673,6 +683,7 @@ class DocumentList extends Component {
       isShowIncluded,
       hasShowIncluded,
       refreshSelection,
+      supportAttribute,
     } = this.state;
 
     const { selected, childSelected, parentSelected } = this.getSelected();
@@ -708,7 +719,8 @@ class DocumentList extends Component {
           className={classnames('document-list-wrapper', {
             'document-list-included': isShowIncluded || isIncluded,
             'document-list-has-included': hasShowIncluded || hasIncluded,
-          })}>
+          })}
+        >
           {!readonly && (
             <div className="panel panel-primary panel-spaced panel-inline document-list-header">
               <div className={hasIncluded ? 'disabled' : ''}>
@@ -827,16 +839,18 @@ class DocumentList extends Component {
                 hasIncluded,
                 viewId,
                 windowType,
-              }}>
+              }}
+            >
               {layout.supportAttributes &&
                 !isIncluded &&
                 !hasIncluded && (
                   <DataLayoutWrapper
                     className="table-flex-wrapper attributes-selector js-not-unselect"
                     entity="documentView"
-                    {...{ windowType, viewId }}>
+                    {...{ windowType, viewId }}
+                  >
                     <SelectionAttributes
-                      supportAttribute={this.supportAttribute}
+                      supportAttribute={supportAttribute}
                       setClickOutsideLock={this.setClickOutsideLock}
                       selected={selectionValid ? selected : undefined}
                       shouldNotUpdate={inBackground}
@@ -853,8 +867,28 @@ class DocumentList extends Component {
   }
 }
 
-const mapStateToProps = ({ windowHandler }) => ({
-  selections: windowHandler.selections,
+const mapStateToProps = (state, props) => ({
+  selections: state.windowHandler.selections,
+  selected: getSelection({
+    state,
+    windowType: props.windowType,
+    viewId: props.defaultViewId,
+  }),
+  childSelected:
+    props.includedView && props.includedView.windowType
+      ? getSelection({
+          state,
+          windowType: props.includedView.windowType,
+          viewId: props.includedView.viewId,
+        })
+      : NO_SELECTION,
+  parentSelected: props.parentWindowType
+    ? getSelection({
+        state,
+        windowType: props.parentWindowType,
+        viewId: props.parentDefaultViewId,
+      })
+    : NO_SELECTION,
 });
 
 export default connect(mapStateToProps, null, null, { withRef: true })(
