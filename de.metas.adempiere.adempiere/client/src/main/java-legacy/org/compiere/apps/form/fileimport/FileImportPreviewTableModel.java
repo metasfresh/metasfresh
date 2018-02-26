@@ -97,9 +97,11 @@ public class FileImportPreviewTableModel extends AbstractTableModel
 		final List<ImpDataLine> impDataLines = new ArrayList<>(lines.size());
 		for (int i = 0; i < lines.size(); i++)
 		{
-			final int fileLineNo = i + 1; // start from 1
-			final String lineStr = lines.get(i);
-			final ImpDataLine impDataLine = new ImpDataLine(getImpFormat(), fileLineNo, lineStr);
+			final ImpDataLine impDataLine = ImpDataLine.builder()
+					.impFormat(getImpFormat())
+					.fileLineNo(i + 1) // start from 1
+					.lineStr(lines.get(i))
+					.build();
 			impDataLines.add(impDataLine);
 		}
 
