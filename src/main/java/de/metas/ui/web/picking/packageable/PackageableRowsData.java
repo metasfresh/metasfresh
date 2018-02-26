@@ -3,15 +3,18 @@ package de.metas.ui.web.picking.packageable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
@@ -56,9 +59,21 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 
 	private final ExtendedMemorizingSupplier<Map<DocumentId, PackageableRow>> topLevelRows;
 
+	private final ImmutableListMultimap<TableRecordReference, DocumentId> initialDocumentIdsByRecordRef;
+
 	private PackageableRowsData(@NonNull final Supplier<List<PackageableRow>> rowsSupplier)
 	{
 		topLevelRows = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rowsSupplier.get(), PackageableRow::getId));
+
+		//
+		// Remember initial rows
+		// We will use this map to figure out what we can invalidate,
+		// because we want to cover the case of rows which just vanished (e.g. everything was delivered)
+		// and the case of rows which appeared back (e.g. the picking candidate was reactivated so we still have QtyToDeliver).
+		initialDocumentIdsByRecordRef = getDocumentId2AllRows()
+				.values()
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(PackageableRow::getTableRecordReference, PackageableRow::getId));
 	}
 
 	@Override
@@ -80,5 +95,21 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 	public void invalidateAll()
 	{
 		topLevelRows.forget();
+	}
+
+	@Override
+	public Stream<DocumentId> streamDocumentIdsToInvalidate(final TableRecordReference recordRef)
+	{
+		final String tableName = recordRef.getTableName();
+		if (I_M_ShipmentSchedule.Table_Name.equals(tableName))
+		{
+			final int shipmentScheduleId = recordRef.getRecord_ID();
+			final TableRecordReference recordRefEffective = PackageableRow.createTableRecordReferenceFromShipmentScheduleId(shipmentScheduleId);
+			return initialDocumentIdsByRecordRef.get(recordRefEffective).stream();
+		}
+		else
+		{
+			return Stream.empty();
+		}
 	}
 }
