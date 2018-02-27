@@ -2,7 +2,10 @@ package de.metas.dist.ait;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Map;
+
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.jayway.restassured.builder.RequestSpecBuilder;
@@ -19,11 +22,16 @@ import de.metas.dist.ait.sales.order.SalesOrderClient;
 
 public class WebuiApiTests
 {
+	public static final String METASFRESH_LOGIN = "metasfresh";
+
+	private static final String METASFRESH_PASSWORD ="metasfresh";
+
 	private static final String HOST = "localhost";
 
 	private static final String PORT = "8080";
 
 	private static final String ENDPOINT_ROOT = "rest/api";
+
 
 	private RequestSpecification spec;
 
@@ -42,7 +50,7 @@ public class WebuiApiTests
 	 * Verifies that {@code en_US} is among the available languages and also the default language.
 	 */
 	@Test
-	public void testAvailableLanguages()
+	public void available_languages_contains_en_US()
 	{
 		final AvailableLanguages languagess = new LoginClient(spec).getAvailableLanguages();
 
@@ -51,17 +59,38 @@ public class WebuiApiTests
 		assertThat(languagess.getValuesMap()).containsKey("en_US");
 	}
 
+	/**
+	 * Log in as metasfresh/metasfresh, assuming that metasfresh has has only one role.
+	 */
 	@Test
-	public void testLogInSuccess()
+	public void logIn_one_role()
 	{
 		final LoginClient login = new LoginClient(spec);
 
 		// initially not logged in
 		assertThat(login.isLoggedIn()).isFalse();
 
-		final AuthenticateResponse authResponse = login.authenticate("SuperUser", "System");
+		final AuthenticateResponse authResponse = login.authenticate(METASFRESH_LOGIN, METASFRESH_PASSWORD);
+		assertThat(authResponse.getRoles()).hasSize(1);
+		assertThat(authResponse.isLoginComplete()).isTrue();
+	}
+
+	/**
+	 * Log in as metasfresh/metasfresh, assuming that metasfresh has has two roles.<br>
+	 * In order to complete the login, one of the two roles needs to be selected.
+	 */
+	@Test
+	@Ignore
+	public void logIn_two_roles()
+	{
+		final LoginClient login = new LoginClient(spec);
+
+		// initially not logged in
+		assertThat(login.isLoggedIn()).isFalse();
+
+		final AuthenticateResponse authResponse = login.authenticate(METASFRESH_LOGIN, METASFRESH_PASSWORD);
+		assertThat(authResponse.getRoles().size()).isGreaterThan(1);
 		assertThat(authResponse.isLoginComplete()).isFalse();
-		assertThat(authResponse.getRoles()).isNotEmpty(); // expecting at least one role
 
 		// still not "fully" logged in
 		assertThat(login.isLoggedIn()).isFalse();
@@ -73,15 +102,16 @@ public class WebuiApiTests
 	}
 
 	@Test
-	public void testNewSalesOrder()
+	public void new_sales_order()
 	{
-		final LoginClient login = new LoginClient(spec);
-		final AuthenticateResponse authResponse = login.authenticate("SuperUser", "System");
-		login.loginComplete(authResponse.getRoles().get(0));
+		logIn_one_role();
 
-		final SalesOrder newSalesOrder = new SalesOrderClient(login)
+		final SalesOrder newSalesOrder = new SalesOrderClient(spec)
 				.newSalesOrder();
 		assertThat(newSalesOrder).isNotNull();
+
+		final Map<String, Field> fieldsByName = newSalesOrder.getFieldsByName();
+		assertThat(fieldsByName).isNotNull();
 	}
 
 }
