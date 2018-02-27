@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -51,6 +52,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_InOut;
+import org.compiere.util.CacheMgt;
 
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -59,6 +61,8 @@ import de.metas.invoice.IMatchInvDAO;
 public class InOutBL implements IInOutBL
 {
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
+	
+	private static final String VIEW_M_Shipment_Statistics_V = "M_Shipment_Statistics_V";
 
 	@Override
 	public IPricingContext createPricingCtx(final org.compiere.model.I_M_InOutLine inOutLine)
@@ -431,6 +435,28 @@ public class InOutBL implements IInOutBL
 		{
 			matchInv.setProcessed(false); // delete it even if it's processed, because all M_MatchInv are processed on save new.
 			InterfaceWrapperHelper.delete(matchInv);
+		}
+	}
+	
+	@Override
+	public void invalidateStatistics(final I_M_InOut inout)
+	{
+		if (inout.isSOTrx())
+		{
+			Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
+			.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inout.getM_InOut_ID())
+			.create()
+			.listIds()
+			.forEach(inoutLineId -> CacheMgt.get().reset(InOutBL.VIEW_M_Shipment_Statistics_V, inoutLineId));
+		}
+	}
+	
+	@Override
+	public void invalidateStatistics(final I_M_InOutLine inoutLine)
+	{
+		if (inoutLine.getM_InOut().isSOTrx())
+		{
+			CacheMgt.get().reset(VIEW_M_Shipment_Statistics_V, inoutLine.getM_InOutLine_ID());
 		}
 	}
 }
