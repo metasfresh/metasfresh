@@ -166,6 +166,11 @@ public interface IADProcessDAO extends ISingletonService
 
 	I_AD_Process_Para retriveProcessParameter(Properties ctx, int adProcessId, String parameterName);
 
+	default I_AD_Process_Para retriveProcessParameter(final int adProcessId, final String parameterName)
+	{
+		return retriveProcessParameter(Env.getCtx(), adProcessId, parameterName);
+	}
+
 	/**
 	 * Add process execution statistics.
 	 *
