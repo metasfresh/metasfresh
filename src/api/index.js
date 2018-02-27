@@ -30,8 +30,6 @@ export function getAttributesInstance(
 ) {
   const type = entity === 'process' ? 'processId' : 'windowId';
 
-  console.log('getAttributesInstance')
-
   return post(`${config.API_URL}/${attrType}`, {
     templateId: tmpId,
     source: {

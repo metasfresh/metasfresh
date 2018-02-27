@@ -31,7 +31,7 @@ export default class Attributes extends Component {
     } = this.props;
     const tmpId = widgetData.value.key;
 
-    getAttributesInstance(
+    return getAttributesInstance(
       attributeType,
       tmpId,
       docType,
@@ -42,7 +42,6 @@ export default class Attributes extends Component {
       entity
     )
       .then(response => {
-        console.log('RESP1')
         const { id, fieldsByName } = response.data;
 
         this.setState({
@@ -63,7 +62,10 @@ export default class Attributes extends Component {
           dropdown: true,
         });
       })
-     .catch(error => { console.log('Attributes handleInit error: ', error.message); });
+      .catch(error => {
+        // eslint-disable-next-line no-console
+        console.error('Attributes handleInit error: ', error.message);
+      });
   };
 
   handleToggle = option => {
