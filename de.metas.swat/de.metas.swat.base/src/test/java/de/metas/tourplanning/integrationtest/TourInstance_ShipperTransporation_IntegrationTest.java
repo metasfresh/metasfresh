@@ -122,7 +122,7 @@ public class TourInstance_ShipperTransporation_IntegrationTest extends TourPlann
 		final I_M_Tour_Instance tourInstance = InterfaceWrapperHelper.newInstance(I_M_Tour_Instance.class, contextProvider);
 		tourInstance.setM_Tour(tour);
 		tourInstance.setProcessed(false);
-		tourInstance.setM_ShipperTransportation(shipperTransportation);
+		tourInstance.setM_ShipperTransportation_ID(shipperTransportation.getM_ShipperTransportation_ID());
 		InterfaceWrapperHelper.save(tourInstance);
 
 		return tourInstance;
