@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.metas.ordercandidate.callout;
+package de.metas.order.callout;
 
 /*
  * #%L
