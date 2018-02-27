@@ -214,7 +214,6 @@ public class RequestMaterialOrderService
 
 			ddOrderLineBuilder
 					.networkDistributionLineId(distributionDetail.getNetworkDistributionLineId());
-
 		}
 
 		final int durationDays = TimeUtil.getDaysBetween(startDate, endDate);
@@ -229,7 +228,6 @@ public class RequestMaterialOrderService
 								.durationDays(durationDays)
 								.build())
 						.build())
-				.groupId(firstGroupMember.getEffectiveGroupId())
 				.build();
 	}
 }

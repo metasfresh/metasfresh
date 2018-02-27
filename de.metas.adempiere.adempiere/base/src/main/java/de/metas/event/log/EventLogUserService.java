@@ -5,13 +5,17 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.service.IErrorManager;
+import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Issue;
 import org.springframework.stereotype.Service;
 
 import de.metas.event.Event;
 import de.metas.event.log.impl.EventLogEntryCollector;
+import de.metas.event.log.impl.EventLogLoggable;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -45,7 +49,6 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-
 @Service
 public class EventLogUserService
 {
@@ -81,7 +84,9 @@ public class EventLogUserService
 
 		public static class EventLogEntryRequestBuilder
 		{
-			public EventLogEntryRequestBuilder formattedMessage(final String message, final Object... params)
+			public EventLogEntryRequestBuilder formattedMessage(
+					@NonNull final String message,
+					@Nullable final Object... params)
 			{
 				message(StringUtils.formatMessage(message, params));
 				return this;
@@ -106,12 +111,28 @@ public class EventLogUserService
 		return eventbuilder.putProperty(PROPERTY_STORE_THIS_EVENT, adviseValue);
 	}
 
+	/**
+	 * Creates a builder to log a message to the current event processing log.
+	 * <p>
+	 * Note: as your current code was most probably invoked via {@link #invokeHandlerAndLog(InvokeHandlerandLogRequest)},
+	 * it might be more convenient to use {@link Loggables#get()}.
+	 *
+	 * @param handlerClass the class to be logged in the record.
+	 */
 	public EventLogEntryRequest.EventLogEntryRequestBuilder newLogEntry(@NonNull final Class<?> handlerClass)
 	{
 		return EventLogEntryRequest.builder()
 				.eventHandlerClass(handlerClass);
 	}
 
+	/**
+	 * Creates a builder to log a an error to the current event processing log.
+	 * <p>
+	 * Note: as your current code was most probably invoked via {@link #invokeHandlerAndLog(InvokeHandlerandLogRequest)},
+	 * it might be more convenient just throw a runtime exception.
+	 *
+	 * @param handlerClass the class to be logged in the record.
+	 */
 	public EventLogEntryRequest.EventLogEntryRequestBuilder newErrorLogEntry(
 			@NonNull final Class<?> handlerClass,
 			@NonNull final Exception e)
@@ -137,6 +158,11 @@ public class EventLogUserService
 		boolean onlyIfNotAlreadyProcessed = true;
 	}
 
+	/**
+	 * Invokes the given {@code request}'s runnable and sets up a threadlocal {@link ILoggable}.
+	 *
+	 * @param request
+	 */
 	public void invokeHandlerAndLog(@NonNull final InvokeHandlerandLogRequest request)
 	{
 		if (request.isOnlyIfNotAlreadyProcessed()
@@ -145,7 +171,7 @@ public class EventLogUserService
 			return;
 		}
 
-		try
+		try (final IAutoCloseable loggable = EventLogLoggable.createAndRegisterThreadLocal(request.getHandlerClass()))
 		{
 			request.getInvokaction().run();
 

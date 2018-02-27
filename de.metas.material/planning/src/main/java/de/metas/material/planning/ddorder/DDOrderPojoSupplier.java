@@ -10,13 +10,11 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
@@ -34,8 +32,6 @@ import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.planning.ErrorCodes;
-import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.exception.MrpException;
@@ -79,9 +75,7 @@ public class DDOrderPojoSupplier
 	 * @param mrpNotesCollector
 	 * @return
 	 */
-	public List<DDOrder> supplyPojos(
-			final IMaterialRequest request,
-			final IMRPNotesCollector mrpNotesCollector)
+	public List<DDOrder> supplyPojos(final IMaterialRequest request)
 	{
 
 		final List<DDOrder.DDOrderBuilder> builders = new ArrayList<>();
@@ -90,7 +84,6 @@ public class DDOrderPojoSupplier
 
 		final Properties ctx = mrpContext.getCtx();
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
-		final I_AD_Org org = mrpContext.getAD_Org();
 		final I_S_Resource plant = mrpContext.getPlant();
 
 		// TODO vpj-cd I need to create logic for DRP-040 Shipment Due Action Notice
@@ -104,8 +97,9 @@ public class DDOrderPojoSupplier
 		if (productPlanningData.getDD_NetworkDistribution_ID() <= 0)
 		{
 			// Indicates that the Product Planning Data for this product does not specify a valid network distribution.
-			mrpNotesCollector.newMRPNoteBuilder(mrpContext, ErrorCodes.ERR_DRP_060_NoSourceOfSupply)
-					.collect();
+			Loggables.get().addLog(
+					"PP_Product_Planning has no DD_NetworkDistribution_ID; {} returns entpy list; productPlanningData={}",
+					this.getClass(), productPlanningData);
 
 			return ImmutableList.of();
 		}
@@ -117,12 +111,11 @@ public class DDOrderPojoSupplier
 		{
 			// No network lines were found for our target warehouse
 			final I_M_Warehouse warehouseTo = productPlanningData.getM_Warehouse();
-			mrpNotesCollector.newMRPNoteBuilder(mrpContext, ErrorCodes.ERR_DRP_060_NoSourceOfSupply)
-					.setComment("@NotFound@ @DD_NetworkDistributionLine_ID@")
-					.addParameter(I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID, network == null ? "?" : network.getName())
-					.addParameter("M_Warehouse_Dest_ID", warehouseTo == null ? "?" : warehouseTo.getName())
-					.collect();
-
+			Loggables.get().addLog(
+					"DD_NetworkDistribution has no lines for target M_Warehouse_ID={}; {} returns entpy list; "
+							+ "networkDistribution={}"
+							+ "warehouseTo={}",
+					productPlanningData.getM_Warehouse_ID(), this.getClass(), network, warehouseTo);
 			return ImmutableList.of();
 		}
 
@@ -135,7 +128,6 @@ public class DDOrderPojoSupplier
 		Quantity qtyToSupplyRemaining = request.getQtyToSupply();
 		for (final I_DD_NetworkDistributionLine networkLine : networkLines)
 		{
-			//
 			// Check: if we created DD Orders for all qty that needed to be supplied, stop here
 			if (qtyToSupplyRemaining.signum() <= 0)
 			{
@@ -145,44 +137,53 @@ public class DDOrderPojoSupplier
 			// get supply source warehouse and locator
 			final I_M_Warehouse warehouseFrom = networkLine.getM_WarehouseSource();
 			final I_M_Locator locatorFrom = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseFrom);
+			if (locatorFrom == null)
+			{
+				Loggables.get().addLog(
+						"The source warehouse with ID={} has no default locator; {} returns entpy list; "
+								+ "networkLine={}"
+								+ "network={}"
+								+ "warehouse={}",
+						networkLine.getM_WarehouseSource_ID(), this.getClass(), networkLine, network, warehouseFrom);
+				continue;
+			}
 
 			// get supply target warehouse and locator
 			final I_M_Warehouse warehouseTo = networkLine.getM_Warehouse();
 			final I_M_Locator locatorTo = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseTo);
-
-			if (locatorFrom == null || locatorTo == null)
+			if (locatorTo == null)
 			{
-				mrpNotesCollector.newMRPNoteBuilder(mrpContext, "DRP-001")// FIXME: DRP-001 error code does not exist
-						.addParameter(I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID, network == null ? "?" : network.getName())
-						.addParameter(I_DD_NetworkDistributionLine.COLUMNNAME_M_WarehouseSource_ID, warehouseFrom.getName())
-						.addParameter(I_DD_NetworkDistributionLine.COLUMNNAME_M_Warehouse_ID, warehouseTo.getName())
-						.setComment("No locators found for source or target warehouse")
-						.collect();
+				Loggables.get().addLog(
+						"The target warehouse with ID={} has no default locator; {} returns entpy list; "
+								+ "networkLine={}"
+								+ "network={}"
+								+ "warehouse={}",
+						networkLine.getM_Warehouse_ID(), this.getClass(), networkLine, network, warehouseTo);
 				continue;
 			}
 
-			//
 			// Get the warehouse in transit
 			final int warehouseInTrasitId = DDOrderUtil.retrieveInTransitWarehouseId(ctx, warehouseFrom.getAD_Org_ID());
 			if (warehouseInTrasitId <= 0)
 			{
 				// DRP-010: Do not exist Transit Warehouse to this Organization
-				mrpNotesCollector.newMRPNoteBuilder(mrpContext, ErrorCodes.ERR_DRP_010_InTransitWarehouseNotFound)
-						.addParameter(I_AD_Org.COLUMNNAME_AD_Org_ID, org.getName())
-						.collect();
-				//
+				Loggables.get().addLog(
+						"No in-transit warehouse found for AD_Org_ID={} of the source warehouse; {} returns entpy list; "
+								+ "networkLine={}"
+								+ "network={}"
+								+ "warehouse={}",
+						warehouseFrom.getAD_Org_ID(), this.getClass(), networkLine, network, warehouseFrom);
 				continue;
 			}
 
-			//
 			// DRP-030: Do not exist Shipper for Create Distribution Order
 			if (networkLine.getM_Shipper_ID() <= 0)
 			{
-				mrpNotesCollector.newMRPNoteBuilder(mrpContext, "DRP-030")
-						.addParameter(I_DD_NetworkDistribution.COLUMNNAME_DD_NetworkDistribution_ID, network == null ? "?" : network.getName())
-						.addParameter(I_DD_NetworkDistributionLine.COLUMNNAME_DD_NetworkDistributionLine_ID, networkLine)
-						.collect();
-				//
+				Loggables.get().addLog(
+						"DD_NetworkDistributionLine has no M_Shipper_ID; {} returns entpy list; "
+								+ "networkDistribution={}"
+								+ "networkLine={}",
+						this.getClass(), network, networkLine);
 				continue;
 			}
 
@@ -193,11 +194,12 @@ public class DDOrderPojoSupplier
 				if (orgBPartnerId <= 0)
 				{
 					// DRP-020: Target Org has no BP linked to it
-					final I_AD_Org locatorToOrg = InterfaceWrapperHelper.create(Env.getCtx(), locatorTo.getAD_Org_ID(), I_AD_Org.class, ITrx.TRXNAME_None);
-					mrpNotesCollector.newMRPNoteBuilder(mrpContext, "DRP-020")
-							.addParameter(I_AD_Org.COLUMNNAME_AD_Org_ID, locatorToOrg.getName())
-							.collect();
-					//
+					Loggables.get().addLog(
+							"No org-bpartner found for AD_Org_ID={} of target locator; {} returns entpy list; "
+									+ "networkLine={}"
+									+ "network={}"
+									+ "locatorTo={}",
+							locatorTo.getAD_Org_ID(), this.getClass(), networkLine, network, locatorTo);
 					continue;
 				}
 

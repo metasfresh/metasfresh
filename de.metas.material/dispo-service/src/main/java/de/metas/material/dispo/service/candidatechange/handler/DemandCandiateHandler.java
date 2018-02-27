@@ -49,7 +49,7 @@ public class DemandCandiateHandler implements CandidateHandler
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
 
-	private final AvailableToPromiseRepository stockRepository;
+	private final AvailableToPromiseRepository availableToPromiseRepository;
 
 	private final PostMaterialEventService materialEventService;
 
@@ -61,13 +61,13 @@ public class DemandCandiateHandler implements CandidateHandler
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
 			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final AvailableToPromiseRepository stockRepository,
+			@NonNull final AvailableToPromiseRepository availableToPromiseRepository,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepository;
 		this.candidateRepositoryWriteService = candidateRepositoryCommands;
 		this.materialEventService = materialEventService;
-		this.stockRepository = stockRepository;
+		this.availableToPromiseRepository = availableToPromiseRepository;
 		this.stockCandidateService = stockCandidateService;
 	}
 
@@ -201,7 +201,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
 				.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
 
-		final BigDecimal availableQuantityAfterDemandWasApplied = stockRepository.retrieveAvailableStockQtySum(query);
+		final BigDecimal availableQuantityAfterDemandWasApplied = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
 		if (availableQuantityAfterDemandWasApplied.signum() < 0)
 		{

@@ -2,13 +2,13 @@ package de.metas.material.cockpit.view.eventhandler;
 
 import java.util.Collection;
 
+import org.adempiere.util.Loggables;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.event.log.EventLogUserService;
 import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.detailrecord.DetailDataRequestHandler;
@@ -57,16 +57,13 @@ public class ReceiptScheduleEventHandler
 {
 
 	private final MainDataRequestHandler dataUpdateRequestHandler;
-	private final EventLogUserService eventLogUserService;
 	private final DetailDataRequestHandler detailRequestHandler;
 
 	public ReceiptScheduleEventHandler(
 			@NonNull final MainDataRequestHandler dataUpdateRequestHandler,
-			@NonNull final DetailDataRequestHandler detailRequestHandler,
-			@NonNull final EventLogUserService eventLogUserService)
+			@NonNull final DetailDataRequestHandler detailRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
-		this.eventLogUserService = eventLogUserService;
 		this.detailRequestHandler = detailRequestHandler;
 	}
 
@@ -103,9 +100,8 @@ public class ReceiptScheduleEventHandler
 		if (event.getOrderedQuantityDelta().signum() == 0
 				&& event.getReservedQuantityDelta().signum() == 0)
 		{
-			eventLogUserService.newLogEntry(this.getClass())
-					.message("Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero")
-					.createAndStore();
+			Loggables.get().addLog(
+					"Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
 			return;
 		}
 		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
@@ -144,10 +140,7 @@ public class ReceiptScheduleEventHandler
 					.detailDataRecordIdentifier(detailIdentifier);
 
 			final int deletedCount = detailRequestHandler.handleRemoveDetailRequest(removeDetailRequest.build());
-			eventLogUserService
-					.newLogEntry(ShipmentScheduleEventHandler.class)
-					.formattedMessage("Deleted {} detail records", deletedCount)
-					.createAndStore();
+			Loggables.get().addLog("Deleted {} detail records", deletedCount);
 		}
 	}
 

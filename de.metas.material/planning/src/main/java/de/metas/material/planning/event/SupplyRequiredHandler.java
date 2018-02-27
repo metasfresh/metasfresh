@@ -7,10 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.PlainStringLoggable;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -23,7 +20,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.event.log.EventLogUserService;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
@@ -70,18 +66,14 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 	private final PostMaterialEventService postMaterialEventService;
 
-	private final EventLogUserService eventLogUserService;
-
 	public SupplyRequiredHandler(
 			@NonNull final DDOrderAdvisedOrCreatedEventCreator dDOrderAdvisedOrCreatedEventCreator,
 			@NonNull final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator,
-			@NonNull final PostMaterialEventService fireMaterialEventService,
-			@NonNull final EventLogUserService eventLogUserService			)
+			@NonNull final PostMaterialEventService fireMaterialEventService)
 	{
 		this.ddOrderAdvisedOrCreatedEventCreator = dDOrderAdvisedOrCreatedEventCreator;
 		this.ppOrderAdvisedEventCreator = ppOrderAdvisedEventCreator;
 		this.postMaterialEventService = fireMaterialEventService;
-		this.eventLogUserService = eventLogUserService;
 	}
 
 	@Override
@@ -103,31 +95,11 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 	 */
 	public void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
-		final PlainStringLoggable plainStringLoggable = new PlainStringLoggable();
-		try (final IAutoCloseable closable = Loggables.temporarySetLoggable(plainStringLoggable);)
-		{
-			handleSupplyRequiredEvent0(descriptor);
-		}
-
-		if (!plainStringLoggable.isEmpty())
-		{
-			final List<String> singleMessages = plainStringLoggable.getSingleMessages();
-			singleMessages.forEach(message -> {
-
-				eventLogUserService.newLogEntry(this.getClass())
-						.message(message)
-						.createAndStore();
-			});
-		}
-	}
-
-	private void handleSupplyRequiredEvent0(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
-	{
-		final IMutableMRPContext mrpContext = mkMRPContext(supplyRequiredDescriptor);
+		final IMutableMRPContext mrpContext = mkMRPContext(descriptor);
 
 		final List<MaterialEvent> events = new ArrayList<>();
-		events.addAll(ddOrderAdvisedOrCreatedEventCreator.createDDOrderAdvisedEvents(supplyRequiredDescriptor, mrpContext));
-		events.addAll(ppOrderAdvisedEventCreator.createPPOrderAdvisedEvents(supplyRequiredDescriptor, mrpContext));
+		events.addAll(ddOrderAdvisedOrCreatedEventCreator.createDDOrderAdvisedEvents(descriptor, mrpContext));
+		events.addAll(ppOrderAdvisedEventCreator.createPPOrderAdvisedEvents(descriptor, mrpContext));
 
 		events.forEach(e -> postMaterialEventService.postEventNow(e));
 	}

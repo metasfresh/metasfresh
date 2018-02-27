@@ -66,13 +66,13 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 		Check.assumeNotNull(params, "params not null");
 
 		final ICompositeQueryFilter<I_M_DeliveryDay> filter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(I_M_DeliveryDay.class);
-		filter
+				.createCompositeQueryFilter(I_M_DeliveryDay.class)
+				//
 				// Only active delivery days
 				.addOnlyActiveRecordsFilter()
 				//
 				// for given BP Location
-				.addEqualsFilter(I_M_DeliveryDay.COLUMN_C_BPartner_Location_ID, params.getC_BPartner_Location_ID())
+				.addInArrayFilter(I_M_DeliveryDay.COLUMN_C_BPartner_Location_ID, null, params.getC_BPartner_Location_ID())
 				//
 				// DeliveryDateTimeMax <= given DeliveryDate
 				.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDateTimeMax, Operator.LESS_OR_EQUAL, params.getDeliveryDate())
@@ -127,6 +127,7 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 			// fallback to what it used to be: In case there is no calculation time set, simply fetch the
 			// delivery date that is closest to the promiseDate
 			queryBuilder.orderBy()
+					.addColumn(I_M_DeliveryDay.COLUMN_C_BPartner_Location_ID, Direction.Descending, Nulls.Last)
 					.addColumn(I_M_DeliveryDay.COLUMN_DeliveryDate, Direction.Descending, Nulls.Last);
 		}
 

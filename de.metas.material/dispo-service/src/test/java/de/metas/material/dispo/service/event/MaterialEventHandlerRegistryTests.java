@@ -2,7 +2,6 @@ package de.metas.material.dispo.service.event;
 
 import static de.metas.material.event.EventTestHelper.CLIENT_ID;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -14,6 +13,7 @@ import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -26,12 +26,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.EventLogUserService.InvokeHandlerandLogRequest;
 import de.metas.material.dispo.commons.DispoTestUtils;
-import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -41,21 +41,25 @@ import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
-import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedOrCreatedHandler;
+import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.pporder.PPOrderAdvisedHandler;
+import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.MaterialEventHandlerRegistry;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import mockit.Delegate;
 import mockit.Expectations;
 import mockit.Mocked;
+import mockit.Verifications;
 
 /*
  * #%L
@@ -85,7 +89,7 @@ import mockit.Mocked;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class MaterialDispoEventListenerFacadeTests
+public class MaterialEventHandlerRegistryTests
 {
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
@@ -103,7 +107,8 @@ public class MaterialDispoEventListenerFacadeTests
 	@Mocked
 	private EventLogUserService eventLogUserService;
 
-	private AvailableToPromiseRepository stockRepository;
+	@Mocked
+	private AvailableToPromiseRepository availableToPromiseRepository;
 
 	@Before
 	public void init()
@@ -115,8 +120,6 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		stockRepository = new AvailableToPromiseRepository();
-
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands);
@@ -126,7 +129,7 @@ public class MaterialDispoEventListenerFacadeTests
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
 						postMaterialEventService,
-						stockRepository,
+						availableToPromiseRepository,
 						stockCandidateService),
 				new SupplyCandiateHandler(
 						candidateRepositoryRetrieval,
@@ -137,7 +140,7 @@ public class MaterialDispoEventListenerFacadeTests
 				candidateRepositoryRetrieval,
 				postMaterialEventService);
 
-		final DDOrderAdvisedOrCreatedHandler distributionAdvisedEventHandler = new DDOrderAdvisedOrCreatedHandler(
+		final DDOrderAdvisedHandler distributionAdvisedEventHandler = new DDOrderAdvisedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,
@@ -192,9 +195,6 @@ public class MaterialDispoEventListenerFacadeTests
 		}};	// @formatter:on
 	}
 
-	/**
-	 * This test is more for myself, to figure out how the system works :-$
-	 */
 	@Test
 	public void test_shipmentScheduleCreatedEvent_then_distributionAdvisedEvent()
 	{
@@ -203,15 +203,35 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final Date shipmentScheduleEventTime = orderedMaterial.getDate();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(stockRepository, orderedMaterial, "0");
+		// Whenever asked, (by DemandCandidateHandler, in this case), we say that we need more.
+		// This is required to make the DemandCandidateHandler fire a supplyRequiredEvent.
+		new Expectations(CandidateRepositoryRetrieval.class)
+		{{
+			availableToPromiseRepository.retrieveAvailableStockQtySum((AvailableToPromiseMultiQuery)any); minTimes = 0;
+			result = new BigDecimal("-10");
+		}}; // @formatter:on
 
 		materialEventListener.onEvent(shipmentScheduleEvent);
 
+		// guard - we expect one for the shipment-schedule demand, two for the distribution demand + supply and 2 stocks (one of them shared between shipment-demand and distr-supply)
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2);
+
+		final Mutable<SupplyRequiredDescriptor> supplyRequiredDescriptor = new Mutable<>();
+		// @formatter:off
+		new Verifications()
+		{{
+			MaterialEvent event;
+			postMaterialEventService.postEventAfterNextCommit(event = withCapture());
+			assertThat(event).isInstanceOf(SupplyRequiredEvent.class);
+			supplyRequiredDescriptor.setValue(((SupplyRequiredEvent)event).getSupplyRequiredDescriptor());
+		}};	// @formatter:on
+
 		// create a distributionAdvisedEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
-		final DDOrderAdvisedOrCreatedEvent event = DDOrderAdvisedOrCreatedEvent.builder()
+		final DDOrderAdvisedEvent ddOrderAdvisedEvent = DDOrderAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
+				.supplyRequiredDescriptor(supplyRequiredDescriptor.getValue())
 				.ddOrder(DDOrder.builder()
 						.orgId(ORG_ID)
 						.plantId(800)
@@ -219,7 +239,7 @@ public class MaterialDispoEventListenerFacadeTests
 						.shipperId(820)
 						.datePromised(shipmentScheduleEventTime)
 						.line(DDOrderLine.builder()
-								.productDescriptor(createProductDescriptor())
+								.productDescriptor(orderedMaterial)
 								.bPartnerId(orderedMaterial.getBPartnerId())
 								.qty(BigDecimal.TEN)
 								.durationDays(0)
@@ -227,7 +247,8 @@ public class MaterialDispoEventListenerFacadeTests
 								.build())
 						.build())
 				.build();
-		materialEventListener.onEvent(event);
+		ddOrderAdvisedEvent.validate();
+		materialEventListener.onEvent(ddOrderAdvisedEvent);
 
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(5); // one for the shipment-schedule demand, two for the distribution demand + supply and 2 stocks (one of them shared between shipment-demand and distr-supply)
 		final I_MD_Candidate toWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, toWarehouseId).get(0);

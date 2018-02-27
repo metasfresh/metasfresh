@@ -35,7 +35,8 @@ import lombok.ToString;
  * #L%
  */
 /**
- * Send by the material planner when it came up with a brilliant production plan that could be turned into an {@link I_PP_Order} <b>or</or> if a ppOrder was actually created or changed.
+ * Send by the material planner when it came up with a brilliant production plan that could be turned into an {@link I_PP_Order}<br>
+ * <b>or</or> if a ppOrder was actually created.
  *
  * @author metas-dev <dev@metasfresh.com>
  *

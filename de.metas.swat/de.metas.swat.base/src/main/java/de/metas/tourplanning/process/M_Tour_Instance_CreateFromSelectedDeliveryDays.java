@@ -168,7 +168,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 			_tourInstance = Services.get(ITourInstanceBL.class).createTourInstanceDraft(context, deliveryDay);
 
 			final I_M_ShipperTransportation shipperTransportation = getCreateShipperTransportation(_tourInstance);
-			_tourInstance.setM_ShipperTransportation(shipperTransportation);
+			_tourInstance.setM_ShipperTransportation_ID(shipperTransportation.getM_ShipperTransportation_ID());
 
 			InterfaceWrapperHelper.save(_tourInstance);
 			return _tourInstance;

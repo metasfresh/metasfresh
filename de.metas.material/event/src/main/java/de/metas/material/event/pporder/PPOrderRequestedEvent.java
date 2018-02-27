@@ -2,6 +2,7 @@ package de.metas.material.event.pporder;
 
 import java.util.Date;
 
+import org.adempiere.util.Check;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.MaterialEvent;
@@ -55,4 +56,9 @@ public class PPOrderRequestedEvent implements MaterialEvent
 	@NonNull
 	PPOrder ppOrder;
 
+	public void validate()
+	{
+		// we need the PPOrder's MaterialDispoGroupId to map the order that was created to its respective candidates
+		Check.errorIf(ppOrder.getMaterialDispoGroupId() <= 0, "The ppOrder of a PPOrderRequestedEvent needs to have a group id");
+	}
 }

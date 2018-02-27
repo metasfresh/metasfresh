@@ -63,15 +63,14 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 	}
 
-	protected final int handlePPOrderAdvisedOrCreatedEvent(
-			@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	protected final int handleAbstractPPOrderEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 
 		final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
 
-		final DemandDetail demandDetailOrNull = DemandDetail.createOrNull(
-				ppOrderEvent.getSupplyRequiredDescriptor());
+		final DemandDetail demandDetailOrNull = //
+				DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
 
 		final CandidatesQuery preExistingSupplyQuery = createPreExistingCandidatesQuery(ppOrderEvent);
 		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
@@ -83,7 +82,6 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		final ProductionDetail newProductionDetailForPPOrder = createProductionDetailForPPOrder(
 				ppOrderEvent,
 				existingCandidateOrNull);
-		// note that newProductionDetailForPPOrder.isAdvised() might be != isPPOrderAdvisedEvent
 
 		final Candidate supplyCandidate = builder
 				.type(CandidateType.SUPPLY)
@@ -131,7 +129,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 			PPOrderLine ppOrderLine,
 			AbstractPPOrderEvent ppOrderEvent);
 
-	protected CandidateType extractCandidateType(final PPOrderLine ppOrderLine)
+	protected final CandidateType extractCandidateType(final PPOrderLine ppOrderLine)
 	{
 		return ppOrderLine.isReceipt() ? CandidateType.SUPPLY : CandidateType.DEMAND;
 	}

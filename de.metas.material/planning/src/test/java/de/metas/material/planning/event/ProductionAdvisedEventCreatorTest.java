@@ -16,7 +16,6 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
-import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.IMutableMRPContext;
@@ -82,7 +81,7 @@ public class ProductionAdvisedEventCreatorTest
 		// @formatter:off
 		new Expectations() {{
 			ppOrderDemandMatcher.matches((IMaterialPlanningContext)any); result = true;
-			ppOrderPojoSupplier.supplyPPOrderPojoWithLines((IMaterialRequest)any, (IMRPNotesCollector)any); result = somePPOrderPojo;
+			ppOrderPojoSupplier.supplyPPOrderPojoWithLines((IMaterialRequest)any); result = somePPOrderPojo;
 		}};	// @formatter:on
 
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());

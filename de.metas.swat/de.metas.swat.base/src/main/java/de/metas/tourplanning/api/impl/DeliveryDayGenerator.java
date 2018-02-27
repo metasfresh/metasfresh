@@ -13,15 +13,14 @@ package de.metas.tourplanning.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.text.DateFormat;
 import java.util.Collections;
@@ -165,7 +164,13 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 			//
 			// Iterate tour version lines and create delivery days
 			final I_M_TourVersion tourVersion = tourVersionRange.getM_TourVersion();
-			for (final I_M_TourVersionLine tourVersionLine : tourDAO.retrieveTourVersionLines(tourVersion))
+			final List<I_M_TourVersionLine> tourVersionLines = tourDAO.retrieveTourVersionLines(tourVersion);
+			if (tourVersionLines.isEmpty())
+			{
+				loggable.addLog("Skip {} because it has no lines", tourVersion);
+				continue;
+			}
+			for (final I_M_TourVersionLine tourVersionLine : tourVersionLines)
 			{
 				createDeliveryDaysForLine(tourVersionRange, tourVersionLine);
 			}
@@ -187,6 +192,11 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 	private void createDeliveryDaysForLine(final ITourVersionRange tourVersionRange, final I_M_TourVersionLine tourVersionLine)
 	{
 		final Set<Date> deliveryDates = tourVersionRange.generateDeliveryDates();
+		if (deliveryDates.isEmpty())
+		{
+			loggable.addLog("Skip {} because no eligible delivery days were found in {}", tourVersionLine, tourVersionRange);
+			return;
+		}
 
 		//
 		// Iterates each period (e.g. each X months, each X weeks etc)

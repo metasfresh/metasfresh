@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.util.Loggables;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -99,6 +100,7 @@ public class SupplyProposalEvaluator
 		final List<Candidate> directReversals = candidateRepository.retrieveOrderedByDateAndSeqNo(directReverseForDemandQuery);
 		if (!directReversals.isEmpty())
 		{
+			Loggables.get().addLog("Given proposal would have closed a loop; rececting it; proposal={}", proposal);
 			return false;
 		}
 
@@ -124,6 +126,7 @@ public class SupplyProposalEvaluator
 
 			if (indirectSupplyCandidate != null)
 			{
+				Loggables.get().addLog("Given proposal would have closed a loop; rececting it; proposal={}", proposal);
 				return false;
 			}
 		}
