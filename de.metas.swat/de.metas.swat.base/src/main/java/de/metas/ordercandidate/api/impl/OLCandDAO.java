@@ -125,17 +125,6 @@ public class OLCandDAO implements IOLCandDAO
 	}
 
 	@Override
-	public List<I_C_OLCandGenerator> retrieveforTable(final Properties ctx, final int adTableId, final String trxName)
-	{
-		return new Query(ctx, I_C_OLCandGenerator.Table_Name, I_C_OLCandGenerator.COLUMNNAME_AD_Table_Source_ID + "=?", trxName)
-				.setParameters(adTableId)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_C_OLCandGenerator.COLUMNNAME_C_OLCandGenerator_ID)
-				.list(I_C_OLCandGenerator.class);
-	}
-
-	@Override
 	public I_C_OLCandGenerator retrieveOlCandCreator(final Properties ctx, final int tableId, final String trxName)
 	{
 		final I_C_OLCandGenerator olCandGenerator = new Query(ctx, I_C_OLCandGenerator.Table_Name, I_C_OLCandGenerator.COLUMNNAME_AD_Table_Source_ID + "=?", trxName)

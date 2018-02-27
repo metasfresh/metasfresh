@@ -75,8 +75,6 @@ public interface IOLCandDAO extends ISingletonService
 	 */
 	List<I_C_Order_Line_Alloc> retrieveAllOlas(I_C_OLCand olCand);
 
-	List<I_C_OLCandGenerator> retrieveforTable(Properties ctx, int adTableId, String trxName);
-
 	I_C_OLCandGenerator retrieveOlCandCreator(Properties ctx, int tableId, String trxName);
 
 	List<I_C_OLCandGenerator> retrieveOlCandCreatorForOrg(Properties ctx, int adOrgId);
