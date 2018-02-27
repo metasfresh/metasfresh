@@ -44,7 +44,9 @@ import lombok.NonNull;
 
 public final class GroupCreator
 {
-	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+
 	private final GroupRepository groupsRepo;
 
 	private Collection<Integer> lineIdsToGroup;
@@ -62,7 +64,7 @@ public final class GroupCreator
 		return this;
 	}
 
-	public GroupCreator newGroupTemplate(final GroupTemplate newGroupTemplate)
+	public GroupCreator groupTemplate(final GroupTemplate newGroupTemplate)
 	{
 		this.newGroupTemplate = newGroupTemplate;
 		return this;
@@ -71,9 +73,16 @@ public final class GroupCreator
 	public Group createGroup()
 	{
 		final Group group = groupsRepo.retrieveOrCreateGroup(createRetrieveOrCreateGroupRequest());
+		return recreateGroup(group);
+	}
+	
+	public Group recreateGroup(@NonNull final Group group)
+	{
+		group.removeAllCompensationLines();
 
 		newGroupTemplate.getLines()
 				.stream()
+				.filter(templateLine -> templateLine.getGroupMatcher().test(group))
 				.map(templateLine -> createGroupCompensationLineCreateRequest(templateLine, group))
 				.forEach(group::addNewCompensationLine);
 
@@ -126,8 +135,16 @@ public final class GroupCreator
 
 	private BigDecimal calculateDefaultDiscountPercentage(final GroupTemplateLine templateLine, final Group group)
 	{
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+		if (templateLine.getPercentage() != null)
+		{
+			return templateLine.getPercentage();
+		}
 
+		return retrieveDiscountPercentageFromPricing(templateLine, group);
+	}
+
+	private final BigDecimal retrieveDiscountPercentageFromPricing(final GroupTemplateLine templateLine, final Group group)
+	{
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setM_Product_ID(templateLine.getProductId());
 		pricingCtx.setC_BPartner_ID(group.getBpartnerId());

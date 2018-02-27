@@ -9,6 +9,7 @@ import java.util.OptionalInt;
 import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.context.annotation.Profile;
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.event.log.EventLogUserService;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -56,15 +56,11 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 {
 
 	private final PickingCandidateService pickingCandidateService;
-	private final EventLogUserService eventLogUserService;
 
 	public PickingRequestedHandler(
-			@NonNull final PickingCandidateService pickingCandidateService,
-			@NonNull final EventLogUserService eventLogUserService)
+			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this.pickingCandidateService = pickingCandidateService;
-		this.eventLogUserService = eventLogUserService;
-
 	}
 
 	@Override
@@ -126,9 +122,9 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 
 		final I_M_PickingSlot firstPickingSlot = pickingSlots.get(0);
 
-		eventLogUserService.newLogEntry(PickingRequestedHandler.class)
-				.formattedMessage("Retrieved an available picking slot, because none was set in the event; pickingSlot={}", firstPickingSlot)
-				.createAndStore();
+		Loggables.get().addLog(
+				"Retrieved an available picking slot, because none was set in the event; pickingSlot={}",
+				firstPickingSlot);
 		return firstPickingSlot.getM_PickingSlot_ID();
 	}
 

@@ -1,6 +1,7 @@
 package de.metas.handlingunits.allocation.transfer;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -896,7 +897,9 @@ public class HUTransformService
 				final I_M_HU_Item tuHUsParentItem = handlingUnitsDAO.retrieveParentItem(sourceTuHU); // can't be null because if is was isAggregateHU() would return false.
 				final BigDecimal representedTUsCount = tuHUsParentItem.getQty();
 				Preconditions.checkState(representedTUsCount.signum() > 0, "Param 'tuHU' is an aggregate HU whose M_HU_Item_Parent has a qty of %s; tuHU=%s; tuHU's M_HU_Item_Parent=%s", representedTUsCount, sourceTuHU, tuHUsParentItem);
-				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount);
+				
+				final int uomPrecision = firstProductStorage.getC_UOM().getStdPrecision();
+				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount, uomPrecision, RoundingMode.HALF_UP);
 			}
 			else
 			{

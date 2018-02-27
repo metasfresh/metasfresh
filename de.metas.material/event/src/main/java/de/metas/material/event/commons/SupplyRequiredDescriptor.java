@@ -43,7 +43,11 @@ public class SupplyRequiredDescriptor
 
 	int shipmentScheduleId;
 
+	int forecastId;
+
 	int forecastLineId;
+
+	int orderId;
 
 	int orderLineId;
 
@@ -56,15 +60,22 @@ public class SupplyRequiredDescriptor
 			@JsonProperty("materialDescriptor") MaterialDescriptor materialDescriptor,
 			@JsonProperty("demandCandidateId") int demandCandidateId,
 			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
+			@JsonProperty("forecastId") int forecastId,
 			@JsonProperty("forecastLineId") int forecastLineId,
+			@JsonProperty("orderId") int orderId,
 			@JsonProperty("orderLineId") int orderLineId,
 			@JsonProperty("subscriptionProgressId") int subscriptionProgressId)
 	{
 		this.demandCandidateId = demandCandidateId;
 
 		this.shipmentScheduleId = shipmentScheduleId > 0 ? shipmentScheduleId : -1;
+
+		this.forecastId = forecastId > 0 ? forecastId : -1;
 		this.forecastLineId = forecastLineId > 0 ? forecastLineId : -1;
+
+		this.orderId = orderId > 0 ? orderId : -1;
 		this.orderLineId = orderLineId > 0 ? orderLineId : -1;
+
 		this.subscriptionProgressId = subscriptionProgressId;
 
 		this.eventDescriptor = eventDescriptor;

@@ -15,7 +15,7 @@ public class X_M_Product_PlanningSchema extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1757280648L;
+	private static final long serialVersionUID = -2058652581L;
 
     /** Standard Constructor */
     public X_M_Product_PlanningSchema (Properties ctx, int M_Product_PlanningSchema_ID, String trxName)
@@ -24,7 +24,6 @@ public class X_M_Product_PlanningSchema extends org.compiere.model.PO implements
       /** if (M_Product_PlanningSchema_ID == 0)
         {
 			setIsAttributeDependant (false); // N
-			setIsCreateDistributionOrder (false); // N
 			setIsCreatePlan (true); // Y
 			setIsDocComplete (false); // N
 			setIsManufactured (null); // N
@@ -34,6 +33,7 @@ public class X_M_Product_PlanningSchema extends org.compiere.model.PO implements
 			setIsTraded (null); // N
 			setM_Product_PlanningSchema_ID (0);
 			setM_ProductPlanningSchema_Selector (null);
+			setOnMaterialReceiptWithDestWarehouse (null); // M
         } */
     }
 
@@ -196,29 +196,6 @@ public class X_M_Product_PlanningSchema extends org.compiere.model.PO implements
 	public boolean isAttributeDependant () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAttributeDependant);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set IsCreateDistributionOrder.
-		@param IsCreateDistributionOrder IsCreateDistributionOrder	  */
-	@Override
-	public void setIsCreateDistributionOrder (boolean IsCreateDistributionOrder)
-	{
-		set_Value (COLUMNNAME_IsCreateDistributionOrder, Boolean.valueOf(IsCreateDistributionOrder));
-	}
-
-	/** Get IsCreateDistributionOrder.
-		@return IsCreateDistributionOrder	  */
-	@Override
-	public boolean isCreateDistributionOrder () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsCreateDistributionOrder);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -531,6 +508,32 @@ public class X_M_Product_PlanningSchema extends org.compiere.model.PO implements
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * OnMaterialReceiptWithDestWarehouse AD_Reference_ID=540835
+	 * Reference name: OnMaterialReceiptWithDestWarehouse_List
+	 */
+	public static final int ONMATERIALRECEIPTWITHDESTWAREHOUSE_AD_Reference_ID=540835;
+	/** CreateMovement = M */
+	public static final String ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement = "M";
+	/** Create Distribution Order = D */
+	public static final String ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder = "D";
+	/** Set OnMaterialReceiptWithDestWarehouse.
+		@param OnMaterialReceiptWithDestWarehouse OnMaterialReceiptWithDestWarehouse	  */
+	@Override
+	public void setOnMaterialReceiptWithDestWarehouse (java.lang.String OnMaterialReceiptWithDestWarehouse)
+	{
+
+		set_Value (COLUMNNAME_OnMaterialReceiptWithDestWarehouse, OnMaterialReceiptWithDestWarehouse);
+	}
+
+	/** Get OnMaterialReceiptWithDestWarehouse.
+		@return OnMaterialReceiptWithDestWarehouse	  */
+	@Override
+	public java.lang.String getOnMaterialReceiptWithDestWarehouse () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_OnMaterialReceiptWithDestWarehouse);
 	}
 
 	@Override

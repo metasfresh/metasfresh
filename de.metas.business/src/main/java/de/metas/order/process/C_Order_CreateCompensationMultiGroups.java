@@ -163,7 +163,7 @@ public class C_Order_CreateCompensationMultiGroups extends JavaProcess implement
 	{
 		return groupsRepo.prepareNewGroup()
 				.linesToGroup(orderLineIds)
-				.newGroupTemplate(groupTemplate)
+				.groupTemplate(groupTemplate)
 				.createGroup();
 	}
 

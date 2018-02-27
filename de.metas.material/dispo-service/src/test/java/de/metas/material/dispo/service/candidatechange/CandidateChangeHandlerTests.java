@@ -341,8 +341,8 @@ public class CandidateChangeHandlerTests
 
 			// shall be balanced between the demand and the supply
 			assertThatModel(secondStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, firstStockRecord.getDateProjected());
-			assertThat(secondStockRecord.getQty()).isEqualByComparingTo("23");
 			assertThat(firstStockRecord.getQty()).isEqualByComparingTo("-23");
+			assertThat(secondStockRecord.getQty()).isEqualByComparingTo("0");
 		}
 	}
 
@@ -392,7 +392,7 @@ public class CandidateChangeHandlerTests
 				.date(NOW)
 				.build();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
+		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
 				stockRepository,
 				materialDescr,
 				"0");
@@ -467,17 +467,23 @@ public class CandidateChangeHandlerTests
 
 			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 			final I_MD_Candidate firstStockRecord = allStockCandidates.get(0);
+			assertThatModel(supplyRecord.getMD_Candidate_Parent())
+					.as("the supply-record is the first stock-record's child")
+					.hasSameIdAs(firstStockRecord);
 
 			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
 			final I_MD_Candidate secondStockRecord = allStockCandidates.get(1);
+			assertThatModel(secondStockRecord.getMD_Candidate_Parent())
+					.as("the second stock-record is the demand-record's child")
+					.hasSameIdAs(demandRecord);
 
 			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, firstStockRecord.getSeqNo() + 1);  // as before
 			assertThatModel(secondStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, demandRecord.getSeqNo() + 1);
 
-			// shall both be balanced between the demand and the supply, so that in sume we have zero
+			// shall both be balanced between the demand and the supply, so that in sum we have zero
 			assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, secondStockRecord.getDateProjected());
 			assertThat(firstStockRecord.getQty()).isEqualByComparingTo("23");
-			assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-23");
+			assertThat(secondStockRecord.getQty()).isEqualByComparingTo("0");
 		}
 	}
 
@@ -498,9 +504,14 @@ public class CandidateChangeHandlerTests
 		final I_MD_Candidate firstStockRecord = allStockCandidates.get(1);
 		final I_MD_Candidate secondStockRecord = allStockCandidates.get(2);
 
-		assertThat(initialStockRecord.getQty()).isEqualByComparingTo("10"); // shall be unchanged
+		// shall be unchanged
+		assertThat(initialStockRecord.getQty()).isEqualByComparingTo("10");
+
+		// 10 + 23 from the createAndAddSupplyWithQtyandDemandDetail above
 		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("33");
-		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-23");
+
+		// 33 - 23 from the createAndAddDemandWithQtyandDemandDetail
+		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("10");
 	}
 
 	@Test
@@ -522,10 +533,9 @@ public class CandidateChangeHandlerTests
 		final List<I_MD_Candidate> allDemandRecords = DispoTestUtils.filter(CandidateType.DEMAND);
 		assertThat(allDemandRecords).hasSize(2);
 
-		// in sum, we now have -46 for this time, product, warehouse and storageAttributesKey
 		assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, secondStockRecord.getDateProjected());
 		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("-23");
-		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-23");
+		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-46"); // = - 23 - 23
 	}
 
 	@Test
@@ -559,6 +569,6 @@ public class CandidateChangeHandlerTests
 
 		// -> overall stock at NOW is (20 - 24) = -4 = (8 -12)
 		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("8");
-		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-12");
+		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-4");
 	}
 }

@@ -23,6 +23,7 @@ package de.metas.order.model.interceptor;
  */
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -44,10 +45,9 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.order.compensationGroup.OrderGroupRepository.OrderLinesStorage;
 
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
@@ -57,7 +57,6 @@ public class C_OrderLine
 
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
 	@Autowired
-	private OrderGroupRepository groupsRepo;
 	private OrderGroupCompensationChangesHandler groupChangesHandler;
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
@@ -69,14 +68,12 @@ public class C_OrderLine
 		// NOTE: in unit test mode and while running tools like model generators,
 		// the groupsRepo is not Autowired because there is no spring context,
 		// so we have to instantiate it directly
-		if (groupsRepo == null)
+		if (groupChangesHandler == null)
 		{
-			groupsRepo = new OrderGroupRepository();
+			groupChangesHandler = new OrderGroupCompensationChangesHandler(
+					new OrderGroupRepository(Optional.empty()),
+					new GroupTemplateRepository(Optional.empty()));
 		}
-
-		groupChangesHandler = OrderGroupCompensationChangesHandler.builder()
-				.groupsRepo(groupsRepo)
-				.build();
 	};
 
 	/**
@@ -97,14 +94,9 @@ public class C_OrderLine
 				.createQueryBuilder(I_C_OrderLine.class, orderLine)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Link_OrderLine_ID, orderLine.getC_OrderLine_ID())
 				.create()
-				.update(new IQueryUpdater<I_C_OrderLine>()
-				{
-					@Override
-					public boolean update(final I_C_OrderLine ol)
-					{
-						ol.setLink_OrderLine(null);
-						return MODEL_UPDATED;
-					}
+				.update(ol -> {
+					ol.setLink_OrderLine(null);
+					return IQueryUpdater.MODEL_UPDATED;
 				});
 
 		// FRESH-386
@@ -112,14 +104,9 @@ public class C_OrderLine
 				.createQueryBuilder(I_C_OrderLine.class, orderLine)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Ref_OrderLine_ID, orderLine.getC_OrderLine_ID()) // ref_orderline_id is used with counter docs
 				.create()
-				.update(new IQueryUpdater<I_C_OrderLine>()
-				{
-					@Override
-					public boolean update(final I_C_OrderLine ol)
-					{
-						ol.setRef_OrderLine(null);
-						return MODEL_UPDATED;
-					}
+				.update(ol -> {
+					ol.setRef_OrderLine(null);
+					return IQueryUpdater.MODEL_UPDATED;
 				});
 
 	}
@@ -246,11 +233,7 @@ public class C_OrderLine
 	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
 	public void onGroupCompensationPercentageChanged(final I_C_OrderLine orderLine)
 	{
-		final Group group = groupsRepo.createPartialGroupFromCompensationLine(orderLine);
-		group.updateAllPercentageLines();
-
-		final OrderLinesStorage orderLinesStorage = groupsRepo.createNotSaveableSingleOrderLineStorage(orderLine);
-		groupsRepo.saveGroup(group, orderLinesStorage);
+		groupChangesHandler.updateCompensationLineNoSave(orderLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {

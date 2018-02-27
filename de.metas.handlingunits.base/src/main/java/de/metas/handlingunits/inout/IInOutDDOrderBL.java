@@ -1,6 +1,7 @@
 package de.metas.handlingunits.inout;
 
 import org.adempiere.util.ISingletonService;
+import org.eevolution.model.I_DD_Order;
 
 import de.metas.handlingunits.model.I_M_InOutLine;
 
@@ -34,7 +35,8 @@ public interface IInOutDDOrderBL extends ISingletonService
 	 * If there are no configuration problems, the new dd_order will be filled with the right data and it will be completed.
 	 * 
 	 * @param inOutLine
+	 * @return the created DD_Order
 	 */
-	void createDDOrderForInOutLine(I_M_InOutLine inOutLine);
+	I_DD_Order createDDOrderForInOutLine(I_M_InOutLine inOutLine);
 
 }

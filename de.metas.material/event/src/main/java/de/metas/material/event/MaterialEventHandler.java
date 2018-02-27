@@ -29,13 +29,13 @@ import java.util.Collection;
  *
  * @author metas-dev <dev@metasfresh.com>
  *
- * @param <T> the sort of {@link MaterialEvent} which the handler shall handle in its {@link #handleEvent(MaterialEvent)} method. <br>
+ * @param <T> the sort of {@link MaterialEvent} which the handler shall handle in its {@link #handleEvent(MaterialEvent)} method.<br>
  *            May be an abstract type.
  */
 public interface MaterialEventHandler<T extends MaterialEvent>
 {
 	/**
-	 * @return The event classes the respective implementation will be invoked on.
+	 * @return The event (concrete) classes the respective implementation will be invoked on.
 	 *         <p>
 	 *         Note that:
 	 *         <li>please don't return {@code null}

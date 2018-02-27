@@ -1,5 +1,7 @@
 package de.metas.material.event.pporder;
 
+import org.adempiere.util.Check;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -60,6 +62,29 @@ public class PPOrderAdvisedEvent extends AbstractPPOrderEvent
 
 		this.directlyCreatePPOrder = directlyCreatePPOrder;
 		this.directlyPickSupply = directlyPickSupply;
+	}
 
+	public void validate()
+	{
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = getSupplyRequiredDescriptor();
+		Check.errorIf(supplyRequiredDescriptor == null, "The given ppOrderAdvisedEvent has no supplyRequiredDescriptor");
+		supplyRequiredDescriptor.validate();
+
+		final PPOrder ppOrder = getPpOrder();
+
+		Check.errorIf(ppOrder.getPpOrderId() > 0,
+				"The given ppOrderAdvisedEvent's ppOrder may not yet have an ID; ppOrder={}", ppOrder);
+
+		final int productPlanningId = ppOrder.getProductPlanningId();
+		Check.errorIf(productPlanningId <= 0,
+				"The given ppOrderAdvisedEvent event has a ppOrder with productPlanningId={}", productPlanningId);
+
+		ppOrder.getLines().forEach(ppOrderLine -> {
+
+			final int productBomLineId = ppOrderLine.getProductBomLineId();
+			Check.errorIf(productBomLineId <= 0,
+					"The given ppOrderAdvisedEvent event has a ppOrderLine with productBomLineId={}; ppOrderLine={}",
+					productBomLineId, ppOrderLine);
+		});
 	}
 }

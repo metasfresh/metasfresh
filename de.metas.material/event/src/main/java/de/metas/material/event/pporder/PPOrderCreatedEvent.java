@@ -1,5 +1,7 @@
 package de.metas.material.event.pporder;
 
+import org.adempiere.util.Check;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -45,5 +47,21 @@ public class PPOrderCreatedEvent extends AbstractPPOrderEvent
 			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		super(eventDescriptor, ppOrder, supplyRequiredDescriptor);
+	}
+
+	public void validate()
+	{
+		final PPOrder ppOrder = getPpOrder();
+
+		final int ppOrderId = ppOrder.getPpOrderId();
+		Check.errorIf(ppOrderId <= 0, "The given ppOrderCreatedEvent event has a ppOrder with ppOrderId={}", ppOrderId);
+
+		ppOrder.getLines().forEach(ppOrderLine -> {
+
+			final int ppOrderLineId = ppOrderLine.getPpOrderLineId();
+			Check.errorIf(ppOrderLineId <= 0,
+					"The given ppOrderCreatedEvent event has a ppOrderLine with ppOrderLineId={}; ppOrderLine={}",
+					ppOrderLineId, ppOrderLine);
+		});
 	}
 }

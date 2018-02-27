@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.order.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_C_CompensationGroup_SchemaLine extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1180626619L;
+	private static final long serialVersionUID = -699664781L;
 
     /** Standard Constructor */
     public X_C_CompensationGroup_SchemaLine (Properties ctx, int C_CompensationGroup_SchemaLine_ID, String trxName)
@@ -42,6 +43,28 @@ public class X_C_CompensationGroup_SchemaLine extends org.compiere.model.PO impl
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Break Value.
+		@param BreakValue 
+		Low Value of trade discount break level
+	  */
+	@Override
+	public void setBreakValue (java.math.BigDecimal BreakValue)
+	{
+		set_Value (COLUMNNAME_BreakValue, BreakValue);
+	}
+
+	/** Get Break Value.
+		@return Low Value of trade discount break level
+	  */
+	@Override
+	public java.math.BigDecimal getBreakValue () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BreakValue);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
 
 	@Override
 	public de.metas.order.model.I_C_CompensationGroup_Schema getC_CompensationGroup_Schema() throws RuntimeException
@@ -99,6 +122,25 @@ public class X_C_CompensationGroup_SchemaLine extends org.compiere.model.PO impl
 		return ii.intValue();
 	}
 
+	/** Set Gesamtauftragsrabatt %.
+		@param CompleteOrderDiscount Gesamtauftragsrabatt %	  */
+	@Override
+	public void setCompleteOrderDiscount (java.math.BigDecimal CompleteOrderDiscount)
+	{
+		set_Value (COLUMNNAME_CompleteOrderDiscount, CompleteOrderDiscount);
+	}
+
+	/** Get Gesamtauftragsrabatt %.
+		@return Gesamtauftragsrabatt %	  */
+	@Override
+	public java.math.BigDecimal getCompleteOrderDiscount () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CompleteOrderDiscount);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
@@ -134,5 +176,54 @@ public class X_C_CompensationGroup_SchemaLine extends org.compiere.model.PO impl
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** 
+	 * Type AD_Reference_ID=540836
+	 * Reference name: C_CompensationGroup_SchemaLine_Type
+	 */
+	public static final int TYPE_AD_Reference_ID=540836;
+	/** Revenue = R */
+	public static final String TYPE_Revenue = "R";
+	/** Set Art.
+		@param Type 
+		Type of Validation (SQL, Java Script, Java Language)
+	  */
+	@Override
+	public void setType (java.lang.String Type)
+	{
+
+		set_Value (COLUMNNAME_Type, Type);
+	}
+
+	/** Get Art.
+		@return Type of Validation (SQL, Java Script, Java Language)
+	  */
+	@Override
+	public java.lang.String getType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Type);
 	}
 }

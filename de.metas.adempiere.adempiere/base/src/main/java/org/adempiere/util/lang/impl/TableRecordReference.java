@@ -53,6 +53,8 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import lombok.NonNull;
+
 /**
  * Simple implementation of {@link ITableRecordReference} which can:
  * <ul>
@@ -228,7 +230,7 @@ public final class TableRecordReference implements ITableRecordReference
 			{
 				recordId = Integer.parseInt(recordIdObj.toString());
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				return null;
 			}
@@ -297,9 +299,8 @@ public final class TableRecordReference implements ITableRecordReference
 		this.recordId = recordId;
 	}
 
-	private TableRecordReference(final Object model)
+	private TableRecordReference(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
 		this.adTableId = InterfaceWrapperHelper.getModelTableId(model);
 		this.tableName = InterfaceWrapperHelper.getModelTableName(model);
 		this.recordId = InterfaceWrapperHelper.getId(model);

@@ -110,13 +110,13 @@ public class PurchaseCandidateRepository
 
 	public void saveAll(final Collection<PurchaseCandidate> purchaseCandidates)
 	{
-		boolean doLock = true;
+		final boolean doLock = true;
 		saveAll(purchaseCandidates, doLock);
 	}
 
 	public void saveAllNoLock(final Collection<PurchaseCandidate> purchaseCandidates)
 	{
-		boolean doLock = false;
+		final boolean doLock = false;
 		saveAll(purchaseCandidates, doLock);
 	}
 
@@ -152,11 +152,15 @@ public class PurchaseCandidateRepository
 		final ILockAutoCloseable lock = doLock && !existingPurchaseCandidateIds.isEmpty() ? lockByIds(existingPurchaseCandidateIds) : null;
 		try
 		{
-			purchaseCandidatesToSave.forEach(purchaseCandidate -> {
+			for (final PurchaseCandidate purchaseCandidate : purchaseCandidatesToSave)
+			{
 				final int repoId = purchaseCandidate.getPurchaseCandidateId();
 				final I_C_PurchaseCandidate existingRecord = repoId > 0 ? existingRecordsById.get(repoId) : null;
 				save(purchaseCandidate, existingRecord);
-			});
+
+				purchaseItemRepository.storeRecords(purchaseCandidate.getPurchaseOrderItems());
+				purchaseItemRepository.storeRecords(purchaseCandidate.getPurchaseErrorItems());
+			} ;
 		}
 		finally
 		{
@@ -233,6 +237,7 @@ public class PurchaseCandidateRepository
 		final boolean locked = Services.get(ILockManager.class).isLocked(purchaseCandidatePO);
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
+				.locked(locked)
 				.purchaseCandidateId(purchaseCandidatePO.getC_PurchaseCandidate_ID())
 				.salesOrderId(purchaseCandidatePO.getC_OrderSO_ID())
 				.salesOrderLineId(purchaseCandidatePO.getC_OrderLineSO_ID())
@@ -245,7 +250,6 @@ public class PurchaseCandidateRepository
 				.qtyToPurchase(purchaseCandidatePO.getQtyToPurchase())
 				.dateRequired(purchaseCandidatePO.getDateRequired())
 				.processed(purchaseCandidatePO.isProcessed())
-				.locked(locked)
 				.build();
 
 		purchaseItemRepository.retrieveForPurchaseCandidate(purchaseCandidate);

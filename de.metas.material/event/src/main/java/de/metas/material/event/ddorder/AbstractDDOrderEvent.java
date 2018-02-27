@@ -1,16 +1,19 @@
 package de.metas.material.event.ddorder;
 
-import org.eevolution.model.I_DD_Order;
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.MaterialEventUtils;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
-import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
 
 /*
  * #%L
@@ -34,51 +37,58 @@ import lombok.Value;
  * #L%
  */
 /**
- * Send by the material planner when it came up with a distribution plan that could be turned into an {@link I_DD_Order}.
+ * Send by the material planner when it came up with a brilliant distribution plan that could be turned into an {@link I_PP_Order}<br>
+ * <b>or</or> if a ddOrder was actually created.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
-@Value
-@Builder
-public class DDOrderAdvisedOrCreatedEvent implements MaterialEvent
+@EqualsAndHashCode(callSuper = false)
+@Getter
+@ToString
+public abstract class AbstractDDOrderEvent implements MaterialEvent
 {
-	public static final String TYPE = "DDOrderAdvisedOrCreatedEvent";
+	@NonNull
+	private final EventDescriptor eventDescriptor;
 
 	@NonNull
-	EventDescriptor eventDescriptor;
-
-	@NonNull
-	DDOrder ddOrder;
+	private final DDOrder ddOrder;
 
 	/**
 	 * Note: this field is a bit redundant because the {@link #getPpOrder()}'s lines contain a network distribution line with this info.<br>
 	 * However, the material-dispo code doesn't know or care about how to get to that information.
 	 */
-	@NonNull
-	Integer fromWarehouseId;
+	private final int fromWarehouseId;
 
 	/**
 	 * Also check the note about {@link #getFromWarehouseId()}.
 	 */
-	@NonNull
-	Integer toWarehouseId;
-
-	/**
-	 * Set to > 0 if this event is about a "real" DDOrder, and not just the advise to create one
-	 */
-	@JsonProperty
-	int groupId;
+	private final int toWarehouseId;
 
 	/**
 	 * Set to not-null mainly if this event is about and "advise" that was created due to a {@link SupplyRequiredEvent}, but also<br>
-	 * if this event is about a "wild" PPOrder that was somehow created and has a sale order line ID
+	 * if this event is about a "wild" DDOrder that was somehow created and has a sales order line ID
 	 */
-	SupplyRequiredDescriptor supplyRequiredDescriptor;
+	private final SupplyRequiredDescriptor supplyRequiredDescriptor;
 
-	/**
-	 * If {@code true}, then this event advises the recipient to directly request an actual DD_Order to be created.
-	 */
-	boolean advisedToCreateDDrder;
+	public AbstractDDOrderEvent(
+			@NonNull final EventDescriptor eventDescriptor,
+			@NonNull final DDOrder ddOrder,
+			final int fromWarehouseId,
+			final int toWarehouseId,
+			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	{
+		this.eventDescriptor = eventDescriptor;
+		this.ddOrder = ddOrder;
+		this.fromWarehouseId = fromWarehouseId;
+		this.toWarehouseId = toWarehouseId;
+		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
+	}
 
-	boolean pickIfFeasible;
+	@OverridingMethodsMustInvokeSuper
+	public void validate()
+	{
+		MaterialEventUtils.checkIdGreaterThanZero("fromWarehouseId", fromWarehouseId);
+		MaterialEventUtils.checkIdGreaterThanZero("toWarehouseId", toWarehouseId);
+	}
 }

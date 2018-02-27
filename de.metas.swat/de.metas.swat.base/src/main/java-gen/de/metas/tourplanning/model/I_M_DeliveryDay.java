@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.tourplanning.model;
 
 
@@ -32,7 +16,7 @@ public interface I_M_DeliveryDay
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -48,7 +32,7 @@ public interface I_M_DeliveryDay
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_DeliveryDay, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_DeliveryDay, org.compiere.model.I_AD_Client>(I_M_DeliveryDay.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,7 +59,7 @@ public interface I_M_DeliveryDay
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -111,8 +95,8 @@ public interface I_M_DeliveryDay
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setC_BPartner_ID (int C_BPartner_ID);
@@ -121,13 +105,13 @@ public interface I_M_DeliveryDay
 	 * Get Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException;
+	public org.compiere.model.I_C_BPartner getC_BPartner();
 
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
@@ -141,7 +125,7 @@ public interface I_M_DeliveryDay
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
@@ -151,12 +135,12 @@ public interface I_M_DeliveryDay
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException;
+	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
 
 	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
 
@@ -340,7 +324,7 @@ public interface I_M_DeliveryDay
 	/**
 	 * Set Tour.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -349,13 +333,13 @@ public interface I_M_DeliveryDay
 	/**
 	 * Get Tour.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Tour_ID();
 
-	public de.metas.tourplanning.model.I_M_Tour getM_Tour() throws RuntimeException;
+	public de.metas.tourplanning.model.I_M_Tour getM_Tour();
 
 	public void setM_Tour(de.metas.tourplanning.model.I_M_Tour M_Tour);
 
@@ -382,7 +366,7 @@ public interface I_M_DeliveryDay
 	 */
 	public int getM_Tour_Instance_ID();
 
-	public de.metas.tourplanning.model.I_M_Tour_Instance getM_Tour_Instance() throws RuntimeException;
+	public de.metas.tourplanning.model.I_M_Tour_Instance getM_Tour_Instance();
 
 	public void setM_Tour_Instance(de.metas.tourplanning.model.I_M_Tour_Instance M_Tour_Instance);
 
@@ -394,7 +378,7 @@ public interface I_M_DeliveryDay
 	/**
 	 * Set Tour Version.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -403,13 +387,13 @@ public interface I_M_DeliveryDay
 	/**
 	 * Get Tour Version.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getM_TourVersion_ID();
 
-	public de.metas.tourplanning.model.I_M_TourVersion getM_TourVersion() throws RuntimeException;
+	public de.metas.tourplanning.model.I_M_TourVersion getM_TourVersion();
 
 	public void setM_TourVersion(de.metas.tourplanning.model.I_M_TourVersion M_TourVersion);
 

@@ -62,6 +62,12 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 	}
 
 	@Override
+	public void validateEvent(@NonNull final PPOrderRequestedEvent event)
+	{
+		event.validate();
+	}
+
+	@Override
 	public void handleEvent(@NonNull final PPOrderRequestedEvent event)
 	{
 		createProductionOrder(event);

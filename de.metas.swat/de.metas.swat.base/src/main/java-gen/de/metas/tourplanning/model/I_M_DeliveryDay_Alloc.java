@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.tourplanning.model;
 
 
@@ -32,7 +16,7 @@ public interface I_M_DeliveryDay_Alloc
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -48,7 +32,7 @@ public interface I_M_DeliveryDay_Alloc
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_DeliveryDay_Alloc, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_DeliveryDay_Alloc, org.compiere.model.I_AD_Client>(I_M_DeliveryDay_Alloc.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,7 +59,7 @@ public interface I_M_DeliveryDay_Alloc
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -104,7 +88,7 @@ public interface I_M_DeliveryDay_Alloc
 	 */
 	public int getAD_Table_ID();
 
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException;
+	public org.compiere.model.I_AD_Table getAD_Table();
 
 	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
 
@@ -209,7 +193,7 @@ public interface I_M_DeliveryDay_Alloc
 	 */
 	public int getM_DeliveryDay_ID();
 
-	public de.metas.tourplanning.model.I_M_DeliveryDay getM_DeliveryDay() throws RuntimeException;
+	public de.metas.tourplanning.model.I_M_DeliveryDay getM_DeliveryDay();
 
 	public void setM_DeliveryDay(de.metas.tourplanning.model.I_M_DeliveryDay M_DeliveryDay);
 
@@ -238,7 +222,7 @@ public interface I_M_DeliveryDay_Alloc
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException;
+	public org.compiere.model.I_M_Product getM_Product();
 
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
@@ -273,8 +257,8 @@ public interface I_M_DeliveryDay_Alloc
     public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Bestellte Menge
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -283,8 +267,8 @@ public interface I_M_DeliveryDay_Alloc
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Bestellte Menge
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true

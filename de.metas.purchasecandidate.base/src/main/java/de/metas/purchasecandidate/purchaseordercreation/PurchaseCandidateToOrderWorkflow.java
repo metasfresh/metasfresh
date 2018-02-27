@@ -1,5 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,6 +12,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.StringUtils;
+import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -78,7 +81,7 @@ public class PurchaseCandidateToOrderWorkflow
 		{
 			createPurchaseOrder0(vendorId, purchaseCandidates);
 		}
-		catch (Throwable t)
+		catch (final Throwable t)
 		{
 			logAndRethrow(t, vendorId, purchaseCandidates);
 		}
@@ -86,6 +89,11 @@ public class PurchaseCandidateToOrderWorkflow
 
 	private int assertValidAndExtractVendorId(@NonNull final List<PurchaseCandidate> purchaseCandidates)
 	{
+		if (purchaseCandidates.isEmpty())
+		{
+			throw new AdempiereException("The given purchaseCandidates list needs to be non-empty");
+		}
+
 		final ImmutableSet<Integer> distinctIds = purchaseCandidates.stream()
 				.map(PurchaseCandidate::getPurchaseCandidateId).collect(ImmutableSet.toImmutableSet());
 
@@ -124,6 +132,17 @@ public class PurchaseCandidateToOrderWorkflow
 				.placeRemotePurchaseOrder(purchaseCandidatesWithVendorId);
 		loggable.addLog("vendorId={} - placeRemotePurchaseOrder returned remotePurchaseItem={}",
 				vendorId, remotePurchaseItems);
+
+		if (remotePurchaseItems.isEmpty())
+		{
+			final I_C_BPartner vendor = load(vendorId, I_C_BPartner.class);
+
+			throw new AdempiereException(
+					"de.metas.purchasecandidate.Event_NoRemotePruchaseOrderWasPlaced",
+					new Object[] { vendor.getValue(), vendor.getName() })
+							.appendParametersToMessage()
+							.setParameter("purchaseCandidatesWithVendorId", purchaseCandidatesWithVendorId);
+		}
 
 		final List<PurchaseOrderItem> purchaseOrderItems = remotePurchaseItems.stream()
 				.filter(item -> item instanceof PurchaseOrderItem)

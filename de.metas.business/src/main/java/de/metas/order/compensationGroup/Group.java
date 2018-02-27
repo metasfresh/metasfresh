@@ -46,12 +46,16 @@ public class Group
 {
 	@Getter
 	private final GroupId groupId;
+	@Getter
+	private final int groupTemplateId;
 	private final int precision;
 	@Getter
 	private final int bpartnerId;
 	@Getter
 	private final boolean isSOTrx;
-	
+	@Getter
+	private final int flatrateConditionsId;
+
 	private final ImmutableList<GroupRegularLine> regularLines;
 	private final ArrayList<GroupCompensationLine> compensationLines;
 
@@ -60,16 +64,20 @@ public class Group
 	@Builder
 	private Group(
 			@NonNull final GroupId groupId,
+			final int groupTemplateId,
 			final int precision,
 			final int bpartnerId,
 			@NonNull final Boolean isSOTrx,
+			final int flatrateConditionsId,
 			@NonNull @Singular final List<GroupRegularLine> regularLines,
 			@NonNull @Singular final List<GroupCompensationLine> compensationLines)
 	{
 		this.groupId = groupId;
+		this.groupTemplateId = groupTemplateId;
 		this.precision = precision;
 		this.bpartnerId = bpartnerId > 0 ? bpartnerId : -1;
 		this.isSOTrx = isSOTrx;
+		this.flatrateConditionsId = flatrateConditionsId > 0 ? flatrateConditionsId : -1;
 
 		if (regularLines.isEmpty())
 		{
@@ -81,7 +89,7 @@ public class Group
 		Collections.sort(this.compensationLines, Comparator.comparing(GroupCompensationLine::getSeqNo));
 	}
 
-	private BigDecimal getRegularLinesNetAmt()
+	public BigDecimal getRegularLinesNetAmt()
 	{
 		if (_regularLinesNetAmt == null)
 		{
@@ -174,5 +182,10 @@ public class Group
 		}
 
 		compensationLines.add(compensationLine);
+	}
+	
+	public void removeAllCompensationLines()
+	{
+		compensationLines.clear();
 	}
 }
