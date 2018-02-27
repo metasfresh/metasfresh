@@ -7,12 +7,12 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
 import org.compiere.util.CCache;
@@ -50,17 +50,16 @@ import lombok.Value;
 @Repository
 public class BPartnerCreditLimitRepository
 {
-	public BigDecimal retrieveCreditLimitByBPartnerId(final int bpartnerId, final Timestamp date)
+	public BigDecimal retrieveCreditLimitByBPartner(final I_C_BPartner bpartner, final Timestamp date)
 	{
 
 		final List<I_C_BPartner_CreditLimit> bpCreditLimits = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.createQueryBuilder(I_C_BPartner_CreditLimit.class, bpartner)
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_IsApproved, true)
 				.addCompareFilter(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, Operator.LESS_OR_EQUAL, date)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.orderByDescending(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom)
 				.create()
 				.list();
 
@@ -75,10 +74,9 @@ public class BPartnerCreditLimitRepository
 		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByDateFrom = Comparator.comparing(bpCreditLimit -> bpCreditLimit.getDateFrom());
 		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByDateFromReversed = ORDERING_BPCreditLimitByDateFrom.reversed();
 
-		final Optional<I_C_BPartner_CreditLimit> limit = bpCreditLimits.stream()
-				.max(ORDERING_BPCreditLimitByTypeSeqNoReversed.thenComparing(ORDERING_BPCreditLimitByDateFromReversed));
+		bpCreditLimits.sort(ORDERING_BPCreditLimitByTypeSeqNoReversed.thenComparing(ORDERING_BPCreditLimitByDateFromReversed));
 
-		return limit.get().getAmount();
+		return bpCreditLimits.get(0).getAmount();
 	}
 
 	private final CCache<Integer, I_C_CreditLimit_Type> cache_creditLimitById = CCache.newCache(I_C_CreditLimit_Type.Table_Name + "#CreditLimitType#by#Id", 10, CCache.EXPIREMINUTES_Never);
