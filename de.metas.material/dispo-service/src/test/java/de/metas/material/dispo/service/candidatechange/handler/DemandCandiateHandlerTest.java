@@ -271,7 +271,7 @@ public class DemandCandiateHandlerTest
 				.date(NOW)
 				.build();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
+		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
 				stockRepository,
 				materialDescriptor,
 				"0");
@@ -325,7 +325,7 @@ public class DemandCandiateHandlerTest
 				.materialDescriptor(materialDescriptor)
 				.build();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
+		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
 				stockRepository,
 				materialDescriptor,
 				"0");
@@ -350,7 +350,7 @@ public class DemandCandiateHandlerTest
 
 		// second invocation with different quantity
 		final Candidate secondInvocationCanddiate = candidate.withQuantity(qty.add(BigDecimal.ONE));
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
+		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
 				stockRepository,
 				secondInvocationCanddiate.getMaterialDescriptor(),
 				"0");

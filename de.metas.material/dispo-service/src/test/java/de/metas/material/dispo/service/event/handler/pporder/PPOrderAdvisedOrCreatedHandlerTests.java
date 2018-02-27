@@ -23,13 +23,12 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.event.log.EventLogUserService;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -85,9 +84,6 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 	@Mocked
 	private PostMaterialEventService postMaterialEventService;
 
-	@Mocked
-	private EventLogUserService eventLogUserService;
-
 	private PPOrderAdvisedHandler ppOrderAdvisedHandler;
 
 	private AvailableToPromiseRepository stockRepository;
@@ -127,8 +123,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(
 				candidateChangeHandler,
-				candidateRepositoryRetrieval,
-				eventLogUserService);
+				candidateRepositoryRetrieval);
 	}
 
 	@Test

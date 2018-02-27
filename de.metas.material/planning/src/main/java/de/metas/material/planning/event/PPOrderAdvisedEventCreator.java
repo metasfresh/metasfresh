@@ -63,8 +63,7 @@ public class PPOrderAdvisedEventCreator
 
 		final PPOrder ppOrder = ppOrderPojoSupplier
 				.supplyPPOrderPojoWithLines(
-						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext),
-						SupplyRequiredHandlerUtils.mkMRPNotesCollector());
+						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext));
 
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 

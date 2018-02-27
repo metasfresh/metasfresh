@@ -3,13 +3,13 @@ package de.metas.material.cockpit.view.eventhandler;
 import java.util.Collection;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.event.log.EventLogUserService;
 import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.detailrecord.DetailDataRequestHandler;
@@ -59,16 +59,13 @@ public class ShipmentScheduleEventHandler
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final DetailDataRequestHandler detailRequestHandler;
-	private EventLogUserService eventLogUserService;
 
 	public ShipmentScheduleEventHandler(
 			@NonNull final MainDataRequestHandler dataUpdateRequestHandler,
-			@NonNull final DetailDataRequestHandler detailRequestHandler,
-			@NonNull final EventLogUserService eventLogUserService)
+			@NonNull final DetailDataRequestHandler detailRequestHandler)
 	{
 		this.detailRequestHandler = detailRequestHandler;
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
-		this.eventLogUserService = eventLogUserService;
 	}
 
 	@Override
@@ -103,9 +100,7 @@ public class ShipmentScheduleEventHandler
 		if (shipmentScheduleEvent.getOrderedQuantityDelta().signum() == 0
 				&& shipmentScheduleEvent.getReservedQuantityDelta().signum() == 0)
 		{
-			eventLogUserService.newLogEntry(this.getClass())
-					.message("Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero")
-					.createAndStore();
+			Loggables.get().addLog("Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
 			return;
 		}
 
@@ -145,10 +140,7 @@ public class ShipmentScheduleEventHandler
 					.handleRemoveDetailRequest(RemoveDetailRequest.builder()
 							.detailDataRecordIdentifier(detailIdentifier)
 							.build());
-			eventLogUserService
-					.newLogEntry(ShipmentScheduleEventHandler.class)
-					.formattedMessage("Deleted {} detail records", deletedCount)
-					.createAndStore();
+			Loggables.get().addLog("Deleted {} detail records", deletedCount);
 		}
 	}
 

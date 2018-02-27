@@ -22,7 +22,9 @@ import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
+import de.metas.material.event.ddorder.DDOrderCreatedEvent;
+import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.forecast.Forecast;
@@ -86,34 +88,61 @@ public class MaterialEventSerializerTests
 		final DDOrderRequestedEvent event = DDOrderRequestedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.dateOrdered(NOW)
-				.groupId(20)
-				.ddOrder(createDdOrder())
+				.ddOrder(createDdOrder(0))
 				.build();
-
+		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
 	@Test
-	public void ddOrderAdvisedOrCreatedEvent()
+	public void ddOrderAdvisedEvent()
 	{
-		final DDOrderAdvisedOrCreatedEvent event = DDOrderAdvisedOrCreatedEvent.builder()
+		final DDOrderAdvisedEvent event = DDOrderAdvisedEvent.builder()
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.advisedToCreateDDrder(true)
-				.ddOrder(createDdOrder())
+				.pickIfFeasible(false)
+				.ddOrder(createDdOrder(0))
 				.fromWarehouseId(30)
 				.eventDescriptor(createEventDescriptor())
 				.toWarehouseId(40)
+				.build();
+		event.validate();
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
+	public void ddOrderCreatedEvent()
+	{
+		final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
+				.ddOrder(createDdOrder(20))
+				.fromWarehouseId(30)
+				.eventDescriptor(createEventDescriptor())
+				.toWarehouseId(40)
+				.build();
+		event.validate();
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
+	public void ddOrderChangedDocStatusEvent()
+	{
+		final DDOrderDocStatusChangedEvent event = DDOrderDocStatusChangedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.ddOrderId(10)
+				.newDocStatus("newDocStatus")
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
-	private DDOrder createDdOrder()
+	private DDOrder createDdOrder(final int ddOrderId)
 	{
 		return DDOrder.builder()
 				.datePromised(SystemTime.asDayTimestamp())
-				.ddOrderId(30)
+				.ddOrderId(ddOrderId)
 				.docStatus("IP")
+				.materialDispoGroupId(35)
 				.line(DDOrderLine.builder()
 						.productDescriptor(createProductDescriptor())
 						.ddOrderLineId(21)
@@ -171,6 +200,7 @@ public class MaterialEventSerializerTests
 						.build())
 				.build();
 
+		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
@@ -182,7 +212,6 @@ public class MaterialEventSerializerTests
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.ppOrder(createPPOrder())
 				.build();
-
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
@@ -194,7 +223,6 @@ public class MaterialEventSerializerTests
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.ppOrder(createPPOrder())
 				.build();
-
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 

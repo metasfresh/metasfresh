@@ -118,8 +118,8 @@ public class RepositoryTestHelper
 				.build();
 	}
 
-	public static void setupMockedRetrieveAvailableStock(
-			@NonNull final AvailableToPromiseRepository stockRepository,
+	public static void setupMockedRetrieveAvailableToPromise(
+			@NonNull final AvailableToPromiseRepository availableToPromiseRepository,
 			@NonNull final MaterialDescriptor materialDescriptor,
 			@NonNull final String quantity)
 	{
@@ -127,7 +127,7 @@ public class RepositoryTestHelper
 		new Expectations(CandidateRepositoryRetrieval.class)
 		{{
 			final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
-			stockRepository.retrieveAvailableStockQtySum(query);
+			availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 			minTimes = 0;
 			result = new BigDecimal(quantity);
 		}}; // @formatter:on

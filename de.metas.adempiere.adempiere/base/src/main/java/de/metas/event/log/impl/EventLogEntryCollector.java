@@ -38,13 +38,12 @@ import lombok.NonNull;
 
 public class EventLogEntryCollector implements IAutoCloseable
 {
-
 	private final static ThreadLocal<EventLogEntryCollector> threadLocalCollector = new ThreadLocal<>();
 
 	@Getter
 	private final Event event;
 
-	private List<EventLogEntry> eventLogs = new ArrayList<>();
+	private final List<EventLogEntry> eventLogs = new ArrayList<>();
 
 	private EventLogEntryCollector(@NonNull final Event event)
 	{
@@ -54,6 +53,8 @@ public class EventLogEntryCollector implements IAutoCloseable
 	public static EventLogEntryCollector createThreadLocalForEvent(@NonNull final Event event)
 	{
 		assertNoCurrentLogCollector();
+
+
 
 		final EventLogEntryCollector newInstance = new EventLogEntryCollector(event);
 		threadLocalCollector.set(newInstance);

@@ -1,6 +1,4 @@
-package de.metas.material.event.pporder;
-
-import org.adempiere.util.Check;
+package de.metas.material.event.ddorder;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,13 +7,14 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
  * #%L
  * metasfresh-material-event
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,33 +34,19 @@ import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class PPOrderCreatedEvent extends AbstractPPOrderEvent
+public class DDOrderCreatedEvent extends AbstractDDOrderEvent
 {
-	public static final String TYPE = "PPOrderCreatedEvent";
+	public static final String TYPE = "DDOrderCreatedEvent";
 
 	@JsonCreator
 	@Builder
-	public PPOrderCreatedEvent(
-			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("ppOrder") final PPOrder ppOrder,
-			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	public DDOrderCreatedEvent(
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
+			@JsonProperty("ddOrder") @NonNull final DDOrder ddOrder,
+			@JsonProperty("fromWarehouseId") final int fromWarehouseId,
+			@JsonProperty("toWarehouseId") final int toWarehouseId,
+			@JsonProperty("supplyRequiredDescriptor") @NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		super(eventDescriptor, ppOrder, supplyRequiredDescriptor);
-	}
-
-	public void validate()
-	{
-		final PPOrder ppOrder = getPpOrder();
-
-		final int ppOrderId = ppOrder.getPpOrderId();
-		Check.errorIf(ppOrderId <= 0, "The given ppOrderCreatedEvent event has a ppOrder with ppOrderId={}", ppOrderId);
-
-		ppOrder.getLines().forEach(ppOrderLine -> {
-
-			final int ppOrderLineId = ppOrderLine.getPpOrderLineId();
-			Check.errorIf(ppOrderLineId <= 0,
-					"The given ppOrderCreatedEvent event has a ppOrderLine with ppOrderLineId={}; ppOrderLine={}",
-					ppOrderLineId, ppOrderLine);
-		});
+		super(eventDescriptor, ddOrder, fromWarehouseId, toWarehouseId, supplyRequiredDescriptor);
 	}
 }

@@ -2,14 +2,13 @@ package de.metas.material.dispo.service.event.handler.pporder;
 
 import java.util.Collection;
 
-import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.event.log.EventLogUserService;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
@@ -51,9 +50,6 @@ import lombok.NonNull;
 public final class PPOrderCreatedHandler
 		extends PPOrderAdvisedOrCreatedHandler<PPOrderCreatedEvent>
 {
-
-	private final EventLogUserService eventLogUserService;
-
 	/**
 	 *
 	 * @param candidateChangeHandler
@@ -61,11 +57,9 @@ public final class PPOrderCreatedHandler
 	 */
 	public PPOrderCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final EventLogUserService eventLogUserService)
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
 	{
 		super(candidateChangeHandler, candidateRepositoryRetrieval);
-		this.eventLogUserService = eventLogUserService;
 	}
 
 	@Override
@@ -77,24 +71,13 @@ public final class PPOrderCreatedHandler
 	@Override
 	public void validateEvent(@NonNull final PPOrderCreatedEvent event)
 	{
-		final PPOrder ppOrder = event.getPpOrder();
-
-		final int ppOrderId = ppOrder.getPpOrderId();
-		Check.errorIf(ppOrderId <= 0, "The given ppOrderCreatedEvent event has a ppOrder with ppOrderId={}", ppOrderId);
-
-		ppOrder.getLines().forEach(ppOrderLine -> {
-
-			final int ppOrderLineId = ppOrderLine.getPpOrderLineId();
-			Check.errorIf(ppOrderLineId <= 0,
-					"The given ppOrderCreatedEvent event has a ppOrderLine with ppOrderLineId={}; ppOrderLine={}",
-					ppOrderLineId, ppOrderLine);
-		});
+		event.validate();
 	}
 
 	@Override
 	public void handleEvent(@NonNull final PPOrderCreatedEvent event)
 	{
-		handlePPOrderAdvisedOrCreatedEvent(event);
+		handleAbstractPPOrderEvent(event);
 	}
 
 	@Override
@@ -106,9 +89,8 @@ public final class PPOrderCreatedHandler
 		final int groupId = ppOrder.getMaterialDispoGroupId();
 		if (groupId <= 0)
 		{
-			eventLogUserService.newLogEntry(this.getClass())
-					.message("The given ppOrderCreatedEvent has no groupId, so it was created by a user and not via material-dispo. Going to create new candidate records.")
-					.createAndStore();
+			Loggables.get().addLog(
+					"The given ppOrderCreatedEvent has no groupId, so it was created by a user and not via material-dispo. Going to create new candidate records.");
 			return CandidatesQuery.FALSE;
 		}
 
