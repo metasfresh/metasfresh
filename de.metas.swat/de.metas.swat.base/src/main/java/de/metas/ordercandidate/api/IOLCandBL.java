@@ -76,8 +76,6 @@ public interface IOLCandBL extends ISingletonService
 
 	void registerCustomerGroupingValuesProvider(IOLCandGroupingProvider groupingValuesProvider);
 
-	I_C_OLCand invokeOLCandCreator(PO po);
-
 	I_C_OLCand invokeOLCandCreator(PO po, IOLCandCreator olCandCreator);
 
 	/**

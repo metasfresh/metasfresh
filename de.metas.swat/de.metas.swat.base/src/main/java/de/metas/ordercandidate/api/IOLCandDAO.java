@@ -30,7 +30,6 @@ import org.adempiere.util.ISingletonService;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.model.I_C_OLCandGenerator;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 
 public interface IOLCandDAO extends ISingletonService
@@ -65,8 +64,4 @@ public interface IOLCandDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_Order_Line_Alloc> retrieveAllOlas(I_C_OLCand olCand);
-
-	I_C_OLCandGenerator retrieveOlCandCreator(Properties ctx, int tableId, String trxName);
-
-	List<I_C_OLCandGenerator> retrieveOlCandCreatorForOrg(Properties ctx, int adOrgId);
 }

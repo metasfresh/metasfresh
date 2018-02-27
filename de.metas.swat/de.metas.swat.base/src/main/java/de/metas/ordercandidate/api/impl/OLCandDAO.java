@@ -31,12 +31,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.model.I_C_OLCandGenerator;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 
 public class OLCandDAO implements IOLCandDAO
@@ -113,27 +111,5 @@ public class OLCandDAO implements IOLCandDAO
 											 // different AD_Clients
 				.setOrderBy(I_C_Order_Line_Alloc.COLUMNNAME_C_Order_Line_Alloc_ID)
 				.list(I_C_Order_Line_Alloc.class);
-	}
-
-	@Override
-	public I_C_OLCandGenerator retrieveOlCandCreator(final Properties ctx, final int tableId, final String trxName)
-	{
-		final I_C_OLCandGenerator olCandGenerator = new Query(ctx, I_C_OLCandGenerator.Table_Name, I_C_OLCandGenerator.COLUMNNAME_AD_Table_Source_ID + "=?", trxName)
-				.setParameters(tableId)
-				.setOnlyActiveRecords(true)
-				.firstOnly(I_C_OLCandGenerator.class);
-		return olCandGenerator;
-	}
-
-	@Override
-	public List<I_C_OLCandGenerator> retrieveOlCandCreatorForOrg(final Properties ctx, final int adOrgId)
-	{
-		final List<I_C_OLCandGenerator> creators = new Query(Env.getCtx(), I_C_OLCandGenerator.Table_Name, I_C_OLCandGenerator.COLUMNNAME_AD_Org_ID + "=?", null)
-				.setParameters(adOrgId)
-				.setOnlyActiveRecords(true)
-				// Note: actually, the order doesn't matter as long as we don't support more than one implementation per table
-				.setOrderBy(I_C_OLCandGenerator.COLUMNNAME_C_OLCandGenerator_ID)
-				.list(I_C_OLCandGenerator.class);
-		return creators;
 	}
 }

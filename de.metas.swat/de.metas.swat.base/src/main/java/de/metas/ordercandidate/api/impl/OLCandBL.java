@@ -45,7 +45,6 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyDAO;
@@ -55,7 +54,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.IOLCandBL;
-import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandAggregation;
 import de.metas.ordercandidate.api.OLCandAggregationRepository;
@@ -63,7 +61,6 @@ import de.metas.ordercandidate.api.OLCandOrderDefaults;
 import de.metas.ordercandidate.api.OLCandsProcessor;
 import de.metas.ordercandidate.api.RelationTypeOLCandSource;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.model.I_C_OLCandGenerator;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.spi.CompositeOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandCreator;
@@ -200,21 +197,6 @@ public class OLCandBL implements IOLCandBL
 		return model;
 	}
 
-
-	@Override
-	public I_C_OLCand invokeOLCandCreator(final PO po)
-	{
-		final IOLCandCreator olCandCreator = retrieveOlCandCreatorInstance(po.getCtx(), po.get_Table_ID(), po.get_TrxName());
-		if (olCandCreator == null)
-		{
-			final String msg = "Unable to process '" + po + "'; Missing IOLCandCreator implmentation for table '" + Services.get(IADTableDAO.class).retrieveTableName(po.get_Table_ID()) + "'";
-			OLCandBL.logger.warn(msg);
-			throw new AdempiereException(msg);
-		}
-
-		return invokeOLCandCreator(po, olCandCreator);
-	}
-
 	@Override
 	public I_C_OLCand invokeOLCandCreator(final PO po, final IOLCandCreator olCandCreator)
 	{
@@ -228,7 +210,7 @@ public class OLCandBL implements IOLCandBL
 
 		if (olCand == null)
 		{
-			OLCandBL.logger.info(olCandCreator + " returned null for " + po + "; Nothing to do.");
+			logger.info("{} returned null for {}; Nothing to do.", olCandCreator, po);
 			return null;
 		}
 
@@ -240,12 +222,6 @@ public class OLCandBL implements IOLCandBL
 		Services.get(IWFExecutionFactory.class).notifyActivityPerformed(po, olCand); // 03745
 
 		return olCand;
-	}
-
-	private IOLCandCreator retrieveOlCandCreatorInstance(final Properties ctx, final int tableId, final String trxName)
-	{
-		final I_C_OLCandGenerator olCandGenerator = Services.get(IOLCandDAO.class).retrieveOlCandCreator(ctx, tableId, trxName);
-		return Util.getInstance(IOLCandCreator.class, olCandGenerator.getOCGeneratorImpl());
 	}
 
 	@Override
