@@ -136,7 +136,7 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 		}
 
 		// used to make sure no order is added more than once
-		final Map<Integer, I_C_Order> orderId2order = new LinkedHashMap<Integer, I_C_Order>();
+		final Map<Integer, I_C_Order> orderId2order = new LinkedHashMap<>();
 
 		// we shall allow only those partner which are set in delivery days and that are vendors and have purchase orders
 		for (final I_M_DeliveryDay dd : deliveryDays)
@@ -145,8 +145,15 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 			{
 				continue; // nothing to do
 			}
+			
+			// skip generic delivery days
+			final I_C_BPartner_Location bpLocation = dd.getC_BPartner_Location();
+			if(bpLocation == null)
+			{
+				continue;
+			}
 
-			final List<I_C_Order> purchaseOrders = orderDAO.retrievePurchaseOrdersForPickup(dd.getC_BPartner_Location(), dd.getDeliveryDate(), dd.getDeliveryDateTimeMax());
+			final List<I_C_Order> purchaseOrders = orderDAO.retrievePurchaseOrdersForPickup(bpLocation, dd.getDeliveryDate(), dd.getDeliveryDateTimeMax());
 			if (purchaseOrders.isEmpty())
 			{
 				continue; // nothing to do
