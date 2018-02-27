@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.modelvalidator;
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,15 +15,14 @@ package de.metas.ordercandidate.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -63,7 +64,7 @@ public class OrderCandidate extends AbstractModuleInterceptor
 
 		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandPriceValidator());
 		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandUOMValidator());
-		//task 09623
+		// task 09623
 		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandLocationValidator());
 
 		Services.get(IAttributeSetInstanceAwareFactoryService.class).registerFactoryForTableName(I_C_OLCand.Table_Name, new OLCandASIAwareFactory()); // task 08803
@@ -82,6 +83,12 @@ public class OrderCandidate extends AbstractModuleInterceptor
 		{
 			ensureDataDestExists();
 		}
+	}
+
+	@Override
+	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
+	{
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.ordercandidate.callout.C_OLCandAggAndOrder());
 	}
 
 	private void ensureDataDestExists()
