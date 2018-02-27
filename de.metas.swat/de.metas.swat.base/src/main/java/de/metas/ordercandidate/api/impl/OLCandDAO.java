@@ -29,7 +29,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -42,14 +41,6 @@ import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 
 public class OLCandDAO implements IOLCandDAO
 {
-	@Override
-	public List<I_C_OLCand> retrieveReferencing(final Object model)
-	{
-		final PO po = InterfaceWrapperHelper.getPO(model);
-
-		return retrieveReferencing(po.getCtx(), po.get_TableName(), po.get_ID(), po.get_TrxName());
-	}
-
 	@Override
 	public List<I_C_OLCand> retrieveReferencing(final Properties ctx, final String tableName, final int recordId, final String trxName)
 	{

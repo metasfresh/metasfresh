@@ -38,15 +38,6 @@ public interface IOLCandDAO extends ISingletonService
 	<T extends I_C_OLCand> List<T> retrieveOLCands(I_C_OrderLine ol, Class<T> clazz);
 
 	/**
-	 * Loads the order line candidates whose AD_Table_ID and Record_ID columns match the given model.
-	 * 
-	 * @param model
-	 * @return matched order candidates
-	 * @see #retrieveReferencing(Properties, String, int, String)
-	 */
-	List<I_C_OLCand> retrieveReferencing(Object model);
-
-	/**
 	 * Loads the order line candidates whose AD_Table_ID and Record_ID columns match the given parameters.
 	 * 
 	 * @param ctx
