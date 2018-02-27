@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.compiere.apps.form.fileimport;
+package org.compiere.impexp;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
 
@@ -49,6 +50,23 @@ public class FileImportReader
 	private static final char TEXT_DELIMITER = '"';
 	private static final int MAX_LOADED_LINES = 100;
 
+	private static final class SingleLineProcessor implements LineProcessor<List<String>>
+	{
+		private final List<String> lines = new ArrayList<>();
+
+		@Override
+		public boolean processLine(final String line) throws IOException
+		{
+			lines.add(line);
+			return true;
+		}
+
+		@Override
+		public List<String> getResult()
+		{
+			return lines;
+		}
+	}
 	final private static class MultiLineProcessor implements LineProcessor<List<String>>
 	{
 		private boolean openQuote = false;
@@ -130,8 +148,12 @@ public class FileImportReader
 	 */
 	public List<String> readMultiLines(@NonNull final File file, @NonNull final Charset charset) throws IOException
 	{
-		final List<String> loadedDataLines = Files.readLines(file, charset, new MultiLineProcessor());
-		return loadedDataLines;
+		return Files.readLines(file, charset, new MultiLineProcessor());
+	}
+
+	public List<String> readMultiLines(@NonNull final byte[] data, @NonNull final Charset charset) throws IOException
+	{
+		return ByteSource.wrap(data).asCharSource(charset).readLines(new MultiLineProcessor());
 	}
 
 	/**
@@ -144,26 +166,14 @@ public class FileImportReader
 	 */
 	public List<String> readRegularLines(@NonNull final File file, @NonNull final Charset charset) throws IOException
 	{
-		final List<String> loadedDataLines = new ArrayList<>();
-
-		Files.readLines(file, charset, new LineProcessor<Void>()
-		{
-			@Override
-			public boolean processLine(final String line) throws IOException
-			{
-				loadedDataLines.add(line);
-				return true;
-			}
-
-			@Override
-			public Void getResult()
-			{
-				return null;
-			}
-		});
-
-		return loadedDataLines;
+		return Files.readLines(file, charset, new SingleLineProcessor());
 	}
+	
+	public List<String> readRegularLines(@NonNull final byte[] data, @NonNull final Charset charset) throws IOException
+	{
+		return ByteSource.wrap(data).asCharSource(charset).readLines(new SingleLineProcessor());
+	}
+
 
 	/**
 	 * Build the preview from the loaded lines
