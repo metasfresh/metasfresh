@@ -30,5 +30,6 @@ CREATE OR REPLACE VIEW M_Shipment_Statistics_V AS
     
  WHERE 
 	io.IsSOTRX = 'Y' 
+	AND io.DocStatus = 'CO'
 
 ;
