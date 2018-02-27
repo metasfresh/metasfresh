@@ -95,7 +95,8 @@ class BPartnerStats implements IBPartnerStats
 		return soCreditStatus;
 	}
 
-	protected I_C_BPartner_Stats getC_BPartner_Stats()
+	@Override
+	public I_C_BPartner_Stats getC_BPartner_Stats()
 	{
 		return stats;
 	}
