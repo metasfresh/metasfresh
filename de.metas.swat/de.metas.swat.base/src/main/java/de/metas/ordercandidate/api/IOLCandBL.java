@@ -36,7 +36,6 @@ import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
-import de.metas.relation.grid.ModelRelationTarget;
 
 /**
  * @author RC
@@ -54,18 +53,6 @@ public interface IOLCandBL extends ISingletonService
 	void process(I_C_OLCandProcessor processor);
 
 	String mkRelationTypeInternalName(I_C_OLCandProcessor processor);
-
-	/**
-	 * Method creates a <code>ModelRelationTarget</code> instance that contains the basic data required to add an explicit relation between the given <code>processor</code> and a set of
-	 * {@link I_C_OLCand}s.
-	 *
-	 * @param processor
-	 * @param sourceWindowId
-	 * @param sourceTabName
-	 * @param whereClause
-	 * @return
-	 */
-	ModelRelationTarget mkModelRelationTarget(I_C_OLCandProcessor processor, int sourceWindowId, String sourceTabName, String whereClause);
 
 	/**
 	 * Registers a listener to be informed about events regarding order line candidates.

@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -42,17 +41,13 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyDAO;
-import de.metas.impex.api.IInputDataSourceDAO;
-import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
-import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandAggregation;
@@ -66,7 +61,6 @@ import de.metas.ordercandidate.spi.CompositeOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
-import de.metas.relation.grid.ModelRelationTarget;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 
@@ -150,51 +144,6 @@ public class OLCandBL implements IOLCandBL
 	public String mkRelationTypeInternalName(final I_C_OLCandProcessor processor)
 	{
 		return I_C_OLCandProcessor.Table_Name + "_" + processor.getC_OLCandProcessor_ID() + "<=>" + I_C_OLCand.Table_Name;
-	}
-
-	@Override
-	public ModelRelationTarget mkModelRelationTarget(
-			final I_C_OLCandProcessor processor,
-			final int sourceWindowId,
-			final String sourceTabName,
-			String whereClause)
-	{
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(processor);
-		final ModelRelationTarget model = new ModelRelationTarget();
-		// configure the dialog's model parameters
-
-		model.setAdTableSourceId(adTableDAO.retrieveTableId(I_C_OLCandProcessor.Table_Name));
-		model.setRecordSourceId(processor.getC_OLCandProcessor_ID());
-
-		// filter by AD_DataDestination_ID
-		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, ITrx.TRXNAME_None);
-
-		if (!Check.isEmpty(whereClause, true))
-		{
-			whereClause += " AND ";
-		}
-		whereClause += I_C_OLCand.COLUMNNAME_AD_DataDestination_ID + " = " + dataDest.getAD_InputDataSource_ID();
-
-		model.setTargetWhereClause(whereClause);
-
-		model.setAdWindowSourceId(sourceWindowId);
-
-		model.setAdTableTargetId(adTableDAO.retrieveTableId(I_C_OLCand.Table_Name));
-
-		final MTable olCandTable = MTable.get(ctx, I_C_OLCand.Table_Name);
-		model.setAdWindowTargetId(olCandTable.getAD_Window_ID());
-
-		model.setRelationTypeInternalName(mkRelationTypeInternalName(processor));
-
-		model.setRelationTypeName(
-				(sourceTabName == null ? "" : sourceTabName + " ")
-						+ processor.getName()
-						+ "<=>"
-						+ olCandTable.getName());
-
-		return model;
 	}
 
 	@Override
