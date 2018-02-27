@@ -422,7 +422,6 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 				// Set defaults (backward compatibility with existing tests)
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
-				.setAllowConsolidateInvoiceOnBPartner(true)
 				.setDiscount(0)
 				.setC_Tax(tax_Default);
 	}

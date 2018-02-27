@@ -45,12 +45,14 @@ import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.invoicecandidate.ExcludeSubscriptionInOutLines;
 import de.metas.contracts.invoicecandidate.ExcludeSubscriptionOrderLines;
 import de.metas.contracts.model.I_I_Flatrate_Term;
+import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.ordercandidate.api.IOLCandBL;
 
 public class MainValidator extends AbstractModuleInterceptor
@@ -114,6 +116,9 @@ public class MainValidator extends AbstractModuleInterceptor
 
 		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
 		ExcludeSubscriptionInOutLines.registerFilterForInvoiceCandidateCreation();
+
+		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
+		invoiceCandidateListeners.addListener(FlatrateTermInvoiceCandidateListener.instance);
 	}
 
 	@Override
@@ -141,7 +146,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
 
 		// 09869
-		engine.addModelValidator(new de.metas.contracts.interceptor.M_ShipmentSchedule(), client);
+		engine.addModelValidator(M_ShipmentSchedule.INSTANCE, client);
 	}
 
 }

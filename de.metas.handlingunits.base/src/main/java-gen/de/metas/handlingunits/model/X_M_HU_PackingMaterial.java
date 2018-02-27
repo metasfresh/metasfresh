@@ -15,7 +15,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1569342263L;
+	private static final long serialVersionUID = 227179655L;
 
     /** Standard Constructor */
     public X_M_HU_PackingMaterial (Properties ctx, int M_HU_PackingMaterial_ID, String trxName)
@@ -261,12 +261,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	}
 
 	/** Set Geschlossen.
-		@param IsClosed 
-		In diesem Feld kann gesteuert werden, ob beim Verpacken das Gesamtvolumen verändert wird oder gleich bleibt.
-Beispiel
-Beim Verpacken einer offenen Palette ändert sich das Gesamtvolumen.
-Beim Verpacken einer geschlossenen Kiste ändert sich das Gesamtvolumen nicht.
-	  */
+		@param IsClosed Geschlossen	  */
 	@Override
 	public void setIsClosed (boolean IsClosed)
 	{
@@ -274,11 +269,7 @@ Beim Verpacken einer geschlossenen Kiste ändert sich das Gesamtvolumen nicht.
 	}
 
 	/** Get Geschlossen.
-		@return In diesem Feld kann gesteuert werden, ob beim Verpacken das Gesamtvolumen verändert wird oder gleich bleibt.
-Beispiel
-Beim Verpacken einer offenen Palette ändert sich das Gesamtvolumen.
-Beim Verpacken einer geschlossenen Kiste ändert sich das Gesamtvolumen nicht.
-	  */
+		@return Geschlossen	  */
 	@Override
 	public boolean isClosed () 
 	{

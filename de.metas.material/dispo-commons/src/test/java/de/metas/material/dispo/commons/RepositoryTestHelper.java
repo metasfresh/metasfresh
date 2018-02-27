@@ -7,22 +7,20 @@ import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.ObjectUtils;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialDescriptor.DateOperator;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 import mockit.Expectations;
 
@@ -55,9 +53,9 @@ public class RepositoryTestHelper
 
 	public final Candidate laterStockCandidate;
 
-	public RepositoryTestHelper(@NonNull final CandidateRepositoryCommands candidateRepositoryCommands)
+	public RepositoryTestHelper(@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands)
 	{
-		materialDescriptorOfStockCandidate = MaterialDescriptor.builderForCompleteDescriptor()
+		materialDescriptorOfStockCandidate = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("11"))
@@ -73,13 +71,12 @@ public class RepositoryTestHelper
 								.materialDescriptor(materialDescriptorOfStockCandidate)
 								.build());
 
-		final MaterialDescriptor laterMaterialDescriptor = MaterialDescriptor.builderForCompleteDescriptor()
+		final MaterialDescriptor laterMaterialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("10"))
 				.date(AFTER_NOW)
 				.build();
-		assertThat(laterMaterialDescriptor.isComplete()).isTrue();
 
 		laterStockCandidate = candidateRepositoryCommands
 				.addOrUpdateOverwriteStoredSeqNo(
@@ -93,41 +90,44 @@ public class RepositoryTestHelper
 
 	public CandidatesQuery mkQueryForStockUntilDate(@NonNull final Date date)
 	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.productId(PRODUCT_ID)
+				.warehouseId(WAREHOUSE_ID)
+				.date(date)
+				.dateOperator(DateOperator.BEFORE_OR_AT)
+				.build();
+
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
-				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.productDescriptor(ProductDescriptor.forProductIdOnly(PRODUCT_ID))
-						.warehouseId(WAREHOUSE_ID)
-						.date(date)
-						.dateOperator(DateOperator.BEFORE_OR_AT)
-						.build())
+				.materialDescriptorQuery(materialDescriptorQuery)
 				.build();
 	}
 
 	public CandidatesQuery mkQueryForStockFromDate(final Date date)
 	{
+		final MaterialDescriptorQuery materialDescriptiorQuery = MaterialDescriptorQuery.builder()
+				.productId(PRODUCT_ID)
+				.warehouseId(WAREHOUSE_ID)
+				.date(date)
+				.dateOperator(DateOperator.AT_OR_AFTER)
+				.build();
+
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
-				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.productDescriptor(ProductDescriptor.forProductIdOnly(PRODUCT_ID))
-						.warehouseId(WAREHOUSE_ID)
-						.date(date)
-						.dateOperator(DateOperator.AT_OR_AFTER)
-						.build())
+				.materialDescriptorQuery(materialDescriptiorQuery)
 				.build();
 	}
 
 	public static void setupMockedRetrieveAvailableStock(
-			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@Nullable final MaterialDescriptor materialDescriptor,
+			@NonNull final AvailableToPromiseRepository stockRepository,
+			@NonNull final MaterialDescriptor materialDescriptor,
 			@NonNull final String quantity)
 	{
-
 		// @formatter:off
 		new Expectations(CandidateRepositoryRetrieval.class)
 		{{
-			final MaterialDescriptor materialDescriptorToUse = ObjectUtils.firstNonNull(materialDescriptor, (MaterialDescriptor)any);
-			candidateRepository.retrieveAvailableStock(materialDescriptorToUse);
+			final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
+			stockRepository.retrieveAvailableStockQtySum(query);
 			minTimes = 0;
 			result = new BigDecimal(quantity);
 		}}; // @formatter:on

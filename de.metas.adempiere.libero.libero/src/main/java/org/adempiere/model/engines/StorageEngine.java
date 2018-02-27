@@ -58,11 +58,12 @@ import org.compiere.model.MWarehouse;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
-import org.eevolution.exceptions.LiberoException;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
+import de.metas.product.IStorageBL;
 
 /**
  * Storage Engine
@@ -103,6 +104,7 @@ public class StorageEngine
 			// Reservation ASI
 			int reservationAttributeSetInstance_ID = o_M_AttributeSetInstance_ID;
 			//
+			final IStorageBL storageBL = Services.get(IStorageBL.class);
 			if (docLine.getM_AttributeSetInstance_ID() == 0)
 			{
 				IInventoryAllocation mas[] = StorageEngine.getMA(docLine);
@@ -114,7 +116,7 @@ public class StorageEngine
 						QtyMA = QtyMA.negate();
 
 					// Update Storage - see also VMatch.createMatchRecord
-					if (!MStorage.add(docLine.getCtx(), M_Warehouse_ID,
+					if (!storageBL.add(docLine.getCtx(), M_Warehouse_ID,
 							docLine.getM_Locator_ID(),
 							docLine.getM_Product_ID(),
 							ma.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
@@ -147,7 +149,7 @@ public class StorageEngine
 					Qty = Qty.negate();
 
 				// Fallback: Update Storage - see also VMatch.createMatchRecord
-				if (!MStorage.add(docLine.getCtx(), M_Warehouse_ID,
+				if (!storageBL.add(docLine.getCtx(), M_Warehouse_ID,
 						docLine.getM_Locator_ID(),
 						docLine.getM_Product_ID(),
 						docLine.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,

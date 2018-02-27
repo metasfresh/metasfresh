@@ -56,6 +56,9 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Locks all the given shipments schedules into one big lock, then creates and enqueues workpackages, splitting off locks.
@@ -96,30 +99,28 @@ public class ShipmentScheduleEnqueuer
 	 * @param adPinstanceId may be 0.
 	 * @param completeShipments
 	 */
-	public Result createWorkpackages(
-			final int adPInstanceId,
-			final IQueryFilter<I_M_ShipmentSchedule> queryFilters,
-			final boolean useQtyPickedRecords,
-			final boolean completeShipments)
+	public Result createWorkpackages(final ShipmentScheduleWorkPackageParameters workPackageParameters)
 	{
 		final String trxNameInitial = getTrxNameInitial();
 
 		final Mutable<Result> result = new Mutable<>();
+
+		IQueryFilter<I_M_ShipmentSchedule> queryFilters = workPackageParameters.getQueryFilters();
+		int adPInstanceId = workPackageParameters.getAdPInstanceId();
 
 		trxManager.run(trxNameInitial, new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
+
 				final ILock mainLock = acquireLock(adPInstanceId, queryFilters);
 				try (final ILockAutoCloseable l = mainLock.asAutocloseableOnTrxClose(localTrxName))
 				{
+
 					final Result result0 = createWorkpackages0(
 							PlainContextAware.newWithTrxName(_ctx, localTrxName),
-							queryFilters,
-							useQtyPickedRecords,
-							completeShipments,
-							adPInstanceId,
+							workPackageParameters,
 							mainLock);
 
 					result.setValue(result0);
@@ -131,15 +132,12 @@ public class ShipmentScheduleEnqueuer
 	}
 
 	private Result createWorkpackages0(final IContextAware localCtx,
-			final IQueryFilter<I_M_ShipmentSchedule> queryFilters,
-			final boolean useQtyPickedRecords,
-			final boolean completeShipments,
-			final int adPinstanceId,
+			final ShipmentScheduleWorkPackageParameters workPackageParameters,
 			final ILock mainLock)
 	{
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class, localCtx.getCtx(), ITrx.TRXNAME_None)
-				.filter(queryFilters);
+				.filter(workPackageParameters.queryFilters);
 
 		queryBuilder.orderBy()
 				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey, Direction.Ascending, Nulls.Last)
@@ -161,7 +159,7 @@ public class ShipmentScheduleEnqueuer
 
 		final IWorkPackageBlockBuilder blockBuilder = queue
 				.newBlock()
-				.setAD_PInstance_Creator_ID(adPinstanceId)
+				.setAD_PInstance_Creator_ID(workPackageParameters.adPInstanceId)
 				.setContext(localCtx.getCtx());
 		IWorkPackageBuilder workpackageBuilder = null;
 		String lastHeaderAggregationKey = null;
@@ -201,8 +199,9 @@ public class ShipmentScheduleEnqueuer
 
 				workpackageBuilder
 						.parameters()
-						.setParameter(GenerateInOutFromShipmentSchedules.PARAM_IsUseQtyPicked, useQtyPickedRecords)
-						.setParameter(GenerateInOutFromShipmentSchedules.PARAM_IsCompleteShipments, completeShipments);
+						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsUseQtyPicked, workPackageParameters.useQtyPickedRecords)
+						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.completeShipments)
+						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday);
 
 				// Create a new locker which will grab the locked invoice candidates from 'mainLock'
 				// and it will move them to a new owner which is created per workpackage
@@ -313,4 +312,21 @@ public class ShipmentScheduleEnqueuer
 			skippedPackagesCount++;
 		}
 	}
+
+	@Builder
+	@Value
+	public static class ShipmentScheduleWorkPackageParameters
+	{
+		public static final String PARAM_IsUseQtyPicked = "IsUseQtyPicked";
+		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
+		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
+
+		private int adPInstanceId;
+		@NonNull
+		private IQueryFilter<I_M_ShipmentSchedule> queryFilters;
+		private boolean useQtyPickedRecords;
+		private boolean completeShipments;
+		private boolean isShipmentDateToday;
+	}
+
 }

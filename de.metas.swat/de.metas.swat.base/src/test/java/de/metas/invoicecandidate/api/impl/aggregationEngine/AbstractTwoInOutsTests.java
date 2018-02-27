@@ -66,12 +66,10 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 
 	abstract protected boolean config_IsSOTrx();
 
-	abstract protected boolean config_IsAllowConsolidateInvoice();
-
 	@Override
 	protected List<I_C_Invoice_Candidate> step_createInvoiceCandidates()
 	{
-		return test_2StepShipment_CommonSetup_Step01(config_IsSOTrx(), config_IsAllowConsolidateInvoice(), config_GetPriceEntered_Override());
+		return test_2StepShipment_CommonSetup_Step01(config_IsSOTrx(), config_GetPriceEntered_Override());
 	}
 
 	@Override

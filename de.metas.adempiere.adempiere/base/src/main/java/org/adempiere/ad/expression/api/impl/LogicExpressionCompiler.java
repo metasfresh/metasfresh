@@ -80,7 +80,7 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 		// there can be values which really need to contain white spaces
 		final StringTokenizer st = new StringTokenizer(expressionStr, LOGIC_OPERATORS, true);
 
-		final List<String> tokens = new ArrayList<String>();
+		final List<String> tokens = new ArrayList<>();
 		while (st.hasMoreTokens())
 		{
 			final String token = st.nextToken();
@@ -183,8 +183,7 @@ public class LogicExpressionCompiler implements ILogicExpressionCompiler
 					+ "'@context@=value' where operand could be one of '" + TUPLE_OPERATORS + "' => " + tupleExpressionStr);
 		}
 
-		final Boolean constantValue = null; // consider it not constant for now
-		final LogicTuple tuple = new LogicTuple(constantValue, tokenizer.nextToken(), tokenizer.nextToken(), tokenizer.nextToken());
+		final LogicTuple tuple = LogicTuple.parseFrom(tokenizer.nextToken(), tokenizer.nextToken(), tokenizer.nextToken());
 		return tuple;
 	}
 

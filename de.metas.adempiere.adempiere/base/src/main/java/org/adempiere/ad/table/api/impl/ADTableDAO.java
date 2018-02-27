@@ -246,10 +246,13 @@ public class ADTableDAO implements IADTableDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, table.getAD_Table_ID())
+				.orderBy()
+				.addColumnAscending(I_AD_Column.COLUMNNAME_AD_Column_ID)
+				.endOrderBy()
 				.create()
 				.list();
 	}
-	
+
 	@Override
 	public I_AD_Table retrieveDocumentTableTemplate(final I_AD_Table targetTable)
 	{

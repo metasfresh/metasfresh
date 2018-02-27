@@ -326,6 +326,29 @@ public interface I_AD_UI_Element
     public static final String COLUMNNAME_IsAdvancedField = "IsAdvancedField";
 
 	/**
+	 * Set Allow filtering.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAllowFiltering (boolean IsAllowFiltering);
+
+	/**
+	 * Get Allow filtering.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAllowFiltering();
+
+    /** Column definition for IsAllowFiltering */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsAllowFiltering = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsAllowFiltering", null);
+    /** Column name IsAllowFiltering */
+    public static final String COLUMNNAME_IsAllowFiltering = "IsAllowFiltering";
+
+	/**
 	 * Set Displayed.
 	 * Determines, if this field is displayed
 	 *

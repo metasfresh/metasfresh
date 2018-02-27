@@ -25,7 +25,9 @@ package de.metas.order;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.interfaces.I_C_OrderLine;
@@ -51,6 +53,13 @@ public interface IOrderLineBL extends ISingletonService
 	 * @return
 	 */
 	<T extends I_C_OrderLine> T createOrderLine(org.compiere.model.I_C_Order order, final Class<T> orderLineClass);
+
+	/**
+	 * Set Defaults from Order. Does not set C_Order_ID. Also invoked by the createOrderLine methods
+	 *
+	 * @param order order
+	 */
+	void setOrder(org.compiere.model.I_C_OrderLine ol, I_C_Order order);
 
 	void setPrices(I_C_OrderLine ol);
 
@@ -109,6 +118,10 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, int precision);
 
+	BigDecimal calculateDiscountFromPrices(BigDecimal priceEntered, BigDecimal priceActual, int precision);
+
+	BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(BigDecimal priceActual, BigDecimal discount, int precision);
+
 	/**
 	 * Retrieves the {@code M_ProductPrice} for the given {@code orderLine}'s {@code M_Product_ID} and {@code M_PriceList_Version_ID} and returns that pp's {@code C_TaxCategory_ID}.
 	 * <p>
@@ -122,10 +135,12 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param orderLine
 	 * @return C_TaxCategory_ID
 	 * @see org.adempiere.util.Check#assume(boolean, String, Object...)
+	 *
+	 * @throws ProductNotOnPriceListException if the product's pricing info could not be retrieved.
 	 */
 	int getC_TaxCategory_ID(org.compiere.model.I_C_OrderLine orderLine);
 
-	void updatePrices(I_C_OrderLine orderLine);
+	void updatePrices(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Sets the product ID and optionally also the UOM.
@@ -211,7 +226,7 @@ public interface IOrderLineBL extends ISingletonService
 
 	/**
 	 * Copy the details from the original order line into the new order line of the counter document
-	 * 
+	 *
 	 * @param line
 	 * @param fromLine
 	 */
@@ -222,7 +237,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * For the time being, make sure the packaging material lines are not copied.
 	 * The reason for this is that the packing instructions are not the same for both orgs and we cannot use them inter-org.
 	 * Later in the life of the counter document the packing material lines will be created based on the correct data from the new org.
-	 * 
+	 *
 	 * @param fromLine
 	 * @return true if the line shall be copied and false if not
 	 */

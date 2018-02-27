@@ -16,7 +16,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.AttributesKey;
 
 /*
  * #%L
@@ -57,7 +57,7 @@ public class PP_Product_PlanningTest
 		final I_M_Attribute attr1 = attributesTestHelper.createM_Attribute("test1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		attr1.setIsStorageRelevant(true);
 		save(attr1);
-		final I_M_AttributeValue attributeValue = attributesTestHelper.createM_AttributeValue(attr1, "testValue1");
+		final I_M_AttributeValue attributeValue1 = attributesTestHelper.createM_AttributeValue(attr1, "testValue1");
 
 		final I_M_Attribute attr2 = attributesTestHelper.createM_Attribute("test2", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		attr2.setIsStorageRelevant(true);
@@ -68,7 +68,7 @@ public class PP_Product_PlanningTest
 		save(asi);
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue2);
 
 		final I_PP_Product_Planning productPlanning = newInstance(I_PP_Product_Planning.class);
@@ -77,7 +77,7 @@ public class PP_Product_PlanningTest
 
 		PP_Product_Planning.INSTANCE.updateStorageAttributesKey(productPlanning);
 
-		assertThat(productPlanning.getStorageAttributesKey())
-				.isEqualTo("testValue1" + ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER + "testValue2");
+		final AttributesKey storageAttributesKeyExpected = AttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
+		assertThat(productPlanning.getStorageAttributesKey()).isEqualTo(storageAttributesKeyExpected.getAsString());
 	}
 }

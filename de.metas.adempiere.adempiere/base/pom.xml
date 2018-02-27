@@ -5,8 +5,8 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>10.0.0</version>
-		<relativePath>../../de.metas.parent/pom.xml</relativePath>
+		<version>[1,10.0.0]</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.adempiere.adempiere</groupId>
@@ -14,32 +14,36 @@
 	<version>10.0.0</version>
 	<packaging>jar</packaging>
 
+	<properties>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+	</properties>
+
 	<dependencies>
 
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.monitoring</groupId>
 			<artifactId>de.metas.monitoring</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<!-- used to build html strings in some legacy code such as GridWindow.java -->
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
 			<!-- NOTE: we need this for MG to be able to track dependencies -->
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -195,7 +199,7 @@
 		<dependency>
 			<groupId>de.metas.report</groupId>
 			<artifactId>de.metas.report.jasper.commons</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>xml-apis</groupId>
@@ -265,8 +269,8 @@
 			<version>4.0</version>
 		</dependency>
 
+		<!-- needed for org.adempiere.plaf.UIDefaultsSerializer -->
 		<dependency>
-			<!-- Initially was needed for org.adempiere.plaf.UIDefaultsSerializer but in future we would use it for many other things -->
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>
@@ -288,6 +292,12 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>

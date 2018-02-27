@@ -636,6 +636,56 @@ public interface I_I_Product
     public static final String COLUMNNAME_ISO_Code = "ISO_Code";
 
 	/**
+	 * Set Verkauft.
+	 * Die Organisation verkauft dieses Produkt
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsSold (boolean IsSold);
+
+	/**
+	 * Get Verkauft.
+	 * Die Organisation verkauft dieses Produkt
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isSold();
+
+    /** Column definition for IsSold */
+    public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_IsSold = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "IsSold", null);
+    /** Column name IsSold */
+    public static final String COLUMNNAME_IsSold = "IsSold";
+
+	/**
+	 * Set Lagerhaltig.
+	 * Die Organisation hat dieses Produkt auf Lager
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsStocked (boolean IsStocked);
+
+	/**
+	 * Get Lagerhaltig.
+	 * Die Organisation hat dieses Produkt auf Lager
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isStocked();
+
+    /** Column definition for IsStocked */
+    public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_IsStocked = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "IsStocked", null);
+    /** Column name IsStocked */
+    public static final String COLUMNNAME_IsStocked = "IsStocked";
+
+	/**
 	 * Set Version Preisliste.
 	 * Bezeichnet eine einzelne Version der Preisliste
 	 *
@@ -748,6 +798,29 @@ public interface I_I_Product
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set M_ProductPlanningSchema_Selector.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ProductPlanningSchema_Selector (java.lang.String M_ProductPlanningSchema_Selector);
+
+	/**
+	 * Get M_ProductPlanningSchema_Selector.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getM_ProductPlanningSchema_Selector();
+
+    /** Column definition for M_ProductPlanningSchema_Selector */
+    public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_M_ProductPlanningSchema_Selector = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "M_ProductPlanningSchema_Selector", null);
+    /** Column name M_ProductPlanningSchema_Selector */
+    public static final String COLUMNNAME_M_ProductPlanningSchema_Selector = "M_ProductPlanningSchema_Selector";
+
+	/**
 	 * Set Hersteller.
 	 * Manufacturer of the Product
 	 *
@@ -846,6 +919,60 @@ public interface I_I_Product
     public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_Order_Pack = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "Order_Pack", null);
     /** Column name Order_Pack */
     public static final String COLUMNNAME_Order_Pack = "Order_Pack";
+
+	/**
+	 * Set Package UOM.
+	 * UOM of the package
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPackage_UOM_ID (int Package_UOM_ID);
+
+	/**
+	 * Get Package UOM.
+	 * UOM of the package
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPackage_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getPackage_UOM();
+
+	public void setPackage_UOM(org.compiere.model.I_C_UOM Package_UOM);
+
+    /** Column definition for Package_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Product, org.compiere.model.I_C_UOM> COLUMN_Package_UOM_ID = new org.adempiere.model.ModelColumn<I_I_Product, org.compiere.model.I_C_UOM>(I_I_Product.class, "Package_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name Package_UOM_ID */
+    public static final String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
+
+	/**
+	 * Set Package Size.
+	 * Size of a package
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPackageSize (java.math.BigDecimal PackageSize);
+
+	/**
+	 * Get Package Size.
+	 * Size of a package
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPackageSize();
+
+    /** Column definition for PackageSize */
+    public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_PackageSize = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "PackageSize", null);
+    /** Column name PackageSize */
+    public static final String COLUMNNAME_PackageSize = "PackageSize";
 
 	/**
 	 * Set Preis gültig.
@@ -1042,6 +1169,29 @@ public interface I_I_Product
     public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_ProductCategory_Value = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "ProductCategory_Value", null);
     /** Column name ProductCategory_Value */
     public static final String COLUMNNAME_ProductCategory_Value = "ProductCategory_Value";
+
+	/**
+	 * Set Product Manufacturer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProductManufacturer (java.lang.String ProductManufacturer);
+
+	/**
+	 * Get Product Manufacturer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getProductManufacturer();
+
+    /** Column definition for ProductManufacturer */
+    public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_ProductManufacturer = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "ProductManufacturer", null);
+    /** Column name ProductManufacturer */
+    public static final String COLUMNNAME_ProductManufacturer = "ProductManufacturer";
 
 	/**
 	 * Set Produktart.

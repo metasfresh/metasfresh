@@ -104,7 +104,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				wpNotified.setC_Queue_WorkPackage_ID(workPackage.getC_Queue_WorkPackage_ID());
 				wpNotified.setBachWorkpackageSeqNo(workPackage.getBatchEnqueuedCount());
 				wpNotified.setIsNotified(false);
-				Services.get(IQueueDAO.class).saveInLocalTrx(wpNotified);
+				Services.get(IQueueDAO.class).save(wpNotified);
 			}
 		}
 	}
@@ -173,7 +173,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 	private final void save(final I_C_Async_Batch asyncBatch)
 	{
-		Services.get(IQueueDAO.class).saveInLocalTrx(asyncBatch);
+		Services.get(IQueueDAO.class).save(asyncBatch);
 	}
 
 	@Override
@@ -199,7 +199,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		// Make sure that the watch processor is not in the same batch (because it will affect the counter which we are checking...)
 		queueWorkpackage.setC_Async_Batch(null);
-		Services.get(IQueueDAO.class).saveInLocalTrx(queueWorkpackage);
+		Services.get(IQueueDAO.class).save(queueWorkpackage);
 
 		queue.enqueueElement(queueWorkpackage, asyncBatch);
 		queue.markReadyForProcessing(queueWorkpackage);

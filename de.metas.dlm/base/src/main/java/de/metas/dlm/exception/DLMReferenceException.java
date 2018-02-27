@@ -1,10 +1,9 @@
 package de.metas.dlm.exception;
 
+import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.exceptions.DBException;
 
 import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 
 /*
  * #%L
@@ -39,11 +38,11 @@ public class DLMReferenceException extends DBException
 	private static final long serialVersionUID = -4557251479983766242L;
 
 	private final boolean referencingTableHasDLMLevel;
-	private final TableReferenceDescriptor tableReferenceDescriptor;
+	private final TableRecordIdDescriptor tableReferenceDescriptor;
 
 	@VisibleForTesting
 	public DLMReferenceException(final Throwable cause,
-			final TableReferenceDescriptor tableReferenceDescriptor,
+			final TableRecordIdDescriptor tableReferenceDescriptor,
 			final boolean referencingTableHasDLMLevel)
 	{
 		super("Another record references the given record", cause);
@@ -57,7 +56,7 @@ public class DLMReferenceException extends DBException
 		return referencingTableHasDLMLevel;
 	}
 
-	public TableReferenceDescriptor getTableReferenceDescriptor()
+	public TableRecordIdDescriptor getTableReferenceDescriptor()
 	{
 		return tableReferenceDescriptor;
 	}

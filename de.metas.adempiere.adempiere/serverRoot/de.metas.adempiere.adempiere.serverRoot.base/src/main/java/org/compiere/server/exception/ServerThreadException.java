@@ -65,7 +65,7 @@ public class ServerThreadException extends AdempiereException
 		final String causeMessage = cause == null ? "unknown cause" : cause.getLocalizedMessage();
 
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		return msgBL.getMsg(getCtx(),
+		return msgBL.getMsg(getADLanguage(),
 				SERVER_THREAD_EXCEPTION_MESSAGE,
 				new Object[] { adempiereProcessorName, causeMessage });
 	}

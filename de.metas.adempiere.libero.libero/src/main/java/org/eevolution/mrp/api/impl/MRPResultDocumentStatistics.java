@@ -24,7 +24,8 @@ package org.eevolution.mrp.api.impl;
 
 
 import org.adempiere.util.Check;
-import org.eevolution.exceptions.LiberoException;
+
+import de.metas.material.planning.pporder.LiberoException;
 
 final class MRPResultDocumentStatistics
 {

@@ -34,7 +34,6 @@ import org.compiere.model.X_C_DocType;
 import org.eevolution.LiberoConfiguration;
 import org.eevolution.LiberoTestConfiguration;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -54,6 +53,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.document.engine.IDocument;
 import de.metas.material.planning.MaterialPlanningConfiguration;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 
 /**
  * This class tests {@link IPPOrderBOMBL} in convert with {@link IPPOrderBOMDAO}.

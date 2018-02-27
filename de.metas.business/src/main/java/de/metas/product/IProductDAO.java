@@ -54,9 +54,12 @@ public interface IProductDAO extends ISingletonService
 
 	/**
 	 * Retrieve all the products from all the organizations that have the same mapping as the given product
-	 * 
+	 *
 	 * @param product
 	 * @return list of the products if found, empty list otherwise
 	 */
 	List<de.metas.product.model.I_M_Product> retrieveAllMappedProducts(I_M_Product product);
+
+	I_M_Product retrieveProductByValue(Properties ctx, String value);
+
 }

@@ -60,6 +60,7 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 	{
 		engine.addModelValidator(new ESR_Import(), client);
 		engine.addModelValidator(new ESR_ImportLine(), client);
+		engine.addModelValidator(new C_PaySelection(), client);
 	}
 
 	public void registerFactories()

@@ -25,17 +25,21 @@ package de.metas.adempiere.service;
 
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
 
 public interface IBPartnerOrgBL extends ISingletonService
 {
 	I_C_BPartner retrieveLinkedBPartner(I_AD_Org org);
+
+	I_C_BPartner retrieveLinkedBPartner(int adOrgId);
 
 	/**
 	 * Returns the default location of the organization.
@@ -47,6 +51,12 @@ public interface IBPartnerOrgBL extends ISingletonService
 	 * @return
 	 */
 	I_C_Location retrieveOrgLocation(Properties ctx, int orgId, String trxName);
+	
+	default I_C_Location retrieveOrgLocation(final int orgId)
+	{
+		return retrieveOrgLocation(Env.getCtx(), orgId, ITrx.TRXNAME_None);
+	}
+
 
 	/**
 	 * 
@@ -67,5 +77,4 @@ public interface IBPartnerOrgBL extends ISingletonService
 	 * @return
 	 */
 	I_AD_User retrieveUserInChargeOrNull(Properties ctx, int orgId, String trxName);
-
 }

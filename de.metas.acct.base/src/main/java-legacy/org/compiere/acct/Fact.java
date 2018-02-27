@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -21,24 +21,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
+import org.compiere.acct.FactTrxLines.FactTrxLinesType;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MFactAcct;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyConversionContext;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Accounting Fact
@@ -59,8 +60,6 @@ public final class Fact
 	 */
 	public Fact(final Doc document, final MAcctSchema acctSchema, final String defaultPostingType)
 	{
-		super();
-
 		Check.assumeNotNull(document, "document not null");
 		m_doc = document;
 
@@ -103,6 +102,14 @@ public final class Fact
 
 	/** Lines */
 	private List<FactLine> m_lines = new ArrayList<>();
+
+	private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+
+	public Fact setFactTrxLinesStrategy(@NonNull final FactTrxStrategy factTrxLinesStrategy)
+	{
+		this.factTrxLinesStrategy = factTrxLinesStrategy;
+		return this;
+	}
 
 	/**
 	 * Dispose
@@ -289,7 +296,7 @@ public final class Fact
 	 */
 	protected BigDecimal getSourceBalance()
 	{
-		BigDecimal result = Env.ZERO;
+		BigDecimal result = BigDecimal.ZERO;
 		for (int i = 0; i < m_lines.size(); i++)
 		{
 			FactLine line = m_lines.get(i);
@@ -322,10 +329,10 @@ public final class Fact
 
 		// Amount
 		if (diff.signum() < 0)   // negative balance => DR
-			line.setAmtSource(m_doc.getC_Currency_ID(), diff.abs(), Env.ZERO);
+			line.setAmtSource(m_doc.getC_Currency_ID(), diff.abs(), BigDecimal.ZERO);
 		else
 			// positive balance => CR
-			line.setAmtSource(m_doc.getC_Currency_ID(), Env.ZERO, diff);
+			line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, diff);
 
 		// Convert
 		line.convert();
@@ -369,7 +376,7 @@ public final class Fact
 	{
 		if (segmentType.equals(MAcctSchemaElement.ELEMENTTYPE_Organization))
 		{
-			HashMap<Integer, BigDecimal> map = new HashMap<Integer, BigDecimal>();
+			HashMap<Integer, BigDecimal> map = new HashMap<>();
 			// Add up values by key
 			for (int i = 0; i < m_lines.size(); i++)
 			{
@@ -433,7 +440,7 @@ public final class Fact
 		// Org
 		if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_Organization))
 		{
-			HashMap<Integer, Balance> map = new HashMap<Integer, Balance>();
+			HashMap<Integer, Balance> map = new HashMap<>();
 			// Add up values by key
 			for (int i = 0; i < m_lines.size(); i++)
 			{
@@ -471,12 +478,12 @@ public final class Fact
 						if (difference.isReversal())
 						{
 							line.setAccount(m_acctSchema, m_acctSchema.getDueTo_Acct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), Env.ZERO, difference.getPostBalance());
+							line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, difference.getPostBalance());
 						}
 						else
 						{
 							line.setAccount(m_acctSchema, m_acctSchema.getDueFrom_Acct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), difference.getPostBalance(), Env.ZERO);
+							line.setAmtSource(m_doc.getC_Currency_ID(), difference.getPostBalance(), BigDecimal.ZERO);
 						}
 					}
 					else
@@ -484,12 +491,12 @@ public final class Fact
 						if (difference.isReversal())
 						{
 							line.setAccount(m_acctSchema, m_acctSchema.getDueFrom_Acct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), difference.getPostBalance(), Env.ZERO);
+							line.setAmtSource(m_doc.getC_Currency_ID(), difference.getPostBalance(), BigDecimal.ZERO);
 						}
 						else
 						{
 							line.setAccount(m_acctSchema, m_acctSchema.getDueTo_Acct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), Env.ZERO, difference.getPostBalance());
+							line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, difference.getPostBalance());
 						}
 					}
 					line.convert();
@@ -529,7 +536,7 @@ public final class Fact
 	 */
 	protected BigDecimal getAcctBalance()
 	{
-		BigDecimal result = Env.ZERO;
+		BigDecimal result = BigDecimal.ZERO;
 		for (int i = 0; i < m_lines.size(); i++)
 		{
 			FactLine line = m_lines.get(i);
@@ -553,9 +560,9 @@ public final class Fact
 				+ " - " + toString());
 		FactLine line = null;
 
-		BigDecimal BSamount = Env.ZERO;
+		BigDecimal BSamount = BigDecimal.ZERO;
 		FactLine BSline = null;
-		BigDecimal PLamount = Env.ZERO;
+		BigDecimal PLamount = BigDecimal.ZERO;
 		FactLine PLline = null;
 
 		//
@@ -568,7 +575,7 @@ public final class Fact
 			{
 				continue;
 			}
-			
+
 			final BigDecimal amt = l.getAcctBalance().abs();
 			if (l.isBalanceSheet() && amt.compareTo(BSamount) > 0)
 			{
@@ -591,11 +598,11 @@ public final class Fact
 			line.setAccount(m_acctSchema, m_acctSchema.getCurrencyBalancing_Acct());
 
 			// Amount
-			line.setAmtSource(m_doc.getC_Currency_ID(), Env.ZERO, Env.ZERO);
+			line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, BigDecimal.ZERO);
 			line.convert();
 			// Accounted
-			BigDecimal drAmt = Env.ZERO;
-			BigDecimal crAmt = Env.ZERO;
+			BigDecimal drAmt = BigDecimal.ZERO;
+			BigDecimal crAmt = BigDecimal.ZERO;
 			boolean isDR = diff.signum() < 0;
 			BigDecimal difference = diff.abs();
 			if (isDR)
@@ -605,11 +612,11 @@ public final class Fact
 			// Switch sides
 			boolean switchIt = BSline != null
 					&& ((BSline.isDrSourceBalance() && isDR)
-					|| (!BSline.isDrSourceBalance() && !isDR));
+							|| (!BSline.isDrSourceBalance() && !isDR));
 			if (switchIt)
 			{
-				drAmt = Env.ZERO;
-				crAmt = Env.ZERO;
+				drAmt = BigDecimal.ZERO;
+				crAmt = BigDecimal.ZERO;
 				if (isDR)
 					crAmt = difference.negate();
 				else
@@ -656,14 +663,14 @@ public final class Fact
 		for (int i = 0; i < m_lines.size(); i++)
 		{
 			final FactLine line = m_lines.get(i);
-			
+
 			final MAccount account = line.getAccount();
 			if (account == null)
 			{
 				log.warn("No Account for " + line);
 				return false;
 			}
-			
+
 			final I_C_ElementValue ev = account.getAccount();
 			if (ev == null)
 			{
@@ -695,7 +702,7 @@ public final class Fact
 	{
 		final List<FactLine> linesAfterDistribution = FactGLDistributor.newInstance()
 				.distribute(m_lines);
-		
+
 		m_lines = linesAfterDistribution;
 		// TODO
 	}
@@ -737,12 +744,56 @@ public final class Fact
 	public final void save(final String trxName)
 	{
 		m_trxName = trxName;
-		// save Lines
-		for (FactLine fl : m_lines)
+
+		factTrxLinesStrategy
+				.createFactTrxLines(m_lines)
+				.forEach(this::save);
+	}
+
+	private void save(final FactTrxLines factTrxLines)
+	{
+		final String trxName = m_trxName;
+
+		//
+		// Case: 1 debit line, one or more credit lines
+		if (factTrxLines.getType() == FactTrxLinesType.Debit)
 		{
-			InterfaceWrapperHelper.save(fl, trxName);
+			final FactLine drLine = factTrxLines.getDebitLine();
+			InterfaceWrapperHelper.save(drLine, trxName);
+
+			factTrxLines.forEachCreditLine(crLine -> {
+				crLine.setCounterpart_Fact_Acct_ID(drLine.getFact_Acct_ID());
+				InterfaceWrapperHelper.save(crLine, trxName);
+			});
+
 		}
-	}   // commit
+		//
+		// Case: 1 credit line, one or more debit lines
+		else if (factTrxLines.getType() == FactTrxLinesType.Credit)
+		{
+			final FactLine crLine = factTrxLines.getCreditLine();
+			InterfaceWrapperHelper.save(crLine, trxName);
+
+			factTrxLines.forEachDebitLine(drLine -> {
+				drLine.setCounterpart_Fact_Acct_ID(crLine.getFact_Acct_ID());
+				InterfaceWrapperHelper.save(drLine, trxName);
+			});
+		}
+		//
+		// Case: no debit lines, no credit lines
+		else if (factTrxLines.getType() == FactTrxLinesType.EmptyOrZero)
+		{
+			// nothing to do
+		}
+		else
+		{
+			throw new AdempiereException("Unknown type: " + factTrxLines.getType());
+		}
+
+		//
+		// also save the zero lines, if they are here
+		factTrxLines.forEachZeroLine(zeroLine -> InterfaceWrapperHelper.save(zeroLine, trxName));
+	}
 
 	/**
 	 * Get Transaction
@@ -776,9 +827,9 @@ public final class Fact
 		}
 
 		/** DR Amount */
-		private BigDecimal DR = Env.ZERO;
+		private BigDecimal DR = BigDecimal.ZERO;
 		/** CR Amount */
-		private BigDecimal CR = Env.ZERO;
+		private BigDecimal CR = BigDecimal.ZERO;
 
 		/**
 		 * Add
@@ -869,12 +920,11 @@ public final class Fact
 		private BigDecimal amtSourceCr;
 
 		private BigDecimal qty = null;
-		
+
 		// Other dimensions
 		private Integer AD_Org_ID;
 		private Integer C_BPartner_ID;
 		private Integer C_Tax_ID;
-		
 
 		private FactLineBuilder(final Fact fact)
 		{
@@ -927,7 +977,7 @@ public final class Fact
 			{
 				line.setSubLine_ID(subLine_ID);
 			}
-			
+
 			// Account
 			line.setPostingType(getPostingType());
 			line.setAccount(getC_AcctSchema(), account);
@@ -974,7 +1024,7 @@ public final class Fact
 			{
 				line.setAmtAcct(docLine.getAmtAcctDr(), docLine.getAmtAcctCr());
 			}
-			
+
 			//
 			// Set the other dimensions
 			final Integer adOrgId = getAD_Org_ID();
@@ -1047,13 +1097,13 @@ public final class Fact
 		{
 			return docLine;
 		}
-		
+
 		public final FactLineBuilder setSubLine_ID(final int subLineId)
 		{
 			this.subLineId = subLineId;
 			return this;
 		}
-		
+
 		private final Integer getSubLine_ID()
 		{
 			return subLineId;
@@ -1107,19 +1157,19 @@ public final class Fact
 			this.currencyId = currencyId;
 			return this;
 		}
-		
+
 		private final int getC_Currency_ID()
 		{
 			return currencyId;
 		}
-		
+
 		public FactLineBuilder setCurrencyConversionCtx(ICurrencyConversionContext currencyConversionCtx)
 		{
 			assertNotBuild();
 			this.currencyConversionCtx = currencyConversionCtx;
 			return this;
 		}
-		
+
 		private final ICurrencyConversionContext getCurrencyConversionCtx()
 		{
 			return currencyConversionCtx;
@@ -1167,7 +1217,7 @@ public final class Fact
 			}
 			return this;
 		}
-		
+
 		public FactLineBuilder setAD_Org_ID(Integer adOrgId)
 		{
 			assertNotBuild();
@@ -1178,7 +1228,7 @@ public final class Fact
 		public FactLineBuilder setAD_Org_ID_IfValid(final int adOrgId)
 		{
 			assertNotBuild();
-			if(adOrgId > 0 && adOrgId != Env.CTXVALUE_AD_Org_ID_System)
+			if (adOrgId > 0 && adOrgId != Env.CTXVALUE_AD_Org_ID_System)
 			{
 				setAD_Org_ID(adOrgId);
 			}
@@ -1189,7 +1239,7 @@ public final class Fact
 		{
 			return AD_Org_ID;
 		}
-		
+
 		public FactLineBuilder setC_BPartner_ID(Integer bpartnerId)
 		{
 			assertNotBuild();
@@ -1205,21 +1255,21 @@ public final class Fact
 				setC_BPartner_ID(bpartnerId);
 			}
 			return this;
-			
+
 		}
 
 		private Integer getC_BPartner_ID()
 		{
 			return C_BPartner_ID;
 		}
-		
+
 		public FactLineBuilder setC_Tax_ID(Integer taxId)
 		{
 			assertNotBuild();
 			this.C_Tax_ID = taxId;
 			return this;
 		}
-		
+
 		private Integer getC_Tax_ID()
 		{
 			return C_Tax_ID;

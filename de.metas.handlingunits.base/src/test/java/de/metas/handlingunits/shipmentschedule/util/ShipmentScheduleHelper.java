@@ -33,8 +33,8 @@ import org.compiere.model.I_C_UOM;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.expectations.HUTransactionExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
-import de.metas.handlingunits.hutransaction.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
+import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -61,7 +61,7 @@ public class ShipmentScheduleHelper
 		this.helper = helper;
 	}
 
-	public void assertValidTransaction(final IHUTransaction trx,
+	public void assertValidTransaction(final IHUTransactionCandidate trx,
 			final I_M_ShipmentSchedule schedule,
 			final BigDecimal trxQtyExpected,
 			final BigDecimal scheduleQtyPickedExpected)
@@ -136,15 +136,15 @@ public class ShipmentScheduleHelper
 	 * @param dummyItem
 	 * @return created counterpart transactions
 	 */
-	public List<IHUTransaction> createHUTransactionDummyCounterparts(
-			final List<IHUTransaction> trxs,
+	public List<IHUTransactionCandidate> createHUTransactionDummyCounterparts(
+			final List<IHUTransactionCandidate> trxs,
 			final I_M_HU_Item dummyItem)
 	{
-		final List<IHUTransaction> trxsFinal = new ArrayList<IHUTransaction>();
-		for (final IHUTransaction trx : trxs)
+		final List<IHUTransactionCandidate> trxsFinal = new ArrayList<IHUTransactionCandidate>();
+		for (final IHUTransactionCandidate trx : trxs)
 		{
 			// Create counterpart
-			final HUTransaction trxCounterpart = new HUTransaction(
+			final HUTransactionCandidate trxCounterpart = new HUTransactionCandidate(
 					trx.getReferencedModel(), // referenced object
 					dummyItem, // M_HU_Item
 					dummyItem, // VHU M_HU_Item

@@ -5,10 +5,11 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
-import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
+import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.util.CacheMgt.ResetMode;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
@@ -52,8 +53,8 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 	private static final Logger logger = LogManager.getLogger(CacheInvalidationRemoteHandler.class);
 
 	private static final Topic TOPIC_CacheInvalidation = Topic.builder()
-			.setName("de.metas.cache.CacheInvalidationRemoteHandler")
-			.setType(Type.REMOTE)
+			.name("de.metas.cache.CacheInvalidationRemoteHandler")
+			.type(Type.REMOTE)
 			.build();
 
 	private static final String EVENT_PROPERTY = CacheInvalidateRequest.class.getSimpleName();
@@ -169,9 +170,8 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 		//
 		// Reset cache for TableName/Record_ID
-		logger.debug("Reseting cache for {} because we got remote event: {}", request, event);
-		final boolean broadcast = false; // don't broadcast it anymore because else we would introduce recursion
-		CacheMgt.get().reset(request, broadcast);
+		logger.debug("Reseting local cache for {} because we got remote event: {}", request, event);
+		CacheMgt.get().reset(request, ResetMode.LOCAL); // don't broadcast it anymore because else we would introduce recursion
 	}
 
 	private final Event createEventFromRequest(@NonNull final CacheInvalidateMultiRequest request)

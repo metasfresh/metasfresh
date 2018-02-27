@@ -89,8 +89,8 @@ public class OrderLineShipmentScheduleHandler implements IShipmentScheduleHandle
 
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(newSched, orderLine);
 
-		Check.assume(newSched.getAD_Client_ID() == orderLine.getAD_Client_ID(),
-				"The new M_ShipmentSchedule haas the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
+		Check.errorUnless(newSched.getAD_Client_ID() == orderLine.getAD_Client_ID(),
+				"The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
 
 		// 04290
 		newSched.setM_Warehouse(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine));
@@ -254,13 +254,6 @@ public class OrderLineShipmentScheduleHandler implements IShipmentScheduleHandle
 	@Override
 	public IDeliverRequest createDeliverRequest(final I_M_ShipmentSchedule sched)
 	{
-		return new IDeliverRequest()
-		{
-			@Override
-			public BigDecimal getQtyOrdered()
-			{
-				return sched.getC_OrderLine().getQtyOrdered();
-			}
-		};
+		return () -> sched.getC_OrderLine().getQtyOrdered();
 	}
 }

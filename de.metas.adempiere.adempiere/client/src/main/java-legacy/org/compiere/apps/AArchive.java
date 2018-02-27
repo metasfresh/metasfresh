@@ -20,28 +20,28 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+
+import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
+
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.util.Services;
+import org.compiere.apps.form.ArchiveViewer;
+import org.compiere.apps.form.FormFrame;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.swing.CMenuItem;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
-import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
-
-import org.compiere.apps.form.ArchiveViewer;
-import org.compiere.apps.form.FormFrame;
-import org.compiere.model.MBPartner;
-import org.compiere.swing.CMenuItem;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
 
 /**
  *	Archive Button Consequences.
  *	Popup Menu
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: AArchive.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
  */
@@ -61,12 +61,12 @@ public class AArchive implements ActionListener
 		m_Record_ID = Record_ID;
 		getArchives(invoker);
 	}	//	AArchive
-	
+
 	/**	The Table						*/
 	private int			m_AD_Table_ID;
 	/** The Record						*/
 	private int			m_Record_ID;
-	
+
 	/**	The Popup						*/
 	private JPopupMenu 	m_popup = new JPopupMenu("ArchiveMenu");
 	private CMenuItem 	m_reports = null;
@@ -74,10 +74,12 @@ public class AArchive implements ActionListener
 	private CMenuItem 	m_documents = null;
 	/** Where Clause					*/
 	StringBuffer 		m_where = null;
-	
+
+	private final int bpartnerTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_BPartner.Table_Name);
+
 	/**	Logger	*/
 	private static Logger	log	= LogManager.getLogger(AArchive.class);
-	
+
 	/**
 	 * 	Display Request Options - New/Existing.
 	 * 	@param invoker button
@@ -86,20 +88,24 @@ public class AArchive implements ActionListener
 	{
 		int reportCount = 0;
 		int documentCount = 0;
-		
+
 		m_where = new StringBuffer();
 		m_where.append("(AD_Table_ID=").append(m_AD_Table_ID)
 			.append(" AND Record_ID=").append(m_Record_ID)
 			.append(")");
 		//	Get all for BP
-		if (m_AD_Table_ID == MBPartner.Table_ID)
+		if (m_AD_Table_ID == bpartnerTableId)
+		{
 			m_where.append(" OR C_BPartner_ID=").append(m_Record_ID);
+		}
 		//
 		StringBuffer sql = new StringBuffer("SELECT IsReport, COUNT(*) FROM AD_Archive ")
 			.append("WHERE (AD_Table_ID=? AND Record_ID=?) ");
-		if (m_AD_Table_ID == MBPartner.Table_ID)
+		if (m_AD_Table_ID == bpartnerTableId)
+		{
 			sql.append(" OR C_BPartner_ID=?");
-		sql.append(" GROUP BY IsReport"); 
+		}
+		sql.append(" GROUP BY IsReport");
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -107,15 +113,21 @@ public class AArchive implements ActionListener
 			pstmt = DB.prepareStatement (sql.toString(), null);
 			pstmt.setInt(1, m_AD_Table_ID);
 			pstmt.setInt(2, m_Record_ID);
-			if (m_AD_Table_ID == MBPartner.Table_ID)
+			if (m_AD_Table_ID == bpartnerTableId)
+			{
 				pstmt.setInt(3, m_Record_ID);
+			}
 			rs = pstmt.executeQuery ();
 			while (rs.next ())
 			{
 				if ("Y".equals(rs.getString(1)))
+				{
 					reportCount += rs.getInt(2);
+				}
 				else
+				{
 					documentCount += rs.getInt(2);
+				}
 			}
 		}
 		catch (Exception e)
@@ -131,37 +143,42 @@ public class AArchive implements ActionListener
 		//
 		if (documentCount > 0)
 		{
-			m_documents = new CMenuItem(Msg.getMsg(Env.getCtx(), "ArchivedDocuments") 
+			m_documents = new CMenuItem(Msg.getMsg(Env.getCtx(), "ArchivedDocuments")
 				+ " (" + documentCount + ")");
 			m_popup.add(m_documents).addActionListener(this);
 		}
 		if (reportCount > 0)
 		{
-			m_reports = new CMenuItem(Msg.getMsg(Env.getCtx(), "ArchivedReports") 
+			m_reports = new CMenuItem(Msg.getMsg(Env.getCtx(), "ArchivedReports")
 				+ " (" + reportCount + ")");
 			m_popup.add(m_reports).addActionListener(this);
 		}
 		//	All Reports
 		String sql1 = "SELECT COUNT(*) FROM AD_Archive WHERE AD_Table_ID=? AND IsReport='Y'";
-		int allReports = DB.getSQLValue(null, sql1, m_AD_Table_ID); 
+		int allReports = DB.getSQLValue(null, sql1, m_AD_Table_ID);
 		if (allReports > 0)
 		{
-			m_reportsAll = new CMenuItem(Msg.getMsg(Env.getCtx(), "ArchivedReportsAll") 
+			m_reportsAll = new CMenuItem(Msg.getMsg(Env.getCtx(), "ArchivedReportsAll")
 				+ " (" + reportCount + ")");
 			m_popup.add(m_reportsAll).addActionListener(this);
 		}
-		
+
 		if (documentCount == 0 && reportCount == 0 && allReports == 0)
+		{
 			m_popup.add(Msg.getMsg(Env.getCtx(), "ArchivedNone"));
+		}
 		//
 		if (invoker.isShowing())
-			m_popup.show(invoker, 0, invoker.getHeight());	//	below button
+		{
+			m_popup.show(invoker, 0, invoker.getHeight());
+		}	//	below button
 	}	//	getZoomTargets
-	
+
 	/**
 	 * 	Listner
 	 *	@param e event
 	 */
+	@Override
 	public void actionPerformed (ActionEvent e)
 	{
 		int AD_Form_ID = 118;	//	ArchiveViewer
@@ -174,11 +191,17 @@ public class AArchive implements ActionListener
 		ArchiveViewer av = (ArchiveViewer)ff.getFormPanel();
 		//
 		if (e.getSource() == m_documents)
+		{
 			av.query(false, m_AD_Table_ID, m_Record_ID);
+		}
 		else if (e.getSource() == m_reports)
+		{
 			av.query(true, m_AD_Table_ID, m_Record_ID);
-		else	//	all Reports
+		}
+		else
+		{
 			av.query(true, m_AD_Table_ID, 0);
+		}
 		//
 		AEnv.addToWindowManager(ff);
 		ff.pack();

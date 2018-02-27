@@ -2,6 +2,7 @@ package de.metas.dlm.partitioner;
 
 import java.util.List;
 
+import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.connection.ITemporaryConnectionCustomizer;
@@ -9,7 +10,6 @@ import de.metas.dlm.Partition;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
 import de.metas.dlm.partitioner.config.PartitionConfig;
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 
 /*
  * #%L
@@ -54,7 +54,7 @@ public interface IPartitionerService extends ISingletonService
 	 * @param descriptor
 	 * @return
 	 */
-	PartitionConfig augmentPartitionerConfig(PartitionConfig config, List<TableReferenceDescriptor> descriptor);
+	PartitionConfig augmentPartitionerConfig(PartitionConfig config, List<TableRecordIdDescriptor> descriptor);
 
 	/**
 	 * Create a connection customizer that can (and should) be registered via {@link de.metas.connection.IConnectionCustomizerService#registerTemporaryCustomizer(ITemporaryConnectionCustomizer)}

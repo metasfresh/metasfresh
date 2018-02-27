@@ -10,12 +10,12 @@ package org.eevolution.mrp.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,7 +40,7 @@ import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
@@ -203,7 +203,7 @@ public class MRPDAO implements IMRPDAO
 				.addNotEqualsFilter(I_M_Product.COLUMNNAME_LowLevel, null); // LowLevel is not null
 
 		final BigDecimal lowLevelMaxBD = queryBuilder.create()
-				.aggregate(I_M_Product.COLUMNNAME_LowLevel, IQuery.AGGREGATE_MAX, BigDecimal.class);
+				.aggregate(I_M_Product.COLUMNNAME_LowLevel, Aggregate.MAX, BigDecimal.class);
 
 		final int lowLevelMax = lowLevelMaxBD == null ? -1 : lowLevelMaxBD.intValueExact();
 

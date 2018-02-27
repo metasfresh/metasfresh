@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -46,7 +47,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Tax;
@@ -148,7 +148,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private Properties ctx;
 
 		private I_C_Invoice createdInvoice = null;
-		private final List<I_AD_Note> notifications = new ArrayList<I_AD_Note>();
+		private final List<I_AD_Note> notifications = new ArrayList<>();
 
 		private Throwable t;
 
@@ -201,7 +201,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoiceBL.renumberLines(lines, 10);
 
 			// task 08926: on invoice creation
-			final List<I_C_Invoice_Candidate> allCands = new ArrayList<I_C_Invoice_Candidate>();
+			final List<I_C_Invoice_Candidate> allCands = new ArrayList<>();
 
 			for (final IInvoiceCandAggregate aggregated : header.getLines())
 			{
@@ -240,7 +240,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 
 			// collect all affected invoice candidates
-			final List<I_C_Invoice_Candidate> allCandidates = new ArrayList<I_C_Invoice_Candidate>();
+			final List<I_C_Invoice_Candidate> allCandidates = new ArrayList<>();
 			for (final IInvoiceCandAggregate aggregate : header.getLines())
 			{
 				allCandidates.addAll(aggregate.getAllCands());
@@ -299,17 +299,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			else
 			{
 				invoice = InterfaceWrapperHelper.create(ctx, I_C_Invoice.class, trxName);
-
-				// task 07242: setting the payment term from the given bill partner. Note that C_BP_Group has no payment term columns, so we don't need a BL to fall back to C_BP_Group
-				final I_C_BPartner billPartner = InterfaceWrapperHelper.create(ctx, invoiceHeader.getBill_BPartner_ID(), org.compiere.model.I_C_BPartner.class, ITrx.TRXNAME_None);
-				if (header.isSOTrx())
-				{
-					invoice.setC_PaymentTerm_ID(billPartner.getC_PaymentTerm_ID());
-				}
-				else
-				{
-					invoice.setC_PaymentTerm_ID(billPartner.getPO_PaymentTerm_ID());
-				}
+				invoice.setC_PaymentTerm_ID(invoiceHeader.getC_PaymentTerm_ID());
 
 				invoice.setAD_Org_ID(invoiceHeader.getAD_Org_ID());
 				setC_DocType(invoice, invoiceHeader);
@@ -329,8 +319,17 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setAD_User_ID(invoiceHeader.getBill_User_ID());
 			invoice.setC_Currency_ID(invoiceHeader.getC_Currency_ID()); // 03805
 
-			invoice.setDescription(invoiceHeader.getDescription());
-			invoice.setDescriptionBottom(invoiceHeader.getDescriptionBottom());
+			//
+			// Set Description and DescriptionBottom.
+			// Don't override if already set (e.g. copied from C_DocType).
+			if (Check.isEmpty(invoice.getDescription(), true))
+			{
+				invoice.setDescription(invoiceHeader.getDescription());
+			}
+			if (Check.isEmpty(invoice.getDescriptionBottom(), true))
+			{
+				invoice.setDescriptionBottom(invoiceHeader.getDescriptionBottom());
+			}
 
 			invoice.setIsSOTrx(header.isSOTrx());
 
@@ -357,21 +356,20 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// a non-local trx
 			Check.assume(!Check.isEmpty(trxName), "Param 'trxName' is not empty");
 
-			final List<I_C_InvoiceLine> createdLines = new ArrayList<I_C_InvoiceLine>();
+			final List<I_C_InvoiceLine> createdLines = new ArrayList<>();
 
 			//
 			// Set of InvoiceLineRWs which were already processed.
 			// Used to avoid processing (i.e. creating invoice line) an IInvoiceLineRW more then once.
 			// NOTE: we are not relying on IInvoiceLineRW's equals() method because it could be that they "look" the same but they are not.
-			final Set<IInvoiceLineRW> processedLines = new IdentityHashSet<IInvoiceLineRW>();
+			final Set<IInvoiceLineRW> processedLines = new IdentityHashSet<>();
 
 			for (final IInvoiceCandAggregate aggregate : aggregates)
 			{
 				// In case of a problem, this two variables are used to hand the problematic candidates and the
 				// exception over to the TrxRunnable's doFinally() method for logging
-				final List<I_C_Invoice_Candidate> errorCandidates = new ArrayList<I_C_Invoice_Candidate>();
-				final AdempiereException[] errorException =
-					{ null };
+				final List<I_C_Invoice_Candidate> errorCandidates = new ArrayList<>();
+				final AdempiereException[] errorException = { null };
 
 				//
 				// The invoice lines from 'aggregate' are generated in a common trx runner.
@@ -415,12 +413,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getC_DocTypeInvoice();
 			if (invoiceHeaderDocType != null)
 			{
-				invoice.setC_DocTypeTarget_ID(invoiceHeaderDocType.getC_DocType_ID());
+				invoiceBL.setDocTypeTargetIdAndUpdateDescription(invoice, invoiceHeaderDocType.getC_DocType_ID());
 				invoice.setIsSOTrx(invoiceHeaderDocType.isSOTrx());
 			}
 			else
 			{
-				invoiceBL.setC_DocTypeTarget(invoice, invoiceHeaderDocBaseType);
+				invoiceBL.setDocTypeTargetId(invoice, invoiceHeaderDocBaseType);
 			}
 		}
 
@@ -439,7 +437,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			final boolean invoice_IsCreditMemo = invoiceBL.isCreditMemo(invoiceDocBaseType);
 			if (invoiceHeader_IsCreditMemo && !invoice_IsCreditMemo)
 			{
-				invoiceBL.setC_DocTypeTarget(invoice, invoiceHeaderDocBaseType);
+				invoiceBL.setDocTypeTargetId(invoice, invoiceHeaderDocBaseType);
 			}
 		}
 	}
@@ -460,7 +458,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
 				final String trxName)
 		{
-			createdLines = new ArrayList<I_C_InvoiceLine>();
+			createdLines = new ArrayList<>();
 
 			this.invoice = invoice;
 			this.errorCandidates = errorCandidates;
@@ -636,7 +634,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 							Services.get(ITrxManager.class)
 									.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-									.onAfterCommit(() -> set_QtyAndPriceOverrideToNull(invoiceCandidate_ID));
+									.newEventListener(TrxEventTiming.AFTER_COMMIT)
+									.registerWeakly(false) // register "hard", because that's how it was before
+									.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+									.registerHandlingMethod(localTrx -> set_QtyAndPriceOverrideToNull(invoiceCandidate_ID));
 						}
 					}
 
@@ -922,9 +923,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			loggable.addLog("Caught exception " + error + " with meesage: " + error.getLocalizedMessage());
 
-			final List<I_AD_Note> result = new ArrayList<I_AD_Note>();
+			final List<I_AD_Note> result = new ArrayList<>();
 
-			final Map<Integer, List<I_C_Invoice_Candidate>> userId2cands = new HashMap<Integer, List<I_C_Invoice_Candidate>>();
+			final Map<Integer, List<I_C_Invoice_Candidate>> userId2cands = new HashMap<>();
 
 			//
 			// find out which user should be notified about which affected candidate
@@ -939,7 +940,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.get(userInChargeId);
 				if (candsOfUserId == null)
 				{
-					candsOfUserId = new ArrayList<I_C_Invoice_Candidate>();
+					candsOfUserId = new ArrayList<>();
 					userId2cands.put(userInChargeId, candsOfUserId);
 				}
 				candsOfUserId.add(ic);
@@ -979,8 +980,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					final String noteMsg = msgBL.getMsg(
 							adLanguage,
 							MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P,
-							new Object[]
-							{ candidates.toString() });
+							new Object[] { candidates.toString() });
 					note.setTextMsg(noteMsg);
 					InterfaceWrapperHelper.save(note);
 					// @formatter:off

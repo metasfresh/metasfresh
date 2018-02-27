@@ -89,9 +89,6 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 		// Only not processed lines
 		filters.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_Processed, false);
 
-		// Only those which were prepared (i.e. planning HUs were generated)
-		filters.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsHUPrepared, true);
-
 		// filter by warehouse
 		filters.addCoalesceEqualsFilter(warehouseId,
 				de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_Override_ID,
@@ -176,7 +173,7 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 			return Collections.emptyList();
 		}
 
-		final List<IPOSTableRow> result = new ArrayList<IPOSTableRow>(schedules.size());
+		final List<IPOSTableRow> result = new ArrayList<>(schedules.size());
 		for (final Object object : schedules)
 		{
 			Check.assumeInstanceOf(object, I_M_ReceiptSchedule.class, "object");
@@ -219,7 +216,7 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 			return Collections.emptyList();
 		}
 
-		final List<I_M_ReceiptSchedule> result = new ArrayList<I_M_ReceiptSchedule>(rows.size());
+		final List<I_M_ReceiptSchedule> result = new ArrayList<>(rows.size());
 		for (final IPOSTableRow row : rows)
 		{
 			final ReceiptScheduleTableRow rsRow = getReceiptScheduleTableRow(row);
@@ -243,9 +240,7 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 		//
 		// Get receipt schedules from rows
 		final List<I_M_ReceiptSchedule> receiptSchedules = getReceiptSchedules(rows);
-
-		final boolean storeReceipts = false;
-		Services.get(IHUReceiptScheduleBL.class).processReceiptSchedules(ctx, receiptSchedules, selectedHUs, storeReceipts);
+		Services.get(IHUReceiptScheduleBL.class).processReceiptSchedules(ctx, receiptSchedules, selectedHUs);
 	}
 
 	/**

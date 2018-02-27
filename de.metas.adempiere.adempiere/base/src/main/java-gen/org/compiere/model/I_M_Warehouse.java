@@ -313,6 +313,33 @@ public interface I_M_Warehouse
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Warehouse Picking Group.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_PickingGroup_ID (int M_Warehouse_PickingGroup_ID);
+
+	/**
+	 * Get Warehouse Picking Group.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_PickingGroup_ID();
+
+	public org.compiere.model.I_M_Warehouse_PickingGroup getM_Warehouse_PickingGroup();
+
+	public void setM_Warehouse_PickingGroup(org.compiere.model.I_M_Warehouse_PickingGroup M_Warehouse_PickingGroup);
+
+    /** Column definition for M_Warehouse_PickingGroup_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Warehouse, org.compiere.model.I_M_Warehouse_PickingGroup> COLUMN_M_Warehouse_PickingGroup_ID = new org.adempiere.model.ModelColumn<I_M_Warehouse, org.compiere.model.I_M_Warehouse_PickingGroup>(I_M_Warehouse.class, "M_Warehouse_PickingGroup_ID", org.compiere.model.I_M_Warehouse_PickingGroup.class);
+    /** Column name M_Warehouse_PickingGroup_ID */
+    public static final String COLUMNNAME_M_Warehouse_PickingGroup_ID = "M_Warehouse_PickingGroup_ID";
+
+	/**
 	 * Set Source Warehouse.
 	 * Optional Warehouse to replenish from
 	 *
@@ -342,8 +369,7 @@ public interface I_M_Warehouse
     public static final String COLUMNNAME_M_WarehouseSource_ID = "M_WarehouseSource_ID";
 
 	/**
-	 * Set Exclude from MRP.
-	 * Exclude from MRP calculation
+	 * Set MRP ausschliessen.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -352,8 +378,7 @@ public interface I_M_Warehouse
 	public void setMRP_Exclude (java.lang.String MRP_Exclude);
 
 	/**
-	 * Get Exclude from MRP.
-	 * Exclude from MRP calculation
+	 * Get MRP ausschliessen.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false

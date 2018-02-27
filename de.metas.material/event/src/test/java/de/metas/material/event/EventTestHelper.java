@@ -8,6 +8,12 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
+
 /*
  * #%L
  * metasfresh-material-event
@@ -18,12 +24,12 @@ import org.compiere.util.TimeUtil;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,16 +56,38 @@ public class EventTestHelper
 
 	public static final int PRODUCT_ID = 24;
 
+	public static final int BPARTNER_ID = 25;
+
 	public static final int ATTRIBUTE_SET_INSTANCE_ID = 28;
 
-	public static final String STORAGE_ATTRIBUTES_KEY = "StorageAttributesKey";
+	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1);
+
+	public static SupplyRequiredDescriptor createSupplyRequiredDescriptor()
+	{
+		return createSupplyRequiredDescriptorWithProductId(PRODUCT_ID);
+	}
+
+	public static SupplyRequiredDescriptor createSupplyRequiredDescriptorWithProductId(final int productId)
+	{
+		return SupplyRequiredDescriptor.builder()
+				.shipmentScheduleId(21)
+				.demandCandidateId(41)
+				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.materialDescriptor(createMaterialDescriptorWithProductId(productId))
+				.build();
+	}
 
 	public static MaterialDescriptor createMaterialDescriptor()
 	{
-		return MaterialDescriptor
-				.builderForCompleteDescriptor()
-				.productDescriptor(createProductDescriptor())
+		return createMaterialDescriptorWithProductId(PRODUCT_ID);
+	}
+
+	public static MaterialDescriptor createMaterialDescriptorWithProductId(final int productId)
+	{
+		return MaterialDescriptor.builder()
+				.productDescriptor(createProductDescriptorWithProductId(productId))
 				.warehouseId(WAREHOUSE_ID)
+				.bPartnerId(BPARTNER_ID)
 				.quantity(BigDecimal.TEN)
 				.date(NOW)
 				.build();
@@ -67,15 +95,22 @@ public class EventTestHelper
 
 	public static ProductDescriptor createProductDescriptor()
 	{
-		return ProductDescriptor.forProductAndAttributes(PRODUCT_ID, STORAGE_ATTRIBUTES_KEY, ATTRIBUTE_SET_INSTANCE_ID);
+		return createProductDescriptorWithProductId(PRODUCT_ID);
+	}
+
+	public static ProductDescriptor createProductDescriptorWithProductId(final int productId)
+	{
+		return ProductDescriptor.forProductAndAttributes(
+				productId,
+				STORAGE_ATTRIBUTES_KEY,
+				ATTRIBUTE_SET_INSTANCE_ID);
 	}
 
 	public static ProductDescriptor createProductDescriptorWithOffSet(final int offset)
 	{
 		return ProductDescriptor.forProductAndAttributes(
 				PRODUCT_ID + offset,
-				STORAGE_ATTRIBUTES_KEY + offset,
+				AttributesKey.ofAttributeValueIds(STORAGE_ATTRIBUTES_KEY.getAttributeValueIds().get(0) + 1 + offset),
 				ATTRIBUTE_SET_INSTANCE_ID + offset);
 	}
-
 }

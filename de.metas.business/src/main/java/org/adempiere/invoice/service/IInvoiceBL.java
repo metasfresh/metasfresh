@@ -113,7 +113,7 @@ public interface IInvoiceBL extends ISingletonService
 		return X_C_DocType.DOCBASETYPE_APInvoice.equals(docBaseType)
 				|| X_C_DocType.DOCBASETYPE_APCreditMemo.equals(docBaseType);
 	}
-	
+
 	/**
 	 * @param invoice
 	 * @return true if the given invoice is a CreditMemo (APC or ARC)
@@ -213,7 +213,23 @@ public interface IInvoiceBL extends ISingletonService
 
 	void setFromOrder(I_C_Invoice invoice, I_C_Order order);
 
-	boolean setC_DocTypeTarget(de.metas.adempiere.model.I_C_Invoice invoice, String docBaseType);
+	/**
+	 * Sets Target Document Type and IsSOTrx.
+	 * 
+	 * @param invoice
+	 * @param docBaseType
+	 * @return true if document type found and set
+	 */
+	boolean setDocTypeTargetId(I_C_Invoice invoice, String docBaseType);
+
+	/**
+	 * Set Target Document Type based on SO flag AP/AP Invoice
+	 * 
+	 * @param invoice
+	 */
+	void setDocTypeTargetIdIfNotSet(I_C_Invoice invoice);
+
+	void setDocTypeTargetIdAndUpdateDescription(I_C_Invoice invoice, int docTypeId);
 
 	/**
 	 * Sort and then renumber all invoice lines.
@@ -409,4 +425,6 @@ public interface IInvoiceBL extends ISingletonService
 	String getDefaultPaymentRule();
 
 	I_C_Invoice voidAndRecreateInvoice(I_C_Invoice invoice);
+
+	void updateDescriptionFromDocTypeTargetId(I_C_Invoice invoice);
 }

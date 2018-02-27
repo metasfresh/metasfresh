@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -30,7 +14,7 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 86737907L;
+	private static final long serialVersionUID = 860324491L;
 
     /** Standard Constructor */
     public X_M_Locator (Properties ctx, int M_Locator_ID, String trxName)
@@ -41,10 +25,10 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 			setIsDefault (false);
 			setM_Locator_ID (0);
 			setM_Warehouse_ID (0);
-			setPriorityNo (0);
-// 50
+			setPriorityNo (0); // 50
 			setValue (null);
 			setX (null);
+			setX1 (null);
 			setY (null);
 			setZ (null);
         } */
@@ -56,29 +40,13 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 7 - System - Client - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_M_Locator[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** Set Standard.
@@ -210,9 +178,9 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 
-	/** Set Gang (X).
+	/** Set Gang.
 		@param X 
-		X dimension, e.g., Aisle
+		X-Dimension, z.B. Gang
 	  */
 	@Override
 	public void setX (java.lang.String X)
@@ -220,8 +188,8 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 		set_Value (COLUMNNAME_X, X);
 	}
 
-	/** Get Gang (X).
-		@return X dimension, e.g., Aisle
+	/** Get Gang.
+		@return X-Dimension, z.B. Gang
 	  */
 	@Override
 	public java.lang.String getX () 
@@ -229,9 +197,25 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 		return (java.lang.String)get_Value(COLUMNNAME_X);
 	}
 
-	/** Set Fach (Y).
+	/** Set Regal.
+		@param X1 Regal	  */
+	@Override
+	public void setX1 (java.lang.String X1)
+	{
+		set_Value (COLUMNNAME_X1, X1);
+	}
+
+	/** Get Regal.
+		@return Regal	  */
+	@Override
+	public java.lang.String getX1 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_X1);
+	}
+
+	/** Set Fach.
 		@param Y 
-		Y dimension, e.g., Bin
+		Y-Dimension, z.B. Fach
 	  */
 	@Override
 	public void setY (java.lang.String Y)
@@ -239,8 +223,8 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 		set_Value (COLUMNNAME_Y, Y);
 	}
 
-	/** Get Fach (Y).
-		@return Y dimension, e.g., Bin
+	/** Get Fach.
+		@return Y-Dimension, z.B. Fach
 	  */
 	@Override
 	public java.lang.String getY () 
@@ -248,9 +232,9 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 		return (java.lang.String)get_Value(COLUMNNAME_Y);
 	}
 
-	/** Set Ebene (Z).
+	/** Set Ebene.
 		@param Z 
-		Z dimension, e.g., Level
+		Z-Dimension, z.B. Ebene
 	  */
 	@Override
 	public void setZ (java.lang.String Z)
@@ -258,8 +242,8 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 		set_Value (COLUMNNAME_Z, Z);
 	}
 
-	/** Get Ebene (Z).
-		@return Z dimension, e.g., Level
+	/** Get Ebene.
+		@return Z-Dimension, z.B. Ebene
 	  */
 	@Override
 	public java.lang.String getZ () 

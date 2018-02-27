@@ -38,6 +38,7 @@ import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import lombok.NonNull;
 
 /**
  * Iterates an order's lines and creates additional lines for the HU packing material.
@@ -57,11 +58,8 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 	 *
 	 * @param order
 	 */
-	public OrderPackingMaterialDocumentLinesBuilder(final I_C_Order order)
+	public OrderPackingMaterialDocumentLinesBuilder(@NonNull final I_C_Order order)
 	{
-		super();
-
-		Check.assumeNotNull(order, "order not null");
 		this.order = order;
 	}
 
@@ -72,7 +70,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 		//
 		// Add Packing Material Order Lines first
 		// and gather regular order lines (sources for packing materials)
-		final List<IPackingMaterialDocumentLineSource> lines = new ArrayList<IPackingMaterialDocumentLineSource>();
+		final List<IPackingMaterialDocumentLineSource> lines = new ArrayList<>();
 		for (final I_C_OrderLine orderLine : orderLinesAll)
 		{
 			if (orderLine.isPackagingMaterial())
@@ -178,7 +176,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 		final OrderLinePackingMaterialDocumentLine orderLinePMLine = toImpl(pmLine);
 		final I_C_OrderLine pmOrderLine = orderLinePMLine.getC_OrderLine();
 
-		// not cool: qtyOrdered is in the product's UOM whereas QtyEntered is in the order lines UOM. They don't have to be the same.
+		// qtyOrdered is in the product's UOM whereas QtyEntered is in the order line's UOM. They don't have to be the same.
 		// pmOrderLine.setQtyEntered(pmOrderLine.getQtyOrdered());
 
 		pmOrderLine.setIsActive(true);

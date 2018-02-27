@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
@@ -40,9 +41,12 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TrxRunnable;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
@@ -63,6 +67,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_PickingSlot_Trx;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPick;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
@@ -321,7 +326,7 @@ public class HUPickingSlotBL
 		if (pickingSlotHU == null)
 		{
 			pickingSlotHU = InterfaceWrapperHelper.newInstance(I_M_PickingSlot_HU.class, huContext);
-			pickingSlotHU.setM_PickingSlot(pickingSlot);
+			pickingSlotHU.setM_PickingSlot_ID(pickingSlot.getM_PickingSlot_ID());
 			pickingSlotHU.setM_HU(hu);
 		}
 
@@ -400,7 +405,7 @@ public class HUPickingSlotBL
 		// BUT ONLY as long as the picking slot is not in use on the other end
 		if (pickingSlotExt.getM_HU() == null)
 		{
-			releasePickingSlot(pickingSlotExt);
+			releasePickingSlotIfPossible(pickingSlotExt);
 		}
 
 		final I_M_PickingSlot_Trx createPickingSlotTrx = createPickingSlotTrx(pickingSlot, hu, X_M_PickingSlot_Trx.ACTION_Remove_HU_From_Queue);
@@ -506,7 +511,7 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public void allocatePickingSlot(final I_M_PickingSlot pickingSlot, final int bpartnerId, final int bpartnerLocationId)
+	public void allocatePickingSlotIfPossible(final I_M_PickingSlot pickingSlot, final int bpartnerId, final int bpartnerLocationId)
 	{
 		//
 		// Not dynamic picking slot; gtfo
@@ -529,7 +534,14 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public void releasePickingSlot(final I_M_PickingSlot pickingSlot)
+	public void allocatePickingSlotIfPossible(final int pickingSlotId, final int bpartnerId, final int bpartnerLocationId)
+	{
+		final I_M_PickingSlot pickingSlot = load(pickingSlotId, I_M_PickingSlot.class);
+		allocatePickingSlotIfPossible(pickingSlot, bpartnerId, bpartnerLocationId);
+	}
+
+	@Override
+	public void releasePickingSlotIfPossible(final I_M_PickingSlot pickingSlot)
 	{
 		//
 		// Not dynamic picking slot; gtfo
@@ -552,9 +564,24 @@ public class HUPickingSlotBL
 			return;
 		}
 
+		//
+		// There still not closed picking candidates; do nothing
+		final PickingCandidateRepository pickingCandidatesRepo = Adempiere.getBean(PickingCandidateRepository.class);
+		if (pickingCandidatesRepo.hasNotClosedCandidatesForPickingSlot(pickingSlot.getM_PickingSlot_ID()))
+		{
+			return;
+		}
+
 		pickingSlot.setC_BPartner(null);
 		pickingSlot.setC_BPartner_Location(null);
 		InterfaceWrapperHelper.save(pickingSlot);
+	}
+	
+	@Override
+	public void releasePickingSlotIfPossible(final int pickingSlotId)
+	{
+		final I_M_PickingSlot pickingSlot = load(pickingSlotId, I_M_PickingSlot.class);
+		releasePickingSlotIfPossible(pickingSlot);
 	}
 
 	@Override
@@ -569,10 +596,20 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsQuery request)
+	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsQuery query)
 	{
 		final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction = vhus -> RetrieveAvailableHUsToPickFilters.retrieveFullTreeAndExcludePickingHUs(vhus);
 
-		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(request, vhuToEndResultFunction);
+		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(query, vhuToEndResultFunction);
 	}
+
+	@Override
+	public List<Integer> retrieveAvailableHUIdsToPick(@NonNull final PickingHUsQuery request)
+	{
+		return retrieveAvailableHUsToPick(request)
+				.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 }

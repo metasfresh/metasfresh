@@ -69,7 +69,7 @@ public interface I_M_PriceList
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Base Pricelist.
+	 * Set Basis Preisliste.
 	 * Pricelist to be used, if product not found on this pricelist
 	 *
 	 * <br>Type: Table
@@ -79,7 +79,7 @@ public interface I_M_PriceList
 	public void setBasePriceList_ID (int BasePriceList_ID);
 
 	/**
-	 * Get Base Pricelist.
+	 * Get Basis Preisliste.
 	 * Pricelist to be used, if product not found on this pricelist
 	 *
 	 * <br>Type: Table
@@ -209,7 +209,7 @@ public interface I_M_PriceList
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Enforce price limit.
+	 * Set Preislimit erzwingen.
 	 * Do not allow prices below the limit price
 	 *
 	 * <br>Type: YesNo
@@ -219,7 +219,7 @@ public interface I_M_PriceList
 	public void setEnforcePriceLimit (boolean EnforcePriceLimit);
 
 	/**
-	 * Get Enforce price limit.
+	 * Get Preislimit erzwingen.
 	 * Do not allow prices below the limit price
 	 *
 	 * <br>Type: YesNo
@@ -232,6 +232,31 @@ public interface I_M_PriceList
     public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_EnforcePriceLimit = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "EnforcePriceLimit", null);
     /** Column name EnforcePriceLimit */
     public static final String COLUMNNAME_EnforcePriceLimit = "EnforcePriceLimit";
+
+	/**
+	 * Set Interner Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setInternalName (java.lang.String InternalName);
+
+	/**
+	 * Get Interner Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getInternalName();
+
+    /** Column definition for InternalName */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "InternalName", null);
+    /** Column name InternalName */
+    public static final String COLUMNNAME_InternalName = "InternalName";
 
 	/**
 	 * Set Aktiv.
@@ -461,7 +486,7 @@ public interface I_M_PriceList
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Price Precision.
+	 * Set Preis Präzision.
 	 * Precision (number of decimals) for the Price
 	 *
 	 * <br>Type: Integer
@@ -471,7 +496,7 @@ public interface I_M_PriceList
 	public void setPricePrecision (int PricePrecision);
 
 	/**
-	 * Get Price Precision.
+	 * Get Preis Präzision.
 	 * Precision (number of decimals) for the Price
 	 *
 	 * <br>Type: Integer

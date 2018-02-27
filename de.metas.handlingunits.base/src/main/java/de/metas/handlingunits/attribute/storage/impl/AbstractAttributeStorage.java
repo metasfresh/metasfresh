@@ -78,6 +78,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public abstract class AbstractAttributeStorage implements IAttributeStorage
 {
@@ -147,11 +148,8 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		}
 	};
 
-	public AbstractAttributeStorage(final IAttributeStorageFactory storageFactory)
+	public AbstractAttributeStorage(@NonNull final IAttributeStorageFactory storageFactory)
 	{
-		super();
-
-		Check.assumeNotNull(storageFactory, "storageFactory not null");
 		this.storageFactory = storageFactory;
 		huAttributesDAO = storageFactory.getHUAttributesDAO();
 		huStorageDAO = storageFactory.getHUStorageDAO();
@@ -471,7 +469,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		final IAttributeValue value = getAttributeValue(attribute);
 		return value.getValue();
 	}
-	
+
 	@Override
 	public String getValueAsString(final I_M_Attribute attribute)
 	{

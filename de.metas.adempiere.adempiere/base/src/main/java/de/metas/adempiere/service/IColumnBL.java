@@ -49,7 +49,7 @@ public interface IColumnBL extends ISingletonService
 	 * @param columnName
 	 * @return true if record_ID form, false otherwise
 	 */
-	boolean isRecordColumnName(String columnName);
+	boolean isRecordIdColumnName(String columnName);
 
 	/**
 	 * Get the primary key column for the given <code>tableName</code>.
@@ -72,7 +72,7 @@ public interface IColumnBL extends ISingletonService
 	 * @param recordColumnName
 	 * @return
 	 */
-	Optional<String> getTableColumnName(String tableName, String recordColumnName);
+	Optional<String> getTableIdColumnName(String tableName, String recordColumnName);
 
 	boolean getDefaultAllowLoggingByColumnName(String columnName);
 

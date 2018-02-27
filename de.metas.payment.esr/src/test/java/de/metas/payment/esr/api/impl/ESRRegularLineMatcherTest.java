@@ -2,6 +2,7 @@ package de.metas.payment.esr.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -34,6 +35,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AllocationLine;
@@ -345,6 +347,120 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final String unrenderedPostAccountNo = unrenderedAccountNoParts[0] + unrenderedAccountNoParts[1] + unrenderedAccountNoParts[2];
 
 		Assert.assertTrue("Rendered account numbers are equal.", !esrImportLine.getESRPostParticipantNumber().equals(unrenderedPostAccountNo));
+	}
+
+	@Test
+	public void test_regularLine_RenderedAccountNo_From_ESRPostFinanceUserNumber()
+	{
+		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000";
+
+		final I_ESR_Import esrImport = createImport();
+
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
+
+		account.setIsEsrAccount(true);
+		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
+		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
+		account.setESR_RenderedAccountNo("01-888888-0");
+
+		save(account);
+		final String esrNoForPostFinanceUser = "010599310";
+
+		createPostFinanceUserNumber(account, esrNoForPostFinanceUser);
+
+		esrImport.setC_BP_BankAccount(account);
+		save(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
+
+		assertThat(esrImportLine.getESRPostParticipantNumber()).isEqualTo(esrNoForPostFinanceUser);
+	}
+
+	@Test
+	public void test_regularLine_RenderedAccountNo_From_ESRPostFinanceUserNumber_Rendered()
+	{
+		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000";
+
+		final I_ESR_Import esrImport = createImport();
+
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
+
+		account.setIsEsrAccount(true);
+		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
+		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
+		account.setESR_RenderedAccountNo("01-888888-0");
+
+		save(account);
+		final String renderedEsrNoForPostFinanceUser = "01-059931-0";
+		final String unRenderedEsrNoForPostFinanceUser = "010599310";
+
+		createPostFinanceUserNumber(account, renderedEsrNoForPostFinanceUser);
+
+		esrImport.setC_BP_BankAccount(account);
+		save(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
+
+		assertThat(esrImportLine.getESRPostParticipantNumber()).isEqualTo(unRenderedEsrNoForPostFinanceUser);
+	}
+
+	@Test(expected = AdempiereException.class)
+	public void test_regularLine_RenderedAccountNo_From_ESRPostFinanceUserNumber_RenderedWrong()
+	{
+		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000";
+
+		final I_ESR_Import esrImport = createImport();
+
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
+
+		account.setIsEsrAccount(true);
+		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
+		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
+		account.setESR_RenderedAccountNo("01-888888-0");
+
+		save(account);
+		final String esrNoForPostFinanceUser = "01-0599310";
+
+		createPostFinanceUserNumber(account, esrNoForPostFinanceUser);
+
+		esrImport.setC_BP_BankAccount(account);
+		save(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+	}
+
+	@Test
+	public void test_regularLine_RenderedAccountNo_WrongESRPostFinanceUserNumber()
+	{
+		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000";
+
+		final I_ESR_Import esrImport = createImport();
+
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
+
+		account.setIsEsrAccount(true);
+		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
+		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
+		account.setESR_RenderedAccountNo("01-888888-0");
+
+		save(account);
+		final String esrNoForPostFinanceUser = "088888880";
+
+		createPostFinanceUserNumber(account, esrNoForPostFinanceUser);
+
+		esrImport.setC_BP_BankAccount(account);
+		save(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
+
+		final String[] unrenderedAccountNoParts = account.getESR_RenderedAccountNo().split("-");
+		final String unrenderedPostAccountNo = unrenderedAccountNoParts[0] + unrenderedAccountNoParts[1] + unrenderedAccountNoParts[2];
+
+		assertThat(esrImportLine.getESRPostParticipantNumber()).isNotEqualTo(esrNoForPostFinanceUser);
+		assertThat(esrImportLine.getESRPostParticipantNumber()).isNotEqualTo(unrenderedPostAccountNo);
 	}
 
 	@Test

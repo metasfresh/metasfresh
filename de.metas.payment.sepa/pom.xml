@@ -4,7 +4,7 @@
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
 		<version>10.0.0</version>
-		<relativePath>../de.metas.parent/pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
@@ -76,22 +76,6 @@
 							<clearOutputDir>false</clearOutputDir>
 							<sources>src/main/xsd/pain.008.003.02.xsd</sources>
 							<packageName>de.metas.payment.sepa.sdd.jaxb.v3</packageName>
-						</configuration>
-					</execution>
-
-					<execution>
-						<id>generate-de.metas.payment.sepa.jaxb.sct.pain_001_003_03</id>
-						<goals>
-							<goal>xjc</goal>
-						</goals>
-						<configuration>
-							<!-- NOTE: don't clear the directory because else we will lose previous 
-								generated files -->
-							<clearOutputDir>false</clearOutputDir>
-							<sources>
-								<source>src/main/xsd/pain.001.003.03.xsd</source>
-							</sources>
-							<packageName>de.metas.payment.sepa.jaxb.sct.pain_001_003_03</packageName>
 						</configuration>
 					</execution>
 

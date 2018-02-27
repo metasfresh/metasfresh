@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -12,6 +14,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
@@ -81,6 +84,13 @@ public class ClosePickingCandidateCommand
 		pickingCandidates.stream()
 				.filter(this::isEligible)
 				.forEach(this::close);
+
+		//
+		// Release the picking slots
+		pickingCandidates.stream()
+				.map(I_M_Picking_Candidate::getM_PickingSlot_ID)
+				.distinct()
+				.forEach(huPickingSlotBL::releasePickingSlotIfPossible);
 	}
 
 	private boolean isEligible(final I_M_Picking_Candidate pickingCandidate)
@@ -102,7 +112,9 @@ public class ClosePickingCandidateCommand
 	{
 		try
 		{
-			huPickingSlotBL.addToPickingSlotQueue(pickingCandidate.getM_PickingSlot(), pickingCandidate.getM_HU());
+			final int pickingSlotId = pickingCandidate.getM_PickingSlot_ID();
+			final I_M_PickingSlot pickingSlot = load(pickingSlotId, I_M_PickingSlot.class);
+			huPickingSlotBL.addToPickingSlotQueue(pickingSlot, pickingCandidate.getM_HU());
 
 			markCandidateAsClosed(pickingCandidate);
 		}

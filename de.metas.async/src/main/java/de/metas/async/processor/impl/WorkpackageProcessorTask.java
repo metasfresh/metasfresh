@@ -1,5 +1,7 @@
 package de.metas.async.processor.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.async
@@ -29,12 +31,12 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -75,6 +77,9 @@ import de.metas.async.processor.IWorkpackageSkipRequest;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.async.spi.IWorkpackageProcessor2;
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
@@ -227,7 +232,7 @@ import de.metas.notification.INotificationBL;
 			}
 			else
 			{
-				markError(workPackage, e);
+				markError(workPackage, AdempiereException.wrapIfNeeded(e));
 			}
 		}
 		finally
@@ -334,7 +339,7 @@ import de.metas.notification.INotificationBL;
 		}
 		catch (final Exception e)
 		{
-			markError(workPackage, e);
+			markError(workPackage, AdempiereException.wrapIfNeeded(e));
 		}
 
 		// NOTE: when notifying, we shall use the original workpackage processor, because that one is known in exterior
@@ -349,7 +354,7 @@ import de.metas.notification.INotificationBL;
 	private void markStartProcessing(final I_C_Queue_WorkPackage workPackage)
 	{
 		workPackage.setLastStartTime(SystemTime.asTimestamp());
-		queueDAO.saveInLocalTrx(workPackage);
+		queueDAO.save(workPackage);
 	}
 
 	/**
@@ -394,7 +399,7 @@ import de.metas.notification.INotificationBL;
 
 		setLastEndTime(workPackage); // update statistics
 
-		queueDAO.saveInLocalTrx(workPackage);
+		queueDAO.save(workPackage);
 	}
 
 	/**
@@ -428,7 +433,7 @@ import de.metas.notification.INotificationBL;
 
 		setLastEndTime(workPackage); // update statistics
 
-		queueDAO.saveInLocalTrx(workPackage);
+		queueDAO.save(workPackage);
 
 		final String processorName;
 		final I_C_Queue_Block queueBlock = workPackage.getC_Queue_Block();
@@ -448,10 +453,9 @@ import de.metas.notification.INotificationBL;
 		Loggables.get().addLog(msg);
 	}
 
-	private void markError(final I_C_Queue_WorkPackage workPackage,
-			final Exception ex)
+	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
 	{
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, ex);
+		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(ex);
 
 		//
 		// Allow retry processing this workpackage?
@@ -464,6 +468,7 @@ import de.metas.notification.INotificationBL;
 			// Flag the workpackage as processed in order to:
 			// * not allow future retries
 			// * avoid discarding items from this workpackage on future workpackages because they were enqueued here
+			// TODO shall we also release the elements lock if any?
 			workPackage.setProcessed(true);
 		}
 
@@ -473,7 +478,7 @@ import de.metas.notification.INotificationBL;
 
 		setLastEndTime(workPackage); // update statistics
 
-		queueDAO.saveInLocalTrx(workPackage);
+		queueDAO.save(workPackage);
 
 		// log error to console (for later audit):
 		final Level logLevel = Services.get(IDeveloperModeBL.class).isEnabled() ? Level.WARN : Level.INFO;
@@ -484,48 +489,62 @@ import de.metas.notification.INotificationBL;
 		// 09700: notify the user in charge, if one was set
 		if (workPackage.getAD_User_InCharge_ID() > 0)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
-			final int workPackageID = workPackage.getC_Queue_WorkPackage_ID();
-			final String trxName = InterfaceWrapperHelper.getTrxName(workPackage);
-
 			// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
-			notifyErrorAfterCommit(ctx, workPackageID, trxName);
+			notifyErrorAfterCommit(workPackage.getC_Queue_WorkPackage_ID());
+
+			if (!ex.isUserNotified())
+			{
+				ex.markUserNotified();
+
+				final ITrxManager trxManager = Services.get(ITrxManager.class);
+				final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
+				final IEventBus eventBus = eventBusFactory.getEventBus(Async_Constants.EVENTBUS_WORKPACKAGE_PROCESSING_ERRORS);
+
+				trxManager.getCurrentTrxListenerManagerOrAutoCommit()
+						.newEventListener(TrxEventTiming.AFTER_COMMIT)
+						.registerHandlingMethod(innerTrx -> eventBus.postEvent(createWorkpackageProcessingErrorEvent(workPackage, ex)));
+			}
 		}
 	}
 
 	/**
 	 *
 	 * @param ctx
-	 * @param workPackageID
+	 * @param workPackageId
 	 * @param trxName
 	 * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
-	private void notifyErrorAfterCommit(final Properties ctx,
-			final int workPackageID,
-			final String trxName)
+	private void notifyErrorAfterCommit(final int workPackageId)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-				.registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void afterCommit(final ITrx trx)
-					{
-						final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-						final I_C_Queue_WorkPackage wpReloaded = InterfaceWrapperHelper.create(ctx, workPackageID, I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
-
-						notificationBL.notifyUser(
-								wpReloaded.getAD_User_InCharge(),
-								MSG_PROCESSING_ERROR_NOTIFICATION_TITLE,
-								msgBL.getMsg(ctx,
-										MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,
-										new Object[] { workPackageID, wpReloaded.getErrorMsg() }),
-								TableRecordReference.of(wpReloaded));
-					}
+		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> {
+					final I_C_Queue_WorkPackage wpReloaded = loadOutOfTrx(workPackageId, I_C_Queue_WorkPackage.class);
+					notificationBL.notifyUser(
+							wpReloaded.getAD_User_InCharge(),
+							MSG_PROCESSING_ERROR_NOTIFICATION_TITLE,
+							msgBL.getMsg(Env.getCtx(),
+									MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,
+									new Object[] { workPackageId, wpReloaded.getErrorMsg() }),
+							TableRecordReference.of(wpReloaded));
 				});
+	}
+
+	private Event createWorkpackageProcessingErrorEvent(final I_C_Queue_WorkPackage workpackage, final Exception ex)
+	{
+		return Event.builder()
+				.setDetailADMessage(
+						MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,
+						workpackage.getC_Queue_WorkPackage_ID(),
+						ex.getLocalizedMessage())
+				.addRecipient_User_ID(workpackage.getAD_User_InCharge_ID())
+				.setRecord(TableRecordReference.of(workpackage))
+				.build();
 	}
 
 	/**
@@ -536,12 +555,6 @@ import de.metas.notification.INotificationBL;
 	 */
 	private static final IWorkpackageSkipRequest getWorkpackageSkipRequest(final Throwable ex)
 	{
-		// internal method, "ex" is never null
-		// if (ex == null)
-		// {
-		// return null;
-		// }
-
 		if (ex instanceof IWorkpackageSkipRequest)
 		{
 			final IWorkpackageSkipRequest skipRequest = (IWorkpackageSkipRequest)ex;

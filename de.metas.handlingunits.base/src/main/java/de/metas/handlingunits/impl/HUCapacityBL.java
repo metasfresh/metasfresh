@@ -38,6 +38,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
+import lombok.NonNull;
 
 public class HUCapacityBL implements IHUCapacityBL
 {
@@ -95,10 +96,12 @@ public class HUCapacityBL implements IHUCapacityBL
 	}
 
 	@Override
-	public CapacityInterface getCapacity(final I_M_HU_Item huItem, final I_M_Product product, final I_C_UOM uom, final Date date)
+	public CapacityInterface getCapacity(
+			@NonNull final I_M_HU_Item huItem,
+			final I_M_Product product,
+			final I_C_UOM uom,
+			final Date date)
 	{
-		Check.assumeNotNull(huItem, "huItem not null");
-
 		final I_M_HU_PI_Item_Product itemDefProduct = Services.get(IHUPIItemProductDAO.class).retrievePIMaterialItemProduct(huItem, product, date);
 		if (itemDefProduct == null)
 		{

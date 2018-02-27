@@ -498,6 +498,29 @@ public interface I_AD_Column
     public static final String COLUMNNAME_FieldLength = "FieldLength";
 
 	/**
+	 * Set Filter Default Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setFilterDefaultValue (java.lang.String FilterDefaultValue);
+
+	/**
+	 * Get Filter Default Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getFilterDefaultValue();
+
+    /** Column definition for FilterDefaultValue */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_FilterDefaultValue = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "FilterDefaultValue", null);
+    /** Column name FilterDefaultValue */
+    public static final String COLUMNNAME_FilterDefaultValue = "FilterDefaultValue";
+
+	/**
 	 * Set Format Pattern.
 	 * The pattern used to format a number or date.
 	 *
@@ -723,6 +746,31 @@ public interface I_AD_Column
     public static final String COLUMNNAME_IsEncrypted = "IsEncrypted";
 
 	/**
+	 * Set GenericZoom Quellspalte.
+	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsGenericZoomOrigin (boolean IsGenericZoomOrigin);
+
+	/**
+	 * Get GenericZoom Quellspalte.
+	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isGenericZoomOrigin();
+
+    /** Column definition for IsGenericZoomOrigin */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_IsGenericZoomOrigin = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "IsGenericZoomOrigin", null);
+    /** Column name IsGenericZoomOrigin */
+    public static final String COLUMNNAME_IsGenericZoomOrigin = "IsGenericZoomOrigin";
+
+	/**
 	 * Set Identifier.
 	 * This column is part of the record identifier
 	 *
@@ -846,6 +894,31 @@ public interface I_AD_Column
     public static final String COLUMNNAME_IsParent = "IsParent";
 
 	/**
+	 * Set Range filter.
+	 * Check if the filter by this column shall render a range component
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsRangeFilter (boolean IsRangeFilter);
+
+	/**
+	 * Get Range filter.
+	 * Check if the filter by this column shall render a range component
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isRangeFilter();
+
+    /** Column definition for IsRangeFilter */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_IsRangeFilter = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "IsRangeFilter", null);
+    /** Column name IsRangeFilter */
+    public static final String COLUMNNAME_IsRangeFilter = "IsRangeFilter";
+
+	/**
 	 * Set Selection Column.
 	 * Is this column used for finding rows in windows
 	 *
@@ -869,6 +942,31 @@ public interface I_AD_Column
     public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_IsSelectionColumn = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "IsSelectionColumn", null);
     /** Column name IsSelectionColumn */
     public static final String COLUMNNAME_IsSelectionColumn = "IsSelectionColumn";
+
+	/**
+	 * Set Filter +/- buttons.
+	 * Show filter increment/decrement buttons
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsShowFilterIncrementButtons (boolean IsShowFilterIncrementButtons);
+
+	/**
+	 * Get Filter +/- buttons.
+	 * Show filter increment/decrement buttons
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isShowFilterIncrementButtons();
+
+    /** Column definition for IsShowFilterIncrementButtons */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_IsShowFilterIncrementButtons = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "IsShowFilterIncrementButtons", null);
+    /** Column name IsShowFilterIncrementButtons */
+    public static final String COLUMNNAME_IsShowFilterIncrementButtons = "IsShowFilterIncrementButtons";
 
 	/**
 	 * Set Staleable.
@@ -1120,7 +1218,7 @@ public interface I_AD_Column
 
 	/**
 	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true

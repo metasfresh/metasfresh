@@ -96,20 +96,17 @@ public class HUReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 		final int itemProductID;
 		final String packDescription;
 		final BigDecimal qtyItemCapacity;
-		final boolean isPackingMaterial;
 		if (orderLine == null)
 		{
 			itemProductID = -1;
 			packDescription = null;
 			qtyItemCapacity = null;
-			isPackingMaterial = false;
 		}
 		else
 		{
 			itemProductID = orderLine.getM_HU_PI_Item_Product_ID();
 			packDescription = orderLine.getPackDescription();
 			qtyItemCapacity = orderLine.getQtyItemCapacity();
-			isPackingMaterial = orderLine.isPackagingMaterial();
 		}
 
 		receiptSchedule.setM_HU_PI_Item_Product_ID(itemProductID);
@@ -118,16 +115,6 @@ public class HUReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 		// receiptSchedule.setIsPackingMaterial(isPackingMaterial); // virtual column
 
 		InterfaceWrapperHelper.save(receiptSchedule);
-
-		if (!isPackingMaterial)
-		{
-			generatePlanningHUs(receiptSchedule);
-		}
-	}
-
-	private void generatePlanningHUs(final I_M_ReceiptSchedule receiptSchedule)
-	{
-		M_ReceiptSchedule_GeneratePlanningHUs_WorkpackageProcessor.createWorkpackage(receiptSchedule);
 	}
 
 	@Override

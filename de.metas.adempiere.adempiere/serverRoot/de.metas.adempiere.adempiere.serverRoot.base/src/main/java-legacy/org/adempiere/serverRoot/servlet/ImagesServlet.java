@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Profile;
 
 import com.google.common.base.Optional;
 
-import de.metas.ServerBoot;
+import de.metas.Profiles;
 
 /**
  * Servlet used to server images directly from our database
@@ -55,7 +55,7 @@ import de.metas.ServerBoot;
  *
  */
 @WebServlet("/images/*")
-@Profile(ServerBoot.PROFILE)
+@Profile(Profiles.PROFILE_App)
 public class ImagesServlet extends HttpServlet
 {
 
@@ -84,7 +84,7 @@ public class ImagesServlet extends HttpServlet
 
 		final String imageName = extractImageName(request);
 		final byte[] pngData = getPNGImageByName(imageName, width);
-		
+
 		if(pngData == null || pngData.length == 0)
 		{
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "No image found for " + imageName);

@@ -45,6 +45,8 @@ public class GroupTests
 		final Group group = Group.builder()
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
 				.precision(2)
+				.bpartnerId(3)
+				.isSOTrx(true)
 				.regularLine(regularLine(480).build())
 				.regularLine(regularLine(260).build())
 				.compensationLine(percentageDiscountLine(30).build())
@@ -82,6 +84,8 @@ public class GroupTests
 		final Group group = Group.builder()
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
 				.precision(2)
+				.bpartnerId(3)
+				.isSOTrx(true)
 				.regularLine(regularLine(480).build())
 				.regularLine(regularLine(260).build())
 				.build();

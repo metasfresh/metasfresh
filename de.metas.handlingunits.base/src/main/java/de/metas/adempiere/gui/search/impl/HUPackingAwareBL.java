@@ -10,12 +10,12 @@ package de.metas.adempiere.gui.search.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,7 +25,6 @@ package de.metas.adempiere.gui.search.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.Services;
 import org.compiere.apps.search.IInfoSimple;
 import org.compiere.model.I_C_UOM;
@@ -34,9 +33,11 @@ import org.compiere.model.I_M_Product;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.handlingunits.IHUCapacityBL;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
+import lombok.NonNull;
 
 public class HUPackingAwareBL implements IHUPackingAwareBL
 {
@@ -53,61 +54,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	}
 
 	@Override
-	public void copy(final IHUPackingAware to, final IHUPackingAware from)
-	{
-		copy(to, from, true);
-	}
-
-	@Override
-	public void copy(final IHUPackingAware to, final IHUPackingAware from, final boolean overridePartner)
-	{
-		to.setM_Product_ID(from.getM_Product_ID());
-
-		final int asiId = from.getM_AttributeSetInstance_ID();
-		if (asiId >= 0)
-		{
-			Services.get(IAttributeSetInstanceBL.class).cloneASI(to, from);
-		}
-		to.setC_UOM(from.getC_UOM());
-		to.setQty(from.getQty());
-		to.setM_HU_PI_Item_Product(from.getM_HU_PI_Item_Product());
-		to.setQtyPacks(from.getQtyPacks());
-
-		// 08276
-		// do not modify the partner in the orderline if it was already set
-
-		if (to.getC_BPartner() == null || overridePartner)
-		{
-			to.setC_BPartner(from.getC_BPartner());
-		}
-	}
-
-	@Override
-	public boolean isValid(final IHUPackingAware record)
-	{
-		if (record == null)
-		{
-			return false;
-		}
-
-		return record.getM_Product_ID() > 0
-				&& record.getM_HU_PI_Item_Product_ID() > 0
-				&& isValidQty(record)
-				&& record.getQtyPacks() != null && record.getQtyPacks().signum() != 0;
-	}
-
-	@Override
-	public boolean isValidQty(final IHUPackingAware record)
-	{
-		if (record == null)
-		{
-			return false;
-		}
-		return record.getQty() != null && record.getQty().signum() != 0;
-	}
-
-	@Override
-	public void setQty(final IHUPackingAware record, final int qtyPacks)
+	public void setQtyCUFromQtyTU(final IHUPackingAware record, final int qtyPacks)
 	{
 		final BigDecimal qty = calculateQty(record, qtyPacks);
 		if (qty == null)
@@ -120,9 +67,9 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	}
 
 	@Override
-	public void updateQtyIfNeeded(final IHUPackingAware record, final int qtyPacks, final BigDecimal qtyCU)
+	public void updateQtyIfNeeded(final IHUPackingAware record, final int qtyTU, final BigDecimal qtyCU)
 	{
-		final BigDecimal maxQty = calculateQty(record, qtyPacks);
+		final BigDecimal maxQty = calculateQty(record, qtyTU);
 
 		if (maxQty == null)
 		{
@@ -137,7 +84,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return;
 		}
 
-		final BigDecimal minQty = calculateQty(record, qtyPacks - 1);
+		final BigDecimal minQty = calculateQty(record, qtyTU - 1);
 
 		if (qtyCU.compareTo(minQty) <= 0)
 		{
@@ -175,22 +122,22 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	}
 
 	@Override
-	public void setQtyPacks(final IHUPackingAware record)
+	public void setQtyTU(final IHUPackingAware record)
 	{
 		// Only set Qty Packs for entries that are not in dispute.
 		if (record.isInDispute())
 		{
-			record.setQtyPacks(BigDecimal.ZERO);
+			record.setQtyTU(BigDecimal.ZERO);
 		}
 		else
 		{
-			final BigDecimal qtyPacks = calculateQtyPacks(record);
-			record.setQtyPacks(qtyPacks);
+			final BigDecimal qtyPacks = calculateQtyTU(record);
+			record.setQtyTU(qtyPacks);
 		}
 	}
 
 	@Override
-	public BigDecimal calculateQtyPacks(final IHUPackingAware record)
+	public BigDecimal calculateQtyTU(final IHUPackingAware record)
 	{
 		final BigDecimal qty = record.getQty();
 		if (qty == null || qty.signum() <= 0)
@@ -223,12 +170,33 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 		final Capacity capacityDef = capacityBL.getCapacity(huPiItemProduct, product, uom);
 
-		final Integer qtyPacks = capacityDef.calculateQtyPacks(qty, uom);
-		if (qtyPacks == null)
+		final Integer qtyTU = capacityDef.calculateQtyTU(qty, uom);
+		if (qtyTU == null)
 		{
 			return null;
 		}
 
-		return BigDecimal.valueOf(qtyPacks);
+		return BigDecimal.valueOf(qtyTU);
 	}
+
+	@Override
+	public void computeAndSetQtysForNewHuPackingAware(
+			@NonNull final PlainHUPackingAware huPackingAware,
+			@NonNull final BigDecimal quickInputQty)
+	{
+		final I_M_HU_PI_Item_Product piItemProduct = huPackingAware.getM_HU_PI_Item_Product();
+		final IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+		if (piItemProduct == null || piPIItemProductBL.isVirtualHUPIItemProduct(piItemProduct) || piItemProduct.isInfiniteCapacity())
+		{
+			huPackingAware.setQty(quickInputQty);
+			huPackingAware.setQtyTU(BigDecimal.ONE);
+		}
+		else
+		{
+			final BigDecimal qtyTU = quickInputQty;
+			huPackingAware.setQtyTU(qtyTU);
+			setQtyCUFromQtyTU(huPackingAware, qtyTU.intValue());
+		}
+	}
+
 }

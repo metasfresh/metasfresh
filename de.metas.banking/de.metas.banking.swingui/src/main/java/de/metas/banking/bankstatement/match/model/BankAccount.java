@@ -9,8 +9,8 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.util.Env;
 
+import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.interfaces.I_C_BP_BankAccount;
 
 /*
  * #%L

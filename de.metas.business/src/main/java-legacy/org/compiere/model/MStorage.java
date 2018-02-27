@@ -26,7 +26,7 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
-import org.adempiere.util.NullLoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.DB;
@@ -122,7 +122,7 @@ public class MStorage extends X_M_Storage
 	public static MStorage[] getAll(final Properties ctx,
 			final int M_Product_ID, final int M_Locator_ID, final String trxName)
 	{
-		final ArrayList<MStorage> list = new ArrayList<MStorage>();
+		final ArrayList<MStorage> list = new ArrayList<>();
 		final String sql = "SELECT * FROM M_Storage "
 				+ "WHERE M_Product_ID=? AND M_Locator_ID=?"
 				+ " AND QtyOnHand <> 0 "
@@ -165,7 +165,7 @@ public class MStorage extends X_M_Storage
 	 */
 	public static MStorage[] getOfProduct(final Properties ctx, final int M_Product_ID, final String trxName)
 	{
-		final ArrayList<MStorage> list = new ArrayList<MStorage>();
+		final ArrayList<MStorage> list = new ArrayList<>();
 		final String sql = "SELECT * FROM M_Storage "
 				+ "WHERE M_Product_ID=?";
 		PreparedStatement pstmt = null;
@@ -250,7 +250,7 @@ public class MStorage extends X_M_Storage
 			allAttributeInstances = true;
 		}
 
-		final ArrayList<MStorage> list = new ArrayList<MStorage>();
+		final ArrayList<MStorage> list = new ArrayList<>();
 		// Specific Attribute Set Instance
 		String sql = "SELECT s.M_Product_ID,s.M_Locator_ID,s.M_AttributeSetInstance_ID,"
 				+ "s.AD_Client_ID,s.AD_Org_ID,s.IsActive,s.Created,s.CreatedBy,s.Updated,s.UpdatedBy,"
@@ -406,46 +406,6 @@ public class MStorage extends X_M_Storage
 		return retValue;
 	}	// getCreate
 
-
-	/**
-	 * Invokes {@link #add(Properties, int, int, int, int, int, BigDecimal, BigDecimal, BigDecimal, ILoggable, String)} with a {@link NullLoggable}.
-	 * 
-	 * @param ctx
-	 * @param M_Warehouse_ID
-	 * @param M_Locator_ID
-	 * @param M_Product_ID
-	 * @param M_AttributeSetInstance_ID
-	 * @param reservationAttributeSetInstance_ID
-	 * @param diffQtyOnHand
-	 * @param diffQtyReserved
-	 * @param diffQtyOrdered
-	 * @param trxName
-	 * @return
-	 */
-	public static boolean add(final Properties ctx,
-			final int M_Warehouse_ID,
-			final int M_Locator_ID,
-			final int M_Product_ID,
-			final int M_AttributeSetInstance_ID,
-			final int reservationAttributeSetInstance_ID,
-			final BigDecimal diffQtyOnHand,
-			final BigDecimal diffQtyReserved,
-			final BigDecimal diffQtyOrdered,
-			final String trxName)
-	{
-		return add(ctx,
-				M_Warehouse_ID,
-				M_Locator_ID,
-				M_Product_ID,
-				M_AttributeSetInstance_ID,
-				reservationAttributeSetInstance_ID,
-				diffQtyOnHand,
-				diffQtyReserved,
-				diffQtyOrdered,
-				NullLoggable.instance,
-				trxName);
-	}
-
 	/**
 	 * Update Storage Info add.
 	 * Called from MProjectIssue
@@ -472,7 +432,6 @@ public class MStorage extends X_M_Storage
 			final BigDecimal diffQtyOnHand,
 			final BigDecimal diffQtyReserved,
 			final BigDecimal diffQtyOrdered,
-			final ILoggable loggable,
 			final String trxName)
 	{
 		MStorage storage = null;
@@ -484,6 +443,9 @@ public class MStorage extends X_M_Storage
 			storage = getCreate(ctx, M_Locator_ID,
 					M_Product_ID, M_AttributeSetInstance_ID, trxName);
 		}
+
+		final ILoggable loggable = Loggables.get();
+
 		// Verify
 		if (storage.getM_Locator_ID() != M_Locator_ID
 				&& storage.getM_Product_ID() != M_Product_ID
@@ -576,7 +538,7 @@ public class MStorage extends X_M_Storage
 
 	/**************************************************************************
 	 * Get Location with highest Locator Priority and a sufficient OnHand Qty
-	 * 
+	 *
 	 * @param M_Warehouse_ID warehouse
 	 * @param M_Product_ID product
 	 * @param M_AttributeSetInstance_ID asi
@@ -664,7 +626,7 @@ public class MStorage extends X_M_Storage
 	 * Get Warehouse/Locator Available Qty.
 	 * The call is accurate only if there is a storage record
 	 * and assumes that the product is stocked
-	 * 
+	 *
 	 * @param M_Warehouse_ID wh (if the M_Locator_ID!=0 then M_Warehouse_ID is ignored)
 	 * @param M_Locator_ID locator (if 0, the whole warehouse will be evaluated)
 	 * @param M_Product_ID product
@@ -675,7 +637,7 @@ public class MStorage extends X_M_Storage
 	public static BigDecimal getQtyAvailable(final int M_Warehouse_ID, final int M_Locator_ID,
 			final int M_Product_ID, final int M_AttributeSetInstance_ID, final String trxName)
 	{
-		final ArrayList<Object> params = new ArrayList<Object>();
+		final ArrayList<Object> params = new ArrayList<>();
 		final StringBuilder sql = new StringBuilder("SELECT COALESCE(SUM(s.QtyOnHand-s.QtyReserved),0)")
 				.append(" FROM M_Storage s")
 				.append(" WHERE s.M_Product_ID=?");
@@ -800,7 +762,7 @@ public class MStorage extends X_M_Storage
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override

@@ -95,7 +95,7 @@ public class ESRImportBL implements IESRImportBL
 
 	private static final String MSG_GroupLinesNegativeAmount = "GroupLinesNegativeAmount";
 
-	public static final String ERR_WRONG_POST_BANK_ACCOUNT = "ESR_Wrong_Post_Bank_Account";
+
 
 	private static final String ESR_NO_HAS_WRONG_ORG_2P = "de.metas.payment.esr.EsrNoHasWrongOrg";
 
@@ -323,25 +323,7 @@ public class ESRImportBL implements IESRImportBL
 		// post account number
 		if (esrImport.getC_BP_BankAccount_ID() > 0) // TODO this might not be the case in unit tests.
 		{
-			final String postAccountNo = importLine.getESRPostParticipantNumber();
-
-			final I_C_BP_BankAccount bankAccount = create(esrImport.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
-
-			final String renderedPostAccountNo = bankAccount.getESR_RenderedAccountNo();
-			final String[] renderenNoComponents = renderedPostAccountNo.split("-");
-			Check.assume(renderenNoComponents.length == 3, renderedPostAccountNo + " contains three '-' separated parts");
-
-			final StringBuilder sb = new StringBuilder();
-			sb.append(renderenNoComponents[0]);
-			sb.append(Util.lpadZero(renderenNoComponents[1], 6, "middle section of " + renderedPostAccountNo));
-			sb.append(renderenNoComponents[2]);
-
-			final String unrenderedPostAccountNo = sb.toString();
-			if (!unrenderedPostAccountNo.equals(postAccountNo))
-			{
-				ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
-						new Object[] { unrenderedPostAccountNo, postAccountNo }));
-			}
+			ESRDataLoaderUtil.evaluateESRAccountNumber(esrImport, importLine);
 		}
 
 		// The reference number of the ESR Import line
@@ -368,6 +350,8 @@ public class ESRImportBL implements IESRImportBL
 		}
 		save(importLine);
 	}
+
+
 
 	/**
 	 * Groups the given lines so that we can create one payment for each line.
@@ -585,7 +569,7 @@ public class ESRImportBL implements IESRImportBL
 				save(esrImport, ITrx.TRXNAME_None); // out of transaction: we want to not be rollback
 			}
 
-			throw new AdempiereException(e.getLocalizedMessage(), e);
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 		finally
 		{

@@ -10,12 +10,12 @@ package de.metas.handlingunits.maintenance.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,7 +50,6 @@ import org.compiere.util.DB;
 import org.compiere.util.TrxRunnable2;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -59,7 +58,7 @@ import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.document.IDocTypeDAO;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -69,6 +68,7 @@ import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.process.JavaProcess;
 
 /**
@@ -241,7 +241,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		//
 		// Document Type & Status
 		// NOTE: not sure if we need to use MaterialTrackingPPOrderBL.C_DocType_DOCSUBTYPE_QualityInspection or not
-		ppOrderBL.setDocType(order, X_C_DocType.DOCBASETYPE_ManufacturingOrder, IDocTypeDAO.DOCSUBTYPE_Any);
+		ppOrderBL.setDocType(order, X_C_DocType.DOCBASETYPE_ManufacturingOrder, DocTypeQuery.DOCSUBTYPE_Any);
 		order.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		order.setDocAction(X_PP_Order.DOCACTION_Complete);
 
@@ -265,7 +265,8 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 
 		//
 		// Qtys
-		ppOrderBL.setQty(order, BigDecimal.ZERO);
+		ppOrderBL.setQtyOrdered(order, BigDecimal.ZERO);
+		ppOrderBL.setQtyEntered(order, BigDecimal.ZERO);
 		// QtyBatchSize : do not set it, let the MO to take it from workflow
 		order.setYield(BigDecimal.ZERO);
 

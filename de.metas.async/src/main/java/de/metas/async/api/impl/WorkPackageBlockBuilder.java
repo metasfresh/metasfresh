@@ -78,7 +78,7 @@ import de.metas.async.model.I_C_Queue_Block;
 			_block.setC_Queue_PackageProcessor_ID(getC_Queue_PackageProcessor_ID());
 			_block.setAD_PInstance_Creator_ID(getAD_PInstance_Creator_ID());
 
-			dao.saveInLocalTrx(_block);
+			dao.save(_block);
 		}
 		return _block;
 	}

@@ -1,5 +1,7 @@
 package de.metas.order.model.interceptor;
 
+import java.util.List;
+
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -8,7 +10,11 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.elasticsearch.IESSystem;
+import de.metas.event.Topic;
+import de.metas.order.event.OrderUserNotifications;
 
 /**
  *
@@ -17,12 +23,17 @@ import de.metas.elasticsearch.IESSystem;
  */
 public class OrderModuleInterceptor extends AbstractModuleInterceptor
 {
-	public static final OrderModuleInterceptor INSTANCE= new OrderModuleInterceptor();
+	public static final OrderModuleInterceptor INSTANCE = new OrderModuleInterceptor();
 
 	private OrderModuleInterceptor()
 	{
-		super();
 	};
+
+	@Override
+	protected List<Topic> getAvailableUserNotificationsTopics()
+	{
+		return ImmutableList.of(OrderUserNotifications.EVENTBUS_TOPIC);
+	}
 
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)

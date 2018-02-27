@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 
@@ -47,7 +46,7 @@ import lombok.NonNull;
 
 /**
  * Immutable {@link IAttributeSet} implementation.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -58,7 +57,8 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return new Builder();
 	}
 
-	public static final ImmutableAttributeSet ofValuesIndexByAttributeId(@Nullable final Map<Object, Object> valuesByAttributeIdObj)
+	public static final ImmutableAttributeSet ofValuesIndexByAttributeId(
+			@Nullable final Map<Object, Object> valuesByAttributeIdObj)
 	{
 		if (valuesByAttributeIdObj == null || valuesByAttributeIdObj.isEmpty())
 		{
@@ -67,6 +67,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 		final ImmutableMap.Builder<Integer, I_M_Attribute> attributes = ImmutableMap.builder();
 		final ImmutableMap.Builder<Integer, Object> valuesByAttributeId = ImmutableMap.builder();
+
 		valuesByAttributeIdObj.forEach((attributeIdObj, value) -> {
 			final int attributeId = Integer.parseInt(attributeIdObj.toString());
 			final I_M_Attribute attribute = load(attributeId, I_M_Attribute.class);
@@ -76,6 +77,23 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		});
 
 		return new ImmutableAttributeSet(attributes.build(), valuesByAttributeId.build());
+	}
+
+	public static ImmutableAttributeSet copyOf(final IAttributeSet attributeSet)
+	{
+		if (attributeSet instanceof ImmutableAttributeSet)
+		{
+			return (ImmutableAttributeSet)attributeSet;
+		}
+
+		final Builder builder = builder();
+		attributeSet.getAttributes()
+				.forEach(attribute -> {
+					final Object value = attributeSet.getValue(attribute);
+					builder.attributeValue(attribute, value);
+				});
+
+		return builder.build();
 	}
 
 	public static final ImmutableAttributeSet EMPTY = new ImmutableAttributeSet();
@@ -275,7 +293,13 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		public Builder attributeValue(final int attributeId, final Object attributeValue)
 		{
 			final I_M_Attribute attribute = loadOutOfTrx(attributeId, I_M_Attribute.class);
-			Check.assumeNotNull(attribute, "Parameter attribute is not null");
+			attributeValue(attribute, attributeValue);
+			return this;
+		}
+
+		public Builder attributeValue(@NonNull final I_M_Attribute attribute, final Object attributeValue)
+		{
+			final int attributeId = attribute.getM_Attribute_ID();
 			attributes.put(attributeId, attribute);
 
 			if (attributeValue == null)
@@ -289,5 +313,6 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 			return this;
 		}
+
 	}
 }

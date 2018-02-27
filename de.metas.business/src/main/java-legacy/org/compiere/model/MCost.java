@@ -41,10 +41,8 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyBL;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
@@ -318,17 +316,17 @@ public class MCost extends X_M_Cost
 		}
 		else if (MCostElement.COSTINGMETHOD_StandardCosting.equals(costingMethod))
 		{
-			//	migrate old costs
-			final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-			MProductCosting pc = MProductCosting.get(ctx, product.getM_Product_ID(),
-				as.getC_AcctSchema_ID(), ITrx.TRXNAME_None);
-			if (pc != null)
-				retValue = pc.getCurrentCostPrice();
+			;
 		}
 		else if (MCostElement.COSTINGMETHOD_UserDefined.equals(costingMethod))
+		{
 			;
+		}
 		else
+		{
 			throw new IllegalArgumentException("Unknown Costing Method = " + costingMethod);
+		}
+		
 		if (retValue != null && retValue.signum() != 0)
 		{
 			s_log.debug(product.getName() + ", CostingMethod=" + costingMethod + " - " + retValue);
@@ -1071,7 +1069,7 @@ public class MCost extends X_M_Cost
 		ResultSet rs = null;
 		//
 		int oldTransaction_ID = 0;
-		ArrayList<QtyCost> fifo = new ArrayList<QtyCost>();
+		ArrayList<QtyCost> fifo = new ArrayList<>();
 		try
 		{
 			pstmt = DB.prepareStatement (sql, null);
@@ -1212,7 +1210,7 @@ public class MCost extends X_M_Cost
 		ResultSet rs = null;
 		//
 		int oldTransaction_ID = 0;
-		ArrayList<QtyCost> lifo = new ArrayList<QtyCost>();
+		ArrayList<QtyCost> lifo = new ArrayList<>();
 		try
 		{
 			pstmt = DB.prepareStatement (sql, null);

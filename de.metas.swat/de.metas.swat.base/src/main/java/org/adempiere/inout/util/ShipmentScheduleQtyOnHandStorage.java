@@ -23,404 +23,252 @@ package org.adempiere.inout.util;
  */
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.model.IContextAware;
-import org.adempiere.util.Check;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Util;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.model.WarehousePickingGroup;
+import org.compiere.Adempiere;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.inout.IInOutDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.storage.IStorageEngine;
-import de.metas.storage.IStorageEngineService;
-import de.metas.storage.IStorageQuery;
-import de.metas.storage.IStorageRecord;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResult;
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 
 /**
- * A complex class to load and cache {@link IStorageRecord}s which are relevant to {@link I_M_ShipmentSchedule}s and their {@link I_C_OrderLine}s.
- *
+ * Loads stock details which are relevant to given {@link I_M_ShipmentSchedule}s.
+ * Allows to change (in memory!) the qtyOnHand.
  */
 public class ShipmentScheduleQtyOnHandStorage
 {
-	// services
-	private final transient IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
-	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
-	private IContextAware _context;
-
-	// Cache
-	private final Map<ArrayKey, IStorageQuery> _cachedStorageQueries = new HashMap<>();
-
-	//
-	// Storage
-	private final IStorageEngine storageEngine;
-	/**
-	 * Loaded storage records (map of StorageId to "mutable storage record")
-	 *
-	 * NOTE: we are using a {@link LinkedHashMap} to preserve the order.
-	 */
-	private final LinkedHashMap<String, ShipmentScheduleStorageRecord> _storageRecords = new LinkedHashMap<>(50);
-
-	//
-	// Unconfirmed Quantities
-	private Set<Integer> unconfirmedQtys_consideredInOutLineIds = new HashSet<>();
-	private Map<Integer, BigDecimal> unconfirmedQtys_shipmentScheduleId2qty = new HashMap<>();
-
-	public ShipmentScheduleQtyOnHandStorage()
+	public static final ShipmentScheduleQtyOnHandStorage ofShipmentSchedules(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
-		storageEngine = storageEngineProvider.getStorageEngine();
+		return new ShipmentScheduleQtyOnHandStorage(shipmentSchedules);
+	}
+
+	public static final ShipmentScheduleQtyOnHandStorage ofShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return new ShipmentScheduleQtyOnHandStorage(ImmutableList.of(shipmentSchedule));
+	}
+
+	public static final ShipmentScheduleQtyOnHandStorage ofOlAndScheds(final List<OlAndSched> lines)
+	{
+		final List<I_M_ShipmentSchedule> shipmentSchedules = lines.stream().map(OlAndSched::getSched).collect(ImmutableList.toImmutableList());
+		return new ShipmentScheduleQtyOnHandStorage(shipmentSchedules);
+	}
+
+	// services
+	private final transient IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
+	private final List<ShipmentScheduleAvailableStockDetail> stockDetails;
+	private final Map<ArrayKey, AvailableToPromiseQuery> cachedMaterialQueries = new HashMap<>();
+
+	private ShipmentScheduleQtyOnHandStorage(final List<I_M_ShipmentSchedule> shipmentSchedules)
+	{
+		final AvailableToPromiseRepository stockRepository = Adempiere.getBean(AvailableToPromiseRepository.class);
+		stockDetails = createStockDetailsFromShipmentSchedules(shipmentSchedules, stockRepository);
 	}
 
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.add("storageRecords", stockDetails)
+				.toString();
 	}
 
-	public void setContext(final IContextAware context)
+	private final List<ShipmentScheduleAvailableStockDetail> createStockDetailsFromShipmentSchedules(final List<I_M_ShipmentSchedule> shipmentSchedules, final AvailableToPromiseRepository stockRepository)
 	{
-		_context = context;
+		if (shipmentSchedules.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		final AvailableToPromiseMultiQuery multiQuery = createMaterialMultiQueryOrNull(shipmentSchedules);
+		if (multiQuery == null)
+		{
+			return ImmutableList.of();
+		}
+
+		final AvailableToPromiseResult stockResult = stockRepository.retrieveAvailableStock(multiQuery);
+		return createStockDetails(stockResult);
 	}
 
-	private IContextAware getContext()
+	private AvailableToPromiseMultiQuery createMaterialMultiQueryOrNull(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
-		Check.assumeNotNull(_context, "context not null");
-		return _context;
+		final Set<AvailableToPromiseQuery> materialQueries = shipmentSchedules.stream()
+				.map(this::getMaterialQuery)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+		if (materialQueries.isEmpty())
+		{
+			return null;
+		}
+
+		return AvailableToPromiseMultiQuery.builder()
+				.queries(materialQueries)
+				.addToPredefinedBuckets(false)
+				.build();
 	}
 
-	private Properties getCtx()
+	public AvailableToPromiseQuery getMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		return getContext().getCtx();
-	}
-
-	public void loadStoragesFor(final List<OlAndSched> lines)
-	{
-		if (Check.isEmpty(lines))
-		{
-			return;
-		}
-
-		final Set<Integer> productIds = new HashSet<>();
-
-		//
-		// Create storage queries from our lines.
-		// Also collect the M_Product_IDs
-		final Set<IStorageQuery> storageQueries = new HashSet<>(lines.size());
-		for (final OlAndSched olAndSched : lines)
-		{
-			// Create query
-			// In case the DeliveryRule is Force, there is no point to load the storage, because it's not needed.
-			// FIXME: make sure this works performance wise, then remove the commented code
-//			final I_M_ShipmentSchedule shipmentSchedule = olAndSched.getSched();
-//			final String deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(shipmentSchedule);
-//			if (!X_M_ShipmentSchedule.DELIVERYRULE_Force.equals(deliveryRule))
-//			{
-				final IStorageQuery storageQuery = createStorageQuery(olAndSched.getSched());
-				storageQueries.add(storageQuery);
-//			}
-
-			// Collect product IDs
-			final int productId = olAndSched.getSched().getM_Product_ID();
-			if (productId > 0)
-			{
-				productIds.add(productId);
-			}
-		}
-
-		//
-		// Retrieve storage records for our queries
-		if (!storageQueries.isEmpty())
-		{
-			final IContextAware context = getContext();
-			final Collection<IStorageRecord> storageRecords = storageEngine.retrieveStorageRecords(context, storageQueries);
-			addStorageRecords(storageRecords);
-		}
-
-		//
-		// Load and subtract unconfirmed qty
-		loadAndApplyUnconfirmedShipments(productIds);
-	}
-
-	public void loadStoragesFor(@NonNull final I_M_ShipmentSchedule sched)
-	{
-		final IStorageQuery storageQuery = createStorageQuery(sched);
-
-		final IContextAware context = getContext();
-		final Collection<IStorageRecord> storagesForLine = storageEngine.retrieveStorageRecords(context, storageQuery);
-
-		addStorageRecords(storagesForLine);
-	}
-
-	private final void addStorageRecords(final Collection<IStorageRecord> storageRecords)
-	{
-		if (Check.isEmpty(storageRecords))
-		{
-			return;
-		}
-
-		for (final IStorageRecord storageRecord : storageRecords)
-		{
-			final ShipmentScheduleStorageRecord mutableStorageRecord = new ShipmentScheduleStorageRecord(storageRecord);
-
-			// Make sure the storage record is not added twice
-			final String storageId = mutableStorageRecord.getId();
-			if (_storageRecords.containsKey(storageId))
-			{
-				continue;
-			}
-
-			_storageRecords.put(storageId, mutableStorageRecord);
-		}
-	}
-
-	/**
-	 * Loads all InProgress shipment lines for given product IDs and then subtract their quantities from current QtyOnHand that we have.
-	 *
-	 * @param productIds
-	 */
-	private void loadAndApplyUnconfirmedShipments(final Set<Integer> productIds)
-	{
-		if (productIds.isEmpty())
-		{
-			return;
-		}
-
-		//
-		// Retrieve shipment lines which are in progress
-		// ... because when they will be processed, their qty will be subtracted from storage
-		final IQueryBuilder<I_M_InOutLine> shipmentLinesInProgressQueryBuilder = inOutDAO.createUnprocessedShipmentLinesQuery(getCtx())
-				.addInArrayOrAllFilter(I_M_InOutLine.COLUMN_M_Product_ID, productIds)
-				.addNotEqualsFilter(I_M_InOutLine.COLUMNNAME_MovementQty, BigDecimal.ZERO);
-
-		// Skip those shipment lines which were already considered
-		if (!unconfirmedQtys_consideredInOutLineIds.isEmpty())
-		{
-			shipmentLinesInProgressQueryBuilder.addNotInArrayFilter(I_M_InOutLine.COLUMN_M_InOutLine_ID, unconfirmedQtys_consideredInOutLineIds);
-		}
-
-		//
-		// Retrieve unconfirmed shipment lines
-		final List<I_M_InOutLine> shipmentLinesInProgress = shipmentLinesInProgressQueryBuilder
-				.create()
-				.list();
-
-		//
-		// Iterate those in progress shipment lines and subtract their qty
-		for (final I_M_InOutLine shipmentLine : shipmentLinesInProgress)
-		{
-			final BigDecimal qtyUnconfirmedPerShipmentLine = shipmentLine.getMovementQty();
-			if (qtyUnconfirmedPerShipmentLine.signum() == 0)
-			{
-				continue;
-			}
-
-			//
-			// Update Storage Lines (if there are any)
-			if (hasStorageRecords())
-			{
-				final IStorageQuery storageQuery = createStorageQuery(shipmentLine);
-
-				// NOTE: we are going to subtract the whole quantity from this shipment line
-				// only from first storage
-				// Not sure if this is ok, but this is how it was before and i did not invest to much time to really implement it right if it works ;)
-				// The right way would be to distribute it to existing storages
-				final ShipmentScheduleStorageRecord storageRecord = getFirstStorageRecordsMatching(storageQuery);
-				if (storageRecord != null)
-				{
-					storageRecord.subtractQtyOnHand(qtyUnconfirmedPerShipmentLine);
-				}
-			}
-
-			//
-			// Update unconfirmed quantities per shipment schedule
-			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-			final List<I_M_ShipmentSchedule> schedulesForInOutLine = shipmentScheduleAllocDAO.retrieveSchedulesForInOutLine(shipmentLine);
-			for (final I_M_ShipmentSchedule sched : schedulesForInOutLine)
-			{
-				addQtyUnconfirmedShipmentsPerShipmentSchedule(sched.getM_ShipmentSchedule_ID(), qtyUnconfirmedPerShipmentLine);
-			}
-
-			// remember this shipment line because we don't want to subtract it twice
-			unconfirmedQtys_consideredInOutLineIds.add(shipmentLine.getM_InOutLine_ID());
-		}
-	}
-
-	public IStorageQuery createStorageQuery(@NonNull final I_M_ShipmentSchedule sched)
-	{
-		final TableRecordReference scheduleReference = TableRecordReference.ofReferenced(sched);
+		// In case the DeliveryRule is Force, there is no point to load the storage, because it's not needed.
+		// FIXME: make sure this works performance wise, then remove the commented code
+		// final I_M_ShipmentSchedule shipmentSchedule = olAndSched.getSched();
+		// final String deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(shipmentSchedule);
+		// if (!X_M_ShipmentSchedule.DELIVERYRULE_Force.equals(deliveryRule))
+		// return null;
 
 		//
 		// Get the storage query from cache if available
-		final ArrayKey storageQueryCacheKey = Util.mkKey(
+		final TableRecordReference scheduleReference = TableRecordReference.ofReferenced(sched);
+		final ArrayKey materialQueryCacheKey = ArrayKey.of(
 				scheduleReference.getTableName(),
 				scheduleReference.getRecord_ID(),
 				I_M_ShipmentSchedule.Table_Name,
 				sched.getM_ShipmentSchedule_ID());
 
-		IStorageQuery storageQuery = _cachedStorageQueries.get(storageQueryCacheKey);
-		if (storageQuery != null)
-		{
-			return storageQuery;
-		}
+		return cachedMaterialQueries.computeIfAbsent(materialQueryCacheKey, k -> createMaterialQuery(sched));
+	}
 
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private AvailableToPromiseQuery createMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final int shipmentScheduleWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
+		final WarehousePickingGroup warehousePickingGroup = warehouseDAO.getWarehousePickingGroupContainingWarehouseId(shipmentScheduleWarehouseId);
+		final Set<Integer> warehouseIds = warehousePickingGroup != null ? warehousePickingGroup.getWarehouseIds() : ImmutableSet.of(shipmentScheduleWarehouseId);
 
-		// Create storage query
-		final I_M_Product product = sched.getM_Product();
-		final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
-		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
+		final int productId = sched.getM_Product_ID();
+		final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
+		final Date date = shipmentScheduleEffectiveBL.getPreparationDate(sched);
 
-		storageQuery = storageEngine.newStorageQuery();
-		storageQuery.addWarehouse(warehouse);
-		storageQuery.addProduct(product);
-		storageQuery.addPartner(bpartner);
+		final AvailableToPromiseQueryBuilder stockQueryBuilder = AvailableToPromiseQuery.builder()
+				.warehouseIds(warehouseIds)
+				.productId(productId)
+				.bpartnerId(bpartnerId)
+				.date(date);
 
 		// Add query attributes
-		final I_M_AttributeSetInstance asi = sched.getM_AttributeSetInstance_ID() > 0 ? sched.getM_AttributeSetInstance() : null;
-		if (asi != null && asi.getM_AttributeSetInstance_ID() > 0)
+		final int asiId = sched.getM_AttributeSetInstance_ID();
+		if (asiId > 0)
 		{
-			final IAttributeSet attributeSet = storageEngine.getAttributeSet(asi);
-			storageQuery.addAttributes(attributeSet);
+			stockQueryBuilder.storageAttributesKey(AttributesKeys
+					.createAttributesKeyFromASIStorageAttributes(asiId)
+					.orElse(AttributesKey.ALL));
 		}
 
 		// Cache the storage query and return it
-		_cachedStorageQueries.put(storageQueryCacheKey, storageQuery);
-		return storageQuery;
+		return stockQueryBuilder.build();
 	}
 
-	private IStorageQuery createStorageQuery(final I_M_InOutLine shipmentLine)
+	private static final List<ShipmentScheduleAvailableStockDetail> createStockDetails(final AvailableToPromiseResult stockResult)
+	{
+		return stockResult
+				.getResultGroups()
+				.stream()
+				.map(ShipmentScheduleQtyOnHandStorage::createStockDetail)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static ShipmentScheduleAvailableStockDetail createStockDetail(final AvailableToPromiseResult.ResultGroup result)
+	{
+		return ShipmentScheduleAvailableStockDetail.builder()
+				.productId(result.getProductId())
+				.warehouseId(result.getWarehouseId())
+				.bpartnerId(result.getBpartnerId())
+				.storageAttributesKey(result.getStorageAttributesKey())
+				.qtyOnHand(result.getQty())
+				.build();
+	}
+
+	private Stream<ShipmentScheduleAvailableStockDetail> streamStockDetailsMatching(final AvailableToPromiseQuery materialQuery)
+	{
+		return stockDetails
+				.stream()
+				.filter(stockDetail -> matching(materialQuery, stockDetail));
+	}
+
+	private static boolean matching(final AvailableToPromiseQuery query, final ShipmentScheduleAvailableStockDetail stockDetail)
 	{
 		//
-		// Get the storage query from cache if available
-		final ArrayKey storageQueryCacheKey = Util.mkKey(I_M_InOutLine.Table_Name, shipmentLine.getC_OrderLine_ID());
-		IStorageQuery storageQuery = _cachedStorageQueries.get(storageQueryCacheKey);
-		if (storageQuery != null)
+		// Product
+		final List<Integer> queryProductIds = query.getProductIds();
+		if (!queryProductIds.isEmpty() && !queryProductIds.contains(stockDetail.getProductId()))
 		{
-			return storageQuery;
+			return false;
 		}
 
 		//
-		// Create storage query
-		final I_M_InOut shipment = shipmentLine.getM_InOut();
-
-		storageQuery = storageEngine.newStorageQuery();
-		storageQuery.addWarehouse(shipment.getM_Warehouse());
-		storageQuery.addProduct(shipmentLine.getM_Product());
-		storageQuery.addPartner(shipment.getC_BPartner());
-
-		// Add query attributes
-		final I_M_AttributeSetInstance asi = shipmentLine.getM_AttributeSetInstance();
-		if (asi != null && asi.getM_AttributeSetInstance_ID() > 0)
+		// Warehouse
+		final Set<Integer> queryWarehouseIds = query.getWarehouseIds();
+		if (!queryWarehouseIds.isEmpty() && !queryWarehouseIds.contains(stockDetail.getWarehouseId()))
 		{
-			final IAttributeSet attributeSet = storageEngine.getAttributeSet(asi);
-			storageQuery.addAttributes(attributeSet);
+			return false;
 		}
 
 		//
-		// Cache the storage query and return it
-		_cachedStorageQueries.put(storageQueryCacheKey, storageQuery);
-		return storageQuery;
+		// Partner
+		final int stockBPartnerId = stockDetail.getBpartnerId();
+		if (stockBPartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
+		{
+			// always match the available stock which is not allocated to a particular BPartner
+		}
+		else if (!query.isBPartnerMatching(stockBPartnerId))
+		{
+			return false;
+		}
+
+		//
+		// Storage Attributes Key
+		final List<AttributesKey> queryStorageAttributeKeys = query.getStorageAttributesKeys();
+		if (!queryStorageAttributeKeys.isEmpty() && !queryStorageAttributeKeys.contains(stockDetail.getStorageAttributesKey()))
+		{
+			return false;
+		}
+
+		return true;
 	}
 
-	private Collection<ShipmentScheduleStorageRecord> getStorageRecords()
+	private boolean hasStockDetails()
 	{
-		return _storageRecords.values();
+		return !stockDetails.isEmpty();
 	}
 
-	private boolean hasStorageRecords()
+	public List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		return !_storageRecords.isEmpty();
-	}
-
-	public List<ShipmentScheduleStorageRecord> getStorageRecordsMatching(@NonNull final I_M_ShipmentSchedule sched)
-	{
-		if (!hasStorageRecords())
+		if (!hasStockDetails())
 		{
 			return Collections.emptyList();
 		}
 
-		final IStorageQuery storageQuery = createStorageQuery(sched);
-		return getStorageRecordsMatching(storageQuery);
+		final AvailableToPromiseQuery materialQuery = getMaterialQuery(sched);
+		return streamStockDetailsMatching(materialQuery)
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	public List<ShipmentScheduleStorageRecord> getStorageRecordsMatching(final IStorageQuery storageQuery)
-	{
-		return getStorageRecords()
-				.stream()
-				.filter(storageRecord -> storageQuery.matches(storageRecord))
-				.collect(Collectors.toList());
-	}
-
-	public ShipmentScheduleStorageRecord getFirstStorageRecordsMatching(final IStorageQuery storageQuery)
-	{
-		final Collection<ShipmentScheduleStorageRecord> storageRecordsAll = getStorageRecords();
-		if (storageRecordsAll.isEmpty())
-		{
-			return null;
-		}
-
-		for (final ShipmentScheduleStorageRecord storageRecord : getStorageRecords())
-		{
-			// Skip storage records which are not matching our query
-			if (!storageQuery.matches(storageRecord))
-			{
-				continue;
-			}
-
-			return storageRecord;
-		}
-
-		return null;
-	}
-
-	private void addQtyUnconfirmedShipmentsPerShipmentSchedule(int m_ShipmentSchedule_ID, BigDecimal qtyUnconfirmedToAdd)
-	{
-		Check.assume(m_ShipmentSchedule_ID > 0, "m_ShipmentSchedule_ID > 0");
-
-		BigDecimal qtyUnconfirmedOld = unconfirmedQtys_shipmentScheduleId2qty.get(m_ShipmentSchedule_ID);
-		if (qtyUnconfirmedOld == null)
-		{
-			qtyUnconfirmedOld = BigDecimal.ZERO;
-		}
-		final BigDecimal qtyUnconfirmedNew = qtyUnconfirmedOld.add(qtyUnconfirmedToAdd);
-		unconfirmedQtys_shipmentScheduleId2qty.put(m_ShipmentSchedule_ID, qtyUnconfirmedNew);
-	}
-
+	// TODO: remove it
 	public BigDecimal getQtyUnconfirmedShipmentsPerShipmentSchedule(final I_M_ShipmentSchedule sched)
 	{
-		Check.assumeNotNull(sched, "Param 'sched' is not null");
-
-		final BigDecimal qtyUnconfirmed = unconfirmedQtys_shipmentScheduleId2qty.get(sched.getM_ShipmentSchedule_ID());
-		if (qtyUnconfirmed == null)
-		{
-			return BigDecimal.ZERO;
-		}
-		return qtyUnconfirmed;
+		return BigDecimal.ZERO;
 	}
 }

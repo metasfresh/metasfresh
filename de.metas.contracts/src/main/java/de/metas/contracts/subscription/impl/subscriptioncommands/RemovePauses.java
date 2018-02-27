@@ -20,6 +20,7 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.contracts.subscription.impl.SubscriptionService;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import lombok.NonNull;
 
 /*
@@ -73,9 +74,10 @@ public class RemovePauses
 		for (final I_C_SubscriptionProgress record : recordsAfterLastPause)
 		{
 			subtractFromSeqNoAndSave(record, seqNoOffset);
+
 		}
 	}
-	
+
 	@VisibleForTesting
 	public List<I_C_SubscriptionProgress> retrieveAllPauseRecords(
 			@NonNull final I_C_Flatrate_Term term,
@@ -104,9 +106,9 @@ public class RemovePauses
 		}
 		return allPauseRecords;
 	}
-	
+
 	private static I_C_SubscriptionProgress retrieveFirstPauseRecordSearchForwards(
-			@NonNull final List<I_C_SubscriptionProgress> sps, 
+			@NonNull final List<I_C_SubscriptionProgress> sps,
 			@NonNull final Timestamp pauseUntil)
 	{
 		for (final I_C_SubscriptionProgress sp : sps)
@@ -125,7 +127,7 @@ public class RemovePauses
 	}
 
 	private static List<I_C_SubscriptionProgress> retrieveAllPauseRecords(
-			@Nullable final I_C_SubscriptionProgress firstPauseRecord, 
+			@Nullable final I_C_SubscriptionProgress firstPauseRecord,
 			@NonNull final Timestamp pauseUntil)
 	{
 		if (firstPauseRecord == null)
@@ -177,7 +179,7 @@ public class RemovePauses
 		final I_C_SubscriptionProgress firstPauseRecord = preceedingPauseRecord != null ? preceedingPauseRecord : firstSp;
 		return firstPauseRecord;
 	}
-	
+
 	private static int deletePauseBeginEndRecordsAndUpdatePausedRecords(@NonNull final List<I_C_SubscriptionProgress> allPauseRecords)
 	{
 		int seqNoOffset = 0;
@@ -195,6 +197,11 @@ public class RemovePauses
 			else if (isWithinPause(pauseRecord))
 			{
 				pauseRecord.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Running);
+
+				if (pauseRecord.getM_ShipmentSchedule_ID() > 0)
+				{
+					Services.get(IShipmentScheduleBL.class).openShipmentSchedule(pauseRecord.getM_ShipmentSchedule());
+				}
 			}
 			subtractFromSeqNoAndSave(pauseRecord, seqNoOffset);
 		}

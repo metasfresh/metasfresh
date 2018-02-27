@@ -42,7 +42,7 @@ public class LanguageDAO implements ILanguageDAO
 	public static String	MAINTENANCEMODE_ReCreate = "R";
 
 	@Override
-	@Cached(cacheName = I_AD_Language.Table_Name)
+	@Cached(cacheName = I_AD_Language.Table_Name, expireMinutes = Cached.EXPIREMINUTES_Never)
 	public ADLanguageList retrieveAvailableLanguages()
 	{
 		final IQueryBuilder<I_AD_Language> queryBuilder = Services.get(IQueryBL.class)

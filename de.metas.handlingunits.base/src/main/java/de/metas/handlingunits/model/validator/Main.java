@@ -48,6 +48,7 @@ import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.impl.HUOrderFastInputHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.ddorder.spi.impl.DDOrderLineHUDocumentHandler;
+import de.metas.handlingunits.ddorder.spi.impl.ForecastLineHUDocumentHandler;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.invoicecandidate.facet.C_Invoice_Candidate_HUPackingMaterials_FacetCollector;
@@ -55,6 +56,7 @@ import de.metas.handlingunits.invoicecandidate.ui.spi.impl.HUC_Invoice_Candidate
 import de.metas.handlingunits.materialtracking.impl.QualityInspectionWarehouseDestProvider;
 import de.metas.handlingunits.materialtracking.spi.impl.HUDocumentLineLineMaterialTrackingListener;
 import de.metas.handlingunits.materialtracking.spi.impl.HUHandlingUnitsInfoFactory;
+import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -131,7 +133,6 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_OrderLine(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_Order(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_OrderLine(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_InOut(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item_Product(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order_Line_Alloc(), client);
@@ -143,6 +144,7 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_LUTU_Configuration(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_Product(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ProductPrice(), client);
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ForecastLine(), client);
 
 		engine.addModelValidator(de.metas.handlingunits.hutransaction.interceptor.M_HU.INSTANCE, client);
 
@@ -169,7 +171,9 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_ShipperTransportation(), client);
 
 		engine.addModelValidator(de.metas.handlingunits.sourcehu.interceptor.M_HU.INSTANCE, client);
-		
+
+		engine.addModelValidator(de.metas.handlingunits.material.interceptor.M_Transaction.INSTANCE, client);
+
 		//
 		// 08255: M_ShipmentSchedule update qtys
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inoutcandidate.callout.M_ShipmentSchedule.instance);
@@ -279,7 +283,7 @@ public final class Main extends AbstractModuleInterceptor
 
 	/**
 	 * Setup tables for InTransaction only caching. see {@link ITableCacheConfigBuilder#setTrxLevel(TrxLevel)}.
-	 * 
+	 *
 	 * @param cachingService
 	 */
 	private void setupInTrxOnlyCaching(final IModelCacheService cachingService)
@@ -361,7 +365,12 @@ public final class Main extends AbstractModuleInterceptor
 			Services.get(IHUDocumentHandlerFactory.class).registerHandler(I_DD_OrderLine.Table_Name, DDOrderLineHUDocumentHandler.class);
 		}
 
-		final EqualsQueryFilter<I_C_OrderLine> excludePackageOrderLinesFilter = new EqualsQueryFilter<I_C_OrderLine>(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, false);
+		// Add handler for Forecast
+		{
+			Services.get(IHUDocumentHandlerFactory.class).registerHandler(I_M_ForecastLine.Table_Name, ForecastLineHUDocumentHandler.class);
+		}
+
+		final EqualsQueryFilter<I_C_OrderLine> excludePackageOrderLinesFilter = new EqualsQueryFilter<>(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, false);
 
 		// task 07242: don't create invoice candidates for packaging order lines
 		{

@@ -9,6 +9,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -26,7 +27,6 @@ import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionAsyncRequ
 import de.metas.dlm.partitioner.async.DLMPartitionerWorkpackageProcessor;
 import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 
 /*
  * #%L
@@ -96,7 +96,7 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 					final String tableName = column.getAD_Table().getTableName();
 					if (!I_DLM_Partition_Workqueue.Table_Name.equals(tableName)) // this table is part of the DLM engine
 					{
-						final Optional<String> tableColumnName = columnBL.getTableColumnName(tableName, column.getColumnName());
+						final Optional<String> tableColumnName = columnBL.getTableIdColumnName(tableName, column.getColumnName());
 						if (tableColumnName.isPresent()) // not the case for e.g. AD_Issue
 						{
 							engine.addModelChange(tableName, CheckTableRecordReferenceInterceptor.INSTANCE);
@@ -204,7 +204,7 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 
 			final String modelTableName = InterfaceWrapperHelper.getModelTableName(model);
 
-			final TableReferenceDescriptor descriptor = TableReferenceDescriptor.of(modelTableName, ITableRecordReference.COLUMNNAME_Record_ID, recordReference.getTableName());
+			final TableRecordIdDescriptor descriptor = TableRecordIdDescriptor.of(modelTableName, ITableRecordReference.COLUMNNAME_Record_ID, recordReference.getTableName());
 
 			final PartitionConfig augmentedConfig = partitionerService.augmentPartitionerConfig(config, Collections.singletonList(descriptor));
 			if (!augmentedConfig.isChanged())

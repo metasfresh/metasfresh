@@ -27,15 +27,13 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
-import org.adempiere.inout.util.ShipmentScheduleStorageRecord;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.process.JavaProcess;
-import de.metas.storage.IStorageBL;
-import de.metas.storage.IStorageQuery;
 
 public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 {
@@ -58,16 +56,13 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 			throw new FillMandatoryException(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
 		}
 
-		final ShipmentScheduleQtyOnHandStorage storagesContainer = new ShipmentScheduleQtyOnHandStorage();
-		storagesContainer.setContext(this);
-		storagesContainer.loadStoragesFor(shipmentSchedule);
+		final ShipmentScheduleQtyOnHandStorage storagesContainer = ShipmentScheduleQtyOnHandStorage.ofShipmentSchedule(shipmentSchedule);
+		final List<ShipmentScheduleAvailableStockDetail> storageRecords = storagesContainer.getStockDetailsMatching(shipmentSchedule);
 
-		final List<ShipmentScheduleStorageRecord> storageRecords = storagesContainer.getStorageRecordsMatching(shipmentSchedule);
-
-		final BigDecimal qtyOnHandTotal = Services.get(IStorageBL.class).calculateQtyOnHandSum(storageRecords);
+		final BigDecimal qtyOnHandTotal = ShipmentScheduleAvailableStockDetail.calculateQtyOnHandSum(storageRecords);
 		addLog("@QtyOnHand@ (@Total@): " + qtyOnHandTotal);
 
-		for (final ShipmentScheduleStorageRecord storage : storageRecords)
+		for (final ShipmentScheduleAvailableStockDetail storage : storageRecords)
 		{
 			addLog("------------------------------------------------------------");
 			addLog(storage.getSummary());
@@ -76,10 +71,10 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		//
 		// Also show the Storage Query
 		{
-			final IStorageQuery storageQuery = storagesContainer.createStorageQuery(shipmentSchedule);
+			final AvailableToPromiseQuery materialQuery = storagesContainer.getMaterialQuery(shipmentSchedule);
 			addLog("------------------------------------------------------------");
 			addLog("Storage Query:");
-			addLog(storageQuery.getSummary());
+			addLog(String.valueOf(materialQuery));
 		}
 
 		return MSG_OK;

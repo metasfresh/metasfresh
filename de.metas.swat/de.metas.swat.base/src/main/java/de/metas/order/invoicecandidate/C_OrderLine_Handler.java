@@ -235,25 +235,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
 
-		final List<I_C_Invoice_Candidate> ics = invoiceCandDB.fetchInvoiceCandidates(ctx, org.compiere.model.I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID(), trxName);
+		final List<I_C_Invoice_Candidate> ics = invoiceCandDB
+				.fetchInvoiceCandidates(ctx, org.compiere.model.I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID(), trxName);
 		for (final I_C_Invoice_Candidate ic : ics)
 		{
-			// task 08216: ts I don't see the case of invalidating all invoice candidates with the same HeaderAggregationKey, and it costs *a lot* of performance
-			// So, commenting it out, but letting it here, for the time beeing
-// @formatter:off
-//			final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-//			final boolean calledFromBackgroundProcess = invoiceCandBL.isUpdateProcessInProgress();
-//			if (calledFromBackgroundProcess)
-//			{
-				// just invalidate this single invoice candidate. The background process itself makes sure that its siblings are also dealt with.
-				invoiceCandDB.invalidateCand(ic);
-//			}
-//			else
-//			{
-//				// invalidate all candidates with the same header aggregation key and, depending on invoice schedule, even more candidates.
-//				invoiceCandBL.invalidateForCandidateHeaderKeyAndPartner(ic);
-//			}
-// @formatter:on
+			invoiceCandDB.invalidateCand(ic);
 		}
 	}
 
@@ -277,6 +263,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * <li>QtyOrdered := C_OrderLine.QtyOrdered
 	 * <li>DateOrdered := C_OrderLine.DateOrdered
 	 * <li>C_Order_ID: C_OrderLine.C_Order_ID
+	 * <li>C_PaymentTerm_ID: C_OrderLine.C_PaymentTerm_ID/C_Order.C_PaymentTerm_ID
 	 * </ul>
 	 *
 	 * @see IInvoiceCandidateHandler#setOrderedData(I_C_Invoice_Candidate)
@@ -290,6 +277,28 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyOrdered(orderLine.getQtyOrdered());
 		ic.setDateOrdered(orderLine.getDateOrdered());
 		ic.setC_Order_ID(orderLine.getC_Order_ID());
+
+		setC_PaymentTerm(ic);
+	}
+
+	private void setC_PaymentTerm(final I_C_Invoice_Candidate ic)
+	{
+		if (!ic.isSOTrx())
+		{
+			return;
+		}
+
+		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
+
+		if (orderLine.getC_PaymentTerm_Override() == null)
+		{
+			final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+			ic.setC_PaymentTerm(order.getC_PaymentTerm());
+		}
+		else
+		{
+			ic.setC_PaymentTerm(orderLine.getC_PaymentTerm_Override());
+		}
 	}
 
 	/**
@@ -385,9 +394,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setBill_Location_ID(order.getBill_Location_ID());
 		ic.setBill_User_ID(order.getBill_User_ID());
 
-		// // 05350 : Set the consolidate invoice flag from the BP
-		// final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
-		// aggregationBL.setAllowConsolidateInvoice(ic);
 	}
 
 	@Override

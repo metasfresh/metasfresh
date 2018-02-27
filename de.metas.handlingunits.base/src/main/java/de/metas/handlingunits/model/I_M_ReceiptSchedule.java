@@ -66,11 +66,4 @@ public interface I_M_ReceiptSchedule extends de.metas.tourplanning.model.I_M_Rec
 	//public int getM_HU_LUTU_Configuration_ID();
 	public I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration();
 	// @formatter:on
-
-	// @formatter:off
-	public static final String COLUMNNAME_IsHUPrepared = "IsHUPrepared";
-	public void setIsHUPrepared(boolean IsHUPrepared);
-	public boolean isHUPrepared();
-	// @formatter:on
-
 }

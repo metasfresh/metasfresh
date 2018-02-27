@@ -43,9 +43,4 @@ public final class CustomColNames {
 
 	public static final String T_Replenish_C_Period_ID = "C_Period_ID";
 	public static final String T_Replenish_TimeToMarket = "TimeToMarket";
-
-	public static final String M_Package_PACKAGE_WEIGHT = "PackageWeight";
-
-	public static final String M_Package_M_PACKAGING_CONTAINER_ID = "M_PackagingContainer_ID";
-
 }

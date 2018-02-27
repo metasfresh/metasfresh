@@ -10,12 +10,12 @@ package de.metas.banking.payment.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,9 +39,9 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.service.IBankingBL;
-import de.metas.interfaces.I_C_BP_BankAccount;
 
 @Interceptor(I_C_PaySelection.class)
 public class C_PaySelection
@@ -97,7 +97,7 @@ public class C_PaySelection
 
 	/**
 	 * Updates the pay selection's name if paydate or the bank account are changed. the name is set to be <PayDate>_<Bank>_<Currency>.
-	 * 
+	 *
 	 * @param paySelection
 	 * @task 08267
 	 */

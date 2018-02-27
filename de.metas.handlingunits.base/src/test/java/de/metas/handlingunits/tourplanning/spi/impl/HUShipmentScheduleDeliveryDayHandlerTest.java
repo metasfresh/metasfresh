@@ -10,12 +10,12 @@ package de.metas.handlingunits.tourplanning.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,7 +66,7 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 		random = new Random(System.currentTimeMillis());
 
 		huShipmentScheduleDeliveryDayHandler = HUShipmentScheduleDeliveryDayHandler.instance;
-		contextProvider = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+		contextProvider = PlainContextAware.newWithTrxName(Env.getCtx(), ITrx.TRXNAME_None);
 
 		shipmentSchedule = createShipmentSchedule();
 		tourInstance = createTourInstance();
@@ -108,7 +108,9 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 		assertEquals(deliveryDay, tourInstance);
 	}
 
-	public static void assertEquals(final IHUDeliveryQuantities expected, final IHUDeliveryQuantities actual)
+	public static void assertEquals(
+			final IHUDeliveryQuantities expected,
+			final IHUDeliveryQuantities actual)
 	{
 		Assert.assertThat("Invalid QtyOrdered_LU",
 				actual.getQtyOrdered_LU(),
@@ -117,15 +119,6 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 		Assert.assertThat("Invalid QtyOrdered_TU",
 				actual.getQtyOrdered_TU(),
 				Matchers.comparesEqualTo(expected.getQtyOrdered_TU())
-				);
-
-		Assert.assertThat("Invalid QtyToDeliver_LU",
-				actual.getQtyToDeliver_LU(),
-				Matchers.comparesEqualTo(expected.getQtyToDeliver_LU())
-				);
-		Assert.assertThat("Invalid QtyToDeliver_TU",
-				actual.getQtyToDeliver_TU(),
-				Matchers.comparesEqualTo(expected.getQtyToDeliver_TU())
 				);
 
 		Assert.assertThat("Invalid QtyDelivered_LU",
@@ -138,21 +131,38 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 				);
 	}
 
+	public static void assertEquals(
+			final I_M_ShipmentSchedule expected,
+			final IHUDeliveryQuantities actual)
+	{
+		Assert.assertThat("Invalid QtyOrdered_LU",
+				actual.getQtyOrdered_LU(),
+				Matchers.comparesEqualTo(expected.getQtyOrdered_LU())
+				);
+		Assert.assertThat("Invalid QtyOrdered_TU",
+				actual.getQtyOrdered_TU(),
+				Matchers.comparesEqualTo(expected.getQtyOrdered_TU())
+				);
+	}
+
+	private void setRandomQtys(final I_M_ShipmentSchedule record)
+	{
+		record.setQtyOrdered_LU(BigDecimal.valueOf(random.nextInt(100000)));
+		record.setQtyOrdered_TU(BigDecimal.valueOf(random.nextInt(100000)));
+	}
+
 	private void setRandomQtys(final IHUDeliveryQuantities record)
 	{
-		shipmentSchedule.setQtyOrdered_LU(BigDecimal.valueOf(random.nextInt(100000)));
-		shipmentSchedule.setQtyOrdered_TU(BigDecimal.valueOf(random.nextInt(100000)));
+		record.setQtyOrdered_LU(BigDecimal.valueOf(random.nextInt(100000)));
+		record.setQtyOrdered_TU(BigDecimal.valueOf(random.nextInt(100000)));
 
-		shipmentSchedule.setQtyToDeliver_LU(BigDecimal.valueOf(random.nextInt(100000)));
-		shipmentSchedule.setQtyToDeliver_TU(BigDecimal.valueOf(random.nextInt(100000)));
-
-		shipmentSchedule.setQtyDelivered_LU(BigDecimal.valueOf(random.nextInt(100000)));
-		shipmentSchedule.setQtyDelivered_TU(BigDecimal.valueOf(random.nextInt(100000)));
+		record.setQtyDelivered_LU(BigDecimal.valueOf(random.nextInt(100000)));
+		record.setQtyDelivered_TU(BigDecimal.valueOf(random.nextInt(100000)));
 	}
 
 	private IDeliveryDayAllocable asDeliveryDayAllocable(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		return ShipmentScheduleDeliveryDayHandler.instance.asDeliveryDayAllocable(shipmentSchedule);
+		return ShipmentScheduleDeliveryDayHandler.INSTANCE.asDeliveryDayAllocable(shipmentSchedule);
 	}
 
 	private I_M_DeliveryDay createDeliveryDay(final I_M_Tour_Instance tourInstance)

@@ -2,7 +2,7 @@ package org.adempiere.impexp.bpartner;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.IImportValidator;
+import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.util.Check;
@@ -90,7 +90,7 @@ import de.metas.logging.LogManager;
 				user.setC_BPartner_Location(bpartnerLocation);
 			}
 
-			ModelValidationEngine.get().fireImportValidate(process, importRecord, user, IImportValidator.TIMING_AFTER_IMPORT);
+			ModelValidationEngine.get().fireImportValidate(process, importRecord, user, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(user);
 		}
 		else 	// New Contact
@@ -108,7 +108,7 @@ import de.metas.logging.LogManager;
 			{
 				user.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
 			}
-			ModelValidationEngine.get().fireImportValidate(process, importRecord, user, IImportValidator.TIMING_AFTER_IMPORT);
+			ModelValidationEngine.get().fireImportValidate(process, importRecord, user, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(user);
 			logger.trace("Insert BP Contact - {}", user);
 

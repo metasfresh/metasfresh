@@ -12,12 +12,12 @@ import java.util.Collections;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -154,7 +154,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		final IQuery<I_M_InOutLine> matchingReceiptLineQuery = queryBL.createQueryBuilder(I_M_InOutLine.class, receipt)
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, receipt.getM_InOut_ID())
 				.create();
-		
+
 		return queryBL
 				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, receipt)
 				.addInSubQueryFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID, I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, matchingReceiptLineQuery)
@@ -200,21 +200,30 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public Set<I_M_ReceiptSchedule> retrieveForInvoiceCandidate(final I_C_Invoice_Candidate candidate)
 	{
-		Set<I_M_ReceiptSchedule> schedules = ImmutableSet.of();
+		final Set<I_M_ReceiptSchedule> schedules;
 
 		final int tableID = candidate.getAD_Table_ID();
 
 		// invoice candidate references an orderline
 		if (tableID == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 		{
-			final org.compiere.model.I_C_OrderLine orderLine = candidate.getC_OrderLine();
-			if (orderLine != null)
+			
+			if (candidate.getC_OrderLine_ID() > 0)
 			{
+				final org.compiere.model.I_C_OrderLine orderLine = candidate.getC_OrderLine();
 				final I_M_ReceiptSchedule schedForOrderLine = retrieveForRecord(orderLine);
-				if (schedForOrderLine != null)
+				if (schedForOrderLine == null)
+				{
+					schedules = ImmutableSet.of();
+				}
+				else
 				{
 					schedules = ImmutableSet.of(schedForOrderLine);
 				}
+			}
+			else
+			{
+				schedules = ImmutableSet.of();
 			}
 		}
 
@@ -225,16 +234,20 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 			final String trxName = InterfaceWrapperHelper.getTrxName(candidate);
 
 			final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_M_InOutLine.class, trxName);
-			if (inoutLine != null)
+			if (inoutLine == null)
+			{
+				schedules = ImmutableSet.of();
+			}
+			else
 			{
 				schedules = ImmutableSet.copyOf(retrieveRsForInOutLine(inoutLine));
 			}
 		}
 		else
 		{
-			// No other tables are supported yet
-			// Please add implementation if required
+			schedules = ImmutableSet.of();
 		}
+
 		return schedules;
 	}
 

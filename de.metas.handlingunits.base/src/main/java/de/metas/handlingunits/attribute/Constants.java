@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute;
 
+import org.adempiere.util.Check;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,16 +15,18 @@ package de.metas.handlingunits.attribute;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import org.compiere.model.I_M_Attribute;
+
+import lombok.experimental.UtilityClass;
 
 /**
  * HU Attributes constants
@@ -30,6 +34,7 @@ import org.compiere.model.I_M_Attribute;
  * @author tsa
  *
  */
+@UtilityClass
 public final class Constants
 {
 	/**
@@ -68,8 +73,14 @@ public final class Constants
 	 */
 	public static final String ATTR_ReceiptInOutLine_ID = "HU_ReceiptInOutLine_ID";
 
-	private Constants()
+	public static final String ATTR_BestBeforeDate = "HU_BestBeforeDate";
+	
+	public static final String ATTR_Expired = "HU_Expired";
+	public static final String ATTR_Expired_Value_Expired = "expired";
+
+	public static String sqlBestBeforeDate(final String huIdColumnName)
 	{
-		super();
-	};
+		Check.assumeNotEmpty(huIdColumnName, "huIdColumnName is not empty");
+		return "\"de.metas.handlingunits\".huBestBeforeDate(" + huIdColumnName + ")";
+	}
 }

@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -262,7 +263,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		Check.assumeNotNull(asi, "asi not null");
 		Check.assume(attributeId > 0, "attributeId > 0");
 
-		//
 		// Check if already exists
 		final I_M_AttributeInstance instanceExisting = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attributeId);
 		if (instanceExisting != null)
@@ -270,7 +270,6 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			return instanceExisting;
 		}
 
-		//
 		// Create New
 		final I_M_AttributeInstance instanceNew = newInstance(I_M_AttributeInstance.class, asi);
 		instanceNew.setM_Attribute_ID(attributeId);
@@ -307,9 +306,27 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public I_M_AttributeSetInstance createAttributeSetInstanceFromAttributeSet(@NonNull final IAttributeSet attributeSet)
+	public I_M_AttributeSetInstance createASIFromAttributeSet(@NonNull final IAttributeSet attributeSet)
 	{
-		final I_M_AttributeSetInstance attributeSetInstance = newInstance(I_M_AttributeSetInstance.class);
+		final int productId = -1;
+		return createASIWithASFromProductAndInsertAttributeSet(productId, attributeSet);
+	}
+
+	@Override
+	public I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(
+			final int productId,
+			@NonNull final IAttributeSet attributeSet)
+	{
+		final I_M_AttributeSetInstance attributeSetInstance;
+		if (productId > 0)
+		{
+			final I_M_Product product = load(productId, I_M_Product.class);
+			attributeSetInstance = createASI(product);
+		}
+		else
+		{
+			attributeSetInstance = newInstance(I_M_AttributeSetInstance.class);
+		}
 		save(attributeSetInstance);
 
 		final ImmutableList<I_M_Attribute> attributesOrderedById = attributeSet.getAttributes().stream()

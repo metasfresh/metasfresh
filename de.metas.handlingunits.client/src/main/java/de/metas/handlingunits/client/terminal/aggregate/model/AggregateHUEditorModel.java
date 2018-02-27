@@ -31,21 +31,17 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.comparator.NullSafeComparator;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHUShipperTransportationBL;
@@ -133,7 +129,7 @@ public class AggregateHUEditorModel extends HUEditorModel
 			throw new AdempiereException("@NotFound@ @" + de.metas.shipping.model.I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID + "@");
 		}
 
-		final List<KeyNamePair> result = new ArrayList<KeyNamePair>(shipperTransportations.size() + 1);
+		final List<KeyNamePair> result = new ArrayList<>(shipperTransportations.size() + 1);
 
 		// Add none (selected by default)
 		result.add(new KeyNamePair(-1, ""));
@@ -226,7 +222,7 @@ public class AggregateHUEditorModel extends HUEditorModel
 
 		//
 		// Validate HUKeys and get HUs from them
-		final Set<I_M_HU> hus = new HashSet<I_M_HU>(huKeys.size());
+		final Set<I_M_HU> hus = new HashSet<>(huKeys.size());
 		for (final HUKey huKey : huKeys)
 		{
 			//
@@ -244,18 +240,7 @@ public class AggregateHUEditorModel extends HUEditorModel
 
 		//
 		// From HUs, create M_Packages and then assign them to selected Shipper Transportation
-		final ITerminalContext terminalContext = getTerminalContext();
-		final Properties ctx = terminalContext.getCtx();
-		trxManager.run(new TrxRunnable()
-		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final IContextAware contextProvider = new PlainContextAware(ctx, localTrxName);
-				huShipperTransportationBL.addHUsToShipperTransportation(contextProvider, shipperTransportationId, hus);
-			}
-		});
+		trxManager.run(() -> huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, hus));
 
 		//
 		// Iterate HU Keys and fire status changed (those HUs got locked)

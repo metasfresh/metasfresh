@@ -4,16 +4,18 @@
 	<parent>
 		<artifactId>metasfresh-report</artifactId>
 		<groupId>de.metas.report</groupId>
-		<version>10.0.0</version>
+		<version>[1,10.0.0]</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
+	
+	<version>10.0.0</version>
 	<artifactId>report-service</artifactId>
 
 	<properties>
 		<migration-sql-basedir>42-de.metas.report.jasper.server</migration-sql-basedir>
-
 		<start-class>de.metas.report.ReportServiceMain</start-class>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
 	<!-- 
@@ -74,13 +76,13 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.report</groupId>
 			<artifactId>de.metas.report.jasper.commons</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<!-- when making the docker image, it shall automatically look for custom SQL scripts and do a migration 
@@ -88,7 +90,7 @@
 		<dependency>
 			<groupId>de.metas.migration</groupId>
 			<artifactId>de.metas.migration.cli</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		
@@ -146,7 +148,6 @@
 	<build>
 		<finalName>metasfresh-report-service</finalName>
 		<plugins>
-
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -158,6 +159,10 @@
 							<goal>repackage</goal>
 						</goals>
 						<configuration>
+							<!-- we *also* need the normal main jar to be use in app
+							so don't replace the normal jar, but create the executable jar with this classifier -->
+							<classifier>standalone</classifier>
+
 							<executable>true</executable>
 							<mainClass>${start-class}</mainClass>
 							

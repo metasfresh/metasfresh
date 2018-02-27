@@ -6,10 +6,8 @@ import java.util.List;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -39,7 +37,7 @@ import lombok.experimental.Wither;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Wither
 public class Candidate
 {
@@ -60,7 +58,7 @@ public class Candidate
 	/**
 	 * Should be {@code null} for stock candidates.
 	 */
-	CandidateSubType subType;
+	CandidateBusinessCase businessCase;
 
 	CandidateStatus status;
 
@@ -82,12 +80,12 @@ public class Candidate
 	MaterialDescriptor materialDescriptor;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#PRODUCTION}.
+	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#PRODUCTION}.
 	 */
 	ProductionDetail productionDetail;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#DISTRIBUTION}.
+	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#DISTRIBUTION}.
 	 */
 	DistributionDetail distributionDetail;
 
@@ -99,13 +97,14 @@ public class Candidate
 	@Singular
 	List<TransactionDetail> transactionDetails;
 
-	public CandidatesQuery.CandidatesQueryBuilder createStockQueryBuilder()
+	public Candidate withAddedQuantity(@NonNull final BigDecimal addedQuantity)
 	{
-		return CandidatesQuery.builder()
-				.materialDescriptor(materialDescriptor
-						.withoutQuantity()
-						.withDateOperator(DateOperator.BEFORE_OR_AT))
-				.type(CandidateType.STOCK);
+		return withQuantity(getQuantity().add(addedQuantity));
+	}
+
+	public Candidate withNegatedQuantity()
+	{
+		return withQuantity(getQuantity().negate());
 	}
 
 	public BigDecimal getQuantity()
@@ -158,7 +157,7 @@ public class Candidate
 
 	private Candidate(final int clientId, final int orgId,
 			@NonNull final CandidateType type,
-			final CandidateSubType subType,
+			final CandidateBusinessCase businessCase,
 			final CandidateStatus status,
 			final int id,
 			final int parentId,
@@ -173,15 +172,13 @@ public class Candidate
 		this.clientId = clientId;
 		this.orgId = orgId;
 		this.type = type;
-		this.subType = subType;
+		this.businessCase = businessCase;
 		this.status = status;
 		this.id = id;
 		this.parentId = parentId;
 		this.groupId = groupId;
 		this.seqNo = seqNo;
 
-		Preconditions.checkArgument(materialDescriptor.isComplete(),
-				"Given parameter materialDescriptor needs to have iscomplete==true; materialDescriptor=%s", materialDescriptor);
 		this.materialDescriptor = materialDescriptor;
 
 		this.productionDetail = productionDetail;

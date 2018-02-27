@@ -41,7 +41,7 @@ public class MUser extends X_AD_User
 	public MUser(Properties ctx, int AD_User_ID, String trxName)
 	{
 		super(ctx, AD_User_ID, trxName);	// 0 is also System
-		if (AD_User_ID == 0)
+		if (is_new())
 		{
 			setIsFullBPAccess(true);
 			setNotificationType(NOTIFICATIONTYPE_EMail);

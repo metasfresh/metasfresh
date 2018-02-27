@@ -147,7 +147,7 @@ public interface I_M_HU_Instance_Properties_v
     public static final String COLUMNNAME_DocumentName = "DocumentName";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -157,7 +157,7 @@ public interface I_M_HU_Instance_Properties_v
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String

@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1397586411L;
+	private static final long serialVersionUID = 1423365144L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -30,7 +30,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 			setM_Warehouse_ID (0);
 			setQty (BigDecimal.ZERO);
 			setSeqNo (0);
-			setStorageAttributesKey (null); // EMPTY
+			setStorageAttributesKey (null); // -1002
         } */
     }
 
@@ -48,6 +48,80 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order(org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	/** Set Auftrag.
+		@param C_Order_ID 
+		Auftrag
+	  */
+	@Override
+	public void setC_Order_ID (int C_Order_ID)
+	{
+		if (C_Order_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
+	}
+
+	/** Get Auftrag.
+		@return Auftrag
+	  */
+	@Override
+	public int getC_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set Plandatum.
 		@param DateProjected Plandatum	  */
@@ -100,6 +174,38 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * MD_Candidate_BusinessCase AD_Reference_ID=540709
+	 * Reference name: MD_Candidate_BusinessCase
+	 */
+	public static final int MD_CANDIDATE_BUSINESSCASE_AD_Reference_ID=540709;
+	/** DISTRIBUTION = DISTRIBUTION */
+	public static final String MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION = "DISTRIBUTION";
+	/** PRODUCTION = PRODUCTION */
+	public static final String MD_CANDIDATE_BUSINESSCASE_PRODUCTION = "PRODUCTION";
+	/** RECEIPT = RECEIPT */
+	public static final String MD_CANDIDATE_BUSINESSCASE_RECEIPT = "RECEIPT";
+	/** SHIPMENT = SHIPMENT */
+	public static final String MD_CANDIDATE_BUSINESSCASE_SHIPMENT = "SHIPMENT";
+	/** FORECAST = FORECAST */
+	public static final String MD_CANDIDATE_BUSINESSCASE_FORECAST = "FORECAST";
+	/** Set Geschäftsvorfall.
+		@param MD_Candidate_BusinessCase Geschäftsvorfall	  */
+	@Override
+	public void setMD_Candidate_BusinessCase (java.lang.String MD_Candidate_BusinessCase)
+	{
+
+		set_Value (COLUMNNAME_MD_Candidate_BusinessCase, MD_Candidate_BusinessCase);
+	}
+
+	/** Get Geschäftsvorfall.
+		@return Geschäftsvorfall	  */
+	@Override
+	public java.lang.String getMD_Candidate_BusinessCase () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MD_Candidate_BusinessCase);
 	}
 
 	/** Set Gruppen-ID.
@@ -208,38 +314,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	/** 
-	 * MD_Candidate_SubType AD_Reference_ID=540709
-	 * Reference name: MD_Candidate_SubType
-	 */
-	public static final int MD_CANDIDATE_SUBTYPE_AD_Reference_ID=540709;
-	/** DISTRIBUTION = DISTRIBUTION */
-	public static final String MD_CANDIDATE_SUBTYPE_DISTRIBUTION = "DISTRIBUTION";
-	/** PRODUCTION = PRODUCTION */
-	public static final String MD_CANDIDATE_SUBTYPE_PRODUCTION = "PRODUCTION";
-	/** RECEIPT = RECEIPT */
-	public static final String MD_CANDIDATE_SUBTYPE_RECEIPT = "RECEIPT";
-	/** SHIPMENT = SHIPMENT */
-	public static final String MD_CANDIDATE_SUBTYPE_SHIPMENT = "SHIPMENT";
-	/** FORECAST = FORECAST */
-	public static final String MD_CANDIDATE_SUBTYPE_FORECAST = "FORECAST";
-	/** Set Untertyp.
-		@param MD_Candidate_SubType Untertyp	  */
-	@Override
-	public void setMD_Candidate_SubType (java.lang.String MD_Candidate_SubType)
-	{
-
-		set_Value (COLUMNNAME_MD_Candidate_SubType, MD_Candidate_SubType);
-	}
-
-	/** Get Untertyp.
-		@return Untertyp	  */
-	@Override
-	public java.lang.String getMD_Candidate_SubType () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_MD_Candidate_SubType);
-	}
-
-	/** 
 	 * MD_Candidate_Type AD_Reference_ID=540707
 	 * Reference name: MD_Candidate_Type
 	 */
@@ -274,6 +348,43 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
+	public org.compiere.model.I_M_Forecast getM_Forecast() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class);
+	}
+
+	@Override
+	public void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class, M_Forecast);
+	}
+
+	/** Set Prognose.
+		@param M_Forecast_ID 
+		Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	  */
+	@Override
+	public void setM_Forecast_ID (int M_Forecast_ID)
+	{
+		if (M_Forecast_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Forecast_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Forecast_ID, Integer.valueOf(M_Forecast_ID));
+	}
+
+	/** Get Prognose.
+		@return Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	  */
+	@Override
+	public int getM_Forecast_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Forecast_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
@@ -305,6 +416,28 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Lieferdisposition.
+		@param M_ShipmentSchedule_ID Lieferdisposition	  */
+	@Override
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	{
+		if (M_ShipmentSchedule_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
+	}
+
+	/** Get Lieferdisposition.
+		@return Lieferdisposition	  */
+	@Override
+	public int getM_ShipmentSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

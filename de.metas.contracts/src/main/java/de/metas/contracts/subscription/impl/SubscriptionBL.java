@@ -39,8 +39,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -49,8 +49,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MNote;
-import org.compiere.model.MPriceList;
-import org.compiere.model.MProductPricing;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -75,7 +73,6 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
@@ -440,7 +437,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		
 		int seqNo = 10;
 
-		final List<I_C_SubscriptionProgress> deliveries = new ArrayList<I_C_SubscriptionProgress>();
+		final List<I_C_SubscriptionProgress> deliveries = new ArrayList<>();
 
 		for (int i = 0; i < numberOfRuns; i++)
 		{
@@ -639,7 +636,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 		//
-		final Set<Integer> delayedControlIds = new HashSet<Integer>();
+		final Set<Integer> delayedControlIds = new HashSet<>();
 
 		for (final I_C_SubscriptionProgress sd : deliveries)
 		{
@@ -708,16 +705,15 @@ public class SubscriptionBL implements ISubscriptionBL
 				deliveries.get(0).getC_Flatrate_Term().getC_OrderLine_Term(),
 				I_C_OrderLine.class);
 
-		final IProductPA productPA = Services.get(IProductPA.class);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_M_PriceList pl = InterfaceWrapperHelper.create(
-				productPA.retrievePriceListByPricingSyst(
-						ctx,
+				priceListDAO.retrievePriceListByPricingSyst(
 						mPricingSystemId,
-						ol.getC_BPartner_Location_ID(),
-						true,
-						trxName),
+						ol.getC_BPartner_Location(),
+						true),
 				I_M_PriceList.class);
 
+		final IProductPA productPA = Services.get(IProductPA.class);
 		final BigDecimal newPrice = productPA.retrievePriceStd(
 				ol.getM_Product_ID(),
 				ol.getC_BPartner_ID(),
@@ -728,114 +724,6 @@ public class SubscriptionBL implements ISubscriptionBL
 		final BigDecimal oldPrice = ol.getPriceActual().multiply(qtySum);
 
 		return newPrice.subtract(oldPrice);
-	}
-
-	public void setPrices(final I_C_OrderLine ol, final int priceListId, final BigDecimal priceQty, final BigDecimal factor)
-	{
-		final int productId = ol.getM_Product_ID();
-
-		final int bPartnerId = ol.getC_BPartner_ID();
-
-		if (productId == 0 || bPartnerId == 0)
-		{
-			return;
-		}
-
-		final MProductPricing pp = new MProductPricing(productId, bPartnerId, priceQty, true);
-		pp.setReferencedObject(ol); // 03152: setting the 'ol' to allow the subscription system to compute the
-									 // right price
-
-		pp.setM_PriceList_ID(priceListId);
-
-		if (!pp.calculatePrice())
-		{
-			throw new ProductNotOnPriceListException(pp, ol.getLine());
-		}
-
-		ol.setPriceList(pp.getPriceList());
-		ol.setPriceLimit(pp.getPriceLimit());
-		ol.setPriceActual(pp.getPriceStd());
-		ol.setPriceEntered(pp.getPriceStd());
-		ol.setC_Currency_ID(pp.getC_Currency_ID());
-		ol.setDiscount(pp.getDiscount());
-		ol.setPrice_UOM_ID(pp.getC_UOM_ID()); // task 06942
-
-		// 05129 : also set the tax category
-		ol.setC_TaxCategory_ID(pp.getC_TaxCategory_ID());
-
-		if (priceQty != null)
-		{
-			// this code has been borrowed from
-			// org.compiere.model.CalloutOrder.amt
-			// TODO: check if we can invoke that callout instead
-			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
-			final int StdPrecision = MPriceList.getStandardPrecision(ctx, priceListId);
-
-			BigDecimal LineNetAmt = priceQty.multiply(factor.multiply(pp.getPriceStd()));
-			if (LineNetAmt.scale() > StdPrecision)
-			{
-				LineNetAmt = LineNetAmt.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
-			}
-			logger.info("LineNetAmt=" + LineNetAmt);
-			ol.setLineNetAmt(LineNetAmt);
-		}
-	}
-
-	@Override
-	public void setSubscription(final I_C_OrderLine ol, final I_C_Flatrate_Conditions subscription)
-	{
-		Check.assume(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription.equals(subscription.getType_Conditions()), "");
-		Check.assume(ol.getM_Product_ID() > 0, "");
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
-
-		ol.setC_Flatrate_Conditions_ID(subscription.getC_Flatrate_Conditions_ID());
-
-		final int pricingSystemIdToUse = subscription.getM_PricingSystem_ID() > 0
-				? subscription.getM_PricingSystem_ID()
-				: InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class).getM_PricingSystem_ID();
-
-		final IProductPA productPA = Services.get(IProductPA.class);
-
-		final I_M_PriceList subscriptionPL = InterfaceWrapperHelper.create(
-				productPA.retrievePriceListByPricingSyst(
-						ctx,
-						pricingSystemIdToUse,
-						ol.getC_BPartner_Location_ID(),
-						true,
-						trxName),
-				I_M_PriceList.class);
-
-		if (subscriptionPL == null)
-		{
-			throw new AdempiereException(
-					Env.getAD_Language(ctx), ERR_NEW_CONDITIONS_PRICE_MISSING_1P,
-					new Object[] { subscription.getM_PricingSystem().getName() });
-		}
-
-		final int numberOfRuns = computeNumberOfRuns(subscription.getC_Flatrate_Transition(), ol.getC_Order().getDateOrdered());
-
-		final I_M_Product olProduct = ol.getM_Product();
-		final I_C_Flatrate_Matching matching = retrieveMatching(ctx, ol.getC_Flatrate_Conditions_ID(), olProduct, null);
-
-		// allowing the matching to be null
-		// Check.assume(matching != null, "Missing C_Flatrate_Matching for C_FlatrateConditions_ID=" +
-		// ol.getC_Flatrate_Conditions_ID() + " and product " + olProduct);
-		final BigDecimal qtyPerRun = matching == null ? BigDecimal.ONE : matching.getQtyPerDelivery();
-
-		final BigDecimal priceQty = qtyPerRun.multiply(new BigDecimal(numberOfRuns));
-
-		// qtyEntered is the "number of subscriptions"
-		// qty ordered needs to be set because it will be used to compute the
-		// line's NetLineAmount in MOrderLine.beforeSave()
-		ol.setQtyOrdered(priceQty.multiply(ol.getQtyEntered()));
-
-		logger.debug("Computing new prices for " + ol);
-
-		// TODO why not use OrderLineBL to compute prices?
-		setPrices(ol, subscriptionPL.getM_PriceList_ID(), priceQty, ol.getQtyEntered());
-		save(ol);
 	}
 
 	private I_C_SubscriptionProgress createDelivery(

@@ -6,8 +6,8 @@
 	<parent>
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent</artifactId>
-		<version>10.0.0</version>
-		<relativePath>../de.metas.parent/pom.xml</relativePath>
+		<version>[1,10.0.0]</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.elasticsearch</groupId>
@@ -19,25 +19,26 @@
 		<!-- empty property because the sql migration dir already contains a list 
 			of base directories -->
 		<migration-sql-basedir></migration-sql-basedir>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.elasticsearch</groupId>
 			<artifactId>de.metas.elasticsearch</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>

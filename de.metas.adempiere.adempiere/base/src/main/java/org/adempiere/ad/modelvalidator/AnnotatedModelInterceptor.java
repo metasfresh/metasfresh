@@ -20,8 +20,8 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChanges;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -514,28 +514,20 @@ import lombok.NonNull;
 		{
 			logger.debug("Scheduling to be executed after commit: {}", pointcut);
 			final String trxName = InterfaceWrapperHelper.getTrxName(po);
+
 			Services.get(ITrxManager.class)
 					.getTrxListenerManagerOrAutoCommit(trxName)
-					.registerListener(new TrxListenerAdapter()
-					{
-						@Override
-						public void afterCommit(final ITrx trx)
-						{
-							deactivate(); // make sure it won't be executed twice
-							InterfaceWrapperHelper.setTrxName(po, ITrx.TRXNAME_ThreadInherited); // make sure we use the RIGHT transaction!
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.additionalToStringInfo(() -> MoreObjects.toStringHelper(this)
+							.add("pointcut", pointcut)
+							.add("po", po)
+							.add("timing", timing)
+							.toString())
+					.invokeMethodJustOnce(true)
+					.registerHandlingMethod(transaction -> {
 
-							executeNow(po, pointcut, timing);
-						}
-
-						@Override
-						public String toString()
-						{
-							return MoreObjects.toStringHelper(this)
-									.add("pointcut", pointcut)
-									.add("po", po)
-									.add("timing", timing)
-									.toString();
-						}
+						executeNow(po, pointcut, timing);
+						InterfaceWrapperHelper.setTrxName(po, ITrx.TRXNAME_ThreadInherited);
 					});
 		}
 	}

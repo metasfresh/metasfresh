@@ -152,16 +152,16 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public BigDecimal getQtyPacks()
+	public BigDecimal getQtyTU()
 	{
 		return orderLine.getQtyEnteredTU();
 	}
 
 	@Override
-	public void setQtyPacks(final BigDecimal qtyPacks)
+	public void setQtyTU(final BigDecimal qtyPacks)
 	{
 		orderLine.setQtyEnteredTU(qtyPacks);
-		values.setQtyPacks(qtyPacks);
+		values.setQtyTU(qtyPacks);
 	}
 
 	@Override
@@ -214,7 +214,7 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	{
 		return String
 				.format("OrderLineHUPackingAware [orderLine=%s, getM_Product_ID()=%s, getM_Product()=%s, getQty()=%s, getM_HU_PI_Item_Product()=%s, getM_AttributeSetInstance_ID()=%s, getC_UOM()=%s, getQtyPacks()=%s, getC_BPartner()=%s, getDateOrdered()=%s, getM_HU_PI_Item_Product_ID()=%s, isInDispute()=%s]",
-						orderLine, getM_Product_ID(), getM_Product(), getQty(), getM_HU_PI_Item_Product(), getM_AttributeSetInstance_ID(), getC_UOM(), getQtyPacks(), getC_BPartner(),
+						orderLine, getM_Product_ID(), getM_Product(), getQty(), getM_HU_PI_Item_Product(), getM_AttributeSetInstance_ID(), getC_UOM(), getQtyTU(), getC_BPartner(),
 						getDateOrdered(), getM_HU_PI_Item_Product_ID(), isInDispute());
 	}
 }

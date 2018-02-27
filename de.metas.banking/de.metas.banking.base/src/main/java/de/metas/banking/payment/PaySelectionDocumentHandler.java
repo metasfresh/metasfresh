@@ -4,6 +4,7 @@ import java.io.File;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
 
 import de.metas.document.engine.DocumentHandler;
@@ -86,9 +87,11 @@ public class PaySelectionDocumentHandler implements DocumentHandler
 	public String completeIt(DocumentTableFields docFields)
 	{
 		final I_C_PaySelection paySelection = extractPaySelection(docFields);
-		paySelection.setProcessed(true);
-		paySelection.setDocAction(IDocument.ACTION_ReActivate);
+		
+		Services.get(IPaySelectionBL.class).completePaySelection(paySelection);
+		
 		return IDocument.STATUS_Completed;
+		
 	}
 
 	@Override
@@ -147,9 +150,8 @@ public class PaySelectionDocumentHandler implements DocumentHandler
 	public void reactivateIt(DocumentTableFields docFields)
 	{
 		final I_C_PaySelection paySelection = extractPaySelection(docFields);
-		paySelection.setProcessed(false);
-		paySelection.setDocAction(IDocument.ACTION_Complete);
 
+		Services.get(IPaySelectionBL.class).reactivatePaySelection(paySelection);
 	}
 
 }

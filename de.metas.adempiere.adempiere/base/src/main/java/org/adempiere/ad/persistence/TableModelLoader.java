@@ -65,7 +65,8 @@ public final class TableModelLoader
 
 	public PO newPO(final Properties ctx, final String tableName, final String trxName)
 	{
-		final int recordId = 0; // marker for new records
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+		final int recordId = InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName) - 1;
 		final PO po = retrievePO(ctx, tableName, recordId, trxName);
 		return po;
 	}

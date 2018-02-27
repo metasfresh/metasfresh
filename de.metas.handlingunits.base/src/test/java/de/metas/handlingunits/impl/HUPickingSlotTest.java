@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,12 +38,21 @@ import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
 
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, PickingCandidateRepository.class, ShutdownListener.class })
 public class HUPickingSlotTest
 {
 	@BeforeClass
@@ -91,7 +100,7 @@ public class HUPickingSlotTest
 		// Setup a PickingSlot-HU assignment
 		final I_M_PickingSlot_HU pickingSlotHu1 = InterfaceWrapperHelper.create(ctx, I_M_PickingSlot_HU.class, trxName);
 		pickingSlotHu1.setM_HU(hu1);
-		pickingSlotHu1.setM_PickingSlot(pickingSlot);
+		pickingSlotHu1.setM_PickingSlot_ID(pickingSlot.getM_PickingSlot_ID());
 		InterfaceWrapperHelper.save(pickingSlotHu1);
 
 		//
@@ -101,7 +110,7 @@ public class HUPickingSlotTest
 
 		final I_M_PickingSlot_HU pickingSlotHu2 = InterfaceWrapperHelper.create(ctx, I_M_PickingSlot_HU.class, trxName);
 		pickingSlotHu2.setM_HU(hu2);
-		pickingSlotHu2.setM_PickingSlot(pickingSlot);
+		pickingSlotHu2.setM_PickingSlot_ID(pickingSlot.getM_PickingSlot_ID());
 		InterfaceWrapperHelper.save(pickingSlotHu2);
 
 		//

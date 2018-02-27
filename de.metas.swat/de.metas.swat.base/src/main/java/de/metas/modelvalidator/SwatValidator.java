@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.dao.cache.ITableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
@@ -57,7 +56,6 @@ import org.adempiere.scheduler.housekeeping.spi.impl.ResetSchedulerState;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Menu;
@@ -65,7 +63,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Campaign;
 import org.compiere.model.I_C_ElementValue;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -111,6 +108,8 @@ import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
 import de.metas.invoice.model.validator.C_Invoice;
 import de.metas.invoice.model.validator.C_InvoiceLine;
 import de.metas.invoice.model.validator.M_MatchInv;
+import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
+import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
 import de.metas.request.model.validator.R_Request;
@@ -214,8 +213,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new de.metas.activity.model.validator.C_OrderLine(), client); // 06788
 		engine.addModelValidator(new de.metas.activity.model.validator.C_InvoiceLine(), client); // 06788
 
-		engine.addModelValidator(new de.metas.picking.modelvalidator.M_PickingSlot(), client); // 06178
-
 		engine.addModelValidator(new M_ShipperTransportation(), client); // 06899
 
 		// task #1064
@@ -279,6 +276,10 @@ public class SwatValidator implements ModelValidator
 			engine.addModelValidator(new M_MatchInv(), client);
 		}
 
+
+		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
+		invoiceCandidateListeners.addListener(OrderAndInOutInvoiceCandidateListener.instance);
+
 		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_C_InvoiceLine.Table_Name, C_InvoiceLine_TabCallout.class);
 
 		// register the default copy handler
@@ -286,24 +287,10 @@ public class SwatValidator implements ModelValidator
 		// this, we had to extend the API and register the default handlers whose invocation used to be hardcoded in the IInvoiceBL impl.
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		invoiceBL.registerCopyHandler(
-				new IQueryFilter<ImmutablePair<I_C_Invoice, I_C_Invoice>>()
-				{
-					@Override
-					public boolean accept(ImmutablePair<I_C_Invoice, I_C_Invoice> model)
-					{
-						return true;
-					}
-				},
+				model -> true,
 				AbstractInvoiceBL.defaultDocCopyHandler);
 		invoiceBL.registerLineCopyHandler(
-				new IQueryFilter<ImmutablePair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>>()
-				{
-					@Override
-					public boolean accept(ImmutablePair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine> model)
-					{
-						return true;
-					}
-				},
+				model -> true,
 				AbstractInvoiceBL.defaultDocCopyHandler.getDocLineCopyHandler());
 
 		// 07466: adding an option to just log failed Checks, and to add a message which puts them into context for the user

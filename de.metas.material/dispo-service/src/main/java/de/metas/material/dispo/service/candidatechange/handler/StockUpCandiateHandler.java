@@ -10,10 +10,12 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.MaterialDemandEvent;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 
 /*
@@ -39,7 +41,7 @@ import lombok.NonNull;
  */
 
 /**
- * This handler might create a {@link MaterialDemandEvent}, but does not decrease the protected stock quantity.
+ * This handler might create a {@link SupplyRequiredEvent}, but does not decrease the protected stock quantity.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -50,15 +52,19 @@ public class StockUpCandiateHandler implements CandidateHandler
 	@NonNull
 	private final CandidateRepositoryRetrieval candidateRepository;
 
-	private final MaterialEventService materialEventService;
+	private final PostMaterialEventService materialEventService;
 
-	private final CandidateRepositoryCommands candidateRepositoryCommands;
+	private final CandidateRepositoryWriteService candidateRepositoryCommands;
+
+	private final AvailableToPromiseRepository stockRepository;
 
 	public StockUpCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands,
-			@NonNull final MaterialEventService materialEventService)
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
+			@NonNull final PostMaterialEventService materialEventService,
+			@NonNull final AvailableToPromiseRepository stockRepository)
 	{
+		this.stockRepository = stockRepository;
 		this.candidateRepositoryCommands = candidateRepositoryCommands;
 		this.candidateRepository = candidateRepository;
 		this.materialEventService = materialEventService;
@@ -85,8 +91,8 @@ public class StockUpCandiateHandler implements CandidateHandler
 			return candidateWithQtyDeltaAndId; // this candidate didn't change anything
 		}
 
-		final BigDecimal projectedQty = candidateRepository //
-				.retrieveAvailableStock(candidate.getMaterialDescriptor());
+		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(candidate.getMaterialDescriptor());
+		final BigDecimal projectedQty = stockRepository.retrieveAvailableStockQtySum(query);
 
 		final BigDecimal requiredAdditionalQty = candidateWithQtyDeltaAndId
 				.getQuantity()
@@ -94,9 +100,9 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 		if (requiredAdditionalQty.signum() > 0)
 		{
-			final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator //
-					.createMaterialDemandEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty);
-			materialEventService.fireEvent(materialDemandEvent);
+			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
+					.createSupplyRequiredEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty);
+			materialEventService.postEventNow(supplyRequiredEvent);
 		}
 
 		return candidateWithQtyDeltaAndId;

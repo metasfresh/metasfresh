@@ -130,7 +130,6 @@ public class AttributeValueTest extends AbstractHUTest
 	public void test_HighVolumeAttribute()
 	{
 		// Create a dummy value which we will set it to our attribute.
-		// Expectation: having M_Attribute.AD_Val_Rule_ID set, our attribute shall be considered high volume
 		final I_AD_Val_Rule adValRule = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_Val_Rule.class, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(adValRule);
 
@@ -138,6 +137,7 @@ public class AttributeValueTest extends AbstractHUTest
 		// Create the high volume attribute
 		final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute("HighVolumeListAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		attribute.setAD_Val_Rule(adValRule);
+		attribute.setIsHighVolume(true);
 		InterfaceWrapperHelper.save(attribute);
 		//
 		Assert.assertTrue("Attribute shall be considered as HighVolume", Services.get(IAttributeDAO.class).isHighVolumeValuesList(attribute));
@@ -150,24 +150,28 @@ public class AttributeValueTest extends AbstractHUTest
 		// Create the Attribute Value on which we will do the tests
 		final PlainAttributeValue attributeValue = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
 
-		Assert.assertEquals("Empty available values are expected for high volume attribute, when there is no current value",
-				Collections.emptyList(),
-				attributeValue.getAvailableValues());
-
 		//
-		// Set current value as "1" and test
-		final IAttributeValueContext attributeValueContext = new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute);
-		attributeValue.setValue(attributeValueContext, "1");
-		Assert.assertEquals("Only current value shall be in available values for high volume attribute",
-				Collections.singletonList(new ValueNamePair("1", "Value1")),
-				attributeValue.getAvailableValues());
+		// Expectation: when M_Attribute.AD_Val_Rule_ID is set, getAvailableValues shall return only current value or empty if no value was set
+		{
 
-		//
-		// Set current value as "2" and test
-		attributeValue.setValue(attributeValueContext, "2");
-		Assert.assertEquals("Only current value shall be in available values for high volume attribute",
-				Collections.singletonList(new ValueNamePair("2", "Value2")),
-				attributeValue.getAvailableValues());
+			Assert.assertEquals("Empty available values are expected for high volume attribute, when there is no current value",
+					Collections.emptyList(),
+					attributeValue.getAvailableValues());
 
+			//
+			// Set current value as "1" and test
+			final IAttributeValueContext attributeValueContext = new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute);
+			attributeValue.setValue(attributeValueContext, "1");
+			Assert.assertEquals("Only current value shall be in available values for high volume attribute",
+					Collections.singletonList(new ValueNamePair("1", "Value1")),
+					attributeValue.getAvailableValues());
+
+			//
+			// Set current value as "2" and test
+			attributeValue.setValue(attributeValueContext, "2");
+			Assert.assertEquals("Only current value shall be in available values for high volume attribute",
+					Collections.singletonList(new ValueNamePair("2", "Value2")),
+					attributeValue.getAvailableValues());
+		}
 	}
 }

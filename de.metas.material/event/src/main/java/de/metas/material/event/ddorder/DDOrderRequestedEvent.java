@@ -1,9 +1,12 @@
 package de.metas.material.event.ddorder;
 
+
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.material.event.EventDescriptor;
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -19,8 +22,10 @@ public class DDOrderRequestedEvent implements MaterialEvent
 
 	@JsonProperty
 	int groupId;
-	
+
+	@NonNull
+	Date dateOrdered;
+
 	@NonNull
 	DDOrder ddOrder;
-
 }

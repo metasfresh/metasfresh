@@ -1,7 +1,10 @@
 package de.metas.material.dispo.commons.repository;
 
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -12,19 +15,16 @@ import org.compiere.model.IQuery;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
-import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
-import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialDescriptor.DateOperator;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -38,12 +38,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -67,28 +67,45 @@ public class RepositoryCommons
 		final IQueryBuilder<I_MD_Candidate> builder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter();
 
+		if(CandidatesQuery.FALSE.equals(query))
+		{
+			builder.filter(ConstantQueryFilter.of(false));
+			return builder;
+		}
+		else if (query.getId() > 0)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
+			return builder;
+		}
+
 		if (query.getType() != null)
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, query.getType().toString());
 		}
 
-		if (query.getId() > 0)
+
+		if (query.getParentId() >= 0)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, query.getParentId());
+		}
+
+		if (query.getGroupId() > 0)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_GroupId, query.getGroupId());
 		}
 
 		addMaterialDescriptorToQueryBuilderIfNotNull(
-				query.getMaterialDescriptor(),
+				query.getMaterialDescriptorQuery(),
 				query.isMatchExactStorageAttributesKey(),
 				builder);
 
-		if (query.hasParentMaterialDescriptor())
+		if (query.getParentMaterialDescriptorQuery() != null)
 		{
 			final IQueryBuilder<I_MD_Candidate> parentBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 					.addOnlyActiveRecordsFilter();
 
 			final boolean atLeastOneFilterAdded = addMaterialDescriptorToQueryBuilderIfNotNull(
-					query.getParentMaterialDescriptor(),
+					query.getParentMaterialDescriptorQuery(),
 					query.isMatchExactStorageAttributesKey(),
 					parentBuilder);
 
@@ -99,7 +116,18 @@ public class RepositoryCommons
 			}
 		}
 
-		addDemandDetailToBuilder(query, builder);
+		if (query.getParentDemandDetail() != null)
+		{
+			final IQueryBuilder<I_MD_Candidate> parentBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)
+					.addOnlyActiveRecordsFilter();
+			addDemandDetailToBuilder(query.getParentDemandDetail(), parentBuilder);
+			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, I_MD_Candidate.COLUMN_MD_Candidate_ID, parentBuilder.create());
+		}
+
+		if (query.getDemandDetail() != null)
+		{
+			addDemandDetailToBuilder(query.getDemandDetail(), builder);
+		}
 
 		addProductionDetailToFilter(query, builder);
 
@@ -112,80 +140,86 @@ public class RepositoryCommons
 
 	@VisibleForTesting
 	boolean addMaterialDescriptorToQueryBuilderIfNotNull(
-			@Nullable final MaterialDescriptor materialDescriptor,
+			@Nullable final MaterialDescriptorQuery materialDescriptorQuery,
 			final boolean matchExactStorageAttributesKey,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
 		boolean atLeastOneFilterAdded = false;
 
-		if (materialDescriptor == null)
+		if (materialDescriptorQuery == null)
 		{
 			return atLeastOneFilterAdded;
 		}
 
-		if (materialDescriptor.getWarehouseId() > 0)
+		if (materialDescriptorQuery.getWarehouseId() > 0)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, materialDescriptor.getWarehouseId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, materialDescriptorQuery.getWarehouseId());
 			atLeastOneFilterAdded = true;
 		}
-		if (materialDescriptor.getProductId() > 0)
+		if (materialDescriptorQuery.getProductId() > 0)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescriptor.getProductId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescriptorQuery.getProductId());
 			atLeastOneFilterAdded = true;
 		}
-		if (materialDescriptor.getStorageAttributesKey() != ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED)
+		if (materialDescriptorQuery.getBPartnerId() > 0)
 		{
-			final String storageAttributesKey = materialDescriptor.getStorageAttributesKey();
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, materialDescriptorQuery.getBPartnerId());
+			atLeastOneFilterAdded = true;
+		}
+		else if (materialDescriptorQuery.getBPartnerId() == AvailableToPromiseQuery.BPARTNER_ID_NONE)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, null);
+			atLeastOneFilterAdded = true;
+		}
+
+		if (!Objects.equals(materialDescriptorQuery.getStorageAttributesKey(), AttributesKey.ALL))
+		{
+			final AttributesKey attributesKey = materialDescriptorQuery.getStorageAttributesKey();
 			if (matchExactStorageAttributesKey)
 			{
-				builder.addEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey);
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, attributesKey.getAsString());
 			}
 			else
 			{
-				builder.addStringLikeFilter(
-						I_MD_Candidate.COLUMN_StorageAttributesKey,
-						prepareStorageAttributesKeyForLikeExpression(storageAttributesKey),
-						false); // iggnoreCase=false
+				builder.addStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, attributesKey.getSqlLikeString(), false); // iggnoreCase=false
 			}
 			atLeastOneFilterAdded = true;
 		}
 
-		atLeastOneFilterAdded = configureBuilderDateFilters(materialDescriptor, builder) || atLeastOneFilterAdded;
+		atLeastOneFilterAdded = configureBuilderDateFilters(materialDescriptorQuery, builder) || atLeastOneFilterAdded;
 
 		return atLeastOneFilterAdded;
 	}
 
-	public static String prepareStorageAttributesKeyForLikeExpression(@NonNull final String storageAttributesKey)
-	{
-		return storageAttributesKey.replaceAll(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER, "%");
-	}
-
 	private boolean configureBuilderDateFilters(
-			@NonNull final MaterialDescriptor materialDescriptor,
+			@NonNull final MaterialDescriptorQuery materialDescriptorQuery,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		if (materialDescriptor.getDate() == null)
+		if (materialDescriptorQuery.getDate() == null)
 		{
 			return false;
 		}
-		final DateOperator dateOperator = Preconditions.checkNotNull(materialDescriptor.getDateOperator(),
-				"As the given parameter query spefifies a date, it also needs to have a not-null dateOperator; query=%s", materialDescriptor);
+		final DateOperator dateOperator = Preconditions.checkNotNull(materialDescriptorQuery.getDateOperator(),
+				"As the given parameter query spefifies a date, it also needs to have a not-null dateOperator; query=%s", materialDescriptorQuery);
 		switch (dateOperator)
 		{
+			case BEFORE:
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS, materialDescriptorQuery.getDate());
+				break;
 			case BEFORE_OR_AT:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, materialDescriptor.getDate());
-				break;
-			case AT_OR_AFTER:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, materialDescriptor.getDate());
-				break;
-			case AFTER:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER, materialDescriptor.getDate());
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, materialDescriptorQuery.getDate());
 				break;
 			case AT:
-				builder.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, materialDescriptor.getDate());
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, materialDescriptorQuery.getDate());
+				break;
+			case AT_OR_AFTER:
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, materialDescriptorQuery.getDate());
+				break;
+			case AFTER:
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER, materialDescriptorQuery.getDate());
 				break;
 			default:
-				Check.errorIf(true, "segment has a unexpected dateOperator {}; segment={}", materialDescriptor.getDateOperator(), materialDescriptor);
+				Check.errorIf(true, "segment has a unexpected dateOperator {}; segment={}", materialDescriptorQuery.getDateOperator(), materialDescriptorQuery);
 				break;
 		}
 		return true;
@@ -198,11 +232,9 @@ public class RepositoryCommons
 	 * @param builder
 	 */
 	private void addDemandDetailToBuilder(
-			final CandidatesQuery candidate,
-			final IQueryBuilder<I_MD_Candidate> builder)
+			@Nullable final DemandDetail demandDetail,
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-
-		final DemandDetail demandDetail = candidate.getDemandDetail();
 		if (demandDetail == null)
 		{
 			return;
@@ -245,39 +277,10 @@ public class RepositoryCommons
 			final CandidatesQuery candidate,
 			final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		final ProductionDetail productionDetail = candidate.getProductionDetail();
-		if (productionDetail == null)
+		final ProductionDetailsQuery productionDetailsQuery = candidate.getProductionDetailsQuery();
+		if (productionDetailsQuery != null)
 		{
-			return;
-		}
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQueryBuilder<I_MD_Candidate_Prod_Detail> productDetailSubQueryBuilder = queryBL
-				.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
-				.addOnlyActiveRecordsFilter();
-
-		if (productionDetail == CandidatesQuery.NO_PRODUCTION_DETAIL)
-		{
-			builder.addNotInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, productDetailSubQueryBuilder.create());
-		}
-		else
-		{
-			boolean doFilter = false;
-			if (productionDetail.getProductPlanningId() > 0)
-			{
-				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Product_Planning_ID, productionDetail.getProductPlanningId());
-				doFilter = true;
-			}
-			if (productionDetail.getProductBomLineId() > 0)
-			{
-				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Product_BOMLine_ID, productionDetail.getProductBomLineId());
-				doFilter = true;
-			}
-			if (doFilter)
-			{
-				builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, productDetailSubQueryBuilder.create());
-			}
+			productionDetailsQuery.augmentQueryBuilder(builder);
 		}
 	}
 
@@ -285,39 +288,10 @@ public class RepositoryCommons
 			@NonNull final CandidatesQuery query,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		final DistributionDetail distributionDetail = query.getDistributionDetail();
-		if (distributionDetail == null)
+		final DistributionDetailsQuery distributionDetail = query.getDistributionDetailsQuery();
+		if (distributionDetail != null)
 		{
-			return;
-		}
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQueryBuilder<I_MD_Candidate_Dist_Detail> distDetailSubQueryBuilder = queryBL
-				.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
-				.addOnlyActiveRecordsFilter();
-
-		if (distributionDetail == CandidatesQuery.NO_DISTRIBUTION_DETAIL)
-		{
-			builder.addNotInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, distDetailSubQueryBuilder.create());
-		}
-		else
-		{
-			boolean doFilter = false;
-			if (distributionDetail.getProductPlanningId() > 0)
-			{
-				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_PP_Product_Planning_ID, distributionDetail.getProductPlanningId());
-				doFilter = true;
-			}
-			if (distributionDetail.getNetworkDistributionLineId() > 0)
-			{
-				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_DD_NetworkDistributionLine_ID, distributionDetail.getNetworkDistributionLineId());
-				doFilter = true;
-			}
-			if (doFilter)
-			{
-				builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, distDetailSubQueryBuilder.create());
-			}
+			distributionDetail.augmentQueryBuilder(builder);
 		}
 	}
 

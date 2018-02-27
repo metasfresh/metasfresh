@@ -15,7 +15,7 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -908753632L;
+	private static final long serialVersionUID = -1361391316L;
 
     /** Standard Constructor */
     public X_M_Attribute (Properties ctx, int M_Attribute_ID, String trxName)
@@ -23,16 +23,14 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
       super (ctx, M_Attribute_ID, trxName);
       /** if (M_Attribute_ID == 0)
         {
-			setAttributeValueType (null);
-// S
-			setIsAttrDocumentRelevant (false);
-// N
+			setAttributeValueType (null); // S
+			setIsAttrDocumentRelevant (false); // N
+			setIsHighVolume (false); // N
 			setIsInstanceAttribute (false);
 			setIsMandatory (false);
-			setIsPricingRelevant (false);
-// N
-			setIsReadOnlyValues (false);
-// N
+			setIsPricingRelevant (false); // N
+			setIsReadOnlyValues (false); // N
+			setIsStorageRelevant (false); // N
 			setM_Attribute_ID (0);
 			setName (null);
 			setValue (null);
@@ -53,18 +51,6 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public de.metas.javaclasses.model.I_AD_JavaClass getAD_JavaClass() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class);
-	}
-
-	@Override
-	public void setAD_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass AD_JavaClass)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_JavaClass_ID, de.metas.javaclasses.model.I_AD_JavaClass.class, AD_JavaClass);
-	}
 
 	/** Set Java Klasse.
 		@param AD_JavaClass_ID Java Klasse	  */
@@ -138,7 +124,7 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	public static final String ATTRIBUTEVALUETYPE_List = "L";
 	/** Date = D */
 	public static final String ATTRIBUTEVALUETYPE_Date = "D";
-	/** Set Attribute Value Type.
+	/** Set Merkmals Wert Typ.
 		@param AttributeValueType 
 		Type of Attribute Value
 	  */
@@ -149,7 +135,7 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 		set_Value (COLUMNNAME_AttributeValueType, AttributeValueType);
 	}
 
-	/** Get Attribute Value Type.
+	/** Get Merkmals Wert Typ.
 		@return Type of Attribute Value
 	  */
 	@Override
@@ -237,7 +223,33 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 		return false;
 	}
 
-	/** Set Instanz-Attribut.
+	/** Set High Volume.
+		@param IsHighVolume 
+		Use Search instead of Pick list
+	  */
+	@Override
+	public void setIsHighVolume (boolean IsHighVolume)
+	{
+		set_Value (COLUMNNAME_IsHighVolume, Boolean.valueOf(IsHighVolume));
+	}
+
+	/** Get High Volume.
+		@return Use Search instead of Pick list
+	  */
+	@Override
+	public boolean isHighVolume () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsHighVolume);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Instanz Merkmal.
 		@param IsInstanceAttribute 
 		The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	  */
@@ -247,7 +259,7 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 		set_Value (COLUMNNAME_IsInstanceAttribute, Boolean.valueOf(IsInstanceAttribute));
 	}
 
-	/** Get Instanz-Attribut.
+	/** Get Instanz Merkmal.
 		@return The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	  */
 	@Override
@@ -312,16 +324,16 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 		return false;
 	}
 
-	/** Set IsReadOnlyValues.
-		@param IsReadOnlyValues IsReadOnlyValues	  */
+	/** Set Read Only.
+		@param IsReadOnlyValues Read Only	  */
 	@Override
 	public void setIsReadOnlyValues (boolean IsReadOnlyValues)
 	{
 		set_Value (COLUMNNAME_IsReadOnlyValues, Boolean.valueOf(IsReadOnlyValues));
 	}
 
-	/** Get IsReadOnlyValues.
-		@return IsReadOnlyValues	  */
+	/** Get Read Only.
+		@return Read Only	  */
 	@Override
 	public boolean isReadOnlyValues () 
 	{

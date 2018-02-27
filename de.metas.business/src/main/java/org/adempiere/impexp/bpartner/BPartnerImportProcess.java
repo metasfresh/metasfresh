@@ -49,12 +49,14 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	private final BPartnerImportHelper bpartnerImporter;
 	private final BPartnerLocationImportHelper bpartnerLocationImporter;
 	private final BPartnerContactImportHelper bpartnerContactImporter;
+	private final BPartnerBankAccountImportHelper bpartnerBankAccountImportHelper;
 
 	public BPartnerImportProcess()
 	{
 		bpartnerImporter = BPartnerImportHelper.newInstance().setProcess(this);
 		bpartnerLocationImporter = BPartnerLocationImportHelper.newInstance().setProcess(this);
 		bpartnerContactImporter = BPartnerContactImportHelper.newInstance().setProcess(this);
+		bpartnerBankAccountImportHelper = BPartnerBankAccountImportHelper.newInstance().setProcess(this);
 	}
 
 	@Override
@@ -157,6 +159,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 		bpartnerLocationImporter.importRecord(importRecord, context.getPreviousImportRecordsForSameBP());
 		bpartnerContactImporter.importRecord(importRecord);
+		bpartnerBankAccountImportHelper.importRecord(importRecord);
 		createUpdateInterestArea(importRecord);
 
 		context.collectImportRecordForSameBP(importRecord);
@@ -177,7 +180,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	/**
 	 * importRecord not have a C_BPartner_ID or it has the same C_BPartner_ID like the previous line
 	 * => reuse previous BPartner
-	 * 
+	 *
 	 * @param importRecord
 	 * @param previousImportRecord
 	 * @return

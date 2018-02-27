@@ -1,28 +1,5 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,7 +18,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
@@ -61,7 +37,6 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
-import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -138,11 +113,6 @@ public class ReceiptScheduleHUGenerator
 		Check.assume(_configurable, "{} is still configurable", this);
 	}
 
-	private final void assertNotConfigurable()
-	{
-		Check.assume(!_configurable, "{} is not configurable anymore", this);
-	}
-
 	private final void markNotConfigurable()
 	{
 		_configurable = false;
@@ -199,14 +169,6 @@ public class ReceiptScheduleHUGenerator
 		return this;
 	}
 
-	private final I_M_ReceiptSchedule getSingleReceiptSchedule()
-	{
-		final List<I_M_ReceiptSchedule> receiptSchedules = getReceiptSchedules();
-		Check.assumeNotEmpty(receiptSchedules, "_receiptSchedules not empty");
-		Check.assume(receiptSchedules.size() == 1, "Only one receipt schedule but there were {}", receiptSchedules);
-		return receiptSchedules.get(0);
-	}
-
 	private final I_M_ReceiptSchedule getSingleReceiptScheduleOrNull()
 	{
 		final List<I_M_ReceiptSchedule> receiptSchedules = getReceiptSchedules();
@@ -251,13 +213,6 @@ public class ReceiptScheduleHUGenerator
 		}
 
 		return this;
-	}
-
-	private I_C_OrderLine getC_OrderLine(final I_M_ReceiptSchedule schedule)
-	{
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(schedule.getC_OrderLine(), I_C_OrderLine.class);
-		Check.assumeNotNull(orderLine, "orderLine not null");
-		return orderLine;
 	}
 
 	/**
@@ -365,7 +320,7 @@ public class ReceiptScheduleHUGenerator
 				"The trxName of the given request's HUContext needs to be {} or 'null', but is {}",
 				ITrx.TRXNAME_ThreadInherited, request.getHUContext().getTrxName());
 
-		final List<I_M_HU> result = new ArrayList<I_M_HU>();
+		final List<I_M_HU> result = new ArrayList<>();
 
 		final String trxNamePrefix = getClass().getSimpleName();
 
@@ -455,11 +410,6 @@ public class ReceiptScheduleHUGenerator
 		return allocationSources;
 	}
 
-	private final IAllocationRequest createAllocationRequest(final BigDecimal qty, final I_C_UOM uom)
-	{
-		return createAllocationRequest(new Quantity(qty, uom));
-	}
-
 	/**
 	 * Keep in sync with {@link de.metas.handlingunits.client.terminal.receipt.model.ReceiptScheduleCUKey.createVHU()}
 	 * 
@@ -496,15 +446,6 @@ public class ReceiptScheduleHUGenerator
 		return request;
 	}
 
-	/**
-	 *
-	 * @return receipt schedule's total qty to allocate
-	 */
-	private BigDecimal getQtyToAllocateTotal(final I_M_ReceiptSchedule schedule)
-	{
-		return getProductStorage(schedule).getQty();
-	}
-
 	public IDocumentLUTUConfigurationManager getLUTUConfigurationManager()
 	{
 		if (_lutuConfigurationManager == null)
@@ -516,41 +457,6 @@ public class ReceiptScheduleHUGenerator
 		return _lutuConfigurationManager;
 	}
 
-	/**
-	 * Creates/Updates {@link I_M_ReceiptSchedule#COLUMNNAME_M_HU_LUTU_Configuration_ID}.
-	 *
-	 * Please note, this method is not updating the receipt schedule but only the {@link I_M_HU_LUTU_Configuration}.
-	 * 
-	 * IMPORTANT: this is used only by {@link #generateAllPlanningHUs_InChunks()}.
-	 *
-	 * Also, it:
-	 * <ul>
-	 * <li>Makes sure LU/TU configuration is adjusted to CUs/TUs to order quantity to not produce more HUs then needed. (07378)
-	 * </ul>
-	 */
-	private void createInitialLUTUConfiguration(final I_M_ReceiptSchedule schedule)
-	{
-		Check.assumeNull(_lutuConfiguration, "_lutuConfiguration shall be null");
-		Check.assumeNotNull(schedule, "schedule not null");
-
-		// final I_M_ReceiptSchedule schedule = getM_ReceiptSchedule();
-
-		//
-		// Create LU/TU Configuration to use
-		final IDocumentLUTUConfigurationManager lutuConfigurationManager = huReceiptScheduleBL.createLUTUConfigurationManager(schedule);
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationManager.getCreateLUTUConfiguration();
-
-		//
-		// Make sure LU/TU configuration is adjusted to CUs/TUs to order quantity
-		// to not produce more HUs then needed. (07378)
-		final I_C_OrderLine orderLine = getC_OrderLine(schedule);
-		final BigDecimal qtyToOrderCUs = orderLine.getQtyOrdered();
-		final BigDecimal qtyToOrderTUs = orderLine.getQtyEnteredTU();
-		lutuConfigurationFactory.adjustForTotalQtyTUsAndCUs(lutuConfiguration, qtyToOrderTUs, qtyToOrderCUs);
-		lutuConfigurationFactory.save(lutuConfiguration);
-		_lutuConfiguration = lutuConfiguration;
-	}
-	
 	/**
 	 * Sets the LU/TU configuration to be used when generating HUs.
 	 */
@@ -603,160 +509,5 @@ public class ReceiptScheduleHUGenerator
 
 		markNotConfigurable();
 		return _lutuProducer;
-	}
-
-	/**
-	 * Adjust LU/TU Configuration with actual <code>lutuProducer</code> values.
-	 * 
-	 * IMPORTANT: this is called only from {@link #generateAllPlanningHUs_InChunks()} so it's ONLY about when we are pregerating the HUs.
-	 *
-	 * NOTE:
-	 * <ul>
-	 * <li>this method is also saving the configuration if there were any changes.
-	 * <li>this method is setting {@link I_M_ReceiptSchedule#setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration)}
-	 * </ul>
-	 */
-	private void updateLUTUConfigurationFromActualValues()
-	{
-		assertNotConfigurable();
-
-		final ILUTUProducerAllocationDestination lutuProducer = getLUTUProducerAllocationDestination();
-
-		//
-		// Get the actual QtyTU which was used
-		final int qtyTU;
-		if (lutuProducer.getCreatedLUsCount() > 0)
-		{
-			// Case: we generated some LUs => QtyTU shall be the maximum number of TUs which were generated on an LU
-			qtyTU = lutuProducer.getMaxTUsPerLU_ActuallyCreated();
-		}
-		else if (lutuProducer.isNoLU() && lutuProducer.getCreatedTUsForRemainingQtyCount() > 0)
-		{
-			// Case: we haven't generated any LU but we generated some TUs for remaining Qty => QtyTU shall be the number of TUs which were generated
-			qtyTU = lutuProducer.getCreatedTUsForRemainingQtyCount();
-		}
-		else
-		{
-			// In any other case, we are not updating the QtyTU
-			qtyTU = 0; // do nothing
-		}
-
-		boolean changed = false; // true if LU/TU configuration was changed and needs to be saved
-
-		final I_M_HU_LUTU_Configuration lutuConfiguration = getM_HU_LUTU_Configuration();
-
-		//
-		// Update configuration's QtyTU, if it's greater then ZERO
-		if (qtyTU > 0)
-		{
-			lutuConfiguration.setIsInfiniteQtyTU(false);
-			lutuConfiguration.setQtyTU(BigDecimal.valueOf(qtyTU));
-			changed = true;
-		}
-
-		//
-		// If configuration was changed, save it
-		if (changed)
-		{
-			// NOTE: we just need to update the LU/TU configuration with the actual generation values
-			// so it's not like making a version of LU/TU configuration which is not compatible with actually generated HUs
-			final boolean disableChangeCheckingOnSave = true;
-			lutuConfigurationFactory.save(lutuConfiguration, disableChangeCheckingOnSave);
-		}
-
-		//
-		// Link used configuration to this receipt schedule (for later use)
-		getLUTUConfigurationManager().setCurrentLUTUConfigurationAndSave(lutuConfiguration);
-
-		//
-		// Flag the receipt schedule as HU prepared
-		final I_M_ReceiptSchedule receiptSchedule = getSingleReceiptSchedule();
-		receiptSchedule.setIsHUPrepared(true);
-		InterfaceWrapperHelper.save(receiptSchedule, ITrx.TRXNAME_ThreadInherited);
-	}
-
-	public void generateAllPlanningHUs_InChunks()
-	{
-		// NOTE: in this case we assume we have only one receipt schedule
-		final I_M_ReceiptSchedule schedule = getSingleReceiptSchedule();
-
-		//
-		// Don't generate planning HUs if we don't have open Quantity
-		if (getQtyToAllocateTotal(schedule).signum() <= 0)
-		{
-			return;
-		}
-
-		//
-		// Prepare for chunk processing
-		// change the trxName because in the trxRunner of generateLUTUHandlingUnitsForQtyToAllocate() we will create plenty of records using this schedule's trxName.
-		// those new records shall be committed as soon as the trxRunner finishes.
-		InterfaceWrapperHelper.setTrxName(schedule, ITrx.TRXNAME_ThreadInherited);
-
-		InterfaceWrapperHelper.setSaveDeleteDisabled(schedule, true); // make sure we are not changing 'schedule'
-
-		//
-		// Make sure LU/TU configuration is adjusted to CUs/TUs to order quantity
-		// to not produce more HUs than needed.
-		createInitialLUTUConfiguration(schedule);
-
-		final BigDecimal qtyToOrderCUs = schedule.getQtyOrdered(); // whole receipt schedule ordered Qty
-		Check.assume(schedule.getQtyMoved().signum() == 0, "No quantity was moved on {}", schedule);
-		final I_C_UOM qtyToOrderCUsUOM = schedule.getC_UOM();
-		final BigDecimal qtyToRequestCUsPerChunk = calculateQtyToRequestPerChunk(qtyToOrderCUs, qtyToOrderCUsUOM);
-
-		//
-		// Generate LU/TUs in chunks
-		BigDecimal qtyToOrderCUsRemaining = qtyToOrderCUs;
-		while (qtyToOrderCUsRemaining.signum() > 0)
-		{
-			final BigDecimal qtyToRequest = qtyToOrderCUsRemaining.min(qtyToRequestCUsPerChunk);
-			final IAllocationRequest request = createAllocationRequest(qtyToRequest, qtyToOrderCUsUOM);
-			generateLUTUHandlingUnitsForQtyToAllocate(request);
-
-			qtyToOrderCUsRemaining = qtyToOrderCUsRemaining.subtract(qtyToRequest);
-		}
-
-		//
-		// Adjust the LU/TU configuration if needed and push it back to receipt schedule (for later use)
-		trxManager.run(() -> {
-			InterfaceWrapperHelper.setSaveDeleteDisabled(schedule, false);
-			updateLUTUConfigurationFromActualValues();
-		});
-	}
-
-	private final BigDecimal calculateQtyToRequestPerChunk(final BigDecimal qtyToOrderCUs, final I_C_UOM qtyToOrderCUsUOM)
-	{
-		if (qtyToOrderCUs == null || qtyToOrderCUs.signum() <= 0)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final I_M_HU_LUTU_Configuration lutuConfiguration = getM_HU_LUTU_Configuration();
-
-		if (lutuConfiguration.isInfiniteQtyCU())
-		{
-			return qtyToOrderCUs;
-		}
-
-		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCU();
-		if (qtyCUsPerTU.signum() <= 0)
-		{
-			return qtyToOrderCUs;
-		}
-
-		if (lutuConfiguration.isInfiniteQtyTU())
-		{
-			return qtyToOrderCUs;
-		}
-
-		final BigDecimal qtyTUsPerLU = lutuConfiguration.getQtyTU();
-		if (qtyTUsPerLU.signum() <= 0)
-		{
-			return qtyToOrderCUs;
-		}
-
-		final BigDecimal qtyCUsPerLU = qtyCUsPerTU.multiply(qtyTUsPerLU);
-		return qtyCUsPerLU;
 	}
 }

@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1381745807L;
+	private static final long serialVersionUID = -2075764497L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (Properties ctx, int C_Invoice_Candidate_ID, String trxName)
@@ -878,6 +878,43 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getC_OrderLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
+	}
+
+	@Override
+	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
+	}
+
+	/** Set Zahlungsbedingung.
+		@param C_PaymentTerm_ID 
+		Die Bedingungen für die Bezahlung dieses Vorgangs
+	  */
+	@Override
+	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
+	{
+		if (C_PaymentTerm_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
+	}
+
+	/** Get Zahlungsbedingung.
+		@return Die Bedingungen für die Bezahlung dieses Vorgangs
+	  */
+	@Override
+	public int getC_PaymentTerm_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -2945,6 +2982,43 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getRecord_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_InOutLine getRef_PackingMaterial_InOutLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Ref_PackingMaterial_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
+	}
+
+	@Override
+	public void setRef_PackingMaterial_InOutLine(org.compiere.model.I_M_InOutLine Ref_PackingMaterial_InOutLine)
+	{
+		set_ValueFromPO(COLUMNNAME_Ref_PackingMaterial_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, Ref_PackingMaterial_InOutLine);
+	}
+
+	/** Set Ref_PackingMaterial_InOutLine_ID.
+		@param Ref_PackingMaterial_InOutLine_ID 
+		Reference the inout line from where the packing material input line was generated. Is filled up only if the IC is a packing material line.
+	  */
+	@Override
+	public void setRef_PackingMaterial_InOutLine_ID (int Ref_PackingMaterial_InOutLine_ID)
+	{
+		if (Ref_PackingMaterial_InOutLine_ID < 1) 
+			set_Value (COLUMNNAME_Ref_PackingMaterial_InOutLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_Ref_PackingMaterial_InOutLine_ID, Integer.valueOf(Ref_PackingMaterial_InOutLine_ID));
+	}
+
+	/** Get Ref_PackingMaterial_InOutLine_ID.
+		@return Reference the inout line from where the packing material input line was generated. Is filled up only if the IC is a packing material line.
+	  */
+	@Override
+	public int getRef_PackingMaterial_InOutLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_PackingMaterial_InOutLine_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

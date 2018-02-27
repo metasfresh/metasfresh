@@ -22,7 +22,7 @@ package org.adempiere.util;
  * #L%
  */
 
-
+@FunctionalInterface
 public interface TypedAccessor<T>
 {
 	public T getValue(Object o);

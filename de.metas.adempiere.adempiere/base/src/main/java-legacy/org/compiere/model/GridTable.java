@@ -2027,7 +2027,12 @@ public class GridTable extends AbstractTableModel
 		final Object[] rowData = getDataAtRow(m_rowChanged);
 		//
 		final PO po;
-		if (Record_ID != -1)
+		if(Record_ID <= 0 && isInserting()) // New record
+		{
+			po = TableModelLoader.instance.newPO(m_ctx, m_tableName, ITrx.TRXNAME_None);
+		}
+		else if (Record_ID != -1 // not multi-key
+				&& Record_ID != 0) // not ID=0 => that one has to be loaded using WHERE clause
 		{
 			// Disable cache checking because we want fresh records on which we save
 			final boolean checkCache = false;
@@ -3195,7 +3200,7 @@ public class GridTable extends AbstractTableModel
 						&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct") 
 							|| columnName.equals("AD_Key") || columnName.equals("AD_Display"))) 
 					|| columnName.endsWith("atedBy")
-					|| (Services.get(IColumnBL.class).isRecordColumnName(columnName) && DisplayType.Button == displayType) // metas: Record_ID buttons are Integer IDs
+					|| (Services.get(IColumnBL.class).isRecordIdColumnName(columnName) && DisplayType.Button == displayType) // metas: Record_ID buttons are Integer IDs
 					)
 				{
 					rowData[j] = new Integer(rs.getInt(j+1));	//	Integer

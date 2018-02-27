@@ -10,12 +10,12 @@ package org.adempiere.test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,9 +55,9 @@ import de.metas.logging.LogManager;
 
 /**
  * Helper to be used in order to setup ANY test which depends on ADempiere.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class AdempiereTestHelper
 {
@@ -84,9 +84,9 @@ public class AdempiereTestHelper
 		Check.setDefaultExClass(AdempiereException.class);
 
 		Util.setClassInstanceProvider(TestingClassInstanceProvider.instance);
-		
+
 		//
-		// Configure services; note the this is not the place to register individual services, see init() for that. 
+		// Configure services; note the this is not the place to register individual services, see init() for that.
 		Services.setAutodetectServices(true);
 		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy()); // 04113
 
@@ -101,7 +101,7 @@ public class AdempiereTestHelper
 	{
 		// Make sure context is clear before starting a new test
 		final Properties ctx = setupContext();
-		
+
 		// By default we are running in client mode
 		Ini.setClient(true);
 
@@ -116,7 +116,6 @@ public class AdempiereTestHelper
 		POJOWrapper.setAllowRefreshingChangedModels(false);
 		POJOWrapper.setDefaultStrictValues(POJOWrapper.DEFAULT_StrictValues);
 
-		//
 		// Setup services
 		{
 			// Make sure we don't have custom registered services
@@ -128,37 +127,34 @@ public class AdempiereTestHelper
 			// NOTE: in normal run, it is registered from org.compiere.Adempiere.startup(RunMode)
 			Services.getInterceptor().registerInterceptor(Cached.class, new CacheInterceptor()); // task 06952
 			JavaAssistInterceptor.FAIL_ON_ERROR = true;
-			
+
 			Services.registerService(IClientUI.class, new TestClientUI());
 		}
 
-		//
 		// Base Language
 		Language.setBaseLanguage(() -> AD_LANGUAGE);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, AD_LANGUAGE);
-		
-		//
+
 		// Reset System Time
 		SystemTime.setTimeSource(null);
-				
-		//
+
 		// Caching
 		AbstractModelListCacheLocal.DEBUG = true;
-		
-		//
+		CacheMgt.get().reset();
+
 		// Logging
 		LogManager.setLevel(Level.WARN);
-	}
+}
 
 	private static Properties setupContext()
 	{
 		Env.setContextProvider(new SwingContextProvider());
-		
+
 		final Properties ctx = Env.getCtx();
 		ctx.clear();
 		return ctx;
 	}
-	
+
 	public void setupContext_AD_Client_IfNotSet()
 	{
 		final Properties ctx = Env.getCtx();
@@ -168,14 +164,14 @@ public class AdempiereTestHelper
 		{
 			return;
 		}
-		
-		final IContextAware contextProvider = new PlainContextAware(ctx);
+
+		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(ctx);
 		final I_AD_Client adClient = InterfaceWrapperHelper.newInstance(I_AD_Client.class, contextProvider);
 		adClient.setValue("Test");
 		adClient.setName("Test");
 		adClient.setAD_Language(AD_LANGUAGE);
 		InterfaceWrapperHelper.save(adClient);
-		
+
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, adClient.getAD_Client_ID());
 	}
 }

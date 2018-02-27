@@ -10,12 +10,12 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,7 +52,7 @@ import de.metas.shipping.interfaces.I_M_Package;
  * <li>ship the TU directly as it is. That's the main point of this test, i.e. be able to ship top level TUs.
  * <li>assume: first VHU is assigned to first shipment schedule, second VHU to second shipment schedule
  * </ul>
- * 
+ *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/08715_Kennzeichen_Gebinde_ausblenden_auf_Lsch._%28Gastro%29%2C_TU_auf_LKW_Verdichtung_%28109809505901%29
  */

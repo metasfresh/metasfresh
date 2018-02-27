@@ -114,7 +114,7 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 	}
 
 	@Override
-	public boolean isFunctionRow()
+	public boolean isFunctionRow(final int row)
 	{
 		return false;
 	}
@@ -123,12 +123,6 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 	public boolean isPageBreak(final int row, final int col)
 	{
 		return false;
-	}
-
-	@Override
-	protected void setCurrentRow(final int row)
-	{
-		; // nothing
 	}
 	
 	private HashMap<String, MLookup> m_buttonLookups = new HashMap<>();
@@ -142,7 +136,7 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		}
 
 		// TODO: refactor with org.compiere.grid.ed.VButton.setField(GridField)
-		if (mField.getColumnName().endsWith("_ID") && ! Services.get(IColumnBL.class).isRecordColumnName(mField.getColumnName()))
+		if (mField.getColumnName().endsWith("_ID") && ! Services.get(IColumnBL.class).isRecordIdColumnName(mField.getColumnName()))
 		{
 			lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
 					mField.getAD_Column_ID(), DisplayType.Search);

@@ -46,10 +46,10 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.MInOutLineConfirm;
-import org.compiere.model.MPackage;
+import org.compiere.model.I_M_Package;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
@@ -82,7 +82,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	public MMShipperTransportation(Properties ctx, int M_ShipperTransportation_ID, String trxName)
 	{
 		super(ctx, M_ShipperTransportation_ID, trxName);
-		if (M_ShipperTransportation_ID == 0)
+		if (is_new())
 		{
 			setDateDoc(SystemTime.asDayTimestamp());
 			setDocAction(DOCACTION_Fertigstellen);	// CO
@@ -169,18 +169,17 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		if (!isApproved())
 			approveIt();
 		log.debug("Completed: {}", this);
-		MMShippingPackage[] lines = getLines(false);
 
 		// All lines
-		for (int i = 0; i < lines.length; i++)
+		for (I_M_ShippingPackage shippingPackage : getLines(false))
 		{
-			MMShippingPackage shippingPackage = lines[i];
-			shippingPackage.set_TrxName(get_TrxName());
+			InterfaceWrapperHelper.setTrxName(shippingPackage, get_TrxName());
 			shippingPackage.setProcessed(true);
-			shippingPackage.saveEx();
-			MPackage mPackage = (MPackage)shippingPackage.getM_Package();
+			InterfaceWrapperHelper.save(shippingPackage);
+			
+			final I_M_Package mPackage = shippingPackage.getM_Package();
 			mPackage.setShipDate(getDateDoc());
-			mPackage.saveEx();
+			InterfaceWrapperHelper.save(mPackage);
 		}	// for all lines
 
 		// User Validation
@@ -238,7 +237,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public BigDecimal getApprovalAmt()
 	{
-		return Env.ZERO;
+		return BigDecimal.ZERO;
 	}	// getApprovalAmt
 
 	/**
@@ -295,11 +294,11 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public String getSummary()
 	{
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(getDocumentNo());
 		// : (#1)
 		sb.append(": ")
-				.append(" (#").append(getLines(false).length).append(")");
+				.append(" (#").append(getLines(false).size()).append(")");
 		if (getDescription() != null && getDescription().length() > 0)
 			sb.append(" - ").append(getDescription());
 		return sb.toString();
@@ -331,8 +330,8 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
 
-		MMShippingPackage[] lines = getLines(true);
-		if (lines.length == 0)
+		final List<I_M_ShippingPackage> lines = getLines(true);
+		if (lines.isEmpty())
 		{
 			m_processMsg = "@NoLines@";
 			return IDocument.STATUS_Invalid;
@@ -379,18 +378,17 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 
 		// metas: When shipping order is reactivated, shipping packages
 		// need to be reactivated, too. MPackages are refreshed.
-		MMShippingPackage[] lines = getLines(false);
-		for (int i = 0; i < lines.length; i++)
+		for (final I_M_ShippingPackage shippingPackage : getLines(false))
 		{
 			// reset isProcessed for shipping packages
-			final MMShippingPackage shippingPackage = lines[i];
-			shippingPackage.set_TrxName(get_TrxName());
+			InterfaceWrapperHelper.setTrxName(shippingPackage, get_TrxName());
 			shippingPackage.setProcessed(false);
-			shippingPackage.saveEx();
+			InterfaceWrapperHelper.save(shippingPackage);
+			
 			// reset shipping date for mPackages
-			MPackage mPackage = (MPackage)shippingPackage.getM_Package();
+			I_M_Package mPackage = shippingPackage.getM_Package();
 			mPackage.setShipDate(null);
-			mPackage.saveEx();
+			InterfaceWrapperHelper.save(mPackage);
 		}
 		// metas:end
 
@@ -502,15 +500,13 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 				|| DOCSTATUS_NichtGenehmigt.equals(getDocStatus()))
 		{
 			// Set lines to 0
-			MMShippingPackage[] lines = getLines(false);
-			for (int i = 0; i < lines.length; i++)
+			for (I_M_ShippingPackage line : getLines(false))
 			{
-				final MMShippingPackage line = lines[i];
 				line.setProcessed(true);
 				line.setIsActive(false);
-				line.setPackageWeight(Env.ZERO);
-				line.setPackageNetTotal(Env.ZERO);
-				line.save(get_TrxName());
+				line.setPackageWeight(BigDecimal.ZERO);
+				line.setPackageNetTotal(BigDecimal.ZERO);
+				InterfaceWrapperHelper.save(line);
 			}
 		}
 
@@ -519,8 +515,8 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		if (m_processMsg != null)
 			return false;
 
-		setPackageWeight(Env.ZERO);
-		setPackageNetTotal(Env.ZERO);
+		setPackageWeight(BigDecimal.ZERO);
+		setPackageNetTotal(BigDecimal.ZERO);
 		setProcessed(true);
 		setDocAction(DOCACTION_Nichts);
 		return true;
@@ -534,14 +530,14 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MMShipperTransportation[");
+		StringBuilder sb = new StringBuilder("MMShipperTransportation[");
 		sb.append(get_ID()).append("-").append(getSummary())
 				.append("]");
 		return sb.toString();
 	}	// toString
 
 	/** Package Lines */
-	private MMShippingPackage[] m_lines = null;
+	private List<I_M_ShippingPackage> m_lines = null;
 
 	/**
 	 * Get Lines
@@ -549,21 +545,21 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	 * @param requery requery
 	 * @return array of lines
 	 */
-	public MMShippingPackage[] getLines(boolean requery)
+	private List<I_M_ShippingPackage> getLines(boolean requery)
 	{
+		final String trxName = get_TrxName();
 		if (m_lines != null && !requery)
 		{
-			set_TrxName(m_lines, get_TrxName());
+			m_lines.forEach(line -> InterfaceWrapperHelper.setTrxName(line, trxName));
 			return m_lines;
 		}
-		final String whereClause = MMShippingPackage.COLUMNNAME_M_ShipperTransportation_ID + "=?";
-		List<MInOutLineConfirm> list = new Query(getCtx(), MMShippingPackage.Table_Name, whereClause, get_TrxName())
+		
+		final String whereClause = I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID + "=?";
+		m_lines = new Query(getCtx(), I_M_ShippingPackage.Table_Name, whereClause, trxName)
 				.setParameters(new Object[] { getM_ShipperTransportation_ID() })
-				.list();
-		m_lines = new MMShippingPackage[list.size()];
-		list.toArray(m_lines);
+				.listImmutable(I_M_ShippingPackage.class);
 		return m_lines;
-	}	// getLines
+	}
 
 	/**
 	 * Before Delete
@@ -576,13 +572,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		if (isProcessed())
 			return false;
 
-		MMShippingPackage[] lines = getLines(false);
-		// All lines
-		for (int i = 0; i < lines.length; i++)
-		{
-			MMShippingPackage shippingPackage = lines[i];
-			shippingPackage.delete(true);
-		}
+		getLines(false).forEach(InterfaceWrapperHelper::delete);
 
 		return true;
 	}	// beforeDelete

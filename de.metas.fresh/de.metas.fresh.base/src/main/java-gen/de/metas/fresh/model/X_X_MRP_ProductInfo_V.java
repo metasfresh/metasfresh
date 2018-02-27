@@ -4,7 +4,6 @@ package de.metas.fresh.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for X_MRP_ProductInfo_V
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -208616401L;
+	private static final long serialVersionUID = 740749204L;
 
     /** Standard Constructor */
     public X_X_MRP_ProductInfo_V (Properties ctx, int X_MRP_ProductInfo_V_ID, String trxName)
@@ -24,30 +23,18 @@ public class X_X_MRP_ProductInfo_V extends org.compiere.model.PO implements I_X_
       super (ctx, X_MRP_ProductInfo_V_ID, trxName);
       /** if (X_MRP_ProductInfo_V_ID == 0)
         {
-			setFresh_QtyMRP (BigDecimal.ZERO);
-// 0
-			setFresh_QtyOnHand_OnDate (BigDecimal.ZERO);
-// 0
-			setFresh_QtyPromised (BigDecimal.ZERO);
-// 0
-			setFresh_QtyPromised_OnDate (BigDecimal.ZERO);
-// 0
-			setQtyAvailable (BigDecimal.ZERO);
-// 0
-			setQtyMaterialentnahme (BigDecimal.ZERO);
-// 0
-			setQtyOnHand (BigDecimal.ZERO);
-// 0
-			setQtyOrdered (BigDecimal.ZERO);
-// 0
-			setQtyOrdered_OnDate (BigDecimal.ZERO);
-// 0
-			setQtyPromised (BigDecimal.ZERO);
-// 0
-			setQtyReserved (BigDecimal.ZERO);
-// 0
-			setQtyReserved_OnDate (BigDecimal.ZERO);
-// 0
+			setFresh_QtyMRP (BigDecimal.ZERO); // 0
+			setFresh_QtyOnHand_OnDate (BigDecimal.ZERO); // 0
+			setFresh_QtyPromised (BigDecimal.ZERO); // 0
+			setFresh_QtyPromised_OnDate (BigDecimal.ZERO); // 0
+			setQtyAvailable (BigDecimal.ZERO); // 0
+			setQtyMaterialentnahme (BigDecimal.ZERO); // 0
+			setQtyOnHand (BigDecimal.ZERO); // 0
+			setQtyOrdered (BigDecimal.ZERO); // 0
+			setQtyOrdered_OnDate (BigDecimal.ZERO); // 0
+			setQtyPromised (BigDecimal.ZERO); // 0
+			setQtyReserved (BigDecimal.ZERO); // 0
+			setQtyReserved_OnDate (BigDecimal.ZERO); // 0
         } */
     }
 

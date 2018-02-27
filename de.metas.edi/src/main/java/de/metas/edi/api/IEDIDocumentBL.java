@@ -38,7 +38,7 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 public interface IEDIDocumentBL extends ISingletonService
 {
 	String MSG_Partner_ValidateIsEDIRecipient_Error = "de.metas.edi.ValidateIsEDIRecipientError";
-	String MSG_Allow_Consolidate_Invoice_Error = "de.metas.edi.AllowConsolidateInvoiceError";
+	String MSG_Invalid_Invoice_Aggregation_Error = "de.metas.edi.InvalidInvoiceAggregationError";
 
 	/**
 	 * Update EDI status, but do not save

@@ -27,13 +27,20 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import lombok.NonNull;
+import lombok.Value;
 
 public interface IHUAssignmentDAO extends ISingletonService
 {
@@ -67,6 +74,79 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 * @return assignments
 	 */
 	List<I_M_HU_Assignment> retrieveHUAssignmentsForModel(Object model);
+
+	default List<HuAssignment> retrieveHUAssignmentPojosForModel(Object model)
+	{
+		return retrieveHUAssignmentsForModel(model).stream()
+				.map(HuAssignment::ofDataRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * This in an "encapsulated" representation of a {@link I_M_HU_Assignment} data record.
+	 * <p>
+	 * Please prefer using this one over the mere data record, and extend is as needed (also, feel free to extract the class onto another file).
+	 */
+	@Value
+	public static class HuAssignment
+	{
+		public static HuAssignment ofDataRecordAllowMissingHU(
+				@NonNull final I_M_HU_Assignment huAssignmentRecord)
+		{
+			return new HuAssignment(
+					extractLowestLevelHuOrNull(huAssignmentRecord),
+					TableRecordReference.ofReferencedOrNull(huAssignmentRecord));
+		}
+
+		public static HuAssignment ofDataRecord(
+				@NonNull final I_M_HU_Assignment huAssignmentRecord)
+		{
+			final I_M_HU lowestLevelHu = extractLowestLevelHuOrNull(huAssignmentRecord);
+			if (lowestLevelHu == null)
+			{
+				throw new AdempiereException("The given I_M_HU_Assignment has no HU")
+						.appendParametersToMessage()
+						.setParameter("I_M_HU_Assignment", huAssignmentRecord);
+			}
+			return new HuAssignment(
+					lowestLevelHu,
+					TableRecordReference.ofReferencedOrNull(huAssignmentRecord));
+		}
+
+		private static I_M_HU extractLowestLevelHuOrNull(
+				@NonNull final I_M_HU_Assignment huAssignmentRecord)
+		{
+			final I_M_HU hu;
+			if (huAssignmentRecord.getVHU_ID() > 0)
+			{
+				hu = huAssignmentRecord.getVHU();
+			}
+			else if (huAssignmentRecord.getM_TU_HU_ID() > 0)
+			{
+				hu = huAssignmentRecord.getM_TU_HU();
+			}
+			else if (huAssignmentRecord.getM_LU_HU_ID() > 0)
+			{
+				hu = huAssignmentRecord.getM_LU_HU();
+			}
+			else if (huAssignmentRecord.getM_HU_ID() > 0)
+			{
+				hu = huAssignmentRecord.getM_HU();
+			}
+			else
+			{
+				hu = null;
+			}
+			return hu;
+		}
+
+		/**
+		 * The lowest level of an HU assigment record is interesting, because it does not contains different products
+		 */
+		I_M_HU lowestLevelHU;
+
+		ITableRecordReference referencedRecord;
+	}
 
 	IQueryBuilder<I_M_HU_Assignment> retrieveHUAssignmentsForModelQuery(Object model);
 
@@ -213,7 +293,7 @@ public interface IHUAssignmentDAO extends ISingletonService
 
 	/**
 	 * Retrieve the table hu assignments for the given HU even if they have LU and/or TU set. This is useful in the shipment hu assignments.
-	 * 
+	 *
 	 * @param contextProvider
 	 * @param adTableId
 	 * @param hu
@@ -225,7 +305,7 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 * Retrieve the hu assignments for the given table and HU.
 	 * Do not force to be top level
 	 * Make sure the tu is set
-	 * 
+	 *
 	 * @param contextProvider
 	 * @param adTableId
 	 * @param hu

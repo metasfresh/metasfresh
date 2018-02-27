@@ -38,6 +38,7 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
@@ -52,10 +53,10 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.exceptions.HULoadException;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.hutransaction.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -85,8 +86,9 @@ public class HULoader
 
 	//
 	// Services that we use
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private HULoader(final IAllocationSource source, final IAllocationDestination destination)
@@ -257,7 +259,7 @@ public class HULoader
 	/**
 	 * Transfer request qty from <code>source</code> to <code>destination</code>.
 	 * <p>
-	 * background-info: depending on the used {@link IAllocationSource}, everything the request's full qty might be unloaded from the source (i.e. {@link IHUTransaction}s are created).<br>
+	 * background-info: depending on the used {@link IAllocationSource}, everything the request's full qty might be unloaded from the source (i.e. {@link IHUTransactionCandidate}s are created).<br>
 	 * If not all from the given {@code unloadRequest} is unloaded, then the it will only try to load the lesser qtys which were unloaded.<br>
 	 * However, in the end, only the stuff that will be "accepted" by the {@link IAllocationDestination} will really be moved.<br>
 	 *
@@ -316,9 +318,9 @@ public class HULoader
 	}
 
 	/**
-	 * Loads from <code>unloadResult</code> to our destination. It does so by iterating the unloadResults {@link IHUTransaction}s trx candidates.
+	 * Loads from <code>unloadResult</code> to our destination. It does so by iterating the unloadResults {@link IHUTransactionCandidate}s trx candidates.
 	 * For each trx candidates, the code will attempts to loadto the {@link IAllocationDestination}.
-	 * After those trx candidates are iterated and loading was attempted, the <b>actual</b> unload {@link IHUTransaction}s will be created based of what was actually loaded to the destination.
+	 * After those trx candidates are iterated and loading was attempted, the <b>actual</b> unload {@link IHUTransactionCandidate}s will be created based of what was actually loaded to the destination.
 	 *
 	 * After running this method:
 	 * <ul>
@@ -349,7 +351,7 @@ public class HULoader
 
 		//
 		// Iterate each unload transaction from unloadResult and try to load it to "destination"
-		for (final IHUTransaction unloadTrx : unloadResult.getTransactions())
+		for (final IHUTransactionCandidate unloadTrx : unloadResult.getTransactions())
 		{
 			final IAllocationRequest loadRequest = createQtyLoadRequest(unloadRequestActual, unloadTrx);
 
@@ -381,19 +383,19 @@ public class HULoader
 				// source.unloadCancel(unloadResult, unloadTrx, loadResult.getQtyToAllocate());
 			}
 
-			final List<IHUTransaction> trxs = new ArrayList<>();
+			final List<IHUTransactionCandidate> trxs = new ArrayList<>();
 
 			//
 			// Iterate each load transaction:
 			// * create it's counterpart 'unloadTrxPartial' by taking properties from 'unloadTrx', but just the part that was actually loaded
 			// * transfer attributes
 			// also now aggregate the IHUTransactions to avoid UC problems with receipt schedule allocations and others that are created per trx-candidate
-			final List<IHUTransaction> aggregatedLoadTransactions = huTrxBL.aggregateTransactions(loadResult.getTransactions());
+			final List<IHUTransactionCandidate> aggregatedLoadTransactions = huTrxBL.aggregateTransactions(loadResult.getTransactions());
 
 			BigDecimal qtyUnloaded = BigDecimal.ZERO;
-			for (final IHUTransaction loadTrx : aggregatedLoadTransactions)
+			for (final IHUTransactionCandidate loadTrx : aggregatedLoadTransactions)
 			{
-				final IHUTransaction unloadTrxPartial = createPartialUnloadTransaction(unloadTrx, loadTrx);
+				final IHUTransactionCandidate unloadTrxPartial = createPartialUnloadTransaction(unloadTrx, loadTrx);
 				unloadTrxPartial.pair(loadTrx);
 
 				// Transfer attributes if allowed
@@ -452,7 +454,7 @@ public class HULoader
 		return finalResult;
 	}
 
-	private final IAllocationRequest createQtyLoadRequest(final IAllocationRequest unloadRequestActual, final IHUTransaction unloadTrx)
+	private final IAllocationRequest createQtyLoadRequest(final IAllocationRequest unloadRequestActual, final IHUTransactionCandidate unloadTrx)
 	{
 		final IAllocationRequestBuilder builder = AllocationUtils.createQtyLoadRequestBuilder(unloadRequestActual, unloadTrx);
 		if (forceLoad)
@@ -464,7 +466,7 @@ public class HULoader
 	}
 
 	// static
-	private IHUTransaction createPartialUnloadTransaction(final IHUTransaction unloadTrx, final IHUTransaction loadTrx)
+	private IHUTransactionCandidate createPartialUnloadTransaction(final IHUTransactionCandidate unloadTrx, final IHUTransactionCandidate loadTrx)
 	{
 		final I_M_Product unloadTrx_Product = unloadTrx.getProduct();
 		final Quantity qtyUnloadFull = unloadTrx.getQuantity();
@@ -478,7 +480,7 @@ public class HULoader
 				uomConversionCtx,
 				qtyUnloadFull.getUOM());
 
-		return new HUTransaction(
+		return new HUTransactionCandidate(
 				unloadTrx.getReferencedModel(),
 				unloadTrx.getM_HU_Item(),   // HU Item
 				unloadTrx.getVHU_Item(),   // VHU Item
@@ -488,7 +490,7 @@ public class HULoader
 	}
 
 	// static
-	private IAttributeStorage getAttributeStorageOrNull(final IHUTransactionAttributeBuilder attributeStorageBuilder, final IHUTransaction trx, final boolean useVHU)
+	private IAttributeStorage getAttributeStorageOrNull(final IHUTransactionAttributeBuilder attributeStorageBuilder, final IHUTransactionCandidate trx, final boolean useVHU)
 	{
 		final IAttributeStorageFactory attributeStorageFactory = attributeStorageBuilder.getAttributeStorageFactory();
 
@@ -518,7 +520,7 @@ public class HULoader
 		return null;
 	}
 
-	private I_M_HU getM_HU(final IHUTransaction trx, final boolean useVHU)
+	private I_M_HU getM_HU(final IHUTransactionCandidate trx, final boolean useVHU)
 	{
 		final I_M_HU hu;
 		if (useVHU)
@@ -534,13 +536,13 @@ public class HULoader
 		return hu;
 	}
 
-	private void transferAttributes(final IHUContext huContext, final IHUTransaction trxFrom, final IHUTransaction trxTo, final BigDecimal qtyUnloaded)
+	private void transferAttributes(final IHUContext huContext, final IHUTransactionCandidate trxFrom, final IHUTransactionCandidate trxTo, final BigDecimal qtyUnloaded)
 	{
 		transferAttributes(huContext, trxFrom, trxTo, qtyUnloaded, false); // useVHU=false
 		transferAttributes(huContext, trxFrom, trxTo, qtyUnloaded, true); // useVHU=true
 	}
 
-	private void transferAttributes(final IHUContext huContext, final IHUTransaction trxFrom, final IHUTransaction trxTo, final BigDecimal qtyUnloaded, final boolean useVHU)
+	private void transferAttributes(final IHUContext huContext, final IHUTransactionCandidate trxFrom, final IHUTransactionCandidate trxTo, final BigDecimal qtyUnloaded, final boolean useVHU)
 	{
 		// FIXME: handle the case when only one Trx has attributes, but we need to create the attributes there because we just created the HU (for example)
 
@@ -584,6 +586,12 @@ public class HULoader
 
 		final IHUAttributeTransferRequest request = requestBuilder.create();
 		trxAttributesBuilder.transferAttributes(request);
+	}
+
+	public void unloadAllFromSource()
+	{
+		final IHUContext huContextInitial = huContextFactory.createMutableHUContext();
+		unloadAllFromSource(huContextInitial);
 	}
 
 	public void unloadAllFromSource(final IHUContext huContextInitial)

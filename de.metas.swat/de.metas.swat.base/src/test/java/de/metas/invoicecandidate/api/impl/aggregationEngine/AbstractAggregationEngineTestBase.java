@@ -87,7 +87,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 
 	protected List<IInvoiceLineRW> getInvoiceLines(final IInvoiceHeader invoice)
 	{
-		final List<IInvoiceLineRW> result = new ArrayList<IInvoiceLineRW>();
+		final List<IInvoiceLineRW> result = new ArrayList<>();
 		for (final IInvoiceCandAggregate lineAgg : invoice.getLines())
 		{
 			result.addAll(lineAgg.getAllLines());
@@ -98,7 +98,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 
 	protected IInvoiceLineRW getInvoiceLineByCandidate(final IInvoiceHeader invoice, final I_C_Invoice_Candidate ic)
 	{
-		final List<IInvoiceLineRW> result = new ArrayList<IInvoiceLineRW>();
+		final List<IInvoiceLineRW> result = new ArrayList<>();
 		for (final IInvoiceCandAggregate lineAgg : invoice.getLines())
 		{
 			result.addAll(lineAgg.getLinesForOrEmpty(ic));
@@ -119,7 +119,6 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 
 	protected List<I_C_Invoice_Candidate> test_2StepShipment_CommonSetup_Step01(
 			final boolean isSOTrx,
-			final boolean allowConsolidateInvoice,
 			final BigDecimal priceEntered_Override)
 	{
 		return createInvoiceCandidate()
@@ -131,7 +130,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 				.setDiscount(0)
 				.setManual(false)
 				.setSOTrx(isSOTrx)
-				.setAllowConsolidateInvoiceOnBPartner(allowConsolidateInvoice)
+
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
 				.buildAsSigletonList();
@@ -196,7 +195,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 
 	protected List<IInvoiceLineRW> getForInOutLine(final List<IInvoiceLineRW> invoiceLines, final I_M_InOutLine iol)
 	{
-		final ArrayList<IInvoiceLineRW> result = new ArrayList<IInvoiceLineRW>();
+		final ArrayList<IInvoiceLineRW> result = new ArrayList<>();
 		for (final IInvoiceLineRW il : invoiceLines)
 		{
 			for (final int icIolId : il.getC_InvoiceCandidate_InOutLine_IDs())

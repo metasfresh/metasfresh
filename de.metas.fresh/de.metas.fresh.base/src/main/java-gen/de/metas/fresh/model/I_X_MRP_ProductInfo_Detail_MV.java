@@ -145,6 +145,29 @@ public interface I_X_MRP_ProductInfo_Detail_MV
     public static final String COLUMNNAME_DateGeneral = "DateGeneral";
 
 	/**
+	 * Set MRP Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setFresh_QtyMRP (java.math.BigDecimal Fresh_QtyMRP);
+
+	/**
+	 * Get MRP Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getFresh_QtyMRP();
+
+    /** Column definition for Fresh_QtyMRP */
+    public static final org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_Detail_MV, Object> COLUMN_Fresh_QtyMRP = new org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_Detail_MV, Object>(I_X_MRP_ProductInfo_Detail_MV.class, "Fresh_QtyMRP", null);
+    /** Column name Fresh_QtyMRP */
+    public static final String COLUMNNAME_Fresh_QtyMRP = "Fresh_QtyMRP";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -251,6 +274,54 @@ public interface I_X_MRP_ProductInfo_Detail_MV
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Zusage Lieferant.
+	 * Vom Lieferanten per Webapplikation zugesagte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPMM_QtyPromised_OnDate (java.math.BigDecimal PMM_QtyPromised_OnDate);
+
+	/**
+	 * Get Zusage Lieferant.
+	 * Vom Lieferanten per Webapplikation zugesagte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPMM_QtyPromised_OnDate();
+
+    /** Column definition for PMM_QtyPromised_OnDate */
+    public static final org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_Detail_MV, Object> COLUMN_PMM_QtyPromised_OnDate = new org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_Detail_MV, Object>(I_X_MRP_ProductInfo_Detail_MV.class, "PMM_QtyPromised_OnDate", null);
+    /** Column name PMM_QtyPromised_OnDate */
+    public static final String COLUMNNAME_PMM_QtyPromised_OnDate = "PMM_QtyPromised_OnDate";
+
+	/**
+	 * Set Materialentnahme.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyMaterialentnahme (java.math.BigDecimal QtyMaterialentnahme);
+
+	/**
+	 * Get Materialentnahme.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyMaterialentnahme();
+
+    /** Column definition for QtyMaterialentnahme */
+    public static final org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_Detail_MV, Object> COLUMN_QtyMaterialentnahme = new org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_Detail_MV, Object>(I_X_MRP_ProductInfo_Detail_MV.class, "QtyMaterialentnahme", null);
+    /** Column name QtyMaterialentnahme */
+    public static final String COLUMNNAME_QtyMaterialentnahme = "QtyMaterialentnahme";
+
+	/**
 	 * Set Bestand.
 	 * Bestand
 	 *
@@ -274,6 +345,52 @@ public interface I_X_MRP_ProductInfo_Detail_MV
     public static final org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_Detail_MV, Object> COLUMN_QtyOnHand = new org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_Detail_MV, Object>(I_X_MRP_ProductInfo_Detail_MV.class, "QtyOnHand", null);
     /** Column name QtyOnHand */
     public static final String COLUMNNAME_QtyOnHand = "QtyOnHand";
+
+	/**
+	 * Set Bestellte Menge Tag.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyOrdered_OnDate (java.math.BigDecimal QtyOrdered_OnDate);
+
+	/**
+	 * Get Bestellte Menge Tag.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyOrdered_OnDate();
+
+    /** Column definition for QtyOrdered_OnDate */
+    public static final org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_Detail_MV, Object> COLUMN_QtyOrdered_OnDate = new org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_Detail_MV, Object>(I_X_MRP_ProductInfo_Detail_MV.class, "QtyOrdered_OnDate", null);
+    /** Column name QtyOrdered_OnDate */
+    public static final String COLUMNNAME_QtyOrdered_OnDate = "QtyOrdered_OnDate";
+
+	/**
+	 * Set Reservierte Menge Tag.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyReserved_OnDate (java.math.BigDecimal QtyReserved_OnDate);
+
+	/**
+	 * Get Reservierte Menge Tag.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyReserved_OnDate();
+
+    /** Column definition for QtyReserved_OnDate */
+    public static final org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_Detail_MV, Object> COLUMN_QtyReserved_OnDate = new org.adempiere.model.ModelColumn<I_X_MRP_ProductInfo_Detail_MV, Object>(I_X_MRP_ProductInfo_Detail_MV.class, "QtyReserved_OnDate", null);
+    /** Column name QtyReserved_OnDate */
+    public static final String COLUMNNAME_QtyReserved_OnDate = "QtyReserved_OnDate";
 
 	/**
 	 * Get Aktualisiert.

@@ -34,7 +34,6 @@ import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
-import de.metas.payment.esr.ESRConstants;
 
 /*
  * #%L
@@ -66,9 +65,9 @@ import de.metas.payment.esr.ESRConstants;
  * <li>save everything: {@link #save()}
  * <li>when a getter is called, it will fetch the value directly from the loaded database record
  * </ul>
- * 
+ *
  * This shall be a short living object.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -142,39 +141,31 @@ class ClientSetup
 	public void save()
 	{
 		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
-		trxManager.run(trxName, new TrxRunnable()
-		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				saveInTrx();
-			}
-		});
+		trxManager.run(trxName, (TrxRunnable)localTrxName -> saveInTrx());
 
 	}
 
 	private final void saveInTrx()
 	{
 		setOtherDefaults();
-		
+
 		InterfaceWrapperHelper.save(adClient, ITrx.TRXNAME_ThreadInherited);
 		InterfaceWrapperHelper.save(adClientInfo, ITrx.TRXNAME_ThreadInherited);
 		InterfaceWrapperHelper.save(adOrg, ITrx.TRXNAME_ThreadInherited);
 		InterfaceWrapperHelper.save(adOrgInfo, ITrx.TRXNAME_ThreadInherited);
-		
+
 		InterfaceWrapperHelper.save(orgBPartner, ITrx.TRXNAME_ThreadInherited);
 
 		InterfaceWrapperHelper.disableReadOnlyColumnCheck(orgBPartnerLocation); // disable it because AD_Org_ID is not updateable
 		orgBPartnerLocation.setAD_Org(adOrg); // FRESH-211
 		InterfaceWrapperHelper.save(orgBPartnerLocation, ITrx.TRXNAME_ThreadInherited);
-		
+
 		InterfaceWrapperHelper.save(orgContact, ITrx.TRXNAME_ThreadInherited);
-		
+
 		InterfaceWrapperHelper.save(orgBankAccount, ITrx.TRXNAME_ThreadInherited);
-		
+
 		InterfaceWrapperHelper.save(acctSchema, ITrx.TRXNAME_ThreadInherited);
-		
+
 		InterfaceWrapperHelper.save(priceList_None, ITrx.TRXNAME_ThreadInherited);
 	}
 

@@ -29,7 +29,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
@@ -612,15 +611,9 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		{
 			return null;
 		}
-		final Set<Map.Entry<String, String>> entrySet = keyNamePairAsMap.entrySet();
-		if (entrySet.size() != 1)
-		{
-			throw new InvalidAttributeValueException("Invalid list value '" + keyNamePairAsMap + "' (" + keyNamePairAsMap.getClass() + ") for " + attribute + ".");
-		}
-		final Map.Entry<String, String> e = entrySet.iterator().next();
-		final String key = e.getKey();
+		
+		final String key = keyNamePairAsMap.get("key"); // keep in sync with de.metas.ui.web.window.datatypes.json.JSONLookupValue.PROPERTY_Key
 		return key;
-
 	}
 	
 	@Override

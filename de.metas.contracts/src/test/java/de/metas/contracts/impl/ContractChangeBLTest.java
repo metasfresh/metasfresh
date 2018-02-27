@@ -1,6 +1,5 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /*
@@ -40,10 +39,9 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.impl.ContractsTestBase.FixedTimeSource;
-import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -58,6 +56,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 	final private static Timestamp cancelDate = TimeUtil.parseTimestamp("2017-12-10");
 	final private static String terminationMemo = "note: cancelContract_test";
+	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
 	final private static ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
 			.changeDate(cancelDate)
 			.isCloseInvoiceCandidate(true)
@@ -69,14 +68,13 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	public void before()
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
-
-		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10)); // today
+		SystemTime.setTimeSource(today);
 	}
 
 	@Test
 	public void cancelContract_test()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(true);
+		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
 		contractChangeBL.cancelContract(contract, contractChangeParameters);
 		assertFlatrateTerm(contract, cancelDate);
 		assertSubscriptionProgress(contract, 1);
@@ -85,9 +83,17 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	@Test
 	public void cancel_a_Contract_which_was_extended_using_a_date_from_initial_contract()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(true);
-		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
-		save(contract);
+		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
+
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(1)
+				.contract(contract)
+				.forceExtend(true)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+
+		Services.get(IFlatrateBL.class).extendContract(context);
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
@@ -104,9 +110,17 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	@Test
 	public void cancel_a_Contract_which_was_extended_using_a_date_from_extended_contract()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(true);
-		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
-		save(contract);
+		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
+
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(1)
+				.contract(contract)
+				.forceExtend(true)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+
+		Services.get(IFlatrateBL.class).extendContract(context);
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
@@ -132,17 +146,6 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		assertThat(contract.getMasterEndDate()).isEqualTo(extendedContract.getMasterEndDate());
 	}
 
-	private I_C_Flatrate_Term prepareContractForTest(final boolean isAutoRenew)
-	{
-		prepareBPartner();
-		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem(startDate);
-		createProductAcct(productAndPricingSystem);
-		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, isAutoRenew);
-		createContractChange(conditions);
-		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem.getProduct(), startDate);
-		return contract;
-	}
-
 	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm, final Timestamp cancelinglDate)
 	{
 		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
@@ -151,6 +154,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		assertThat(flatrateTerm.getMasterEndDate()).isEqualTo(cancelinglDate);
 		assertThat(flatrateTerm.getTerminationMemo()).isEqualTo(terminationMemo);
 		assertThat(flatrateTerm.getTerminationReason()).isEqualTo(X_C_Flatrate_Term.TERMINATIONREASON_General);
+		assertThat(flatrateTerm.getTerminationDate()).isEqualTo(SystemTime.asDayTimestamp());
 	}
 
 	private void assertSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm, final int expected)
@@ -164,5 +168,4 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 				.filter(progress -> progress.getEventDate().after(flatrateTerm.getMasterEndDate()))
 				.peek(progress -> assertThat(progress.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running));
 	}
-
 }

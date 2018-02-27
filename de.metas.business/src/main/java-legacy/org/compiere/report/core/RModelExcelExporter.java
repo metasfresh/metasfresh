@@ -25,7 +25,6 @@ public class RModelExcelExporter
 		extends AbstractExcelExporter
 {
 	private RModel m_model = null;
-	private int m_currentRow = 0;
 
 	public RModelExcelExporter(final RModel model)
 	{
@@ -72,20 +71,14 @@ public class RModelExcelExporter
 	}
 
 	@Override
-	public boolean isFunctionRow()
+	public boolean isFunctionRow(final int row)
 	{
-		return m_model.isGroupRow(m_currentRow);
+		return m_model.isGroupRow(row);
 	}
 
 	@Override
 	public boolean isPageBreak(final int row, final int col)
 	{
 		return false;
-	}
-
-	@Override
-	protected void setCurrentRow(final int row)
-	{
-		m_currentRow = row;
 	}
 }

@@ -1,5 +1,7 @@
 package de.metas.order.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -52,15 +54,14 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
@@ -68,7 +69,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderPA;
-import de.metas.product.IProductPA;
 
 public class OrderBL implements IOrderBL
 {
@@ -217,19 +217,17 @@ public class OrderBL implements IOrderBL
 
 	private I_M_PriceList retrievePriceListOrNull(final I_C_Order order, final BillBPartnerAndShipToLocation bpartnerAndLocation)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-
-		if (bpartnerAndLocation.getShip_BPartner_Location_ID() <= 0)
+		final int shipBPLocationId = bpartnerAndLocation.getShip_BPartner_Location_ID();
+		if (shipBPLocationId <= 0)
 		{
 			return null;
 		}
 
-		final IProductPA productPA = Services.get(IProductPA.class);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final int M_PricingSystem_ID = order.getM_PricingSystem_ID();
-		final int shipBPartnerLocationId = bpartnerAndLocation.getShip_BPartner_Location_ID();
+		final I_C_BPartner_Location shipBPLocation = loadOutOfTrx(shipBPLocationId, I_C_BPartner_Location.class);
 		final boolean isSOTrx = order.isSOTrx();
-		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, M_PricingSystem_ID, shipBPartnerLocationId, isSOTrx, trxName);
+		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(M_PricingSystem_ID, shipBPLocation, isSOTrx);
 		return pl;
 	}
 
@@ -305,62 +303,82 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void setDocTypeTargetId(final I_C_Order order)
 	{
-		final int clientId = order.getAD_Client_ID();
-
-		if (order.isSOTrx()) // SO = Std Order
+		if (order.isSOTrx())
 		{
 			setDocTypeTargetId(order, X_C_DocType.DOCSUBTYPE_StandardOrder);
 			return;
 		}
-		// PO
-
-		final int adOrgId = order.getAD_Org_ID();
-
-		final String sql = "SELECT C_DocType_ID FROM C_DocType "
-				+ " WHERE AD_Client_ID=? AND AD_Org_ID IN (0," + adOrgId + ") AND DocBaseType='POO' "
-				+ " ORDER BY AD_Org_ID DESC, IsDefault DESC, DocSubType NULLS FIRST";
-		final int C_DocType_ID = DB.getSQLValueEx(null, sql, clientId);
-		if (C_DocType_ID <= 0)
-		{
-			OrderBL.logger.error("No POO found for AD_Client_ID=" + clientId);
-		}
 		else
 		{
-			OrderBL.logger.debug("(PO) - " + C_DocType_ID);
-			order.setC_DocTypeTarget_ID(C_DocType_ID);
+			final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
+					.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+					.adClientId(order.getAD_Client_ID())
+					.adOrgId(order.getAD_Org_ID())
+					.build();
+			final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(docTypeQuery);
+			if (docTypeId <= 0)
+			{
+				logger.error("No POO found for {}", docTypeQuery);
+			}
+			else
+			{
+				logger.debug("(PO) - {}", docTypeId);
+				setDocTypeTargetIdAndUpdateDescription(order, docTypeId);
+			}
 		}
 	}
 
 	@Override
-	public void setDocTypeTargetId(final I_C_Order order, final String docSubType)
+	public void setDocTypeTargetId(final I_C_Order order, final String soDocSubType)
 	{
-		final int clientId = order.getAD_Client_ID();
-		final int adOrgId = order.getAD_Org_ID();
-
-		final int C_DocType_ID = retrieveDocTypeId(clientId, adOrgId, docSubType);
-
-		if (C_DocType_ID <= 0)
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+				.docSubType(soDocSubType)
+				.adClientId(order.getAD_Client_ID())
+				.adOrgId(order.getAD_Org_ID())
+				.build();
+		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(docTypeQuery);
+		if (docTypeId <= 0)
 		{
-			OrderBL.logger.error("Not found for AD_Client_ID=" + order.getAD_Client_ID() + ", SubType=" + docSubType);
+			logger.error("Not found for {}", docTypeQuery);
 		}
 		else
 		{
-			OrderBL.logger.debug("(SO) - " + docSubType);
-			order.setC_DocTypeTarget_ID(C_DocType_ID);
+			logger.debug("(SO) - {}", soDocSubType);
+			setDocTypeTargetIdAndUpdateDescription(order, docTypeId);
 			order.setIsSOTrx(true);
 		}
 	}
 
 	@Override
-	public int retrieveDocTypeId(final int clientId, final int adOrgId, final String docSubType)
+	public void setDocTypeTargetIdAndUpdateDescription(final I_C_Order order, final int docTypeId)
 	{
-		final String sql = "SELECT C_DocType_ID FROM C_DocType "
-				+ "WHERE AD_Client_ID=? AND AD_Org_ID IN (0," + adOrgId
-				+ ") AND DocSubType=? "
-				+ "ORDER BY IsDefault DESC, AD_Org_ID DESC";
+		order.setC_DocTypeTarget_ID(docTypeId);
+		updateDescriptionFromDocTypeTargetId(order);
+	}
 
-		final int C_DocType_ID = DB.getSQLValueEx(null, sql, clientId, docSubType);
-		return C_DocType_ID;
+	@Override
+	public void updateDescriptionFromDocTypeTargetId(final I_C_Order order)
+	{
+		final int docTypeId = order.getC_DocTypeTarget_ID();
+		if(docTypeId <= 0)
+		{
+			return;
+		}
+		org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		if(docType == null)
+		{
+			return;
+		}
+
+		if(!docType.isCopyDescriptionToDocument())
+		{
+			return;
+		}
+
+		order.setDescription(docType.getDescription());
+		order.setDescriptionBottom(docType.getDocumentNote());
 	}
 
 	@Override
@@ -370,11 +388,6 @@ public class OrderBL implements IOrderBL
 
 		for (final I_C_OrderLine line : Services.get(IOrderDAO.class).retrieveOrderLines(orderEx))
 		{
-			if (line instanceof MOrderLine && order instanceof MOrder)
-			{
-				((MOrderLine)line).setHeaderInfo((MOrder)order);
-			}
-
 			if (orderEx.isDropShip() && orderEx.getDropShip_BPartner_ID() > 0)
 			{
 				line.setC_BPartner_ID(orderEx.getDropShip_BPartner_ID());
@@ -902,7 +915,7 @@ public class OrderBL implements IOrderBL
 		aggregateOnOrder.sum(DYNATTR_QtyOrderedSum, org.compiere.model.I_C_OrderLine.COLUMN_QtyOrdered);
 
 		final de.metas.order.model.I_C_Order fOrder = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
-		
+
 		final List<org.compiere.model.I_C_Order> queryiedOrders = aggregateOnOrder.aggregate();
 		if (queryiedOrders.isEmpty())
 		{

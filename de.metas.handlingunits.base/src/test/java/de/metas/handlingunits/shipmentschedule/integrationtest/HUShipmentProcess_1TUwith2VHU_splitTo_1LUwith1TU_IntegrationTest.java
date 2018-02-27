@@ -15,12 +15,12 @@ import static org.junit.Assert.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -150,7 +150,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 
 	/**
 	 * Verify that the TU before {@link #step30_aggregateHUs()} is the way we expect it to be.
-	 * 
+	 *
 	 * @param tu
 	 */
 	private void assertTUPreAggregateInvariants(final I_M_HU tu)
@@ -218,7 +218,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				.capture(afterAggregation_LU)
 				.huPI(piLU)
 				.huStatus(X_M_HU.HUSTATUS_Picked)
-				
+
 				.newHUItemExpectation() // the real IFCO which contains the 15kg
 					.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
 					.newIncludedHUExpectation() // the "real" IFCO inside the LU
@@ -248,7 +248,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 						.endExpectation()
 					.endExpectation() // end of the "real" IFCO inside the LU
 				.endExpectation() // end of the real IFCO which contains the 15kg
-				
+
 				.newHUItemExpectation() // the empty stub aggregate VHU
 					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 					.noItemStorages()

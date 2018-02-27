@@ -27,7 +27,6 @@ import java.util.List;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -35,8 +34,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 public interface IHUPIItemProductBL extends ISingletonService
 {
 	List<I_M_HU_PI_Item_Product> getCompatibleItemDefProducts(I_M_HU_PI_Version version, I_M_Product product);
-
-	I_M_HU_PI_Item_Product getCompatibleItemDefProduct(I_M_HU_PI_Version version, I_M_Product product);
 
 	/**
 	 * @param version
@@ -47,7 +44,6 @@ public interface IHUPIItemProductBL extends ISingletonService
 
 	void deleteForItem(I_M_HU_PI_Item packingInstructionsItem);
 
-	boolean isCompatibleProduct(I_M_HU hu, I_M_Product product);
 
 	/**
 	 * Returns <code>true</code> if the given <code>piip</code> is the "virtual" one, i.e. the one referencing the virtual packing instruction.

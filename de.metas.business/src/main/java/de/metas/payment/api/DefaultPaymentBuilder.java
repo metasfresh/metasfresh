@@ -25,7 +25,6 @@ package de.metas.payment.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Properties;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,6 +35,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.builder.IBuilder;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -133,13 +133,14 @@ public class DefaultPaymentBuilder implements IBuilder
 	public I_C_Payment createNoSave()
 	{
 		markAsBuilt();
-		final String trxName = InterfaceWrapperHelper.getTrxName(contextProvider);
-		final Properties ctx = InterfaceWrapperHelper.getCtx(contextProvider);
 
-		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(ctx,
-				getDocBaseType(),
-				payment.getAD_Client_ID(), payment.getAD_Org_ID(),
-				trxName);
+		// note: the only reason why we are calling the "...OrNull" method is because some unit tests are failing.
+		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(DocTypeQuery.builder()
+				.docBaseType(getDocBaseType())
+				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+				.adClientId(payment.getAD_Client_ID())
+				.adOrgId(payment.getAD_Org_ID())
+				.build());
 		payment.setC_DocType_ID(docTypeId);
 		
 		return payment;

@@ -42,7 +42,7 @@ public class ColumnBL implements IColumnBL
 {
 
 	@Override
-	public boolean isRecordColumnName(final String columnName)
+	public boolean isRecordIdColumnName(final String columnName)
 	{
 		if (columnName == null)
 		{
@@ -80,7 +80,7 @@ public class ColumnBL implements IColumnBL
 			return 0;
 		}
 
-		if (!isRecordColumnName(columnName))
+		if (!isRecordIdColumnName(columnName))
 		{
 			return 0;
 		}
@@ -110,12 +110,12 @@ public class ColumnBL implements IColumnBL
 	}
 
 	@Override
-	public Optional<String> getTableColumnName(final String tableName, final String recordColumnName)
+	public Optional<String> getTableIdColumnName(final String tableName, final String recordIdColumnName)
 	{
-		Check.assumeNotEmpty(tableName, "Paramter 'tableName' is empty; recordColumnName={}", tableName, recordColumnName);
-		Check.assumeNotEmpty(tableName, "Paramter 'recordColumnName' is empty; tableName={}", recordColumnName, tableName);
+		Check.assumeNotEmpty(tableName, "Paramter 'tableName' is empty; recordColumnName={}", tableName, recordIdColumnName);
+		Check.assumeNotEmpty(recordIdColumnName, "Paramter 'recordColumnName' is empty; tableName={}", recordIdColumnName, tableName);
 
-		final String prefix = extractPrefixFromRecordColumn(recordColumnName);
+		final String prefix = extractPrefixFromRecordColumn(recordIdColumnName);
 
 		if (Adempiere.isUnitTestMode())
 		{
@@ -192,4 +192,5 @@ public class ColumnBL implements IColumnBL
 		}
 		return false;
 	}
+	
 }

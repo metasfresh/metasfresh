@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -16,7 +17,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.postgresql.util.PSQLException;
 
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import mockit.Expectations;
 import mockit.Mocked;
 
@@ -87,7 +87,7 @@ public class DLMExceptionWrapperTests
 	PSQLException mockedPSQLException;
 
 	/**
-	 * Make sure that the lower-case infos coming from postgres result in a {@link TableReferenceDescriptor} which contains the correct case for table and column names.
+	 * Make sure that the lower-case infos coming from postgres result in a {@link TableRecordIdDescriptor} which contains the correct case for table and column names.
 	 * This is required to avoid problems the same table or column (as far as the DB is concerned) being represented multiple times with table and column name strings that only differ in case.
 	 */
 	@SuppressWarnings("deprecation")
@@ -115,27 +115,26 @@ public class DLMExceptionWrapperTests
 		InterfaceWrapperHelper.save(column);
 
 		// set up the infos the exception shall provide to the wrapper
+		// @formatter:off
 		new Expectations()
-		{
-			{
+		{{
 				mockedPSQLException.getServerErrorMessage().getDetail();
 				result = "DLM_Referenced_Table_Name = ad_window;  DLM_Referenced_Record_ID=1243 ; DLM_Referencing_Table_Name = ad_tab; DLM_Referencig_Column_Name = ad_window_id;"; // automatically wrapped in a list of one item
 
 				mockedPSQLException.getSQLState();
 				result = DLMReferenceExceptionWrapper.PG_SQLSTATE_Referencing_Record_Has_Wrong_DLM_Level;
-			}
-		};
+		}}; // @formatter:on
 
 		final DBException dbException = DLMReferenceExceptionWrapper.INSTANCE.wrapIfNeededOrReturnNull(mockedPSQLException);
 		assertThat(dbException, instanceOf(DLMReferenceException.class));
 
 		final DLMReferenceException dlmException = (DLMReferenceException)dbException;
-		final TableReferenceDescriptor tableReferenceDescriptor = dlmException.getTableReferenceDescriptor();
+		final TableRecordIdDescriptor tableReferenceDescriptor = dlmException.getTableReferenceDescriptor();
 
 		// the descriptor needs to contain the "real" table and column names, not the lower-case versions that were returned by postgresl.
-		assertThat(tableReferenceDescriptor.getReferencedTableName(), is(I_AD_Window.Table_Name));
-		assertThat(tableReferenceDescriptor.getReferencingTableName(), is(I_AD_Tab.Table_Name));
-		assertThat(tableReferenceDescriptor.getReferencingColumnName(), is(I_AD_Tab.COLUMNNAME_AD_Window_ID));
+		assertThat(tableReferenceDescriptor.getTargetTableName(), is(I_AD_Window.Table_Name));
+		assertThat(tableReferenceDescriptor.getOriginTableName(), is(I_AD_Tab.Table_Name));
+		assertThat(tableReferenceDescriptor.getRecordIdColumnName(), is(I_AD_Tab.COLUMNNAME_AD_Window_ID));
 
 	}
 }

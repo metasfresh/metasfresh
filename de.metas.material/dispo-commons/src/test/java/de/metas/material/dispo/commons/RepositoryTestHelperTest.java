@@ -9,11 +9,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.AttributesKey;
 
 /*
  * #%L
@@ -25,12 +26,12 @@ import de.metas.material.event.ProductDescriptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,19 +50,19 @@ public class RepositoryTestHelperTest
 	@Test
 	public void mkQueryForStockUntilDate_has_unspecified_StorageAttributesKey()
 	{
-		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryCommands());
+		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService());
 
 		final CandidatesQuery stockCandidatequery = repositoryTestHelper
 				.mkQueryForStockUntilDate(EventTestHelper.NOW);
 
-		assertThat(stockCandidatequery.getMaterialDescriptor().getStorageAttributesKey())
-				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED);
+		assertThat(stockCandidatequery.getMaterialDescriptorQuery().getStorageAttributesKey())
+				.isSameAs(AttributesKey.ALL);
 	}
 
 	@Test
 	public void constructor_sets_up_candidates_correctly()
 	{
-		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryCommands());
+		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService());
 
 		final Candidate laterStockCandidate = repositoryTestHelper.laterStockCandidate;
 		final Candidate stockCandidate = repositoryTestHelper.stockCandidate;
@@ -90,9 +91,9 @@ public class RepositoryTestHelperTest
 	}
 
 	@Test
-	public void constructor_sets_up_candidates_correctly_and_queryies_work()
+	public void constructor_sets_up_candidates_correctly_and_queries_work()
 	{
-		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryCommands());
+		final RepositoryTestHelper repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService());
 
 		final CandidatesQuery stockCandidatequery = repositoryTestHelper.mkQueryForStockUntilDate(EventTestHelper.NOW);
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();

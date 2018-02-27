@@ -37,12 +37,12 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
-import org.eevolution.api.IPPOrderBOMDAO;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.LiberoException;
 
 @Validator(I_PP_Order_BOMLine.class)
 public class PP_Order_BOMLine

@@ -25,6 +25,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Source_HU;
+import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
@@ -49,12 +50,12 @@ import mockit.Mocked;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -247,7 +248,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	/**
 	 * Like {@link #testVhuWithTuAndLuAndPickingCandidateForLu(boolean)}, but the LU is not flagged by a picking candidate but by a {@link I_M_Source_HU}.<br>
 	 * Because of the source HU, LU shall still not be returned.
-	 * 
+	 *
 	 * @param onlyTopLevelHUs
 	 */
 	@Theory
@@ -357,7 +358,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 
 	/**
 	 * Set up the storage engine to return the given {@code vhu} and call the method under test.
-	 * 
+	 *
 	 * @param vhu
 	 * @param onlyTopLevelHUs TODO
 	 * @return
@@ -367,7 +368,11 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 			final I_M_HU vhu,
 			final boolean onlyTopLevelHUs)
 	{
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		save(warehouse);
+
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule.setM_Warehouse(warehouse);
 		save(shipmentSchedule);
 
 		// @formatter:off

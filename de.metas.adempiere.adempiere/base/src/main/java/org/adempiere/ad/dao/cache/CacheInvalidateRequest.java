@@ -1,5 +1,7 @@
 package org.adempiere.ad.dao.cache;
 
+import java.util.UUID;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -51,27 +53,30 @@ public final class CacheInvalidateRequest
 
 	public static CacheInvalidateRequest allRecordsForTable(@NonNull final String rootTableName)
 	{
+		final String id = UUID.randomUUID().toString();
 		final int rootRecordId = CacheMgt.RECORD_ID_ALL;
 		final String childTableName = null;
 		final int childRecordId = CacheMgt.RECORD_ID_ALL;
-		return new CacheInvalidateRequest(rootTableName, rootRecordId, childTableName, childRecordId);
+		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId);
 	}
 
 	public static CacheInvalidateRequest rootRecord(@NonNull final String rootTableName, final int rootRecordId)
 	{
 		Check.assume(rootRecordId >= 0, "rootRecordId >= 0");
 
+		final String id = UUID.randomUUID().toString();
 		final String childTableName = null;
 		final int childRecordId = CacheMgt.RECORD_ID_ALL;
-		return new CacheInvalidateRequest(rootTableName, rootRecordId, childTableName, childRecordId);
+		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId);
 	}
 
 	public static CacheInvalidateRequest allChildRecords(@NonNull final String rootTableName, final int rootRecordId, @NonNull final String childTableName)
 	{
 		Check.assume(rootRecordId >= 0, "rootRecordId >= 0");
 
+		final String id = UUID.randomUUID().toString();
 		final int childRecordId = CacheMgt.RECORD_ID_ALL;
-		return new CacheInvalidateRequest(rootTableName, rootRecordId, childTableName, childRecordId);
+		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId);
 	}
 
 	public static CacheInvalidateRequest fromTableNameAndRecordId(final String tableName, final int recordId)
@@ -90,8 +95,11 @@ public final class CacheInvalidateRequest
 		}
 	}
 
-	private static final CacheInvalidateRequest ALL = new CacheInvalidateRequest(null, CacheMgt.RECORD_ID_ALL, null, CacheMgt.RECORD_ID_ALL);
+	private static final CacheInvalidateRequest ALL = new CacheInvalidateRequest("ALL", null, CacheMgt.RECORD_ID_ALL, null, CacheMgt.RECORD_ID_ALL);
 
+	@JsonProperty("id")
+	private final String id;
+	
 	@JsonProperty("rootTableName")
 	private final String rootTableName;
 	@JsonProperty("rootRecordId")
@@ -104,11 +112,13 @@ public final class CacheInvalidateRequest
 
 	@JsonCreator
 	private CacheInvalidateRequest(
+			@JsonProperty("id") final String id,
 			@JsonProperty("rootTableName") final String rootTableName,
 			@JsonProperty("rootRecordId") final int rootRecordId,
 			@JsonProperty("childTableName") final String childTableName,
 			@JsonProperty("childRecordId") final int childRecordId)
 	{
+		this.id = id;
 		this.rootTableName = rootTableName;
 		this.rootRecordId = rootRecordId >= 0 ? rootRecordId : CacheMgt.RECORD_ID_ALL;
 		this.childTableName = childTableName;
@@ -134,11 +144,11 @@ public final class CacheInvalidateRequest
 
 	public TableRecordReference getRecordEffective()
 	{
-		if (childTableName != null && childRecordId > 0)
+		if (childTableName != null && childRecordId >= 0)
 		{
 			return TableRecordReference.of(childTableName, childRecordId);
 		}
-		else if (rootTableName != null && rootRecordId > 0)
+		else if (rootTableName != null && rootRecordId >= 0)
 		{
 			return TableRecordReference.of(rootTableName, rootRecordId);
 		}
@@ -172,7 +182,8 @@ public final class CacheInvalidateRequest
 
 		public CacheInvalidateRequest build()
 		{
-			return new CacheInvalidateRequest(rootTableName, rootRecordId, childTableName, childRecordId);
+			final String id = UUID.randomUUID().toString();
+			return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId);
 		}
 
 		public Builder rootRecord(@NonNull final String tableName, final int recordId)

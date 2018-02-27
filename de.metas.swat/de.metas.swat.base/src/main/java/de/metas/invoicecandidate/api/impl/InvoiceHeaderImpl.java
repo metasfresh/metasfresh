@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -86,7 +85,9 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 
 	private boolean taxIncluded;
 
-	/* package */InvoiceHeaderImpl()
+	private int C_PaymentTerm_ID = -1;;
+
+	/* package */ InvoiceHeaderImpl()
 	{
 		super();
 	}
@@ -340,5 +341,16 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 		}
 
 		return totalNetAmt;
+	}
+
+	public void setC_PaymentTerm_ID(final int paymentTermId)
+	{
+		C_PaymentTerm_ID = paymentTermId;
+	}
+
+	@Override
+	public int getC_PaymentTerm_ID()
+	{
+		return C_PaymentTerm_ID;
 	}
 }

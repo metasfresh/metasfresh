@@ -5,12 +5,13 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>10.0.0</version>
-		<relativePath>../de.metas.parent/pom.xml</relativePath>
+		<version>[1,10.0.0]</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.report</groupId>
 	<artifactId>metasfresh-report</artifactId>
+	<version>10.0.0</version>
 	<packaging>pom</packaging>
 
 	<modules>

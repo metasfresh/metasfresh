@@ -10,12 +10,12 @@ package org.adempiere.model.engines;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,7 +46,7 @@ import de.metas.product.IProductBL;
 
 /**
  * Immutable Cost Dimension
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  */
 public final class CostDimension
@@ -70,9 +70,14 @@ public final class CostDimension
 	private final int C_AcctSchema_ID;
 	private final int M_CostElement_ID;
 
-	public CostDimension(I_M_Product product, I_C_AcctSchema as, int M_CostType_ID, int AD_Org_ID, int M_ASI_ID, int M_CostElement_ID)
+	public CostDimension(
+			I_M_Product product,
+			I_C_AcctSchema as,
+			int M_CostType_ID,
+			int AD_Org_ID,
+			int M_ASI_ID,
+			int M_CostElement_ID)
 	{
-		super();
 		this.AD_Client_ID = as.getAD_Client_ID();
 		this.AD_Org_ID = AD_Org_ID;
 		this.M_Product_ID = product != null ? product.getM_Product_ID() : ANY;
@@ -83,9 +88,15 @@ public final class CostDimension
 		updateForProduct(product, as);
 	}
 
-	public CostDimension(int client_ID, int org_ID, int product_ID, int attributeSetInstance_ID, int costType_ID, int acctSchema_ID, int costElement_ID)
+	public CostDimension(
+			int client_ID,
+			int org_ID,
+			int product_ID,
+			int attributeSetInstance_ID,
+			int costType_ID,
+			int acctSchema_ID,
+			int costElement_ID)
 	{
-		super();
 		this.AD_Client_ID = client_ID;
 		this.AD_Org_ID = org_ID;
 		this.M_Product_ID = product_ID;
@@ -99,12 +110,11 @@ public final class CostDimension
 
 	/**
 	 * Copy Constructor
-	 * 
+	 *
 	 * @param costDimension a <code>CostDimension</code> object
 	 */
 	public CostDimension(final CostDimension costDimension)
 	{
-		super();
 		this.AD_Client_ID = costDimension.AD_Client_ID;
 		this.AD_Org_ID = costDimension.AD_Org_ID;
 		this.M_Product_ID = costDimension.M_Product_ID;

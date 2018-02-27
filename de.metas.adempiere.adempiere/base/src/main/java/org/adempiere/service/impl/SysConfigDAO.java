@@ -29,7 +29,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.Adempiere;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.Query;
@@ -74,7 +74,7 @@ public class SysConfigDAO extends AbstractSysConfigDAO
 		{
 			// If there is no Spring context then go an check JVM System Properties.
 			// Usually we will get here when we will run some tools based on metasfresh framework.
-			
+
 			final Properties systemProperties = System.getProperties();
 			final String systemPropertyValue = systemProperties.getProperty(Name);
 			if(!Check.isEmpty(systemPropertyValue, true))
@@ -103,7 +103,7 @@ public class SysConfigDAO extends AbstractSysConfigDAO
 		return new Query(Env.getCtx(), I_AD_SysConfig.Table_Name, whereClause, ITrx.TRXNAME_None)
 				.setParameters(sqlPrefix, adClientId, adOrgId, true)
 				.setOrderBy(I_AD_SysConfig.COLUMNNAME_Name)
-				.aggregateList(I_AD_SysConfig.COLUMNNAME_Name, IQuery.AGGREGATE_DISTINCT, String.class);
+				.aggregateList(I_AD_SysConfig.COLUMNNAME_Name, Aggregate.DISTINCT, String.class);
 	}
 
 }

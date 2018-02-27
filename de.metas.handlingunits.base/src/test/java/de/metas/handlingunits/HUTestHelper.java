@@ -97,7 +97,6 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.impl.MTransactionAllocationSourceDestination;
 import de.metas.handlingunits.allocation.transfer.IHUJoinBL;
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
@@ -199,7 +198,7 @@ public class HUTestHelper
 	public I_C_UOM uomKg;
 	public I_C_UOM uomEach;
 	public I_C_UOM uomPCE;
-	
+
 	/**
 	 * Value: Palet
 	 */
@@ -352,7 +351,6 @@ public class HUTestHelper
 	};
 	private IMutableHUContext huContext;
 
-
 	/**
 	 * Invokes {@link #HUTestHelper(boolean)} with init=<code>true</code>.
 	 */
@@ -478,14 +476,14 @@ public class HUTestHelper
 
 	/**
 	 * Setup module interceptors: "de.metas.handlingunits" module - FULL (interceptors, factories, etc), like in production (used by some integration tests).
-	 * 
+	 *
 	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
-	 * 
+	 *
 	 * <pre>
 	&#64;RunWith(SpringRunner.class)
 	&#64;SpringBootTest(classes= HandlingUnitsConfiguration.class)
 	 * </pre>
-	 * 
+	 *
 	 * Otherwise, tests will probably fail due to spring application context.
 	 */
 	protected final void setupModuleInterceptors_HU_Full()
@@ -559,9 +557,9 @@ public class HUTestHelper
 		uomKg = createUomKg();
 		uomEach = createUomEach();
 		uomPCE = createUomPCE();
-		
+
 		final AttributesTestHelper attributesTestHelper = new AttributesTestHelper();
-		
+
 		attr_CountryMadeIn = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_CountryMadeIn_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		createAttributeListValues(attr_CountryMadeIn,
 				HUTestHelper.COUNTRYMADEIN_RO,
@@ -1508,7 +1506,11 @@ public class HUTestHelper
 
 	public final void load(TestHelperLoadRequest r)
 	{
-		final IAllocationSource source = createDummySourceDestination(r.getCuProduct(), Quantity.QTY_INFINITE, r.getLoadCuUOM(), true);
+		final IAllocationSource source = createDummySourceDestination(
+				r.getCuProduct(),
+				Quantity.QTY_INFINITE,
+				r.getLoadCuUOM(),
+				true); // fullyLoaded
 
 		final HULoader huLoader = HULoader.of(source, r.getProducer())
 				.setAllowPartialUnloads(false)
@@ -1705,8 +1707,7 @@ public class HUTestHelper
 
 	/**
 	 * This method creates one or many HU(s) and distributes the products and Qtys of the given transaction document (e.g. material receipt) among those instances' material-HU-items. The method also
-	 * creates a {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} which references the given transactionDoc. The trx-hdr has a one line for every
-	 * {@link org.compiere.model.I_M_TransactionAllocation} of the given transaction doc and one line for every created {@link de.metas.handlingunits.model.I_M_HU_Item}.
+	 * creates a {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} which references the given transactionDoc.
 	 *
 	 * @param incomingTrxDoc the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
 	 * @param huPI
@@ -1881,15 +1882,9 @@ public class HUTestHelper
 	public void joinHUs(final IHUContext huContext, final I_M_HU loadingUnit, final I_M_HU... tradingUnits)
 	{
 		trxBL.createHUContextProcessorExecutor(huContext)
-				.run(new IHUContextProcessor()
-				{
-
-					@Override
-					public IMutableAllocationResult process(IHUContext huContextLocal)
-					{
-						joinHUs(huContextLocal, loadingUnit, Arrays.asList(tradingUnits));
-						return NULL_RESULT;
-					}
+				.run((IHUContextProcessor)huContextLocal -> {
+					joinHUs(huContextLocal, loadingUnit, Arrays.asList(tradingUnits));
+					return IHUContextProcessor.NULL_RESULT;
 				});
 	}
 

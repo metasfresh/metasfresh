@@ -1,0 +1,10 @@
+SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning DROP COLUMN IsPhantom');
+SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning DROP COLUMN Order_Max');
+SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning DROP COLUMN Order_Min');
+SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning DROP COLUMN Order_Pack');
+SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning DROP COLUMN Order_Period');
+SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning DROP COLUMN Order_Policy');
+SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning DROP COLUMN Order_Qty');
+SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning DROP COLUMN PP_POQ_AggregateOnBPartnerLevel');
+SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning DROP COLUMN SafetyStock');
+SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning DROP COLUMN TimeFence');

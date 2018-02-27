@@ -85,8 +85,6 @@ public class C_AllocationHdr
 				//
 				// Collect all C_PaySelectionLines which are about those invoices
 				.andCollectChildren(I_C_PaySelectionLine.COLUMN_C_Invoice_ID, I_C_PaySelectionLine.class)
-				// Only those which are not processed
-				.addEqualsFilter(I_C_PaySelectionLine.COLUMN_Processed, false)
 				// Only those which are active 
 				.addOnlyActiveRecordsFilter()
 				//
@@ -127,11 +125,7 @@ public class C_AllocationHdr
 			logger.info("Skip updating lines because pay selection was already processed: {}", paySelection);
 			return;
 		}
-		if (paySelection.isProcessing())
-		{
-			logger.info("Skip updating lines because pay selection was locked: {}", paySelection);
-		}
-
+		
 		//
 		// Update all pay selection lines
 		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);

@@ -41,7 +41,7 @@ public final class PlainContextAware implements IContextAware
 		final boolean allowThreadInherited = false;
 		return new PlainContextAware(ctx, ITrx.TRXNAME_None, allowThreadInherited);
 	}
-	
+
 	public static final PlainContextAware newOutOfTrx()
 	{
 		final boolean allowThreadInherited = false;
@@ -59,7 +59,7 @@ public final class PlainContextAware implements IContextAware
 		final boolean allowThreadInherited = true;
 		return new PlainContextAware(ctx, ITrx.TRXNAME_None, allowThreadInherited);
 	}
-	
+
 	/**
 	 * @return a {@link IContextAware} for {@link Env#getCtx()} and {@link ITrx#TRXNAME_None}.
 	 */
@@ -109,7 +109,8 @@ public final class PlainContextAware implements IContextAware
 	 * <li>Use {@link #newOutOfTrx(Properties)}
 	 *
 	 * @param ctx
-	 * @deprecated please use {@link #newOutOfTrx(Properties)} to get a context aware that will use a local trx.
+	 * @deprecated please use {@link #newOutOfTrxAllowThreadInherited(Properties)}
+	 *             to get a context aware that will use a local trx but can "fall back" to thread-inherited.
 	 */
 	@Deprecated
 	public PlainContextAware(final Properties ctx)

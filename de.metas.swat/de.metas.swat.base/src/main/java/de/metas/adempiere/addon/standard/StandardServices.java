@@ -1,31 +1,5 @@
 package de.metas.adempiere.addon.standard;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.bpartner.service.impl.BPartnerBL;
-import org.adempiere.bpartner.service.impl.BPartnerDAO;
 import org.adempiere.db.IDBService;
 import org.adempiere.db.IDatabaseBL;
 import org.adempiere.db.impl.DatabaseBL;
@@ -56,7 +30,6 @@ import de.metas.adempiere.service.AppDictionaryBL;
 import de.metas.adempiere.service.IAppDictionaryBL;
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.adempiere.service.IGlobalLockSystem;
-import de.metas.adempiere.service.IPackageInfoService;
 import de.metas.adempiere.service.IParameterBL;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.ISweepTableBL;
@@ -67,7 +40,6 @@ import de.metas.adempiere.service.impl.ParameterBL;
 import de.metas.adempiere.service.impl.PrinterRoutingBL;
 import de.metas.adempiere.service.impl.SweepTableBL;
 import de.metas.adempiere.service.impl.TableColumnPathBL;
-import de.metas.dpd.service.RoutingService;
 import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderBL;
 
@@ -96,7 +68,6 @@ public class StandardServices implements IAddOn
 		Services.registerService(IClientOrgPA.class, new ClientOrgPA());
 		Services.registerService(IDatabaseBL.class, new DatabaseBL());
 		Services.registerService(IDBService.class, new org.adempiere.db.impl.DBService());
-		Services.registerService(IPackageInfoService.class, new RoutingService());
 		Services.registerService(IOrderBL.class, new OrderBL());
 		Services.registerService(IParameterBL.class, new ParameterBL());
 		Services.registerService(ICalendarDAO.class, new CalendarDAO());

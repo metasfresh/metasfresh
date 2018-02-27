@@ -14,6 +14,7 @@
 package org.adempiere.model;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,9 +22,14 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -39,6 +45,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  *
@@ -67,9 +74,16 @@ public class ZoomInfoFactory
 
 		int getAD_Table_ID();
 
-		String getKeyColumnName();
-
-		List<String> getKeyColumnNames();
+		/**
+		 * The name of the column from which the zoom originates.<br>
+		 * In other words, the name of the column for which the system tries to load {@link IZoomProvider}s.
+		 *
+		 * Example: when looking for zoom-targets from a {@code C_Order} window, then this is {@code C_Order_ID}.
+		 *
+		 * @return The name of the single ID column which has {@link I_AD_Column#COLUMN_IsGenericZoomOrigin} {@code ='Y'}.
+		 *         May also return {@code null}. In this case, expect no exception, but also no zoom providers to be created.
+		 */
+		String getKeyColumnNameOrNull();
 
 		int getRecord_ID();
 
@@ -103,23 +117,41 @@ public class ZoomInfoFactory
 
 		private final PO po;
 		private final int adWindowId;
-		private final List<String> keyColumnNames;
+		private final String keyColumnName;
 
-		private POZoomSource(final PO po, final int adWindowId)
+		private POZoomSource(@NonNull final PO po, final int adWindowId)
 		{
-			Check.assumeNotNull(po, "Parameter po is not null");
 			this.po = po;
 			this.adWindowId = adWindowId;
 
+			this.keyColumnName = extractKeyColumnNameOrNull(po);
+		}
+
+		private static String extractKeyColumnNameOrNull(@NonNull final PO po)
+		{
 			final String[] keyColumnNamesArr = po.get_KeyColumns();
 			if (keyColumnNamesArr == null)
 			{
-				keyColumnNames = ImmutableList.of();
+				return null;
 			}
-			else
+
+			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
+			final ArrayList<String> eligibleKeyColumnNames = new ArrayList<>();
+			for (int i = 0; i < keyColumnNamesArr.length; i++)
 			{
-				keyColumnNames = ImmutableList.copyOf(keyColumnNamesArr);
+				final I_AD_Column column = adTableDAO.retrieveColumn(po.get_TableName(), keyColumnNamesArr[i]);
+				if (column.isGenericZoomOrigin())
+				{
+					eligibleKeyColumnNames.add(keyColumnNamesArr[i]);
+				}
 			}
+
+			if (eligibleKeyColumnNames.size() != 1)
+			{
+				return null;
+			}
+			return eligibleKeyColumnNames.get(0);
 		}
 
 		@Override
@@ -155,19 +187,9 @@ public class ZoomInfoFactory
 		}
 
 		@Override
-		public String getKeyColumnName()
+		public String getKeyColumnNameOrNull()
 		{
-			if (keyColumnNames.size() != 1)
-			{
-				return null;
-			}
-			return keyColumnNames.get(0);
-		}
-
-		@Override
-		public List<String> getKeyColumnNames()
-		{
-			return keyColumnNames;
+			return keyColumnName;
 		}
 
 		@Override
@@ -250,7 +272,11 @@ public class ZoomInfoFactory
 	@SuppressWarnings("serial")
 	public static final class ZoomInfo implements Serializable
 	{
-		public static final ZoomInfo of(final String zoomInfoId, final int windowId, final MQuery query, final ITranslatableString destinationDisplay)
+		public static final ZoomInfo of(
+				@NonNull final String zoomInfoId,
+				final int windowId,
+				@NonNull final MQuery query,
+				@NonNull final ITranslatableString destinationDisplay)
 		{
 			return new ZoomInfo(zoomInfoId, windowId, query, destinationDisplay);
 		}
@@ -260,20 +286,19 @@ public class ZoomInfoFactory
 		private final MQuery _query;
 		private final int _windowId;
 
-		private ZoomInfo(final String zoomInfoId, final int windowId, final MQuery query, final ITranslatableString destinationDisplay)
+		private ZoomInfo(
+				@NonNull final String zoomInfoId,
+				final int windowId,
+				@NonNull final MQuery query,
+				@NonNull final ITranslatableString destinationDisplay)
 		{
-			super();
-
 			Check.assumeNotEmpty(zoomInfoId, "zoomInfoId is not empty");
 			_zoomInfoId = zoomInfoId;
 
 			Check.assume(windowId > 0, "windowId > 0");
 			_windowId = windowId;
 
-			Check.assumeNotNull(query, "Parameter query is not null");
 			_query = query;
-
-			Check.assumeNotNull(destinationDisplay, "destinationDisplay is not null");
 			_destinationDisplay = destinationDisplay;
 		}
 
@@ -304,6 +329,12 @@ public class ZoomInfoFactory
 			return _query.getRecordCount();
 		}
 
+		@Nullable
+		public Duration getRecordCountDuration()
+		{
+			return _query.getRecordCountDuration();
+		}
+
 		public int getAD_Window_ID()
 		{
 			return _windowId;
@@ -325,42 +356,43 @@ public class ZoomInfoFactory
 	}
 
 	/**
-	 * @param source the source we need zoom targets for
+	 * @param zoomOrigin the source we need zoom targets for
 	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
 	 */
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source)
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource zoomOrigin)
 	{
-		return streamZoomInfos(source).collect(ImmutableList.toImmutableList());
+		return streamZoomInfos(zoomOrigin).collect(ImmutableList.toImmutableList());
 	}
 
 	/**
 	 * Stream all {@link ZoomInfo}s for given {@link IZoomSource}.
 	 */
-	public Stream<ZoomInfo> streamZoomInfos(final IZoomSource source)
+	public Stream<ZoomInfo> streamZoomInfos(final IZoomSource zoomOrigin)
 	{
 		final int targetAD_Window_ID = -1;
 		final boolean checkRecordsCount = true;
-		return streamZoomInfos(source, targetAD_Window_ID, checkRecordsCount);
+		return streamZoomInfos(zoomOrigin, targetAD_Window_ID, checkRecordsCount);
 	}
 
-	private Stream<ZoomInfo> streamZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
+	private Stream<ZoomInfo> streamZoomInfos(final IZoomSource zoomOrigin, final int targetAD_Window_ID, final boolean checkRecordsCount)
 	{
-		logger.debug("source={}", source);
-		
+		logger.debug("source={}", zoomOrigin);
+
 		final IUserRolePermissions rolePermissions = Env.getUserRolePermissions();
 		final Set<Integer> alreadySeenWindowIds = new HashSet<>();
 
-		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(source.getTableName());
+		final String tableName = zoomOrigin.getTableName();
+		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(tableName);
 
 		return zoomProviders.stream()
 				.flatMap(zoomProvider -> {
 					try
 					{
-						return zoomProvider.retrieveZoomInfos(source, targetAD_Window_ID, checkRecordsCount).stream();
+						return zoomProvider.retrieveZoomInfos(zoomOrigin, targetAD_Window_ID, checkRecordsCount).stream();
 					}
 					catch (Exception ex)
 					{
-						logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, source, ex);
+						logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, zoomOrigin, ex);
 						return Stream.empty();
 					}
 				})
@@ -389,7 +421,7 @@ public class ZoomInfoFactory
 								+ "\n zoomInfo: " + zoomInfo
 						// + "\n zoomProvider: " + zoomProvider
 								+ "\n targetAD_Window_ID: " + targetAD_Window_ID
-								+ "\n source: " + source
+								+ "\n source: " + zoomOrigin
 								+ "\n checkRecordsCount: " + checkRecordsCount)
 										.throwIfDeveloperModeOrLogWarningElse(logger);
 						return false; // reject
@@ -435,20 +467,20 @@ public class ZoomInfoFactory
 	 *
 	 * NOTE: Records count is not checked
 	 *
-	 * @param source
+	 * @param zoomSource
 	 * @param targetWindowId target AD_Window_ID (must be provided)
 	 * @return ZoomInfo; never returns <code>null</code>
 	 */
-	public ZoomInfo retrieveZoomInfo(final IZoomSource source, final int targetWindowId)
+	public ZoomInfo retrieveZoomInfo(final IZoomSource zoomSource, final int targetWindowId)
 	{
 		Check.assume(targetWindowId > 0, "targetWindowId > 0");
 
 		// NOTE: we need to check the records count because in case there are multiple ZoomInfos for the same targetWindowId,
 		// we shall pick the one which actually has some data. Usually there would be only one (see #1808)
 		final boolean checkRecordsCount = true;
-		return streamZoomInfos(source, targetWindowId, checkRecordsCount)
+		return streamZoomInfos(zoomSource, targetWindowId, checkRecordsCount)
 				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId));
+				.orElseThrow(() -> new AdempiereException("No zoomInfo found for source=" + zoomSource + ", targetWindowId=" + targetWindowId));
 	}
 
 	private List<IZoomProvider> retrieveZoomProviders(final String tableName)
@@ -457,7 +489,7 @@ public class ZoomInfoFactory
 
 		// NOTE: Zoom providers order matter because in case it finds some duplicates (i.e. same window),
 		// it will pick only the first one (i.e. the one from the first provider).
-		zoomProviders.addAll(RelationTypeZoomProvidersFactory.instance.getZoomProvidersBySourceTableName(tableName));
+		zoomProviders.addAll(RelationTypeZoomProvidersFactory.instance.getZoomProvidersByZoomOriginTableName(tableName));
 		zoomProviders.add(GenericZoomProvider.instance);
 		if (factAcctZoomProviderEnabled)
 		{
@@ -469,7 +501,7 @@ public class ZoomInfoFactory
 
 	/**
 	 * Disable the {@link FactAcctZoomProvider} (which is enabled by default
-	 * 
+	 *
 	 * @deprecated Needed only for Swing
 	 */
 	@Deprecated

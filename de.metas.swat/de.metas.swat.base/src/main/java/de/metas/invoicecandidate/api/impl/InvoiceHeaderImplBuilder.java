@@ -63,7 +63,7 @@ public class InvoiceHeaderImplBuilder
 
 	private int Bill_BPartner_ID;
 	private int Bill_Location_ID;
-	private Set<Integer> Bill_User_IDs = new LinkedHashSet<Integer>(); // avoid NPE
+	private Set<Integer> Bill_User_IDs = new LinkedHashSet<>(); // avoid NPE
 
 	// 03805: add attribute C_Currency_ID
 	private int C_Currency_ID;

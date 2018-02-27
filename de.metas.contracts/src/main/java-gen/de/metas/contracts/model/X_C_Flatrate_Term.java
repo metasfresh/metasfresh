@@ -15,7 +15,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1740272971L;
+	private static final long serialVersionUID = -1900230049L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (Properties ctx, int C_Flatrate_Term_ID, String trxName)
@@ -29,9 +29,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 			setC_Flatrate_Data_ID (0);
 			setC_Flatrate_Term_ID (0);
 			setC_TaxCategory_ID (0); // 100
-			setContractDocumentNo (null); // 0
 			setDocAction (null); // CO
 			setDocStatus (null); // DR
+			setDocumentNo (null); // 0
 			setIsAutoRenew (false); // N
 			setIsSimulation (false); // N
 			setIsTaxIncluded (false); // N
@@ -663,22 +663,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		return (java.lang.String)get_Value(COLUMNNAME_ChangeOrCancelTerm);
 	}
 
-	/** Set Vertrag Nr..
-		@param ContractDocumentNo Vertrag Nr.	  */
-	@Override
-	public void setContractDocumentNo (java.lang.String ContractDocumentNo)
-	{
-		set_ValueNoCheck (COLUMNNAME_ContractDocumentNo, ContractDocumentNo);
-	}
-
-	/** Get Vertrag Nr..
-		@return Vertrag Nr.	  */
-	@Override
-	public java.lang.String getContractDocumentNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ContractDocumentNo);
-	}
-
 	/** 
 	 * ContractStatus AD_Reference_ID=540000
 	 * Reference name: SubscriptionStatus
@@ -696,6 +680,8 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String CONTRACTSTATUS_Waiting = "Wa";
 	/** EndingContract = Ec */
 	public static final String CONTRACTSTATUS_EndingContract = "Ec";
+	/** Voided = Vo */
+	public static final String CONTRACTSTATUS_Voided = "Vo";
 	/** Set Vertrags-Status.
 		@param ContractStatus Vertrags-Status	  */
 	@Override
@@ -746,7 +732,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String DELIVERYRULE_Force = "F";
 	/** Manual = M */
 	public static final String DELIVERYRULE_Manual = "M";
-	/** Mit nächster Abolieferung = S */
+	/** MitNaechsterAbolieferung = S */
 	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
@@ -901,6 +887,25 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public java.lang.String getDocStatus () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+	}
+
+	/** Set Nr..
+		@param DocumentNo 
+		Document sequence number of the document
+	  */
+	@Override
+	public void setDocumentNo (java.lang.String DocumentNo)
+	{
+		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
+	}
+
+	/** Get Nr..
+		@return Document sequence number of the document
+	  */
+	@Override
+	public java.lang.String getDocumentNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
 	@Override
@@ -1507,6 +1512,22 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public java.sql.Timestamp getStartDate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_StartDate);
+	}
+
+	/** Set Termination Date.
+		@param TerminationDate Termination Date	  */
+	@Override
+	public void setTerminationDate (java.sql.Timestamp TerminationDate)
+	{
+		set_Value (COLUMNNAME_TerminationDate, TerminationDate);
+	}
+
+	/** Get Termination Date.
+		@return Termination Date	  */
+	@Override
+	public java.sql.Timestamp getTerminationDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_TerminationDate);
 	}
 
 	/** Set Termination Memo.

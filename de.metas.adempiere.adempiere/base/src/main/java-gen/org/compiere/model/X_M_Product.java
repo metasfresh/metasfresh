@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 571530876L;
+	private static final long serialVersionUID = 733124775L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -335,6 +335,28 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getGroupCompensationType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationType);
+	}
+
+	/** Set Min. Garantie-Tage.
+		@param GuaranteeDaysMin 
+		Minumum number of guarantee days
+	  */
+	@Override
+	public void setGuaranteeDaysMin (int GuaranteeDaysMin)
+	{
+		set_Value (COLUMNNAME_GuaranteeDaysMin, Integer.valueOf(GuaranteeDaysMin));
+	}
+
+	/** Get Min. Garantie-Tage.
+		@return Minumum number of guarantee days
+	  */
+	@Override
+	public int getGuaranteeDaysMin () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_GuaranteeDaysMin);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Kommentar/Hilfe.
@@ -888,9 +910,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
 	}
 
-	/** Set Produkt-Kategorie.
+	/** Set Produkt Kategorie.
 		@param M_Product_Category_ID 
-		Category of a Product
+		Kategorie eines Produktes
 	  */
 	@Override
 	public void setM_Product_Category_ID (int M_Product_Category_ID)
@@ -901,8 +923,8 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
 	}
 
-	/** Get Produkt-Kategorie.
-		@return Category of a Product
+	/** Get Produkt Kategorie.
+		@return Kategorie eines Produktes
 	  */
 	@Override
 	public int getM_Product_Category_ID () 
@@ -936,6 +958,49 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * M_ProductPlanningSchema_Selector AD_Reference_ID=540829
+	 * Reference name: M_ProductPlanningSchema_Selector_List
+	 */
+	public static final int M_PRODUCTPLANNINGSCHEMA_SELECTOR_AD_Reference_ID=540829;
+	/** Normal = N */
+	public static final String M_PRODUCTPLANNINGSCHEMA_SELECTOR_Normal = "N";
+	/** Set M_ProductPlanningSchema_Selector.
+		@param M_ProductPlanningSchema_Selector M_ProductPlanningSchema_Selector	  */
+	@Override
+	public void setM_ProductPlanningSchema_Selector (java.lang.String M_ProductPlanningSchema_Selector)
+	{
+
+		set_Value (COLUMNNAME_M_ProductPlanningSchema_Selector, M_ProductPlanningSchema_Selector);
+	}
+
+	/** Get M_ProductPlanningSchema_Selector.
+		@return M_ProductPlanningSchema_Selector	  */
+	@Override
+	public java.lang.String getM_ProductPlanningSchema_Selector () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_M_ProductPlanningSchema_Selector);
+	}
+
+	/** Set Hersteller.
+		@param Manufacturer 
+		Hersteller des Produktes
+	  */
+	@Override
+	public void setManufacturer (java.lang.String Manufacturer)
+	{
+		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
+	}
+
+	/** Get Hersteller.
+		@return Hersteller des Produktes
+	  */
+	@Override
+	public java.lang.String getManufacturer () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
 	}
 
 	/** 
@@ -981,6 +1046,65 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_C_UOM getPackage_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Package_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setPackage_UOM(org.compiere.model.I_C_UOM Package_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_Package_UOM_ID, org.compiere.model.I_C_UOM.class, Package_UOM);
+	}
+
+	/** Set Package UOM.
+		@param Package_UOM_ID 
+		UOM of the package
+	  */
+	@Override
+	public void setPackage_UOM_ID (int Package_UOM_ID)
+	{
+		if (Package_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Package_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Package_UOM_ID, Integer.valueOf(Package_UOM_ID));
+	}
+
+	/** Get Package UOM.
+		@return UOM of the package
+	  */
+	@Override
+	public int getPackage_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Package_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Package Size.
+		@param PackageSize 
+		Size of a package
+	  */
+	@Override
+	public void setPackageSize (java.math.BigDecimal PackageSize)
+	{
+		set_Value (COLUMNNAME_PackageSize, PackageSize);
+	}
+
+	/** Get Package Size.
+		@return Size of a package
+	  */
+	@Override
+	public java.math.BigDecimal getPackageSize () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageSize);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Verarbeiten.

@@ -70,9 +70,6 @@ public class MAttributeSetInstance extends X_M_AttributeSetInstance
 	public MAttributeSetInstance(Properties ctx, int M_AttributeSetInstance_ID, String trxName)
 	{
 		super(ctx, M_AttributeSetInstance_ID, trxName);
-		if (M_AttributeSetInstance_ID == 0)
-		{
-		}
 	}	// MAttributeSetInstance
 
 	/**

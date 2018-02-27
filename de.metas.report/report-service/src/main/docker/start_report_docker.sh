@@ -1,5 +1,4 @@
 ﻿#!/bin/bash
-
 set -e
 
 
@@ -12,7 +11,8 @@ db_user=${DB_USER:-metasfresh}
 db_password=${DB_PASSWORD:-metasfresh}
 app_host=${APP_HOST:-app}
 skip_run_db_update=${SKIP_DB_UPDATE:-false}
-
+debug_port=${DEBUG_PORT:-8791}
+admin_url=${METASFRESH_ADMIN_URL:-NONE}
 
 echo_variable_values()
 {
@@ -22,9 +22,12 @@ echo_variable_values()
  echo "DB_PORT=${db_port}"
  echo "DB_NAME=${db_name}"
  echo "DB_USER=${db_user}"
- echo "DB_PASSWORD=(that's secret)"
+ echo "DB_PASSWORD=*******"
  echo "SKIP_DB_UPDATE=${skip_run_db_update}"
  echo "APP_HOST=${app_host}"
+ echo "DEBUG_PORT=${debug_port}"
+ echo "METASFRESH_ADMIN_URL=${admin_url}"
+ 
 }
 
 set_properties()
@@ -82,11 +85,26 @@ run_db_update()
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
 run_metasfresh()
 {
+ if [ "$admin_url" != "NONE" ]; 
+ then
+	# see https://codecentric.github.io/spring-boot-admin/1.5.0/#spring-boot-admin-client
+	# spring.boot.admin.client.prefer-ip=true because within docker, the hostname is no help
+	metasfresh_admin_params="-Dspring.boot.admin.url=${admin_url} -Dmanagement.security.enabled=false -Dspring.boot.admin.client.prefer-ip=true"
+ else
+	metasfresh_admin_params=""
+ fi
+
+ # add the external font jars we might have in the external lib folder
+ # this assumes that the metasfresh-report.jar uses PropertiesLauncher (can be verified by opening the jar e.g. with 7-zip and checking META-INF/MANIFEST.MF)
+ # Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
+ ext_lib_param="-Dloader.path=/opt/metasfresh/metasfresh-report/external-lib"
+
  cd /opt/metasfresh/metasfresh-report/ && java -Dsun.misc.URLClassPath.disableJarChecking=true \
- -Xmx512M -XX:+HeapDumpOnOutOfMemoryError \
+ ${ext_lib_param} \
+ -Xmx256M -XX:+HeapDumpOnOutOfMemoryError ${metasfresh_admin_params} \
  -DPropertyFile=/opt/metasfresh/metasfresh-report/metasfresh.properties \
  -Djava.security.egd=file:/dev/./urandom \
- -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8791 \
+ -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${debug_port} \
  -jar metasfresh-report.jar
 }
 

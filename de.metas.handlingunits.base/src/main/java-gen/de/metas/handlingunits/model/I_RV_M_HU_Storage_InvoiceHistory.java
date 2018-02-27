@@ -200,8 +200,8 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
     public static final String COLUMNNAME_QtyOnHand = "QtyOnHand";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Bestellte Menge
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -210,8 +210,8 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Bestellte Menge
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -225,8 +225,8 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
     public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set Reservierte Menge.
-	 * Reservierte Menge
+	 * Set Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -235,8 +235,8 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
 	public void setQtyReserved (java.math.BigDecimal QtyReserved);
 
 	/**
-	 * Get Reservierte Menge.
-	 * Reservierte Menge
+	 * Get Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

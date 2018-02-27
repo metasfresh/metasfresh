@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -35,6 +36,8 @@ import org.compiere.model.I_M_ProductPrice;
 
 public interface IPriceListDAO extends ISingletonService
 {
+	public static final int M_PricingSystem_ID_None = 100;
+	
 	I_M_PriceList retrievePriceList(Properties ctx, int priceListId);
 
 	/**
@@ -56,6 +59,11 @@ public interface IPriceListDAO extends ISingletonService
 	 * @return
 	 */
 	Iterator<I_M_PriceList> retrievePriceLists(I_M_PricingSystem pricingSystem, I_C_Country country, boolean isSOTrx);
+
+	/**
+	 * @return the price list for the given pricing system and location or <code>null</code>.
+	 */
+	I_M_PriceList retrievePriceListByPricingSyst(int pricingSystemId, I_C_BPartner_Location bpartnerLocation, boolean isSOPriceList);
 
 
 	/**
@@ -92,7 +100,11 @@ public interface IPriceListDAO extends ISingletonService
 	 * @return
 	 */
 	I_M_PriceList_Version retrievePreviousVersionOrNull(I_M_PriceList_Version plv);
-	
+
 	/** @return next product price's MatchSeqNo */
 	int retrieveNextMatchSeqNo(final I_M_ProductPrice productPrice);
+
+	I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(int priceListId, Date date);
+
+	I_M_PriceList_Version retrieveLastCreatedPriceListVersion(int priceListId);
 }

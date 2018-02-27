@@ -13,12 +13,11 @@ import org.compiere.model.I_S_Resource;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.experimental.Wither;
 
 /*
  * #%L
@@ -42,7 +41,6 @@ import lombok.experimental.Wither;
  * #L%
  */
 @Value
-@Wither
 public class PPOrder
 {
 	int orgId;
@@ -54,12 +52,19 @@ public class PPOrder
 
 	int warehouseId;
 
+	int bPartnerId;
+
 	int productPlanningId;
+
+	/**
+	 * Not persisted in the {@code PP_Order} data record, but
+	 * when material-dispo posts {@link PPOrderRequestedEvent}, it contains a group-ID,
+	 * and the respective {@link PPOrderCreatedEvent} contains the same group-ID.
+	 */
+	int materialDispoGroupId;
 
 	@NonNull
 	ProductDescriptor productDescriptor;
-
-	int uomId;
 
 	/**
 	 * In a build-to-order scenario, this is the ID of the order line which this all is about.
@@ -89,50 +94,45 @@ public class PPOrder
 	BigDecimal quantity;
 
 	/**
-	 * If {@code true}, then this event advises the recipient to directly request an actual PP_Order to be created.
-	 */
-	boolean createPPOrder;
-
-	/**
 	 * Attention, might be {@code null}.
 	 */
 	@Singular
 	List<PPOrderLine> lines;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	public PPOrder(
 			@JsonProperty("orgId") final int orgId,
 			@JsonProperty("plantId") final int plantId,
 			@JsonProperty("warehouseId") final int warehouseId,
+			@JsonProperty("bPartnerId") final int bPartnerId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-			@JsonProperty("uomId") final int uomId,
 			@JsonProperty("orderLineId") final int orderLineId,
 			@JsonProperty("ppOrderId") final int ppOrderId,
 			@JsonProperty("docStatus") @Nullable final String docStatus,
 			@JsonProperty("datePromised") @NonNull final Date datePromised,
 			@JsonProperty("dateStartSchedule") @NonNull final Date dateStartSchedule,
 			@JsonProperty("quantity") @NonNull final BigDecimal quantity,
-			@JsonProperty("createPPOrder") final boolean createPPOrder,
-			@JsonProperty("lines") @Singular final List<PPOrderLine> lines)
+			@JsonProperty("lines") @Singular final List<PPOrderLine> lines,
+			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
 	{
 		this.orgId = checkIdGreaterThanZero("orgId", orgId);
 		this.plantId = checkIdGreaterThanZero("plantId", plantId);
 		this.warehouseId = checkIdGreaterThanZero("warehouseId", warehouseId);
-		this.productPlanningId = productPlanningId; // ok to be not set
 
-		productDescriptor.asssertCompleteness();
+		this.bPartnerId = bPartnerId;
+		this.productPlanningId = productPlanningId; // ok to be not set
 		this.productDescriptor = productDescriptor;
 
-		this.uomId = checkIdGreaterThanZero("uomId", uomId);
 		this.orderLineId = orderLineId;
 		this.ppOrderId = ppOrderId;
 		this.docStatus = docStatus;
 		this.datePromised = datePromised;
 		this.dateStartSchedule = dateStartSchedule;
 		this.quantity = quantity;
-		this.createPPOrder = createPPOrder;
 		this.lines = lines;
+
+		this.materialDispoGroupId = materialDispoGroupId;
 	}
 }

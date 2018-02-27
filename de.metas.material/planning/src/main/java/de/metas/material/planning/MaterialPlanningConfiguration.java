@@ -3,6 +3,7 @@ package de.metas.material.planning;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 
 /*
@@ -29,7 +30,8 @@ import de.metas.StartupListener;
 @Configuration
 @ComponentScan(basePackageClasses = {
 		MaterialPlanningConfiguration.class, // scan the classes in the material planning sub-packages for components. Without this, we need to have @Bean annotated methods in here
-		StartupListener.class
+		StartupListener.class,
+		ShutdownListener.class,
 		})
 public class MaterialPlanningConfiguration
 {

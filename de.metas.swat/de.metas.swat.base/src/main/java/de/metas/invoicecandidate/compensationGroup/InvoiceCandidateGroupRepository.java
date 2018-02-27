@@ -84,7 +84,9 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 
 		final GroupBuilder groupBuilder = Group.builder()
 				.groupId(groupId)
-				.precision(precision);
+				.precision(precision)
+				.bpartnerId(order.getC_BPartner_ID())
+				.isSOTrx(order.isSOTrx());
 
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{

@@ -62,7 +62,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	/**
 	 * Creates a new LRU cache
 	 *
-	 * @param cacheName cache name (shall respect the current naming conventions)
+	 * @param cacheName cache name; shall respect the current naming conventions, see {@link #extractTableNameForCacheName(String)}
 	 * @param maxSize LRU cache maximum size
 	 * @param expireAfterMinutes if positive, the entries will expire after given number of minutes
 	 * @return new cache instance
@@ -78,6 +78,11 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		);
 	}
 
+	/**
+	 * Similar to {@link #newLRUCache(String, int, int)}.
+	 *
+	 * @param cacheName cache name; shall respect the current naming conventions, see {@link #extractTableNameForCacheName(String)}
+	 */
 	public static final <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
 	{
 		final String tableName = extractTableNameForCacheName(cacheName);
@@ -153,7 +158,6 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 			final int expireMinutes,
 			final CacheMapType cacheMapType)
 	{
-		super();
 		this.cacheId = NEXT_CACHE_ID.getAndIncrement();
 		this.initialCapacity = initialCapacity;
 		this.m_name = name;
@@ -476,22 +480,22 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		{
 			return cache.get(key, valueInitializer);
 		}
-		catch (InvalidCacheLoadException e)
+		catch (final InvalidCacheLoadException e)
 		{
 			// Exception thrown when the Callable returns null
 			// We can safely ignore it and return null.
 			// The value was not cached.
 			return null;
 		}
-		catch (ExecutionException e)
+		catch (final ExecutionException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-		catch (UncheckedExecutionException e)
+		catch (final UncheckedExecutionException e)
 		{
 			throw (RuntimeException)e.getCause();
 		}
-		catch (ExecutionError e)
+		catch (final ExecutionError e)
 		{
 			throw (Error)e.getCause();
 		}

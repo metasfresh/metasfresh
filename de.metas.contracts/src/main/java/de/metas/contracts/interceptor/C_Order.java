@@ -43,6 +43,7 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.document.IDocTypeBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
@@ -51,12 +52,12 @@ import de.metas.order.IOrderDAO;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
+	private static final Logger logger = LogManager.getLogger(C_Order.class);
 
 	private static final String MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = "Order_DateOrdered_Change_Forbidden";
 
 	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_CHANGE }, 
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {I_C_Order.COLUMNNAME_DateOrdered} )
 	public void updateDataEntry(final I_C_Order order)
 	{
@@ -79,6 +80,11 @@ public class C_Order
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void handleComplete(final I_C_Order order)
 	{
+		if (Services.get(IDocTypeBL.class).isOffer(order.getC_DocType()))
+		{
+			return;
+		}
+
 		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine ol : orderLines)
 		{

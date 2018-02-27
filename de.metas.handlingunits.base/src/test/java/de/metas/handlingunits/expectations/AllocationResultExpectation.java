@@ -30,7 +30,7 @@ import java.util.List;
 import org.junit.Assert;
 
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 
 public class AllocationResultExpectation extends AbstractHUExpectation<Object>
 {
@@ -87,7 +87,7 @@ public class AllocationResultExpectation extends AbstractHUExpectation<Object>
 		return this;
 	}
 
-	private AllocationResultExpectation assertExpectedHUTransactions(final String message, final List<IHUTransaction> transactions)
+	private AllocationResultExpectation assertExpectedHUTransactions(final String message, final List<IHUTransactionCandidate> transactions)
 	{
 		final int count = transactions.size();
 		final int expectedCount = huTransactionExpectations.size();
@@ -96,7 +96,7 @@ public class AllocationResultExpectation extends AbstractHUExpectation<Object>
 
 		for (int i = 0; i < count; i++)
 		{
-			final IHUTransaction transaction = transactions.get(i);
+			final IHUTransactionCandidate transaction = transactions.get(i);
 
 			final String prefix = (message == null ? "" : message)
 					+ "\n HUTransaction Index: " + (i + 1) + "/" + count;

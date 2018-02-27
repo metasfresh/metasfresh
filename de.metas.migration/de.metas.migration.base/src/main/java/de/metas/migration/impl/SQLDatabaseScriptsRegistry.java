@@ -121,6 +121,8 @@ public class SQLDatabaseScriptsRegistry implements IScriptsRegistry
 			description = "Applied by " + getClass().getCanonicalName();
 		}
 
+		final long durationMillis = script.getLastDurationMillis();
+
 		//
 		final String sql = "INSERT INTO AD_MigrationScript("
 				// + " AD_MigrationScript_ID, "
@@ -132,6 +134,7 @@ public class SQLDatabaseScriptsRegistry implements IScriptsRegistry
 				+ ", FileName"
 				+ ", Name"
 				+ ", ProjectName"
+				+ ", DurationMillis"
 				+ ") VALUES ("
 				// + "nextIdFunc(?, 'N'), "
 				+ "0, 0, now(), 100, now(), 100" // AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy
@@ -142,9 +145,10 @@ public class SQLDatabaseScriptsRegistry implements IScriptsRegistry
 				+ ",?" // FileName
 				+ ",?" // Name
 				+ ",?" // ProjectName
+				+ ",?" // DurationMillis
 				+ ")";
 		;
 
-		sqlHelper.executeUpdate(sql, description, developerName, ignored, filename, name, projectName);
+		sqlHelper.executeUpdate(sql, description, developerName, ignored, filename, name, projectName, durationMillis);
 	}
 }

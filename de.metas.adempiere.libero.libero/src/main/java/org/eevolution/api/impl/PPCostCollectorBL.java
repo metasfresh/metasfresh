@@ -10,12 +10,12 @@ package org.eevolution.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,7 +40,6 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.api.impl.ReceiptCostCollectorCandidate.ReceiptCostCollectorCandidateBuilder;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -50,7 +49,9 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import lombok.NonNull;
 
 public class PPCostCollectorBL implements IPPCostCollectorBL
 {
@@ -64,7 +65,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 	/**
 	 * Suggests which Cost Collector Type to use for given Order BOM Line.
-	 * 
+	 *
 	 * @param orderBOMLine
 	 * @return cost collector type
 	 * @see X_PP_Cost_Collector.COSTCOLLECTORTYPE_*
@@ -96,11 +97,12 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		final boolean considerCoProductsAsReceipt = true;
 		return isMaterialReceipt(cc, considerCoProductsAsReceipt);
 	}
-	
+
 	@Override
-	public boolean isMaterialReceipt(final I_PP_Cost_Collector cc, final boolean considerCoProductsAsReceipt)
+	public boolean isMaterialReceipt(
+			@NonNull final I_PP_Cost_Collector cc,
+			final boolean considerCoProductsAsReceipt)
 	{
-		Check.assumeNotNull(cc, LiberoException.class, "cc not null");
 		final String costCollectorType = cc.getCostCollectorType();
 
 		//
@@ -109,7 +111,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		{
 			return true;
 		}
-		
+
 		//
 		// Case: by/co-product receipts
 		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance.equals(costCollectorType))
@@ -128,10 +130,10 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	}
 
 	@Override
-	public boolean isMaterialIssue(final I_PP_Cost_Collector cc, 
+	public boolean isMaterialIssue(
+			@NonNull final I_PP_Cost_Collector cc,
 			final boolean considerCoProductsAsIssue)
 	{
-		Check.assumeNotNull(cc, LiberoException.class, "cc not null");
 		final String costCollectorType = cc.getCostCollectorType();
 
 		//
@@ -147,14 +149,14 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		{
 			return false;
 		}
-		
+
 		//
 		// Case Method Change Variance: we issue product, but not the one from BOM Line
 		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance.equals(costCollectorType))
 		{
 			return true;
 		}
-		
+
 		//
 		// Case Mix Variance: we received (i.e. negative issue) a by/co-product
 		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance.equals(costCollectorType))
@@ -168,10 +170,10 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 				return false;
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	@Override
 	public boolean isCoOrByProductReceipt(final I_PP_Cost_Collector cc)
 	{
@@ -185,7 +187,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	{
 		Check.assumeNotNull(cc, LiberoException.class, "cc not null");
 		final String costCollectorType = cc.getCostCollectorType();
-		
+
 		return X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl.equals(costCollectorType);
 	}
 
@@ -367,7 +369,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		Check.assumeNotNull(ppOrder, LiberoException.class, "ppOrder not null");
 		return ppOrder.getM_Locator_ID();
 	}
-	
+
 	@Override
 	public boolean isReversal(final I_PP_Cost_Collector cc)
 	{
@@ -377,13 +379,13 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		{
 			return false;
 		}
-		
+
 		final int reversalCostCollectorId = cc.getReversal_ID();
 		if (reversalCostCollectorId <= 0)
 		{
 			return false;
 		}
-		
+
 		//
 		// We consider given cost collector as a reversal if it's ID is bigger then the Reveral_ID.
 		final boolean reversal = costCollectorId > reversalCostCollectorId;

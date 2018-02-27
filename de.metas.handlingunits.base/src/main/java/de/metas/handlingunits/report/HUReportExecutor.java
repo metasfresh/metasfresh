@@ -10,9 +10,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
@@ -172,13 +172,21 @@ public class HUReportExecutor
 
 		// gh #1121: do this not now, but after the current transaction was committed. Because "right now", the HUs in question are probably not yet ready.
 		// The background is that in the handling unit framework we have some "decoupled" DAOs, that collect data in memory and then safe it all at once, right before the commit is made.
-		trxManager
-				.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-				.registerListener(huReportTrxListener);
+
+		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> huReportTrxListener.afterCommit(innerTrx));
+
+		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
+				.newEventListener(TrxEventTiming.AFTER_CLOSE)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> huReportTrxListener.afterClose(innerTrx));
+
 		huReportTrxListener.setListenerWasRegistered();
 	}
 
-	private static final class HUReportTrxListener extends TrxListenerAdapter
+	private static final class HUReportTrxListener
 	{
 		private final Properties listenerCtx;
 		private final int listenerAdProcessId;
@@ -239,13 +247,11 @@ public class HUReportExecutor
 			this.listenerWasRegistered = true;
 		}
 
-		@Override
 		public void afterCommit(final ITrx trx)
 		{
 			commitWasDone = true;
 		}
 
-		@Override
 		public void afterClose(final ITrx trx)
 		{
 			if (!commitWasDone)

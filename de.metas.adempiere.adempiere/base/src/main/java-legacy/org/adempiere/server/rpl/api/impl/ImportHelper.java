@@ -1,30 +1,30 @@
 /**********************************************************************
- * This file is part of Adempiere ERP Bazaar                          *
- * http://www.adempiere.org                                           *
- *                                                                    *
- * Copyright (C) Trifon Trifonov.                                     *
- * Copyright (C) Contributors                                         *
- *                                                                    *
- * This program is free software; you can redistribute it and/or      *
- * modify it under the terms of the GNU General Public License        *
- * as published by the Free Software Foundation; either version 2     *
- * of the License, or (at your option) any later version.             *
- *                                                                    *
- * This program is distributed in the hope that it will be useful,    *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of     *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the       *
- * GNU General Public License for more details.                       *
- *                                                                    *
- * You should have received a copy of the GNU General Public License  *
- * along with this program; if not, write to the Free Software        *
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,         *
- * MA 02110-1301, USA.                                                *
- *                                                                    *
- * Contributors:                                                      *
- *  - Trifon Trifonov (trifonnt@users.sourceforge.net)                *
- *                                                                    *
- * Sponsors:                                                          *
- *  - E-evolution (http://www.e-evolution.com/)                       *
+ * This file is part of Adempiere ERP Bazaar *
+ * http://www.adempiere.org *
+ * *
+ * Copyright (C) Trifon Trifonov. *
+ * Copyright (C) Contributors *
+ * *
+ * This program is free software; you can redistribute it and/or *
+ * modify it under the terms of the GNU General Public License *
+ * as published by the Free Software Foundation; either version 2 *
+ * of the License, or (at your option) any later version. *
+ * *
+ * This program is distributed in the hope that it will be useful, *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the *
+ * GNU General Public License for more details. *
+ * *
+ * You should have received a copy of the GNU General Public License *
+ * along with this program; if not, write to the Free Software *
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, *
+ * MA 02110-1301, USA. *
+ * *
+ * Contributors: *
+ * - Trifon Trifonov (trifonnt@users.sourceforge.net) *
+ * *
+ * Sponsors: *
+ * - E-evolution (http://www.e-evolution.com/) *
  *********************************************************************/
 package org.adempiere.server.rpl.api.impl;
 
@@ -76,6 +76,9 @@ import org.adempiere.server.rpl.trx.api.impl.POReplicationTrxLineDraft;
 import org.adempiere.server.rpl.trx.spi.IReplicationIssueAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_AD_Attribute_Value;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Column;
@@ -98,7 +101,6 @@ import org.compiere.model.X_EXP_FormatLine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
@@ -120,9 +122,15 @@ import lombok.NonNull;
  * Default XML importer
  *
  * @author Trifon N. Trifonov
- * @author Antonio Cañaveral, e-Evolution <li>[ 2195016 ] Implementation delete records messages <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332
- * @author victor.perez@e-evolution.com, e-Evolution <li>[ 2195090 ] Stabilization of replication <li>https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2936561&group_id=176962 <li>BF
- *         [2947622] The replication ID (Primary Key) is not working <li>https://sourceforge.net/tracker/?func=detail&aid=2947622&group_id=176962&atid=879332
+ * @author Antonio Cañaveral, e-Evolution
+ *         <li>[ 2195016 ] Implementation delete records messages
+ *         <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332
+ * @author victor.perez@e-evolution.com, e-Evolution
+ *         <li>[ 2195090 ] Stabilization of replication
+ *         <li>https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2936561&group_id=176962
+ *         <li>BF
+ *         [2947622] The replication ID (Primary Key) is not working
+ *         <li>https://sourceforge.net/tracker/?func=detail&aid=2947622&group_id=176962&atid=879332
  *
  */
 public class ImportHelper implements IImportHelper
@@ -181,20 +189,16 @@ public class ImportHelper implements IImportHelper
 
 	public ImportHelper()
 	{
-		super();
-
 		importProcessorBL = Services.get(IIMPProcessorBL.class);
 	}
 
 	@Override
-	public void setInitialCtx(final Properties initialCtx)
+	public void setInitialCtx(@NonNull final Properties initialCtx)
 	{
 		if (ctx != null)
 		{
 			throw new IllegalStateException("Cannot set initialCtx when context was already created");
 		}
-
-		Check.assume(initialCtx != null, "initialCtx is not null");
 		_initialCtx = initialCtx;
 	}
 
@@ -204,17 +208,11 @@ public class ImportHelper implements IImportHelper
 			final Document documentToBeImported,
 			final String trxName)
 	{
-		final Document[] retValue = new Document[] { null };
-		Services.get(ITrxManager.class).run(trxName, new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				retValue[0] = importXMLDocument0(result, documentToBeImported, localTrxName);
-			}
-		});
+		final IMutable<Document> retValue = new Mutable<>();
+		Services.get(ITrxManager.class)
+				.run(localTrxName -> retValue.setValue(importXMLDocument0(result, documentToBeImported, localTrxName)));
 
-		return retValue[0];
+		return retValue.getValue();
 	}
 
 	private Document importXMLDocument0(
@@ -222,116 +220,116 @@ public class ImportHelper implements IImportHelper
 			final Document documentToBeImported,
 			final String trxName)
 	{
-
 		final Element rootElement = documentToBeImported.getDocumentElement();
-
 		ctx = createContext(rootElement);
-
-		// Find which Export format to Load...
-		final String version = rootElement.getAttribute(RPL_Constants.XML_ATTR_Version);
-		log.info("Version = {}", version);
-		if (Check.isEmpty(version, true))
+		try (final IAutoCloseable contextRestorer = Env.switchContext(ctx))
 		{
-			throw new ReplicationException(MSG_XMLVersionAttributeMandatory);
-		}
-
-		// /Getting Attributes.
-		final int ReplicationMode = getAttributeAsInt(rootElement, RPL_Constants.XML_ATTR_REPLICATION_MODE);
-		final String ReplicationType = rootElement.getAttribute(RPL_Constants.XML_ATTR_REPLICATION_TYPE);
-		final int ReplicationEvent = getAttributeAsInt(rootElement, RPL_Constants.XML_ATTR_REPLICATION_EVENT);
-
-		String EXP_Format_Value = null;
-		EXP_Format_Value = rootElement.getNodeName();
-		log.info("EXP_Format_Value = {}", EXP_Format_Value);
-
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		MEXPFormat expFormatPO = null;
-		try
-		{
-			// Note: calling the method with trxName==NONE because we want to get the cached version
-			expFormatPO = MEXPFormat.getFormatByValueAD_Client_IDAndVersion(ctx, EXP_Format_Value, adClientId, version, ITrx.TRXNAME_None);
-		}
-		catch (final AdempiereException e)
-		{
-			throw new ReplicationException(MSG_EXPValueFormatNotResolved, e)
-					.setParameter(I_AD_Client.COLUMNNAME_AD_Client_ID, adClientId)
-					.setParameter(I_AD_Client.COLUMNNAME_Value, EXP_Format_Value)
-					.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_Version, version);
-		}
-
-		if (expFormatPO == null || expFormatPO.getEXP_Format_ID() <= 0)
-		{
-			throw new ReplicationException(MSG_EXPFormatNotFound)
-					.setParameter(I_AD_Client.COLUMNNAME_AD_Client_ID, adClientId)
-					.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_Version, version);
-		}
-		log.info("expFormat = " + expFormatPO.toString());
-
-		final IMeter meter = Services.get(IMonitoringBL.class).createOrGet("org.adempiere.replication", ImportHelper.class.getSimpleName() + "_" + expFormatPO.getName());
-
-		isChanged = false;
-
-		//
-		// Get ReplicationTrxName from the root element,
-		// OR generate random UUID if ReplicationTrxName is empty
-		final String ReplicationTrxName;
-		{
-			final String attrReplicationTrxName = rootElement.getAttribute(RPL_Constants.XML_ATTR_REPLICATION_TrxName);
-			if (!Check.isEmpty(attrReplicationTrxName))
+			// Find which Export format to Load...
+			final String version = rootElement.getAttribute(RPL_Constants.XML_ATTR_Version);
+			log.info("Version = {}", version);
+			if (Check.isEmpty(version, true))
 			{
-				ReplicationTrxName = attrReplicationTrxName;
+				throw new ReplicationException(MSG_XMLVersionAttributeMandatory);
 			}
-			else
+
+			// /Getting Attributes.
+			final int ReplicationMode = getAttributeAsInt(rootElement, RPL_Constants.XML_ATTR_REPLICATION_MODE);
+			final String ReplicationType = rootElement.getAttribute(RPL_Constants.XML_ATTR_REPLICATION_TYPE);
+			final int ReplicationEvent = getAttributeAsInt(rootElement, RPL_Constants.XML_ATTR_REPLICATION_EVENT);
+
+			String EXP_Format_Value = null;
+			EXP_Format_Value = rootElement.getNodeName();
+			log.info("EXP_Format_Value = {}", EXP_Format_Value);
+
+			final int adClientId = Env.getAD_Client_ID(ctx);
+			MEXPFormat expFormatPO = null;
+			try
 			{
-				ReplicationTrxName = UUID.randomUUID().toString();
+				// Note: calling the method with trxName==NONE because we want to get the cached version
+				expFormatPO = MEXPFormat.getFormatByValueAD_Client_IDAndVersion(ctx, EXP_Format_Value, adClientId, version, ITrx.TRXNAME_None);
 			}
-		}
-
-		final PO po;
-		try
-		{
-			po = importElement(result, rootElement, expFormatPO, ReplicationType, "",
-					null, // masterPO
-					null, // masterExpFormat
-					null, // masterFormaLine
-					ReplicationTrxName, trxName);
-			meter.plusOne();
-
-			// task 03132
-			final I_EXP_Format format = InterfaceWrapperHelper.create(expFormatPO, I_EXP_Format.class);
-			if (format.getIMP_RequestHandler_ID() > 0)
+			catch (final AdempiereException e)
 			{
-				return handleRequestResonse(rootElement, format, po);
+				throw new ReplicationException(MSG_EXPValueFormatNotResolved, e)
+						.setParameter(I_AD_Client.COLUMNNAME_AD_Client_ID, adClientId)
+						.setParameter(I_AD_Client.COLUMNNAME_Value, EXP_Format_Value)
+						.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_Version, version);
 			}
-		}
-		catch (final Exception e)
-		{
-			throw new ReplicationException(MSG_CantImport, e)
-					.setParameter(I_AD_Element.COLUMNNAME_AD_Element_ID, rootElement);
-		}
 
-		Check.assumeNotNull(po, "po not null");
-		if (!po.is_Changed() && !isChanged)
-		{
-			log.info("Object not changed = " + po.toString());
+			if (expFormatPO == null || expFormatPO.getEXP_Format_ID() <= 0)
+			{
+				throw new ReplicationException(MSG_EXPFormatNotFound)
+						.setParameter(I_AD_Client.COLUMNNAME_AD_Client_ID, adClientId)
+						.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_Version, version);
+			}
+			log.info("expFormat = " + expFormatPO.toString());
+
+			final IMeter meter = Services.get(IMonitoringBL.class).createOrGet("org.adempiere.replication", ImportHelper.class.getSimpleName() + "_" + expFormatPO.getName());
+
+			isChanged = false;
+
+			//
+			// Get ReplicationTrxName from the root element,
+			// OR generate random UUID if ReplicationTrxName is empty
+			final String ReplicationTrxName;
+			{
+				final String attrReplicationTrxName = rootElement.getAttribute(RPL_Constants.XML_ATTR_REPLICATION_TrxName);
+				if (!Check.isEmpty(attrReplicationTrxName))
+				{
+					ReplicationTrxName = attrReplicationTrxName;
+				}
+				else
+				{
+					ReplicationTrxName = UUID.randomUUID().toString();
+				}
+			}
+
+			final PO po;
+			try
+			{
+				po = importElement(result, rootElement, expFormatPO, ReplicationType, "",
+						null, // masterPO
+						null, // masterExpFormat
+						null, // masterFormaLine
+						ReplicationTrxName, trxName);
+				meter.plusOne();
+
+				// task 03132
+				final I_EXP_Format format = InterfaceWrapperHelper.create(expFormatPO, I_EXP_Format.class);
+				if (format.getIMP_RequestHandler_ID() > 0)
+				{
+					return handleRequestResonse(rootElement, format, po);
+				}
+			}
+			catch (final Exception e)
+			{
+				throw new ReplicationException(MSG_CantImport, e)
+						.setParameter(I_AD_Element.COLUMNNAME_AD_Element_ID, rootElement);
+			}
+
+			Check.assumeNotNull(po, "po not null");
+			if (!po.is_Changed() && !isChanged)
+			{
+				log.info("Object not changed = " + po.toString());
+				return null;
+			}
+
+			//
+			// Decide actions on PO, depending on REPLICATION configuration
+			if (MReplicationStrategy.REPLICATION_TABLE == ReplicationMode)
+			{
+				handleTableReplication(ReplicationType, ReplicationEvent, adClientId, po);
+			}
+			else if (MReplicationStrategy.REPLICATION_DOCUMENT == ReplicationMode
+					&& X_AD_ReplicationDocument.REPLICATIONTYPE_Merge.equals(ReplicationType)
+					&& po instanceof IDocument)
+			{
+				handleDocumentReplication(po);
+			}
+
+			result.append("Save Successful; ");
 			return null;
 		}
-
-		//
-		// Decide actions on PO, depending on REPLICATION configuration
-		if (MReplicationStrategy.REPLICATION_TABLE == ReplicationMode)
-		{
-			handleTableReplication(ReplicationType, ReplicationEvent, adClientId, po);
-		}
-		else if (MReplicationStrategy.REPLICATION_DOCUMENT == ReplicationMode
-				&& X_AD_ReplicationDocument.REPLICATIONTYPE_Merge.equals(ReplicationType)
-				&& po instanceof IDocument)
-		{
-			handleDocumentReplication(po);
-		}
-
-		result.append("Save Successful; ");
-		return null;
 	}
 
 	private void handleTableReplication(final String ReplicationType, final int ReplicationEvent, final int adClientId, final PO po)
@@ -560,10 +558,9 @@ public class ImportHelper implements IImportHelper
 		// *embedded sub formats last; note that the postgres ordering for boolean values is false, true, null
 		// *mandatory line before non-mandatory lines
 		// *whatever is specified in the 'Position' column
-		final String orderBy =
-				I_EXP_FormatLine.COLUMNNAME_Type + "='" + X_EXP_FormatLine.TYPE_EmbeddedEXPFormat + "'," +
-						I_EXP_FormatLine.COLUMNNAME_IsMandatory + " DESC , " + // mandatory fields first
-						I_EXP_FormatLine.COLUMNNAME_Position;
+		final String orderBy = I_EXP_FormatLine.COLUMNNAME_Type + "='" + X_EXP_FormatLine.TYPE_EmbeddedEXPFormat + "'," +
+				I_EXP_FormatLine.COLUMNNAME_IsMandatory + " DESC , " + // mandatory fields first
+				I_EXP_FormatLine.COLUMNNAME_Position;
 
 		final Collection<I_EXP_FormatLine> formatLines = expFormat.getFormatLinesOrderedBy(orderBy);
 		if (formatLines == null || formatLines.size() < 1)
@@ -858,7 +855,7 @@ public class ImportHelper implements IImportHelper
 			{
 				clazz = Boolean.class;
 			}
-			else if (Services.get(IColumnBL.class).isRecordColumnName(columnName))
+			else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
 			{
 				clazz = Integer.class;
 			}
@@ -893,7 +890,7 @@ public class ImportHelper implements IImportHelper
 
 					// 03534: note that a Button can be 'anything' in the case of C_BPartner.AD_OrgBP_ID, it is a table reference to AD_Org
 					|| DisplayType.Button == adReferenceId && column.getAD_Reference_Value_ID() > 0
-					&& X_AD_Reference.VALIDATIONTYPE_TableValidation.equals(column.getAD_Reference_Value().getValidationType()))
+							&& X_AD_Reference.VALIDATIONTYPE_TableValidation.equals(column.getAD_Reference_Value().getValidationType()))
 			{
 				// 02775
 				// Note: Even with displayType being ID, we still can't assume an integer in all cases. E.g. AD_Languange
@@ -907,8 +904,7 @@ public class ImportHelper implements IImportHelper
 				final int displayType = adReferenceId;
 				if ((displayType == DisplayType.Table
 						|| displayType == DisplayType.Search
-						|| displayType == DisplayType.Button
-						) && column.getAD_Reference_Value_ID() > 0)
+						|| displayType == DisplayType.Button) && column.getAD_Reference_Value_ID() > 0)
 				{
 					final MRefTable refTable = MRefTable.get(ctx, column.getAD_Reference_Value_ID());
 
@@ -996,11 +992,11 @@ public class ImportHelper implements IImportHelper
 	}
 
 	private boolean setColumnOfPOtoValue(
-			final int columnId ,
+			final int columnId,
 			@NonNull final PO po,
 			final Object value)
 	{
-		final String nodeColumnName= Services.get(IADTableDAO.class).retrieveColumnName(columnId);
+		final String nodeColumnName = Services.get(IADTableDAO.class).retrieveColumnName(columnId);
 		final boolean ok = po.set_ValueOfColumn(nodeColumnName, value);
 		return ok;
 	}
@@ -1239,8 +1235,8 @@ public class ImportHelper implements IImportHelper
 					{
 						throw new ReplicationException("Decoding failed at line " + uniqueFormatLine.getName()
 								+ ", at column number " + col, e)
-								.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, uniqueFormatLine)
-								.setParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, column);
+										.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, uniqueFormatLine)
+										.setParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, column);
 					}
 					// metas:rc: end
 				}
@@ -1342,7 +1338,7 @@ public class ImportHelper implements IImportHelper
 
 			// further up, this exception might be caught and resolved by getSingleDefaultPO()
 			final String lookupExMsg = MSG_EXPFormatLineDuplicatedObject + " : " + expFormat.getName() + "(" + formatLines + ")";
-			throw  new DuplicateLookupObjectException(lookupExMsg, lookupValues, replicationTrxLine, doLookup)
+			throw new DuplicateLookupObjectException(lookupExMsg, lookupValues, replicationTrxLine, doLookup)
 					.setParameter("WhereClause", whereClause.toString())
 					.setParameter("Parameters", params)
 					.setParameter("Value", lookupValues)
@@ -1454,7 +1450,7 @@ public class ImportHelper implements IImportHelper
 		PO defaultValue = null;
 		for (final PO lookupValue : availableValues)
 		{
-			if(!lookupValue.isActive())
+			if (!lookupValue.isActive())
 			{
 				continue; // shouldn't be the case, but just to make sure..
 			}
@@ -1623,7 +1619,7 @@ public class ImportHelper implements IImportHelper
 	private final Properties createContext(final Element rootElement)
 	{
 		Check.assumeNotNull(_initialCtx, "initialCtx not null");
-		final Properties ctx = Env.deriveCtx(_initialCtx);
+		final Properties ctx = Env.copyCtx(_initialCtx);
 
 		if (rootElement.hasAttribute(RPL_Constants.XML_ATTR_AD_Client_Value))
 		{

@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 954867283L;
+	private static final long serialVersionUID = 2054191448L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -33,13 +33,13 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			setIsPOTaxExempt (false); // N
 			setIsProspect (false);
 			setIsSalesRep (false);
+			setIsSEPASigned (false); // N
 			setIsSummary (false);
 			setIsVendor (false);
 			setName (null);
 			setPaymentRule (null); // P
 			setPaymentRulePO (null); // P
 			setSendEMail (false);
-			setSO_CreditLimit (BigDecimal.ZERO);
 			setValue (null);
         } */
     }
@@ -106,11 +106,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_AD_Language);
 	}
 
-	/** 
-	 * AD_OrgBP_ID AD_Reference_ID=276
-	 * Reference name: AD_Org (all)
-	 */
-	public static final int AD_ORGBP_ID_AD_Reference_ID=276;
+	@Override
+	public org.compiere.model.I_AD_Org getAD_OrgBP() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_OrgBP_ID, org.compiere.model.I_AD_Org.class);
+	}
+
+	@Override
+	public void setAD_OrgBP(org.compiere.model.I_AD_Org AD_OrgBP)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_OrgBP_ID, org.compiere.model.I_AD_Org.class, AD_OrgBP);
+	}
+
 	/** Set Linked Organization.
 		@param AD_OrgBP_ID 
 		The Business Partner is another Organization for explicit Inter-Org transactions
@@ -134,6 +141,24 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Straße und Nr..
+		@param Address1 
+		Adresszeile 1 für diesen Standort
+	  */
+	@Override
+	public void setAddress1 (java.lang.String Address1)
+	{
+		throw new IllegalArgumentException ("Address1 is virtual column");	}
+
+	/** Get Straße und Nr..
+		@return Adresszeile 1 für diesen Standort
+	  */
+	@Override
+	public java.lang.String getAddress1 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Address1);
 	}
 
 	/** Set Sammel-Lieferscheine erlaubt.
@@ -428,6 +453,24 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
+	/** Set Ort.
+		@param City 
+		Name des Ortes
+	  */
+	@Override
+	public void setCity (java.lang.String City)
+	{
+		throw new IllegalArgumentException ("City is virtual column");	}
+
+	/** Get Ort.
+		@return Name des Ortes
+	  */
+	@Override
+	public java.lang.String getCity () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_City);
+	}
+
 	/** Set Firmenname.
 		@param CompanyName Firmenname	  */
 	@Override
@@ -460,6 +503,24 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_CreateSO);
 	}
 
+	/** Set Credit limit indicator %.
+		@param CreditLimitIndicator 
+		Percent of Credit used from the limit
+	  */
+	@Override
+	public void setCreditLimitIndicator (java.lang.String CreditLimitIndicator)
+	{
+		throw new IllegalArgumentException ("CreditLimitIndicator is virtual column");	}
+
+	/** Get Credit limit indicator %.
+		@return Percent of Credit used from the limit
+	  */
+	@Override
+	public java.lang.String getCreditLimitIndicator () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CreditLimitIndicator);
+	}
+
 	/** 
 	 * DeliveryRule AD_Reference_ID=151
 	 * Reference name: C_Order DeliveryRule
@@ -477,7 +538,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String DELIVERYRULE_Force = "F";
 	/** Manual = M */
 	public static final String DELIVERYRULE_Manual = "M";
-	/** Mit nächster Abolieferung = S */
+	/** MitNaechsterAbolieferung = S */
 	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
@@ -601,6 +662,24 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getDUNS () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DUNS);
+	}
+
+	/** Set eMail.
+		@param EMail 
+		EMail-Adresse
+	  */
+	@Override
+	public void setEMail (java.lang.String EMail)
+	{
+		throw new IllegalArgumentException ("EMail is virtual column");	}
+
+	/** Get eMail.
+		@return EMail-Adresse
+	  */
+	@Override
+	public java.lang.String getEMail () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EMail);
 	}
 
 	/** Set Vorname.
@@ -996,6 +1075,29 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return false;
 	}
 
+	/** Set SEPA Signed.
+		@param IsSEPASigned SEPA Signed	  */
+	@Override
+	public void setIsSEPASigned (boolean IsSEPASigned)
+	{
+		set_Value (COLUMNNAME_IsSEPASigned, Boolean.valueOf(IsSEPASigned));
+	}
+
+	/** Get SEPA Signed.
+		@return SEPA Signed	  */
+	@Override
+	public boolean isSEPASigned () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSEPASigned);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Shipping Notification Email.
 		@param IsShippingNotificationEmail Shipping Notification Email	  */
 	@Override
@@ -1232,18 +1334,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
-	@Override
-	public org.adempiere.model.I_M_FreightCost getM_FreightCost() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_FreightCost_ID, org.adempiere.model.I_M_FreightCost.class);
-	}
-
-	@Override
-	public void setM_FreightCost(org.adempiere.model.I_M_FreightCost M_FreightCost)
-	{
-		set_ValueFromPO(COLUMNNAME_M_FreightCost_ID, org.adempiere.model.I_M_FreightCost.class, M_FreightCost);
-	}
-
 	/** Set Frachtkostenpauschale.
 		@param M_FreightCost_ID Frachtkostenpauschale	  */
 	@Override
@@ -1386,10 +1476,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String MRP_EXCLUDE_Yes = "Y";
 	/** No = N */
 	public static final String MRP_EXCLUDE_No = "N";
-	/** Set Exclude from MRP.
-		@param MRP_Exclude 
-		Exclude from MRP calculation
-	  */
+	/** Set MRP ausschliessen.
+		@param MRP_Exclude MRP ausschliessen	  */
 	@Override
 	public void setMRP_Exclude (java.lang.String MRP_Exclude)
 	{
@@ -1397,9 +1485,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
 	}
 
-	/** Get Exclude from MRP.
-		@return Exclude from MRP calculation
-	  */
+	/** Get MRP ausschliessen.
+		@return MRP ausschliessen	  */
 	@Override
 	public java.lang.String getMRP_Exclude () 
 	{
@@ -1461,6 +1548,25 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getName2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name2);
+	}
+
+	/** Set Name3.
+		@param Name3 
+		Zusätzliche Bezeichnung
+	  */
+	@Override
+	public void setName3 (java.lang.String Name3)
+	{
+		set_Value (COLUMNNAME_Name3, Name3);
+	}
+
+	/** Get Name3.
+		@return Zusätzliche Bezeichnung
+	  */
+	@Override
+	public java.lang.String getName3 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Name3);
 	}
 
 	/** Set Anzahl Beschäftigte.
@@ -1777,6 +1883,24 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_POReferencePattern);
 	}
 
+	/** Set PLZ.
+		@param Postal 
+		Postleitzahl
+	  */
+	@Override
+	public void setPostal (java.lang.String Postal)
+	{
+		throw new IllegalArgumentException ("Postal is virtual column");	}
+
+	/** Get PLZ.
+		@return Postleitzahl
+	  */
+	@Override
+	public java.lang.String getPostal () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Postal);
+	}
+
 	/** Set Möglicher Gesamtertrag.
 		@param PotentialLifeTimeValue 
 		Total Revenue expected
@@ -2032,26 +2156,20 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
-	/** Set Kreditlimit.
-		@param SO_CreditLimit 
-		Total outstanding invoice amounts allowed
-	  */
+	/** Set Short Description.
+		@param ShortDescription Short Description	  */
 	@Override
-	public void setSO_CreditLimit (java.math.BigDecimal SO_CreditLimit)
+	public void setShortDescription (java.lang.String ShortDescription)
 	{
-		set_Value (COLUMNNAME_SO_CreditLimit, SO_CreditLimit);
+		set_Value (COLUMNNAME_ShortDescription, ShortDescription);
 	}
 
-	/** Get Kreditlimit.
-		@return Total outstanding invoice amounts allowed
-	  */
+	/** Get Short Description.
+		@return Short Description	  */
 	@Override
-	public java.math.BigDecimal getSO_CreditLimit () 
+	public java.lang.String getShortDescription () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SO_CreditLimit);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		return (java.lang.String)get_Value(COLUMNNAME_ShortDescription);
 	}
 
 	/** Set Beschreibung Auftrag.

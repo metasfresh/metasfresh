@@ -1,23 +1,28 @@
 package de.metas.handlingunits.picking;
 
-import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.OptionalInt;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
-import de.metas.handlingunits.picking.pickingCandidateCommands.AddHUToPickingSlot;
-import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHU;
+import de.metas.handlingunits.picking.pickingCandidateCommands.AddHUToPickingSlotCommand;
+import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHUCommand;
+import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHUCommand.AddQtyToHUCommandBuilder;
 import de.metas.handlingunits.picking.pickingCandidateCommands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.ClosePickingCandidateCommand.ClosePickingCandidateCommandBuilder;
 import de.metas.handlingunits.picking.pickingCandidateCommands.ProcessPickingCandidateCommand;
-import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHU;
+import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveHUFromPickingSlotCommand;
+import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHUCommand;
+import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHUCommand.RemoveQtyFromHUCommandBuilder;
 import de.metas.handlingunits.picking.pickingCandidateCommands.UnProcessPickingCandidateCommand;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
-import de.metas.quantity.Quantity;
-import lombok.Builder.Default;
 import lombok.NonNull;
 
 /*
@@ -58,67 +63,35 @@ public class PickingCandidateService
 
 	public void addHUToPickingSlot(final int huId, final int pickingSlotId, final int shipmentScheduleId)
 	{
-		new AddHUToPickingSlot(pickingCandidateRepository).perform(huId, pickingSlotId, shipmentScheduleId);
+		AddHUToPickingSlotCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.huId(huId)
+				.pickingSlotId(pickingSlotId)
+				.shipmentScheduleId(shipmentScheduleId)
+				.build()
+				.perform();
 	}
 
-	/**
-	 * 
-	 * @param qtyCU
-	 * @param huId
-	 * @param pickingSlotId
-	 * @param shipmentScheduleId
-	 * 
-	 * @return the quantity that was effectively added. We can only add the quantity that's still left in our source HUs.
-	 */
-	public Quantity addQtyToHU(@NonNull final AddQtyToHURequest addQtyToHURequest)
+	public AddQtyToHUCommandBuilder addQtyToHU()
 	{
-		return new AddQtyToHU(pickingCandidateRepository).perform(addQtyToHURequest);
+		return AddQtyToHUCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository);
 	}
 
-	@lombok.Value
-	@lombok.Builder
-	public static final class AddQtyToHURequest
+	public RemoveQtyFromHUCommandBuilder removeQtyFromHU()
 	{
-		@NonNull
-		@Default
-		BigDecimal qtyCU = Quantity.QTY_INFINITE;
-
-		@NonNull
-		Integer targetHuId;
-
-		@NonNull
-		Integer pickingSlotId;
-
-		@NonNull
-		Integer shipmentScheduleId;
-	}
-
-	public void removeQtyFromHU(@NonNull final RemoveQtyFromHURequest removeQtyFromHURequest)
-	{
-		new RemoveQtyFromHU(sourceHUsRepository, pickingCandidateRepository).perform(removeQtyFromHURequest);
-	}
-
-	@lombok.Value
-	@lombok.Builder
-	public static final class RemoveQtyFromHURequest
-	{
-		@NonNull
-		@Default
-		BigDecimal qtyCU = Quantity.QTY_INFINITE;
-
-		@NonNull
-		Integer huId;
-
-		@NonNull
-		Integer pickingSlotId;
-
-		@NonNull
-		Integer productId;
+		return RemoveQtyFromHUCommand.builder()
+				.sourceHUsRepository(sourceHUsRepository)
+				.pickingCandidateRepository(pickingCandidateRepository);
 	}
 
 	public void removeHUFromPickingSlot(final int huId)
 	{
-		pickingCandidateRepository.deletePickingCandidate(huId);
+		RemoveHUFromPickingSlotCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.huId(huId)
+				.build()
+				.perform();
 	}
 
 	/**
@@ -167,5 +140,24 @@ public class PickingCandidateService
 		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByShipmentScheduleIdsAndStatus(shipmentScheduleIds, X_M_Picking_Candidate.STATUS_PR);
 		return ClosePickingCandidateCommand.builder()
 				.pickingCandidates(pickingCandidates);
+	}
+
+	public void inactivateForHUId(final int huId)
+	{
+		Check.assume(huId > 0, "huId > 0");
+		inactivateForHUIds(ImmutableList.of(huId));
+	}
+
+	public void inactivateForHUIds(final Collection<Integer> huIds)
+	{
+		pickingCandidateRepository.retrievePickingCandidatesByHUIds(huIds)
+				.forEach(this::inactivate);
+	}
+
+	private void inactivate(final I_M_Picking_Candidate pickingCandidate)
+	{
+		pickingCandidate.setIsActive(false);
+		pickingCandidate.setStatus(X_M_Picking_Candidate.STATUS_CL);
+		InterfaceWrapperHelper.save(pickingCandidate);
 	}
 }

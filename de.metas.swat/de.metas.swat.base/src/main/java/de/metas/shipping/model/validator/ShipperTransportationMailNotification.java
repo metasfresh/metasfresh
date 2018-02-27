@@ -33,10 +33,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_M_PackageLine;
 import org.compiere.model.MClient;
 import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
-import org.compiere.model.MPackageLine;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -53,8 +53,8 @@ import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.MMShipperTransportation;
-import de.metas.shipping.model.MMShippingPackage;
 
 /**
  * Supposed to send an email to a shipment's receiver when the shipper document is completed.
@@ -83,7 +83,7 @@ public class ShipperTransportationMailNotification implements ModelValidator
 				int AD_BoilerPlate_ID = MSysConfig.getIntValue(SYS_CONFIG_SHIP, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 				final MADBoilerPlate text = MADBoilerPlate.get(ctx, AD_BoilerPlate_ID);
 
-				for (MMShippingPackage sp : getShippingPackage(ship.getM_ShipperTransportation_ID()))
+				for (I_M_ShippingPackage sp : getShippingPackage(ship.getM_ShipperTransportation_ID()))
 				{
 					// get user for sendind mail
 					I_AD_User user = null;
@@ -103,10 +103,10 @@ public class ShipperTransportationMailNotification implements ModelValidator
 						String message = sendEMail(text, (MInOut)sp.getM_InOut(), orderUser);
 						if (Check.isEmpty(message, true))
 						{
-							for (MPackageLine pl : getPackageLine(sp.getM_Package_ID()))
+							for (I_M_PackageLine pl : getPackageLine(sp.getM_Package_ID()))
 							{
 								setNotified(pl);
-								pl.saveEx();
+								InterfaceWrapperHelper.save(pl);
 							}
 						}
 					}
@@ -116,24 +116,22 @@ public class ShipperTransportationMailNotification implements ModelValidator
 		return null;
 	}
 
-	private MMShippingPackage[] getShippingPackage(int M_ShipperTransportation_ID)
+	private List<I_M_ShippingPackage> getShippingPackage(int M_ShipperTransportation_ID)
 	{
-		String whereClause = MMShippingPackage.COLUMNNAME_M_ShipperTransportation_ID + " = ?";
-		List<MMShippingPackage> list = new Query(Env.getCtx(), MMShippingPackage.Table_Name, whereClause, null)
+		String whereClause = I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID + " = ?";
+		return new Query(Env.getCtx(), I_M_ShippingPackage.Table_Name, whereClause, null)
 				.setClient_ID()
 				.setParameters(M_ShipperTransportation_ID)
-				.list();
-		return list.toArray(new MMShippingPackage[list.size()]);
+				.list(I_M_ShippingPackage.class);
 	}
 
-	private MPackageLine[] getPackageLine(int M_Package_ID)
+	private List<I_M_PackageLine> getPackageLine(int M_Package_ID)
 	{
-		String whereClause = MPackageLine.COLUMNNAME_M_Package_ID + " = ?";
-		List<MMShippingPackage> list = new Query(Env.getCtx(), MPackageLine.Table_Name, whereClause, null)
+		String whereClause = I_M_PackageLine.COLUMNNAME_M_Package_ID + " = ?";
+		return new Query(Env.getCtx(), I_M_PackageLine.Table_Name, whereClause, null)
 				.setClient_ID()
 				.setParameters(M_Package_ID)
-				.list();
-		return list.toArray(new MPackageLine[list.size()]);
+				.list(I_M_PackageLine.class);
 	}
 
 	@Override
@@ -245,9 +243,9 @@ public class ShipperTransportationMailNotification implements ModelValidator
 		while (true);
 	}
 
-	private void setNotified(MPackageLine packageLine)
+	private void setNotified(I_M_PackageLine packageLine)
 	{
-		packageLine.set_ValueOfColumn("IsSentMailNotification", true);
+		InterfaceWrapperHelper.getPO(packageLine).set_ValueOfColumn("IsSentMailNotification", true);
 	}
 
 }

@@ -9,7 +9,9 @@ RETURNS TABLE
 	LineNetAmt numeric,
 	UOMSymbol character varying(10),
 	rate numeric,
-	IsPrintTax character(1)
+	IsPrintTax character(1),
+	QtyEntered numeric,
+	description  character varying
 )
 AS
 $$
@@ -27,7 +29,9 @@ SELECT
 	SUM(il.LineNetAmt)			AS LineNetAmt,
 	COALESCE(uom.UOMSymbol, uomt.UOMSymbol)	AS UOMSymbol,
 	t.rate,
-	bpg.IsPrintTax
+	bpg.IsPrintTax,
+	SUM(il.QtyEntered) as QtyEntered,
+	il.Description
 FROM
 	C_InvoiceLine il
 	INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID AND i.isActive = 'Y'
@@ -48,7 +52,7 @@ WHERE
 GROUP BY
 	COALESCE(pt.Name, p.Name), COALESCE(uom.UOMSymbol, uomt.UOMSymbol), il.PriceEntered,
 	t.rate,
-	bpg.IsPrintTax
+	bpg.IsPrintTax, il.Description
 $$
 LANGUAGE sql STABLE
 ;

@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -28,12 +30,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUPackageBL;
@@ -47,7 +52,6 @@ import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
 import de.metas.lock.api.LockOwner;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 
@@ -56,16 +60,11 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private static final LockOwner transportationLockOwner = LockOwner.forOwnerName(HUShipperTransportationBL.class.getName());
 
 	@Override
-	public void addHUsToShipperTransportation(final IContextAware contextProvider, final int shipperTransportationId, final Collection<I_M_HU> hus)
+	public List<I_M_Package> addHUsToShipperTransportation(final int shipperTransportationId, final Collection<I_M_HU> hus)
 	{
-		Check.assumeNotNull(contextProvider, "contextProvider not null");
-
 		//
 		// Load Shipper transportation document and validate it
-		final I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.create(contextProvider.getCtx(),
-				shipperTransportationId,
-				I_M_ShipperTransportation.class,
-				contextProvider.getTrxName());
+		final I_M_ShipperTransportation shipperTransportation = load(shipperTransportationId, I_M_ShipperTransportation.class);
 		if (shipperTransportation == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_ShipperTransportation_ID@");
@@ -78,14 +77,17 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 		final I_M_Shipper shipper = shipperTransportation.getM_Shipper();
 
-		//
-		// Iterate HUs and:
-		// * create M_Packages
-		// * assign M_Packages them to Shipper Transportation document
+		// services
 		final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 		final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 		final IHULockBL huLockBL = Services.get(IHULockBL.class);
+		
+		//
+		// Iterate HUs and:
+		// * create M_Packages
+		// * assign M_Packages them to Shipper Transportation document
+		final List<I_M_Package> result = new ArrayList<>();
 		for (final I_M_HU hu : hus)
 		{
 			//
@@ -98,7 +100,8 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 			//
 			// Create M_Package
-			final I_M_Package mpackage = huPackageBL.createM_Package(contextProvider, hu, shipper);
+			final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipper);
+			result.add(mpackage);
 
 			//
 			// Add M_Package to Shipper Transportation document
@@ -110,11 +113,11 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			final String huTrxNameOld = InterfaceWrapperHelper.getTrxName(hu);
 			try
 			{
-				InterfaceWrapperHelper.setTrxName(hu, contextProvider.getTrxName());
+				InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 
 				//
 				// Mark the top level HU as Locked & save it
-				huLockBL.lock(hu, transportationLockOwner);
+				huLockBL.lockAfterCommit(hu, transportationLockOwner);
 
 				//
 				// Remove HU from picking slots, if any (07499).
@@ -129,6 +132,9 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				InterfaceWrapperHelper.setTrxName(hu, huTrxNameOld);
 			}
 		}
+		
+		//
+		return ImmutableList.copyOf(result);
 	}
 
 	@Override
@@ -166,7 +172,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			throw new AdempiereException("@NotFound@ @M_HU_ID@ @Locked@");
 		}
 
-		GenerateInOutFromHU.enqueueWorkpackage(ctx, hus);
+		GenerateInOutFromHU.enqueueWorkpackage(hus);
 	}
 
 	@Override

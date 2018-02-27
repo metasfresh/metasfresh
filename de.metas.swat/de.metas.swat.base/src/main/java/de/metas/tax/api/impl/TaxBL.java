@@ -60,6 +60,7 @@ import de.metas.adempiere.service.ICountryDAO;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxDAO;
+import lombok.NonNull;
 
 public class TaxBL implements de.metas.tax.api.ITaxBL
 {
@@ -163,19 +164,18 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	public int retrieveTaxIdForCategory(final Properties ctx,
 			final int countryFromId,
 			final int orgId,
-			final I_C_BPartner_Location bpLocTo,
+			@NonNull final I_C_BPartner_Location bpLocTo,
 			final Timestamp date,
 			final int taxCategoryId,
 			final boolean isSOTrx,
 			final String trxName,
 			final boolean throwEx)
 	{
-		Check.assumeNotNull(bpLocTo, "bpLocTo not null");
 		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(bpLocTo.getC_BPartner(), I_C_BPartner.class);
 
 		final boolean hasTaxCertificate = !Check.isEmpty(bPartner.getVATaxID());
 
-		final I_C_Location locationTo = InterfaceWrapperHelper.create(ctx, bpLocTo.getC_Location_ID(), I_C_Location.class, trxName); 
+		final I_C_Location locationTo = InterfaceWrapperHelper.create(ctx, bpLocTo.getC_Location_ID(), I_C_Location.class, trxName);
 
 		final boolean toEULocation = Services.get(ICountryAreaBL.class).isMemberOf(ctx,
 				ICountryAreaBL.COUNTRYAREAKEY_EU,
@@ -188,9 +188,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final IQueryBuilder<I_C_Tax> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Tax.class, ctx, ITrx.TRXNAME_None)
-				.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS, date)
+				.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date)
 				.addOnlyActiveRecordsFilter();
-		
+
 
 		if (countryFromId > 0)
 		{
@@ -248,7 +248,6 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.addColumnDescending(I_C_Tax.COLUMNNAME_ValidFrom)
 				.endOrderBy()
 				.create()
-				.setClient_ID()
 				.firstId();
 
 		if (taxId <= 0)

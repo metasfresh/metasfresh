@@ -1,5 +1,7 @@
 package org.adempiere.ad.modelvalidator;
 
+import org.adempiere.impexp.IImportInterceptor;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -40,4 +42,6 @@ public interface IModelValidationEngine
 	void addDocValidate(String tableName, IModelInterceptor interceptor);
 
 	void removeModelChange(String tableName, IModelInterceptor interceptor);
+
+	void addImportInterceptor(String importTableName, IImportInterceptor listener);
 }

@@ -10,12 +10,12 @@ package de.metas.letters.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,6 +49,7 @@ import javax.swing.text.html.HTMLEditorKit;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
@@ -150,7 +151,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		final Properties ctx = Env.getCtx();
 		String text = parseText(ctx, html, false, context, ITrx.TRXNAME_None);
 		text = text.replace("</", " </"); // we need to leave at least one space before closing tag, else jasper will not apply the effect of that tag
-		
+
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setAD_ProcessByClassname("de.metas.letters.report.AD_BoilerPlate_Report")
@@ -159,7 +160,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				.buildAndPrepareExecution()
 				.executeSync()
 				.getProcessInfo();
-		
+
 		final ReportEngine re = ReportEngine.get(ctx, pi);
 		return re;
 	}
@@ -217,7 +218,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			return;
 		}
-		
+
 		final EMailSentStatus emailSentStatus = email.getLastSentStatus();
 		if (!emailSentStatus.isSentOK())
 		{
@@ -241,7 +242,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		request.setResult(message);
 		updateRequestDetails(request, parent_table_id, parent_record_id, context);
 		request.saveEx();
-		
+
 		//
 		// Attach email attachments to this request
 		try
@@ -277,7 +278,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		);
 		updateRequestDetails(request, parent_table_id, parent_record_id, context);
 		InterfaceWrapperHelper.save(request);
-		
+
 		//
 		// Attach printed letter
 		if(pdf != null)
@@ -310,7 +311,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			return;
 		}
 		//
-		if (parent_table_id == I_C_BPartner.Table_ID)
+		if (parent_table_id == Services.get(IADTableDAO.class).retrieveTableId(I_C_BPartner.Table_Name))
 		{
 			rq.setC_BPartner_ID(parent_record_id);
 		}
@@ -358,7 +359,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setR_RequestRelated_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_C_OrderLine.Table_ID)
+		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 		{
 			final MOrderLine oLine = new MOrderLine(Env.getCtx(), parent_record_id, null);
 			if (oLine != null)
@@ -448,7 +449,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	}
 
 	/**
-	 * 
+	 *
 	 * @return all snippets, ordered by name
 	 */
 	public static SortedMap<String, String> getAllSnippetsMap()
@@ -550,7 +551,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	/**
 	 * Get Parsed Text
-	 * 
+	 *
 	 * @param ctx
 	 * @param text
 	 * @param AD_Language
@@ -682,7 +683,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	}
 
 	/**
-	 * 
+	 *
 	 * @param AD_Language
 	 * @param isEmbeded
 	 * @param attrs
@@ -696,7 +697,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	/**
 	 * Get Parsed Text
-	 * 
+	 *
 	 * @param AD_Language
 	 * @param attrs variables map. If null, no variable repacement will be made
 	 * @param isEmbeded will this text be embeded (i.e. shoud we strip html, head, body tags?
@@ -867,7 +868,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				}
 			}
 		}
-		
+
 		if(C_BPartner_Location_ID <= 0)
 		{
 			C_BPartner_Location_ID = sourceDocument != null ? sourceDocument.getFieldValueAsInt("C_BPartner_Location_ID", -1) : -1;
@@ -876,7 +877,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			attributesBuilder.setC_BPartner_Location_ID(C_BPartner_Location_ID);
 		}
-		
+
 		//
 		// Language
 		String AD_Language = Env.getAD_Language(ctx);
@@ -889,7 +890,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			}
 		}
 		attributesBuilder.setAD_Language(AD_Language);
-		
+
 		int adOrgId = sourceDocument != null ? sourceDocument.getFieldValueAsInt("AD_Org_ID", -1) : -1;
 		if(adOrgId < 0)
 		{
@@ -897,7 +898,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		}
 		attributesBuilder.setAD_Org_ID(adOrgId);
 
-		
+
 		//
 		//
 		// attrs.put(BoilerPlateContext.VAR_Phone, null);
@@ -924,11 +925,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		//
 		return attributesBuilder.build();
 	}
-	
+
 	private static I_AD_User getDefaultContactOrFirstWithValidEMail(final MBPartner bpartner)
 	{
 		final IUserBL userBL = Services.get(IUserBL.class);
-		
+
 		I_AD_User firstContact = null;
 		I_AD_User firstValidContact = null;
 		for (final I_AD_User contact : bpartner.getContacts(false))
@@ -937,7 +938,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			{
 				return contact;
 			}
-			
+
 			if(firstContact == null)
 			{
 				firstContact = contact;
@@ -951,18 +952,18 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				}
 			}
 		}
-		
+
 		if(firstValidContact != null)
 		{
 			return firstValidContact;
 		}
-		
+
 		return firstContact;
 	}
 
 	/**
 	 * Get Language from attributes
-	 * 
+	 *
 	 * @param attributes
 	 * @return
 	 */
@@ -994,7 +995,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	/**
 	 * Create record into T_BoilerPlate_Spool table
-	 * 
+	 *
 	 * @param ctx
 	 * @param AD_Client_ID
 	 * @param AD_PInstance_ID
@@ -1088,7 +1089,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			final Integer bpartnerId = getC_BPartner_ID();
 			return bpartnerId != null ? bpartnerId : defaultValue;
 		}
-		
+
 		@Nullable
 		public Integer getC_BPartner_Location_ID()
 		{
@@ -1235,7 +1236,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				setAttribute(VAR_EMail, email);
 				return this;
 			}
-			
+
 			public Builder setAD_Org_ID(final int adOrgId)
 			{
 				setAttribute(VAR_AD_Org_ID, adOrgId);

@@ -14,7 +14,7 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 326811592L;
+	private static final long serialVersionUID = 1910542388L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Demand_Detail (Properties ctx, int MD_Candidate_Demand_Detail_ID, String trxName)
@@ -74,6 +74,28 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	public int getC_OrderLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Abo-Verlauf.
+		@param C_SubscriptionProgress_ID Abo-Verlauf	  */
+	@Override
+	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID)
+	{
+		if (C_SubscriptionProgress_ID < 1) 
+			set_Value (COLUMNNAME_C_SubscriptionProgress_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_SubscriptionProgress_ID, Integer.valueOf(C_SubscriptionProgress_ID));
+	}
+
+	/** Get Abo-Verlauf.
+		@return Abo-Verlauf	  */
+	@Override
+	public int getC_SubscriptionProgress_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_SubscriptionProgress_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

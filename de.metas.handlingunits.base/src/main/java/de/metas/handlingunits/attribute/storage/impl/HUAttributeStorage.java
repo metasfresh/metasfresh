@@ -38,6 +38,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import lombok.NonNull;
 
 /* package */class HUAttributeStorage extends AbstractHUAttributeStorage
 {
@@ -49,11 +50,12 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 	 */
 	private Map<String, IAttributeStorage> childrenAttributeStoragesMap = null;
 
-	/* package */ HUAttributeStorage(final IAttributeStorageFactory storageFactory, final I_M_HU hu)
+	/* package */ HUAttributeStorage(
+			@NonNull final IAttributeStorageFactory storageFactory,
+			@NonNull final I_M_HU hu)
 	{
 		super(storageFactory);
 
-		Check.assumeNotNull(hu, "hu not null");
 		_hu = hu;
 
 		id = "M_HU_ID=" + hu.getM_HU_ID();

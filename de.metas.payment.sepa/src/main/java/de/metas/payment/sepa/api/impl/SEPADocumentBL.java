@@ -56,7 +56,7 @@ import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
-import de.metas.payment.sepa.spi.impl.SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02;
+import de.metas.payment.sepa.sepamarshaller.impl.SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02;
 
 public class SEPADocumentBL implements ISEPADocumentBL
 {

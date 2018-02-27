@@ -2,9 +2,7 @@ package de.metas.material.dispo.commons;
 
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
@@ -14,17 +12,19 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -50,14 +50,17 @@ import de.metas.material.event.pporder.PPOrderRequestedEvent;
 
 public class CandidateServiceTests
 {
-	private CandidateService candidateService;
+	private RequestMaterialOrderService requestMaterialOrderService;
+
+	@Mocked
+	private PostMaterialEventService postMaterialEventService;
 
 	@Before
 	public void init()
 	{
-		candidateService = new CandidateService(
+		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(),
-				MaterialEventService.createLocalServiceThatIsReadyToUse());
+				postMaterialEventService);
 	}
 
 	@Test
@@ -67,50 +70,58 @@ public class CandidateServiceTests
 				.clientId(20)
 				.orgId(30)
 				.type(CandidateType.SUPPLY)
-				.subType(CandidateSubType.PRODUCTION)
+				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.materialDescriptor(createMaterialDescriptor())
 				.productionDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
-						.uomId(230)
+						.advised(Flag.FALSE)
+						.pickDirectlyIfFeasible(Flag.FALSE)
 						.build())
 				.build();
 
 		final Candidate candidate2 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(310))
+						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
 				.withProductionDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
 						.productBomLineId(500)
+						.advised(Flag.TRUE)
+						.pickDirectlyIfFeasible(Flag.FALSE)
 						.build());
 
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(320))
+						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
 				.withProductionDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
 						.productBomLineId(600)
+						.advised(Flag.FALSE)
+						.pickDirectlyIfFeasible(Flag.TRUE)
 						.build());
 
-		final PPOrderRequestedEvent productionOrderEvent = candidateService.createPPOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
-		assertThat(productionOrderEvent, notNullValue());
-		assertThat(productionOrderEvent.getEventDescriptor(), notNullValue());
+		final PPOrderRequestedEvent ppOrderRequestedEvent = requestMaterialOrderService
+				.createPPOrderRequestedEvent(
+						ImmutableList.of(candidate, candidate2, candidate3));
 
-		assertThat(productionOrderEvent.getEventDescriptor().getClientId(), is(20));
-		assertThat(productionOrderEvent.getEventDescriptor().getOrgId(), is(30));
+		assertThat(ppOrderRequestedEvent).isNotNull();
+		assertThat(ppOrderRequestedEvent.getEventDescriptor()).isNotNull();
 
-		final PPOrder ppOrder = productionOrderEvent.getPpOrder();
-		assertThat(ppOrder, notNullValue());
-		assertThat(ppOrder.getOrgId(), is(30));
-		assertThat(ppOrder.getProductDescriptor().getProductId(), is(PRODUCT_ID));
+		assertThat(ppOrderRequestedEvent.getEventDescriptor().getClientId()).isEqualTo(20);
+		assertThat(ppOrderRequestedEvent.getEventDescriptor().getOrgId()).isEqualTo(30);
 
-		assertThat(ppOrder.getLines().size(), is(2));
+		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
+		assertThat(ppOrder).isNotNull();
+		assertThat(ppOrder.getOrgId()).isEqualTo(30);
+		assertThat(ppOrder.getProductDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
+
+		assertThat(ppOrder.getLines()).hasSize(2);
 	}
 
 	@Test
@@ -120,7 +131,7 @@ public class CandidateServiceTests
 				.clientId(20)
 				.orgId(30)
 				.type(CandidateType.SUPPLY)
-				.subType(CandidateSubType.DISTRIBUTION)
+				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.materialDescriptor(createMaterialDescriptor())
 				.distributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
@@ -132,7 +143,7 @@ public class CandidateServiceTests
 		final Candidate candidate2 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(310))
+						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
 				.withDistributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
@@ -144,7 +155,7 @@ public class CandidateServiceTests
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(320))
+						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
 				.withDistributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
@@ -153,20 +164,20 @@ public class CandidateServiceTests
 						.networkDistributionLineId(501)
 						.build());
 
-		final DDOrderRequestedEvent distributionOrderEvent = candidateService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
-		assertThat(distributionOrderEvent, notNullValue());
+		final DDOrderRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		assertThat(distributionOrderEvent).isNotNull();
 
-		assertThat(distributionOrderEvent.getEventDescriptor(), notNullValue());
-		assertThat(distributionOrderEvent.getEventDescriptor().getClientId(), is(20));
-		assertThat(distributionOrderEvent.getEventDescriptor().getOrgId(), is(30));
+		assertThat(distributionOrderEvent.getEventDescriptor()).isNotNull();
+		assertThat(distributionOrderEvent.getEventDescriptor().getClientId()).isEqualTo(20);
+		assertThat(distributionOrderEvent.getEventDescriptor().getOrgId()).isEqualTo(30);
 
 		final DDOrder ddOrder = distributionOrderEvent.getDdOrder();
-		assertThat(ddOrder, notNullValue());
-		assertThat(ddOrder.getOrgId(), is(30));
-		assertThat(ddOrder.getProductPlanningId(), is(220));
-		assertThat(ddOrder.getPlantId(), is(230));
-		assertThat(ddOrder.getShipperId(), is(240));
-		assertThat(ddOrder.getLines().isEmpty(), is(false));
+		assertThat(ddOrder).isNotNull();
+		assertThat(ddOrder.getOrgId()).isEqualTo(30);
+		assertThat(ddOrder.getProductPlanningId()).isEqualTo(220);
+		assertThat(ddOrder.getPlantId()).isEqualTo(230);
+		assertThat(ddOrder.getShipperId()).isEqualTo(240);
+		assertThat(ddOrder.getLines().isEmpty()).isFalse();
 
 	}
 

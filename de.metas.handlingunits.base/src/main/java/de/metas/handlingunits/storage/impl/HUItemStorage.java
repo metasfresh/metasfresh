@@ -10,12 +10,12 @@ package de.metas.handlingunits.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,6 +54,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 public class HUItemStorage implements IHUItemStorage
 {
@@ -79,7 +80,7 @@ public class HUItemStorage implements IHUItemStorage
 
 	/**
 	 * Creates a new instance. Actual {@link I_M_HU_Item_Storage} records will be loaded and saved only when needed.
-	 * 
+	 *
 	 * @param storageFactory
 	 * @param item
 	 */
@@ -211,7 +212,10 @@ public class HUItemStorage implements IHUItemStorage
 	}
 
 	@Override
-	public CapacityInterface getCapacity(final I_M_Product product, final I_C_UOM uom, final Date date)
+	public CapacityInterface getCapacity(
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM uom,
+			@NonNull final Date date)
 	{
 		//
 		// In case there is a custom capacity set, we use that right away
@@ -266,7 +270,10 @@ public class HUItemStorage implements IHUItemStorage
 	}
 
 	@Override
-	public CapacityInterface getAvailableCapacity(final I_M_Product product, final I_C_UOM uom, final Date date)
+	public CapacityInterface getAvailableCapacity(
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM uom,
+			@NonNull final Date date)
 	{
 		final CapacityInterface capacity = getCapacity(product, uom, date);
 		if (handlingUnitsBL.isAggregateHU(getM_HU_Item().getM_HU()))

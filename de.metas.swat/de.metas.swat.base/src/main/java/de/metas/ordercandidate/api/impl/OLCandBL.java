@@ -32,6 +32,7 @@ import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
@@ -50,6 +51,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.IOLCandBL;
@@ -66,7 +68,6 @@ import de.metas.ordercandidate.spi.CompositeOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
-import de.metas.product.IProductPA;
 import de.metas.relation.grid.ModelRelationTarget;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
@@ -198,6 +199,7 @@ public class OLCandBL implements IOLCandBL
 		return model;
 	}
 
+
 	@Override
 	public I_C_OLCand invokeOLCandCreator(final PO po)
 	{
@@ -285,7 +287,7 @@ public class OLCandBL implements IOLCandBL
 		else
 		{
 			final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-			final IProductPA productPA = Services.get(IProductPA.class);
+			final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 			final int bill_BPartner_ID = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
 
@@ -313,7 +315,7 @@ public class OLCandBL implements IOLCandBL
 
 			if (pl == null)
 			{
-				throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + dropShipLocation.getC_BPartner_Location_ID());
+				throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + dropShipLocation.getC_BPartner_Location_ID());
 			}
 			pricingCtx.setM_PriceList_ID(pl.getM_PriceList_ID());
 			pricingCtx.setM_Product_ID(effectiveValuesBL.getM_Product_Effective_ID(olCand));

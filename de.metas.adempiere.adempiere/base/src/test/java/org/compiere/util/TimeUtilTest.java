@@ -350,10 +350,10 @@ public class TimeUtilTest
 	{
 		// NOTE: this test was initially in org.compiere.util.TimeUtil.main(String[])
 
-		assertFormatElapsed("01.0", 1000);
-		assertFormatElapsed("01.234", 1234);
-		assertFormatElapsed("01:00:01.234", 3601234);
-		assertFormatElapsed("02:01:01.234", 7261234);
+		assertFormatElapsed("1.000 s", 1000);
+		assertFormatElapsed("1.234 s", 1234);
+		assertFormatElapsed("1.000 h", 3601234);
+		assertFormatElapsed("2.017 h", 7261234);
 	}
 
 	private void assertFormatElapsed(final String expected, final long elapsedMS)

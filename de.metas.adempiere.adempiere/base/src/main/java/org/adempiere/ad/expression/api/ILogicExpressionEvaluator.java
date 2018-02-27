@@ -49,4 +49,6 @@ public interface ILogicExpressionEvaluator extends IExpressionEvaluator<ILogicEx
 	 * @throws ExpressionEvaluationException
 	 */
 	LogicExpressionResult evaluateToResult(Evaluatee ctx, ILogicExpression expression, OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
+
+	ILogicExpression evaluatePartial(Evaluatee params, ILogicExpression expr);
 }

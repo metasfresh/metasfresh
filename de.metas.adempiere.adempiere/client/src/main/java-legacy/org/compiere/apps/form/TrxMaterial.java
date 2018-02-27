@@ -42,7 +42,7 @@ public class TrxMaterial
 {
 	// services
 	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	
+
 	/**	Window No			*/
 	public int         	m_WindowNo = 0;
 	/** MWindow                 */
@@ -53,23 +53,23 @@ public class TrxMaterial
 	public MQuery          m_staticQuery = null;
 	/**	Logger			*/
 	public static Logger log = LogManager.getLogger(TrxMaterial.class);
-	
+
 	protected final int getWindowNo()
 	{
 		return m_WindowNo;
 	}
-	
+
 	protected void dispose()
 	{
 		m_mTab = null;
-		
+
 		if (m_mWindow != null)
 		{
 			m_mWindow.dispose();
 		}
 		m_mWindow = null;
 	}
-	
+
 	protected GridTab getGridTab()
 	{
 		if (m_mTab != null)
@@ -88,7 +88,7 @@ public class TrxMaterial
 
 		return m_mTab;
 	}
-	
+
 	/**
 	 *  Dynamic Layout (Grid).
 	 * 	Based on AD_Window: Material Transactions
@@ -105,15 +105,15 @@ public class TrxMaterial
 		statusBar.setStatusLine(" ", false);
 		statusBar.setStatusDB(" ");
 	}   //  dynInit
-	
+
 	/**************************************************************************
 	 *  Refresh - Create Query and refresh grid
-	 * @param bpartnerId 
+	 * @param bpartnerId
 	 */
 	public void refresh(Object organization,
 			Object locator,
 			Object product,
-			Object movementType, 
+			Object movementType,
 			Timestamp movementDateFrom, Timestamp movementDateTo,
 			final Object bpartnerId,
 			IStatusBar statusBar)
@@ -160,10 +160,10 @@ public class TrxMaterial
 		statusBar.setStatusLine(" ", false);
 		statusBar.setStatusDB(Integer.toString(no));
 	}   //  refresh
-	
+
 	public int AD_Window_ID;
 	public MQuery query;
-	
+
 	/**
 	 *  Zoom
 	 */
@@ -206,19 +206,6 @@ public class TrxMaterial
 					ColumnName = "M_Movement_ID";
 					SQL = "SELECT M_Movement_ID FROM M_MovementLine WHERE M_MovementLine_ID=?";
 				}
-				else
-				{
-					lineID = Env.getContextAsInt(Env.getCtx(), m_WindowNo, "M_ProductionLine_ID");
-					if (lineID > 0)
-					{
-						log.debug("M_ProductionLine_ID=" + lineID);
-						AD_Window_ID = 191;
-						ColumnName = "M_Production_ID";
-						SQL = "SELECT M_Production_ID FROM M_ProductionLine WHERE M_ProductionLine_ID=?";
-					}
-					else
-						log.debug("Not found WindowNo=" + m_WindowNo);
-				}
 			}
 		}
 		if (AD_Window_ID <= 0)
@@ -231,7 +218,7 @@ public class TrxMaterial
 		if (parentID <= 0)
 			log.error("No ParentValue - " + SQL + " - " + lineID);
 	}   //  zoom
-	
+
 	protected final Lookup getLookup(final String columnName)
 	{
 		final GridTab gridTab = getGridTab();

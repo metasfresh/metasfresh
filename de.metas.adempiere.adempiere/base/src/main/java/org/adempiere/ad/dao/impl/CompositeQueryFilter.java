@@ -13,11 +13,11 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,6 +39,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
+
+import lombok.NonNull;
 
 /**
  * Composite Query Filters. Contains a set of {@link IQueryFilter} joined together by AND or OR (see {@link #setJoinAnd()}, {@link #setJoinOr()}).
@@ -383,9 +385,9 @@ import org.compiere.model.IQuery;
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> addFilter(final IQueryFilter<T> filter)
+	public ICompositeQueryFilter<T> addFilter(@NonNull final IQueryFilter<T> filter)
 	{
-		Check.assumeNotNull(filter, "filter not null");
+		Check.errorIf(filter == this, "Attempt to add a filter to itself; filter={}", filter);
 
 		if (filters.contains(filter))
 		{
@@ -414,6 +416,28 @@ import org.compiere.model.IQuery;
 		}
 
 		return this;
+	}
+
+	@Override
+	public ICompositeQueryFilter<T> addFiltersUnboxed(final ICompositeQueryFilter<T> compositeFilter)
+	{
+		final List<IQueryFilter<T>> filtersToAdd = compositeFilter.getFilters();
+		if(filtersToAdd.isEmpty())
+		{
+			return this;
+		}
+		else if(filtersToAdd.size() == 1)
+		{
+			return addFilters(filtersToAdd);
+		}
+		else if(isJoinAnd() == compositeFilter.isJoinAnd())
+		{
+			return addFilters(filtersToAdd);
+		}
+		else
+		{
+			return addFilter(compositeFilter);
+		}
 	}
 
 	@Override
@@ -498,6 +522,14 @@ import org.compiere.model.IQuery;
 	{
 		final StringLikeFilter<T> filter = new StringLikeFilter<>(columnName, substring, ignoreCase);
 		return addFilter(filter);
+	}
+
+	@Override
+	public ICompositeQueryFilter<T> addStringNotLikeFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
+	{
+		final String columnName = column.getColumnName();
+		final StringLikeFilter<T> filter = new StringLikeFilter<>(columnName, substring, ignoreCase);
+		return addFilter(NotQueryFilter.of(filter));
 	}
 
 	@Override
@@ -591,7 +623,7 @@ import org.compiere.model.IQuery;
 				.setDefaultReturnWhenEmpty(true);
 		return addFilter(filter);
 	}
-	
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final String columnName, final V... values)
@@ -601,7 +633,6 @@ import org.compiere.model.IQuery;
 		return addFilter(filter);
 	}
 
-
 	@Override
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final V... values)
@@ -610,7 +641,7 @@ import org.compiere.model.IQuery;
 				.setDefaultReturnWhenEmpty(true);
 		return addFilter(filter);
 	}
-	
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final ModelColumn<T, ?> column, final V... values)
@@ -627,7 +658,7 @@ import org.compiere.model.IQuery;
 				.setDefaultReturnWhenEmpty(true);
 		return addFilter(filter);
 	}
-	
+
 	@Override
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final String columnName, final Collection<V> values)
 	{
@@ -684,7 +715,7 @@ import org.compiere.model.IQuery;
 			final String subQueryColumnName,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
+		final IQueryFilter<T> filter = InSubQueryFilter.<T> builder()
 				.tableName(tableName)
 				.subQuery(subQuery)
 				.matchingColumnNames(columnName, subQueryColumnName)
@@ -697,7 +728,7 @@ import org.compiere.model.IQuery;
 			final String subQueryColumnName,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
+		final IQueryFilter<T> filter = InSubQueryFilter.<T> builder()
 				.tableName(tableName)
 				.subQuery(subQuery)
 				.matchingColumnNames(columnName, subQueryColumnName)
@@ -711,12 +742,12 @@ import org.compiere.model.IQuery;
 			final ModelColumn<ST, ?> subQueryColumn,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
+		final IQueryFilter<T> filter = InSubQueryFilter.<T> builder()
 				.tableName(tableName)
 				.subQuery(subQuery)
 				.matchingColumnNames(column.getColumnName(), subQueryColumn.getColumnName())
 				.build();
-		
+
 		final IQueryFilter<T> notFilter = NotQueryFilter.of(filter);
 		return addFilter(notFilter);
 	}
@@ -726,12 +757,12 @@ import org.compiere.model.IQuery;
 			final ModelColumn<ST, ?> subQueryColumn,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
+		final IQueryFilter<T> filter = InSubQueryFilter.<T> builder()
 				.tableName(tableName)
 				.subQuery(subQuery)
 				.matchingColumnNames(column.getColumnName(), subQueryColumn.getColumnName())
 				.build();
-		
+
 		return addFilter(filter);
 	}
 
@@ -748,7 +779,7 @@ import org.compiere.model.IQuery;
 			final String subQueryColumnName,
 			final IQuery<ST> subQuery)
 	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
+		final IQueryFilter<T> filter = InSubQueryFilter.<T> builder()
 				.tableName(tableName)
 				.subQuery(subQuery)
 				.matchingColumnNames(columnName, subQueryColumnName, modifier)
@@ -992,5 +1023,4 @@ import org.compiere.model.IQuery;
 		addFilter(filter);
 		return filter;
 	}
-
 }

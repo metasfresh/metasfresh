@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
@@ -33,12 +34,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,7 +47,7 @@ import lombok.NonNull;
  */
 
 /**
- * 
+ *
  * Contains glue code such that:
  * <ul>
  * <li>{@link HUTraceEventsService#createAndAddForHuParentChanged(I_M_HU, I_M_HU_Item)} is invoked when an HU parent relation is changed.</li>
@@ -90,18 +91,22 @@ public class TraceHUTrxListener implements IHUTrxListener
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrxListenerManager trxListenerManager = trxManager.getTrxListenerManager(ITrx.TRXNAME_ThreadInherited);
-		trxListenerManager.onAfterNextCommit(() -> {
+		trxListenerManager
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> {
 
-			final ITrxManager innerTrxManager = Services.get(ITrxManager.class);
-			innerTrxManager.run(localTrxName -> {
+					// do a brand new transaction in which we execute our things,
+					// because basically 'innerTrx' is already done and might even already be closed
+					final ITrxManager innerTrxManager = Services.get(ITrxManager.class);
+					innerTrxManager.run(localTrxName -> {
 
-				// we need to update our subjects' trxNames, because the one this listener method was called with was committed and therefore is not valid anymore
-				setTrxName(trxHdr, localTrxName);
-				trxLines.forEach(l -> setTrxName(l, localTrxName));
+						// we need to update our subjects' trxNames, because the one this listener method was called with was committed and therefore is not valid anymore
+						setTrxName(trxHdr, localTrxName);
+						trxLines.forEach(l -> setTrxName(l, localTrxName));
 
-				afterTrxProcessed0(trxLines, trxHdr);
-			});
-		});
+						afterTrxProcessed0(trxLines, trxHdr);
+					});
+				});
 		logger.info("Enqueued M_HU_Trx_Hdr and _M_HU_Trx_Lines for HU-tracing after the next commit; trxHdr={}; trxLines={}", trxHdr, trxLines);
 	}
 

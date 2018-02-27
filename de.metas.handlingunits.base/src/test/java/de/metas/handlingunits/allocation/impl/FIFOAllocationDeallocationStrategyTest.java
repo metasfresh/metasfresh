@@ -43,7 +43,7 @@ import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.expectations.AllocationResultExpectation;
 import de.metas.handlingunits.expectations.HUExpectation;
-import de.metas.handlingunits.hutransaction.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -60,7 +60,7 @@ import de.metas.quantity.Quantity;
  *
  * NOTEs for all tests:
  * <ul>
- * <li>Allocation strategies are not changing the HU Storages, they are just creating {@link HUTransaction}. So we are not checking if HU storages changed after an allocation/deallocation round,
+ * <li>Allocation strategies are not changing the HU Storages, they are just creating {@link HUTransactionCandidate}. So we are not checking if HU storages changed after an allocation/deallocation round,
  * because the don't.
  * </ul>
  *

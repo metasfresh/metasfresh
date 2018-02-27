@@ -137,11 +137,7 @@ public class AttributeDAO implements IAttributeDAO
 			return false;
 		}
 
-		// NOTE:
-		// * atm we assume if we have a validation rule, we are dealing with high volume lists
-		// * in future, maybe we could add a flag for that (or something)
-		// * atm, the only case/example that we have is the "Karoten ID" from
-		return attribute.getAD_Val_Rule_ID() > 0;
+		return attribute.isHighVolume();
 	}
 
 	@Override

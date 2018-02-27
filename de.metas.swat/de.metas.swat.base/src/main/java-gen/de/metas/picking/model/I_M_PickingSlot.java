@@ -35,7 +35,7 @@ public interface I_M_PickingSlot
 	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_Client>(I_M_PickingSlot.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -64,7 +64,7 @@ public interface I_M_PickingSlot
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_Org>(I_M_PickingSlot.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -93,7 +93,7 @@ public interface I_M_PickingSlot
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_C_BPartner>(I_M_PickingSlot.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -122,7 +122,7 @@ public interface I_M_PickingSlot
 	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
 
     /** Column definition for C_BPartner_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_C_BPartner_Location>(I_M_PickingSlot.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
@@ -137,7 +137,7 @@ public interface I_M_PickingSlot
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -152,7 +152,7 @@ public interface I_M_PickingSlot
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_User>(I_M_PickingSlot.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -177,7 +177,7 @@ public interface I_M_PickingSlot
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -200,7 +200,7 @@ public interface I_M_PickingSlot
 	public boolean isDynamic();
 
     /** Column definition for IsDynamic */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_IsDynamic = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "IsDynamic", null);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_IsDynamic = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "IsDynamic", null);
     /** Column name IsDynamic */
     public static final String COLUMNNAME_IsDynamic = "IsDynamic";
 
@@ -223,9 +223,32 @@ public interface I_M_PickingSlot
 	public boolean isPickingRackSystem();
 
     /** Column definition for IsPickingRackSystem */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_IsPickingRackSystem = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "IsPickingRackSystem", null);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_IsPickingRackSystem = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "IsPickingRackSystem", null);
     /** Column name IsPickingRackSystem */
     public static final String COLUMNNAME_IsPickingRackSystem = "IsPickingRackSystem";
+
+	/**
+	 * Set Handling Units.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_ID (int M_HU_ID);
+
+	/**
+	 * Get Handling Units.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_ID();
+
+    /** Column definition for M_HU_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "M_HU_ID", null);
+    /** Column name M_HU_ID */
+    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
 	 * Set Lagerort.
@@ -252,7 +275,7 @@ public interface I_M_PickingSlot
 	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
 
     /** Column definition for M_Locator_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_M_Locator>(I_M_PickingSlot.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
@@ -275,7 +298,7 @@ public interface I_M_PickingSlot
 	public int getM_PickingSlot_ID();
 
     /** Column definition for M_PickingSlot_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_M_PickingSlot_ID = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "M_PickingSlot_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_M_PickingSlot_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "M_PickingSlot_ID", null);
     /** Column name M_PickingSlot_ID */
     public static final String COLUMNNAME_M_PickingSlot_ID = "M_PickingSlot_ID";
 
@@ -304,7 +327,7 @@ public interface I_M_PickingSlot
 	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
 
     /** Column definition for M_Warehouse_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_M_Warehouse>(I_M_PickingSlot.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
@@ -327,7 +350,7 @@ public interface I_M_PickingSlot
 	public java.lang.String getPickingSlot();
 
     /** Column definition for PickingSlot */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_PickingSlot = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "PickingSlot", null);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_PickingSlot = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "PickingSlot", null);
     /** Column name PickingSlot */
     public static final String COLUMNNAME_PickingSlot = "PickingSlot";
 
@@ -342,7 +365,7 @@ public interface I_M_PickingSlot
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -357,7 +380,7 @@ public interface I_M_PickingSlot
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_M_PickingSlot.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_PickingSlot, org.compiere.model.I_AD_User>(I_M_PickingSlot.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

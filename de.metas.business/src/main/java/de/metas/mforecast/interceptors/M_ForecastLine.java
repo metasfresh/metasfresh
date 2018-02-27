@@ -6,6 +6,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.WarehouseInvalidForOrgException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.MOrg;
 import org.compiere.model.MWarehouse;
@@ -48,6 +49,20 @@ public class M_ForecastLine
 		if (wh.getAD_Org_ID() != adOrgId)
 		{
 			throw new WarehouseInvalidForOrgException(wh.getName(), MOrg.get(ctx, adOrgId).getName());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_M_ForecastLine.COLUMNNAME_M_Forecast_ID})
+	public void updateFieldsFromHeader(final I_M_ForecastLine forecastLine)
+	{
+		final I_M_Forecast forecast = forecastLine.getM_Forecast();
+		if (forecast != null)
+		{
+			forecastLine.setC_BPartner(forecast.getC_BPartner());
+			forecastLine.setM_Warehouse(forecast.getM_Warehouse());
+			forecastLine.setC_Period(forecast.getC_Period());
+			forecastLine.setDatePromised(forecast.getDatePromised());
 		}
 	}
 }

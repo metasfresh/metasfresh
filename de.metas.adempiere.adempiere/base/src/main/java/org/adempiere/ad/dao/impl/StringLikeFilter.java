@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,7 +30,7 @@ import lombok.NonNull;
 
 /**
  * Filters for substrings. This filter creates SQL like <code>column LIKE '%value%'</code>.
- * 
+ *
  * @param <T> the type of the class we filter for.
  */
 public class StringLikeFilter<T> extends CompareQueryFilter<T>
@@ -106,15 +106,21 @@ public class StringLikeFilter<T> extends CompareQueryFilter<T>
 			}
 			return str;
 		}
+
+		@Override
+		public String toString()
+		{
+			return "Modifier[ignoreCase=" + ignoreCase + "]";
+		}
 	}
 
 	/**
-	 * 
+	 *
 	 * @param columnName
 	 * @param substring
 	 * @param ignoreCase
 	 */
-	StringLikeFilter(
+	public StringLikeFilter(
 			@NonNull final String columnName,
 			@NonNull final String substring,
 			final boolean ignoreCase)

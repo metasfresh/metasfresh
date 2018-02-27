@@ -11,11 +11,15 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.event.MaterialDemandEvent;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 
 /*
@@ -45,21 +49,25 @@ public class DemandCandiateHandler implements CandidateHandler
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
 
-	private final MaterialEventService materialEventService;
+	private final AvailableToPromiseRepository stockRepository;
+
+	private final PostMaterialEventService materialEventService;
 
 	private final StockCandidateService stockCandidateService;
 
-	private final CandidateRepositoryCommands candidateRepositoryCommands;
+	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	public DemandCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryCommands candidateRepositoryCommands,
-			@NonNull final MaterialEventService materialEventService,
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
+			@NonNull final PostMaterialEventService materialEventService,
+			@NonNull final AvailableToPromiseRepository stockRepository,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepository;
-		this.candidateRepositoryCommands = candidateRepositoryCommands;
+		this.candidateRepositoryWriteService = candidateRepositoryCommands;
 		this.materialEventService = materialEventService;
+		this.stockRepository = stockRepository;
 		this.stockCandidateService = stockCandidateService;
 	}
 
@@ -70,17 +78,14 @@ public class DemandCandiateHandler implements CandidateHandler
 	}
 
 	/**
-	 * Persists (updates or creates) the given demand candidate and also it's <b>child</b> stock candidate.
-	 *
-	 * @param demandCandidate
-	 * @return
+	 * Persists (updates or creates) the given demand candidate and also its <b>child</b> stock candidate.
 	 */
 	@Override
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate demandCandidate)
 	{
 		assertCorrectCandidateType(demandCandidate);
 
-		final Candidate demandCandidateWithId = candidateRepositoryCommands
+		final Candidate demandCandidateWithId = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
 
 		if (demandCandidateWithId.getQuantity().signum() == 0)
@@ -93,64 +98,61 @@ public class DemandCandiateHandler implements CandidateHandler
 		final int expectedStockSeqNo = demandCandidateWithId.getSeqNo() + 1;
 
 		final Candidate childStockWithDemand;
+		final Candidate childStockWithDemandDelta;
 
 		final Optional<Candidate> possibleChildStockCandidate = candidateRepository.retrieveSingleChild(demandCandidateWithId.getId());
 		if (possibleChildStockCandidate.isPresent())
 		{
-			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* candidate
-			childStockWithDemand = stockCandidateService
-					.updateStock(
-							demandCandidateWithId, () -> {
-								// don't check if we might create a new stock candidate, because we know we don't.
-								// Instead we might run into trouble with CandidateRepository.retrieveExact() and multiple matching records.
-								// So get the one that we know already exists and just update its quantity
-								final Candidate childStockCandidate = possibleChildStockCandidate.get();
-								return candidateRepositoryCommands
-										.updateQty(
-												childStockCandidate
-														.withQuantity(
-																childStockCandidate.getQuantity().subtract(demandCandidateWithId.getQuantity())));
-							});
+			childStockWithDemand = possibleChildStockCandidate.get().withQuantity(demandCandidate.getQuantity().negate());
+			childStockWithDemandDelta = stockCandidateService.updateQty(childStockWithDemand);
 		}
-
 		else
 		{
-			childStockWithDemand = stockCandidateService.addOrUpdateStock(
-					demandCandidate
-							.withSeqNo(expectedStockSeqNo)
-							.withQuantity(demandCandidateWithId.getQuantity().negate())
-							.withParentId(demandCandidateWithId.getId()));
+			// check if there is a supply record with the same demand detail and material descriptor
+			final Candidate existingSupplyParentStockWithoutParentId = retrieveSupplyParentStockWithoutParentIdOrNull(demandCandidateWithId);
+			if (existingSupplyParentStockWithoutParentId != null)
+			{
+				//
+				final Candidate existingSupplyParentStockWithUpdatedQty = existingSupplyParentStockWithoutParentId
+						.withQuantity(existingSupplyParentStockWithoutParentId.getQuantity().subtract(demandCandidateWithId.getQuantity()))
+						.withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID);
+
+				childStockWithDemandDelta = stockCandidateService.updateQty(existingSupplyParentStockWithUpdatedQty);
+				childStockWithDemand = existingSupplyParentStockWithUpdatedQty;
+			}
+			else
+			{
+				final Candidate newDemandCandidateChild = stockCandidateService.createStockCandidate(demandCandidateWithId.withNegatedQuantity());
+				childStockWithDemandDelta = candidateRepositoryWriteService
+						.addOrUpdatePreserveExistingSeqNo(newDemandCandidateChild);
+				childStockWithDemand = childStockWithDemandDelta.withQuantity(newDemandCandidateChild.getQuantity());
+			}
 		}
+
+		candidateRepositoryWriteService
+				.updateCandidateById(childStockWithDemand.withParentId(demandCandidateWithId.getId()));
+
+		stockCandidateService
+				.applyDeltaToMatchingLaterStockCandidates(childStockWithDemandDelta);
 
 		final Candidate demandCandidateToReturn;
 
-		if (childStockWithDemand.getSeqNo() != expectedStockSeqNo)
+		if (childStockWithDemandDelta.getSeqNo() != expectedStockSeqNo)
 		{
 			// there was already a stock candidate which already had a seqNo.
 			// keep it and in turn update the demandCandidate's seqNo accordingly
 			demandCandidateToReturn = demandCandidate
-					.withSeqNo(childStockWithDemand.getSeqNo() - 1);
-			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(demandCandidateToReturn);
+					.withSeqNo(childStockWithDemandDelta.getSeqNo() - 1);
+			candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(demandCandidateToReturn);
 		}
 		else
 		{
 			demandCandidateToReturn = demandCandidateWithId;
 		}
 
-		if (demandCandidate.getType() == CandidateType.DEMAND)
+		if (demandCandidateWithId.getType() == CandidateType.DEMAND)
 		{
-			final BigDecimal availableQuantity = candidateRepository.retrieveAvailableStock(demandCandidate.getMaterialDescriptor());
-			final boolean demandExceedsAvailableQty = demandCandidate.getQuantity().compareTo(availableQuantity) > 0;
-
-			if (demandExceedsAvailableQty)
-			{
-				// there would be no more stock left, so
-				// notify whoever is in charge that we have a demand to balance
-				final BigDecimal requiredAdditionalQty = demandCandidate.getQuantity().subtract(availableQuantity);
-
-				final MaterialDemandEvent materialDemandEvent = MaterialDemandEventCreator.createMaterialDemandEvent(demandCandidateWithId, requiredAdditionalQty);
-				materialEventService.fireEvent(materialDemandEvent);
-			}
+			fireSupplyRequiredEventIfQtyBelowZero(demandCandidateWithId);
 		}
 		return demandCandidateToReturn;
 	}
@@ -163,5 +165,51 @@ public class DemandCandiateHandler implements CandidateHandler
 				type == CandidateType.DEMAND || type == CandidateType.UNRELATED_DECREASE,
 				"Given parameter 'demandCandidate' has type=%s; demandCandidate=%s",
 				type, demandCandidate);
+	}
+
+	private Candidate retrieveSupplyParentStockWithoutParentIdOrNull(@NonNull final Candidate demandCandidateWithId)
+	{
+		final CandidatesQuery queryForExistingSupply = CandidatesQuery.builder()
+				.type(CandidateType.SUPPLY)
+				.demandDetail(demandCandidateWithId.getDemandDetail())
+				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(demandCandidateWithId.getMaterialDescriptor()))
+				.build();
+
+		final Candidate existingSupplyParentStockWithoutOwnParentId;
+		final Candidate existingSupply = candidateRepository.retrieveLatestMatchOrNull(queryForExistingSupply);
+		if (existingSupply != null && existingSupply.getParentId() > 0)
+		{
+			final Candidate existingSupplyParentStock = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(existingSupply.getParentId()));
+			if (existingSupplyParentStock.getParentId() > 0)  // we only want to dock with currently "dangling" stock records
+			{
+				existingSupplyParentStockWithoutOwnParentId = null;
+			}
+			else
+			{
+				existingSupplyParentStockWithoutOwnParentId = existingSupplyParentStock;
+			}
+		}
+		else
+		{
+			existingSupplyParentStockWithoutOwnParentId = null;
+		}
+		return existingSupplyParentStockWithoutOwnParentId;
+	}
+
+	private void fireSupplyRequiredEventIfQtyBelowZero(@NonNull final Candidate demandCandidateWithId)
+	{
+		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
+
+		final BigDecimal availableQuantityAfterDemandWasApplied = stockRepository.retrieveAvailableStockQtySum(query);
+
+		if (availableQuantityAfterDemandWasApplied.signum() < 0)
+		{
+			final BigDecimal requiredQty = availableQuantityAfterDemandWasApplied.negate();
+
+			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
+					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty);
+			materialEventService.postEventAfterNextCommit(supplyRequiredEvent);
+		}
 	}
 }

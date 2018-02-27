@@ -27,8 +27,11 @@ public class AD_Process_Para
 
 		final boolean centrallyMaintained = pp.isCentrallyMaintained();
 		final I_AD_Element adElement = pp.getAD_Element();
-
-		pp.setColumnName(adElement.getColumnName());
+		
+		final String elementColumnName = adElement.getColumnName();
+		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", adElement);
+		
+		pp.setColumnName(elementColumnName);
 		if (centrallyMaintained || Check.isEmpty(pp.getName()))
 			pp.setName(adElement.getName());
 		if (centrallyMaintained || Check.isEmpty(pp.getDescription()))

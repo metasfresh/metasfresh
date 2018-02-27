@@ -28,7 +28,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -926,8 +926,8 @@ public class LUTUProducerDestinationTransferTests
 
 	/**
 	 * Sets up the transfer so that there will be 85 unloaded, but on the target side there is just space for 5.
-	 * Then, from the unloader there will be one {@link IHUTransaction} with 5 which will in consequence completely fill the target.
-	 * Then the second {@link IHUTransaction} with with the remaining 80 that were also unloaded will come in.<br>
+	 * Then, from the unloader there will be one {@link IHUTransactionCandidate} with 5 which will in consequence completely fill the target.
+	 * Then the second {@link IHUTransactionCandidate} with with the remaining 80 that were also unloaded will come in.<br>
 	 * This rest verifies that those 80 won't be loaded <b>and</b> that the destination HU's HA item's qty will be 1 (and not two because of the two incoming transactions).
 	 *
 	 */

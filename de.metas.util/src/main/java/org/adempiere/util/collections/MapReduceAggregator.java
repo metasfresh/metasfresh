@@ -13,11 +13,11 @@ package org.adempiere.util.collections;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -25,10 +25,13 @@ package org.adempiere.util.collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.apache.commons.collections4.map.LRUMap;
+
+import lombok.NonNull;
 
 /**
  * An aggregator which takes items as input and group them.
@@ -49,7 +52,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	//
 	// Configuration
 	private boolean _configurable = true;
-	private IAggregationKeyBuilder<ItemType> _itemAggregationKeyBuilder;
+	private Function<ItemType, Object> _itemAggregationKeyBuilder;
 
 	//
 	// Status
@@ -112,13 +115,18 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 *
 	 * @param itemAggregationKeyBuilder
 	 */
-	public final void setItemAggregationKeyBuilder(final IAggregationKeyBuilder<ItemType> itemAggregationKeyBuilder)
+	public final void setItemAggregationKeyBuilder(@NonNull final IAggregationKeyBuilder<ItemType> itemAggregationKeyBuilder)
+	{
+		setItemAggregationKeyBuilder(itemAggregationKeyBuilder::buildKey);
+	}
+
+	public final void setItemAggregationKeyBuilder(@NonNull final Function<ItemType, Object> itemAggregationKeyBuilder)
 	{
 		assertConfigurable();
 		this._itemAggregationKeyBuilder = itemAggregationKeyBuilder;
 	}
 
-	protected final IAggregationKeyBuilder<ItemType> getItemAggregationKeyBuilder()
+	private final Function<ItemType, Object> getItemAggregationKeyBuilder()
 	{
 		return this._itemAggregationKeyBuilder;
 	}
@@ -202,7 +210,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 		_countItems++;
 	}
 
-	public MapReduceAggregator<GroupType, ItemType> addAll(final Iterator<ItemType> items)
+	public final MapReduceAggregator<GroupType, ItemType> addAll(final Iterator<ItemType> items)
 	{
 		Check.assumeNotNull(items, "items not null");
 		while (items.hasNext())
@@ -221,8 +229,8 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 */
 	private final Object createItemHashKey(final ItemType item)
 	{
-		final IAggregationKeyBuilder<ItemType> itemAggregationKeyBuilder = getItemAggregationKeyBuilder();
-		final Object itemHashKey = itemAggregationKeyBuilder.buildKey(item);
+		final Function<ItemType, Object> itemAggregationKeyBuilder = getItemAggregationKeyBuilder();
+		final Object itemHashKey = itemAggregationKeyBuilder.apply(item);
 		return itemHashKey;
 	}
 

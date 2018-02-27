@@ -15,7 +15,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -443016053L;
+	private static final long serialVersionUID = -989610355L;
 
     /** Standard Constructor */
     public X_RV_HU_Quantities (Properties ctx, int RV_HU_Quantities_ID, String trxName)
@@ -190,7 +190,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
 	}
 
-	/** Set Produkt-Kategorie.
+	/** Set Produkt Kategorie.
 		@param M_Product_Category_ID 
 		Kategorie eines Produktes
 	  */
@@ -203,7 +203,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
 	}
 
-	/** Get Produkt-Kategorie.
+	/** Get Produkt Kategorie.
 		@return Kategorie eines Produktes
 	  */
 	@Override
@@ -334,9 +334,9 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 		return bd;
 	}
 
-	/** Set Bestellte Menge.
+	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
-		Bestellte Menge
+		Bestellt/ Beauftragt
 	  */
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
@@ -344,8 +344,8 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellte Menge.
-		@return Bestellte Menge
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
 	  */
 	@Override
 	public java.math.BigDecimal getQtyOrdered () 
@@ -356,9 +356,9 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 		return bd;
 	}
 
-	/** Set Reservierte Menge.
+	/** Set Offen.
 		@param QtyReserved 
-		Reservierte Menge
+		Offene Menge
 	  */
 	@Override
 	public void setQtyReserved (java.math.BigDecimal QtyReserved)
@@ -366,8 +366,8 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 		set_Value (COLUMNNAME_QtyReserved, QtyReserved);
 	}
 
-	/** Get Reservierte Menge.
-		@return Reservierte Menge
+	/** Get Offen.
+		@return Offene Menge
 	  */
 	@Override
 	public java.math.BigDecimal getQtyReserved () 

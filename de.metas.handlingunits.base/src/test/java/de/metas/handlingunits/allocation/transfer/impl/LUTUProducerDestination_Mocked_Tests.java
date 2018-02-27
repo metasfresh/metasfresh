@@ -31,7 +31,7 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -55,7 +55,7 @@ public class LUTUProducerDestination_Mocked_Tests
 	Services services;
 
 	@Mocked
-	IHUTransaction luTransaction;
+	IHUTransactionCandidate luTransaction;
 
 	@Mocked
 	I_M_HU luHU;
@@ -73,7 +73,7 @@ public class LUTUProducerDestination_Mocked_Tests
 	AllocationUtils allocationUtils;
 
 	/**
-	 * Verifies that {@link LUTUProducerDestination#loadHU(I_M_HU, IAllocationRequest)} creates a {@link IHUTransaction} for the given LU handling unit,<br>
+	 * Verifies that {@link LUTUProducerDestination#loadHU(I_M_HU, IAllocationRequest)} creates a {@link IHUTransactionCandidate} for the given LU handling unit,<br>
 	 * and that this transaction is also added to the method's return value (task 06748).
 	 */
 	@Test

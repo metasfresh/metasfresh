@@ -31,6 +31,7 @@ import java.util.concurrent.Callable;
 
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.POWrapper;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -218,6 +219,7 @@ public final class POInfo implements Serializable
 	 * If table has composed primary key, this variable will be set to null
 	 */
 	private String m_keyColumnName = null;
+	private int firstValidId = 0;
 
 	/** Table needs keep log */
 	private boolean m_IsChangeLog = false;
@@ -230,13 +232,6 @@ public final class POInfo implements Serializable
 	private String sqlSelect;
 
 	private POTrlInfo trlInfo;
-//	/**
-//	 * True if at least one column is translated
-//	 */
-//	private boolean translated = false;
-//	private ImmutableList<String> translatedColumnNames = null; // built on demand
-//	private Optional<String> sqlSelectTrlByIdAndLanguage;  // built on demand
-//	private Optional<String> sqlSelectTrlById;  // built on demand
 
 	/**
 	 * Load Table/Column Info into this instance. If the select returns no result, nothing is loaded and no error is raised.
@@ -438,6 +433,16 @@ public final class POInfo implements Serializable
 			m_keyColumnNames = Collections.emptyList();
 			m_keyColumnName = null;
 		}
+		
+		// First valid ID
+		if(m_keyColumnName != null)
+		{
+			firstValidId = POWrapper.getFirstValidIdByColumnName(m_keyColumnName);
+		}
+		else
+		{
+			firstValidId = 0;
+		}
 
 		//
 		// Setup some pre-built SQLs which are frequently used
@@ -545,6 +550,11 @@ public final class POInfo implements Serializable
 	public String[] getKeyColumnNamesAsArray()
 	{
 		return m_keyColumnNames.toArray(new String[m_keyColumnNames.size()]);
+	}
+	
+	public int getFirstValidId()
+	{
+		return firstValidId;
 	}
 
 	/**

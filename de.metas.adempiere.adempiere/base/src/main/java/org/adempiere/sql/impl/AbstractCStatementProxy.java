@@ -30,6 +30,7 @@ import java.sql.Statement;
 
 import javax.sql.RowSet;
 
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
@@ -54,8 +55,6 @@ import org.compiere.util.Trx;
 
 	public AbstractCStatementProxy(final CStatementVO vo)
 	{
-		super();
-
 		if (vo == null)
 		{
 			throw new DBException("CStatementVO shall not be null");
@@ -434,6 +433,8 @@ import org.compiere.util.Trx;
 	{
 		final String sqlConverted = DB.getDatabase().convertStatement(sql);
 		p_vo.setSql(sqlConverted);
+
+		MigrationScriptFileLoggerHolder.logMigrationScript(sql);
 
 		return sqlConverted;
 	}

@@ -10,12 +10,12 @@ package de.metas.contracts.interceptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,12 +41,11 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
@@ -59,7 +58,6 @@ public class C_Flatrate_DataEntry
 	private static final String MSG_DATA_ENTRY_EXISTING_CORRECTION_ENTRY_0P = "DataEntry_Existing_Correction_Entry";
 	public static final String MSG_DATA_ENTRY_EXISTING_CLOSING_ENTRY_0P = "DataEntry_Existing_Closing_Entry";
 
-	
 	public static final transient C_Flatrate_DataEntry instance = new C_Flatrate_DataEntry();
 
 	private static final List<String> DATAENTRY_TYPES_InvoiceCandidatesRelated = ImmutableList
@@ -69,24 +67,24 @@ public class C_Flatrate_DataEntry
 	{
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Flatrate_DataEntry.COLUMNNAME_ActualQty, I_C_Flatrate_DataEntry.COLUMNNAME_Qty_Reported })
+	@ModelChange( //
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_Flatrate_DataEntry.COLUMNNAME_ActualQty, I_C_Flatrate_DataEntry.COLUMNNAME_Qty_Reported })
 	public void updateDataEntry(final I_C_Flatrate_DataEntry dataEntry)
 	{
 		final I_C_Flatrate_Term term = dataEntry.getC_Flatrate_Term();
 
-		if (term.getC_Flatrate_Conditions_ID() < 0 || term.getC_UOM_ID() != dataEntry.getC_UOM_ID())
+		if (term.getC_UOM_ID() != dataEntry.getC_UOM_ID())
 		{
 			return; // nothing to do
 		}
 
-		final I_C_Flatrate_Conditions conditions = term.getC_Flatrate_Conditions();
-
-		if (!X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(conditions.getType_Conditions()))
+		if (X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions())
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_HoldingFee.equals(term.getType_Conditions()))
 		{
 			final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 			flatrateBL.updateEntry(dataEntry);
 		}
-
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
@@ -191,7 +189,7 @@ public class C_Flatrate_DataEntry
 		{
 			return;
 		}
-		
+
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 		flatrateBL.beforeCompleteDataEntry(dataEntry);
 	}

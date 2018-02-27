@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1607068852L;
+	private static final long serialVersionUID = -413006417L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -33,11 +33,14 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 			setC_Tax_ID (0);
 			setC_UOM_ID (0); // @#C_UOM_ID@
 			setDateOrdered (new Timestamp( System.currentTimeMillis() )); // @DateOrdered@
+			setEnforcePriceLimit (false); // N
 			setFreightAmt (BigDecimal.ZERO);
 			setFrequencyType (null); // M
 			setIsDescription (false); // N
+			setIsDiscountEditable (true); // Y
 			setIsGroupCompensationLine (false); // N
 			setIsManualPrice (false); // N
+			setIsPriceEditable (true); // Y
 			setIsSubscription (false); // N
 			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_OrderLine WHERE C_Order_ID=@C_Order_ID@
 			setLineNetAmt (BigDecimal.ZERO);
@@ -428,6 +431,43 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_Override_ID, org.compiere.model.I_C_PaymentTerm.class);
+	}
+
+	@Override
+	public void setC_PaymentTerm_Override(org.compiere.model.I_C_PaymentTerm C_PaymentTerm_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_Override_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm_Override);
+	}
+
+	/** Set Zahlungsbedingung abw..
+		@param C_PaymentTerm_Override_ID 
+		Die Bedingungen für die Bezahlung dieses Vorgangs
+	  */
+	@Override
+	public void setC_PaymentTerm_Override_ID (int C_PaymentTerm_Override_ID)
+	{
+		if (C_PaymentTerm_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentTerm_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaymentTerm_Override_ID, Integer.valueOf(C_PaymentTerm_Override_ID));
+	}
+
+	/** Get Zahlungsbedingung abw..
+		@return Die Bedingungen für die Bezahlung dieses Vorgangs
+	  */
+	@Override
+	public int getC_PaymentTerm_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
@@ -763,6 +803,32 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return bd;
 	}
 
+	/** Set Preislimit erzwingen.
+		@param EnforcePriceLimit 
+		Do not allow prices below the limit price
+	  */
+	@Override
+	public void setEnforcePriceLimit (boolean EnforcePriceLimit)
+	{
+		set_Value (COLUMNNAME_EnforcePriceLimit, Boolean.valueOf(EnforcePriceLimit));
+	}
+
+	/** Get Preislimit erzwingen.
+		@return Do not allow prices below the limit price
+	  */
+	@Override
+	public boolean isEnforcePriceLimit () 
+	{
+		Object oo = get_Value(COLUMNNAME_EnforcePriceLimit);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Frachtbetrag.
 		@param FreightAmt 
 		Freight Amount 
@@ -937,6 +1003,32 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return false;
 	}
 
+	/** Set Discount Editable.
+		@param IsDiscountEditable 
+		Allow user to change the discount
+	  */
+	@Override
+	public void setIsDiscountEditable (boolean IsDiscountEditable)
+	{
+		set_Value (COLUMNNAME_IsDiscountEditable, Boolean.valueOf(IsDiscountEditable));
+	}
+
+	/** Get Discount Editable.
+		@return Allow user to change the discount
+	  */
+	@Override
+	public boolean isDiscountEditable () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDiscountEditable);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Group Compensation Line.
 		@param IsGroupCompensationLine Group Compensation Line	  */
 	@Override
@@ -997,6 +1089,32 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isManualPrice () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsManualPrice);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Price Editable.
+		@param IsPriceEditable 
+		Allow user to change the price
+	  */
+	@Override
+	public void setIsPriceEditable (boolean IsPriceEditable)
+	{
+		set_Value (COLUMNNAME_IsPriceEditable, Boolean.valueOf(IsPriceEditable));
+	}
+
+	/** Get Price Editable.
+		@return Allow user to change the price
+	  */
+	@Override
+	public boolean isPriceEditable () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPriceEditable);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -1626,9 +1744,9 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return bd;
 	}
 
-	/** Set Bestellte Menge.
+	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
-		Ordered Quantity
+		Bestellt/ Beauftragt
 	  */
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
@@ -1636,8 +1754,8 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellte Menge.
-		@return Ordered Quantity
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
 	  */
 	@Override
 	public java.math.BigDecimal getQtyOrdered () 
@@ -1667,9 +1785,9 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return bd;
 	}
 
-	/** Set Reservierte Menge.
+	/** Set Offen.
 		@param QtyReserved 
-		Reserved Quantity
+		Offene Menge
 	  */
 	@Override
 	public void setQtyReserved (java.math.BigDecimal QtyReserved)
@@ -1677,8 +1795,8 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		set_ValueNoCheck (COLUMNNAME_QtyReserved, QtyReserved);
 	}
 
-	/** Get Reservierte Menge.
-		@return Reserved Quantity
+	/** Get Offen.
+		@return Offene Menge
 	  */
 	@Override
 	public java.math.BigDecimal getQtyReserved () 

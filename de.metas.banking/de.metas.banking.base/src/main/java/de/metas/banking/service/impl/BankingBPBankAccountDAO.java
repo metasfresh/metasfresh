@@ -32,11 +32,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Bank;
 
 import de.metas.banking.service.IBankingBPBankAccountDAO;
-import de.metas.interfaces.I_C_BP_BankAccount;
 
 /**
  * @author al
@@ -56,7 +56,7 @@ public class BankingBPBankAccountDAO implements IBankingBPBankAccountDAO
 		return queryBuilder.create()
 				.first();
 	}
-	
+
 
 	@Override
 	public IQueryFilter<org.compiere.model.I_C_BP_BankAccount> createBankAccountsExcludingCashFilter(final Properties ctx)

@@ -82,7 +82,7 @@ public class MOrg extends X_AD_Org
 	public MOrg (Properties ctx, int AD_Org_ID, String trxName)
 	{
 		super(ctx, AD_Org_ID, trxName);
-		if (AD_Org_ID == 0)
+		if (is_new())
 		{
 		//	setValue (null);
 		//	setName (null);
@@ -108,7 +108,7 @@ public class MOrg extends X_AD_Org
 	 */
 	public MOrg (MClient client, String name)
 	{
-		this (client.getCtx(), 0, client.get_TrxName());
+		this (client.getCtx(), -1, client.get_TrxName());
 		setAD_Client_ID (client.getAD_Client_ID());
 		setValue (name);
 		setName (name);

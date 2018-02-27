@@ -47,7 +47,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.IModelCacheInvalidationService;
 import org.adempiere.ad.dao.cache.ModelCacheInvalidationTiming;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
@@ -63,9 +63,9 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
@@ -234,6 +234,7 @@ public abstract class PO
 
 		if (ID == ID_NewInstanceNoInit)
 		{
+			// IMPORTANT: m_createNew is false at this point!
 			return;
 		}
 
@@ -1619,8 +1620,7 @@ public abstract class PO
 	 */
 	protected final void load(final int ID, final String trxName)
 	{
-		log.trace("Loading ID={}", ID);
-		if (ID > 0)
+		if (p_info.isSingleKeyColumnName() && ID >= p_info.getFirstValidId())
 		{
 			Check.assume(m_KeyColumns != null && m_KeyColumns.length == 1, "PO {} shall have one single primary key but it has: {}", this, m_KeyColumns);
 			m_IDs = new Object[] { ID };
@@ -2291,7 +2291,7 @@ public abstract class PO
 	{
 		final PO po = InterfaceWrapperHelper.getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
-		setClientOrg(po);
+		setClientOrg(po.getAD_Client_ID(), po.getAD_Org_ID());
 	}
 
 	/**
@@ -2703,7 +2703,6 @@ public abstract class PO
 		final boolean newRecordInitial = m_createNew;
 		trxManager.run(trxNameInitial, new TrxRunnable2()
 		{
-
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
@@ -2716,7 +2715,6 @@ public abstract class PO
 			{
 				// restoring settings and flags before failing
 				m_createNew = newRecordInitial;
-
 				throw e;
 			}
 
@@ -2932,9 +2930,16 @@ public abstract class PO
 
 		//
 		// Reset model cache
-		if(p_info.isSingleKeyColumnName())
+		if (p_info.isSingleKeyColumnName())
 		{
-			Services.get(IModelCacheInvalidationService.class).invalidateForModel(this, newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
+			try
+			{
+				Services.get(IModelCacheInvalidationService.class).invalidateForModel(this, newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
+			}
+			catch (final Exception ex)
+			{
+				log.warn("Cache invalidation on new/change failed for {}. Ignored.", this, ex);
+			}
 		}
 
 		//
@@ -3331,18 +3336,15 @@ public abstract class PO
 		//
 		// We are registering a fallback trx listener: in case the transaction fails we need to revert IDs to their old values
 		final ITrx trx = get_TrxManager().get(m_trxName, OnTrxMissingPolicy.Fail);
-		trx.getTrxListenerManager().registerListener(
-				true,  // weak because in case the object is not referenced anymore there is no point to update it's status
-				new TrxListenerAdapter()
-				{
 
-					@Override
-					public void afterRollback(final ITrx trx)
-					{
-						// revert ID
-						set_ID(idOld);
-						m_createNew = createNewOld;
-					}
+		trx.getTrxListenerManager()
+				.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerWeakly(true) // weak because in case the object is not referenced anymore there is no point to update it's status
+				.registerHandlingMethod(transaction -> {
+
+					set_ID(idOld); // revert ID
+					m_createNew = createNewOld;
 				});
 
 		return true;
@@ -3953,7 +3955,7 @@ public abstract class PO
 		// Create cache invalidation request
 		// (we have to do it here, before we reset all fields)
 		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		final CacheInvalidateRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName() ?
+		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName() ?
 				cacheInvalidationService.createRequest(this, ModelCacheInvalidationTiming.DELETE)
 				: null;
 
@@ -3988,9 +3990,16 @@ public abstract class PO
 
 		//
 		// Fire cache invalidation event, as last thing
-		if(cacheInvalidateRequest != null)
+		if (cacheInvalidateRequest != null)
 		{
-			cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.DELETE);
+			try
+			{
+				cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.DELETE);
+			}
+			catch (final Exception ex)
+			{
+				log.warn("Cache invalidation on delete failed for {}. Ignored.", cacheInvalidateRequest, ex);
+			}
 		}
 	}
 
@@ -4045,7 +4054,7 @@ public abstract class PO
 
 	private boolean is_Translatable()
 	{
-		if(!p_info.getTrlInfo().isTranslated())
+		if (!p_info.getTrlInfo().isTranslated())
 		{
 			return false;
 		}
@@ -4075,7 +4084,7 @@ public abstract class PO
 		}
 
 		final boolean ok = POTrlRepository.instance.insertTranslations(p_info.getTrlInfo(), get_ID());
-		if(ok)
+		if (ok)
 		{
 			m_translations = null; // reset translations cache
 		}
@@ -4094,13 +4103,13 @@ public abstract class PO
 	private boolean updateTranslations()
 	{
 		// Not a translation table
-		if(!is_Translatable())
+		if (!is_Translatable())
 		{
 			return true; // OK
 		}
 
 		final boolean ok = POTrlRepository.instance.updateTranslations(this);
-		if(ok)
+		if (ok)
 		{
 			m_translations = null; // reset cached translations
 		}
@@ -4117,13 +4126,13 @@ public abstract class PO
 	private boolean deleteTranslations()
 	{
 		// Not a translation table
-		if(!is_Translatable())
+		if (!is_Translatable())
 		{
 			return true;
 		}
 
 		final boolean ok = POTrlRepository.instance.deleteTranslations(p_info.getTrlInfo(), get_ID());
-		if(ok)
+		if (ok)
 		{
 			m_translations = NullModelTranslationMap.instance; // reset cached translations
 		}

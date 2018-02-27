@@ -10,12 +10,12 @@ package de.metas.payment.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -69,7 +69,6 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class, paySelection)
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelection.getC_PaySelection_ID())
-				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_Processed, true)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_C_PaySelectionLine.class);
@@ -100,7 +99,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		// Check if there are fact accounts created for each document
 		final IQueryBuilder<I_Fact_Acct> subQueryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Payment.class));
-		
+
 		queryBuilder
 				.addNotInSubQueryFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryBuilder.create()) // has no accounting
 				;
@@ -117,28 +116,28 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.list();
 
 	}
-	
+
 	@Override
 	public List<I_C_Payment> retrievePayments(de.metas.adempiere.model.I_C_Invoice invoice)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-		
-		
+
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_C_Payment> queryBuilder = queryBL.createQueryBuilder(I_C_Payment.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter();
 
 		final boolean isReceipt = invoice.isSOTrx();
-		
+
 		queryBuilder
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, invoice.getC_BPartner_ID()) // C_BPartner_ID
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
 				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed)  // DocStatus in ('CO', 'CL')
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, isReceipt); // Matching DocType
-				
-	
+
+
 		final IQuery<I_C_AllocationLine> allocationsQuery = queryBL.createQueryBuilder(I_C_AllocationLine.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
@@ -146,21 +145,21 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		final IQueryFilter<I_C_Payment> allocationFilter = queryBL.createCompositeQueryFilter(I_C_Payment.class)
 				.addInSubQueryFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, I_C_AllocationLine.COLUMNNAME_C_Payment_ID, allocationsQuery);
-		
+
 
 		final ICompositeQueryFilter<I_C_Payment> linkedPayments = queryBL.createCompositeQueryFilter(I_C_Payment.class).setJoinOr()
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
 				.addFilter(allocationFilter);
 
-		queryBuilder.filter(linkedPayments);			
+		queryBuilder.filter(linkedPayments);
 
 		// ordering by DocumentNo
 		final IQueryOrderBy orderBy = queryBuilder.orderBy().addColumn(I_C_Payment.COLUMNNAME_DocumentNo).createQueryOrderBy();
-		
+
 		return queryBuilder
 				.create()
 				.setOrderBy(orderBy)
 				.list();
-		
+
 	}
 }

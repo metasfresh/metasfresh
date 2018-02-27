@@ -13,15 +13,14 @@ package de.metas.async.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -35,14 +34,14 @@ import de.metas.async.processor.IQueueProcessorsExecutor;
 @Validator(I_C_Queue_Processor.class)
 public class C_Queue_Processor
 {
-	public void processorChanged(final I_C_Queue_Processor queueProcessorDef)
-	{
-	}
-
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void processorDeleted(final I_C_Queue_Processor queueProcessorDef)
 	{
-		final IQueueProcessorsExecutor executor = Services.get(IQueueProcessorExecutorService.class).getExecutor();
-		executor.removeQueueProcessor(queueProcessorDef.getC_Queue_Processor_ID());
+		final IQueueProcessorExecutorService queueProcessorExecutorService = Services.get(IQueueProcessorExecutorService.class);
+		if (queueProcessorExecutorService.isInitialized())
+		{
+			final IQueueProcessorsExecutor executor = queueProcessorExecutorService.getExecutor();
+			executor.removeQueueProcessor(queueProcessorDef.getC_Queue_Processor_ID());
+		}
 	}
 }

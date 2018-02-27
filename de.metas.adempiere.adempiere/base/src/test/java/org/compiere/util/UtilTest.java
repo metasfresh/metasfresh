@@ -76,7 +76,7 @@ public class UtilTest
 		final String actual = Util.cleanAmp(input);
 		Assert.assertEquals("Invalid result for input: " + input, expected, actual);
 	}
-	
+
 	@Test
 	public void lpadZero_EmptyStringTest()
 	{
@@ -85,7 +85,7 @@ public class UtilTest
 
 		assertThat(Util.lpadZero(emptyString, 10, "This Is An Empty String")).isEqualTo(zeroString);
 	}
-	
+
 	@Test(expected = AdempiereException.class)
 	public void lpadZero_StringExceedingSizeTest()
 	{
@@ -94,7 +94,7 @@ public class UtilTest
 		Util.lpadZero(value, 2, "This Is An Empty String");
 
 	}
-	
+
 	@Test
 	public void lpadZero_DefaultStringTest()
 	{
@@ -104,8 +104,6 @@ public class UtilTest
 		assertThat(Util.lpadZero(value, 6, "This Is An Empty String")).isEqualTo(zeroString);
 	}
 
-	
-	
 	@Test
 	public void rpadZero_EmptyStringTest()
 	{
@@ -114,7 +112,7 @@ public class UtilTest
 
 		assertThat(Util.rpadZero(emptyString, 10, "This Is An Empty String")).isEqualTo(zeroString);
 	}
-	
+
 	@Test(expected = AdempiereException.class)
 	public void rpadZero_StringExceedingSizeTest()
 	{
@@ -123,7 +121,7 @@ public class UtilTest
 		Util.rpadZero(value, 2, "This Is An Empty String");
 
 	}
-	
+
 	@Test
 	public void rpadZero_DefaultStringTest()
 	{
@@ -131,6 +129,32 @@ public class UtilTest
 		final String zeroString = "123000";
 
 		assertThat(Util.rpadZero(value, 6, "This Is An Empty String")).isEqualTo(zeroString);
+	}
+
+	@Test
+	public void minimumOfThreeTest()
+	{
+		final int minimumNumber = 1;
+		final int mediumNumber = 2;
+		final int maximumNumber = 3;
+
+		// 3 different numbers in any order
+		assertThat(Util.getMinimumOfThree(minimumNumber, mediumNumber, maximumNumber)).isEqualTo(minimumNumber);
+		assertThat(Util.getMinimumOfThree(minimumNumber, maximumNumber, mediumNumber)).isEqualTo(minimumNumber);
+		assertThat(Util.getMinimumOfThree(mediumNumber, minimumNumber, maximumNumber)).isEqualTo(minimumNumber);
+		assertThat(Util.getMinimumOfThree(mediumNumber, maximumNumber, minimumNumber)).isEqualTo(minimumNumber);
+		assertThat(Util.getMinimumOfThree(maximumNumber, minimumNumber, mediumNumber)).isEqualTo(minimumNumber);
+		assertThat(Util.getMinimumOfThree(maximumNumber, mediumNumber, minimumNumber)).isEqualTo(minimumNumber);
+
+		// 3 equal numbers
+		assertThat(Util.getMinimumOfThree(minimumNumber, minimumNumber, minimumNumber)).isEqualTo(minimumNumber);
+
+		// 1 minimum, 2 equals and greater
+		assertThat(Util.getMinimumOfThree(minimumNumber, mediumNumber, mediumNumber)).isEqualTo(minimumNumber);
+
+		// 2 minimums, 1 greater
+		assertThat(Util.getMinimumOfThree(minimumNumber, minimumNumber, mediumNumber)).isEqualTo(minimumNumber);
+		
 	}
 
 }

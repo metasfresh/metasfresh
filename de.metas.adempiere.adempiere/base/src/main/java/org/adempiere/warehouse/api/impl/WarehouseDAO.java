@@ -13,15 +13,14 @@ package org.adempiere.warehouse.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -33,18 +32,25 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_M_Warehouse_PickingGroup;
 import org.eevolution.model.I_M_Warehouse_Routing;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -125,25 +131,25 @@ public class WarehouseDAO implements IWarehouseDAO
 	public List<I_M_Warehouse> retrieveWarehouses(final Properties ctx, final String docBaseType)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		
+
 		final IQuery<I_M_Warehouse_Routing> queryWarehouseRoutingForDocBaseType = queryBL.createQueryBuilder(I_M_Warehouse_Routing.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Warehouse_Routing.COLUMNNAME_DocBaseType, docBaseType)
 				.create();
-		
+
 		final IQuery<I_M_Warehouse_Routing> queryWarehouseRoutingAllActive = queryBL
-		                 .createQueryBuilder(I_M_Warehouse_Routing.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_M_Warehouse_Routing.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.create();
-		
+
 		final ICompositeQueryFilter<I_M_Warehouse> filterWarehouseRouting = queryBL.createCompositeQueryFilter(I_M_Warehouse.class)
 				.setJoinOr()
 				// warehouse shall have a routing to given DocBaseType
 				.addInSubQueryFilter(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, I_M_Warehouse_Routing.COLUMNNAME_M_Warehouse_ID, queryWarehouseRoutingForDocBaseType)
 				// or warehouse shall have no routing at all
 				.addNotInSubQueryFilter(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, I_M_Warehouse_Routing.COLUMNNAME_M_Warehouse_ID, queryWarehouseRoutingAllActive)
-				//
-				;
+		//
+		;
 
 		return queryBL.createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
@@ -236,5 +242,67 @@ public class WarehouseDAO implements IWarehouseDAO
 				.list(I_M_Warehouse.class);
 
 		return warehouses;
+	}
+
+	// TODO: implement a way to reset a cache when I_M_Warehouse_PickingGroup is changed
+	@Cached(cacheName = I_M_Warehouse.Table_Name)
+	public ImmutableList<WarehousePickingGroup> retrieveWarehouseGroups()
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final ImmutableSetMultimap<Integer, Integer> warehouseIdsByPickingGroupId = queryBL.createQueryBuilder(I_M_Warehouse.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_M_Warehouse.COLUMNNAME_M_Warehouse_PickingGroup_ID)
+				.create()
+				.listDistinct(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, I_M_Warehouse.COLUMNNAME_M_Warehouse_PickingGroup_ID)
+				.stream()
+				.map(record -> {
+					final int warehouseId = (int)record.get(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID);
+					final int warehousePickingGroupId = (int)record.get(I_M_Warehouse.COLUMNNAME_M_Warehouse_PickingGroup_ID);
+					return GuavaCollectors.entry(warehousePickingGroupId, warehouseId);
+				})
+				.collect(GuavaCollectors.toImmutableSetMultimap());
+
+		return queryBL.createQueryBuilder(I_M_Warehouse_PickingGroup.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(warehousePickingGroupPO -> WarehousePickingGroup.builder()
+						.id(warehousePickingGroupPO.getM_Warehouse_PickingGroup_ID())
+						.name(warehousePickingGroupPO.getName())
+						.description(warehousePickingGroupPO.getDescription())
+						.warehouseIds(warehouseIdsByPickingGroupId.get(warehousePickingGroupPO.getM_Warehouse_PickingGroup_ID()))
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	@Override
+	public WarehousePickingGroup getWarehousePickingGroupContainingWarehouseId(final int warehouseId)
+	{
+		return retrieveWarehouseGroups()
+				.stream()
+				.filter(warehousePickingGroup -> warehousePickingGroup.containsWarehouseId(warehouseId))
+				.findFirst().orElse(null);
+	}
+
+	@Override
+	public int retrieveLocatorIdByBarcode(final String barcode)
+	{
+		if (Check.isEmpty(barcode, true))
+		{
+			throw new AdempiereException("Invalid locator barcode: " + barcode);
+		}
+
+		try
+		{
+			final int locatorId = Integer.parseInt(barcode);
+			Check.assume(locatorId > 0, "locatorId > 0");
+			return locatorId;
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Invalid locator barcode: " + barcode, ex);
+		}
 	}
 }

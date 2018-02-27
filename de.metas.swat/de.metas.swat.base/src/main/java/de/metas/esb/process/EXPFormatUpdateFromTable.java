@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.esb.process;
 
@@ -13,12 +13,12 @@ package de.metas.esb.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,12 +38,12 @@ import org.compiere.util.DisplayType;
 
 import de.metas.esb.interfaces.I_EXP_Format;
 import de.metas.esb.interfaces.I_EXP_FormatLine;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * @author tsa
- * 
+ *
  */
 public class EXPFormatUpdateFromTable extends JavaProcess
 {
@@ -118,7 +118,7 @@ public class EXPFormatUpdateFromTable extends JavaProcess
 			final String whereClause = I_EXP_FormatLine.COLUMNNAME_EXP_Format_ID + "=?";
 			int newPosition = new Query(getCtx(), I_EXP_FormatLine.Table_Name, whereClause, get_TrxName())
 					.setParameters(format.getEXP_Format_ID())
-					.aggregate(I_EXP_FormatLine.COLUMNNAME_Position, Query.AGGREGATE_MAX, Integer.class);
+					.aggregate(I_EXP_FormatLine.COLUMNNAME_Position, Query.Aggregate.MAX, Integer.class);
 			newPosition += 10;
 			formatLine.setPosition(newPosition);
 		}

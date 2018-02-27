@@ -1,7 +1,9 @@
 package org.compiere.impexp;
 
 import java.util.List;
+import java.util.Objects;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -10,6 +12,9 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.Builder;
+import lombok.Getter;
 
 /**
  * A line from import file, which needs to be imported.
@@ -21,6 +26,9 @@ public class ImpDataLine
 {
 	private final String lineStr;
 	private final int fileLineNo;
+	@Getter
+	private final int dataImportId;
+	
 	private ImpFormat _impFormat;
 	private List<ImpDataCell> _values;
 
@@ -31,12 +39,17 @@ public class ImpDataLine
 	private ITableRecordReference importRecordRef;
 	private boolean toImport = true;
 
-	public ImpDataLine(final ImpFormat impFormat, final int fileLineNo, final String lineStr)
+	@Builder
+	private ImpDataLine(
+			final ImpFormat impFormat,
+			final int fileLineNo,
+			final String lineStr,
+			final int dataImportId)
 	{
-		super();
-
 		this.fileLineNo = fileLineNo;
 		this.lineStr = lineStr;
+		this.dataImportId = dataImportId;
+
 
 		this.setImpFormat(impFormat);
 	}
@@ -58,7 +71,7 @@ public class ImpDataLine
 
 	public synchronized void setImpFormat(final ImpFormat impFormat)
 	{
-		if (Check.equals(this._impFormat, impFormat))
+		if (Objects.equals(this._impFormat, impFormat))
 		{
 			return;
 		}
@@ -265,7 +278,7 @@ public class ImpDataLine
 	{
 		final ImpFormat impFormat = getImpFormat();
 		Check.assumeNotNull(impFormat, "impFormat not null");
-		Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
+		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
 		{
 			private Throwable error = null;
 			private ITableRecordReference importRecordRef;

@@ -187,11 +187,12 @@ public class HUSplitBuilder implements IHUSplitBuilder
 		// Request is configured with full qty on the CU key and upper limits for max split LU/TUs will be handled in the destination
 		final Function<IHUContext, IAllocationRequest> splitQtyRequestProvider = huContext -> createSplitAllocationRequest(huContext);
 
-		final List<I_M_HU> splitHUs = HUSplitBuilderCoreEngine
-				.of(huContextInitial,
-						getHUToSplit(),
-						splitQtyRequestProvider,
-						destination)
+		final List<I_M_HU> splitHUs = HUSplitBuilderCoreEngine.builder()
+				.huContextInitital(huContextInitial)
+				.huToSplit(getHUToSplit())
+				.requestProvider(splitQtyRequestProvider)
+				.destination(destination)
+				.build()
 				.withPropagateHUValues()
 				.withDocumentLine(documentLine)
 				.withTuPIItem(tuPIItem)

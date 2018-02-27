@@ -580,29 +580,6 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_ChangeOrCancelTerm = "ChangeOrCancelTerm";
 
 	/**
-	 * Set Vertrag Nr..
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setContractDocumentNo (java.lang.String ContractDocumentNo);
-
-	/**
-	 * Get Vertrag Nr..
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getContractDocumentNo();
-
-    /** Column definition for ContractDocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ContractDocumentNo = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "ContractDocumentNo", null);
-    /** Column name ContractDocumentNo */
-    public static final String COLUMNNAME_ContractDocumentNo = "ContractDocumentNo";
-
-	/**
 	 * Set Vertrags-Status.
 	 *
 	 * <br>Type: List
@@ -777,6 +754,31 @@ public interface I_C_Flatrate_Term
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "DocStatus", null);
     /** Column name DocStatus */
     public static final String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
+	 * Set Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDocumentNo (java.lang.String DocumentNo);
+
+	/**
+	 * Get Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocumentNo();
+
+    /** Column definition for DocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "DocumentNo", null);
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Streckengeschäft-Kunde.
@@ -1418,6 +1420,29 @@ public interface I_C_Flatrate_Term
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_StartDate = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "StartDate", null);
     /** Column name StartDate */
     public static final String COLUMNNAME_StartDate = "StartDate";
+
+	/**
+	 * Set Termination Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTerminationDate (java.sql.Timestamp TerminationDate);
+
+	/**
+	 * Get Termination Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getTerminationDate();
+
+    /** Column definition for TerminationDate */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_TerminationDate = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "TerminationDate", null);
+    /** Column name TerminationDate */
+    public static final String COLUMNNAME_TerminationDate = "TerminationDate";
 
 	/**
 	 * Set Termination Memo.

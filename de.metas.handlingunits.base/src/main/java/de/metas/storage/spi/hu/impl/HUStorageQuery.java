@@ -97,7 +97,7 @@ import lombok.NonNull;
 
 		// consider only VHUs
 		huQueryBuilder.setOnlyTopLevelHUs(false);
-		huQueryBuilder.addPIVersionToInclude(handlingUnitsDAO.getVirtual_HU_PI_ID());
+		huQueryBuilder.addPIVersionToInclude(handlingUnitsDAO.getVirtual_HU_PI_Version_ID());
 
 		// consider only those HUs which are supposed to be considered for (e.g. not "shipped")
 		final List<String> huStatusesQtyOnHand = Services.get(IHUStatusBL.class).getQtyOnHandStatuses();

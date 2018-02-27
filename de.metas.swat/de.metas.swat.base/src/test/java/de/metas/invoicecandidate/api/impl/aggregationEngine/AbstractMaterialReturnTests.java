@@ -62,7 +62,6 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 				.setPriceEntered(1)
 				.setQty(FIFTY.negate())
 				.setSOTrx(config_IsSOTrx())
-				.setAllowConsolidateInvoiceOnBPartner(true)
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
 				.setInstanceName("ic1")

@@ -4,7 +4,6 @@ package de.metas.fresh.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for Fresh_QtyOnHand_Line
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_F
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1396857293L;
+	private static final long serialVersionUID = 991918086L;
 
     /** Standard Constructor */
     public X_Fresh_QtyOnHand_Line (Properties ctx, int Fresh_QtyOnHand_Line_ID, String trxName)
@@ -24,15 +23,13 @@ public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_F
       super (ctx, Fresh_QtyOnHand_Line_ID, trxName);
       /** if (Fresh_QtyOnHand_Line_ID == 0)
         {
-			setDateDoc (new Timestamp( System.currentTimeMillis() ));
-// @DateDoc@
+			setDateDoc (new Timestamp( System.currentTimeMillis() )); // @DateDoc@
 			setFresh_QtyOnHand_ID (0);
 			setFresh_QtyOnHand_Line_ID (0);
 			setM_Product_ID (0);
 			setPP_Plant_ID (0);
 			setQtyCount (BigDecimal.ZERO);
-			setSeqNo (0);
-// 0
+			setSeqNo (0); // 0
         } */
     }
 

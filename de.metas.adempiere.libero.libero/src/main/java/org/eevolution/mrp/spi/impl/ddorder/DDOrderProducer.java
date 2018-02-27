@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,7 +39,7 @@ import org.eevolution.mrp.api.IMRPDAO;
 import org.springframework.stereotype.Service;
 
 import de.metas.document.IDocTypeDAO;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.ddorder.DDOrderUtil;
@@ -85,7 +87,7 @@ public class DDOrderProducer
 	}
 
 	/**
-	 * 
+	 *
 	 * @param pojo
 	 * @param request may be {@code null}. If not-null, then the method also does some {@link I_PP_MRP} related stuff that is likely to become obsolete soon.
 	 * @return
@@ -93,7 +95,7 @@ public class DDOrderProducer
 	private I_DD_Order createDDOrder(
 			@NonNull final DDOrder pojo,
 			@NonNull final Date dateOrdered,
-			final IMRPCreateSupplyRequest request)
+			@Nullable final IMRPCreateSupplyRequest request)
 	{
 		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper.create(Env.getCtx(), pojo.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_ThreadInherited);
 
@@ -130,12 +132,13 @@ public class DDOrderProducer
 
 		for (final DDOrderLine linePojo : pojo.getLines())
 		{
-			//
 			// Create DD Order Line
 			final I_DD_OrderLine ddOrderline = InterfaceWrapperHelper.newInstance(I_DD_OrderLine.class, ddOrder);
 			ddOrderline.setAD_Org_ID(pojo.getOrgId());
 			ddOrderline.setDD_Order(ddOrder);
 			ddOrderline.setC_OrderLineSO_ID(linePojo.getSalesOrderLineId());
+			ddOrderline.setC_BPartner_ID(linePojo.getBPartnerId());
+
 			if (linePojo.getSalesOrderLineId() > 0)
 			{
 				ddOrderline.setC_BPartner_ID(ddOrderline.getC_OrderLineSO().getC_BPartner_ID());

@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.agg.key.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +36,6 @@ import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
 import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.impl.AggregationKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
@@ -56,10 +54,7 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 			I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID,
 			I_C_Invoice_Candidate.COLUMNNAME_Bill_User_ID,
 			I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID,
-			// I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced, // 08511 workaround
-			// I_C_Invoice_Candidate.COLUMNNAME_DateAcct, // task 08437 // 08511 workaround
 			I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx,
-			// I_C_Invoice_Candidate.COLUMNNAME_M_PricingSystem_ID, // 08511 workaround
 			I_C_Invoice_Candidate.COLUMNNAME_DescriptionHeader, // 04258: header and footer added
 			I_C_Invoice_Candidate.COLUMNNAME_DescriptionBottom,
 			I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID,
@@ -69,7 +64,7 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 			I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override,
 
 			I_C_Invoice_Candidate.COLUMNNAME_POReference // task 07879
-			);
+	);
 
 	private ICHeaderAggregationKeyBuilder_OLD()
 	{
@@ -97,15 +92,11 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		return new AggregationKey(key, aggregationId);
 	}
 
-	/**
-	 * Note: this method assumes that {@link IInvoiceCandidateHandlerBL#setBPartnerData(I_C_Invoice_Candidate)} was already called, so that {@link I_C_Invoice_Candidate#COLUMN_AllowConsolidateInvoice}
-	 * has already its correct value (that was the problem of task 08512).
-	 */
 	private final List<Object> getValues(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-		final List<Object> values = new ArrayList<Object>();
+		final List<Object> values = new ArrayList<>();
 
 		final int invoiceDocTypeId = ic.getC_DocTypeInvoice_ID();
 		final int currencyId = ic.getC_Currency_ID();
@@ -113,23 +104,8 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		values.add(invoiceDocTypeId <= 0 ? 0 : invoiceDocTypeId);
 		values.add(ic.getAD_Org_ID());
 
-//		// task 07978: we incorporate the POReference if it is an actual PO
-//		// or if invoice consolidating is "not" allowed
-//		final boolean allowConsolidateInvoice = Services.get(IAggregationBL.class).isAllowConsolidateInvoice(ic);
-//		if (ic.isSOTrx() && allowConsolidateInvoice)
-//		{
-//			values.add(null);
-//		}
-//		else
-//		{
-//			values.add(ic.getPOReference());
-//		}
-
 		values.add(ic.getBill_BPartner_ID());
 		values.add(ic.getBill_Location_ID());
-
-		// task 08241: we want to be able to aggregate ICs with different Bill_User_IDs
-		// values.add(ic.getBill_User_ID());
 
 		values.add(currencyId <= 0 ? 0 : currencyId);
 
@@ -144,34 +120,12 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		// Pricing System
 		final int pricingSystemId = MPricingSystem.M_PricingSystem_ID_None; // 08511 workaround
 		values.add(pricingSystemId);
-		// final int pricingSystemId = ic.getM_PricingSystem_ID();
-		// values.add(pricingSystemId <= 0 ? 0 : pricingSystemId);
-
+		
 		values.add(invoiceCandBL.isTaxIncluded(ic)); // task 08451
 
-		// 04258 : header and footer added
-		// Boolean compact = InterfaceWrapperHelper.getDynAttribute(ic, HeaderAggregationKeyBuilder.HeaderAggregationKeyBuilder_IsCompact);
-		// if (compact == null)
-		// {
-		// compact = false;
-		// }
 		final Boolean compact = true;
 		values.add(compact ? toHashcode(ic.getDescriptionHeader()) : ic.getDescriptionHeader());
 		values.add(compact ? toHashcode(ic.getDescriptionBottom()) : ic.getDescriptionBottom());
-
-//		// 05350 : Make sure we have different aggregation keys for different orders if AllowConsolidateInvoice is set to 'N'
-//		values.add(allowConsolidateInvoice ? 0 : ic.getC_Order_ID());
-
-//		//
-//		// Append InOut Id to headerKey
-//		// task 07927..unless we actually want to consolidate multiple InOuts into one Invoice
-//		if (!allowConsolidateInvoice)
-//		{
-//			final IAggregationAttribute attribute = new AggregationAttribute_Attribute(AggregationEngine.ATTRIBUTE_CODE_AggregatePer_M_InOut_ID);
-//			final Evaluatee ctx = null; // does not matter
-//			final Object value = attribute.evaluate(ctx);
-//			values.add(value);
-//		}
 
 		return values;
 	}

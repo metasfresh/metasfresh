@@ -192,7 +192,7 @@ import de.metas.lock.api.LockOwner;
 		group.build();
 	}
 
-	public InvoiceCandidate2WorkpackageAggregator setAD_PInstance_ID(final int adPInstanceId)
+	public InvoiceCandidate2WorkpackageAggregator setAD_PInstance_Creator_ID(final int adPInstanceId)
 	{
 		_queueBlockBuilder.setAD_PInstance_Creator_ID(adPInstanceId);
 		return this;

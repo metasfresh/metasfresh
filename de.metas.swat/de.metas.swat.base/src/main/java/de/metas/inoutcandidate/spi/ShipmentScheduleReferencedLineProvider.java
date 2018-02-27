@@ -14,12 +14,12 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,12 +30,11 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  * Implementations create {@link ShipmentScheduleReferencedLine} instances for shipment schedules that reference a particular table.
  * They are automatically discovered and added to {@link ShipmentScheduleReferencedLineProvider} on startup.
  * <p>
- * Please annotate your implementations also with {@link Service} to avoid problems with spring junit testing.
- * 
+ * Please annotate your implementations also with {@link Service} to enable auto detection.
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Service
 public interface ShipmentScheduleReferencedLineProvider
 {
 	/**
@@ -46,7 +45,7 @@ public interface ShipmentScheduleReferencedLineProvider
 	/**
 	 * Provide a {@link ShipmentScheduleReferencedLine} that is based on the given {@code shipmentSchedule}'s references document(line).<br>
 	 * Please don't call this method directly. It is called from {@link ShipmentScheduleReferencedLineFactory#createFor(I_M_ShipmentSchedule)}.
-	 * 
+	 *
 	 * @param shipmentSchedule may not be {@code null}.
 	 * @return
 	 */

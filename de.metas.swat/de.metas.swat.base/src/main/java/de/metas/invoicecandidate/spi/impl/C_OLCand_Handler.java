@@ -237,7 +237,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final String trxName = InterfaceWrapperHelper.getTrxName(olc);
 
 		final List<I_C_Invoice_Candidate> ics = invoiceCandDAO.fetchInvoiceCandidates(ctx, I_C_OLCand.Table_Name, olc.getC_OLCand_ID(), trxName);
-		invoiceCandDAO.invalidateCands(ics, trxName);
+		invoiceCandDAO.invalidateCands(ics);
 	}
 
 	@Override
@@ -285,13 +285,13 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyDelivered(ic.getQtyOrdered());
 		ic.setDeliveryDate(ic.getDateOrdered());
 	}
-	
+
 	@Override
 	public PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate ic)
 	{
 		final I_C_OLCand olc = getOLCand(ic);
 		final IPricingResult pricingResult = Services.get(IOLCandBL.class).computePriceActual(olc, null, 0, olc.getDateCandidate());
-		
+
 		return PriceAndTax.builder()
 				.priceUOMId(pricingResult.getPrice_UOM_ID())
 				.priceActual(pricingResult.getPriceStd())

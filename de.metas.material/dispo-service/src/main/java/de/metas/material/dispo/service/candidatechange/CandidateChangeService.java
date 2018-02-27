@@ -50,7 +50,7 @@ public class CandidateChangeService
 
 	/**
 	 * Persists the given candidate and decides if further events shall be fired.
-	 * 
+	 *
 	 * @param candidate
 	 * @return
 	 */
@@ -59,7 +59,6 @@ public class CandidateChangeService
 		final CandidateHandler candidateChangeHandler = type2handler.get(candidate.getType());
 		if (candidateChangeHandler == null)
 		{
-
 			throw new AdempiereException("Given 'candidate' parameter has an unsupported type").appendParametersToMessage()
 					.setParameter("type", candidate.getType())
 					.setParameter("candidate", candidate);
@@ -77,7 +76,7 @@ public class CandidateChangeService
 		{
 			for (final CandidateType type : handler.getHandeledTypes())
 			{
-				builder.put(type, handler); // builder already prohibits duplicate keys :-)
+				builder.put(type, handler); // builder already prohibits duplicate keys
 			}
 		}
 		return builder.build();

@@ -13,11 +13,11 @@ package org.adempiere.ad.expression.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -25,9 +25,11 @@ package org.adempiere.ad.expression.api.impl;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpressionEvaluator;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -50,7 +52,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	private static final transient Logger logger = LogManager.getLogger(LogicExpressionEvaluator.class);
 
 	/** Internal marker for value not found */
-	private static final transient String VALUE_NotFound = new String("<<NOT FOUND>>"); // new String to make sure it's unique
+	static final transient String VALUE_NotFound = new String("<<NOT FOUND>>"); // new String to make sure it's unique
 
 	/* package */static interface BooleanValueSupplier
 	{
@@ -294,12 +296,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 
 			// Boolean evaluator
 			final String logicOperator = logicExpr.getOperator();
-			final BooleanEvaluator logicExprEvaluator = EVALUATORS_ByOperator.get(logicOperator);
-			if (logicExprEvaluator == null)
-			{
-				// shall not happen because expression was already compiled and validated
-				throw new ExpressionEvaluationException("Invalid operator: " + logicOperator);
-			}
+			final BooleanEvaluator logicExprEvaluator = getBooleanEvaluatorByOperator(logicOperator);
 
 			final Boolean result = logicExprEvaluator.evaluateOrNull(leftValueSupplier, rightValueSupplier);
 			logger.trace("expression {} => {}", logicExpr, result);
@@ -311,6 +308,17 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		}
 	}
 
+	static BooleanEvaluator getBooleanEvaluatorByOperator(final String logicOperator)
+	{
+		final BooleanEvaluator logicExprEvaluator = EVALUATORS_ByOperator.get(logicOperator);
+		if (logicExprEvaluator == null)
+		{
+			// shall not happen because expression was already compiled and validated
+			throw new ExpressionEvaluationException("Invalid operator: " + logicOperator);
+		}
+		return logicExprEvaluator;
+	}
+
 	/**
 	 * Evaluate Logic Tuple
 	 *
@@ -319,7 +327,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	 * @param value2
 	 * @return evaluation
 	 */
-	private boolean evaluateLogicTuple(final String valueObj1, final String operand, final String valueObj2)
+	static boolean evaluateLogicTuple(final String valueObj1, final String operand, final String valueObj2)
 	{
 		if (valueObj1 == null || operand == null || valueObj2 == null)
 		{
@@ -356,7 +364,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		}
 	}
 
-	private final <T> boolean evaluateLogicTupleForComparables(final Comparable<T> value1, final String operand, final T value2)
+	private static final <T> boolean evaluateLogicTupleForComparables(final Comparable<T> value1, final String operand, final T value2)
 	{
 		//
 		if (operand.equals(LogicTuple.OPERATOR_Equals))
@@ -414,6 +422,93 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		return s;
 	}
 
+	@Override
+	public ILogicExpression evaluatePartial(final Evaluatee params, final ILogicExpression expr)
+	{
+		final ExpressionEvaluationContext ctx = new ExpressionEvaluationContext(params, OnVariableNotFound.ReturnNoResult);
+		return evaluatePartial(ctx, expr);
+	}
+
+	private ILogicExpression evaluatePartial(final ExpressionEvaluationContext ctx, final ILogicExpression expr)
+	{
+		logger.trace("Partial evaluating {}", expr);
+
+		if (expr == null)
+		{
+			throw new ExpressionEvaluationException("Cannot evaluate null expression");
+		}
+		else if (expr.isConstant())
+		{
+			return expr;
+		}
+		else if (expr instanceof LogicTuple)
+		{
+			final LogicTuple tuple = (LogicTuple)expr;
+
+			final Object operand1 = tuple.getOperand1();
+			final String operand1Resolved = ctx.getValue(operand1);
+			final boolean isOperand1Resolved = operand1Resolved != VALUE_NotFound;
+			final Object newOperand1 = isOperand1Resolved ? operand1Resolved : operand1;
+
+			final Object operand2 = tuple.getOperand2();
+			final String operand2Resolved = ctx.getValue(operand2);
+			final boolean isOperand2Resolved = operand2Resolved != VALUE_NotFound;
+			final Object newOperand2 = isOperand2Resolved ? operand2Resolved : operand2;
+
+			if (isOperand1Resolved && isOperand2Resolved)
+			{
+				final boolean result = evaluateLogicTuple(operand1Resolved, tuple.getOperator(), operand2Resolved);
+				return ConstantLogicExpression.of(result);
+			}
+			else if(Objects.equals(operand1, operand1Resolved)
+					&& Objects.equals(operand2, operand2Resolved))
+			{
+				return tuple;
+			}
+			else
+			{
+				return LogicTuple.of(newOperand1, tuple.getOperator(), newOperand2);
+			}
+		}
+		else if (expr instanceof LogicExpression)
+		{
+			final LogicExpression logicExpr = (LogicExpression)expr;
+
+			final ILogicExpression leftExpression = logicExpr.getLeft();
+			final ILogicExpression newLeftExpression = evaluatePartial(ctx, leftExpression);
+
+			final ILogicExpression rightExpression = logicExpr.getRight();
+			final ILogicExpression newRightExpression = evaluatePartial(ctx, rightExpression);
+
+			final String logicOperator = logicExpr.getOperator();
+
+			if (newLeftExpression.isConstant() && newRightExpression.isConstant())
+			{
+				final BooleanEvaluator logicExprEvaluator = getBooleanEvaluatorByOperator(logicOperator);
+				final boolean result = logicExprEvaluator.evaluateOrNull(newLeftExpression::constantValue, newRightExpression::constantValue);
+				return ConstantLogicExpression.of(result);
+			}
+			else if (Objects.equals(leftExpression, newLeftExpression)
+					&& Objects.equals(rightExpression, newRightExpression))
+			{
+				return logicExpr;
+			}
+			else
+			{
+				return LogicExpression.of(newLeftExpression, logicOperator, newRightExpression);
+			}
+		}
+		else
+		{
+			throw new ExpressionEvaluationException("Unsupported ILogicExpression type: " + expr + " (class: " + expr.getClass() + ")");
+		}
+	}
+
+	//
+	//
+	//
+	//
+	//
 	private static final class ExpressionEvaluationContext
 	{
 		private final Evaluatee params;

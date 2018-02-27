@@ -25,7 +25,7 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -115,7 +115,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		final Map<Integer, I_M_HU_Item> itemId2AggregateItem = new HashMap<>();
-		final Map<Integer, IHUTransaction> itemId2Trx = new HashMap<>();
+		final Map<Integer, IHUTransactionCandidate> itemId2Trx = new HashMap<>();
 
 		loadResults.stream().flatMap(result -> result.getTransactions().stream())
 				.filter(trx -> handlingUnitsBL.isAggregateHU(trx.getVHU()))
@@ -129,7 +129,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 				.forEach(item -> updateItemQtyAndSplitIfNeeded(huContext, itemId2Trx, item));
 	}
 
-	private void updateItemQtyAndSplitIfNeeded(final IHUContext huContext, final Map<Integer, IHUTransaction> itemId2Trx, final I_M_HU_Item item)
+	private void updateItemQtyAndSplitIfNeeded(final IHUContext huContext, final Map<Integer, IHUTransactionCandidate> itemId2Trx, final I_M_HU_Item item)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
@@ -147,7 +147,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 			return; // nothing to do
 		}
 
-		final IHUTransaction trx = itemId2Trx.get(item.getM_HU_Item_ID());
+		final IHUTransactionCandidate trx = itemId2Trx.get(item.getM_HU_Item_ID());
 		final BigDecimal storageQty = storage.getQty(trx.getProduct(), trx.getQuantity().getUOM());
 
 		// get the new TU quantity, which as TUs go needs to be an integer

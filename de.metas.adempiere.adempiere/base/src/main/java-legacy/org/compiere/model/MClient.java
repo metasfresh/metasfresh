@@ -111,49 +111,25 @@ public class MClient extends X_AD_Client
 		return LegacyAdapters.convertToPO(client);
 	}	// get
 
-	/**************************************************************************
-	 * 	Standard Constructor
-	 * 	@param ctx context
-	 * 	@param AD_Client_ID id
-	 * 	@param createNew create new
-	 *	@param trxName transaction
-	 */
-	public MClient (Properties ctx, int AD_Client_ID, boolean createNew, String trxName)
-	{
-		super (ctx, AD_Client_ID, trxName);
-		m_createNew = createNew;
-		if (AD_Client_ID == 0)
-		{
-			if (m_createNew)
-			{
-			//	setValue (null);
-			//	setName (null);
-				setAD_Org_ID(0);
-				setIsMultiLingualDocument (false);
-				setIsSmtpAuthorization (false);
-				setIsUseBetaFunctions (true);
-				setIsServerEMail(false);
-				setAD_Language(Language.getBaseAD_Language());
-				setAutoArchive(AUTOARCHIVE_None);
-				setMMPolicy (MMPOLICY_FiFo);	// F
-				setIsPostImmediate(false);
-				setIsCostImmediate(false);
-			}
-			else
-				load(get_TrxName());
-		}
-	}	//	MClient
-
-	/**
-	 * 	Standard Constructor
-	 * 	@param ctx context
-	 * 	@param AD_Client_ID id
-	 *	@param trxName transaction
-	 */
 	public MClient (Properties ctx, int AD_Client_ID, String trxName)
 	{
-		this (ctx, AD_Client_ID, false, trxName);
-	}	//	MClient
+		super (ctx, AD_Client_ID, trxName);
+		if (is_new())
+		{
+			// setValue (null);
+			// setName (null);
+			setAD_Org_ID(0);
+			setIsMultiLingualDocument(false);
+			setIsSmtpAuthorization(false);
+			setIsUseBetaFunctions(true);
+			setIsServerEMail(false);
+			setAD_Language(Language.getBaseAD_Language());
+			setAutoArchive(AUTOARCHIVE_None);
+			setMMPolicy(MMPOLICY_FiFo);	// F
+			setIsPostImmediate(false);
+			setIsCostImmediate(false);
+		}
+	}
 
 	/**
 	 * 	Load Constructor
@@ -178,8 +154,6 @@ public class MClient extends X_AD_Client
 
 	/** Language					*/
 	private Language			m_language = null;
-	/** New Record					*/
-	private boolean				m_createNew = false;
 	/** Client Info Setup Tree for Account	*/
 	private int					m_AD_Tree_Account_ID;
 
@@ -471,7 +445,7 @@ public class MClient extends X_AD_Client
 	@Deprecated
 	public boolean sendEMail (int AD_User_ID, String subject, String message, File attachment)
 	{
-		Collection<File> attachments = new ArrayList<File>();
+		Collection<File> attachments = new ArrayList<>();
 		if (attachment != null)
 			attachments.add(attachment);
 		return sendEMailAttachments(AD_User_ID, subject, message, attachments);

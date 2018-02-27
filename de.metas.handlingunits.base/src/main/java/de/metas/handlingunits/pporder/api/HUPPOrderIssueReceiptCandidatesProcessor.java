@@ -47,7 +47,7 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.materialtracking.IHUPPOrderMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
@@ -380,7 +380,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	}
 
 	/**
-	 * Aggregates {@link IHUTransaction}s and creates {@link I_PP_Cost_Collector}s for issuing materials to manufacturing order
+	 * Aggregates {@link IHUTransactionCandidate}s and creates {@link I_PP_Cost_Collector}s for issuing materials to manufacturing order
 	 *
 	 * @author tsa
 	 *
@@ -421,7 +421,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 					.forEach(huTransaction -> addHUTransaction(huContext, huTransaction));
 		}
 
-		private void addHUTransaction(final IHUContext huContext, final IHUTransaction huTransaction)
+		private void addHUTransaction(final IHUContext huContext, final IHUTransactionCandidate huTransaction)
 		{
 			//
 			// Get the BOM line on which it was issued
@@ -444,7 +444,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			// Get HU from counterpart transaction
 			// (because in this transaction we have the Order BOM line)
-			final IHUTransaction huTransactionCounterpart = huTransaction.getCounterpart();
+			final IHUTransactionCandidate huTransactionCounterpart = huTransaction.getCounterpart();
 			final I_M_HU hu = huTransactionCounterpart.getM_HU();
 			Check.assumeNotNull(hu, "HU not found in counterpart transaction. \n trx: {} \n counterpart: {}", huTransaction, huTransactionCounterpart);
 
@@ -463,7 +463,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			issueCandidate.addMaterialTracking(huPPOrderMaterialTrackingBL.extractMaterialTrackingIfAny(huContext, hu));
 		}
 
-		private I_PP_Order_BOMLine getOrderBOMLineToIssueOrNull(final IHUTransaction huTransaction)
+		private I_PP_Order_BOMLine getOrderBOMLineToIssueOrNull(final IHUTransactionCandidate huTransaction)
 		{
 			final Object referencedModel = huTransaction.getReferencedModel();
 			if (referencedModel == null)

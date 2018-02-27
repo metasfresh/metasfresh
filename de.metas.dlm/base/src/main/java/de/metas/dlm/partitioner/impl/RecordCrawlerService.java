@@ -123,9 +123,9 @@ public class RecordCrawlerService implements IRecordCrawlerService
 
 					// first check if this is all about a Record_ID/AD_Table_ID reference.
 					// if that is the case, then we need to verify that the AD_Table_ID of 'record' actually points to the table named 'forwardTableName'
-					if (columnBL.isRecordColumnName(forwardColumnName))
+					if (columnBL.isRecordIdColumnName(forwardColumnName))
 					{
-						final String tableColumnName = columnBL.getTableColumnName(currentTableName, forwardColumnName)
+						final String tableColumnName = columnBL.getTableIdColumnName(currentTableName, forwardColumnName)
 								.orElseThrow(Check.supplyEx("Table={} has no table column name for recordColumnName={}", currentTableName, forwardColumnName));
 
 						final Integer tableId = InterfaceWrapperHelper.getValueOrNull(currentRecord, tableColumnName);
@@ -216,10 +216,10 @@ public class RecordCrawlerService implements IRecordCrawlerService
 
 				// if we have a case of AD_Table_ID/Record_ID,
 				// then we need to make sure to only load records whose AD_Table_ID references currentRecord
-				if (columnBL.isRecordColumnName(backwardColumnName))
+				if (columnBL.isRecordIdColumnName(backwardColumnName))
 				{
 					// note that referencedTableColumnName = AD_Table_ID, in most cases
-					final String referencedTableColumnName = columnBL.getTableColumnName(backwardTableName, backwardRef.getReferencingColumnName())
+					final String referencedTableColumnName = columnBL.getTableIdColumnName(backwardTableName, backwardRef.getReferencingColumnName())
 							.orElseThrow(Check.supplyEx("Table={} has no table column name for recordColumnName={}", backwardTableName, backwardColumnName));
 
 					final int referencedTableID = adTableDAO.retrieveTableId(currentTableName);

@@ -305,6 +305,29 @@ public interface I_AD_RelationType
     public static final String COLUMNNAME_IsDirected = "IsDirected";
 
 	/**
+	 * Set IsTableRecordIdTarget .
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsTableRecordIdTarget (boolean IsTableRecordIdTarget);
+
+	/**
+	 * Get IsTableRecordIdTarget .
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isTableRecordIdTarget();
+
+    /** Column definition for IsTableRecordIdTarget */
+    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_IsTableRecordIdTarget = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "IsTableRecordIdTarget", null);
+    /** Column name IsTableRecordIdTarget */
+    public static final String COLUMNNAME_IsTableRecordIdTarget = "IsTableRecordIdTarget";
+
+	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *

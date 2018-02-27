@@ -24,8 +24,8 @@ package de.metas.shipping.api;
 
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_M_Package;
 
-import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 

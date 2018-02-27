@@ -12,8 +12,8 @@ RETURNS TABLE
 	huline character(1),
 	isprinttax character(1),
 	cursymbol character varying(10),
+	vataxid character varying(60),
 	orderindex integer
-
 )
 AS
 $$
@@ -37,6 +37,7 @@ FROM
 		'N' AS HuLine,
 		bpg.IsPrintTaxSales,
 		c.cursymbol,
+		null as vataxid,
 		1 as orderindex
 	FROM
 		C_InvoiceTax it
@@ -73,6 +74,7 @@ UNION
 		it.IsPackagingTax AS HuLine,
 		bpg.IsPrintTaxSales,
 		c.cursymbol,
+		null as vataxid,
 		2 AS orderindex
 	FROM
 		C_InvoiceTax it
@@ -102,6 +104,7 @@ UNION
 		null,
 		bpg.IsPrintTaxSales,
 		c.cursymbol,
+		null as vataxid,
 		3 AS orderindex
 	FROM
 		C_Invoice i
@@ -126,6 +129,7 @@ UNION
 		null AS HuLine,
 		bpg.IsPrintTaxSales,
 		c.cursymbol,
+		COALESCE(bp.vataxid, '') as vataxid,
 		4 as orderindex
 	FROM
 		C_InvoiceTax it
@@ -142,6 +146,7 @@ UNION
 		bpg.IsPrintTaxSales,
 		c.cursymbol,
 		Grandtotal,
+		COALESCE(bp.vataxid, ''),
 		CASE
 			WHEN round(t.Rate,0) = t.Rate THEN floor(t.Rate)
 			WHEN round(t.Rate,1) = t.Rate THEN round(t.Rate,1)

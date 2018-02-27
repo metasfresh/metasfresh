@@ -100,6 +100,7 @@ public interface ILookupDAO extends ISingletonService
 		 * @return
 		 */
 		boolean isNumericKey();
+
 	}
 
 	interface ILookupDisplayInfo

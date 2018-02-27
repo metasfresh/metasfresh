@@ -67,7 +67,7 @@ public class MTree extends MTree_Base
 	/**
 	 * Default Constructor.
 	 * Need to call loadNodes explicitly
-	 * 
+	 *
 	 * @param ctx context for security
 	 * @param AD_Tree_ID The tree to build
 	 * @param trxName transaction
@@ -78,7 +78,7 @@ public class MTree extends MTree_Base
 		m_editable = false;
 		m_allNodes = true;
 		m_clientTree = true;
-		_adLanguage = null; 
+		_adLanguage = null;
 		_userRolePermissions = null;
 	}   // MTree
 
@@ -116,7 +116,7 @@ public class MTree extends MTree_Base
 	/**************************************************************************
 	 * Get default (oldest) complete AD_Tree_ID for KeyColumn.
 	 * Called from GridController
-	 * 
+	 *
 	 * @param keyColumnName key column name, eg. C_Project_ID
 	 * @param AD_Client_ID client
 	 * @return AD_Tree_ID
@@ -178,7 +178,7 @@ public class MTree extends MTree_Base
 
 	/**
 	 * Get or create default tree for given table
-	 * 
+	 *
 	 * @param AD_Client_ID
 	 * @param tableName
 	 * @return AD_Tree_ID
@@ -214,7 +214,7 @@ public class MTree extends MTree_Base
 
 	/*************************************************************************
 	 * Load Nodes and Bar
-	 * 
+	 *
 	 * @param AD_User_ID user for tree bar
 	 */
 	private void loadNodes(final int AD_User_ID)
@@ -347,7 +347,7 @@ public class MTree extends MTree_Base
 	/**
 	 * Add Node to Tree.
 	 * If not found add to buffer
-	 * 
+	 *
 	 * @param node_ID Node_ID
 	 * @param parent_ID Parent_ID
 	 * @param seqNo SeqNo
@@ -386,7 +386,7 @@ public class MTree extends MTree_Base
 
 	/**
 	 * Check the buffer for nodes which have newNode as Parents
-	 * 
+	 *
 	 * @param newNode new node
 	 */
 	private void checkBuffer(final MTreeNode newNode)
@@ -468,7 +468,7 @@ public class MTree extends MTree_Base
 	/**
 	 * Get Menu Node Details.
 	 * As SQL contains security access, not all nodes will be found
-	 * 
+	 *
 	 * @param node_ID Key of the record
 	 * @param parent_ID Parent ID of the record
 	 * @param seqNo Sort index
@@ -539,7 +539,7 @@ public class MTree extends MTree_Base
 
 	/**
 	 * Get Root node
-	 * 
+	 *
 	 * @return root
 	 */
 	public MTreeNode getRoot()
@@ -549,7 +549,7 @@ public class MTree extends MTree_Base
 
 	/**
 	 * Is Menu Tree
-	 * 
+	 *
 	 * @return true if menu
 	 */
 	public boolean isMenu()
@@ -559,7 +559,7 @@ public class MTree extends MTree_Base
 
 	/**
 	 * Is Product Tree
-	 * 
+	 *
 	 * @return true if product
 	 */
 	public boolean isProduct()
@@ -569,7 +569,7 @@ public class MTree extends MTree_Base
 
 	/**
 	 * Is Business Partner Tree
-	 * 
+	 *
 	 * @return true if partner
 	 */
 	public boolean isBPartner()
@@ -579,7 +579,7 @@ public class MTree extends MTree_Base
 
 	/**
 	 * String representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -641,7 +641,7 @@ public class MTree extends MTree_Base
 
 	/**
 	 * Get Node TableName
-	 * 
+	 *
 	 * @param AD_Table_ID table
 	 * @return node table name, e.g. AD_TreeNode
 	 */
@@ -652,7 +652,7 @@ public class MTree extends MTree_Base
 		{
 			nodeTableName += "MM";
 		}
-		else if (I_C_BPartner.Table_ID == AD_Table_ID)
+		else if (Services.get(IADTableDAO.class).retrieveTableId(I_C_BPartner.Table_Name) == AD_Table_ID)
 		{
 			nodeTableName += "BP";
 		}
@@ -696,7 +696,7 @@ public class MTree extends MTree_Base
 	{
 		return m_clientTree;
 	}
-	
+
 	public final String getAD_Language()
 	{
 		if(_adLanguage == null)
@@ -846,13 +846,13 @@ public class MTree extends MTree_Base
 		{
 			return allNodes;
 		}
-		
+
 		public Builder setLanguage(final String adLanguage)
 		{
 			this.adLanguage = adLanguage;
 			return this;
 		}
-		
+
 		private String getAD_Language()
 		{
 			if(adLanguage == null)

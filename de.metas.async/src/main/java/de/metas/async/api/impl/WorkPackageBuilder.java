@@ -54,6 +54,7 @@ import lombok.NonNull;
 	private IWorkpackagePrioStrategy _priority = SizeBasedWorkpackagePrio.INSTANCE;
 	private I_C_Async_Batch asyncBatch = null;
 	private boolean asyncBatchSet = false;
+	private int userInChargeId;
 	private WorkPackageParamsBuilder _parametersBuilder;
 	private String _trxName = ITrx.TRXNAME_None;
 	private boolean _trxNameBound = false;
@@ -82,7 +83,6 @@ import lombok.NonNull;
 	@Override
 	public I_C_Queue_WorkPackage build()
 	{
-		//
 		// Add parameter "ElementsLockOwner" if we are are locking
 		final ILockCommand elementsLocker = getElementsLockerOrNull();
 		if (elementsLocker != null)
@@ -90,12 +90,10 @@ import lombok.NonNull;
 			parameters().setParameter(IWorkpackageProcessor.PARAMETERNAME_ElementsLockOwner, elementsLocker.getOwner().getOwnerName());
 		}
 
-		//
 		// Mark as built.
 		// From now one, any changes are prohibited.
 		markAsBuilt();
 
-		//
 		// Create the workpackage
 		final IWorkPackageQueue workpackageQueue = getWorkpackageQueue();
 		final I_C_Queue_Block queueBlock = getC_Queue_Block();
@@ -111,7 +109,12 @@ import lombok.NonNull;
 		if (asyncBatchSet)
 		{
 			workpackage.setC_Async_Batch(asyncBatch);
-			Services.get(IQueueDAO.class).saveInLocalTrx(asyncBatch);
+			Services.get(IQueueDAO.class).save(asyncBatch);
+		}
+
+		if(userInChargeId > 0)
+		{
+			workpackage.setAD_User_InCharge_ID(userInChargeId);
 		}
 
 		// Create workpackage parameters
@@ -139,7 +142,7 @@ import lombok.NonNull;
 	}
 
 	private void createWorkpackageElements(
-			@NonNull final IWorkPackageQueue workpackageQueue, 
+			@NonNull final IWorkPackageQueue workpackageQueue,
 			@NonNull final I_C_Queue_WorkPackage workpackage)
 	{
 		for (final ITableRecordReference element : elements)
@@ -275,6 +278,14 @@ import lombok.NonNull;
 		assertNotBuilt();
 		this.asyncBatch = asyncBatch;
 		this.asyncBatchSet = true;
+		return this;
+	}
+
+	@Override
+	public IWorkPackageBuilder setUserInChargeId(int userInChargeId)
+	{
+		assertNotBuilt();
+		this.userInChargeId = userInChargeId;
 		return this;
 	}
 }

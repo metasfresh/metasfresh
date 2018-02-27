@@ -44,7 +44,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  * @author ts
  *
  */
-public class TestTwoReceiptsTwoInvoices extends AbstractTwoInOutsTwoInvoicesTests
+public class TestTwoReceiptsTwoInvoices extends AbstractTwoInOutsTests
 {
 
 	@Override

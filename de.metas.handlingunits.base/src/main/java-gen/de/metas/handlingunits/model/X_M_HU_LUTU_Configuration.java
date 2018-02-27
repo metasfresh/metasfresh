@@ -15,7 +15,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1426073199L;
+	private static final long serialVersionUID = 1233112750L;
 
     /** Standard Constructor */
     public X_M_HU_LUTU_Configuration (Properties ctx, int M_HU_LUTU_Configuration_ID, String trxName)
@@ -177,6 +177,8 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	public static final String HUSTATUS_Picked = "S";
 	/** Shipped = E */
 	public static final String HUSTATUS_Shipped = "E";
+	/** Issued = I */
+	public static final String HUSTATUS_Issued = "I";
 	/** Set Gebinde Status.
 		@param HUStatus Gebinde Status	  */
 	@Override
@@ -297,8 +299,8 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 		set_ValueFromPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class, M_HU_PI_Item_Product);
 	}
 
-	/** Set Packvorschrift-Produkt Zuordnung.
-		@param M_HU_PI_Item_Product_ID Packvorschrift-Produkt Zuordnung	  */
+	/** Set Packvorschrift.
+		@param M_HU_PI_Item_Product_ID Packvorschrift	  */
 	@Override
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
 	{
@@ -308,8 +310,8 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
 	}
 
-	/** Get Packvorschrift-Produkt Zuordnung.
-		@return Packvorschrift-Produkt Zuordnung	  */
+	/** Get Packvorschrift.
+		@return Packvorschrift	  */
 	@Override
 	public int getM_HU_PI_Item_Product_ID () 
 	{

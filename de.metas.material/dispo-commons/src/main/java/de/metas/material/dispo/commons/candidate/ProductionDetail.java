@@ -1,6 +1,13 @@
 package de.metas.material.dispo.commons.candidate;
 
+import java.math.BigDecimal;
+
+import org.adempiere.util.Check;
+
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -25,15 +32,59 @@ import lombok.Value;
  * #L%
  */
 @Value
-@Builder
 public class ProductionDetail
 {
-	/**
-	 * Only set if this instance related to a ppOrder header.
-	 */
-	int plantId;
+	public enum Flag
+	{
+		TRUE,
 
-	int uomId;
+		FALSE,
+
+		/**
+		 * Don't update existing records, but initialize new ones to {@code false}.
+		 * <p>
+		 * Only used when storing an instance with the {@link CandidateRepositoryWriteService}.<br>
+		 * If you load an instance from DB, it shall never have flags with this value.
+		 */
+		FALSE_DONT_UPDATE;
+
+		public static Flag of(final boolean value)
+		{
+			return value ? TRUE : FALSE;
+		}
+
+		public boolean toBoolean()
+		{
+			return this.equals(TRUE);
+		}
+
+		public boolean updateExistingRecord()
+		{
+			return !this.equals(FALSE_DONT_UPDATE);
+		}
+	}
+
+	public static ProductionDetail forProductionDetailRecord(
+			@NonNull final I_MD_Candidate_Prod_Detail productionDetailRecord)
+	{
+		final ProductionDetail productionDetail = ProductionDetail.builder()
+				.advised(Flag.of(productionDetailRecord.isAdvised()))
+				.pickDirectlyIfFeasible(Flag.of(productionDetailRecord.isPickDirectlyIfFeasible()))
+				.description(productionDetailRecord.getDescription())
+				.plantId(productionDetailRecord.getPP_Plant_ID())
+				.productBomLineId(productionDetailRecord.getPP_Product_BOMLine_ID())
+				.productPlanningId(productionDetailRecord.getPP_Product_Planning_ID())
+				.ppOrderId(productionDetailRecord.getPP_Order_ID())
+				.ppOrderLineId(productionDetailRecord.getPP_Order_BOMLine_ID())
+				.ppOrderDocStatus(productionDetailRecord.getPP_Order_DocStatus())
+				.plannedQty(productionDetailRecord.getPlannedQty())
+				.actualQty(productionDetailRecord.getActualQty())
+				.build();
+
+		return productionDetail;
+	}
+
+	int plantId;
 
 	int productPlanningId;
 
@@ -46,4 +97,48 @@ public class ProductionDetail
 	String ppOrderDocStatus;
 
 	int ppOrderLineId;
+
+	Flag advised;
+
+	Flag pickDirectlyIfFeasible;
+
+	BigDecimal plannedQty;
+
+	BigDecimal actualQty;
+
+	@Builder(toBuilder = true)
+	private ProductionDetail(
+			final int plantId,
+			final int productPlanningId,
+			final int productBomLineId,
+			final String description,
+			final int ppOrderId,
+			final String ppOrderDocStatus,
+			final int ppOrderLineId,
+			@NonNull final Flag advised,
+			@NonNull final Flag pickDirectlyIfFeasible,
+			final BigDecimal plannedQty,
+			final BigDecimal actualQty)
+	{
+		this.advised = advised;
+		this.pickDirectlyIfFeasible = pickDirectlyIfFeasible;
+
+		final boolean detailIsAboutPPOrderHeader = productBomLineId <= 0;
+		if (Flag.TRUE.equals(advised) && detailIsAboutPPOrderHeader)
+		{
+			// plantId needs to be available when using this productionDetail to request a ppOrder being created
+			Check.errorIf(plantId <= 0, "Parameter plantId needs to be >= 0 for and advised PPOrder 'Header' productionDetail");
+		}
+
+		this.plantId = plantId;
+
+		this.productPlanningId = productPlanningId;
+		this.productBomLineId = productBomLineId;
+		this.description = description;
+		this.ppOrderId = ppOrderId;
+		this.ppOrderDocStatus = ppOrderDocStatus;
+		this.ppOrderLineId = ppOrderLineId;
+		this.plannedQty = plannedQty;
+		this.actualQty = actualQty;
+	}
 }

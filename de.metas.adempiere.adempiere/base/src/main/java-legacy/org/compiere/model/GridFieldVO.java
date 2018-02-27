@@ -203,7 +203,6 @@ public class GridFieldVO implements Serializable
 					vo.AD_Column_ID = rs.getInt (i);
 				else if (columnName.equalsIgnoreCase("AD_Table_ID"))
 					vo.AD_Table_ID = rs.getInt (i);
-				// metas: begin
 				else if (columnName.equalsIgnoreCase("AD_Field_ID"))
 				{
 					vo.AD_Field_ID = rs.getInt(i);
@@ -212,7 +211,6 @@ public class GridFieldVO implements Serializable
 						vo.AD_Field_ID = -1;
 					}
 				}
-				// metas: end
 				//
 				// Layout constraints
 				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_DisplayLength))
@@ -270,10 +268,6 @@ public class GridFieldVO implements Serializable
 					vo.IsEncryptedField = "Y".equals(rs.getString (i));
 				else if (columnName.equalsIgnoreCase("IsEncryptedColumn"))
 					vo.IsEncryptedColumn = "Y".equals(rs.getString (i));
-				else if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_IsSelectionColumn))
-					vo.IsSelectionColumn = DisplayType.toBoolean(rs.getString(i));
-				else if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_SelectionColumnSeqNo))
-					vo.selectionColumnSeqNo = rs.getInt(i);
 				else if (columnName.equalsIgnoreCase("SortNo"))
 					vo.SortNo = rs.getInt (i);
 				else if (columnName.equalsIgnoreCase("FieldLength"))
@@ -351,6 +345,7 @@ public class GridFieldVO implements Serializable
 			}
 
 			//
+			vo.defaultFilterDescriptor = retrieveDefaultFilterDescriptor(rs);
 			vo.fieldGroup = FieldGroupVO.build(fieldGroupName, fieldGroupType, fieldGroupCollapsedByDefault);
 			vo.layoutConstraints = layoutConstraints.build();
 		}
@@ -391,6 +386,22 @@ public class GridFieldVO implements Serializable
 		vo.initFinish();
 		return vo;
 	}   //  create
+	
+	private static GridFieldDefaultFilterDescriptor retrieveDefaultFilterDescriptor(final ResultSet rs) throws SQLException
+	{
+		final boolean selectionColumn = DisplayType.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
+		if(!selectionColumn)
+		{
+			return null;
+		}
+		
+		return GridFieldDefaultFilterDescriptor.builder()
+				.seqNo(rs.getInt(I_AD_Column.COLUMNNAME_SelectionColumnSeqNo))
+				.rangeFilter(DisplayType.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRangeFilter)))
+				.showFilterIncrementButtons(DisplayType.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterIncrementButtons)))
+				.defaultValue(rs.getString(I_AD_Column.COLUMNNAME_FilterDefaultValue))
+				.build();
+	}
 	
 	void loadAdditionalLanguage(final ResultSet rs) throws SQLException
 	{
@@ -646,9 +657,8 @@ public class GridFieldVO implements Serializable
 	private boolean IsEncryptedField = false;
 	/**	Storage Encryption	*/
 	public boolean      IsEncryptedColumn = false;
-	/**	Find Selection		*/
-	private boolean IsSelectionColumn = false;
-	private int selectionColumnSeqNo = 0;
+	/**	Filtering info */
+	private GridFieldDefaultFilterDescriptor defaultFilterDescriptor;
 	/**	Order By		*/
 	public int          SortNo = 0;
 	/**	Field Length		*/
@@ -867,8 +877,7 @@ public class GridFieldVO implements Serializable
 		clone.IsFieldOnly = IsFieldOnly;
 		clone.IsEncryptedField = IsEncryptedField;
 		clone.IsEncryptedColumn = IsEncryptedColumn;
-		clone.IsSelectionColumn = IsSelectionColumn;
-		clone.selectionColumnSeqNo = selectionColumnSeqNo;
+		clone.defaultFilterDescriptor = defaultFilterDescriptor;
 		clone.autocomplete = autocomplete;
 		clone.SortNo = SortNo;
 		clone.FieldLength = FieldLength;
@@ -1399,14 +1408,19 @@ public class GridFieldVO implements Serializable
 		return SortNo;
 	}
 	
+	public GridFieldDefaultFilterDescriptor getDefaultFilterDescriptor()
+	{
+		return defaultFilterDescriptor;
+	}
+	
 	public boolean isSelectionColumn()
 	{
-		return IsSelectionColumn;
+		return defaultFilterDescriptor != null;
 	}
 	
 	public int getSelectionColumnSeqNo()
 	{
-		return selectionColumnSeqNo;
+		return defaultFilterDescriptor != null ? defaultFilterDescriptor.getSeqNo() : 0;
 	}
 
 	/**

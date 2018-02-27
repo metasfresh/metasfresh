@@ -15,6 +15,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -117,7 +118,7 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public void addSchedules(final Map<I_M_ShipmentSchedule, BigDecimal> toAdd)
+	public void addSchedules(final Map<I_M_ShipmentSchedule, Quantity> toAdd)
 	{
 		getDelegate().addSchedules(toAdd);
 	}
@@ -135,7 +136,9 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public Map<I_M_ShipmentSchedule, BigDecimal> subtract(final BigDecimal subtrahent, final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
+	public Map<I_M_ShipmentSchedule, Quantity> subtract(
+			final Quantity subtrahent,
+			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
 		return getDelegate().subtract(subtrahent, acceptShipmentSchedulePredicate);
 	}
@@ -147,25 +150,27 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public IFreshPackingItem subtractToPackingItem(final BigDecimal subtrahent, final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
+	public IFreshPackingItem subtractToPackingItem(
+			final Quantity subtrahent,
+			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
 		return getDelegate().subtractToPackingItem(subtrahent, acceptShipmentSchedulePredicate);
 	}
 
 	@Override
-	public Map<I_M_ShipmentSchedule, BigDecimal> subtract(final BigDecimal subtrahent)
+	public Map<I_M_ShipmentSchedule, Quantity> subtract(final Quantity subtrahent)
 	{
 		return getDelegate().subtract(subtrahent);
 	}
 
 	@Override
-	public Map<I_M_ShipmentSchedule, BigDecimal> getQtys()
+	public Map<I_M_ShipmentSchedule, Quantity> getQtys()
 	{
 		return getDelegate().getQtys();
 	}
 
 	@Override
-	public BigDecimal getQtyForSched(final I_M_ShipmentSchedule sched)
+	public Quantity getQtyForSched(final I_M_ShipmentSchedule sched)
 	{
 		return getDelegate().getQtyForSched(sched);
 	}
@@ -189,15 +194,15 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public BigDecimal retrieveVolumeSingle(final String trxName)
+	public Quantity retrieveVolumeSingle(final String trxName)
 	{
 		return getDelegate().retrieveVolumeSingle(trxName);
 	}
 
 	@Override
-	public BigDecimal computeWeight()
+	public BigDecimal computeWeightInProductUOM()
 	{
-		return getDelegate().computeWeight();
+		return getDelegate().computeWeightInProductUOM();
 	}
 
 	@Override
@@ -207,13 +212,13 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public void setQtyForSched(final I_M_ShipmentSchedule sched, final BigDecimal qty)
+	public void setQtyForSched(final I_M_ShipmentSchedule sched, final Quantity qty)
 	{
 		getDelegate().setQtyForSched(sched, qty);
 	}
 
 	@Override
-	public BigDecimal getQtySum()
+	public Quantity getQtySum()
 	{
 		return getDelegate().getQtySum();
 	}

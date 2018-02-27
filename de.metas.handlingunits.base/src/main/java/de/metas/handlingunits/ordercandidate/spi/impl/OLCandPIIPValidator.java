@@ -10,12 +10,12 @@ package de.metas.handlingunits.ordercandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,15 +26,15 @@ package de.metas.handlingunits.ordercandidate.spi.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
@@ -44,7 +44,6 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValdiator;
-import de.metas.product.IProductPA;
 
 public class OLCandPIIPValidator implements IOLCandValdiator
 {
@@ -63,10 +62,10 @@ public class OLCandPIIPValidator implements IOLCandValdiator
 			final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 
 			// 1.
-			// Run calculate QtyPacks just to make sure everything is ok.
+			// Run calculate QtyTU just to make sure everything is ok.
 			// In case of any errors, an exception will be thrown
 			final OLCandHUPackingAware huPackingWare = new OLCandHUPackingAware(olCand);
-			huPackingAwareBL.calculateQtyPacks(huPackingWare);
+			huPackingAwareBL.calculateQtyTU(huPackingWare);
 
 			// 2.
 			// If there is a PIIP, then verify that there is pricing info for the packing material. Otherwise, completing the order will fail later on.
@@ -96,15 +95,12 @@ public class OLCandPIIPValidator implements IOLCandValdiator
 
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 		final Timestamp datePromisedEffective = olCandEffectiveValuesBL.getDatePromisedEffective(olCand);
-		final int bill_Location_ID = olCandEffectiveValuesBL.getBill_Location_Effective_ID(olCand);
+		final I_C_BPartner_Location billBPLocation = olCandEffectiveValuesBL.getBill_Location_Effective(olCand);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
-
-		final I_M_PriceList pl = Services.get(IProductPA.class).retrievePriceListByPricingSyst(ctx, pricingSystemId, bill_Location_ID, true, trxName);
+		final I_M_PriceList pl = Services.get(IPriceListDAO.class).retrievePriceListByPricingSyst(pricingSystemId, billBPLocation, true);
 		if (pl == null)
 		{
-			throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + bill_Location_ID);
+			throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + billBPLocation);
 		}
 
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);

@@ -43,7 +43,6 @@ import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.model.PlainContextAware;
@@ -60,9 +59,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Attribute;
 
-import de.metas.dimension.IDimensionSpecAttributeDAO;
+import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
-import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -122,11 +120,11 @@ import lombok.NonNull;
 	private final Set<Integer> _onlyInBpartnerIdsRO = Collections.unmodifiableSet(_onlyInBpartnerIds);
 	private final Set<Integer> _onlyWithBPartnerLocationIds = new HashSet<>();
 	private final Set<Integer> _onlyWithProductIds = new HashSet<>();
-	
+
 	private Boolean _emptyStorageOnly = null;
-	
+
 	private boolean _allowEmptyStorage = false;
-	
+
 	/** M_Attribute_ID to {@link HUAttributeQueryFilterVO} */
 	private final Map<Integer, HUAttributeQueryFilterVO> onlyAttributeId2values = new HashMap<>();
 
@@ -353,8 +351,8 @@ import lombok.NonNull;
 
 		//
 		// Create and add Query Filters
-		final IQueryFilter<I_M_HU> filters = createQueryFilter();
-		queryBuilder.filter(filters);
+		final ICompositeQueryFilter<I_M_HU> filters = createQueryFilter();
+		queryBuilder.addFiltersUnboxed(filters);
 
 		//
 		// ORDER BY
@@ -365,7 +363,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final IQueryFilter<I_M_HU> createQueryFilter()
+	public final ICompositeQueryFilter<I_M_HU> createQueryFilter()
 	{
 		final ICompositeQueryFilter<I_M_HU> filters = queryBL.createCompositeQueryFilter(I_M_HU.class);
 
@@ -854,7 +852,7 @@ import lombok.NonNull;
 		_allowEmptyStorage = true;
 		return this;
 	}
-	
+
 	@Override
 	public IHUQueryBuilder setEmptyStorageOnly()
 	{
@@ -895,7 +893,7 @@ import lombok.NonNull;
 		_huStatusesToInclude.add(huStatus);
 		return this;
 	}
-	
+
 	@Override
 	public IHUQueryBuilder addHUStatusesToInclude(@NonNull final Collection<String> huStatuses)
 	{
@@ -919,7 +917,7 @@ import lombok.NonNull;
 		_huStatusesToExclude.add(huStatus);
 		return this;
 	}
-	
+
 	@Override
 	public IHUQueryBuilder addHUStatusesToExclude(final Collection<String> huStatuses)
 	{
@@ -957,7 +955,7 @@ import lombok.NonNull;
 	/**
 	 * Retrieves an existing or new de.metas.handlingunits.impl.HUAttributeQueryFilterVO entry for the given attribute and type.
 	 * Note: The entry will be included in the onlyAttributeId2values and not in the barcode attributes list
-	 * 
+	 *
 	 * @param attribute
 	 * @param attributeValueType
 	 * @return
@@ -969,7 +967,7 @@ import lombok.NonNull;
 
 	/**
 	 * Possibility to put the attribute in a given map.
-	 * 
+	 *
 	 * @param targetMap
 	 * @param attribute
 	 * @param attributeValueType
@@ -1073,26 +1071,21 @@ import lombok.NonNull;
 	public IHUQueryBuilder setOnlyWithBarcode(final String barcode)
 	{
 		this.barcode = barcode;
-		loadBarcodeAttrributes(barcode);
+		loadBarcodeAttributes(barcode);
 		return this;
 	}
 
-	private void loadBarcodeAttrributes(final String barcode)
+	private void loadBarcodeAttributes(final String barcode)
 	{
 		final String dimBarcodeAttributesInternalName = HUConstants.DIM_Barcode_Attributes;
 
-		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(getContextProvider());
-
-		final I_DIM_Dimension_Spec barcodeDimSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalName(dimBarcodeAttributesInternalName, contextAware);
-
+		final DimensionSpec barcodeDimSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalNameOrNull(dimBarcodeAttributesInternalName);
 		if (barcodeDimSpec == null)
 		{
-			// no barcode dimension spec. Nothing to do
-			return;
+			return; // no barcode dimension spec. Nothing to do
 		}
 
-		final List<I_M_Attribute> barcodeAttributes = Services.get(IDimensionSpecAttributeDAO.class)
-				.retrieveAttributesForDimensionSpec(barcodeDimSpec);
+		final List<I_M_Attribute> barcodeAttributes = barcodeDimSpec.retrieveAttributes();
 
 		for (final I_M_Attribute attribute : barcodeAttributes)
 		{

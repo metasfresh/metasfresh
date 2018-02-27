@@ -14,7 +14,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 
@@ -196,7 +196,7 @@ public class GLDistributionDAO implements IGLDistributionDAO
 				.addEqualsFilter(I_GL_DistributionLine.COLUMN_GL_Distribution_ID, glDistribution.getGL_Distribution_ID())
 				//
 				.create()
-				.aggregate(I_GL_DistributionLine.COLUMNNAME_Line, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_GL_DistributionLine.COLUMNNAME_Line, Aggregate.MAX, Integer.class);
 
 		return lastLineNo == null ? 0 : lastLineNo;
 	}

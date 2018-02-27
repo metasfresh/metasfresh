@@ -1,6 +1,5 @@
 package de.metas.picking.service;
 
-import java.math.BigDecimal;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -11,6 +10,7 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -36,7 +36,7 @@ import de.metas.picking.legacy.form.IPackingItem;
 
 /**
  * You can obtain an instance via {@link FreshPackingItemHelper#create(java.util.Map)}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -75,5 +75,5 @@ public interface IFreshPackingItem extends IPackingItem
 	 * @param acceptShipmentSchedulePredicate may be {@code null}.
 	 * @return
 	 */
-	IFreshPackingItem subtractToPackingItem(BigDecimal subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
+	IFreshPackingItem subtractToPackingItem(Quantity subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
 }

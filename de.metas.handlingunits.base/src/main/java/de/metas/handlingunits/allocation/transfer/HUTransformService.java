@@ -1,13 +1,13 @@
 package de.metas.handlingunits.allocation.transfer;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -16,6 +16,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
@@ -89,7 +90,7 @@ import lombok.Singular;
 
 /**
  * This class contains business logic run by clients when they transform HUs.
- * Use {@link #get(Properties)} or {@link #get(IHUContext)} to obtain an instance.
+ * Use {@link #newInstance(Properties)} or {@link #newInstance(IHUContext)} to obtain an instance.
  * 
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh-webui/issues/181
@@ -97,6 +98,16 @@ import lombok.Singular;
  */
 public class HUTransformService
 {
+	public static HUTransformService newInstance()
+	{
+		return builder().build();
+	}
+
+	public static HUTransformService newInstance(@NonNull final IMutableHUContext huContext)
+	{
+		return builderForHUcontext().huContext(huContext).build();
+	}
+
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
@@ -105,18 +116,7 @@ public class HUTransformService
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IHUContext huContext;
-
-	private final List<TableRecordReference> referencedObjects;
-
-	public static HUTransformService get()
-	{
-		return builder().build();
-	}
-
-	public static HUTransformService get(@NonNull final IMutableHUContext huContext)
-	{
-		return builderForHUcontext().huContext(huContext).build();
-	}
+	private final ImmutableList<TableRecordReference> referencedObjects;
 
 	/**
 	 * Uses {@link IHUContextFactory#createMutableHUContext(Properties, String)} with the given {@code ctx} and {@code trxName} and returns a new {@link HUTransformService} instance with that huContext.
@@ -135,9 +135,9 @@ public class HUTransformService
 			@Nullable final EmptyHUListener emptyHUListener,
 			@Nullable final List<TableRecordReference> referencedObjects)
 	{
-		this.referencedObjects = Util.coalesce(referencedObjects, ImmutableList.of());
+		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 
-		final Properties effectiveCtx = Util.coalesce(ctx, Env.getCtx());
+		final Properties effectiveCtx = ctx != null ? ctx : Env.getCtx();
 		final String effectiveTrxName = Util.coalesce(trxName, ITrx.TRXNAME_ThreadInherited);
 		final IMutableHUContext mutableHUContext = Services.get(IHUContextFactory.class).createMutableHUContext(effectiveCtx, effectiveTrxName);
 		if (emptyHUListener != null)
@@ -157,7 +157,7 @@ public class HUTransformService
 	private HUTransformService(@NonNull final IHUContext huContext,
 			@Nullable final List<TableRecordReference> referencedObjects)
 	{
-		this.referencedObjects = Util.coalesce(referencedObjects, ImmutableList.of());
+		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 		this.huContext = huContext;
 	}
 
@@ -252,15 +252,18 @@ public class HUTransformService
 
 		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
 		final IHUProductStorage singleProductStorage = getSingleProductStorage(cuHU);
-		HUSplitBuilderCoreEngine.of(huContext, cuHU,
-				// forceAllocation = false; no need, because destination has no capacity constraints
-				huContext -> createCUAllocationRequest(
+		HUSplitBuilderCoreEngine.builder()
+				.huContextInitital(huContext)
+				.huToSplit(cuHU)
+				.requestProvider(huContext -> createCUAllocationRequest(
 						huContext,
 						singleProductStorage.getM_Product(),
 						singleProductStorage.getC_UOM(),
 						qtyCU,
-						false),
-				destination)
+						false) // forceAllocation = false; no need, because destination has no capacity constraints
+				)
+				.destination(destination)
+				.build()
 				.withPropagateHUValues()
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 				.performSplit();
@@ -285,14 +288,26 @@ public class HUTransformService
 	 * @param sourceCuHU the source CU to be split or joined
 	 * @param qtyCU the CU-quantity to join or split
 	 * @param targetTuHU the target TU
+	 * 
+	 * @return the CUs that were created
 	 */
-	public void cuToExistingTU(
+	public List<I_M_HU> cuToExistingTU(
+			@NonNull final I_M_HU sourceCuHU,
+			@NonNull final BigDecimal qtyCU,
+			@NonNull final I_M_HU targetTuHU)
+	{
+		// NOTE: because this method does several non-atomic operations it is important to glue them together in a transaction
+		return trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> cuToExistingTU_InTrx(sourceCuHU, qtyCU, targetTuHU));
+	}
+
+	private List<I_M_HU> cuToExistingTU_InTrx(
 			@NonNull final I_M_HU sourceCuHU,
 			@NonNull final BigDecimal qtyCU,
 			@NonNull final I_M_HU targetTuHU)
 	{
 		final IAllocationDestination destination;
-		if (handlingUnitsBL.isAggregateHU(targetTuHU))
+		final boolean isTargetAggregatedTU = handlingUnitsBL.isAggregateHU(targetTuHU);
+		if (isTargetAggregatedTU)
 		{
 			// we will load directly to the given tuHU which is actually a VHU
 			destination = HUListAllocationSourceDestination.of(targetTuHU);
@@ -316,25 +331,24 @@ public class HUTransformService
 
 		if (destination != null)
 		{
-			HUSplitBuilderCoreEngine
-					.of(
-							huContext,
-							sourceCuHU,
-							// forceAllocation = true; we don't want to get bothered by capacity constraint, even if the destination *probably* doesn't have any to start with
-							huContext -> createCUAllocationRequest(huContext,
-									singleProductStorage.getM_Product(),
-									singleProductStorage.getC_UOM(),
-									qtyCU,
-									true),
-							destination)
+			HUSplitBuilderCoreEngine.builder()
+					.huContextInitital(huContext)
+					.huToSplit(sourceCuHU)
+					.requestProvider(huContext -> createCUAllocationRequest(huContext,
+							singleProductStorage.getM_Product(),
+							singleProductStorage.getC_UOM(),
+							qtyCU,
+							true /* forceAllocation */))
+					.destination(destination)
+					.build()
 					.withPropagateHUValues()
 					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 					.performSplit();
 		}
 
-		if (handlingUnitsBL.isAggregateHU(targetTuHU))
+		if (isTargetAggregatedTU)
 		{
-			return; // we are done; no attaching
+			return ImmutableList.of(); // we are done; no attaching
 		}
 
 		// we attach the
@@ -350,33 +364,34 @@ public class HUTransformService
 		}
 
 		// get *the* MI HU_Item of 'tuHU'. There must be exactly one, otherwise, tuHU wouldn't exist here in the first place.
-		final List<I_M_HU_Item> tuMaterialItem = handlingUnitsDAO.retrieveItems(targetTuHU)
+		final I_M_HU_Item tuMaterialItem = handlingUnitsDAO.retrieveItems(targetTuHU)
 				.stream()
 				.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(piItem.getItemType()))
-				.collect(Collectors.toList());
-		Check.errorUnless(tuMaterialItem.size() == 1, "Param 'tuHU' does not have one 'MI' item; tuHU={}", targetTuHU);
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Param 'tuHU' does not have one 'MI' item; tuHU=" + targetTuHU)));
 
 		// finally do the attaching
 
 		// iterate the child CUs and set their parent item
-		childCUs.forEach(newChildCU -> {
-			setParent(newChildCU,
-					tuMaterialItem.get(0),
+		childCUs.forEach(childCU -> {
+			setParent(childCU,
+					tuMaterialItem,
 
 					// before the newChildCU's parent item is set,
 					localHuContext -> {
-						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
+						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(childCU);
 						final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
-						updateAllocation(oldParentLU, oldParentTU, sourceCuHU, qtyCU, true, localHuContext);
+						updateAllocation(oldParentLU, oldParentTU, childCU, qtyCU, true, localHuContext);
 					},
 
 					// after the newChildCU's parent item is set,
 					localHuContext -> {
-						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
+						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(childCU);
 						final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
-						updateAllocation(newParentLU, newParentTU, newChildCU, qtyCU, false, localHuContext);
+						updateAllocation(newParentLU, newParentTU, childCU, qtyCU, false, localHuContext);
 					});
 		});
+
+		return childCUs;
 	}
 
 	/**
@@ -537,12 +552,13 @@ public class HUTransformService
 
 		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
-		HUSplitBuilderCoreEngine
-				.of(huContext,
-						cuHU,
-						// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
-						huContext -> createCUAllocationRequest(huContext, storages.get(0).getM_Product(), storages.get(0).getC_UOM(), qtyCU, false),
-						destination)
+		HUSplitBuilderCoreEngine.builder()
+				.huContextInitital(huContext)
+				.huToSplit(cuHU)
+				// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
+				.requestProvider(huContext -> createCUAllocationRequest(huContext, storages.get(0).getM_Product(), storages.get(0).getC_UOM(), qtyCU, false))
+				.destination(destination)
+				.build()
 				.withPropagateHUValues()
 				.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
@@ -642,7 +658,7 @@ public class HUTransformService
 
 		return result.build();
 	}
-	
+
 	private List<I_M_HU> huToNewTUs(@NonNull final I_M_HU sourceHU, final int qtyTU)
 	{
 		if (handlingUnitsBL.isLoadingUnit(sourceHU))
@@ -881,7 +897,9 @@ public class HUTransformService
 				final I_M_HU_Item tuHUsParentItem = handlingUnitsDAO.retrieveParentItem(sourceTuHU); // can't be null because if is was isAggregateHU() would return false.
 				final BigDecimal representedTUsCount = tuHUsParentItem.getQty();
 				Preconditions.checkState(representedTUsCount.signum() > 0, "Param 'tuHU' is an aggregate HU whose M_HU_Item_Parent has a qty of %s; tuHU=%s; tuHU's M_HU_Item_Parent=%s", representedTUsCount, sourceTuHU, tuHUsParentItem);
-				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount);
+				
+				final int uomPrecision = firstProductStorage.getC_UOM().getStdPrecision();
+				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount, uomPrecision, RoundingMode.HALF_UP);
 			}
 			else
 			{
@@ -918,12 +936,13 @@ public class HUTransformService
 
 			destination.addTUCapacity(cuProduct, sourceQtyCUperTU, cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
 
-			HUSplitBuilderCoreEngine
-					.of(huContext,
-							sourceTuHU,
-							// forceAllocation = false; we want to create as many new top level HUs as are implied by the cuQty and the HUs' capacity
-							huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(sourceQtyCUperTU), false),
-							destination)
+			HUSplitBuilderCoreEngine.builder()
+					.huContextInitital(huContext)
+					.huToSplit(sourceTuHU)
+					// forceAllocation = false; we want to create as many new top level HUs as are implied by the cuQty and the HUs' capacity
+					.requestProvider(huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(sourceQtyCUperTU), false))
+					.destination(destination)
+					.build()
 					.withPropagateHUValues()
 					.withTuPIItem(materialItem)
 					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error

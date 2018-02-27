@@ -10,12 +10,12 @@ package de.metas.pricing.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +35,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
 
@@ -61,8 +61,8 @@ public class M_ProductPrice
 					.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, productPrice.getM_PriceList_Version_ID())
 					.addNotEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID, productPrice.getM_ProductPrice_ID())
 					.create()
-					.aggregate(I_M_ProductPrice.COLUMNNAME_SeqNo, IQuery.AGGREGATE_MAX, int.class);
-			
+					.aggregate(I_M_ProductPrice.COLUMNNAME_SeqNo, Aggregate.MAX, int.class);
+
 			final int nextSeqNo = (lastSeqNo <= 0 ? 0 : lastSeqNo) / 10 * 10 + 10;
 			productPrice.setSeqNo(nextSeqNo);
 		}
@@ -70,7 +70,7 @@ public class M_ProductPrice
 
 	/**
 	 * Make sure Scale price and Attribute price are never both used.
-	 * 
+	 *
 	 * @param productPrice
 	 */
 	@ModelChange(timings = {

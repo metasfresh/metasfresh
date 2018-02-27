@@ -18,6 +18,8 @@
  *****************************************************************************/
 package de.metas.shipping.model;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -44,7 +46,6 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 /**
  *	Shipping Package model
@@ -67,13 +68,13 @@ public class MMShippingPackage extends X_M_ShippingPackage
 	public MMShippingPackage (Properties ctx, int M_ShippingPackage_ID, String trxName)
 	{
 		super (ctx, M_ShippingPackage_ID, trxName);
-		if (M_ShippingPackage_ID == 0)
+		if (is_new())
 		{
 			// setC_BPartner_Location_ID (0);
 			// setM_Package_ID (0);
 			// setM_ShipperTransportation_ID (0);
 			// setM_ShippingPackage_ID (0);
-			setPackageNetTotal (Env.ZERO);
+			setPackageNetTotal (BigDecimal.ZERO);
 			setProcessed (false);
 		}
 	}	//	MMShippingPackage

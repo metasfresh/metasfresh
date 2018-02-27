@@ -19,7 +19,6 @@ RUN apt update \
     && apt -y autoclean
 
 COPY ./configs/logback.xml /opt/metasfresh/metasfresh-report/
-COPY ./configs/metasfresh-report.conf /opt/metasfresh/metasfresh-report/
 COPY ./configs/metasfresh.properties /opt/metasfresh/metasfresh-report/
 
 COPY ./start_report_docker.sh /opt/metasfresh/metasfresh-report/
@@ -32,7 +31,7 @@ RUN dos2unix /opt/metasfresh/metasfresh-report/start_report_docker.sh
 # make our start command executable
 RUN chmod 700 /opt/metasfresh/metasfresh-report/start_report_docker.sh
 
-COPY ./metasfresh-report-service.jar /opt/metasfresh/metasfresh-report/metasfresh-report.jar
+COPY ./metasfresh-report-service-standalone.jar /opt/metasfresh/metasfresh-report/metasfresh-report.jar
 RUN sh -c 'touch /opt/metasfresh/metasfresh-report/metasfresh-report.jar'
 
 # prepare the docker image to accomodate external/private jars

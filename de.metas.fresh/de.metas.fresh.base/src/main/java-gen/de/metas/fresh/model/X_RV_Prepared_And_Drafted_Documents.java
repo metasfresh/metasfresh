@@ -14,7 +14,7 @@ public class X_RV_Prepared_And_Drafted_Documents extends org.compiere.model.PO i
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 832501144L;
+	private static final long serialVersionUID = -261912338L;
 
     /** Standard Constructor */
     public X_RV_Prepared_And_Drafted_Documents (Properties ctx, int RV_Prepared_And_Drafted_Documents_ID, String trxName)
@@ -182,7 +182,7 @@ public class X_RV_Prepared_And_Drafted_Documents extends org.compiere.model.PO i
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -192,7 +192,7 @@ public class X_RV_Prepared_And_Drafted_Documents extends org.compiere.model.PO i
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override

@@ -1,20 +1,22 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): victor.perez@e-evolution.com http://www.e-evolution.com    *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
+ * Contributor(s): victor.perez@e-evolution.com http://www.e-evolution.com *
  *****************************************************************************/
 
 package org.adempiere.model.engines;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -29,11 +31,11 @@ package org.adempiere.model.engines;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -70,7 +72,6 @@ import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPCostCollectorDAO;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Cost;
@@ -84,6 +85,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
 
 /**
@@ -106,10 +108,10 @@ public class CostEngine
 	{
 		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(cc);
-		
+
 		final I_S_Resource resource = InterfaceWrapperHelper.create(ctx, S_Resource_ID, I_S_Resource.class, ITrx.TRXNAME_None);
-		
-		final I_M_Product resourceProduct =resourceProductService.retrieveProductForResource(resource);
+
+		final I_M_Product resourceProduct = resourceProductService.retrieveProductForResource(resource);
 		return getProductStandardCostPrice(
 				cc,
 				resourceProduct,
@@ -123,10 +125,10 @@ public class CostEngine
 		{
 			return BigDecimal.ZERO;
 		}
-		
+
 		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 		final I_S_Resource resource = InterfaceWrapperHelper.create(Env.getCtx(), S_Resource_ID, I_S_Resource.class, ITrx.TRXNAME_None);
-		
+
 		final I_M_Product resourceProduct = resourceProductService.retrieveProductForResource(resource);
 		return getProductActualCostPrice(
 				cc,
@@ -136,17 +138,6 @@ public class CostEngine
 				trxName);
 	}
 
-	public BigDecimal getProductActualCostPrice(
-			final I_PP_Cost_Collector cc,
-			final I_M_Product product,
-			final I_C_AcctSchema as,
-			final I_M_CostElement element,
-			final String trxName)
-	{
-		final boolean failIfNoCostFound = true;
-		return getProductActualCostPrice(cc, product, as, element, failIfNoCostFound, trxName);
-	}
-
 	public BigDecimal getProductActualCostPriceOrZero(
 			final I_PP_Cost_Collector cc,
 			final I_M_Product product,
@@ -154,8 +145,7 @@ public class CostEngine
 			final I_M_CostElement element,
 			final String trxName)
 	{
-		final boolean failIfNoCostFound = false;
-		final BigDecimal price = getProductActualCostPrice(cc, product, as, element, failIfNoCostFound, trxName);
+		final BigDecimal price = getProductActualCostPrice(cc, product, as, element, trxName);
 		if (price == null)
 		{
 			return BigDecimal.ZERO;
@@ -178,33 +168,45 @@ public class CostEngine
 			final I_M_Product product,
 			final I_C_AcctSchema as,
 			final I_M_CostElement element,
-			final boolean failIfNoCostFound,
+			final String trxName)
+	{
+		final I_M_Cost cost = retrieveOrCreateCostRecord(cc, product, as, element, trxName);
+
+		final BigDecimal price = cost.getCurrentCostPrice().add(cost.getCurrentCostPriceLL());
+		return roundCost(price, as.getC_AcctSchema_ID());
+	}
+
+	private I_M_Cost retrieveOrCreateCostRecord(
+			final I_PP_Cost_Collector cc,
+			final I_M_Product product,
+			final I_C_AcctSchema as,
+			final I_M_CostElement element,
 			final String trxName)
 	{
 		final CostDimension d = new CostDimension(product,
 				as,
 				as.getM_CostType_ID(),
-				cc.getAD_Org_ID(), // AD_Org_ID,
-				cc.getM_AttributeSetInstance_ID(), // M_ASI_ID,
+				cc.getAD_Org_ID(),
+				cc.getM_AttributeSetInstance_ID(),
 				element.getM_CostElement_ID());
 
 		final I_M_Cost cost = d.toQuery(I_M_Cost.class, trxName).firstOnly(I_M_Cost.class);
-		if (cost == null)
+		if (cost != null)
 		{
-			if (!failIfNoCostFound)
-			{
-				return null;
-			}
-
-			throw new LiberoException("@NotFound@ @M_Cost@ - "
-					+ "@M_AcctSchema_ID@=" + as
-					+ ", @M_CostElement_ID@=" + element
-					+ ", @M_Product_ID@=" + product
-					+ ", Dimension=" + d);
+			return cost;
 		}
+		final I_M_Cost newCostRecord = new MCost(product,
+				cc.getM_AttributeSetInstance_ID(),
+				as,
+				cc.getAD_Org_ID(),
+				element.getM_CostElement_ID());
+		save(newCostRecord);
 
-		final BigDecimal price = cost.getCurrentCostPrice().add(cost.getCurrentCostPriceLL());
-		return roundCost(price, as.getC_AcctSchema_ID());
+		log.warn(
+				"An M_Cost record was missing; we created it on the fly; product={}; account schema={}; cost element={}; new record={}",
+				product, as, element, newCostRecord);
+
+		return newCostRecord;
 	}
 
 	public BigDecimal getProductStandardCostPrice(I_PP_Cost_Collector cc, I_M_Product product, I_C_AcctSchema as, I_M_CostElement element)
@@ -512,11 +514,11 @@ public class CostEngine
 		{
 			return;
 		}
-		
+
 		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-		
+
 		final I_M_Product resourceProduct = resourceProductService.retrieveProductForResource(cc.getS_Resource());
-		
+
 		//
 		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(cc.getAD_Client_ID());
 		final BigDecimal qty = routingService.getResourceBaseValue(cc.getS_Resource_ID(), cc);
@@ -574,7 +576,7 @@ public class CostEngine
 		{
 			final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 			product = resourceProductService.retrieveProductForResource(ccuv.getS_Resource());
-			
+
 			final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(ccuv.getAD_Client_ID());
 			qty = routingService.getResourceBaseValue(ccuv.getS_Resource_ID(), ccuv);
 		}
@@ -603,7 +605,7 @@ public class CostEngine
 		if (cc.isCostCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl))
 		{
 			final I_AD_WF_Node node = cc.getPP_Order_Node().getAD_WF_Node();
-			
+
 			final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 			product = resourceProductService.retrieveProductForResource(node.getS_Resource());
 		}
@@ -679,10 +681,10 @@ public class CostEngine
 			for (I_M_CostElement element : getCostElements(cc.getCtx()))
 			{
 				final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-				
+
 				final I_M_Product resourcePStd = resourceProductService.retrieveProductForResource(cc.getPP_Order_Node().getAD_WF_Node().getS_Resource()); // std_resource;
 				final I_M_Product resourcePActual = resourceProductService.retrieveProductForResource(cc.getS_Resource()); // actual_resource;
-				
+
 				final BigDecimal priceStd = getProductActualCostPrice(cc, resourcePStd, as, element, cc.get_TrxName());
 				final BigDecimal priceActual = getProductActualCostPrice(cc, resourcePActual, as, element, cc.get_TrxName());
 				if (priceStd.compareTo(priceActual) == 0)

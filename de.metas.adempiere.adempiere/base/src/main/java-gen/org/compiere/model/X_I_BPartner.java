@@ -14,7 +14,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 43477797L;
+	private static final long serialVersionUID = -1051207302L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 			setIsBillToContact_Default (false); // N
 			setIsBillToDefault (false); // N
 			setIsDefaultContact (false); // N
+			setIsSEPASigned (false); // N
 			setIsShipTo (false); // N
 			setIsShipToContact_Default (false); // N
 			setIsShipToDefault (false); // N
@@ -220,6 +221,43 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
+	}
+
+	@Override
+	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class, C_BP_BankAccount);
+	}
+
+	/** Set Bankverbindung.
+		@param C_BP_BankAccount_ID 
+		Bankverbindung des Geschäftspartners
+	  */
+	@Override
+	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
+	{
+		if (C_BP_BankAccount_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
+	}
+
+	/** Get Bankverbindung.
+		@return Bankverbindung des Geschäftspartners
+	  */
+	@Override
+	public int getC_BP_BankAccount_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_BP_Group getC_BP_Group() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
@@ -399,6 +437,43 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public int getC_Greeting_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Greeting_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_InvoiceSchedule getC_InvoiceSchedule() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_InvoiceSchedule_ID, org.compiere.model.I_C_InvoiceSchedule.class);
+	}
+
+	@Override
+	public void setC_InvoiceSchedule(org.compiere.model.I_C_InvoiceSchedule C_InvoiceSchedule)
+	{
+		set_ValueFromPO(COLUMNNAME_C_InvoiceSchedule_ID, org.compiere.model.I_C_InvoiceSchedule.class, C_InvoiceSchedule);
+	}
+
+	/** Set Terminplan Rechnung.
+		@param C_InvoiceSchedule_ID 
+		Plan für die Rechnungsstellung
+	  */
+	@Override
+	public void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID)
+	{
+		if (C_InvoiceSchedule_ID < 1) 
+			set_Value (COLUMNNAME_C_InvoiceSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_InvoiceSchedule_ID, Integer.valueOf(C_InvoiceSchedule_ID));
+	}
+
+	/** Get Terminplan Rechnung.
+		@return Plan für die Rechnungsstellung
+	  */
+	@Override
+	public int getC_InvoiceSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceSchedule_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -625,6 +700,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Firstname);
 	}
 
+	/** Set Erster Verkauf.
+		@param FirstSale 
+		Datum des Ersten Verkaufs
+	  */
+	@Override
+	public void setFirstSale (java.sql.Timestamp FirstSale)
+	{
+		set_Value (COLUMNNAME_FirstSale, FirstSale);
+	}
+
+	/** Get Erster Verkauf.
+		@return Datum des Ersten Verkaufs
+	  */
+	@Override
+	public java.sql.Timestamp getFirstSale () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_FirstSale);
+	}
+
 	/** Set Gruppen-Schlüssel.
 		@param GroupValue 
 		Business Partner Group Key
@@ -711,6 +805,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return false;
 	}
 
+	/** Set IBAN.
+		@param IBAN 
+		International Bank Account Number
+	  */
+	@Override
+	public void setIBAN (java.lang.String IBAN)
+	{
+		set_Value (COLUMNNAME_IBAN, IBAN);
+	}
+
+	/** Get IBAN.
+		@return International Bank Account Number
+	  */
+	@Override
+	public java.lang.String getIBAN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IBAN);
+	}
+
 	/** Set Interessengebiet.
 		@param InterestAreaName 
 		Name of the Interest Area
@@ -728,6 +841,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getInterestAreaName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InterestAreaName);
+	}
+
+	/** Set Status Terminplan.
+		@param InvoiceSchedule Status Terminplan	  */
+	@Override
+	public void setInvoiceSchedule (java.lang.String InvoiceSchedule)
+	{
+		set_Value (COLUMNNAME_InvoiceSchedule, InvoiceSchedule);
+	}
+
+	/** Get Status Terminplan.
+		@return Status Terminplan	  */
+	@Override
+	public java.lang.String getInvoiceSchedule () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InvoiceSchedule);
 	}
 
 	/** Set Vorbelegung Rechnung.
@@ -868,6 +997,29 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public boolean isEmployee () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsEmployee);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set SEPA Signed.
+		@param IsSEPASigned SEPA Signed	  */
+	@Override
+	public void setIsSEPASigned (boolean IsSEPASigned)
+	{
+		set_Value (COLUMNNAME_IsSEPASigned, Boolean.valueOf(IsSEPASigned));
+	}
+
+	/** Get SEPA Signed.
+		@return SEPA Signed	  */
+	@Override
+	public boolean isSEPASigned () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSEPASigned);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -1048,6 +1200,44 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Name2);
 	}
 
+	/** Set Name3.
+		@param Name3 
+		Zusätzliche Bezeichnung
+	  */
+	@Override
+	public void setName3 (java.lang.String Name3)
+	{
+		set_Value (COLUMNNAME_Name3, Name3);
+	}
+
+	/** Get Name3.
+		@return Zusätzliche Bezeichnung
+	  */
+	@Override
+	public java.lang.String getName3 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Name3);
+	}
+
+	/** Set Organisations-Schlüssel.
+		@param OrgValue 
+		Suchschlüssel der Organisation
+	  */
+	@Override
+	public void setOrgValue (java.lang.String OrgValue)
+	{
+		set_Value (COLUMNNAME_OrgValue, OrgValue);
+	}
+
+	/** Get Organisations-Schlüssel.
+		@return Suchschlüssel der Organisation
+	  */
+	@Override
+	public java.lang.String getOrgValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_OrgValue);
+	}
+
 	/** Set Kennwort.
 		@param Password 
 		Password of any length (case sensitive)
@@ -1065,6 +1255,103 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getPassword () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Password);
+	}
+
+	/** 
+	 * PaymentRule AD_Reference_ID=195
+	 * Reference name: _Payment Rule
+	 */
+	public static final int PAYMENTRULE_AD_Reference_ID=195;
+	/** Cash = B */
+	public static final String PAYMENTRULE_Cash = "B";
+	/** CreditCard = K */
+	public static final String PAYMENTRULE_CreditCard = "K";
+	/** DirectDeposit = T */
+	public static final String PAYMENTRULE_DirectDeposit = "T";
+	/** Check = S */
+	public static final String PAYMENTRULE_Check = "S";
+	/** OnCredit = P */
+	public static final String PAYMENTRULE_OnCredit = "P";
+	/** DirectDebit = D */
+	public static final String PAYMENTRULE_DirectDebit = "D";
+	/** Mixed = M */
+	public static final String PAYMENTRULE_Mixed = "M";
+	/** Set Zahlungsweise.
+		@param PaymentRule 
+		Wie die Rechnung bezahlt wird
+	  */
+	@Override
+	public void setPaymentRule (java.lang.String PaymentRule)
+	{
+
+		set_Value (COLUMNNAME_PaymentRule, PaymentRule);
+	}
+
+	/** Get Zahlungsweise.
+		@return Wie die Rechnung bezahlt wird
+	  */
+	@Override
+	public java.lang.String getPaymentRule () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PaymentRule);
+	}
+
+	/** 
+	 * PaymentRulePO AD_Reference_ID=195
+	 * Reference name: _Payment Rule
+	 */
+	public static final int PAYMENTRULEPO_AD_Reference_ID=195;
+	/** Cash = B */
+	public static final String PAYMENTRULEPO_Cash = "B";
+	/** CreditCard = K */
+	public static final String PAYMENTRULEPO_CreditCard = "K";
+	/** DirectDeposit = T */
+	public static final String PAYMENTRULEPO_DirectDeposit = "T";
+	/** Check = S */
+	public static final String PAYMENTRULEPO_Check = "S";
+	/** OnCredit = P */
+	public static final String PAYMENTRULEPO_OnCredit = "P";
+	/** DirectDebit = D */
+	public static final String PAYMENTRULEPO_DirectDebit = "D";
+	/** Mixed = M */
+	public static final String PAYMENTRULEPO_Mixed = "M";
+	/** Set Zahlungsweise.
+		@param PaymentRulePO 
+		Möglichkeiten der Bezahlung einer Bestellung
+	  */
+	@Override
+	public void setPaymentRulePO (java.lang.String PaymentRulePO)
+	{
+
+		set_Value (COLUMNNAME_PaymentRulePO, PaymentRulePO);
+	}
+
+	/** Get Zahlungsweise.
+		@return Möglichkeiten der Bezahlung einer Bestellung
+	  */
+	@Override
+	public java.lang.String getPaymentRulePO () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PaymentRulePO);
+	}
+
+	/** Set Zahlungskondition.
+		@param PaymentTerm 
+		Zahlungskondition
+	  */
+	@Override
+	public void setPaymentTerm (java.lang.String PaymentTerm)
+	{
+		set_Value (COLUMNNAME_PaymentTerm, PaymentTerm);
+	}
+
+	/** Get Zahlungskondition.
+		@return Zahlungskondition
+	  */
+	@Override
+	public java.lang.String getPaymentTerm () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PaymentTerm);
 	}
 
 	/** Set Telefon.
@@ -1103,6 +1390,43 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getPhone2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Phone2);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PaymentTerm getPO_PaymentTerm() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PO_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
+	}
+
+	@Override
+	public void setPO_PaymentTerm(org.compiere.model.I_C_PaymentTerm PO_PaymentTerm)
+	{
+		set_ValueFromPO(COLUMNNAME_PO_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, PO_PaymentTerm);
+	}
+
+	/** Set Zahlungskondition.
+		@param PO_PaymentTerm_ID 
+		Zahlungskondition für die Bestellung
+	  */
+	@Override
+	public void setPO_PaymentTerm_ID (int PO_PaymentTerm_ID)
+	{
+		if (PO_PaymentTerm_ID < 1) 
+			set_Value (COLUMNNAME_PO_PaymentTerm_ID, null);
+		else 
+			set_Value (COLUMNNAME_PO_PaymentTerm_ID, Integer.valueOf(PO_PaymentTerm_ID));
+	}
+
+	/** Get Zahlungskondition.
+		@return Zahlungskondition für die Bestellung
+	  */
+	@Override
+	public int getPO_PaymentTerm_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PaymentTerm_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set PLZ.
@@ -1246,6 +1570,41 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getRegionName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RegionName);
+	}
+
+	/** Set Short Description.
+		@param ShortDescription Short Description	  */
+	@Override
+	public void setShortDescription (java.lang.String ShortDescription)
+	{
+		set_Value (COLUMNNAME_ShortDescription, ShortDescription);
+	}
+
+	/** Get Short Description.
+		@return Short Description	  */
+	@Override
+	public java.lang.String getShortDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ShortDescription);
+	}
+
+	/** Set Swift code.
+		@param SwiftCode 
+		Swift Code or BIC
+	  */
+	@Override
+	public void setSwiftCode (java.lang.String SwiftCode)
+	{
+		set_Value (COLUMNNAME_SwiftCode, SwiftCode);
+	}
+
+	/** Get Swift code.
+		@return Swift Code or BIC
+	  */
+	@Override
+	public java.lang.String getSwiftCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SwiftCode);
 	}
 
 	/** Set Steuer-ID.

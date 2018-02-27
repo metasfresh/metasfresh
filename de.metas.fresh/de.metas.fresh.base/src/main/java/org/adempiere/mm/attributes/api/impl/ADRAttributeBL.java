@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes.api.impl;
 
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
@@ -88,13 +89,13 @@ public class ADRAttributeBL implements IADRAttributeBL
 			else if (attributeAction == AttributeAction.GenerateNew)
 			{
 				final I_M_Attribute adrAttribute = Services.get(IADRAttributeDAO.class).retrieveADRAttribute(partner);
-				
+
 				//FRESH-559: In case of null adrAttribute, return null
 				if(adrAttribute == null)
 				{
 					return null;
 				}
-				
+
 				final IAttributeValueGenerator generator = Services.get(IAttributesBL.class).getAttributeValueGenerator(adrAttribute);
 
 				if (generator == null)
@@ -102,7 +103,8 @@ public class ADRAttributeBL implements IADRAttributeBL
 					throw new NoAttributeGeneratorException(partner.getValue());
 				}
 
-				return generator.generateAttributeValue(ctx, I_C_BPartner.Table_ID, partner.getC_BPartner_ID(), isSOTrx, trxName);
+				final int bpartnerTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_BPartner.Table_Name);
+				return generator.generateAttributeValue(ctx, bpartnerTableId, partner.getC_BPartner_ID(), isSOTrx, trxName);
 			}
 			else if (attributeAction == AttributeAction.Ignore)
 			{

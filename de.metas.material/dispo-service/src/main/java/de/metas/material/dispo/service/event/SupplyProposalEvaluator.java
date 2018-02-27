@@ -7,13 +7,13 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialDescriptor.DateOperator;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -72,28 +72,29 @@ public class SupplyProposalEvaluator
 	 * That makes no sense and this method shall therefore return {@code false} on such a folly.
 	 * </li>
 	 * </ul>
-	 *
-	 * @param proposal
-	 * @return
 	 */
-	public boolean evaluateSupply(@NonNull final SupplyProposal proposal)
+	public boolean isProposalAccepted(@NonNull final SupplyProposal proposal)
 	{
+		final ProductDescriptor productDescriptor = proposal.getProductDescriptor();
+
 		final CandidatesQuery demandQuery = CandidatesQuery.builder()
 				.type(CandidateType.DEMAND)
-				.materialDescriptor(MaterialDescriptor.builderForQuery()
+				.materialDescriptorQuery(MaterialDescriptorQuery.builder()
 						.date(proposal.getDate())
 						.dateOperator(DateOperator.AT_OR_AFTER)
-						.productDescriptor(proposal.getProductDescriptor())
+						.productId(productDescriptor.getProductId())
+						.storageAttributesKey(productDescriptor.getStorageAttributesKey())
 						.warehouseId(proposal.getDestWarehouseId()).build())
 				.build();
 
-		final MaterialDescriptor sourceMaterialDescriptor = MaterialDescriptor.builderForQuery()
-				.productDescriptor(proposal.getProductDescriptor())
+		final MaterialDescriptorQuery sourceMaterialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.productId(productDescriptor.getProductId())
+				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
 				.warehouseId(proposal.getSourceWarehouseId())
 				.build();
 
 		final CandidatesQuery directReverseForDemandQuery = demandQuery
-				.withParentMaterialDescriptor(sourceMaterialDescriptor);
+				.withParentMaterialDescriptorQuery(sourceMaterialDescriptorQuery);
 
 		final List<Candidate> directReversals = candidateRepository.retrieveOrderedByDateAndSeqNo(directReverseForDemandQuery);
 		if (!directReversals.isEmpty())
@@ -101,12 +102,17 @@ public class SupplyProposalEvaluator
 			return false;
 		}
 
+		final MaterialDescriptorQuery supplyMaterialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.productId(productDescriptor.getProductId())
+				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
+				.warehouseId(proposal.getSourceWarehouseId())
+				.date(proposal.getDate())
+				.dateOperator(DateOperator.AT_OR_AFTER)
+				.build();
+
 		final CandidatesQuery supplyQuery = demandQuery
 				.withType(CandidateType.SUPPLY)
-				.withMaterialDescriptor(demandQuery.getMaterialDescriptor()
-						.withDate(proposal.getDate())
-						.withDateOperator(DateOperator.AT_OR_AFTER)
-						.withWarehouseId(proposal.getSourceWarehouseId()));
+				.withMaterialDescriptorQuery(supplyMaterialDescriptorQuery);
 
 		final List<Candidate> demands = candidateRepository.retrieveOrderedByDateAndSeqNo(demandQuery);
 		for (final Candidate demand : demands)

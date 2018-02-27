@@ -19,8 +19,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Services;
@@ -30,16 +28,16 @@ import org.compiere.model.MInOutLine;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MMatchPO;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.MStorage;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.IMatchInvBL;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.IStorageBL;
 
 public class Match
 {
@@ -68,8 +66,8 @@ public class Match
 	private static final int		I_Product = 5;
 	private static final int		I_QTY = 6;
 	private static final int		I_MATCHED = 7;
-//	private static final int        I_Org = 8; //JAVIER 
-	
+//	private static final int        I_Org = 8; //JAVIER
+
 
 
 	private StringBuffer    m_sql = null;
@@ -80,7 +78,7 @@ public class Match
 	//private BigDecimal      m_xMatched = Env.ZERO;
 	//private BigDecimal      m_xMatchedTo = Env.ZERO;
 
-	
+
 	/**
 	 *  Match From Changed - Fill Match To
 	 */
@@ -88,7 +86,7 @@ public class Match
 	{
 	//	log.debug( "VMatch.cmd_matchFrom");
 		//String selection = (String)matchFrom.getSelectedItem();
-		Vector<String> vector = new Vector<String>(2);
+		Vector<String> vector = new Vector<>(2);
 		if (selection.equals(m_matchOptions[MATCH_INVOICE]))
 			vector.add(m_matchOptions[MATCH_SHIPMENT]);
 		else if (selection.equals(m_matchOptions[MATCH_ORDER]))
@@ -101,7 +99,7 @@ public class Match
 		return vector;
 	}   //  cmd_matchFrom
 
-	
+
 	/**
 	 *  Search Button Pressed - Fill xMatched
 	 */
@@ -141,7 +139,7 @@ public class Match
 			m_sql.append(" AND ").append(m_dateColumn).append(" >= ").append(DB.TO_DATE(from));
 		else if (to != null)
 			m_sql.append(" AND ").append(m_dateColumn).append(" <= ").append(DB.TO_DATE(to));
-		
+
 		//  ** Load Table **
 		tableLoad (xMatchedTable);
 		return xMatchedTable;
@@ -213,7 +211,7 @@ public class Match
 		//  requery
 		//cmd_search();
 	}   //  cmd_process
-	
+
 
 	/**
 	 *  Fill xMatchedTo
@@ -252,7 +250,7 @@ public class Match
 
 		return xMatchedToTable;
 	}   //  cmd_seachTo
-	
+
 	/**************************************************************************
 	 *  Initialize Table access - create SQL, dateColumn.
 	 *  <br>
@@ -313,15 +311,15 @@ public class Match
 			m_linetype = new StringBuffer();
 			m_linetype.append( matchToType == MATCH_SHIPMENT ? "M_InOutLine_ID" : "C_InvoiceLine_ID") ;
 			if ( matched ) {
-				m_sql.append( " mo." + m_linetype + " IS NOT NULL " ) ; 
+				m_sql.append( " mo." + m_linetype + " IS NOT NULL " ) ;
 			} else {
  				m_sql.append( " ( mo." + m_linetype + " IS NULL OR "
-				+ " (lin.QtyOrdered <>  (SELECT sum(mo1.Qty) AS Qty" 
+				+ " (lin.QtyOrdered <>  (SELECT sum(mo1.Qty) AS Qty"
 				+ " FROM m_matchpo mo1 WHERE "
 				+ " mo1.C_ORDERLINE_ID=lin.C_ORDERLINE_ID AND "
 				+ " hdr.C_ORDER_ID=lin.C_ORDER_ID AND "
 				+ " mo1." + m_linetype
-				+ " IS NOT NULL group by mo1.C_ORDERLINE_ID))) " );	
+				+ " IS NOT NULL group by mo1.C_ORDERLINE_ID))) " );
 			}
 			m_sql.append( " AND hdr.DocStatus IN ('CO','CL')" );
 			m_groupBy = " GROUP BY hdr.C_Order_ID,hdr.DocumentNo,hdr.DateOrdered,bp.Name,hdr.C_BPartner_ID,"
@@ -429,7 +427,7 @@ public class Match
 			{
 				success = true;
 			}
-			
+
 			//	Create PO - Invoice Link = corrects PO
 			if (iLine.getC_OrderLine_ID() != 0 && iLine.getM_Product_ID() != 0)
 			{
@@ -466,11 +464,13 @@ public class Match
 					success = true;
 					//	Correct Ordered Qty for Stocked Products (see MOrder.reserveStock / MInOut.processIt)
 					if (sLine.getProduct() != null && Services.get(IProductBL.class).isStocked(sLine.getProduct()))
-						success = MStorage.add (Env.getCtx(), sLine.getM_Warehouse_ID(), 
-							sLine.getM_Locator_ID(), 
-							sLine.getM_Product_ID(), 
-							sLine.getM_AttributeSetInstance_ID(), oLine.getM_AttributeSetInstance_ID(), 
+					{
+						success = Services.get(IStorageBL.class).add (Env.getCtx(), sLine.getM_Warehouse_ID(),
+							sLine.getM_Locator_ID(),
+							sLine.getM_Product_ID(),
+							sLine.getM_AttributeSetInstance_ID(), oLine.getM_AttributeSetInstance_ID(),
 							null, null, qty.negate(), null);
+					}
 				}
 			}
 			else

@@ -8,7 +8,8 @@ import org.compiere.model.I_M_Product_Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.order.compensationGroup.GroupIdTemplate;
+import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateLine;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -71,9 +72,9 @@ public class C_Order_CreateCompensationGroup extends JavaProcess implements IPro
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only draft orders are allowed");
 		}
-		
+
 		// Only sales orders
-		if(!order.isSOTrx())
+		if (!order.isSOTrx())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");
 		}
@@ -86,14 +87,13 @@ public class C_Order_CreateCompensationGroup extends JavaProcess implements IPro
 	{
 		groupsRepo.prepareNewGroup()
 				.linesToGroup(getSelectedIncludedRecordIds(I_C_OrderLine.class))
-				.newGroupIdTemplate(createNewGroupIdTemplate())
-				.compensationProductId(compensationProductId)
+				.groupTemplate(createNewGroupTemplate())
 				.createGroup();
 
 		return MSG_OK;
 	}
 
-	private GroupIdTemplate createNewGroupIdTemplate()
+	private GroupTemplate createNewGroupTemplate()
 	{
 		String groupNameEffective = this.groupName;
 		if (Check.isEmpty(groupNameEffective, true) && productCategory != null)
@@ -101,9 +101,12 @@ public class C_Order_CreateCompensationGroup extends JavaProcess implements IPro
 			groupNameEffective = productCategory.getName();
 		}
 
-		return GroupIdTemplate.builder()
+		return GroupTemplate.builder()
 				.name(groupNameEffective)
 				.productCategoryId(productCategory != null ? productCategory.getM_Product_Category_ID() : 0)
+				.line(GroupTemplateLine.builder()
+						.productId(compensationProductId)
+						.build())
 				.build();
 	}
 }

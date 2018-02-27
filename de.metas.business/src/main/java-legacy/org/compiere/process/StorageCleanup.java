@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
+import org.adempiere.util.Services;
 import org.compiere.model.MLocator;
 import org.compiere.model.MMovement;
 import org.compiere.model.MMovementLine;
@@ -31,6 +32,7 @@ import org.compiere.util.Env;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IStorageBL;
 
 /**
  * 	StorageCleanup
@@ -218,12 +220,13 @@ public class StorageCleanup extends JavaProcess
 				//	Eliminate Reservation
 				if (reserved.signum() != 0 || ordered.signum() != 0)
 				{
-					if (MStorage.add(getCtx(), target.getM_Warehouse_ID(), target.getM_Locator_ID(),
+					final IStorageBL storageBL = Services.get(IStorageBL.class);
+					if (storageBL.add(getCtx(), target.getM_Warehouse_ID(), target.getM_Locator_ID(),
 						target.getM_Product_ID(),
 						target.getM_AttributeSetInstance_ID(), target.getM_AttributeSetInstance_ID(),
 						BigDecimal.ZERO, reserved.negate(), ordered.negate(), get_TrxName()))
 					{
-						if (MStorage.add(getCtx(), storage0.getM_Warehouse_ID(), storage0.getM_Locator_ID(),
+						if (storageBL.add(getCtx(), storage0.getM_Warehouse_ID(), storage0.getM_Locator_ID(),
 							storage0.getM_Product_ID(),
 							storage0.getM_AttributeSetInstance_ID(), storage0.getM_AttributeSetInstance_ID(),
 							BigDecimal.ZERO, reserved, ordered, get_TrxName()))

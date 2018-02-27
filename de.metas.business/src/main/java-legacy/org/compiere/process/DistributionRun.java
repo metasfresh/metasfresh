@@ -21,14 +21,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDistributionRun;
 import org.compiere.model.MDistributionRunDetail;
@@ -47,6 +42,11 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
+
+import de.metas.i18n.Msg;
+import de.metas.order.IOrderBL;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Create Distribution	
@@ -95,6 +95,7 @@ public class DistributionRun extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -119,11 +120,11 @@ public class DistributionRun extends JavaProcess
 			else if (m_docType.getDocBaseType().equals(MDocType.DOCBASETYPE_DistributionOrder) & name.equals("M_Warehouse_ID"))
 				p_M_Warehouse_ID=((BigDecimal)para[i].getParameter()).intValue();
 			else if (m_docType.getDocBaseType().equals(MDocType.DOCBASETYPE_DistributionOrder) & name.equals("ConsolidateDocument"))
-				p_ConsolidateDocument="Y".equals((String)para[i].getParameter());
+				p_ConsolidateDocument="Y".equals(para[i].getParameter());
 			else if (m_docType.getDocBaseType().equals(MDocType.DOCBASETYPE_DistributionOrder) & name.equals("M_DistributionList_ID"))
 				p_M_DistributionList_ID=para[i].getParameterAsInt();
 			else if (m_docType.getDocBaseType().equals(MDocType.DOCBASETYPE_DistributionOrder) & name.equals("IsRequiredDRP"))
-				p_BasedInDamnd = "Y".equals((String)para[i].getParameter());
+				p_BasedInDamnd = "Y".equals(para[i].getParameter());
 			else
 				log.error("prepare - Unknown Parameter: " + name);		
 		}
@@ -135,6 +136,7 @@ public class DistributionRun extends JavaProcess
 	 *  @return Message (text with variables)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("M_DistributionRun_ID=" + p_M_DistributionRun_ID 
@@ -462,7 +464,7 @@ public class DistributionRun extends JavaProcess
 			if (!p_IsTest)
 			{
 				singleOrder = new MOrder (getCtx(), 0, get_TrxName());
-				singleOrder.setC_DocTypeTarget_ID(m_docType.getC_DocType_ID());
+				Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(singleOrder, m_docType.getC_DocType_ID());
 				singleOrder.setC_DocType_ID(m_docType.getC_DocType_ID());
 				singleOrder.setIsSOTrx(m_docType.isSOTrx());
 				singleOrder.setBPartner(bp);
@@ -507,7 +509,7 @@ public class DistributionRun extends JavaProcess
 				if (!p_IsTest)
 				{
 					order = new MOrder (getCtx(), 0, get_TrxName());
-					order.setC_DocTypeTarget_ID(m_docType.getC_DocType_ID());
+					Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, m_docType.getC_DocType_ID());
 					order.setC_DocType_ID(m_docType.getC_DocType_ID());
 					order.setIsSOTrx(m_docType.isSOTrx());
 					//	Counter Doc

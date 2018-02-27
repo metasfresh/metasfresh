@@ -61,6 +61,7 @@ public class ProcessExecutionResultTest
 		result.setRecordsToOpen(createDummyTableRecordReferenceList(3), 1234);
 		//
 		result.setWebuiIncludedViewIdToOpen("123-dummyIncludedViewId");
+		result.setWebuiViewProfileId("dummyProfile");
 		//
 		System.out.println("result: " + result);
 
@@ -88,6 +89,7 @@ public class ProcessExecutionResultTest
 		Assert.assertEquals(result.getRecordsToOpen(), resultFromJson.getRecordsToOpen());
 		//
 		Assert.assertEquals(result.getWebuiIncludedViewIdToOpen(), resultFromJson.getWebuiIncludedViewIdToOpen());
+		Assert.assertEquals(result.getWebuiViewProfileId(), resultFromJson.getWebuiViewProfileId());
 		//
 		// Assert.assertEquals(result.get, resultFromJson.get);
 	}

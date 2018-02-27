@@ -12,7 +12,7 @@ public interface I_C_BPartner
     public static final String Table_Name = "C_BPartner";
 
     /** AD_Table_ID=291 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
@@ -122,7 +122,7 @@ public interface I_C_BPartner
 	 * Set Linked Organization.
 	 * The Business Partner is another Organization for explicit Inter-Org transactions
 	 *
-	 * <br>Type: Button
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -132,16 +132,47 @@ public interface I_C_BPartner
 	 * Get Linked Organization.
 	 * The Business Partner is another Organization for explicit Inter-Org transactions
 	 *
-	 * <br>Type: Button
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_OrgBP_ID();
 
+	public org.compiere.model.I_AD_Org getAD_OrgBP();
+
+	public void setAD_OrgBP(org.compiere.model.I_AD_Org AD_OrgBP);
+
     /** Column definition for AD_OrgBP_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_AD_OrgBP_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "AD_OrgBP_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_AD_Org> COLUMN_AD_OrgBP_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_AD_Org>(I_C_BPartner.class, "AD_OrgBP_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_OrgBP_ID */
     public static final String COLUMNNAME_AD_OrgBP_ID = "AD_OrgBP_ID";
+
+	/**
+	 * Set Straße und Nr..
+	 * Adresszeile 1 für diesen Standort
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setAddress1 (java.lang.String Address1);
+
+	/**
+	 * Get Straße und Nr..
+	 * Adresszeile 1 für diesen Standort
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getAddress1();
+
+    /** Column definition for Address1 */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Address1 = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Address1", null);
+    /** Column name Address1 */
+    public static final String COLUMNNAME_Address1 = "Address1";
 
 	/**
 	 * Set Sammel-Lieferscheine erlaubt.
@@ -389,6 +420,33 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_C_TaxGroup_ID = "C_TaxGroup_ID";
 
 	/**
+	 * Set Ort.
+	 * Name des Ortes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setCity (java.lang.String City);
+
+	/**
+	 * Get Ort.
+	 * Name des Ortes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getCity();
+
+    /** Column definition for City */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_City = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "City", null);
+    /** Column name City */
+    public static final String COLUMNNAME_City = "City";
+
+	/**
 	 * Set Firmenname.
 	 *
 	 * <br>Type: String
@@ -463,6 +521,33 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CreateSO = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CreateSO", null);
     /** Column name CreateSO */
     public static final String COLUMNNAME_CreateSO = "CreateSO";
+
+	/**
+	 * Set Credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setCreditLimitIndicator (java.lang.String CreditLimitIndicator);
+
+	/**
+	 * Get Credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getCreditLimitIndicator();
+
+    /** Column definition for CreditLimitIndicator */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CreditLimitIndicator = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CreditLimitIndicator", null);
+    /** Column name CreditLimitIndicator */
+    public static final String COLUMNNAME_CreditLimitIndicator = "CreditLimitIndicator";
 
 	/**
 	 * Set Lieferart.
@@ -609,6 +694,33 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_DUNS = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "DUNS", null);
     /** Column name DUNS */
     public static final String COLUMNNAME_DUNS = "DUNS";
+
+	/**
+	 * Set eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setEMail (java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getEMail();
+
+    /** Column definition for EMail */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_EMail = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "EMail", null);
+    /** Column name EMail */
+    public static final String COLUMNNAME_EMail = "EMail";
 
 	/**
 	 * Set Vorname.
@@ -1011,6 +1123,29 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_IsSalesRep = "IsSalesRep";
 
 	/**
+	 * Set SEPA Signed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsSEPASigned (boolean IsSEPASigned);
+
+	/**
+	 * Get SEPA Signed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isSEPASigned();
+
+    /** Column definition for IsSEPASigned */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_IsSEPASigned = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "IsSEPASigned", null);
+    /** Column name IsSEPASigned */
+    public static final String COLUMNNAME_IsSEPASigned = "IsSEPASigned";
+
+	/**
 	 * Set Shipping Notification Email.
 	 *
 	 * <br>Type: YesNo
@@ -1274,12 +1409,8 @@ public interface I_C_BPartner
 	 */
 	public int getM_FreightCost_ID();
 
-	public org.adempiere.model.I_M_FreightCost getM_FreightCost();
-
-	public void setM_FreightCost(org.adempiere.model.I_M_FreightCost M_FreightCost);
-
     /** Column definition for M_FreightCost_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.adempiere.model.I_M_FreightCost> COLUMN_M_FreightCost_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.adempiere.model.I_M_FreightCost>(I_C_BPartner.class, "M_FreightCost_ID", org.adempiere.model.I_M_FreightCost.class);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_M_FreightCost_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "M_FreightCost_ID", null);
     /** Column name M_FreightCost_ID */
     public static final String COLUMNNAME_M_FreightCost_ID = "M_FreightCost_ID";
 
@@ -1371,8 +1502,7 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Exclude from MRP.
-	 * Exclude from MRP calculation
+	 * Set MRP ausschliessen.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1381,8 +1511,7 @@ public interface I_C_BPartner
 	public void setMRP_Exclude (java.lang.String MRP_Exclude);
 
 	/**
-	 * Get Exclude from MRP.
-	 * Exclude from MRP calculation
+	 * Get MRP ausschliessen.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1469,6 +1598,31 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Name2 = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Name2", null);
     /** Column name Name2 */
     public static final String COLUMNNAME_Name2 = "Name2";
+
+	/**
+	 * Set Name3.
+	 * Zusätzliche Bezeichnung
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setName3 (java.lang.String Name3);
+
+	/**
+	 * Get Name3.
+	 * Zusätzliche Bezeichnung
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getName3();
+
+    /** Column definition for Name3 */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Name3 = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Name3", null);
+    /** Column name Name3 */
+    public static final String COLUMNNAME_Name3 = "Name3";
 
 	/**
 	 * Set Anzahl Beschäftigte.
@@ -1733,6 +1887,33 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_POReferencePattern = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "POReferencePattern", null);
     /** Column name POReferencePattern */
     public static final String COLUMNNAME_POReferencePattern = "POReferencePattern";
+
+	/**
+	 * Set PLZ.
+	 * Postleitzahl
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setPostal (java.lang.String Postal);
+
+	/**
+	 * Get PLZ.
+	 * Postleitzahl
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getPostal();
+
+    /** Column definition for Postal */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Postal = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Postal", null);
+    /** Column name Postal */
+    public static final String COLUMNNAME_Postal = "Postal";
 
 	/**
 	 * Set Möglicher Gesamtertrag.
@@ -2012,29 +2193,27 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_ShelfLifeMinPct = "ShelfLifeMinPct";
 
 	/**
-	 * Set Kreditlimit.
-	 * Total outstanding invoice amounts allowed
+	 * Set Short Description.
 	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Type: String
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSO_CreditLimit (java.math.BigDecimal SO_CreditLimit);
+	public void setShortDescription (java.lang.String ShortDescription);
 
 	/**
-	 * Get Kreditlimit.
-	 * Total outstanding invoice amounts allowed
+	 * Get Short Description.
 	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Type: String
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getSO_CreditLimit();
+	public java.lang.String getShortDescription();
 
-    /** Column definition for SO_CreditLimit */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_SO_CreditLimit = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "SO_CreditLimit", null);
-    /** Column name SO_CreditLimit */
-    public static final String COLUMNNAME_SO_CreditLimit = "SO_CreditLimit";
+    /** Column definition for ShortDescription */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_ShortDescription = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "ShortDescription", null);
+    /** Column name ShortDescription */
+    public static final String COLUMNNAME_ShortDescription = "ShortDescription";
 
 	/**
 	 * Set Beschreibung Auftrag.

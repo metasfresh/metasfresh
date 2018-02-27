@@ -14,7 +14,7 @@ public class X_AD_Element extends org.compiere.model.PO implements I_AD_Element,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -58197865L;
+	private static final long serialVersionUID = -1438104714L;
 
     /** Standard Constructor */
     public X_AD_Element (Properties ctx, int AD_Element_ID, String trxName)
@@ -23,7 +23,6 @@ public class X_AD_Element extends org.compiere.model.PO implements I_AD_Element,
       /** if (AD_Element_ID == 0)
         {
 			setAD_Element_ID (0);
-			setColumnName (null);
 			setEntityType (null); // U
 			setName (null);
 			setPrintName (null);
@@ -263,11 +262,23 @@ public class X_AD_Element extends org.compiere.model.PO implements I_AD_Element,
 		return (java.lang.String)get_Value(COLUMNNAME_PrintName);
 	}
 
+	/** 
+	 * WidgetSize AD_Reference_ID=540724
+	 * Reference name: WidgetSize_WEBUI
+	 */
+	public static final int WIDGETSIZE_AD_Reference_ID=540724;
+	/** Small = S */
+	public static final String WIDGETSIZE_Small = "S";
+	/** Medium = M */
+	public static final String WIDGETSIZE_Medium = "M";
+	/** Large = L */
+	public static final String WIDGETSIZE_Large = "L";
 	/** Set Widget size.
 		@param WidgetSize Widget size	  */
 	@Override
 	public void setWidgetSize (java.lang.String WidgetSize)
 	{
+
 		set_Value (COLUMNNAME_WidgetSize, WidgetSize);
 	}
 

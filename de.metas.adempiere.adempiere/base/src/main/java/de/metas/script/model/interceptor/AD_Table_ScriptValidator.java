@@ -4,7 +4,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Table_ScriptValidator;
 import org.compiere.model.ModelValidator;
 
@@ -50,7 +50,7 @@ public class AD_Table_ScriptValidator
 					.addEqualsFilter(I_AD_Table_ScriptValidator.COLUMN_AD_Table_ID, validator.getAD_Table_ID())
 					.addEqualsFilter(I_AD_Table_ScriptValidator.COLUMN_EventModelValidator, validator.getEventModelValidator())
 					.create()
-					.aggregate(I_AD_Table_ScriptValidator.COLUMN_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+					.aggregate(I_AD_Table_ScriptValidator.COLUMN_SeqNo, Aggregate.MAX, Integer.class);
 
 			final int seqNo = (lastSeqNo == null ? 0 : lastSeqNo) + 10;
 			validator.setSeqNo(seqNo);

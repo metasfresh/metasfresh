@@ -406,7 +406,7 @@ public final class Language implements Serializable
 		return getBaseLanguage();
 	}   // getLocale
 
-	private static final Language findLanguageByLocale(final Locale locale)
+	public static final Language findLanguageByLocale(final Locale locale)
 	{
 		final String search_lang = locale.getLanguage();
 		final String search_country = locale.getCountry();

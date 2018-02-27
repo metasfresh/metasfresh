@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
@@ -41,6 +43,8 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -48,6 +52,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import lombok.NonNull;
 
 /**
  * Simple implementation of {@link ITableRecordReference} which can:
@@ -61,6 +67,7 @@ import com.google.common.collect.ImmutableSet;
  * @author tsa
  *
  */
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class TableRecordReference implements ITableRecordReference
 {
 	/**
@@ -96,7 +103,7 @@ public final class TableRecordReference implements ITableRecordReference
 	/**
 	 * @return immutable list of {@link TableRecordReference}s
 	 */
-	public static final List<TableRecordReference> ofList(final List<?> models)
+	public static final List<TableRecordReference> ofCollection(@Nullable final Collection<?> models)
 	{
 		if (models == null || models.isEmpty())
 		{
@@ -139,7 +146,7 @@ public final class TableRecordReference implements ITableRecordReference
 
 	/**
 	 * Creates an {@link TableRecordReference} from the given {@code model}'s {@code AD_Table_ID} and {@code Record_ID}.
-	 * 
+	 *
 	 * @param model
 	 * @return
 	 */
@@ -223,25 +230,25 @@ public final class TableRecordReference implements ITableRecordReference
 			{
 				recordId = Integer.parseInt(recordIdObj.toString());
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				return null;
 			}
 		}
-		
+
 		return new TableRecordReference(tableName, recordId);
 	}
 
 	private final transient int adTableId;
-	
+
 	private static final String PROP_TableName = "tableName";
 	@JsonProperty(PROP_TableName)
 	private final String tableName;
-	
+
 	private static final String PROP_RecordId = "recordId";
 	@JsonProperty(PROP_RecordId)
 	private final int recordId;
-	
+
 	private transient Integer _hashcode;
 
 	/**
@@ -265,6 +272,8 @@ public final class TableRecordReference implements ITableRecordReference
 		this.adTableId = adTableId;
 		this.tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 
+		// NOTE: not validating with org.adempiere.model.InterfaceWrapperHelper.getFirstValidIdByColumnName(String) just for performances,
+		// but we might consider it since it's not a big deal.
 		Check.assume(recordId >= 0, "recordId >= 0");
 		this.recordId = recordId;
 	}
@@ -284,13 +293,14 @@ public final class TableRecordReference implements ITableRecordReference
 		this.tableName = tableName;
 		this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
-		Check.assume(recordId > 0, "recordId > 0");
+		// NOTE: not validating with org.adempiere.model.InterfaceWrapperHelper.getFirstValidIdByColumnName(String) just for performances,
+		// but we might consider it since it's not a big deal.
+		Check.assume(recordId >= 0, "recordId >= 0");
 		this.recordId = recordId;
 	}
 
-	private TableRecordReference(final Object model)
+	private TableRecordReference(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
 		this.adTableId = InterfaceWrapperHelper.getModelTableId(model);
 		this.tableName = InterfaceWrapperHelper.getModelTableName(model);
 		this.recordId = InterfaceWrapperHelper.getId(model);

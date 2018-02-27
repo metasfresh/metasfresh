@@ -10,12 +10,12 @@ package org.compiere.acct;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,12 +25,10 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MInvoiceLine;
@@ -107,13 +105,13 @@ public class DocLine_Invoice extends DocLine
 
 	/**
 	 * Adjusts the sign of given relative <code>qty</code> using the credit memo and SOTrx flags.
-	 * 
+	 *
 	 * Mainly it is:
 	 * <ul>
 	 * <li>if {@link #isCreditMemo()}, negate the quantity
 	 * <li>if {@link #isSOTrx()}, negate the quantity
 	 * </ul>
-	 * 
+	 *
 	 * @param qty
 	 * @return quantity (absolute value)
 	 */
@@ -155,7 +153,7 @@ public class DocLine_Invoice extends DocLine
 			final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
 			BigDecimal qtyReceived = matchInvDAO.retrieveForInvoiceLineQuery(invoiceLine)
 					.create()
-					.aggregate(I_M_MatchInv.COLUMNNAME_Qty, IQuery.AGGREGATE_SUM, BigDecimal.class);
+					.aggregate(I_M_MatchInv.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
 			if (qtyReceived == null)
 			{
 				qtyReceived = BigDecimal.ZERO;
@@ -199,7 +197,7 @@ public class DocLine_Invoice extends DocLine
 
 	/**
 	 * Calculate the net amount of quantity received using <code>lineNetAmt</code> as total amount.
-	 * 
+	 *
 	 * @param lineNetAmt
 	 * @return quantity received invoiced amount
 	 */
@@ -239,7 +237,7 @@ public class DocLine_Invoice extends DocLine
 
 	/**
 	 * Checks if invoice reposting is needed when given <code>matchInv</code> was created.
-	 * 
+	 *
 	 * @param matchInv
 	 * @return true if invoice reposting is needed
 	 */

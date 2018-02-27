@@ -10,12 +10,12 @@ package de.metas.lock.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,9 +24,8 @@ package de.metas.lock.api.impl;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -114,7 +113,7 @@ import de.metas.logging.LogManager;
 						+ "\n Locked to subtract: " + countLockedToSubtract
 						+ "\n Lock: " + this)
 								.throwIfDeveloperModeOrLogWarningElse(logger);
-				
+
 				_countLocked = 0;
 			}
 			else
@@ -180,14 +179,9 @@ import de.metas.logging.LogManager;
 	{
 		Services.get(ITrxManager.class)
 				.getTrxListenerManagerOrAutoCommit(trxName)
-				.registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void afterClose(final ITrx trx)
-					{
-						close();
-					}
-				});
+				.newEventListener(TrxEventTiming.AFTER_CLOSE)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> close());
 	}
 
 	private final void assertHasRealOwner()

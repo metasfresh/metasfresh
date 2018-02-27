@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.List;
 
+import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -17,7 +18,6 @@ import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
 import de.metas.dlm.partitioner.config.PartitionConfig;
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.logging.LogManager;
 
 /*
@@ -57,16 +57,15 @@ public class PartitionerServiceTests
 	{
 		final PartitionConfig config = PartitionConfig.builder().line(I_AD_Field.Table_Name).endLine().build();
 
-		final List<TableReferenceDescriptor> descriptors = ImmutableList.of(
-				TableReferenceDescriptor.of(I_AD_ChangeLog.Table_Name,
+		final List<TableRecordIdDescriptor> descriptors = ImmutableList.of(
+				TableRecordIdDescriptor.of(I_AD_ChangeLog.Table_Name,
 						I_AD_ChangeLog.COLUMNNAME_Record_ID,
-						I_AD_Field.Table_Name,
-						123));
+						I_AD_Field.Table_Name));
 
 		testAugmentPartitionSimple(config, descriptors);
 	}
 
-	private PartitionConfig testAugmentPartitionSimple(final PartitionConfig configtoAugment, final List<TableReferenceDescriptor> descriptors)
+	private PartitionConfig testAugmentPartitionSimple(final PartitionConfig configtoAugment, final List<TableRecordIdDescriptor> descriptors)
 	{
 		final I_AD_Field adField = InterfaceWrapperHelper.newInstance(I_AD_Field.class);
 		InterfaceWrapperHelper.save(adField);
@@ -99,13 +98,13 @@ public class PartitionerServiceTests
 	{
 		final PartitionConfig config = PartitionConfig.builder().line(I_AD_Field.Table_Name).endLine().build();
 
-		final List<TableReferenceDescriptor> descriptors = ImmutableList.of(
-				TableReferenceDescriptor.of(I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Field.Table_Name, 123));
+		final List<TableRecordIdDescriptor> descriptors = ImmutableList.of(
+				TableRecordIdDescriptor.of(I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Field.Table_Name));
 
 		final PartitionConfig augmentedConfig = testAugmentPartitionSimple(config, descriptors);
 
-		final List<TableReferenceDescriptor> descriptors2 = ImmutableList.of(
-				TableReferenceDescriptor.of(I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Field.Table_Name, 123));
+		final List<TableRecordIdDescriptor> descriptors2 = ImmutableList.of(
+				TableRecordIdDescriptor.of(I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Field.Table_Name));
 
 		// make the same call again. there shall be no double lines or references.
 		testAugmentPartitionSimple(augmentedConfig, descriptors2);
@@ -120,11 +119,10 @@ public class PartitionerServiceTests
 		// empty config
 		final PartitionConfig config = PartitionConfig.builder().build();
 
-		final List<TableReferenceDescriptor> descriptors = ImmutableList.of(
-				TableReferenceDescriptor.of(I_AD_ChangeLog.Table_Name,
+		final List<TableRecordIdDescriptor> descriptors = ImmutableList.of(
+				TableRecordIdDescriptor.of(I_AD_ChangeLog.Table_Name,
 						I_AD_ChangeLog.COLUMNNAME_Record_ID,
-						I_AD_Field.Table_Name,
-						123));
+						I_AD_Field.Table_Name));
 
 		testAugmentPartitionSimple(config, descriptors);
 	}

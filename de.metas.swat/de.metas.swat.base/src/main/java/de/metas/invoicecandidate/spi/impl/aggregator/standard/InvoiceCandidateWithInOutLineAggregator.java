@@ -157,6 +157,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 		// 07442: also add tax and activity
 		invoiceLine.setC_Activity_ID(getC_Activity_ID());
 		invoiceLine.setC_Tax(getC_Tax());
+
+		invoiceLine.setC_PaymentTerm_ID(getC_PaymentTerm_ID());
 		return invoiceLine;
 	}
 
@@ -213,7 +215,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 		// #1604
 		// if we deal with a material disposal, this qtyLeftToInvoice is acceptable
 		final boolean isMaterialDisposalIC = ics.getC_Invoice_Candidate().getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_M_InventoryLine.class);
-		
+
 		if (qtyLeftToInvoice.multiply(factor).signum() <= 0 && !isMaterialDisposalIC)
 		{
 			// if we already invoiced the whole qty for this IC, then we also skip
@@ -558,6 +560,11 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 	private final int getC_Activity_ID()
 	{
 		return getFirstInvoiceCandidate().getC_Activity_ID();
+	}
+
+	private int getC_PaymentTerm_ID()
+	{
+		return getFirstInvoiceCandidate().getC_PaymentTerm_ID();
 	}
 
 	/** @return effective tax to use in invoice line */

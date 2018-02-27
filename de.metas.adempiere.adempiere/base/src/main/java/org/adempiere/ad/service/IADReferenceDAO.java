@@ -95,4 +95,6 @@ public interface IADReferenceDAO extends ISingletonService
 	 * @return existing active {@link I_ADRefListItem} or null
 	 */
 	ADRefListItem retrieveListItemOrNull(int adReferenceId, String value);
+
+	ITranslatableString retrieveListNameTranslatableString(int adReferenceId, String value);
 }

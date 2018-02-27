@@ -10,7 +10,6 @@ import org.compiere.model.ModelValidator;
 
 import com.google.common.base.Objects;
 
-import de.metas.material.event.ProductDescriptor;
 import lombok.NonNull;
 
 /*
@@ -42,21 +41,6 @@ public class M_AttributeValue
 
 	public M_AttributeValue()
 	{
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
-	public void preventDelimiterStringInAttributeValue(@NonNull final I_M_AttributeValue attributeValue)
-	{
-		final String value = attributeValue.getValue();
-		if (value == null)
-		{
-			return;
-		}
-
-		Check.errorIf(
-				value.contains(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER),
-				"M_AttributeValue.Value may not contain the delimiter string {}; value={}; attributeValue={}",
-				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER, value, attributeValue);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_AttributeValue.COLUMNNAME_Value)

@@ -10,24 +10,24 @@ package de.metas.event.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 import org.adempiere.util.Check;
+import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -40,6 +40,9 @@ import de.metas.event.EventBusConstants;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
 import de.metas.event.Type;
+import de.metas.event.log.EventLogSystemBusTools;
+import de.metas.event.log.EventLogUserService;
+import de.metas.event.log.impl.EventLogEntryCollector;
 import lombok.NonNull;
 
 final class EventBus implements IEventBus
@@ -52,9 +55,9 @@ final class EventBus implements IEventBus
 		@Override
 		public void handleException(final Throwable exception, final SubscriberExceptionContext context)
 		{
-			String errmsg = "Could not dispatch event: "  + context.getSubscriber() + " to " + context.getSubscriberMethod()
-					+"\n Event: "+context.getEvent()
-					+"\n Bus: "+context.getEventBus();
+			String errmsg = "Could not dispatch event: " + context.getSubscriber() + " to " + context.getSubscriberMethod()
+					+ "\n Event: " + context.getEvent()
+					+ "\n Bus: " + context.getEventBus();
 			logger.error(errmsg, exception);
 		}
 	};
@@ -69,22 +72,22 @@ final class EventBus implements IEventBus
 	 */
 	private Type type = Type.LOCAL;
 
-	public EventBus(final String topicName, final ExecutorService executor)
+	public EventBus(
+			final String topicName,
+			final ExecutorService executor)
 	{
-		super();
-		Check.assumeNotEmpty(topicName, "name not empty");
-		this.name = topicName;
+		this.name = Check.assumeNotEmpty(topicName, "name not empty");
 
 		if (executor == null)
 		{
-			eventBus = new com.google.common.eventbus.EventBus(exceptionHandler);
+			this.eventBus = new com.google.common.eventbus.EventBus(exceptionHandler);
 		}
 		else
 		{
-			eventBus = new com.google.common.eventbus.AsyncEventBus(executor, exceptionHandler);
+			this.eventBus = new com.google.common.eventbus.AsyncEventBus(executor, exceptionHandler);
 		}
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -104,7 +107,7 @@ final class EventBus implements IEventBus
 
 	/**
 	 * To be invoked only by the factory.
-	 * 
+	 *
 	 * @param type
 	 */
 	/* package */void setTypeRemote()
@@ -141,14 +144,13 @@ final class EventBus implements IEventBus
 		eventBus.register(listenerAdapter);
 		logger.trace("{} - Registered: {}", this, listener);
 	}
-	
+
 	@Override
 	public void subscribe(@NonNull Consumer<Event> eventConsumer)
 	{
 		final IEventListener eventListener = (eventBus, event) -> eventConsumer.accept(event);
 		subscribe(eventListener);
 	}
-
 
 	@Override
 	public void subscribeWeak(final IEventListener listener)
@@ -168,7 +170,7 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
-	public void postEvent(final Event event)
+	public void postEvent(@NonNull final Event event)
 	{
 		// Do nothing if destroyed
 		if (destroyed)
@@ -183,15 +185,18 @@ final class EventBus implements IEventBus
 		eventBus.post(event);
 	}
 
+	@Override
+	public boolean isDestroyed()
+	{
+		return destroyed;
+	}
+
 	public class GuavaEventListenerAdapter
 	{
 		private final IEventListener eventListener;
 
-		GuavaEventListenerAdapter(final IEventListener eventListener)
+		GuavaEventListenerAdapter(@NonNull final IEventListener eventListener)
 		{
-			super();
-
-			Check.assumeNotNull(eventListener, "eventListener not null");
 			this.eventListener = eventListener;
 		}
 
@@ -204,9 +209,9 @@ final class EventBus implements IEventBus
 		}
 
 		@Subscribe
-		public void onEvent(final Event event)
+		public void onEvent(@NonNull final Event event)
 		{
-			eventListener.onEvent(EventBus.this, event);
+			invokeEventListener(this.eventListener, event);
 		}
 	}
 
@@ -214,11 +219,8 @@ final class EventBus implements IEventBus
 	{
 		private final WeakReference<IEventListener> eventListenerRef;
 
-		WeakGuavaEventListenerAdapter(final IEventListener eventListener)
+		WeakGuavaEventListenerAdapter(@NonNull final IEventListener eventListener)
 		{
-			super();
-
-			Check.assumeNotNull(eventListener, "eventListener not null");
 			eventListenerRef = new WeakReference<>(eventListener);
 		}
 
@@ -244,14 +246,30 @@ final class EventBus implements IEventBus
 				return;
 			}
 
-			eventListener.onEvent(EventBus.this, event);
+			invokeEventListener(eventListener, event);
 		}
 	}
 
-	@Override
-	public boolean isDestroyed()
+	private void invokeEventListener(
+			@NonNull final IEventListener eventListener,
+			@NonNull final Event event)
 	{
-		return destroyed;
+		// even if the event(-data) is not stored, we allow all listeners/handlers to add log entries.
+		final EventLogEntryCollector collector = EventLogSystemBusTools.provideEventLogEntryCollectorForCurrentThread(event);
+		try
+		{
+			eventListener.onEvent(this, event);
+		}
+		catch (final RuntimeException e)
+		{
+			final EventLogUserService eventLogUserService = Adempiere.getBean(EventLogUserService.class);
+			eventLogUserService
+					.newErrorLogEntry(eventListener.getClass(), e)
+					.createAndStore();
+		}
+		finally
+		{
+			collector.close();
+		}
 	}
-
 }

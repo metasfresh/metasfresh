@@ -41,7 +41,6 @@ import org.compiere.model.MPayment;
 import org.compiere.model.MProjectIssue;
 import org.compiere.model.MRequisition;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_M_Production;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
@@ -53,7 +52,7 @@ import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Accounting Fact Reset
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: FactAcctReset.java,v 1.5 2006/09/21 21:05:02 jjanke Exp $
  */
@@ -65,34 +64,34 @@ public class FactAcctReset extends JavaProcess
 	private int		p_AD_Table_ID = 0;
 	/**	Delete Parameter		*/
 	private boolean	p_DeletePosting = false;
-	
+
 	private int		m_countReset = 0;
 	private int		m_countDelete = 0;
 	private Timestamp p_DateAcct_From = null ;
 	private Timestamp p_DateAcct_To = null;
-	
+
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		final ProcessInfoParameter[] para = getParametersAsArray();
+		for (final ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
+			final String name = element.getParameterName();
+			if (element.getParameter() == null)
 				;
 			else if (name.equals("AD_Client_ID"))
-				p_AD_Client_ID = ((BigDecimal)para[i].getParameter()).intValue();
+				p_AD_Client_ID = ((BigDecimal)element.getParameter()).intValue();
 			else if (name.equals("AD_Table_ID"))
-				p_AD_Table_ID = ((BigDecimal)para[i].getParameter()).intValue();
+				p_AD_Table_ID = ((BigDecimal)element.getParameter()).intValue();
 			else if (name.equals("DeletePosting"))
-				p_DeletePosting = "Y".equals(para[i].getParameter());
+				p_DeletePosting = "Y".equals(element.getParameter());
 			else if (name.equals("DateAcct"))
 			{
-				p_DateAcct_From = (Timestamp)para[i].getParameter();
-				p_DateAcct_To = (Timestamp)para[i].getParameter_To();
+				p_DateAcct_From = (Timestamp)element.getParameter();
+				p_DateAcct_To = (Timestamp)element.getParameter_To();
 			}
 			else
 				log.error("Unknown Parameter: " + name);
@@ -107,7 +106,7 @@ public class FactAcctReset extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		log.info("AD_Client_ID=" + p_AD_Client_ID 
+		log.info("AD_Client_ID=" + p_AD_Client_ID
 			+ ", AD_Table_ID=" + p_AD_Table_ID + ", DeletePosting=" + p_DeletePosting);
 		//	List of Tables with Accounting Consequences
 		String sql = "SELECT AD_Table_ID, TableName "
@@ -121,11 +120,11 @@ public class FactAcctReset extends JavaProcess
 		try
 		{
 			pstmt = DB.prepareStatement(sql, get_TrxName());
-			ResultSet rs = pstmt.executeQuery();
+			final ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				int AD_Table_ID = rs.getInt(1);
-				String TableName = rs.getString(2);
+				final int AD_Table_ID = rs.getInt(1);
+				final String TableName = rs.getString(2);
 				if (p_DeletePosting)
 					delete (TableName, AD_Table_ID);
 				else
@@ -135,7 +134,7 @@ public class FactAcctReset extends JavaProcess
 			pstmt.close();
 			pstmt = null;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error(sql, e);
 		}
@@ -145,7 +144,7 @@ public class FactAcctReset extends JavaProcess
 				pstmt.close();
 			pstmt = null;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			pstmt = null;
 		}
@@ -162,16 +161,16 @@ public class FactAcctReset extends JavaProcess
 		String sql = "UPDATE " + TableName
 			+ " SET Processing='N' WHERE AD_Client_ID=" + p_AD_Client_ID
 			+ " AND (Processing<>'N' OR Processing IS NULL)";
-		int unlocked = DB.executeUpdate(sql, get_TrxName());
+		final int unlocked = DB.executeUpdate(sql, get_TrxName());
 		//
 		sql = "UPDATE " + TableName
 			+ " SET Posted='N' WHERE AD_Client_ID=" + p_AD_Client_ID
 			+ " AND (Posted NOT IN ('Y','N') OR Posted IS NULL) AND Processed='Y'";
-		int invalid = DB.executeUpdate(sql, get_TrxName());
+		final int invalid = DB.executeUpdate(sql, get_TrxName());
 		//
 		if (unlocked + invalid != 0)
 			log.debug(TableName + " - Unlocked=" + unlocked + " - Invalid=" + invalid);
-		m_countReset += unlocked + invalid; 
+		m_countReset += unlocked + invalid;
 	}	//	reset
 
 	/**
@@ -182,12 +181,12 @@ public class FactAcctReset extends JavaProcess
 	private void delete (String TableName, int AD_Table_ID)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		
-		Timestamp today = TimeUtil.trunc(new Timestamp (System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+		final Timestamp today = TimeUtil.trunc(new Timestamp (System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
 		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(getCtx());
 		final boolean autoPeriod = as != null && as.isAutoPeriodControl();
-		
+
 		if (autoPeriod)
 		{
 			Timestamp temp = TimeUtil.addDays(today, - as.getPeriod_OpenHistory());
@@ -207,7 +206,7 @@ public class FactAcctReset extends JavaProcess
 		//
 		String docBaseType = null;
 		if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
-			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_APInvoice 
+			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_APInvoice
 				+ "','" + X_C_DocType.DOCBASETYPE_APCreditMemo
 				+ "','" + X_C_DocType.DOCBASETYPE_ARInvoice
 				+ "','" + X_C_DocType.DOCBASETYPE_ARCreditMemo
@@ -239,14 +238,12 @@ public class FactAcctReset extends JavaProcess
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_PurchaseRequisition + "'";
 		else if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_Inventory.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory + "'";
-		else if (AD_Table_ID == X_M_Production.Table_ID)
-			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MaterialProduction + "'";
 		else if (AD_Table_ID == adTableDAO.retrieveTableId(I_M_MatchInv.Table_Name))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MatchInvoice + "'";
 		else if (AD_Table_ID == adTableDAO.retrieveTableId(I_M_MatchPO.Table_Name))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MatchPO + "'";
 		else if (AD_Table_ID == adTableDAO.retrieveTableId(I_PP_Order.Table_Name))
-			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_ManufacturingOrder 
+			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_ManufacturingOrder
 				+ "','" + X_C_DocType.DOCBASETYPE_MaintenanceOrder
 				+ "','" + X_C_DocType.DOCBASETYPE_QualityOrder + "')";
 		else if (AD_Table_ID == adTableDAO.retrieveTableId(I_DD_Order.Table_Name))
@@ -256,7 +253,7 @@ public class FactAcctReset extends JavaProcess
 		//
 		if (docBaseType == null)
 		{
-			String s = TableName + ": Unknown DocBaseType";
+			final String s = TableName + ": Unknown DocBaseType";
 			log.error(s);
 			addLog(s);
 			docBaseType = "";
@@ -264,7 +261,7 @@ public class FactAcctReset extends JavaProcess
 		}
 		else
 			docBaseType = " AND pc.DocBaseType " + docBaseType;
-		
+
 		//	Doc
 		String sql1 = "UPDATE " + TableName
 			+ " SET Posted='N', Processing='N' "
@@ -284,7 +281,7 @@ public class FactAcctReset extends JavaProcess
 
 		log.debug(sql1);
 
-		int reset = DB.executeUpdate(sql1, get_TrxName()); 
+		final int reset = DB.executeUpdate(sql1, get_TrxName());
 		//	Fact
 		String sql2 = "DELETE FROM Fact_Acct "
 			+ "WHERE AD_Client_ID=" + p_AD_Client_ID
@@ -302,11 +299,11 @@ public class FactAcctReset extends JavaProcess
 			sql2 += " AND TRUNC(Fact_Acct.DateAcct) <= " + DB.TO_DATE(p_DateAcct_To);
 
 		log.debug(sql2);
-		
-		int deleted = DB.executeUpdate(sql2, get_TrxName());
+
+		final int deleted = DB.executeUpdate(sql2, get_TrxName());
 		//
 		log.info(TableName + "(" + AD_Table_ID + ") - Reset=" + reset + " - Deleted=" + deleted);
-		String s = TableName + " - Reset=" + reset + " - Deleted=" + deleted;
+		final String s = TableName + " - Reset=" + reset + " - Deleted=" + deleted;
 		addLog(s);
 		//
 		m_countReset += reset;

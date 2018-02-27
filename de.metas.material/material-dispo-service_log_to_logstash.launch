@@ -6,12 +6,9 @@
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
 </listAttribute>
-<listAttribute key="org.eclipse.debug.ui.favoriteGroups">
-<listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
-</listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.metas.material.dispo.service.Application"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="metasfresh-material-dispo-service"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=&quot;${workspace_loc:metasfresh-sp80}/metasfresh.properties&quot;&#13;&#10;-Dspring.boot.admin.url=http://localhost:9090&#13;&#10;-Dmanagement.security.enabled=false&#13;&#10;-Dlogstash.enabled=true"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=&quot;${workspace_loc:metasfresh-dist}/metasfresh.properties&quot;&#13;&#10;-Dspring.boot.admin.url=http://localhost:9090&#13;&#10;-Dmanagement.security.enabled=false&#13;&#10;-Dlogstash.enabled=true"/>
 </launchConfiguration>

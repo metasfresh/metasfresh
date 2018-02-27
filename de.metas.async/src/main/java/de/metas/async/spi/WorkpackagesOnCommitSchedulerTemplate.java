@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -60,7 +61,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			final Class<ModelType> modelType)
 	{
 		final boolean collectModels = false;
-		return new ModelsScheduler<ModelType>(workpackageProcessorClass, modelType, collectModels);
+		return new ModelsScheduler<>(workpackageProcessorClass, modelType, collectModels);
 	}
 
 	/** Convenient method to create an instance which is scheduling a workpackage on transaction commit based on a given {@link IContextAware} */
@@ -76,7 +77,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			final Class<ModelType> modelType)
 	{
 		final boolean collectModels = true;
-		return new ModelsScheduler<ModelType>(workpackageProcessorClass, modelType, collectModels);
+		return new ModelsScheduler<>(workpackageProcessorClass, modelType, collectModels);
 	}
 
 	private final Class<? extends IWorkpackageProcessor> workpackageProcessorClass;
@@ -87,11 +88,9 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	 *
 	 * @param workpackageProcessorClass workpackage processor class to be used when workpackages are enqueued.
 	 */
-	public WorkpackagesOnCommitSchedulerTemplate(final Class<? extends IWorkpackageProcessor> workpackageProcessorClass)
+	public WorkpackagesOnCommitSchedulerTemplate(
+			@NonNull final Class<? extends IWorkpackageProcessor> workpackageProcessorClass)
 	{
-		super();
-
-		Check.assumeNotNull(workpackageProcessorClass, "workpackageProcessorClass not null");
 		this.workpackageProcessorClass = workpackageProcessorClass;
 
 		this.trxPropertyName = getClass().getSimpleName() + "-" + workpackageProcessorClass.getName();
@@ -103,12 +102,9 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	 * The transaction is extracted from item, using {@link #extractTrxNameFromItem(Object)}.
 	 *
 	 * If item has no transaction, a workpackage with given item will be automatically created and enqueued to be processed.
-	 *
-	 * @param item
 	 */
-	public final void schedule(final ItemType item)
+	public final void schedule(@NonNull final ItemType item)
 	{
-		Check.assumeNotNull(item, "Param 'item' is not null");
 		// Avoid collecting the item if is not eligible
 		if (!isEligibleForScheduling(item))
 		{
@@ -117,7 +113,8 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		scheduleFactory.collect(item);
 	}
 
-	public WorkpackagesOnCommitSchedulerTemplate<ItemType> setCreateOneWorkpackagePerModel(final boolean createOneWorkpackagePerModel)
+	public WorkpackagesOnCommitSchedulerTemplate<ItemType> setCreateOneWorkpackagePerModel(
+			final boolean createOneWorkpackagePerModel)
 	{
 		this.createOneWorkpackagePerModel.set(createOneWorkpackagePerModel);
 		return this;

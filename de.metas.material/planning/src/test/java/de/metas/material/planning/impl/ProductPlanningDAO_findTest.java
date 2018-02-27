@@ -1,5 +1,6 @@
 package de.metas.material.planning.impl;
 
+import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,11 +13,11 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,12 +53,16 @@ public class ProductPlanningDAO_findTest
 	@Rule
 	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
 
-	private static final String MADE_IN_COLOGNE_ATTRIBUTE_VALUE = "MadeInCologneAttributeValue";
-	private static final String ORGANIC_ATTRIBUTE_VALUE = "OrganicAttributeValue";
 	private I_M_Warehouse warehouse;
 	private I_M_Product product;
 	private I_S_Resource plant;
 	private AttributesTestHelper attributesTestHelper;
+
+	private I_M_Attribute organicAttribute;
+	private I_M_AttributeValue organicAttributeValue;
+
+	private I_M_Attribute madeInCologneAttribute;
+	private I_M_AttributeValue madeInCologneAttributeValue;
 
 	@Before
 	public void init()
@@ -72,6 +77,12 @@ public class ProductPlanningDAO_findTest
 		save(plant);
 
 		attributesTestHelper = new AttributesTestHelper();
+
+		organicAttribute = createStorageRelevantListAttribute("MadeInCologneAttributeValue");
+		organicAttributeValue = attributesTestHelper.createM_AttributeValue(organicAttribute, "MadeInCologneAttributeValue");
+
+		madeInCologneAttribute = createStorageRelevantListAttribute("OrganicAttribute");
+		madeInCologneAttributeValue = attributesTestHelper.createM_AttributeValue(organicAttribute, "OrganicAttributeValue");
 	}
 
 	@Test
@@ -92,7 +103,10 @@ public class ProductPlanningDAO_findTest
 
 		final I_PP_Product_Planning productPlanningWithAsi = createAttributeIndependantProductPlanning();
 		productPlanningWithAsi.setM_AttributeSetInstance_ID(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
-		productPlanningWithAsi.setStorageAttributesKey(ORGANIC_ATTRIBUTE_VALUE);
+
+		final String attributesKeyFOrOrganicAttribute = Integer.toString(organicAttributeValue.getM_AttributeValue_ID());
+		productPlanningWithAsi.setStorageAttributesKey(attributesKeyFOrOrganicAttribute);
+
 		save(productPlanningWithAsi);
 
 		final I_PP_Product_Planning resultWithoutASI = invokeFindMethodWithASI(AttributeConstants.M_AttributeSetInstance_ID_None);
@@ -108,13 +122,17 @@ public class ProductPlanningDAO_findTest
 
 		final I_PP_Product_Planning productPlanningWithAsi = createAttributeIndependantProductPlanning();
 		productPlanningWithAsi.setM_AttributeSetInstance_ID(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
-		productPlanningWithAsi.setStorageAttributesKey(ORGANIC_ATTRIBUTE_VALUE);
+
+		final String attributesKeyFOrOrganicAttribute = Integer.toString(organicAttributeValue.getM_AttributeValue_ID());
+		productPlanningWithAsi.setStorageAttributesKey(attributesKeyFOrOrganicAttribute);
+
 		productPlanningWithAsi.setIsAttributeDependant(true);
 		save(productPlanningWithAsi);
 
-		final I_PP_Product_Planning resultWithAsI = invokeFindMethodWithASI(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
-		assertThat(resultWithAsI).isNotNull();
-		assertThat(resultWithAsI.getPP_Product_Planning_ID()).isEqualTo(productPlanningWithAsi.getPP_Product_Planning_ID());
+		final I_PP_Product_Planning resultWithAsi = invokeFindMethodWithASI(organicAttributeSetInstance.getM_AttributeSetInstance_ID());
+
+		assertThat(resultWithAsi).isNotNull();
+		assertThatModel(resultWithAsi).hasSameIdAs(productPlanningWithAsi);
 	}
 
 	@Test
@@ -143,32 +161,42 @@ public class ProductPlanningDAO_findTest
 		assertThat(result.getPP_Product_Planning_ID()).isEqualTo(productPlanningWithoutAsi.getPP_Product_Planning_ID());
 	}
 
+	private I_M_Attribute createStorageRelevantListAttribute(final String name)
+	{
+		final I_M_Attribute attribute = attributesTestHelper.createM_Attribute(name, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		attribute.setIsStorageRelevant(true);
+		save(attribute);
+
+		return attribute;
+	}
+
 	private I_M_AttributeSetInstance createOrganicAndMadeInCologneASI()
 	{
 		final I_M_AttributeSetInstance organicAttributeSetInstance = createOrganicASI();
 
-		final I_M_Attribute madeInCologneAttribute = attributesTestHelper.createM_Attribute("MadeInCologneAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
-
 		final I_M_AttributeSetInstance organicAndMadeInCologneASI = ASICopy.newInstance(organicAttributeSetInstance).copy();
-		final I_M_AttributeInstance madeInCologneattributeInstance = newInstance(I_M_AttributeInstance.class);
-		madeInCologneattributeInstance.setM_AttributeSetInstance(organicAndMadeInCologneASI);
-		madeInCologneattributeInstance.setM_Attribute(madeInCologneAttribute);
-		madeInCologneattributeInstance.setValue(MADE_IN_COLOGNE_ATTRIBUTE_VALUE);
-		save(madeInCologneattributeInstance);
+
+		final I_M_AttributeInstance madeInCologneAttributeInstance = newInstance(I_M_AttributeInstance.class);
+		madeInCologneAttributeInstance.setM_AttributeSetInstance(organicAndMadeInCologneASI);
+		madeInCologneAttributeInstance.setM_Attribute(madeInCologneAttribute);
+		madeInCologneAttributeInstance.setM_AttributeValue(madeInCologneAttributeValue);
+		madeInCologneAttributeInstance.setValue(madeInCologneAttribute.getValue());
+		save(madeInCologneAttributeInstance);
 
 		return organicAndMadeInCologneASI;
 	}
 
 	private I_M_AttributeSetInstance createOrganicASI()
 	{
-		final I_M_Attribute organicAttribute = attributesTestHelper.createM_Attribute("OrganicAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 
 		final I_M_AttributeSetInstance organicAttributeSetInstance = newInstance(I_M_AttributeSetInstance.class);
 		save(organicAttributeSetInstance);
+
 		final I_M_AttributeInstance organicAttributeInstance = newInstance(I_M_AttributeInstance.class);
 		organicAttributeInstance.setM_AttributeSetInstance(organicAttributeSetInstance);
 		organicAttributeInstance.setM_Attribute(organicAttribute);
-		organicAttributeInstance.setValue(ORGANIC_ATTRIBUTE_VALUE);
+		organicAttributeInstance.setM_AttributeValue(organicAttributeValue);
+		organicAttributeInstance.setValue(organicAttributeValue.getValue());
 		save(organicAttributeInstance);
 
 		return organicAttributeSetInstance;
@@ -188,7 +216,7 @@ public class ProductPlanningDAO_findTest
 
 	private I_PP_Product_Planning invokeFindMethodWithASI(final int attributeSetInstanceId)
 	{
-		final I_PP_Product_Planning result = new ProductPlanningDAO().find(Env.getCtx(),
+		final I_PP_Product_Planning result = new ProductPlanningDAO().find(
 				warehouse.getAD_Org_ID(),
 				warehouse.getM_Warehouse_ID(),
 				plant.getS_Resource_ID(),

@@ -61,7 +61,7 @@ public class Merge
 			"T_Aging" };
 	/** Tables to delete (not update) for M_Product */
 	public static String[] s_delete_Product = new String[] { "M_Product_PO", "M_Replenish", "T_Replenish",
-			"M_ProductPrice", "M_Product_Costing",
+			"M_ProductPrice",
 			"M_Cost",       // teo_sarca [ 1704554 ]
 			"M_Product_Trl", "M_Product_Acct" };		// M_Storage
 

@@ -2,11 +2,11 @@ package org.eevolution.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.mm.attributes.api.AttributesKeyGenerator;
-import org.compiere.model.I_M_AttributeInstance;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 
 /*
@@ -42,16 +42,9 @@ public class PP_Product_Planning
 	)
 	public void updateStorageAttributesKey(@NonNull final I_PP_Product_Planning productPlanning)
 	{
-		final String storageAttributesKey = AttributesKeyGenerator.builder()
-				.attributeSetInstanceId(productPlanning.getM_AttributeSetInstance_ID())
-				.attributeInstanceFilter(ai -> attributeInstanceIsStorageRelevant(ai))
-				.build()
-				.createAttributesKey();
-		productPlanning.setStorageAttributesKey(storageAttributesKey);
-	}
+		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(productPlanning.getM_AttributeSetInstance_ID())
+				.orElse(AttributesKey.NONE);
 
-	private boolean attributeInstanceIsStorageRelevant(@NonNull final I_M_AttributeInstance ai)
-	{
-		return ai.getM_Attribute().isStorageRelevant();
+		productPlanning.setStorageAttributesKey(attributesKey.getAsString());
 	}
 }

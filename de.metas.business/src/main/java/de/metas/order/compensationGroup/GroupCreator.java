@@ -5,6 +5,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.math.BigDecimal;
 import java.util.Collection;
 
+import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPricingBL;
+import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.pricing.spi.impl.rules.Discount;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -40,12 +44,13 @@ import lombok.NonNull;
 
 public final class GroupCreator
 {
-	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+
 	private final GroupRepository groupsRepo;
 
 	private Collection<Integer> lineIdsToGroup;
-	private GroupIdTemplate newGroupIdTemplate;
-	private int compensationProductId = -1;
+	private GroupTemplate newGroupTemplate;
 
 	/* package */ GroupCreator(@NonNull final GroupRepository groupsRepo)
 	{
@@ -59,46 +64,60 @@ public final class GroupCreator
 		return this;
 	}
 
-	public GroupCreator compensationProductId(final int compensationProductId)
+	public GroupCreator groupTemplate(final GroupTemplate newGroupTemplate)
 	{
-		this.compensationProductId = compensationProductId;
+		this.newGroupTemplate = newGroupTemplate;
 		return this;
 	}
 
-	public GroupCreator newGroupIdTemplate(final GroupIdTemplate newGroupIdTemplate)
-	{
-		this.newGroupIdTemplate = newGroupIdTemplate;
-		return this;
-	}
-
-	public void createGroup()
+	public Group createGroup()
 	{
 		final Group group = groupsRepo.retrieveOrCreateGroup(createRetrieveOrCreateGroupRequest());
-		group.addNewCompensationLine(createGroupCompensationLineCreateRequest());
+		return recreateGroup(group);
+	}
+	
+	public Group recreateGroup(@NonNull final Group group)
+	{
+		group.removeAllCompensationLines();
+
+		newGroupTemplate.getLines()
+				.stream()
+				.filter(templateLine -> templateLine.getGroupMatcher().test(group))
+				.map(templateLine -> createGroupCompensationLineCreateRequest(templateLine, group))
+				.forEach(group::addNewCompensationLine);
+
 		groupsRepo.saveGroup(group);
+		return group;
 	}
 
 	private RetrieveOrCreateGroupRequest createRetrieveOrCreateGroupRequest()
 	{
 		return RetrieveOrCreateGroupRequest.builder()
 				.orderLineIds(lineIdsToGroup)
-				.newGroupIdTemplate(newGroupIdTemplate)
+				.newGroupTemplate(newGroupTemplate)
 				.build();
 	}
 
-	private GroupCompensationLineCreateRequest createGroupCompensationLineCreateRequest()
+	private GroupCompensationLineCreateRequest createGroupCompensationLineCreateRequest(@NonNull final GroupTemplateLine templateLine, @NonNull final Group group)
 	{
-		Check.assume(compensationProductId > 0, "compensationProductId > 0");
-		
-		final I_M_Product product = load(compensationProductId, I_M_Product.class);
+		final I_M_Product product = load(templateLine.getProductId(), I_M_Product.class);
 		final I_C_UOM uom = productBL.getStockingUOM(product);
+
+		final GroupCompensationType type = extractGroupCompensationType(product);
+		final GroupCompensationAmtType amtType = extractGroupCompensationAmtType(product);
+
+		BigDecimal percentage = BigDecimal.ZERO;
+		if (GroupCompensationType.Discount.equals(type) && GroupCompensationAmtType.Percent.equals(amtType))
+		{
+			percentage = calculateDefaultDiscountPercentage(templateLine, group);
+		}
 
 		return GroupCompensationLineCreateRequest.builder()
 				.productId(product.getM_Product_ID())
 				.uomId(uom.getC_UOM_ID())
-				.type(extractGroupCompensationType(product))
-				.amtType(extractGroupCompensationAmtType(product))
-				.percentage(BigDecimal.ZERO)
+				.type(type)
+				.amtType(amtType)
+				.percentage(percentage)
 				.qty(BigDecimal.ZERO)
 				.price(BigDecimal.ZERO)
 				.build();
@@ -112,6 +131,35 @@ public final class GroupCreator
 	private static final GroupCompensationAmtType extractGroupCompensationAmtType(final I_M_Product product)
 	{
 		return GroupCompensationAmtType.ofAD_Ref_List_Value(Util.coalesce(product.getGroupCompensationAmtType(), X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
+	}
+
+	private BigDecimal calculateDefaultDiscountPercentage(final GroupTemplateLine templateLine, final Group group)
+	{
+		if (templateLine.getPercentage() != null)
+		{
+			return templateLine.getPercentage();
+		}
+
+		return retrieveDiscountPercentageFromPricing(templateLine, group);
+	}
+
+	private final BigDecimal retrieveDiscountPercentageFromPricing(final GroupTemplateLine templateLine, final Group group)
+	{
+		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
+		pricingCtx.setM_Product_ID(templateLine.getProductId());
+		pricingCtx.setC_BPartner_ID(group.getBpartnerId());
+		pricingCtx.setSOTrx(group.isSOTrx());
+		pricingCtx.setDisallowDiscount(false);// just to be sure
+		pricingCtx.setQty(BigDecimal.ONE);
+
+		final IPricingResult pricingResult = pricingBL.createInitialResult(pricingCtx);
+		pricingResult.setCalculated(true); // important, else the Discount rule does not react
+		pricingResult.setPriceStd(group.getTotalNetAmt());
+
+		final Discount discountRule = new Discount();
+		discountRule.calculate(pricingCtx, pricingResult);
+
+		return pricingResult.getDiscount();
 	}
 
 }

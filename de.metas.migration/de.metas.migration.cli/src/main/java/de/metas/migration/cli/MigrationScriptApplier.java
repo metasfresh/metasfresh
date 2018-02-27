@@ -51,18 +51,6 @@ public class MigrationScriptApplier
 {
 	private static final transient Logger logger = LoggerFactory.getLogger(MigrationScriptApplier.class);
 
-	// @NonNull
-	// private final IScriptsApplierListener listener;
-	//
-	// @Default
-	// private final boolean justMarkScriptAsExecuted = false;
-	//
-	// @NonNull
-	// private final String rolloutDirName;
-	//
-	// @Default
-	// private final String scriptFileName = null;
-
 	@NonNull
 	private final DirectoryChecker directoryChecker;
 

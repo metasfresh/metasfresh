@@ -98,7 +98,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 		// Setup ADR attribute
 		{
 			attr_ADR = helper.createM_Attribute_TypeList("ADR");
-			attr_ADR.setAD_JavaClass(helper.createAD_JavaClass(ADRAttributeGenerator.class));
+			attr_ADR.setAD_JavaClass_ID(helper.createAD_JavaClass(ADRAttributeGenerator.class).getAD_JavaClass_ID());
 			InterfaceWrapperHelper.save(attr_ADR);
 			helper.createM_AttributeUse(helper.product_attributeSet, attr_ADR);
 

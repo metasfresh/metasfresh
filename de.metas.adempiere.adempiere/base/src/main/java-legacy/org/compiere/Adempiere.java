@@ -74,6 +74,8 @@ import de.metas.logging.LogManager;
  */
 public class Adempiere
 {
+	public static final String BEAN_NAME = "Adempiere";
+
 	/**
 	 * The "raw" unsubstituted version string from <code>/de.metas.endcustomer..base/src/main/resources/org/adempiere/version.properties</code>
 	 */
@@ -143,7 +145,7 @@ public class Adempiere
 
 	/**
 	 * Inject the application context from outside <b>and</b> enable {@link Services} to retrieve service implementations from it.
-	 * 
+	 *
 	 * Currently seems to be required because currently the client startup procedure needs to be decomposed more.
 	 * See <code>SwingUIApplication</code> to know what I mean.
 	 *
@@ -175,15 +177,22 @@ public class Adempiere
 
 	/**
 	 * When running this method from within a junit test, we need to fire up spring
-	 * 
+	 *
 	 * @param requiredType
 	 * @return
 	 */
 	public static final <T> T getBean(final Class<T> requiredType)
 	{
 		final ApplicationContext springApplicationContext = getSpringApplicationContext();
-		throwExceptionIfNull(springApplicationContext);
-
+		try
+		{
+			throwExceptionIfNull(springApplicationContext);
+		}
+		catch (final AdempiereException e)
+		{
+			throw e.appendParametersToMessage()
+					.setParameter("requiredType", requiredType);
+		}
 		return springApplicationContext.getBean(requiredType);
 	}
 
@@ -199,7 +208,7 @@ public class Adempiere
 			message = "This unit test requires a spring ApplicationContext; A known way to do that is to annotate the test class like this:\n"
 					+ "\n"
 					+ "@RunWith(SpringRunner.class)\n"
-					+ "@SpringBootTest(classes = { StartupListener.class, <further configuration classes> })\n"
+					+ "@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, <further classes> })\n"
 					+ "public class YourTest ...\n"
 					+ "\n"
 					+ "Where the further configuration classes contain @ComponentScann annotations to discover spring components required by the actual tests"
@@ -209,7 +218,7 @@ public class Adempiere
 		{
 			message = "SpringApplicationContext not configured yet";
 		}
-		throw new IllegalStateException(message);
+		throw new AdempiereException(message);
 	}
 
 	//

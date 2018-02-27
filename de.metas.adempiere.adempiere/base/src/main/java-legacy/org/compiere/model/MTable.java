@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.service.ISequenceDAO;
@@ -41,7 +42,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.dbPort.Convert;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -476,7 +476,7 @@ public class MTable extends X_AD_Table
 			}
 		}
 		
-		final StringBuilder sql = new StringBuilder(Convert.DDL_PREFIX + "CREATE TABLE ")
+		final StringBuilder sql = new StringBuilder(MigrationScriptFileLoggerHolder.DDL_PREFIX + "CREATE TABLE ")
 				.append("public.") // schema
 				.append(getTableName())
 				.append(" (")

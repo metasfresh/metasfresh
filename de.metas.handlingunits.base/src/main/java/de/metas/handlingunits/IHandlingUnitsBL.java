@@ -163,9 +163,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Destroy given HU or some of it's children which are empty.
-	 * 
+	 *
 	 * <b>NOTE: for a full description of everything this method does, consult the javadoc of {@link #destroyIfEmptyStorage(IHUContext, I_M_HU)}.</b>
-	 * 
+	 *
 	 * @param hu
 	 * @return true if given HU was fully destroyed now or it was already destroyed
 	 * @see #destroyIfEmptyStorage(IHUContext, I_M_HU)
@@ -215,7 +215,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Gets top level HUs of given HUs (i.e. the top of hierarchy).
 	 *
 	 * @param query see {@link TopLevelHusQuery}.
-	 * 
+	 *
 	 * @return top level HUs; never return {@code null}
 	 */
 	List<I_M_HU> getTopLevelHUs(TopLevelHusQuery query);
@@ -353,18 +353,16 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Check if an HU has a status that is "physical"/ "concrete"/ "material" Which means the HU exists as a box/ will still be used by us.
 	 *
-	 * For the time being, the only hu statuses that are physical are {@link X_M_HU_Status#HUSTATUS_Active Active} and {@link X_M_HU_Status#HUSTATUS_Picked Picked}.<br>
-	 * Why are the other statuses not interesting for us:
+	 * The following hu statuses are not phyical:
 	 * <ul>
 	 * <li>{@link X_M_HU_Status#HUSTATUS_Planning Planning}: is a draft state, may or may not be used further
 	 * <li>{@link X_M_HU_Status#HUSTATUS_Destroyed Destroyed}: not used any longer
 	 * <li>{@link X_M_HU_Status#HUSTATUS_Shipped Shipped}: No longer in our warehouses
 	 * </ul>
-	 * NOTE: if status is <code>null</code>, it is considered not physical. It means that the HU was just created and will sun get another status
+	 * NOTE: if status is <code>null</code>, it is considered not physical. It means that the HU was just created and will soon get another status.
 	 *
-	 * In the future, if another status of such kind (let's call it "intangible"), please, add it in the implementation of this method
+	 * In the future, if another status of such kind (let's call it "intangible"), please add it in the implementation of this method.
 	 *
-	 * @param huStatus
 	 * @return <code>true</code> if the status is a "physical" status (active or picked), false otherwise
 	 */
 	boolean isPhysicalHU(String huStatus);
@@ -385,7 +383,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Same as {@link #setHUStatus(IHUContext, I_M_HU, String)}, but if <code>forceFetchPackingMaterial=true</code>, then the packing material will be fetched automatically.
 	 *
 	 * NOTE: this method is not saving the HU.
-	 * 
+	 *
 	 * @param huContext
 	 * @param hu
 	 * @param huStatus
@@ -395,7 +393,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Activate the HU (assuming it was Planning)
-	 * 
+	 *
 	 * @param hus
 	 */
 	void setHUStatusActive(Collection<I_M_HU> hus);
@@ -419,7 +417,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Checks if the given {@code hu} is a aggregate HU.<br>
 	 * An aggregate HU is on a virtual HU located below an LU that represents a whole number of TUs at once.
-	 * 
+	 *
 	 * @param hu optional, may be {@code null}.
 	 * @return {@code true} if the given {@code hu} is not {@code null} and if it also has a {@code M_HU_Item_Parent} with {@code ItemType} being {@link X_M_HU_Item#ITEMTYPE_HUAggregate}.
 	 */
@@ -428,7 +426,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * If the given {@code hu} is a aggregate HU, return the PI version of the HUs that are <i>represented</i> within the aggregate HU.<br>
 	 * Otherwise, return the given {@code hu}'s own/direct PI version.
-	 * 
+	 *
 	 * @param hu
 	 * @return
 	 */
@@ -437,7 +435,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * If the given {@code hu} is a aggregate HU, return the PI of the HUs that are <i>represented</i> within the aggregate HU.<br>
 	 * Otherwise, return the given {@code hu}'s own/direct PI.
-	 * 
+	 *
 	 * @param hu
 	 * @return
 	 */

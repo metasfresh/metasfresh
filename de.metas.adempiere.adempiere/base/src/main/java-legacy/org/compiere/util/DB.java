@@ -73,6 +73,7 @@ import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IADPInstanceDAO;
+import lombok.NonNull;
 
 /**
  * General Database Interface
@@ -656,13 +657,6 @@ public final class DB
 		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, null);
 	}	// prepareStatement
 
-	/**
-	 * Prepare Statement
-	 *
-	 * @param sql
-	 * @param trxName transaction
-	 * @return Prepared Statement
-	 */
 	public static CPreparedStatement prepareStatement(String sql, String trxName)
 	{
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
@@ -1822,7 +1816,7 @@ public final class DB
 	public static String TO_DATE(Timestamp day)
 	{
 		return TO_DATE(day, true);
-	} 
+	}
 
 	/**
 	 * Create SQL for formatted Date, Number
@@ -2348,7 +2342,7 @@ public final class DB
 	 * <pre>
 	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..
 	 * </pre>
-	 * 
+	 *
 	 * @param paramsIn
 	 * @param paramsOut
 	 * @return SQL list
@@ -2624,4 +2618,36 @@ public final class DB
 		return value;
 	}
 
+	@FunctionalInterface
+	public static interface ResultSetConsumer
+	{
+		void accept(ResultSet rs) throws SQLException;
+	}
+
+	public static void forEachRow(
+			@NonNull final String sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetConsumer rowConsumer)
+	{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+			while(rs.next())
+			{
+				rowConsumer.accept(rs);
+			}
+		}
+		catch(SQLException ex)
+		{
+			throw new DBException(sql);
+		}
+		finally
+		{
+			close(rs, pstmt);
+		}
+	}
 } // DB

@@ -10,5 +10,5 @@
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.metas.material.dispo.service.Application"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="metasfresh-material-dispo-service"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=&quot;${workspace_loc:metasfresh-dist}/metasfresh.properties&quot;&#13;&#10;-Dspring.boot.admin.url=http://localhost:9090&#13;&#10;-Dmanagement.security.enabled=false"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=${project_loc:metasfresh-dist}/metasfresh.properties&#13;&#10;-Dspring.boot.admin.url=http://localhost:9090&#13;&#10;-Dmanagement.security.enabled=false"/>
 </launchConfiguration>

@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 import org.springframework.stereotype.Service;
@@ -7,11 +8,12 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import lombok.NonNull;
 
@@ -25,12 +27,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +41,7 @@ import lombok.NonNull;
 @Service
 public class SupplyCandiateHandler implements CandidateHandler
 {
-	private final CandidateRepositoryCommands candidateRepositoryCommands;
+	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	private final StockCandidateService stockCandidateService;
 
@@ -47,11 +49,11 @@ public class SupplyCandiateHandler implements CandidateHandler
 
 	public SupplyCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final CandidateRepositoryCommands candidateRepository,
+			@NonNull final CandidateRepositoryWriteService candidateRepository,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepositoryRetrieval;
-		this.candidateRepositoryCommands = candidateRepository;
+		this.candidateRepositoryWriteService = candidateRepository;
 		this.stockCandidateService = stockCandidateService;
 	}
 
@@ -71,56 +73,72 @@ public class SupplyCandiateHandler implements CandidateHandler
 	 * @param supplyCandidate
 	 */
 
+	@Override
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate supplyCandidate)
 	{
 		assertCorrectCandidateType(supplyCandidate);
 
 		// store the supply candidate and get both it's ID and qty-delta
-		final Candidate supplyCandidateDeltaWithId = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
+		// TODO 3034 test: if we add a supplyCandidate that has an unspecified parent-id and and in DB there is an MD_Candidate with parentId > 0,
+		// then supplyCandidateDeltaWithId needs ton have that parentId
+		final Candidate supplyCandidateDeltaWithId = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
+		final Candidate supplyCandidateWithIdAndParentId = supplyCandidateDeltaWithId.withQuantity(supplyCandidate.getQuantity());
 
 		if (supplyCandidateDeltaWithId.getQuantity().signum() == 0)
 		{
 			return supplyCandidateDeltaWithId; // nothing to do
 		}
 
-		final Candidate parentStockCandidateWithId;
-		if (supplyCandidateDeltaWithId.getParentId() > 0)
+		final Candidate parentStockCandidateWithIdAndDelta;
+
+		final boolean alreadyHasParentStockCandidate = supplyCandidateWithIdAndParentId.getParentId() > 0;
+		if (alreadyHasParentStockCandidate)
 		{
-			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* stock candidate
-			parentStockCandidateWithId = stockCandidateService.updateStock(
-					supplyCandidateDeltaWithId,
-					() -> {
-						// don't check if we might create a new stock candidate, because we know we don't. Get the one that already exists and just update its quantity
-						final Candidate stockCandidate = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateDeltaWithId.getParentId()));
-						return candidateRepositoryCommands.updateQty(
-								stockCandidate.withQuantity(
-										stockCandidate.getQuantity().add(supplyCandidateDeltaWithId.getQuantity())));
-					});
+			final Candidate parentStockCandidate = candidateRepository
+					.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateWithIdAndParentId.getParentId()));
+			parentStockCandidateWithIdAndDelta = stockCandidateService.updateQty(
+					parentStockCandidate.withQuantity(supplyCandidate.getQuantity()));
 		}
 		else
 		{
-			// update (or add) the stock with the delta
-			parentStockCandidateWithId = stockCandidateService.addOrUpdateStock(supplyCandidateDeltaWithId
-					// but don't provide the supply's SeqNo, because there might already be a stock record which we might override (even if the supply candidate is not yet linked to it);
-					// plus, the supply's seqNo shall depend on the stock's anyways
-					.withSeqNo(-1));
+			// figure out if there is stock candidate that is a child of a demand candidate with has the same demand details that we have
+			final CandidatesQuery queryForExistingDemandChild = CandidatesQuery.builder()
+					.type(CandidateType.STOCK)
+					.parentDemandDetail(supplyCandidateWithIdAndParentId.getDemandDetail())
+					.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(supplyCandidate.getMaterialDescriptor()))
+					.build();
+
+			final Candidate existingDemandChildStock = candidateRepository.retrieveLatestMatchOrNull(queryForExistingDemandChild);
+			if (existingDemandChildStock != null)
+			{
+				final BigDecimal newStockQuantity = existingDemandChildStock.getQuantity()
+						.add(supplyCandidateDeltaWithId.getQuantity());
+
+				final Candidate existingDemandChildWithUpdatedQty = existingDemandChildStock
+						.withQuantity(newStockQuantity);
+
+				parentStockCandidateWithIdAndDelta = candidateRepositoryWriteService
+						.addOrUpdatePreserveExistingSeqNo(existingDemandChildWithUpdatedQty);
+			}
+			else
+			{
+				final Candidate newSupplyCandidateParent = stockCandidateService.createStockCandidate(supplyCandidateWithIdAndParentId);
+				parentStockCandidateWithIdAndDelta = candidateRepositoryWriteService.addOrUpdatePreserveExistingSeqNo(newSupplyCandidateParent);
+			}
 		}
+
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(parentStockCandidateWithIdAndDelta);
 
 		// set the stock candidate as parent for the supply candidate
 		// the return value would have qty=0, but in the repository we updated the parent-ID
-		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(
-				supplyCandidate
-						.withParentId(parentStockCandidateWithId.getId())
-						.withSeqNo(parentStockCandidateWithId.getSeqNo() + 1));
+		candidateRepositoryWriteService.updateCandidateById(
+				supplyCandidateWithIdAndParentId
+						.withParentId(parentStockCandidateWithIdAndDelta.getId())
+						.withSeqNo(parentStockCandidateWithIdAndDelta.getSeqNo() + 1));
 
 		return supplyCandidateDeltaWithId
-				.withParentId(parentStockCandidateWithId.getId())
-				.withSeqNo(parentStockCandidateWithId.getSeqNo() + 1);
-
-		// e.g.
-		// supply-candidate with 23 (i.e. +23)
-		// parent-stockCandidate used to have -44 (because of "earlier" candidate)
-		// now has -21
+				.withParentId(parentStockCandidateWithIdAndDelta.getId())
+				.withSeqNo(parentStockCandidateWithIdAndDelta.getSeqNo() + 1);
 	}
 
 	private void assertCorrectCandidateType(@NonNull final Candidate supplyCandidate)

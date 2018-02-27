@@ -1,0 +1,1185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn:msv3:v2" targetNamespace="urn:msv3:v2" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:complexType name="VertragsdatenAbfrage">
+		<xs:annotation>
+			<xs:documentation>Abfrage Vertragsdaten für MSV3 inklusive Sondertage</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="AutomatischerAbruf" type="xs:boolean" use="required">
+			<xs:annotation>
+				<xs:documentation>Angabe, ob der Vertragsdatenabruf aus dem automatischen taeglichen Abruf erfolgt ist oder manuell ausgeloest wurde.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="VertragsdatenAntwort">
+		<xs:annotation>
+			<xs:documentation>Vertragsdaten für MSV3 inklusive Sondertage</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Bestellfenster" type="VertragsdatenBestellfenster" maxOccurs="999"/>
+			<xs:element name="AuftragsartNormal" type="VertragsdatenAuftragsartNormal"/>
+			<xs:element name="AuftragsartStapel" type="VertragsdatenAuftragsart"/>
+			<xs:element name="AuftragsartSonder" type="VertragsdatenAuftragsart"/>
+			<xs:element name="AuftragsartVersand" type="VertragsdatenAuftragsartVersand"/>
+			<xs:element name="Substitutionsvereinbarung" type="xs:boolean"/>
+			<xs:element name="VerfuegbarkeitEinzelnSpezifischeRueckmeldungVereinbart" type="xs:boolean"/>
+			<xs:element name="VerfuegbarkeitBulkVereinbart" type="xs:boolean"/>
+			<xs:element name="RuecknahmeangebotVereinbart" type="xs:boolean"/>
+			<xs:element name="Sondertag" type="TypSondertag" minOccurs="0" maxOccurs="99"/>
+		</xs:sequence>
+		<xs:attribute name="AutomatischerAbruf" type="xs:boolean" use="required">
+			<xs:annotation>
+				<xs:documentation>Angabe, ob der Vertragsdatenabruf aus dem automatischen taeglichen Abruf erfolgt ist oder manuell ausgeloest wurde. Der Wert wird in der Anfrage mitgesendet und an dieser Stelle in die Antwort uebernommen.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="KundenKennung" use="required">
+			<xs:annotation>
+				<xs:documentation>MSV3-Kundenkennung (redundant zum gleichen authentifizierenden Benutzernamen der HTTPS-Anfrage)</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="1"/>
+					<xs:maxLength value="80"/>
+					<xs:pattern value="([a-zA-Z0-9]+\\)?[a-zA-Z0-9]+"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="Ruecknahmeangebot">
+		<xs:annotation>
+			<xs:documentation>nur die fachliche Anfrage</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Artikel" type="ArtikelMenge" maxOccurs="1000">
+				<xs:annotation>
+					<xs:documentation>Spezifiziert die Artikel, welche die Apotheke dem GH zurückgeben möchte; keine doppelten PZNs erlaubt</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="Id" type="uuid" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="RuecknahmeangebotAntwort">
+		<xs:annotation>
+			<xs:documentation>nur die fachliche Anfrage</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ReferenzId">
+				<xs:annotation>
+					<xs:documentation>ID mit der von GH der Empfang der Anfrage bestätigt wird und die bei späterer Kommunikation Tel/Mail/Fax zur Referenzierung benutzt werden kann.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="80"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="Id" type="uuid" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="VerfuegbarkeitsanfrageEinzelne">
+		<xs:sequence>
+			<xs:element name="Artikel" maxOccurs="50">
+				<xs:annotation>
+					<xs:documentation>Spezifiziert die Artikeln, zu denen die Verfuegbarkeit abgefragt werden soll keine doppelten PZNs innerhalb erlaubt</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="ArtikelMenge">
+							<xs:attribute name="Bedarf" use="required">
+								<xs:annotation>
+									<xs:documentation>Flag zur Defektoptimierung des GH, das anzeigt welchen Bedarf dieser Artikel im Kontext der aktuellen Verfuegbarkeitsanfrage hat.
+z.B: 
+direkt -> Apo benoetigt definitiv genau diesen Artikel
+einsAusN -> Apo benoetigt genau einen der so markierten Artikel dieser Anfrage
+unspezifisch -> Die Apo-Warenwirtschaft hat kein Wissen ueber den Grund der Anfrage.</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:enumeration value="direkt"/>
+										<xs:enumeration value="einsAusN"/>
+										<xs:enumeration value="unspezifisch"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:attribute>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="Id" type="uuid" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="VerfuegbarkeitsanfrageEinzelneAntwort">
+		<xs:annotation>
+			<xs:documentation>Die Struktur (Artikel) bezüglich Mengen muss zwischen Anfrage und Antwort identisch sein</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Artikel" type="VerfuegbarkeitsantwortArtikel" maxOccurs="50">
+				<xs:annotation>
+					<xs:documentation>Rückmeldung für alle angefragten Artikel</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="Id" type="uuid" use="required"/>
+		<xs:attribute name="RTyp" type="VerfuegbarkeitTyp" use="required">
+			<xs:annotation>
+				<xs:documentation>Legt den Typ der Rückmeldung fest</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="VerfuegbarkeitsanfrageBulk">
+		<xs:choice>
+			<xs:element name="Pzn" type="pzn" maxOccurs="10000">
+				<xs:annotation>
+					<xs:documentation>definiert maximal 10000 konkrete PZNs, zu denen einen Abfrage erfolgen soll. keine doppelten PZNs erlaubt</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PznBlock" type="pzn">
+				<xs:annotation>
+					<xs:documentation>Start PZN eines 100.000-Blocks von PZNs. Diese PZN muss auf 5 Nullen enden! (damit das Cachen auf GH-seite einfacher wird) Achtung: Wegen den Prüfziffern und Vergabelöchern sind diese Blöcke nie voll besetzt und in der Antwort kommen weniger Artikel zurück. Dies sind maximal 10.000 Stück, in der Regel aber ca. 6-8.000</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:choice>
+		<xs:attribute name="Id" type="uuid" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="VerfuegbarkeitsanfrageBulkAntwort">
+		<xs:sequence>
+			<xs:element name="Pzn" type="pzn" minOccurs="0" maxOccurs="10000">
+				<xs:annotation>
+					<xs:documentation>Liste mit verfügbaren PZNs. Nicht verfügbare PZNs ergeben sich aus der Differenz zur Anfrage. (aus Gründen der Performance/Traffic)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="Id" type="uuid" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="Bestellung">
+		<xs:annotation>
+			<xs:documentation>nur die fachliche Anfrage Die Struktur (Aufträge und Positionen) bezüglich Mengen und Reihenfolgen muss zwischen Anfrage und Antwort identisch sein</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Auftraege" type="BestellungAuftrag" maxOccurs="1000">
+				<xs:annotation>
+					<xs:documentation>Reihenfolge in der Antwort darf beliebig sein! aber maximal 1000 Positionen in der gesamten Bestellung!</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="Id" type="uuid" use="required"/>
+		<xs:attribute name="BestellSupportId" type="SupportIDType" use="required">
+			<xs:annotation>
+				<xs:documentation>ausschließliche Identifikation für Menschen! Support (optional Anzeige auf GUI kein Andruck) - keine technische Semantik Apo-Wawi vergibt diese; soll genügend Selektiv sein</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="BestellungAntwort">
+		<xs:annotation>
+			<xs:documentation>nur die fachliche Anfrage Die Struktur (Aufträge und Positionen) bezüglich Mengen muss zwischen Anfrage und Antwort identisch sein</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Auftraege" type="BestellungAntwortAuftrag" minOccurs="0" maxOccurs="1000">
+				<xs:annotation>
+					<xs:documentation>Die Reihenfolge der Aufträge in der Antwort darf von der Abfrage-Reihenfolge abweichen. Die Anzahl der Elemente muss identisch sein. Wenn NachtBetrieb = true, Anzahl der Aufträge ist immer 0.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="Id" type="uuid" use="required"/>
+		<xs:attribute name="BestellSupportId" type="SupportIDType" use="required">
+			<xs:annotation>
+				<xs:documentation>ausschließliche Identifikation für Menschen! Support (optional Anzeige auf GUI kein Andruck) - keine technische Semantik Apo-Wawi vergibt diese; soll genügend Selektiv sein</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="NachtBetrieb" type="xs:boolean" use="required">
+			<xs:annotation>
+				<xs:documentation>Wenn true, darf die Bestellung keine Aufträge enthalten</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="BestellstatusAntwort">
+		<xs:annotation>
+			<xs:documentation>gibt an, ob: - Bestellkennung unbekannt ist (seit 7 Tagen) - Bestellkennung bekannt, aber Bestellantwort ist NICHT MEHR verfügbar - Bestellkennung bekannt, Bestellantwort ist verfügbar</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="BestellSupportId" type="SupportIDType" nillable="true">
+				<xs:annotation>
+					<xs:documentation>ausschließliche Identifikation für Menschen! Support (optional Anzeige auf GUI kein Andruck) - keine technische Semantik Apo-Wawi vergibt diese; soll genügend Selektiv sein</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Auftraege" type="BestellungAntwortAuftrag" minOccurs="0" maxOccurs="1000">
+				<xs:annotation>
+					<xs:documentation>Die Reihenfolge der Aufträge in der Antwort darf von der Abfrage-Reihenfolge abweichen. Die Anzahl der Elemente muss identisch sein. Aufträge sind nur beim Status = BestellungAntwortVerfügbar gesetzt</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="Id" type="uuid" use="required">
+			<xs:annotation>
+				<xs:documentation>Kennung der angefragten Bestellung</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Status" type="Bestellstatus" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="DokumentAbfragenType">
+		<xs:annotation>
+			<xs:documentation>PDF Dokumente für Lieveravis und Retourenavis abfragen</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="DokumentId" type="uuid" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="DokumentAbfragenAntwort">
+		<xs:annotation>
+			<xs:documentation>PDF Dokumente für Lieveravis und Retourenavis abfragen</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Data">
+				<xs:annotation>
+					<xs:documentation>Pdf-Dokument mit der maximalgröße von 2MB</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:base64Binary">
+						<xs:maxLength value="2097152"/>
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="DokumentId" type="uuid" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="LieferavisAbfrageHistAbfrage">
+		<xs:attribute name="Lieferscheinnummer" type="LieferscheinnummerType" use="optional">
+			<xs:annotation>
+				<xs:documentation>fachlich und technischer PK Nummer vom Papierlieferschein</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="BarcodeReferenz" type="BarcodeReferenzType" use="optional">
+			<xs:annotation>
+				<xs:documentation>für Abscannen mit Präfix! (1D oder 2D)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="LieferavisAbfragenAntwort">
+		<xs:annotation>
+			<xs:documentation>Abfrage von Neuen oder Historischen Lieveravis; zu einem Lieferschein GENAU ein Avis</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Lieferavis" minOccurs="0" maxOccurs="999">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Zeile" maxOccurs="9999">
+							<xs:annotation>
+								<xs:documentation>Reihenfolge ist exakt die Reihenfolge auf dem gedruckten Lieferschein PZN kann in mehreren Zeilen vorkommen</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:annotation>
+										<xs:documentation>muss mind ein Anteil oder eine Fehlmenge enthalten sein</xs:documentation>
+									</xs:annotation>
+									<xs:element name="Anteil" minOccurs="0" maxOccurs="99">
+										<xs:complexType>
+											<xs:attribute name="AuftragsID" type="uuid">
+												<xs:annotation>
+													<xs:documentation>optional nur für NICHT-MSV3Bestellungen (Telefon, Fax, MSV2) Die Befüllung des Feldes erfolgt nur bei eindeutiger Zuordnung – an-dernfalls soll das Feld nicht befüllt werden (Bsp.: Zusammenfüh-rung…)</xs:documentation>
+												</xs:annotation>
+											</xs:attribute>
+											<xs:attribute name="MengeGeliefert" use="required">
+												<xs:simpleType>
+													<xs:restriction base="xs:int">
+														<xs:minInclusive value="1"/>
+													</xs:restriction>
+												</xs:simpleType>
+											</xs:attribute>
+											<xs:attribute name="Packstuecknummer">
+												<xs:annotation>
+													<xs:documentation>Nummer, die das Packstück eindeutig identifiziert. In der Regel wird diese Nummer als maschinenlesbarer Barcode aufgebracht sein.</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+													<xs:restriction base="xs:string">
+														<xs:maxLength value="20"/>
+														<xs:minLength value="1"/>
+													</xs:restriction>
+												</xs:simpleType>
+											</xs:attribute>
+											<xs:attribute name="Charge" use="optional">
+												<xs:annotation>
+													<xs:documentation>optional: Chargeninformation</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+													<xs:restriction base="xs:string">
+														<xs:minLength value="0"/>
+														<xs:maxLength value="50"/>
+													</xs:restriction>
+												</xs:simpleType>
+											</xs:attribute>
+											<xs:attribute name="Verfalldatum" type="xs:date" use="optional">
+												<xs:annotation>
+													<xs:documentation>optional: Verfalldatum=letzter Tag, wo eine Packung noch benutzbar ist (für 11/2016 -> 30.11.2016)</xs:documentation>
+												</xs:annotation>
+											</xs:attribute>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="Fehlmenge" minOccurs="0" maxOccurs="99">
+										<xs:annotation>
+											<xs:documentation>Differenz zwischen bei Bestellung zu liefernd zurückgemeldet und nicht geliefert (nachträglicher Lagerdefekt beim GH) Bei dieser Menge darf davon ausgegangen werden, dass eine spätere (Nach)Lieferung NICHT erfolgt</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:attribute name="AuftragsID" type="uuid">
+												<xs:annotation>
+													<xs:documentation>optional nur für NICHT-MSV3Bestellungen (Telefon, Fax, MSV2) Die Befüllung des Feldes erfolgt nur bei eindeutiger Zuordnung – an-dernfalls soll das Feld nicht befüllt werden (Bsp.: Zusammenfüh-rung…)</xs:documentation>
+												</xs:annotation>
+											</xs:attribute>
+											<xs:attribute name="Menge" use="required">
+												<xs:simpleType>
+													<xs:restriction base="xs:int">
+														<xs:minInclusive value="1"/>
+													</xs:restriction>
+												</xs:simpleType>
+											</xs:attribute>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+								<xs:attribute name="PZN" type="pzn" use="required">
+									<xs:annotation>
+										<xs:documentation>kann in mehreren Zeilen vorkommen</xs:documentation>
+									</xs:annotation>
+								</xs:attribute>
+								<xs:attribute name="Artikelbezeichnung" use="optional">
+									<xs:annotation>
+										<xs:documentation>optional vor allem für GH-Spezifische und "neue" Artikel</xs:documentation>
+									</xs:annotation>
+									<xs:simpleType>
+										<xs:restriction base="xs:string">
+											<xs:minLength value="1"/>
+											<xs:maxLength value="50"/>
+										</xs:restriction>
+									</xs:simpleType>
+								</xs:attribute>
+								<xs:attribute name="GebindeId" type="DruckbareKennung" use="optional">
+									<xs:annotation>
+										<xs:documentation>bei Auftragsart=Versand Pflicht sonst nicht erlaubt</xs:documentation>
+									</xs:annotation>
+								</xs:attribute>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="DokumentId" type="uuid" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>optional PDF-Lieferschein der mit Funktion DokumentAbfragen abrufbar ist.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="Lieferscheinnummer" type="LieferscheinnummerType" use="required">
+						<xs:annotation>
+							<xs:documentation>fachlich und technischer PK Nummer vom Papierlieferschein</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="BarcodeReferenz" type="BarcodeReferenzType" use="required">
+						<xs:annotation>
+							<xs:documentation>für Abscannen mit Präfix! (1D oder 2D)</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="Auftragsart" type="Auftragsart" use="required">
+						<xs:annotation>
+							<xs:documentation>Die Augtragsart muss immer der Anfrage-Auftragsart entsprechen.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="Auftragskennung" type="DruckbareKennung" use="required">
+						<xs:annotation>
+							<xs:documentation>Eine von 4 vordefinierten oder eine freie kennung. Kann von der Anfrage-Kennung abweichen und durch einer der 4 vordefinierten Kennungen ersetzt werden (Siehe Pflichtenheft).</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="Belegdatum" type="xs:date" use="required">
+						<xs:annotation>
+							<xs:documentation>fachlich vom Papierlieferschein</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="Lieferzeitpunkt" type="xs:dateTime" use="optional">
+						<xs:annotation>
+							<xs:documentation>der vermeintliche Zeitpunkt, wann die Ware in der Apotheke ist (ggf. ungefähr)</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="Tour" use="optional">
+						<xs:annotation>
+							<xs:documentation>optional Tour oder Lieferzeitpunkt ist Pflicht</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:minLength value="1"/>
+								<xs:maxLength value="80"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="FehlmengenEnthalten" type="xs:boolean" use="required">
+						<xs:annotation>
+							<xs:documentation>mind eine Zeile hat Fehlmenge (redundant) -> Kunde ist darauf hinzuweisen wenn Fehlmengen enthalten sind</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LieferavisBestaetigenType">
+		<xs:annotation>
+			<xs:documentation>Bestätigung des Lieferavis-Empfangs</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Lieferscheinnummer" type="LieferscheinnummerType" maxOccurs="999">
+				<xs:annotation>
+					<xs:documentation>fachlich und technischer PK Nummer vom Papierlieferschein der in der Apotheke verarbeitet wurde</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="RetourenavisAnfrageType">
+		<xs:annotation>
+			<xs:documentation>unverbind. Anfrage zur Beurteilung durch GH</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Position" type="RetourePositionType" maxOccurs="999"/>
+		</xs:sequence>
+		<xs:attribute name="ID" type="uuid" use="required">
+			<xs:annotation>
+				<xs:documentation>Vom System zu vergebende eindeutige ID zur Referenzierung durch den GH (GUID)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="RetoureSupportID" type="SupportIDType" use="required">
+			<xs:annotation>
+				<xs:documentation>Ausschließliche Identifikation für Menschen! Dient für Rückfragen beim GH (optional Anzeige auf GUI kein Andruck) - keine technische Semantik Apo-Wawi vergibt diese; soll genügend Selektiv sein</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="RetourenavisAnfrageAntwort">
+		<xs:annotation>
+			<xs:documentation>Antwort(en) zu einer RetourenAnfrage</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Position" maxOccurs="999">
+				<xs:annotation>
+					<xs:documentation>Die Reihenfolge der PosRefIDs in der Antwort kann von der Reihenfolge in der Anfrage abweichen. Für die Erzeugung eines Retourenscheins sind die Zeilen aber immer aufsteigend nach PosRefID sortiert.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="RetourePositionType">
+							<xs:attribute name="RetourenAnteilTyp" type="RetourenAnteilTypType" use="required">
+								<xs:annotation>
+									<xs:documentation>Ja (Retoure akzeptiert, Retoure akzeptiert Rücksprache nötig, Retoure akzeptiert keine Rücksendung nötig), Nein (LS unbekannt, PZN nicht im LS enthalten, keine Rücknahme, Rückgabefrist überschritten, Menge überschritten)</xs:documentation>
+								</xs:annotation>
+							</xs:attribute>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="ID" type="uuid" use="required">
+			<xs:annotation>
+				<xs:documentation>ID der Anfrage</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="RetoureSupportID" type="SupportIDType" use="required">
+			<xs:annotation>
+				<xs:documentation>ausschließliche Identifikation für Menschen! Support (optional Anzeige auf GUI kein Andruck) - keine technische Semantik Apo-Wawi vergibt diese; soll genügend Selektiv sein</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="RetourenavisAnkuendigungType">
+		<xs:sequence>
+			<xs:element name="Position" type="RetourePositionType" maxOccurs="999"/>
+		</xs:sequence>
+		<xs:attribute name="ID" type="uuid" use="required">
+			<xs:annotation>
+				<xs:documentation>Vom System zu vergebende eindeutige ID zur Referenzierung durch den GH (GUID)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="RetoureSupportID" type="SupportIDType" use="required">
+			<xs:annotation>
+				<xs:documentation>Ausschließliche Identifikation für Menschen! Dient für Rückfragen beim GH (optional Anzeige auf GUI kein Andruck) - keine technische Semantik Apo-Wawi vergibt diese; soll genügend Selektiv sein</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Amtsgericht">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="0"/>
+					<xs:maxLength value="100"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Handelsregisternummer">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="0"/>
+					<xs:maxLength value="100"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="UmsatzsteuerID">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="0"/>
+					<xs:maxLength value="100"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Steuernummer">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="0"/>
+					<xs:maxLength value="100"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Bankname">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="0"/>
+					<xs:maxLength value="100"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="BIC">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="0"/>
+					<xs:maxLength value="100"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="IBAN">
+			<xs:annotation>
+				<xs:documentation>Die Daten Amtsgericht ... IBAN sind optional und werden im Wesentlichen für Retouren an den Hersteller benötigt, wenn dieser den Retourenbeleg erstellt.</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="0"/>
+					<xs:maxLength value="100"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="RetourenavisAnkuendigungAntwort">
+		<xs:annotation>
+			<xs:documentation>Antwort(en) zu einer RetourenAnkuendigung</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="RetourenAnteil" maxOccurs="15">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Position" maxOccurs="999">
+							<xs:annotation>
+								<xs:documentation>Die Reihenfolge der PosRefIDs in der Antwort kann von der Reihenfolge in der Anfrage abweichen. Für die Erzeugung eines Retourenscheins sind die Zeilen aber immer aufsteigend nach PosRefID sortiert.</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:complexContent>
+									<xs:extension base="RetourePositionType"/>
+								</xs:complexContent>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="GHReferenzID">
+						<xs:annotation>
+							<xs:documentation>Wird vom GH vergeben, dient der Identifikation, wird auch als Barcode (Datamatrix) aufgedruckt. Pflichtfeld, sobald eine Retourenmenge akzeptiert wird, sonst nicht angegeben.</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:minLength value="1"/>
+								<xs:maxLength value="30"/>
+								<xs:pattern value="[a-zA-Z0-9#+\*/\-_]*"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="DokumentID" type="uuid">
+						<xs:annotation>
+							<xs:documentation>optional ID eines PDF-Retourenscheins. Wenn der GH ein Retourenbeleg als DokumentID erzeugt, muss dieses auch benutzt werden. Für jeden Retourenanteil muss eine eigene DokumentID erzeugt werden. Wenn nicht angegeben, generiert der Client einen Retourenschein selbst. Die Entscheidung, wer den Retourenbeleg druckt, muss über alle Retourenanteile gleich sein.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="Abholzeitpunkt" type="xs:dateTime" use="optional">
+						<xs:annotation>
+							<xs:documentation>Voraussichtlich! z.B. 25.05.2015 14.00 Uhr. Datum+Uhrzeit der Abholung in der Apotheke. Sobald mind. eine Position akzeptiert wird (RetoureAkzeptiert), muss mindestens Abholzeitpunkt oder die Tour gefüllt sein.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="Tour" use="optional">
+						<xs:annotation>
+							<xs:documentation>optional Angabe zur Tour, mit der die enthaltenen Positionen abgeholt werden. Z.B "Mittagstour am 25.05.2015". Sobald mind. eine Position akzeptiert wird (RetoureAkzeptiert), muss mindenstens Abholzeitpunkt oder die Tour gefüllt sein.</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:minLength value="1"/>
+								<xs:maxLength value="80"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="RetourenAnteilTyp" type="RetourenAnteilTypType" use="required">
+						<xs:annotation>
+							<xs:documentation>Ja (Retoure akzeptiert, Retoure akzeptiert Rücksprache nötig, Retoure akzeptiert keine Rücksendung nötig), Nein (LS unbekannt, PZN nicht im LS enthalten, keine Rücknahme, Rückgabefrist überschritten, Menge überschritten)</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="ID" type="uuid" use="required">
+			<xs:annotation>
+				<xs:documentation>ID der Anfrage</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="RetoureSupportID" type="SupportIDType" use="required">
+			<xs:annotation>
+				<xs:documentation>ausschließliche Identifikation für Menschen! Support - keine technische Semantik Apo-Wawi vergibt diese; soll genügend Selektiv sein</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<!--
+    xxxxxxxxxxxxxxxxx Ab hier folgen die internen Typen xxxxxxxxxxxxxxxxxxxxxxxxxx
+    -->
+	<xs:simpleType name="pzn">
+		<xs:annotation>
+			<xs:documentation>PZN oder auch EAN TODO: Restrictions einbauen.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:long"/>
+	</xs:simpleType>
+	<xs:simpleType name="uuid">
+		<xs:annotation>
+			<xs:documentation>eindeutige sich nie wiederholende ID des Webservicerequests. (Für Benutzung bei AF2 - Nachträgliche Antwortabfrage für eine Bestellung) Datentyp GUID (Primärschlüssel)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="36"/>
+			<xs:pattern value="([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ClientSoftwareKennung">
+		<xs:annotation>
+			<xs:documentation>Ein Rückschluss auf die zugrunde liegende Version des Kommunikationsmoduls ist zusätzlich hilfreich, aber nicht obligatorisch</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="80"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Substitutionsgrund">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Nachfolgeprodukt"/>
+			<xs:enumeration value="ReUndParallelImport"/>
+			<xs:enumeration value="Vorschlag"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VerfuegbarkeitTyp">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Spezifisch"/>
+			<xs:enumeration value="Unspezifisch"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Liefervorgabe">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Normal"/>
+			<xs:enumeration value="MaxVerbund"/>
+			<xs:enumeration value="MaxNachlieferung"/>
+			<xs:enumeration value="MaxDispo"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Auftragsart">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="NORMAL"/>
+			<xs:enumeration value="STAPEL"/>
+			<xs:enumeration value="SONDER"/>
+			<xs:enumeration value="VERSAND"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="BestellungRueckmeldungTyp">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Normal"/>
+			<xs:enumeration value="Verbund"/>
+			<xs:enumeration value="Nachlieferung"/>
+			<xs:enumeration value="Dispo"/>
+			<xs:enumeration value="KeineLieferungAberNormalMoeglich"/>
+			<xs:enumeration value="KeineLieferungAberVerbundMoeglich"/>
+			<xs:enumeration value="KeineLieferungAberNachlieferungMoeglich"/>
+			<xs:enumeration value="KeineLieferungAberDispoMoeglich"/>
+			<xs:enumeration value="NichtLieferbar"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VerfuegbarkeitRueckmeldungTyp">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Normal"/>
+			<xs:enumeration value="Verbund"/>
+			<xs:enumeration value="Nachlieferung"/>
+			<xs:enumeration value="Dispo"/>
+			<xs:enumeration value="NichtLieferbar"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="BestellungDefektgrund">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="KeineAngabe"/>
+			<xs:enumeration value="FehltZurzeit"/>
+			<xs:enumeration value="HerstellerNichtLieferbar"/>
+			<xs:enumeration value="NurDirekt"/>
+			<xs:enumeration value="NichtGefuehrt"/>
+			<xs:enumeration value="ArtikelNrUnbekannt"/>
+			<xs:enumeration value="AusserHandel"/>
+			<xs:enumeration value="KeinBezug"/>
+			<xs:enumeration value="Transportausschluss"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VerfuegbarkeitDefektgrund">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="KeineAngabe"/>
+			<xs:enumeration value="FehltZurzeit"/>
+			<xs:enumeration value="HerstellerNichtLieferbar"/>
+			<xs:enumeration value="NurDirekt"/>
+			<xs:enumeration value="NichtGefuehrt"/>
+			<xs:enumeration value="ArtikelNrUnbekannt"/>
+			<xs:enumeration value="AusserHandel"/>
+			<xs:enumeration value="KeinBezug"/>
+			<xs:enumeration value="Teildefekt"/>
+			<xs:enumeration value="Transportausschluss"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Bestellstatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="KennungUnbekannt"/>
+			<xs:enumeration value="BestellantwortNichtVerfuegbar"/>
+			<xs:enumeration value="BestellantwortVerfuegbar"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VertragsdatenTag">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Mo"/>
+			<xs:enumeration value="Di"/>
+			<xs:enumeration value="Mi"/>
+			<xs:enumeration value="Do"/>
+			<xs:enumeration value="Fr"/>
+			<xs:enumeration value="Sa"/>
+			<xs:enumeration value="So"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="VertragsdatenZeit">
+		<xs:annotation>
+			<xs:documentation>Es dürfen nur ganze Minuten angegeben werden! Als technische Reserve zählt eine Bestellung noch zum alten Bestellfenster, wenn die Bestellübertragung beim GH bis zur angegebenen Zeit + 59Sekunden startet.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:time">
+			<xs:pattern value="\d\d:\d\d:00"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="SondertagBestellfenster">
+		<xs:sequence>
+			<xs:element name="Endezeit" type="VertragsdatenZeit">
+				<xs:annotation>
+					<xs:documentation>Es dürfen nur ganze Minuten angegeben werden! Als technische Reserve zählt eine Bestellung noch zum alten Bestellfenster, wenn die Bestellübertragung beim GH bis zur angegebenen Zeit + 59Sekunden startet.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Hauptbestellzeit" type="VertragsdatenZeit">
+				<xs:annotation>
+					<xs:documentation>Zeitpunkt INNERHALB des Bestellfensters an dem die Hauptbestellung durchgeführt werden soll</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="TypSondertag">
+		<xs:sequence>
+			<xs:element name="Bestellfenster" type="SondertagBestellfenster" minOccurs="0" maxOccurs="99">
+				<xs:annotation>
+					<xs:documentation>Werden zu einem Sondertag keine Bestellfenster gemeldet, so bedeutet das, dass an diesem Tag kein Bestellfensterende existiert. Auf diese Weise können Tage ohne Belieferung behandelt werden.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="Datum" type="xs:date" use="required"/>
+	</xs:complexType>
+	<xs:simpleType name="DruckbareKennung">
+		<xs:annotation>
+			<xs:documentation>Typ für alle auf Gebinden und Papier aufgedruckten Kennungen</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[A-Z0-9+\-_]{1,20}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="MSV3AnzahlAuftragskennungen">
+		<xs:restriction base="xs:int"/>
+	</xs:simpleType>
+	<xs:complexType name="VertragsdatenBestellfenster">
+		<xs:sequence>
+			<xs:element name="Tag" type="VertragsdatenTag"/>
+			<xs:element name="Endezeit" type="VertragsdatenZeit">
+				<xs:annotation>
+					<xs:documentation>es dürfen nur ganze Minuten angegeben werden! Als technische Reserve zählt eine Bestellung noch zum alten Bestellfenster, wenn die Bestellübertragung beim GH bis zur angegebenen Zeit + 59Sekunden startet.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Hauptbestellzeit" type="VertragsdatenHauptbestellzeit">
+				<xs:annotation>
+					<xs:documentation>Zeitpunkt INNERHALB des Bestellfensters an dem die Hauptbestellung durchgeführt werden soll</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="VertragsdatenHauptbestellzeit">
+		<xs:sequence>
+			<xs:element name="Tag" type="VertragsdatenTag"/>
+			<xs:element name="Zeitpunkt" type="VertragsdatenZeit">
+				<xs:annotation>
+					<xs:documentation>es dürfen nur ganze Minuten angegeben werden! Als technische Reserve zählt eine Bestellung noch zum alten Bestellfenster, wenn die Bestellübertragung beim GH bis zur angegebenen Zeit + 59Sekunden startet.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="VertragsdatenAuftragsartNormal">
+		<xs:attribute name="MaxAnzahlFreieAuftragskennungen" type="MSV3AnzahlAuftragskennungen" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="VertragsdatenAuftragsart">
+		<xs:complexContent>
+			<xs:extension base="VertragsdatenAuftragsartNormal">
+				<xs:attribute name="Vereinbart" type="xs:boolean" use="required">
+					<xs:annotation>
+						<xs:documentation>ist diese Auftragsart überhaupt erlaubt?</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="VertragsdatenAuftragsartVersand">
+		<xs:complexContent>
+			<xs:extension base="VertragsdatenAuftragsart">
+				<xs:attribute name="NurKompletteGebinde" type="xs:boolean" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="BestellungAuftrag">
+		<xs:annotation>
+			<xs:documentation>Reihenfolge in der Antwort muss gleich sein! aber maximal 1000 Positionen in der gesamten Bestellung!</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Positionen" type="BestellungPosition" maxOccurs="1000">
+				<xs:annotation>
+					<xs:documentation>Reihenfolge (bez PZN) in der Antwort darf beliebig sein! keine doppelten PZNs innerhalb eines Auftrags erlaubt (in gesamter Bestellung schon).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="Id" type="uuid" use="required"/>
+		<xs:attribute name="Auftragsart" type="Auftragsart" use="required"/>
+		<xs:attribute name="Auftragskennung" type="DruckbareKennung" use="required">
+			<xs:annotation>
+				<xs:documentation>eine von 4 vordefinierten oder eine freie kennung</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="GebindeId" type="DruckbareKennung" use="optional">
+			<xs:annotation>
+				<xs:documentation>bei Auftragsart=Versand Pflicht sonst nicht erlaubt</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="AuftragsSupportID" type="SupportIDType" use="required">
+			<xs:annotation>
+				<xs:documentation>ausschließliche Identifikation für Menschen! Support (optional Anzeige auf GUI kein Andruck) - keine technische Semantik Apo-Wawi vergibt diese; soll genügend Selektiv sein</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="BestellungPosition">
+		<xs:annotation>
+			<xs:documentation>Reihenfolge (bez PZN) in der Antwort muss gleich sein! keine doppelten PZNs innerhalb eines Auftrags erlaubt (in gesamter Bestellung schon).</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Pzn" type="pzn">
+				<xs:annotation>
+					<xs:documentation>in einem Auftrag eine PZN nur einmal</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Menge" type="MengeType"/>
+			<xs:element name="Liefervorgabe" type="Liefervorgabe"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BestellungAntwortAuftrag">
+		<xs:sequence>
+			<xs:annotation>
+				<xs:documentation>Fachlich ist das ein Choice aber wegen technichen Problement im .NET Generator, steht hier eine Sequence. Es wird aber fachlich zur Laufzeit validiert, dass entweder ein oder das andere Element vorhanden ist.</xs:documentation>
+			</xs:annotation>
+			<xs:element name="Positionen" type="BestellungAntwortPosition" minOccurs="0" maxOccurs="1000">
+				<xs:annotation>
+					<xs:documentation>Reihenfolge in der Antwort kann von der Anfrage abweichen! keine doppelten PZNs innerhalb eines Auftrags erlaubt (in gesamter Bestellung schon). Wenn Auftragsfehler gesetzt ist, ist Anzahl der Positionen immer 0.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Auftragsfehler" type="Msv3FaultInfo" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Wenn gesetzt ist, darf der Auftrag keine Positionen enthalten.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="Id" type="uuid" use="required"/>
+		<xs:attribute name="Auftragsart" type="Auftragsart" use="required">
+			<xs:annotation>
+				<xs:documentation>Die Augtragsart muss immer der Anfrage-Auftragsart entsprechen.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Auftragskennung" type="DruckbareKennung" use="required">
+			<xs:annotation>
+				<xs:documentation>Eine von 4 vordefinierten oder eine freie kennung. Kann von der Anfrage-Kennung abweichen und durch einer der 4 vordefinierten Kennungen ersetzt werden (Siehe Pflichtenheft).</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="GebindeId" type="DruckbareKennung" use="optional">
+			<xs:annotation>
+				<xs:documentation>bei Auftragsart=Versand Pflicht sonst nicht erlaubt</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="AuftragsSupportID" type="SupportIDType" use="required">
+			<xs:annotation>
+				<xs:documentation>ausschließliche Identifikation für Menschen! Support (optional Anzeige auf GUI kein Andruck) - keine technische Semantik Apo-Wawi vergibt diese; soll genügend Selektiv sein</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="BestellungAntwortPosition">
+		<xs:sequence>
+			<xs:element name="BestellPzn" type="pzn"/>
+			<xs:element name="BestellMenge" type="MengeType"/>
+			<xs:element name="BestellLiefervorgabe" type="Liefervorgabe"/>
+			<xs:element name="Substitution" type="BestellungSubstitution" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>wenn angegeben, wird für ALLE Anteile der Substitutionsartikel angenommen (außer bei Substitutionsgrund "Vorschlag") -> Die Lösung schließt aus Komplexitätsgründen aus, dass man bei Substitution für Normallieferung einen Anteil mit und einen anteil ohne Substitution liefern darf!</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Anteile" type="BestellungAnteil" maxOccurs="9">
+				<xs:annotation>
+					<xs:documentation>maximal 9 Anteile der Rückmeldung wobei jede Ausprägung von Typ nur 1x benutzt werden darf.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BestellungAnteil">
+		<xs:sequence>
+			<xs:element name="Menge" type="MengeType" nillable="true">
+				<xs:annotation>
+					<xs:documentation>die Summe ALLER Mengenfelder = AnfrageMenge</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Typ" type="BestellungRueckmeldungTyp"/>
+			<xs:element name="Lieferzeitpunkt" type="xs:dateTime" nillable="true">
+				<xs:annotation>
+					<xs:documentation>Voraussichtlich! z.B. 1.1.2011 15:00 Uhr Bei Typ=Normal oder Verbund muss enweder Lieferzeitpunkt oder Tour gefüllt sein!</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Tour" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Beschreibung der Tour z.B. "9 Uhr Tour" oder "Mittagstour" Bei Typ=Normal oder Verbund muss enweder Lieferzeitpunkt oder Tour gefüllt sein!</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="80"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Grund" type="BestellungDefektgrund">
+				<xs:annotation>
+					<xs:documentation>ein definierter Defektgrund Bei Typ=Normal oder Verbund ist der Wert immer "KeineAngabe" , sonst ist bei allen anderen Typen einer der ANDEREN! Werte Pflicht</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TourId" type="DruckbareKennung" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Pflichtangabe bei Typ=Normal: Unterschiedliche TourIDs und Auftragskennungen in einem Bestellfenster für Artikel zeigen an, dass diese Artikel nicht auf den selben Lieferschein gedruckt werden. Für eine Auftragskennung und eine TourID gibt es mind. einen Lieferschein.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Tourabweichung" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>nur bei Typ NORMAL und VERBUND ist true erlaubt; true, wenn wegen BTM oder Kühlware / Transportausschluss nicht mit der nächsten Tour geliefert werden kann</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="VerfuegbarkeitsantwortArtikel">
+		<xs:sequence>
+			<xs:element name="AnfrageMenge" type="MengeType"/>
+			<xs:element name="AnfragePzn" type="pzn"/>
+			<xs:element name="Substitution" type="VerfuegbarkeitSubstitution" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>wenn angegeben, wird für ALLE Anteile der Substitutionsartikel angenommen (außer bei Substitutionsgrund "Vorschlag") -> Die Lösung schließt aus Komplexitätsgründen aus, dass man bei Substitution für Normallieferung einen Anteil mit und einen anteil ohne Substitution liefern darf!</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Anteile" type="VerfuegbarkeitAnteil" maxOccurs="5">
+				<xs:annotation>
+					<xs:documentation>maximal 5 Anteile der Rückmeldung wobei jede Ausprägung von Typ nur 1x benutzt werden darf.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="VerfuegbarkeitAnteil">
+		<xs:sequence>
+			<xs:element name="Menge" type="MengeType" nillable="true">
+				<xs:annotation>
+					<xs:documentation>die Summe ALLER Mengenfelder = AnfrageMenge</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Typ" type="VerfuegbarkeitRueckmeldungTyp"/>
+			<xs:element name="Lieferzeitpunkt" type="xs:dateTime" nillable="true">
+				<xs:annotation>
+					<xs:documentation>Voraussichtlich! z.B. 1.1.2011 15:00 Uhr Bei Typ=Normal oder Verbund und spezifischer Rückmeldung muss enweder Lieferzeitpunkt oder Tour gefüllt sein!</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Tour" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Beschreibung der Tour z.B. "9 Uhr Tour" oder "Mittagstour" Bei Typ=Normal oder Verbund und spezifischer Rückmeldung muss enweder Lieferzeitpunkt oder Tour gefüllt sein!</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="80"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Grund" type="VerfuegbarkeitDefektgrund">
+				<xs:annotation>
+					<xs:documentation>ein definierter Defektgrund Bei Typ=Normal oder Verbund ist der Wert immer "KeineAngabe" , sonst ist bei allen anderen Typen einer der ANDEREN! Werte Pflicht</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Tourabweichung" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>nur bei Typ NORMAL und VERBUND ist true erlaubt; true, wenn wegen BTM oder Kühlware / Transportausschluss nicht mit der nächsten Tour geliefert werden kann</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ArtikelMenge">
+		<xs:annotation>
+			<xs:documentation>Artikel mit Menge</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Pzn" type="pzn"/>
+			<xs:element name="Menge" type="MengeType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="VerfuegbarkeitSubstitution">
+		<xs:sequence>
+			<xs:element name="Substitutionsgrund" type="Substitutionsgrund"/>
+			<xs:element name="Grund" type="VerfuegbarkeitDefektgrund"/>
+			<xs:element name="LieferPzn" type="pzn">
+				<xs:annotation>
+					<xs:documentation>PZN die bei einer Bestellung geliefert werden würde.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BestellungSubstitution">
+		<xs:sequence>
+			<xs:element name="Substitutionsgrund" type="Substitutionsgrund"/>
+			<xs:element name="Grund" type="BestellungDefektgrund"/>
+			<xs:element name="LieferPzn" type="pzn">
+				<xs:annotation>
+					<xs:documentation>PZN die bei einer Bestellung geliefert werden würde.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Msv3FaultInfo">
+		<xs:sequence>
+			<xs:element name="ErrorCode">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="5"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="EndanwenderFehlertext">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="1024"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="TechnischerFehlertext">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+						<xs:maxLength value="1024"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="LieferscheinnummerType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="30"/>
+			<xs:pattern value="[a-zA-Z0-9#+\*/\-_]*"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="MengeType">
+		<xs:restriction base="xs:int">
+			<xs:minInclusive value="1"/>
+			<xs:maxInclusive value="99999"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SupportIDType">
+		<xs:restriction base="xs:int">
+			<xs:minInclusive value="1"/>
+			<xs:maxInclusive value="999999"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="RetourePositionType">
+		<xs:attribute name="PosRefID" use="required">
+			<xs:annotation>
+				<xs:documentation>Eindeutige ID innerhalb einer Anfrage, da PZN nicht eindeutig ist. 1..999</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:short">
+					<xs:minInclusive value="1"/>
+					<xs:maxInclusive value="999"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Lieferscheinnummer" type="LieferscheinnummerType" use="required">
+			<xs:annotation>
+				<xs:documentation>Information fuer GH zur Zuordnung zur damaligen Lieferung</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="PZN" type="pzn" use="required">
+			<xs:annotation>
+				<xs:documentation>Eine PZN kann mehrfach vorkommen wegen unterschiedlicher Lieferscheinnummern und Reklamantionsgründe</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="RetourenMenge" use="required">
+			<xs:annotation>
+				<xs:documentation>1 ... 9999</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="MengeType">
+					<xs:maxInclusive value="9999"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Retouregrund" type="RetoureGrund" use="required">
+			<xs:annotation>
+				<xs:documentation>Bestellfehler, Berechnet aber nicht geliefert, Beschaedigt, Verfall zu kurz, Zuviel geliefert</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Charge" use="optional">
+			<xs:annotation>
+				<xs:documentation>optional: Chargeninformation</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:minLength value="0"/>
+					<xs:maxLength value="50"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="Verfalldatum" type="xs:date" use="optional">
+			<xs:annotation>
+				<xs:documentation>optional: Verfalldatum=letzter Tag, wo eine Packung noch benutzbar ist (für 11/2016 -> 30.11.2016)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:simpleType name="RetoureGrund">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Bestellfehler"/>
+			<xs:enumeration value="BerechnetNichtGeliefert"/>
+			<xs:enumeration value="Beschaedigt"/>
+			<xs:enumeration value="VerfallZuKurz"/>
+			<xs:enumeration value="ZuvielGeliefert"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="RetourenAnteilTypType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="RetoureAkzeptiert"/>
+			<xs:enumeration value="RetoureAkzeptiertRueckspracheNoetig"/>
+			<xs:enumeration value="RetoureAkzeptiertKeineRuecksendungNoetig"/>
+			<xs:enumeration value="LieferscheinnummerUnbekannt"/>
+			<xs:enumeration value="PznInLieferscheinnummerNichtEnthalten"/>
+			<xs:enumeration value="KeineRuecknahme"/>
+			<xs:enumeration value="RueckgabefristUeberschritten"/>
+			<xs:enumeration value="MengeUeberschritten"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="BarcodeReferenzType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="30"/>
+			<xs:pattern value="[0-9]*[\*+#_\?][a-zA-Z0-9#+\*/\-_\?]*"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

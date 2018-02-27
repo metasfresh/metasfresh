@@ -15,7 +15,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1000035018L;
+	private static final long serialVersionUID = 1243593463L;
 
     /** Standard Constructor */
     public X_AD_Column (Properties ctx, int AD_Column_ID, String trxName)
@@ -40,7 +40,9 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 			setIsLazyLoading (false); // N
 			setIsMandatory (false);
 			setIsParent (false);
+			setIsRangeFilter (false); // N
 			setIsSelectionColumn (false);
+			setIsShowFilterIncrementButtons (false); // N
 			setIsStaleable (false); // N
 			setIsTranslated (false);
 			setIsUpdateable (true); // Y
@@ -481,6 +483,22 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		return ii.intValue();
 	}
 
+	/** Set Filter Default Value.
+		@param FilterDefaultValue Filter Default Value	  */
+	@Override
+	public void setFilterDefaultValue (java.lang.String FilterDefaultValue)
+	{
+		set_Value (COLUMNNAME_FilterDefaultValue, FilterDefaultValue);
+	}
+
+	/** Get Filter Default Value.
+		@return Filter Default Value	  */
+	@Override
+	public java.lang.String getFilterDefaultValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_FilterDefaultValue);
+	}
+
 	/** Set Format Pattern.
 		@param FormatPattern 
 		The pattern used to format a number or date.
@@ -671,6 +689,32 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		return (java.lang.String)get_Value(COLUMNNAME_IsEncrypted);
 	}
 
+	/** Set GenericZoom Quellspalte.
+		@param IsGenericZoomOrigin 
+		Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	  */
+	@Override
+	public void setIsGenericZoomOrigin (boolean IsGenericZoomOrigin)
+	{
+		set_Value (COLUMNNAME_IsGenericZoomOrigin, Boolean.valueOf(IsGenericZoomOrigin));
+	}
+
+	/** Get GenericZoom Quellspalte.
+		@return Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	  */
+	@Override
+	public boolean isGenericZoomOrigin () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsGenericZoomOrigin);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Identifier.
 		@param IsIdentifier 
 		This column is part of the record identifier
@@ -798,6 +842,32 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		return false;
 	}
 
+	/** Set Range filter.
+		@param IsRangeFilter 
+		Check if the filter by this column shall render a range component
+	  */
+	@Override
+	public void setIsRangeFilter (boolean IsRangeFilter)
+	{
+		set_Value (COLUMNNAME_IsRangeFilter, Boolean.valueOf(IsRangeFilter));
+	}
+
+	/** Get Range filter.
+		@return Check if the filter by this column shall render a range component
+	  */
+	@Override
+	public boolean isRangeFilter () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsRangeFilter);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Selection Column.
 		@param IsSelectionColumn 
 		Is this column used for finding rows in windows
@@ -815,6 +885,32 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public boolean isSelectionColumn () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSelectionColumn);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Filter +/- buttons.
+		@param IsShowFilterIncrementButtons 
+		Show filter increment/decrement buttons
+	  */
+	@Override
+	public void setIsShowFilterIncrementButtons (boolean IsShowFilterIncrementButtons)
+	{
+		set_Value (COLUMNNAME_IsShowFilterIncrementButtons, Boolean.valueOf(IsShowFilterIncrementButtons));
+	}
+
+	/** Get Filter +/- buttons.
+		@return Show filter increment/decrement buttons
+	  */
+	@Override
+	public boolean isShowFilterIncrementButtons () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsShowFilterIncrementButtons);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

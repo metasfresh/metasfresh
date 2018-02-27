@@ -43,6 +43,7 @@ import org.adempiere.ad.security.permissions.TableRecordPermission;
 import org.adempiere.ad.security.permissions.TableRecordPermissions;
 import org.adempiere.ad.security.permissions.TableResource;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -80,6 +81,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -109,7 +111,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			I_AD_Table_Access.Table_Name,
 			I_AD_Record_Access.Table_Name);
 
-	
 	private final AtomicBoolean accountingModuleActive = new AtomicBoolean(false);
 
 	private final AtomicLong version = new AtomicLong(1);
@@ -126,7 +127,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		return version.get();
 	}
 
-	
 	@Override
 	public void resetCacheAfterTrxCommit()
 	{
@@ -141,15 +141,22 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		else
 		{
 			final String TRXPROPERTY_ResetCache = getClass().getName() + ".ResetCache";
-			trx.getProperty(TRXPROPERTY_ResetCache, () -> {
-				trx.getTrxListenerManager().onAfterCommit(() -> {
-					logger.info("Reseting the cache because transaction was commited: {}", trx);
-					resetCache(true);
-				});
-				logger.info("Scheduled cache reset after trx commit: {}", trx);
 
+			final Supplier<Boolean> valueInitializer = () -> {
+
+				trx.getTrxListenerManager()
+						.newEventListener(TrxEventTiming.AFTER_COMMIT)
+						.registerWeakly(false) // register "hard", because that's how it was before
+						.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+						.registerHandlingMethod(innerTrx -> {
+
+							logger.info("Reseting the cache because transaction was commited: {}", innerTrx);
+							resetCache(true);
+						});
+				logger.info("Scheduled cache reset after trx commit: {}", trx);
 				return Boolean.TRUE;
-			});
+			};
+			trx.getProperty(TRXPROPERTY_ResetCache, valueInitializer);
 		}
 	}
 
@@ -174,7 +181,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		try
 		{
 			version.incrementAndGet();
-			
+
 			final CacheMgt cacheManager = CacheMgt.get();
 			cacheManager.resetLocal(I_AD_Role.Table_Name); // cache reset role itself
 			ROLE_DEPENDENT_TABLENAMES.forEach(cacheManager::resetLocal);
@@ -795,9 +802,9 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	public void setAccountingModuleActive()
 	{
 		final boolean accountingModuleActiveOld = accountingModuleActive.getAndSet(true);
-		
+
 		// If flag changed, reset the cache
-		if(!accountingModuleActiveOld)
+		if (!accountingModuleActiveOld)
 		{
 			// NOTE: don't broadcast because this is just a local change
 			resetLocalCache();

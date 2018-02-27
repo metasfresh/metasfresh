@@ -4,7 +4,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for I_Product
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1723621615L;
+	private static final long serialVersionUID = -145461139L;
 
     /** Standard Constructor */
     public X_I_Product (Properties ctx, int I_Product_ID, String trxName)
@@ -26,6 +25,8 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
         {
 			setI_IsImported (false);
 			setI_Product_ID (0);
+			setIsSold (false); // N
+			setIsStocked (false); // N
         } */
     }
 
@@ -264,7 +265,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CostPerOrder);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -415,7 +416,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	@Override
 	public void setI_ErrorMsg (java.lang.String I_ErrorMsg)
 	{
-		set_Value (COLUMNNAME_I_ErrorMsg, I_ErrorMsg);
+		set_ValueNoCheck (COLUMNNAME_I_ErrorMsg, I_ErrorMsg);
 	}
 
 	/** Get Import-Fehlermeldung.
@@ -514,6 +515,58 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public java.lang.String getISO_Code () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ISO_Code);
+	}
+
+	/** Set Verkauft.
+		@param IsSold 
+		Die Organisation verkauft dieses Produkt
+	  */
+	@Override
+	public void setIsSold (boolean IsSold)
+	{
+		set_Value (COLUMNNAME_IsSold, Boolean.valueOf(IsSold));
+	}
+
+	/** Get Verkauft.
+		@return Die Organisation verkauft dieses Produkt
+	  */
+	@Override
+	public boolean isSold () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSold);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Lagerhaltig.
+		@param IsStocked 
+		Die Organisation hat dieses Produkt auf Lager
+	  */
+	@Override
+	public void setIsStocked (boolean IsStocked)
+	{
+		set_Value (COLUMNNAME_IsStocked, Boolean.valueOf(IsStocked));
+	}
+
+	/** Get Lagerhaltig.
+		@return Die Organisation hat dieses Produkt auf Lager
+	  */
+	@Override
+	public boolean isStocked () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsStocked);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
@@ -646,6 +699,22 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		return ii.intValue();
 	}
 
+	/** Set M_ProductPlanningSchema_Selector.
+		@param M_ProductPlanningSchema_Selector M_ProductPlanningSchema_Selector	  */
+	@Override
+	public void setM_ProductPlanningSchema_Selector (java.lang.String M_ProductPlanningSchema_Selector)
+	{
+		set_Value (COLUMNNAME_M_ProductPlanningSchema_Selector, M_ProductPlanningSchema_Selector);
+	}
+
+	/** Get M_ProductPlanningSchema_Selector.
+		@return M_ProductPlanningSchema_Selector	  */
+	@Override
+	public java.lang.String getM_ProductPlanningSchema_Selector () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_M_ProductPlanningSchema_Selector);
+	}
+
 	/** Set Hersteller.
 		@param Manufacturer 
 		Manufacturer of the Product
@@ -728,6 +797,65 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_C_UOM getPackage_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Package_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setPackage_UOM(org.compiere.model.I_C_UOM Package_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_Package_UOM_ID, org.compiere.model.I_C_UOM.class, Package_UOM);
+	}
+
+	/** Set Package UOM.
+		@param Package_UOM_ID 
+		UOM of the package
+	  */
+	@Override
+	public void setPackage_UOM_ID (int Package_UOM_ID)
+	{
+		if (Package_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Package_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Package_UOM_ID, Integer.valueOf(Package_UOM_ID));
+	}
+
+	/** Get Package UOM.
+		@return UOM of the package
+	  */
+	@Override
+	public int getPackage_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Package_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Package Size.
+		@param PackageSize 
+		Size of a package
+	  */
+	@Override
+	public void setPackageSize (java.math.BigDecimal PackageSize)
+	{
+		set_Value (COLUMNNAME_PackageSize, PackageSize);
+	}
+
+	/** Get Package Size.
+		@return Size of a package
+	  */
+	@Override
+	public java.math.BigDecimal getPackageSize () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageSize);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Preis gültig.
 		@param PriceEffective 
 		Effective Date of Price
@@ -765,7 +893,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceLimit);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -787,7 +915,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceList);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -809,7 +937,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PricePO);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -831,7 +959,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStd);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -900,6 +1028,22 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		return (java.lang.String)get_Value(COLUMNNAME_ProductCategory_Value);
 	}
 
+	/** Set Product Manufacturer.
+		@param ProductManufacturer Product Manufacturer	  */
+	@Override
+	public void setProductManufacturer (java.lang.String ProductManufacturer)
+	{
+		set_Value (COLUMNNAME_ProductManufacturer, ProductManufacturer);
+	}
+
+	/** Get Product Manufacturer.
+		@return Product Manufacturer	  */
+	@Override
+	public java.lang.String getProductManufacturer () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductManufacturer);
+	}
+
 	/** 
 	 * ProductType AD_Reference_ID=270
 	 * Reference name: M_Product_ProductType
@@ -953,7 +1097,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RoyaltyAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

@@ -160,7 +160,7 @@ public class VoidAndRecreateInvoiceBuilder
 
 		// set the async batch in workpackage in order to track it
 		queueWorkpackage.setC_Async_Batch(asyncBatch);
-		Services.get(IQueueDAO.class).saveInLocalTrx(queueWorkpackage);
+		Services.get(IQueueDAO.class).save(queueWorkpackage);
 
 		queue.enqueueElement(queueWorkpackage, invoice);
 		queue.markReadyForProcessing(queueWorkpackage);
@@ -178,7 +178,7 @@ public class VoidAndRecreateInvoiceBuilder
 		asyncBatch.setAD_PInstance_ID(AD_PInstance_ID);
 		asyncBatch.setName("Void and recreate invoices");
 		asyncBatch.setC_Async_Batch_Type(asyncBatchType);
-		queueDAO.saveInLocalTrx(asyncBatch);
+		queueDAO.save(asyncBatch);
 		// is very importing the order; first enque and then set the batch
 		// otherwise, will be counted also the workpackage for the batch
 		asyncBatchBL.enqueueAsyncBatch(asyncBatch);

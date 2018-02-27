@@ -105,6 +105,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	int getVirtual_HU_PI_ID();
 
+	int getVirtual_HU_PI_Version_ID();
+
 	int getVirtual_HU_PI_Item_ID();
 
 	/**
@@ -367,4 +369,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_M_Warehouse> retrieveWarehousesForHUs(List<I_M_HU> hus);
+	
+	/**
+	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs
+	 * 
+	 * @param hus
+	 * @return
+	 */
+	List<I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(List<I_M_HU> hus);
 }

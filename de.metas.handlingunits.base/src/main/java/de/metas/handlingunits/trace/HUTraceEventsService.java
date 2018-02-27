@@ -49,12 +49,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -64,7 +64,7 @@ import lombok.NonNull;
 /**
  * The job of this service is to create {@link HUTraceEvent}s from the inout lines etc it is invoked with<br>
  * and add those events to the {@link HUTraceRepository}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -91,13 +91,12 @@ public class HUTraceEventsService
 	{
 		this.huAccessService = huAccessService;
 		this.huTraceRepository = huTraceRepository;
-
 	}
 
 	/**
 	 * Creates one event for the given cost collector and adds it to the {@link HUTraceRepository}.<br>
 	 * The event has no source VHU ID, even in case of a 1:1 PP_Order.
-	 * 
+	 *
 	 * @param costCollector
 	 */
 	public void createAndAddFor(
@@ -227,14 +226,15 @@ public class HUTraceEventsService
 	/**
 	 * Iterate the given {@link I_M_HU_Trx_Line}s and add events for those lines that
 	 * <ul>
-	 * <li>have a {@link IHandlingUnitsBL#isPhysicalHU(String) physical} {@code M_HU_ID}. We don't care about planned HUs and we assume that destroyed or shipped HUs won't be altered anymore.
+	 * <li>have a {@link IHandlingUnitsBL#isPhysicalHU(String) physical} {@code M_HU_ID}.<br>
+	 * We don't care about planned HUs and we assume that destroyed or shipped HUs won't be altered anymore.
 	 * <li>have a partner ({@code Parent_HU_Trx_Line_ID > 0}) which also has a a M_HU_ID
 	 * <li>have {@code Quantity > 0}
 	 * </ul>
 	 *
 	 * @param trxHeader needed because we use its {@code updated} timestamp for our eventTime.
 	 * @param trxLines
-	 * 
+	 *
 	 * @return a map with two lists that contains all events which were created and given to the repository.<br>
 	 *         The events that were actually inserted are in the list with the {@code true} key.
 	 */
@@ -354,7 +354,7 @@ public class HUTraceEventsService
 
 	/**
 	 * Filters for the trx lines we actually want to create events from.
-	 * 
+	 *
 	 * @param trxLines
 	 * @return
 	 */
@@ -391,7 +391,7 @@ public class HUTraceEventsService
 
 	/**
 	 * Creates two trace records for the given {@code hu} which is moved from one parent to another parent (source or target parent might also be null).
-	 * 
+	 *
 	 * @param hu
 	 * @param parentHUItemOld
 	 */
@@ -450,7 +450,7 @@ public class HUTraceEventsService
 	/**
 	 * Takes the "mostly complete" builder and stream of model instances and creates {@link HUTraceEvent}s for the models'
 	 * {@link I_M_HU_Assignment}s' top level HUs.
-	 * 
+	 *
 	 * @param builder a pre fabricated builder. {@code huId}s and {@code eventTime} will be set by this method.
 	 * @param models stream of objects that might be associated with HUs (e.g. inout lines).
 	 */

@@ -282,12 +282,12 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	@Override
-	public InOutGenerateResult processReceiptSchedules(final Properties ctx, final List<I_M_ReceiptSchedule> receiptSchedules, final Set<I_M_HU> selectedHUs, final boolean storeReceipts)
+	public InOutGenerateResult processReceiptSchedules(final Properties ctx, final List<I_M_ReceiptSchedule> receiptSchedules, final Set<I_M_HU> selectedHUs)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
 
-		final InOutGenerateResult inoutGenerateResult = trxManager.call(trxName, () -> processReceiptSchedules0(ctx, receiptSchedules, selectedHUs, storeReceipts));
+		final InOutGenerateResult inoutGenerateResult = trxManager.call(trxName, () -> processReceiptSchedules0(ctx, receiptSchedules, selectedHUs));
 		return inoutGenerateResult;
 	}
 
@@ -305,8 +305,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 */
 	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx,
 			final List<I_M_ReceiptSchedule> receiptSchedules,
-			final Set<I_M_HU> selectedHUs,
-			final boolean storeReceipts)
+			final Set<I_M_HU> selectedHUs)
 	{
 		// TODO: make sure receipt schedules and selected HUs have TrxNone or InheritedTrx
 		// assertNoTrxOrIneheritedtrx(receiptSchedules);
@@ -352,7 +351,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final InOutGenerateResult result;
 		{
 			// Create result collector
-			result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(storeReceipts); // referenceReceipts
+			result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true);
 
 			// Create Receipt producer
 			final boolean createReceiptWithDatePromised = false; // create the InOuts with MovementDate = the current login date

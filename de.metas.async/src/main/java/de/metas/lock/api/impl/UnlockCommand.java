@@ -10,26 +10,24 @@ package de.metas.lock.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.Future;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.FutureValue;
@@ -79,20 +77,17 @@ public class UnlockCommand implements IUnlockCommand
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-				.registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void afterCommit(final ITrx trx)
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> {
+					try
 					{
-						try
-						{
-							final int countUnlocked = release();
-							countUnlockedFuture.set(countUnlocked);
-						}
-						catch (Exception e)
-						{
-							countUnlockedFuture.setError(e);
-						}
+						final int countUnlocked = release();
+						countUnlockedFuture.set(countUnlocked);
+					}
+					catch (Exception e)
+					{
+						countUnlockedFuture.setError(e);
 					}
 				});
 		return countUnlockedFuture;
@@ -132,14 +127,13 @@ public class UnlockCommand implements IUnlockCommand
 		_recordsToUnlock.setRecordByTableRecordId(tableId, recordId);
 		return this;
 	}
-	
+
 	@Override
 	public IUnlockCommand setRecordByTableRecordId(final String tableName, final int recordId)
 	{
 		_recordsToUnlock.setRecordByTableRecordId(tableName, recordId);
 		return this;
 	}
-
 
 	@Override
 	public IUnlockCommand setRecordsBySelection(final Class<?> modelClass, final int adPIstanceId)
