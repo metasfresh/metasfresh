@@ -38,6 +38,7 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_PriceList;
@@ -57,6 +58,7 @@ import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandAggregation;
+import de.metas.ordercandidate.api.OLCandAggregationRepository;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
 import de.metas.ordercandidate.api.OLCandsProcessor;
 import de.metas.ordercandidate.api.RelationTypeOLCandSource;
@@ -83,9 +85,9 @@ public class OLCandBL implements IOLCandBL
 	{
 		final OLCandOrderDefaults orderDefaults = createOLCandOrderDefaults(processor);
 
-		final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 		final int olCandProcessorId = processor.getC_OLCandProcessor_ID();
-		final OLCandAggregation aggregationInfo = olCandDAO.retrieveOLCandAggregation(olCandProcessorId);
+		final OLCandAggregationRepository olCandAggregationRepo = Adempiere.getBean(OLCandAggregationRepository.class);
+		final OLCandAggregation aggregationInfo = olCandAggregationRepo.getById(olCandProcessorId);
 
 		final RelationTypeOLCandSource candidatesSource = RelationTypeOLCandSource.builder()
 				.processor(processor)

@@ -23,34 +23,22 @@ package de.metas.ordercandidate.api.impl;
  */
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_AD_Column;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.api.IOLCandDAO;
-import de.metas.ordercandidate.api.OLCandAggregation;
-import de.metas.ordercandidate.api.OLCandAggregationColumn;
-import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.model.I_C_OLCandAggAndOrder;
 import de.metas.ordercandidate.model.I_C_OLCandGenerator;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
-import de.metas.ordercandidate.model.X_C_OLCandAggAndOrder;
 
 public class OLCandDAO implements IOLCandDAO
 {
@@ -168,43 +156,4 @@ public class OLCandDAO implements IOLCandDAO
 				.list(I_C_OLCandGenerator.class);
 		return creators;
 	}
-
-	@Override
-	@Cached(cacheName = "OLCandAggregation#from#" + I_C_OLCandAggAndOrder.Table_Name)
-	public OLCandAggregation retrieveOLCandAggregation(final int olCandProcessorId)
-	{
-		final List<OLCandAggregationColumn> columns = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_OLCandAggAndOrder.class)
-				.addEqualsFilter(I_C_OLCandAggAndOrder.COLUMN_C_OLCandProcessor_ID, olCandProcessorId)
-				.addOnlyActiveRecordsFilter()
-				.orderBy()
-				.addColumn(I_C_OLCandAggAndOrder.COLUMN_OrderBySeqNo)
-				.endOrderBy()
-				.create()
-				.stream(I_C_OLCandAggAndOrder.class)
-				.map(this::createOLCandAggregationColumn)
-				.collect(ImmutableList.toImmutableList());
-
-		return OLCandAggregation.of(columns);
-	}
-
-	private OLCandAggregationColumn createOLCandAggregationColumn(final I_C_OLCandAggAndOrder olCandAgg)
-	{
-		final I_AD_Column adColumn = olCandAgg.getAD_Column_OLCand();
-
-		return OLCandAggregationColumn.builder()
-				.columnName(adColumn.getColumnName())
-				.adColumnId(adColumn.getAD_Column_ID())
-				.orderBySeqNo(olCandAgg.getOrderBySeqNo())
-				.splitOrderDiscriminator(olCandAgg.isSplitOrder())
-				.groupByColumn(olCandAgg.isGroupBy())
-				.granularity(granularityByADRefListValue.get(olCandAgg.getGranularity()))
-				.build();
-	}
-	
-	private static final Map<String, Granularity> granularityByADRefListValue = ImmutableMap.<String, Granularity>builder()
-			.put(X_C_OLCandAggAndOrder.GRANULARITY_Tag, Granularity.Day)
-			.put(X_C_OLCandAggAndOrder.GRANULARITY_Woche, Granularity.Week)
-			.put(X_C_OLCandAggAndOrder.GRANULARITY_Monat, Granularity.Month)
-			.build();
 }

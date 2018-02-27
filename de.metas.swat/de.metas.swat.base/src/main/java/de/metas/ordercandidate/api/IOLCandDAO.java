@@ -80,6 +80,4 @@ public interface IOLCandDAO extends ISingletonService
 	I_C_OLCandGenerator retrieveOlCandCreator(Properties ctx, int tableId, String trxName);
 
 	List<I_C_OLCandGenerator> retrieveOlCandCreatorForOrg(Properties ctx, int adOrgId);
-
-	OLCandAggregation retrieveOLCandAggregation(int olCandProcessorId);
 }
