@@ -6,6 +6,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.RelationTypeZoomProvidersFactory;
 import org.adempiere.util.Services;
+import org.compiere.model.PO;
 import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
@@ -43,35 +44,43 @@ public class RelationTypeOLCandSource implements OLCandSource
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 	private final OLCandOrderDefaults orderDefaults;
-	private final I_C_OLCandProcessor processor;
+	private final int olCandProcessorId;
 	private final String relationTypeInternalName;
 
 	@Builder
 	private RelationTypeOLCandSource(
 			@NonNull final OLCandOrderDefaults orderDefaults,
-			@NonNull final I_C_OLCandProcessor processor)
+			@NonNull final OLCandProcessorDescriptor processor)
 	{
-		this.processor = processor;
+		this.olCandProcessorId = processor.getId();
 		this.orderDefaults = orderDefaults;
-
-		relationTypeInternalName = olCandBL.mkRelationTypeInternalName(processor);
+		this.relationTypeInternalName = mkRelationTypeInternalNameForOLCandProcessorId(olCandProcessorId);
 	}
+	
+	private static String mkRelationTypeInternalNameForOLCandProcessorId(final int olCandProcessorId)
+	{
+		return I_C_OLCandProcessor.Table_Name + "_" + olCandProcessorId + "<=>" + I_C_OLCand.Table_Name;
+	}
+
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("relationTypeInternalName", relationTypeInternalName)
-				.add("processor", processor)
+				.add("olCandProcessorId", olCandProcessorId)
 				.toString();
 	}
 
 	@Override
 	public Stream<OLCand> streamOLCands()
 	{
+		// FIXME: get rid of it
+		final PO processorPO = InterfaceWrapperHelper.getPO(InterfaceWrapperHelper.loadOutOfTrx(olCandProcessorId, I_C_OLCandProcessor.class));
+		
 		return RelationTypeZoomProvidersFactory.instance
 				.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
-				.retrieveDestinations(Env.getCtx(), InterfaceWrapperHelper.getPO(processor), I_C_OLCand.class, ITrx.TRXNAME_ThreadInherited)
+				.retrieveDestinations(Env.getCtx(), processorPO, I_C_OLCand.class, ITrx.TRXNAME_ThreadInherited)
 				.stream()
 				.map(this::toOLCand);
 	}

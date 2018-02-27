@@ -37,7 +37,6 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_PriceList;
@@ -50,20 +49,20 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
-import de.metas.ordercandidate.api.OLCandAggregation;
-import de.metas.ordercandidate.api.OLCandAggregationRepository;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
-import de.metas.ordercandidate.api.OLCandsProcessor;
+import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
+import de.metas.ordercandidate.api.OLCandsProcessorExecutor;
 import de.metas.ordercandidate.api.RelationTypeOLCandSource;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.spi.CompositeOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString(of = { "olCandListeners", "groupingValuesProviders" })
 public class OLCandBL implements IOLCandBL
 {
 	private static final Logger logger = LogManager.getLogger(OLCandBL.class);
@@ -72,43 +71,19 @@ public class OLCandBL implements IOLCandBL
 	private final CompositeOLCandGroupingProvider groupingValuesProviders = new CompositeOLCandGroupingProvider();
 
 	@Override
-	public void process(final I_C_OLCandProcessor processor)
+	public void process(final OLCandProcessorDescriptor processor)
 	{
-		final OLCandOrderDefaults orderDefaults = createOLCandOrderDefaults(processor);
-
-		final int olCandProcessorId = processor.getC_OLCandProcessor_ID();
-		final OLCandAggregationRepository olCandAggregationRepo = Adempiere.getBean(OLCandAggregationRepository.class);
-		final OLCandAggregation aggregationInfo = olCandAggregationRepo.getById(olCandProcessorId);
-
 		final RelationTypeOLCandSource candidatesSource = RelationTypeOLCandSource.builder()
 				.processor(processor)
 				.build();
 
-		OLCandsProcessor.builder()
-				.orderDefaults(orderDefaults)
-				.userInChargeId(processor.getAD_User_InCharge_ID())
-				.olCandProcessorId(olCandProcessorId)
+		OLCandsProcessorExecutor.builder()
+				.processorDescriptor(processor)
 				.olCandListeners(olCandListeners)
-				.aggregationInfo(aggregationInfo)
 				.groupingValuesProviders(groupingValuesProviders)
 				.candidatesSource(candidatesSource)
 				.build()
 				.process();
-	}
-
-	private OLCandOrderDefaults createOLCandOrderDefaults(final I_C_OLCandProcessor processor)
-	{
-		return OLCandOrderDefaults.builder()
-				.deliveryRule(processor.getDeliveryRule())
-				.deliveryViaRule(processor.getDeliveryViaRule())
-				.shipperId(processor.getM_Shipper_ID())
-				.warehouseId(processor.getM_Warehouse_ID())
-				.freightCostRule(processor.getFreightCostRule())
-				.paymentRule(processor.getPaymentRule())
-				.paymentTermId(processor.getC_PaymentTerm_ID())
-				.invoiceRule(processor.getInvoiceRule())
-				.docTypeTargetId(processor.getC_DocTypeTarget_ID())
-				.build();
 	}
 
 	@Override
@@ -138,12 +113,6 @@ public class OLCandBL implements IOLCandBL
 		}
 
 		return result;
-	}
-
-	@Override
-	public String mkRelationTypeInternalName(final I_C_OLCandProcessor processor)
-	{
-		return I_C_OLCandProcessor.Table_Name + "_" + processor.getC_OLCandProcessor_ID() + "<=>" + I_C_OLCand.Table_Name;
 	}
 
 	@Override
@@ -183,12 +152,6 @@ public class OLCandBL implements IOLCandBL
 	public void registerCustomerGroupingValuesProvider(final IOLCandGroupingProvider groupingProvider)
 	{
 		groupingValuesProviders.add(groupingProvider);
-	}
-
-	@Override
-	public String toString()
-	{
-		return "OLCandBL [olCandListeners=" + olCandListeners + ", groupingValuesProviders=" + groupingValuesProviders + "]";
 	}
 
 	@Override

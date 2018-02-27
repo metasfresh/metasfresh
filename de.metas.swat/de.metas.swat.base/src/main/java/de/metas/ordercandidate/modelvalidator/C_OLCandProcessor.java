@@ -13,15 +13,14 @@ package de.metas.ordercandidate.modelvalidator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -37,29 +36,28 @@ import de.metas.ordercandidate.model.I_C_OLCandAggAndOrder;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 
 @Validator(I_C_OLCandProcessor.class)
-public class C_OLCandProcessor 
+public class C_OLCandProcessor
 {
-	@ModelChange(timings=ModelValidator.TYPE_BEFORE_DELETE)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteAggAndOrderRecords(final I_C_OLCandProcessor processor)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(processor);
 		final String trxName = InterfaceWrapperHelper.getTrxName(processor);
-		
-		final List<I_C_OLCandAggAndOrder> referencingAggAndOrders =
-				new Query(ctx, I_C_OLCandAggAndOrder.Table_Name, I_C_OLCandAggAndOrder.COLUMNNAME_C_OLCandProcessor_ID + "=?", trxName)
-						.setParameters(processor.getC_OLCandProcessor_ID())
-						.list(I_C_OLCandAggAndOrder.class);
+
+		final List<I_C_OLCandAggAndOrder> referencingAggAndOrders = new Query(ctx, I_C_OLCandAggAndOrder.Table_Name, I_C_OLCandAggAndOrder.COLUMNNAME_C_OLCandProcessor_ID + "=?", trxName)
+				.setParameters(processor.getC_OLCandProcessor_ID())
+				.list(I_C_OLCandAggAndOrder.class);
 
 		for (final I_C_OLCandAggAndOrder referencingAggAndOrder : referencingAggAndOrders)
 		{
 			InterfaceWrapperHelper.delete(referencingAggAndOrder);
 		}
 	}
-	
-	@ModelChange(timings=ModelValidator.TYPE_BEFORE_DELETE)
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteScheduler(final I_C_OLCandProcessor processor)
 	{
-		if(processor.getAD_Scheduler_ID()>0)
+		if (processor.getAD_Scheduler_ID() > 0)
 		{
 			final I_AD_Scheduler referencedScheduler = processor.getAD_Scheduler();
 			InterfaceWrapperHelper.delete(referencedScheduler);

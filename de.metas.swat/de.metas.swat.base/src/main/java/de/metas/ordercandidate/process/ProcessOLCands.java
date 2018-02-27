@@ -1,13 +1,14 @@
 package de.metas.ordercandidate.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.ordercandidate.api.IOLCandBL;
+import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
+import de.metas.ordercandidate.api.OLCandProcessorRepository;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.process.JavaProcess;
@@ -27,6 +28,7 @@ public class ProcessOLCands extends JavaProcess
 	//
 	// Services
 	private final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
+	private final OLCandProcessorRepository olCandProcessorRepo = Adempiere.getBean(OLCandProcessorRepository.class);
 
 	public static final String PARAM_C_OLCandProcessor_ID = I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID;
 	@Param(mandatory = true, parameterName = PARAM_C_OLCandProcessor_ID)
@@ -47,7 +49,7 @@ public class ProcessOLCands extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
-		final I_C_OLCandProcessor olCandProcessor = load(olCandProcessorId, I_C_OLCandProcessor.class);
+		final OLCandProcessorDescriptor olCandProcessor = olCandProcessorRepo.getById(olCandProcessorId);
 
 		try
 		{

@@ -58,9 +58,9 @@ import lombok.NonNull;
  * #L%
  */
 
-public class OLCandsProcessor
+public class OLCandsProcessorExecutor
 {
-	private static final Logger logger = LogManager.getLogger(OLCandsProcessor.class);
+	private static final Logger logger = LogManager.getLogger(OLCandsProcessorExecutor.class);
 	private final ILoggable loggable;
 
 	private final IOLCandListener olCandListeners;
@@ -75,23 +75,20 @@ public class OLCandsProcessor
 	private final OLCandSource candidatesSource;
 
 	@Builder
-	private OLCandsProcessor(
-			@NonNull final OLCandOrderDefaults orderDefaults,
+	private OLCandsProcessorExecutor(
+			@NonNull final OLCandProcessorDescriptor processorDescriptor,
 			@NonNull final IOLCandListener olCandListeners,
-			@NonNull final OLCandAggregation aggregationInfo,
 			@NonNull final IOLCandGroupingProvider groupingValuesProviders,
-			final int userInChargeId,
-			final int olCandProcessorId,
 			@NonNull final OLCandSource candidatesSource)
 	{
-		this.orderDefaults = orderDefaults;
+		this.orderDefaults = processorDescriptor.getDefaults();
 		this.olCandListeners = olCandListeners;
-		this.aggregationInfo = aggregationInfo;
+		this.aggregationInfo = processorDescriptor.getAggregationInfo();
 		this.groupingValuesProviders = groupingValuesProviders;
 		this.loggable = Loggables.get().withLogger(logger, Level.INFO);
 
-		this.olCandProcessorId = olCandProcessorId;
-		this.userInChargeId = userInChargeId;
+		this.olCandProcessorId = processorDescriptor.getId();
+		this.userInChargeId = processorDescriptor.getUserInChangeId();
 
 		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(
 				Env.getCtx(),

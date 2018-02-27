@@ -32,7 +32,6 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
@@ -50,9 +49,7 @@ public interface IOLCandBL extends ISingletonService
 	 *
 	 * @param processor
 	 */
-	void process(I_C_OLCandProcessor processor);
-
-	String mkRelationTypeInternalName(I_C_OLCandProcessor processor);
+	void process(OLCandProcessorDescriptor processor);
 
 	/**
 	 * Registers a listener to be informed about events regarding order line candidates.
