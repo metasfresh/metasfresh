@@ -16,8 +16,7 @@ WHERE m_shipmentschedule_id IN
 (
 	select sched.M_ShipmentSchedule_ID 
 	from M_ShipmentSchedule sched
-		left join C_SubscriptionProgress s ON 
-			sched.AD_table_ID=540029 /*C_SubscriptionProgress*/
-			and sched.Record_ID=s.C_SubscriptionProgress_ID
-	where s is null
+		left join C_SubscriptionProgress s ON sched.Record_ID=s.C_SubscriptionProgress_ID
+	where sched.AD_Table_ID=540029 /*C_SubscriptionProgress*/
+		and s is null
 );
