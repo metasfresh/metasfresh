@@ -129,7 +129,15 @@ public class GenerateModel
 		String directory = null;
 		if (args.length > 0)
 		{
-			directory = new File(args[0]).getAbsolutePath();
+			final String directoryArg = args[0];
+			if("-".equals(directoryArg))
+			{
+				directory = directoryArg;
+			}
+			else
+			{
+				directory = new File(directoryArg).getAbsolutePath();
+			}
 		}
 		if (directory == null || directory.length() == 0)
 		{
