@@ -78,7 +78,7 @@ public class C_Order
 		final Timestamp dateOrdered = order.getDateOrdered();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getC_BPartner_ID(), dateOrdered);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartner(order.getC_BPartner(), dateOrdered);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 		{

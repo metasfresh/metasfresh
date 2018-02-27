@@ -1267,7 +1267,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final BigDecimal creditUsed = stats.getSOCreditUsed();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getMovementDate());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartner(getC_BPartner(), getMovementDate());
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 		{

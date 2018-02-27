@@ -239,7 +239,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner partner = retrieveC_BPartner(bpStats);
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartner(partner, SystemTime.asDayTimestamp());
 
 		final String initialCreditStatus = bpStats.getSOCreditStatus();
 
@@ -300,7 +300,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bstats);
 		final  BigDecimal creditUsed = retrieveSOCreditUsed(bstats);
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartner(stats.getC_BPartner(), SystemTime.asDayTimestamp());
 
 		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
 		final Locale locale = Locale.getDefault();
