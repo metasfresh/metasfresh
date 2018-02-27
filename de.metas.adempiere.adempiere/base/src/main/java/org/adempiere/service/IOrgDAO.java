@@ -53,6 +53,12 @@ public interface IOrgDAO extends ISingletonService
 	I_AD_Org retrieveOrganizationByValue(Properties ctx, String value);
 
 	List<I_AD_Org> retrieveClientOrgs(Properties ctx, int adClientId);
+	
+	default List<I_AD_Org> retrieveClientOrgs(final int adClientId)
+	{
+		return retrieveClientOrgs(Env.getCtx(), adClientId);
+	}
+
 
 	List<I_AD_Org> retrieveChildOrgs(Properties ctx, int parentOrgId, int adTreeOrgId);
 }
