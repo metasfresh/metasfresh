@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.impexp;
 
@@ -28,13 +28,16 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_ImpFormat_Row;
+import org.compiere.model.I_C_DataImport;
 import org.compiere.model.I_I_GLJournal;
+import org.compiere.model.POInfo;
 import org.compiere.model.X_AD_ImpFormat;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -43,6 +46,9 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Import Format a Row
@@ -52,26 +58,14 @@ import de.metas.logging.LogManager;
  */
 public final class ImpFormat
 {
-	/**
-	 * Format
-	 * 
-	 * @param name name
-	 * @param AD_Table_ID table
-	 * @param formatType format type
-	 */
-	private ImpFormat(final String name, final int AD_Table_ID, final String formatType)
-	{
-		super();
-		setName(name);
-		setTable(AD_Table_ID);
-		setFormatType(formatType);
-	}	// ImpFormat
-
 	/** Logger */
 	private static Logger log = LogManager.getLogger(ImpFormat.class);
 
-	private String m_name;
-	private String m_formatType;
+	@Getter
+	private final String name;
+	private final String formatType;
+	@Getter
+	private final boolean multiLine;
 
 	/** The Table to be imported */
 	private int m_AD_Table_ID;
@@ -81,33 +75,36 @@ public final class ImpFormat
 	private String m_tableUnique2;
 	private String m_tableUniqueParent;
 	private String m_tableUniqueChild;
+	private boolean hasDataImportIdColumn;
 	//
-	private String m_BPartner;
 	private ArrayList<ImpFormatRow> m_rows = new ArrayList<>();
 
-	/**
-	 * Set Name
-	 * 
-	 * @param newName new name
-	 */
-	public void setName(final String newName)
+	@Builder
+	private ImpFormat(
+			@NonNull final String name,
+			final int adTableId,
+			@NonNull final String formatType,
+			final boolean multiLine)
 	{
-		if (newName == null || newName.length() == 0)
-			throw new IllegalArgumentException("Name must be at least 1 char");
+		Check.assumeNotEmpty(name, "name is not empty");
+
+		this.name = name;
+
+		if (formatType.equals(FORMATTYPE_FIXED) || formatType.equals(FORMATTYPE_COMMA)
+				|| formatType.equals(FORMATTYPE_TAB) || formatType.equals(FORMATTYPE_XML))
+		{
+			this.formatType = formatType;
+		}
 		else
-			m_name = newName;
+		{
+			throw new IllegalArgumentException("FormatType must be F/C/T/X");
+		}
+
+		this.multiLine = multiLine;
+
+		setTable(adTableId);
 	}
 
-	/**
-	 * Get Name
-	 * 
-	 * @return name
-	 */
-	public String getName()
-	{
-		return m_name;
-	}   // getName
-	
 	public String getTableName()
 	{
 		return m_tableName;
@@ -118,33 +115,21 @@ public final class ImpFormat
 	 * 
 	 * @param AD_Table_ID table
 	 */
-	public void setTable(final int AD_Table_ID)
+	private void setTable(final int AD_Table_ID)
 	{
 		m_AD_Table_ID = AD_Table_ID;
-		m_tableName = null;
-		m_tablePK = null;
-		String sql = "SELECT t.TableName,c.ColumnName "
-				+ "FROM AD_Table t INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID AND c.IsKey='Y') "
-				+ "WHERE t.AD_Table_ID=?";
-		try
+
+		final POInfo poInfo = POInfo.getPOInfo(AD_Table_ID);
+		Check.assumeNotNull(poInfo, "poInfo is not null for AD_Table_ID={}", AD_Table_ID);
+		m_tableName = poInfo.getTableName();
+
+		m_tablePK = poInfo.getKeyColumnName();
+		if (m_tablePK == null)
 		{
-			PreparedStatement pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, AD_Table_ID);
-			ResultSet rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				m_tableName = rs.getString(1);
-				m_tablePK = rs.getString(2);
-			}
-			rs.close();
-			pstmt.close();
+			throw new AdempiereException("Table " + m_tableName + " has not primary key");
 		}
-		catch (SQLException e)
-		{
-			log.error("ImpFormat.setTable", e);
-		}
-		if (m_tableName == null || m_tablePK == null)
-			log.error("Data not found for AD_Table_ID=" + AD_Table_ID);
+
+		hasDataImportIdColumn = poInfo.hasColumnName(I_C_DataImport.COLUMNNAME_C_DataImport_ID);
 
 		// Set Additional Table Info
 		m_tableUnique1 = "";
@@ -152,14 +137,7 @@ public final class ImpFormat
 		m_tableUniqueParent = "";
 		m_tableUniqueChild = "";
 
-		if (m_AD_Table_ID == 311)			// I_061_SyncItem
-		{
-			m_tableUnique1 = "H_UPC";					// UPC = unique
-			m_tableUnique2 = "Value";
-			m_tableUniqueChild = "H_Commodity1";		// Vendor No may not be unique !
-			m_tableUniqueParent = "H_PartnrID";			// Makes it unique
-		}
-		else if (m_AD_Table_ID == 532)		// I_Product
+		if (m_AD_Table_ID == 532)		// I_Product
 		{
 			m_tableUnique1 = "UPC";						// UPC = unique
 			m_tableUnique2 = "Value";
@@ -201,50 +179,6 @@ public final class ImpFormat
 	public static final String FORMATTYPE_TAB = X_AD_ImpFormat.FORMATTYPE_TabSeparated;
 	/** Format Type - XML X */
 	public static final String FORMATTYPE_XML = X_AD_ImpFormat.FORMATTYPE_XML;
-
-	/**
-	 * Set Format Type
-	 * 
-	 * @param newFormatType - F/C/T/X
-	 */
-	public void setFormatType(final String newFormatType)
-	{
-		if (newFormatType.equals(FORMATTYPE_FIXED) || newFormatType.equals(FORMATTYPE_COMMA)
-				|| newFormatType.equals(FORMATTYPE_TAB) || newFormatType.equals(FORMATTYPE_XML))
-			m_formatType = newFormatType;
-		else
-			throw new IllegalArgumentException("FormatType must be F/C/T/X");
-	}   // setFormatType
-
-	/**
-	 * Set Format Type
-	 * 
-	 * @return format type - F/C/T/X
-	 */
-	public String getFormatType()
-	{
-		return m_formatType;
-	}   // getFormatType
-
-	/**
-	 * Set Business Partner
-	 * 
-	 * @param newBPartner (value)
-	 */
-	public void setBPartner(final String newBPartner)
-	{
-		m_BPartner = newBPartner;
-	}   // setBPartner
-
-	/**
-	 * Get Business Partner
-	 * 
-	 * @return BPartner (value)
-	 */
-	public String getBPartner()
-	{
-		return m_BPartner;
-	}   // getVPartner
 
 	/*************************************************************************
 	 * Add Format Row
@@ -303,11 +237,22 @@ public final class ImpFormat
 		return load(impFormatModel);
 	}	// getFormat
 
+	public static ImpFormat load(final int impFormatId)
+	{
+		final I_AD_ImpFormat impFormatModel = InterfaceWrapperHelper.loadOutOfTrx(impFormatId, I_AD_ImpFormat.class);
+		return load(impFormatModel);
+	}
+
 	public static ImpFormat load(final I_AD_ImpFormat impFormatModel)
 	{
 		Check.assumeNotNull(impFormatModel, "impFormatModel not null");
 
-		final ImpFormat impFormat = new ImpFormat(impFormatModel.getName(), impFormatModel.getAD_Table_ID(), impFormatModel.getFormatType());
+		final ImpFormat impFormat = ImpFormat.builder()
+				.name(impFormatModel.getName())
+				.formatType(impFormatModel.getFormatType())
+				.multiLine(impFormatModel.isMultiLine())
+				.adTableId(impFormatModel.getAD_Table_ID())
+				.build();
 		loadRows(impFormat, impFormatModel.getAD_ImpFormat_ID());
 		return impFormat;
 	}
@@ -381,7 +326,7 @@ public final class ImpFormat
 			{
 				cellValueRaw = "Constant";
 			}
-			else if (m_formatType.equals(FORMATTYPE_FIXED))
+			else if (formatType.equals(FORMATTYPE_FIXED))
 			{
 				// check length
 				if (impFormatRow.getStartNo() > 0 && impFormatRow.getEndNo() <= line.length())
@@ -389,7 +334,7 @@ public final class ImpFormat
 			}
 			else
 			{
-				cellValueRaw = parseFlexFormat(line, m_formatType, impFormatRow.getStartNo());
+				cellValueRaw = parseFlexFormat(line, formatType, impFormatRow.getStartNo());
 			}
 			if (cellValueRaw == null)
 			{
@@ -412,7 +357,7 @@ public final class ImpFormat
 	 * @param fieldNo number of field to be returned
 	 * @return field in lime or ""
 	 * @throws IllegalArgumentException if format unknows
-	 * */
+	 */
 	private String parseFlexFormat(final String line, final String formatType, final int fieldNo)
 	{
 		final char QUOTE = '"';
@@ -489,8 +434,11 @@ public final class ImpFormat
 	{
 		try
 		{
-			final int fileLineNo = 0; // unknown
-			final ImpDataLine line = new ImpDataLine(this, fileLineNo, lineStr);
+			final ImpDataLine line = ImpDataLine.builder()
+					.impFormat(this)
+					.fileLineNo(0) // unknown
+					.lineStr(lineStr)
+					.build();
 			updateDB(ctx, line, trxName);
 			return true;
 		}
@@ -641,11 +589,11 @@ public final class ImpFormat
 		if (importRecordId <= 0)
 		{
 			importRecordId = DB.getNextID(ctx, m_tableName, ITrx.TRXNAME_None);		// get ID
-			if(importRecordId <= 0)
+			if (importRecordId <= 0)
 			{
 				throw new AdempiereException("Cannot acquire next ID for " + m_tableName);
 			}
-			
+
 			final StringBuilder sql = new StringBuilder("INSERT INTO ")
 					.append(m_tableName).append("(").append(m_tablePK).append(",")
 					.append("AD_Client_ID,AD_Org_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive")	// StdFields
@@ -679,6 +627,12 @@ public final class ImpFormat
 				}
 				sqlUpdate.append(node.getColumnNameEqualsValueSql()).append(",");		// column=value
 			}
+
+			if (hasDataImportIdColumn && line.getDataImportId() > 0)
+			{
+				sqlUpdate.append(I_C_DataImport.COLUMNNAME_C_DataImport_ID).append("=").append(line.getDataImportId()).append(",");
+			}
+
 			sqlUpdate.append("IsActive='Y',Processed='N',I_IsImported='N',Updated=now(),UpdatedBy=").append(UpdatedBy);
 			sqlUpdate.append(" WHERE ").append(m_tablePK).append("=").append(importRecordId);
 			//
