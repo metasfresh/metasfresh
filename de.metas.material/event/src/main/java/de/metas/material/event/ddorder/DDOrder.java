@@ -65,6 +65,13 @@ final public class DDOrder
 
 	String docStatus;
 
+	/**
+	 * Not persisted in the {@code DD_Order} data record, but
+	 * when material-dispo posts {@link DDOrderRequestedEvent}, it contains a group-ID,
+	 * and the respective {@link DDOrderCreatedEvent} contains the same group-ID.
+	 */
+	int materialDispoGroupId;
+
 	@JsonCreator
 	public DDOrder(
 			@JsonProperty("orgId") final int orgId,
@@ -74,7 +81,8 @@ final public class DDOrder
 			@JsonProperty("shipperId") final int shipperId,
 			@JsonProperty("lines") final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,
-			@JsonProperty("docStatus") final String docStatus)
+			@JsonProperty("docStatus") final String docStatus,
+			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
 	{
 		this.orgId = checkIdGreaterThanZero("orgId", orgId);
 
@@ -87,6 +95,6 @@ final public class DDOrder
 		this.lines = lines;
 		this.ddOrderId = ddOrderId;
 		this.docStatus = docStatus;
+		this.materialDispoGroupId = materialDispoGroupId;
 	}
-
 }

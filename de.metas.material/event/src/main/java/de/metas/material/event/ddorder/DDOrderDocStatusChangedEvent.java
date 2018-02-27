@@ -1,14 +1,11 @@
-package de.metas.material.event.pporder;
+package de.metas.material.event.ddorder;
 
-import java.util.Date;
-
-import org.adempiere.util.Check;
-import org.eevolution.model.I_PP_Order;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -32,33 +29,28 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/**
- * Send by the material dispo when it wants a {@link I_PP_Order} to be created.
- * <p>
- * <b>Important: right now, any {@link PPOrderLine}s are ignored</b>. The receiver of this event will mostly use
- * the event's {@link PPOrder}'s {@link PPOrder#getProductPlanningId()} to create the @{code PP_Order}.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
+
 @Value
 @Builder
-public class PPOrderRequestedEvent implements MaterialEvent
+public class DDOrderDocStatusChangedEvent implements MaterialEvent
 {
-	public static final String TYPE = "PPOrderRequestedEvent";
+	public static final String TYPE = "DDOrderDocStatusChangedEvent";
 
-	@NonNull
 	EventDescriptor eventDescriptor;
 
-	@NonNull
-	Date dateOrdered;
+	int ddOrderId;
 
-	@NonNull
-	PPOrder ppOrder;
+	String newDocStatus;
 
-	public void validate()
+	@JsonCreator
+	@Builder
+	public DDOrderDocStatusChangedEvent(
+			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
+			@JsonProperty("ddOrderId") final int ddOrderId,
+			@JsonProperty("newDocStatus") final String newDocStatus)
 	{
-		// we need the PPOrder's MaterialDispoGroupId to map the order that was created to its respective candidates
-		Check.errorIf(ppOrder.getMaterialDispoGroupId() <= 0, "The ppOrder of a PPOrderRequestedEvent needs to have a group id");
+		this.eventDescriptor = eventDescriptor;
+		this.ddOrderId = ddOrderId;
+		this.newDocStatus = newDocStatus;
 	}
 }

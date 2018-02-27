@@ -18,9 +18,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.IMutableMRPContext;
@@ -94,19 +93,17 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 		new Expectations()
 		{{
 			ddOrderDemandMatcher.matches((IMaterialPlanningContext)any); result = true;
-			ddOrderPojoSupplier.supplyPojos((IMaterialRequest)any, (IMRPNotesCollector)any); result = ddOrder;
+			ddOrderPojoSupplier.supplyPojos((IMaterialRequest)any); result = ddOrder;
 			ddOrder.getLines(); result = ImmutableList.of(ddOrderLine);
 			ddOrderLine.getNetworkDistributionLineId(); result = networkDistributionLine.getDD_NetworkDistributionLine_ID();
 		}};	// @formatter:on
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
 
 		final DDOrderAdvisedOrCreatedEventCreator productionAdvisedEventCreator = new DDOrderAdvisedOrCreatedEventCreator(ddOrderDemandMatcher, ddOrderPojoSupplier);
-		final List<DDOrderAdvisedOrCreatedEvent> events = productionAdvisedEventCreator.createDDOrderAdvisedEvents(supplyRequiredDescriptor, mrpContext);
+		final List<DDOrderAdvisedEvent> events = productionAdvisedEventCreator.createDDOrderAdvisedEvents(supplyRequiredDescriptor, mrpContext);
 
 		assertThat(events).hasSize(1);
 		assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
 	}
-
-
 
 }

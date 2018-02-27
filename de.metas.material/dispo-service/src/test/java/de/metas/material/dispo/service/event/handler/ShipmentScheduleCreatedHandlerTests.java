@@ -106,7 +106,7 @@ public class ShipmentScheduleCreatedHandlerTests
 	{
 		final ShipmentScheduleCreatedEvent event = createShipmentScheduleTestEvent();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
+		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
 				stockRepository,
 				event.getMaterialDescriptor(),
 				"0");

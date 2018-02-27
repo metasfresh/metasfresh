@@ -30,6 +30,12 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Converts {@link Event}s to {@link MaterialEvent}s and vice versa.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Service
 public class MaterialEventConverter
 {

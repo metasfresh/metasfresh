@@ -30,7 +30,6 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.ProductPlanningBL;
@@ -78,9 +77,7 @@ public class PPOrderPojoSupplier
 		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
-	public PPOrder supplyPPOrderPojo(
-			@NonNull final IMaterialRequest request,
-			@NonNull final IMRPNotesCollector mrpNotesCollector)
+	public PPOrder supplyPPOrderPojo(@NonNull final IMaterialRequest request)
 	{
 		final IMaterialPlanningContext mrpContext = request.getMrpContext();
 
@@ -142,10 +139,9 @@ public class PPOrderPojoSupplier
 	}
 
 	public PPOrder supplyPPOrderPojoWithLines(
-			@NonNull final IMaterialRequest request,
-			@NonNull final IMRPNotesCollector mrpNotesCollector)
+			@NonNull final IMaterialRequest request)
 	{
-		final PPOrder ppOrder = supplyPPOrderPojo(request, mrpNotesCollector);
+		final PPOrder ppOrder = supplyPPOrderPojo(request);
 
 		final PPOrder ppOrderWithLines = ppOrder.toBuilder()
 				.lines(supplyPPOrderLinePojos(ppOrder)).build();

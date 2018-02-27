@@ -72,7 +72,7 @@ public class DemandDetail
 				.subscriptionProgressId(subscriptionProgressId).build();
 	}
 
-	public static DemandDetail createOrNull(
+	public static DemandDetail forSupplyRequiredDescriptorOrNull(
 			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		if (supplyRequiredDescriptor == null)
@@ -80,9 +80,12 @@ public class DemandDetail
 			return null;
 		}
 		return DemandDetail.builder()
+				.demandCandidateId(supplyRequiredDescriptor.getDemandCandidateId())
+				.forecastId(supplyRequiredDescriptor.getForecastId())
 				.forecastLineId(supplyRequiredDescriptor.getForecastLineId())
-				.shipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
+				.orderId(supplyRequiredDescriptor.getOrderId())
 				.orderLineId(supplyRequiredDescriptor.getOrderLineId())
+				.shipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
 				.subscriptionProgressId(supplyRequiredDescriptor.getSubscriptionProgressId()).build();
 	}
 
@@ -128,19 +131,9 @@ public class DemandDetail
 
 	int subscriptionProgressId;
 
-	private DemandDetail(
-			final int forecastId,
-			final int forecastLineId,
-			final int shipmentScheduleId,
-			final int orderId,
-			final int orderLineId,
-			final int subscriptionProgressId)
-	{
-		this.forecastId = forecastId;
-		this.forecastLineId = forecastLineId;
-		this.shipmentScheduleId = shipmentScheduleId;
-		this.orderId = orderId;
-		this.orderLineId = orderLineId;
-		this.subscriptionProgressId = subscriptionProgressId;
-	}
+	/**
+	 * Used when a new supply candidate is created, to link it to it's respective demand candidate;
+	 * When a demand detail is loaded from DB, this filed is always <= 0.
+	 */
+	int demandCandidateId;
 }

@@ -392,7 +392,7 @@ public class CandidateChangeHandlerTests
 				.date(NOW)
 				.build();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
+		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
 				stockRepository,
 				materialDescr,
 				"0");
