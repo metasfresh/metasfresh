@@ -51,7 +51,6 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.IOLCandBL;
@@ -311,8 +310,7 @@ public class OLCandBL implements IOLCandBL
 
 			pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
 
-			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, dropShipLocation.getC_BPartner_Location_ID(), true, ITrx.TRXNAME_None);
-
+			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, dropShipLocation, true);
 			if (pl == null)
 			{
 				throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + dropShipLocation.getC_BPartner_Location_ID());
