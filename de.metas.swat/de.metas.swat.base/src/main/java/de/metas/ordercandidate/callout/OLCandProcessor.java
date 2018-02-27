@@ -48,48 +48,11 @@ import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.process.ProcessOLCands;
 import de.metas.process.IADProcessDAO;
 import de.metas.relation.IRelationTypeDAO;
-import de.metas.relation.grid.ModelRelationTarget;
-import de.metas.relation.grid.VRelationTarget;
 
 public class OLCandProcessor extends CalloutEngine
 {
 
 	private static final String MSG_MISSING_RELTYPE = "OLCandProcessor.MissingRelationType";
-
-	public String assignOLCands(
-			final Properties ctx,
-			final int WindowNo,
-			final GridTab mTab,
-			final GridField mField,
-			final Object value)
-	{
-		if (isCalloutActive())
-		{
-			return "";
-		}
-
-		final I_C_OLCandProcessor processor = InterfaceWrapperHelper.create(mTab, I_C_OLCandProcessor.class);
-
-		if (processor.getC_OLCandProcessor_ID() <= 0)
-		{
-			return "";
-		}
-
-		final int sourceWindowId = mTab.getAD_Window_ID();
-		final String sourceTabName = mTab.getName();
-		
-		final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
-		
-		final ModelRelationTarget model = olCandBL.mkModelRelationTarget(processor, sourceWindowId, sourceTabName, "");
-		final VRelationTarget relationTarget;
-
-		// TODO find out if we are dealing with ZK
-		relationTarget = new VRelationTarget(WindowNo, model);
-
-		relationTarget.showWindow();
-
-		return "";
-	}
 
 	public String adSchedulerOLCandProcessor(
 			final Properties ctx,
