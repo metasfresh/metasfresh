@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.tourplanning.model;
 
 
@@ -32,9 +16,9 @@ public interface I_M_Tour_Instance
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 7 - System - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
@@ -48,7 +32,7 @@ public interface I_M_Tour_Instance
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Tour_Instance, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Tour_Instance, org.compiere.model.I_AD_Client>(I_M_Tour_Instance.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,7 +59,7 @@ public interface I_M_Tour_Instance
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -163,7 +147,7 @@ public interface I_M_Tour_Instance
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Shipper Transportation.
+	 * Set Transport Auftrag.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -172,7 +156,7 @@ public interface I_M_Tour_Instance
 	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID);
 
 	/**
-	 * Get Shipper Transportation.
+	 * Get Transport Auftrag.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -180,12 +164,8 @@ public interface I_M_Tour_Instance
 	 */
 	public int getM_ShipperTransportation_ID();
 
-	public de.metas.shipping.model.I_M_ShipperTransportation getM_ShipperTransportation() throws RuntimeException;
-
-	public void setM_ShipperTransportation(de.metas.shipping.model.I_M_ShipperTransportation M_ShipperTransportation);
-
     /** Column definition for M_ShipperTransportation_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Tour_Instance, de.metas.shipping.model.I_M_ShipperTransportation> COLUMN_M_ShipperTransportation_ID = new org.adempiere.model.ModelColumn<I_M_Tour_Instance, de.metas.shipping.model.I_M_ShipperTransportation>(I_M_Tour_Instance.class, "M_ShipperTransportation_ID", de.metas.shipping.model.I_M_ShipperTransportation.class);
+    public static final org.adempiere.model.ModelColumn<I_M_Tour_Instance, Object> COLUMN_M_ShipperTransportation_ID = new org.adempiere.model.ModelColumn<I_M_Tour_Instance, Object>(I_M_Tour_Instance.class, "M_ShipperTransportation_ID", null);
     /** Column name M_ShipperTransportation_ID */
     public static final String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
 
@@ -207,7 +187,7 @@ public interface I_M_Tour_Instance
 	 */
 	public int getM_Tour_ID();
 
-	public de.metas.tourplanning.model.I_M_Tour getM_Tour() throws RuntimeException;
+	public de.metas.tourplanning.model.I_M_Tour getM_Tour();
 
 	public void setM_Tour(de.metas.tourplanning.model.I_M_Tour M_Tour);
 
