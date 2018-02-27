@@ -55,13 +55,15 @@ class RawWidget extends Component {
    * DOM element outside of it's parent's tree.
    */
   focus = () => {
-    const { handleFocus, disableOnClickOutside } = this.props;
+    const { handleFocus, disableOnClickOutside, entity } = this.props;
 
     if (this.rawWidget && this.rawWidget.focus) {
       this.rawWidget.focus();
     }
 
-    disableOnClickOutside && disableOnClickOutside();
+    if (entity !== 'pattribute') {
+      disableOnClickOutside && disableOnClickOutside();
+    }
     handleFocus && handleFocus();
   };
 
@@ -100,7 +102,9 @@ class RawWidget extends Component {
 
     listenOnKeysTrue && listenOnKeysTrue();
 
-    this.handlePatch(widgetField, value, id);
+    if (widgetField && value && id) {
+      this.handlePatch(widgetField, value, id);
+    }
   };
 
   willPatch = (value, valueTo) => {
@@ -731,6 +735,8 @@ class RawWidget extends Component {
             docType={windowType}
             tabId={tabId}
             rowId={rowId}
+            onFocus={this.handleFocus}
+            onHandleBlur={this.handleBlur}
             fieldName={widgetField}
             handleBackdropLock={handleBackdropLock}
             patch={option => this.handlePatch(widgetField, option)}

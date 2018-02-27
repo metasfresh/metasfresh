@@ -117,16 +117,21 @@ export default class Attributes extends Component {
       if (response.data && response.data.length) {
         const fields = response.data[0].fieldsByName;
         Object.keys(fields).map(fieldName => {
-          this.setState(prevState => ({
-            data: {
-              ...prevState.data,
-              [fieldName]: {
-                ...prevState.data[fieldName],
-                value,
+          this.setState(
+            prevState => ({
+              data: {
+                ...prevState.data,
+                [fieldName]: {
+                  ...prevState.data[fieldName],
+                  value,
+                },
               },
-            },
-          })),
-            () => cb && cb();
+            }),
+            () => {
+              cb && cb();
+              this.props.onBlur && this.props.onBlur();
+            }
+          );
         });
       }
     });
@@ -197,6 +202,7 @@ export default class Attributes extends Component {
         </button>
         {dropdown && (
           <AttributesDropdown
+            {...this.props}
             attributeType={attributeType}
             dataId={dataId}
             tabIndex={tabIndex}

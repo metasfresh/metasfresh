@@ -89,7 +89,6 @@ class AttributesDropdown extends Component {
             handlePatch={(prop, value) =>
               patchCallbacks[idx](prop, value, attrId)
             }
-            handleFocus={this.handleFocus}
             handleChange={handleChange}
             disableOnClickOutside={disableOnClickOutside}
             enableOnClickOutside={enableOnClickOutside}
