@@ -33,6 +33,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -41,6 +42,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCandAggregation;
 import de.metas.ordercandidate.api.OLCandAggregationColumn;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
@@ -50,8 +52,16 @@ import de.metas.ordercandidate.model.I_C_OLCandGenerator;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.ordercandidate.model.X_C_OLCandAggAndOrder;
 
-public class OLCandDAO extends AbstractOLCandDAO
+public class OLCandDAO implements IOLCandDAO
 {
+	@Override
+	public List<I_C_OLCand> retrieveReferencing(final Object model)
+	{
+		final PO po = InterfaceWrapperHelper.getPO(model);
+
+		return retrieveReferencing(po.getCtx(), po.get_TableName(), po.get_ID(), po.get_TrxName());
+	}
+
 	@Override
 	public List<I_C_OLCand> retrieveReferencing(final Properties ctx, final String tableName, final int recordId, final String trxName)
 	{
