@@ -41,12 +41,13 @@ import lombok.NonNull;
 @Component
 public class C_BPartner_CreditLimit
 {
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
 	public void updateBPartnerStatsRecord(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
 	{
 		Services.get(IBPartnerStatisticsUpdater.class)
 				.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(bpCreditLimit.getC_BPartner_ID()), ITrx.TRXNAME_None);
 	}
+
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE })
 	public void setApproved(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
