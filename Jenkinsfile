@@ -46,7 +46,7 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION'),
 
 		string(defaultValue: '',
-			description: 'Version of the metasfresh-webui-frontend webui to include in the distribution. Leave empty and this build will use the latest.',
+			description: 'Version of the metasfresh-esb (camel) bundles to include in the distribution. Leave empty and this build will use the latest.',
 			name: 'MF_METASFRESH_ESB_CAMEL_VERSION')
 	]),
 	pipelineTriggers([]),
@@ -118,7 +118,7 @@ node('agent && linux && libc6-i386')
 
 				// the square brackets in "-DnewVersion" are required if we have a concrete version (i.e. not "LATEST"); see https://github.com/mojohaus/versions-maven-plugin/issues/141 for details
 				final String metasfreshAdminPropertyParam="-Dproperty=metasfresh-admin.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-admin'])}"
-				final String metasfreshWebFrontEndUpdatePropertyParam = "-Dproperty=metasfresh-webui-frontend.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'])}";
+				final String metasfreshWebFrontEndUpdatePropertyParam = "-Dproperty=metasfresh-webui-frontend.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'])}"
 				final String metasfreshWebApiUpdatePropertyParam = "-Dproperty=metasfresh-webui-api.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-webui'])}"
 				final String metasfreshProcurementWebuiUpdatePropertyParam = "-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'])}"
 				final String metasfreshEsbCamelUpdatePropertyParam = "-Dproperty=metasfresh-esb-camel.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-esb-camel'])}"
