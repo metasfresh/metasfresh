@@ -552,6 +552,29 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
+	 * Set Vertragsbedingungen.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID);
+
+	/**
+	 * Get Vertragsbedingungen.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Flatrate_Conditions_ID();
+
+    /** Column definition for C_Flatrate_Conditions_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_C_Flatrate_Conditions_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "C_Flatrate_Conditions_ID", null);
+    /** Column name C_Flatrate_Conditions_ID */
+    public static final String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
+
+	/**
 	 * Set Auftragskandidat.
 	 *
 	 * <br>Type: ID
@@ -1495,6 +1518,29 @@ public interface I_C_OLCand
     public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_M_HU_PI_Item_Product_Effective_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "M_HU_PI_Item_Product_Effective_ID", null);
     /** Column name M_HU_PI_Item_Product_Effective_ID */
     public static final String COLUMNNAME_M_HU_PI_Item_Product_Effective_ID = "M_HU_PI_Item_Product_Effective_ID";
+
+	/**
+	 * Set Packvorschrift.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
+
+	/**
+	 * Get Packvorschrift.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_PI_Item_Product_ID();
+
+    /** Column definition for M_HU_PI_Item_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "M_HU_PI_Item_Product_ID", null);
+    /** Column name M_HU_PI_Item_Product_ID */
+    public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
 	 * Set Packvorschrift-Produkt Zuordnung abw..

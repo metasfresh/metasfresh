@@ -15,7 +15,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1753974685L;
+	private static final long serialVersionUID = -1732060382L;
 
     /** Standard Constructor */
     public X_C_OLCand (Properties ctx, int C_OLCand_ID, String trxName)
@@ -639,6 +639,28 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
+	/** Set Vertragsbedingungen.
+		@param C_Flatrate_Conditions_ID Vertragsbedingungen	  */
+	@Override
+	public void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID)
+	{
+		if (C_Flatrate_Conditions_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Conditions_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Conditions_ID, Integer.valueOf(C_Flatrate_Conditions_ID));
+	}
+
+	/** Get Vertragsbedingungen.
+		@return Vertragsbedingungen	  */
+	@Override
+	public int getC_Flatrate_Conditions_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Conditions_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Auftragskandidat.
 		@param C_OLCand_ID Auftragskandidat	  */
 	@Override
@@ -821,7 +843,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public static final String DELIVERYRULE_Force = "F";
 	/** Manual = M */
 	public static final String DELIVERYRULE_Manual = "M";
-	/** Mit nächster Abolieferung = S */
+	/** MitNaechsterAbolieferung = S */
 	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
@@ -1565,6 +1587,28 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getM_HU_PI_Item_Product_Effective_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Item_Product_Effective_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Packvorschrift.
+		@param M_HU_PI_Item_Product_ID Packvorschrift	  */
+	@Override
+	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
+	{
+		if (M_HU_PI_Item_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
+	}
+
+	/** Get Packvorschrift.
+		@return Packvorschrift	  */
+	@Override
+	public int getM_HU_PI_Item_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Item_Product_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
