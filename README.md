@@ -20,13 +20,14 @@ It has a 3-tier architecture with Rest-API and a Web User Frontend developed in 
 <img src="/images/screenshot-kpi-dashboard.png" width="33%" alt="KPI Dashboard"></img> <img src="/images/screenshot-sales-order.png" width="33%" alt="Sales Order Window"></img> <img src="/images/screenshot-material-receipt.png" width="33%" alt="Material Receipt Window"></img>
 
 ## Installation
-We publish a stable Release of metasfresh once a week. It can be downloaded from our official website at [metasfresh.com/en/download/](http://metasfresh.com/en/download/). 
+We publish a stable Release of metasfresh once a week. It can be downloaded [here](http://metasfresh.com/en/download/).
 
-metasfresh can be installed via Docker or Ubuntu Installer:
-- Docker [How do I setup the metasfresh stack using Docker?](http://docs.metasfresh.org/howto_collection/EN/How_do_I_setup_the_metasfresh_stack_using_Docker.html)
-- Ubuntu [How do I install metasfresh using the Installation package](http://docs.metasfresh.org/installation_collection/EN/installer_how_do_install_metasfresh_package.html)
+metasfresh can be installed via **Docker** or **Ubuntu Installer**
+>**Docker** [How do I setup the metasfresh stack using Docker?](http://docs.metasfresh.org/howto_collection/EN/How_do_I_setup_the_metasfresh_stack_using_Docker.html)
+>
+>**Ubuntu** [How do I install metasfresh using the Installation package?](http://docs.metasfresh.org/installation_collection/EN/installer_how_do_install_metasfresh_package.html)
 
-First steps:
+**First steps:**
 - [How do I log on?](http://docs.metasfresh.org/webui_collection/EN/Logon.html)
 - [How do I change the Interface Language?](http://docs.metasfresh.org/webui_collection/EN/SwitchLanguage)
 - [How do I Setup me Company?](http://docs.metasfresh.org/webui_collection/EN/InitialSetupWizard)
