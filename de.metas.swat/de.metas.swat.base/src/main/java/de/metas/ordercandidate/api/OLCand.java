@@ -3,7 +3,6 @@ package de.metas.ordercandidate.api;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.model.IModelWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -37,9 +36,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public final class OLCand
-		implements IModelWrapper, // required to be able to save it directly
-		IProductPriceAware
+public final class OLCand implements IProductPriceAware
 {
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL;
 
@@ -93,12 +90,6 @@ public final class OLCand
 	public I_C_OLCand unbox()
 	{
 		return candidate;
-	}
-
-	@Override
-	public I_C_OLCand getModel()
-	{
-		return unbox();
 	}
 
 	public int getId()
