@@ -23,17 +23,18 @@ It has a 3-tier architecture with Rest-API and a Web User Frontend developed in 
 We publish a stable Release of metasfresh once a week. It can be downloaded [here](http://metasfresh.com/en/download/).
 
 metasfresh can be installed via **Docker** or **Ubuntu Installer**
->**Docker** [How do I setup the metasfresh stack using Docker?](http://docs.metasfresh.org/howto_collection/EN/How_do_I_setup_the_metasfresh_stack_using_Docker.html)
->
->**Ubuntu** [How do I install metasfresh using the Installation package?](http://docs.metasfresh.org/installation_collection/EN/installer_how_do_install_metasfresh_package.html)
 
-**First steps:**
-- [How do I log on?](http://docs.metasfresh.org/webui_collection/EN/Logon.html)
-- [How do I change the Interface Language?](http://docs.metasfresh.org/webui_collection/EN/SwitchLanguage)
-- [How do I Setup me Company?](http://docs.metasfresh.org/webui_collection/EN/InitialSetupWizard)
-- [How do I create my first Sales Order?](http://docs.metasfresh.org/webui_collection/EN/SalesOrder_recording)
-- [How do I create my first Shipment?](http://docs.metasfresh.org/webui_collection/EN/Ship_SalesOrder)
-- [How do I create my first Invoice?](http://docs.metasfresh.org/webui_collection/EN/Invoice_SalesOrder)
+**Docker** [How do I setup the metasfresh stack using Docker?](http://docs.metasfresh.org/howto_collection/EN/How_do_I_setup_the_metasfresh_stack_using_Docker.html)
+
+**Ubuntu** [How do I install metasfresh using the Installation package?](http://docs.metasfresh.org/installation_collection/EN/installer_how_do_install_metasfresh_package.html)
+
+>**First steps:**
+>- [How do I log on?](http://docs.metasfresh.org/webui_collection/EN/Logon.html)
+>- [How do I change the Interface Language?](http://docs.metasfresh.org/webui_collection/EN/SwitchLanguage)
+>- [How do I Setup me Company?](http://docs.metasfresh.org/webui_collection/EN/InitialSetupWizard)
+>- [How do I create my first Sales Order?](http://docs.metasfresh.org/webui_collection/EN/SalesOrder_recording)
+>- [How do I create my first Shipment?](http://docs.metasfresh.org/webui_collection/EN/Ship_SalesOrder)
+>- [How do I create my first Invoice?](http://docs.metasfresh.org/webui_collection/EN/Invoice_SalesOrder)
 
 ## Documentation
 If you are new to metasfresh and would like to learn more, then you can find our documentation here:
