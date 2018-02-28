@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.RelationTypeZoomProvidersFactory;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
@@ -38,7 +39,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class RelationTypeOLCandSource implements OLCandSource
+final class RelationTypeOLCandSource implements OLCandSource
 {
 	private final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
@@ -50,9 +51,10 @@ public class RelationTypeOLCandSource implements OLCandSource
 	@Builder
 	private RelationTypeOLCandSource(
 			@NonNull final OLCandOrderDefaults orderDefaults,
-			@NonNull final OLCandProcessorDescriptor processor)
+			final int olCandProcessorId)
 	{
-		this.olCandProcessorId = processor.getId();
+		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
+		this.olCandProcessorId = olCandProcessorId;
 		this.orderDefaults = orderDefaults;
 		this.relationTypeInternalName = mkRelationTypeInternalNameForOLCandProcessorId(olCandProcessorId);
 	}

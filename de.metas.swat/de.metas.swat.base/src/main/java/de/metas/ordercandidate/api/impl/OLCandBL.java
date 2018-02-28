@@ -37,6 +37,7 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_PriceList;
@@ -51,8 +52,9 @@ import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
 import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
+import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.ordercandidate.api.OLCandSource;
 import de.metas.ordercandidate.api.OLCandsProcessorExecutor;
-import de.metas.ordercandidate.api.RelationTypeOLCandSource;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.CompositeOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandCreator;
@@ -73,9 +75,8 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public void process(final OLCandProcessorDescriptor processor)
 	{
-		final RelationTypeOLCandSource candidatesSource = RelationTypeOLCandSource.builder()
-				.processor(processor)
-				.build();
+		final OLCandRepository olCandRepo = Adempiere.getBean(OLCandRepository.class);
+		final OLCandSource candidatesSource = olCandRepo.getForProcessor(processor);
 
 		OLCandsProcessorExecutor.builder()
 				.processorDescriptor(processor)
