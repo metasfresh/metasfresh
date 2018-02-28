@@ -185,7 +185,7 @@ class ListWidget extends Component {
   activate = () => {
     const { list, listToggled } = this.state;
 
-    if (list && list.size > 1 && !listToggled) {
+    if (list && !listToggled) {
       this.setState({
         listToggled: true,
       });
