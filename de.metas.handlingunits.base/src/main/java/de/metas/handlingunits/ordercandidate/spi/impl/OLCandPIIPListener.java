@@ -13,20 +13,18 @@ package de.metas.handlingunits.ordercandidate.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_OrderLine;
 
-import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
+import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandListener;
@@ -40,14 +38,12 @@ import de.metas.ordercandidate.spi.IOLCandListener;
 public class OLCandPIIPListener implements IOLCandListener
 {
 	/**
-	 * Sets the new order line's <code>M_HU_PI_Item_Product_ID</code> from the olCand's effective <code>M_HU_PI_Item_Product_ID</code>, so that the sytem won't have to guess.
+	 * Sets the new order line's <code>M_HU_PI_Item_Product_ID</code> from the olCand's effective <code>M_HU_PI_Item_Product_ID</code>, so that the system won't have to guess.
 	 */
 	@Override
-	public void onOrderLineCreated(final OLCand olCand, final I_C_OrderLine newOrderLine)
+	public void onOrderLineCreated(final OLCand olCand, final org.compiere.model.I_C_OrderLine newOrderLine)
 	{
-		final de.metas.handlingunits.model.I_C_OrderLine newOrderLineExt = InterfaceWrapperHelper.create(newOrderLine, de.metas.handlingunits.model.I_C_OrderLine.class);
-		final OLCandHUPackingAware olCandHUPackingAware = new OLCandHUPackingAware(olCand.unbox());
-
-		newOrderLineExt.setM_HU_PI_Item_Product_ID(olCandHUPackingAware.getM_HU_PI_Item_Product_ID());
+		final I_C_OrderLine newOrderLineExt = InterfaceWrapperHelper.create(newOrderLine, I_C_OrderLine.class);
+		newOrderLineExt.setM_HU_PI_Item_Product_ID(olCand.getHUPIProductItemId());
 	}
 }

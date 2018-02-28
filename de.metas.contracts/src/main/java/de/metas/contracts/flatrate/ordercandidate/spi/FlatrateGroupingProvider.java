@@ -2,11 +2,8 @@ package de.metas.contracts.flatrate.ordercandidate.spi;
 
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import com.google.common.collect.ImmutableList;
 
-import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 
@@ -31,9 +28,8 @@ public class FlatrateGroupingProvider implements IOLCandGroupingProvider
 	@Override
 	public List<Object> provideLineGroupingValues(final OLCand cand)
 	{
-		final I_C_OLCand flatratesCand = InterfaceWrapperHelper.create(cand.unbox(), I_C_OLCand.class);
-
-		return ImmutableList.<Object> of(flatratesCand.getC_Flatrate_Conditions_ID());
+		final int flatrateConditionsId = cand.getFlatrateConditionsId();
+		return ImmutableList.<Object> of(flatrateConditionsId);
 	}
 
 }

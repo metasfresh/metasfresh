@@ -310,4 +310,18 @@ public final class OLCand
 	{
 		return candidate.isExplicitProductPriceAttribute();
 	}
+
+	public int getFlatrateConditionsId()
+	{
+		return candidate.getC_Flatrate_Conditions_ID();
+	}
+
+	public int getHUPIProductItemId()
+	{
+		if (candidate.getM_HU_PI_Item_Product_Override_ID() > 0)
+		{
+			return candidate.getM_HU_PI_Item_Product_Override_ID();
+		}
+		return candidate.getM_HU_PI_Item_Product_ID();
+	}
 }
