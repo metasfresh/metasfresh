@@ -1,8 +1,8 @@
 # <img src='/images/metasfresh_logo_green.jpg' height='80' alt='metasfresh Logo' aria-label='metasfresh.com' /></a>
 
-
-[![Join the chat at https://gitter.im/metasfresh/metasfresh](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/metasfresh/metasfresh)
+[![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/metasfresh)
 [![Krihelimeter](http://krihelinator.xyz/badge/metasfresh/metasfresh)](http://krihelinator.xyz)
+[![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md)
 
 metasfresh is a responsive free and Open Source ERP System focused on creating an outstanding User Experience.
 
