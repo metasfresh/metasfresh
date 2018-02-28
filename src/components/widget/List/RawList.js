@@ -34,6 +34,7 @@ class RawList extends PureComponent {
       selected,
       autoFocus,
       emptyText,
+      lookupList,
     } = this.props;
 
     if (prevProps.list !== list) {
@@ -75,7 +76,7 @@ class RawList extends PureComponent {
     }
 
     // for lookups
-    if (prevProps.selected !== selected) {
+    if (lookupList && prevProps.selected !== selected) {
       this.handleSwitch(selected);
     }
 
