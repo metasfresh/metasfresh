@@ -746,6 +746,31 @@ public interface I_AD_Column
     public static final String COLUMNNAME_IsEncrypted = "IsEncrypted";
 
 	/**
+	 * Set Force include in generated model.
+	 * Force including this column in java generated interface and class
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsForceIncludeInGeneratedModel (boolean IsForceIncludeInGeneratedModel);
+
+	/**
+	 * Get Force include in generated model.
+	 * Force including this column in java generated interface and class
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isForceIncludeInGeneratedModel();
+
+    /** Column definition for IsForceIncludeInGeneratedModel */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_IsForceIncludeInGeneratedModel = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "IsForceIncludeInGeneratedModel", null);
+    /** Column name IsForceIncludeInGeneratedModel */
+    public static final String COLUMNNAME_IsForceIncludeInGeneratedModel = "IsForceIncludeInGeneratedModel";
+
+	/**
 	 * Set GenericZoom Quellspalte.
 	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
 	 *

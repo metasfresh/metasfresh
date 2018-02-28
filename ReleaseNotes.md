@@ -17,12 +17,21 @@ Here come the actual release notes:
 * metasfresh
   * [#3540](https://github.com/metasfresh/metasfresh/issues/3540) WebUI: Show GuaranteeDaysMin on Product and Product Category windows
     * Improved Product and Product Category windows, added new field for Min. Guarantee Days ad part of the best before management.
+  * [#3556](https://github.com/metasfresh/metasfresh/issues/3556) Webui: Pimp Compensation Group Schema window
+    * Enhanced Window Compensation group Schema, added fields for the new automatic Discount Functionality.
   * [#3562](https://github.com/metasfresh/metasfresh/issues/3562) Primary Layout in Product Planning Subtabs
-    * Layoutn adjustment for the Subtabs in Product planning window, now added primary background to all of them.
+    * Layout adjustment for the Subtabs in Product planning window, now added primary background to all of them.
 
 * metasfresh-webui-frontend
   * [#1620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1620) List widgets with focus shall have dark grey color underline
     * Improved focus indicator line for list widgets.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1623](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1623) Attributes not shown in Material Receipt Candidates
+    * Fixes a Bug in the Handling Unit Editor in Material Receipts, not showing the Attributes View when Receiving CU.
+  * [#1625](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1625) Show Attribute Editor for selected CU Level HU
+    * Fix for the Handling Unit Editor when selectin the first entry of an HU. Now initially showing the Attributes view again.
 
 
 
