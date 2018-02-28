@@ -1,7 +1,6 @@
 package de.metas.ordercandidate.api;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +14,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.compiere.util.ArrayKeyBuilder;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -247,23 +247,21 @@ public class OLCandsProcessorExecutor
 	 */
 	private ArrayKey mkGroupingKey(final OLCand candidate)
 	{
-		final List<Object> groupingValues = new ArrayList<>();
-
-		final List<OLCandAggregationColumn> groupByColumns = aggregationInfo.getGroupByColumns();
-		if (groupByColumns.isEmpty())
+		if (aggregationInfo.getGroupByColumns().isEmpty())
 		{
 			// each candidate results in its own order line
 			return Util.mkKey(candidate.getId());
 		}
 
-		groupingValues.addAll(groupingValuesProviders.provideLineGroupingValues(candidate));
+		final ArrayKeyBuilder groupingValues = ArrayKey.builder()
+				.appendAll(groupingValuesProviders.provideLineGroupingValues(candidate));
 
 		for (final OLCandAggregationColumn column : aggregationInfo.getColumns())
 		{
 			if (!column.isGroupByColumn())
 			{
 				// we don't group by the current column, so all different values result in their own order lines
-				groupingValues.add(candidate.getValueByColumn(column));
+				groupingValues.append(candidate.getValueByColumn(column));
 			}
 			else if (column.getGranularity() != null)
 			{
@@ -271,12 +269,11 @@ public class OLCandsProcessorExecutor
 				final Granularity granularity = column.getGranularity();
 				final Timestamp timestamp = (Timestamp)candidate.getValueByColumn(column);
 				final long groupingValue = truncateDateByGranularity(timestamp, granularity).getTime();
-				groupingValues.add(groupingValue);
+				groupingValues.append(groupingValue);
 			}
-
 		}
 
-		return Util.mkKey(groupingValues.toArray());
+		return groupingValues.build();
 	}
 
 	private static Timestamp truncateDateByGranularity(final Timestamp date, final Granularity granularity)
