@@ -253,12 +253,12 @@ public class TableAndColumnInfoRepository
 
 			// only columns from system entity type
 			final Set<String> systemMaintainedEntityTypes = EntityTypesCache.instance.getSystemMaintainedEntityTypeNames();
-			return " AND c.EntityType IN " + DB.buildSqlList(systemMaintainedEntityTypes);
+			return " AND (c.IsForceIncludeInGeneratedModel='Y' OR c.EntityType IN " + DB.buildSqlList(systemMaintainedEntityTypes) + ")";
 		}
 		// Strict column's EntityType - same entity type as it's table
 		else
 		{
-			return " AND c.EntityType IN (SELECT t1.EntityType FROM AD_Table t1 WHERE t1.AD_Table_ID=" + AD_Table_ID + ")";
+			return " AND (c.IsForceIncludeInGeneratedModel='Y' OR c.EntityType IN (SELECT t1.EntityType FROM AD_Table t1 WHERE t1.AD_Table_ID=" + AD_Table_ID + "))";
 		}
 	}
 
