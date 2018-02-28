@@ -5,7 +5,7 @@
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md)
 
 
-metasfresh is a responsive free and Open Source ERP System. Our aim is to create fast and easy to use enterprise software with an outstanding User Experience.
+metasfresh is a responsive, Free and Open Source ERP System. Our aim is to create fast and easy-to-use enterprise software with an outstanding user experience.
 
 > **__Competitive ERP is Free__**
 
@@ -20,7 +20,7 @@ It has a 3-tier architecture with Rest-API and a Web User Frontend developed in 
 <img src="/images/screenshot-kpi-dashboard.png" width="33%" alt="KPI Dashboard"></img> <img src="/images/screenshot-sales-order.png" width="33%" alt="Sales Order Window"></img> <img src="/images/screenshot-material-receipt.png" width="33%" alt="Material Receipt Window"></img>
 
 ## Installation
-We publish a stable Release of metasfresh once a week. It can be downloaded [here](http://metasfresh.com/en/download/).
+We publish a stable Release of metasfresh each Friday - ok, we skip 1 week at the end of the year ;) . It can be downloaded [here](http://metasfresh.com/en/download/).
 
 metasfresh can be installed via **Docker** or **Ubuntu Installer**
 
