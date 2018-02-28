@@ -1,20 +1,20 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import DocumentList from "./app/DocumentList";
-import ErrorScreen from "./app/ErrorScreen";
-import Modal from "./app/Modal";
-import RawModal from "./app/RawModal";
-import Header from "./header/Header";
+import DocumentList from './app/DocumentList';
+import ErrorScreen from './app/ErrorScreen';
+import Modal from './app/Modal';
+import RawModal from './app/RawModal';
+import Header from './header/Header';
 
 const mapStateToProps = state => ({
-  connectionError: state.windowHandler.connectionError || false
+  connectionError: state.windowHandler.connectionError || false,
 });
 
 class Container extends Component {
   static propTypes = {
-    connectionError: PropTypes.bool
+    connectionError: PropTypes.bool,
   };
 
   render() {
@@ -56,7 +56,7 @@ class Container extends Component {
       editmode,
       handleEditModeToggle,
       activeTab,
-      masterDocumentList
+      masterDocumentList,
     } = this.props;
 
     return (
@@ -94,8 +94,8 @@ class Container extends Component {
 
         <div
           className={
-            "header-sticky-distance js-unselect " +
-            (noMargin ? "dashboard" : "container-fluid")
+            'header-sticky-distance js-unselect ' +
+            (noMargin ? 'dashboard' : 'container-fluid')
           }
         >
           {modal.visible && (

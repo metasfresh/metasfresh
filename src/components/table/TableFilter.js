@@ -1,24 +1,24 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import keymap from "../../shortcuts/keymap";
-import Tooltips from "../tooltips/Tooltips";
-import TableQuickInput from "./TableQuickInput";
+import keymap from '../../shortcuts/keymap';
+import Tooltips from '../tooltips/Tooltips';
+import TableQuickInput from './TableQuickInput';
 
 class TableFilter extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      isTooltipShow: false
+      isTooltipShow: false,
     };
   }
 
   toggleTooltip = (key = null) => {
     this.setState({
-      isTooltipShow: key
+      isTooltipShow: key,
     });
   };
 
@@ -33,7 +33,7 @@ class TableFilter extends Component {
       isBatchEntry,
       handleBatchEntryToggle,
       supportQuickInput,
-      allowCreateNew
+      allowCreateNew,
     } = this.props;
 
     const { isTooltipShow } = this.state;
@@ -49,7 +49,7 @@ class TableFilter extends Component {
                   onClick={openModal}
                   tabIndex="-1"
                 >
-                  {counterpart.translate("window.addNew.caption")}
+                  {counterpart.translate('window.addNew.caption')}
                 </button>
               )}
             {supportQuickInput &&
@@ -65,19 +65,19 @@ class TableFilter extends Component {
                   tabIndex="-1"
                 >
                   {isBatchEntry
-                    ? counterpart.translate("window.batchEntryClose.caption")
-                    : counterpart.translate("window.batchEntry.caption")}
+                    ? counterpart.translate('window.batchEntryClose.caption')
+                    : counterpart.translate('window.batchEntry.caption')}
                   {isTooltipShow === keymap.TOGGLE_QUICK_INPUT && (
                     <Tooltips
                       name={keymap.TOGGLE_QUICK_INPUT}
                       action={
                         isBatchEntry
                           ? counterpart.translate(
-                              "window.batchEntryClose.caption"
+                              'window.batchEntryClose.caption'
                             )
-                          : counterpart.translate("window.batchEntry.caption")
+                          : counterpart.translate('window.batchEntry.caption')
                       }
-                      type={""}
+                      type={''}
                     />
                   )}
                 </button>
@@ -114,10 +114,10 @@ class TableFilter extends Component {
                 name={keymap.TOGGLE_EXPAND}
                 action={
                   fullScreen
-                    ? counterpart.translate("window.table.collapse")
-                    : counterpart.translate("window.table.expand")
+                    ? counterpart.translate('window.table.collapse')
+                    : counterpart.translate('window.table.expand')
                 }
-                type={""}
+                type={''}
               />
             )}
           </button>
@@ -128,7 +128,7 @@ class TableFilter extends Component {
 }
 
 TableFilter.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect()(TableFilter);

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
 class BlankPage extends Component {
   constructor(props) {
@@ -11,7 +11,7 @@ class BlankPage extends Component {
     return (
       <div className="blank-page">
         <h1>404</h1>
-        <h3>{what ? what + " not found." : "Not found"}</h3>
+        <h3>{what ? what + ' not found.' : 'Not found'}</h3>
       </div>
     );
   }

@@ -1,9 +1,9 @@
-import counterpart from "counterpart";
-import React, { Component } from "react";
-import onClickOutside from "react-onclickoutside";
+import counterpart from 'counterpart';
+import React, { Component } from 'react';
+import onClickOutside from 'react-onclickoutside';
 
-import Avatar from "../app/Avatar";
-import Tooltips from "../tooltips/Tooltips";
+import Avatar from '../app/Avatar';
+import Tooltips from '../tooltips/Tooltips';
 
 class UserDropdown extends Component {
   constructor(props) {
@@ -14,7 +14,7 @@ class UserDropdown extends Component {
 
   handleKeyDown = e => {
     switch (e.key) {
-      case "ArrowDown": {
+      case 'ArrowDown': {
         e.preventDefault();
         const activeElem = document.activeElement;
         if (activeElem.nextSibling) {
@@ -22,13 +22,13 @@ class UserDropdown extends Component {
         }
         break;
       }
-      case "ArrowUp": {
+      case 'ArrowUp': {
         e.preventDefault();
         const activeElem = document.activeElement;
         // When focus pulled out once, do not allow to get there
         if (
           activeElem.previousSibling.classList.contains(
-            "js-selection-placeholder"
+            'js-selection-placeholder'
           )
         ) {
           return;
@@ -38,11 +38,11 @@ class UserDropdown extends Component {
         }
         break;
       }
-      case "Enter":
+      case 'Enter':
         e.preventDefault();
         document.activeElement.click();
         break;
-      case "Escape":
+      case 'Escape':
         e.preventDefault();
         this.handleClickOutside();
         break;
@@ -57,17 +57,17 @@ class UserDropdown extends Component {
       shortcut,
       toggleTooltip,
       tooltipOpen,
-      me
+      me,
     } = this.props;
     return (
       <div
         className={
-          "header-item-container " +
-          "pointer user-dropdown-container tooltip-parent " +
-          (open ? "header-item-open " : "")
+          'header-item-container ' +
+          'pointer user-dropdown-container tooltip-parent ' +
+          (open ? 'header-item-open ' : '')
         }
         onMouseEnter={() => toggleTooltip(shortcut)}
-        onMouseLeave={() => toggleTooltip("")}
+        onMouseLeave={() => toggleTooltip('')}
       >
         <div
           className="header-item avatar-container"
@@ -96,26 +96,26 @@ class UserDropdown extends Component {
               className="user-dropdown-item"
               onClick={() => {
                 redirect(
-                  "/window/" + me.userProfileWindowId + "/" + me.userProfileId
+                  '/window/' + me.userProfileWindowId + '/' + me.userProfileId
                 );
                 handleUDOpen(false);
-                toggleTooltip("");
+                toggleTooltip('');
               }}
               tabIndex={0}
             >
               <i className="meta-icon-settings" />
-              {counterpart.translate("window.settings.caption")}
+              {counterpart.translate('window.settings.caption')}
             </div>
             <div
               className="user-dropdown-item"
               onClick={() => {
-                redirect("/logout");
+                redirect('/logout');
                 handleUDOpen(false);
               }}
               tabIndex={0}
             >
               <i className="meta-icon-logout" />
-              {counterpart.translate("window.logOut.caption")}
+              {counterpart.translate('window.logOut.caption')}
             </div>
           </div>
         )}
@@ -123,8 +123,8 @@ class UserDropdown extends Component {
           !open && (
             <Tooltips
               name={shortcut}
-              action={counterpart.translate("mainScreen.userMenu.tooltip")}
-              type={""}
+              action={counterpart.translate('mainScreen.userMenu.tooltip')}
+              type={''}
             />
           )}
       </div>

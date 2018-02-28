@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { Shortcut } from "../Shortcuts";
+import { Shortcut } from '../Shortcuts';
 
 export default class PaginationContextShortcuts extends Component {
   handlers = {
@@ -30,7 +30,7 @@ export default class PaginationContextShortcuts extends Component {
       event.preventDefault();
 
       return this.props.handleSelectAll();
-    }
+    },
   };
 
   render() {
@@ -59,7 +59,7 @@ export default class PaginationContextShortcuts extends Component {
         key="SELECT_ALL_ROWS"
         name="SELECT_ALL_ROWS"
         handler={this.handlers.SELECT_ALL_ROWS}
-      />
+      />,
     ];
   }
 }

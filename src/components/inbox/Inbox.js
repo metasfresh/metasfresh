@@ -1,16 +1,16 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import onClickOutside from "react-onclickoutside";
-import { connect } from "react-redux";
-import { push } from "react-router-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
 import {
   deleteUserNotification,
   markAllAsRead,
-  markAsRead
-} from "../../actions/AppActions";
-import InboxItem from "./InboxItem";
+  markAsRead,
+} from '../../actions/AppActions';
+import InboxItem from './InboxItem';
 
 class Inbox extends Component {
   constructor(props) {
@@ -27,12 +27,12 @@ class Inbox extends Component {
     const { dispatch, close } = this.props;
     if (item.target) {
       switch (item.target.targetType) {
-        case "window":
+        case 'window':
           dispatch(
             push(
-              "/window/" +
+              '/window/' +
                 item.target.documentType +
-                "/" +
+                '/' +
                 item.target.documentId
             )
           );
@@ -55,7 +55,7 @@ class Inbox extends Component {
 
   handleShowAll = () => {
     const { close, dispatch } = this.props;
-    dispatch(push("/inbox"));
+    dispatch(push('/inbox'));
     close && close();
   };
 
@@ -68,7 +68,7 @@ class Inbox extends Component {
 
   componentDidUpdate() {
     const { open } = this.props;
-    const inboxWrapper = document.getElementsByClassName("js-inbox-wrapper")[0];
+    const inboxWrapper = document.getElementsByClassName('js-inbox-wrapper')[0];
     if (inboxWrapper && open) {
       inboxWrapper.focus();
     }
@@ -76,17 +76,17 @@ class Inbox extends Component {
 
   handleKeyDown = e => {
     const { close } = this.props;
-    const inboxItem = document.getElementsByClassName("js-inbox-item")[0];
+    const inboxItem = document.getElementsByClassName('js-inbox-item')[0];
     switch (e.key) {
-      case "ArrowDown":
+      case 'ArrowDown':
         e.preventDefault();
-        if (document.activeElement.classList.contains("js-inbox-wrapper")) {
+        if (document.activeElement.classList.contains('js-inbox-wrapper')) {
           if (inboxItem) {
             inboxItem.focus();
           }
         }
         break;
-      case "Escape":
+      case 'Escape':
         e.preventDefault();
         close && close();
         break;
@@ -102,17 +102,17 @@ class Inbox extends Component {
         tabIndex={0}
       >
         {(all || open) && (
-          <div className={all ? "inbox-all " : "inbox"}>
-            <div className={"inbox-body " + (!all ? "breadcrumbs-shadow" : "")}>
+          <div className={all ? 'inbox-all ' : 'inbox'}>
+            <div className={'inbox-body ' + (!all ? 'breadcrumbs-shadow' : '')}>
               <div className="inbox-header">
                 <span className="inbox-header-title">
-                  {counterpart.translate("window.inbox.caption")}
+                  {counterpart.translate('window.inbox.caption')}
                 </span>
                 <span onClick={this.handleMarkAllAsRead} className="inbox-link">
-                  {counterpart.translate("window.markAsRead.caption")}
+                  {counterpart.translate('window.markAsRead.caption')}
                 </span>
               </div>
-              <div className={!all ? "inbox-list" : ""}>
+              <div className={!all ? 'inbox-list' : ''}>
                 {inbox &&
                   inbox.notifications.map((item, id) => (
                     <InboxItem
@@ -126,7 +126,7 @@ class Inbox extends Component {
                 {inbox &&
                   inbox.notifications.length == 0 && (
                     <div className="inbox-item inbox-item-empty">
-                      {counterpart.translate("window.inbox.empty")}
+                      {counterpart.translate('window.inbox.empty')}
                     </div>
                   )}
               </div>
@@ -136,7 +136,7 @@ class Inbox extends Component {
                     onClick={this.handleShowAll}
                     className="inbox-link text-xs-center"
                   >
-                    {counterpart.translate("window.allInbox.caption")} &gt;&gt;
+                    {counterpart.translate('window.allInbox.caption')} &gt;&gt;
                   </div>
                 )}
               </div>
@@ -149,7 +149,7 @@ class Inbox extends Component {
 }
 
 Inbox.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect()(onClickOutside(Inbox));

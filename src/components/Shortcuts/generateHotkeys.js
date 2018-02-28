@@ -6,7 +6,7 @@ export default ({ keymap = {}, blacklist = {} } = {}) => {
 
     if (hotkey in blacklist) {
       const reason = blacklist[hotkey];
-      const reasonFormatted = reason ? ` (${reason})` : "";
+      const reasonFormatted = reason ? ` (${reason})` : '';
 
       // eslint-disable-next-line no-console
       console.warn(

@@ -37,9 +37,10 @@ class AttributesDropdown extends Component {
     this.setState(
       {
         clickedOutside: true,
-      }, () => {
-      //we need to wait for fetching all of PATCH fields on blur
-      //to complete on updated instance
+      },
+      () => {
+        //we need to wait for fetching all of PATCH fields on blur
+        //to complete on updated instance
         Promise.all(this.state.patchCallbacks).then(() => onClickOutside());
       }
     );

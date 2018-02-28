@@ -1,8 +1,8 @@
-import React, { Component } from "react";
-import { DragSource, DropTarget } from "react-dnd";
+import React, { Component } from 'react';
+import { DragSource, DropTarget } from 'react-dnd';
 
-import ItemTypes from "../../constants/ItemTypes";
-import Avatar from "../app/Avatar";
+import ItemTypes from '../../constants/ItemTypes';
+import Avatar from '../app/Avatar';
 
 const cardTarget = {
   drop(props, monitor) {
@@ -24,12 +24,12 @@ const cardTarget = {
 
     monitor.getItem().index = props.index;
     monitor.getItem().laneId = props.laneId;
-  }
+  },
 };
 
 function connect(connect) {
   return {
-    connectDropTarget: connect.dropTarget()
+    connectDropTarget: connect.dropTarget(),
   };
 }
 
@@ -39,18 +39,18 @@ const cardSource = {
       id: props.cardId,
       index: props.index,
       initLaneId: props.laneId,
-      laneId: props.laneId
+      laneId: props.laneId,
     };
   },
   endDrag(props) {
     props.onReject && props.onReject();
-  }
+  },
 };
 
 function collect(connect, monitor) {
   return {
     connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
+    isDragging: monitor.isDragging(),
   };
 }
 
@@ -65,7 +65,7 @@ class Card extends Component {
     super(props);
 
     this.state = {
-      mouseOn: false
+      mouseOn: false,
     };
   }
 
@@ -81,7 +81,7 @@ class Card extends Component {
       cardId,
       laneId,
       onCaptionClick,
-      documentPath
+      documentPath,
     } = this.props;
 
     const { mouseOn } = this.state;

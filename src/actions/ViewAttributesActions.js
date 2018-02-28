@@ -1,6 +1,6 @@
-import axios from "axios";
+import axios from 'axios';
 
-import { createPatchRequestPayload } from "./GenericActions";
+import { createPatchRequestPayload } from './GenericActions';
 
 //
 // Handles view attributes (the panel which is displayed on the right side of a view, if view supports attributes)
@@ -10,30 +10,30 @@ import { createPatchRequestPayload } from "./GenericActions";
 export function getViewAttributesLayout(windowId, viewId, rowId) {
   return axios.get(
     config.API_URL +
-      "/documentView" +
-      "/" +
+      '/documentView' +
+      '/' +
       windowId +
-      "/" +
+      '/' +
       viewId +
-      "/" +
+      '/' +
       rowId +
-      "/attributes/layout"
+      '/attributes/layout'
   );
 }
 
 export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
   return axios.get(
     config.API_URL +
-      "/documentView" +
-      "/" +
+      '/documentView' +
+      '/' +
       windowId +
-      "/" +
+      '/' +
       viewId +
-      "/" +
+      '/' +
       rowId +
-      "/attributes/attribute/" +
+      '/attributes/attribute/' +
       attribute +
-      "/dropdown"
+      '/dropdown'
   );
 }
 
@@ -46,16 +46,16 @@ export function getViewAttributeTypeahead(
 ) {
   return axios.get(
     config.API_URL +
-      "/documentView" +
-      "/" +
+      '/documentView' +
+      '/' +
       windowId +
-      "/" +
+      '/' +
       viewId +
-      "/" +
+      '/' +
       rowId +
-      "/attributes/attribute/" +
+      '/attributes/attribute/' +
       attribute +
-      "/typeahead?query=" +
+      '/typeahead?query=' +
       encodeURIComponent(query)
   );
 }
@@ -69,14 +69,14 @@ export function getViewAttributeTypeahead(
 export function getViewAttributes(windowId, viewId, rowId) {
   return axios.get(
     config.API_URL +
-      "/documentView" +
-      "/" +
+      '/documentView' +
+      '/' +
       windowId +
-      "/" +
+      '/' +
       viewId +
-      "/" +
+      '/' +
       rowId +
-      "/attributes"
+      '/attributes'
   );
 }
 
@@ -85,14 +85,14 @@ export function patchViewAttributes(windowId, viewId, rowId, property, value) {
 
   return axios.patch(
     config.API_URL +
-      "/documentView" +
-      "/" +
+      '/documentView' +
+      '/' +
       windowId +
-      "/" +
+      '/' +
       viewId +
-      "/" +
+      '/' +
       rowId +
-      "/attributes",
+      '/attributes',
     payload
   );
 }

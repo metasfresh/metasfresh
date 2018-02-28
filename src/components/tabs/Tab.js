@@ -1,8 +1,8 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { addRowData, getTab } from "../../actions/WindowActions";
+import { addRowData, getTab } from '../../actions/WindowActions';
 
 class Tab extends Component {
   constructor(props) {
@@ -14,16 +14,16 @@ class Tab extends Component {
       windowType,
       queryOnActivate,
       docId,
-      orderBy
+      orderBy,
     } = this.props;
 
     if (docId && queryOnActivate) {
       const query = orderBy
-        ? (orderBy[0].ascending ? "+" : "-") + orderBy[0].fieldName
-        : "";
+        ? (orderBy[0].ascending ? '+' : '-') + orderBy[0].fieldName
+        : '';
 
       getTab(tabid, windowType, docId, query).then(res => {
-        dispatch(addRowData({ [tabid]: res }, "master"));
+        dispatch(addRowData({ [tabid]: res }, 'master'));
       });
     }
   }
@@ -36,7 +36,7 @@ class Tab extends Component {
 }
 
 Tab.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect()(Tab);

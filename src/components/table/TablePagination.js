@@ -1,8 +1,8 @@
-import counterpart from "counterpart";
-import React, { Component } from "react";
-import PropTypes from "prop-types";
+import counterpart from 'counterpart';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
-import PaginationContextShortcuts from "../shortcuts/PaginationContextShortcuts";
+import PaginationContextShortcuts from '../shortcuts/PaginationContextShortcuts';
 
 const propTypes = {
   selected: PropTypes.array,
@@ -15,7 +15,7 @@ const propTypes = {
   queryLimitHit: PropTypes.number,
   pageLength: PropTypes.number.isRequired,
   disablePaginationShortcuts: PropTypes.bool,
-  page: PropTypes.number.isRequired
+  page: PropTypes.number.isRequired,
 };
 
 class TablePagination extends Component {
@@ -24,14 +24,14 @@ class TablePagination extends Component {
     this.state = {
       firstDotsState: false,
       secondDotsState: false,
-      value: ""
+      value: '',
     };
   }
 
   handleValue = e => {
     e.preventDefault();
     this.setState({
-      value: e.target.value ? e.target.value : ""
+      value: e.target.value ? e.target.value : '',
     });
   };
 
@@ -40,25 +40,25 @@ class TablePagination extends Component {
       selected,
       rowLength,
       handleSelectAll,
-      handleSelectRange
+      handleSelectRange,
     } = this.props;
 
     const selectedWholePage = selected && selected.length === rowLength;
 
-    return selectedWholePage ? handleSelectRange(["all"]) : handleSelectAll();
+    return selectedWholePage ? handleSelectRange(['all']) : handleSelectAll();
   };
 
   handleSubmit = (e, value, pages) => {
     const { handleChangePage } = this.props;
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
 
       if (value <= pages && value > 0) {
         handleChangePage(Number(value));
         this.setState({
-          value: "",
+          value: '',
           secondDotsState: false,
-          firstDotsState: false
+          firstDotsState: false,
         });
       }
     }
@@ -68,7 +68,7 @@ class TablePagination extends Component {
     const { firstDotsState } = this.state;
     this.setState(
       {
-        firstDotsState: !firstDotsState
+        firstDotsState: !firstDotsState,
       },
       () => {
         if (!firstDotsState) {
@@ -82,7 +82,7 @@ class TablePagination extends Component {
     const { secondDotsState } = this.state;
     this.setState(
       {
-        secondDotsState: !secondDotsState
+        secondDotsState: !secondDotsState,
       },
       () => {
         if (!secondDotsState) {
@@ -94,21 +94,21 @@ class TablePagination extends Component {
 
   handleSelectWholePage = value => {
     this.setState({
-      selectedWholePage: value
+      selectedWholePage: value,
     });
   };
 
   resetGoToPage = () => {
     this.setState({
       secondDotsState: false,
-      firstDotsState: false
+      firstDotsState: false,
     });
   };
 
   renderGoToPage = (pages, value) => {
     return (
       <div className="page-dots-open">
-        <span>{counterpart.translate("view.goTo.caption")}</span>
+        <span>{counterpart.translate('view.goTo.caption')}</span>
         <input
           type="number"
           min="1"
@@ -135,7 +135,7 @@ class TablePagination extends Component {
         }}
       >
         <a
-          className={"page-link " + (compressed ? "page-link-compressed " : "")}
+          className={'page-link ' + (compressed ? 'page-link-compressed ' : '')}
         >
           {1}
         </a>
@@ -145,10 +145,10 @@ class TablePagination extends Component {
       <li className="page-item page-dots" key={0}>
         {firstDotsState && this.renderGoToPage(pages, value)}
         <a
-          className={"page-link " + (compressed ? "page-link-compressed " : "")}
+          className={'page-link ' + (compressed ? 'page-link-compressed ' : '')}
           onClick={() => this.handleFirstDotsState()}
         >
-          {"..."}
+          {'...'}
         </a>
       </li>
     );
@@ -162,10 +162,10 @@ class TablePagination extends Component {
       <li className="page-item page-dots" key={99990}>
         {secondDotsState && this.renderGoToPage(pages, value)}
         <a
-          className={"page-link " + (compressed ? "page-link-compressed " : "")}
+          className={'page-link ' + (compressed ? 'page-link-compressed ' : '')}
           onClick={() => this.handleSecondDotsState()}
         >
-          {"..."}
+          {'...'}
         </a>
       </li>
     );
@@ -179,7 +179,7 @@ class TablePagination extends Component {
         }}
       >
         <a
-          className={"page-link " + (compressed ? "page-link-compressed " : "")}
+          className={'page-link ' + (compressed ? 'page-link-compressed ' : '')}
         >
           {pages}
         </a>
@@ -192,7 +192,7 @@ class TablePagination extends Component {
     for (let i = start; i <= end; i++) {
       pagination.push(
         <li
-          className={"page-item " + (page === i ? "active" : "")}
+          className={'page-item ' + (page === i ? 'active' : '')}
           key={i}
           onClick={() => {
             this.resetGoToPage();
@@ -201,7 +201,7 @@ class TablePagination extends Component {
         >
           <a
             className={
-              "page-link " + (compressed ? "page-link-compressed " : "")
+              'page-link ' + (compressed ? 'page-link-compressed ' : '')
             }
           >
             {i}
@@ -216,7 +216,7 @@ class TablePagination extends Component {
     return (
       <div className="hidden-sm-down">
         <div>
-          {counterpart.translate("view.totalItems.caption")} {size}
+          {counterpart.translate('view.totalItems.caption')} {size}
           {queryLimitHit && <span className="text-danger"> (limited)</span>}
         </div>
       </div>
@@ -232,10 +232,10 @@ class TablePagination extends Component {
       <div className="hidden-sm-down">
         <div>
           {selected.length > 0
-            ? counterpart.translate("view.itemsSelected.caption", {
-                size: selected[0] === "all" ? size : selected.length
+            ? counterpart.translate('view.itemsSelected.caption', {
+                size: selected[0] === 'all' ? size : selected.length,
               })
-            : counterpart.translate("view.noItemSelected.caption")}
+            : counterpart.translate('view.noItemSelected.caption')}
         </div>
         <div
           className="pagination-link pointer"
@@ -245,10 +245,10 @@ class TablePagination extends Component {
           title="Alt+A"
         >
           {selectedWholePage && isShowSelectAllItems
-            ? counterpart.translate("view.selectAllItems.caption", {
-                size: size
+            ? counterpart.translate('view.selectAllItems.caption', {
+                size: size,
               })
-            : counterpart.translate("view.selectAllOnPage.caption")}
+            : counterpart.translate('view.selectAllOnPage.caption')}
         </div>
       </div>
     );
@@ -259,13 +259,13 @@ class TablePagination extends Component {
     return (
       <li className="page-item">
         <a
-          className={"page-link " + (compressed ? "page-link-compressed " : "")}
+          className={'page-link ' + (compressed ? 'page-link-compressed ' : '')}
           onClick={() => {
             this.resetGoToPage();
-            handleChangePage(left ? "down" : "up");
+            handleChangePage(left ? 'down' : 'up');
           }}
         >
-          <span>{left ? "«" : "»"}</span>
+          <span>{left ? '«' : '»'}</span>
         </a>
       </li>
     );
@@ -276,7 +276,7 @@ class TablePagination extends Component {
       size,
       pageLength,
       disablePaginationShortcuts,
-      handleChangePage
+      handleChangePage,
     } = this.props;
 
     const pages = size ? Math.ceil(size / pageLength) : 0;
@@ -286,9 +286,9 @@ class TablePagination extends Component {
         handleFirstPage: () => handleChangePage(1),
         handleLastPage: () =>
           handleChangePage(size ? Math.ceil(size / pageLength) : 0),
-        handleNextPage: () => handleChangePage("up"),
-        handlePrevPage: () => handleChangePage("down"),
-        pages: pages
+        handleNextPage: () => handleChangePage('up'),
+        handlePrevPage: () => handleChangePage('down'),
+        pages: pages,
       }
     );
   };

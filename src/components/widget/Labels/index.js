@@ -1,1 +1,1 @@
-export { default } from "./Labels.js";
+export { default } from './Labels.js';

@@ -1,20 +1,20 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { quickActionsRequest } from "../../actions/ViewActions";
-import { openModal } from "../../actions/WindowActions";
-import keymap from "../../shortcuts/keymap";
-import QuickActionsContextShortcuts from "../shortcuts/QuickActionsContextShortcuts";
-import Tooltips from "../tooltips/Tooltips.js";
-import QuickActionsDropdown from "./QuickActionsDropdown";
+import { quickActionsRequest } from '../../actions/ViewActions';
+import { openModal } from '../../actions/WindowActions';
+import keymap from '../../shortcuts/keymap';
+import QuickActionsContextShortcuts from '../shortcuts/QuickActionsContextShortcuts';
+import Tooltips from '../tooltips/Tooltips.js';
+import QuickActionsDropdown from './QuickActionsDropdown';
 
 const initialState = {
   actions: [],
   isDropdownOpen: false,
   isTooltip: false,
-  loading: false
+  loading: false,
 };
 
 class QuickActions extends Component {
@@ -24,7 +24,7 @@ class QuickActions extends Component {
 
     // from <DocumentList>
     childView: PropTypes.object.isRequired,
-    parentView: PropTypes.object.isRequired
+    parentView: PropTypes.object.isRequired,
   };
 
   unmounted = false;
@@ -38,7 +38,7 @@ class QuickActions extends Component {
       windowType,
       viewId,
       childView,
-      parentView
+      parentView,
     } = props;
     this.state = initialState;
 
@@ -91,14 +91,14 @@ class QuickActions extends Component {
     if (inModal === false && prevProps.inModal === true) {
       // gained focus after sub-modal closed
       this.setState({
-        loading: false
+        loading: false,
       });
     }
 
     if (inBackground === true && prevProps.inBackground === false) {
       // gained focus after modal closed
       this.setState({
-        loading: false
+        loading: false,
       });
     }
   };
@@ -115,14 +115,14 @@ class QuickActions extends Component {
     }
 
     this.setState({
-      loading: true
+      loading: true,
     });
 
     dispatch(
       openModal(
         action.caption,
         action.processId,
-        "process",
+        'process',
         null,
         null,
         false,
@@ -150,30 +150,30 @@ class QuickActions extends Component {
         .then(response => {
           this.setState({
             actions: response.data.actions,
-            loading: false
+            loading: false,
           });
         })
         .catch(() => {
           this.setState({
-            loading: false
+            loading: false,
           });
         });
     } else {
       this.setState({
-        loading: false
+        loading: false,
       });
     }
   };
 
   toggleDropdown = option => {
     this.setState({
-      isDropdownOpen: option
+      isDropdownOpen: option,
     });
   };
 
   toggleTooltip = visible => {
     this.setState({
-      isTooltip: visible
+      isTooltip: visible,
     });
   };
 
@@ -182,22 +182,22 @@ class QuickActions extends Component {
 
     const { shouldNotUpdate, processStatus, disabled } = this.props;
 
-    const disabledDuringProcessing = processStatus === "pending" || loading;
+    const disabledDuringProcessing = processStatus === 'pending' || loading;
 
     if (actions.length) {
       return (
-        <div className={"js-not-unselect " + (disabled ? "disabled " : "")}>
+        <div className={'js-not-unselect ' + (disabled ? 'disabled ' : '')}>
           <span className="spacer-right">
-            {counterpart.translate("window.quickActions.caption")}:
+            {counterpart.translate('window.quickActions.caption')}:
           </span>
           <div className="quick-actions-wrapper">
             <div
               className={
-                "tag tag-success tag-xlg spacer-right " +
-                "quick-actions-tag " +
+                'tag tag-success tag-xlg spacer-right ' +
+                'quick-actions-tag ' +
                 (actions[0].disabled || disabledDuringProcessing
-                  ? "tag-default "
-                  : "pointer ")
+                  ? 'tag-default '
+                  : 'pointer ')
               }
               onClick={e => {
                 e.preventDefault();
@@ -210,11 +210,11 @@ class QuickActions extends Component {
             </div>
             <div
               className={
-                "btn-meta-outline-secondary btn-icon-sm " +
-                "btn-inline btn-icon pointer tooltip-parent " +
+                'btn-meta-outline-secondary btn-icon-sm ' +
+                'btn-inline btn-icon pointer tooltip-parent ' +
                 (isDropdownOpen || disabledDuringProcessing
-                  ? "btn-disabled "
-                  : "")
+                  ? 'btn-disabled '
+                  : '')
               }
               onMouseEnter={() => this.toggleTooltip(true)}
               onMouseLeave={() => this.toggleTooltip(false)}
@@ -226,8 +226,8 @@ class QuickActions extends Component {
               {isTooltip && (
                 <Tooltips
                   name={keymap.QUICK_ACTION_TOGGLE}
-                  action={"Toggle list"}
-                  type={""}
+                  action={'Toggle list'}
+                  type={''}
                 />
               )}
             </div>

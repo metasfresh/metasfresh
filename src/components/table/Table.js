@@ -14,7 +14,7 @@ import {
   getZoomIntoWindow,
   mapIncluded,
   openModal,
-  selectTableItems
+  selectTableItems,
 } from '../../actions/WindowActions';
 import Prompt from '../app/Prompt';
 import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortcuts';
@@ -82,7 +82,7 @@ class Table extends Component {
       openIncludedViewOnSelect,
       viewId,
       isModal,
-      hasIncluded
+      hasIncluded,
     } = this.props;
 
     const { selected, rows } = this.state;
@@ -129,7 +129,10 @@ class Table extends Component {
       );
     }
 
-    if (!_.isEqual(prevProps.rowData, rowData) || (prevProps.rowData !== rowData)) {
+    if (
+      !_.isEqual(prevProps.rowData, rowData) ||
+      prevProps.rowData !== rowData
+    ) {
       this.getIndentData();
     }
 
@@ -143,7 +146,7 @@ class Table extends Component {
       showIncludedViewOnSelect,
       viewId,
       windowType,
-      isIncluded
+      isIncluded,
     } = this.props;
 
     this.deselectAllProducts();
@@ -217,8 +220,8 @@ class Table extends Component {
                   mapCollapsed = mapCollapsed.concat(collapsedMap(row));
                   this.setState(prev => ({
                     collapsedParentsRows: prev.collapsedParentsRows.concat(
-                      row[keyProperty],
-                    )
+                      row[keyProperty]
+                    ),
                   }));
                 }
                 if (row.indent.length > expandedDepth) {
@@ -361,7 +364,7 @@ class Table extends Component {
           selectTableItems({
             windowType: type,
             viewId,
-            ids: newSelected
+            ids: newSelected,
           })
         );
       }
@@ -375,7 +378,7 @@ class Table extends Component {
 
     this.setState(
       {
-        selected: []
+        selected: [],
       },
       cb && cb()
     );
@@ -385,7 +388,7 @@ class Table extends Component {
         selectTableItems({
           windowType: type,
           viewId,
-          ids: []
+          ids: [],
         })
       );
     }
@@ -393,13 +396,13 @@ class Table extends Component {
 
   triggerFocus = (idFocused, idFocusedDown) => {
     if (this.table) {
-      const rowSelected = this.table.getElementsByClassName("row-selected");
+      const rowSelected = this.table.getElementsByClassName('row-selected');
 
       if (rowSelected.length > 0) {
-        if (typeof idFocused == "number") {
+        if (typeof idFocused == 'number') {
           rowSelected[0].children[idFocused].focus();
         }
-        if (typeof idFocusedDown == "number") {
+        if (typeof idFocusedDown == 'number') {
           rowSelected[rowSelected.length - 1].children[idFocusedDown].focus();
         }
       }
@@ -412,14 +415,14 @@ class Table extends Component {
       viewId,
       windowType,
       inBackground,
-      allowOutsideClick
+      allowOutsideClick,
     } = this.props;
 
     if (
       allowOutsideClick &&
       event.target.parentNode !== document &&
       event.target.parentNode &&
-      !event.target.parentNode.className.includes("notification") &&
+      !event.target.parentNode.className.includes('notification') &&
       !inBackground
     ) {
       const item = event.path;
@@ -428,7 +431,7 @@ class Table extends Component {
         for (let i = 0; i < item.length; i++) {
           if (
             item[i].classList &&
-            item[i].classList.contains("js-not-unselect")
+            item[i].classList.contains('js-not-unselect')
           ) {
             return;
           }
@@ -440,7 +443,7 @@ class Table extends Component {
         showIncludedViewOnSelect({
           showIncludedView: false,
           windowType,
-          viewId
+          viewId,
         });
       }
     }
@@ -468,7 +471,7 @@ class Table extends Component {
     }
 
     switch (e.key) {
-      case "ArrowDown": {
+      case 'ArrowDown': {
         e.preventDefault();
 
         const array =
@@ -495,7 +498,7 @@ class Table extends Component {
         }
         break;
       }
-      case "ArrowUp": {
+      case 'ArrowUp': {
         e.preventDefault();
 
         const array =
@@ -522,26 +525,26 @@ class Table extends Component {
         }
         break;
       }
-      case "ArrowLeft":
+      case 'ArrowLeft':
         e.preventDefault();
         if (document.activeElement.previousSibling) {
           document.activeElement.previousSibling.focus();
         }
         break;
-      case "ArrowRight":
+      case 'ArrowRight':
         e.preventDefault();
         if (document.activeElement.nextSibling) {
           document.activeElement.nextSibling.focus();
         }
         break;
-      case "Tab":
+      case 'Tab':
         if (mainTable) {
           e.preventDefault();
           const focusedElem = document.getElementsByClassName(
-            "js-attributes"
+            'js-attributes'
           )[0];
           if (focusedElem) {
-            focusedElem.getElementsByTagName("input")[0].focus();
+            focusedElem.getElementsByTagName('input')[0].focus();
           }
           break;
         } else {
@@ -554,13 +557,13 @@ class Table extends Component {
           }
         }
         break;
-      case "Enter":
+      case 'Enter':
         if (selected.length <= 1 && onDoubleClick && readonly) {
           e.preventDefault();
           onDoubleClick(selected[selected.length - 1]);
         }
         break;
-      case "Escape":
+      case 'Escape':
         closeOverlays && closeOverlays();
         break;
     }
@@ -569,8 +572,8 @@ class Table extends Component {
   closeContextMenu = () => {
     this.setState({
       contextMenu: Object.assign({}, this.state.contextMenu, {
-        open: false
-      })
+        open: false,
+      }),
     });
   };
 
@@ -655,8 +658,8 @@ class Table extends Component {
         open: true,
         fieldName,
         supportZoomInto,
-        supportFieldEdit
-      })
+        supportFieldEdit,
+      }),
     });
   };
 
@@ -682,39 +685,39 @@ class Table extends Component {
     const { isBatchEntry } = this.state;
 
     this.setState({
-      isBatchEntry: !isBatchEntry
+      isBatchEntry: !isBatchEntry,
     });
   };
 
   openModal = (windowType, tabId, rowId) => {
     const { dispatch } = this.props;
-    dispatch(openModal("Add new", windowType, "window", tabId, rowId));
+    dispatch(openModal('Add new', windowType, 'window', tabId, rowId));
   };
 
   handleAdvancedEdit = (type, tabId, selected) => {
     const { dispatch } = this.props;
 
     dispatch(
-      openModal("Advanced edit", type, "window", tabId, selected[0], true)
+      openModal('Advanced edit', type, 'window', tabId, selected[0], true)
     );
   };
 
   handleOpenNewTab = selected => {
     const { type } = this.props;
     for (let i = 0; i < selected.length; i++) {
-      window.open("/window/" + type + "/" + selected[i], "_blank");
+      window.open('/window/' + type + '/' + selected[i], '_blank');
     }
   };
 
   handleDelete = () => {
     this.setState({
-      promptOpen: true
+      promptOpen: true,
     });
   };
 
   handlePromptCancelClick = () => {
     this.setState({
-      promptOpen: false
+      promptOpen: false,
     });
   };
 
@@ -724,18 +727,18 @@ class Table extends Component {
     this.setState(
       {
         promptOpen: false,
-        selected: []
+        selected: [],
       },
       () => {
         deleteRequest(
-          "window",
+          'window',
           type,
           docId ? docId : null,
           docId ? tabid : null,
           selected
         ).then(response => {
           if (docId) {
-            dispatch(deleteLocal(tabid, selected, "master", response));
+            dispatch(deleteLocal(tabid, selected, 'master', response));
           } else {
             updateDocList();
           }
@@ -750,7 +753,7 @@ class Table extends Component {
     const cell = e.target;
     const textValue = cell.value || cell.textContent;
 
-    e.clipboardData.setData("text/plain", textValue);
+    e.clipboardData.setData('text/plain', textValue);
   };
 
   handleZoomInto = fieldName => {
@@ -761,43 +764,43 @@ class Table extends Component {
       entity,
       type,
       docId,
-      entity === "window" ? tabid : viewId,
+      entity === 'window' ? tabid : viewId,
       selected[0],
       fieldName
     ).then(res => {
       res &&
         res.data &&
         window.open(
-          "/window/" +
+          '/window/' +
             res.data.documentPath.windowId +
-            "/" +
+            '/' +
             res.data.documentPath.documentId,
-          "_blank"
+          '_blank'
         );
     });
   };
 
   getSizeClass = col => {
     const { widgetType, size } = col;
-    const lg = ["List", "Lookup", "LongText", "Date", "DateTime", "Time"];
-    const md = ["Text", "Address", "ProductAttributes"];
+    const lg = ['List', 'Lookup', 'LongText', 'Date', 'DateTime', 'Time'];
+    const md = ['Text', 'Address', 'ProductAttributes'];
 
     if (size) {
       switch (size) {
-        case "S":
-          return "td-sm";
-        case "M":
-          return "td-md";
-        case "L":
-          return "td-lg";
+        case 'S':
+          return 'td-sm';
+        case 'M':
+          return 'td-md';
+        case 'L':
+          return 'td-lg';
       }
     } else {
       if (lg.indexOf(widgetType) > -1) {
-        return "td-lg";
+        return 'td-lg';
       } else if (md.indexOf(widgetType) > -1) {
-        return "td-md";
+        return 'td-md';
       } else {
-        return "td-sm";
+        return 'td-sm';
       }
     }
   };
@@ -807,25 +810,25 @@ class Table extends Component {
     const {
       collapsedParentsRows,
       collapsedRows,
-      collapsedArrayMap
+      collapsedArrayMap,
     } = this.state;
 
     this.setState({
-      collapsedArrayMap: collapsedMap(node, collapsed, collapsedArrayMap)
+      collapsedArrayMap: collapsedMap(node, collapsed, collapsedArrayMap),
     });
 
     if (collapsed) {
       this.setState(prev => ({
         collapsedParentsRows: update(prev.collapsedParentsRows, {
-          $splice: [[prev.collapsedParentsRows.indexOf(node[keyProperty]), 1]]
-        })
+          $splice: [[prev.collapsedParentsRows.indexOf(node[keyProperty]), 1]],
+        }),
       }));
     } else {
       if (collapsedParentsRows.indexOf(node[keyProperty]) > -1) return;
       this.setState(prev => ({
         collapsedParentsRows: prev.collapsedParentsRows.concat(
           node[keyProperty]
-        )
+        ),
       }));
     }
 
@@ -834,13 +837,13 @@ class Table extends Component {
         if (collapsed) {
           this.setState(prev => ({
             collapsedRows: update(prev.collapsedRows, {
-              $splice: [[prev.collapsedRows.indexOf(node[keyProperty]), 1]]
-            })
+              $splice: [[prev.collapsedRows.indexOf(node[keyProperty]), 1]],
+            }),
           }));
         } else {
           if (collapsedRows.indexOf(node[keyProperty]) > -1) return;
           this.setState(prev => ({
-            collapsedRows: prev.collapsedRows.concat(node[keyProperty])
+            collapsedRows: prev.collapsedRows.concat(node[keyProperty]),
           }));
           node.includedDocuments && this.handleRowCollapse(node, collapsed);
         }
@@ -851,8 +854,8 @@ class Table extends Component {
     const { selected, rows, collapsedParentsRows } = this.state;
     const { keyProperty } = this.props;
 
-    let node = "";
-    let isCollapsed = "";
+    let node = '';
+    let isCollapsed = '';
     selected.length === 1 &&
       rows.map(item => {
         if (item.id === selected[0]) {
@@ -918,7 +921,7 @@ class Table extends Component {
       collapsible,
       showIncludedViewOnSelect,
       openIncludedViewOnSelect,
-      viewId
+      viewId,
     } = this.props;
 
     const { selected, rows, collapsedRows, collapsedParentsRows } = this.state;
@@ -944,7 +947,7 @@ class Table extends Component {
               tabIndex,
               readonly,
               collapsible,
-              viewId
+              viewId,
             }}
             collapsed={collapsedParentsRows.indexOf(item[keyProperty]) > -1}
             odd={i & 1}
@@ -973,7 +976,7 @@ class Table extends Component {
 
                   viewId: item.supportIncludedViews
                     ? item.includedView.viewId
-                    : ""
+                    : '',
                 });
               }
             }}
@@ -995,11 +998,11 @@ class Table extends Component {
             changeListenOnFalse={() => this.changeListen(false)}
             newRow={i === rows.length - 1 ? newRow : false}
             isSelected={
-              selected.indexOf(item[keyProperty]) > -1 || selected[0] === "all"
+              selected.indexOf(item[keyProperty]) > -1 || selected[0] === 'all'
             }
             handleSelect={this.selectRangeProduct}
             contextType={item.type}
-            caption={item.caption ? item.caption : ""}
+            caption={item.caption ? item.caption : ''}
             colspan={item.colspan}
             notSaved={item.saveStatus && !item.saveStatus.saved}
             getSizeClass={this.getSizeClass}
@@ -1068,7 +1071,7 @@ class Table extends Component {
       allowShortcut,
       disablePaginationShortcuts,
       hasIncluded,
-      blurOnIncludedView
+      blurOnIncludedView,
     } = this.props;
 
     const {
@@ -1076,7 +1079,7 @@ class Table extends Component {
       selected,
       promptOpen,
       isBatchEntry,
-      rows
+      rows,
     } = this.state;
 
     return (
@@ -1094,7 +1097,7 @@ class Table extends Component {
                 type,
                 selected,
                 mainTable,
-                updateDocList
+                updateDocList,
               }}
               blur={() => this.closeContextMenu()}
               tabId={tabid}
@@ -1120,14 +1123,14 @@ class Table extends Component {
             <div className="row">
               <div className="col-xs-12">
                 <TableFilter
-                  openModal={() => this.openModal(type, tabid, "NEW")}
+                  openModal={() => this.openModal(type, tabid, 'NEW')}
                   {...{
                     toggleFullScreen,
                     fullScreen,
                     docId,
                     tabIndex,
                     isBatchEntry,
-                    supportQuickInput
+                    supportQuickInput,
                   }}
                   docType={type}
                   tabId={tabid}
@@ -1150,7 +1153,8 @@ class Table extends Component {
                     Object.keys(rowData[tabid]).length === 0) ||
                   !rowData[tabid],
               }
-            )}>
+            )}
+          >
             <table
               className={classnames(
                 'table table-bordered-vertically',
@@ -1163,7 +1167,8 @@ class Table extends Component {
               onKeyDown={this.handleKeyDown}
               tabIndex={tabIndex}
               ref={c => (this.table = c)}
-              onCopy={this.handleCopy}>
+              onCopy={this.handleCopy}
+            >
               <thead>
                 <TableHeader
                   {...{
@@ -1172,7 +1177,7 @@ class Table extends Component {
                     orderBy,
                     page,
                     indentSupported,
-                    tabid
+                    tabid,
                   }}
                   getSizeClass={this.getSizeClass}
                   deselect={this.deselectAllProducts}
@@ -1202,7 +1207,7 @@ class Table extends Component {
                   page,
                   orderBy,
                   queryLimitHit,
-                  disablePaginationShortcuts
+                  disablePaginationShortcuts,
                 }}
                 pageLength={pageLength}
                 rowLength={rows ? rows.length : 0}
@@ -1216,7 +1221,7 @@ class Table extends Component {
           <Prompt
             title="Delete"
             text="Are you sure?"
-            buttons={{ submit: "Delete", cancel: "Cancel" }}
+            buttons={{ submit: 'Delete', cancel: 'Cancel' }}
             onCancelClick={this.handlePromptCancelClick}
             onSubmitClick={() => this.handlePromptSubmitClick(selected)}
           />
@@ -1254,7 +1259,7 @@ class Table extends Component {
 
 const mapStateToProps = state => ({
   allowShortcut: state.windowHandler.allowShortcut,
-  allowOutsideClick: state.windowHandler.allowOutsideClick
+  allowOutsideClick: state.windowHandler.allowOutsideClick,
 });
 
 export default connect(mapStateToProps, false, false, { withRef: true })(

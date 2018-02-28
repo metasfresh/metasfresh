@@ -1,20 +1,20 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 
 import {
   attachmentsRequest,
   deleteRequest,
-  openFile
-} from "../../actions/GenericActions";
-import Loader from "../app/Loader";
-import AttachUrl from "./AttachUrl";
+  openFile,
+} from '../../actions/GenericActions';
+import Loader from '../app/Loader';
+import AttachUrl from './AttachUrl';
 
 class Attachments extends Component {
   state = {
     data: null,
     attachmentHovered: null,
-    isAttachUrlOpen: false
+    isAttachUrlOpen: false,
   };
 
   componentDidMount = () => {
@@ -24,7 +24,7 @@ class Attachments extends Component {
   fetchAttachments = () => {
     const { windowType, docId } = this.props;
 
-    attachmentsRequest("window", windowType, docId).then(response => {
+    attachmentsRequest('window', windowType, docId).then(response => {
       this.setState({ data: response.data }, () => {
         if (this.attachments) {
           this.attachments.focus();
@@ -35,7 +35,7 @@ class Attachments extends Component {
 
   toggleAttachmentDelete = value => {
     this.setState({
-      attachmentHovered: value
+      attachmentHovered: value,
     });
   };
 
@@ -50,20 +50,20 @@ class Attachments extends Component {
 
   handleClickAttachment = id => {
     const { windowType, docId } = this.props;
-    openFile("window", windowType, docId, "attachments", id);
+    openFile('window', windowType, docId, 'attachments', id);
   };
 
   handleDeleteAttachment = (e, id) => {
     const { windowType, docId } = this.props;
     e.stopPropagation();
 
-    deleteRequest("window", windowType, docId, null, null, "attachments", id)
+    deleteRequest('window', windowType, docId, null, null, 'attachments', id)
       .then(() => {
-        return attachmentsRequest("window", windowType, docId);
+        return attachmentsRequest('window', windowType, docId);
       })
       .then(response => {
         this.setState({
-          data: response.data
+          data: response.data,
         });
       });
   };
@@ -72,9 +72,9 @@ class Attachments extends Component {
     const active = document.activeElement;
 
     const keyHandler = (e, dir) => {
-      const sib = dir ? "nextSibling" : "previousSibling";
+      const sib = dir ? 'nextSibling' : 'previousSibling';
       e.preventDefault();
-      if (active.classList.contains("js-subheader-item")) {
+      if (active.classList.contains('js-subheader-item')) {
         active[sib] && active[sib].focus();
       } else {
         active.childNodes[0].focus();
@@ -82,13 +82,13 @@ class Attachments extends Component {
     };
 
     switch (e.key) {
-      case "ArrowDown":
+      case 'ArrowDown':
         keyHandler(e, true);
         break;
-      case "ArrowUp":
+      case 'ArrowUp':
         keyHandler(e, false);
         break;
-      case "Enter":
+      case 'Enter':
         e.preventDefault();
         document.activeElement.click();
         break;
@@ -101,7 +101,7 @@ class Attachments extends Component {
 
     return (
       <div className="subheader-attachurl" onClick={this.handleClickAttachUrl}>
-        {counterpart.translate("window.attachment.url.add")}
+        {counterpart.translate('window.attachment.url.add')}
 
         {isAttachUrlOpen && (
           <AttachUrl
@@ -150,7 +150,7 @@ class Attachments extends Component {
 
   renderEmpty = () => (
     <div className="subheader-item subheader-item-disabled">
-      {counterpart.translate("window.sideList.attachments.empty")}
+      {counterpart.translate('window.sideList.attachments.empty')}
     </div>
   );
 
@@ -182,7 +182,7 @@ class Attachments extends Component {
 
 Attachments.propTypes = {
   windowType: PropTypes.string.isRequired,
-  docId: PropTypes.string.isRequired
+  docId: PropTypes.string.isRequired,
 };
 
 export default Attachments;

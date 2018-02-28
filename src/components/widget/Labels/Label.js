@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
 export default class Label extends Component {
   handleClick = () => {
@@ -10,7 +10,7 @@ export default class Label extends Component {
       <div className={this.props.className}>
         {this.props.label.caption}
         <span className="labels-label-remove" onClick={this.handleClick}>
-          {" "}
+          {' '}
           ✕
         </span>
       </div>

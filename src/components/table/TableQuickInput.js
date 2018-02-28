@@ -1,16 +1,16 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { addNotification } from "../../actions/AppActions";
+import { addNotification } from '../../actions/AppActions';
 import {
   completeRequest,
   createInstance,
   initLayout,
-  patchRequest
-} from "../../actions/GenericActions";
-import { addNewRow, parseToDisplay } from "../../actions/WindowActions";
-import RawWidget from "../widget/RawWidget";
+  patchRequest,
+} from '../../actions/GenericActions';
+import { addNewRow, parseToDisplay } from '../../actions/WindowActions';
+import RawWidget from '../widget/RawWidget';
 
 class TableQuickInput extends Component {
   // promise with patching for queuing form submission after patch is done
@@ -23,7 +23,7 @@ class TableQuickInput extends Component {
       layout: null,
       data: null,
       id: null,
-      editedField: 0
+      editedField: 0,
     };
   }
 
@@ -42,7 +42,7 @@ class TableQuickInput extends Component {
           if (editedField !== i) {
             this.setState(
               {
-                editedField: i
+                editedField: i,
               },
               () => {
                 if (this.rawWidgets) {
@@ -67,25 +67,25 @@ class TableQuickInput extends Component {
 
     this.setState(
       {
-        data: null
+        data: null,
       },
       () => {
-        createInstance("window", docType, docId, tabId, "quickInput")
+        createInstance('window', docType, docId, tabId, 'quickInput')
           .then(instance => {
             this.setState({
               data: parseToDisplay(instance.data.fieldsByName),
               id: instance.data.id,
-              editedField: 0
+              editedField: 0,
             });
           })
           .catch(err => {
             if (err.response.status === 404) {
               dispatch(
                 addNotification(
-                  "Batch entry error",
-                  "Batch entry is not available.",
+                  'Batch entry error',
+                  'Batch entry is not available.',
                   5000,
-                  "error"
+                  'error'
                 )
               );
               closeBatchEntry();
@@ -93,10 +93,10 @@ class TableQuickInput extends Component {
           });
 
         !layout &&
-          initLayout("window", docType, tabId, "quickInput", docId).then(
+          initLayout('window', docType, tabId, 'quickInput', docId).then(
             layout => {
               this.setState({
-                layout: layout.data.elements
+                layout: layout.data.elements,
               });
             }
           );
@@ -108,9 +108,9 @@ class TableQuickInput extends Component {
     this.setState(prevState => ({
       data: Object.assign({}, prevState.data, {
         [field]: Object.assign({}, prevState.data[field], {
-          value
-        })
-      })
+          value,
+        }),
+      }),
     }));
   };
 
@@ -120,14 +120,14 @@ class TableQuickInput extends Component {
 
     this.patchPromise = new Promise(resolve => {
       patchRequest({
-        entity: "window",
+        entity: 'window',
         docType,
         docId,
         tabId,
         property: prop,
         value,
-        subentity: "quickInput",
-        subentityId: id
+        subentity: 'quickInput',
+        subentityId: id,
       }).then(response => {
         const fields = response.data[0] && response.data[0].fieldsByName;
 
@@ -140,8 +140,8 @@ class TableQuickInput extends Component {
                     {},
                     prevState.data[fieldName],
                     fields[fieldName]
-                  )
-                })
+                  ),
+                }),
               }),
               () => {
                 if (callback) {
@@ -209,10 +209,10 @@ class TableQuickInput extends Component {
     if (!this.validateForm(data)) {
       return dispatch(
         addNotification(
-          "Error",
-          "Mandatory fields are not filled!",
+          'Error',
+          'Mandatory fields are not filled!',
           5000,
-          "error"
+          'error'
         )
       );
     }
@@ -220,19 +220,19 @@ class TableQuickInput extends Component {
     this.patchPromise
       .then(() => {
         return completeRequest(
-          "window",
+          'window',
           docType,
           docId,
           tabId,
           null,
-          "quickInput",
+          'quickInput',
           id
         );
       })
       .then(response => {
         this.initQuickInput();
         dispatch(
-          addNewRow(response.data, tabId, response.data.rowId, "master")
+          addNewRow(response.data, tabId, response.data.rowId, 'master')
         );
       });
   };
@@ -254,7 +254,7 @@ class TableQuickInput extends Component {
         className="quick-input-container"
         ref={c => (this.form = c)}
       >
-        {this.renderFields(layout, data, docId, "window", id)}
+        {this.renderFields(layout, data, docId, 'window', id)}
         <div className="hint">{"(Press 'Enter' to add)"}</div>
         <button type="submit" className="hidden-xs-up" />
       </form>
@@ -263,7 +263,7 @@ class TableQuickInput extends Component {
 }
 
 TableQuickInput.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect()(TableQuickInput);

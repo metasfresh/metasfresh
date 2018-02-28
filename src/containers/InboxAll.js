@@ -1,9 +1,9 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import Container from "../components/Container";
-import Inbox from "../components/inbox/Inbox";
+import Container from '../components/Container';
+import Inbox from '../components/inbox/Inbox';
 
 const mapStateToProps = state => ({
   inbox: state.appHandler.inbox,
@@ -11,13 +11,13 @@ const mapStateToProps = state => ({
   modal: state.windowHandler.modal,
   rawModal: state.windowHandler.rawModal,
   indicator: state.windowHandler.indicator,
-  includedView: state.listHandler.includedView
+  includedView: state.listHandler.includedView,
 });
 
 class InboxAll extends Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
-    inbox: PropTypes.object.isRequired
+    inbox: PropTypes.object.isRequired,
   };
 
   render() {
@@ -27,7 +27,7 @@ class InboxAll extends Component {
       rawModal,
       processStatus,
       indicator,
-      includedView
+      includedView,
     } = this.props;
 
     return (

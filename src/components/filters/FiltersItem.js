@@ -1,27 +1,27 @@
-import counterpart from "counterpart";
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import PropTypes from "prop-types";
-import TetherComponent from "react-tether";
+import counterpart from 'counterpart';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+import TetherComponent from 'react-tether';
 
-import keymap from "../../shortcuts/keymap";
-import OverlayField from "../app/OverlayField";
-import ModalContextShortcuts from "../shortcuts/ModalContextShortcuts";
-import Tooltips from "../tooltips/Tooltips.js";
-import RawWidget from "../widget/RawWidget";
+import keymap from '../../shortcuts/keymap';
+import OverlayField from '../app/OverlayField';
+import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
+import Tooltips from '../tooltips/Tooltips.js';
+import RawWidget from '../widget/RawWidget';
 import {
   openFilterBox,
   closeFilterBox,
-  parseDateWithCurrenTimezone
-} from "../../actions/WindowActions";
-import { DATE_FIELDS } from "../../constants/Constants";
+  parseDateWithCurrenTimezone,
+} from '../../actions/WindowActions';
+import { DATE_FIELDS } from '../../constants/Constants';
 class FiltersItem extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       filter: props.data,
-      isTooltipShow: false
+      isTooltipShow: false,
     };
   }
 
@@ -39,7 +39,7 @@ class FiltersItem extends Component {
 
   componentDidMount() {
     if (this.widgetsContainer) {
-      this.widgetsContainer.addEventListener("scroll", this.handleScroll);
+      this.widgetsContainer.addEventListener('scroll', this.handleScroll);
     }
   }
 
@@ -47,7 +47,7 @@ class FiltersItem extends Component {
     const { dispatch } = this.props;
 
     if (this.widgetsContainer) {
-      this.widgetsContainer.removeEventListener("scroll", this.handleScroll);
+      this.widgetsContainer.removeEventListener('scroll', this.handleScroll);
     }
 
     dispatch(closeFilterBox());
@@ -71,13 +71,13 @@ class FiltersItem extends Component {
       activeFilter.parameters.map(item => {
         this.mergeData(
           item.parameterName,
-          item.value != null ? item.value : "",
-          item.valueTo != null ? item.valueTo : ""
+          item.value != null ? item.value : '',
+          item.valueTo != null ? item.valueTo : ''
         );
       });
     } else if (filter.parameters) {
       filter.parameters.map(item => {
-        this.mergeData(item.parameterName, "");
+        this.mergeData(item.parameterName, '');
       });
     }
   };
@@ -113,13 +113,13 @@ class FiltersItem extends Component {
           if (param.parameterName === property) {
             return Object.assign({}, param, {
               value: this.parseDateToReadable(param.widgetType, value),
-              valueTo: this.parseDateToReadable(param.widgetType, valueTo)
+              valueTo: this.parseDateToReadable(param.widgetType, valueTo),
             });
           } else {
             return param;
           }
-        })
-      })
+        }),
+      }),
     }));
   };
 
@@ -129,7 +129,7 @@ class FiltersItem extends Component {
       top,
       left,
       bottom,
-      right
+      right,
     } = this.widgetsContainer.getBoundingClientRect();
     dispatch(openFilterBox({ top, left, bottom, right }));
   };
@@ -140,7 +140,7 @@ class FiltersItem extends Component {
 
     if (
       filter &&
-      filter.parametersLayoutType === "singleOverlayField" &&
+      filter.parametersLayoutType === 'singleOverlayField' &&
       !filter.parameters[0].value
     ) {
       return this.handleClear();
@@ -162,7 +162,7 @@ class FiltersItem extends Component {
 
   toggleTooltip = visible => {
     this.setState({
-      isTooltipShow: visible
+      isTooltipShow: visible,
     });
   };
 
@@ -176,14 +176,14 @@ class FiltersItem extends Component {
       onHide,
       viewId,
       outsideClick,
-      captionValue
+      captionValue,
     } = this.props;
 
     const { filter, isTooltipShow } = this.state;
 
     return (
       <div>
-        {data.parametersLayoutType === "singleOverlayField" ? (
+        {data.parametersLayoutType === 'singleOverlayField' ? (
           <OverlayField
             type={windowType}
             filter
@@ -201,14 +201,14 @@ class FiltersItem extends Component {
             ref={c => (this.widgetsContainer = c)}
           >
             <div>
-              {counterpart.translate("window.activeFilter.caption")}:
+              {counterpart.translate('window.activeFilter.caption')}:
               <span className="filter-active">{data.caption}</span>
               {isActive && (
                 <span
                   className="filter-clear"
                   onClick={() => this.handleClear()}
                 >
-                  {counterpart.translate("window.clearFilter.caption")}
+                  {counterpart.translate('window.clearFilter.caption')}
                   <i className="meta-icon-trash" />
                 </span>
               )}
@@ -237,7 +237,7 @@ class FiltersItem extends Component {
                         viewId,
                         windowType,
                         onShow,
-                        onHide
+                        onHide,
                       }}
                     />
                   ))}
@@ -245,7 +245,7 @@ class FiltersItem extends Component {
               <div className="col-sm-12 text-xs-right">
                 {notValidFields && (
                   <div className="input-error">
-                    {counterpart.translate("window.noMandatory.caption")}
+                    {counterpart.translate('window.noMandatory.caption')}
                   </div>
                 )}
               </div>
@@ -256,12 +256,12 @@ class FiltersItem extends Component {
                 targetAttachment="bottom left"
                 constraints={[
                   {
-                    to: "scrollParent"
+                    to: 'scrollParent',
                   },
                   {
-                    to: "window",
-                    pin: ["bottom"]
-                  }
+                    to: 'window',
+                    pin: ['bottom'],
+                  },
                 ]}
               >
                 <button
@@ -270,14 +270,14 @@ class FiltersItem extends Component {
                   onMouseEnter={() => this.toggleTooltip(true)}
                   onMouseLeave={() => this.toggleTooltip(false)}
                 >
-                  {counterpart.translate("window.apply.caption")}
+                  {counterpart.translate('window.apply.caption')}
                 </button>
                 {isTooltipShow && (
                   <Tooltips
                     className="filter-tooltip"
                     name={keymap.APPLY}
-                    action={counterpart.translate("window.apply.caption")}
-                    type={""}
+                    action={counterpart.translate('window.apply.caption')}
+                    type={''}
                   />
                 )}
               </TetherComponent>
@@ -291,7 +291,7 @@ class FiltersItem extends Component {
 }
 
 FiltersItem.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect()(FiltersItem);

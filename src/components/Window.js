@@ -1,11 +1,11 @@
-import React, { Component } from "react";
-import ReactDOM from "react-dom";
+import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 
-import Table from "../components/table/Table";
-import Tabs from "../components/tabs/Tabs";
-import MasterWidget from "../components/widget/MasterWidget";
-import Dropzone from "./Dropzone";
-import Separator from "./Separator";
+import Table from '../components/table/Table';
+import Tabs from '../components/tabs/Tabs';
+import MasterWidget from '../components/widget/MasterWidget';
+import Dropzone from './Dropzone';
+import Separator from './Separator';
 
 class Window extends Component {
   constructor(props) {
@@ -13,27 +13,27 @@ class Window extends Component {
 
     this.state = {
       fullScreen: null,
-      dragActive: false
+      dragActive: false,
     };
 
     if (props.isModal) {
       this.tabIndex = {
         firstColumn: 0,
         tabs: 0,
-        secondColumn: 0
+        secondColumn: 0,
       };
     } else {
       this.tabIndex = {
         firstColumn: 1,
         tabs: 2,
-        secondColumn: 3
+        secondColumn: 3,
       };
     }
   }
 
   toggleTableFullScreen = tabId => {
     this.setState({
-      fullScreen: tabId
+      fullScreen: tabId,
     });
   };
 
@@ -64,7 +64,7 @@ class Window extends Component {
             emptyResultHint,
             queryOnActivate,
             supportQuickInput,
-            defaultOrderBys
+            defaultOrderBys,
           } = elem;
           return (
             <Table
@@ -99,7 +99,7 @@ class Window extends Component {
       const { title, columns } = elem;
       const isFirst = id === 0;
       return (
-        <div className="row" key={"section" + id}>
+        <div className="row" key={'section' + id}>
           {title && <Separator {...{ title }} />}
           {columns && this.renderColumns(columns, isFirst)}
         </div>
@@ -114,7 +114,7 @@ class Window extends Component {
       const isFirst = id === 0 && isSectionFirst;
       const elementGroups = elem.elementGroups;
       return (
-        <div className={"col-sm-" + colWidth} key={"col" + id}>
+        <div className={'col-sm-' + colWidth} key={'col' + id}>
           {elementGroups && this.renderElementGroups(elementGroups, isFirst)}
         </div>
       );
@@ -128,7 +128,7 @@ class Window extends Component {
       const shouldBeFocused = isFirst && id === 0;
 
       const tabIndex =
-        type === "primary"
+        type === 'primary'
           ? this.tabIndex.firstColumn
           : this.tabIndex.secondColumn;
 
@@ -136,7 +136,7 @@ class Window extends Component {
         elementsLine &&
         elementsLine.length > 0 && (
           <div
-            key={"elemGroups" + id}
+            key={'elemGroups' + id}
             ref={c => {
               if (this.focused) return;
               if (isModal && shouldBeFocused && c) c.focus();
@@ -144,10 +144,10 @@ class Window extends Component {
             }}
             tabIndex={shouldBeFocused ? 0 : undefined}
             className={
-              "panel panel-spaced panel-distance " +
-              (type === "primary"
-                ? "panel-bordered panel-primary"
-                : "panel-secondary")
+              'panel panel-spaced panel-distance ' +
+              (type === 'primary'
+                ? 'panel-bordered panel-primary'
+                : 'panel-secondary')
             }
           >
             {this.renderElementsLine(elementsLine, tabIndex, shouldBeFocused)}
@@ -164,7 +164,7 @@ class Window extends Component {
       return (
         elements &&
         elements.length > 0 && (
-          <div className="elements-line" key={"line" + id}>
+          <div className="elements-line" key={'line' + id}>
             {this.renderElements(elements, tabIndex, isFocused)}
           </div>
         )
@@ -194,7 +194,7 @@ class Window extends Component {
         // eslint-disable-next-line react/no-find-dom-node
         let element = ReactDOM.findDOMNode(this.widgets[nextWidgetIndex]);
         if (element) {
-          let tabElement = element.querySelector("[tabindex]");
+          let tabElement = element.querySelector('[tabindex]');
 
           if (tabElement) {
             tabElement.focus();
@@ -212,7 +212,7 @@ class Window extends Component {
     return elements.map((elem, id) => {
       const autoFocus = isFocused && id === 0;
       const widgetData = elem.fields.map(item => data[item.field] || -1);
-      const fieldName = elem.fields ? elem.fields[0].field : "";
+      const fieldName = elem.fields ? elem.fields[0].field : '';
       const relativeDocId = data.ID && data.ID.value;
       return (
         <MasterWidget
@@ -222,7 +222,7 @@ class Window extends Component {
             }
           }}
           entity="window"
-          key={"element" + id}
+          key={'element' + id}
           windowType={type}
           dataId={dataId}
           widgetData={widgetData}
@@ -247,7 +247,7 @@ class Window extends Component {
       handleDropFile,
       handleRejectDropped,
       handleDragStart,
-      isModal
+      isModal,
     } = this.props;
 
     this.widgets = [];

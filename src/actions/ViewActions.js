@@ -22,25 +22,25 @@ export function browseViewRequest({
   viewId,
   page,
   pageLength,
-  orderBy
+  orderBy,
 }) {
   return axios.get(
     config.API_URL +
-      "/documentView/" +
+      '/documentView/' +
       windowId +
-      "/" +
+      '/' +
       viewId +
-      "?firstRow=" +
+      '?firstRow=' +
       pageLength * (page - 1) +
-      "&pageLength=" +
+      '&pageLength=' +
       pageLength +
-      (orderBy ? "&orderBy=" + orderBy : "")
+      (orderBy ? '&orderBy=' + orderBy : '')
   );
 }
 
 export function deleteView(windowId, viewId) {
   return axios.delete(
-    config.API_URL + "/documentView/" + windowId + "/" + viewId
+    config.API_URL + '/documentView/' + windowId + '/' + viewId
   );
 }
 
@@ -51,14 +51,14 @@ export function createViewRequest({
   refDocType = null,
   refDocId = null,
   refTabId = null,
-  refRowIds = null
+  refRowIds = null,
 }) {
   let referencing = null;
 
   if (refDocType && refDocId) {
     referencing = {
       documentType: refDocType,
-      documentId: refDocId
+      documentId: refDocId,
     };
 
     if (refTabId && refRowIds) {
@@ -67,11 +67,11 @@ export function createViewRequest({
     }
   }
 
-  return axios.post(config.API_URL + "/documentView/" + windowId, {
+  return axios.post(config.API_URL + '/documentView/' + windowId, {
     documentType: windowId,
     viewType: viewType,
     referencing: referencing,
-    filters: filters
+    filters: filters,
   });
 }
 
@@ -79,7 +79,7 @@ export function filterViewRequest(windowId, viewId, filters) {
   filters.map(filter => {
     filter.parameters &&
       filter.parameters.map((param, index) => {
-        if (param.widgetType === "Date" && param.value) {
+        if (param.widgetType === 'Date' && param.value) {
           filter.parameters[index].value = Moment(param.value).format(
             DATE_FORMAT
           );
@@ -87,9 +87,9 @@ export function filterViewRequest(windowId, viewId, filters) {
       });
   });
   return axios.post(
-    config.API_URL + "/documentView/" + windowId + "/" + viewId + "/filter",
+    config.API_URL + '/documentView/' + windowId + '/' + viewId + '/filter',
     {
-      filters: filters
+      filters: filters,
     }
   );
 }
@@ -97,11 +97,11 @@ export function filterViewRequest(windowId, viewId, filters) {
 export function deleteStaticFilter(windowId, viewId, filterId) {
   return axios.delete(
     config.API_URL +
-      "/documentView/" +
+      '/documentView/' +
       windowId +
-      "/" +
+      '/' +
       viewId +
-      "/staticFilter/" +
+      '/staticFilter/' +
       filterId
   );
 }
@@ -118,17 +118,17 @@ export function quickActionsRequest(
     childViewId: childView.viewId,
     childViewSelectedIds: childView.viewSelectedIds,
     parentViewId: parentView.viewId,
-    parentViewSelectedIds: parentView.viewSelectedIds
+    parentViewSelectedIds: parentView.viewSelectedIds,
   });
 
   return axios.get(
     config.API_URL +
-      "/documentView/" +
+      '/documentView/' +
       windowId +
-      "/" +
+      '/' +
       viewId +
-      "/quickActions" +
-      (query ? "?" + query : "")
+      '/quickActions' +
+      (query ? '?' + query : '')
   );
 }
 
@@ -164,7 +164,7 @@ function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
   }
 
   if (columnInfo.widgetType) {
-    viewRowField["widgetType"] = columnInfo.widgetType;
+    viewRowField['widgetType'] = columnInfo.widgetType;
   }
 
   // NOTE: as discussed with @metas-mk, at the moment we cannot apply the maxPrecision per page,

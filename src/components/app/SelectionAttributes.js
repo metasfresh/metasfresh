@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import {
   getViewAttributes,
-  getViewAttributesLayout
+  getViewAttributesLayout,
 } from '../../actions/ViewAttributesActions';
 import RawWidget from '../widget/RawWidget';
 
@@ -82,7 +82,7 @@ class SelectionAttributes extends Component {
       DLWrapperHandleChange,
       DLWrapperHandlePatch,
       entity,
-      setClickOutsideLock
+      setClickOutsideLock,
     } = this.props;
 
     return (
