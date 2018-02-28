@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.Properties;
 
+import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.TimeUtil;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
+import lombok.Builder;
 
 /*
  * #%L
@@ -27,11 +29,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -63,15 +65,15 @@ public final class UserRolePermissionsKey implements Serializable
 	{
 		return new UserRolePermissionsKey(permissionsKeyStr);
 	}
-	
+
 	public static UserRolePermissionsKey fromEvaluatee(final Evaluatee evaluatee, final String variableName)
 	{
 		final Object permissionsKeyStrObj = evaluatee.get_ValueIfExists(variableName, String.class).orElse(null);
-		if(permissionsKeyStrObj == null)
+		if (permissionsKeyStrObj == null)
 		{
-			throw new IllegalArgumentException("No permissions key found for "+variableName+" in "+evaluatee);
+			throw new IllegalArgumentException("No permissions key found for " + variableName + " in " + evaluatee);
 		}
-		
+
 		return UserRolePermissionsKey.fromString(permissionsKeyStrObj.toString());
 	}
 
@@ -101,9 +103,16 @@ public final class UserRolePermissionsKey implements Serializable
 	private transient Integer _hashcode;
 	private transient String _permissionsKeyStr;
 
+	@Builder
+	private UserRolePermissionsKey(final int adRoleId, final int adUserId, final int adClientId, final Date date)
+	{
+		this(adRoleId, adUserId, adClientId,
+				normalizeDate(date != null ? date : SystemTime.asDayTimestamp()) // dateMillis
+		);
+	}
+
 	private UserRolePermissionsKey(final int adRoleId, final int adUserId, final int adClientId, final long dateMillis)
 	{
-		super();
 		this.adRoleId = adRoleId;
 		this.adUserId = adUserId;
 		this.adClientId = adClientId;
