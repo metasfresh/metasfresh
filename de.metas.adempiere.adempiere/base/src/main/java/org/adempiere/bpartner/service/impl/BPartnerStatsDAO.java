@@ -137,7 +137,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
 		final String trxName = ITrx.TRXNAME_None;
 
-		BigDecimal SO_CreditUsed = null;
+		BigDecimal SO_CreditUsed = BigDecimal.ZERO;
 
 		final Object[] sqlParams = new Object[] {stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
@@ -148,9 +148,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				+ "COALESCE((SELECT SUM(currencyBase(Paymentavailable(p.C_Payment_ID),p.C_Currency_ID,p.DateTrx,p.AD_Client_ID,p.AD_Org_ID)) FROM C_Payment_v p "
 				+ "WHERE p.C_BPartner_ID=bp.C_BPartner_ID AND p.IsAllocated='N'"
 				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0)*(-1), "
-				// open invoice candidates
-				+ "COALESCE((SELECT SUM(currencyBase(ic.NetAmtToInvoice,ic.C_Currency_ID,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
-				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N'),0) "
 				+ "FROM C_BPartner bp " + "WHERE C_BPartner_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -173,6 +170,9 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		{
 			DB.close(rs, pstmt);
 		}
+
+		// compute also open order amount when amount is not deliverable yet
+
 
 		return SO_CreditUsed;
 	}
