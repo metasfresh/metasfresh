@@ -73,7 +73,6 @@ import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPListener;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPValidator;
 import de.metas.handlingunits.picking.interceptor.M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.pricing.spi.impl.HUPricing;
@@ -101,7 +100,6 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
-import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
 import de.metas.pricing.ProductPrices;
 import de.metas.pricing.attributebased.impl.AttributePricing;
@@ -386,9 +384,6 @@ public final class Main extends AbstractModuleInterceptor
 
 		// task 08147: validate if the C_OLCand's PIIP is OK
 		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandPIIPValidator());
-
-		// task 08839:
-		Services.get(IOLCandBL.class).registerOLCandListener(new OLCandPIIPListener());
 
 		//
 		// Invoice candidates facets collector

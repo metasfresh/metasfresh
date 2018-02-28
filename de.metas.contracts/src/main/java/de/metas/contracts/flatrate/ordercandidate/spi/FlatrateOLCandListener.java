@@ -25,10 +25,12 @@ package de.metas.contracts.flatrate.ordercandidate.spi;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_OrderLine;
+import org.springframework.stereotype.Component;
 
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.spi.IOLCandListener;
 
+@Component
 public class FlatrateOLCandListener implements IOLCandListener
 {
 

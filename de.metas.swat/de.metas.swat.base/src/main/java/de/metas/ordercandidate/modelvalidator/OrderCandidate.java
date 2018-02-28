@@ -39,10 +39,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.ordercandidate.OrderCandidate_Constants;
-import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.spi.impl.DefaultGroupingProvider;
 import de.metas.ordercandidate.spi.impl.OLCandASIAwareFactory;
 import de.metas.ordercandidate.spi.impl.OLCandLocationValidator;
 import de.metas.ordercandidate.spi.impl.OLCandPriceValidator;
@@ -59,8 +57,6 @@ public class OrderCandidate extends AbstractModuleInterceptor
 	public void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		super.onInit(engine, client);
-
-		Services.get(IOLCandBL.class).registerCustomerGroupingValuesProvider(new DefaultGroupingProvider());
 
 		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandPriceValidator());
 		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandUOMValidator());

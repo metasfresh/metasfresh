@@ -33,8 +33,6 @@ import org.compiere.model.PO;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
-import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
-import de.metas.ordercandidate.spi.IOLCandListener;
 
 /**
  * @author RC
@@ -50,15 +48,6 @@ public interface IOLCandBL extends ISingletonService
 	 * @param processor
 	 */
 	void process(OLCandProcessorDescriptor processor);
-
-	/**
-	 * Registers a listener to be informed about events regarding order line candidates.
-	 *
-	 * @param l
-	 */
-	void registerOLCandListener(IOLCandListener l);
-
-	void registerCustomerGroupingValuesProvider(IOLCandGroupingProvider groupingValuesProvider);
 
 	I_C_OLCand invokeOLCandCreator(PO po, IOLCandCreator olCandCreator);
 

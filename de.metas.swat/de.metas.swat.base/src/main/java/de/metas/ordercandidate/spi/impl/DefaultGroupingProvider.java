@@ -25,6 +25,8 @@ package de.metas.ordercandidate.spi.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 
@@ -34,6 +36,7 @@ import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
  * @author ts
  * 
  */
+@Component
 public class DefaultGroupingProvider implements IOLCandGroupingProvider
 {
 

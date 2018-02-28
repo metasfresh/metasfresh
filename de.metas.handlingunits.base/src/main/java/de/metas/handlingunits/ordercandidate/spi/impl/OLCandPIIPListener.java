@@ -23,6 +23,7 @@ package de.metas.handlingunits.ordercandidate.spi.impl;
  */
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.ordercandidate.api.OLCand;
@@ -33,8 +34,9 @@ import de.metas.ordercandidate.spi.IOLCandListener;
  * See {@link #onOrderLineCreated(I_C_OLCand, I_C_OrderLine)}.
  * 
  * @author ts
- *
+ * @task 08839
  */
+@Component
 public class OLCandPIIPListener implements IOLCandListener
 {
 	/**

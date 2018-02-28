@@ -52,36 +52,30 @@ import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
 import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
+import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandSource;
 import de.metas.ordercandidate.api.OLCandsProcessorExecutor;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.spi.CompositeOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandCreator;
-import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
-import de.metas.ordercandidate.spi.IOLCandListener;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
-import lombok.ToString;
 
-@ToString(of = { "olCandListeners", "groupingValuesProviders" })
 public class OLCandBL implements IOLCandBL
 {
 	private static final Logger logger = LogManager.getLogger(OLCandBL.class);
 
-	private final CompositeOLCandListener olCandListeners = new CompositeOLCandListener();
-	private final CompositeOLCandGroupingProvider groupingValuesProviders = new CompositeOLCandGroupingProvider();
-
 	@Override
 	public void process(final OLCandProcessorDescriptor processor)
 	{
+		final OLCandRegistry olCandRegistry = Adempiere.getBean(OLCandRegistry.class);
 		final OLCandRepository olCandRepo = Adempiere.getBean(OLCandRepository.class);
 		final OLCandSource candidatesSource = olCandRepo.getForProcessor(processor);
 
 		OLCandsProcessorExecutor.builder()
 				.processorDescriptor(processor)
-				.olCandListeners(olCandListeners)
-				.groupingValuesProviders(groupingValuesProviders)
+				.olCandListeners(olCandRegistry.getListeners())
+				.groupingValuesProviders(olCandRegistry.getGroupingValuesProviders())
 				.candidatesSource(candidatesSource)
 				.build()
 				.process();
@@ -138,18 +132,6 @@ public class OLCandBL implements IOLCandBL
 		Services.get(IWFExecutionFactory.class).notifyActivityPerformed(po, olCand); // 03745
 
 		return olCand;
-	}
-
-	@Override
-	public void registerOLCandListener(final IOLCandListener l)
-	{
-		olCandListeners.add(l);
-	}
-
-	@Override
-	public void registerCustomerGroupingValuesProvider(final IOLCandGroupingProvider groupingProvider)
-	{
-		groupingValuesProviders.add(groupingProvider);
 	}
 
 	@Override

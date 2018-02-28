@@ -2,6 +2,8 @@ package de.metas.contracts.flatrate.ordercandidate.spi;
 
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ordercandidate.api.OLCand;
@@ -13,6 +15,7 @@ import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
  * @author ts
  *
  */
+@Component
 public class FlatrateGroupingProvider implements IOLCandGroupingProvider
 {
 	/**
