@@ -309,6 +309,10 @@
 						<groupId>com.google.guava</groupId>
 						<artifactId>guava</artifactId>
 					</exclusion>
+					<exclusion>
+					    <groupId>org.reflections</groupId>
+					    <artifactId>reflections</artifactId>
+					</exclusion>
 				</exclusions>
 			</dependency>
 			<dependency>
