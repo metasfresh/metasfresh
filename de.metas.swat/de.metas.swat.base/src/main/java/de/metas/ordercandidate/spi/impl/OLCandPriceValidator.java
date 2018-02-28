@@ -41,13 +41,13 @@ import org.compiere.model.MUOM;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.spi.IOLCandValdiator;
+import de.metas.ordercandidate.spi.IOLCandValidator;
 
 /**
  * Validates and sets the given OLCand's pricing data.
  *
  */
-public class OLCandPriceValidator implements IOLCandValdiator
+public class OLCandPriceValidator implements IOLCandValidator
 {
 	private static final transient Logger logger = LogManager.getLogger(OLCandPriceValidator.class);
 

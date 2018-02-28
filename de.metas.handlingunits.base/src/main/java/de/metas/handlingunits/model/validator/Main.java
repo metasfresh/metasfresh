@@ -100,7 +100,7 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
-import de.metas.ordercandidate.api.IOLCandValdiatorBL;
+import de.metas.ordercandidate.api.IOLCandValidatorBL;
 import de.metas.pricing.ProductPrices;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.storage.IStorageEngineService;
@@ -383,7 +383,7 @@ public final class Main extends AbstractModuleInterceptor
 		}
 
 		// task 08147: validate if the C_OLCand's PIIP is OK
-		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandPIIPValidator());
+		Services.get(IOLCandValidatorBL.class).registerValidator(new OLCandPIIPValidator());
 
 		//
 		// Invoice candidates facets collector

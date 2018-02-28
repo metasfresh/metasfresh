@@ -33,7 +33,7 @@ import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.ordercandidate.api.IOLCandValdiatorBL;
+import de.metas.ordercandidate.api.IOLCandValidatorBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.JavaProcess;
 
@@ -44,7 +44,7 @@ public class C_OLCand_Validate_Selected extends JavaProcess
 	// services
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	final IOLCandValdiatorBL olCandValdiatorBL = Services.get(IOLCandValdiatorBL.class);
+	final IOLCandValidatorBL olCandValdiatorBL = Services.get(IOLCandValidatorBL.class);
 
 	@Override
 	protected void prepare()
@@ -79,7 +79,7 @@ public class C_OLCand_Validate_Selected extends JavaProcess
 				}
 				InterfaceWrapperHelper.save(olCand);
 			}
-			return msgBL.getMsg(getCtx(), IOLCandValdiatorBL.MSG_ERRORS_FOUND, new Object[] { candidatesWithError });
+			return msgBL.getMsg(getCtx(), IOLCandValidatorBL.MSG_ERRORS_FOUND, new Object[] { candidatesWithError });
 		}
 		finally
 		{

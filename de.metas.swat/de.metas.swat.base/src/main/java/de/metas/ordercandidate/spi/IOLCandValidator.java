@@ -29,7 +29,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
  *
  *
  */
-public interface IOLCandValdiator
+public interface IOLCandValidator
 {
 	/**
 	 * Validate the given <code>olCand</code>.

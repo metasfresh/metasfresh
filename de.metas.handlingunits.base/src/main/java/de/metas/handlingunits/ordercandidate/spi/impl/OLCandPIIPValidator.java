@@ -43,9 +43,9 @@ import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.spi.IOLCandValdiator;
+import de.metas.ordercandidate.spi.IOLCandValidator;
 
-public class OLCandPIIPValidator implements IOLCandValdiator
+public class OLCandPIIPValidator implements IOLCandValidator
 {
 	/**
 	 * Validates

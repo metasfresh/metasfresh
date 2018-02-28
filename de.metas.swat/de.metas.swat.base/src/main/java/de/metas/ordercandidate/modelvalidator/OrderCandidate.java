@@ -39,7 +39,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.ordercandidate.OrderCandidate_Constants;
-import de.metas.ordercandidate.api.IOLCandValdiatorBL;
+import de.metas.ordercandidate.api.IOLCandValidatorBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.impl.OLCandASIAwareFactory;
 import de.metas.ordercandidate.spi.impl.OLCandLocationValidator;
@@ -58,10 +58,10 @@ public class OrderCandidate extends AbstractModuleInterceptor
 	{
 		super.onInit(engine, client);
 
-		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandPriceValidator());
-		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandUOMValidator());
+		Services.get(IOLCandValidatorBL.class).registerValidator(new OLCandPriceValidator());
+		Services.get(IOLCandValidatorBL.class).registerValidator(new OLCandUOMValidator());
 		// task 09623
-		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandLocationValidator());
+		Services.get(IOLCandValidatorBL.class).registerValidator(new OLCandLocationValidator());
 
 		Services.get(IAttributeSetInstanceAwareFactoryService.class).registerFactoryForTableName(I_C_OLCand.Table_Name, new OLCandASIAwareFactory()); // task 08803
 

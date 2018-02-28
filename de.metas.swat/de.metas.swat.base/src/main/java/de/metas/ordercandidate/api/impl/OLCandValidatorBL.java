@@ -26,17 +26,17 @@ package de.metas.ordercandidate.api.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.metas.ordercandidate.api.IOLCandValdiatorBL;
+import de.metas.ordercandidate.api.IOLCandValidatorBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.spi.IOLCandValdiator;
+import de.metas.ordercandidate.spi.IOLCandValidator;
 
-public class OLCandValdiatorBL implements IOLCandValdiatorBL
+public class OLCandValidatorBL implements IOLCandValidatorBL
 {
 
-	private final List<IOLCandValdiator> validators = new ArrayList<IOLCandValdiator>();
+	private final List<IOLCandValidator> validators = new ArrayList<IOLCandValidator>();
 
 	@Override
-	public void registerValidator(final IOLCandValdiator olCandValdiator)
+	public void registerValidator(final IOLCandValidator olCandValdiator)
 	{
 		validators.add(olCandValdiator);
 
@@ -51,7 +51,7 @@ public class OLCandValdiatorBL implements IOLCandValdiatorBL
 		olCand.setErrorMsg(null);
 		olCand.setIsError(false);
 
-		for (final IOLCandValdiator olCandValdiator : validators)
+		for (final IOLCandValidator olCandValdiator : validators)
 		{
 			if (!olCandValdiator.validate(olCand))
 			{

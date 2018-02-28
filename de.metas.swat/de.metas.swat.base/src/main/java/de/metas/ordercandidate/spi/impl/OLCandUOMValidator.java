@@ -30,9 +30,9 @@ import org.adempiere.util.Services;
 
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.spi.IOLCandValdiator;
+import de.metas.ordercandidate.spi.IOLCandValidator;
 
-public class OLCandUOMValidator implements IOLCandValdiator
+public class OLCandUOMValidator implements IOLCandValidator
 {
 	/**
 	 * Validates the UOM conversion; we will need convertToProductUOM in order to get the QtyOrdered in the order line.
