@@ -38,6 +38,13 @@ import lombok.NonNull;
 
 public final class OLCand implements IProductPriceAware
 {
+	public static OLCand of(final I_C_OLCand candidate)
+	{
+		final int pricingSystemId = -1;
+		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+		return new OLCand(candidate, pricingSystemId, olCandEffectiveValuesBL);
+	}
+
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL;
 
 	private final I_C_OLCand candidate;

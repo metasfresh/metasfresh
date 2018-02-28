@@ -6,8 +6,10 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -32,16 +34,20 @@ import lombok.Data;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-public final class JsonOLCandCreateRequest
+@Value
+@Builder
+public class JsonOLCand
 {
 	private JsonBPartnerInfo bpartner;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private JsonBPartnerInfo billBPartner;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private JsonBPartnerInfo dropShipBPartner;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private JsonBPartnerInfo handOverBPartner;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate dateRequired;
+	private LocalDate datePromised;
 	private int flatrateConditionsId;
 
 	private int productId;
@@ -53,6 +59,4 @@ public final class JsonOLCandCreateRequest
 	private int pricingSystemId;
 	private BigDecimal price;
 	private BigDecimal discount;
-	// private String currencyCode; // shall come from pricingSystem/priceList
-
 }

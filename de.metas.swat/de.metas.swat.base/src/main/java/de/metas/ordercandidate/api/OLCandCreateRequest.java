@@ -1,17 +1,14 @@
-package de.metas.ordercandidate.rest;
+package de.metas.ordercandidate.api;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import lombok.Data;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.ordercandidate.rest-api
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -31,16 +28,15 @@ import lombok.Data;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-public final class JsonOLCandCreateRequest
+@Value
+@Builder
+public class OLCandCreateRequest
 {
-	private JsonBPartnerInfo bpartner;
-	private JsonBPartnerInfo billBPartner;
-	private JsonBPartnerInfo dropShipBPartner;
-	private JsonBPartnerInfo handOverBPartner;
+	private OLCandBPartnerInfo bpartner;
+	private OLCandBPartnerInfo billBPartner;
+	private OLCandBPartnerInfo dropShipBPartner;
+	private OLCandBPartnerInfo handOverBPartner;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate dateRequired;
 	private int flatrateConditionsId;
 
@@ -54,5 +50,4 @@ public final class JsonOLCandCreateRequest
 	private BigDecimal price;
 	private BigDecimal discount;
 	// private String currencyCode; // shall come from pricingSystem/priceList
-
 }

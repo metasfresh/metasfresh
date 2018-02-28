@@ -1,7 +1,10 @@
 package de.metas.ordercandidate.api;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import de.metas.ordercandidate.model.I_C_OLCand;
 import lombok.NonNull;
 
 /*
@@ -35,5 +38,58 @@ public class OLCandRepository
 				.orderDefaults(processor.getDefaults())
 				.olCandProcessorId(processor.getId())
 				.build();
+	}
+
+	public OLCand create(@NonNull final OLCandCreateRequest request)
+	{
+		final I_C_OLCand olCandPO = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
+
+		{
+			final OLCandBPartnerInfo bpartner = request.getBpartner();
+			olCandPO.setC_BPartner_ID(bpartner.getBpartnerId());
+			olCandPO.setC_BPartner_Location_ID(bpartner.getBpartnerLocationId());
+			olCandPO.setAD_User_ID(bpartner.getContactId());
+		}
+
+		if (request.getBillBPartner() != null)
+		{
+			OLCandBPartnerInfo bpartner = request.getBillBPartner();
+			olCandPO.setBill_BPartner_ID(bpartner.getBpartnerId());
+			olCandPO.setBill_Location_ID(bpartner.getBpartnerLocationId());
+			olCandPO.setBill_User_ID(bpartner.getContactId());
+		}
+
+		if (request.getDropShipBPartner() != null)
+		{
+			final OLCandBPartnerInfo bpartner = request.getDropShipBPartner();
+			olCandPO.setDropShip_BPartner_ID(bpartner.getBpartnerId());
+			olCandPO.setDropShip_Location_ID(bpartner.getBpartnerLocationId());
+			// olCandPO.setDropShip_User_ID(bpartner.getContactId());
+		}
+
+		if (request.getHandOverBPartner() != null)
+		{
+			final OLCandBPartnerInfo bpartner = request.getHandOverBPartner();
+			olCandPO.setHandOver_Partner_ID(bpartner.getBpartnerId());
+			olCandPO.setHandOver_Location_ID(bpartner.getBpartnerLocationId());
+			// olCandPO.setHandOver_User_ID(bpartner.getContactId());
+		}
+
+		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()));
+		olCandPO.setC_Flatrate_Conditions_ID(request.getFlatrateConditionsId());
+
+		olCandPO.setM_Product_ID(request.getProductId());
+		olCandPO.setProductDescription(request.getProductDescription());
+		olCandPO.setQty(request.getQty());
+		olCandPO.setC_UOM_ID(request.getUomId());
+		olCandPO.setM_HU_PI_Item_Product_ID(request.getHuPIItemProductId());
+
+		olCandPO.setM_PricingSystem_ID(request.getPricingSystemId());
+		olCandPO.setPriceEntered(request.getPrice());
+		olCandPO.setDiscount(request.getDiscount());
+
+		InterfaceWrapperHelper.save(olCandPO);
+
+		return OLCand.of(olCandPO);
 	}
 }
