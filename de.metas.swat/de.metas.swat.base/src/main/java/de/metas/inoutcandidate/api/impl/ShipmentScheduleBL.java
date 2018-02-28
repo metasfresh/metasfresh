@@ -49,10 +49,12 @@ import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
@@ -82,6 +84,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
@@ -102,8 +105,6 @@ import lombok.NonNull;
  *
  * @see IShipmentSchedulePA
  * @see OlAndSched
- *
- * @author ts
  *
  */
 public class ShipmentScheduleBL implements IShipmentScheduleBL
@@ -1000,7 +1001,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			final WarehousePickingGroup warehouseGroup = Services.get(IWarehouseDAO.class)
 					.getWarehousePickingGroupContainingWarehouseId(shipmentScheduleWarehouse.getM_Warehouse_ID());
-			if(warehouseGroup == null)
+			if (warehouseGroup == null)
 			{
 				warehouses = ImmutableList.of(shipmentScheduleWarehouse);
 			}
@@ -1033,5 +1034,26 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 		}
 		return storageQuery;
+	}
+
+	private final ThreadLocal<Boolean> missingSchedsAreCreatedLater = ThreadLocal.withInitial(() -> false);
+
+	@Override
+	public boolean isMissingSchedsCreatedLater()
+	{
+		return missingSchedsAreCreatedLater.get();
+	}
+
+	@Override
+	public IAutoCloseable createMissingSchedsOnClose()
+	{
+		missingSchedsAreCreatedLater.set(true);
+
+		final IAutoCloseable createMissingScheds = //
+				() -> {
+					missingSchedsAreCreatedLater.set(false);
+					CreateMissingShipmentSchedulesWorkpackageProcessor.schedule(PlainContextAware.newWithThreadInheritedTrx());
+				};
+		return createMissingScheds;
 	}
 }

@@ -30,6 +30,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
@@ -39,6 +40,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.document.engine.IDocument;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 
@@ -58,6 +60,31 @@ public class C_SubscriptionProgress_Evaluate extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final Timestamp startTime = SystemTime.asTimestamp();
+		final int countProcessedTerms = createOrUpdateSubscriptionProgress();
+
+		addLog("Updating shipment schedules");
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.run(() -> {
+			subscriptionBL.evalDeliveries(getCtx(), ITrx.TRXNAME_ThreadInherited);
+		});
+
+		addLog("Done after {}" + " (evaluated {} terms)", TimeUtil.formatElapsed(startTime), countProcessedTerms);
+
+		return "@Success@";
+	}
+
+	private int createOrUpdateSubscriptionProgress()
+	{
+
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+		try (final IAutoCloseable createMissingScheds = shipmentScheduleBL.createMissingSchedsOnClose())
+		{
+			return createOrUpdateSubscriptionProgress0();
+		}
+	}
+
+	private int createOrUpdateSubscriptionProgress0()
+	{
 		int errorCount = 0;
 		int count = 0;
 
@@ -77,16 +104,7 @@ public class C_SubscriptionProgress_Evaluate extends JavaProcess
 			}
 		}
 		addLog(errorCount + " errors on updating subscriptions");
-		
-		addLog("Updating shipment schedule");
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		trxManager.run(() -> {
-			subscriptionBL.evalDeliveries(getCtx(), ITrx.TRXNAME_ThreadInherited);
-		});
-
-		addLog("Done after {}" + " (evaluated {} terms)", TimeUtil.formatElapsed(startTime), count);
-
-		return "@Success@";
+		return count;
 	}
 
 	private Iterator<I_C_Flatrate_Term> retrieveTermsToEvaluate()
@@ -104,19 +122,19 @@ public class C_SubscriptionProgress_Evaluate extends JavaProcess
 		return termsToEval;
 	}
 
-	private boolean invokeEvalCurrentSPs(final I_C_Flatrate_Term sc)
+	private boolean invokeEvalCurrentSPs(final I_C_Flatrate_Term flatrateTerm)
 	{
 		final Mutable<Boolean> success = new Mutable<>(false);
 
 		Services.get(ITrxManager.class).run(() -> {
 			try
 			{
-				subscriptionBL.evalCurrentSPs(sc, currentDate);
+				subscriptionBL.evalCurrentSPs(flatrateTerm, currentDate);
 				success.setValue(true);
 			}
-			catch (AdempiereException e)
+			catch (final AdempiereException e)
 			{
-				addLog("Error updating " + sc + ": " + e.getMessage());
+				addLog("Error updating " + flatrateTerm + ": " + e.getMessage());
 			}
 		});
 
