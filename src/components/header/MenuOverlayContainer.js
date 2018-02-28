@@ -1,8 +1,8 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { getWindowBreadcrumb } from "../../actions/MenuActions";
-import MenuOverlayItem from "./MenuOverlayItem";
+import { getWindowBreadcrumb } from '../../actions/MenuActions';
+import MenuOverlayItem from './MenuOverlayItem';
 
 class MenuOverlayContainer extends Component {
   constructor(props) {
@@ -33,32 +33,32 @@ class MenuOverlayContainer extends Component {
       showBookmarks,
       updateData,
       transparentBookmarks,
-      onKeyDown
+      onKeyDown,
     } = this.props;
     return (
       <div
         tabIndex={0}
         onKeyDown={onKeyDown}
         className={
-          "menu-overlay-node-container js-menu-container " +
+          'menu-overlay-node-container js-menu-container ' +
           (deep
-            ? "menu-overlay-node-spaced "
-            : "menu-overlay-expanded-link-spaced js-menu-main-container")
+            ? 'menu-overlay-node-spaced '
+            : 'menu-overlay-expanded-link-spaced js-menu-main-container')
         }
       >
-        {type === "group" && (
+        {type === 'group' && (
           <span
             className={
-              "menu-overlay-header " +
-              (!printChildren ? "menu-overlay-header-spaced " : "") +
-              (!deep ? "menu-overlay-header-main" : "")
+              'menu-overlay-header ' +
+              (!printChildren ? 'menu-overlay-header-spaced ' : '') +
+              (!deep ? 'menu-overlay-header-main' : '')
             }
           >
             {caption}
           </span>
         )}
 
-        {type !== "group" && (
+        {type !== 'group' && (
           <MenuOverlayItem
             printChildren={false}
             {...{
@@ -74,7 +74,7 @@ class MenuOverlayContainer extends Component {
               handleMenuOverlay,
               handleNewRedirect,
               handleRedirect,
-              handleClickOnFolder
+              handleClickOnFolder,
             }}
           />
         )}
@@ -96,7 +96,7 @@ class MenuOverlayContainer extends Component {
                     transparentBookmarks,
                     handleNewRedirect,
                     handleRedirect,
-                    handleClickOnFolder
+                    handleClickOnFolder,
                   }}
                 />
               ) : (
@@ -114,7 +114,7 @@ class MenuOverlayContainer extends Component {
                     handleMenuOverlay,
                     handleNewRedirect,
                     handleRedirect,
-                    handleClickOnFolder
+                    handleClickOnFolder,
                   }}
                 />
               )

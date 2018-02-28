@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { Shortcut } from "../Shortcuts";
+import { Shortcut } from '../Shortcuts';
 
 export default class DocumentListContextShortcuts extends Component {
   handlers = {
@@ -45,7 +45,7 @@ export default class DocumentListContextShortcuts extends Component {
       if (this.props.handleIndent) {
         this.props.handleIndent(false);
       }
-    }
+    },
   };
 
   render() {
@@ -79,7 +79,7 @@ export default class DocumentListContextShortcuts extends Component {
         key="COLLAPSE_INDENT"
         name="COLLAPSE_INDENT"
         handler={this.handlers.COLLAPSE_INDENT}
-      />
+      />,
     ];
   }
 }

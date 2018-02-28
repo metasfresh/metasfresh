@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { Shortcut } from "../Shortcuts";
+import { Shortcut } from '../Shortcuts';
 
 export default class ModalContextShortcuts extends Component {
   handlers = {
@@ -15,7 +15,7 @@ export default class ModalContextShortcuts extends Component {
       event.preventDefault();
 
       this.props.cancel && this.props.cancel();
-    }
+    },
   };
 
   blurActiveElement = () => {
@@ -29,7 +29,7 @@ export default class ModalContextShortcuts extends Component {
   render() {
     return [
       <Shortcut key="APPLY" name="APPLY" handler={this.handlers.APPLY} />,
-      <Shortcut key="CANCEL" name="CANCEL" handler={this.handlers.CANCEL} />
+      <Shortcut key="CANCEL" name="CANCEL" handler={this.handlers.CANCEL} />,
     ];
   }
 }

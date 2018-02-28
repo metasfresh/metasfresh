@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import Card from "./Card";
+import Card from './Card';
 
 class Lane extends Component {
   constructor(props) {
@@ -18,7 +18,7 @@ class Lane extends Component {
       onReject,
       onDelete,
       placeholder,
-      onCaptionClick
+      onCaptionClick,
     } = this.props;
 
     if (placeholder) {
@@ -30,8 +30,8 @@ class Lane extends Component {
         <div className="board-lane-header">{caption}</div>
         <div
           className={
-            "board-draggable-wrapper " +
-            (!cards.length ? "board-draggable-placeholder " : "")
+            'board-draggable-wrapper ' +
+            (!cards.length ? 'board-draggable-placeholder ' : '')
           }
         >
           {!cards.length && (
@@ -52,7 +52,7 @@ class Lane extends Component {
                 onReject,
                 targetIndicator,
                 onDelete,
-                onCaptionClick
+                onCaptionClick,
               }}
               {...card}
             />

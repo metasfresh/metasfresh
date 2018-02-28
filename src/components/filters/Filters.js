@@ -1,16 +1,16 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 
-import { TableCell } from "../table/TableCell";
-import FiltersFrequent from "./FiltersFrequent";
-import FiltersNotFrequent from "./FiltersNotFrequent";
+import { TableCell } from '../table/TableCell';
+import FiltersFrequent from './FiltersFrequent';
+import FiltersNotFrequent from './FiltersNotFrequent';
 
 class Filters extends Component {
   state = {
     filter: null,
     notValidFields: null,
-    widgetShown: false
+    widgetShown: false,
   };
 
   componentWillReceiveProps(props) {
@@ -26,7 +26,7 @@ class Filters extends Component {
 
   init = filter => {
     this.setState({
-      filter: filter
+      filter: filter,
     });
   };
 
@@ -41,13 +41,13 @@ class Filters extends Component {
 
     this.setState(
       {
-        notValidFields: !valid
+        notValidFields: !valid,
       },
       () => {
         if (valid) {
           const parsedFilter = filter.parameters
             ? Object.assign({}, filter, {
-                parameters: this.parseToPatch(filter.parameters)
+                parameters: this.parseToPatch(filter.parameters),
               })
             : filter;
 
@@ -73,7 +73,7 @@ class Filters extends Component {
 
     this.setState(
       {
-        filter: newFilter
+        filter: newFilter,
       },
       () => {
         updateDocList(newFilter);
@@ -87,7 +87,7 @@ class Filters extends Component {
      */
   handleShow = value => {
     this.setState({
-      widgetShown: value
+      widgetShown: value,
     });
   };
 
@@ -102,7 +102,7 @@ class Filters extends Component {
 
       this.setState(
         {
-          filter: newFilter
+          filter: newFilter,
         },
         () => {
           updateDocList(newFilter);
@@ -113,7 +113,7 @@ class Filters extends Component {
 
   dropdownToggled = () => {
     this.setState({
-      notValidFields: false
+      notValidFields: false,
     });
   };
 
@@ -134,12 +134,12 @@ class Filters extends Component {
               : activeParameter.value,
             filterType
           )
-        : "";
+        : '';
 
       return {
         ...unannotatedFilter,
         captionValue,
-        isActive
+        isActive,
       };
     });
   };
@@ -154,7 +154,7 @@ class Filters extends Component {
       notFrequentFilters: this.annotateFilters(
         data.filter(filter => !filter.frequent && !filter.static)
       ),
-      staticFilters: this.annotateFilters(data.filter(filter => filter.static))
+      staticFilters: this.annotateFilters(data.filter(filter => filter.static)),
     };
   };
 
@@ -172,7 +172,7 @@ class Filters extends Component {
 
     if (filter) {
       const activeFilter = filter.find(item => item.filterId === filterId);
-      return typeof activeFilter !== "undefined";
+      return typeof activeFilter !== 'undefined';
     }
 
     return false;
@@ -181,7 +181,7 @@ class Filters extends Component {
   parseToPatch = params => {
     return params.map(param =>
       Object.assign({}, param, {
-        value: param.value === "" ? null : param.value
+        value: param.value === '' ? null : param.value,
       })
     );
   };
@@ -197,7 +197,7 @@ class Filters extends Component {
 
     return (
       <div className="filter-wrapper js-not-unselect">
-        <span>{counterpart.translate("window.filters.caption")}: </span>
+        <span>{counterpart.translate('window.filters.caption')}: </span>
         <div className="filter-wrapper">
           {!!frequentFilters.length && (
             <FiltersFrequent
@@ -234,7 +234,7 @@ class Filters extends Component {
 }
 
 Filters.propTypes = {
-  windowType: PropTypes.string.isRequired
+  windowType: PropTypes.string.isRequired,
 };
 
 export default Filters;

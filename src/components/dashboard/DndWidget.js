@@ -1,14 +1,14 @@
-import React, { Component } from "react";
-import { DragSource, DropTarget } from "react-dnd";
+import React, { Component } from 'react';
+import { DragSource, DropTarget } from 'react-dnd';
 
 const cardSource = {
   beginDrag(props) {
     return {
       id: props.id,
       index: props.index,
-      isNew: props.isNew
+      isNew: props.isNew,
     };
-  }
+  },
 };
 
 const cardTarget = {
@@ -30,19 +30,19 @@ const cardTarget = {
     } else {
       props.onDrop && props.onDrop(props.entity, monitor.getItem().id);
     }
-  }
+  },
 };
 
 function collect(connect, monitor) {
   return {
     connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
+    isDragging: monitor.isDragging(),
   };
 }
 
 function connect(connect) {
   return {
-    connectDropTarget: connect.dropTarget()
+    connectDropTarget: connect.dropTarget(),
   };
 }
 
@@ -63,7 +63,7 @@ export class DndWidget extends Component {
       entity,
       id,
       placeholder,
-      index
+      index,
     } = this.props;
 
     if (transparent) return <div {...{ className }}>{children}</div>;
@@ -73,9 +73,9 @@ export class DndWidget extends Component {
         <div
           className={
             className +
-            " dnd-widget " +
-            (isDragging ? "dragging " : "") +
-            (placeholder ? "dnd-placeholder " : "")
+            ' dnd-widget ' +
+            (isDragging ? 'dragging ' : '') +
+            (placeholder ? 'dnd-placeholder ' : '')
           }
         >
           {!placeholder &&

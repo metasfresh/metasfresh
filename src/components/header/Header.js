@@ -1,34 +1,34 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import { push } from "react-router-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
 import {
   deleteRequest,
   duplicateRequest,
-  openFile
-} from "../../actions/GenericActions";
-import { openModal } from "../../actions/WindowActions";
-import logo from "../../assets/images/metasfresh_logo_green_thumb.png";
-import keymap from "../../shortcuts/keymap";
-import Indicator from "../app/Indicator";
-import Prompt from "../app/Prompt";
-import NewEmail from "../email/NewEmail";
-import Inbox from "../inbox/Inbox";
-import NewLetter from "../letter/NewLetter";
-import GlobalContextShortcuts from "../shortcuts/GlobalContextShortcuts";
-import Tooltips from "../tooltips/Tooltips";
-import MasterWidget from "../widget/MasterWidget";
-import Breadcrumb from "./Breadcrumb";
-import SideList from "./SideList";
-import Subheader from "./SubHeader";
-import UserDropdown from "./UserDropdown";
+  openFile,
+} from '../../actions/GenericActions';
+import { openModal } from '../../actions/WindowActions';
+import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import keymap from '../../shortcuts/keymap';
+import Indicator from '../app/Indicator';
+import Prompt from '../app/Prompt';
+import NewEmail from '../email/NewEmail';
+import Inbox from '../inbox/Inbox';
+import NewLetter from '../letter/NewLetter';
+import GlobalContextShortcuts from '../shortcuts/GlobalContextShortcuts';
+import Tooltips from '../tooltips/Tooltips';
+import MasterWidget from '../widget/MasterWidget';
+import Breadcrumb from './Breadcrumb';
+import SideList from './SideList';
+import Subheader from './SubHeader';
+import UserDropdown from './UserDropdown';
 
 const mapStateToProps = state => ({
   inbox: state.appHandler.inbox,
   me: state.appHandler.me,
-  pathname: state.routing.locationBeforeTransitions.pathname
+  pathname: state.routing.locationBeforeTransitions.pathname,
 });
 
 class Header extends Component {
@@ -41,15 +41,15 @@ class Header extends Component {
     scrolled: false,
     isInboxOpen: false,
     isUDOpen: false,
-    tooltipOpen: "",
+    tooltipOpen: '',
     isEmailOpen: false,
-    prompt: { open: false }
+    prompt: { open: false },
   };
 
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     inbox: PropTypes.object.isRequired,
-    me: PropTypes.object.isRequired
+    me: PropTypes.object.isRequired,
   };
 
   componentDidMount() {
@@ -91,11 +91,11 @@ class Header extends Component {
   }
 
   initEventListeners = () => {
-    document.addEventListener("scroll", this.handleScroll);
+    document.addEventListener('scroll', this.handleScroll);
   };
 
   removeEventListeners = () => {
-    document.removeEventListener("scroll", this.handleScroll);
+    document.removeEventListener('scroll', this.handleScroll);
   };
 
   handleInboxOpen = state => {
@@ -116,10 +116,10 @@ class Header extends Component {
     let toggleBreadcrumb = () => {
       this.setState(
         {
-          menuOverlay: nodeId
+          menuOverlay: nodeId,
         },
         () => {
-          if (nodeId !== "") {
+          if (nodeId !== '') {
             this.setState({ isMenuOverlayShow: true });
           } else {
             this.setState({ isMenuOverlayShow: false });
@@ -150,14 +150,14 @@ class Header extends Component {
 
   handleDashboardLink = () => {
     const { dispatch } = this.props;
-    dispatch(push("/"));
+    dispatch(push('/'));
   };
 
   toggleScrollScope = open => {
     if (!open) {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = 'auto';
     } else {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
     }
   };
 
@@ -203,18 +203,18 @@ class Header extends Component {
 
   handlePrint = (windowType, docId, docNo) => {
     openFile(
-      "window",
+      'window',
       windowType,
       docId,
-      "print",
-      windowType + "_" + (docNo ? docNo : docId) + ".pdf"
+      'print',
+      windowType + '_' + (docNo ? docNo : docId) + '.pdf'
     );
   };
 
   handleClone = (windowType, docId) => {
     const { dispatch } = this.props;
 
-    duplicateRequest("window", windowType, docId).then(response => {
+    duplicateRequest('window', windowType, docId).then(response => {
       if (response && response.data && response.data.id) {
         dispatch(push(`/window/${windowType}/${response.data.id}`));
       }
@@ -223,7 +223,7 @@ class Header extends Component {
 
   handleDelete = () => {
     this.setState({
-      prompt: Object.assign({}, this.state.prompt, { open: true })
+      prompt: Object.assign({}, this.state.prompt, { open: true }),
     });
   };
 
@@ -245,7 +245,7 @@ class Header extends Component {
 
   handlePromptCancelClick = () => {
     this.setState({
-      prompt: Object.assign({}, this.state.prompt, { open: false })
+      prompt: Object.assign({}, this.state.prompt, { open: false }),
     });
   };
 
@@ -254,19 +254,19 @@ class Header extends Component {
 
     this.setState(
       {
-        prompt: Object.assign({}, this.state.prompt, { open: false })
+        prompt: Object.assign({}, this.state.prompt, { open: false }),
       },
       () => {
-        deleteRequest("window", windowType, null, null, [docId]).then(() => {
+        deleteRequest('window', windowType, null, null, [docId]).then(() => {
           handleDeletedStatus(true);
-          dispatch(push("/window/" + windowType));
+          dispatch(push('/window/' + windowType));
         });
       }
     );
   };
 
   handleDocStatusToggle = close => {
-    const elem = document.getElementsByClassName("js-dropdown-toggler")[0];
+    const elem = document.getElementsByClassName('js-dropdown-toggler')[0];
 
     if (close) {
       elem.blur();
@@ -284,7 +284,7 @@ class Header extends Component {
 
     this.setState({
       isSideListShow: id !== null && id !== sideListTab,
-      sideListTab: id !== sideListTab ? id : null
+      sideListTab: id !== sideListTab ? id : null,
     });
   };
 
@@ -300,15 +300,15 @@ class Header extends Component {
         isSideListShow: false,
         sideListTab: null,
         isSubheaderShow:
-          clickedItem == "isSubheaderShow" ? !isSubheaderShow : false,
-        tooltipOpen: ""
+          clickedItem == 'isSubheaderShow' ? !isSubheaderShow : false,
+        tooltipOpen: '',
       },
       callback
     );
 
     if (
-      document.getElementsByClassName("js-dropdown-toggler")[0] &&
-      clickedItem !== "dropdown"
+      document.getElementsByClassName('js-dropdown-toggler')[0] &&
+      clickedItem !== 'dropdown'
     ) {
       this.handleDocStatusToggle(true);
     }
@@ -340,7 +340,7 @@ class Header extends Component {
       me,
       editmode,
       handleEditModeToggle,
-      activeTab
+      activeTab,
     } = this.props;
     const {
       isSubheaderShow,
@@ -354,7 +354,7 @@ class Header extends Component {
       sideListTab,
       isUDOpen,
       isEmailOpen,
-      isLetterOpen
+      isLetterOpen,
     } = this.state;
 
     return (
@@ -363,7 +363,7 @@ class Header extends Component {
           <Prompt
             title="Delete"
             text="Are you sure?"
-            buttons={{ submit: "Delete", cancel: "Cancel" }}
+            buttons={{ submit: 'Delete', cancel: 'Cancel' }}
             onCancelClick={this.handlePromptCancelClick}
             onSubmitClick={() =>
               this.handlePromptSubmitClick(windowType, dataId)
@@ -373,26 +373,26 @@ class Header extends Component {
 
         <nav
           className={
-            "header header-super-faded js-not-unselect " +
-            (scrolled ? "header-shadow" : "")
+            'header header-super-faded js-not-unselect ' +
+            (scrolled ? 'header-shadow' : '')
           }
         >
           <div className="container-fluid">
             <div className="header-container">
               <div className="header-left-side">
                 <div
-                  onClick={() => this.closeOverlays("isSubheaderShow")}
+                  onClick={() => this.closeOverlays('isSubheaderShow')}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_ACTIONS_MENU)
                   }
-                  onMouseLeave={() => this.toggleTooltip("")}
+                  onMouseLeave={() => this.toggleTooltip('')}
                   className={
-                    "btn-square btn-header " +
-                    "tooltip-parent " +
+                    'btn-square btn-header ' +
+                    'tooltip-parent ' +
                     (isSubheaderShow
-                      ? "btn-meta-default-dark " +
-                        "btn-subheader-open btn-header-open"
-                      : "btn-meta-primary")
+                      ? 'btn-meta-default-dark ' +
+                        'btn-subheader-open btn-header-open'
+                      : 'btn-meta-primary')
                   }
                 >
                   <i className="meta-icon-more" />
@@ -401,7 +401,7 @@ class Header extends Component {
                     <Tooltips
                       name={keymap.OPEN_ACTIONS_MENU}
                       action={counterpart.translate(
-                        "mainScreen.actionMenu.tooltip"
+                        'mainScreen.actionMenu.tooltip'
                       )}
                       type=""
                     />
@@ -432,9 +432,9 @@ class Header extends Component {
                 {docStatus && (
                   <div
                     className="hidden-sm-down tooltip-parent"
-                    onClick={() => this.toggleTooltip("")}
+                    onClick={() => this.toggleTooltip('')}
                     onMouseEnter={() => this.toggleTooltip(keymap.DOC_STATUS)}
-                    onMouseLeave={() => this.toggleTooltip("")}
+                    onMouseLeave={() => this.toggleTooltip('')}
                   >
                     <MasterWidget
                       entity="window"
@@ -444,7 +444,7 @@ class Header extends Component {
                       noLabel
                       type="primary"
                       dropdownOpenCallback={() => {
-                        this.closeOverlays("dropdown");
+                        this.closeOverlays('dropdown');
                       }}
                       {...docStatus}
                     />
@@ -452,7 +452,7 @@ class Header extends Component {
                       <Tooltips
                         name={keymap.DOC_STATUS}
                         action={counterpart.translate(
-                          "mainScreen.docStatus.tooltip"
+                          'mainScreen.docStatus.tooltip'
                         )}
                         type=""
                       />
@@ -462,18 +462,18 @@ class Header extends Component {
 
                 <div
                   className={
-                    "header-item-container " +
-                    "header-item-container-static " +
-                    "pointer tooltip-parent " +
-                    (isInboxOpen ? "header-item-open " : "")
+                    'header-item-container ' +
+                    'header-item-container-static ' +
+                    'pointer tooltip-parent ' +
+                    (isInboxOpen ? 'header-item-open ' : '')
                   }
                   onClick={() =>
-                    this.closeOverlays("", () => this.handleInboxOpen(true))
+                    this.closeOverlays('', () => this.handleInboxOpen(true))
                   }
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_INBOX_MENU)
                   }
-                  onMouseLeave={() => this.toggleTooltip("")}
+                  onMouseLeave={() => this.toggleTooltip('')}
                 >
                   <span className="header-item header-item-badge icon-lg">
                     <i className="meta-icon-notifications" />
@@ -486,8 +486,8 @@ class Header extends Component {
                   {tooltipOpen === keymap.OPEN_INBOX_MENU && (
                     <Tooltips
                       name={keymap.OPEN_INBOX_MENU}
-                      action={counterpart.translate("mainScreen.inbox.tooltip")}
-                      type={""}
+                      action={counterpart.translate('mainScreen.inbox.tooltip')}
+                      type={''}
                     />
                   )}
                 </div>
@@ -513,11 +513,11 @@ class Header extends Component {
                 {showSidelist && (
                   <div
                     className={
-                      "tooltip-parent btn-header " +
-                      "side-panel-toggle btn-square " +
+                      'tooltip-parent btn-header ' +
+                      'side-panel-toggle btn-square ' +
                       (isSideListShow
-                        ? "btn-meta-default-bright " + "btn-header-open"
-                        : "btn-meta-primary")
+                        ? 'btn-meta-default-bright ' + 'btn-header-open'
+                        : 'btn-meta-primary')
                     }
                     onClick={() => {
                       this.closeOverlays();
@@ -526,7 +526,7 @@ class Header extends Component {
                     onMouseEnter={() =>
                       this.toggleTooltip(keymap.OPEN_SIDEBAR_MENU_0)
                     }
-                    onMouseLeave={() => this.toggleTooltip("")}
+                    onMouseLeave={() => this.toggleTooltip('')}
                   >
                     <i className="meta-icon-list" />
                     {tooltipOpen === keymap.OPEN_SIDEBAR_MENU_0 && (
@@ -534,7 +534,7 @@ class Header extends Component {
                         name={keymap.OPEN_SIDEBAR_MENU_0}
                         action={counterpart.translate(
                           /* eslint-disable max-len */
-                          "mainScreen.sideList.tooltip"
+                          'mainScreen.sideList.tooltip'
                           /* eslint-enable max-len */
                         )}
                         type=""
@@ -553,7 +553,7 @@ class Header extends Component {
 
         {isSubheaderShow && (
           <Subheader
-            closeSubheader={() => this.closeOverlays("isSubheaderShow")}
+            closeSubheader={() => this.closeOverlays('isSubheaderShow')}
             docNo={docNoData && docNoData.value}
             openModal={this.openModal}
             openModalRow={this.openModalRow}
@@ -581,7 +581,7 @@ class Header extends Component {
         {showSidelist &&
           isSideListShow && (
             <SideList
-              windowType={windowType ? windowType : ""}
+              windowType={windowType ? windowType : ''}
               closeOverlays={this.closeOverlays}
               closeSideList={this.handleSidelistToggle}
               isSideListShow={isSideListShow}
@@ -594,14 +594,14 @@ class Header extends Component {
 
         {isEmailOpen && (
           <NewEmail
-            windowId={windowType ? windowType : ""}
+            windowId={windowType ? windowType : ''}
             docId={dataId}
             handleCloseEmail={this.handleCloseEmail}
           />
         )}
         {isLetterOpen && (
           <NewLetter
-            windowId={windowType ? windowType : ""}
+            windowId={windowType ? windowType : ''}
             docId={dataId}
             handleCloseLetter={this.handleCloseLetter}
           />
@@ -612,9 +612,9 @@ class Header extends Component {
           }
           handleMenuOverlay={
             isMenuOverlayShow
-              ? () => this.handleMenuOverlay("", "")
+              ? () => this.handleMenuOverlay('', '')
               : () =>
-                  this.closeOverlays("", () => this.handleMenuOverlay("", "0"))
+                  this.closeOverlays('', () => this.handleMenuOverlay('', '0'))
           }
           handleInboxOpen={
             isInboxOpen
@@ -625,26 +625,26 @@ class Header extends Component {
           openModal={
             dataId
               ? () =>
-                  this.openModal(windowType, "window", "Advanced edit", true)
-              : ""
+                  this.openModal(windowType, 'window', 'Advanced edit', true)
+              : ''
           }
           handlePrint={
             dataId
               ? () => this.handlePrint(windowType, dataId, docNoData.value)
-              : ""
+              : ''
           }
           handleEmail={this.handleEmail}
           handleLetter={this.handleLetter}
-          handleDelete={dataId ? this.handleDelete : ""}
+          handleDelete={dataId ? this.handleDelete : ''}
           redirect={
             windowType
-              ? () => this.redirect("/window/" + windowType + "/new")
-              : ""
+              ? () => this.redirect('/window/' + windowType + '/new')
+              : ''
           }
           handleDocStatusToggle={
-            document.getElementsByClassName("js-dropdown-toggler")[0]
+            document.getElementsByClassName('js-dropdown-toggler')[0]
               ? this.handleDocStatusToggle
-              : ""
+              : ''
           }
           handleEditModeToggle={handleEditModeToggle}
           closeOverlays={this.closeOverlays}

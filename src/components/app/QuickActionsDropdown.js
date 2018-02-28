@@ -1,6 +1,6 @@
-import React, { Component } from "react";
-import onClickOutside from "react-onclickoutside";
-import { connect } from "react-redux";
+import React, { Component } from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
 class QuickActionsDropdown extends Component {
   constructor(props) {
@@ -14,7 +14,7 @@ class QuickActionsDropdown extends Component {
   };
 
   componentDidMount() {
-    document.getElementsByClassName("quick-actions-item")[0].focus();
+    document.getElementsByClassName('quick-actions-item')[0].focus();
   }
 
   handleKeyDown = (e, action) => {
@@ -23,29 +23,29 @@ class QuickActionsDropdown extends Component {
     const next = document.activeElement.nextSibling;
     const prev = document.activeElement.previousSibling;
     switch (e.key) {
-      case "ArrowDown":
-        if (!document.activeElement.classList.contains("quick-actions-item")) {
-          document.getElementsByClassName("quick-actions-item")[0].focus();
+      case 'ArrowDown':
+        if (!document.activeElement.classList.contains('quick-actions-item')) {
+          document.getElementsByClassName('quick-actions-item')[0].focus();
         } else {
-          if (next && next.classList.contains("quick-actions-item")) {
+          if (next && next.classList.contains('quick-actions-item')) {
             next.focus();
           }
         }
 
         break;
-      case "ArrowUp":
-        if (prev && prev.classList.contains("quick-actions-item")) {
+      case 'ArrowUp':
+        if (prev && prev.classList.contains('quick-actions-item')) {
           prev.focus();
         }
         break;
-      case "Enter":
+      case 'Enter':
         handleClick(action);
         break;
     }
   };
 
   handleItem = item => {
-    document.getElementsByClassName("quick-actions-item")[item].focus();
+    document.getElementsByClassName('quick-actions-item')[item].focus();
   };
 
   render() {
@@ -58,8 +58,8 @@ class QuickActionsDropdown extends Component {
             tabIndex={0}
             ref={c => (this.item = c)}
             className={
-              "quick-actions-item " +
-              (action.disabled ? "quick-actions-item-disabled " : "")
+              'quick-actions-item ' +
+              (action.disabled ? 'quick-actions-item-disabled ' : '')
             }
             key={index}
             onClick={() => handleClick(action)}

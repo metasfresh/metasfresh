@@ -1,4 +1,4 @@
-import boxSize from "./boxSize";
+import boxSize from './boxSize';
 
 export const getHorizontalDimensions = (
   svg,
@@ -10,14 +10,14 @@ export const getHorizontalDimensions = (
   const minWidth = height * boxSize.ratio || boxSize.minWidth;
   const applyingMargin = {
     left: margin.left + boxSize.padding,
-    right: margin.right + boxSize.padding
+    right: margin.right + boxSize.padding,
   };
 
   return {
     ...applyingMargin,
     width:
       (parentWidth < minWidth ? minWidth : parentWidth) -
-      (applyingMargin.left + applyingMargin.right)
+      (applyingMargin.left + applyingMargin.right),
   };
 };
 
@@ -27,12 +27,12 @@ export const getVerticalDimensions = (
 ) => {
   const applyingMargin = {
     top: margin.top + boxSize.padding,
-    bottom: margin.bottom + boxSize.padding
+    bottom: margin.bottom + boxSize.padding,
   };
 
   return {
     ...applyingMargin,
     height:
-      (height || boxSize.height) - (applyingMargin.top + applyingMargin.bottom)
+      (height || boxSize.height) - (applyingMargin.top + applyingMargin.bottom),
   };
 };

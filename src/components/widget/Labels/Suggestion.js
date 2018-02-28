@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
 export default class Suggestion extends Component {
   handleMouseDown = () => {
@@ -9,11 +9,11 @@ export default class Suggestion extends Component {
     const classes = [this.props.className];
 
     if (this.props.active) {
-      classes.push("active");
+      classes.push('active');
     }
 
     return (
-      <div className={classes.join(" ")} onMouseDown={this.handleMouseDown}>
+      <div className={classes.join(' ')} onMouseDown={this.handleMouseDown}>
         {this.props.suggestion.caption}
       </div>
     );

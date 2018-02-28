@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
 class Checkbox extends Component {
   constructor(props) {
@@ -7,7 +7,7 @@ class Checkbox extends Component {
 
   handleClear = () => {
     const { handlePatch, widgetField, id } = this.props;
-    handlePatch(widgetField, "", id);
+    handlePatch(widgetField, '', id);
   };
 
   render() {
@@ -19,20 +19,20 @@ class Checkbox extends Component {
       handlePatch,
       widgetField,
       id,
-      filterWidget
+      filterWidget,
     } = this.props;
 
     return (
       <div>
         <label
           className={
-            "input-checkbox " +
-            (widgetData[0].readonly || disabled ? "input-disabled " : "")
+            'input-checkbox ' +
+            (widgetData[0].readonly || disabled ? 'input-disabled ' : '')
           }
           tabIndex={fullScreen ? -1 : tabIndex}
           ref={c => (this.rawWidget = c)}
           onKeyDown={e => {
-            if (e.key === " ") {
+            if (e.key === ' ') {
               e.preventDefault();
               this.rawWidget && this.rawWidget.click();
             }
@@ -48,22 +48,22 @@ class Checkbox extends Component {
           />
           <div
             className={
-              "input-checkbox-tick " +
+              'input-checkbox-tick ' +
               (widgetData[0].value === false && filterWidget
-                ? "input-state-false "
-                : "")
+                ? 'input-state-false '
+                : '')
             }
           />
         </label>
         {filterWidget &&
         !disabled &&
         !widgetData[0].readonly &&
-        (widgetData[0].value != null && widgetData[0].value !== "") ? (
+        (widgetData[0].value != null && widgetData[0].value !== '') ? (
           <small className="input-side" onClick={this.handleClear}>
             (clear)
           </small>
         ) : (
-          ""
+          ''
         )}
       </div>
     );

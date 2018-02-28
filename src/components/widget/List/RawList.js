@@ -147,8 +147,14 @@ class RawList extends PureComponent {
   };
 
   handleKeyDown = e => {
-    const { onSelect, list, readonly, isToggled,
-      onOpenDropdown, onCloseDropdown } = this.props;
+    const {
+      onSelect,
+      list,
+      readonly,
+      isToggled,
+      onOpenDropdown,
+      onCloseDropdown,
+    } = this.props;
     const { selected } = this.state;
 
     if (e.keyCode > 47 && e.keyCode < 123) {

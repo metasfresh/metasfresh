@@ -1,15 +1,15 @@
-import counterpart from "counterpart";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import counterpart from 'counterpart';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { addNotification } from "../../actions/AppActions";
-import { patchRequest } from "../../actions/GenericActions";
+import { addNotification } from '../../actions/AppActions';
+import { patchRequest } from '../../actions/GenericActions';
 import {
   completeLetter,
   createLetter,
-  getTemplates
-} from "../../actions/LetterActions";
-import RawList from "../widget/List/RawList";
+  getTemplates,
+} from '../../actions/LetterActions';
+import RawList from '../widget/List/RawList';
 
 class NewLetter extends Component {
   constructor(props) {
@@ -19,7 +19,7 @@ class NewLetter extends Component {
       init: false,
       cached: {},
       templates: [],
-      template: {}
+      template: {},
     };
   }
 
@@ -32,7 +32,7 @@ class NewLetter extends Component {
       this.setState({
         ...res.data,
         init: true,
-        cached: res.data
+        cached: res.data,
       });
 
       try {
@@ -50,13 +50,13 @@ class NewLetter extends Component {
     const res = await getTemplates();
 
     this.setState({
-      templates: res.data.values
+      templates: res.data.values,
     });
   };
 
   handleChange = ({ target: { value: message } }) => {
     this.setState({
-      message
+      message,
     });
   };
 
@@ -68,15 +68,15 @@ class NewLetter extends Component {
     }
 
     const response = await patchRequest({
-      entity: "letter",
+      entity: 'letter',
       docType: letterId,
-      property: "message",
-      value: message
+      property: 'message',
+      value: message,
     });
 
     this.setState({
       ...response.data,
-      cached: response.data
+      cached: response.data,
     });
   };
 
@@ -89,7 +89,7 @@ class NewLetter extends Component {
     handleCloseLetter();
 
     await dispatch(
-      addNotification("Letter", "Letter has been sent.", 5000, "success")
+      addNotification('Letter', 'Letter has been sent.', 5000, 'success')
     );
   };
 
@@ -101,15 +101,15 @@ class NewLetter extends Component {
     }
 
     const response = await patchRequest({
-      entity: "letter",
+      entity: 'letter',
       docType: letterId,
-      property: "templateId",
-      value: option
+      property: 'templateId',
+      value: option,
     });
 
     this.setState({
       ...response.data,
-      template: option
+      template: option,
     });
   };
 
@@ -127,7 +127,7 @@ class NewLetter extends Component {
           <div className="panel-letter-header-wrapper">
             <div className="panel-letter-header panel-letter-header-top">
               <span className="letter-headline">
-                {counterpart.translate("window.letter.new")}
+                {counterpart.translate('window.letter.new')}
               </span>
               <a
                 href={`${config.API_URL}/letter/${letterId}/printPreview`}
@@ -156,7 +156,7 @@ class NewLetter extends Component {
           </div>
           <div className="panel-letter-body">
             <textarea
-              value={message ? message : ""}
+              value={message ? message : ''}
               onChange={this.handleChange}
               onBlur={this.handleBlur}
             />
@@ -166,7 +166,7 @@ class NewLetter extends Component {
               onClick={this.complete}
               className="btn btn-meta-success btn-sm btn-submit"
             >
-              {counterpart.translate("window.letter.create")}
+              {counterpart.translate('window.letter.create')}
             </button>
           </div>
         </div>

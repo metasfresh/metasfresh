@@ -1,10 +1,10 @@
-import counterpart from "counterpart";
-import React, { Component, Fragment } from "react";
-import onClickOutside from "react-onclickoutside";
-import { connect } from "react-redux";
+import counterpart from 'counterpart';
+import React, { Component, Fragment } from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
-import { getItemsByProperty } from "../../actions/WindowActions";
-import FiltersItem from "./FiltersItem";
+import { getItemsByProperty } from '../../actions/WindowActions';
+import FiltersItem from './FiltersItem';
 
 class FiltersNotFrequent extends Component {
   constructor(props) {
@@ -12,7 +12,7 @@ class FiltersNotFrequent extends Component {
 
     this.state = {
       isOpenDropdown: false,
-      openFilterId: null
+      openFilterId: null,
     };
   }
 
@@ -31,13 +31,13 @@ class FiltersNotFrequent extends Component {
 
   toggleDropdown = value => {
     this.setState({
-      isOpenDropdown: value
+      isOpenDropdown: value,
     });
   };
 
   toggleFilter = index => {
     this.setState({
-      openFilterId: index
+      openFilterId: index,
     });
   };
 
@@ -50,12 +50,12 @@ class FiltersNotFrequent extends Component {
       handleShow,
       applyFilters,
       clearFilters,
-      active
+      active,
     } = this.props;
 
     const { isOpenDropdown, openFilterId } = this.state;
 
-    const openFilter = getItemsByProperty(data, "filterId", openFilterId)[0];
+    const openFilter = getItemsByProperty(data, 'filterId', openFilterId)[0];
 
     const activeFilters = data.filter(filter => filter.isActive);
     const activeFilter = activeFilters.length === 1 && activeFilters[0];
@@ -65,10 +65,10 @@ class FiltersNotFrequent extends Component {
         <button
           onClick={() => this.toggleDropdown(true)}
           className={
-            "btn btn-filter btn-meta-outline-secondary " +
-            "btn-distance btn-sm" +
-            (isOpenDropdown ? " btn-select" : "") +
-            (activeFilters.length > 0 ? " btn-active" : "")
+            'btn btn-filter btn-meta-outline-secondary ' +
+            'btn-distance btn-sm' +
+            (isOpenDropdown ? ' btn-select' : '') +
+            (activeFilters.length > 0 ? ' btn-active' : '')
           }
         >
           <i className="meta-icon-preview" />
@@ -81,12 +81,12 @@ class FiltersNotFrequent extends Component {
                 {activeFilter.captionValue}
               </Fragment>
             ) : (
-              `${counterpart.translate("window.filters.caption2")}: ${
+              `${counterpart.translate('window.filters.caption2')}: ${
                 activeFilter.caption
               }`
             )
           ) : (
-            "Filter"
+            'Filter'
           )}
         </button>
 
@@ -129,6 +129,6 @@ class FiltersNotFrequent extends Component {
 }
 
 const mapStateToProps = state => ({
-  allowOutsideClick: state.windowHandler.allowOutsideClick
+  allowOutsideClick: state.windowHandler.allowOutsideClick,
 });
 export default connect(mapStateToProps)(onClickOutside(FiltersNotFrequent));

@@ -1,6 +1,6 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 class Indicator extends Component {
   constructor(props) {
@@ -9,12 +9,12 @@ class Indicator extends Component {
 
   renderIndicator = state => {
     switch (state) {
-      case "saved":
-        return "indicator-success";
-      case "pending":
-        return "indicator-pending";
-      case "error":
-        return "indicator-error";
+      case 'saved':
+        return 'indicator-success';
+      case 'pending':
+        return 'indicator-pending';
+      case 'error':
+        return 'indicator-error';
     }
   };
 
@@ -24,8 +24,8 @@ class Indicator extends Component {
       <div>
         <div
           className={
-            "indicator-bar " +
-            (isDocumentNotSaved ? "indicator-error " : "indicator-" + indicator)
+            'indicator-bar ' +
+            (isDocumentNotSaved ? 'indicator-error ' : 'indicator-' + indicator)
           }
         />
       </div>
@@ -37,16 +37,16 @@ function mapStateToProps(state) {
   const { windowHandler } = state;
 
   const { indicator } = windowHandler || {
-    indicator: ""
+    indicator: '',
   };
 
   return {
-    indicator
+    indicator,
   };
 }
 
 Indicator.propTypes = {
-  indicator: PropTypes.string.isRequired
+  indicator: PropTypes.string.isRequired,
 };
 
 export default connect(mapStateToProps)(Indicator);

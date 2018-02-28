@@ -1,40 +1,40 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { processNewRecord } from "../../actions/GenericActions";
+import { processNewRecord } from '../../actions/GenericActions';
 import {
   closeModal,
   createProcess,
   createWindow,
   handleProcessResponse,
   patch,
-  startProcess
-} from "../../actions/WindowActions";
-import { getSelection } from "../../reducers/windowHandler";
-import keymap from "../../shortcuts/keymap";
-import Process from "../Process";
-import Window from "../Window";
-import ModalContextShortcuts from "../shortcuts/ModalContextShortcuts";
-import Tooltips from "../tooltips/Tooltips.js";
-import Indicator from "./Indicator";
-import OverlayField from "./OverlayField";
+  startProcess,
+} from '../../actions/WindowActions';
+import { getSelection } from '../../reducers/windowHandler';
+import keymap from '../../shortcuts/keymap';
+import Process from '../Process';
+import Window from '../Window';
+import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
+import Tooltips from '../tooltips/Tooltips.js';
+import Indicator from './Indicator';
+import OverlayField from './OverlayField';
 
 const mapStateToProps = (state, props) => ({
   parentSelection: getSelection({
     state,
     windowType: props.parentType,
-    viewId: props.viewId
+    viewId: props.viewId,
   }),
-  activeTabId: state.windowHandler.master.layout.activeTab
+  activeTabId: state.windowHandler.master.layout.activeTab,
 });
 
 class Modal extends Component {
   mounted = false;
 
   static propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
   };
 
   constructor(props) {
@@ -44,12 +44,12 @@ class Modal extends Component {
 
     this.state = {
       scrolled: false,
-      isNew: rowId === "NEW",
-      isNewDoc: dataId === "NEW",
+      isNew: rowId === 'NEW',
+      isNewDoc: dataId === 'NEW',
       init: false,
       pending: false,
       waitingFetch: false,
-      isTooltipShow: false
+      isTooltipShow: false,
     };
   }
 
@@ -67,7 +67,7 @@ class Modal extends Component {
       return;
     }
 
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
 
     this.initEventListeners();
   }
@@ -91,7 +91,7 @@ class Modal extends Component {
     if (waitingFetch && prevProps.indicator !== indicator) {
       this.setState(
         {
-          waitingFetch: false
+          waitingFetch: false,
         },
         () => {
           this.handleStart();
@@ -105,18 +105,18 @@ class Modal extends Component {
   };
 
   initEventListeners = () => {
-    const modalContent = document.querySelector(".js-panel-modal-content");
+    const modalContent = document.querySelector('.js-panel-modal-content');
 
     if (modalContent) {
-      modalContent.addEventListener("scroll", this.handleScroll);
+      modalContent.addEventListener('scroll', this.handleScroll);
     }
   };
 
   removeEventListeners = () => {
-    const modalContent = document.querySelector(".js-panel-modal-content");
+    const modalContent = document.querySelector('.js-panel-modal-content');
 
     if (modalContent) {
-      modalContent.removeEventListener("scroll", this.handleScroll);
+      modalContent.removeEventListener('scroll', this.handleScroll);
     }
   };
 
@@ -137,11 +137,11 @@ class Modal extends Component {
       childViewId,
       childViewSelectedIds,
       parentViewId,
-      parentViewSelectedIds
+      parentViewSelectedIds,
     } = this.props;
 
     switch (modalType) {
-      case "window":
+      case 'window':
         try {
           await dispatch(
             createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)
@@ -154,7 +154,7 @@ class Modal extends Component {
 
         break;
 
-      case "process":
+      case 'process':
         // We have 3 cases of processes (prioritized):
         // - with viewDocumentIds: on single page with rawModal
         // - with dataId: on single document page
@@ -169,13 +169,13 @@ class Modal extends Component {
               ? modalViewDocumentIds
               : dataId ? [dataId] : parentSelection,
             tabId,
-            rowId
+            rowId,
           };
 
           if (activeTabId && parentSelection) {
             options.selectedTab = {
               tabId: activeTabId,
-              rowIds: parentSelection
+              rowIds: parentSelection,
             };
           }
 
@@ -193,7 +193,7 @@ class Modal extends Component {
         } catch (error) {
           this.handleClose();
 
-          if (error.toString() !== "Error: close_modal") {
+          if (error.toString() !== 'Error: close_modal') {
             throw error;
           }
         }
@@ -213,15 +213,15 @@ class Modal extends Component {
       parentDataId,
       triggerField,
       rowId,
-      tabId
+      tabId,
     } = this.props;
     const { isNew, isNewDoc } = this.state;
 
     if (isNewDoc) {
-      processNewRecord("window", windowType, dataId).then(response => {
+      processNewRecord('window', windowType, dataId).then(response => {
         dispatch(
           patch(
-            "window",
+            'window',
             parentType,
             parentDataId,
             null,
@@ -240,7 +240,7 @@ class Modal extends Component {
           windowType,
           documentId: dataId,
           tabId,
-          rowId
+          rowId,
         });
       }
 
@@ -288,14 +288,14 @@ class Modal extends Component {
   handleStart = () => {
     const { dispatch, layout, windowType, indicator } = this.props;
 
-    if (indicator === "pending") {
+    if (indicator === 'pending') {
       this.setState({ waitingFetch: true, pending: true });
       return;
     }
 
     this.setState(
       {
-        pending: true
+        pending: true,
       },
       async () => {
         let response;
@@ -316,7 +316,7 @@ class Modal extends Component {
           throw error;
         } finally {
           this.setState({
-            pending: false
+            pending: false,
           });
         }
       }
@@ -332,12 +332,12 @@ class Modal extends Component {
       dataId,
       modalType,
       windowType,
-      isAdvanced
+      isAdvanced,
     } = this.props;
     const { pending } = this.state;
 
     switch (modalType) {
-      case "window":
+      case 'window':
         return (
           <Window
             data={data}
@@ -352,7 +352,7 @@ class Modal extends Component {
           />
         );
 
-      case "process":
+      case 'process':
         return (
           <Process
             data={data}
@@ -370,7 +370,7 @@ class Modal extends Component {
       modalTitle,
       modalType,
       isDocumentNotSaved,
-      layout
+      layout,
     } = this.props;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 
@@ -380,7 +380,7 @@ class Modal extends Component {
           <div className="panel panel-modal panel-modal-primary">
             <div
               className={
-                "panel-modal-header " + (scrolled ? "header-shadow" : "")
+                'panel-modal-header ' + (scrolled ? 'header-shadow' : '')
               }
             >
               <span className="panel-modal-header-title">
@@ -393,20 +393,20 @@ class Modal extends Component {
                     className={`btn btn-meta-outline-secondary
                                         btn-distance-3 btn-md ${
                                           pending
-                                            ? "tag-disabled disabled "
-                                            : ""
+                                            ? 'tag-disabled disabled '
+                                            : ''
                                         }`}
                     onClick={this.removeModal}
                     tabIndex={0}
                     onMouseEnter={() => this.toggleTooltip(keymap.CANCEL)}
                     onMouseLeave={this.toggleTooltip}
                   >
-                    {counterpart.translate("modal.actions.cancel")}
+                    {counterpart.translate('modal.actions.cancel')}
 
                     {isTooltipShow === keymap.CANCEL && (
                       <Tooltips
                         name={keymap.CANCEL}
-                        action={counterpart.translate("modal.actions.cancel")}
+                        action={counterpart.translate('modal.actions.cancel')}
                         type=""
                       />
                     )}
@@ -417,57 +417,57 @@ class Modal extends Component {
                   className={
                     `btn btn-meta-outline-secondary
                                     btn-distance-3 btn-md ` +
-                    (pending ? "tag-disabled disabled " : "")
+                    (pending ? 'tag-disabled disabled ' : '')
                   }
                   onClick={this.handleClose}
                   tabIndex={0}
                   onMouseEnter={() =>
                     this.toggleTooltip(
-                      modalType === "process" ? keymap.CANCEL : keymap.APPLY
+                      modalType === 'process' ? keymap.CANCEL : keymap.APPLY
                     )
                   }
                   onMouseLeave={this.toggleTooltip}
                 >
-                  {modalType === "process"
-                    ? counterpart.translate("modal.actions.cancel")
-                    : counterpart.translate("modal.actions.done")}
+                  {modalType === 'process'
+                    ? counterpart.translate('modal.actions.cancel')
+                    : counterpart.translate('modal.actions.done')}
 
                   {isTooltipShow ===
-                    (modalType === "process"
+                    (modalType === 'process'
                       ? keymap.CANCEL
                       : keymap.APPLY) && (
                     <Tooltips
                       name={
-                        modalType === "process" ? keymap.CANCEL : keymap.APPLY
+                        modalType === 'process' ? keymap.CANCEL : keymap.APPLY
                       }
                       action={
-                        modalType === "process"
-                          ? counterpart.translate("modal.actions.cancel")
-                          : counterpart.translate("modal.actions.done")
+                        modalType === 'process'
+                          ? counterpart.translate('modal.actions.cancel')
+                          : counterpart.translate('modal.actions.done')
                       }
                       type=""
                     />
                   )}
                 </button>
 
-                {modalType === "process" && (
+                {modalType === 'process' && (
                   <button
                     className={
                       `btn btn-meta-primary btn-distance-3
                                         btn-md ` +
-                      (pending ? "tag-disabled disabled" : "")
+                      (pending ? 'tag-disabled disabled' : '')
                     }
                     onClick={this.handleStart}
                     tabIndex={0}
                     onMouseEnter={() => this.toggleTooltip(keymap.APPLY)}
                     onMouseLeave={this.toggleTooltip}
                   >
-                    {counterpart.translate("modal.actions.start")}
+                    {counterpart.translate('modal.actions.start')}
 
                     {isTooltipShow === keymap.APPLY && (
                       <Tooltips
                         name={keymap.APPLY}
-                        action={counterpart.translate("modal.actions.start")}
+                        action={counterpart.translate('modal.actions.start')}
                         type=""
                       />
                     )}
@@ -491,12 +491,12 @@ class Modal extends Component {
             </div>
             <ModalContextShortcuts
               apply={
-                modalType === "process" ? this.handleStart : this.handleClose
+                modalType === 'process' ? this.handleStart : this.handleClose
               }
               cancel={
-                modalType === "process"
+                modalType === 'process'
                   ? this.handleClose
-                  : isNewDoc ? this.removeModal : ""
+                  : isNewDoc ? this.removeModal : ''
               }
             />
           </div>
@@ -526,10 +526,10 @@ class Modal extends Component {
 
     return (
       <div>
-        {(!layout.layoutType || layout.layoutType === "panel") &&
+        {(!layout.layoutType || layout.layoutType === 'panel') &&
           this.renderPanel()}
 
-        {layout.layoutType === "singleOverlayField" && this.renderOverlay()}
+        {layout.layoutType === 'singleOverlayField' && this.renderOverlay()}
       </div>
     );
   }

@@ -1,12 +1,12 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import { push } from "react-router-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
-import keymap from "../../shortcuts/keymap";
-import Tooltips from "../tooltips/Tooltips";
-import MenuOverlay from "./MenuOverlay";
+import keymap from '../../shortcuts/keymap';
+import Tooltips from '../tooltips/Tooltips';
+import MenuOverlay from './MenuOverlay';
 
 class Breadcrumb extends Component {
   constructor(props) {
@@ -14,13 +14,13 @@ class Breadcrumb extends Component {
     this.state = {
       tooltipOpen: false,
       tooltipOnFirstlevel: false,
-      tooltipOnFirstlevelPositionLeft: 0
+      tooltipOnFirstlevelPositionLeft: 0,
     };
   }
 
   linkToPage = page => {
     const { dispatch } = this.props;
-    dispatch(push("/window/" + page));
+    dispatch(push('/window/' + page));
   };
 
   linkToEntityPage = (entity, page) => {
@@ -30,17 +30,17 @@ class Breadcrumb extends Component {
 
   toggleTooltip = tooltip => {
     this.setState({
-      tooltipOpen: tooltip
+      tooltipOpen: tooltip,
     });
   };
 
   toggleTooltipOnFirstLevel = showTooltip => {
     const breadcrumbWrapper = document.getElementsByClassName(
-      "header-breadcrumb-wrapper"
+      'header-breadcrumb-wrapper'
     )[0];
     const breadcrumbWrapperLeft =
       breadcrumbWrapper && breadcrumbWrapper.getBoundingClientRect().left;
-    const elem = document.getElementsByClassName("header-item-last-level")[0];
+    const elem = document.getElementsByClassName('header-item-last-level')[0];
     const elemWidth = elem && elem.offsetWidth;
     const elemLeft = elem && elem.getBoundingClientRect().left;
 
@@ -49,14 +49,14 @@ class Breadcrumb extends Component {
 
     this.setState({
       tooltipOnFirstlevel: showTooltip,
-      tooltipOnFirstlevelPositionLeft: tooltipPositionLeft
+      tooltipOnFirstlevelPositionLeft: tooltipPositionLeft,
     });
   };
 
   closeTooltips = () => {
     this.setState({
       tooltipOpen: false,
-      tooltipOnFirstlevel: false
+      tooltipOnFirstlevel: false,
     });
   };
 
@@ -65,13 +65,13 @@ class Breadcrumb extends Component {
 
     const noChildNodes =
       menu &&
-      (menu.type === "window" ||
-        menu.type === "board" ||
+      (menu.type === 'window' ||
+        menu.type === 'board' ||
         (menu.children && menu.children.length === 0));
 
     if (menu && (menu.elementId || noChildNodes)) {
       if (windowType) {
-        if (menu.type === "board") {
+        if (menu.type === 'board') {
           this.linkToEntityPage(menu.type, windowType);
         } else {
           this.linkToPage(windowType);
@@ -92,7 +92,7 @@ class Breadcrumb extends Component {
       openModal,
       windowType,
       breadcrumb,
-      docId
+      docId,
     } = this.props;
 
     return (
@@ -101,12 +101,12 @@ class Breadcrumb extends Component {
         <div className="header-btn tooltip-parent">
           <div
             className={
-              "header-item-container pointer " +
-              (menuOverlay === menu.nodeId ? "header-item-open " : "") +
-              (!index ? "header-item-container-static " : "") +
+              'header-item-container pointer ' +
+              (menuOverlay === menu.nodeId ? 'header-item-open ' : '') +
+              (!index ? 'header-item-container-static ' : '') +
               (breadcrumb && index === breadcrumb.length
-                ? "header-item-last-level"
-                : "")
+                ? 'header-item-last-level'
+                : '')
             }
             onClick={e => this.handleClick(e, menu)}
             onMouseEnter={
@@ -130,11 +130,11 @@ class Breadcrumb extends Component {
                 handleMenuOverlay,
                 openModal,
                 windowType,
-                docId
+                docId,
               }}
               nodeId={menu.nodeId}
               node={menu}
-              onClickOutside={e => handleMenuOverlay(e, "")}
+              onClickOutside={e => handleMenuOverlay(e, '')}
               disableOnClickOutside={menuOverlay !== menu.nodeId}
             />
           )}
@@ -149,7 +149,7 @@ class Breadcrumb extends Component {
     const {
       tooltipOpen,
       tooltipOnFirstlevel,
-      tooltipOnFirstlevelPositionLeft
+      tooltipOnFirstlevelPositionLeft,
     } = this.state;
 
     return (
@@ -158,21 +158,21 @@ class Breadcrumb extends Component {
           <Tooltips
             extraClass="tooltip-home-menu"
             name={keymap.OPEN_NAVIGATION_MENU}
-            action={counterpart.translate("mainScreen.navigation.tooltip")}
-            type={""}
+            action={counterpart.translate('mainScreen.navigation.tooltip')}
+            type={''}
           />
         )}
         {tooltipOnFirstlevel && (
           <Tooltips
             {...{ tooltipOnFirstlevelPositionLeft }}
             name=""
-            action={"Go to default documents list"}
-            type={""}
+            action={'Go to default documents list'}
+            type={''}
           />
         )}
 
         <div className="header-breadcrumb">
-          {this.renderBtn({ nodeId: "0" }, 0)}
+          {this.renderBtn({ nodeId: '0' }, 0)}
 
           {breadcrumb &&
             breadcrumb.map((item, index) => this.renderBtn(item, index + 1))}
@@ -206,7 +206,7 @@ class Breadcrumb extends Component {
 }
 
 Breadcrumb.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect()(Breadcrumb);

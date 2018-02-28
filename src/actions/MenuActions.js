@@ -1,6 +1,6 @@
-import axios from "axios";
+import axios from 'axios';
 
-import * as types from "../constants/MenuTypes";
+import * as types from '../constants/MenuTypes';
 
 // REQUESTS
 
@@ -9,52 +9,52 @@ let breadcrumbsId = null;
 
 export function pathRequest(nodeId) {
   return axios.get(
-    config.API_URL + "/menu/" + nodeId + "/path/" + "&inclusive=true"
+    config.API_URL + '/menu/' + nodeId + '/path/' + '&inclusive=true'
   );
 }
 
 export function nodePathsRequest(nodeId, limit) {
   return axios.get(
     config.API_URL +
-      "/menu/node/" +
+      '/menu/node/' +
       nodeId +
-      "?depth=2" +
-      (limit ? "&childrenLimit=" + limit : "")
+      '?depth=2' +
+      (limit ? '&childrenLimit=' + limit : '')
   );
 }
 
 export function elementPathRequest(pathType, elementId) {
   return axios.get(
     config.API_URL +
-      "/menu/elementPath?type=" +
+      '/menu/elementPath?type=' +
       pathType +
-      "&elementId=" +
+      '&elementId=' +
       elementId +
-      "&inclusive=true"
+      '&inclusive=true'
   );
 }
 
 export function queryPathsRequest(query, limit, child) {
   return axios.get(
     config.API_URL +
-      "/menu/queryPaths?nameQuery=" +
+      '/menu/queryPaths?nameQuery=' +
       query +
-      (limit ? "&childrenLimit=" + limit : "") +
-      (child ? "&childrenInclusive=true" : "")
+      (limit ? '&childrenLimit=' + limit : '') +
+      (child ? '&childrenInclusive=true' : '')
   );
 }
 
 export function rootRequest(limit, depth = 0, onlyFavorites) {
   return axios.get(
     config.API_URL +
-      "/menu/root?depth=" +
+      '/menu/root?depth=' +
       depth +
-      (limit ? "&childrenLimit=" + limit : "") +
-      (onlyFavorites ? "&favorites=true" : "")
+      (limit ? '&childrenLimit=' + limit : '') +
+      (onlyFavorites ? '&favorites=true' : '')
   );
 }
 export function breadcrumbRequest(nodeId) {
-  return axios.get(config.API_URL + "/menu/node/" + nodeId + "/breadcrumbMenu");
+  return axios.get(config.API_URL + '/menu/node/' + nodeId + '/breadcrumbMenu');
 }
 
 // END OF REQUESTS
@@ -62,21 +62,21 @@ export function breadcrumbRequest(nodeId) {
 export function setBreadcrumb(breadcrumb) {
   return {
     type: types.SET_BREADCRUMB,
-    breadcrumb
+    breadcrumb,
   };
 }
 
 export function updateBreadcrumb(node) {
   return {
     type: types.UPDATE_BREADCRUMB,
-    node
+    node,
   };
 }
 
 export function getRootBreadcrumb() {
   return rootRequest(6, 10, true).then(root => ({
-    nodeId: "0",
-    children: root.data.children
+    nodeId: '0',
+    children: root.data.children,
   }));
 }
 
@@ -85,7 +85,7 @@ export function getWindowBreadcrumb(id) {
     if (!breadcrumbsRequested && breadcrumbsId !== id) {
       breadcrumbsRequested = true;
 
-      elementPathRequest("window", id)
+      elementPathRequest('window', id)
         .then(response => {
           let pathData = flattenOneLine(response.data);
           return pathData;
@@ -136,14 +136,14 @@ export function getElementBreadcrumb(entity, id) {
 
 // UTILITIES
 
-export function flattenLastElem(node, prop = "children") {
+export function flattenLastElem(node, prop = 'children') {
   let result = [];
 
   if (node[prop]) {
     node[prop].map(child => {
       const flat = flattenLastElem(child);
 
-      if (typeof flat === "object") {
+      if (typeof flat === 'object') {
         result = result.concat(flat);
       } else {
         result.push(flattenLastElem(child));
@@ -165,7 +165,7 @@ export function flattenOneLine(node) {
   result.push({
     nodeId: node.nodeId,
     caption: node.caption,
-    type: node.type
+    type: node.type,
   });
   return result;
 }

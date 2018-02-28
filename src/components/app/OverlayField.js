@@ -1,7 +1,7 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import MasterWidget from "../widget/MasterWidget";
-import RawWidget from "../widget/RawWidget";
+import MasterWidget from '../widget/MasterWidget';
+import RawWidget from '../widget/RawWidget';
 
 class OverlayField extends Component {
   constructor(props) {
@@ -11,11 +11,11 @@ class OverlayField extends Component {
   handleKeyDown = e => {
     const { handleSubmit, closeOverlay } = this.props;
     switch (e.key) {
-      case "Enter":
+      case 'Enter':
         document.activeElement.blur();
         handleSubmit();
         break;
-      case "Escape":
+      case 'Escape':
         closeOverlay();
         break;
     }
@@ -29,7 +29,7 @@ class OverlayField extends Component {
       return (
         <MasterWidget
           entity="process"
-          key={"element" + id}
+          key={'element' + id}
           windowType={type}
           dataId={layout.pinstanceId}
           widgetData={widgetData}
@@ -50,7 +50,7 @@ class OverlayField extends Component {
       onHide,
       handlePatch,
       handleChange,
-      captionValue
+      captionValue,
     } = this.props;
     const parameters = layout.parameters;
     return parameters.map((item, index) => {
@@ -78,7 +78,7 @@ class OverlayField extends Component {
             windowType,
             onShow,
             onHide,
-            viewId
+            viewId,
           }}
         />
       );

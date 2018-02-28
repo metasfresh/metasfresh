@@ -1,31 +1,31 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import TetherComponent from "react-tether";
-import ReactDOM from "react-dom";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import TetherComponent from 'react-tether';
+import ReactDOM from 'react-dom';
 
-import { autocompleteRequest } from "../../../actions/GenericActions";
-import { getViewAttributeTypeahead } from "../../../actions/ViewAttributesActions";
+import { autocompleteRequest } from '../../../actions/GenericActions';
+import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesActions';
 import {
   openModal,
   allowOutsideClick,
-  disableOutsideClick
-} from "../../../actions/WindowActions";
-import LookupList from "./LookupList";
+  disableOutsideClick,
+} from '../../../actions/WindowActions';
+import LookupList from './LookupList';
 
 class RawLookup extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      query: "",
+      query: '',
       list: [],
       isInputEmpty: true,
       selected: null,
       loading: false,
-      oldValue: "",
+      oldValue: '',
       shouldBeFocused: true,
-      validLocal: true
+      validLocal: true,
     };
   }
 
@@ -61,13 +61,13 @@ class RawLookup extends Component {
       lookupEmpty,
       localClearing,
       resetLocalClearing,
-      fireDropdownList
+      fireDropdownList,
     } = this.props;
 
     const { shouldBeFocused } = this.state;
 
     if (localClearing && !defaultValue) {
-      this.inputSearch.value = "";
+      this.inputSearch.value = '';
       resetLocalClearing();
     }
 
@@ -75,7 +75,7 @@ class RawLookup extends Component {
       this.inputSearch.focus();
 
       this.setState({
-        shouldBeFocused: false
+        shouldBeFocused: false,
       });
     }
 
@@ -84,9 +84,9 @@ class RawLookup extends Component {
       handleInputEmptyStatus(false);
 
     if (fireClickOutside && prevProps.fireClickOutside !== fireClickOutside) {
-      if (defaultValue !== null && typeof defaultValue !== "undefined") {
+      if (defaultValue !== null && typeof defaultValue !== 'undefined') {
         if (defaultValue.caption !== this.inputSearch.value) {
-          this.inputSearch.value = defaultValue.caption || "";
+          this.inputSearch.value = defaultValue.caption || '';
         }
       }
     }
@@ -96,7 +96,7 @@ class RawLookup extends Component {
     }
 
     if (fireDropdownList && prevProps.fireDropdownList !== fireDropdownList) {
-      this.handleChange("", true);
+      this.handleChange('', true);
     }
 
     this.checkIfComponentOutOfFilter();
@@ -125,7 +125,7 @@ class RawLookup extends Component {
       isInputEmpty: true,
       selected: null,
       loading: false,
-      query: ""
+      query: '',
     });
   };
 
@@ -135,21 +135,21 @@ class RawLookup extends Component {
     if (list.length === 0) {
       // Case of selecting row for creting new instance
       this.setState({
-        selected: "new"
+        selected: 'new',
       });
     } else {
       // Case of selecting regular list items
-      if (typeof selected === "number") {
+      if (typeof selected === 'number') {
         const selectTarget = selected + (reverse ? -1 : 1);
 
-        if (typeof list[selectTarget] !== "undefined") {
+        if (typeof list[selectTarget] !== 'undefined') {
           this.setState({
-            selected: selectTarget
+            selected: selectTarget,
           });
         }
-      } else if (typeof list[0] !== "undefined") {
+      } else if (typeof list[0] !== 'undefined') {
         this.setState({
-          selected: 0
+          selected: 0,
         });
       }
     }
@@ -162,13 +162,13 @@ class RawLookup extends Component {
       mainProperty,
       setNextProperty,
       filterWidget,
-      subentity
+      subentity,
     } = this.props;
 
     let mainProp = mainProperty[0];
 
     this.setState({
-      selected: null
+      selected: null,
     });
 
     if (filterWidget) {
@@ -182,7 +182,7 @@ class RawLookup extends Component {
         setNextProperty(mainProp.parameterName);
       }
     } else {
-      if (subentity === "quickInput") {
+      if (subentity === 'quickInput') {
         onChange(mainProperty[0].field, select, () =>
           setNextProperty(mainProp.field)
         );
@@ -215,7 +215,7 @@ class RawLookup extends Component {
       newRecordCaption,
       filterWidget,
       parameterName,
-      mainProperty
+      mainProperty,
     } = this.props;
 
     this.handleBlur();
@@ -224,13 +224,13 @@ class RawLookup extends Component {
       openModal(
         newRecordCaption,
         newRecordWindowId,
-        "window",
+        'window',
         null,
         null,
         null,
         null,
         null,
-        "NEW",
+        'NEW',
         filterWidget ? parameterName : mainProperty[0].field
       )
     );
@@ -262,7 +262,7 @@ class RawLookup extends Component {
       mainProperty,
       handleInputEmptyStatus,
       enableAutofocus,
-      dispatch
+      dispatch,
     } = this.props;
 
     dispatch(disableOutsideClick());
@@ -275,13 +275,13 @@ class RawLookup extends Component {
       this.setState({
         isInputEmpty: false,
         loading: true,
-        query: this.inputSearch.value
+        query: this.inputSearch.value,
       });
 
       this.props.onDropdownListToggle(true);
 
       let typeaheadRequest;
-      if (entity === "documentView" && !filterWidget) {
+      if (entity === 'documentView' && !filterWidget) {
         typeaheadRequest = getViewAttributeTypeahead(
           windowType,
           viewId,
@@ -299,7 +299,7 @@ class RawLookup extends Component {
           rowId,
           subentity,
           subentityId,
-          tabId
+          tabId,
         });
       }
 
@@ -311,14 +311,14 @@ class RawLookup extends Component {
           loading: false,
           selected: 0,
           validLocal:
-            values.length === 0 && handleChangeOnFocus !== true ? false : true
+            values.length === 0 && handleChangeOnFocus !== true ? false : true,
         });
       });
     } else {
       this.setState({
         isInputEmpty: true,
         query: this.inputSearch.value,
-        list: recent
+        list: recent,
       });
 
       handleInputEmptyStatus(true);
@@ -333,25 +333,25 @@ class RawLookup extends Component {
     listenOnKeys && listenOnKeysFalse && listenOnKeysFalse();
 
     switch (e.key) {
-      case "ArrowDown":
+      case 'ArrowDown':
         e.preventDefault();
         this.navigate();
         break;
 
-      case "ArrowUp":
+      case 'ArrowUp':
         e.preventDefault();
         this.navigate(true);
         break;
 
-      case "ArrowLeft":
+      case 'ArrowLeft':
         e.preventDefault();
         this.handleChange();
         break;
 
-      case "Enter":
+      case 'Enter':
         e.preventDefault();
 
-        if (selected === "new") {
+        if (selected === 'new') {
           this.handleAddNew(query);
         } else if (selected !== null) {
           this.handleSelect(list[selected]);
@@ -359,12 +359,12 @@ class RawLookup extends Component {
 
         break;
 
-      case "Escape":
+      case 'Escape':
         e.preventDefault();
         this.handleBlur();
         break;
 
-      case "Tab":
+      case 'Tab':
         this.handleBlur();
         break;
     }
@@ -385,12 +385,12 @@ class RawLookup extends Component {
           oldValue: inputValue,
           isInputEmpty: false,
           validLocal: true,
-          list: [init]
+          list: [init],
         });
       } else if (isInputEmpty) {
         this.setState({
           isInputEmpty: false,
-          list: [init]
+          list: [init],
         });
       }
     } else if (oldValue && !defaultValue && this.inputSearch) {
@@ -401,7 +401,7 @@ class RawLookup extends Component {
 
         this.setState({
           oldValue: inputEmptyValue,
-          isInputEmpty: true
+          isInputEmpty: true,
         });
       }
     }
@@ -416,7 +416,7 @@ class RawLookup extends Component {
       readonly,
       disabled,
       tabIndex,
-      isOpen
+      isOpen,
     } = this.props;
 
     const { isInputEmpty, list, query, loading, selected } = this.state;
@@ -424,9 +424,9 @@ class RawLookup extends Component {
     return (
       <div
         className={
-          "raw-lookup-wrapper raw-lookup-wrapper-bcg" +
-          (disabled ? " raw-lookup-disabled" : "") +
-          (readonly ? " input-disabled" : "")
+          'raw-lookup-wrapper raw-lookup-wrapper-bcg' +
+          (disabled ? ' raw-lookup-disabled' : '') +
+          (readonly ? ' input-disabled' : '')
         }
         onKeyDown={this.handleKeyDown}
         ref={c => (this.rawLookup = c)}
@@ -436,17 +436,17 @@ class RawLookup extends Component {
           targetAttachment="bottom left"
           constraints={[
             {
-              to: "scrollParent"
+              to: 'scrollParent',
             },
             {
-              to: "window",
-              pin: ["bottom"]
-            }
+              to: 'window',
+              pin: ['bottom'],
+            },
           ]}
         >
-          <div className={"input-dropdown input-block"}>
+          <div className={'input-dropdown input-block'}>
             <div
-              className={"input-editable" + (align ? " text-xs-" + align : "")}
+              className={'input-editable' + (align ? ' text-xs-' + align : '')}
             >
               <input
                 ref={c => (this.inputSearch = c)}
@@ -477,7 +477,7 @@ class RawLookup extends Component {
                 handleAddNew={this.handleAddNew}
                 onClickOutside={this.handleBlur}
                 style={{
-                  width: `${this.rawLookup.offsetWidth + SEARCH_ICON_WIDTH}px`
+                  width: `${this.rawLookup.offsetWidth + SEARCH_ICON_WIDTH}px`,
                 }}
               />
             )}
@@ -488,11 +488,11 @@ class RawLookup extends Component {
 }
 
 const mapStateToProps = state => ({
-  filter: state.windowHandler.filter
+  filter: state.windowHandler.filter,
 });
 
 RawLookup.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect(mapStateToProps)(RawLookup);

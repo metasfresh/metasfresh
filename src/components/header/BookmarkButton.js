@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { patchRequest } from "../../actions/GenericActions";
+import { patchRequest } from '../../actions/GenericActions';
 
 export default class BookmarkButton extends Component {
   constructor(props) {
@@ -8,7 +8,7 @@ export default class BookmarkButton extends Component {
 
     this.state = {
       isBookmarkButtonShowed: false,
-      isBookmark: props.isBookmark
+      isBookmark: props.isBookmark,
     };
   }
 
@@ -31,11 +31,11 @@ export default class BookmarkButton extends Component {
     const { isBookmark } = this.state;
 
     patchRequest({
-      entity: "menu",
-      property: "favorite",
+      entity: 'menu',
+      property: 'favorite',
       value: !isBookmark,
-      subentity: "node",
-      subentityId: nodeId
+      subentity: 'node',
+      subentityId: nodeId,
     }).then(response => {
       this.setState({ isBookmark: !isBookmark });
 
@@ -65,8 +65,8 @@ export default class BookmarkButton extends Component {
             <i
               onClick={this.handleClick}
               className={
-                "btn-bookmark-icon meta-icon-star icon-spaced " +
-                (isBookmark ? "active " : "")
+                'btn-bookmark-icon meta-icon-star icon-spaced ' +
+                (isBookmark ? 'active ' : '')
               }
             />
           ))}

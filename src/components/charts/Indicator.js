@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import Loader from "../app/Loader";
+import Loader from '../app/Loader';
 
 class Indicator extends Component {
   constructor(props) {
@@ -14,7 +14,7 @@ class Indicator extends Component {
       loader,
       fullWidth,
       editmode,
-      framework
+      framework,
     } = this.props;
 
     if (loader)
@@ -27,10 +27,10 @@ class Indicator extends Component {
     return (
       <div
         className={
-          "indicator js-indicator " +
-          (editmode || framework ? "indicator-draggable " : "")
+          'indicator js-indicator ' +
+          (editmode || framework ? 'indicator-draggable ' : '')
         }
-        style={fullWidth ? { width: "100%" } : {}}
+        style={fullWidth ? { width: '100%' } : {}}
       >
         <div className="indicator-value">{value}</div>
         <div className="indicator-kpi-caption">{caption}</div>

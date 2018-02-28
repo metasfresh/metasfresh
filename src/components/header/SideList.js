@@ -1,13 +1,13 @@
-import counterpart from "counterpart";
-import React, { Component } from "react";
-import onClickOutside from "react-onclickoutside";
-import { connect } from "react-redux";
+import counterpart from 'counterpart';
+import React, { Component } from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
-import keymap from "../../shortcuts/keymap";
-import DocumentList from "../app/DocumentList";
-import Tooltips from "../tooltips/Tooltips";
-import Attachments from "./Attachments";
-import Referenced from "./Referenced";
+import keymap from '../../shortcuts/keymap';
+import DocumentList from '../app/DocumentList';
+import Tooltips from '../tooltips/Tooltips';
+import Attachments from './Attachments';
+import Referenced from './Referenced';
 
 class SideList extends Component {
   constructor(props) {
@@ -17,7 +17,7 @@ class SideList extends Component {
 
     this.state = {
       tab: defaultTab ? defaultTab : 0,
-      tooltipOpen: false
+      tooltipOpen: false,
     };
   }
 
@@ -28,7 +28,7 @@ class SideList extends Component {
 
   changeTab = index => {
     this.setState({
-      tab: index
+      tab: index,
     });
   };
 
@@ -41,7 +41,7 @@ class SideList extends Component {
       docId,
       pagination,
       sorting,
-      viewId
+      viewId,
     } = this.props;
 
     const { tab } = this.state;
@@ -70,7 +70,7 @@ class SideList extends Component {
               windowType,
               closeOverlays,
               closeSideList,
-              isSideListShow
+              isSideListShow,
             }}
           />
         );
@@ -83,7 +83,7 @@ class SideList extends Component {
 
   toggleTooltip = id => {
     this.setState({
-      tooltipOpen: id
+      tooltipOpen: id,
     });
   };
 
@@ -92,19 +92,21 @@ class SideList extends Component {
 
     const tabs = [
       {
-        icon: "meta-icon-list",
-        title: counterpart.translate("mainScreen.sideList.documentList.tooltip")
-      },
-      {
-        icon: "meta-icon-share",
+        icon: 'meta-icon-list',
         title: counterpart.translate(
-          "mainScreen.sideList.referencedDocuments.tooltip"
-        )
+          'mainScreen.sideList.documentList.tooltip'
+        ),
       },
       {
-        icon: "meta-icon-attachments",
-        title: counterpart.translate("mainScreen.sideList.attachments.tooltip")
-      }
+        icon: 'meta-icon-share',
+        title: counterpart.translate(
+          'mainScreen.sideList.referencedDocuments.tooltip'
+        ),
+      },
+      {
+        icon: 'meta-icon-attachments',
+        title: counterpart.translate('mainScreen.sideList.attachments.tooltip'),
+      },
     ];
 
     return (
@@ -118,8 +120,8 @@ class SideList extends Component {
               <div
                 key={index}
                 className={
-                  "order-list-btn tooltip-parent " +
-                  (index === tab ? "active " : "")
+                  'order-list-btn tooltip-parent ' +
+                  (index === tab ? 'active ' : '')
                 }
                 onClick={() => this.changeTab(index)}
                 onMouseEnter={() => this.toggleTooltip(index)}
@@ -129,9 +131,9 @@ class SideList extends Component {
                 <i className={item.icon} />
                 {tooltipOpen === index && (
                   <Tooltips
-                    name={keymap["OPEN_SIDEBAR_MENU_" + index]}
+                    name={keymap['OPEN_SIDEBAR_MENU_' + index]}
                     action={item.title}
-                    type={""}
+                    type={''}
                   />
                 )}
               </div>
@@ -149,13 +151,13 @@ function mapStateToProps(state) {
   const { sorting, pagination, viewId } = listHandler || {
     sorting: {},
     pagination: {},
-    viewId: {}
+    viewId: {},
   };
 
   return {
     sorting,
     pagination,
-    viewId
+    viewId,
   };
 }
 

@@ -1,19 +1,19 @@
-import PropTypes from "prop-types";
-import { Component } from "react";
+import PropTypes from 'prop-types';
+import { Component } from 'react';
 
-import keymap from "../../shortcuts/keymap";
+import keymap from '../../shortcuts/keymap';
 
 export default class Shortcut extends Component {
   static contextTypes = {
     shortcuts: PropTypes.shape({
       subscribe: PropTypes.func.isRequired,
-      unsubscribe: PropTypes.func.isRequired
-    }).isRequired
+      unsubscribe: PropTypes.func.isRequired,
+    }).isRequired,
   };
 
   static propTypes = {
     name: PropTypes.oneOf(Object.keys(keymap)).isRequired,
-    handler: PropTypes.func.isRequired
+    handler: PropTypes.func.isRequired,
   };
 
   componentWillMount() {

@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { Shortcut } from "../Shortcuts";
+import { Shortcut } from '../Shortcuts';
 
 export default class DocumentStatusContextShortcuts extends Component {
   handleShortcut = event => {

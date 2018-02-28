@@ -1,12 +1,12 @@
-import React, { Component } from "react";
-import Dropzone from "react-dropzone";
+import React, { Component } from 'react';
+import Dropzone from 'react-dropzone';
 
 class DropzoneWrapper extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      dragActive: false
+      dragActive: false,
     };
   }
 
@@ -30,7 +30,7 @@ class DropzoneWrapper extends Component {
 
     this.setState(
       {
-        dragActive: true
+        dragActive: true,
       },
       () => {
         dragActive && handleDragStart();
@@ -40,7 +40,7 @@ class DropzoneWrapper extends Component {
 
   handleDragEnd() {
     this.setState({
-      dragActive: false
+      dragActive: false,
     });
   }
 
@@ -50,8 +50,8 @@ class DropzoneWrapper extends Component {
     return (
       <Dropzone
         className={
-          "document-file-dropzone" +
-          (dragActive ? " document-file-dropzone-active" : "")
+          'document-file-dropzone' +
+          (dragActive ? ' document-file-dropzone-active' : '')
         }
         disablePreview={true}
         multiple={false}

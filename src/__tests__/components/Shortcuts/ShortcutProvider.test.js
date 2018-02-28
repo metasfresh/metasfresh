@@ -1,18 +1,18 @@
-import ShortcutProvider from "../../../components/Shortcuts/ShortcutProvider";
+import ShortcutProvider from '../../../components/Shortcuts/ShortcutProvider';
 
-describe("ShortcutProvider", () => {
-  it("should return children", () => {
+describe('ShortcutProvider', () => {
+  it('should return children', () => {
     const shortcutProvider = new ShortcutProvider();
     const children = {};
 
     shortcutProvider.props = {
-      children
+      children,
     };
 
     expect(shortcutProvider.render()).toEqual(children);
   });
 
-  it("should clean up event listeners", () => {
+  it('should clean up event listeners', () => {
     const listeners = [];
     const listenerAPI = {
       addEventListener: (event, handler) => {
@@ -33,7 +33,7 @@ describe("ShortcutProvider", () => {
         for (const index of indices.reverse()) {
           listeners.splice(index, 1);
         }
-      }
+      },
     };
 
     global.document = listenerAPI;
@@ -55,28 +55,28 @@ describe("ShortcutProvider", () => {
     }
   });
 
-  it("should expose context", () => {
+  it('should expose context', () => {
     const shortcutProvider = new ShortcutProvider();
     const context = shortcutProvider.getChildContext();
 
     expect(context).toEqual({
       shortcuts: {
         subscribe: shortcutProvider.subscribe,
-        unsubscribe: shortcutProvider.unsubscribe
-      }
+        unsubscribe: shortcutProvider.unsubscribe,
+      },
     });
   });
 
-  describe("subscribe", () => {
-    it("should be able to subscribe to hotkeys", () => {
+  describe('subscribe', () => {
+    it('should be able to subscribe to hotkeys', () => {
       const shortcutProvider = new ShortcutProvider();
-      const name = "FOO";
-      const shortcut = "CONTROL+1";
+      const name = 'FOO';
+      const shortcut = 'CONTROL+1';
       const hotkeys = {
-        [shortcut]: []
+        [shortcut]: [],
       };
       const keymap = {
-        [name]: shortcut
+        [name]: shortcut,
       };
       shortcutProvider.props = { hotkeys, keymap };
       const handler = () => {};
@@ -86,8 +86,8 @@ describe("ShortcutProvider", () => {
       expect(shortcutProvider.props.hotkeys[shortcut]).toContain(handler);
     });
 
-    it("should warn when trying to subscribe to a not defined shortcut", () => {
-      jest.spyOn(global.console, "warn");
+    it('should warn when trying to subscribe to a not defined shortcut', () => {
+      jest.spyOn(global.console, 'warn');
 
       const shortcutProvider = new ShortcutProvider();
       const hotkeys = {};
@@ -95,27 +95,27 @@ describe("ShortcutProvider", () => {
       shortcutProvider.props = { hotkeys, keymap };
       const handler = () => {};
 
-      shortcutProvider.subscribe("NOT_DEFINED", handler);
+      shortcutProvider.subscribe('NOT_DEFINED', handler);
 
       // eslint-disable-next-line no-console
       expect(console.warn).toBeCalled();
     });
   });
 
-  describe("unsubscribe", () => {
-    it("should be able to unsubscribe from hotkeys", () => {
+  describe('unsubscribe', () => {
+    it('should be able to unsubscribe from hotkeys', () => {
       const shortcutProvider = new ShortcutProvider();
-      const name = "FOO";
-      const shortcut = "CONTROL+1";
+      const name = 'FOO';
+      const shortcut = 'CONTROL+1';
       const handler = () => {};
 
       shortcutProvider.props = {
         hotkeys: {
-          [shortcut]: [handler]
+          [shortcut]: [handler],
         },
         keymap: {
-          [name]: shortcut
-        }
+          [name]: shortcut,
+        },
       };
 
       shortcutProvider.unsubscribe(name, handler);
@@ -123,58 +123,58 @@ describe("ShortcutProvider", () => {
       expect(shortcutProvider.props.hotkeys[shortcut]).not.toContain(handler);
     });
 
-    it("should not modify other handlers when unsubscribing", () => {
+    it('should not modify other handlers when unsubscribing', () => {
       const shortcutProvider = new ShortcutProvider();
-      const name = "FOO";
-      const shortcut = "CONTROL+1";
+      const name = 'FOO';
+      const shortcut = 'CONTROL+1';
       const handler1 = () => {};
       const handler2 = () => {};
       const handler3 = () => {};
 
       shortcutProvider.props = {
         hotkeys: {
-          [shortcut]: [handler1, handler2, handler3]
+          [shortcut]: [handler1, handler2, handler3],
         },
         keymap: {
-          [name]: shortcut
-        }
+          [name]: shortcut,
+        },
       };
 
       shortcutProvider.unsubscribe(name, handler2);
 
       expect(shortcutProvider.props.hotkeys[shortcut]).toEqual([
         handler1,
-        handler3
+        handler3,
       ]);
     });
 
-    it("should warn when trying to unsubscribe from a not defined hotkey", () => {
-      jest.spyOn(global.console, "warn");
+    it('should warn when trying to unsubscribe from a not defined hotkey', () => {
+      jest.spyOn(global.console, 'warn');
 
       const shortcutProvider = new ShortcutProvider();
       shortcutProvider.props = { hotkeys: {}, keymap: {} };
       const handler = () => {};
 
-      shortcutProvider.unsubscribe("NOT_DEFINED", handler);
+      shortcutProvider.unsubscribe('NOT_DEFINED', handler);
 
       // eslint-disable-next-line no-console
       expect(console.warn).toBeCalled();
     });
 
-    it("should warn when trying to unsubscribe a not subscribed handler", () => {
-      jest.spyOn(global.console, "warn");
+    it('should warn when trying to unsubscribe a not subscribed handler', () => {
+      jest.spyOn(global.console, 'warn');
 
       const shortcutProvider = new ShortcutProvider();
-      const name = "FOO";
-      const shortcut = "CONTROL+1";
+      const name = 'FOO';
+      const shortcut = 'CONTROL+1';
 
       shortcutProvider.props = {
         hotkeys: {
-          [shortcut]: []
+          [shortcut]: [],
         },
         keymap: {
-          [name]: shortcut
-        }
+          [name]: shortcut,
+        },
       };
 
       const handler = () => {};
@@ -186,8 +186,8 @@ describe("ShortcutProvider", () => {
     });
   });
 
-  describe("handleKeyDown", () => {
-    it("should return when key is not defined", () => {
+  describe('handleKeyDown', () => {
+    it('should return when key is not defined', () => {
       const shortcutProvider = new ShortcutProvider();
       shortcutProvider.props = { hotkeys: {} };
       const keyCode = 0; // 'a'
@@ -195,7 +195,7 @@ describe("ShortcutProvider", () => {
       shortcutProvider.handleKeyDown({ keyCode });
     });
 
-    it("should not fire multiple times for a single key", () => {
+    it('should not fire multiple times for a single key', () => {
       const shortcutProvider = new ShortcutProvider();
       shortcutProvider.props = { hotkeys: {} };
       const keyCode = 65; // 'a'
@@ -204,16 +204,16 @@ describe("ShortcutProvider", () => {
 
       shortcutProvider.handleKeyDown({ keyCode });
 
-      expect(shortcutProvider.fired["A"]).toBeTruthy();
-      expect(shortcutProvider.keySequence).toEqual(["A"]);
+      expect(shortcutProvider.fired['A']).toBeTruthy();
+      expect(shortcutProvider.keySequence).toEqual(['A']);
 
       shortcutProvider.handleKeyDown({ keyCode });
 
-      expect(shortcutProvider.fired["A"]).toBeTruthy();
-      expect(shortcutProvider.keySequence).toEqual(["A"]);
+      expect(shortcutProvider.fired['A']).toBeTruthy();
+      expect(shortcutProvider.keySequence).toEqual(['A']);
     });
 
-    it("should call latest registered handler for that hotkey", () => {
+    it('should call latest registered handler for that hotkey', () => {
       const shortcutProvider = new ShortcutProvider();
       const keyCode = 65; // 'a'
       const handler1 = jest.fn();
@@ -222,8 +222,8 @@ describe("ShortcutProvider", () => {
 
       shortcutProvider.props = {
         hotkeys: {
-          A: [handler1, handler2, handler3]
-        }
+          A: [handler1, handler2, handler3],
+        },
       };
 
       shortcutProvider.handleKeyDown({ keyCode });
@@ -233,15 +233,15 @@ describe("ShortcutProvider", () => {
       expect(handler3).toHaveBeenCalled();
     });
 
-    it("should call handler with event as argument", () => {
+    it('should call handler with event as argument', () => {
       const shortcutProvider = new ShortcutProvider();
       const keyCode = 65; // 'a'
       const handler = jest.fn();
 
       shortcutProvider.props = {
         hotkeys: {
-          A: [handler]
-        }
+          A: [handler],
+        },
       };
 
       const event = { keyCode };
@@ -251,8 +251,8 @@ describe("ShortcutProvider", () => {
       expect(handler).toHaveBeenCalledWith(event);
     });
 
-    it("should warn when handler is not a function", () => {
-      jest.spyOn(global.console, "warn");
+    it('should warn when handler is not a function', () => {
+      jest.spyOn(global.console, 'warn');
 
       const shortcutProvider = new ShortcutProvider();
       const keyCode = 65; // 'a'
@@ -260,8 +260,8 @@ describe("ShortcutProvider", () => {
 
       shortcutProvider.props = {
         hotkeys: {
-          A: [handler]
-        }
+          A: [handler],
+        },
       };
 
       shortcutProvider.handleKeyDown({ keyCode });
@@ -271,8 +271,8 @@ describe("ShortcutProvider", () => {
     });
   });
 
-  describe("handleKeyUp", () => {
-    it("should return when key is not defined", () => {
+  describe('handleKeyUp', () => {
+    it('should return when key is not defined', () => {
       const shortcutProvider = new ShortcutProvider();
       shortcutProvider.props = { hotkeys: {} };
       const keyCode = 0; // 'a'
@@ -280,17 +280,17 @@ describe("ShortcutProvider", () => {
       shortcutProvider.handleKeyUp({ keyCode });
     });
 
-    it("should take key out of sequence", () => {
+    it('should take key out of sequence', () => {
       const shortcutProvider = new ShortcutProvider();
-      const key1 = "A";
-      const key2 = "B";
-      const key3 = "C";
+      const key1 = 'A';
+      const key2 = 'B';
+      const key3 = 'C';
 
       shortcutProvider.keySequence = [key1, key2, key3];
       shortcutProvider.fired = {
         [key1]: true,
         [key2]: true,
-        [key3]: true
+        [key3]: true,
       };
 
       shortcutProvider.handleKeyUp({ keyCode: 66 /* 'b' */ });
@@ -298,17 +298,17 @@ describe("ShortcutProvider", () => {
       expect(shortcutProvider.keySequence).toEqual([key1, key3]);
       expect(shortcutProvider.fired).toEqual({
         [key1]: true,
-        [key3]: true
+        [key3]: true,
       });
     });
   });
 
-  describe("handleBlur", () => {
-    it("should reset key sequence", () => {
+  describe('handleBlur', () => {
+    it('should reset key sequence', () => {
       const shortcutProvider = new ShortcutProvider();
-      const key1 = "A";
-      const key2 = "B";
-      const key3 = "C";
+      const key1 = 'A';
+      const key2 = 'B';
+      const key3 = 'C';
 
       shortcutProvider.keySequence = [key1, key2, key3];
 

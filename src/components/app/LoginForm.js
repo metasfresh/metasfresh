@@ -1,28 +1,28 @@
-import counterpart from "counterpart";
-import Moment from "moment";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import { goBack, push } from "react-router-redux";
+import counterpart from 'counterpart';
+import Moment from 'moment';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { goBack, push } from 'react-router-redux';
 
 import {
   getUserLang,
   localLoginRequest,
   loginCompletionRequest,
   loginRequest,
-  loginSuccess
-} from "../../actions/AppActions";
-import logo from "../../assets/images/metasfresh_logo_green_thumb.png";
-import RawList from "../widget/List/RawList";
+  loginSuccess,
+} from '../../actions/AppActions';
+import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import RawList from '../widget/List/RawList';
 
 class LoginForm extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      role: "",
+      role: '',
       roleSelect: false,
-      err: ""
+      err: '',
     };
   }
 
@@ -31,7 +31,7 @@ class LoginForm extends Component {
   }
 
   handleKeyPress = e => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       this.handleLogin();
     }
   };
@@ -40,7 +40,7 @@ class LoginForm extends Component {
     e.preventDefault();
 
     this.setState({
-      err: ""
+      err: '',
     });
   };
 
@@ -49,12 +49,12 @@ class LoginForm extends Component {
 
     getUserLang().then(response => {
       //GET language shall always return a result
-      Moment.locale(response.data["key"]);
+      Moment.locale(response.data['key']);
 
       if (redirect) {
         dispatch(goBack());
       } else {
-        dispatch(push("/"));
+        dispatch(push('/'));
       }
     });
   };
@@ -64,7 +64,7 @@ class LoginForm extends Component {
 
     return localLoginRequest().then(response => {
       if (response.data) {
-        return router.push("/");
+        return router.push('/');
       }
 
       return Promise.reject(err);
@@ -77,7 +77,7 @@ class LoginForm extends Component {
 
     this.setState(
       {
-        pending: true
+        pending: true,
       },
       () => {
         if (roleSelect) {
@@ -97,12 +97,12 @@ class LoginForm extends Component {
             this.setState({
               roleSelect: true,
               roles,
-              role: roles[0]
+              role: roles[0],
             });
           })
           .then(() => {
             this.setState({
-              pending: false
+              pending: false,
             });
           })
           .catch(err => {
@@ -112,8 +112,8 @@ class LoginForm extends Component {
             this.setState({
               err: err.response
                 ? err.response.data.message
-                : counterpart.translate("login.error.fallback"),
-              pending: false
+                : counterpart.translate('login.error.fallback'),
+              pending: false,
             });
           });
       }
@@ -122,7 +122,7 @@ class LoginForm extends Component {
 
   handleRoleSelect = option => {
     this.setState({
-      role: option
+      role: option,
     });
   };
 
@@ -139,7 +139,7 @@ class LoginForm extends Component {
         {roleSelect ? (
           <div>
             <div className="form-control-label">
-              <small>{counterpart.translate("login.selectRole.caption")}</small>
+              <small>{counterpart.translate('login.selectRole.caption')}</small>
             </div>
             <RawList
               rank="primary"
@@ -157,15 +157,15 @@ class LoginForm extends Component {
             {err && <div className="input-error">{err}</div>}
             <div>
               <div className="form-control-label">
-                <small>{counterpart.translate("login.caption")}</small>
+                <small>{counterpart.translate('login.caption')}</small>
               </div>
               <input
                 type="text"
                 onChange={this.handleOnChange}
                 className={
-                  "input-primary input-block " +
-                  (err ? "input-error " : "") +
-                  (pending ? "input-disabled " : "")
+                  'input-primary input-block ' +
+                  (err ? 'input-error ' : '') +
+                  (pending ? 'input-disabled ' : '')
                 }
                 disabled={pending}
                 ref={c => (this.login = c)}
@@ -173,15 +173,15 @@ class LoginForm extends Component {
             </div>
             <div>
               <div className="form-control-label">
-                <small>{counterpart.translate("login.password.caption")}</small>
+                <small>{counterpart.translate('login.password.caption')}</small>
               </div>
               <input
                 type="password"
                 onChange={this.handleOnChange}
                 className={
-                  "input-primary input-block " +
-                  (err ? "input-error " : "") +
-                  (pending ? "input-disabled " : "")
+                  'input-primary input-block ' +
+                  (err ? 'input-error ' : '') +
+                  (pending ? 'input-disabled ' : '')
                 }
                 disabled={pending}
                 ref={c => (this.passwd = c)}
@@ -196,8 +196,8 @@ class LoginForm extends Component {
             disabled={pending}
           >
             {roleSelect
-              ? counterpart.translate("login.send.caption")
-              : counterpart.translate("login.callToAction")}
+              ? counterpart.translate('login.send.caption')
+              : counterpart.translate('login.callToAction')}
           </button>
         </div>
       </div>
@@ -206,11 +206,11 @@ class LoginForm extends Component {
 }
 
 LoginForm.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 LoginForm.contextTypes = {
-  router: PropTypes.object.isRequired
+  router: PropTypes.object.isRequired,
 };
 
 export default connect()(LoginForm);
