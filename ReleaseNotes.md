@@ -24,6 +24,11 @@ Here come the actual release notes:
   * [#1620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1620) List widgets with focus shall have dark grey color underline
     * Improved focus indicator line for list widgets.
 
+## Fixes
+* metasfresh-webui-frontend
+  * [#1625](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1625) Show Attribute Editor for selected CU Level HU
+    * Fixe for the Handling Unit Editor when loaded for a CU. Now initially showing the Attributes view again.
+
 
 
 # metasfresh 5.46 (2018-09)
