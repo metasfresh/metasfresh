@@ -48,12 +48,19 @@ class RawList extends PureComponent {
       }
 
       if (dropdownList.size > 0) {
-        let idx = -1;
+        let idx = 0;
 
-        if (defaultValue) {
+        if (defaultValue || selected) {
+          const select = selected || defaultValue;
           idx = dropdownList.findIndex(
-            item => item.caption === defaultValue.caption
-          );
+            item => item.caption === select.caption
+          ); 
+        }
+
+        if (idx !== 0) {
+          const item = dropdownList.get(idx);
+          dropdownList = dropdownList.delete(idx);
+          dropdownList = dropdownList.insert(0, item);
         }
 
         const selectedValue = {
@@ -299,7 +306,8 @@ class RawList extends PureComponent {
   };
 
   renderOptions = () => {
-    const { list, mandatory, emptyText } = this.props;
+    const { mandatory, emptyText } = this.props;
+    const { dropdownList } = this.state;
     let emptyRow = null;
 
     /* if field is not mandatory add extra empty row */
@@ -310,7 +318,7 @@ class RawList extends PureComponent {
     return (
       <div>
         {emptyRow}
-        {list.map(this.getRow)}
+        {dropdownList.map(this.getRow)}
       </div>
     );
   };
