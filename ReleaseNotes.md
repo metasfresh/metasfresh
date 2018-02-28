@@ -24,6 +24,13 @@ Here come the actual release notes:
   * [#1620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1620) List widgets with focus shall have dark grey color underline
     * Improved focus indicator line for list widgets.
 
+## Fixes
+* metasfresh-webui-frontend
+  * [#1623](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1623) Attributes not shown in Material Receipt Candidates
+    * Fixes a Bug in the Handling Unit Editor in Material Receipts, not showing the Attributes View when Receiving CU.
+  * [#1625](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1625) Show Attribute Editor for selected CU Level HU
+    * Fix for the Handling Unit Editor when selectin the first entry of an HU. Now initially showing the Attributes view again.
+
 
 
 # metasfresh 5.46 (2018-09)
