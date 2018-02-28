@@ -10,6 +10,8 @@ Equipped with wide & detailed functionality, metasfresh is built for companies f
 
 It has a 3-tier architecture with Rest-API and a Web User Frontend developed in HTML5/ ReactJS/ Redux.
 
+![metasfresh-sales-order](https://user-images.githubusercontent.com/13365687/36795926-8cd2a88e-1ca4-11e8-8f4c-87487c7ff448.gif)
+
 ## Screenshots
 <img src="/images/screenshot-kpi-dashboard.png" width="33%" alt="KPI Dashboard"></img> <img src="/images/screenshot-sales-order.png" width="33%" alt="Sales Order Window"></img> <img src="/images/screenshot-material-receipt.png" width="33%" alt="Material Receipt Window"></img>
 
