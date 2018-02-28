@@ -86,16 +86,23 @@ class DatetimeRange extends Component {
         }}
         autoApply={false}
         timePicker={timePicker}
-        timePicker24Hour={true}>
+        timePicker24Hour={true}
+      >
         <button
           className={classnames(
-            'btn', 'btn-block', 'text-xs-left', 'btn-meta-outline-secondary',
-            'btn-distance', 'btn-sm input-icon-container', 'input-primary',
+            'btn',
+            'btn-block',
+            'text-xs-left',
+            'btn-meta-outline-secondary',
+            'btn-distance',
+            'btn-sm input-icon-container',
+            'input-primary',
             {
               'input-mandatory': mandatory && !startDate && !endDate,
               'input-error': validStatus && !validStatus.valid,
             }
-          )}>
+          )}
+        >
           {availableDates}
           <i className="meta-icon-calendar input-icon-right" />
         </button>

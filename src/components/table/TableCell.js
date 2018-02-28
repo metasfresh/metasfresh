@@ -199,7 +199,8 @@ class TableCell extends Component {
             'pulse-on': updatedRow,
             'pulse-off': !updatedRow,
           }
-        )}>
+        )}
+      >
         {isEdited ? (
           <MasterWidget
             {...item}
@@ -232,7 +233,8 @@ class TableCell extends Component {
               item.widgetType === 'YesNo' || item.widgetType === 'Switch'
                 ? ''
                 : tdValue
-            }>
+            }
+          >
             {tdValue}
           </div>
         )}

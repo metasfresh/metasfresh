@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import Device from "./Device";
+import Device from './Device';
 
 class DevicesWidget extends Component {
   constructor(props) {

@@ -171,7 +171,7 @@ export default class Attributes extends Component {
       rowId,
       attributeType,
       tabIndex,
-      readonly
+      readonly,
     } = this.props;
 
     const { dropdown, data, layout } = this.state;
@@ -185,7 +185,8 @@ export default class Attributes extends Component {
         onKeyDown={this.handleKeyDown}
         className={classnames('attributes', {
           'attributes-in-table': rowId,
-        })}>
+        })}
+      >
         <button
           tabIndex={tabIndex}
           onClick={() => this.handleToggle(true)}
@@ -195,7 +196,8 @@ export default class Attributes extends Component {
               'tag-disabled': dropdown,
               'tag-disabled disabled': readonly,
             }
-          )}>
+          )}
+        >
           {label ? label : 'Edit'}
         </button>
         {dropdown && (

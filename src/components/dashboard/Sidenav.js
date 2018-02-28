@@ -1,9 +1,9 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { getRequest } from "../../actions/GenericActions";
-import Indicator from "../charts/Indicator";
-import ChartWidget from "./ChartWidget";
-import DndWidget from "./DndWidget";
+import { getRequest } from '../../actions/GenericActions';
+import Indicator from '../charts/Indicator';
+import ChartWidget from './ChartWidget';
+import DndWidget from './DndWidget';
 
 class Sidenav extends Component {
   constructor(props) {
@@ -11,17 +11,17 @@ class Sidenav extends Component {
 
     this.state = {
       cards: [],
-      indicators: []
+      indicators: [],
     };
   }
 
   componentDidMount = () => {
-    getRequest("dashboard", "kpis", "available").then(res => {
+    getRequest('dashboard', 'kpis', 'available').then(res => {
       this.setState({
         indicators: res.data.filter(
-          chart => chart.widgetTypes[0] === "TargetIndicator"
+          chart => chart.widgetTypes[0] === 'TargetIndicator'
         ),
-        cards: res.data.filter(chart => chart.widgetTypes[0] === "KPI")
+        cards: res.data.filter(chart => chart.widgetTypes[0] === 'KPI'),
       });
     });
   };
@@ -36,10 +36,10 @@ class Sidenav extends Component {
         index={item.kpiId}
         moveCard={moveCard}
         isNew={true}
-        entity={item.widgetTypes[0] === "KPI" ? "cards" : "indicators"}
+        entity={item.widgetTypes[0] === 'KPI' ? 'cards' : 'indicators'}
         transparent={false}
       >
-        {item.widgetTypes[0] === "KPI" ? (
+        {item.widgetTypes[0] === 'KPI' ? (
           <ChartWidget
             id={item.kpiId}
             index={i}

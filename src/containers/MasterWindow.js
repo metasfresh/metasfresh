@@ -357,7 +357,8 @@ class MasterWindow extends Component {
         docId={params.docId}
         showSidelist
         showIndicator={!modal.visible}
-        handleDeletedStatus={this.handleDeletedStatus}>
+        handleDeletedStatus={this.handleDeletedStatus}
+      >
         {dataId === 'notfound' ? (
           <BlankPage what="Document" />
         ) : (

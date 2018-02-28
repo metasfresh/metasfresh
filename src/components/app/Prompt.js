@@ -1,6 +1,6 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 class Prompt extends Component {
   constructor(props) {
@@ -48,8 +48,8 @@ class Prompt extends Component {
           </div>
           <div className="panel-modal-header panel-prompt-header panel-prompt-footer">
             <div className="prompt-button-wrapper">
-              {cancel ? this.renderCancelButton() : ""}
-              {submit ? this.renderSubmitButton() : ""}
+              {cancel ? this.renderCancelButton() : ''}
+              {submit ? this.renderSubmitButton() : ''}
             </div>
           </div>
         </div>
@@ -59,7 +59,7 @@ class Prompt extends Component {
 }
 
 Prompt.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect()(Prompt);

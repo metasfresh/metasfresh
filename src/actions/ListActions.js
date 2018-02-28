@@ -1,10 +1,10 @@
-import * as types from "../constants/ListTypes";
+import * as types from '../constants/ListTypes';
 
 export function setListId(viewId, windowType) {
   return {
     type: types.SET_LIST_ID,
     viewId,
-    windowType
+    windowType,
   };
 }
 
@@ -12,7 +12,7 @@ export function setFilter(filter, windowType) {
   return {
     type: types.SET_LIST_FILTERS,
     filter,
-    windowType
+    windowType,
   };
 }
 
@@ -20,7 +20,7 @@ export function setSorting(sort, windowType) {
   return {
     type: types.SET_LIST_SORTING,
     sort,
-    windowType
+    windowType,
   };
 }
 
@@ -28,7 +28,7 @@ export function setPagination(page, windowType) {
   return {
     type: types.SET_LIST_PAGINATION,
     page,
-    windowType
+    windowType,
   };
 }
 
@@ -37,7 +37,7 @@ export function setListIncludedView(
 ) {
   return {
     type: types.SET_LIST_INCLUDED_VIEW,
-    payload: { windowType, viewId, viewProfileId }
+    payload: { windowType, viewId, viewProfileId },
   };
 }
 
@@ -46,6 +46,6 @@ export function closeListIncludedView(
 ) {
   return {
     type: types.CLOSE_LIST_INCLUDED_VIEW,
-    payload: { windowType, viewId, forceClose }
+    payload: { windowType, viewId, forceClose },
   };
 }

@@ -1,66 +1,66 @@
-import axios from "axios";
-import Moment from "moment";
-import numeral from "numeral";
-import { replace } from "react-router-redux";
+import axios from 'axios';
+import Moment from 'moment';
+import numeral from 'numeral';
+import { replace } from 'react-router-redux';
 
-import * as types from "../constants/ActionTypes";
-import { LOCAL_LANG } from "../constants/Constants";
+import * as types from '../constants/ActionTypes';
+import { LOCAL_LANG } from '../constants/Constants';
 
 // REQUESTS
 
 export function getAvatar(id) {
-  return config.API_URL + "/image/" + id + "?maxWidth=200&maxHeight=200";
+  return config.API_URL + '/image/' + id + '?maxWidth=200&maxHeight=200';
 }
 
 export function getUserSession() {
-  return axios.get(config.API_URL + "/userSession");
+  return axios.get(config.API_URL + '/userSession');
 }
 
 export function getUserLang() {
-  return axios.get(config.API_URL + "/userSession/language");
+  return axios.get(config.API_URL + '/userSession/language');
 }
 
 export function setUserLang(payload) {
-  return axios.put(config.API_URL + "/userSession/language", payload);
+  return axios.put(config.API_URL + '/userSession/language', payload);
 }
 
 export function getAvailableLang() {
-  return axios.get(config.API_URL + "/login/availableLanguages");
+  return axios.get(config.API_URL + '/login/availableLanguages');
 }
 
 export function loginRequest(username, password) {
-  return axios.post(config.API_URL + "/login/authenticate", {
+  return axios.post(config.API_URL + '/login/authenticate', {
     username,
-    password
+    password,
   });
 }
 
 export function localLoginRequest() {
-  return axios.get(config.API_URL + "/login/isLoggedIn");
+  return axios.get(config.API_URL + '/login/isLoggedIn');
 }
 
 export function loginCompletionRequest(role) {
-  return axios.post(config.API_URL + "/login/loginComplete", role);
+  return axios.post(config.API_URL + '/login/loginComplete', role);
 }
 
 export function logoutRequest() {
-  return axios.get(config.API_URL + "/login/logout");
+  return axios.get(config.API_URL + '/login/logout');
 }
 
 export function getNotifications() {
-  return axios.get(config.API_URL + "/notifications/all?limit=20");
+  return axios.get(config.API_URL + '/notifications/all?limit=20');
 }
 
 export function getNotificationsEndpoint() {
-  return axios.get(config.API_URL + "/notifications/websocketEndpoint");
+  return axios.get(config.API_URL + '/notifications/websocketEndpoint');
 }
 
 export function markAllAsRead() {
-  return axios.put(config.API_URL + "/notifications/all/read");
+  return axios.put(config.API_URL + '/notifications/all/read');
 }
 
 export function markAsRead(id) {
-  return axios.put(config.API_URL + "/notifications/" + id + "/read");
+  return axios.put(config.API_URL + '/notifications/' + id + '/read');
 }
 
 export function deleteUserNotification(id) {
@@ -77,24 +77,24 @@ export function getAttributesInstance(
   fieldName,
   entity
 ) {
-  const type = entity === "process" ? "processId" : "windowId";
+  const type = entity === 'process' ? 'processId' : 'windowId';
 
-  return axios.post(config.API_URL + "/" + attrType, {
+  return axios.post(config.API_URL + '/' + attrType, {
     templateId: tmpId,
     source: {
       [type]: docType,
       documentId: docId,
       tabid: tabId,
       rowId: rowId,
-      fieldName: fieldName
-    }
+      fieldName: fieldName,
+    },
   });
 }
 
 export function getImageAction(id) {
   return axios({
     url: `${config.API_URL}/image/${id}?maxWidth=200&maxHeight=200`,
-    responseType: "blob"
+    responseType: 'blob',
   }).then(response => response.data);
 }
 
@@ -105,68 +105,68 @@ export function postImageAction(data) {
 }
 
 export function getKPIsDashboard() {
-  return axios.get(config.API_URL + "/dashboard/kpis?silentError=true");
+  return axios.get(config.API_URL + '/dashboard/kpis?silentError=true');
 }
 
 export function getTargetIndicatorsDashboard() {
   return axios.get(
-    config.API_URL + "/dashboard/targetIndicators?silentError=true"
+    config.API_URL + '/dashboard/targetIndicators?silentError=true'
   );
 }
 
 export function getKPIData(id) {
   return axios.get(
-    config.API_URL + "/dashboard/kpis/" + id + "/data?silentError=true"
+    config.API_URL + '/dashboard/kpis/' + id + '/data?silentError=true'
   );
 }
 
 export function changeKPIItem(id, path, value) {
-  return axios.patch(config.API_URL + "/dashboard/kpis/" + id, [
+  return axios.patch(config.API_URL + '/dashboard/kpis/' + id, [
     {
-      op: "replace",
+      op: 'replace',
       path: path,
-      value: value
-    }
+      value: value,
+    },
   ]);
 }
 
 export function changeTargetIndicatorsItem(id, path, value) {
-  return axios.patch(config.API_URL + "/dashboard/targetIndicators/" + id, [
+  return axios.patch(config.API_URL + '/dashboard/targetIndicators/' + id, [
     {
-      op: "replace",
+      op: 'replace',
       path: path,
-      value: value
-    }
+      value: value,
+    },
   ]);
 }
 
 export function getTargetIndicatorsData(id) {
   return axios.get(
     config.API_URL +
-      "/dashboard/targetIndicators/" +
+      '/dashboard/targetIndicators/' +
       id +
-      "/data?silentError=true"
+      '/data?silentError=true'
   );
 }
 
 export function setUserDashboardWidgets(payload) {
-  return axios.patch(config.API_URL + "/dashboard/kpis", payload);
+  return axios.patch(config.API_URL + '/dashboard/kpis', payload);
 }
 
 export function getMessages(lang) {
   return axios.get(
-    config.API_URL + "/i18n/messages" + (lang ? "?=" + lang : "")
+    config.API_URL + '/i18n/messages' + (lang ? '?=' + lang : '')
   );
 }
 
 export function createUrlAttachment({ windowId, documentId, name, url }) {
   return axios.post(
     config.API_URL +
-      "/window/" +
+      '/window/' +
       windowId +
-      "/" +
+      '/' +
       documentId +
-      "/attachments/addUrl",
+      '/attachments/addUrl',
     { name, url }
   );
 }
@@ -175,7 +175,7 @@ export function createUrlAttachment({ windowId, documentId, name, url }) {
 
 export function loginSuccess(auth) {
   return dispatch => {
-    localStorage.setItem("isLogged", true);
+    localStorage.setItem('isLogged', true);
 
     /*
         getMessages().then(response => {
@@ -186,14 +186,14 @@ export function loginSuccess(auth) {
 
     getUserSession().then(session => {
       dispatch(userSessionInit(session.data));
-      languageSuccess(session.data.language["key"]);
-      initNumeralLocales(session.data.language["key"], session.data.locale);
+      languageSuccess(session.data.language['key']);
+      initNumeralLocales(session.data.language['key'], session.data.locale);
 
       auth.initSessionClient(session.data.websocketEndpoint, msg => {
         const me = JSON.parse(msg.body);
         dispatch(userSessionUpdate(me));
-        me.language && languageSuccess(me.language["key"]);
-        me.locale && initNumeralLocales(me.language["key"], me.locale);
+        me.language && languageSuccess(me.language['key']);
+        me.locale && initNumeralLocales(me.language['key'], me.locale);
 
         getNotifications().then(response => {
           dispatch(
@@ -217,21 +217,21 @@ export function loginSuccess(auth) {
       auth.initNotificationClient(topic, msg => {
         const notification = JSON.parse(msg.body);
 
-        if (notification.eventType === "Read") {
+        if (notification.eventType === 'Read') {
           dispatch(
             updateNotification(
               notification.notification,
               notification.unreadCount
             )
           );
-        } else if (notification.eventType === "Delete") {
+        } else if (notification.eventType === 'Delete') {
           dispatch(
             removeNotification(
               notification.notificationId,
               notification.unreadCount
             )
           );
-        } else if (notification.eventType === "New") {
+        } else if (notification.eventType === 'New') {
           dispatch(
             newNotification(notification.notification, notification.unreadCount)
           );
@@ -239,10 +239,10 @@ export function loginSuccess(auth) {
           if (notif.important) {
             dispatch(
               addNotification(
-                "Important notification",
+                'Important notification',
                 notif.message,
                 5000,
-                "primary"
+                'primary'
               )
             );
           }
@@ -264,18 +264,18 @@ export function loginSuccess(auth) {
 function initNumeralLocales(lang, locale) {
   const language = lang.toLowerCase();
   const LOCAL_NUMERAL_FORMAT = {
-    defaultFormat: "0,0.00[000]",
+    defaultFormat: '0,0.00[000]',
     delimiters: {
-      thousands: locale.numberGroupingSeparator || ",",
-      decimal: locale.numberDecimalSeparator || "."
-    }
+      thousands: locale.numberGroupingSeparator || ',',
+      decimal: locale.numberDecimalSeparator || '.',
+    },
   };
 
-  if (typeof numeral.locales[language] === "undefined") {
-    numeral.register("locale", language, LOCAL_NUMERAL_FORMAT);
+  if (typeof numeral.locales[language] === 'undefined') {
+    numeral.register('locale', language, LOCAL_NUMERAL_FORMAT);
   }
 
-  if (typeof numeral.locales[language] !== "undefined") {
+  if (typeof numeral.locales[language] !== 'undefined') {
     numeral.locale(language);
 
     if (LOCAL_NUMERAL_FORMAT.defaultFormat) {
@@ -288,18 +288,18 @@ export function languageSuccess(lang) {
   localStorage.setItem(LOCAL_LANG, lang);
   Moment.locale(lang);
 
-  axios.defaults.headers.common["Accept-Language"] = lang;
+  axios.defaults.headers.common['Accept-Language'] = lang;
 }
 
 export function logoutSuccess(auth) {
   auth.close();
-  localStorage.removeItem("isLogged");
+  localStorage.removeItem('isLogged');
 }
 
 export function enableTutorial(flag = true) {
   return {
     type: types.ENABLE_TUTORIAL,
-    flag: flag
+    flag: flag,
   };
 }
 
@@ -311,7 +311,7 @@ export function addNotification(title, msg, time, notifType, shortMsg) {
     shortMsg: shortMsg,
     time: time,
     notifType: notifType,
-    id: Date.now()
+    id: Date.now(),
   };
 }
 
@@ -319,26 +319,26 @@ export function setNotificationProgress(key, progress) {
   return {
     type: types.SET_NOTIFICATION_PROGRESS,
     key: key,
-    progress: progress
+    progress: progress,
   };
 }
 
 export function deleteNotification(key) {
   return {
     type: types.DELETE_NOTIFICATION,
-    key: key
+    key: key,
   };
 }
 
 export function clearNotifications() {
   return {
-    type: types.CLEAR_NOTIFICATIONS
+    type: types.CLEAR_NOTIFICATIONS,
   };
 }
 
 export function updateUri(pathname, query, prop, value) {
   return dispatch => {
-    let url = pathname + "?";
+    let url = pathname + '?';
 
     // add new prop or overwrite existing
     query[prop] = value;
@@ -348,9 +348,9 @@ export function updateUri(pathname, query, prop, value) {
     for (let i = 0; i < queryKeys.length; i++) {
       url +=
         queryKeys[i] +
-        "=" +
+        '=' +
         query[queryKeys[i]] +
-        (queryKeys.length - 1 !== i ? "&" : "");
+        (queryKeys.length - 1 !== i ? '&' : '');
     }
 
     dispatch(replace(url));
@@ -361,7 +361,7 @@ export function getNotificationsSuccess(notifications, unreadCount) {
   return {
     type: types.GET_NOTIFICATIONS_SUCCESS,
     notifications: notifications,
-    unreadCount: unreadCount
+    unreadCount: unreadCount,
   };
 }
 
@@ -369,7 +369,7 @@ export function updateNotification(msg, count) {
   return {
     type: types.UPDATE_NOTIFICATION,
     notification: msg,
-    unreadCount: count
+    unreadCount: count,
   };
 }
 
@@ -377,7 +377,7 @@ export function newNotification(msg, count) {
   return {
     type: types.NEW_NOTIFICATION,
     notification: msg,
-    unreadCount: count
+    unreadCount: count,
   };
 }
 
@@ -385,32 +385,32 @@ export function removeNotification(msg, count) {
   return {
     type: types.REMOVE_NOTIFICATION,
     notification: msg,
-    unreadCount: count
+    unreadCount: count,
   };
 }
 
 export function setProcessPending() {
   return {
-    type: types.SET_PROCESS_STATE_PENDING
+    type: types.SET_PROCESS_STATE_PENDING,
   };
 }
 
 export function setProcessSaved() {
   return {
-    type: types.SET_PROCESS_STATE_SAVED
+    type: types.SET_PROCESS_STATE_SAVED,
   };
 }
 
 export function userSessionInit(me) {
   return {
     type: types.USER_SESSION_INIT,
-    me
+    me,
   };
 }
 
 export function userSessionUpdate(me) {
   return {
     type: types.USER_SESSION_UPDATE,
-    me
+    me,
   };
 }

@@ -1,8 +1,8 @@
-import React, { cloneElement, Component } from "react";
-import { connect } from "react-redux";
+import React, { cloneElement, Component } from 'react';
+import { connect } from 'react-redux';
 
-import { patchViewAttributes } from "../actions/ViewAttributesActions";
-import { parseToDisplay } from "../actions/WindowActions";
+import { patchViewAttributes } from '../actions/ViewAttributesActions';
+import { parseToDisplay } from '../actions/WindowActions';
 
 class DataLayoutWrapper extends Component {
   constructor(props) {
@@ -11,7 +11,7 @@ class DataLayoutWrapper extends Component {
     this.state = {
       layout: [],
       data: [],
-      dataId: null
+      dataId: null,
     };
   }
 
@@ -29,9 +29,9 @@ class DataLayoutWrapper extends Component {
         ...this.state.data,
         [field]: {
           ...this.state.data[field],
-          value
-        }
-      }
+          value,
+        },
+      },
     });
   };
 
@@ -51,7 +51,7 @@ class DataLayoutWrapper extends Component {
                 ...this.state.data,
                 [key]: {
                   ...this.state.data[key],
-                  ...preparedData[key]
+                  ...preparedData[key],
                 }
               }
             });
@@ -70,7 +70,7 @@ class DataLayoutWrapper extends Component {
       this.setState(
         {
           data: preparedData,
-          dataId: dataId
+          dataId: dataId,
         },
         () => {
           cb && cb();
@@ -82,7 +82,7 @@ class DataLayoutWrapper extends Component {
     this.mounted &&
       this.setState(
         {
-          layout: layout
+          layout: layout,
         },
         () => {
           cb && cb();
@@ -95,7 +95,7 @@ class DataLayoutWrapper extends Component {
     const { children, className } = this.props;
 
     // sometimes it's a number, and React complaints about wrong type
-    const dataId = this.state.dataId + "";
+    const dataId = this.state.dataId + '';
 
     return (
       <div className={className}>
@@ -110,7 +110,7 @@ class DataLayoutWrapper extends Component {
           DLWrapperSetData: this.setData,
           DLWrapperSetLayout: this.setLayout,
           DLWrapperHandleChange: this.handleChange,
-          DLWrapperHandlePatch: this.handlePatch
+          DLWrapperHandlePatch: this.handlePatch,
         })}
       </div>
     );

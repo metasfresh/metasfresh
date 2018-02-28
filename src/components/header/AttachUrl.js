@@ -1,14 +1,14 @@
-import counterpart from "counterpart";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import counterpart from 'counterpart';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { addNotification, createUrlAttachment } from "../../actions/AppActions";
+import { addNotification, createUrlAttachment } from '../../actions/AppActions';
 
 class AttachUrl extends Component {
   state = {
-    url: "",
-    name: "",
-    nameFromUrl: ""
+    url: '',
+    name: '',
+    nameFromUrl: '',
   };
 
   updateNameFromUrl = url => {
@@ -16,10 +16,10 @@ class AttachUrl extends Component {
     this.setState({
       // TODO: handle edge cases like URL with trailing slash
       nameFromUrl: url
-        .split("/")
+        .split('/')
         .pop()
-        .split("#")[0]
-        .split("?")[0]
+        .split('#')[0]
+        .split('?')[0],
     });
   };
 
@@ -50,7 +50,7 @@ class AttachUrl extends Component {
       documentId,
       handleClose,
       dispatch,
-      fetchAttachments
+      fetchAttachments,
     } = this.props;
     const { url, name, nameFromUrl } = this.state;
 
@@ -58,7 +58,7 @@ class AttachUrl extends Component {
       windowId,
       documentId,
       url,
-      name: name || nameFromUrl
+      name: name || nameFromUrl,
     })
       .then(() => {
         handleClose(event);
@@ -67,10 +67,10 @@ class AttachUrl extends Component {
       .catch(() => {
         dispatch(
           addNotification(
-            counterpart.translate("window.attachment.url.title"),
-            counterpart.translate("window.attachment.url.error"),
+            counterpart.translate('window.attachment.url.title'),
+            counterpart.translate('window.attachment.url.error'),
             5000,
-            "error"
+            'error'
           )
         );
       });
@@ -89,7 +89,7 @@ class AttachUrl extends Component {
           <div className="panel-attachurl-header-wrapper">
             <div className="panel-attachurl-header panel-attachurl-header-top">
               <span className="attachurl-headline">
-                {counterpart.translate("window.attachment.url.title")}
+                {counterpart.translate('window.attachment.url.title')}
               </span>
               <div
                 className="input-icon input-icon-lg attachurl-icon-close"
@@ -101,7 +101,7 @@ class AttachUrl extends Component {
             <div className="panel-attachurl-header panel-attachurl-bright">
               <div className="panel-attachurl-data-wrapper">
                 <span className="attachurl-label">
-                  {counterpart.translate("window.attachment.url.url")}
+                  {counterpart.translate('window.attachment.url.url')}
                 </span>
                 <input
                   className="attachurl-input"
@@ -114,7 +114,7 @@ class AttachUrl extends Component {
             <div className="panel-attachurl-header panel-attachurl-bright">
               <div className="panel-attachurl-data-wrapper">
                 <span className="attachurl-label">
-                  {counterpart.translate("window.attachment.url.name")}
+                  {counterpart.translate('window.attachment.url.name')}
                 </span>
                 <input
                   className="attachurl-input"
@@ -131,7 +131,7 @@ class AttachUrl extends Component {
               onClick={this.handleClick}
               className="btn btn-meta-success btn-sm btn-submit"
             >
-              {counterpart.translate("window.attachment.url.create")}
+              {counterpart.translate('window.attachment.url.create')}
             </button>
           </div>
         </div>

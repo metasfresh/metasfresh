@@ -1,11 +1,11 @@
-import React, { Component } from "react";
-import classNames from "classnames";
+import React, { Component } from 'react';
+import classNames from 'classnames';
 class Tooltips extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      opacity: 0
+      opacity: 0,
     };
   }
 
@@ -13,7 +13,7 @@ class Tooltips extends Component {
     const { delay } = this.props;
     this.timeout = setTimeout(() => {
       this.setState({
-        opacity: 1
+        opacity: 1,
       });
     }, delay ? delay : 1000);
   }
@@ -29,11 +29,11 @@ class Tooltips extends Component {
       type,
       extraClass,
       tooltipOnFirstlevelPositionLeft,
-      className
+      className,
     } = this.props;
 
     const cx = classNames(
-      "tooltip-wrapp",
+      'tooltip-wrapp',
       { [`tooltip-${type}`]: type },
       { [`${extraClass}`]: extraClass },
       { [`${className}`]: className }
@@ -44,7 +44,7 @@ class Tooltips extends Component {
       <div style={{ opacity: opacity }}>
         <div
           className={cx}
-          style={{ left: tooltipOnFirstlevelPositionLeft + "px" }}
+          style={{ left: tooltipOnFirstlevelPositionLeft + 'px' }}
         >
           <div className="tooltip-shortcut">{name}</div>
           <div className="tooltip-name">{action}</div>

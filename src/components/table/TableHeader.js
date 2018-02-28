@@ -62,17 +62,20 @@ class TableHeader extends Component {
     return (
       <div
         className={classnames('sort-menu', { 'sort-menu--sortable': sortable })}
-        onClick={() => this.handleClick(field, sortable)}>
+        onClick={() => this.handleClick(field, sortable)}
+      >
         <span
           title={caption}
-          className={classnames({ 'th-caption': sortable })}>
+          className={classnames({ 'th-caption': sortable })}
+        >
           {caption}
         </span>
         <span
           className={classnames('sort-ico', {
             'sort rotate-90': field in fields && fieldSorting,
             sort: field in fields && !fieldSorting,
-          })}>
+          })}
+        >
           <i className="meta-icon-chevron-1" />
         </span>
       </div>

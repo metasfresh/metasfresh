@@ -1,12 +1,12 @@
-import counterpart from "counterpart";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import counterpart from 'counterpart';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import {
   getViewAttributes,
-  getViewAttributesLayout
-} from "../../actions/ViewAttributesActions";
-import RawWidget from "../widget/RawWidget";
+  getViewAttributesLayout,
+} from '../../actions/ViewAttributesActions';
+import RawWidget from '../widget/RawWidget';
 
 class SelectionAttributes extends Component {
   componentDidUpdate = prevProps => {
@@ -15,7 +15,7 @@ class SelectionAttributes extends Component {
       DLWrapperSetData,
       DLWrapperSetLayout,
       shouldNotUpdate,
-      supportAttribute
+      supportAttribute,
     } = this.props;
 
     if (shouldNotUpdate) {
@@ -42,7 +42,7 @@ class SelectionAttributes extends Component {
       viewId,
       selected,
       DLWrapperSetData,
-      DLWrapperSetLayout
+      DLWrapperSetLayout,
     } = this.props;
     getViewAttributesLayout(windowType, viewId, selected[0])
       .then(response => {
@@ -57,7 +57,7 @@ class SelectionAttributes extends Component {
 
   moveToDevice = e => {
     switch (e.key) {
-      case "Shift":
+      case 'Shift':
         e.preventDefault();
         //TO DO
         break;
@@ -69,7 +69,7 @@ class SelectionAttributes extends Component {
   };
 
   selectTable = () => {
-    document.getElementsByClassName("js-table")[0].focus();
+    document.getElementsByClassName('js-table')[0].focus();
   };
 
   render() {
@@ -82,13 +82,13 @@ class SelectionAttributes extends Component {
       DLWrapperHandleChange,
       DLWrapperHandlePatch,
       entity,
-      setClickOutsideLock
+      setClickOutsideLock,
     } = this.props;
 
     return (
       <div className="js-not-unselect">
         <div className="attributes-selector-header">
-          {counterpart.translate("window.selectionAttributes.caption")}
+          {counterpart.translate('window.selectionAttributes.caption')}
         </div>
         <div tabIndex={1} className="attributes-selector-body js-attributes">
           {DLWrapperLayout &&
@@ -121,7 +121,7 @@ class SelectionAttributes extends Component {
             !DLWrapperLayout.length && (
               <i>
                 {counterpart.translate(
-                  "window.selectionAttributes.callToAction"
+                  'window.selectionAttributes.callToAction'
                 )}
               </i>
             )}

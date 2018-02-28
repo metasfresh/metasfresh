@@ -1,29 +1,29 @@
-import update from "immutability-helper";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { DragDropContext } from "react-dnd";
-import HTML5Backend from "react-dnd-html5-backend";
-import { connect } from "react-redux";
+import update from 'immutability-helper';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { DragDropContext } from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
+import { connect } from 'react-redux';
 
 import {
   changeKPIItem,
   changeTargetIndicatorsItem,
   getKPIsDashboard,
-  getTargetIndicatorsDashboard
-} from "../../actions/AppActions";
+  getTargetIndicatorsDashboard,
+} from '../../actions/AppActions';
 import {
   addDashboardWidget,
-  removeDashboardWidget
-} from "../../actions/BoardActions";
-import { patchRequest } from "../../actions/GenericActions";
-import { connectWS, disconnectWS } from "../../actions/WindowActions";
-import logo from "../../assets/images/metasfresh_logo_green_thumb.png";
-import RawChart from "../charts/RawChart";
-import RawList from "../widget/List/RawList";
-import ChartWidget from "./ChartWidget";
-import DndWidget from "./DndWidget";
-import Placeholder from "./Placeholder";
-import Sidenav from "./Sidenav";
+  removeDashboardWidget,
+} from '../../actions/BoardActions';
+import { patchRequest } from '../../actions/GenericActions';
+import { connectWS, disconnectWS } from '../../actions/WindowActions';
+import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import RawChart from '../charts/RawChart';
+import RawList from '../widget/List/RawList';
+import ChartWidget from './ChartWidget';
+import DndWidget from './DndWidget';
+import Placeholder from './Placeholder';
+import Sidenav from './Sidenav';
 
 export class DraggableWrapper extends Component {
   state = {
@@ -32,11 +32,11 @@ export class DraggableWrapper extends Component {
     idMaximized: null,
     websocketEndpoint: null,
     chartOptions: false,
-    captionHandler: "",
-    when: "",
-    interval: "",
-    currentId: "",
-    isIndicator: ""
+    captionHandler: '',
+    when: '',
+    interval: '',
+    currentId: '',
+    isIndicator: '',
   };
 
   componentDidMount = () => {
@@ -53,10 +53,10 @@ export class DraggableWrapper extends Component {
       connectWS.call(this, websocketEndpoint, msg => {
         msg.events.map(event => {
           switch (event.widgetType) {
-            case "TargetIndicator":
+            case 'TargetIndicator':
               this.getIndicators();
               break;
-            case "KPI":
+            case 'KPI':
               this.getDashboard();
               break;
           }
@@ -69,12 +69,12 @@ export class DraggableWrapper extends Component {
     disconnectWS.call(this);
   };
 
-  getType = entity => (entity === "cards" ? "kpis" : "targetIndicators");
+  getType = entity => (entity === 'cards' ? 'kpis' : 'targetIndicators');
 
   getIndicators = () => {
     getTargetIndicatorsDashboard().then(response => {
       this.setState({
-        indicators: response.data.items
+        indicators: response.data.items,
       });
     });
   };
@@ -83,7 +83,7 @@ export class DraggableWrapper extends Component {
     getKPIsDashboard().then(response => {
       this.setState({
         cards: response.data.items,
-        websocketEndpoint: response.data.websocketEndpoint
+        websocketEndpoint: response.data.websocketEndpoint,
       });
     });
   };
@@ -94,8 +94,8 @@ export class DraggableWrapper extends Component {
       this.setState(prev =>
         update(prev, {
           [entity]: {
-            [tmpItemIndex]: { $set: res.data }
-          }
+            [tmpItemIndex]: { $set: res.data },
+          },
         })
       );
     });
@@ -104,12 +104,12 @@ export class DraggableWrapper extends Component {
   onDrop = (entity, id) => {
     const tmpItemIndex = this.state[entity].findIndex(i => i.id === id);
     patchRequest({
-      entity: "dashboard",
-      property: "position",
+      entity: 'dashboard',
+      property: 'position',
       value: tmpItemIndex,
       subentity: this.getType(entity),
       // TODO: This looks like it should rather be viewId: id
-      isAdvanced: id
+      isAdvanced: id,
     });
   };
 
@@ -120,8 +120,8 @@ export class DraggableWrapper extends Component {
       this.setState(prev =>
         update(prev, {
           [entity]: {
-            $splice: [[dragIndex, 1], [hoverIndex, 0, draggedItem]]
-          }
+            $splice: [[dragIndex, 1], [hoverIndex, 0, draggedItem]],
+          },
         })
       );
     } else {
@@ -129,18 +129,18 @@ export class DraggableWrapper extends Component {
       const newItem = {
         id: item.id,
         fetchOnDrop: true,
-        kpi: { chartType: this.getType(entity) }
+        kpi: { chartType: this.getType(entity) },
       };
       this.setState(prev =>
         update(prev, {
           [entity]:
             prev[entity].length === 0
               ? {
-                  $set: [newItem]
+                  $set: [newItem],
                 }
               : {
-                  $splice: [[dragIndex, 1], [hoverIndex, 0, newItem]]
-                }
+                  $splice: [[dragIndex, 1], [hoverIndex, 0, newItem]],
+                },
         })
       );
     }
@@ -151,15 +151,15 @@ export class DraggableWrapper extends Component {
     this.setState(prev =>
       update(prev, {
         [entity]: {
-          $splice: [[index, 1]]
-        }
+          $splice: [[index, 1]],
+        },
       })
     );
   };
 
   maximizeWidget = id => {
     this.setState({
-      idMaximized: id
+      idMaximized: id,
     });
   };
 
@@ -173,13 +173,13 @@ export class DraggableWrapper extends Component {
           <DndWidget
             moveCard={this.moveCard}
             addCard={this.addCard}
-            entity={"indicators"}
+            entity={'indicators'}
             placeholder={true}
             transparent={!editmode}
           >
             <Placeholder
-              entity={"indicators"}
-              description={"Drop Target Indicator widget here."}
+              entity={'indicators'}
+              description={'Drop Target Indicator widget here.'}
             />
           </DndWidget>
         </div>
@@ -188,7 +188,7 @@ export class DraggableWrapper extends Component {
     if (!indicators.length) return false;
 
     return (
-      <div className={"indicators-wrapper"}>
+      <div className={'indicators-wrapper'}>
         {indicators.map((indicator, id) => (
           <DndWidget
             key={id}
@@ -198,7 +198,7 @@ export class DraggableWrapper extends Component {
             addCard={this.addCard}
             onDrop={this.onDrop}
             removeCard={this.removeCard}
-            entity={"indicators"}
+            entity={'indicators'}
             transparent={!editmode}
           >
             <RawChart
@@ -207,7 +207,7 @@ export class DraggableWrapper extends Component {
               caption={indicator.caption}
               fields={indicator.kpi.fields}
               pollInterval={indicator.kpi.pollIntervalSec}
-              chartType={"Indicator"}
+              chartType={'Indicator'}
               kpi={false}
               noData={indicator.fetchOnDrop}
               handleChartOptions={this.handleChartOptions}
@@ -228,14 +228,14 @@ export class DraggableWrapper extends Component {
         <div className="kpis-wrapper">
           <DndWidget
             placeholder={true}
-            entity={"cards"}
+            entity={'cards'}
             moveCard={this.moveCard}
             addCard={this.addCard}
             transparent={!editmode}
           >
             <Placeholder
-              entity={"cards"}
-              description={"Drop KPI widget here."}
+              entity={'cards'}
+              description={'Drop KPI widget here.'}
             />
           </DndWidget>
         </div>
@@ -254,10 +254,10 @@ export class DraggableWrapper extends Component {
                 addCard={this.addCard}
                 onDrop={this.onDrop}
                 removeCard={this.removeCard}
-                entity={"cards"}
+                entity={'cards'}
                 className={
-                  "draggable-widget " +
-                  (idMaximized === item.id ? "draggable-widget-maximize " : "")
+                  'draggable-widget ' +
+                  (idMaximized === item.id ? 'draggable-widget-maximize ' : '')
                 }
                 transparent={!editmode}
               >
@@ -313,9 +313,9 @@ export class DraggableWrapper extends Component {
                 <div className="chart-options-list-wrapper">
                   <RawList
                     onSelect={option =>
-                      this.handleOptionSelect("interval", option)
+                      this.handleOptionSelect('interval', option)
                     }
-                    list={[{ caption: "week", value: "week" }]}
+                    list={[{ caption: 'week', value: 'week' }]}
                     selected={interval}
                   />
                 </div>
@@ -324,13 +324,13 @@ export class DraggableWrapper extends Component {
                 <label>when</label>
                 <div className="chart-options-list-wrapper">
                   <RawList
-                    onSelect={option => this.handleOptionSelect("when", option)}
+                    onSelect={option => this.handleOptionSelect('when', option)}
                     list={[
-                      { caption: "now", value: "now" },
+                      { caption: 'now', value: 'now' },
                       {
-                        caption: "last week",
-                        value: "lastWeek"
-                      }
+                        caption: 'last week',
+                        value: 'lastWeek',
+                      },
                     ]}
                     selected={when}
                   />
@@ -340,7 +340,7 @@ export class DraggableWrapper extends Component {
             <div className="chart-options-button-wrapper">
               <button
                 className="btn btn-meta-outline-secondary btn-sm"
-                onClick={() => this.changeChartData("caption", captionHandler)}
+                onClick={() => this.changeChartData('caption', captionHandler)}
               >
                 Save
               </button>
@@ -356,9 +356,9 @@ export class DraggableWrapper extends Component {
       chartOptions: opened,
       captionHandler: caption,
       currentId: id,
-      when: opened ? this.state.when : "",
-      interval: opened ? this.state.interval : "",
-      isIndicator: isIndicator ? true : false
+      when: opened ? this.state.when : '',
+      interval: opened ? this.state.interval : '',
+      isIndicator: isIndicator ? true : false,
     });
   };
 
@@ -378,14 +378,14 @@ export class DraggableWrapper extends Component {
   setSelectedOption = (path, option) => {
     const { when, interval } = this.state;
     this.setState({
-      when: path === "when" ? option : when,
-      interval: path === "interval" ? option : interval
+      when: path === 'when' ? option : when,
+      interval: path === 'interval' ? option : interval,
     });
   };
 
   handleChange = e => {
     this.setState({
-      captionHandler: e.target.value
+      captionHandler: e.target.value,
     });
   };
 
@@ -408,7 +408,7 @@ export class DraggableWrapper extends Component {
     return (
       <div className="dashboard-cards-wrapper">
         {this.renderOptionModal()}
-        <div className={editmode ? "dashboard-edit-mode" : "dashboard-cards"}>
+        <div className={editmode ? 'dashboard-edit-mode' : 'dashboard-cards'}>
           {this.renderIndicators()}
           {this.renderKpis()}
         </div>
@@ -419,7 +419,7 @@ export class DraggableWrapper extends Component {
 }
 
 DraggableWrapper.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect()(DragDropContext(HTML5Backend)(DraggableWrapper));

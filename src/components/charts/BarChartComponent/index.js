@@ -1,18 +1,18 @@
-import * as d3 from "d3";
-import React, { Component } from "react";
+import * as d3 from 'd3';
+import React, { Component } from 'react';
 
 import {
   getXAxisLabelsHeight,
   moveXAxis,
   populateXAxis,
   populateYAxis,
-  populateY0Axis
-} from "./axes";
-import { drawData } from "./data";
-import { getHorizontalDimensions, getVerticalDimensions } from "./dimensions";
-import { drawLegend } from "./legend";
-import { getX0Range, getX1Range, getYRange, getZRange } from "./ranges";
-import { getSvg, sizeSvg } from "./svg";
+  populateY0Axis,
+} from './axes';
+import { drawData } from './data';
+import { getHorizontalDimensions, getVerticalDimensions } from './dimensions';
+import { drawLegend } from './legend';
+import { getX0Range, getX1Range, getYRange, getZRange } from './ranges';
+import { getSvg, sizeSvg } from './svg';
 
 class BarChartComponent extends Component {
   svg;
@@ -53,7 +53,7 @@ class BarChartComponent extends Component {
     // adjust svg container
     sizeSvg(this.svg, {
       ...horizontal,
-      ...vertical
+      ...vertical,
     });
 
     drawLegend(this.svg, fields, horizontal, rangeZ);
@@ -61,14 +61,14 @@ class BarChartComponent extends Component {
     return {
       dimensions: {
         ...horizontal,
-        ...vertical
+        ...vertical,
       },
       ranges: {
         x0: rangeX0,
         x1: rangeX1,
         y: rangeY,
-        z: rangeZ
-      }
+        z: rangeZ,
+      },
     };
   }
 
@@ -91,7 +91,7 @@ class BarChartComponent extends Component {
   addResponsive = () => {
     const { chartClass } = this.props;
 
-    d3.select(window).on("resize." + chartClass + "-wrapper", () => {
+    d3.select(window).on('resize.' + chartClass + '-wrapper', () => {
       this.draw();
     });
   };
@@ -118,20 +118,20 @@ class BarChartComponent extends Component {
       data,
       fields,
       groupBy,
-      chartTitle
+      chartTitle,
     } = this.props;
 
     return (
-      <div className={"chart-wrapper " + chartClass + "-wrapper"}>
+      <div className={'chart-wrapper ' + chartClass + '-wrapper'}>
         <svg className={chartClass} />
         {isMaximized && (
           <div
             className={
-              "panel panel-primary panel-bordered " + "chart-data-table-wrapper"
+              'panel panel-primary panel-bordered ' + 'chart-data-table-wrapper'
             }
           >
             <table
-              className={"table table-bordered-vertically " + "table-striped"}
+              className={'table table-bordered-vertically ' + 'table-striped'}
             >
               <thead>
                 <tr>
@@ -153,7 +153,7 @@ class BarChartComponent extends Component {
                                   <td>{field.caption}</td>
                                   <td className="table-chart-value">
                                     {item[field.fieldName]}
-                                    {field.unit ? field.unit : ""}
+                                    {field.unit ? field.unit : ''}
                                   </td>
                                 </tr>
                               </tbody>

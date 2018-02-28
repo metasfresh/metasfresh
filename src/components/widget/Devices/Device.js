@@ -1,7 +1,7 @@
-import React, { Component } from "react";
-import SockJs from "sockjs-client";
+import React, { Component } from 'react';
+import SockJs from 'sockjs-client';
 
-import Stomp from "stompjs/lib/stomp.min.js";
+import Stomp from 'stompjs/lib/stomp.min.js';
 
 class Device extends Component {
   constructor(props) {
@@ -9,7 +9,7 @@ class Device extends Component {
 
     this.state = {
       value: null,
-      valueChangeStopper: false
+      valueChangeStopper: false,
     };
   }
 
@@ -27,7 +27,7 @@ class Device extends Component {
 
           this.mounted &&
             this.setState({
-              value: body.value
+              value: body.value,
             });
         }
       });
@@ -50,7 +50,7 @@ class Device extends Component {
 
   handleToggleChangeStopper = value => {
     this.setState({
-      valueChangeStopper: value
+      valueChangeStopper: value,
     });
   };
 
@@ -59,7 +59,7 @@ class Device extends Component {
     const { value } = this.state;
 
     switch (e.key) {
-      case "Enter":
+      case 'Enter':
         handleChange(value);
         break;
     }
@@ -73,12 +73,12 @@ class Device extends Component {
       return (
         <div
           className={
-            "btn btn-device btn-meta-outline-secondary btn-sm " +
-            "btn-inline pointer btn-distance-rev " +
-            (isMore ? "btn-flagged " : "")
+            'btn btn-device btn-meta-outline-secondary btn-sm ' +
+            'btn-inline pointer btn-distance-rev ' +
+            (isMore ? 'btn-flagged ' : '')
           }
           onClick={this.handleClick}
-          tabIndex={tabIndex ? tabIndex : ""}
+          tabIndex={tabIndex ? tabIndex : ''}
           onMouseEnter={() => this.handleToggleChangeStopper(true)}
           onFocus={() => this.handleToggleChangeStopper(true)}
           onMouseLeave={() => this.handleToggleChangeStopper(false)}

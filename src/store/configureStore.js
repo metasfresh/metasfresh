@@ -1,8 +1,8 @@
-import { routerMiddleware } from "react-router-redux";
-import { applyMiddleware, compose, createStore } from "redux";
-import thunk from "redux-thunk";
+import { routerMiddleware } from 'react-router-redux';
+import { applyMiddleware, compose, createStore } from 'redux';
+import thunk from 'redux-thunk';
 
-import rootReducer from "../reducers";
+import rootReducer from '../reducers';
 
 export default function configureStore(history) {
   const middleware = [thunk, routerMiddleware(history)];
@@ -15,7 +15,7 @@ export default function configureStore(history) {
   );
 
   if (module.hot) {
-    module.hot.accept("../reducers", () => {
+    module.hot.accept('../reducers', () => {
       const nextReducer = rootReducer;
       store.replaceReducer(nextReducer);
     });

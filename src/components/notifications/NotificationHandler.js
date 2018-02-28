@@ -1,8 +1,8 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import Notification from "./Notification";
+import Notification from './Notification';
 
 class NotificationHandler extends Component {
   constructor(props) {
@@ -26,17 +26,17 @@ class NotificationHandler extends Component {
 }
 
 NotificationHandler.propTypes = {
-  notifications: PropTypes.object.isRequired
+  notifications: PropTypes.object.isRequired,
 };
 
 function mapStateToProps(state) {
   const { appHandler } = state;
   const { notifications } = appHandler || {
-    notifications: {}
+    notifications: {},
   };
 
   return {
-    notifications
+    notifications,
   };
 }
 

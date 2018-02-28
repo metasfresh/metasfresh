@@ -1,8 +1,8 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import ReactCSSTransitionGroup from "react-addons-css-transition-group";
-import onClickOutside from "react-onclickoutside";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
 class LookupList extends Component {
   constructor(props) {
@@ -11,7 +11,7 @@ class LookupList extends Component {
     this.state = {
       listElementHeight: 0,
       listVisibleElements: 0,
-      shouldListScrollUpdate: false
+      shouldListScrollUpdate: false,
     };
   }
 
@@ -27,12 +27,12 @@ class LookupList extends Component {
     this.setState({
       listElementHeight: listElementHeight,
       listVisibleElements: listVisibleElements,
-      shouldListScrollUpdate: shouldListScrollUpdate
+      shouldListScrollUpdate: shouldListScrollUpdate,
     });
   }
 
   componentWillReceiveProps(nextProps) {
-    if (typeof nextProps.selected === "number") {
+    if (typeof nextProps.selected === 'number') {
       const container = this.listScrollWrap;
       let element = this.items.childNodes[nextProps.selected];
 
@@ -51,8 +51,8 @@ class LookupList extends Component {
       <div
         key={item.key + item.caption}
         className={
-          "input-dropdown-list-option " +
-          (selected === index ? "input-dropdown-list-option-key-on" : "")
+          'input-dropdown-list-option ' +
+          (selected === index ? 'input-dropdown-list-option-key-on' : '')
         }
         onClick={() => {
           handleSelect(item);
@@ -73,8 +73,8 @@ class LookupList extends Component {
     return (
       <div
         className={
-          "input-dropdown-list-option input-dropdown-list-option-alt " +
-          (selected === "new" ? "input-dropdown-list-option-key-on" : "")
+          'input-dropdown-list-option input-dropdown-list-option-alt ' +
+          (selected === 'new' ? 'input-dropdown-list-option-key-on' : '')
         }
         onClick={handleAddNew}
       >
@@ -115,7 +115,7 @@ class LookupList extends Component {
       list,
       creatingNewDisabled,
       newRecordCaption,
-      style
+      style,
     } = this.props;
 
     return (
@@ -139,7 +139,7 @@ class LookupList extends Component {
 }
 
 LookupList.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect(false, false, false, { withRef: true })(

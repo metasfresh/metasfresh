@@ -1,7 +1,7 @@
-import * as types from "../constants/MenuTypes";
+import * as types from '../constants/MenuTypes';
 
 const initialState = {
-  breadcrumb: []
+  breadcrumb: [],
 };
 
 export default function menuHandler(state = initialState, action) {
@@ -18,7 +18,7 @@ export default function menuHandler(state = initialState, action) {
             node.nodeId === action.node.nodeId
               ? { ...node, children: action.node }
               : node
-        )
+        ),
       };
     }
 

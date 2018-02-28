@@ -1,7 +1,7 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { getAvatar } from "../../actions/AppActions";
-import defaultAvatar from "../../assets/images/default-avatar.png";
+import { getAvatar } from '../../actions/AppActions';
+import defaultAvatar from '../../assets/images/default-avatar.png';
 
 class Avatar extends Component {
   constructor(props) {
@@ -15,9 +15,9 @@ class Avatar extends Component {
         src={id ? getAvatar(id) : defaultAvatar}
         title={title}
         className={
-          "avatar img-fluid rounded-circle " +
-          (size ? "avatar-" + size + " " : "") +
-          (className ? className : "")
+          'avatar img-fluid rounded-circle ' +
+          (size ? 'avatar-' + size + ' ' : '') +
+          (className ? className : '')
         }
       />
     );

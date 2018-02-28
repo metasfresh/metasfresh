@@ -10,14 +10,14 @@ describe('generateHotkeys', () => {
   it('should transform a key map to a map of hotkeys', () => {
     const keymap = {
       COMBO_A: 'CONTROL+A',
-      COMBO_B: 'CONTROL+B'
+      COMBO_B: 'CONTROL+B',
     };
 
     const hotkeys = generateHotkeys({ keymap });
 
     expect(hotkeys).toEqual({
       'CONTROL+A': [],
-      'CONTROL+B': []
+      'CONTROL+B': [],
     });
   });
 
@@ -26,7 +26,7 @@ describe('generateHotkeys', () => {
 
     const keymap = {
       COMBO_1: 'CONTROL+A',
-      COMBO_2: 'CONTROL+A'
+      COMBO_2: 'CONTROL+A',
     };
 
     generateHotkeys({ keymap });
@@ -38,11 +38,11 @@ describe('generateHotkeys', () => {
     jest.spyOn(global.console, 'warn');
 
     const blacklist = {
-      'CONTROL+W': 'Close tab'
+      'CONTROL+W': 'Close tab',
     };
 
     const keymap = {
-      COMBO_1: 'CONTROL+W'
+      COMBO_1: 'CONTROL+W',
     };
 
     generateHotkeys({ keymap, blacklist });

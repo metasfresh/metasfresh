@@ -3,33 +3,33 @@
  * https://github.com/captivationsoftware/react-file-input
  */
 
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
 export default class FileInput extends Component {
   state = {
-    value: "",
+    value: '',
     styles: {
       parent: {
-        position: "relative"
+        position: 'relative',
       },
       file: {
-        position: "absolute",
+        position: 'absolute',
         top: 0,
         left: 0,
         opacity: 0,
-        width: "100%",
-        zIndex: 1
+        width: '100%',
+        zIndex: 1,
       },
       text: {
-        position: "relative",
-        zIndex: -1
-      }
-    }
+        position: 'relative',
+        zIndex: -1,
+      },
+    },
   };
 
   handleChange = event => {
     this.setState({
-      value: event.target.value.split(/(\\|\/)/g).pop()
+      value: event.target.value.split(/(\\|\/)/g).pop(),
     });
 
     if (this.props.onChange) {

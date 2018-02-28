@@ -1,29 +1,29 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import { push } from "react-router-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
-import { referencesRequest } from "../../actions/GenericActions";
-import { setFilter } from "../../actions/ListActions";
-import Loader from "../app/Loader";
+import { referencesRequest } from '../../actions/GenericActions';
+import { setFilter } from '../../actions/ListActions';
+import Loader from '../app/Loader';
 
 class Referenced extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      data: null
+      data: null,
     };
   }
 
   componentDidMount = () => {
     const { windowType, docId } = this.props;
 
-    referencesRequest("window", windowType, docId).then(response => {
+    referencesRequest('window', windowType, docId).then(response => {
       this.setState(
         {
-          data: response.data.groups
+          data: response.data.groups,
         },
         () => {
           this.referenced && this.referenced.focus();
@@ -36,7 +36,7 @@ class Referenced extends Component {
     const { dispatch, windowType, docId } = this.props;
     dispatch(setFilter(filter, type));
     dispatch(
-      push("/window/" + type + "?refType=" + windowType + "&refId=" + docId)
+      push('/window/' + type + '?refType=' + windowType + '&refId=' + docId)
     );
   };
 
@@ -44,30 +44,30 @@ class Referenced extends Component {
     const active = document.activeElement;
 
     const keyHandler = (e, dir) => {
-      const sib = dir ? "nextSibling" : "previousSibling";
+      const sib = dir ? 'nextSibling' : 'previousSibling';
       e.preventDefault();
-      if (active.classList.contains("js-subheader-item")) {
+      if (active.classList.contains('js-subheader-item')) {
         if (!active[sib]) {
           return;
         }
-        if (active[sib].classList.contains("js-subheader-item")) {
+        if (active[sib].classList.contains('js-subheader-item')) {
           active[sib].focus();
         } else {
           active[sib][sib] && active[sib][sib].focus();
         }
       } else {
-        active.getElementsByClassName("js-subheader-item")[0].focus();
+        active.getElementsByClassName('js-subheader-item')[0].focus();
       }
     };
 
     switch (e.key) {
-      case "ArrowDown":
+      case 'ArrowDown':
         keyHandler(e, true);
         break;
-      case "ArrowUp":
+      case 'ArrowUp':
         keyHandler(e, false);
         break;
-      case "Enter":
+      case 'Enter':
         e.preventDefault();
         document.activeElement.click();
         break;
@@ -82,7 +82,7 @@ class Referenced extends Component {
         return [
           <div key="caption" className="subheader-caption">
             {item.caption}
-          </div>
+          </div>,
         ].concat(
           item.references.map((ref, refKey) => (
             <div
@@ -100,7 +100,7 @@ class Referenced extends Component {
       })
     ) : (
       <div className="subheader-item subheader-item-disabled">
-        {counterpart.translate("window.sideList.referenced.empty")}
+        {counterpart.translate('window.sideList.referenced.empty')}
       </div>
     );
   };
@@ -122,7 +122,7 @@ class Referenced extends Component {
 Referenced.propTypes = {
   windowType: PropTypes.string.isRequired,
   docId: PropTypes.string.isRequired,
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect()(Referenced);

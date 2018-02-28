@@ -1,8 +1,8 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import MasterWidget from "./widget/MasterWidget";
+import MasterWidget from './widget/MasterWidget';
 
 export class Process extends Component {
   constructor(props) {
@@ -17,7 +17,7 @@ export class Process extends Component {
       return (
         <MasterWidget
           entity="process"
-          key={"element" + id}
+          key={'element' + id}
           windowType={type}
           dataId={layout.pinstanceId}
           widgetData={widgetData}
@@ -41,7 +41,7 @@ export class Process extends Component {
 }
 
 Process.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect()(Process);

@@ -1,14 +1,14 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import {
   actionsRequest,
-  rowActionsRequest
-} from "../../actions/GenericActions";
-import Loader from "../app/Loader";
-import { getSelection } from "../../reducers/windowHandler";
+  rowActionsRequest,
+} from '../../actions/GenericActions';
+import Loader from '../app/Loader';
+import { getSelection } from '../../reducers/windowHandler';
 
 const mapStateToProps = (state, props) => {
   const includedView = state.listHandler.includedView;
@@ -17,8 +17,8 @@ const mapStateToProps = (state, props) => {
     selected: getSelection({
       state,
       windowType: props.windowType,
-      viewId: props.viewId
-    })
+      viewId: props.viewId,
+    }),
   };
 
   if (includedView && includedView.viewId) {
@@ -26,7 +26,7 @@ const mapStateToProps = (state, props) => {
     result.childViewSelectedIds = getSelection({
       state,
       windowType: includedView.windowType,
-      viewId: includedView.viewId
+      viewId: includedView.viewId,
     });
   }
 
@@ -43,12 +43,12 @@ class Actions extends Component {
     childViewId: PropTypes.string,
     childViewSelectedIds: PropTypes.array,
     dispatch: PropTypes.func.isRequired,
-    selected: PropTypes.array.isRequired
+    selected: PropTypes.array.isRequired,
   };
 
   state = {
     actions: null,
-    rowActions: null
+    rowActions: null,
   };
 
   async componentDidMount() {
@@ -58,20 +58,20 @@ class Actions extends Component {
       docId,
       notfound,
       activeTab,
-      activeTabSelected
+      activeTabSelected,
     } = this.props;
 
-    if (!windowType || docId === "notfound" || notfound) {
+    if (!windowType || docId === 'notfound' || notfound) {
       this.setState({
-        actions: []
+        actions: [],
       });
 
       return;
     }
 
-    if (entity === "board") {
+    if (entity === 'board') {
       this.setState({
-        actions: []
+        actions: [],
       });
 
       return;
@@ -87,7 +87,7 @@ class Actions extends Component {
 
     this.setState({
       actions,
-      ...(rowActions && { rowActions })
+      ...(rowActions && { rowActions }),
     });
   }
 
@@ -101,7 +101,7 @@ class Actions extends Component {
       docId,
       rowId,
       activeTab,
-      activeTabSelected
+      activeTabSelected,
     } = this.props;
 
     try {
@@ -111,10 +111,10 @@ class Actions extends Component {
         viewId,
         childViewId,
         childViewSelectedIds,
-        id: docId
+        id: docId,
       };
 
-      if (entity === "documentView") {
+      if (entity === 'documentView') {
         request.selectedIds = rowId;
       }
 
@@ -143,13 +143,13 @@ class Actions extends Component {
           windowId: windowType,
           documentId: docId,
           tabId: activeTab,
-          rowId
+          rowId,
         });
 
         const actions = response.data.actions.map(action => ({
           ...action,
           tabId: activeTab,
-          rowId
+          rowId,
         }));
 
         return actions;
@@ -175,7 +175,7 @@ class Actions extends Component {
       openModal,
       selected,
       childViewId,
-      childViewSelectedIds
+      childViewSelectedIds,
     } = this.props;
 
     let handleClick = null;
@@ -186,8 +186,8 @@ class Actions extends Component {
       if (item.tabId && item.rowId) {
         handleModal = () =>
           openModalRow(
-            item.processId + "",
-            "process",
+            item.processId + '',
+            'process',
             item.caption,
             item.tabId,
             item.rowId
@@ -195,8 +195,8 @@ class Actions extends Component {
       } else {
         handleModal = () =>
           openModal(
-            item.processId + "",
-            "process",
+            item.processId + '',
+            'process',
             item.caption,
             false,
             selected,
@@ -217,8 +217,8 @@ class Actions extends Component {
         key={identifier + key}
         tabIndex={0}
         className={
-          "subheader-item js-subheader-item" +
-          (item.disabled ? " subheader-item-disabled" : "")
+          'subheader-item js-subheader-item' +
+          (item.disabled ? ' subheader-item-disabled' : '')
         }
         onClick={handleClick}
       >
@@ -244,18 +244,18 @@ class Actions extends Component {
       const separator = <hr key="separator" tabIndex={0} />;
 
       return [
-        ...actions.map(renderAction("actions")),
+        ...actions.map(renderAction('actions')),
         separator,
-        ...rowActions.map(renderAction("rowActions"))
+        ...rowActions.map(renderAction('rowActions')),
       ];
     } else if (numActions > 0) {
-      return actions.map(renderAction("actions"));
+      return actions.map(renderAction('actions'));
     } else if (numRowActions > 0) {
-      return rowActions.map(renderAction("rowActions"));
+      return rowActions.map(renderAction('rowActions'));
     } else {
       return (
         <div className="subheader-item subheader-item-disabled">
-          {counterpart.translate("window.actions.emptyText")}
+          {counterpart.translate('window.actions.emptyText')}
         </div>
       );
     }
@@ -267,7 +267,7 @@ class Actions extends Component {
     return (
       <div className="subheader-column js-subheader-column" tabIndex={0}>
         <div className="subheader-header">
-          {counterpart.translate("window.actions.caption")}
+          {counterpart.translate('window.actions.caption')}
         </div>
         <div className="subheader-break" />
         {actions ? this.renderData() : <Loader />}
