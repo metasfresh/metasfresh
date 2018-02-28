@@ -438,7 +438,7 @@ class RawList extends PureComponent {
 }
 
 RawList.propTypes = {
-  filter: PropTypes.object.isRequired,
+  filter: PropTypes.object,
   readonly: PropTypes.bool,
   // Immutable List
   list: PropTypes.object,

@@ -2,8 +2,10 @@ import counterpart from 'counterpart';
 import Moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { List } from 'immutable';
 import { connect } from 'react-redux';
 import { goBack, push } from 'react-router-redux';
+import classnames from 'classnames';
 
 import {
   getUserLang,
@@ -23,6 +25,8 @@ class LoginForm extends Component {
       role: '',
       roleSelect: false,
       err: '',
+      dropdownToggled: false,
+      dropdownFocused: false,
     };
   }
 
@@ -92,12 +96,12 @@ class LoginForm extends Component {
             if (response.data.loginComplete) {
               return this.handleSuccess();
             }
-            const roles = response.data.roles;
+            const roles = List(response.data.roles);
 
             this.setState({
               roleSelect: true,
               roles,
-              role: roles[0],
+              role: roles.get(0),
             });
           })
           .then(() => {
@@ -126,8 +130,39 @@ class LoginForm extends Component {
     });
   };
 
+  openDropdown = () => {
+    this.setState({
+      dropdownToggled: true,
+    });
+  };
+
+  closeDropdown = () => {
+    this.setState({
+      dropdownToggled: false,
+    });
+  };
+
+  onFocus = () => {
+    this.setState({
+      dropdownFocused: true,
+    });
+  };
+
+  onBlur = () => {
+    this.setState({ dropdownFocused: false });
+  };
+
   render() {
-    const { roleSelect, roles, err, role, pending } = this.state;
+    const {
+      roleSelect,
+      roles,
+      err,
+      role,
+      pending,
+      dropdownToggled,
+      dropdownFocused,
+    } = this.state;
+
     return (
       <div
         className="login-form panel panel-spaced-lg panel-shadowed panel-primary"
@@ -150,6 +185,12 @@ class LoginForm extends Component {
               autofocus={true}
               doNotOpenOnFocus={true}
               mandatory={true}
+              isToggled={dropdownToggled}
+              isFocused={dropdownFocused}
+              onOpenDropdown={this.openDropdown}
+              onCloseDropdown={this.closeDropdown}
+              onFocus={this.onFocus}
+              onBlur={this.onBlur}
             />
           </div>
         ) : (
@@ -162,11 +203,10 @@ class LoginForm extends Component {
               <input
                 type="text"
                 onChange={this.handleOnChange}
-                className={
-                  'input-primary input-block ' +
-                  (err ? 'input-error ' : '') +
-                  (pending ? 'input-disabled ' : '')
-                }
+                className={classnames('input-primary input-block', {
+                  'input-error': err,
+                  'input-disabled': pending,
+                })}
                 disabled={pending}
                 ref={c => (this.login = c)}
               />
@@ -178,11 +218,10 @@ class LoginForm extends Component {
               <input
                 type="password"
                 onChange={this.handleOnChange}
-                className={
-                  'input-primary input-block ' +
-                  (err ? 'input-error ' : '') +
-                  (pending ? 'input-disabled ' : '')
-                }
+                className={classnames('input-primary input-block', {
+                  'input-error': err,
+                  'input-disabled': pending,
+                })}
                 disabled={pending}
                 ref={c => (this.passwd = c)}
               />
