@@ -26,7 +26,6 @@ package de.metas.ordercandidate.api;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.spi.IOLCandValidator;
 
 public interface IOLCandValidatorBL extends ISingletonService
 {
@@ -34,8 +33,6 @@ public interface IOLCandValidatorBL extends ISingletonService
 	 * AD_Message to be used by users of this implementation.
 	 */
 	public static final String MSG_ERRORS_FOUND = "de.metas.ordercandidate.spi.impl.OLCandPriceValidator.FoundErrors";
-
-	void registerValidator(IOLCandValidator olCandValdiator);
 
 	boolean validate(I_C_OLCand olCand);
 

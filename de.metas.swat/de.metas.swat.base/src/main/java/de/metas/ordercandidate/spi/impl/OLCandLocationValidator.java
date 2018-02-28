@@ -5,6 +5,7 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
+import org.springframework.stereotype.Component;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -38,6 +39,7 @@ import de.metas.ordercandidate.spi.IOLCandValidator;
  * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09623_old_incoice_location_taken_sometimes_in_excel_import_%28104714160405%29
  */
+@Component
 public class OLCandLocationValidator implements IOLCandValidator
 {
 	// error messages

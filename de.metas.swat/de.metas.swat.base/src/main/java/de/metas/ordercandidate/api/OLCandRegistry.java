@@ -8,8 +8,10 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
+import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.ordercandidate.spi.NullOLCandListener;
 import lombok.ToString;
 
@@ -40,13 +42,16 @@ public class OLCandRegistry
 {
 	private final IOLCandListener listeners;
 	private final IOLCandGroupingProvider groupingValuesProviders;
+	private final IOLCandValidator validators;
 
 	public OLCandRegistry(
 			final List<IOLCandListener> listeners,
-			final List<IOLCandGroupingProvider> groupingValuesProviders)
+			final List<IOLCandGroupingProvider> groupingValuesProviders,
+			final List<IOLCandValidator> validators)
 	{
 		this.listeners = !listeners.isEmpty() ? new CompositeOLCandListener(listeners) : NullOLCandListener.instance;
 		this.groupingValuesProviders = !groupingValuesProviders.isEmpty() ? new CompositeOLCandGroupingProvider(groupingValuesProviders) : NullOLCandGroupingProvider.instance;
+		this.validators = !validators.isEmpty() ? new CompositeOLCandValidator(validators) : NullOLCandValidator.instance;
 	}
 
 	public IOLCandListener getListeners()
@@ -57,6 +62,11 @@ public class OLCandRegistry
 	public IOLCandGroupingProvider getGroupingValuesProviders()
 	{
 		return groupingValuesProviders;
+	}
+
+	public IOLCandValidator getValidators()
+	{
+		return validators;
 	}
 
 	@ToString
@@ -85,13 +95,12 @@ public class OLCandRegistry
 		{
 			return ImmutableList.of();
 		}
-
 	}
 
 	@ToString
 	private static final class CompositeOLCandGroupingProvider implements IOLCandGroupingProvider
 	{
-		private final List<IOLCandGroupingProvider> providers;
+		private final ImmutableList<IOLCandGroupingProvider> providers;
 
 		private CompositeOLCandGroupingProvider(final List<IOLCandGroupingProvider> providers)
 		{
@@ -105,7 +114,40 @@ public class OLCandRegistry
 					.flatMap(provider -> provider.provideLineGroupingValues(cand).stream())
 					.collect(Collectors.toList());
 		}
+	}
 
+	private static final class NullOLCandValidator implements IOLCandValidator
+	{
+		public static final transient NullOLCandValidator instance = new NullOLCandValidator();
+
+		@Override
+		public boolean validate(final I_C_OLCand olCand)
+		{
+			return true;
+		}
+	}
+
+	private static final class CompositeOLCandValidator implements IOLCandValidator
+	{
+		private final ImmutableList<IOLCandValidator> validators;
+
+		private CompositeOLCandValidator(final List<IOLCandValidator> validators)
+		{
+			this.validators = ImmutableList.copyOf(validators);
+		}
+
+		@Override
+		public boolean validate(final I_C_OLCand olCand)
+		{
+			for (final IOLCandValidator olCandValdiator : validators)
+			{
+				if (!olCandValdiator.validate(olCand))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 
 }

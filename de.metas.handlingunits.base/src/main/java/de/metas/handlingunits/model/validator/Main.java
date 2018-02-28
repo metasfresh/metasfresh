@@ -73,7 +73,6 @@ import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPValidator;
 import de.metas.handlingunits.picking.interceptor.M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.pricing.spi.impl.HUPricing;
 import de.metas.handlingunits.pricing.spi.impl.OrderLinePricingHUDocumentHandler;
@@ -100,7 +99,6 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
-import de.metas.ordercandidate.api.IOLCandValidatorBL;
 import de.metas.pricing.ProductPrices;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.storage.IStorageEngineService;
@@ -381,9 +379,6 @@ public final class Main extends AbstractModuleInterceptor
 			Services.get(IC_Order_CreatePOFromSOsDAO.class).addAdditionalOrderLinesFilter(excludePackageOrderLinesFilter);
 			Services.get(IC_Order_CreatePOFromSOsBL.class).registerListener(new de.metas.handlingunits.order.process.spi.impl.HUC_Order_CreatePOFromSOsListener());
 		}
-
-		// task 08147: validate if the C_OLCand's PIIP is OK
-		Services.get(IOLCandValidatorBL.class).registerValidator(new OLCandPIIPValidator());
 
 		//
 		// Invoice candidates facets collector

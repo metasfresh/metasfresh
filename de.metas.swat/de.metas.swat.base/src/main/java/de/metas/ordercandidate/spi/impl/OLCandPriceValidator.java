@@ -26,10 +26,6 @@ package de.metas.ordercandidate.spi.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -38,6 +34,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
 import org.compiere.model.MUOM;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -47,6 +48,7 @@ import de.metas.ordercandidate.spi.IOLCandValidator;
  * Validates and sets the given OLCand's pricing data.
  *
  */
+@Component
 public class OLCandPriceValidator implements IOLCandValidator
 {
 	private static final transient Logger logger = LogManager.getLogger(OLCandPriceValidator.class);
@@ -57,7 +59,7 @@ public class OLCandPriceValidator implements IOLCandValidator
 	 * @task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
 	 */
 	/* package */static final ModelDynAttributeAccessor<I_C_OLCand, IPricingResult> DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT =
-			new ModelDynAttributeAccessor<I_C_OLCand, IPricingResult>( OLCandPriceValidator.class.getSimpleName() + "#pricingResult", IPricingResult.class);
+			new ModelDynAttributeAccessor<>( OLCandPriceValidator.class.getSimpleName() + "#pricingResult", IPricingResult.class);
 
 	@Override
 	public boolean validate(final I_C_OLCand olCand)
