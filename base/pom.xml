@@ -29,13 +29,6 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
-		<!-- this is required when we run with -Dorg.adempiere.server.embedded=true -->
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
 		<!--
 		Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer.
 		i.e. a developer wants to use embedded jasper server while working/debugging in eclipse.
