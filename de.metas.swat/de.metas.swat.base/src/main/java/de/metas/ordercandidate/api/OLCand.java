@@ -99,7 +99,7 @@ public final class OLCand implements IProductPriceAware
 
 	public TableRecordReference toTableRecordReference()
 	{
-		return TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getC_OLCand_ID());
+		return TableRecordReference.of(I_C_OLCand.Table_Name, getId());
 	}
 
 	public int getAD_Client_ID()
@@ -283,6 +283,10 @@ public final class OLCand implements IProductPriceAware
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_M_PricingSystem_ID))
 		{
 			return getPricingSystemId();
+		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DatePromised_Effective))
+		{
+			return getDatePromised();
 		}
 		else
 		{

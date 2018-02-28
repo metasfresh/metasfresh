@@ -92,14 +92,13 @@ public class OLCandBL implements IOLCandBL
 	{
 		Check.assumeNotNull(olCand, "Param 'olCand' not null");
 
-		final int result;
 		if (olCand.getM_PricingSystem_ID() > 0)
 		{
-			result = olCand.getM_PricingSystem_ID();
+			return olCand.getM_PricingSystem_ID();
 		}
 		else if (orderDefaults != null && orderDefaults.getPricingSystemId() > 0)
 		{
-			result = orderDefaults.getPricingSystemId();
+			return orderDefaults.getPricingSystemId();
 		}
 		else
 		{
@@ -110,10 +109,8 @@ public class OLCandBL implements IOLCandBL
 			final boolean soTrx = true;
 
 			final int pricingSystemId = bPartnerDAO.retrievePricingSystemId(Env.getCtx(), bpartnerId, soTrx, ITrx.TRXNAME_None);
-			result = pricingSystemId;
+			return pricingSystemId;
 		}
-
-		return result;
 	}
 
 	@Override
