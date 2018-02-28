@@ -1,18 +1,14 @@
-[![Join the chat at https://gitter.im/metasfresh/metasfresh](https://badges.gitter.im/metasfresh/metasfresh.svg)](https://gitter.im/metasfresh/metasfresh?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+# <img src='/images/metasfresh_logo_green.jpg' height='80' alt='metasfresh Logo' aria-label='metasfresh.com' /></a>
+
+[![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/metasfresh)
 [![Krihelimeter](http://krihelinator.xyz/badge/metasfresh/metasfresh)](http://krihelinator.xyz)
+[![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md)
 
-# metasfresh - Competitive ERP is FREE.
+metasfresh is a responsive free and Open Source ERP System focused on creating an outstanding User Experience.
 
-metasfresh is a free and Open Source ERP System for midsize companies from industry and trade.
-The Development is based on requirement implementations of midsize company projects during the last 8 years. The metasfresh Project was initially founded in October 2015, as a friendly fork of the Open Source ERP System ADempiere.
+Equipped with wide & detailed functionality, metasfresh is built for companies from industry and trade that are searching for a business software that provides high scalability and flexibility. 
 
-Besides having detailed ERP functionality, metasfresh is focused on creating an outstanding User Experience. metasfresh has a 3-tier architecture with Rest-API and a Web User End Frontend developed with ReactJS/ Redux.
-
-The metasfresh ERP Software includes Sales & Procurement, CRM, Manufacturing, Billing, Accounting and more.
-
-It is designed to be Out-of-the-box ready to use and with sophisticated vertical features like handling units and attribute management.
-
-metasfresh is a perfect fit for midsize companies in wholesale and manufacturing which are in search for high flexibility and high performance in data processing assisted with multi-threading and mass document creation.
+It has a 3-tier architecture with Rest-API and a Web User Frontend developed in HTML5/ ReactJS/ Redux.
 
 ## Screenshots
 <img src="/images/screenshot-kpi-dashboard.png" width="33%" alt="KPI Dashboard"></img> <img src="/images/screenshot-sales-order.png" width="33%" alt="Sales Order Window"></img> <img src="/images/screenshot-material-receipt.png" width="33%" alt="Material Receipt Window"></img>

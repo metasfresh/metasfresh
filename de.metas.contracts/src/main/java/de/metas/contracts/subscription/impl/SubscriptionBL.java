@@ -101,7 +101,6 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	public static final Logger logger = LogManager.getLogger(SubscriptionBL.class);
 
-	
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
 			@NonNull final I_C_OrderLine ol,
@@ -139,7 +138,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDropShip_BPartner_ID(ol.getC_BPartner_ID());
 		newTerm.setDropShip_Location_ID(ol.getC_BPartner_Location_ID());
 		newTerm.setDropShip_User_ID(ol.getAD_User_ID());
-		
+
 		final String wcData = I_C_Flatrate_Data.COLUMNNAME_C_BPartner_ID + "=?";
 		I_C_Flatrate_Data existingData = new Query(ctx, I_C_Flatrate_Data.Table_Name, wcData, trxName)
 				.setParameters(order.getBill_BPartner_ID())
@@ -164,9 +163,9 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		newTerm.setPriceActual(ol.getPriceActual());
 		newTerm.setC_Currency(ol.getC_Currency());
-		
+
 		setPricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
-		
+
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);
 		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
@@ -180,15 +179,15 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		return newTerm;
 	}
-	
+
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final PricingSystemTaxCategoryAndIsTaxIncluded computed = computePricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
 		newTerm.setM_PricingSystem_ID(computed.getPricingSystemId());
 		newTerm.setC_TaxCategory_ID(computed.getTaxCategoryId());
 		newTerm.setIsTaxIncluded(computed.isTaxIncluded());
-	}	
-	
+	}
+
 	@lombok.Value
 	private static class PricingSystemTaxCategoryAndIsTaxIncluded
 	{
@@ -196,7 +195,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		private int taxCategoryId;
 		private boolean isTaxIncluded;
 	}
-	
+
 	private PricingSystemTaxCategoryAndIsTaxIncluded computePricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final I_C_Flatrate_Conditions cond = ol.getC_Flatrate_Conditions();
@@ -221,7 +220,6 @@ public class SubscriptionBL implements ISubscriptionBL
 				.build()
 				.computeOrThrowEx();
 	}
-	
 
 	@Override
 	public int createMissingTermsForOLCands(
@@ -375,7 +373,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDropShip_Location_ID(olCandEffectiveValuesBL.getDropShip_Location_Effective_ID(olCand));
 		newTerm.setDropShip_User_ID(olCandEffectiveValuesBL.getDropShip_User_Effective_ID(olCand));
 
-		I_C_Flatrate_Data existingData = Services.get(IFlatrateDAO.class).retriveOrCreateFlatrateData(bill_BPartner);
+		final I_C_Flatrate_Data existingData = Services.get(IFlatrateDAO.class).retriveOrCreateFlatrateData(bill_BPartner);
 
 		newTerm.setC_Flatrate_Data(existingData);
 
@@ -434,7 +432,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		Check.assume(numberOfRuns > 0, trans + " has NumberOfEvents > 0");
 
 		Timestamp eventDate = getEventDate(term);
-		
+
 		int seqNo = 10;
 
 		final List<I_C_SubscriptionProgress> deliveries = new ArrayList<>();
@@ -457,10 +455,10 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
 		final int daysInPast = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CREATE_SUBSCRIPTIONPROGRESS_IN_PAST_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
-		
+
 		final Timestamp minimumEventDate = TimeUtil.addDays(SystemTime.asDayTimestamp(), -daysInPast);
 		final Timestamp eventDate = term.getStartDate();
-		
+
 		if (minimumEventDate.after(eventDate))
 		{
 			return minimumEventDate;
@@ -468,7 +466,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		return eventDate;
 	}
-	
+
 	@Override
 	public void evalCurrentSPs(
 			@NonNull final I_C_Flatrate_Term term,
@@ -518,7 +516,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	}
 
 	/**
-	 * 
+	 *
 	 * @param term
 	 * @param currentDate
 	 * @return never returns {@code null}
@@ -546,7 +544,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		return createSubscriptionEntries(term);
 	}
 
-	private boolean markPlannedPauseRecordAsExecuted(			
+	private boolean markPlannedPauseRecordAsExecuted(
 			@NonNull final Timestamp currentDate,
 			@NonNull final I_C_SubscriptionProgress sp)
 	{
@@ -631,7 +629,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		final List<I_C_SubscriptionProgress> deliveries = subscriptionPA.retrievePlannedAndDelayedDeliveries(ctx, SystemTime.asTimestamp(), trxName);
 
-		logger.debug("Going to add shipment schedule entries for " + deliveries.size() + " subscription deliveries");
+		logger.debug("Going to add shipment schedule entries for {} subscription deliveries", deliveries.size());
 
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
@@ -644,7 +642,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 			if (delayedControlIds.contains(sd.getC_Flatrate_Term_ID()))
 			{
-				logger.info("An earlier SP of " + sc + " is delayed => also delaying " + sd);
+				logger.info("An earlier SP of {} is delayed => also delaying {}", sc, sd);
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
 				save(sd);
 				continue;
@@ -659,14 +657,14 @@ public class SubscriptionBL implements ISubscriptionBL
 			{
 				if (X_C_SubscriptionProgress.STATUS_Delayed.equals(sd.getStatus()))
 				{
-					logger.info(sd + " is not delayed anymore");
+					logger.info("{} is not delayed anymore", sd);
 					sd.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
 					save(sd);
 				}
 			}
 			else
 			{
-				logger.debug(sd + " is deplayed because there is at least on open delivery");
+				logger.debug("{} is deplayed because there is at least on open delivery", sd);
 				sd.setStatus(X_C_SubscriptionProgress.STATUS_Delayed);
 				save(sd);
 
@@ -763,12 +761,12 @@ public class SubscriptionBL implements ISubscriptionBL
 	}
 
 	private void setDeliveryDropShipValuesFromTerm(
-			@NonNull final I_C_SubscriptionProgress delivery, 
+			@NonNull final I_C_SubscriptionProgress delivery,
 			@NonNull final I_C_Flatrate_Term term)
 	{
 		Preconditions.checkArgument(term.getDropShip_Location_ID() > 0, "The given term has DropShip_Location_ID<=0; term=%s", term);
 		Preconditions.checkArgument(term.getDropShip_BPartner_ID() > 0, "The given term has DropShip_BPartner_ID<=0; term=%s", term);
-		
+
 		delivery.setDropShip_Location_ID(term.getDropShip_Location_ID());
 		delivery.setDropShip_BPartner_ID(term.getDropShip_BPartner_ID());
 		delivery.setDropShip_User_ID(term.getDropShip_User_ID());
