@@ -98,29 +98,6 @@ public interface I_C_OLCandProcessor
     public static final String COLUMNNAME_AD_Scheduler_ID = "AD_Scheduler_ID";
 
 	/**
-	 * Set Ausführungsplan.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Scheduler_OLCandProcessor (java.lang.String AD_Scheduler_OLCandProcessor);
-
-	/**
-	 * Get Ausführungsplan.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAD_Scheduler_OLCandProcessor();
-
-    /** Column definition for AD_Scheduler_OLCandProcessor */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_AD_Scheduler_OLCandProcessor = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "AD_Scheduler_OLCandProcessor", null);
-    /** Column name AD_Scheduler_OLCandProcessor */
-    public static final String COLUMNNAME_AD_Scheduler_OLCandProcessor = "AD_Scheduler_OLCandProcessor";
-
-	/**
 	 * Set Betreuer.
 	 * Person, die bei einem fachlichen Problem vom System informiert wird.
 	 *
@@ -148,29 +125,6 @@ public interface I_C_OLCandProcessor
     public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_User> COLUMN_AD_User_InCharge_ID = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_User>(I_C_OLCandProcessor.class, "AD_User_InCharge_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_InCharge_ID */
     public static final String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
-
-	/**
-	 * Set Auftragskand. Zuordnen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAssignOLCands (java.lang.String AssignOLCands);
-
-	/**
-	 * Get Auftragskand. Zuordnen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAssignOLCands();
-
-    /** Column definition for AssignOLCands */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_AssignOLCands = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "AssignOLCands", null);
-    /** Column name AssignOLCands */
-    public static final String COLUMNNAME_AssignOLCands = "AssignOLCands";
 
 	/**
 	 * Set Zielbelegart.

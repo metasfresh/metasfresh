@@ -257,8 +257,8 @@ public interface I_C_Order_Line_Alloc
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Bestellte Menge
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -267,8 +267,8 @@ public interface I_C_Order_Line_Alloc
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Bestellte Menge
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true

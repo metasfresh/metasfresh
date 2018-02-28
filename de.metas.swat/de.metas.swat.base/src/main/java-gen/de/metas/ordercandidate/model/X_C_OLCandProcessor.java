@@ -14,7 +14,7 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1595574419L;
+	private static final long serialVersionUID = 580090053L;
 
     /** Standard Constructor */
     public X_C_OLCandProcessor (Properties ctx, int C_OLCandProcessor_ID, String trxName)
@@ -88,22 +88,6 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 		return ii.intValue();
 	}
 
-	/** Set Ausführungsplan.
-		@param AD_Scheduler_OLCandProcessor Ausführungsplan	  */
-	@Override
-	public void setAD_Scheduler_OLCandProcessor (java.lang.String AD_Scheduler_OLCandProcessor)
-	{
-		set_Value (COLUMNNAME_AD_Scheduler_OLCandProcessor, AD_Scheduler_OLCandProcessor);
-	}
-
-	/** Get Ausführungsplan.
-		@return Ausführungsplan	  */
-	@Override
-	public java.lang.String getAD_Scheduler_OLCandProcessor () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_AD_Scheduler_OLCandProcessor);
-	}
-
 	@Override
 	public org.compiere.model.I_AD_User getAD_User_InCharge() throws RuntimeException
 	{
@@ -139,22 +123,6 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Auftragskand. Zuordnen.
-		@param AssignOLCands Auftragskand. Zuordnen	  */
-	@Override
-	public void setAssignOLCands (java.lang.String AssignOLCands)
-	{
-		set_Value (COLUMNNAME_AssignOLCands, AssignOLCands);
-	}
-
-	/** Get Auftragskand. Zuordnen.
-		@return Auftragskand. Zuordnen	  */
-	@Override
-	public java.lang.String getAssignOLCands () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_AssignOLCands);
 	}
 
 	@Override
@@ -286,7 +254,7 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	public static final String DELIVERYRULE_Force = "F";
 	/** Manual = M */
 	public static final String DELIVERYRULE_Manual = "M";
-	/** Mit nächster Abolieferung = S */
+	/** MitNaechsterAbolieferung = S */
 	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
