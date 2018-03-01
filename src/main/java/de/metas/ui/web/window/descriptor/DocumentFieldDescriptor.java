@@ -1123,12 +1123,6 @@ public final class DocumentFieldDescriptor
 				return ConstantLogicExpression.TRUE;
 			}
 
-			// Case: DocumentNo/Value special field not be readonly
-			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
-			{
-				return ConstantLogicExpression.FALSE;
-			}
-
 			// Case: DocAction
 			if (hasCharacteristic(Characteristic.SpecialField_DocAction))
 			{
