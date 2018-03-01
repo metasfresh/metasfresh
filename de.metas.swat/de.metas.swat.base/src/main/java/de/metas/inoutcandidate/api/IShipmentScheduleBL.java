@@ -29,9 +29,11 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.storage.IStorageQuery;
@@ -57,7 +59,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 *
 	 *
 	 * @param olsAndScheds
-
+	 *
 	 * @param trxName
 	 */
 	void updateSchedules(
@@ -166,4 +168,17 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @param shipmentSchedule
 	 */
 	void openShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);
+
+	/**
+	 * Please use this method before calling {@link CreateMissingShipmentSchedulesWorkpackageProcessor#schedule(Properties, String)}, to avoid unneeded work packages.
+	 *
+	 * @return {@code true} if the caller can (and should) skip scheduling a workpackage processor.
+	 */
+	boolean isMissingSchedsCreatedLater();
+
+	/**
+	 * Use this closable in a try-with-resource block if you create a number shipment-schedule related records and want to avoid some model
+	 * interceptors etc to schedule one {@link CreateMissingShipmentSchedulesWorkpackageProcessor} for each of them. The closable will schedule one work package at the end.
+	 */
+	IAutoCloseable createMissingSchedsOnClose();
 }

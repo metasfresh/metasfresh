@@ -26,6 +26,7 @@ package de.metas.inoutcandidate.async;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
@@ -52,20 +53,22 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	 * @param ctx context
 	 * @param trxName optional transaction name. In case is provided, the workpackage will be marked as ready for processing when given transaction is committed.
 	 */
-	public static final void schedule(final Properties ctx, final String trxName)
+	public static final void schedule(final IContextAware ctxAware)
 	{
 		// don't try to enqueue it if is not active
 		if (!Services.get(IQueueDAO.class).isWorkpackageProcessorEnabled(CreateMissingShipmentSchedulesWorkpackageProcessor.class))
 		{
 			return;
 		}
-				
+
+		final Properties ctx = ctxAware.getCtx();
+
 		Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, CreateMissingShipmentSchedulesWorkpackageProcessor.class)
 				.newBlock()
 				.setContext(ctx)
 				.newWorkpackage()
-				.bindToTrxName(trxName)
+				.bindToTrxName(ctxAware.getTrxName())
 				.build();
 	}
 

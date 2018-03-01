@@ -118,7 +118,7 @@ public class M_ShipmentSchedule
 
 	/**
 	 * If a shipment schedule is deleted, then this method makes sure that all {@link I_M_IolCandHandler_Log} records which refer to the same record as the schedule are also deleted.<br>
-	 * Otherwise, that referenced record would never be considered again by {@link de.metas.inoutcandidate.spi.IShipmentScheduleHandler#retrieveModelsWithMissingCandidates(Properties, String)}.
+	 * Otherwise, that referenced record would never be considered again by {@link de.metas.inoutcandidate.spi.ShipmentScheduleHandler#retrieveModelsWithMissingCandidates(Properties, String)}.
 	 *
 	 * @param schedule
 	 * @task 08288

@@ -69,39 +69,6 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Lieferlauf-ID.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setAD_PInstance_ShipmentRun_ID (int AD_PInstance_ShipmentRun_ID);
-
-	/**
-	 * Get Lieferlauf-ID.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	public int getAD_PInstance_ShipmentRun_ID();
-
-	@Deprecated
-	public org.compiere.model.I_AD_PInstance getAD_PInstance_ShipmentRun();
-
-	@Deprecated
-	public void setAD_PInstance_ShipmentRun(org.compiere.model.I_AD_PInstance AD_PInstance_ShipmentRun);
-
-    /** Column definition for AD_PInstance_ShipmentRun_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ShipmentRun_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_PInstance>(I_M_ShipmentSchedule.class, "AD_PInstance_ShipmentRun_ID", org.compiere.model.I_AD_PInstance.class);
-    /** Column name AD_PInstance_ShipmentRun_ID */
-    public static final String COLUMNNAME_AD_PInstance_ShipmentRun_ID = "AD_PInstance_ShipmentRun_ID";
-
-	/**
 	 * Set DB-Tabelle.
 	 * Database Table information
 	 *
@@ -185,39 +152,6 @@ public interface I_M_ShipmentSchedule
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_User> COLUMN_AD_User_Override_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_User>(I_M_ShipmentSchedule.class, "AD_User_Override_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_Override_ID */
     public static final String COLUMNNAME_AD_User_Override_ID = "AD_User_Override_ID";
-
-	/**
-	 * Set Kommisionierer.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setAD_User_ShipmentRun_ID (int AD_User_ShipmentRun_ID);
-
-	/**
-	 * Get Kommisionierer.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	public int getAD_User_ShipmentRun_ID();
-
-	@Deprecated
-	public org.compiere.model.I_AD_User getAD_User_ShipmentRun();
-
-	@Deprecated
-	public void setAD_User_ShipmentRun(org.compiere.model.I_AD_User AD_User_ShipmentRun);
-
-    /** Column definition for AD_User_ShipmentRun_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_User> COLUMN_AD_User_ShipmentRun_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_User>(I_M_ShipmentSchedule.class, "AD_User_ShipmentRun_ID", org.compiere.model.I_AD_User.class);
-    /** Column name AD_User_ShipmentRun_ID */
-    public static final String COLUMNNAME_AD_User_ShipmentRun_ID = "AD_User_ShipmentRun_ID";
 
 	/**
 	 * Set Sammel-Lieferscheine erlaubt.
@@ -1032,33 +966,6 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
-	 * Set Lieferlauf beendet.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setIsShipmentRunDone (boolean IsShipmentRunDone);
-
-	/**
-	 * Get Lieferlauf beendet.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	public boolean isShipmentRunDone();
-
-    /** Column definition for IsShipmentRunDone */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsShipmentRunDone = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "IsShipmentRunDone", null);
-    /** Column name IsShipmentRunDone */
-    public static final String COLUMNNAME_IsShipmentRunDone = "IsShipmentRunDone";
-
-	/**
 	 * Set zu Akt..
 	 * Wert wird bei einer Benutzer-Änderung am Rechnungskandidaten vom System automatisch auf "Ja" gesetzt.
 	 *
@@ -1616,8 +1523,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_QtyOnHand = "QtyOnHand";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Bestellte Menge
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1626,8 +1533,8 @@ public interface I_M_ShipmentSchedule
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Bestellte Menge
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1710,8 +1617,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_QtyPickList = "QtyPickList";
 
 	/**
-	 * Set Reservierte Menge.
-	 * Reservierte Menge
+	 * Set Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1720,8 +1627,8 @@ public interface I_M_ShipmentSchedule
 	public void setQtyReserved (java.math.BigDecimal QtyReserved);
 
 	/**
-	 * Get Reservierte Menge.
-	 * Reservierte Menge
+	 * Get Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
