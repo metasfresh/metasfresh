@@ -217,8 +217,6 @@ public class PurchaseRow implements IViewRow
 
 		viewEditorRenderModeByFieldName = from.viewEditorRenderModeByFieldName;
 		_fieldNameAndJsonValues = from._fieldNameAndJsonValues;
-
-		System.out.println("copied: " + this.rowId + ", RO=" + this.readonly + " -- " + this);
 	}
 
 	public PurchaseRow copy()
