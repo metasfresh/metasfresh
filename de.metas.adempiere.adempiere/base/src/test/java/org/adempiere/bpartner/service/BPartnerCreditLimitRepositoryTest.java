@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Properties;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.FixedTimeSource;
@@ -18,7 +17,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -68,7 +66,6 @@ public class BPartnerCreditLimitRepositoryTest
 	}
 
 	private BPartnerCreditLimitRepository repository;
-	private Properties ctx;
 	private I_C_CreditLimit_Type typeInsurance;
 	private I_C_CreditLimit_Type typeManagement;
 
@@ -78,7 +75,6 @@ public class BPartnerCreditLimitRepositoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		ctx = Env.getCtx();
 		repository = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 
 		typeInsurance = newCreditLimitType()
@@ -181,7 +177,7 @@ public class BPartnerCreditLimitRepositoryTest
 	}
 
 	@Builder(builderMethodName = "newCreditLimitType")
-	private static I_C_CreditLimit_Type createCreditLimitType(@NonNull final String name, final int seqNo, final boolean isAutoApproval)
+	public static I_C_CreditLimit_Type createCreditLimitType(@NonNull final String name, final int seqNo, final boolean isAutoApproval)
 	{
 		final I_C_CreditLimit_Type type = newInstance(I_C_CreditLimit_Type.class);
 		type.setName(name);
@@ -193,7 +189,7 @@ public class BPartnerCreditLimitRepositoryTest
 	}
 
 	@Builder(builderMethodName = "newBPCreditLimit")
-	private static I_C_BPartner_CreditLimit createBPCreditLimit(@NonNull final I_C_BPartner partner, @NonNull final I_C_CreditLimit_Type type,
+	public static I_C_BPartner_CreditLimit createBPCreditLimit(@NonNull final I_C_BPartner partner, @NonNull final I_C_CreditLimit_Type type,
 			@NonNull final BigDecimal amount, @NonNull final Timestamp dateFrom)
 	{
 		final I_C_BPartner_CreditLimit bpLimit = newInstance(I_C_BPartner_CreditLimit.class);
