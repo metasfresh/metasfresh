@@ -97,6 +97,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	private final transient CCache<Integer, SqlViewBinding> sqlViewBindingCache = CCache.newCache("SqlViewBinding", 1, 0);
 	private final transient CCache<ArrayKey, ViewLayout> layouts = CCache.newLRUCache("HUEditorViewFactory#Layouts", 10, 0);
 
+	@Autowired
+	private WebuiHUReportService huReportService;
+
 	protected HUEditorViewFactoryTemplate(final List<HUEditorViewCustomizer> viewCustomizers)
 	{
 		viewCustomizersByReferencingTableName = viewCustomizers.stream()
@@ -300,7 +303,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
 					.orderBys(sqlViewBinding.getDefaultOrderBys())
 					.setActions(request.getActions())
-					.setAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors())
+					.addAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors())
+					.addAdditionalRelatedProcessDescriptors(huReportService.getHUReportDescriptors())
 					.setHUEditorViewRepository(huEditorViewRepository)
 					.setParameters(request.getParameters());
 
@@ -423,7 +427,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			{
 				return ConstantQueryFilter.of(false).getSql();
 			}
-			
+
 			final ISqlQueryFilter sqlQueryFilter = new InArrayQueryFilter<>(I_M_HU.COLUMNNAME_M_HU_ID, huIds);
 
 			final String sql = sqlQueryFilter.getSql();
