@@ -1,6 +1,8 @@
 package de.metas.ui.web.handlingunits;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.ui.web.view.IViewRowType;
@@ -64,21 +66,22 @@ public enum HUEditorRowType implements IViewRowType
 
 	public static final HUEditorRowType ofHU_UnitType(final String huUnitType)
 	{
-		if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType))
-		{
-			return LU;
-		}
-		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitType))
-		{
-			return TU;
-		}
-		else if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitType))
-		{
-			return VHU;
-		}
-		else
+		final HUEditorRowType type = huUnitType2type.get(huUnitType);
+		if (type == null)
 		{
 			throw new IllegalArgumentException("Cannot convert HU_UnitType '" + huUnitType + "' to " + HUEditorRowType.class);
 		}
+		return type;
 	}
+
+	public String toHUUnitTypeOrNull()
+	{
+		return huUnitType2type.inverse().get(this);
+	}
+
+	private static final BiMap<String, HUEditorRowType> huUnitType2type = ImmutableBiMap.<String, HUEditorRowType> builder()
+			.put(X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, LU)
+			.put(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, TU)
+			.put(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, VHU)
+			.build();
 }
