@@ -4,8 +4,9 @@
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
-import de.metas.jenkins.MvnConf
+import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
+import de.metas.jenkins.MvnConf
 
 final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
 echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
