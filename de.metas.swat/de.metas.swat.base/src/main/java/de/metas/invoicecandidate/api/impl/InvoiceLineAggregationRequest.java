@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,7 +42,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * Default immutable implementation of {@link IInvoiceLineAggregationRequest}.
- * 
+ *
  * @author tsa
  *
  */
@@ -118,14 +118,14 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 	/**
 	 * {@link InvoiceLineAggregationRequest} builder.
-	 * 
+	 *
 	 * @author tsa
 	 */
 	public static class Builder
 	{
 		private I_C_Invoice_Candidate invoiceCandidate;
 		private I_C_InvoiceCandidate_InOutLine iciol;
-		private final List<Object> aggregationKeyElements = new ArrayList<Object>();
+		private final List<Object> aggregationKeyElements = new ArrayList<>();
 		private final Set<IInvoiceLineAttribute> invoiceLineAttributes = new LinkedHashSet<>();
 		private boolean allocateRemainingQty = false;
 
@@ -136,7 +136,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 		private Builder()
 		{
-			super();
 		}
 
 		@Override
@@ -159,11 +158,11 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 		/**
 		 * Adds an additional element to be considered part of the line aggregation key.
-		 * 
+		 *
 		 * NOTE: basically this shall be always empty because everything which is related to line aggregation
 		 * shall be configured from aggregation definition,
 		 * but we are also leaving this door open in case we need to implement some quick/hot fixes.
-		 * 
+		 *
 		 * @param aggregationKeyElement
 		 * @deprecated This method will be removed because we shall go entirely with standard aggregation definition.
 		 */

@@ -25,16 +25,21 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
+import java.util.TreeSet;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -42,6 +47,7 @@ import org.compiere.model.Null;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.engine.IDocumentBL;
@@ -58,7 +64,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
+import lombok.Getter;
 import lombok.NonNull;
 
 public class ShipmentScheduleWithHU
@@ -96,7 +105,13 @@ public class ShipmentScheduleWithHU
 	private final I_M_HU vhu;
 	private final I_M_HU tuHU;
 	private final I_M_HU luHU;
-	private Object _attributesAggregationKey; // lazy
+
+	@Getter(lazy = true)
+	private final Object attributesAggregationKey = computeAttributesAggregationKey();
+
+	@Getter(lazy = true)
+	private final List<IAttributeValue> attributeValues = computeAttributeValues();
+
 	private I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked;
 
 	private I_M_InOutLine shipmentLine = null;
@@ -149,7 +164,7 @@ public class ShipmentScheduleWithHU
 				+ "\n    vhu=" + vhu
 				+ "\n    tuHU=" + tuHU
 				+ "\n    luHU=" + luHU
-				+ "\n    attributesAggregationKey=" + (_attributesAggregationKey == null ? "<NOT BUILT>" : _attributesAggregationKey)
+				+ "\n    attributesAggregationKey=" + (attributesAggregationKey == null ? "<NOT BUILT>" : attributesAggregationKey)
 				+ "\n    shipmentScheduleAlloc=" + shipmentScheduleQtyPicked
 				+ "\n    shipmentLine=" + shipmentLine
 				+ "\n]";
@@ -176,54 +191,57 @@ public class ShipmentScheduleWithHU
 		return asiId <= 0 ? AttributeConstants.M_AttributeSetInstance_ID_None : asiId;
 	}
 
-	public Object getAttributesAggregationKey()
+	private Object computeAttributesAggregationKey()
 	{
-		if (_attributesAggregationKey == null)
-		{
-			_attributesAggregationKey = createAttributesAggregationKey();
-			logger.trace("AttributesAggregationKey created: {}", _attributesAggregationKey);
-		}
-		return _attributesAggregationKey;
+		final Object attributesAggregationKey = createAttributesAggregationKey();
+		logger.trace("AttributesAggregationKey created: {}", attributesAggregationKey);
+
+		return attributesAggregationKey;
 	}
 
 	private Object createAttributesAggregationKey()
 	{
-		logger.trace("Creating AttributesAggregationKey");
-
-		final I_M_HU hu = getTopLevelHU();
-		if (hu == null)
-		{
-			return ImmutableMap.of("M_AttributeSetInstance_ID", getM_AttributeSetInstance_ID());
-		}
-
 		final ImmutableMap.Builder<String, Object> keyBuilder = ImmutableMap.builder();
-		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
-		for (final IAttributeValue attributeValue : attributeStorage.getAttributeValues())
+
+		for (final IAttributeValue attributeValue : getAttributeValues())
 		{
-			// Only consider attributes which are usable in ASI
-			if (!attributeValue.isUseInASI())
-			{
-				logger.trace("Skip attribute because UseInASI=false: {}", attributeValue);
-				continue;
-			}
-
-			// Only consider attributes which were defined in the template (i.e. No PI),
-			// because only those attributes will be considered in ASI, so only those attributes will land there.
-			// e.g. SSCC18 which has UseInASI=true but it's not defined in template but in some LUs.
-			if (!attributeValue.isDefinedByTemplate())
-			{
-				logger.trace("Skip attribute because it's not defined by template: {}", attributeValue);
-				continue;
-			}
-
 			final String name = attributeValue.getM_Attribute().getValue();
 			final Object value = attributeValue.getValue();
 			keyBuilder.put(name, Null.box(value));
-			logger.trace("Considered attribute {}={}", name, value);
+		}
+		return keyBuilder.build();
+	}
+
+	private List<IAttributeValue> computeAttributeValues()
+	{
+		logger.trace("Creating AttributesAggregationKey");
+
+		final TreeSet<IAttributeValue> allAttributeValues = //
+				new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
+
+		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+
+		final I_M_HU hu = getTopLevelHU();
+		if (hu != null)
+		{
+			final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+			allAttributeValues.addAll(attributeStorage.getAttributeValues());
 		}
 
-		return keyBuilder.build();
+		if (getM_AttributeSetInstance_ID() > 0)
+		{
+			final I_M_AttributeInstance attributeSetInstance = load(getM_AttributeSetInstance_ID(), I_M_AttributeInstance.class);
+			final IAttributeStorage asiAttributeStorage = attributeStorageFactory.getAttributeStorage(attributeSetInstance);
+			allAttributeValues.addAll(asiAttributeStorage.getAttributeValues());
+		}
+
+		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerFor(shipmentSchedule);
+
+		final ImmutableList<IAttributeValue> result = allAttributeValues.stream()
+				.filter(IAttributeValue::isUseInASI)
+				.filter(attributeValue -> handler.attributeShallBePartOfShipmentLine(shipmentSchedule, attributeValue.getM_Attribute()))
+				.collect(ImmutableList.toImmutableList());
+		return result;
 	}
 
 	/**

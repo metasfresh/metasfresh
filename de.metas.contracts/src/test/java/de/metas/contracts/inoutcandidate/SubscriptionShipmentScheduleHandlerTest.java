@@ -42,7 +42,7 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
  * #L%
  */
 
-public class SubscriptionInOutCandHandlerTest
+public class SubscriptionShipmentScheduleHandlerTest
 {
 	private I_C_SubscriptionProgress firstRecord;
 	private I_C_SubscriptionProgress secondRecord;
