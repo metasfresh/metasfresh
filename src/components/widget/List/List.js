@@ -50,7 +50,7 @@ class ListWidget extends Component {
   componentDidUpdate(prevProps) {
     const { isInputEmpty } = this.props;
     const { initialFocus, defaultValue, doNotOpenOnFocus } = this.props;
-    const { autoFocus, isFocused } = this.state;
+    const { autoFocus, isFocused, list } = this.state;
 
     if (isInputEmpty && prevProps.isInputEmpty !== isInputEmpty) {
       this.previousValue = '';
@@ -59,11 +59,11 @@ class ListWidget extends Component {
     if (prevProps.autoFocus !== autoFocus && !isFocused) {
       if (autoFocus) {
         this.handleFocus();
-        !doNotOpenOnFocus && this.activate();
+        !doNotOpenOnFocus && list.size > 1 && this.activate();
       } else {
         if (initialFocus && !defaultValue) {
           this.handleFocus();
-          !doNotOpenOnFocus && this.activate();
+          !doNotOpenOnFocus && list.size > 1 && this.activate();
         }
       }
     }
@@ -187,8 +187,9 @@ class ListWidget extends Component {
 
   activate = () => {
     const { list, listToggled } = this.state;
+    const { lookupList } = this.props;
 
-    if (list && list.size > 1 && !listToggled) {
+    if (list && !listToggled && !(lookupList && list.size < 1)) {
       this.setState({
         listToggled: true,
       });
