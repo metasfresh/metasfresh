@@ -32,6 +32,7 @@ package de.metas.process;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@FunctionalInterface
 public interface IProcessPrecondition
 {
 	/**

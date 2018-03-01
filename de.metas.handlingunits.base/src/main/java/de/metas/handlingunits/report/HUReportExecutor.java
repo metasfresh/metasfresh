@@ -15,6 +15,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Table_Process;
 import org.compiere.report.IJasperService;
@@ -57,6 +58,11 @@ import lombok.NonNull;
  */
 public class HUReportExecutor
 {
+	public static HUReportExecutor newInstance(final Properties ctx)
+	{
+		return new HUReportExecutor(ctx);
+	}
+
 	/**
 	 * AD_SysConfig for "BarcodeServlet".
 	 */
@@ -69,25 +75,17 @@ public class HUReportExecutor
 
 	private int windowNo = Env.WINDOW_None;
 
-	private int copies = 1;
+	private int numberOfCopies = 1;
 
 	private HUReportExecutor(final Properties ctx)
 	{
 		this.ctx = ctx;
 	};
 
-	public static HUReportExecutor get(final Properties ctx)
-	{
-		return new HUReportExecutor(ctx);
-	}
-
 	/**
 	 * Give this service a window number. The default is {@link Env#WINDOW_None}.
-	 *
-	 * @param windowNo
-	 * @return
 	 */
-	public HUReportExecutor withWindowNo(final int windowNo)
+	public HUReportExecutor windowNo(final int windowNo)
 	{
 		this.windowNo = windowNo;
 		return this;
@@ -95,13 +93,11 @@ public class HUReportExecutor
 
 	/**
 	 * Specify the number of copies. One means one printout. The default is one.
-	 *
-	 * @param copies
-	 * @return
 	 */
-	public HUReportExecutor withNumberOfCopies(final int copies)
+	public HUReportExecutor numberOfCopies(final int numberOfCopies)
 	{
-		this.copies = copies;
+		Check.assume(numberOfCopies > 0, "numberOfCopies > 0");
+		this.numberOfCopies = numberOfCopies;
 		return this;
 	}
 
@@ -119,7 +115,6 @@ public class HUReportExecutor
 		// Collect HU's C_BPartner_IDs and M_HU_IDs
 		final Set<Integer> huBPartnerIds = new HashSet<>();
 		final List<Integer> huIds = new ArrayList<>();
-
 		for (final I_M_HU hu : husToProcess)
 		{
 			final int huId = hu.getM_HU_ID();
@@ -135,15 +130,14 @@ public class HUReportExecutor
 
 		// check if we actually got any new M_HU_ID
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-
 		final HUReportTrxListener huReportTrxListener;
 		if (trx != null)
 		{
-			huReportTrxListener = trx.getProperty("huReportTrxListener", () -> new HUReportTrxListener(ctx, adProcessId, windowNo, copies));
+			huReportTrxListener = trx.getProperty("huReportTrxListener", () -> newHUReportTrxListener(adProcessId));
 		}
 		else
 		{
-			huReportTrxListener = new HUReportTrxListener(ctx, adProcessId, windowNo, copies);
+			huReportTrxListener = newHUReportTrxListener(adProcessId);
 		}
 
 		if (!huReportTrxListener.addAll(huIds))
@@ -152,18 +146,7 @@ public class HUReportExecutor
 		}
 
 		// Use BPartner's Language, if all HUs' partners have a common language
-		{
-			if (huBPartnerIds.size() == 1)
-			{
-				final int bpartnerId = huBPartnerIds.iterator().next();
-				Language reportLanguage = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
-				huReportTrxListener.setLanguage(reportLanguage == null ? REPORT_LANG_NONE : reportLanguage.getAD_Language());
-			}
-			else
-			{
-				huReportTrxListener.setLanguage(REPORT_LANG_NONE);
-			}
-		}
+		huReportTrxListener.setLanguage(extractReportingLanguage(huBPartnerIds));
 
 		if (huReportTrxListener.isListenerWasRegistered())
 		{
@@ -184,6 +167,25 @@ public class HUReportExecutor
 				.registerHandlingMethod(innerTrx -> huReportTrxListener.afterClose(innerTrx));
 
 		huReportTrxListener.setListenerWasRegistered();
+	}
+
+	private HUReportTrxListener newHUReportTrxListener(final int adProcessId)
+	{
+		return new HUReportTrxListener(ctx, adProcessId, windowNo, numberOfCopies);
+	}
+	
+	private String extractReportingLanguage(final Set<Integer> huBPartnerIds)
+	{
+		if (huBPartnerIds.size() == 1)
+		{
+			final int bpartnerId = huBPartnerIds.iterator().next();
+			final Language reportLanguage = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+			return reportLanguage == null ? REPORT_LANG_NONE : reportLanguage.getAD_Language();
+		}
+		else
+		{
+			return REPORT_LANG_NONE;
+		}
 	}
 
 	private static final class HUReportTrxListener
