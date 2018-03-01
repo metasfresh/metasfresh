@@ -32,6 +32,8 @@ Here come the actual release notes:
     * Fixes a Bug in the Handling Unit Editor in Material Receipts, not showing the Attributes View when Receiving CU.
   * [#1625](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1625) Show Attribute Editor for selected CU Level HU
     * Fix for the Handling Unit Editor when selectin the first entry of an HU. Now initially showing the Attributes view again.
+  * [#1628](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1628) Clicking in field w/ 1 value in dropdown sets the value directly
+    * Fixes the List widget with only 1 entry. Now opeing the list widget drop-down instead of directly setting the single entry.
 
 
 
