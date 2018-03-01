@@ -1,5 +1,12 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getId;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,11 +20,11 @@ package de.metas.inoutcandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,14 +35,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.util.TrxRunnable;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -46,10 +53,11 @@ import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer.OnMissingCandidate;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 {
@@ -58,15 +66,21 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 
 	private final static Logger logger = LogManager.getLogger(ShipmentScheduleHandlerBL.class);
 
-	private final Map<String, IShipmentScheduleHandler> tableName2Handler = new HashMap<String, IShipmentScheduleHandler>();
+	private final Map<String, ShipmentScheduleHandler> tableName2Handler = new HashMap<>();
 
 	private final Map<String, List<ModelWithoutShipmentScheduleVetoer>> tableName2Listeners = new HashMap<>();
 
 	@Override
-	public void registerHandler(final Properties ctx, final IShipmentScheduleHandler handler)
+	public void registerHandler(@NonNull final Class<? extends ShipmentScheduleHandler> handlerClass)
 	{
+		final ShipmentScheduleHandler handler = ShipmentScheduleHandler.createNewInstance(handlerClass);
+
+		Check.errorIf(tableName2Handler.containsKey(handler.getSourceTable()),
+				"A handler was already registered for tableName={}; handlerClass={};",
+				handler.getSourceTable(), handlerClass);
+
 		// do the actual registering
-		final IShipmentScheduleHandler oldImpl = tableName2Handler.put(handler.getSourceTable(), handler);
+		final ShipmentScheduleHandler oldImpl = tableName2Handler.put(handler.getSourceTable(), handler);
 		Check.assume(oldImpl == null, "There is only one attempt to register a handler for table '" + handler.getSourceTable() + "'");
 
 		// make sure that there is also a list of listeners (albeit empty) for the handler's source table
@@ -76,27 +90,24 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		}
 
 		// make sure that there is an M_IolCandHandler record for the handler
-		final I_M_IolCandHandler existingRecord = retrieveHandlerRecordOrNull(ctx, handler.getClass().getName(), null);
-		if (existingRecord != null)
+		final I_M_IolCandHandler existingRecord = retrieveHandlerRecordOrNull(Env.getCtx(), handler.getClass().getName(), null);
+		final int existingRecordId;
+		if (existingRecord == null)
 		{
-			return; // nothing to do
+			final I_M_IolCandHandler handlerRecord = newInstance(I_M_IolCandHandler.class);
+			handlerRecord.setClassname(handler.getClass().getName());
+			handlerRecord.setAD_Org_ID(0);
+			handlerRecord.setTableName(handler.getSourceTable());
+			save(handlerRecord);
+
+			existingRecordId = handlerRecord.getM_IolCandHandler_ID();
+		}
+		else
+		{
+			existingRecordId = existingRecord.getM_IolCandHandler_ID();
 		}
 
-		// create a handler record
-		Services.get(ITrxManager.class).run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final I_M_IolCandHandler handlerRecord = InterfaceWrapperHelper.create(ctx, I_M_IolCandHandler.class, localTrxName);
-				handlerRecord.setClassname(handler.getClass().getName());
-				handlerRecord.setAD_Org_ID(0);
-				handlerRecord.setTableName(handler.getSourceTable());
-
-				InterfaceWrapperHelper.save(handlerRecord);
-
-			}
-		});
+		handler.setM_IolCandHandler_IDOneTimeOnly(existingRecordId);
 	}
 
 	@Override
@@ -118,7 +129,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 				.create()
 				.setApplyAccessFilter(true)
 				.firstOnly(I_M_IolCandHandler.class);
-		
+
 	}
 
 	@Override
@@ -127,7 +138,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		List<ModelWithoutShipmentScheduleVetoer> listeners = tableName2Listeners.get(tableName);
 		if (listeners == null)
 		{
-			listeners = new ArrayList<ModelWithoutShipmentScheduleVetoer>();
+			listeners = new ArrayList<>();
 			tableName2Listeners.put(tableName, listeners);
 		}
 		listeners.add(l);
@@ -139,11 +150,11 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		Check.errorIf(Check.isEmpty(trxName), "Param 'trxName' may not be empty");
 		Check.errorIf(trxName.startsWith("POSave"), "Param 'trxName'={} may not start with 'POSave'", trxName);
 
-		final List<I_M_ShipmentSchedule> result = new ArrayList<I_M_ShipmentSchedule>();
+		final List<I_M_ShipmentSchedule> result = new ArrayList<>();
 
 		for (final String tableName : tableName2Handler.keySet())
 		{
-			final IShipmentScheduleHandler handler = tableName2Handler.get(tableName);
+			final ShipmentScheduleHandler handler = tableName2Handler.get(tableName);
 			final I_M_IolCandHandler handlerRecord = retrieveHandlerRecordOrNull(ctx, handler.getClass().getName(), trxName);
 
 			final List<Object> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, trxName);
@@ -171,7 +182,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 					for (final I_M_ShipmentSchedule newSched : candidatesForModel)
 					{
 						newSched.setM_IolCandHandler_ID(handlerRecord.getM_IolCandHandler_ID());
-						InterfaceWrapperHelper.save(newSched);
+						save(newSched);
 					}
 
 					result.addAll(candidatesForModel);
@@ -208,7 +219,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	@Override
 	public void invalidateCandidatesFor(final Object model, final String tableName)
 	{
-		final IShipmentScheduleHandler handler = tableName2Handler.get(tableName);
+		final ShipmentScheduleHandler handler = tableName2Handler.get(tableName);
 		if (handler == null)
 		{
 			return;
@@ -217,30 +228,38 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		handler.invalidateCandidatesFor(model);
 	}
 
-	private void saveHandlerLog(final I_M_IolCandHandler handlerRecord, final Object referencedModel, final String status)
+	private void saveHandlerLog(
+			@NonNull final I_M_IolCandHandler handlerRecord,
+			@Nullable final Object referencedModel,
+			@NonNull final String status)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(handlerRecord);
-		final String trxName = InterfaceWrapperHelper.getTrxName(handlerRecord);
+		final Properties ctx = getCtx(handlerRecord);
+		final String trxName = getTrxName(handlerRecord);
 
-		final I_M_IolCandHandler_Log logRecord = InterfaceWrapperHelper.create(ctx, I_M_IolCandHandler_Log.class, trxName);
+		final I_M_IolCandHandler_Log logRecord = create(ctx, I_M_IolCandHandler_Log.class, trxName);
 
 		logRecord.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(handlerRecord.getTableName()));
-		logRecord.setRecord_ID(InterfaceWrapperHelper.getId(referencedModel));
+		logRecord.setRecord_ID(getId(referencedModel));
 		logRecord.setM_IolCandHandler_ID(handlerRecord.getM_IolCandHandler_ID());
 		logRecord.setStatus(status);
 
-		InterfaceWrapperHelper.save(logRecord);
+		save(logRecord);
 	}
 
 	@Override
-	public IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched)
+	public IDeliverRequest createDeliverRequest(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		return getHandlerFor(sched).createDeliverRequest(sched);
+	}
+
+	@Override
+	public ShipmentScheduleHandler getHandlerFor(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
 
-		final IShipmentScheduleHandler inOutCandHandler = tableName2Handler.get(tableName);
-		Check.assumeNotNull(inOutCandHandler, "IInOutCandHandler for {} with table name {} is not null", sched, tableName);
-
-		return inOutCandHandler.createDeliverRequest(sched);
+		final ShipmentScheduleHandler shipmentScheduleHandler = tableName2Handler.get(tableName);
+		Check.assumeNotNull(shipmentScheduleHandler, "IInOutCandHandler for {} with table name {} is not null", sched, tableName);
+		return shipmentScheduleHandler;
 	}
 }

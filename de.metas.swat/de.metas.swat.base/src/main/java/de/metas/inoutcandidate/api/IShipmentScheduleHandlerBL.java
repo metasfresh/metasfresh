@@ -29,7 +29,7 @@ import org.adempiere.util.ISingletonService;
 
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 
 
@@ -39,8 +39,6 @@ import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
  * <li>register SPI implementations in the framework</li>
  * <li>invoke the registered implementations</li>
  * </ul>
- *
- * @author ts
  *
  */
 public interface IShipmentScheduleHandlerBL extends ISingletonService
@@ -56,13 +54,11 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 	 * <li>makes sure that a {@link I_M_IolCandHandler} record is created for every registered handler</li>
 	 * </ul>
 	 *
-	 * @param ctx
-	 *            context properties that are used when the system makes sure that a <code>I_M_IolCandHandler</code> exists for the given <code>handler</code>.
-	 * @param handler
-	 *            the implementation to register. This method will call {@link IShipmentScheduleHandler#getSourceTable()} to
+	 * @param handler-class
+	 *            the implementation to register. This method will call {@link ShipmentScheduleHandler#getSourceTable()} to
 	 *            find out for which table the handler is registered.
 	 */
-	public void registerHandler(Properties ctx, IShipmentScheduleHandler handler);
+	void registerHandler(Class<? extends ShipmentScheduleHandler> handler);
 
 	/**
 	 * Registers a listener for the given table name. The listener is informed if a handler found a data record with a
@@ -77,12 +73,12 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 	 * @param vetoer
 	 * @param tableName
 	 */
-	public void registerVetoer(ModelWithoutShipmentScheduleVetoer vetoer, String tableName);
+	void registerVetoer(ModelWithoutShipmentScheduleVetoer vetoer, String tableName);
 
 	void invalidateCandidatesFor(Object model, String tableName);
 
 	/**
-	 * Invokes all registered {@link IShipmentScheduleHandler}s to create missing InOut candidates.
+	 * Invokes all registered {@link ShipmentScheduleHandler}s to create missing InOut candidates.
 	 *
 	 * @param ctx
 	 * @param trxName
@@ -101,10 +97,12 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 	I_M_IolCandHandler retrieveHandlerRecordOrNull(Properties ctx, String className, String trxName);
 
 	/**
-	 * Invokes the given <code>sched</code>'s {@link IShipmentScheduleHandler} to get a {@link IDeliverRequest} instance.
+	 * Invokes the given <code>sched</code>'s {@link ShipmentScheduleHandler} to get a {@link IDeliverRequest} instance.
 	 *
 	 * @param sched
 	 * @return
 	 */
 	IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched);
+
+	ShipmentScheduleHandler getHandlerFor(I_M_ShipmentSchedule sched);
 }

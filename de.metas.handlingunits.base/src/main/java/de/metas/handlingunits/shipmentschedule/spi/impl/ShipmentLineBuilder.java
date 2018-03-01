@@ -1,5 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -30,7 +32,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -45,7 +46,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -351,7 +351,7 @@ import lombok.NonNull;
 		// Copy ASI instead of copying its ID
 		if (attributeSetInstanceId > 0)
 		{
-			final I_M_AttributeSetInstance oldASI = InterfaceWrapperHelper.create(Env.getCtx(), attributeSetInstanceId, I_M_AttributeSetInstance.class, ITrx.TRXNAME_None);
+			final I_M_AttributeSetInstance oldASI = load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
 			final I_M_AttributeSetInstance newASI = Services.get(IAttributeDAO.class).copy(oldASI);
 			shipmentLine.setM_AttributeSetInstance(newASI);
 		}

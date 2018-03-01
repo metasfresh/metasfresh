@@ -47,7 +47,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
@@ -57,12 +57,11 @@ import lombok.NonNull;
 /**
  * Default implementation for sales order lines.
  *
- * @author ts
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class OrderLineShipmentScheduleHandler implements IShipmentScheduleHandler
+public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
-
 	private static final Logger logger = LogManager.getLogger(OrderLineShipmentScheduleHandler.class);
 
 	@Override

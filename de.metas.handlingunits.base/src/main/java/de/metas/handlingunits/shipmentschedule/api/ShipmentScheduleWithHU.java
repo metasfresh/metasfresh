@@ -58,6 +58,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -196,6 +198,8 @@ public class ShipmentScheduleWithHU
 			return ImmutableMap.of("M_AttributeSetInstance_ID", getM_AttributeSetInstance_ID());
 		}
 
+		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerFor(shipmentSchedule);
+
 		final ImmutableMap.Builder<String, Object> keyBuilder = ImmutableMap.builder();
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
@@ -204,23 +208,21 @@ public class ShipmentScheduleWithHU
 			// Only consider attributes which are usable in ASI
 			if (!attributeValue.isUseInASI())
 			{
-				logger.trace("Skip attribute because UseInASI=false: {}", attributeValue);
+				logger.trace("Skip attribute because UseInASI=false; attributeValue={}", attributeValue);
 				continue;
 			}
 
-			// Only consider attributes which were defined in the template (i.e. No PI),
-			// because only those attributes will be considered in ASI, so only those attributes will land there.
-			// e.g. SSCC18 which has UseInASI=true but it's not defined in template but in some LUs.
-			if (!attributeValue.isDefinedByTemplate())
+			if (!handler.attributeShallBePartOfShipmentLine(shipmentSchedule, attributeValue.getM_Attribute()))
 			{
-				logger.trace("Skip attribute because it's not defined by template: {}", attributeValue);
+				logger.trace("Skip attribute according to the handler's attribute config; attributeValue={}; handler={}; shipmentSchedule={}",
+						attributeValue, handler, shipmentLine);
 				continue;
 			}
 
 			final String name = attributeValue.getM_Attribute().getValue();
 			final Object value = attributeValue.getValue();
 			keyBuilder.put(name, Null.box(value));
-			logger.trace("Considered attribute {}={}", name, value);
+			logger.trace("Considered attribute name={}, value={}", name, value);
 		}
 
 		return keyBuilder.build();
