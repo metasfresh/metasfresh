@@ -91,7 +91,7 @@ import lombok.NonNull;
  * See {@link #processWorkPackage(I_C_Queue_WorkPackage, String)}.
  * Note: the enqeueing part is done by {@link de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer ShipmentScheduleEnqueuer}.
  *
- * @author tsa
+ * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary
  */
 public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdapter
