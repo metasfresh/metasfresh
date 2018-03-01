@@ -608,6 +608,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		// Util.errorUnless(ic.isManual(), "Setting NetAmtToInvoice is only allowed for manual candidates, but {} is not manual", ic);
 		Services.get(IInvoiceCandidateHandlerBL.class).setNetAmtToInvoice(ic);
+		Services.get(IInvoiceCandidateHandlerBL.class).setLineNetAmt(ic);
 	}
 
 	@Override
@@ -1925,7 +1926,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// return SystemTime.asDayTimestamp();
 	}
 
-	BigDecimal computeQtyToInvoice(final Properties ctx, final I_C_Invoice_Candidate ic, final BigDecimal factor, boolean useEffectiveQtyDeliviered)
+	BigDecimal computeQtyToInvoice(final Properties ctx, final I_C_Invoice_Candidate ic, final BigDecimal factor, final boolean useEffectiveQtyDeliviered)
 	{
 		final BigDecimal newQtyToInvoice;
 

@@ -36,6 +36,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.IProductBL;
+import lombok.NonNull;
 
 /**
  * Simple abstract base class that implements {@link #setHandlerRecord(I_C_ILCandHandler)} and {@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
@@ -60,11 +61,11 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	}
 
 	@Override
-	public List<InvoiceCandidateGenerateRequest> expandRequest(InvoiceCandidateGenerateRequest request)
+	public List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request)
 	{
 		return ImmutableList.of(request);
 	}
-	
+
 	@Override
 	public Object getModelForInvoiceCandidateGenerateScheduling(final Object model)
 	{
@@ -75,7 +76,21 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	 * Sets NetAmtToInvoice = PriceActual * QtyToInvoice - DiscountAmt, rounded to currency precision.
 	 */
 	@Override
-	public void setNetAmtToInvoice(final I_C_Invoice_Candidate ic)
+	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final BigDecimal netAmtToInvoice = computeNetAmt(ic);
+		ic.setNetAmtToInvoice(netAmtToInvoice);
+		ic.setSplitAmt(BigDecimal.ZERO);
+	}
+
+	@Override
+	public void setLineNetAmt(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final BigDecimal netAmt = computeNetAmt(ic);
+		ic.setLineNetAmt(netAmt);
+	}
+
+	private BigDecimal computeNetAmt(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
@@ -93,9 +108,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 				ic.getQtyToInvoice(),
 				ic);
 
-		final BigDecimal netAmtToInvoice = qtyToInvoice.multiply(priceActual).setScale(precision, RoundingMode.HALF_UP);
-		ic.setNetAmtToInvoice(netAmtToInvoice);
-		ic.setSplitAmt(BigDecimal.ZERO);
+		return qtyToInvoice.multiply(priceActual).setScale(precision, RoundingMode.HALF_UP);
 	}
 
 	/**

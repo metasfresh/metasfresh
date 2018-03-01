@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2075764497L;
+	private static final long serialVersionUID = 642601052L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (Properties ctx, int C_Invoice_Candidate_ID, String trxName)
@@ -2056,7 +2056,8 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setLineNetAmt (java.math.BigDecimal LineNetAmt)
 	{
-		throw new IllegalArgumentException ("LineNetAmt is virtual column");	}
+		set_ValueNoCheck (COLUMNNAME_LineNetAmt, LineNetAmt);
+	}
 
 	/** Get Zeilennetto.
 		@return Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
@@ -2193,7 +2194,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
 	}
 
-	/** Set Produkt-Kategorie.
+	/** Set Produkt Kategorie.
 		@param M_Product_Category_ID 
 		Kategorie eines Produktes
 	  */
@@ -2202,7 +2203,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		throw new IllegalArgumentException ("M_Product_Category_ID is virtual column");	}
 
-	/** Get Produkt-Kategorie.
+	/** Get Produkt Kategorie.
 		@return Kategorie eines Produktes
 	  */
 	@Override
@@ -2662,9 +2663,9 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
-	/** Set Bestellte Menge.
+	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
-		Bestellte Menge
+		Bestellt/ Beauftragt
 	  */
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
@@ -2672,8 +2673,8 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellte Menge.
-		@return Bestellte Menge
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
 	  */
 	@Override
 	public java.math.BigDecimal getQtyOrdered () 
