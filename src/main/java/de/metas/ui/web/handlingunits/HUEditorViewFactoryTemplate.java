@@ -418,14 +418,14 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
 					.create()
 					.listIds();
-			
-			if(huIds.isEmpty())
+
+			if (huIds.isEmpty())
 			{
 				return ConstantQueryFilter.of(false).getSql();
 			}
 			
 			final ISqlQueryFilter sqlQueryFilter = new InArrayQueryFilter<>(I_M_HU.COLUMNNAME_M_HU_ID, huIds);
-			
+
 			final String sql = sqlQueryFilter.getSql();
 			sqlParamsOut.collectAll(sqlQueryFilter);
 			return sql;
