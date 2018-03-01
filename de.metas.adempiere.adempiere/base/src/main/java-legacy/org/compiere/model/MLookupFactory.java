@@ -661,6 +661,7 @@ public class MLookupFactory
 		lookupInfo.setOrderBySqlPart(sqlOrderBy);
 		lookupInfo.setSecurityDisabled(false);
 		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
+		lookupInfo.setTranslated(isTranslated);
 
 		return lookupInfo;
 	}
