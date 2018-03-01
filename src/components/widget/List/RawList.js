@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import { List } from 'immutable';
 import onClickOutside from 'react-onclickoutside';
-
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
@@ -41,7 +40,7 @@ class RawList extends PureComponent {
       let dropdownList = List(list);
 
       if (!mandatory && emptyText) {
-        dropdownList.unshift({
+        dropdownList = dropdownList.unshift({
           caption: emptyText,
           key: null,
         });
@@ -50,17 +49,19 @@ class RawList extends PureComponent {
       if (dropdownList.size > 0) {
         let idx = 0;
 
-        if (defaultValue || selected) {
-          const select = selected || defaultValue;
+        if (selected || defaultValue) {
+          const selectedCaption = selected ? selected.caption : defaultValue;
+
           idx = dropdownList.findIndex(
-            item => item.caption === select.caption
-          ); 
+            item => item.caption === selectedCaption
+          );
         }
 
         if (idx !== 0) {
           const item = dropdownList.get(idx);
           dropdownList = dropdownList.delete(idx);
           dropdownList = dropdownList.insert(0, item);
+          idx = 0;
         }
 
         const selectedValue = {
@@ -69,8 +70,8 @@ class RawList extends PureComponent {
 
         this.setState(
           {
-            ...selectedValue,
             dropdownList,
+            selected: selectedValue.selected,
           },
           () => {
             autoFocus && this.dropdown.focus();
@@ -258,13 +259,9 @@ class RawList extends PureComponent {
       onOpenDropdown();
     }
 
-    let selectedIndex = null;
-
-    dropdownList.map((item, index) => {
-      if (JSON.stringify(item) === JSON.stringify(selected)) {
-        selectedIndex = index;
-      }
-    });
+    const selectedIndex = dropdownList.findIndex(
+      item => item.caption === selected.caption
+    );
 
     const next = up ? selectedIndex + 1 : selectedIndex - 1;
 
@@ -306,21 +303,9 @@ class RawList extends PureComponent {
   };
 
   renderOptions = () => {
-    const { mandatory, emptyText } = this.props;
     const { dropdownList } = this.state;
-    let emptyRow = null;
 
-    /* if field is not mandatory add extra empty row */
-    if (!mandatory && emptyText) {
-      emptyRow = this.getRow({ key: null, caption: emptyText });
-    }
-
-    return (
-      <div>
-        {emptyRow}
-        {dropdownList.map(this.getRow)}
-      </div>
-    );
+    return <div>{dropdownList.map(this.getRow)}</div>;
   };
 
   render() {

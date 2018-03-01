@@ -149,14 +149,14 @@ class ListWidget extends Component {
   };
 
   handleFocus = () => {
-    const { onFocus } = this.props;
+    const { onFocus, mandatory } = this.props;
     const { list, loading } = this.state;
 
     this.focus();
     onFocus && onFocus();
 
     if (!list && !loading) {
-      this.requestListData(true, true);
+      this.requestListData(mandatory, true);
     }
   };
 
