@@ -4,8 +4,9 @@
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
-import de.metas.jenkins.MvnConf
+import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
+import de.metas.jenkins.MvnConf
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
@@ -96,13 +97,14 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
+		final DockerConf dockerConf = new DockerConf(
+						'metasfresh-webui-api-dev', // artifactName
+						MF_UPSTREAM_BRANCH, // branchName
+						MF_VERSION, // versionSuffix
+						'target/docker' // workDir
+					)
 		final String publishedDockerImageName =
-			createAndPublishDockerImage_nexus(
-					'metasfresh-webui-api-dev', // dockerRepositoryName
-					'.',  // dockerModuleDir
-					MF_UPSTREAM_BRANCH, // dockerBranchName
-					MF_VERSION // dockerVersionSuffix
-			)
+					dockerBuildAndPush(dockerConf)
 
 		// gh #968:
 		// set env variables which will be available to a possible upstream job that might have called us
