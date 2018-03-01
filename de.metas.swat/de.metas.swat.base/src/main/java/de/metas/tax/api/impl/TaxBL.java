@@ -13,15 +13,14 @@ package de.metas.tax.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -44,6 +43,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
@@ -114,37 +114,29 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 			final I_C_BPartner_Location bpLocTo = InterfaceWrapperHelper.create(ctx, billC_BPartner_Location_ID, I_C_BPartner_Location.class, trxName);
 
-			final int taxIdForCategory = retrieveTaxIdForCategory(ctx
-					, countryFromId
-					, adOrgId
-					, bpLocTo
-					, billDate
-					, taxCategoryId
-					, isSOTrx
-					, trxName, false);
+			final int taxIdForCategory = retrieveTaxIdForCategory(ctx, countryFromId, adOrgId, bpLocTo, billDate, taxCategoryId, isSOTrx, trxName, false);
 			if (taxIdForCategory > 0)
 			{
 				return taxIdForCategory;
 			}
 		}
 
-		final AdempiereException ex =
-				new AdempiereException(StringUtils.formatMessage(
-						"Could not retrieve C_Tax_ID; will return the Tax-Not-Found-C_Tax_ID; Method paratmers:"
-								+ "model= {0}, taxCategoryId={1}, productId={2}, chargeId={3}, billDate={4}, shipDate={5}, adOrgId={6}, "
-								+ "warehouse={7}, billC_BPartner_Location_ID={8}, shipC_BPartner_Location_ID={9}, isSOTrx={10}, trxName={11}",
-						model,
-						taxCategoryId,
-						productId,
-						chargeId,
-						billDate,
-						shipDate,
-						adOrgId,
-						warehouse,
-						billC_BPartner_Location_ID,
-						shipC_BPartner_Location_ID,
-						isSOTrx,
-						trxName));
+		final AdempiereException ex = new AdempiereException(StringUtils.formatMessage(
+				"Could not retrieve C_Tax_ID; will return the Tax-Not-Found-C_Tax_ID; Method paratmers:"
+						+ "model= {0}, taxCategoryId={1}, productId={2}, chargeId={3}, billDate={4}, shipDate={5}, adOrgId={6}, "
+						+ "warehouse={7}, billC_BPartner_Location_ID={8}, shipC_BPartner_Location_ID={9}, isSOTrx={10}, trxName={11}",
+				model,
+				taxCategoryId,
+				productId,
+				chargeId,
+				billDate,
+				shipDate,
+				adOrgId,
+				warehouse,
+				billC_BPartner_Location_ID,
+				shipC_BPartner_Location_ID,
+				isSOTrx,
+				trxName));
 		log.warn("getTax - error: ", ex);
 
 		// 07814
@@ -191,7 +183,6 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date)
 				.addOnlyActiveRecordsFilter();
 
-
 		if (countryFromId > 0)
 		{
 			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Country_ID, countryFromId);
@@ -233,7 +224,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 		else
 		{
-			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both , X_C_Tax.SOPOTYPE_PurchaseTax);
+			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
 		}
 
 		if (orgId > 0)
@@ -241,23 +232,26 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, 0);
 		}
 
-		final int taxId =  queryBuilder
+		final IQuery<I_C_Tax> query = queryBuilder
 				.orderBy()
 				.addColumnDescending(I_C_Tax.COLUMNNAME_AD_Org_ID)
 				.addColumn(I_C_Tax.COLUMNNAME_To_Country_ID)
 				.addColumnDescending(I_C_Tax.COLUMNNAME_ValidFrom)
 				.endOrderBy()
-				.create()
-				.firstId();
-
+				.create();
+		final int taxId = query.firstId();
 		if (taxId <= 0)
 		{
 			TaxNotFoundException.builder()
+					.adMessage(TaxNotFoundException.MSG_TaxCategoryNotFound)
+					.orgId(orgId)
 					.taxCategoryId(taxCategoryId)
 					.isSOTrx(isSOTrx)
 					.billDate(date)
+					.shipFromCountryId(countryFromId)
 					.billToC_Location_ID(locationTo.getC_Location_ID())
 					.build()
+					.setParameter("query", query.toString())
 					.throwOrLogWarning(throwEx, log);
 			return -1;
 		}
@@ -475,19 +469,20 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 	/**
 	 * Get Exempt Tax Code
+	 * 
 	 * @param ctx context
 	 * @param AD_Org_ID org to find client
 	 * @return C_Tax_ID
 	 * @throws TaxNoExemptFoundException if no tax exempt found
 	 */
 	@Override
-	public int getExemptTax (Properties ctx, int AD_Org_ID)
+	public int getExemptTax(Properties ctx, int AD_Org_ID)
 	{
 		final String sql = "SELECT t.C_Tax_ID "
-			+ "FROM C_Tax t"
-			+ " INNER JOIN AD_Org o ON (t.AD_Client_ID=o.AD_Client_ID) "
-			+ "WHERE t.IsTaxExempt='Y' AND o.AD_Org_ID=? "
-			+ "ORDER BY t.Rate DESC";
+				+ "FROM C_Tax t"
+				+ " INNER JOIN AD_Org o ON (t.AD_Client_ID=o.AD_Client_ID) "
+				+ "WHERE t.IsTaxExempt='Y' AND o.AD_Org_ID=? "
+				+ "ORDER BY t.Rate DESC";
 		int C_Tax_ID = DB.getSQLValueEx(null, sql, AD_Org_ID);
 		log.debug("getExemptTax - TaxExempt=Y - C_Tax_ID={}", C_Tax_ID);
 		if (C_Tax_ID <= 0)
@@ -498,7 +493,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		{
 			return C_Tax_ID;
 		}
-	}	//	getExemptTax
+	}	// getExemptTax
 
 	@Override
 	public BigDecimal calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
