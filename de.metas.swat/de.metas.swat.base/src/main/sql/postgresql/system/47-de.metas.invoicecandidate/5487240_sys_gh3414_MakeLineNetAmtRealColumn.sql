@@ -8,3 +8,5 @@ UPDATE AD_Column SET ColumnSQL='',Updated=TO_TIMESTAMP('2018-03-01 11:23:42','YY
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN LineNetAmt NUMERIC')
 ;
 
+UPDATE C_Invoice_Candidate SET  LineNetAmt = NetAmtToInvoice WHERE Processed='N';
+

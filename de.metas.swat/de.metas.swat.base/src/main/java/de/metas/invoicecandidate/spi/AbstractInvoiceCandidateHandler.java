@@ -78,7 +78,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	@Override
 	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final BigDecimal netAmtToInvoice = computeNetAmt(ic);
+		final BigDecimal netAmtToInvoice = computeNetAmt(ic, false);
 		ic.setNetAmtToInvoice(netAmtToInvoice);
 		ic.setSplitAmt(BigDecimal.ZERO);
 	}
@@ -86,11 +86,12 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	@Override
 	public void setLineNetAmt(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final BigDecimal netAmt = computeNetAmt(ic);
+		final boolean force = ic.getQtyToInvoice().signum() ==  0 ? true : false;
+		final BigDecimal netAmt = computeNetAmt(ic, force);
 		ic.setLineNetAmt(netAmt);
 	}
 
-	private BigDecimal computeNetAmt(@NonNull final I_C_Invoice_Candidate ic)
+	private BigDecimal computeNetAmt(@NonNull final I_C_Invoice_Candidate ic, final boolean force)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
@@ -104,8 +105,26 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		//
 		// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and QtDdelivered)
 		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore we don'T use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
+		final BigDecimal qty;
+		if (force)
+		{
+			final BigDecimal factor;
+			if (ic.getQtyOrdered().signum() < 0)
+			{
+				factor = BigDecimal.ONE.negate();
+			}
+			else
+			{
+				factor = BigDecimal.ONE;
+			}
+			qty = invoiceCandBL.computeQtyToInvoiceWhenRuleImmediate(ic, factor);
+		}
+		else
+		{
+			qty = ic.getQtyToInvoice();
+		}
 		final BigDecimal qtyToInvoice = invoiceCandBL.convertToPriceUOM(
-				ic.getQtyToInvoice(),
+				qty,
 				ic);
 
 		return qtyToInvoice.multiply(priceActual).setScale(precision, RoundingMode.HALF_UP);

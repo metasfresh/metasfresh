@@ -1960,10 +1960,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                                // Immediate
 			{
-				// 07847
-				// Use the maximum between qtyOrdered and qtyDelivered
-				final BigDecimal maxInvoicableQty = calculateMaxInvoicableQtyFromOrderedAndDelivered(ic.getQtyOrdered(), qtyDeliveredToUse);
-				newQtyToInvoice = getQtyToInvoice(ic, maxInvoicableQty, factor);
+				newQtyToInvoice = computeQtyToInvoiceWhenRuleImmediate(ic, factor);
 			}
 			else if (X_C_Invoice_Candidate.INVOICERULE_NachLieferungAuftrag.equals(invoiceRule))
 			{
@@ -1988,6 +1985,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 		}
 		return newQtyToInvoice;
+	}
+
+	@Override
+	public BigDecimal computeQtyToInvoiceWhenRuleImmediate(@NonNull final I_C_Invoice_Candidate ic, @NonNull final BigDecimal factor)
+	{
+		// 07847
+		// Use the maximum between qtyOrdered and qtyDelivered
+		final BigDecimal maxInvoicableQty = calculateMaxInvoicableQtyFromOrderedAndDelivered(ic.getQtyOrdered(), getQtyDelivered_Effective(ic));
+		return getQtyToInvoice(ic, maxInvoicableQty, factor);
 	}
 
 	@Override

@@ -453,4 +453,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param invoice
 	 */
 	void closePartiallyInvoiced_InvoiceCandidates(I_C_Invoice invoice);
+
+	BigDecimal computeQtyToInvoiceWhenRuleImmediate(I_C_Invoice_Candidate ic, BigDecimal factor);
 }
