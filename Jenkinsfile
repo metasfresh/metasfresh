@@ -4,8 +4,9 @@
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
-import de.metas.jenkins.MvnConf
+import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
+import de.metas.jenkins.MvnConf
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
@@ -82,24 +83,12 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 						stage('Build docker image')
 						{
-							def app
-  						docker.withRegistry('https://nexus.metasfresh.com:6000/v2/', 'nexus.metasfresh.com_jenkins')
-							{
-								app = docker.build 'metasfresh/metasfresh-admin', 'src/main/docker';
-							}
-
-							docker.withRegistry('https://nexus.metasfresh.com:6001/v2/', 'nexus.metasfresh.com_jenkins')
-							{
-								def misc = new de.metas.jenkins.Misc();
-								app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
-								app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${MF_VERSION}");
-
-								if(MF_UPSTREAM_BRANCH=='release')
-								{
-									echo 'MF_UPSTREAM_BRANCH=release, so we also push this with the "latest" tag'
-									app.push misc.mkDockerTag('latest');
-								}
-							}
+							final DockerConf dockerConf = new DockerConf(
+											'metasfresh-admin', // artifactName
+											MF_UPSTREAM_BRANCH, // branchName
+											MF_VERSION, // versionSuffix
+											'src/main/docker') // workDir
+							dockerBuildAndPush(dockerConf)
             } // stage
 		   } // withMaven
 		}
