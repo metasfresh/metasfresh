@@ -57,7 +57,6 @@ import { initLayout } from '../api';
 import { setListIncludedView } from './ListActions';
 import { getWindowBreadcrumb } from './MenuActions';
 
-
 export function setLatestNewDocument(id) {
   return {
     type: SET_LATEST_NEW_DOCUMENT,

@@ -11,10 +11,10 @@ export function initLayout(
   supportTree
 ) {
   return get(`${config.API_URL}/${entity}/${docType}${
-    docId ? `/${docId}` : ''}${
-      tabId ? `/${tabId}` : ''}${subentity ? `/${subentity}` : ''}/layout${
-        isAdvanced ? '?advanced=true' : ''}${list ? `?viewType=${list}` : ''}${
-          supportTree ? '&supportTree=true' : ''}
+    docId ? `/${docId}` : ''
+  }${tabId ? `/${tabId}` : ''}${subentity ? `/${subentity}` : ''}/layout${
+    isAdvanced ? '?advanced=true' : ''
+  }${list ? `?viewType=${list}` : ''}${supportTree ? '&supportTree=true' : ''}
   `);
 }
 

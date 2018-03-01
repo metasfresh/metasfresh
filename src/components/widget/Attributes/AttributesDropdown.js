@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
+import { Map } from 'immutable';
 
 import RawWidget from '../RawWidget';
 
@@ -9,54 +10,46 @@ class AttributesDropdown extends Component {
     super(props);
 
     this.state = {
-      clickedOutside: false,
-      patchCallbacks: [],
+      patchCallbacks: Map(),
     };
-  }
-
-  setInitialState() {
-    const { layout } = this.props;
-    let patchCallbacks = [];
-
-    if (layout) {
-      patchCallbacks = layout.map(() => this.handlePatch);
-    }
-
-    this.setState({
-      patchCallbacks,
-    });
-  }
-
-  componentWillMount() {
-    this.setInitialState();
   }
 
   handleClickOutside = () => {
     const { onClickOutside } = this.props;
 
-    this.setState(
-      {
-        clickedOutside: true,
-      },
-      () => {
-        //we need to wait for fetching all of PATCH fields on blur
-        //to complete on updated instance
-        Promise.all(this.state.patchCallbacks).then(() => onClickOutside());
+    // we need to wait for fetching all of PATCH fields on blur
+    // to complete on updated instance
+    // TODO: Figure out if it would be possible to rewrite this
+    // using Promise.all somehow
+    const requestsInterval = window.setInterval(() => {
+      const intervalsLeft = this.state.patchCallbacks.size;
+
+      if (intervalsLeft === 0) {
+        window.clearInterval(requestsInterval);
+        onClickOutside();
       }
-    );
+    }, 10);
   };
 
   handlePatch = (prop, value, attrId) => {
-    const { handlePatch, onClickOutside } = this.props;
+    const { handlePatch } = this.props;
+    const { patchCallbacks } = this.state;
+    const updatedCallbacks = patchCallbacks.set(attrId, true);
 
-    return handlePatch(prop, value, attrId, () => {
-      const { focused, clickedOutside } = this.state;
-      if (!focused && clickedOutside) {
-        onClickOutside();
+    this.setState(
+      {
+        patchCallbacks: updatedCallbacks,
+      },
+      () => {
+        handlePatch(prop, value, attrId, () => {
+          const resolvedCallbacks = this.state.patchCallbacks.delete(attrId);
+
+          this.setState({
+            patchCallbacks: resolvedCallbacks,
+          });
+        });
       }
-
-      return true;
-    });
+    );
   };
 
   renderFields = () => {
@@ -70,7 +63,6 @@ class AttributesDropdown extends Component {
       disableOnClickOutside,
       enableOnClickOutside,
     } = this.props;
-    const { patchCallbacks } = this.state;
 
     if (layout) {
       return layout.map((item, idx) => {
@@ -86,9 +78,7 @@ class AttributesDropdown extends Component {
             key={idx}
             type={item.type}
             caption={item.caption}
-            handlePatch={(prop, value) =>
-              patchCallbacks[idx](prop, value, attrId)
-            }
+            handlePatch={(prop, value) => this.handlePatch(prop, value, attrId)}
             handleChange={handleChange}
             disableOnClickOutside={disableOnClickOutside}
             enableOnClickOutside={enableOnClickOutside}

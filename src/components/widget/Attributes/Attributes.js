@@ -109,7 +109,7 @@ export default class Attributes extends Component {
   handlePatch = (prop, value, id, cb) => {
     const { attributeType } = this.props;
 
-    return patchRequest({
+    patchRequest({
       entity: attributeType,
       docType: null,
       docId: id,

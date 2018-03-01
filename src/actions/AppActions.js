@@ -150,18 +150,18 @@ export function createUrlAttachment({ windowId, documentId, name, url }) {
 function initNumeralLocales(lang, locale) {
   const language = lang.toLowerCase();
   const LOCAL_NUMERAL_FORMAT = {
-    defaultFormat: "0,0.00[000]",
+    defaultFormat: '0,0.00[000]',
     delimiters: {
-      thousands: locale.numberGroupingSeparator || ",",
-      decimal: locale.numberDecimalSeparator || "."
-    }
+      thousands: locale.numberGroupingSeparator || ',',
+      decimal: locale.numberDecimalSeparator || '.',
+    },
   };
 
-  if (typeof numeral.locales[language] === "undefined") {
-    numeral.register("locale", language, LOCAL_NUMERAL_FORMAT);
+  if (typeof numeral.locales[language] === 'undefined') {
+    numeral.register('locale', language, LOCAL_NUMERAL_FORMAT);
   }
 
-  if (typeof numeral.locales[language] !== "undefined") {
+  if (typeof numeral.locales[language] !== 'undefined') {
     numeral.locale(language);
 
     if (LOCAL_NUMERAL_FORMAT.defaultFormat) {
@@ -174,14 +174,13 @@ export function languageSuccess(lang) {
   localStorage.setItem(LOCAL_LANG, lang);
   Moment.locale(lang);
 
-  axios.defaults.headers.common["Accept-Language"] = lang;
+  axios.defaults.headers.common['Accept-Language'] = lang;
 }
 
 export function logoutSuccess(auth) {
   auth.close();
-  localStorage.removeItem("isLogged");
+  localStorage.removeItem('isLogged');
 }
-
 
 // REDUX ACTIONS
 
