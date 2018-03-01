@@ -14,6 +14,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.ProcessId;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -46,6 +47,7 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@ToString
 public final class WebuiRelatedProcessDescriptor
 {
 	private final ProcessId processId;

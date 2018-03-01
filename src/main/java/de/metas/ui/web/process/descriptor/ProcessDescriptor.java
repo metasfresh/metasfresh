@@ -64,15 +64,13 @@ public final class ProcessDescriptor implements ETagAware
 
 	private final DocumentEntityDescriptor parametersDescriptor;
 	private final ProcessLayout layout;
-	
+
 	// ETag support
 	private static final Supplier<ETag> nextETagSupplier = ETagAware.newETagGenerator();
 	private final ETag eTag = nextETagSupplier.get();
 
 	private ProcessDescriptor(final Builder builder)
 	{
-		super();
-
 		processId = builder.getProcessId();
 		type = builder.getType();
 
@@ -91,7 +89,7 @@ public final class ProcessDescriptor implements ETagAware
 				.add("processId", processId)
 				.toString();
 	}
-	
+
 	public ProcessId getProcessId()
 	{
 		return processId;
@@ -127,7 +125,7 @@ public final class ProcessDescriptor implements ETagAware
 	{
 		// Filter out processes on which we don't have access
 		final ProcessId processId = getProcessId();
-		
+
 		if (ProcessId.PROCESSHANDLERTYPE_AD_Process.equals(processId.getProcessHandlerType()))
 		{
 			final Boolean accessRW = permissions.checkProcessAccess(processId.getProcessIdAsInt());
@@ -187,7 +185,7 @@ public final class ProcessDescriptor implements ETagAware
 		private ProcessDescriptorType type;
 		private ProcessId processId;
 
-		public String processClassname;
+		private String processClassname;
 		private Optional<Class<?>> processClass = Optional.empty();
 
 		private DocumentEntityDescriptor parametersDescriptor;
