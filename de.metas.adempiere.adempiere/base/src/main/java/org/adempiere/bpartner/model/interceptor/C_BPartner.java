@@ -79,14 +79,19 @@ public class C_BPartner
 		final String creditStatus = bpGroup.getSOCreditStatus();
 		if (!Check.isEmpty(creditStatus,true))
 		{
-			final I_C_BPartner_Stats stats = bpartnerStats.getC_BPartner_Stats();
-			stats.setSOCreditStatus(creditStatus);
-			InterfaceWrapperHelper.save(stats);
+			setSO_CreditStatus(bpartnerStats, creditStatus);
 
 			// make sure the status is correct
 			Services.get(IBPartnerStatisticsUpdater.class)
 			.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(bpartner.getC_BPartner_ID()), ITrx.TRXNAME_None);
 
 		}
+	}
+
+	private void setSO_CreditStatus(@NonNull final IBPartnerStats bpartnerStats, @NonNull final String creditStatus)
+	{
+		final I_C_BPartner_Stats stats = bpartnerStats.getC_BPartner_Stats();
+		stats.setSOCreditStatus(creditStatus);
+		InterfaceWrapperHelper.save(stats);
 	}
 }

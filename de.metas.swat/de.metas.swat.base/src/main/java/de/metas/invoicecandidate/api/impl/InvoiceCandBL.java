@@ -608,6 +608,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		// Util.errorUnless(ic.isManual(), "Setting NetAmtToInvoice is only allowed for manual candidates, but {} is not manual", ic);
 		Services.get(IInvoiceCandidateHandlerBL.class).setNetAmtToInvoice(ic);
+
 		Services.get(IInvoiceCandidateHandlerBL.class).setLineNetAmt(ic);
 	}
 

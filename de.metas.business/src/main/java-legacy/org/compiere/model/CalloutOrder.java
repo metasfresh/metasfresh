@@ -573,7 +573,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartner(bPartner, order.getDateOrdered());
+		final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartner(bPartner, order.getDateOrdered());
 
 		final BigDecimal CreditAvailable = creditLimit.subtract(bPartnerStats.getSOCreditUsed());
 		if (CreditAvailable.signum() < 0)
@@ -727,7 +727,7 @@ public class CalloutOrder extends CalloutEngine
 					{
 						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 						final I_C_BPartner partner = InterfaceWrapperHelper.load(bill_BPartner_ID, I_C_BPartner.class);
-						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartner(partner, order.getDateOrdered());
+						final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartner(partner, order.getDateOrdered());
 						final double creditUsed = rs.getDouble("SO_CreditUsed");
 						final BigDecimal CreditAvailable = creditLimit.subtract(BigDecimal.valueOf(creditUsed));
 						if (!rs.wasNull() && CreditAvailable.signum() < 0)
@@ -1487,7 +1487,7 @@ public class CalloutOrder extends CalloutEngine
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final I_C_BPartner partner = InterfaceWrapperHelper.load(bpartnerId, I_C_BPartner.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartner(partner, evaluationDate);
+		final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartner(partner, evaluationDate);
 		boolean dontCheck = true;
 		if (evalCreditstatus)
 		{

@@ -113,7 +113,7 @@ public class BPartnerCreditLimitRepositoryTest
 
 		final Timestamp today = SystemTime.asDayTimestamp();
 
-		final BigDecimal limitAmount = repository.retrieveCreditLimitByBPartner(partner, today);
+		final BigDecimal limitAmount = repository.getCreditLimitByBPartner(partner, today);
 
 		assertThat(limitAmount).isEqualTo(BigDecimal.valueOf(200));
 
@@ -143,7 +143,7 @@ public class BPartnerCreditLimitRepositoryTest
 
 		final Timestamp today = SystemTime.asDayTimestamp();
 
-		final BigDecimal limitAmount = repository.retrieveCreditLimitByBPartner(partner, today);
+		final BigDecimal limitAmount = repository.getCreditLimitByBPartner(partner, today);
 
 		assertThat(limitAmount).isEqualTo(BigDecimal.valueOf(100));
 	}
@@ -171,7 +171,7 @@ public class BPartnerCreditLimitRepositoryTest
 
 		final Timestamp today = SystemTime.asDayTimestamp();
 
-		final BigDecimal limitAmount = repository.retrieveCreditLimitByBPartner(partner, today);
+		final BigDecimal limitAmount = repository.getCreditLimitByBPartner(partner, today);
 
 		assertThat(limitAmount).isEqualTo(BigDecimal.valueOf(200));
 	}

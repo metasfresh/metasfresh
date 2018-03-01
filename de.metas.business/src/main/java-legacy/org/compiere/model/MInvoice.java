@@ -1376,7 +1376,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 			final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
 			final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-			final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartner(getC_BPartner(), getDateInvoiced());
+			final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartner(getC_BPartner(), getDateInvoiced());
 
 			if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true),  getDateInvoiced()))
 			{
