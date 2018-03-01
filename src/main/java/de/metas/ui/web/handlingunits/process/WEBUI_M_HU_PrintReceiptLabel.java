@@ -56,7 +56,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 		final HUReportService huReportService = HUReportService.get();
 
 		final Properties ctx = Env.getCtx(); // note: at this point, the JavaProces's ctx was not set so we are using the global context
-		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId(ctx);
+		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId();
 		if (adProcessId <= 0)
 		{
 			return ProcessPreconditionsResolution.reject("Receipt label process not configured via sysconfig " + HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
@@ -87,14 +87,14 @@ public class WEBUI_M_HU_PrintReceiptLabel
 	{
 		final HUReportService huReportService = HUReportService.get();
 
-		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId(getCtx());
+		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId();
 		final I_M_HU hu = getSingleSelectedRow().getM_HU();
 
 		final List<I_M_HU> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
 
-		HUReportExecutor.get(getCtx())
-				.withWindowNo(getProcessInfo().getWindowNo())
-				.withNumberOfCopies(p_copies)
+		HUReportExecutor.newInstance(getCtx())
+				.windowNo(getProcessInfo().getWindowNo())
+				.numberOfCopies(p_copies)
 				.executeHUReportAfterCommit(adProcessId, husToProcess);
 
 		return MSG_OK;
