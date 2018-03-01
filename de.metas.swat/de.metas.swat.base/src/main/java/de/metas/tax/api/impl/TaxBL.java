@@ -243,7 +243,6 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		if (taxId <= 0)
 		{
 			TaxNotFoundException.builder()
-					.adMessage(TaxNotFoundException.MSG_TaxCategoryNotFound)
 					.orgId(orgId)
 					.taxCategoryId(taxCategoryId)
 					.isSOTrx(isSOTrx)

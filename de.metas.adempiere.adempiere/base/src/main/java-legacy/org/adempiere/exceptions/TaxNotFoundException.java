@@ -42,9 +42,6 @@ public class TaxNotFoundException extends AdempiereException
 	private static final long serialVersionUID = -5471615720092096644L;
 
 	public static final String MSG_TaxNotFound = "TaxNotFound";
-	public static final String MSG_TaxCategoryNotFound = "TaxCategoryNotFound";
-
-	private final String adMessage;
 
 	private final int productId;
 	private final int chargeId;
@@ -84,8 +81,6 @@ public class TaxNotFoundException extends AdempiereException
 			final int billFromCountryId,
 			final int billToC_Location_ID)
 	{
-		this.adMessage = adMessage != null ? adMessage : MSG_TaxNotFound;
-
 		this.productId = productId;
 		setParameter("productId", productId > 0 ? productId : null);
 		this.chargeId = chargeId;
@@ -121,7 +116,7 @@ public class TaxNotFoundException extends AdempiereException
 	@Override
 	protected String buildMessage()
 	{
-		final StringBuilder msg = new StringBuilder("@").append(adMessage).append("@");
+		final StringBuilder msg = new StringBuilder("@").append(MSG_TaxNotFound).append("@");
 
 		//
 		if (productId > 0)
