@@ -41,12 +41,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.util.Env;
+import org.compiere.util.CCache;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -59,6 +58,11 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
+/**
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 {
 	private static final String MSG_RECORDS_CREATED_1P = "de.metas.inoutCandidate.RECORDS_CREATED";
@@ -90,7 +94,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		}
 
 		// make sure that there is an M_IolCandHandler record for the handler
-		final I_M_IolCandHandler existingRecord = retrieveHandlerRecordOrNull(Env.getCtx(), handler.getClass().getName(), null);
+		final I_M_IolCandHandler existingRecord = retrieveHandlerRecordOrNull(handler.getClass().getName());
 		final int existingRecordId;
 		if (existingRecord == null)
 		{
@@ -110,14 +114,15 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		handler.setM_IolCandHandler_IDOneTimeOnly(existingRecordId);
 	}
 
-	@Override
-	@Cached
-	public I_M_IolCandHandler retrieveHandlerRecordOrNull(
-			final @CacheCtx Properties ctx,
-			final String className,
-			final @CacheTrx String trxName)
-	{
+	private final CCache<String, I_M_IolCandHandler> className2HandlerRecord = //
+			CCache.newCache(
+					I_M_IolCandHandler.Table_Name + "#by" + I_M_IolCandHandler.COLUMNNAME_Classname,
+					5,
+					CCache.EXPIREMINUTES_Never);
 
+	@VisibleForTesting
+	public I_M_IolCandHandler retrieveHandlerRecordOrNull(final String className)
+	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilder(I_M_IolCandHandler.class)
@@ -129,7 +134,6 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 				.create()
 				.setApplyAccessFilter(true)
 				.firstOnly(I_M_IolCandHandler.class);
-
 	}
 
 	@Override
@@ -155,7 +159,11 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		for (final String tableName : tableName2Handler.keySet())
 		{
 			final ShipmentScheduleHandler handler = tableName2Handler.get(tableName);
-			final I_M_IolCandHandler handlerRecord = retrieveHandlerRecordOrNull(ctx, handler.getClass().getName(), trxName);
+			final String handlerClassName = handler.getClass().getName();
+
+			final I_M_IolCandHandler handlerRecord = className2HandlerRecord.getOrLoad(
+					handlerClassName,
+					() -> retrieveHandlerRecordOrNull(handler.getClass().getName()));
 
 			final List<Object> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, trxName);
 
@@ -259,7 +267,10 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		final String tableName = adTableDAO.retrieveTableName(sched.getAD_Table_ID());
 
 		final ShipmentScheduleHandler shipmentScheduleHandler = tableName2Handler.get(tableName);
-		Check.assumeNotNull(shipmentScheduleHandler, "IInOutCandHandler for {} with table name {} is not null", sched, tableName);
+		Check.assumeNotNull(shipmentScheduleHandler,
+				"ShipmentScheduleHandler for the given shipmentSchedule with table name {} is not null; shipmentSchedule={}",
+				tableName, sched);
+
 		return shipmentScheduleHandler;
 	}
 }

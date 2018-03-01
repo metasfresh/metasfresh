@@ -1,15 +1,23 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.junit.Assert;
 
 import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inout.IInOutDAO;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.model.I_M_IolCandHandler;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_AttributeConfig;
+import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 
 /*
  * #%L
@@ -36,7 +44,7 @@ import de.metas.inout.IInOutDAO;
 /**
  * Test case:
  * <ul>
- * <li>consider "attribute" it's a template attribute, with UseInASI=Yes
+ * <li>consider "attribute" its a template attribute, with UseInASI=Yes
  * <li>have 1 shipment schedule
  * <li>pick LU1 with attribute's value "value1"
  * <li>pick LU2 with attribute's value "value2"
@@ -55,6 +63,22 @@ public class HUShipmentProcess_AttributesAggregation_WithDifferentTemplateAttrib
 	protected void initialize()
 	{
 		super.initialize();
+
+		//
+		// set up the attribute config for this test case
+		final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+		assertThat(shipmentScheduleHandlerBL).as("this rest requires a particular instance").isInstanceOf(ShipmentScheduleHandlerBL.class);
+
+		final I_M_IolCandHandler handlerRecord = ((ShipmentScheduleHandlerBL)shipmentScheduleHandlerBL)
+				.retrieveHandlerRecordOrNull(OrderLineShipmentScheduleHandler.class.getName());
+		assertThat(handlerRecord).isNotNull(); // should have been registered by super.initialize();
+
+		final I_M_ShipmentSchedule_AttributeConfig attributeConfigRecord = newInstance(I_M_ShipmentSchedule_AttributeConfig.class);
+		attributeConfigRecord.setM_Attribute(attribute);
+		attributeConfigRecord.setOnlyIfInReferencedASI(false);
+		attributeConfigRecord.setM_IolCandHandler(handlerRecord);
+		save(attributeConfigRecord);
+
 
 		template_huPIAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
 				.setM_HU_PI(helper.huDefNone)
@@ -81,20 +105,20 @@ public class HUShipmentProcess_AttributesAggregation_WithDifferentTemplateAttrib
 	{
 		//
 		// Get generated shipment
-		Assert.assertEquals("Invalid generated shipments count", 1, generatedShipments.size());
+		assertThat(generatedShipments).as("Invalid generated shipments count").hasSize(1);
 		final I_M_InOut shipment = generatedShipments.get(0);
 
 		//
 		// Retrieve generated shipment lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
-		Assert.assertEquals("Invalid generated shipment lines count", 2, shipmentLines.size());
+		assertThat(shipmentLines).as("Invalid generated shipment lines count").hasSize(2);
+
 		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
 		final I_M_InOutLine shipmentLine2 = shipmentLines.get(1);
 
 		assertShipmentLineASIAttributeValueString(lu1_attributeValue, shipmentLine1, attribute);
 		assertShipmentLineASIAttributeValueString(lu2_attributeValue, shipmentLine2, attribute);
 
-		//
 		// Revalidate the ShipmentSchedule_QtyPicked expectations,
 		// but this time, also make sure the M_InOutLine_ID is set
 		//@formatter:off

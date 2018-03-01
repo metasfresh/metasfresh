@@ -13,11 +13,11 @@ package de.metas.inoutcandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,9 +29,8 @@ import org.adempiere.util.ISingletonService;
 
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
-
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 
 /**
  * This interface declares methods to
@@ -85,16 +84,6 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 	 * @return
 	 */
 	List<I_M_ShipmentSchedule> createMissingCandidates(Properties ctx, String trxName);
-
-	/**
-	 * Loads the handler record with the given class name
-	 *
-	 * @param ctx
-	 * @param className
-	 * @param trxName
-	 * @return
-	 */
-	I_M_IolCandHandler retrieveHandlerRecordOrNull(Properties ctx, String className, String trxName);
 
 	/**
 	 * Invokes the given <code>sched</code>'s {@link ShipmentScheduleHandler} to get a {@link IDeliverRequest} instance.

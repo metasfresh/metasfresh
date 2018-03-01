@@ -1,7 +1,5 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -26,6 +24,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -33,8 +32,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
@@ -54,6 +54,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
+import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -104,7 +105,7 @@ import lombok.NonNull;
 	// Shipment Line attributes
 	private IHUContext huContext;
 	private I_M_Product product = null;
-	private int attributeSetInstanceId;
+
 	private Object attributesAggregationKey = null;
 	private int orderLineId = -1;
 	private I_C_UOM uom = null;
@@ -116,7 +117,6 @@ import lombok.NonNull;
 	/** Candidates which were added to this builder */
 	private final List<ShipmentScheduleWithHU> candidates = new ArrayList<>();
 
-
 	/** Loading Units(LUs)/Transport Units(TUs) to assign to the shipment line that will be created */
 	private final Set<HUTopLevel> husToAssign = new TreeSet<>();
 	private Set<Integer> alreadyAssignedTUIds = null; // to be configured by called
@@ -127,6 +127,9 @@ import lombok.NonNull;
 
 	private I_M_HU_PI_Item_Product manualPackingMaterial_huPIItemProduct = null;
 	private final Set<Integer> manualPackingMaterial_seenShipmentScheduleIds = new HashSet<>();
+
+	final TreeSet<IAttributeValue> attributeValues = //
+			new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
 
 	/**
 	 *
@@ -188,12 +191,6 @@ import lombok.NonNull;
 			return false;
 		}
 
-		// Check: ASI
-		if (attributeSetInstanceId != candidate.getM_AttributeSetInstance_ID())
-		{
-			return false;
-		}
-
 		// Check: same attributes aggregation key
 		if (!Objects.equals(this.attributesAggregationKey, candidate.getAttributesAggregationKey()))
 		{
@@ -225,7 +222,7 @@ import lombok.NonNull;
 	 *
 	 * @param candidate
 	 */
-	private void init(final ShipmentScheduleWithHU candidate)
+	private void init(@NonNull final ShipmentScheduleWithHU candidate)
 	{
 		Check.assume(isEmpty(), "builder shall be empty");
 
@@ -234,7 +231,7 @@ import lombok.NonNull;
 		//
 		// Product, ASI, UOM (retrieved from Shipment Schedule)
 		product = candidate.getM_Product();
-		attributeSetInstanceId = candidate.getM_AttributeSetInstance_ID();
+		attributeValues.addAll(candidate.getAttributeValues());
 		attributesAggregationKey = candidate.getAttributesAggregationKey();
 		uom = shipmentScheduleBL.getUomOfProduct(candidate.getM_ShipmentSchedule());
 
@@ -243,9 +240,10 @@ import lombok.NonNull;
 		orderLineId = candidate.getC_OrderLine_ID();
 	}
 
-	private void append(final ShipmentScheduleWithHU candidate)
+	private void append(@NonNull final ShipmentScheduleWithHU candidate)
 	{
 		Check.assume(canAdd(candidate), "candidate {} can be added to shipment line builder", candidate);
+		attributeValues.addAll(candidate.getAttributeValues()); // because of canAdd()==true, we may assume that it's all fine
 
 		logger.trace("Adding candidate to {}: {}", this, candidate);
 
@@ -347,19 +345,24 @@ import lombok.NonNull;
 		// Product & ASI (retrieved from Shipment Schedule)
 		shipmentLine.setM_Product(product);
 
-		// 08811
-		// Copy ASI instead of copying its ID
-		if (attributeSetInstanceId > 0)
+		final I_M_AttributeSetInstance newASI;
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+		if (attributeValues.isEmpty())
 		{
-			final I_M_AttributeSetInstance oldASI = load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
-			final I_M_AttributeSetInstance newASI = Services.get(IAttributeDAO.class).copy(oldASI);
-			shipmentLine.setM_AttributeSetInstance(newASI);
+			newASI =attributeSetInstanceBL.createASI(product);
 		}
 		else
 		{
-			final I_M_AttributeSetInstance newASI = Services.get(IAttributeSetInstanceBL.class).createASI(product);
-			shipmentLine.setM_AttributeSetInstance(newASI);
+			final Builder attributeSetBuilder = ImmutableAttributeSet.builder();
+			for (final IAttributeValue attributeValue : attributeValues)
+			{
+				attributeSetBuilder.attributeValue(
+						attributeValue.getM_Attribute(),
+						attributeValue.getValue());
+			}
+			newASI = attributeSetInstanceBL.createASIFromAttributeSet(attributeSetBuilder.build());
 		}
+		shipmentLine.setM_AttributeSetInstance(newASI);
 
 		//
 		// Order Line Link (retrieved from current Shipment)
