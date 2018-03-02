@@ -84,7 +84,9 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3452](https://github.com/metasfresh/metasfresh/issues/3452) Material Receipt candidates serial No - TU-CU case
+    * Minor fix for the Handling Unit Serial No. distribution in material receipt. Now also working when selecting Transport units and Customer Units together.
   * [#3520](https://github.com/metasfresh/metasfresh/issues/3520) Workpackage with error for Update Invalid Shipment Schedules
+    * Internal Housekeeping, solving an issue with a corercase in async workpackage processing.
 
 * metasfresh-webui-frontend
   * [#1394](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1394) Quickactions not loaded after using barcode/ std. filter in HU editor in Manufacturing Order
@@ -98,12 +100,19 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#856](https://github.com/metasfresh/metasfresh-webui-api/issues/856) t_query_selection grows huge when importing products or partners massively
+    * Improved processing of the Query Selection when doing a Businesspartner or Products Import with large datasets.
   * [#859](https://github.com/metasfresh/metasfresh-webui-api/issues/859) Navigation Menu shown duplicated for Windows not in Menu
+    * Fixes the Breadcrumb navigation menu for windows that are not included in WebUI menu. Now not showing a duplicated drop-down list anymore.
   * [#860](https://github.com/metasfresh/metasfresh-webui-api/issues/860) Shipment disposition does not update when you complete the order
-  * [#863](https://github.com/metasfresh/metasfresh-webui-api/issues/863) fix available stock (ATP) display in sales order
+    * Fix for the shipment schedule recompute after sales order complete. Now updated correctly again so the picking terminal is now shown correctly in document reference list again.
+  * [#863](https://github.com/metasfresh/metasfresh-webui-api/issues/863) Fix available stock (ATP) display in sales order
+    * Fixes the available to promise information in sales orderline batch entry.
   * [#869](https://github.com/metasfresh/metasfresh-webui-api/issues/869) Sometimes the error message is in German even if I am logged in with English
+    * Minor fix for the translation of error messages. In some cases the error messages were shown in the base language instead of the language the user was logged in.
   * [#871](https://github.com/metasfresh/metasfresh-webui-api/issues/871) Error when selecting tabs in bpartner window
+    * Fixes a cornercase that occurred when seleting included tabs in the businesspartner window in WebUI for records that were recorded via swingUI.
   * [#872](https://github.com/metasfresh/metasfresh-webui-api/issues/872) Don't show passwords in grid view
+    * Fixes the password fields in Webui Grid View, now showing them obfuscated too, like in main view.
 
 # metasfresh 5.45 (2018-08)
 **release for week 2018-08**
