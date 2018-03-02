@@ -10,8 +10,8 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.47 (2018-09)
-**release for week 2018-09**
+# metasfresh 5.47 (2018-10)
+**release for week 2018-10**
 
 ## Features
 * metasfresh
@@ -42,8 +42,6 @@ Here come the actual release notes:
     * Fixes the List widget with only 1 entry. Now opeing the list widget drop-down instead of directly setting the single entry.
   * [#1630](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1630) Setting attributes in orderline not working
     * Fixes the Listr widget for attributes in documentlines.
-
-
 
 # metasfresh 5.46 (2018-09)
 **release for week 2018-09**
