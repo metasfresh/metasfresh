@@ -8,7 +8,8 @@
     "storybook": "node .storybook/findStories && start-storybook -p 6006",
     "stylelint": "stylelint 'src/assets/**/*.css'",
     "test:watch": "jest --watch",
-    "test": "jest"
+    "test": "jest",
+    "cypress:open": "cypress open"
   },
   "jest": {
     "setupFiles": [
@@ -36,10 +37,12 @@
   "devDependencies": {
     "@storybook/react": "^3.2.13",
     "autoprefixer": "~6.3.6",
+    "axios-mock-adapter": "^1.14.0",
     "babel-core": "^6.21.0",
     "babel-eslint": "^8.0.1",
     "babel-jest": "^22.2.0",
     "babel-loader": "^6.2.10",
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-es2017": "^6.24.1",
@@ -47,6 +50,7 @@
     "babel-register": "^6.26.0",
     "common-tags": "^1.4.0",
     "css-loader": "~0.23.1",
+    "cypress": "^2.0.4",
     "enzyme": "^3.3.0",
     "enzyme-adapter-react-16": "^1.1.1",
     "eslint": "^4.9.0",
@@ -63,6 +67,8 @@
     "jest": "^22.2.1",
     "jest-enzyme": "^4.2.0",
     "jest-localstorage-mock": "^2.2.0",
+    "jsdom": "^11.6.2",
+    "json-loader": "^0.5.7",
     "nock": "^9.1.6",
     "nyc": "^11.3.0",
     "postcss-color-function": "~2.0.1",

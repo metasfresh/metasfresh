@@ -1,12 +1,12 @@
-import React, { Component } from "react";
-import RawChart from "../charts/RawChart";
+import React, { Component } from 'react';
+import RawChart from '../charts/RawChart';
 
 export class ChartWidget extends Component {
   constructor(props) {
     super(props);
     this.state = {
       toggleWidgetMenu: false,
-      height: 400
+      height: 400,
     };
   }
 
@@ -14,20 +14,20 @@ export class ChartWidget extends Component {
     const { text } = this.props;
 
     this.setState({
-      captionHandler: text
+      captionHandler: text,
     });
   }
 
   handleClickOutside = () => {
     this.setState({
-      toggleWidgetMenu: false
+      toggleWidgetMenu: false,
     });
   };
 
   toggleMenu = opt => {
     const { toggleWidgetMenu } = this.state;
     this.setState({
-      toggleWidgetMenu: typeof opt === "boolean" ? opt : !toggleWidgetMenu
+      toggleWidgetMenu: typeof opt === 'boolean' ? opt : !toggleWidgetMenu,
     });
   };
 
@@ -46,20 +46,20 @@ export class ChartWidget extends Component {
       groupBy,
       pollInterval,
       editmode,
-      handleChartOptions
+      handleChartOptions,
     } = this.props;
 
     const { toggleWidgetMenu, height } = this.state;
 
     const isMaximized = idMaximized === id;
-    if (!isMaximized && typeof idMaximized === "number") return false;
+    if (!isMaximized && typeof idMaximized === 'number') return false;
 
     return (
       <div>
         <div
           className={
-            "draggable-widget-header " +
-            (editmode ? "draggable-widget-edited " : "")
+            'draggable-widget-header ' +
+            (editmode ? 'draggable-widget-edited ' : '')
           }
           onDoubleClick={
             !editmode &&
@@ -79,7 +79,7 @@ export class ChartWidget extends Component {
                 <i className="meta-icon-settings" />
               </span>
             ) : (
-              ""
+              ''
             )}
           </p>
           {!editmode &&
@@ -128,7 +128,7 @@ export class ChartWidget extends Component {
                 height,
                 isMaximized,
                 id,
-                noData
+                noData,
               }}
               responsive={true}
               chartTitle={text}

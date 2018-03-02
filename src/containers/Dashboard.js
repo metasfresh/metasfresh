@@ -1,10 +1,10 @@
-import { Hints } from "intro.js-react";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import { Hints } from 'intro.js-react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import Container from "../components/Container";
-import DraggableWrapper from "../components/dashboard/DraggableWrapper";
+import Container from '../components/Container';
+import DraggableWrapper from '../components/dashboard/DraggableWrapper';
 
 // import { introHints } from '../components/intro/intro';
 
@@ -15,18 +15,18 @@ const mapStateToProps = state => ({
   includedView: state.listHandler.includedView,
   enableTutorial: state.appHandler.enableTutorial,
   processStatus: state.appHandler.processStatus,
-  me: state.appHandler.me
+  me: state.appHandler.me,
 });
 
 export class Dashboard extends Component {
   state = {
     editmode: false,
     hintsEnabled: null,
-    introHints: null
+    introHints: null,
   };
 
   static propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
   };
 
   componentDidUpdate() {
@@ -63,7 +63,7 @@ export class Dashboard extends Component {
       indicator,
       processStatus,
       includedView,
-      enableTutorial
+      enableTutorial,
     } = this.props;
     const { editmode, hintsEnabled, introHints } = this.state;
 

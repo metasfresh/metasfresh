@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
 class FiltersStatic extends Component {
   constructor(props) {
@@ -13,7 +13,7 @@ class FiltersStatic extends Component {
           return (
             <div className="filter-wrapper" key={index}>
               <button
-                className={"btn btn-meta-disabled " + "btn-distance btn-sm"}
+                className={'btn btn-meta-disabled ' + 'btn-distance btn-sm'}
                 onClick={() => clearFilters(item.id)}
               >
                 <i className="meta-icon-trash" />

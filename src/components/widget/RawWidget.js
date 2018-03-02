@@ -24,7 +24,7 @@ class RawWidget extends Component {
   };
 
   static defaultProps = {
-    handleZoomInto: () => {}
+    handleZoomInto: () => {},
   };
 
   constructor(props) {
@@ -55,13 +55,15 @@ class RawWidget extends Component {
    * DOM element outside of it's parent's tree.
    */
   focus = () => {
-    const { handleFocus, disableOnClickOutside } = this.props;
+    const { handleFocus, disableOnClickOutside, entity } = this.props;
 
     if (this.rawWidget && this.rawWidget.focus) {
       this.rawWidget.focus();
     }
 
-    disableOnClickOutside && disableOnClickOutside();
+    if (entity !== 'pattribute') {
+      disableOnClickOutside && disableOnClickOutside();
+    }
     handleFocus && handleFocus();
   };
 
@@ -72,7 +74,7 @@ class RawWidget extends Component {
 
     this.setState({
       isEdited: true,
-      cachedValue: e.target.value
+      cachedValue: e.target.value,
     });
 
     listenOnKeysFalse && listenOnKeysFalse();
@@ -80,7 +82,12 @@ class RawWidget extends Component {
   };
 
   handleBlur = (widgetField, value, id) => {
-    const { dispatch, handleBlur, listenOnKeysTrue, enableOnClickOutside } = this.props;
+    const {
+      dispatch,
+      handleBlur,
+      listenOnKeysTrue,
+      enableOnClickOutside,
+    } = this.props;
 
     enableOnClickOutside && enableOnClickOutside();
 
@@ -90,12 +97,14 @@ class RawWidget extends Component {
 
     this.setState({
       isEdited: false,
-      cachedValue: undefined
+      cachedValue: undefined,
     });
 
     listenOnKeysTrue && listenOnKeysTrue();
 
-    this.handlePatch(widgetField, value, id);
+    if (widgetField && value) {
+      this.handlePatch(widgetField, value, id);
+    }
   };
 
   willPatch = (value, valueTo) => {
@@ -111,7 +120,7 @@ class RawWidget extends Component {
   };
 
   handleKeyDown = (e, property, value, widgetType) => {
-    if (e.key === "Enter" && widgetType !== "LongText") {
+    if (e.key === 'Enter' && widgetType !== 'LongText') {
       this.handlePatch(property, value);
     }
   };
@@ -133,7 +142,7 @@ class RawWidget extends Component {
     // or cache is set and it is not equal value
     if ((isForce || this.willPatch(value, valueTo)) && handlePatch) {
       this.setState({
-        cachedValue: value
+        cachedValue: value,
       });
       return handlePatch(property, value, id, valueTo);
     }
@@ -149,7 +158,7 @@ class RawWidget extends Component {
       rowId,
       dataId,
       windowType,
-      caption
+      caption,
     } = this.props;
 
     handleProcess &&
@@ -158,7 +167,7 @@ class RawWidget extends Component {
 
   handleErrorPopup = value => {
     this.setState({
-      errorPopup: value
+      errorPopup: value,
     });
   };
 
@@ -166,7 +175,7 @@ class RawWidget extends Component {
     Object.entries(classObject)
       .filter(([, classActive]) => classActive)
       .map(([className]) => className)
-      .join(" ");
+      .join(' ');
 
   getClassNames = ({ icon, forcedPrimary } = {}) => {
     const {
@@ -176,7 +185,7 @@ class RawWidget extends Component {
       type,
       updated,
       rowId,
-      isModal
+      isModal,
     } = this.props;
 
     const { isEdited } = this.state;
@@ -184,28 +193,28 @@ class RawWidget extends Component {
     const { readonly, value, mandatory, validStatus } = widgetData[0];
 
     return this.classNames({
-      "input-block": true,
-      "input-icon-container": icon,
-      "input-disabled": readonly || disabled,
-      "input-mandatory":
+      'input-block': true,
+      'input-icon-container': icon,
+      'input-disabled': readonly || disabled,
+      'input-mandatory':
         mandatory && (value ? value.length === 0 : value !== 0),
-      "input-error":
+      'input-error':
         validStatus &&
         !validStatus.valid &&
         !validStatus.initialValue &&
         !isEdited,
       [`text-xs-${gridAlign}`]: gridAlign,
       [`input-${
-        type === "primary" || forcedPrimary ? "primary" : "secondary"
+        type === 'primary' || forcedPrimary ? 'primary' : 'secondary'
       }`]: true,
-      [`pulse-${updated ? "on" : "off"}`]: true,
-      "input-table": rowId && !isModal
+      [`pulse-${updated ? 'on' : 'off'}`]: true,
+      'input-table': rowId && !isModal,
     });
   };
 
   renderErrorPopup = reason => {
     return (
-      <div className="input-error-popup">{reason ? reason : "Input error"}</div>
+      <div className="input-error-popup">{reason ? reason : 'Input error'}</div>
     );
   };
 
@@ -251,7 +260,7 @@ class RawWidget extends Component {
       onBlurWidget,
       defaultValue,
       isOpenDatePicker,
-      dateFormat
+      dateFormat,
     } = this.props;
     const widgetValue = data || widgetData[0].value;
     const { isEdited } = this.state;
@@ -263,7 +272,7 @@ class RawWidget extends Component {
 
     const widgetProperties = {
       ref: c => (this.rawWidget = c),
-      className: "input-field js-input-field",
+      className: 'input-field js-input-field',
       value: widgetValue,
       defaultValue,
       placeholder: fields[0].emptyText,
@@ -273,7 +282,7 @@ class RawWidget extends Component {
       onChange: e => handleChange && handleChange(widgetField, e.target.value),
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: e =>
-        this.handleKeyDown(e, widgetField, e.target.value, widgetType)
+        this.handleKeyDown(e, widgetField, e.target.value, widgetType),
     };
 
     switch (widgetType) {
@@ -330,7 +339,7 @@ class RawWidget extends Component {
                   )
                 }
                 {...{
-                  handleBackdropLock
+                  handleBackdropLock,
                 }}
               />
             </div>
@@ -371,7 +380,7 @@ class RawWidget extends Component {
                 inputProps={{
                   placeholder: fields[0].emptyText,
                   disabled: widgetData[0].readonly || disabled,
-                  tabIndex: fullScreen ? -1 : tabIndex
+                  tabIndex: fullScreen ? -1 : tabIndex,
                 }}
                 value={widgetValue}
                 onChange={date => handleChange(widgetField, date)}
@@ -396,7 +405,7 @@ class RawWidget extends Component {
             onChange={(value, valueTo) =>
               this.handlePatch(widgetField, {
                 ...(value && { value }),
-                ...(valueTo && { valueTo })
+                ...(valueTo && { valueTo }),
               })
             }
             mandatory={widgetData[0].mandatory}
@@ -419,7 +428,7 @@ class RawWidget extends Component {
               inputProps={{
                 placeholder: fields[0].emptyText,
                 disabled: widgetData[0].readonly || disabled,
-                tabIndex: fullScreen ? -1 : tabIndex
+                tabIndex: fullScreen ? -1 : tabIndex,
               }}
               value={widgetValue}
               onChange={date => handleChange(widgetField, date)}
@@ -441,7 +450,7 @@ class RawWidget extends Component {
         return (
           <Lookup
             {...{
-              attribute
+              attribute,
             }}
             entity={entity}
             subentity={subentity}
@@ -483,7 +492,7 @@ class RawWidget extends Component {
         return (
           <List
             {...{
-              attribute
+              attribute,
             }}
             dataId={dataId}
             entity={entity}
@@ -523,7 +532,7 @@ class RawWidget extends Component {
               icon,
               widgetData,
               tabIndex,
-              fullScreen
+              fullScreen,
             }}
           />
         );
@@ -545,7 +554,7 @@ class RawWidget extends Component {
             className={
               this.getClassNames({
                 icon: false,
-                forcedPrimary: true
+                forcedPrimary: true,
               }) + (isEdited ? 'input-focused ' : '')
             }
           >
@@ -584,35 +593,7 @@ class RawWidget extends Component {
           </div>
         );
       case 'Integer':
-        return (
-          <div
-            className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '')
-            }
-          >
-            <input {...widgetProperties} type="number" min="0" step="1" />
-          </div>
-        );
-      case 'Number':
-        return (
-          <div
-            className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '')
-            }
-          >
-            <input {...widgetProperties} type="number" />
-          </div>
-        );
       case 'Amount':
-        return (
-          <div
-            className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '')
-            }
-          >
-            <input {...widgetProperties} type="number" min="0" step="1" />
-          </div>
-        );
       case 'Quantity':
         return (
           <div
@@ -623,6 +604,7 @@ class RawWidget extends Component {
             <input {...widgetProperties} type="number" min="0" step="1" />
           </div>
         );
+      case 'Number':
       case 'CostPrice':
         return (
           <div
@@ -643,7 +625,7 @@ class RawWidget extends Component {
               tabIndex,
               widgetField,
               id,
-              filterWidget
+              filterWidget,
             }}
             handlePatch={this.handlePatch}
           />
@@ -665,7 +647,7 @@ class RawWidget extends Component {
             tabIndex={fullScreen ? -1 : tabIndex}
             ref={c => (this.rawWidget = c)}
             onKeyDown={e => {
-              e.key === " " &&
+              e.key === ' ' &&
                 this.handlePatch(widgetField, !widgetData[0].value, id);
             }}
           >
@@ -753,6 +735,8 @@ class RawWidget extends Component {
             docType={windowType}
             tabId={tabId}
             rowId={rowId}
+            onFocus={this.handleFocus}
+            onHandleBlur={this.handleBlur}
             fieldName={widgetField}
             handleBackdropLock={handleBackdropLock}
             patch={option => this.handlePatch(widgetField, option)}
@@ -826,7 +810,7 @@ class RawWidget extends Component {
             className={this.getClassNames()}
             onChange={value =>
               this.handlePatch(widgetField, {
-                values: value
+                values: value,
               })
             }
             tabIndex={fullScreen ? -1 : tabIndex}
@@ -849,7 +833,7 @@ class RawWidget extends Component {
       isModal,
       handlePatch,
       widgetType,
-      handleZoomInto
+      handleZoomInto,
     } = this.props;
 
     const { errorPopup } = this.state;

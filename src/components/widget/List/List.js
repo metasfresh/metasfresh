@@ -137,8 +137,11 @@ class ListWidget extends Component {
 
       if (values.length === 0 && lastProperty) {
         disableAutofocus();
-      } else if ((forceFocus || this.state.autoFocus) &&
-        values && values.length > 1) {
+      } else if (
+        (forceFocus || this.state.autoFocus) &&
+        values &&
+        values.length > 1
+      ) {
         !listFocused && this.handleFocus();
         !doNotOpenOnFocus && this.activate();
       }
@@ -146,14 +149,14 @@ class ListWidget extends Component {
   };
 
   handleFocus = () => {
-    const { onFocus } = this.props;
+    const { onFocus, mandatory } = this.props;
     const { list, loading } = this.state;
 
     this.focus();
     onFocus && onFocus();
 
     if (!list && !loading) {
-      this.requestListData(true, true);
+      this.requestListData(mandatory, true);
     }
   };
 
@@ -256,7 +259,14 @@ class ListWidget extends Component {
 
   render() {
     const { selected, lookupList } = this.props;
-    const { list, loading, selectedItem, autoFocus, listToggled, listFocused } = this.state;
+    const {
+      list,
+      loading,
+      selectedItem,
+      autoFocus,
+      listToggled,
+      listFocused,
+    } = this.state;
 
     return (
       <RawList

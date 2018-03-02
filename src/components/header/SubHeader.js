@@ -1,41 +1,41 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import onClickOutside from "react-onclickoutside";
-import { connect } from "react-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
 import {
   elementPathRequest,
-  updateBreadcrumb
-} from "../../actions/MenuActions";
-import { getSelection } from "../../reducers/windowHandler";
-import keymap from "../../shortcuts/keymap";
-import Actions from "./Actions";
-import BookmarkButton from "./BookmarkButton";
+  updateBreadcrumb,
+} from '../../actions/MenuActions';
+import { getSelection } from '../../reducers/windowHandler';
+import keymap from '../../shortcuts/keymap';
+import Actions from './Actions';
+import BookmarkButton from './BookmarkButton';
 
 const mapStateToProps = (state, props) => ({
   standardActions: state.windowHandler.master.standardActions,
   selected: getSelection({
     state,
     windowType: props.windowType,
-    viewId: props.viewId
-  })
+    viewId: props.viewId,
+  }),
 });
 
 class Subheader extends Component {
   static propTypes = {
-    dispatch: PropTypes.func.isRequired
+    dispatch: PropTypes.func.isRequired,
   };
 
   state = {
     pdfSrc: null,
-    elementPath: ""
+    elementPath: '',
   };
 
   componentDidMount() {
-    document.getElementsByClassName("js-subheader-column")[0].focus();
+    document.getElementsByClassName('js-subheader-column')[0].focus();
 
-    const entity = this.props.entity === "board" ? "board" : "window";
+    const entity = this.props.entity === 'board' ? 'board' : 'window';
 
     elementPathRequest(entity, this.props.windowType).then(response => {
       this.setState({ elementPath: response.data });
@@ -46,7 +46,7 @@ class Subheader extends Component {
     const { closeSubheader } = this.props;
 
     switch (e.key) {
-      case "ArrowDown": {
+      case 'ArrowDown': {
         e.preventDefault();
         const activeElem = this.getItemActiveElem();
         if (activeElem.nextSibling) {
@@ -55,7 +55,7 @@ class Subheader extends Component {
         break;
       }
 
-      case "ArrowUp": {
+      case 'ArrowUp': {
         e.preventDefault();
         const activeEl = this.getItemActiveElem();
         if (activeEl.previousSibling) {
@@ -64,7 +64,7 @@ class Subheader extends Component {
         break;
       }
 
-      case "ArrowLeft": {
+      case 'ArrowLeft': {
         e.preventDefault();
         const activeColumn = this.getColumnActiveElem();
         if (activeColumn.previousSibling) {
@@ -76,7 +76,7 @@ class Subheader extends Component {
         break;
       }
 
-      case "ArrowRight": {
+      case 'ArrowRight': {
         e.preventDefault();
         const activeCol = this.getColumnActiveElem();
         if (activeCol.nextSibling) {
@@ -88,12 +88,12 @@ class Subheader extends Component {
         break;
       }
 
-      case "Enter":
+      case 'Enter':
         e.preventDefault();
         document.activeElement.click();
         break;
 
-      case "Escape":
+      case 'Escape':
         e.preventDefault();
         closeSubheader();
         break;
@@ -111,7 +111,7 @@ class Subheader extends Component {
 
   getColumnActiveElem = () => {
     const active = document.activeElement;
-    if (active.classList.contains("js-subheader-item")) {
+    if (active.classList.contains('js-subheader-item')) {
       return active.parentNode;
     } else {
       return active;
@@ -121,7 +121,7 @@ class Subheader extends Component {
   getItemActiveElem = () => {
     const active = document.activeElement;
 
-    if (active.classList.contains("js-subheader-column")) {
+    if (active.classList.contains('js-subheader-column')) {
       return active.childNodes[1];
     } else {
       return active;
@@ -172,7 +172,7 @@ class Subheader extends Component {
       handlePrint,
       openModal,
       standardActions,
-      windowType
+      windowType,
     } = this.props;
 
     if (!dataId) {
@@ -181,59 +181,59 @@ class Subheader extends Component {
 
     const docLinks = [
       {
-        action: "advancedEdit",
+        action: 'advancedEdit',
         handler: () => {
-          openModal(windowType, "window", "Advanced edit", true);
+          openModal(windowType, 'window', 'Advanced edit', true);
         },
-        icon: "meta-icon-edit",
-        caption: counterpart.translate("window.advancedEdit.caption"),
-        hotkey: keymap.OPEN_ADVANCED_EDIT
+        icon: 'meta-icon-edit',
+        caption: counterpart.translate('window.advancedEdit.caption'),
+        hotkey: keymap.OPEN_ADVANCED_EDIT,
       },
       {
-        action: "clone",
+        action: 'clone',
         handler: () => {
           handleClone(windowType, dataId);
         },
-        icon: "meta-icon-duplicate",
-        caption: counterpart.translate("window.clone.caption"),
-        hotkey: keymap.CLONE_DOCUMENT
+        icon: 'meta-icon-duplicate',
+        caption: counterpart.translate('window.clone.caption'),
+        hotkey: keymap.CLONE_DOCUMENT,
       },
       {
-        action: "email",
+        action: 'email',
         handler: () => {
           handleEmail();
         },
-        icon: "meta-icon-mail",
-        caption: counterpart.translate("window.email.caption"),
-        hotkey: keymap.OPEN_EMAIL
+        icon: 'meta-icon-mail',
+        caption: counterpart.translate('window.email.caption'),
+        hotkey: keymap.OPEN_EMAIL,
       },
       {
-        action: "letter",
+        action: 'letter',
         handler: () => {
           handleLetter();
         },
-        icon: "meta-icon-letter",
-        caption: counterpart.translate("window.letter.caption"),
-        hotkey: keymap.OPEN_LETTER
+        icon: 'meta-icon-letter',
+        caption: counterpart.translate('window.letter.caption'),
+        hotkey: keymap.OPEN_LETTER,
       },
       {
-        action: "print",
+        action: 'print',
         handler: () => {
           handlePrint(windowType, dataId, docNo);
         },
-        icon: "meta-icon-print",
-        caption: counterpart.translate("window.Print.caption"),
-        hotkey: keymap.OPEN_PRINT_RAPORT
+        icon: 'meta-icon-print',
+        caption: counterpart.translate('window.Print.caption'),
+        hotkey: keymap.OPEN_PRINT_RAPORT,
       },
       {
-        action: "delete",
+        action: 'delete',
         handler: () => {
           handleDelete();
         },
-        icon: "meta-icon-delete",
-        caption: counterpart.translate("window.Delete.caption"),
-        hotkey: keymap.DELETE_DOCUMENT
-      }
+        icon: 'meta-icon-delete',
+        caption: counterpart.translate('window.Delete.caption'),
+        hotkey: keymap.DELETE_DOCUMENT,
+      },
     ]
       .filter(docLink => standardActions.has(docLink.action))
       .map(docLink => {
@@ -252,7 +252,7 @@ class Subheader extends Component {
       redirect,
       selected,
       siteName,
-      windowType
+      windowType,
     } = this.props;
     const { elementPath } = this.state;
 
@@ -263,7 +263,7 @@ class Subheader extends Component {
       } while (
         currentNode &&
         currentNode.children &&
-        currentNode.type !== "window"
+        currentNode.type !== 'window'
       );
     }
 
@@ -292,13 +292,13 @@ class Subheader extends Component {
             className="subheader-item js-subheader-item"
             tabIndex={0}
             onClick={() => {
-              redirect("/window/" + windowType + "/new");
+              redirect('/window/' + windowType + '/new');
               closeSubheader();
             }}
           >
             <i className="meta-icon-report-1" />
 
-            {counterpart.translate("window.new.caption")}
+            {counterpart.translate('window.new.caption')}
 
             <span className="tooltip-inline">{keymap.NEW_DOCUMENT}</span>
           </div>
@@ -311,17 +311,17 @@ class Subheader extends Component {
               className="subheader-item js-subheader-item"
               href={`${config.API_URL}/documentView/${windowType}/${
                 query.viewId
-              }/export/excel?selectedIds=${selected.join(",")}`}
+              }/export/excel?selectedIds=${selected.join(',')}`}
               download
               onClick={this.handleDownloadSelected}
               style={{
-                opacity: selected.length === 0 ? "0.5" : 1
+                opacity: selected.length === 0 ? '0.5' : 1,
               }}
             >
-              {counterpart.translate("window.downloadSelected.caption")}
+              {counterpart.translate('window.downloadSelected.caption')}
               {selected.length === 0 &&
                 ` (${counterpart.translate(
-                  "window.downloadSelected.nothingSelected"
+                  'window.downloadSelected.nothingSelected'
                 )})`}
             </a>
           )}
@@ -338,8 +338,8 @@ class Subheader extends Component {
           >
             <i className="meta-icon-settings" />
             {editmode
-              ? counterpart.translate("window.closeEditMode")
-              : counterpart.translate("window.openEditMode")}
+              ? counterpart.translate('window.closeEditMode')
+              : counterpart.translate('window.openEditMode')}
             <span className="tooltip-inline">{keymap.TOGGLE_EDIT_MODE}</span>
           </div>
         )}
@@ -359,7 +359,7 @@ class Subheader extends Component {
       openModalRow,
       closeSubheader,
       notfound,
-      activeTab
+      activeTab,
     } = this.props;
 
     return (

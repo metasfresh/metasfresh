@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { Shortcut } from "../Shortcuts";
+import { Shortcut } from '../Shortcuts';
 
 export default class QuickActionsContextShortcuts extends Component {
   handlers = {
@@ -13,7 +13,7 @@ export default class QuickActionsContextShortcuts extends Component {
       event.preventDefault();
 
       this.props.onClick();
-    }
+    },
   };
 
   render() {
@@ -27,7 +27,7 @@ export default class QuickActionsContextShortcuts extends Component {
         key="QUICK_ACTION_TOGGLE"
         name="QUICK_ACTION_TOGGLE"
         handler={this.handlers.QUICK_ACTION_TOGGLE}
-      />
+      />,
     ];
   }
 }

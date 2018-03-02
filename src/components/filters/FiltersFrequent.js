@@ -1,14 +1,14 @@
-import cx from "classnames";
-import counterpart from "counterpart";
-import React, { Component, Fragment } from "react";
-import { connect } from "react-redux";
-import onClickOutside from "react-onclickoutside";
+import cx from 'classnames';
+import counterpart from 'counterpart';
+import React, { Component, Fragment } from 'react';
+import { connect } from 'react-redux';
+import onClickOutside from 'react-onclickoutside';
 
-import { TableCell } from "../table/TableCell";
-import FiltersDateStepper from "./FiltersDateStepper";
-import FiltersItem from "./FiltersItem";
+import { TableCell } from '../table/TableCell';
+import FiltersDateStepper from './FiltersDateStepper';
+import FiltersItem from './FiltersItem';
 
-const classes = "btn btn-filter btn-meta-outline-secondary btn-sm";
+const classes = 'btn btn-filter btn-meta-outline-secondary btn-sm';
 
 class FiltersFrequent extends Component {
   state = { openFilterId: null };
@@ -19,7 +19,7 @@ class FiltersFrequent extends Component {
 
   toggleFilter = index => {
     this.setState({
-      openFilterId: index
+      openFilterId: index,
     });
   };
 
@@ -44,7 +44,7 @@ class FiltersFrequent extends Component {
       handleShow,
       applyFilters,
       clearFilters,
-      active
+      active,
     } = this.props;
 
     const { openFilterId } = this.state;
@@ -76,9 +76,9 @@ class FiltersFrequent extends Component {
               <button
                 onClick={() => this.toggleFilter(index, item)}
                 className={cx(classes, {
-                  ["btn-select"]: openFilterId === index,
-                  ["btn-active"]: item.isActive,
-                  ["btn-distance"]: !dateStepper
+                  ['btn-select']: openFilterId === index,
+                  ['btn-active']: item.isActive,
+                  ['btn-distance']: !dateStepper,
                 })}
               >
                 <i className="meta-icon-preview" />
@@ -91,7 +91,7 @@ class FiltersFrequent extends Component {
                     {item.captionValue}
                   </Fragment>
                 ) : (
-                  `${counterpart.translate("window.filters.caption2")}: ${
+                  `${counterpart.translate('window.filters.caption2')}: ${
                     item.caption
                   }`
                 )}
@@ -133,7 +133,7 @@ class FiltersFrequent extends Component {
 }
 
 const mapStateToProps = state => ({
-  allowOutsideClick: state.windowHandler.allowOutsideClick
+  allowOutsideClick: state.windowHandler.allowOutsideClick,
 });
 
 export default connect(mapStateToProps)(onClickOutside(FiltersFrequent));

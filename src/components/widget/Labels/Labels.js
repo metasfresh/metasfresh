@@ -1,13 +1,13 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import {
   autocompleteRequest,
-  dropdownRequest
-} from "../../../actions/GenericActions";
-import Label from "./Label";
-import Suggestion from "./Suggestion";
+  dropdownRequest,
+} from '../../../actions/GenericActions';
+import Label from './Label';
+import Suggestion from './Suggestion';
 
 class Labels extends Component {
   static propTypes = {
@@ -15,24 +15,24 @@ class Labels extends Component {
     selected: PropTypes.array.isRequired,
     className: PropTypes.string,
     onChange: PropTypes.func.isRequired,
-    tabIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    tabIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   };
 
   static defaultProps = {
-    entity: "window",
+    entity: 'window',
     selected: [],
-    onChange: () => {}
+    onChange: () => {},
   };
 
   state = {
     focused: false,
     values: [],
     suggestions: [],
-    cursorY: -1
+    cursorY: -1,
   };
 
   childClick = false;
-  lastTypeAhead = "";
+  lastTypeAhead = '';
 
   handleClick = async () => {
     this.input.focus();
@@ -44,7 +44,7 @@ class Labels extends Component {
       entity,
       subentity,
       subentityId,
-      viewId
+      viewId,
     } = this.props;
 
     const response = await dropdownRequest({
@@ -54,7 +54,7 @@ class Labels extends Component {
       subentity,
       subentityId,
       viewId,
-      propertyName: name
+      propertyName: name,
     });
 
     const { values } = response.data;
@@ -68,7 +68,7 @@ class Labels extends Component {
     }
 
     this.setState({
-      focused: true
+      focused: true,
     });
   };
 
@@ -86,7 +86,7 @@ class Labels extends Component {
 
     this.setState({
       focused: false,
-      cursorY: -1
+      cursorY: -1,
     });
   };
 
@@ -102,9 +102,9 @@ class Labels extends Component {
     suggestions = suggestions.filter(this.unusedSuggestions());
 
     switch (event.key) {
-      case "ArrowUp": {
+      case 'ArrowUp': {
         this.setState(({ cursorY }) => ({
-          cursorY: Math.max(Math.min(cursorY, suggestions.length - 1) - 1, -1)
+          cursorY: Math.max(Math.min(cursorY, suggestions.length - 1) - 1, -1),
         }));
 
         // Prevent page from scrolling
@@ -113,9 +113,9 @@ class Labels extends Component {
         return;
       }
 
-      case "ArrowDown": {
+      case 'ArrowDown': {
         this.setState(({ cursorY }) => ({
-          cursorY: Math.min(cursorY + 1, suggestions.length - 1)
+          cursorY: Math.min(cursorY + 1, suggestions.length - 1),
         }));
 
         // Prevent page from scrolling
@@ -137,7 +137,7 @@ class Labels extends Component {
         entity,
         subentity,
         subentityId,
-        viewId
+        viewId,
       } = this.props;
 
       const response = await autocompleteRequest({
@@ -148,13 +148,13 @@ class Labels extends Component {
         subentityId,
         viewId,
         propertyName: name,
-        query: typeAhead
+        query: typeAhead,
       });
 
       const { values } = response.data;
 
       this.setState({
-        suggestions: values
+        suggestions: values,
       });
 
       this.typeAhead = typeAhead;
@@ -165,7 +165,7 @@ class Labels extends Component {
     const typeAhead = event.target.innerHTML;
     const { selected } = this.props;
 
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       if (typeAhead || this.state.cursorY >= 0) {
         let suggestions;
 
@@ -181,16 +181,16 @@ class Labels extends Component {
           ...this.props.selected,
           suggestions[
             Math.max(0, Math.min(this.state.cursorY, suggestions.length - 1))
-          ]
+          ],
         ]);
 
         if (typeAhead) {
           this.setState({
-            cursorY: -1
+            cursorY: -1,
           });
         }
 
-        this.input.innerHTML = "";
+        this.input.innerHTML = '';
       }
 
       // Don't break contentEditable container with newline
@@ -199,7 +199,7 @@ class Labels extends Component {
       return;
     }
 
-    if (event.key === "Backspace") {
+    if (event.key === 'Backspace') {
       if (selected.length < 1) {
         return;
       } else if (!typeAhead) {
@@ -210,7 +210,7 @@ class Labels extends Component {
     }
 
     if (
-      ["ArrowTop", "ArrowRight", "ArrowBottom", "ArrowLeft"].includes(event.key)
+      ['ArrowTop', 'ArrowRight', 'ArrowBottom', 'ArrowLeft'].includes(event.key)
     ) {
       return;
     }
@@ -226,7 +226,7 @@ class Labels extends Component {
 
   handleSuggestionAdd = suggestion => {
     this.childClick = true;
-    this.input.innerHTML = "";
+    this.input.innerHTML = '';
 
     this.props.onChange([...this.props.selected, suggestion]);
   };
@@ -310,5 +310,5 @@ class Labels extends Component {
 
 export default connect(state => ({
   docId: state.windowHandler.master.docId,
-  windowId: state.windowHandler.master.layout.windowId
+  windowId: state.windowHandler.master.layout.windowId,
 }))(Labels);

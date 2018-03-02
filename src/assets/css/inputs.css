@@ -662,8 +662,11 @@ input:checked + .input-slider:before {
     margin-bottom: .125rem;
     border-bottom: none;   
 }
+.input-dropdown-container.select-dropdown.input-mandatory {
+    border: 2px solid $brand-mandatory-color;
+}
 .input-dropdown-container.select-dropdown.focused {
-    border-bottom: 1px solid #C9D5DC;
+    border-bottom: 1px solid #4b5b64;
 }
 .input-dropdown-container.select-dropdown.opened {
     border-bottom: none;
@@ -704,6 +707,9 @@ input:checked + .input-slider:before {
     align-items: center;
     padding: .3rem .50rem;
     flex: 1;
+}
+.row-lookup-wrapper.focused {
+    border-bottom: 1px solid #C9D5DC;
 }
 
 .raw-lookup-wrapper .input-dropdown-container  {

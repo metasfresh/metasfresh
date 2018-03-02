@@ -1,15 +1,15 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { deleteNotification } from "../../actions/AppActions";
+import { deleteNotification } from '../../actions/AppActions';
 
 class Notification extends Component {
   constructor(props) {
     super(props);
     this.state = {
       isClosing: false,
-      isDisplayedMore: false
+      isDisplayedMore: false,
     };
 
     this.closing = null;
@@ -25,7 +25,7 @@ class Notification extends Component {
     const th = this;
     setTimeout(() => {
       th.setState({
-        isClosing: true
+        isClosing: true,
       });
     }, 10);
   }
@@ -69,14 +69,14 @@ class Notification extends Component {
       shouldClose ? this.setClosing() : clearInterval(this.closing);
 
       this.setState({
-        isClosing: shouldClose
+        isClosing: shouldClose,
       });
     }
   };
 
   handleToggleMore = () => {
     this.setState({
-      isDisplayedMore: true
+      isDisplayedMore: true,
     });
   };
 
@@ -88,25 +88,25 @@ class Notification extends Component {
     return (
       <div
         className={
-          "notification-item " +
-          (item.notifType ? item.notifType + " " : "error ")
+          'notification-item ' +
+          (item.notifType ? item.notifType + ' ' : 'error ')
         }
         onMouseEnter={() => this.handleClosing(false)}
         onMouseLeave={() => this.handleClosing(true)}
       >
         <div className="notification-header">
-          {item.title}{" "}
+          {item.title}{' '}
           {item.count ? (
             <span
               className={
-                "tag tag-sm tag-default " +
-                ("tag-" + (item.notifType ? item.notifType : "error "))
+                'tag tag-sm tag-default ' +
+                ('tag-' + (item.notifType ? item.notifType : 'error '))
               }
             >
               {item.count}
             </span>
           ) : (
-            ""
+            ''
           )}
           <i
             onClick={() => this.handleCloseButton()}
@@ -114,7 +114,7 @@ class Notification extends Component {
           />
         </div>
         <div className="notification-content">
-          {item.shortMsg ? item.shortMsg + " " : item.msg}
+          {item.shortMsg ? item.shortMsg + ' ' : item.msg}
           {item.shortMsg &&
             item.msg &&
             !isDisplayedMore && (
@@ -125,18 +125,18 @@ class Notification extends Component {
                 (read more)
               </u>
             )}
-          {isDisplayedMore ? <p>{item.msg}</p> : ""}
+          {isDisplayedMore ? <p>{item.msg}</p> : ''}
         </div>
         <div
           className={
-            "progress-bar " + (item.notifType ? item.notifType : "error")
+            'progress-bar ' + (item.notifType ? item.notifType : 'error')
           }
           style={
-            typeof progress === "number"
-              ? { width: `${progress}%`, transition: "width 0s" }
+            typeof progress === 'number'
+              ? { width: `${progress}%`, transition: 'width 0s' }
               : isClosing
-                ? { width: 0, transition: "width 5s linear" }
-                : { width: "100%", transition: "width 0s" }
+                ? { width: 0, transition: 'width 5s linear' }
+                : { width: '100%', transition: 'width 0s' }
           }
         />
       </div>
@@ -145,7 +145,7 @@ class Notification extends Component {
 }
 
 Notification.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect()(Notification);

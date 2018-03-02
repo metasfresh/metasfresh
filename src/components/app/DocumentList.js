@@ -340,7 +340,7 @@ class DocumentList extends Component {
       type,
       viewProfileId,
       setModalTitle,
-      setNotFound
+      setNotFound,
     } = this.props;
     const { viewId } = this.state;
 
@@ -632,8 +632,13 @@ class DocumentList extends Component {
   };
 
   getSelected = () => {
-    const { selections, windowType, includedView, parentWindowType,
-      parentDefaultViewId } = this.props;
+    const {
+      selections,
+      windowType,
+      includedView,
+      parentWindowType,
+      parentDefaultViewId,
+    } = this.props;
     const { viewId } = this.state;
 
     return {
@@ -729,7 +734,8 @@ class DocumentList extends Component {
                     <button
                       className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
                       onClick={() => this.redirectToNewDocument()}
-                      title={layout.newRecordCaption}>
+                      title={layout.newRecordCaption}
+                    >
                       <i className="meta-icon-add" />
                       {layout.newRecordCaption}
                     </button>

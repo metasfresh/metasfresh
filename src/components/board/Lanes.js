@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import Lane from "./Lane";
+import Lane from './Lane';
 
 class Lanes extends Component {
   constructor(props) {
@@ -15,7 +15,7 @@ class Lanes extends Component {
       onReject,
       onDelete,
       targetIndicator,
-      onCaptionClick
+      onCaptionClick,
     } = this.props;
 
     if (!lanes) return false;
@@ -31,7 +31,7 @@ class Lanes extends Component {
               onDelete,
               onReject,
               targetIndicator,
-              onCaptionClick
+              onCaptionClick,
             }}
             {...lane}
           />

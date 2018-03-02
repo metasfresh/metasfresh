@@ -1,11 +1,11 @@
-import update from "immutability-helper";
-import React, { Component } from "react";
-import InfiniteScroll from "react-infinite-scroller";
-import onClickOutside from "react-onclickoutside";
+import update from 'immutability-helper';
+import React, { Component } from 'react';
+import InfiniteScroll from 'react-infinite-scroller';
+import onClickOutside from 'react-onclickoutside';
 
-import { createView, getLayout, getView } from "../../actions/BoardActions";
-import Loader from "../app/Loader";
-import Card from "./Card";
+import { createView, getLayout, getView } from '../../actions/BoardActions';
+import Loader from '../app/Loader';
+import Card from './Card';
 
 class Sidenav extends Component {
   constructor(props) {
@@ -13,9 +13,9 @@ class Sidenav extends Component {
 
     this.state = {
       view: {},
-      emptyText: "",
-      emptyHint: "",
-      loading: false
+      emptyText: '',
+      emptyHint: '',
+      loading: false,
     };
   }
 
@@ -23,14 +23,14 @@ class Sidenav extends Component {
     const { boardId, viewId, setViewId } = this.props;
 
     this.setState({
-      loading: true
+      loading: true,
     });
 
     if (viewId) {
       getView(boardId, viewId, 0).then(res =>
         this.setState({
           view: res.data,
-          loading: false
+          loading: false,
         })
       );
     } else {
@@ -39,7 +39,7 @@ class Sidenav extends Component {
         getView(boardId, res.data.viewId, 0).then(res =>
           this.setState({
             view: res.data,
-            loading: false
+            loading: false,
           })
         );
       });
@@ -69,9 +69,9 @@ class Sidenav extends Component {
         this.setState(prev =>
           update(prev, {
             view: {
-              result: { $unset: [cardIndex] }
+              result: { $unset: [cardIndex] },
             },
-            loading: { $set: false }
+            loading: { $set: false },
           })
         );
       }
@@ -83,7 +83,7 @@ class Sidenav extends Component {
     getLayout(boardId).then(res =>
       this.setState({
         emptyText: res.data.emptyResultText,
-        emptyHint: res.data.emptyResultHint
+        emptyHint: res.data.emptyResultHint,
       })
     );
   };
@@ -92,16 +92,16 @@ class Sidenav extends Component {
     const { boardId, viewId } = this.props;
 
     this.setState({
-      loading: true
+      loading: true,
     });
 
     getView(boardId, viewId, page).then(res =>
       this.setState(prev =>
         update(prev, {
           view: {
-            result: { $push: res.data.result }
+            result: { $push: res.data.result },
           },
-          loading: { $set: false }
+          loading: { $set: false },
         })
       )
     );
@@ -135,7 +135,7 @@ class Sidenav extends Component {
               view.result.length === 0 && (
                 <div className="empty-text">
                   {emptyText}
-                  {emptyHint ? ". " + emptyHint : ""}
+                  {emptyHint ? '. ' + emptyHint : ''}
                 </div>
               )}
           </div>

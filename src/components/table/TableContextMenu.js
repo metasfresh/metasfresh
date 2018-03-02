@@ -1,10 +1,10 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { referencesRequest } from "../../actions/GenericActions";
-import { setFilter } from "../../actions/ListActions";
-import keymap from "../../shortcuts/keymap";
+import { referencesRequest } from '../../actions/GenericActions';
+import { setFilter } from '../../actions/ListActions';
+import keymap from '../../shortcuts/keymap';
 
 class TableContextMenu extends Component {
   constructor(props) {
@@ -12,9 +12,9 @@ class TableContextMenu extends Component {
     this.state = {
       contextMenu: {
         x: 0,
-        y: 0
+        y: 0,
       },
-      references: []
+      references: [],
     };
   }
 
@@ -25,7 +25,7 @@ class TableContextMenu extends Component {
       fieldName,
       supportZoomInto,
       supportFieldEdit,
-      docId
+      docId,
     } = this.props;
 
     this.setPosition(
@@ -44,9 +44,9 @@ class TableContextMenu extends Component {
 
   getPosition = (dir, pos, element) => {
     if (element) {
-      const windowSize = dir === "x" ? window.innerWidth : window.innerHeight;
+      const windowSize = dir === 'x' ? window.innerWidth : window.innerHeight;
       const elementSize =
-        dir === "x" ? element.offsetWidth : element.offsetHeight;
+        dir === 'x' ? element.offsetWidth : element.offsetHeight;
 
       if (windowSize - pos > elementSize) {
         return pos;
@@ -59,22 +59,22 @@ class TableContextMenu extends Component {
   setPosition = (x, y, fieldName, supportZoomInto, supportFieldEdit, elem) => {
     this.setState({
       contextMenu: {
-        x: this.getPosition("x", x, elem),
-        y: this.getPosition("y", y, elem),
+        x: this.getPosition('x', x, elem),
+        y: this.getPosition('y', y, elem),
         fieldName,
         supportZoomInto,
-        supportFieldEdit
-      }
+        supportFieldEdit,
+      },
     });
   };
 
   getReferences = () => {
     const { docId, tabId, type, selected } = this.props;
 
-    referencesRequest("window", type, docId, tabId, selected[0]).then(
+    referencesRequest('window', type, docId, tabId, selected[0]).then(
       response => {
         this.setState({
-          references: response.data.references
+          references: response.data.references,
         });
       }
     );
@@ -86,17 +86,17 @@ class TableContextMenu extends Component {
     dispatch(setFilter(filter, refType));
 
     window.open(
-      "/window/" +
+      '/window/' +
         refType +
-        "?refType=" +
+        '?refType=' +
         type +
-        "&refId=" +
+        '&refId=' +
         docId +
-        "&refTabId=" +
+        '&refTabId=' +
         tabId +
-        "&refRowIds=" +
+        '&refRowIds=' +
         JSON.stringify(selected || []),
-      "_blank"
+      '_blank'
     );
   };
 
@@ -109,7 +109,7 @@ class TableContextMenu extends Component {
       handleOpenNewTab,
       handleDelete,
       handleFieldEdit,
-      handleZoomInto
+      handleZoomInto,
     } = this.props;
 
     const { contextMenu, references } = this.state;
@@ -131,10 +131,10 @@ class TableContextMenu extends Component {
         }}
         style={{
           left: contextMenu.x,
-          top: contextMenu.y
+          top: contextMenu.y,
         }}
         className={
-          "context-menu context-menu-open" + " panel-bordered panel-primary"
+          'context-menu context-menu-open' + ' panel-bordered panel-primary'
         }
         tabIndex="0"
         onBlur={blur}
@@ -200,7 +200,7 @@ class TableContextMenu extends Component {
 }
 
 TableContextMenu.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect()(TableContextMenu);

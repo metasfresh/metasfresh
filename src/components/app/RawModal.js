@@ -1,22 +1,22 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { PATCH_RESET } from "../../constants/ActionTypes";
-import { closeListIncludedView } from "../../actions/ListActions";
-import { deleteView } from "../../actions/ViewActions";
-import { addNotification } from "../../actions/AppActions";
-import { closeModal, closeRawModal } from "../../actions/WindowActions";
-import keymap from "../../shortcuts/keymap";
-import ModalContextShortcuts from "../shortcuts/ModalContextShortcuts";
-import Tooltips from "../tooltips/Tooltips.js";
-import Indicator from "./Indicator";
+import { PATCH_RESET } from '../../constants/ActionTypes';
+import { closeListIncludedView } from '../../actions/ListActions';
+import { deleteView } from '../../actions/ViewActions';
+import { addNotification } from '../../actions/AppActions';
+import { closeModal, closeRawModal } from '../../actions/WindowActions';
+import keymap from '../../shortcuts/keymap';
+import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
+import Tooltips from '../tooltips/Tooltips.js';
+import Indicator from './Indicator';
 
 class RawModal extends Component {
   state = {
     scrolled: false,
-    isTooltipShow: false
+    isTooltipShow: false,
   };
 
   componentDidMount() {
@@ -25,7 +25,7 @@ class RawModal extends Component {
     // because body is out of react app range
     // and css dont affect parents
     // but we have to change scope of scrollbar
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
 
     this.initEventListeners();
   }
@@ -50,23 +50,23 @@ class RawModal extends Component {
 
   toggleTooltip = visible => {
     this.setState({
-      isTooltipShow: visible
+      isTooltipShow: visible,
     });
   };
 
   initEventListeners = () => {
-    const modalContent = document.querySelector(".js-panel-modal-content");
+    const modalContent = document.querySelector('.js-panel-modal-content');
 
     if (modalContent) {
-      modalContent.addEventListener("scroll", this.handleScroll);
+      modalContent.addEventListener('scroll', this.handleScroll);
     }
   };
 
   removeEventListeners = () => {
-    const modalContent = document.querySelector(".js-panel-modal-content");
+    const modalContent = document.querySelector('.js-panel-modal-content');
 
     if (modalContent) {
-      modalContent.removeEventListener("scroll", this.handleScroll);
+      modalContent.removeEventListener('scroll', this.handleScroll);
     }
   };
 
@@ -74,7 +74,7 @@ class RawModal extends Component {
     const scrollTop = event.srcElement.scrollTop;
 
     this.setState({
-      scrolled: scrollTop > 0
+      scrolled: scrollTop > 0,
     });
   };
 
@@ -84,7 +84,7 @@ class RawModal extends Component {
       closeCallback,
       viewId,
       windowType,
-      requests
+      requests,
     } = this.props;
 
     const { isNew } = this.state;
@@ -99,10 +99,10 @@ class RawModal extends Component {
       if (!success) {
         await dispatch({ type: PATCH_RESET });
 
-        const title = "Error while saving";
-        const message = "Not all fields have been saved";
+        const title = 'Error while saving';
+        const message = 'Not all fields have been saved';
         const time = 5000;
-        const type = "error";
+        const type = 'error';
 
         await dispatch(addNotification(title, message, time, type));
 
@@ -129,13 +129,13 @@ class RawModal extends Component {
         closeListIncludedView({
           windowType,
           viewId,
-          forceClose: true
-        })
+          forceClose: true,
+        }),
       ].map(action => dispatch(action))
     );
 
     if (!modalVisible) {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = 'auto';
     }
   };
 
@@ -149,13 +149,13 @@ class RawModal extends Component {
         <div className="panel panel-modal panel-modal-primary">
           <div
             className={
-              "panel-modal-header " + (scrolled ? "header-shadow" : "")
+              'panel-modal-header ' + (scrolled ? 'header-shadow' : '')
             }
           >
             <span className="panel-modal-header-title">
-              {modalTitle ? modalTitle : "Modal"}
+              {modalTitle ? modalTitle : 'Modal'}
               <span className="panel-modal-description">
-                {modalDescription ? modalDescription : ""}
+                {modalDescription ? modalDescription : ''}
               </span>
             </span>
 
@@ -167,12 +167,12 @@ class RawModal extends Component {
                 onMouseEnter={() => this.toggleTooltip(true)}
                 onMouseLeave={() => this.toggleTooltip(false)}
               >
-                {counterpart.translate("modal.actions.done")}
+                {counterpart.translate('modal.actions.done')}
                 {isTooltipShow && (
                   <Tooltips
                     name={keymap.APPLY}
-                    action={counterpart.translate("modal.actions.done")}
-                    type={""}
+                    action={counterpart.translate('modal.actions.done')}
+                    type={''}
                   />
                 )}
               </button>
@@ -197,14 +197,14 @@ class RawModal extends Component {
 const mapStateToProps = state => ({
   modalVisible: state.windowHandler.modal.visible || false,
   requests: state.windowHandler.patches.requests,
-  success: state.windowHandler.patches.success
+  success: state.windowHandler.patches.success,
 });
 
 RawModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool,
   requests: PropTypes.object.isRequired,
-  success: PropTypes.bool.isRequired
+  success: PropTypes.bool.isRequired,
 };
 
 export default connect(mapStateToProps)(RawModal);

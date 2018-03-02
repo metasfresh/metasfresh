@@ -1,19 +1,19 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { addNotification } from "../../actions/AppActions";
+import { addNotification } from '../../actions/AppActions';
 import {
   createEmail,
   getEmail,
   getTemplates,
-  sendEmail
-} from "../../actions/EmailActions";
-import { patchRequest } from "../../actions/GenericActions";
-import RawList from "../widget/List/RawList";
-import Attachments from "./Attachments";
-import AutocompleteTo from "./AutocompleteTo";
+  sendEmail,
+} from '../../actions/EmailActions';
+import { patchRequest } from '../../actions/GenericActions';
+import RawList from '../widget/List/RawList';
+import Attachments from './Attachments';
+import AutocompleteTo from './AutocompleteTo';
 
 class NewEmail extends Component {
   constructor(props) {
@@ -23,7 +23,7 @@ class NewEmail extends Component {
       init: false,
       cached: {},
       templates: [],
-      template: {}
+      template: {},
     };
   }
 
@@ -34,7 +34,7 @@ class NewEmail extends Component {
         this.setState({
           init: true,
           ...res.data,
-          cached: res.data
+          cached: res.data,
         });
         this.getTemplates();
       })
@@ -48,7 +48,7 @@ class NewEmail extends Component {
       this.setState({
         init: true,
         ...res.data,
-        cached: res.data
+        cached: res.data,
       });
     });
   };
@@ -56,14 +56,14 @@ class NewEmail extends Component {
   getTemplates = () => {
     getTemplates().then(res => {
       this.setState({
-        templates: res.data.values
+        templates: res.data.values,
       });
     });
   };
 
   change = (prop, value) => {
     this.setState({
-      [prop]: value
+      [prop]: value,
     });
   };
 
@@ -73,14 +73,14 @@ class NewEmail extends Component {
     if (this.state.cached[prop] === value) return;
 
     patchRequest({
-      entity: "mail",
+      entity: 'mail',
       docType: emailId,
       property: prop,
-      value
+      value,
     }).then(response => {
       this.setState({
         ...response.data,
-        cached: response.data
+        cached: response.data,
       });
     });
   };
@@ -91,7 +91,7 @@ class NewEmail extends Component {
     sendEmail(emailId).then(() => {
       handleCloseEmail();
       dispatch(
-        addNotification("Email", "Email has been sent.", 5000, "success")
+        addNotification('Email', 'Email has been sent.', 5000, 'success')
       );
     });
   };
@@ -101,14 +101,14 @@ class NewEmail extends Component {
     if (template === option) return;
 
     patchRequest({
-      entity: "mail",
+      entity: 'mail',
       docType: emailId,
-      property: "templateId",
-      value: option
+      property: 'templateId',
+      value: option,
     }).then(response => {
       this.setState({
         ...response.data,
-        template: option
+        template: option,
       });
     });
   };
@@ -123,7 +123,7 @@ class NewEmail extends Component {
       message,
       to,
       templates,
-      template
+      template,
     } = this.state;
 
     if (!init) return false;
@@ -134,7 +134,7 @@ class NewEmail extends Component {
           <div className="panel-email-header-wrapper">
             <div className="panel-email-header panel-email-header-top">
               <span className="email-headline">
-                {counterpart.translate("window.email.new")}
+                {counterpart.translate('window.email.new')}
               </span>
               {templates.length > 0 && (
                 <div className="email-templates">
@@ -156,7 +156,7 @@ class NewEmail extends Component {
             <div className="panel-email-header panel-email-bright">
               <div className="panel-email-data-wrapper">
                 <span className="email-label">
-                  {counterpart.translate("window.email.to")}:
+                  {counterpart.translate('window.email.to')}:
                 </span>
                 <AutocompleteTo {...{ windowId, docId, emailId, to }} />
               </div>
@@ -164,23 +164,23 @@ class NewEmail extends Component {
             <div className="panel-email-header panel-email-bright">
               <div className="panel-email-data-wrapper">
                 <span className="email-label">
-                  {counterpart.translate("window.email.topic")}:
+                  {counterpart.translate('window.email.topic')}:
                 </span>
                 <input
                   className="email-input email-input-msg"
                   type="text"
-                  onChange={e => this.change("subject", e.target.value)}
-                  value={subject ? subject : ""}
-                  onBlur={() => this.patch("subject", subject)}
+                  onChange={e => this.change('subject', e.target.value)}
+                  value={subject ? subject : ''}
+                  onBlur={() => this.patch('subject', subject)}
                 />
               </div>
             </div>
           </div>
           <div className="panel-email-body">
             <textarea
-              value={message ? message : ""}
-              onChange={e => this.change("message", e.target.value)}
-              onBlur={() => this.patch("message", message)}
+              value={message ? message : ''}
+              onChange={e => this.change('message', e.target.value)}
+              onBlur={() => this.patch('message', message)}
             />
           </div>
           <div className="panel-email-footer">
@@ -192,7 +192,7 @@ class NewEmail extends Component {
               onClick={this.send}
               className="btn btn-meta-success btn-sm btn-submit"
             >
-              {counterpart.translate("window.email.send")}
+              {counterpart.translate('window.email.send')}
             </button>
           </div>
         </div>
@@ -205,7 +205,7 @@ NewEmail.propTypes = {
   windowId: PropTypes.string,
   dispatch: PropTypes.func,
   docId: PropTypes.string,
-  handleCloseEmail: PropTypes.func
+  handleCloseEmail: PropTypes.func,
 };
 
 export default connect()(NewEmail);

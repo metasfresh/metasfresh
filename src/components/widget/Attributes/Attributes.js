@@ -2,12 +2,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import classnames from 'classnames';
 
-import { getAttributesInstance } from '../../../actions/AppActions';
-import {
-  completeRequest,
-  initLayout,
-  patchRequest,
-} from '../../../actions/GenericActions';
+import { getAttributesInstance, initLayout } from '../../../api';
+import { completeRequest, patchRequest } from '../../../actions/GenericActions';
 import { parseToDisplay } from '../../../actions/WindowActions';
 import AttributesDropdown from './AttributesDropdown';
 
@@ -33,10 +29,9 @@ export default class Attributes extends Component {
       widgetData,
       entity,
     } = this.props;
-
     const tmpId = widgetData.value.key;
 
-    getAttributesInstance(
+    return getAttributesInstance(
       attributeType,
       tmpId,
       docType,
@@ -66,6 +61,10 @@ export default class Attributes extends Component {
         this.setState({
           dropdown: true,
         });
+      })
+      .catch(error => {
+        // eslint-disable-next-line no-console
+        console.error('Attributes handleInit error: ', error.message);
       });
   };
 
@@ -110,7 +109,7 @@ export default class Attributes extends Component {
   handlePatch = (prop, value, id, cb) => {
     const { attributeType } = this.props;
 
-    return patchRequest({
+    patchRequest({
       entity: attributeType,
       docType: null,
       docId: id,
@@ -122,13 +121,18 @@ export default class Attributes extends Component {
         Object.keys(fields).map(fieldName => {
           this.setState(
             prevState => ({
-              data: Object.assign({}, prevState.data, {
-                [fieldName]: Object.assign({}, prevState.data[fieldName], {
+              data: {
+                ...prevState.data,
+                [fieldName]: {
+                  ...prevState.data[fieldName],
                   value,
-                }),
-              }),
+                },
+              },
             }),
-            () => cb && cb()
+            () => {
+              cb && cb();
+              this.props.onBlur && this.props.onBlur();
+            }
           );
         });
       }
@@ -171,11 +175,9 @@ export default class Attributes extends Component {
       rowId,
       attributeType,
       tabIndex,
-      readonly
+      readonly,
     } = this.props;
-
     const { dropdown, data, layout } = this.state;
-
     const { value } = widgetData;
     const label = value.caption;
     const attrId = data && data.ID ? data.ID.value : -1;
@@ -185,7 +187,8 @@ export default class Attributes extends Component {
         onKeyDown={this.handleKeyDown}
         className={classnames('attributes', {
           'attributes-in-table': rowId,
-        })}>
+        })}
+      >
         <button
           tabIndex={tabIndex}
           onClick={() => this.handleToggle(true)}
@@ -195,11 +198,13 @@ export default class Attributes extends Component {
               'tag-disabled': dropdown,
               'tag-disabled disabled': readonly,
             }
-          )}>
+          )}
+        >
           {label ? label : 'Edit'}
         </button>
         {dropdown && (
           <AttributesDropdown
+            {...this.props}
             attributeType={attributeType}
             dataId={dataId}
             tabIndex={tabIndex}
@@ -217,5 +222,6 @@ export default class Attributes extends Component {
 }
 
 Attributes.propTypes = {
-  patch: PropTypes.func,
+  patch: PropTypes.func.isRequired,
+  handleBackdropLock: PropTypes.func,
 };

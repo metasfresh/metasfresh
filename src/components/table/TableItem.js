@@ -1,21 +1,21 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import {
   VIEW_EDITOR_RENDER_MODES_ALWAYS,
-  VIEW_EDITOR_RENDER_MODES_ON_DEMAND
-} from "../../constants/Constants";
-import TableCell from "./TableCell";
+  VIEW_EDITOR_RENDER_MODES_ON_DEMAND,
+} from '../../constants/Constants';
+import TableCell from './TableCell';
 
 class TableItem extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      edited: "",
-      activeCell: "",
+      edited: '',
+      activeCell: '',
       updatedRow: false,
-      listenOnKeys: true
+      listenOnKeys: true,
     };
   }
 
@@ -23,9 +23,9 @@ class TableItem extends Component {
     const { activeCell } = this.state;
     const elem = document.activeElement;
 
-    if (activeCell !== elem && !elem.className.includes("js-input-field")) {
+    if (activeCell !== elem && !elem.className.includes('js-input-field')) {
       this.setState({
-        activeCell: elem
+        activeCell: elem,
       });
     }
 
@@ -62,12 +62,12 @@ class TableItem extends Component {
     if (item ? !item.readonly : true) {
       this.setState(
         {
-          edited: property
+          edited: property,
         },
         () => {
           if (callback) {
             const elem = document.activeElement.getElementsByClassName(
-              "js-input-field"
+              'js-input-field'
             )[0];
 
             if (elem) {
@@ -75,10 +75,10 @@ class TableItem extends Component {
             }
 
             const disabled = document.activeElement.querySelector(
-              ".input-disabled"
+              '.input-disabled'
             );
             const readonly = document.activeElement.querySelector(
-              ".input-readonly"
+              '.input-readonly'
             );
 
             if (disabled || readonly) {
@@ -97,7 +97,7 @@ class TableItem extends Component {
     const { changeListenOnTrue } = this.props;
 
     this.setState({
-      listenOnKeys: true
+      listenOnKeys: true,
     });
     changeListenOnTrue();
   };
@@ -106,7 +106,7 @@ class TableItem extends Component {
     const { changeListenOnFalse } = this.props;
 
     this.setState({
-      listenOnKeys: false
+      listenOnKeys: false,
     });
     changeListenOnFalse();
   };
@@ -141,7 +141,7 @@ class TableItem extends Component {
       caption,
       colspan,
       onItemChange,
-      viewId
+      viewId,
     } = this.props;
 
     const { edited, updatedRow, listenOnKeys } = this.state;
@@ -169,13 +169,13 @@ class TableItem extends Component {
 
               if (
                 isEditable ||
-                (supportFieldEdit && typeof cellWidget === "object")
+                (supportFieldEdit && typeof cellWidget === 'object')
               ) {
                 cellWidget = Object.assign({}, cellWidget, {
                   widgetType: item.widgetType,
                   displayed: true,
                   mandatory: true,
-                  readonly: false
+                  readonly: false,
                 });
               }
 
@@ -201,7 +201,7 @@ class TableItem extends Component {
                 listenOnKeys,
                 caption,
                 mainTable,
-                viewId
+                viewId,
               }}
               key={index}
               isEdited={isEditable || edited === property}
@@ -232,12 +232,12 @@ class TableItem extends Component {
   updateRow = () => {
     this.setState(
       {
-        updatedRow: true
+        updatedRow: true,
       },
       () => {
         setTimeout(() => {
           this.setState({
-            updatedRow: false
+            updatedRow: false,
           });
         }, 1000);
       }
@@ -269,19 +269,19 @@ class TableItem extends Component {
 
   getIconClassName = huType => {
     switch (huType) {
-      case "LU":
-        return "meta-icon-pallete";
-      case "TU":
-        return "meta-icon-package";
-      case "CU":
-        return "meta-icon-product";
-      case "PP_Order_Receive":
-        return "meta-icon-receipt";
-      case "PP_Order_Issue":
-        return "meta-icon-issue";
-      case "M_Picking_Slot":
+      case 'LU':
+        return 'meta-icon-pallete';
+      case 'TU':
+        return 'meta-icon-package';
+      case 'CU':
+        return 'meta-icon-product';
+      case 'PP_Order_Receive':
+        return 'meta-icon-receipt';
+      case 'PP_Order_Issue':
+        return 'meta-icon-issue';
+      case 'M_Picking_Slot':
         // https://github.com/metasfresh/metasfresh/issues/2298
-        return "meta-icon-beschaffung";
+        return 'meta-icon-beschaffung';
     }
   };
 
@@ -293,7 +293,7 @@ class TableItem extends Component {
       rowId,
       collapsed,
       handleRowCollapse,
-      collapsible
+      collapsible,
     } = this.props;
 
     let indentation = [];
@@ -303,15 +303,15 @@ class TableItem extends Component {
         <div
           key={i}
           className={
-            "indent-item-mid " +
-            (collapsible ? "indent-collapsible-item-mid " : "")
+            'indent-item-mid ' +
+            (collapsible ? 'indent-collapsible-item-mid ' : '')
           }
         >
           {i === indent.length - 1 && <div className="indent-mid" />}
           <div
             className={
-              (indent[i] ? "indent-sign " : "") +
-              (lastChild && i === indent.length - 1 ? "indent-sign-bot " : "")
+              (indent[i] ? 'indent-sign ' : '') +
+              (lastChild && i === indent.length - 1 ? 'indent-sign-bot ' : '')
             }
           />
         </div>
@@ -319,13 +319,13 @@ class TableItem extends Component {
     }
 
     return (
-      <div className={"indent"}>
+      <div className={'indent'}>
         {indentation}
         {includedDocuments &&
           !collapsed && (
             <div
               className={
-                "indent-bot " + (collapsible ? "indent-collapsible-bot " : "")
+                'indent-bot ' + (collapsible ? 'indent-collapsible-bot ' : '')
               }
             />
           )}
@@ -342,7 +342,7 @@ class TableItem extends Component {
             />
           )
         ) : (
-          ""
+          ''
         )}
         <div
           className="indent-icon"
@@ -369,7 +369,7 @@ class TableItem extends Component {
       processed,
       includedDocuments,
       notSaved,
-      caption
+      caption,
     } = this.props;
 
     return (
@@ -377,14 +377,14 @@ class TableItem extends Component {
         onClick={onClick}
         onDoubleClick={onDoubleClick}
         className={
-          (isSelected ? "row-selected " : "") +
-          (odd ? "tr-odd " : "tr-even ") +
-          (processed ? "row-disabled " : "") +
+          (isSelected ? 'row-selected ' : '') +
+          (odd ? 'tr-odd ' : 'tr-even ') +
+          (processed ? 'row-disabled ' : '') +
           (processed && lastChild && !includedDocuments
-            ? "row-boundary "
-            : "") +
-          (notSaved ? "row-not-saved " : "") +
-          (caption ? "item-caption " : "")
+            ? 'row-boundary '
+            : '') +
+          (notSaved ? 'row-not-saved ' : '') +
+          (caption ? 'item-caption ' : '')
         }
       >
         {indentSupported &&
@@ -398,7 +398,7 @@ class TableItem extends Component {
 }
 
 TableItem.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
 };
 
 export default connect(false, false, false, { withRef: true })(TableItem);

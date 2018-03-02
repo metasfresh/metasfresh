@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { Shortcut } from "../Shortcuts";
+import { Shortcut } from '../Shortcuts';
 
 export default class GlobalContextShortcuts extends Component {
   handlers = {
@@ -14,7 +14,7 @@ export default class GlobalContextShortcuts extends Component {
     OPEN_ACTIONS_MENU: event => {
       event.preventDefault();
 
-      this.props.closeOverlays("isSubheaderShow");
+      this.props.closeOverlays('isSubheaderShow');
     },
     OPEN_NAVIGATION_MENU: event => {
       event.preventDefault();
@@ -24,7 +24,7 @@ export default class GlobalContextShortcuts extends Component {
     OPEN_INBOX_MENU: event => {
       event.preventDefault();
 
-      this.props.closeOverlays("", () => this.props.handleInboxOpen(true));
+      this.props.closeOverlays('', () => this.props.handleInboxOpen(true));
     },
     OPEN_SIDEBAR_MENU_0: event => {
       event.preventDefault();
@@ -86,7 +86,7 @@ export default class GlobalContextShortcuts extends Component {
       event.preventDefault();
 
       if (this.props.handleDocStatusToggle) {
-        this.props.closeOverlays("dropdown", this.props.handleDocStatusToggle);
+        this.props.closeOverlays('dropdown', this.props.handleDocStatusToggle);
       }
     },
     TOGGLE_EDIT_MODE: event => {
@@ -95,7 +95,7 @@ export default class GlobalContextShortcuts extends Component {
       if (this.props.handleEditModeToggle) {
         this.props.handleEditModeToggle();
       }
-    }
+    },
   };
 
   render() {
@@ -169,7 +169,7 @@ export default class GlobalContextShortcuts extends Component {
         key="TOGGLE_EDIT_MODE"
         name="TOGGLE_EDIT_MODE"
         handler={this.handlers.TOGGLE_EDIT_MODE}
-      />
+      />,
     ];
   }
 }

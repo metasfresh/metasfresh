@@ -1,37 +1,37 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import DebounceInput from "react-debounce-input";
-import { connect } from "react-redux";
-import { push } from "react-router-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import DebounceInput from 'react-debounce-input';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
 import {
   nodePathsRequest,
   queryPathsRequest,
-  rootRequest
-} from "../actions/MenuActions";
-import { openModal } from "../actions/WindowActions";
-import Container from "../components/Container";
-import MenuOverlayContainer from "../components/header/MenuOverlayContainer";
+  rootRequest,
+} from '../actions/MenuActions';
+import { openModal } from '../actions/WindowActions';
+import Container from '../components/Container';
+import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
 
 class NavigationTree extends Component {
   constructor(props) {
     super(props);
     this.state = {
       rootResults: {
-        caption: "",
-        children: []
+        caption: '',
+        children: [],
       },
-      query: "",
+      query: '',
       queriedResults: [],
-      deepNode: null
+      deepNode: null,
     };
   }
 
   componentDidMount = () => {
     this.getData();
 
-    document.getElementById("search-input").focus();
+    document.getElementById('search-input').focus();
   };
 
   getData = async doNotResetState => {
@@ -49,7 +49,7 @@ class NavigationTree extends Component {
               ...this.state,
               rootResults: response.data,
               queriedResults: response.data.children,
-              query: ""
+              query: '',
             },
             resolve
           )
@@ -62,7 +62,7 @@ class NavigationTree extends Component {
                 ...this.state,
                 queriedResults: [],
                 rootResults: {},
-                query: ""
+                query: '',
               },
               resolve
             )
@@ -89,7 +89,7 @@ class NavigationTree extends Component {
       await new Promise(resolve =>
         this.setState(
           {
-            query: event.target.value
+            query: event.target.value,
           },
           resolve
         )
@@ -105,12 +105,12 @@ class NavigationTree extends Component {
 
   queryRequest = async value => {
     try {
-      const response = await queryPathsRequest(value, "", true);
+      const response = await queryPathsRequest(value, '', true);
 
       await new Promise(resolve =>
         this.setState(
           {
-            queriedResults: response.data.children
+            queriedResults: response.data.children,
           },
           resolve
         )
@@ -121,7 +121,7 @@ class NavigationTree extends Component {
           this.setState(
             {
               queriedResults: [],
-              rootResults: {}
+              rootResults: {},
             },
             resolve
           )
@@ -131,7 +131,7 @@ class NavigationTree extends Component {
   };
 
   clearValue = () => {
-    document.getElementById("search-input").value = "";
+    document.getElementById('search-input').value = '';
   };
 
   handleClear = async event => {
@@ -143,30 +143,30 @@ class NavigationTree extends Component {
   };
 
   handleKeyDown = e => {
-    const input = document.getElementById("search-input");
-    const firstMenuItem = document.getElementsByClassName("js-menu-item")[0];
+    const input = document.getElementById('search-input');
+    const firstMenuItem = document.getElementsByClassName('js-menu-item')[0];
     let prevParentSibling = document.activeElement.previousSibling;
 
     switch (e.key) {
-      case "ArrowDown":
+      case 'ArrowDown':
         if (document.activeElement === input) {
           firstMenuItem.focus();
         }
         break;
-      case "ArrowUp":
-        if (document.activeElement.classList.contains("js-menu-header")) {
+      case 'ArrowUp':
+        if (document.activeElement.classList.contains('js-menu-header')) {
           prevParentSibling.children[0] &&
             prevParentSibling.children[0].classList.contains(
-              "js-menu-header"
+              'js-menu-header'
             ) &&
             prevParentSibling.children[0].focus();
         }
 
-        if (document.activeElement.classList.contains("js-menu-item")) {
+        if (document.activeElement.classList.contains('js-menu-item')) {
           this.handleArrowUp();
         }
         break;
-      case "Tab":
+      case 'Tab':
         e.preventDefault();
         if (document.activeElement === input) {
           firstMenuItem.focus();
@@ -174,7 +174,7 @@ class NavigationTree extends Component {
           input.focus();
         }
         break;
-      case "Enter":
+      case 'Enter':
         e.preventDefault();
         document.activeElement.childNodes[0].childNodes[0].click();
         break;
@@ -183,11 +183,11 @@ class NavigationTree extends Component {
 
   handleArrowUp() {
     let prevSiblings = document.activeElement.previousSibling;
-    if (prevSiblings && prevSiblings.classList.contains("input-primary")) {
-      document.getElementById("search-input-query").focus();
+    if (prevSiblings && prevSiblings.classList.contains('input-primary')) {
+      document.getElementById('search-input-query').focus();
     } else if (
       prevSiblings &&
-      prevSiblings.classList.contains("js-menu-item")
+      prevSiblings.classList.contains('js-menu-item')
     ) {
       document.activeElement.previousSibling.focus();
     } else {
@@ -201,10 +201,10 @@ class NavigationTree extends Component {
     while (
       !(
         (elem &&
-          elem.classList.contains("js-menu-container") &&
+          elem.classList.contains('js-menu-container') &&
           elem.previousSibling &&
           elem.previousSibling.children.length !== 0) ||
-        (elem && elem.classList.contains("js-menu-main-container") && i < 100)
+        (elem && elem.classList.contains('js-menu-main-container') && i < 100)
       )
     ) {
       elem = elem && elem.parentElement;
@@ -218,7 +218,7 @@ class NavigationTree extends Component {
     const previousMainGroup = this.findPreviousGroup();
     const previousGroup = document.activeElement.parentElement.previousSibling;
 
-    if (previousGroup && previousGroup.classList.contains("js-menu-item")) {
+    if (previousGroup && previousGroup.classList.contains('js-menu-item')) {
       previousGroup.focus();
     } else {
       if (previousGroup && previousGroup.children.length > 0) {
@@ -237,22 +237,22 @@ class NavigationTree extends Component {
     if (listChildren.length == 1) {
       listChildren[0].focus && listChildren[0].focus();
     } else {
-      if (lastChildren.classList.contains("js-menu-item")) {
+      if (lastChildren.classList.contains('js-menu-item')) {
         lastChildren.focus();
       } else {
         if (
           lastChildren.children[
             lastChildren.children.length - 1
-          ].classList.contains("js-menu-item")
+          ].classList.contains('js-menu-item')
         ) {
           lastChildren.children[lastChildren.children.length - 1].focus();
         } else {
           lastChildren.children[lastChildren.children.length - 1]
-            .getElementsByClassName("js-menu-item")
+            .getElementsByClassName('js-menu-item')
             [
               lastChildren.children[
                 lastChildren.children.length - 1
-              ].getElementsByClassName("js-menu-item").length - 1
+              ].getElementsByClassName('js-menu-item').length - 1
             ].focus();
         }
       }
@@ -261,12 +261,12 @@ class NavigationTree extends Component {
 
   handleRedirect = (elementId, isNew, type) => {
     const { dispatch } = this.props;
-    dispatch(push("/" + (type ? type : "window") + "/" + elementId));
+    dispatch(push('/' + (type ? type : 'window') + '/' + elementId));
   };
 
   handleNewRedirect = elementId => {
     const { dispatch } = this.props;
-    dispatch(push("/window/" + elementId + "/new"));
+    dispatch(push('/window/' + elementId + '/new'));
   };
 
   handleDeeper = (e, nodeId) => {
@@ -275,7 +275,7 @@ class NavigationTree extends Component {
     nodePathsRequest(nodeId, 4).then(response => {
       this.setState(
         Object.assign({}, this.state, {
-          deepNode: response.data
+          deepNode: response.data,
         })
       );
     });
@@ -285,7 +285,7 @@ class NavigationTree extends Component {
 
     this.setState(
       Object.assign({}, this.state, {
-        deepNode: null
+        deepNode: null,
       })
     );
   };
@@ -304,7 +304,7 @@ class NavigationTree extends Component {
               type="text"
               id="search-input"
               className="input-field"
-              placeholder={counterpart.translate("window.type.placeholder")}
+              placeholder={counterpart.translate('window.type.placeholder')}
               onChange={this.handleQuery}
               onKeyDown={this.handleKeyDown}
             />
@@ -340,7 +340,7 @@ class NavigationTree extends Component {
             ))}
 
           {queriedResults.length === 0 &&
-            query !== "" && <span>There are no results</span>}
+            query !== '' && <span>There are no results</span>}
         </div>
       </div>
     );
@@ -363,19 +363,19 @@ function mapStateToProps(state) {
 
   const { modal, rawModal } = windowHandler || {
     modal: {},
-    rawModal: {}
+    rawModal: {},
   };
 
   return {
     modal,
-    rawModal
+    rawModal,
   };
 }
 
 NavigationTree.propTypes = {
   dispatch: PropTypes.func.isRequired,
   modal: PropTypes.object.isRequired,
-  rawModal: PropTypes.object.isRequired
+  rawModal: PropTypes.object.isRequired,
 };
 
 export default connect(mapStateToProps)(NavigationTree);

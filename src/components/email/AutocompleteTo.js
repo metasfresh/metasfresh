@@ -1,10 +1,10 @@
-import React, { Component } from "react";
-import Autosuggest from "react-autosuggest";
-import TagsInput from "react-tagsinput";
+import React, { Component } from 'react';
+import Autosuggest from 'react-autosuggest';
+import TagsInput from 'react-tagsinput';
 
-import "react-tagsinput/react-tagsinput.css";
+import 'react-tagsinput/react-tagsinput.css';
 
-import { autocompleteRequest } from "../../actions/GenericActions";
+import { autocompleteRequest } from '../../actions/GenericActions';
 
 class AutocompleteTo extends Component {
   constructor(props) {
@@ -12,7 +12,7 @@ class AutocompleteTo extends Component {
 
     this.state = {
       suggestions: [],
-      tags: this.getTags()
+      tags: this.getTags(),
     };
   }
 
@@ -35,12 +35,12 @@ class AutocompleteTo extends Component {
     autocompleteRequest({
       attribute: false,
       docType: emailId,
-      entity: "mail",
-      propertyName: "to",
-      query: value
+      entity: 'mail',
+      propertyName: 'to',
+      query: value,
     }).then(response => {
       this.setState({
-        suggestions: response.data.values
+        suggestions: response.data.values,
       });
     });
   };
@@ -49,7 +49,7 @@ class AutocompleteTo extends Component {
     const { suggestions } = this.state;
 
     const handleOnChange = (e, { method }) => {
-      if (method === "enter") {
+      if (method === 'enter') {
         e.preventDefault();
       } else {
         props.onChange(e);
@@ -81,8 +81,8 @@ class AutocompleteTo extends Component {
         className="tagsinput"
         renderInput={this.autocompleteRenderInput}
         inputProps={{
-          placeholder: "",
-          className: "email-input"
+          placeholder: '',
+          className: 'email-input',
         }}
         value={tags}
         onChange={this.handleChange}

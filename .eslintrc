@@ -12,12 +12,9 @@
         "prettier"
     ],
     "rules": {
-        "prettier/prettier": ["warn", {
+        "prettier/prettier": ["error", {
           "singleQuote": true,
-          "trailingComma": "es5",
-          "bracketSpacing": true,
-          "jsxBracketSameLine": false,
-          "parser": "flow"
+          "trailingComma": "es5"
         }],
         "react/prop-types": "warn",
         "react/jsx-filename-extension": "off",
@@ -27,6 +24,10 @@
     "globals": {
         "localStorage": true,
         "Promise": true,
-        "config": true
+        "config": true,
+        "cy": true,
+        "context": true,
+        "Cypress": true,
+        "before": true
     }
 }

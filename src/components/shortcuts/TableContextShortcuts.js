@@ -1,6 +1,6 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 
-import { Shortcut } from "../Shortcuts";
+import { Shortcut } from '../Shortcuts';
 
 export default class TableContextShortcuts extends Component {
   handlers = {
@@ -13,7 +13,7 @@ export default class TableContextShortcuts extends Component {
       event.preventDefault();
 
       this.props.handleToggleQuickInput();
-    }
+    },
   };
 
   render() {
@@ -27,7 +27,7 @@ export default class TableContextShortcuts extends Component {
         key="TOGGLE_QUICK_INPUT"
         name="TOGGLE_QUICK_INPUT"
         handler={this.handlers.TOGGLE_QUICK_INPUT}
-      />
+      />,
     ];
   }
 }

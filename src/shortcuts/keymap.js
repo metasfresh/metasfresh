@@ -1,4 +1,4 @@
-const mod = "Alt";
+const mod = 'Alt';
 
 export default {
   /* Global context */
@@ -28,18 +28,18 @@ export default {
 
   /* POS context */
   SELECT_ALL_LEAFS: `${mod}+S`,
-  EXPAND_INDENT: "+",
-  COLLAPSE_INDENT: "-",
+  EXPAND_INDENT: '+',
+  COLLAPSE_INDENT: '-',
 
   /* Table context */
   TOGGLE_QUICK_INPUT: `${mod}+Q`,
   TOGGLE_EXPAND: `${mod}++`,
 
   /* Pagination context */
-  NEXT_PAGE: "PageDown",
-  PREV_PAGE: "PageUp",
-  FIRST_PAGE: "Home",
-  LAST_PAGE: "End",
+  NEXT_PAGE: 'PageDown',
+  PREV_PAGE: 'PageUp',
+  FIRST_PAGE: 'Home',
+  LAST_PAGE: 'End',
   SELECT_ALL_ROWS: `${mod}+A`,
 
   /* Quick actions context */
@@ -51,5 +51,5 @@ export default {
 
   /* Modal context */
   APPLY: `${mod}+Enter`,
-  CANCEL: "Escape"
+  CANCEL: 'Escape',
 };

@@ -1,8 +1,8 @@
-import counterpart from "counterpart";
-import React, { Component } from "react";
+import counterpart from 'counterpart';
+import React, { Component } from 'react';
 
-import { addAttachment } from "../../actions/EmailActions";
-import FileInput from "../FileInput";
+import { addAttachment } from '../../actions/EmailActions';
+import FileInput from '../FileInput';
 
 class Attachments extends Component {
   constructor(props) {
@@ -24,7 +24,7 @@ class Attachments extends Component {
   };
 
   clearFile = () => {
-    document.getElementsByClassName("attachment-input")[1].value = "";
+    document.getElementsByClassName('attachment-input')[1].value = '';
   };
 
   render() {
@@ -52,7 +52,7 @@ class Attachments extends Component {
               <FileInput
                 name="myImage"
                 placeholder={counterpart.translate(
-                  "window.email.addattachment"
+                  'window.email.addattachment'
                 )}
                 className="attachment-input"
                 onChange={this.addAttachment}

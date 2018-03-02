@@ -1,18 +1,18 @@
-import counterpart from "counterpart";
-import React, { Component } from "react";
+import counterpart from 'counterpart';
+import React, { Component } from 'react';
 
-const OFFLINE_MESSAGE_LINE1 = "Connection lost.";
+const OFFLINE_MESSAGE_LINE1 = 'Connection lost.';
 const OFFLINE_MESSAGE_LINE2 =
-  "There are some connection issues. " +
-  "Check connection and try to refresh the page.";
+  'There are some connection issues. ' +
+  'Check connection and try to refresh the page.';
 
 class ErrorScreen extends Component {
   constructor(props) {
     super(props);
   }
   render() {
-    let line1 = counterpart.translate("window.error.noStatus.title");
-    let line2 = counterpart.translate("window.error.noStatus.description");
+    let line1 = counterpart.translate('window.error.noStatus.title');
+    let line2 = counterpart.translate('window.error.noStatus.description');
 
     if (!line1) {
       line1 = OFFLINE_MESSAGE_LINE1;
