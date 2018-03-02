@@ -190,8 +190,7 @@ public class CalloutInvoice extends CalloutEngine
 				if (isSOTrx)
 				{
 						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-						final I_C_BPartner partner = InterfaceWrapperHelper.load(bPartnerID, I_C_BPartner.class);
-						final BigDecimal CreditLimit = creditLimitRepo.getCreditLimitByBPartner(partner, invoice.getDateInvoiced());
+						final BigDecimal CreditLimit = creditLimitRepo.getCreditLimitByBPartner(bPartnerID, invoice.getDateInvoiced());
 						if (CreditLimit.signum() > 0)
 						{
 							final double creditUsed = rs.getDouble("SO_CreditUsed");
