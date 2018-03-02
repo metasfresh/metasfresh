@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -569,7 +570,9 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		// Update BP Statistics
 
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(bpartnerIds);
+		.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+				.bpartnerIds(bpartnerIds)
+				.build());
 
 		// User Validation
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -919,9 +922,10 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 
 		// FRESH-152 update bpartner stats
-		final IBPartnerStatisticsUpdater bpartnerTotalOpenBalanceUpdater = Services.get(IBPartnerStatisticsUpdater.class);
-
-		bpartnerTotalOpenBalanceUpdater.updateBPartnerStatistics(bpartnerIds);
+		Services.get(IBPartnerStatisticsUpdater.class)
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+						.bpartnerIds(bpartnerIds)
+						.build());
 
 	}	// updateBP
 

@@ -749,7 +749,7 @@ public class MBPartner extends X_C_BPartner
 	public boolean isCreditStopHold()
 	{
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(partner);
 
 		final String status = stats.getSOCreditStatus();
 

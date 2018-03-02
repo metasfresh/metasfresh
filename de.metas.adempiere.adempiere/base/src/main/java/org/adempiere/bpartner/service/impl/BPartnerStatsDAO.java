@@ -52,7 +52,7 @@ import lombok.NonNull;
 public class BPartnerStatsDAO implements IBPartnerStatsDAO
 {
 	@Override
-	public IBPartnerStats retrieveBPartnerStats(final I_C_BPartner partner)
+	public IBPartnerStats getCreateBPartnerStats(final I_C_BPartner partner)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(partner);
 		I_C_BPartner_Stats stat = Services.get(IQueryBL.class)
@@ -240,7 +240,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner partner = retrieveC_BPartner(bpStats);
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartner(partner.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+		final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartnerId(partner.getC_BPartner_ID(), SystemTime.asDayTimestamp());
 
 		final String initialCreditStatus = bpStats.getSOCreditStatus();
 
@@ -301,7 +301,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bstats);
 		final  BigDecimal creditUsed = retrieveSOCreditUsed(bstats);
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartner(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+		final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
 
 		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
 		final Locale locale = Locale.getDefault();
@@ -351,7 +351,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(Env.getCtx(), bpartnerID, I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
 
-			bpStatsInstance = (BPartnerStats)retrieveBPartnerStats(partner);
+			bpStatsInstance = (BPartnerStats)getCreateBPartnerStats(partner);
 
 		}
 

@@ -15,10 +15,10 @@ package org.compiere.apps.form;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Collections;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -298,7 +298,9 @@ public class Merge
 
 				// task FRESH-152. Update bpartner stats
 				Services.get(IBPartnerStatisticsUpdater.class)
-						.updateBPartnerStatistics(Collections.singleton(partner.getC_BPartner_ID()));
+						.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+								.bpartnerId(to_ID)
+								.build());
 			}
 		}
 		else if (ColumnName.equals(M_PRODUCT_ID))

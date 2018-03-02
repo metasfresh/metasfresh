@@ -1,10 +1,9 @@
 package org.adempiere.bpartner.model.interceptor;
 
-import java.util.Collections;
-
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
@@ -43,7 +42,9 @@ public class C_BPartner_CreditLimit
 	public void updateBPartnerStatsRecord(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
 	{
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(Collections.singleton(bpCreditLimit.getC_BPartner_ID()));
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+						.bpartnerId(bpCreditLimit.getC_BPartner_ID())
+						.build());
 	}
 
 

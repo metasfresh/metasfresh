@@ -49,21 +49,19 @@ import lombok.Value;
 @Repository
 public class BPartnerCreditLimitRepository
 {
-	private final CCache<Integer, I_C_CreditLimit_Type> cache_creditLimitById = CCache.newCache(I_C_CreditLimit_Type.Table_Name + "#CreditLimitType#by#Id", 10, CCache.EXPIREMINUTES_Never);
+	private final CCache<Integer, CreditLimitType> cache_creditLimitById = CCache.newCache(I_C_CreditLimit_Type.Table_Name + "#CreditLimitType#by#Id", 10, CCache.EXPIREMINUTES_Never);
 
-	public BigDecimal getCreditLimitByBPartner(final int bpartnerId, @NonNull final Timestamp date)
+	public BigDecimal getCreditLimitByBPartnerId(final int bpartnerId, @NonNull final Timestamp date)
 	{
-		final List<I_C_BPartner_CreditLimit> bpCreditLimits = retrieveCreditLimitsByBPartner(bpartnerId, date);
-		if (bpCreditLimits.isEmpty())
-		{
-			return BigDecimal.ZERO;
-		}
-
-		sort(bpCreditLimits);
-		return bpCreditLimits.get(0).getAmount();
+		return retrieveCreditLimitsByBPartnerId(bpartnerId, date)
+				.stream()
+				.sorted(sort())
+				.findFirst()
+				.map(I_C_BPartner_CreditLimit::getAmount)
+				.orElse(BigDecimal.ZERO);
 	}
 
-	public List<I_C_BPartner_CreditLimit> retrieveCreditLimitsByBPartner(final int bpartnerId, @NonNull final Timestamp date)
+	private List<I_C_BPartner_CreditLimit> retrieveCreditLimitsByBPartnerId(final int bpartnerId, @NonNull final Timestamp date)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
@@ -76,44 +74,42 @@ public class BPartnerCreditLimitRepository
 				.list();
 	}
 
-	private void sort(final List<I_C_BPartner_CreditLimit> bpCreditLimits)
+	private Comparator<I_C_BPartner_CreditLimit> sort()
 	{
-		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByTypeSeqNo = Comparator.comparing(bpCreditLimit -> getCreditLimitTypeById(bpCreditLimit.getC_CreditLimit_Type_ID()).getSeqNo());
-		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByTypeSeqNoReversed = ORDERING_BPCreditLimitByTypeSeqNo.reversed();
+		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByTypeSeqNoReversed = Comparator.<I_C_BPartner_CreditLimit, Integer> comparing(bpCreditLimit -> getCreditLimitTypeById(bpCreditLimit.getC_CreditLimit_Type_ID()).getSeqNo()).reversed();
 
 		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByDateFrom = Comparator.comparing(bpCreditLimit -> bpCreditLimit.getDateFrom());
 		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByDateFromReversed = ORDERING_BPCreditLimitByDateFrom.reversed();
 
-		bpCreditLimits.sort(ORDERING_BPCreditLimitByTypeSeqNoReversed.thenComparing(ORDERING_BPCreditLimitByDateFromReversed));
+		return ORDERING_BPCreditLimitByTypeSeqNoReversed.thenComparing(ORDERING_BPCreditLimitByDateFromReversed);
 	}
 
 	@Builder
 	@Value
-	private static class CreditLimitTypePOJO
+	private static class CreditLimitType
 	{
 		private final int seqNo;
-		private final int C_CreditLimit_Type_ID;
+		private final int creditLimitTypeId;
 	}
 
-	private CreditLimitTypePOJO getCreditLimitTypeById(final int C_CreditLimit_Type_ID)
+	private CreditLimitType getCreditLimitTypeById(final int C_CreditLimit_Type_ID)
 	{
-		final I_C_CreditLimit_Type type = cache_creditLimitById.getOrLoad(C_CreditLimit_Type_ID, () -> retrieveRecordFromDB(C_CreditLimit_Type_ID));
-
-		return CreditLimitTypePOJO.builder()
-				.C_CreditLimit_Type_ID(type.getC_CreditLimit_Type_ID())
-				.seqNo(type.getSeqNo())
-				.build();
+		return cache_creditLimitById.getOrLoad(C_CreditLimit_Type_ID, () -> retrieveCreditLimitTypePOJO(C_CreditLimit_Type_ID));
 	}
 
-	private I_C_CreditLimit_Type retrieveRecordFromDB(final int C_CreditLimit_Type_ID)
+	private CreditLimitType retrieveCreditLimitTypePOJO(final int C_CreditLimit_Type_ID)
 	{
-		final I_C_CreditLimit_Type result = Services.get(IQueryBL.class)
+		final I_C_CreditLimit_Type type = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_CreditLimit_Type.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_CreditLimit_Type.COLUMN_C_CreditLimit_Type_ID, C_CreditLimit_Type_ID)
 				.create()
-				.firstOnly(I_C_CreditLimit_Type.class);
+				.firstOnlyNotNull(I_C_CreditLimit_Type.class);
 
-		return result;
+		return CreditLimitType.builder()
+				.creditLimitTypeId(type.getC_CreditLimit_Type_ID())
+				.seqNo(type.getSeqNo())
+				.build();
+
 	}
 }

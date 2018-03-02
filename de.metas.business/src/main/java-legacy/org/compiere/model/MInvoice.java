@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -35,6 +34,7 @@ import java.util.Set;
 
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
@@ -1373,9 +1373,9 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-			final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+			final IBPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
 			final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-			final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartner(getC_BPartner_ID(), getDateInvoiced());
+			final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartnerId(getC_BPartner_ID(), getDateInvoiced());
 
 			if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true),  getDateInvoiced()))
 			{
@@ -1843,7 +1843,9 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// FRESH-152 Update BP Statistics
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(Collections.singleton(getC_BPartner_ID()));
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+						.bpartnerId(getC_BPartner_ID())
+						.build());
 
 		// Update Project
 		if (isSOTrx() && getC_Project_ID() != 0)

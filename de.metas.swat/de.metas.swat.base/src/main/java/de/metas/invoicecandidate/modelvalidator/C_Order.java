@@ -72,13 +72,13 @@ public class C_Order
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.load(order.getC_BPartner_ID(), I_C_BPartner.class);
-		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+		final IBPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
 		final BigDecimal crediUsed = stats.getSOCreditUsed();
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final Timestamp dateOrdered = order.getDateOrdered();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartner(order.getC_BPartner_ID(), dateOrdered);
+		final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartnerId(order.getC_BPartner_ID(), dateOrdered);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 		{

@@ -15,10 +15,9 @@
  *****************************************************************************/
 package org.eevolution.process;
 
-import java.util.Collections;
-
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -90,7 +89,9 @@ public class InvoiceCalculateTax extends JavaProcess
 
 		// FRESH-152 Update bpartner stats
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(Collections.singleton(partner.getC_BPartner_ID()));
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+						.bpartnerId(partner.getC_BPartner_ID())
+						.build());
 
 	}
 }

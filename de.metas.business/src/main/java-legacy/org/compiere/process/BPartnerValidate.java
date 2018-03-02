@@ -18,10 +18,10 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.Iterator;
 
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -132,7 +132,7 @@ public class BPartnerValidate extends JavaProcess
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), bp.getC_BPartner_ID(), I_C_BPartner.class, getTrxName());
-		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+		final IBPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
 
 		addLog(0, null, null, bp.getName() + ":");
 		// See also VMerge.postMerge
@@ -142,7 +142,9 @@ public class BPartnerValidate extends JavaProcess
 		//
 		// task FRESH-152.Update bpartner stats
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(Collections.singleton(bp.getC_BPartner_ID()));
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+						.bpartnerId(bp.getC_BPartner_ID())
+						.build());
 
 		//
 		// if (bp.getSO_CreditUsed().signum() != 0)

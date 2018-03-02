@@ -20,7 +20,6 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -31,6 +30,7 @@ import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
 import org.adempiere.exceptions.BPartnerNoShipToAddressException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -1802,7 +1802,10 @@ public class MOrder extends X_C_Order implements IDocument
 		final boolean realTimePOS = false;
 
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(Collections.singleton(getC_BPartner_ID()));
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+						.bpartnerId(getBill_BPartner_ID())
+						.bpartnerId(getC_BPartner_ID())
+						.build());
 
 		// Create SO Shipment - Force Shipment
 		MInOut shipment = null;

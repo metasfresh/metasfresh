@@ -39,7 +39,7 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @param partner
 	 * @return the {@link IBPartnerStats} object
 	 */
-	IBPartnerStats retrieveBPartnerStats(I_C_BPartner partner);
+	IBPartnerStats getCreateBPartnerStats(I_C_BPartner partner);
 
 	/**
 	 * Retrieve the total open balance value for the given stats using the old legacy sql

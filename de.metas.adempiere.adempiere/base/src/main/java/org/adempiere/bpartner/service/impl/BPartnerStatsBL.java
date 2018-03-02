@@ -60,7 +60,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		final I_C_BPartner partner = bpStatsDAO.retrieveC_BPartner(bpStats);
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartner(partner.getC_BPartner_ID(), date);
+		BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartnerId(partner.getC_BPartner_ID(), date);
 
 		// Nothing to do
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
@@ -122,7 +122,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 	@Override
 	public void setCreditStatusBasedOnBPGroup(@NonNull final I_C_BPartner bpartner)
 	{
-		final IBPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
+		final IBPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
 		final I_C_BP_Group bpGroup = bpartner.getC_BP_Group();
 		final String creditStatus = bpGroup.getSOCreditStatus();
 		if (!Check.isEmpty(creditStatus,true))

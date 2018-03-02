@@ -5,7 +5,8 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
@@ -59,16 +60,18 @@ public class C_BPartner
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void createBPartnerStatsRecord(@NonNull final I_C_BPartner bpartner)
 	{
-		Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
+		Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE}, ifColumnsChanged = {I_C_BPartner.COLUMNNAME_C_BP_Group_ID})
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_C_BP_Group_ID })
 	public void updateSO_CreditStatus(@NonNull final I_C_BPartner bpartner)
 	{
-		Services.get(IBPartnerStatsBL.class).setCreditStatusBasedOnBPGroup(bpartner);
 		// make sure that the SO_CreditStatus is correct
-		Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
+		Services.get(IBPartnerStatisticsUpdater.class)
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+						.bpartnerId(bpartner.getC_BPartner_ID())
+						.updateFromBPGroup(true)
+						.build());
 	}
-
 
 }
