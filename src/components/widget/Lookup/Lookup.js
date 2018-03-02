@@ -21,6 +21,7 @@ class Lookup extends Component {
       fireDropdownList: false,
       autofocusDisabled: false,
       isDropdownListOpen: false,
+      isFocused: false,
     };
   }
 
@@ -172,6 +173,20 @@ class Lookup extends Component {
     });
   };
 
+  handleFocus = () => {
+    this.setState({
+      isFocused: true,
+    });
+    this.props.onFocus();
+  };
+
+  handleBlur = () => {
+    this.setState({
+      isFocused: false,
+    });
+    this.props.onHandleBlur();
+  };
+
   disableAutofocus = () => {
     this.setState({
       autofocusDisabled: true,
@@ -222,6 +237,7 @@ class Lookup extends Component {
       localClearing,
       fireDropdownList,
       autofocusDisabled,
+      isFocused,
     } = this.state;
 
     this.linkedList = [];
@@ -326,6 +342,7 @@ class Lookup extends Component {
                     'raw-lookup-wrapper raw-lookup-wrapper-bcg ',
                     {
                       'raw-lookup-disabled': disabled || readonly,
+                      focused: isFocused,
                     }
                   )}
                 >
@@ -349,8 +366,8 @@ class Lookup extends Component {
                     setNextProperty={this.setNextProperty}
                     disableAutofocus={this.disableAutofocus}
                     enableAutofocus={this.enableAutofocus}
-                    onFocus={this.props.onFocus}
-                    onHandleBlur={this.props.onHandleBlur}
+                    onFocus={this.handleFocus}
+                    onHandleBlur={this.handleBlur}
                     {...{
                       dataId,
                       entity,

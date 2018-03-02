@@ -24,6 +24,10 @@
     "globals": {
         "localStorage": true,
         "Promise": true,
-        "config": true
+        "config": true,
+        "cy": true,
+        "context": true,
+        "Cypress": true,
+        "before": true
     }
 }

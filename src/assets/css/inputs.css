@@ -705,6 +705,9 @@ input:checked + .input-slider:before {
     padding: .3rem .50rem;
     flex: 1;
 }
+.row-lookup-wrapper.focused {
+    border-bottom: 1px solid #C9D5DC;
+}
 
 .raw-lookup-wrapper .input-dropdown-container  {
     width: 100%;
