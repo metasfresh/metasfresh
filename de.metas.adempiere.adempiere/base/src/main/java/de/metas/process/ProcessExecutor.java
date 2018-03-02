@@ -714,6 +714,12 @@ public final class ProcessExecutor
 			this.onErrorThrowException = true;
 			return this;
 		}
+		
+		public Builder onErrorThrowException(final boolean onErrorThrowException)
+		{
+			this.onErrorThrowException = onErrorThrowException;
+			return this;
+		}
 
 		/**
 		 * Advice the executor to switch current context with process info's context.

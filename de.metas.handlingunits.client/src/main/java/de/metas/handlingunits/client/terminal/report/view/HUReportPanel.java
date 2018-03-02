@@ -118,7 +118,7 @@ public class HUReportPanel
 		boolean cancelDispose = true;
 		try
 		{
-			final BigDecimal printCopies = printCopiesField.getValue();
+			final int printCopies = printCopiesField.getValue().intValueExact();
 			model.executeReport(printCopies);
 			cancelDispose = false;
 		}
