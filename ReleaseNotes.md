@@ -36,6 +36,8 @@ Here come the actual release notes:
     * Fix for the Handling Unit Editor when selectin the first entry of an HU. Now initially showing the Attributes view again.
   * [#1628](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1628) Clicking in field w/ 1 value in dropdown sets the value directly
     * Fixes the List widget with only 1 entry. Now opeing the list widget drop-down instead of directly setting the single entry.
+  * [#1630](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1630) Setting attributes in orderline not working
+    * Fixes the Listr widget for attributes in documentlines.
 
 
 
