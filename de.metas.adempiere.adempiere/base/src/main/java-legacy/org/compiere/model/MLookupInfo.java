@@ -135,6 +135,8 @@ public final class MLookupInfo implements Serializable, Cloneable
 	public String InfoFactoryClass = null;
 	private boolean autoComplete = false;
 	private boolean queryHasEntityType = false;
+	
+	private boolean translated = false;
 
 	/**
 	 * String representation
@@ -543,5 +545,15 @@ public final class MLookupInfo implements Serializable, Cloneable
 	public MQuery getZoomQuery()
 	{
 		return zoomQuery;
+	}
+	
+	void setTranslated(final boolean translated)
+	{
+		this.translated = translated;
+	}
+	
+	public boolean isTranslated()
+	{
+		return translated;
 	}
 }   // MLookupInfo
