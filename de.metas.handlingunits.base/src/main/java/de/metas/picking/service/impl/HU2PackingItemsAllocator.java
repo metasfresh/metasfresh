@@ -1,5 +1,8 @@
 package de.metas.picking.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
@@ -26,9 +29,11 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.impl.AbstractShipmentScheduleQtyPickedBuilder;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.IPackingContext;
@@ -53,6 +58,7 @@ import lombok.NonNull;
  */
 public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedBuilder
 {
+
 	//
 	// Services
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
@@ -69,6 +75,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 	// Parameters
 	private IPackingContext _packingContext;
 	private IFreshPackingItem _itemToPack;
+	private boolean _isAllowOverdelivery;
 
 	public HU2PackingItemsAllocator()
 	{
@@ -107,6 +114,17 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 	{
 		Check.assumeNotNull(_itemToPack, "itemToPack set");
 		return _itemToPack;
+	}
+
+	public HU2PackingItemsAllocator setAllowOverdelivery(final boolean isAllowOverdelivery)
+	{
+		this._isAllowOverdelivery = isAllowOverdelivery;
+		return this;
+	}
+
+	private boolean isAllowOverdelivery()
+	{
+		return _isAllowOverdelivery;
 	}
 
 	private I_M_Product getM_Product()
@@ -159,6 +177,11 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 				for (final I_M_ShipmentSchedule sched : itemPacked.getShipmentSchedules())
 				{
 					final Quantity schedQty = itemPacked.getQtyForSched(sched); // qty to pack, available on current shipment schedule
+
+					if (!isAllowOverdelivery())
+					{
+						validateQtyPicked(sched, schedQty);
+					}
 					if (schedQty.signum() != 0)
 					{
 						// gh #1712: only create M_ShipmentSchedule_QtyPicked etc etc for 'sched' if there is an actual quantity.
@@ -170,6 +193,18 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 
 		final IPackingContext packingContext = getPackingContext();
 		packingService.packItem(packingContext, itemToPack, qtyToPack, itemPackedProcessor);
+	}
+
+	private void validateQtyPicked(final I_M_ShipmentSchedule schedule, final Quantity qtyPickCandidate)
+	{
+
+		final BigDecimal currentQtyToDeliver = schedule.getQtyToDeliver();
+
+		if (currentQtyToDeliver.compareTo(qtyPickCandidate.getQty()) < 0)
+		{
+			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(schedule), PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed));
+		}
+
 	}
 
 	@Override
