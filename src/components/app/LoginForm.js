@@ -203,6 +203,7 @@ class LoginForm extends Component {
               <input
                 type="text"
                 onChange={this.handleOnChange}
+                name="username"
                 className={classnames('input-primary input-block', {
                   'input-error': err,
                   'input-disabled': pending,
@@ -217,6 +218,7 @@ class LoginForm extends Component {
               </div>
               <input
                 type="password"
+                name="password"
                 onChange={this.handleOnChange}
                 className={classnames('input-primary input-block', {
                   'input-error': err,
