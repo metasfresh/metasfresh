@@ -4,8 +4,9 @@
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
-import de.metas.jenkins.MvnConf
+import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
+import de.metas.jenkins.MvnConf
 
 // always offer deployment, because there might be different tasks/branches to roll out
 final skipDeploymentParamDefaultValue = false;
