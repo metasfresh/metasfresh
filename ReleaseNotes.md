@@ -45,18 +45,25 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3430](https://github.com/metasfresh/metasfresh/issues/3430) Best before Date evaluating process/ action
+    * New action that analyses the Handling Units on stock and marks them as "Best before" cases if the best-before-date has reached a time offset.
   * [#3503](https://github.com/metasfresh/metasfresh/issues/3503) Use correct picking quantities in shipment
+    * Improvement of shipment document lines generation. Adjusting the base data to fill the picking quantities in shipment.
   * [#3513](https://github.com/metasfresh/metasfresh/issues/3513) Webui: Pimp DATEV windows
     * New Windows for accounting export and export formats in webui.
   * [#3515](https://github.com/metasfresh/metasfresh/issues/3515) Webui: Pimp Compensation Group Schema window
     * New Window for Compensation group maintenance.
   * [#3516](https://github.com/metasfresh/metasfresh/issues/3516) Price/ Discount Change restrictions Order/ Invoice Pharma
+    * New feature that allows to restrict user changes on discounts and prices during sales order recording, depending on the configuration in product prices.
   * [#3532](https://github.com/metasfresh/metasfresh/issues/3532) New Window for Shipment Statistics
+    * New Window that shows shipment statistics and allows to filter and export as excel file.
   * [#3534](https://github.com/metasfresh/metasfresh/issues/3534) Webui Window Design: Create window for Picking Config
     * New Window for Picking group Configuration.
   * [#3537](https://github.com/metasfresh/metasfresh/issues/3537) Remove legacy M_Production code
+    * Internal housekeeping, removing some old/ unused M_Production code.
   * [#3555](https://github.com/metasfresh/metasfresh/issues/3555) Automatic Group Discount Calculation
+    * New action in Sales order that allows to group lines and automatic select the appropriate discount depending on quantities and amount breaks.
   * [#3557](https://github.com/metasfresh/metasfresh/issues/3557) Respect Picking Group Selection in Picking HU Editor
+    * Improved Handling Unit Filterin in Picking, now also respecting the newly introduces Picking Groups.
 
 * metasfresh-webui-api
   * [#820](https://github.com/metasfresh/metasfresh-webui-api/issues/820) Picking Terminal: Detailed Picking Issues
