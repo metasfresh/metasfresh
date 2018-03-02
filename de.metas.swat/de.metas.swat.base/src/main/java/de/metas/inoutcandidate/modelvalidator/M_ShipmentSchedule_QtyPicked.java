@@ -1,9 +1,5 @@
 package de.metas.inoutcandidate.modelvalidator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-
-import java.math.BigDecimal;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -17,39 +13,32 @@ import java.math.BigDecimal;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.picking.api.PickingConfigRepository;
 
-@Interceptor(I_M_ShipmentSchedule_QtyPicked.class)
-@Component
+@Validator(I_M_ShipmentSchedule_QtyPicked.class)
 public class M_ShipmentSchedule_QtyPicked
 {
-	@Autowired
-	private PickingConfigRepository pickingConfigRepo;
 
 	/**
 	 * Invalidates the {@link I_M_ShipmentSchedule} referenced by the given <code>shipmentScheduleQtyPicked</code>.
@@ -73,37 +62,4 @@ public class M_ShipmentSchedule_QtyPicked
 
 		Services.get(IShipmentSchedulePA.class).invalidate(singletonList, trxName);
 	}
-
-	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_NEW,
-			ModelValidator.TYPE_BEFORE_CHANGE })
-	public void validateOverdelivery(final I_M_ShipmentSchedule_QtyPicked schedQtyPicked)
-	{
-		final boolean isAllowOverdelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
-
-		if (isAllowOverdelivery)
-		{
-			// nothing to do
-			return;
-		}
-
-		validateQtyPicked(schedQtyPicked);
-	}
-
-	private void validateQtyPicked(final I_M_ShipmentSchedule_QtyPicked schedQtyPicked)
-	{
-		final I_M_ShipmentSchedule schedule = schedQtyPicked.getM_ShipmentSchedule();
-
-		final BigDecimal currentQtyToDeliver = schedule.getQtyToDeliver();
-
-		final BigDecimal qtyPickedCandidate = schedQtyPicked.getQtyPicked();
-
-		if (currentQtyToDeliver.compareTo(qtyPickedCandidate) < 0)
-		{
-			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(schedule), PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed));
-		}
-
-	}
-
-
 }
