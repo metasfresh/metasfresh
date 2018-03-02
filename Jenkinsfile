@@ -4,8 +4,9 @@
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
-import de.metas.jenkins.MvnConf
+import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
+import de.metas.jenkins.MvnConf
 
 final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
 echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
@@ -101,25 +102,25 @@ node('agent && linux')
 			}
 			stage('Build metasfresh docker image(s)')
 			{
+
 				if(params.MF_SKIP_TO_DIST)
 				{
 					echo "params.MF_SKIP_TO_DIST=true so don't create docker images"
 				}
 				else
 				{
-					// now create and publish some docker images
-					createAndPublishDockerImage_nexus(
-						'metasfresh-material-dispo-dev', // publishRepositoryName
-						'de.metas.material/dispo-service',  // dockerModuleDir
-						MF_UPSTREAM_BRANCH, // dockerBranchName
-						MF_VERSION // dockerVersionSuffix
-					)
-					createAndPublishDockerImage_nexus(
-						'metasfresh-report-dev', // dockerRepositoryName
-						'de.metas.report/report-service',  // dockerModuleDir
-						MF_UPSTREAM_BRANCH, // dockerBranchName
-						MF_VERSION // dockerVersionSuffix
-					)
+					final DockerConf materialDispoDockerConf = new DockerConf(
+						'metasfresh-material-dispo', // artifactName
+						MF_UPSTREAM_BRANCH, // branchName
+						MF_VERSION, // versionSuffix
+						'de.metas.material/dispo-service/target/docker' // workDir
+					);
+					dockerBuildAndPush(materialDispoDockerConf)
+				
+					final DockerConf reportDockerConf = materialDispoDockerConf
+						.withArtifactName('metasfresh-report')
+						.withWorkDir('de.metas.report/report-service/target/docker');
+					dockerBuildAndPush(reportDockerConf)
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage
 
