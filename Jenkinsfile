@@ -101,10 +101,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 						'metasfresh-webui-api-dev', // artifactName
 						MF_UPSTREAM_BRANCH, // branchName
 						MF_VERSION, // versionSuffix
-						'target/docker' // workDir
-					)
-		final String publishedDockerImageName =
-					dockerBuildAndPush(dockerConf)
+						'target/docker') // workDir
+		final String publishedDockerImageName =	dockerBuildAndPush(dockerConf)
 
 		// gh #968:
 		// set env variables which will be available to a possible upstream job that might have called us
