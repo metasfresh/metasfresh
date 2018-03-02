@@ -15,7 +15,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1970459605L;
+	private static final long serialVersionUID = 1211921978L;
 
     /** Standard Constructor */
     public X_I_Pharma_Product (Properties ctx, int I_Pharma_Product_ID, String trxName)
@@ -316,16 +316,16 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A00PZN);
 	}
 
-	/** Set A00SSATZ - Statusindikator Artikelsatz.
-		@param A00SSATZ A00SSATZ - Statusindikator Artikelsatz	  */
+	/** Set A00SSATZ.
+		@param A00SSATZ A00SSATZ	  */
 	@Override
 	public void setA00SSATZ (java.lang.String A00SSATZ)
 	{
 		set_Value (COLUMNNAME_A00SSATZ, A00SSATZ);
 	}
 
-	/** Get A00SSATZ - Statusindikator Artikelsatz.
-		@return A00SSATZ - Statusindikator Artikelsatz	  */
+	/** Get A00SSATZ.
+		@return A00SSATZ	  */
 	@Override
 	public java.lang.String getA00SSATZ () 
 	{
@@ -337,24 +337,24 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_Group
 	 */
 	public static final int A00WGA_AD_Reference_ID=540792;
-	/** 0 = 0 */
-	public static final String A00WGA_0 = "0";
-	/** 1 = 1 */
-	public static final String A00WGA_1 = "1";
-	/** 2 = 2 */
-	public static final String A00WGA_2 = "2";
-	/** 3 = 3 */
-	public static final String A00WGA_3 = "3";
-	/** 4 = 4 */
-	public static final String A00WGA_4 = "4";
-	/** 5 = 5 */
-	public static final String A00WGA_5 = "5";
-	/** 6 = 6 */
-	public static final String A00WGA_6 = "6";
-	/** 7 = 7 */
-	public static final String A00WGA_7 = "7";
-	/** 8 = 8 */
-	public static final String A00WGA_8 = "8";
+	/** 00 = 00 */
+	public static final String A00WGA_00 = "00";
+	/** 01 = 01 */
+	public static final String A00WGA_01 = "01";
+	/** 02 = 02 */
+	public static final String A00WGA_02 = "02";
+	/** 03 = 03 */
+	public static final String A00WGA_03 = "03";
+	/** 04 = 04 */
+	public static final String A00WGA_04 = "04";
+	/** 05 = 05 */
+	public static final String A00WGA_05 = "05";
+	/** 06 = 06 */
+	public static final String A00WGA_06 = "06";
+	/** 07 = 07 */
+	public static final String A00WGA_07 = "07";
+	/** 08 = 08 */
+	public static final String A00WGA_08 = "08";
 	/** 55 = 55 */
 	public static final String A00WGA_55 = "55";
 	/** Set A00WGA.
@@ -2802,6 +2802,40 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_C_DataImport getC_DataImport() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class);
+	}
+
+	@Override
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class, C_DataImport);
+	}
+
+	/** Set Data import.
+		@param C_DataImport_ID Data import	  */
+	@Override
+	public void setC_DataImport_ID (int C_DataImport_ID)
+	{
+		if (C_DataImport_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_DataImport_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_DataImport_ID, Integer.valueOf(C_DataImport_ID));
+	}
+
+	/** Get Data import.
+		@return Data import	  */
+	@Override
+	public int getC_DataImport_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DataImport_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Import-Fehlermeldung.
 		@param I_ErrorMsg 
 		Meldungen, die durch den Importprozess generiert wurden
@@ -2937,6 +2971,43 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	public int getM_DosageForm_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_DosageForm_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Product_Category getM_Product_Category() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class);
+	}
+
+	@Override
+	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
+	}
+
+	/** Set Produkt Kategorie.
+		@param M_Product_Category_ID 
+		Kategorie eines Produktes
+	  */
+	@Override
+	public void setM_Product_Category_ID (int M_Product_Category_ID)
+	{
+		if (M_Product_Category_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_Category_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
+	}
+
+	/** Get Produkt Kategorie.
+		@return Kategorie eines Produktes
+	  */
+	@Override
+	public int getM_Product_Category_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Category_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

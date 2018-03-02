@@ -14,7 +14,7 @@ Equipped with wide and detailed functionality, metasfresh fits for companies fro
 It has a 3-tier architecture with Rest-API and a Web User Frontend developed in HTML5/ ReactJS/ Redux.
 
 
-![metasfresh-sales-order](https://user-images.githubusercontent.com/13365687/36795926-8cd2a88e-1ca4-11e8-8f4c-87487c7ff448.gif)
+![metasfresh-sales-order](https://user-images.githubusercontent.com/13365687/36896187-f5ed2e48-1e11-11e8-9c41-a7878c148f81.gif)
 
 ## Screenshots
 <img src="/images/screenshot-kpi-dashboard.png" width="33%" alt="KPI Dashboard"></img> <img src="/images/screenshot-sales-order.png" width="33%" alt="Sales Order Window"></img> <img src="/images/screenshot-material-receipt.png" width="33%" alt="Material Receipt Window"></img>
@@ -31,7 +31,7 @@ metasfresh can be installed via **Docker** or **Ubuntu Installer**
 >**First steps:**
 >- [How do I log on?](http://docs.metasfresh.org/webui_collection/EN/Logon.html)
 >- [How do I change the Interface Language?](http://docs.metasfresh.org/webui_collection/EN/SwitchLanguage)
->- [How do I Setup me Company?](http://docs.metasfresh.org/webui_collection/EN/InitialSetupWizard)
+>- [How do I Setup my Company?](http://docs.metasfresh.org/webui_collection/EN/InitialSetupWizard)
 >- [How do I create my first Sales Order?](http://docs.metasfresh.org/webui_collection/EN/SalesOrder_recording)
 >- [How do I create my first Shipment?](http://docs.metasfresh.org/webui_collection/EN/Ship_SalesOrder)
 >- [How do I create my first Invoice?](http://docs.metasfresh.org/webui_collection/EN/Invoice_SalesOrder)

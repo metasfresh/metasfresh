@@ -10,8 +10,8 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.47 (2018-09)
-**release for week 2018-09**
+# metasfresh 5.47 (2018-10)
+**release for week 2018-10**
 
 ## Features
 * metasfresh
@@ -25,19 +25,23 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1620) List widgets with focus shall have dark grey color underline
     * Improved focus indicator line for list widgets.
+  * [#1621](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1621) Dropdown List Widget - first entry at top shall be selected entry
+    * Improves the behavior of selected elements in List drop-downs. Now showing them as first entry in list.
   * [#1622](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1622) List widget with only 1 entry shall still show the drop-down
     * Now the List widget also shows a drop-down list with only 1 entry.
 
 ## Fixes
 * metasfresh-webui-frontend
+  * [#1550](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1550) Dropdown List Widget does not show 1st line as selected with keyboard scroll
+    * Now the field content is shown as selected first element in the dropdown.
   * [#1623](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1623) Attributes not shown in Material Receipt Candidates
     * Fixes a Bug in the Handling Unit Editor in Material Receipts, not showing the Attributes View when Receiving CU.
   * [#1625](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1625) Show Attribute Editor for selected CU Level HU
     * Fix for the Handling Unit Editor when selectin the first entry of an HU. Now initially showing the Attributes view again.
   * [#1628](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1628) Clicking in field w/ 1 value in dropdown sets the value directly
     * Fixes the List widget with only 1 entry. Now opeing the list widget drop-down instead of directly setting the single entry.
-
-
+  * [#1630](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1630) Setting attributes in orderline not working
+    * Fixes the Listr widget for attributes in documentlines.
 
 # metasfresh 5.46 (2018-09)
 **release for week 2018-09**
