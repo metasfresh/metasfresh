@@ -67,10 +67,15 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#820](https://github.com/metasfresh/metasfresh-webui-api/issues/820) Picking Terminal: Detailed Picking Issues
+    * Improvents of some workflow and filtering details (overdelivery allowed, initial quantities calculated and set in picking action, initially retrieving and setting the packing instructions) in the new picking Terminal in WebUI.
   * [#857](https://github.com/metasfresh/metasfresh-webui-api/issues/857) Material Cockpit additional Filter criteria
+    * New Filter criteria added in the Material Cockpit.
   * [#876](https://github.com/metasfresh/metasfresh-webui-api/issues/876) Preset Product and Qty in Process/ Action Pick CU
+    * Improved workflow in Pick Customer Unit Action. Now presetting the product and the remaining quantity to pick.
   * [#870](https://github.com/metasfresh/metasfresh-webui-api/issues/870) Extend Attribute / Label Feature to support tab link columns / Foreign Key
+    * Improvement of the Label Feature, now allowing to link to the subtabs parent link column when set.
   * [#877](https://github.com/metasfresh/metasfresh-webui-api/issues/877) Picking tray Clearing action: Take out and add to new/ existing HU
+    * New action that allows to take aout multiple Customer Units at once and add them to a new or existing Package Handling Unit.
 
 * metasfresh-webui-frontend
   * [#1554](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1554) Action Parm modal Overlay focus missing n 1st Field
