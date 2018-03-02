@@ -85,9 +85,9 @@ public class MProductImportTableSqlUpdater
 
 		dbUpdatePriceListVersion(whereClause, ctx);
 
-		dbDosageForm(whereClause);
+		dbUpdateDosageForm(whereClause);
 
-		dbIndication(whereClause);
+		dbUpdateIndication(whereClause);
 
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -99,11 +99,11 @@ public class MProductImportTableSqlUpdater
 		valueColumnName = valueName;
 
 		dbUpdateProductsByValue(whereClause);
-		dbIFACategory(whereClause);
+		dbUpdateProductCategoryForIFAProduct(whereClause);
 
 		dbUpdatePackageUOM(whereClause);
 
-		dbDosageForm(whereClause);
+		dbUpdateDosageForm(whereClause);
 
 		dbUpdatePriceLists(whereClause, ctx, priceName_KAEP);
 		dbUpdatePriceLists(whereClause, ctx, priceName_APU);
@@ -435,7 +435,7 @@ public class MProductImportTableSqlUpdater
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private void dbDosageForm(@NonNull final String whereClause)
+	private void dbUpdateDosageForm(@NonNull final String whereClause)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
@@ -446,7 +446,7 @@ public class MProductImportTableSqlUpdater
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private void dbIFACategory(@NonNull final String whereClause)
+	private void dbUpdateProductCategoryForIFAProduct(@NonNull final String whereClause)
 	{
 
 		final StringBuilder sql = new StringBuilder("UPDATE ")
@@ -460,7 +460,7 @@ public class MProductImportTableSqlUpdater
 	}
 
 
-	private void dbIndication(@NonNull final String whereClause)
+	private void dbUpdateIndication(@NonNull final String whereClause)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
