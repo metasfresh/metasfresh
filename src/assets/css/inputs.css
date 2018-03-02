@@ -662,6 +662,9 @@ input:checked + .input-slider:before {
     margin-bottom: .125rem;
     border-bottom: none;   
 }
+.input-dropdown-container.select-dropdown.input-mandatory {
+    border: 2px solid $brand-mandatory-color;
+}
 .input-dropdown-container.select-dropdown.focused {
     border-bottom: 1px solid #4b5b64;
 }

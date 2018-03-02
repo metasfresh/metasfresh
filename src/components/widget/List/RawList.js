@@ -357,6 +357,7 @@ class RawList extends PureComponent {
           'select-dropdown': !lookupList,
           focused: isFocused,
           opened: isToggled,
+          'input-mandatory': !lookupList && mandatory && !selected,
         })}
         tabIndex={tabIndex ? tabIndex : 0}
         onFocus={readonly ? null : onFocus}
