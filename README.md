@@ -31,7 +31,7 @@ metasfresh can be installed via **Docker** or **Ubuntu Installer**
 >**First steps:**
 >- [How do I log on?](http://docs.metasfresh.org/webui_collection/EN/Logon.html)
 >- [How do I change the Interface Language?](http://docs.metasfresh.org/webui_collection/EN/SwitchLanguage)
->- [How do I Setup me Company?](http://docs.metasfresh.org/webui_collection/EN/InitialSetupWizard)
+>- [How do I Setup my Company?](http://docs.metasfresh.org/webui_collection/EN/InitialSetupWizard)
 >- [How do I create my first Sales Order?](http://docs.metasfresh.org/webui_collection/EN/SalesOrder_recording)
 >- [How do I create my first Shipment?](http://docs.metasfresh.org/webui_collection/EN/Ship_SalesOrder)
 >- [How do I create my first Invoice?](http://docs.metasfresh.org/webui_collection/EN/Invoice_SalesOrder)
