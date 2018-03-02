@@ -74,6 +74,11 @@
 						<configuration>
 							<executable>true</executable>
 							<mainClass>${start-class}</mainClass>
+							
+							<!-- this also provides the super-jar to the successive docker build 
+								Note that the ${docker.build.directory} property  is set by the prepare-docker profile 
+								that is activated by the presence of the scr/main/docker folder -->
+							<outputDirectory>${docker.build.directory}</outputDirectory>
 						</configuration>
 					</execution>
 					<execution>

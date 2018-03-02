@@ -218,13 +218,20 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 		} // withEnv
 	} // configFileProvider
 
+	final DockerConf dockerConf = new DockerConf(
+					'metasfresh-dist-serverRoot', // artifactName
+					MF_UPSTREAM_BRANCH, // branchName
+					MF_VERSION, // versionSuffix
+					'serverRoot/target/docker') // workDir
+	final String publishedDockerImageName =	dockerBuildAndPush(dockerConf)
+
 	// clean up the workspace after (successfull) builds
 	cleanWs cleanWhenAborted: false, cleanWhenFailure: false
 
 } // node
 
-// we need this one for both "Test-SQL" and "Deployment
-def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
+	// we need this one for both "Test-SQL" and "Deployment
+	def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
 
 	final packagingPart=packaging ? ":${packaging}" : ""
 	final classifierPart=classifier ? ":${classifier}" : ""
