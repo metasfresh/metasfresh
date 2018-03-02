@@ -15,6 +15,7 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.model.Document;
@@ -201,6 +202,14 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 			info = parameter == null ? null : parameter.toString();
 			parameterTo = dateRange.getTo();
 			infoTo = parameterTo == null ? null : parameterTo.toString();
+		}
+		else if (fieldValue instanceof Password)
+		{
+			final Password password = Password.cast(fieldValue);
+			parameter = password.getAsString();
+			info = Password.OBFUSCATE_STRING;
+			parameterTo = null;
+			infoTo = null;
 		}
 		else
 		{
