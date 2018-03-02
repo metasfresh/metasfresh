@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -641147684L;
+	private static final long serialVersionUID = 1274970292L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -56,36 +56,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_PInstance getAD_PInstance_ShipmentRun() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_PInstance_ShipmentRun_ID, org.compiere.model.I_AD_PInstance.class);
-	}
-
-	@Override
-	public void setAD_PInstance_ShipmentRun(org.compiere.model.I_AD_PInstance AD_PInstance_ShipmentRun)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_PInstance_ShipmentRun_ID, org.compiere.model.I_AD_PInstance.class, AD_PInstance_ShipmentRun);
-	}
-
-	/** Set Lieferlauf-ID.
-		@param AD_PInstance_ShipmentRun_ID Lieferlauf-ID	  */
-	@Override
-	public void setAD_PInstance_ShipmentRun_ID (int AD_PInstance_ShipmentRun_ID)
-	{
-		throw new IllegalArgumentException ("AD_PInstance_ShipmentRun_ID is virtual column");	}
-
-	/** Get Lieferlauf-ID.
-		@return Lieferlauf-ID	  */
-	@Override
-	public int getAD_PInstance_ShipmentRun_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PInstance_ShipmentRun_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	@Override
 	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
@@ -190,36 +160,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getAD_User_Override_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_Override_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User_ShipmentRun() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ShipmentRun_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User_ShipmentRun(org.compiere.model.I_AD_User AD_User_ShipmentRun)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ShipmentRun_ID, org.compiere.model.I_AD_User.class, AD_User_ShipmentRun);
-	}
-
-	/** Set Kommisionierer.
-		@param AD_User_ShipmentRun_ID Kommisionierer	  */
-	@Override
-	public void setAD_User_ShipmentRun_ID (int AD_User_ShipmentRun_ID)
-	{
-		throw new IllegalArgumentException ("AD_User_ShipmentRun_ID is virtual column");	}
-
-	/** Get Kommisionierer.
-		@return Kommisionierer	  */
-	@Override
-	public int getAD_User_ShipmentRun_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ShipmentRun_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -759,7 +699,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DELIVERYRULE_Force = "F";
 	/** Manual = M */
 	public static final String DELIVERYRULE_Manual = "M";
-	/** Mit nächster Abolieferung = S */
+	/** MitNaechsterAbolieferung = S */
 	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
@@ -1083,28 +1023,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public boolean isDropShip () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDropShip);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Lieferlauf beendet.
-		@param IsShipmentRunDone Lieferlauf beendet	  */
-	@Override
-	public void setIsShipmentRunDone (boolean IsShipmentRunDone)
-	{
-		throw new IllegalArgumentException ("IsShipmentRunDone is virtual column");	}
-
-	/** Get Lieferlauf beendet.
-		@return Lieferlauf beendet	  */
-	@Override
-	public boolean isShipmentRunDone () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsShipmentRunDone);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -1678,9 +1596,9 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return bd;
 	}
 
-	/** Set Bestellte Menge.
+	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
-		Bestellte Menge
+		Bestellt/ Beauftragt
 	  */
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
@@ -1688,8 +1606,8 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		set_ValueNoCheck (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellte Menge.
-		@return Bestellte Menge
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
 	  */
 	@Override
 	public java.math.BigDecimal getQtyOrdered () 
@@ -1757,9 +1675,9 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return bd;
 	}
 
-	/** Set Reservierte Menge.
+	/** Set Offen.
 		@param QtyReserved 
-		Reservierte Menge
+		Offene Menge
 	  */
 	@Override
 	public void setQtyReserved (java.math.BigDecimal QtyReserved)
@@ -1767,8 +1685,8 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		set_ValueNoCheck (COLUMNNAME_QtyReserved, QtyReserved);
 	}
 
-	/** Get Reservierte Menge.
-		@return Reservierte Menge
+	/** Get Offen.
+		@return Offene Menge
 	  */
 	@Override
 	public java.math.BigDecimal getQtyReserved () 

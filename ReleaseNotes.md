@@ -10,8 +10,8 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.47 (2018-09)
-**release for week 2018-09**
+# metasfresh 5.47 (2018-10)
+**release for week 2018-10**
 
 ## Features
 * metasfresh
@@ -25,15 +25,28 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1620) List widgets with focus shall have dark grey color underline
     * Improved focus indicator line for list widgets.
+  * [#1621](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1621) Dropdown List Widget - first entry at top shall be selected entry
+    * Improves the behavior of selected elements in List drop-downs. Now showing them as first entry in list.
+  * [#1622](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1622) List widget with only 1 entry shall still show the drop-down
+    * Now the List widget also shows a drop-down list with only 1 entry.
+  * [#1635](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1635) Check code formatting on CI
+  * [#1644](https://github.com/metasfresh/metasfresh-webui-frontend/pull/1644) Add cypress e2e test setup
+
 
 ## Fixes
 * metasfresh-webui-frontend
+  * [#1550](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1550) Dropdown List Widget does not show 1st line as selected with keyboard scroll
+    * Now the field content is shown as selected first element in the dropdown.
   * [#1623](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1623) Attributes not shown in Material Receipt Candidates
     * Fixes a Bug in the Handling Unit Editor in Material Receipts, not showing the Attributes View when Receiving CU.
   * [#1625](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1625) Show Attribute Editor for selected CU Level HU
     * Fix for the Handling Unit Editor when selectin the first entry of an HU. Now initially showing the Attributes view again.
-
-
+  * [#1628](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1628) Clicking in field w/ 1 value in dropdown sets the value directly
+    * Fixes the List widget with only 1 entry. Now opeing the list widget drop-down instead of directly setting the single entry.
+  * [#1630](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1630) Setting attributes in orderline not working
+    * Fixes the Listr widget for attributes in documentlines.
+  * [#1638](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1638) Cannot use the dropdown in login
+  * [#1645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1645) Mandatory List Widget
 
 # metasfresh 5.46 (2018-09)
 **release for week 2018-09**
@@ -41,25 +54,37 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3430](https://github.com/metasfresh/metasfresh/issues/3430) Best before Date evaluating process/ action
+    * New action that analyzes the Handling Units on stock and marks them as "Best before" cases if the best-before-date has reached a time offset.
   * [#3503](https://github.com/metasfresh/metasfresh/issues/3503) Use correct picking quantities in shipment
+    * Improvement of shipment document lines generation. Adjusting the base data to fill the picking quantities in shipment.
   * [#3513](https://github.com/metasfresh/metasfresh/issues/3513) Webui: Pimp DATEV windows
     * New Windows for accounting export and export formats in webui.
   * [#3515](https://github.com/metasfresh/metasfresh/issues/3515) Webui: Pimp Compensation Group Schema window
     * New Window for Compensation group maintenance.
   * [#3516](https://github.com/metasfresh/metasfresh/issues/3516) Price/ Discount Change restrictions Order/ Invoice Pharma
+    * New feature that allows to restrict user changes on discounts and prices during sales order recording, depending on the configuration in product prices.
   * [#3532](https://github.com/metasfresh/metasfresh/issues/3532) New Window for Shipment Statistics
+    * New Window that shows shipment statistics and allows to filter and export as excel file.
   * [#3534](https://github.com/metasfresh/metasfresh/issues/3534) Webui Window Design: Create window for Picking Config
     * New Window for Picking group Configuration.
   * [#3537](https://github.com/metasfresh/metasfresh/issues/3537) Remove legacy M_Production code
+    * Internal housekeeping, removing some old/ unused M_Production code.
   * [#3555](https://github.com/metasfresh/metasfresh/issues/3555) Automatic Group Discount Calculation
+    * New action in Sales order that allows to group lines and automatic select the appropriate discount depending on quantities and amount breaks.
   * [#3557](https://github.com/metasfresh/metasfresh/issues/3557) Respect Picking Group Selection in Picking HU Editor
+    * Improved Handling Unit Filterin in Picking, now also respecting the newly introduces Picking Groups.
 
 * metasfresh-webui-api
   * [#820](https://github.com/metasfresh/metasfresh-webui-api/issues/820) Picking Terminal: Detailed Picking Issues
+    * Improvents of some workflow and filtering details (overdelivery allowed, initial quantities calculated and set in picking action, initially retrieving and setting the packing instructions) in the new picking Terminal in WebUI.
   * [#857](https://github.com/metasfresh/metasfresh-webui-api/issues/857) Material Cockpit additional Filter criteria
+    * New Filter criteria added in the Material Cockpit.
   * [#876](https://github.com/metasfresh/metasfresh-webui-api/issues/876) Preset Product and Qty in Process/ Action Pick CU
+    * Improved workflow in Pick Customer Unit Action. Now presetting the product and the remaining quantity to pick.
   * [#870](https://github.com/metasfresh/metasfresh-webui-api/issues/870) Extend Attribute / Label Feature to support tab link columns / Foreign Key
+    * Improvement of the Label Feature, now allowing to link to the subtabs parent link column when set.
   * [#877](https://github.com/metasfresh/metasfresh-webui-api/issues/877) Picking tray Clearing action: Take out and add to new/ existing HU
+    * New action that allows to take aout multiple Customer Units at once and add them to a new or existing Package Handling Unit.
 
 * metasfresh-webui-frontend
   * [#1554](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1554) Action Parm modal Overlay focus missing n 1st Field
@@ -68,11 +93,13 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3452](https://github.com/metasfresh/metasfresh/issues/3452) Material Receipt candidates serial No - TU-CU case
+    * Minor fix for the Handling Unit Serial No. distribution in material receipt. Now also working when selecting Transport units and Customer Units together.
   * [#3520](https://github.com/metasfresh/metasfresh/issues/3520) Workpackage with error for Update Invalid Shipment Schedules
+    * Internal Housekeeping, solving an issue with a corercase in async workpackage processing.
 
 * metasfresh-webui-frontend
   * [#1394](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1394) Quickactions not loaded after using barcode/ std. filter in HU editor in Manufacturing Order
-    * Fixes a Bug that let the Quickactions Buttons dissappear after setting filter criteria.
+    * Fixes a Bug that let the Quickactions Buttons disappear after setting filter criteria.
   * [#1567](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1567) Create purchase orders: Date promised format
     * Fixes the date/ time format in create puchase orders modal overlay in sales order.
   * [#1585](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1585) Date recording with keys leads to error
@@ -82,12 +109,19 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#856](https://github.com/metasfresh/metasfresh-webui-api/issues/856) t_query_selection grows huge when importing products or partners massively
+    * Improved processing of the Query Selection when doing a Businesspartner or Products Import with large datasets.
   * [#859](https://github.com/metasfresh/metasfresh-webui-api/issues/859) Navigation Menu shown duplicated for Windows not in Menu
+    * Fixes the Breadcrumb navigation menu for windows that are not included in WebUI menu. Now not showing a duplicated drop-down list anymore.
   * [#860](https://github.com/metasfresh/metasfresh-webui-api/issues/860) Shipment disposition does not update when you complete the order
-  * [#863](https://github.com/metasfresh/metasfresh-webui-api/issues/863) fix available stock (ATP) display in sales order
+    * Fix for the shipment schedule recompute after sales order complete. Now updated correctly again so the picking terminal is now shown correctly in document reference list again.
+  * [#863](https://github.com/metasfresh/metasfresh-webui-api/issues/863) Fix available stock (ATP) display in sales order
+    * Fixes the available to promise information in sales orderline batch entry.
   * [#869](https://github.com/metasfresh/metasfresh-webui-api/issues/869) Sometimes the error message is in German even if I am logged in with English
+    * Minor fix for the translation of error messages. In some cases the error messages were shown in the base language instead of the language the user was logged in.
   * [#871](https://github.com/metasfresh/metasfresh-webui-api/issues/871) Error when selecting tabs in bpartner window
+    * Fixes a cornercase that occurred when seleting included tabs in the businesspartner window in WebUI for records that were recorded via swingUI.
   * [#872](https://github.com/metasfresh/metasfresh-webui-api/issues/872) Don't show passwords in grid view
+    * Fixes the password fields in Webui Grid View, now showing them obfuscated too, like in main view.
 
 # metasfresh 5.45 (2018-08)
 **release for week 2018-08**

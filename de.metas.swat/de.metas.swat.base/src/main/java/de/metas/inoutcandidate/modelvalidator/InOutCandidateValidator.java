@@ -13,7 +13,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.CacheMgt;
-import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
@@ -94,7 +93,7 @@ public final class InOutCandidateValidator implements ModelValidator
 		shipmentScheduleBL.registerCandidateProcessor(new DefaultCandidateProcessor());
 		shipmentScheduleBL.registerCandidateProcessor(new OnlyOneOpenInvoiceCandProcessor());
 
-		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(Env.getCtx(), new OrderLineShipmentScheduleHandler());
+		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
 
 		Services.get(IStorageListeners.class).addStorageListener(new StorageListenerAdapter()
 		{
@@ -104,7 +103,7 @@ public final class InOutCandidateValidator implements ModelValidator
 				Services.get(IShipmentSchedulePA.class).invalidate(storageSegments);
 			}
 		});
-		
+
 		setupCaching();
 	}
 
