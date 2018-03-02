@@ -25,6 +25,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1620) List widgets with focus shall have dark grey color underline
     * Improved focus indicator line for list widgets.
+  * [#1621](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1621) Dropdown List Widget - first entry at top shall be selected entry
+    * Improves the behavior of selected elements in List drop-downs. Now showing them as first entry in list.
   * [#1622](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1622) List widget with only 1 entry shall still show the drop-down
     * Now the List widget also shows a drop-down list with only 1 entry.
 
