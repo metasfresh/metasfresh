@@ -409,47 +409,47 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	{
 		if (hu == null)
 		{
-			logger.info("Param 'hu'==null; nothing to do");
+			logger.debug("Param 'hu'==null; nothing to do");
 			return;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-
 		final HUReportService huReportService = HUReportService.get();
-		if (!huReportService.isReceiptLabelAutoPrintEnabled(ctx, hu, vendorBPartnerId))
+		if (!huReportService.isReceiptLabelAutoPrintEnabled(vendorBPartnerId))
 		{
-			logger.info("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
+			logger.debug("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
 			return;
 		}
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		if (!handlingUnitsBL.isTopLevel(hu))
 		{
-			logger.info("We only print top level HUs; nothing to do; hu={}", hu);
+			logger.debug("We only print top level HUs; nothing to do; hu={}", hu);
 			return;
 		}
 
-		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId(ctx);
+		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId();
 		if (adProcessId <= 0)
 		{
-			logger.info("No process configured via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
+			logger.debug("No process configured via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
 			return;
 		}
 
 		final List<I_M_HU> husToProcess = huReportService
-				.getHUsToProcess(hu, adProcessId).stream()
+				.getHUsToProcess(hu, adProcessId)
+				.stream()
 				.filter(huToProcess -> handlingUnitsBL.isTopLevel(huToProcess)) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
 				.collect(Collectors.toList());
 		if (husToProcess.isEmpty())
 		{
-			logger.info("hu's type does not match process {}; nothing to do; hu={}", adProcessId, hu);
+			logger.debug("hu's type does not match process {}; nothing to do; hu={}", adProcessId, hu);
 			return;
 		}
 
-		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount(ctx);
+		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount();
 
-		HUReportExecutor.get(ctx)
-				.withNumberOfCopies(copies)
+		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
+		HUReportExecutor.newInstance(ctx)
+				.numberOfCopies(copies)
 				.executeHUReportAfterCommit(adProcessId, husToProcess);
 	}
 
