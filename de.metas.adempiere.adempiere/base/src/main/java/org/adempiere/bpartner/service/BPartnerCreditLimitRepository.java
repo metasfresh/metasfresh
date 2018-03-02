@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -51,6 +50,8 @@ import lombok.Value;
 @Repository
 public class BPartnerCreditLimitRepository
 {
+	private final CCache<Integer, I_C_CreditLimit_Type> cache_creditLimitById = CCache.newCache(I_C_CreditLimit_Type.Table_Name + "#CreditLimitType#by#Id", 10, CCache.EXPIREMINUTES_Never);
+
 	public BigDecimal getCreditLimitByBPartner(@NonNull final I_C_BPartner bpartner, @NonNull final Timestamp date)
 	{
 		final List<I_C_BPartner_CreditLimit> bpCreditLimits = retrieveCreditLimitsByBPartner(bpartner, date);
@@ -87,8 +88,6 @@ public class BPartnerCreditLimitRepository
 		bpCreditLimits.sort(ORDERING_BPCreditLimitByTypeSeqNoReversed.thenComparing(ORDERING_BPCreditLimitByDateFromReversed));
 	}
 
-	private final CCache<Integer, I_C_CreditLimit_Type> cache_creditLimitById = CCache.newCache(I_C_CreditLimit_Type.Table_Name + "#CreditLimitType#by#Id", 10, CCache.EXPIREMINUTES_Never);
-
 	@Builder
 	@Value
 	private static class CreditLimitTypePOJO
@@ -99,8 +98,7 @@ public class BPartnerCreditLimitRepository
 
 	private CreditLimitTypePOJO getCreditLimitTypeById(final int C_CreditLimit_Type_ID)
 	{
-		final Supplier<I_C_CreditLimit_Type> recordLoader = () -> retrieveRecordFromDB(C_CreditLimit_Type_ID);
-		final I_C_CreditLimit_Type type = cache_creditLimitById.get(C_CreditLimit_Type_ID, recordLoader);
+		final I_C_CreditLimit_Type type = cache_creditLimitById.getOrLoad(C_CreditLimit_Type_ID, () -> retrieveRecordFromDB(C_CreditLimit_Type_ID));
 
 		return CreditLimitTypePOJO.builder()
 				.C_CreditLimit_Type_ID(type.getC_CreditLimit_Type_ID())
