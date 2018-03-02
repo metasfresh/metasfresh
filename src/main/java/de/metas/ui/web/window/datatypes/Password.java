@@ -41,6 +41,13 @@ public final class Password
 		return password != null ? new Password(password) : null;
 	}
 
+	public static Password cast(final Object value)
+	{
+		return (Password)value;
+	}
+
+	public static final String OBFUSCATE_STRING = "********";
+
 	private final String password;
 
 	private Password(@NonNull final String password)
@@ -59,7 +66,7 @@ public final class Password
 	@JsonValue
 	public String toJson()
 	{
-		return "********";
+		return OBFUSCATE_STRING;
 	}
 
 	public String getAsString()
