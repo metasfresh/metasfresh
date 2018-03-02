@@ -52,7 +52,8 @@ import {
   setProcessPending,
   setProcessSaved,
 } from './AppActions';
-import { getData, initLayout, openFile, patchRequest } from './GenericActions';
+import { getData, openFile, patchRequest } from './GenericActions';
+import { initLayout } from '../api';
 import { setListIncludedView } from './ListActions';
 import { getWindowBreadcrumb } from './MenuActions';
 

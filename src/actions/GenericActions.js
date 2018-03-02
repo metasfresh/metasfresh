@@ -20,32 +20,6 @@ export const getQueryString = query =>
 
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 
-export function initLayout(
-  entity,
-  docType,
-  tabId,
-  subentity = null,
-  docId = null,
-  isAdvanced,
-  list,
-  supportTree
-) {
-  return axios.get(
-    config.API_URL +
-      '/' +
-      entity +
-      '/' +
-      docType +
-      (docId ? '/' + docId : '') +
-      (tabId ? '/' + tabId : '') +
-      (subentity ? '/' + subentity : '') +
-      '/layout' +
-      (isAdvanced ? '?advanced=true' : '') +
-      (list ? '?viewType=' + list : '') +
-      (supportTree ? '&supportTree=true' : '')
-  );
-}
-
 export function getData(
   entity,
   docType,
@@ -348,7 +322,7 @@ export function referencesRequest(entity, type, docId, tabId, rowId) {
 
 export function attachmentsRequest(entity, docType, docId) {
   return axios.get(
-    config.API_URL + '/' + entity + '/' + docType + '/' + docId + '/attachments'
+    `${config.API_URL}/${entity}/${docType}/${docId}/attachments`
   );
 }
 
@@ -366,18 +340,9 @@ export function processNewRecord(entity, docType, docId) {
 }
 
 export function openFile(entity, docType, docId, fileType, fileId) {
-  const url =
-    config.API_URL +
-    '/' +
-    entity +
-    '/' +
-    docType +
-    '/' +
-    docId +
-    '/' +
-    fileType +
-    '/' +
-    fileId;
+  const url = `${
+    config.API_URL
+  }/${entity}/${docType}/${docId}/${fileType}/${fileId}`;
 
   window.open(url, '_blank');
 }

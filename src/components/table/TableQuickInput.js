@@ -6,9 +6,9 @@ import { addNotification } from '../../actions/AppActions';
 import {
   completeRequest,
   createInstance,
-  initLayout,
   patchRequest,
 } from '../../actions/GenericActions';
+import { initLayout } from '../../api';
 import { addNewRow, parseToDisplay } from '../../actions/WindowActions';
 import RawWidget from '../widget/RawWidget';
 

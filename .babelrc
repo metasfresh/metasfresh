@@ -4,6 +4,7 @@
       ["transform-class-properties", { "spec": true }],
       "transform-es2015-modules-commonjs",
       "transform-object-rest-spread",
+      "transform-async-to-generator",
       "react-hot-loader/babel"
   ]
 }
