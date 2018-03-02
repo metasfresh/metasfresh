@@ -36,6 +36,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -65,8 +66,6 @@ import lombok.NonNull;
 public class AddQtyToHUCommand
 {
 	private static final Logger logger = LogManager.getLogger(AddQtyToHUCommand.class);
-
-	public static final String MSG_WEBUI_Picking_OverdeliveryNotAllowed = "M_Picking_Config_OverdeliveryNotAllowed";
 
 	private final PickingCandidateRepository pickingCandidateRepository;
 
@@ -113,7 +112,7 @@ public class AddQtyToHUCommand
 
 		if (overdeliveryError)
 		{
-			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(shipmentSchedule), MSG_WEBUI_Picking_OverdeliveryNotAllowed));
+			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(shipmentSchedule), PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed));
 		}
 
 		final I_M_Product product = shipmentSchedule.getM_Product();
@@ -213,7 +212,7 @@ public class AddQtyToHUCommand
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentSchedule);
-		final BigDecimal qtytoDeliver =shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned == null? BigDecimal.ZERO : qtyPickedPlanned);
+		final BigDecimal qtytoDeliver = shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned == null ? BigDecimal.ZERO : qtyPickedPlanned);
 
 		return qtyCU.compareTo(qtytoDeliver) > 0;
 	}
