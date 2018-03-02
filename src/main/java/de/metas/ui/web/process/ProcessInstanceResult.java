@@ -52,6 +52,19 @@ public final class ProcessInstanceResult implements Serializable
 		return new Builder(instanceId);
 	}
 
+	public static final ProcessInstanceResult ok(final DocumentId instanceId)
+	{
+		return builder(instanceId).build();
+	}
+
+	public static final ProcessInstanceResult error(final DocumentId instanceId, final Throwable error)
+	{
+		return builder(instanceId)
+				.setError(true)
+				.setSummary(error.getLocalizedMessage())
+				.build();
+	}
+
 	private final DocumentId instanceId;
 	private final String summary;
 	private final boolean error;
