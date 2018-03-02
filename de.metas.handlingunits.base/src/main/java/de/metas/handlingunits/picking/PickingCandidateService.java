@@ -6,6 +6,7 @@ import java.util.OptionalInt;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -23,6 +24,7 @@ import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHUCo
 import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHUCommand.RemoveQtyFromHUCommandBuilder;
 import de.metas.handlingunits.picking.pickingCandidateCommands.UnProcessPickingCandidateCommand;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.picking.api.PickingConfigRepository;
 import lombok.NonNull;
 
 /*
@@ -52,6 +54,9 @@ public class PickingCandidateService
 {
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
+	
+	@Autowired
+	private PickingConfigRepository pickingConfigRepository;
 
 	public PickingCandidateService(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
@@ -110,6 +115,7 @@ public class PickingCandidateService
 		final ProcessPickingCandidateCommand processCmd = ProcessPickingCandidateCommand.builder()
 				.sourceHUsRepository(sourceHUsRepository)
 				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingConfigRepository(pickingConfigRepository)
 				.huIds(huIds)
 				.pickingSlotId(pickingSlotId)
 				.shipmentScheduleId(shipmentScheduleId.orElse(-1))
