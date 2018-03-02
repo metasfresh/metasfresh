@@ -26,11 +26,13 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 
@@ -47,12 +49,14 @@ import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
  */
 public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdapter
 {
-	public static void createWorkpackage(final Properties ctx, final Set<Integer> bpartnerIds, final String trxName)
+	public static void createWorkpackage(final Set<Integer> bpartnerIds)
 	{
 		if (bpartnerIds == null || bpartnerIds.isEmpty())
 		{
 			return;
 		}
+
+		final Properties ctx = Env.getCtx();
 
 		for (final Integer bpartnerId : bpartnerIds)
 		{
@@ -61,7 +65,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 				continue;
 			}
 
-			SCHEDULER.schedule(BPartnerToUpdate.of(ctx, bpartnerId, trxName));
+			SCHEDULER.schedule(BPartnerToUpdate.of(ctx , bpartnerId, ITrx.TRXNAME_ThreadInherited));
 		}
 	}
 

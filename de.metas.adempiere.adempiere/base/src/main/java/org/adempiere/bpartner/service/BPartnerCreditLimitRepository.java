@@ -11,7 +11,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
 import org.compiere.util.CCache;
@@ -52,9 +51,9 @@ public class BPartnerCreditLimitRepository
 {
 	private final CCache<Integer, I_C_CreditLimit_Type> cache_creditLimitById = CCache.newCache(I_C_CreditLimit_Type.Table_Name + "#CreditLimitType#by#Id", 10, CCache.EXPIREMINUTES_Never);
 
-	public BigDecimal getCreditLimitByBPartner(@NonNull final I_C_BPartner bpartner, @NonNull final Timestamp date)
+	public BigDecimal getCreditLimitByBPartner(final int bpartnerId, @NonNull final Timestamp date)
 	{
-		final List<I_C_BPartner_CreditLimit> bpCreditLimits = retrieveCreditLimitsByBPartner(bpartner, date);
+		final List<I_C_BPartner_CreditLimit> bpCreditLimits = retrieveCreditLimitsByBPartner(bpartnerId, date);
 		if (bpCreditLimits.isEmpty())
 		{
 			return BigDecimal.ZERO;
@@ -64,11 +63,11 @@ public class BPartnerCreditLimitRepository
 		return bpCreditLimits.get(0).getAmount();
 	}
 
-	public List<I_C_BPartner_CreditLimit> retrieveCreditLimitsByBPartner(@NonNull final I_C_BPartner bpartner, @NonNull final Timestamp date)
+	public List<I_C_BPartner_CreditLimit> retrieveCreditLimitsByBPartner(final int bpartnerId, @NonNull final Timestamp date)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_CreditLimit.class, bpartner)
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_IsApproved, true)
 				.addCompareFilter(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, Operator.LESS_OR_EQUAL, date)
 				.addOnlyActiveRecordsFilter()

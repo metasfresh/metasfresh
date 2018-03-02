@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStats;
@@ -1844,7 +1843,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// FRESH-152 Update BP Statistics
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(getC_BPartner_ID()), ITrx.TRXNAME_None);
+				.updateBPartnerStatistics(Collections.singleton(getC_BPartner_ID()));
 
 		// Update Project
 		if (isSOTrx() && getC_Project_ID() != 0)

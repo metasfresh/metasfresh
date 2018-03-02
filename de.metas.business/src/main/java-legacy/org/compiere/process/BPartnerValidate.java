@@ -142,7 +142,7 @@ public class BPartnerValidate extends JavaProcess
 		//
 		// task FRESH-152.Update bpartner stats
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(getCtx(), Collections.singleton(bp.getC_BPartner_ID()), get_TrxName());
+				.updateBPartnerStatistics(Collections.singleton(bp.getC_BPartner_ID()));
 
 		//
 		// if (bp.getSO_CreditUsed().signum() != 0)

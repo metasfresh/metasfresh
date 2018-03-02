@@ -25,12 +25,12 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPeriod;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Re-calculate Invoice Tax (and unpost the document)
- * 
+ *
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  *         <li>FR [ 2520591 ] Support multiples calendar for Org
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
@@ -45,9 +45,9 @@ public class InvoiceCalculateTax extends JavaProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParametersAsArray())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
-			String name = para.getParameterName();
+			final String name = para.getParameterName();
 			if (para.getParameter() == null)
 			{
 				;
@@ -67,13 +67,13 @@ public class InvoiceCalculateTax extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		MInvoice invoice = new MInvoice(getCtx(), p_C_Invoice_ID, get_TrxName());
+		final MInvoice invoice = new MInvoice(getCtx(), p_C_Invoice_ID, get_TrxName());
 		recalculateTax(invoice);
 		//
 		return "@ProcessOK@";
 	}
 
-	public static void recalculateTax(MInvoice invoice)
+	public static void recalculateTax(final MInvoice invoice)
 	{
 
 		final I_C_BPartner partner = invoice.getC_BPartner();
@@ -90,7 +90,7 @@ public class InvoiceCalculateTax extends JavaProcess
 
 		// FRESH-152 Update bpartner stats
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(invoice.getCtx(), Collections.singleton(partner.getC_BPartner_ID()), invoice.get_TrxName());
+				.updateBPartnerStatistics(Collections.singleton(partner.getC_BPartner_ID()));
 
 	}
 }

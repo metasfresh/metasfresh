@@ -26,12 +26,14 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
 
 /**
  * Synchronous implementation; note that there is also an async implementation which sets up a work package to to the job later and in background.
@@ -40,7 +42,7 @@ import org.compiere.model.I_C_BPartner;
 public class BPartnerStatisticsUpdater implements IBPartnerStatisticsUpdater
 {
 	@Override
-	public void updateBPartnerStatistics(final Properties ctx, final Set<Integer> bpartnerIds, final String trxName)
+	public void updateBPartnerStatistics(final Set<Integer> bpartnerIds)
 	{
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
@@ -49,10 +51,11 @@ public class BPartnerStatisticsUpdater implements IBPartnerStatisticsUpdater
 			return;
 		}
 
+		final Properties ctx = Env.getCtx();
 		final Iterator<Integer> it = bpartnerIds.iterator();
 		while (it.hasNext())
 		{
-			final I_C_BPartner partner = InterfaceWrapperHelper.create(ctx, it.next(), I_C_BPartner.class, trxName);
+			final I_C_BPartner partner = InterfaceWrapperHelper.create(ctx, it.next(), I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
 			final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 
 			bpartnerStatsDAO.updateOpenItems(stats);

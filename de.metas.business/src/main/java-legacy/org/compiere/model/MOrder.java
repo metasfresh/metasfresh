@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
@@ -1803,7 +1802,7 @@ public class MOrder extends X_C_Order implements IDocument
 		final boolean realTimePOS = false;
 
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(getC_BPartner_ID()), ITrx.TRXNAME_None);
+				.updateBPartnerStatistics(Collections.singleton(getC_BPartner_ID()));
 
 		// Create SO Shipment - Force Shipment
 		MInOut shipment = null;

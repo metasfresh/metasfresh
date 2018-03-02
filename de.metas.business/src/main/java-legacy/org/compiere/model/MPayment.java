@@ -1991,7 +1991,7 @@ public final class MPayment extends X_C_Payment
 			// task FRESH-152. Update bpartner stats
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 			Services.get(IBPartnerStatisticsUpdater.class)
-					.updateBPartnerStatistics(getCtx(), Collections.singleton(partner.getC_BPartner_ID()), get_TrxName());
+					.updateBPartnerStatistics(Collections.singleton(partner.getC_BPartner_ID()));
 		}
 
 		// Counter Doc
@@ -2679,7 +2679,7 @@ public final class MPayment extends X_C_Payment
 		if (getC_BPartner_ID() > 0)
 		{
 			Services.get(IBPartnerStatisticsUpdater.class)
-					.updateBPartnerStatistics(getCtx(), Collections.singleton(getC_BPartner_ID()), get_TrxName());
+					.updateBPartnerStatistics(Collections.singleton(getC_BPartner_ID()));
 
 		}
 		// After reverseCorrect
