@@ -45,7 +45,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3430](https://github.com/metasfresh/metasfresh/issues/3430) Best before Date evaluating process/ action
-    * New action that analyses the Handling Units on stock and marks them as "Best before" cases if the best-before-date has reached a time offset.
+    * New action that analyzes the Handling Units on stock and marks them as "Best before" cases if the best-before-date has reached a time offset.
   * [#3503](https://github.com/metasfresh/metasfresh/issues/3503) Use correct picking quantities in shipment
     * Improvement of shipment document lines generation. Adjusting the base data to fill the picking quantities in shipment.
   * [#3513](https://github.com/metasfresh/metasfresh/issues/3513) Webui: Pimp DATEV windows
@@ -90,7 +90,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1394](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1394) Quickactions not loaded after using barcode/ std. filter in HU editor in Manufacturing Order
-    * Fixes a Bug that let the Quickactions Buttons dissappear after setting filter criteria.
+    * Fixes a Bug that let the Quickactions Buttons disappear after setting filter criteria.
   * [#1567](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1567) Create purchase orders: Date promised format
     * Fixes the date/ time format in create puchase orders modal overlay in sales order.
   * [#1585](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1585) Date recording with keys leads to error
