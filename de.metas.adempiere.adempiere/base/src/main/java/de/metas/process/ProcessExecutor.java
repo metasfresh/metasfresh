@@ -39,6 +39,7 @@ import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.script.ScriptExecutor;
 import de.metas.session.jaxrs.IServerService;
+import lombok.NonNull;
 
 /**
  * Process executor: executes a process (sync or async) which was defined by given {@link ProcessInfo}.
@@ -150,7 +151,7 @@ public final class ProcessExecutor
 			{
 				thread.join();
 			}
-			catch (InterruptedException ex)
+			catch (final InterruptedException ex)
 			{
 				throw AdempiereException.wrapIfNeeded(ex);
 			}
@@ -185,7 +186,7 @@ public final class ProcessExecutor
 			final ProcessExecutionResult remoteResult = Services.get(IServerService.class).process(pi.getAD_PInstance_ID());
 			result.updateFrom(remoteResult);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			final Throwable cause = AdempiereException.extractCause(e);
 			logger.warn("Got error", cause);
@@ -292,7 +293,7 @@ public final class ProcessExecutor
 			if (duration != null)
 			{
 				duration.stop();
-				IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+				final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 				adProcessDAO.addProcessStatistics(pi.getCtx(), pi.getAD_Process_ID(), pi.getAD_Client_ID(), duration.elapsed(TimeUnit.MILLISECONDS)); // never throws exception
 			}
 
@@ -346,7 +347,7 @@ public final class ProcessExecutor
 
 	/**
 	 * Lock the process instance and notify the parent
-	 * 
+	 *
 	 * NOTE: it's OK to throw exceptions
 	 */
 	private void lock(final boolean runningLocally)
@@ -368,7 +369,7 @@ public final class ProcessExecutor
 
 	/**
 	 * Unlock the process instance and notify the parent.
-	 * 
+	 *
 	 * NOTE: it's very important this method to never throw exception.
 	 */
 	private void unlock(final boolean runningLocally)
@@ -396,7 +397,7 @@ public final class ProcessExecutor
 				listener.unlockUI(pi);
 			}
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed notifying the listener {} to unlock {}", listener, pi, ex);
 		}
@@ -409,7 +410,7 @@ public final class ProcessExecutor
 			{
 				adPInstanceDAO.unlockAndSaveResult(ctx, result);
 			}
-			catch (Throwable e)
+			catch (final Throwable e)
 			{
 				logger.error("Failed unlocking for {}", result, e);
 			}
@@ -495,7 +496,7 @@ public final class ProcessExecutor
 			scriptExecutor.putArgument("Parameter", parameters.toArray(new ProcessInfoParameter[parameters.size()])); // put as array for backward compatibility
 			for (final ProcessInfoParameter para : parameters)
 			{
-				String name = para.getParameterName();
+				final String name = para.getParameterName();
 				if (para.getParameter_To() == null)
 				{
 					final Object value = para.getParameter();
@@ -549,15 +550,15 @@ public final class ProcessExecutor
 	private final void startJavaProcess() throws Exception
 	{
 		final ProcessInfo pi = this.pi;
-		
+
 		final IProcess process = pi.newProcessClassInstanceOrNull();
 		if(process == null)
 		{
 			throw new AdempiereException("Cannot create process class instance for " + pi); // shall not happen
 		}
-		
+
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		
+
 		try (final IAutoCloseable currentInstanceRestorer = JavaProcess.temporaryChangeCurrentInstanceOverriding(process))
 		{
 			process.startProcess(pi, trx);
@@ -585,7 +586,7 @@ public final class ProcessExecutor
 			adPInstanceDAO.loadResultSummary(result);
 			result.markLogsAsStale();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new DBException(e, sql, sqlParams);
 		}
@@ -631,11 +632,8 @@ public final class ProcessExecutor
 		private boolean onErrorThrowException = false;
 		private Consumer<ProcessInfo> beforeCallback = null;
 
-		private Builder(final ProcessInfo processInfo)
+		private Builder(@NonNull final ProcessInfo processInfo)
 		{
-			super();
-
-			Check.assumeNotNull(processInfo, "Parameter processInfo is not null");
 			this.processInfo = processInfo;
 		}
 
@@ -719,7 +717,7 @@ public final class ProcessExecutor
 
 		/**
 		 * Advice the executor to switch current context with process info's context.
-		 * 
+		 *
 		 * @see ProcessInfo#getCtx()
 		 * @see Env#switchContext(Properties)
 		 */
@@ -732,9 +730,9 @@ public final class ProcessExecutor
 		/**
 		 * Sets the callback to be executed after AD_PInstance is created but before the actual process is started.
 		 * If the callback fails, the exception is propagated, so the process will not be started.
-		 * 
+		 *
 		 * A common use case of <code>beforeCallback</code> is to create to selections which are linked to this AD_PInstance_ID.
-		 * 
+		 *
 		 * @param beforeCallback
 		 */
 		public Builder callBefore(final Consumer<ProcessInfo> beforeCallback)

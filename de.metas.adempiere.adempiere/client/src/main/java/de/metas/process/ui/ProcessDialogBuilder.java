@@ -25,11 +25,11 @@ import de.metas.process.IProcessExecutionListener;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -44,6 +44,8 @@ public final class ProcessDialogBuilder
 	private int AD_Table_ID;
 	private int Record_ID;
 
+	private int AD_Window_ID = -1;
+
 	private boolean skipResultsPanel = false;
 	private IProcessExecutionListener processExecutionListener;
 	private Boolean _printPreview;
@@ -55,7 +57,6 @@ public final class ProcessDialogBuilder
 
 	ProcessDialogBuilder()
 	{
-		super();
 	}
 
 	public ProcessDialog showModal(final JFrame parentFrame)
@@ -109,6 +110,17 @@ public final class ProcessDialogBuilder
 	int getTabNo()
 	{
 		return tabNo;
+	}
+
+	public ProcessDialogBuilder setAD_Window_ID(final int AD_Window_ID)
+	{
+		this.AD_Window_ID = AD_Window_ID;
+		return this;
+	}
+
+	int getAD_Window_ID()
+	{
+		return AD_Window_ID;
 	}
 
 	public ProcessDialogBuilder setAD_Process_ID(final int AD_Process_ID)
@@ -173,7 +185,7 @@ public final class ProcessDialogBuilder
 
 	String getShowHelp(final Supplier<String> defaultValueSupplier)
 	{
-		return showHelp != null ? showHelp : defaultValueSupplier.get(); 
+		return showHelp != null ? showHelp : defaultValueSupplier.get();
 	}
 
 	ProcessDialogBuilder skipResultsPanel()
@@ -186,13 +198,13 @@ public final class ProcessDialogBuilder
 	{
 		return skipResultsPanel;
 	}
-	
+
 	public ProcessDialogBuilder setAllowProcessReRun(final Boolean allowProcessReRun)
 	{
 		this.allowProcessReRun = allowProcessReRun;
 		return this;
 	}
-	
+
 	boolean isAllowProcessReRun(final Supplier<Boolean> defaultValueSupplier)
 	{
 		return allowProcessReRun != null ? allowProcessReRun : defaultValueSupplier.get();
@@ -202,8 +214,10 @@ public final class ProcessDialogBuilder
 	{
 		final int windowNo = gridTab.getWindowNo();
 		final int tabNo = gridTab.getTabNo();
-
 		setWindowAndTabNo(windowNo, tabNo);
+
+		setAD_Window_ID(gridTab.getAD_Window_ID());
+
 		setIsSOTrx(Env.isSOTrx(gridTab.getCtx(), windowNo));
 		setTableAndRecord(gridTab.getAD_Table_ID(), gridTab.getRecord_ID());
 		setWhereClause(gridTab.getTableModel().getSelectWhereClauseFinal());
@@ -231,11 +245,11 @@ public final class ProcessDialogBuilder
 
 	boolean isPrintPreview()
 	{
-		if(_printPreview != null)
+		if (_printPreview != null)
 		{
 			return _printPreview;
 		}
-		
+
 		return Ini.isPropertyBool(Ini.P_PRINTPREVIEW);
 	}
 }

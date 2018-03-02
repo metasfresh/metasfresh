@@ -132,7 +132,6 @@ public class ProcessExecutionResult
 
 	public ProcessExecutionResult()
 	{
-		super();
 		logs = new ArrayList<>();
 	}
 
@@ -392,7 +391,7 @@ public class ProcessExecutionResult
 
 	/**
 	 * Sets webui's viewId on which this process was executed.
-	 * 
+	 *
 	 * @param webuiIncludedViewIdToOpen
 	 */
 	public void setWebuiViewId(String webuiViewId)
@@ -407,7 +406,7 @@ public class ProcessExecutionResult
 
 	/**
 	 * Sets webui's included view to be opened if the process was successfully executed.
-	 * 
+	 *
 	 * @param webuiIncludedViewIdToOpen
 	 */
 	public void setWebuiIncludedViewIdToOpen(final String webuiIncludedViewIdToOpen)
@@ -424,7 +423,7 @@ public class ProcessExecutionResult
 	{
 		this.webuiViewProfileId = webuiViewProfileId;
 	}
-	
+
 	public String getWebuiViewProfileId()
 	{
 		return webuiViewProfileId;
@@ -727,7 +726,6 @@ public class ProcessExecutionResult
 				, @JsonProperty("target") final OpenTarget target //
 		)
 		{
-			super();
 			Check.assumeNotEmpty(records, "records is not empty");
 
 			this.records = ImmutableList.copyOf(records);
