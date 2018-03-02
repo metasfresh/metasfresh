@@ -69,7 +69,12 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 	{
 		if (!document.isHUStatusActive())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Only active HUs can be reversed"); // TODO: trl
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Only active HUs can be reversed");
+		}
+		final List<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();
+		if(receiptSchedules.isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Thre are no receipt schedules");
 		}
 		return null;
 	}

@@ -39,7 +39,9 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  *
  */
 @Profile(Profiles.PROFILE_Webui)
-public class PMM_Purchase_Candidate_CreatePurchaseOrder extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class PMM_Purchase_Candidate_CreatePurchaseOrder
+		extends ViewBasedProcessTemplate
+		implements IProcessPrecondition
 {
 	private int recordsEnqueued;
 

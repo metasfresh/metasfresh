@@ -145,14 +145,19 @@ public final class ViewId
 	private final String viewId;
 	private final ImmutableList<String> parts;
 
-	private ViewId(@NonNull final String viewIdStr, @NonNull final ImmutableList<String> parts, @NonNull final WindowId windowId)
+	private ViewId(
+			@NonNull final String viewIdStr,
+			@NonNull final ImmutableList<String> parts,
+			@NonNull final WindowId windowId)
 	{
-		super();
 		this.windowId = windowId;
-		viewId = viewIdStr;
+		this.viewId = viewIdStr;
 		this.parts = parts;
 	}
 
+	/**
+	 * @return never {@code null}
+	 */
 	public WindowId getWindowId()
 	{
 		return windowId;
@@ -182,7 +187,7 @@ public final class ViewId
 			final String partStr = getPart(index);
 			return Integer.parseInt(partStr);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Cannot extract part with index " + index + " as integer from " + this, ex);
 		}
