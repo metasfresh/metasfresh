@@ -974,11 +974,26 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.map(org.compiere.model.I_M_Warehouse::getM_Warehouse_ID)
 				.collect(ImmutableSet.toImmutableSet());
 
-		 final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId)
-				 .stream()
-				 .filter(warehouse -> !huWarehouseIds.contains(warehouse.getM_Warehouse_ID()))
-				 .collect(ImmutableList.toImmutableList());
+		final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId)
+				.stream()
+				.filter(warehouse -> !huWarehouseIds.contains(warehouse.getM_Warehouse_ID()))
+				.collect(ImmutableList.toImmutableList());
 
 		return warehouses;
+	}
+
+	@Override
+	public List<I_M_HU> retrieveByIds(@NonNull final Collection<Integer> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU.class)
+				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
+				.create()
+				.listImmutable(I_M_HU.class);
 	}
 }
