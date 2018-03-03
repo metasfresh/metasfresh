@@ -36,6 +36,7 @@ import java.util.TreeSet;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.IContextAware;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -120,7 +121,9 @@ public class ShipmentScheduleWithHU
 			final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc)
 	{
-		this.huContext = huContext;
+		this.huContext = Util.coalesce(
+				huContext,
+				Services.get(IHandlingUnitsBL.class).createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx()));
 		this.shipmentScheduleQtyPicked = shipmentScheduleAlloc;
 
 		this.shipmentSchedule = create(shipmentScheduleAlloc.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
@@ -143,7 +146,9 @@ public class ShipmentScheduleWithHU
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final BigDecimal qtyPicked)
 	{
-		this.huContext = huContext;
+		this.huContext = Util.coalesce(
+				huContext,
+				Services.get(IHandlingUnitsBL.class).createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx()));
 
 		this.shipmentScheduleQtyPicked = null; // no allocation, will be created on fly when needed
 
@@ -220,7 +225,6 @@ public class ShipmentScheduleWithHU
 				new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
 
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-
 		final I_M_HU hu = getTopLevelHU();
 		if (hu != null)
 		{

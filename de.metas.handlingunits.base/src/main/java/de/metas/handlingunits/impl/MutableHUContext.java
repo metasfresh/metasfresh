@@ -72,11 +72,8 @@ import lombok.NonNull;
 
 	private final List<EmptyHUListener> emptyHUListeners = new ArrayList<>();
 
-	public MutableHUContext(final Object contextProvider)
+	public MutableHUContext(@NonNull final Object contextProvider)
 	{
-		super();
-
-		Check.assumeNotNull(contextProvider, "contextProvider  not null");
 		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(contextProvider);
 		ctx = contextAware.getCtx();
 		trxName = contextAware.getTrxName();
@@ -88,11 +85,8 @@ import lombok.NonNull;
 		this(ctx, ITrx.TRXNAME_None);
 	}
 
-	public MutableHUContext(final Properties ctx, final String trxName)
+	public MutableHUContext(@NonNull final Properties ctx, final String trxName)
 	{
-		super();
-
-		Check.assumeNotNull(ctx, "ctx not null");
 		this.ctx = ctx;
 
 		this.trxName = trxName;

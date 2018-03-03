@@ -10,8 +10,8 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.47 (2018-09)
-**release for week 2018-09**
+# metasfresh 5.47 (2018-10)
+**release for week 2018-10**
 
 ## Features
 * metasfresh
@@ -29,6 +29,9 @@ Here come the actual release notes:
     * Improves the behavior of selected elements in List drop-downs. Now showing them as first entry in list.
   * [#1622](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1622) List widget with only 1 entry shall still show the drop-down
     * Now the List widget also shows a drop-down list with only 1 entry.
+  * [#1635](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1635) Check code formatting on CI
+  * [#1644](https://github.com/metasfresh/metasfresh-webui-frontend/pull/1644) Add cypress e2e test setup
+
 
 ## Fixes
 * metasfresh-webui-frontend
@@ -44,8 +47,8 @@ Here come the actual release notes:
     * Fixes the Listr widget for attributes in documentlines.
   * [#1645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1645) Mandatory List Widget
     * Fixes the visibility of List Widget fields that are mandatory.
-
-
+  * [#1638](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1638) Cannot use the dropdown in login
+  * [#1645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1645) Mandatory List Widget
 
 # metasfresh 5.46 (2018-09)
 **release for week 2018-09**

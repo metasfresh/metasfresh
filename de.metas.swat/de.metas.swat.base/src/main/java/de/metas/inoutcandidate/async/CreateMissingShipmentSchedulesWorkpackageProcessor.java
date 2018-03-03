@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.async;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -30,14 +29,17 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 
 /**
  * Workpackage used to create missing shipment schedules.
@@ -47,17 +49,26 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  */
 public class CreateMissingShipmentSchedulesWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
+	private static final Logger logger = LogManager.getLogger(CreateMissingShipmentSchedulesWorkpackageProcessor.class);
+
 	/**
-	 * Schedule a new "create missing shipment schedules" run.
+	 * Schedules a new "create missing shipment schedules" run, <b>unless</b> the processor is disabled or all scheds would be created later.<br>
+	 * See {@link IShipmentScheduleBL#allMissingSchedsWillBeCreatedLater()}.
 	 *
-	 * @param ctx context
-	 * @param trxName optional transaction name. In case is provided, the workpackage will be marked as ready for processing when given transaction is committed.
+	 * @param ctxAware if it has a not-null trxName, then  the workpackage will be marked as ready for processing when given transaction is committed.
 	 */
-	public static final void schedule(final IContextAware ctxAware)
+	public static final void scheduleIfNotPostponed(final IContextAware ctxAware)
 	{
+		if (Services.get(IShipmentScheduleBL.class).allMissingSchedsWillBeCreatedLater())
+		{
+			logger.debug("Not scheduling WP because", CreateMissingShipmentSchedulesWorkpackageProcessor.class);
+			return;
+		}
+
 		// don't try to enqueue it if is not active
 		if (!Services.get(IQueueDAO.class).isWorkpackageProcessorEnabled(CreateMissingShipmentSchedulesWorkpackageProcessor.class))
 		{
+			logger.debug("Not scheduling WP because this workpackage processor is disabled: {}", CreateMissingShipmentSchedulesWorkpackageProcessor.class);
 			return;
 		}
 

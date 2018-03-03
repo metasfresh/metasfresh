@@ -46,9 +46,6 @@ import lombok.NonNull;
 public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma_Product>
 {
 
-	// temporary defaults
-	final private int M_Product_Category_ID = 1000000; // FIXME : don't know yet from where to take it
-
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@Override
@@ -238,7 +235,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 		product.setProductType(X_I_Product.PRODUCTTYPE_Item);
 		product.setC_UOM(Services.get(IUOMDAO.class).retrieveEachUOM(getCtx()));
-		product.setM_Product_Category_ID(M_Product_Category_ID);
+		product.setM_Product_Category_ID(importRecord.getM_Product_Category_ID());
 
 		InterfaceWrapperHelper.save(product);
 
@@ -270,6 +267,8 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		{
 			product.setUPC(importRecord.getA00GTIN());
 		}
+
+		product.setM_Product_Category_ID(importRecord.getM_Product_Category_ID());
 
 		setPackageFields(importRecord, product);
 		setPharmaFields(importRecord, product);

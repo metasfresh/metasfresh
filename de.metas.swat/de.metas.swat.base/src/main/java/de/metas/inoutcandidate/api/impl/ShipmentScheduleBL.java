@@ -55,6 +55,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
@@ -114,6 +115,33 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final static Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
 
 	private final CompositeCandidateProcessor candidateProcessors = new CompositeCandidateProcessor();
+
+	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
+
+	@Override
+	public boolean allMissingSchedsWillBeCreatedLater()
+	{
+		return postponeMissingSchedsCreationUntilClose.get();
+	}
+
+	@Override
+	public IAutoCloseable postponeMissingSchedsCreationUntilClose()
+	{
+		if (allMissingSchedsWillBeCreatedLater())
+		{
+			return NullAutoCloseable.instance; // we were already called;
+		}
+
+		postponeMissingSchedsCreationUntilClose.set(true);
+
+		final IAutoCloseable onCloseCreateMissingScheds = //
+				() -> {
+					postponeMissingSchedsCreationUntilClose.set(false);
+					CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
+				};
+
+		return onCloseCreateMissingScheds;
+	}
 
 	@Override
 	public void updateSchedules(
@@ -1034,26 +1062,5 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 		}
 		return storageQuery;
-	}
-
-	private final ThreadLocal<Boolean> missingSchedsAreCreatedLater = ThreadLocal.withInitial(() -> false);
-
-	@Override
-	public boolean isMissingSchedsCreatedLater()
-	{
-		return missingSchedsAreCreatedLater.get();
-	}
-
-	@Override
-	public IAutoCloseable createMissingSchedsOnClose()
-	{
-		missingSchedsAreCreatedLater.set(true);
-
-		final IAutoCloseable createMissingScheds = //
-				() -> {
-					missingSchedsAreCreatedLater.set(false);
-					CreateMissingShipmentSchedulesWorkpackageProcessor.schedule(PlainContextAware.newWithThreadInheritedTrx());
-				};
-		return createMissingScheds;
 	}
 }

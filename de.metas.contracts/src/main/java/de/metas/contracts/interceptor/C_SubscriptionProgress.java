@@ -11,7 +11,6 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import lombok.NonNull;
@@ -28,17 +27,11 @@ public class C_SubscriptionProgress
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void createMissingShipmentSchedules(@NonNull final I_C_SubscriptionProgress subscriptionProgress)
 	{
-		if(Services.get(IShipmentScheduleBL.class).isMissingSchedsCreatedLater())
-		{
-			return;
-		}
-
 		if (!isGoingToHaveAShipmentScheduleSomeDay(subscriptionProgress))
 		{
 			return;
 		}
-
-		CreateMissingShipmentSchedulesWorkpackageProcessor.schedule(getContextAware(subscriptionProgress));
+		CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(getContextAware(subscriptionProgress));
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
