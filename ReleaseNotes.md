@@ -21,6 +21,8 @@ Here come the actual release notes:
     * Enhanced Window Compensation group Schema, added fields for the new automatic Discount Functionality.
   * [#3562](https://github.com/metasfresh/metasfresh/issues/3562) Primary Layout in Product Planning Subtabs
     * Layout adjustment for the Subtabs in Product planning window, now added primary background to all of them.
+  * [#3609](https://github.com/metasfresh/metasfresh/issues/3609) Default Product Window take out Pharma specific fields
+    * Adjustment of the default product window, removing all pharma vertical fields. These are included in the Pharma product window.
 
 * metasfresh-webui-frontend
   * [#1620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1620) List widgets with focus shall have dark grey color underline
