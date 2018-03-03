@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.descriptor;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import de.metas.ui.web.window.model.DocumentsRepository;
@@ -42,10 +44,12 @@ public interface DocumentEntityDataBindingDescriptor
 		return false;
 	}
 
+	@FunctionalInterface
 	public interface DocumentEntityDataBindingDescriptorBuilder
 	{
 		final DocumentEntityDataBindingDescriptorBuilder NULL = () -> null;
 
+		@Nullable
 		DocumentEntityDataBindingDescriptor getOrBuild();
 	}
 }
