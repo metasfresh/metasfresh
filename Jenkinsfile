@@ -219,8 +219,10 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 		} // withEnv
 	} // configFileProvider
 
+stage('Build&Push metasfresh-app-dev docker image')
+{
 	final DockerConf dockerConf = new DockerConf(
-					'metasfresh-dist-serverRoot', // artifactName
+					'metasfresh-app-dev', // artifactName
 					MF_UPSTREAM_BRANCH, // branchName
 					MF_VERSION, // versionSuffix
 					'serverRoot/target/docker') // workDir
@@ -228,7 +230,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 
 	// clean up the workspace after (successfull) builds
 	cleanWs cleanWhenAborted: false, cleanWhenFailure: false
-
+}
 } // node
 
 	// we need this one for both "Test-SQL" and "Deployment
