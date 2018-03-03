@@ -91,8 +91,7 @@ class AttributesDropdown extends Component {
 
   render() {
     return (
-      <div className="attributes-dropdown panel-shadowed
-          panel-primary panel-bordered panel-spaced">
+      <div className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced">
         {this.renderFields()}
       </div>
     );

@@ -32,18 +32,22 @@ export function setPagination(page, windowType) {
   };
 }
 
-export function setListIncludedView(
-  { windowType, viewId, viewProfileId = null } = {}
-) {
+export function setListIncludedView({
+  windowType,
+  viewId,
+  viewProfileId = null,
+} = {}) {
   return {
     type: types.SET_LIST_INCLUDED_VIEW,
     payload: { windowType, viewId, viewProfileId },
   };
 }
 
-export function closeListIncludedView(
-  { windowType, viewId, forceClose = false } = {}
-) {
+export function closeListIncludedView({
+  windowType,
+  viewId,
+  forceClose = false,
+} = {}) {
   return {
     type: types.CLOSE_LIST_INCLUDED_VIEW,
     payload: { windowType, viewId, forceClose },

@@ -607,9 +607,12 @@ class DocumentList extends Component {
     }
   };
 
-  showIncludedViewOnSelect = (
-    { showIncludedView, windowType, viewId, forceClose } = {}
-  ) => {
+  showIncludedViewOnSelect = ({
+    showIncludedView,
+    windowType,
+    viewId,
+    forceClose,
+  } = {}) => {
     const { dispatch } = this.props;
 
     this.setState(

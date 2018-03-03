@@ -212,9 +212,13 @@ class MasterWindow extends Component {
     window.removeEventListener('beforeunload', this.confirm);
   };
 
-  closeModalCallback = (
-    { isNew, windowType, documentId, tabId, rowId } = {}
-  ) => {
+  closeModalCallback = ({
+    isNew,
+    windowType,
+    documentId,
+    tabId,
+    rowId,
+  } = {}) => {
     if (isNew) {
       return discardNewRow({ windowType, documentId, tabId, rowId });
     }
