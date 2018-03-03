@@ -42,6 +42,8 @@ Here come the actual release notes:
     * Fixes the List widget with only 1 entry. Now opeing the list widget drop-down instead of directly setting the single entry.
   * [#1630](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1630) Setting attributes in orderline not working
     * Fixes the Listr widget for attributes in documentlines.
+  * [#1645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1645) Mandatory List Widget
+    * Fixes the visibility of List Widget fields that are mandatory.
 
 
 
