@@ -2,7 +2,7 @@
 
 # The variables have defaults that can be set from outside, e.g. via -e "DB_HOST=mydbms" or from the docker-compose.yml file.
 # Also see https://docs.docker.com/engine/reference/builder/#environment-replacement
-webapi_host=${WEBAPI_URL:-webapi}
+webapi_host=${WEBAPI_HOST:-webapi}
 webapi_port=${WEBAPI_PORT:-8080}
 
 local config_js_file=/opt/metasfresh-webui-frontend/dist/config.js
