@@ -5,15 +5,15 @@
 webapi_host=${WEBAPI_HOST:-webapi}
 webapi_port=${WEBAPI_PORT:-8080}
 
-config_js_file=/opt/metasfresh-webui-frontend/dist/config.js
+config_js_file='/opt/metasfresh-webui-frontend/dist/config.js'
 sed -Ei "s/WEBUI_API_HOST/${webapi_host}/g" $config_js_file
 sed -Ei "s/WEBUI_API_PORT/${webapi_port}/g" $config_js_file
 
-ssl_config_file = /etc/apache2/sites-available/metasfresh_webui_ssl.conf
+ssl_config_file='/etc/apache2/sites-available/metasfresh_webui_ssl.conf'
 sed -Ei "s/WEBUI_API_HOST/${webapi_host}/g" $ssl_config_file
 sed -Ei "s/WEBUI_API_PORT/${webapi_port}/g" $ssl_config_file
 
-non_ssl_config_file = /etc/apache2/sites-available/metasfresh_webui.conf
+non_ssl_config_file='/etc/apache2/sites-available/metasfresh_webui.conf'
 sed -Ei "s/WEBUI_API_HOST/${webapi_host}/g" $non_ssl_config_file
 sed -Ei "s/WEBUI_API_PORT/${webapi_port}/g" $non_ssl_config_file
 
