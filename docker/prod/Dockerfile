@@ -12,12 +12,12 @@ RUN a2dissite 000-default.conf default-ssl.conf
 
 RUN mkdir -p /opt/metasfresh-webui-frontend
 
-COPY sources/dist /opt/metasfresh-webui-frontend/dist
-COPY sources/configs/config.js /opt/metasfresh-webui-frontend/dist/
+COPY dist /opt/metasfresh-webui-frontend/dist
+COPY configs/config.js /opt/metasfresh-webui-frontend/dist/
 
 #add apache config
-COPY sources/configs/metasfresh_webui.conf /etc/apache2/sites-available/
-COPY sources/configs/metasfresh_webui_ssl.conf /etc/apache2/sites-available/
+COPY configs/metasfresh_webui.conf /etc/apache2/sites-available/
+COPY configs/metasfresh_webui_ssl.conf /etc/apache2/sites-available/
 
 #set environment
 RUN . /etc/apache2/envvars
