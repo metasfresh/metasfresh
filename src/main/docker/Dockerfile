@@ -1,5 +1,5 @@
 
-#Note: I played with openjdk:8-jdk-alpine, but wasn't able to get event the entrypoint shell script to actually run
+#Note: I played with openjdk:8-jdk-alpine, but wasn't able to get even the entrypoint shell script to actually run
 
 FROM ubuntu:16.04
 
