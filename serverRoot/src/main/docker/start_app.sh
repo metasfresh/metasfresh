@@ -5,11 +5,19 @@ set -u
 
 # The variables have defaults that can be set from outside, e.g. via -e "DB_HOST=mydbms" or from the docker-compose.yml file.
 # Also see https://docs.docker.com/engine/reference/builder/#environment-replacement
+
+# postgres
 db_host=${DB_HOST:-db}
 db_port=${DB_PORT:-5432}
 db_name=${DB_NAME:-metasfresh}
 db_user=${DB_USER:-metasfresh}
 db_password=${DB_PASSWORD:-metasfresh}
+
+# elastic search
+es_host=${ES_HOST:-search}
+es_port=${ES_PORT:-9300}
+
+# self
 app_host=${APP_HOST:-app}
 
 set_properties()
@@ -59,10 +67,14 @@ wait_dbms()
 
 run_metasfresh()
 {
- cd /opt/metasfresh/ && java \
+ cd /opt/metasfresh/ \
+ && java \
  -Dsun.misc.URLClassPath.disableJarChecking=true \
- -Xmx1024M -XX:MaxPermSize=512M -XX:+HeapDumpOnOutOfMemoryError \
+ -Xmx1024M \
+ -XX:MaxPermSize=512M \
+ -XX:+HeapDumpOnOutOfMemoryError \
  -DPropertyFile=/opt/metasfresh/metasfresh.properties \
+ -Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port} \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788 \
  -jar metasfresh-app.jar
 }
@@ -79,4 +91,4 @@ wait_dbms
 
 run_metasfresh
 
-exit 0 
+exit 0
