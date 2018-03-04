@@ -32,7 +32,7 @@ ENV APACHE_LOG_DIR     /var/log/apache2
 RUN chown www-data:www-data -R /opt/metasfresh-webui-frontend/
 
 #add entry-script
-COPY sources/start_webui.sh /
+COPY start_webui.sh /
 RUN chmod +x /start_webui.sh
 
 EXPOSE 80 443
