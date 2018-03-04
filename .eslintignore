@@ -1,2 +1,3 @@
 .gitignore
-docker
+.git/**
+docker/**
