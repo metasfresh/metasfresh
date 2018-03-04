@@ -117,7 +117,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 			env.MF_VERSION="${MF_VERSION}"
 		} // stage
 
-		stage 'Build&push docker image'
+		stage('Build and push docker image')
 		{
 			sh 'cp -r dist docker/prod'
 
