@@ -1,36 +1,33 @@
 package de.metas.ui.web.pporder;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.util.Evaluatee;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
-import de.metas.ui.web.process.view.ViewAction;
-import de.metas.ui.web.view.ASIViewRowAttributesProvider;
-import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -39,8 +36,8 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -68,11 +65,6 @@ import lombok.NonNull;
 
 public class PPOrderLinesView implements IView
 {
-	public static PPOrderLinesView cast(final IView view)
-	{
-		return (PPOrderLinesView)view;
-	}
-
 	private final ViewId parentViewId;
 	private final DocumentId parentRowId;
 
@@ -81,10 +73,17 @@ public class PPOrderLinesView implements IView
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
 	private final int ppOrderId;
+	private final int salesOrderLineId;
 
-	private final ASIViewRowAttributesProvider asiAttributesProvider;
-	private final ExtendedMemorizingSupplier<PPOrderLinesViewData> dataSupplier;
+	private final PPOrderLinesViewDataSupplier dataSupplier;
 
+	final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
+
+	public static PPOrderLinesView cast(final IView view)
+	{
+		return (PPOrderLinesView)view;
+	}
+	
 	@Builder
 	private PPOrderLinesView(
 			final ViewId parentViewId,
@@ -93,8 +92,8 @@ public class PPOrderLinesView implements IView
 			@NonNull final JSONViewDataType viewType,
 			final Set<DocumentPath> referencingDocumentPaths,
 			final int ppOrderId,
-			final ASIViewRowAttributesProvider asiAttributesProvider
-	)
+			final PPOrderLinesViewDataSupplier dataSupplier, 
+			@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
 		this.parentViewId = parentViewId; // might be null
 		this.parentRowId = parentRowId; // might be null
@@ -102,16 +101,14 @@ public class PPOrderLinesView implements IView
 		this.viewType = viewType;
 		this.referencingDocumentPaths = referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 
+		this.additionalRelatedProcessDescriptors = ImmutableList.copyOf(additionalRelatedProcessDescriptors);
+
 		Preconditions.checkArgument(ppOrderId > 0, "PP_Order_ID not provided");
 		this.ppOrderId = ppOrderId;
+		final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
+		this.salesOrderLineId = ppOrder.getC_OrderLine_ID();
 
-		this.asiAttributesProvider = asiAttributesProvider;
-
-		final WindowId viewWindowId = viewId.getWindowId();
-		dataSupplier = ExtendedMemorizingSupplier.of(() -> PPOrderLinesLoader.builder(viewWindowId)
-				.asiAttributesProvider(asiAttributesProvider)
-				.build()
-				.retrieveData(ppOrderId));
+		this.dataSupplier = dataSupplier;
 	}
 
 	@Override
@@ -140,7 +137,7 @@ public class PPOrderLinesView implements IView
 	{
 		return parentViewId;
 	}
-	
+
 	@Override
 	public DocumentId getParentRowId()
 	{
@@ -165,15 +162,33 @@ public class PPOrderLinesView implements IView
 		return referencingDocumentPaths;
 	}
 
+	/**
+	 * @param may be {@code null}; in that case, the method also returns {@code null}
+	 * @return the table name for the given row
+	 */
 	@Override
-	public String getTableName()
+	public String getTableNameOrNull(@Nullable final DocumentId documentId)
 	{
-		return null; // no particular table (i.e. we have more)
+		if (documentId == null)
+		{
+			return null;
+		}
+		final PPOrderLineRow ppOrderLine = getById(documentId);
+		if (ppOrderLine == null)
+		{
+			return null; // just be sure to avoid an NPE in here
+		}
+		return ppOrderLine.getType().getTableName();
 	}
 
 	public int getPP_Order_ID()
 	{
 		return ppOrderId;
+	}
+	
+	public int getSalesOrderLineId()
+	{
+		return salesOrderLineId;
 	}
 
 	@Override
@@ -183,7 +198,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public void close()
+	public void close(final ViewCloseReason reason)
 	{
 		invalidateAllNoNotify();
 	}
@@ -249,7 +264,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public String getSqlWhereClause(final DocumentIdsSelection viewDocumentIds)
+	public String getSqlWhereClause(final DocumentIdsSelection viewDocumentIds, final SqlOptions sqlOpts)
 	{
 		return null; // not supported
 	}
@@ -261,9 +276,47 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection documentIds, final Class<T> modelClass)
+	public <T> List<T> retrieveModelsByIds(
+			@NonNull final DocumentIdsSelection documentIds,
+			@NonNull final Class<T> modelClass)
 	{
-		throw new UnsupportedOperationException();
+		return streamByIds(documentIds)
+				.map(ppOrderLineRow -> getModel(ppOrderLineRow, modelClass))
+				.filter(optional -> optional.isPresent())
+				.map(optional -> optional.get())
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * loads and returns the given {@code ppOrderLineRow}'s {@code PP_Order} or {@code P_Order_BOMLine}, if available.
+	 * 
+	 * @param ppOrderLineRow
+	 * @param modelClass
+	 * @return
+	 */
+	private <T> Optional<T> getModel(
+			@NonNull final PPOrderLineRow ppOrderLineRow,
+			@NonNull final Class<T> modelClass)
+	{
+		if (I_PP_Order.class.isAssignableFrom(modelClass))
+		{
+			if (ppOrderLineRow.getPP_Order_ID() <= 0)
+			{
+				return Optional.empty();
+			}
+			return Optional.of(load(ppOrderLineRow.getPP_Order_ID(), modelClass));
+		}
+
+		if (I_PP_Order_BOMLine.class.isAssignableFrom(modelClass))
+		{
+			if (ppOrderLineRow.getPP_Order_BOMLine_ID() <= 0)
+			{
+				return Optional.empty();
+			}
+			return Optional.of(load(ppOrderLineRow.getPP_Order_BOMLine_ID(), modelClass));
+		}
+
+		return Optional.empty();
 	}
 
 	@Override
@@ -285,6 +338,12 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return additionalRelatedProcessDescriptors;
+	}
+
+	@Override
 	public void invalidateAll()
 	{
 		invalidateAllNoNotify();
@@ -295,75 +354,12 @@ public class PPOrderLinesView implements IView
 
 	private void invalidateAllNoNotify()
 	{
-		if (asiAttributesProvider != null)
-		{
-			asiAttributesProvider.invalidateAll();
-		}
-
-		dataSupplier.forget();
+		dataSupplier.invalidate();
 	}
 
 	private PPOrderLinesViewData getData()
 	{
-		return dataSupplier.get();
+		return dataSupplier.getData();
 	}
-
-	@ViewAction(caption = "PPOrderLinesView.openViewsToIssue", precondition = IsSingleIssueLine.class)
-	public OpenIncludedViewAction actionOpenViewForHUsToIssue(final DocumentIdsSelection selectedDocumentIds)
-	{
-		final DocumentId selectedRowId = selectedDocumentIds.getSingleDocumentId();
-		final PPOrderLineRow selectedRow = getById(selectedRowId);
-
-		if (!selectedRow.isIssue())
-		{
-			throw new IllegalStateException("Only issue lines are supported");
-		}
-		if (selectedRow.isProcessed())
-		{
-			throw new IllegalStateException("Row processed");
-		}
-
-		final IHUQueryBuilder huIdsToAvailableToIssueQuery = Services.get(IHUPPOrderBL.class).createHUsAvailableToIssueQuery(selectedRow.getM_Product_ID());
-
-		final IViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IViewsRepository.class); // TODO dirty workaround
-		final IView husToIssueView = viewsRepo.createView(CreateViewRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
-				.setParentViewId(getViewId())
-				.addStickyFilters(HUIdsFilterHelper.createFilter(huIdsToAvailableToIssueQuery))
-				.addActionsFromUtilityClass(PPOrderHUsToIssueActions.class)
-				.build());
-
-		return OpenIncludedViewAction.builder()
-				.viewId(husToIssueView.getViewId())
-				.build();
-	}
-
-	public static final class IsSingleIssueLine implements ViewAction.Precondition
-	{
-		@Override
-		public ProcessPreconditionsResolution matches(final IView view, final DocumentIdsSelection selectedDocumentIds)
-		{
-			if (!selectedDocumentIds.isSingleDocumentId())
-			{
-				return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-			}
-
-			final PPOrderLinesView ppOrder = cast(view);
-			if (!(ppOrder.isStatusPlanning() || ppOrder.isStatusReview()))
-			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("not in planning or in review");
-			}
-
-			final DocumentId selectedDocumentId = selectedDocumentIds.getSingleDocumentId();
-			final PPOrderLineRow ppOrderLine = ppOrder.getById(selectedDocumentId);
-			if (!ppOrderLine.isIssue())
-			{
-				return ProcessPreconditionsResolution.reject("not an issue line");
-			}
-			if (ppOrderLine.isProcessed())
-			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("row processed");
-			}
-			return ProcessPreconditionsResolution.accept();
-		}
-	}
+	
 }

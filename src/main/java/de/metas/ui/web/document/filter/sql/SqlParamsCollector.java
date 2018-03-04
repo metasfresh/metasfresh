@@ -1,16 +1,19 @@
 package de.metas.ui.web.document.filter.sql;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
+
+import com.google.common.base.MoreObjects;
 
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -35,13 +38,12 @@ import lombok.ToString;
  */
 
 /**
- * Helper class used to collect SQL parameters between method calls.
+ * Helper class used to collect SQL parameters and convert parameter values to strings with correct SQL syntax. See the unit tests for usage examples.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @EqualsAndHashCode
-@ToString
 public final class SqlParamsCollector
 {
 	public static SqlParamsCollector newInstance()
@@ -50,7 +52,10 @@ public final class SqlParamsCollector
 	}
 
 	/**
-	 * Wraps the given list. All changes will be directed to that list.
+	 * Wraps the given list if not {@code null}. All changes will be directed the list.
+	 * If the list is null, the new instance is in "not-collecting" mode.
+	 * 
+	 * @param list may be {@code null}, but not immutable.
 	 */
 	public static SqlParamsCollector wrapNullable(@Nullable final List<Object> list)
 	{
@@ -78,20 +83,40 @@ public final class SqlParamsCollector
 		paramsRO = params != null ? Collections.unmodifiableList(params) : null;
 	}
 
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.addValue(paramsRO)
+				.toString();
+	}
+
 	public boolean isCollecting()
 	{
 		return params != null;
 	}
 
 	/**
-	 * Directly append all sqlParams.
+	 * Directly append all sqlParams from the given {@code sqlQueryFilter}.
 	 * 
-	 * @deprecated Please avoid using it. It's used mainly to adapt with old code
+	 * @param sqlQueryFilter
+	 * 
+	 */
+	public void collectAll(@NonNull final ISqlQueryFilter sqlQueryFilter)
+	{
+		final List<Object> sqlParams = sqlQueryFilter.getSqlParams(Env.getCtx());
+		collectAll(sqlParams);
+	}
+
+	/**
+	 * Directly append the given {@code sqlParams}. Please prefer using {@link #placeholder(Object)} instead.<br>
+	 * "Package" scope because currently this method is needed only by {@link SqlDefaultDocumentFilterConverter}.
+	 * 
+	 * Please avoid using it. It's used mainly to adapt with old code
 	 * 
 	 * @param sqlParams
 	 */
-	@Deprecated
-	public void collectAll(final Collection<? extends Object> sqlParams)
+	/* package */ void collectAll(final List<Object> sqlParams)
 	{
 		if (sqlParams == null || sqlParams.isEmpty())
 		{
@@ -102,8 +127,12 @@ public final class SqlParamsCollector
 		{
 			throw new IllegalStateException("Cannot append " + sqlParams + " to not collecting params");
 		}
-
 		params.addAll(sqlParams);
+	}
+
+	public void collect(final SqlParamsCollector from)
+	{
+		collectAll(from.params);
 	}
 
 	/**

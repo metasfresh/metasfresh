@@ -128,7 +128,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 	}
 
 	@Override
-	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request, final IDocumentChangesCollector changesCollector)
+	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request)
 	{
 		//
 		// Get the view and and the viewActionDescriptor
@@ -147,8 +147,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 				.pinstanceId(pinstanceId)
 				.view(view)
 				.viewActionDescriptor(viewActionDescriptor)
-				.selectedDocumentIds(request.getViewDocumentIds())
-				.changesCollector(changesCollector)
+				.selectedDocumentIds(request.getViewRowIdsSelection().getRowIds())
 				.build();
 		request.assertProcessIdEquals(viewActionInstance.getProcessId());
 		viewActionInstancesList.add(viewActionInstance);

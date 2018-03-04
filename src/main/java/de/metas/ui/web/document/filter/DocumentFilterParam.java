@@ -3,14 +3,19 @@ package de.metas.ui.web.document.filter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 
 import org.adempiere.util.Check;
+import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -39,19 +44,6 @@ import lombok.NonNull;
 @EqualsAndHashCode // required for (ETag) caching
 public class DocumentFilterParam
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
-	public static final DocumentFilterParam ofSqlWhereClause(final boolean joinAnd, final String sqlWhereClause)
-	{
-		// NOTE: avoid having sqlWhereClauseParams because they might introduce issues when we have to convert to SQL code without params.
-		final List<Object> sqlWhereClauseParams = ImmutableList.of();
-		return new DocumentFilterParam(joinAnd, sqlWhereClause, sqlWhereClauseParams);
-	}
-
-	
 	public static enum Operator
 	{
 		EQUAL, NOT_EQUAL, //
@@ -84,10 +76,31 @@ public class DocumentFilterParam
 	private final String sqlWhereClause;
 	private final List<Object> sqlWhereClauseParams;
 
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
+
+	public static final DocumentFilterParam ofSqlWhereClause(final boolean joinAnd, final String sqlWhereClause)
+	{
+		// NOTE: avoid having sqlWhereClauseParams because they might introduce issues when we have to convert to SQL code without params.
+		final List<Object> sqlWhereClauseParams = ImmutableList.of();
+		return new DocumentFilterParam(joinAnd, sqlWhereClause, sqlWhereClauseParams);
+	}
+
+	/**
+	 * Shortcut to create an often-used kind of parameters.
+	 */
+	public static final DocumentFilterParam ofNameOperatorValue(
+			@NonNull final String fieldName,
+			@NonNull final Operator operator,
+			@NonNull final Object value)
+	{
+		return builder().setFieldName(fieldName).setOperator(operator).setValue(value).build();
+	}
+
 	private DocumentFilterParam(final Builder builder)
 	{
-		super();
-
 		joinAnd = builder.joinAnd;
 
 		fieldName = builder.fieldName;
@@ -105,8 +118,6 @@ public class DocumentFilterParam
 
 	private DocumentFilterParam(final boolean joinAnd, final String sqlWhereClause, final List<Object> sqlWhereClauseParams)
 	{
-		super();
-
 		this.joinAnd = joinAnd;
 
 		fieldName = null;
@@ -147,7 +158,7 @@ public class DocumentFilterParam
 	{
 		return sqlWhereClause;
 	}
-	
+
 	public List<Object> getSqlWhereClauseParams()
 	{
 		return sqlWhereClauseParams;
@@ -166,6 +177,32 @@ public class DocumentFilterParam
 	public Object getValue()
 	{
 		return value;
+	}
+
+	public String getValueAsString()
+	{
+		return value != null ? value.toString() : null;
+	}
+
+	public int getValueAsInt(final int defaultValue)
+	{
+		final Integer valueInt = convertToInt(value);
+		return valueInt != null ? valueInt : defaultValue;
+	}
+
+	public Boolean getValueAsBoolean(final Boolean defaultValue)
+	{
+		return DisplayType.toBoolean(value, defaultValue);
+	}
+
+	public Date getValueAsDate(final Date defaultValue)
+	{
+		if (value == null)
+		{
+			return defaultValue;
+		}
+
+		return JSONDate.fromObject(value, DocumentFieldWidgetType.Date);
 	}
 
 	public Collection<?> getValueAsCollection()
@@ -191,8 +228,8 @@ public class DocumentFilterParam
 		{
 			throw new IllegalStateException("Cannot convert null value to List<Integer>");
 		}
-		
-		if(valueAsCollection.isEmpty())
+
+		if (valueAsCollection.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -200,26 +237,33 @@ public class DocumentFilterParam
 		return valueAsCollection.stream()
 				.map(itemConverter)
 				.collect(ImmutableList.toImmutableList());
-
 	}
 
 	public List<Integer> getValueAsIntList()
 	{
-		return getValueAsList(itemObj -> {
-			if (itemObj == null)
-			{
-				// pass-through, even though it will produce an exception when the list will be converted to immutable list
-				return null;
-			}
-			else if (itemObj instanceof Number)
-			{
-				return ((Number)itemObj).intValue();
-			}
-			else
-			{
-				return Integer.parseInt(itemObj.toString());
-			}
-		});
+		return getValueAsList(itemObj -> convertToInt(itemObj));
+	}
+
+	private static final Integer convertToInt(final Object itemObj)
+	{
+		if (itemObj == null)
+		{
+			// pass-through, even though it will produce an exception when the list will be converted to immutable list
+			return null;
+		}
+		else if (itemObj instanceof Number)
+		{
+			return ((Number)itemObj).intValue();
+		}
+		else if (itemObj instanceof LookupValue)
+		{
+			return ((LookupValue)itemObj).getIdAsInt();
+		}
+		else
+		{
+			final String itemStr = itemObj.toString();
+			return Integer.parseInt(itemStr);
+		}
 	}
 
 	public Object getValueTo()

@@ -100,7 +100,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		Preconditions.checkArgument(boardId > 0);
 		return TOPIC_Board + "/" + boardId;
 	}
-	
+
 	@Override
 	public void registerStompEndpoints(final StompEndpointRegistry registry)
 	{
@@ -213,14 +213,14 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 			final UserSession userSession = UserSession.getCurrentOrNull();
 			if (userSession == null)
 			{
-				logger.warn("Websocket connection not allowed (missing session)");
+				logger.warn("Websocket connection not allowed (missing userSession)");
 				response.setStatusCode(HttpStatus.UNAUTHORIZED);
 				return false;
 			}
 
 			if (!userSession.isLoggedIn())
 			{
-				logger.warn("Websocket connection not allowed (not logged in) - {}", userSession);
+				logger.warn("Websocket connection not allowed (not logged in) - userSession={}", userSession);
 				response.setStatusCode(HttpStatus.UNAUTHORIZED);
 				return false;
 			}
@@ -248,7 +248,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 			final String simpDestination = extractSimpDestination(event);
 			websocketProducersRegistry.onTopicSubscribed(simpSessionId, simpDestination);
 
-			logger.info("Subscribed to {} [ {} ]", simpDestination, simpSessionId);
+			logger.info("Subscribed to simpDestination={} [ simpSessionId={} ]", simpDestination, simpSessionId);
 		}
 	}
 
@@ -265,7 +265,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 			final String simpDestination = extractSimpDestination(event);
 			websocketProducersRegistry.onTopicUnsubscribed(simpSessionId, simpDestination);
 
-			logger.info("Unsubscribed from {} [ {} ]", simpDestination, simpSessionId);
+			logger.info("Unsubscribed from simpDestination={} [ simpSessionId={} ]", simpDestination != null ? simpDestination : "<null>", simpSessionId);
 		}
 	}
 

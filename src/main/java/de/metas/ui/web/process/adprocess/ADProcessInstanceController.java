@@ -11,6 +11,9 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -26,6 +29,7 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.OutputType;
@@ -49,19 +53,22 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -95,20 +102,15 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 {
 	private static final transient Logger logger = LogManager.getLogger(ADProcessInstanceController.class);
 
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
 	private final DocumentId instanceId;
 
 	private final ProcessDescriptor processDescriptor;
 	private final Document parameters;
 	private final Object processClassInstance;
 
-	private final IViewsRepository viewsRepo;
 	private final ViewId viewId;
-	private final DocumentIdsSelection viewSelectedDocumentIds;
+
+	private final DocumentPath contextSingleDocumentPath;
 
 	private boolean executed = false;
 	private ProcessInstanceResult executionResult;
@@ -116,16 +118,24 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	private final ReentrantReadWriteLock readwriteLock;
 
 	/** New instance constructor */
-	private ADProcessInstanceController(final Builder builder)
+	@Builder
+	private ADProcessInstanceController(
+			@NonNull final ProcessDescriptor processDescriptor,
+			@NonNull final DocumentId instanceId,
+			@Nullable final Document parameters,
+			@Nullable final Object processClassInstance,
+			@Nullable final DocumentPath contextSingleDocumentPath,
+			//
+			@Nullable final ViewId viewId)
 	{
-		processDescriptor = builder.processDescriptor;
-		instanceId = builder.instanceId;
-		parameters = builder.parameters;
-		processClassInstance = builder.processClassInstance;
+		this.processDescriptor = processDescriptor;
+		this.instanceId = instanceId;
+		this.parameters = parameters;
+		this.processClassInstance = processClassInstance;
 
-		viewsRepo = builder.viewsRepo;
-		viewId = builder.viewId;
-		viewSelectedDocumentIds = builder.viewSelectedDocumentIds == null ? DocumentIdsSelection.EMPTY : builder.viewSelectedDocumentIds;
+		this.viewId = viewId;
+
+		this.contextSingleDocumentPath = contextSingleDocumentPath;
 
 		executed = false;
 		executionResult = null;
@@ -136,17 +146,15 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	/** Copy constructor */
 	private ADProcessInstanceController(final ADProcessInstanceController from, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
-		super();
-
 		instanceId = from.instanceId;
 
 		processDescriptor = from.processDescriptor;
 		parameters = from.parameters.copy(copyMode, changesCollector);
 		processClassInstance = from.processClassInstance;
 
-		viewsRepo = from.viewsRepo;
 		viewId = from.viewId;
-		viewSelectedDocumentIds = from.viewSelectedDocumentIds;
+
+		contextSingleDocumentPath = from.contextSingleDocumentPath;
 
 		executed = from.executed;
 		executionResult = from.executionResult;
@@ -177,6 +185,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return instanceId;
 	}
 
+	public ViewId getViewId()
+	{
+		return viewId;
+	}
+
 	private Document getParametersDocument()
 	{
 		return parameters;
@@ -191,6 +204,23 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	public ADProcessInstanceController copy(final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
 		return new ADProcessInstanceController(this, copyMode, changesCollector);
+	}
+
+	public ADProcessInstanceController bindContextSingleDocumentIfPossible(@NonNull final DocumentCollection documentsCollection)
+	{
+		if (contextSingleDocumentPath == null)
+		{
+			return this;
+		}
+		if (!documentsCollection.isWindowIdSupported(contextSingleDocumentPath.getWindowIdOrNull()))
+		{
+			return this;
+		}
+
+		final Document contextSingleDocument = documentsCollection.getDocumentReadonly(contextSingleDocumentPath);
+		getParametersDocument().setShadowParentDocumentEvaluatee(contextSingleDocument.asEvaluatee());
+
+		return this;
 	}
 
 	public IAutoCloseable activate()
@@ -242,7 +272,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	}
 
 	@Override
-	public ProcessInstanceResult startProcess(final IViewsRepository viewsRepo)
+	public ProcessInstanceResult startProcess(final IViewsRepository viewsRepo, final DocumentCollection documentsCollection)
 	{
 		assertNotExecuted();
 
@@ -255,7 +285,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		}
 
 		//
-		executionResult = executeADProcess(getInstanceId(), getDescriptor(), viewsRepo);
+		executionResult = executeADProcess(viewsRepo, documentsCollection);
 		if (executionResult.isSuccess())
 		{
 			executed = false;
@@ -263,18 +293,17 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return executionResult;
 	}
 
-	private static final ProcessInstanceResult executeADProcess(final DocumentId adPInstanceId, final ProcessDescriptor processDescriptor, IViewsRepository viewsRepo)
+	private final ProcessInstanceResult executeADProcess(final IViewsRepository viewsRepo, final DocumentCollection documentsCollection)
 	{
 		//
 		// Create the process info and execute the process synchronously
 		final Properties ctx = Env.getCtx(); // We assume the right context was already used when the process was loaded
 		final String adLanguage = Env.getAD_Language(ctx);
-		final String name = processDescriptor.getCaption().translate(adLanguage);
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setCreateTemporaryCtx()
-				.setAD_PInstance_ID(adPInstanceId.toInt())
-				.setTitle(name)
+				.setAD_PInstance_ID(getInstanceId().toInt())
+				.setTitle(getDescriptor().getCaption().translate(adLanguage))
 				.setPrintPreview(true)
 				.setJRDesiredOutputType(OutputType.PDF)
 				//
@@ -283,6 +312,8 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 				.onErrorThrowException() // throw exception directly... this will allow the original exception (including exception params) to be sent back to frontend
 				.executeSync();
 		final ProcessExecutionResult processExecutionResult = processExecutor.getResult();
+
+		invalidateDocumentsAndViews(processExecutionResult, viewsRepo, documentsCollection);
 
 		//
 		// Build and return the execution result
@@ -322,7 +353,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 					final String parentViewIdStr = processExecutionResult.getWebuiViewId();
 					final ViewId parentViewId = parentViewIdStr != null ? ViewId.ofViewIdString(parentViewIdStr) : null;
 					final CreateViewRequest viewRequest = createViewRequest(recordsToOpen, referencingDocumentPaths, parentViewId);
-					
+
 					final IView view = viewsRepo.createView(viewRequest);
 					resultBuilder.setAction(OpenViewAction.builder()
 							.viewId(view.getViewId())
@@ -334,6 +365,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 				{
 					resultBuilder.setAction(OpenIncludedViewAction.builder()
 							.viewId(ViewId.ofViewIdString(processExecutionResult.getWebuiIncludedViewIdToOpen()))
+							.profileId(ViewProfileId.fromJson(processExecutionResult.getWebuiViewProfileId()))
 							.build());
 				}
 				//
@@ -361,7 +393,48 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 			final ProcessInstanceResult result = resultBuilder.build();
 			return result;
 		}
+	}
 
+	private void invalidateDocumentsAndViews(final ProcessExecutionResult processExecutionResult,
+			final IViewsRepository viewsRepo,
+			final DocumentCollection documentsCollection)
+	{
+		final Supplier<IView> viewSupplier = Suppliers.memoize(() -> {
+			final ViewId viewId = getViewId();
+			if (viewId == null)
+			{
+				return null;
+			}
+
+			final IView view = viewsRepo.getViewIfExists(viewId);
+			if (view == null)
+			{
+				logger.warn("No view found for {}. View invalidation will be skipped for {}", viewId, processExecutionResult);
+			}
+			return view;
+		});
+
+		//
+		// Refresh all
+		boolean viewInvalidateAllCalled = false;
+		if (processExecutionResult.isRefreshAllAfterExecution() && viewSupplier.get() != null)
+		{
+			viewSupplier.get().invalidateAll();
+			viewInvalidateAllCalled = true;
+		}
+
+		//
+		// Refresh required document
+		final TableRecordReference recordToRefresh = processExecutionResult.getRecordToRefreshAfterExecution();
+		if (recordToRefresh != null)
+		{
+			documentsCollection.invalidateDocumentByRecordId(recordToRefresh.getTableName(), recordToRefresh.getRecord_ID());
+
+			if (!viewInvalidateAllCalled && viewSupplier.get() != null)
+			{
+				viewSupplier.get().notifyRecordsChanged(ImmutableSet.of(recordToRefresh));
+			}
+		}
 	}
 
 	private static final File saveReportToDiskIfAny(final ProcessExecutionResult processExecutionResult)
@@ -406,15 +479,14 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 			return null; // shall not happen
 		}
 
-		final int adWindowId_Override = recordsToOpen.getAD_Window_ID(); // optional
+		final WindowId windowId_Override = WindowId.fromNullableJson(recordsToOpen.getWindowIdString()); // optional
 
 		//
 		// Create view create request builders from current records
 		final Map<WindowId, CreateViewRequest.Builder> viewRequestBuilders = new HashMap<>();
 		for (final TableRecordReference recordRef : recordRefs)
 		{
-			final int recordWindowIdInt = adWindowId_Override > 0 ? adWindowId_Override : RecordZoomWindowFinder.findAD_Window_ID(recordRef);
-			final WindowId recordWindowId = WindowId.of(recordWindowIdInt);
+			final WindowId recordWindowId = windowId_Override != null ? windowId_Override : WindowId.ofIntOrNull(RecordZoomWindowFinder.findAD_Window_ID(recordRef));
 			final CreateViewRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> CreateViewRequest.builder(recordWindowId, JSONViewDataType.grid));
 
 			viewRequestBuilder.addFilterOnlyId(recordRef.getRecord_ID());
@@ -489,13 +561,13 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		final TableRecordReference recordRef = recordsToOpen.getSingleRecord();
 		final int documentId = recordRef.getRecord_ID();
 
-		int adWindowId = recordsToOpen.getAD_Window_ID();
-		if (adWindowId <= 0)
+		WindowId windowId = WindowId.fromNullableJson(recordsToOpen.getWindowIdString());
+		if (windowId == null)
 		{
-			adWindowId = RecordZoomWindowFinder.findAD_Window_ID(recordRef);
+			windowId = WindowId.ofIntOrNull(RecordZoomWindowFinder.findAD_Window_ID(recordRef));
 		}
 
-		return DocumentPath.rootDocumentPath(WindowId.of(adWindowId), documentId);
+		return DocumentPath.rootDocumentPath(windowId, documentId);
 	}
 
 	/* package */boolean saveIfValidAndHasChanges(final boolean throwEx)
@@ -536,69 +608,4 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 			logger.debug("Released write lock for {}: {}", this, writeLock);
 		};
 	}
-
-	//
-	//
-	// Builder
-	//
-	//
-	public static class Builder
-	{
-		private ProcessDescriptor processDescriptor;
-		private DocumentId instanceId;
-		private Document parameters;
-
-		private IViewsRepository viewsRepo;
-		private ViewId viewId;
-		private DocumentIdsSelection viewSelectedDocumentIds;
-		private Object processClassInstance;
-
-		private Builder()
-		{
-		}
-
-		public ADProcessInstanceController build()
-		{
-
-			return new ADProcessInstanceController(this);
-		}
-
-		public Builder setProcessDescriptor(final ProcessDescriptor processDescriptor)
-		{
-			this.processDescriptor = processDescriptor;
-			return this;
-		}
-
-		public Builder setInstanceId(final DocumentId instanceId)
-		{
-			this.instanceId = instanceId;
-			return this;
-		}
-
-		public Builder setParameters(final Document parameters)
-		{
-			this.parameters = parameters;
-			return this;
-		}
-
-		public Builder setViewsRepo(final IViewsRepository viewsRepo)
-		{
-			this.viewsRepo = viewsRepo;
-			return this;
-		}
-
-		public Builder setView(final ViewId viewId, final DocumentIdsSelection selectedDocumentIds)
-		{
-			this.viewId = viewId;
-			viewSelectedDocumentIds = selectedDocumentIds;
-			return this;
-		}
-
-		public Builder setProcessClassInstance(Object processClassInstance)
-		{
-			this.processClassInstance = processClassInstance;
-			return this;
-		}
-	}
-
 }

@@ -2,9 +2,10 @@ package de.metas.ui.web.exceptions;
 
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -40,29 +41,27 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(code = HttpStatus.NOT_FOUND)
 public class EntityNotFoundException extends AdempiereException
 {
-	public static final EntityNotFoundException wrapIfNeeded(final Throwable throwable)
+	public static final EntityNotFoundException wrapIfNeeded(@NonNull final Throwable throwable)
 	{
-		Check.assumeNotNull(throwable, "throwable not null");
-		
 		if (throwable instanceof CalloutInitException)
 		{
 			return (EntityNotFoundException)throwable;
 		}
-		
+
 		final Throwable cause = extractCause(throwable);
 		if(cause != throwable)
 		{
 			return wrapIfNeeded(cause);
 		}
-		
+
 		return new EntityNotFoundException(extractMessage(throwable), cause);
 	}
-	
+
 	public EntityNotFoundException(final String message)
 	{
 		super(message);
 	}
-	
+
 	public EntityNotFoundException(final String message, final Throwable cause)
 	{
 		super(message, cause);

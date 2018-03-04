@@ -1,12 +1,25 @@
 package de.metas.ui.web.view;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import org.adempiere.util.NumberUtils;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -32,7 +45,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 
 public interface IViewRow
 {
-	//
 	// Document info
 	// @formatter:off
 	DocumentId getId();
@@ -51,9 +63,62 @@ public interface IViewRow
 
 	//
 	// Fields
-	// @formatter:off
+	default Set<String> getFieldNames()
+	{
+		return ImmutableSet.<String> builder()
+				.addAll(getFieldNameAndJsonValues().keySet())
+				.addAll(getViewEditorRenderModeByFieldName().keySet())
+				.addAll(getWidgetTypesByFieldName().keySet())
+				.build();
+	}
+
+	/**
+	 * @return a map with an entry for each of this row's fields.<br>
+	 *         Where the row has <code>null</code> values, the respective entry's value is {@link #NULL_JSON_VALUE}.
+	 */
 	Map<String, Object> getFieldNameAndJsonValues();
-	// @formatter:on
+
+	default int getFieldJsonValueAsInt(@NonNull final String fieldName, final int defaultValueIfNotFound)
+	{
+		final Object jsonValueObj = getFieldNameAndJsonValues().get(fieldName);
+		if (JSONNullValue.toNullIfInstance(jsonValueObj) == null)
+		{
+			return defaultValueIfNotFound;
+		}
+		else if (jsonValueObj instanceof Number)
+		{
+			return ((Number)jsonValueObj).intValue();
+		}
+		else if (jsonValueObj instanceof JSONLookupValue)
+		{
+			return ((JSONLookupValue)jsonValueObj).getKeyAsInt();
+		}
+		else
+		{
+			return Integer.parseInt(jsonValueObj.toString());
+		}
+	}
+
+	default BigDecimal getFieldJsonValueAsBigDecimal(
+			@NonNull final String fieldName,
+			final BigDecimal defaultValueIfNotFoundOrError)
+	{
+		final Object jsonValueObj = getFieldNameAndJsonValues().get(fieldName);
+
+		return NumberUtils.asBigDecimal(
+				JSONNullValue.toNullIfInstance(jsonValueObj),
+				defaultValueIfNotFoundOrError);
+	}
+
+	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	{
+		return ImmutableMap.of();
+	}
+
+	default Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
+	{
+		return ImmutableMap.of();
+	}
 
 	//
 	// Included documents (children)
@@ -62,14 +127,13 @@ public interface IViewRow
 	//
 	// Attributes
 	// @formatter:off
-	boolean hasAttributes();
-	IViewRowAttributes getAttributes() throws EntityNotFoundException;
+	default boolean hasAttributes() { return false; }
+	default IViewRowAttributes getAttributes() { throw new EntityNotFoundException("Row does not support attributes"); };
 	// @formatter:on
 
 	//
-	// Attributes
+	// IncludedView
 	// @formatter:off
-	boolean hasIncludedView();
 	default ViewId getIncludedViewId() { return null; }
 	// @formatter:on
 
@@ -81,4 +145,13 @@ public interface IViewRow
 	/** @return text to be displayed if {@link #isSingleColumn()} */
 	default ITranslatableString getSingleColumnCaption() { return ITranslatableString.empty(); }
 	// @formatter:on
+
+	/** @return a stream of given row and all it's included rows recursively */
+	public default Stream<IViewRow> streamRecursive()
+	{
+		return this.getIncludedRows()
+				.stream()
+				.map(includedRow -> includedRow.streamRecursive())
+				.reduce(Stream.of(this), Stream::concat);
+	}
 }

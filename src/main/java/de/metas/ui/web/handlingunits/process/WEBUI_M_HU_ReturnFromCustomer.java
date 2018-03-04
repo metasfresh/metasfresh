@@ -1,14 +1,19 @@
 package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
-import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 
 /*
  * #%L
@@ -23,11 +28,11 @@ import de.metas.process.ProcessPreconditionsResolution;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,10 +50,14 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final Set<Integer> huIds = getSelectedHUIds();
-		if (huIds.isEmpty())
+		if(!isHUEditorView())
 		{
-			return ProcessPreconditionsResolution.reject("No HUs selected");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
+		}
+
+		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -57,7 +66,12 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	@Override
 	protected String doIt()
 	{
-		husToReturn = getSelectedHUs();
+		husToReturn = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
+		if (husToReturn.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
 		Services.get(IHUInOutBL.class).createCustomerReturnInOutForHUs(husToReturn);
 		return MSG_OK;
 	}
@@ -67,7 +81,7 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	{
 		if (husToReturn != null && !husToReturn.isEmpty())
 		{
-			getView().removeHUsAndInvalidate(getSelectedHUs());
+			getView().removeHUsAndInvalidate(husToReturn);
 		}
 	}
 

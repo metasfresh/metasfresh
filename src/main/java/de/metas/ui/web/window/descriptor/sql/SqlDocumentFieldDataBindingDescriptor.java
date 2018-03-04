@@ -9,6 +9,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -69,8 +70,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 	private final String fieldName;
 
-	private final String sqlTableName;
-	private final String sqlTableAlias;
 	private final String sqlColumnName;
 	private final String sqlColumnSql;
 	private final Class<?> sqlValueClass;
@@ -99,8 +98,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		super();
 		fieldName = builder.fieldName;
 
-		sqlTableName = builder.getTableName();
-		sqlTableAlias = builder.getTableAlias();
 		sqlColumnName = builder.getColumnName();
 		sqlColumnSql = builder.getColumnSql();
 		sqlValueClass = builder.getSqlValueClass();
@@ -136,7 +133,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("sqlTableName", sqlTableName)
 				.add("sqlColumnName", sqlColumnName)
 				.toString();
 	}
@@ -144,16 +140,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	public String getFieldName()
 	{
 		return fieldName;
-	}
-
-	public String getTableName()
-	{
-		return sqlTableName;
-	}
-
-	public String getTableAlias()
-	{
-		return sqlTableAlias;
 	}
 
 	@Override
@@ -243,19 +229,19 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return numericKey != null && numericKey;
 	}
 
-	/**
-	 * @return true if this field has ORDER BY instructions
-	 */
+	@Override
 	public boolean isDefaultOrderBy()
 	{
 		return defaultOrderByPriority != 0;
 	}
 
+	@Override
 	public int getDefaultOrderByPriority()
 	{
 		return defaultOrderByPriority;
 	}
 
+	@Override
 	public boolean isDefaultOrderByAscending()
 	{
 		return defaultOrderByAscending;
@@ -272,10 +258,10 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	@Override
 	public IStringExpression getSqlOrderBy()
 	{
-		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : ConstantStringExpression.of(getColumnSql());
+		final IStringExpression orderByExpr = isUsingDisplayColumn() ? getDisplayColumnSqlExpression() : ConstantStringExpression.ofNullable(getColumnSql());
 		return orderByExpr;
 	}
-	
+
 	public static final class Builder
 	{
 		private String fieldName;
@@ -316,7 +302,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			//
 			// Display column
 			final SqlLookupDescriptor sqlLookupDescriptor = _lookupDescriptor == null ? null : _lookupDescriptor.castOrNull(SqlLookupDescriptor.class);
-			if (_lookupDescriptor != null)
+			if (sqlLookupDescriptor != null)
 			{
 				_usingDisplayColumn = true;
 
@@ -344,11 +330,22 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			final String columnSql = getColumnSql();
 			final String columnName = getColumnName();
 
-			final boolean isVirtualColumn = isVirtualColumn();
-			if (isVirtualColumn)
+			//
+			// Case: the SQL binding doesn't have any column set.
+			// Usually that's the case when the actual value it's not in the table name but it will be fetched by loader (from other tables).
+			// Check the Labels case for example.
+			if (Check.isEmpty(columnName, true))
+			{
+				return "NULL AS " + getFieldName();
+			}
+			//
+			// Virtual column
+			else if (isVirtualColumn())
 			{
 				return columnSql + " AS " + columnName;
 			}
+			//
+			// Regular table column
 			else
 			{
 				return getTableName() + "." + columnSql + " AS " + columnName;
@@ -405,7 +402,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				, final DocumentFieldWidgetType widgetType //
 				, final boolean encrypted //
 				, final Boolean numericKey //
-				)
+		)
 		{
 			if (!Check.isEmpty(displayColumnName))
 			{
@@ -414,6 +411,10 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			else if (java.lang.String.class == valueClass)
 			{
 				return DocumentFieldValueLoaders.toString(sqlColumnName, encrypted);
+			}
+			else if (Password.class == valueClass)
+			{
+				return DocumentFieldValueLoaders.toPassword(sqlColumnName, encrypted);
 			}
 			else if (java.lang.Integer.class == valueClass)
 			{
@@ -438,6 +439,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			{
 				return DocumentFieldValueLoaders.toByteArray(sqlColumnName, encrypted);
 			}
+			// Labels
+			else if (DocumentFieldWidgetType.Labels.getValueClass().equals(valueClass))
+			{
+				return DocumentFieldValueLoaders.toLabelValues(sqlColumnName);
+			}
 			else
 			{
 				return DocumentFieldValueLoaders.toString(sqlColumnName, encrypted);
@@ -448,6 +454,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			this.fieldName = fieldName;
 			return this;
+		}
+
+		private String getFieldName()
+		{
+			return fieldName;
 		}
 
 		public Builder setTableName(final String tableName)
@@ -578,7 +589,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		 *
 		 * @param priority priority; if positive then direction will be ascending; if negative then direction will be descending
 		 */
-		public Builder setOrderBy(final int priority)
+		public Builder setDefaultOrderBy(final int priority)
 		{
 			if (priority >= 0)
 			{

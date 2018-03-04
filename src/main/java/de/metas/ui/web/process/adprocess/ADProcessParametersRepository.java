@@ -12,8 +12,10 @@ import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.model.Document;
@@ -131,7 +133,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 		throw new UnsupportedOperationException();
 	}
 
-	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, final IDocumentEvaluatee evalCtx, final IDocumentChangesCollector changesCollector)
+	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, final IDocumentEvaluatee evalCtx)
 	{
 		final IDocumentEvaluatee evalCtxEffective;
 		if (evalCtx != null)
@@ -145,7 +147,6 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
 		return Document.builder(parametersDescriptor)
 				.setShadowParentDocumentEvaluatee(evalCtxEffective)
-				.setChangesCollector(changesCollector)
 				.initializeAsNewDocument(adPInstanceId, VERSION_DEFAULT);
 	}
 
@@ -184,21 +185,41 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
 		final Object parameter;
 		final String info;
+		final Object parameterTo;
+		final String infoTo;
 		if (fieldValue instanceof LookupValue)
 		{
 			final LookupValue lookupValue = (LookupValue)fieldValue;
 			parameter = lookupValue.getId();
 			info = lookupValue.getDisplayName();
+			parameterTo = null;
+			infoTo = null;
+		}
+		else if (fieldValue instanceof DateRangeValue)
+		{
+			final DateRangeValue dateRange = (DateRangeValue)fieldValue;
+			parameter = dateRange.getFrom();
+			info = parameter == null ? null : parameter.toString();
+			parameterTo = dateRange.getTo();
+			infoTo = parameterTo == null ? null : parameterTo.toString();
+		}
+		else if (fieldValue instanceof Password)
+		{
+			final Password password = Password.cast(fieldValue);
+			parameter = password.getAsString();
+			info = Password.OBFUSCATE_STRING;
+			parameterTo = null;
+			infoTo = null;
 		}
 		else
 		{
 			parameter = fieldValue;
 			info = fieldValue == null ? null : fieldValue.toString();
+			parameterTo = null;
+			infoTo = null;
 		}
 
-		final Object parameter_To = null;
-		final String info_To = null;
-		return new ProcessInfoParameter(parameterName, parameter, parameter_To, info, info_To);
+		return new ProcessInfoParameter(parameterName, parameter, parameterTo, info, infoTo);
 	}
 
 	@Override

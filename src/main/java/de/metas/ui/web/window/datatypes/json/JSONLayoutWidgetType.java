@@ -34,22 +34,25 @@ public enum JSONLayoutWidgetType
 {
 	Text, LongText, Link, Password
 
-	, Date, Time, DateTime
+	, Date, Time, DateTime, DateRange
 
 	, Integer, Number, Amount, Quantity, CostPrice
 
 	//
-	, List, Lookup, Address, ProductAttributes
+	, List, Lookup
+	, Labels
+	, Address, ProductAttributes
 
 	, YesNo, Switch
 
 	, Image
+	, BinaryData
 
 	, Button, ActionButton, ProcessButton, ZoomIntoButton
 	//
 	;
 
-	public static JSONLayoutWidgetType fromNullable(DocumentFieldWidgetType widgetType)
+	public static JSONLayoutWidgetType fromNullable(final DocumentFieldWidgetType widgetType)
 	{
 		if (widgetType == null)
 		{
@@ -71,6 +74,7 @@ public enum JSONLayoutWidgetType
 			.put(DocumentFieldWidgetType.Date, JSONLayoutWidgetType.Date)
 			.put(DocumentFieldWidgetType.Time, JSONLayoutWidgetType.Time)
 			.put(DocumentFieldWidgetType.DateTime, JSONLayoutWidgetType.DateTime)
+			.put(DocumentFieldWidgetType.DateRange, JSONLayoutWidgetType.DateRange)
 			.put(DocumentFieldWidgetType.Integer, JSONLayoutWidgetType.Integer)
 			.put(DocumentFieldWidgetType.Number, JSONLayoutWidgetType.Number)
 			.put(DocumentFieldWidgetType.Amount, JSONLayoutWidgetType.Amount)
@@ -78,11 +82,13 @@ public enum JSONLayoutWidgetType
 			.put(DocumentFieldWidgetType.CostPrice, JSONLayoutWidgetType.CostPrice)
 			.put(DocumentFieldWidgetType.List, JSONLayoutWidgetType.List)
 			.put(DocumentFieldWidgetType.Lookup, JSONLayoutWidgetType.Lookup)
+			.put(DocumentFieldWidgetType.Labels, JSONLayoutWidgetType.Labels)
 			.put(DocumentFieldWidgetType.Address, JSONLayoutWidgetType.Address)
 			.put(DocumentFieldWidgetType.ProductAttributes, JSONLayoutWidgetType.ProductAttributes)
 			.put(DocumentFieldWidgetType.YesNo, JSONLayoutWidgetType.YesNo)
 			.put(DocumentFieldWidgetType.Switch, JSONLayoutWidgetType.Switch)
 			.put(DocumentFieldWidgetType.Image, JSONLayoutWidgetType.Image)
+			.put(DocumentFieldWidgetType.BinaryData, JSONLayoutWidgetType.BinaryData)
 			.put(DocumentFieldWidgetType.Button, JSONLayoutWidgetType.Button)
 			.put(DocumentFieldWidgetType.ActionButton, JSONLayoutWidgetType.ActionButton)
 			.put(DocumentFieldWidgetType.ProcessButton, JSONLayoutWidgetType.ProcessButton)

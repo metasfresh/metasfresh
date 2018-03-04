@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
@@ -18,6 +19,7 @@ import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -29,6 +31,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,11 +46,11 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupVal
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -66,7 +69,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	{
 		return new Builder(lookupTableName);
 	}
-	
+
 	public static final Builder builderWithoutTableName()
 	{
 		return new Builder(null);
@@ -75,13 +78,13 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	public static final String FILTER_Any = "%";
 	private static final String FILTER_Any_SQL = "'%'";
 
-	public static final CtxName PARAM_AD_Language = CtxName.parse(Env.CTXNAME_AD_Language);
+	public static final CtxName PARAM_AD_Language = CtxNames.parse(Env.CTXNAME_AD_Language);
 	private static final CtxName PARAM_UserRolePermissionsKey = AccessSqlStringExpression.PARAM_UserRolePermissionsKey;
 
-	public static final CtxName PARAM_Filter = CtxName.parse("Filter");
-	public static final CtxName PARAM_FilterSql = CtxName.parse("FilterSql");
-	public static final CtxName PARAM_Offset = CtxName.parse("Offset/0");
-	public static final CtxName PARAM_Limit = CtxName.parse("Limit/1000");
+	public static final CtxName PARAM_Filter = CtxNames.parse("Filter");
+	public static final CtxName PARAM_FilterSql = CtxNames.parse("FilterSql");
+	public static final CtxName PARAM_Offset = CtxNames.ofNameAndDefaultValue("Offset", "0");
+	public static final CtxName PARAM_Limit = CtxNames.ofNameAndDefaultValue("Limit", "1000");
 
 	private final String lookupTableName;
 	private final ImmutableMap<String, Object> parameterValues;
@@ -89,15 +92,13 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	private final INamePairPredicate postQueryPredicate;
 
 	private LookupDataSourceContext(
-			final String lookupTableName //
-			, final Map<String, Object> values //
-			, final Object idToFilter //
-			, final INamePairPredicate postQueryPredicate //
-	)
+			final String lookupTableName,
+			final Map<String, Object> values,
+			final Object idToFilter,
+			final INamePairPredicate postQueryPredicate)
 	{
-		super();
 		this.lookupTableName = lookupTableName;
-		parameterValues = ImmutableMap.copyOf(values);
+		this.parameterValues = ImmutableMap.copyOf(values);
 		this.idToFilter = idToFilter;
 		this.postQueryPredicate = postQueryPredicate;
 	}
@@ -147,26 +148,25 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	{
 		return get_ValueAsString(PARAM_Filter.getName());
 	}
-	
+
 	public String getFilterOrIfAny(final String whenAnyFilter)
 	{
 		final String filterStr = getFilter();
-		if(filterStr == FILTER_Any)
+		if (filterStr == FILTER_Any)
 		{
 			return whenAnyFilter;
 		}
 		return filterStr;
 	}
 
-	
 	public LookupValueFilterPredicate getFilterPredicate()
 	{
 		final String filterStr = getFilter();
-		if(filterStr == FILTER_Any)
+		if (filterStr == FILTER_Any)
 		{
 			return LookupValueFilterPredicates.MATCH_ALL;
 		}
-		return LookupValueFilterPredicates.of(filterStr);
+		return LookupValueFilterPredicates.ofFilterAndLanguage(filterStr, getAD_Language());
 	}
 
 	public int getLimit(final int defaultValue)
@@ -256,6 +256,11 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		}
 	}
 
+	public String getIdToFilterAsString()
+	{
+		return idToFilter != null ? idToFilter.toString() : null;
+	}
+
 	public static final class Builder
 	{
 		private Evaluatee parentEvaluatee;
@@ -263,7 +268,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		private INamePairPredicate postQueryPredicate = INamePairPredicate.NULL;
 		private final Map<String, Object> name2value = new HashMap<>();
 		private Object idToFilter;
-		private Collection<String> _requiredParameters;
+		private Collection<CtxName> _requiredParameters;
 		private boolean _requiredParameters_copyOnAdd = false;
 
 		private final Map<String, Object> valuesCollected = new LinkedHashMap<>();
@@ -301,26 +306,26 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			//
 			// Collect all values required by the post-query predicate
 			// failIfNotFound=false because it might be that NOT all postQueryPredicate's parameters are mandatory!
-			collectContextValues(postQueryPredicate.getParameters(), false);
+			collectContextValues(CtxNames.parseAll(postQueryPredicate.getParameters()), false);
 
 			//
 			// Build the effective context
 			return new LookupDataSourceContext(lookupTableName, valuesCollected, idToFilter, postQueryPredicate);
 		}
 
-		private Collection<String> getRequiredParameters()
+		private Collection<CtxName> getRequiredParameters()
 		{
 			return _requiredParameters;
 		}
 
 		/**
 		 * Advises the builder that provided parameters shall be present the context that will be build.
-		 * 
+		 *
 		 * NOTE: previous required parameters, if any, will be lost.
-		 * 
-		 * @param requiredParameters
+		 *
+		 * @param requiredParameters the required parameters which might also contain default values to fall back to.
 		 */
-		public Builder setRequiredParameters(final Collection<String> requiredParameters)
+		public Builder setRequiredParameters(@NonNull final Collection<CtxName> requiredParameters)
 		{
 			_requiredParameters = requiredParameters;
 			_requiredParameters_copyOnAdd = true;
@@ -332,9 +337,8 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		 *
 		 * @param requiredParameter
 		 */
-		public Builder requiresParameter(final String requiredParameter)
+		public Builder requiresParameter(@NonNull final CtxName requiredParameter)
 		{
-			Check.assumeNotEmpty(requiredParameter, "requiredParameter is not empty");
 			if (_requiredParameters != null && _requiredParameters.contains(requiredParameter))
 			{
 				// we already have the parameter => do nothing
@@ -362,7 +366,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		 */
 		public Builder requiresAD_Language()
 		{
-			requiresParameter(PARAM_AD_Language.getName());
+			requiresParameter(PARAM_AD_Language);
 			return this;
 		}
 
@@ -371,10 +375,10 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		 */
 		public Builder requiresFilterAndLimit()
 		{
-			requiresParameter(PARAM_Filter.getName());
-			requiresParameter(PARAM_FilterSql.getName());
-			requiresParameter(PARAM_Limit.getName());
-			requiresParameter(PARAM_Offset.getName());
+			requiresParameter(PARAM_Filter);
+			requiresParameter(PARAM_FilterSql);
+			requiresParameter(PARAM_Limit);
+			requiresParameter(PARAM_Offset);
 			return this;
 		}
 
@@ -383,7 +387,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		 */
 		public Builder requiresUserRolePermissionsKey()
 		{
-			requiresParameter(PARAM_UserRolePermissionsKey.getName());
+			requiresParameter(PARAM_UserRolePermissionsKey);
 			return this;
 		}
 
@@ -455,14 +459,16 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return this;
 		}
 
-		private Builder collectContextValues(final Collection<String> parameters, final boolean failIfNotFound)
+		private Builder collectContextValues(
+				@Nullable final Collection<CtxName> parameters,
+				final boolean failIfNotFound)
 		{
 			if (parameters == null || parameters.isEmpty())
 			{
 				return this;
 			}
 
-			for (final String parameterName : parameters)
+			for (final CtxName parameterName : parameters)
 			{
 				collectContextValue(parameterName, failIfNotFound);
 			}
@@ -470,9 +476,11 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return this;
 		}
 
-		private void collectContextValue(final String variableName, final boolean failIfNotFound)
+		private void collectContextValue(
+				@NonNull final CtxName variableName,
+				final boolean failIfNotFound)
 		{
-			if (valuesCollected.containsKey(variableName))
+			if (valuesCollected.containsKey(variableName.getName()))
 			{
 				return;
 			}
@@ -487,35 +495,39 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			}
 			else
 			{
-				valuesCollected.put(variableName, value);
+				valuesCollected.put(variableName.getName(), value);
 			}
 		}
 
-		private final Object findContextValueOrNull(final String variableName)
+		private final Object findContextValueOrNull(@NonNull final CtxName variableName)
 		{
 			//
 			// Check given parameters
-			if (name2value.containsKey(variableName))
+			if (name2value.containsKey(variableName.getName()))
 			{
-				final Object valueObj = name2value.get(variableName);
+				final Object valueObj = name2value.get(variableName.getName());
 				if (valueObj != null)
 				{
 					return valueObj;
 				}
 			}
 
-			//
 			// Fallback to document evaluatee
 			if (parentEvaluatee != null)
 			{
-				final Object value = parentEvaluatee.get_ValueAsObject(variableName);
+				final Object value = parentEvaluatee.get_ValueAsObject(variableName.getName());
 				if (value != null)
 				{
 					return value;
 				}
 			}
 
-			//
+			// Fallback to the variableName's default value
+			if (variableName.getDefaultValue() != CtxNames.VALUE_NULL)
+			{
+				return variableName.getDefaultValue();
+			}
+
 			// Value not found
 			return null;
 		}

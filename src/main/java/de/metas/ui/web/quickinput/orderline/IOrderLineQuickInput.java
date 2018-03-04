@@ -2,9 +2,8 @@ package de.metas.ui.web.quickinput.orderline;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.I_M_Product;
-
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.ui.web.window.datatypes.LookupValue;
 
 /*
  * #%L
@@ -33,8 +32,7 @@ public interface IOrderLineQuickInput
 {
 	//@formatter:off
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
-	int getM_Product_ID();
-	I_M_Product getM_Product();
+	LookupValue getM_Product_ID();
 	//@formatter:on
 
 	//@formatter:off

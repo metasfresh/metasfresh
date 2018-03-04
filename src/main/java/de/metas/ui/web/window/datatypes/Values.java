@@ -10,6 +10,10 @@ import org.compiere.util.NamePair;
 
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.ui.web.window.datatypes.json.JSONRange;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -35,12 +39,16 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
 /**
  * Misc JSON values converters.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@UtilityClass
 public final class Values
 {
+	/**
+	 * Invokes {@link #valueToJsonObject(Object, UnaryOperator)} with {@link UnaryOperator#identity()}.
+	 */
 	public static final Object valueToJsonObject(final Object value)
 	{
 		return valueToJsonObject(value, UnaryOperator.identity());
@@ -48,8 +56,8 @@ public final class Values
 
 	/**
 	 * Convert value to JSON.
-	 * 
-	 * @param value
+	 *
+	 * @param value may be {@code null}. In that case, {@link JSONNullValue} is returned.
 	 * @param fallbackMapper mapper called when value could not be converted to JSON; takes as input the <code>value</code>
 	 * @return JSON value
 	 */
@@ -57,17 +65,27 @@ public final class Values
 	{
 		if (value == null)
 		{
-			return null;
+			return JSONNullValue.instance;
 		}
 		else if (value instanceof java.util.Date)
 		{
 			final java.util.Date valueDate = (java.util.Date)value;
 			return JSONDate.toJson(valueDate);
 		}
+		else if (value instanceof DateRangeValue)
+		{
+			final DateRangeValue dateRange = (DateRangeValue)value;
+			return JSONRange.of(dateRange);
+		}
 		else if (value instanceof LookupValue)
 		{
 			final LookupValue lookupValue = (LookupValue)value;
 			return JSONLookupValue.ofLookupValue(lookupValue);
+		}
+		else if (value instanceof LookupValuesList)
+		{
+			final LookupValuesList lookupValues = (LookupValuesList)value;
+			return JSONLookupValuesList.ofLookupValuesList(lookupValues);
 		}
 		else if (value instanceof NamePair)
 		{
@@ -97,8 +115,33 @@ public final class Values
 		}
 	}
 
-	private Values()
+	public static BigDecimal toBigDecimal(final Object value)
 	{
-		throw new UnsupportedOperationException();
+		if (value == null)
+		{
+			return null;
+		}
+		else if (value instanceof BigDecimal)
+		{
+			return (BigDecimal)value;
+		}
+		else
+		{
+			final String valueStr = value.toString().trim();
+			if (valueStr.isEmpty())
+			{
+				return null;
+			}
+			return new BigDecimal(valueStr);
+		}
+	}
+
+	public static int toInt(final Object value, final int defaultValueIfNull)
+	{
+		if (value == null)
+		{
+			return defaultValueIfNull;
+		}
+		return Integer.parseInt(value.toString());
 	}
 }

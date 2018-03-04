@@ -11,7 +11,9 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -21,16 +23,20 @@ import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.callout.api.impl.NullCalloutExecutor;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Ordering;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -46,6 +52,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.Doc
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.HighVolumeReadWriteIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
@@ -95,7 +102,7 @@ public class DocumentEntityDescriptor
 	private final ILogicExpression allowDeleteLogic;
 	private final ILogicExpression readonlyLogic;
 	private final ILogicExpression displayLogic;
-	
+
 	private final Map<String, DocumentFieldDescriptor> fields;
 	private final DocumentFieldDescriptor idField;
 
@@ -125,8 +132,6 @@ public class DocumentEntityDescriptor
 
 	private DocumentEntityDescriptor(final Builder builder)
 	{
-		super();
-
 		documentType = builder.getDocumentType();
 		documentTypeId = builder.getDocumentTypeId();
 		caption = builder.getCaption();
@@ -242,7 +247,7 @@ public class DocumentEntityDescriptor
 	{
 		return allowDeleteLogic;
 	}
-	
+
 	public ILogicExpression getReadonlyLogic()
 	{
 		return readonlyLogic;
@@ -267,7 +272,7 @@ public class DocumentEntityDescriptor
 	{
 		return fields.values();
 	}
-	
+
 	public boolean hasField(final String fieldName)
 	{
 		return fields.containsKey(fieldName);
@@ -326,6 +331,13 @@ public class DocumentEntityDescriptor
 			throw new NoSuchElementException("No included entity found for detailId=" + detailId + " in " + this);
 		}
 		return includedEntityDescriptor;
+	}
+
+	public Stream<DocumentEntityDescriptor> streamIncludedEntitiesByTableName(@NonNull final String tableName)
+	{
+		return includedEntitiesByDetailId.values()
+				.stream()
+				.filter(includedEntity -> tableName.equals(includedEntity.getTableNameOrNull()));
 	}
 
 	public DocumentEntityDataBindingDescriptor getDataBinding()
@@ -405,6 +417,33 @@ public class DocumentEntityDescriptor
 		return printProcessId.orElseThrow(() -> new IllegalStateException("No print process configured for " + this));
 	}
 
+	public boolean isPrintable()
+	{
+		return printProcessId.orElse(-1) > 0;
+	}
+
+	public boolean isCloneEnabled()
+	{
+		if (!CopyRecordFactory.isEnabled())
+		{
+			return false;
+		}
+
+		final String tableName = getTableNameOrNull();
+		if (tableName == null)
+		{
+			return false;
+		}
+
+		return CopyRecordFactory.isEnabledForTableName(tableName);
+	}
+
+	//
+	//
+	// -----------------------------------------------------------------------------------------------------------------------
+	//
+	//
+
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
@@ -426,10 +465,10 @@ public class DocumentEntityDescriptor
 
 		private DetailId _detailId;
 
-		private ILogicExpression _allowCreateNewLogic = ILogicExpression.TRUE;
-		private ILogicExpression _allowDeleteLogic = ILogicExpression.TRUE;
-		private ILogicExpression _displayLogic = ILogicExpression.TRUE;
-		private ILogicExpression _readonlyLogic = ILogicExpression.FALSE;
+		private ILogicExpression _allowCreateNewLogic = ConstantLogicExpression.TRUE;
+		private ILogicExpression _allowDeleteLogic = ConstantLogicExpression.TRUE;
+		private ILogicExpression _displayLogic = ConstantLogicExpression.TRUE;
+		private ILogicExpression _readonlyLogic = ConstantLogicExpression.FALSE;
 
 		//
 		// Callouts
@@ -494,7 +533,7 @@ public class DocumentEntityDescriptor
 
 			return id.toString();
 		}
-		
+
 		public WindowId getWindowId()
 		{
 			Check.assume(_documentType == DocumentType.Window, "expected document type to be {} but it was {}", DocumentType.Window, _documentType);
@@ -519,6 +558,18 @@ public class DocumentEntityDescriptor
 		{
 			assertNotBuilt();
 			Check.assumeNull(_fields, "Fields not already built");
+		}
+
+		public Builder addFieldIf(final boolean condition, @NonNull final Supplier<DocumentFieldDescriptor.Builder> fieldBuilderSupplier)
+		{
+			if (!condition)
+			{
+				return this;
+			}
+
+			assertFieldsNotBuilt();
+			addField(fieldBuilderSupplier.get());
+			return this;
 		}
 
 		public Builder addField(final DocumentFieldDescriptor.Builder fieldBuilder)
@@ -687,7 +738,7 @@ public class DocumentEntityDescriptor
 		{
 			return _highVolume;
 		}
-		
+
 		public boolean isQueryIncludedTabOnActivate()
 		{
 			return true;
@@ -696,9 +747,11 @@ public class DocumentEntityDescriptor
 		private DocumentFieldDependencyMap buildDependencies()
 		{
 			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
-			
-			dependenciesBuilder.add(DocumentFieldDependencyMap.DOCUMENT_Readonly, getReadonlyLogic().getParameters(), DependencyType.DocumentReadonlyLogic);
-			
+
+			dependenciesBuilder.add(DocumentFieldDependencyMap.DOCUMENT_Readonly,
+					getReadonlyLogic().getParameterNames(),
+					DependencyType.DocumentReadonlyLogic);
+
 			getFields().values().stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
 			return dependenciesBuilder.build();
 		}
@@ -979,6 +1032,16 @@ public class DocumentEntityDescriptor
 		private OptionalInt getPrintAD_Process_ID()
 		{
 			return _printProcessId;
+		}
+
+		public List<DocumentQueryOrderBy> getDefaultOrderBys()
+		{
+			return getFieldBuilders()
+					.stream()
+					.filter(field -> field.isDefaultOrderBy())
+					.sorted(Ordering.natural().onResultOf(field -> field.getDefaultOrderByPriority()))
+					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
+					.collect(ImmutableList.toImmutableList());
 		}
 	}
 }

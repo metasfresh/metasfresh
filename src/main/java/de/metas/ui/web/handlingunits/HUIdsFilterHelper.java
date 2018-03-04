@@ -2,14 +2,15 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -21,6 +22,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.UtilityClass;
@@ -56,13 +58,19 @@ public final class HUIdsFilterHelper
 	@ToString
 	public static final class HUIdsFilterData
 	{
-		public static HUIdsFilterData ofHUIds(final Collection<Integer> huIds)
+		/**
+		 * Creates a new instance with the given {@code huIds} as {@link #getInitialHUIds()}.
+		 * 
+		 * @param huIds may be empty, but not null. Empty means that <b>no</b> HU will be matched.
+		 * @return
+		 */
+		public static HUIdsFilterData ofHUIds(@NonNull final Collection<Integer> huIds)
 		{
 			final IHUQueryBuilder initialFilter = null;
 			return new HUIdsFilterData(huIds, initialFilter);
 		}
 
-		public static HUIdsFilterData ofHUQuery(final IHUQueryBuilder initialHUQuery)
+		public static HUIdsFilterData ofHUQuery(@NonNull final IHUQueryBuilder initialHUQuery)
 		{
 			final Collection<Integer> huIds = null;
 			return new HUIdsFilterData(huIds, initialHUQuery);
@@ -75,16 +83,25 @@ public final class HUIdsFilterHelper
 			return new HUIdsFilterData(huIds, initialHUQuery);
 		}
 
+		/**
+		 * Important: {@code null} means "no restriction" (i.e. we can select allHUs) whereas empty means that no HU matches the filter.
+		 */
 		private final ImmutableSet<Integer> initialHUIds;
+
 		private final IHUQueryBuilder initialHUQuery;
 
+		/**
+		 * Empty list means "no restriction".
+		 */
 		private final Set<Integer> mustHUIds;
 		private final Set<Integer> shallNotHUIds;
 
-		private HUIdsFilterData(final Collection<Integer> initialHUIds, final IHUQueryBuilder initialHUQuery)
+		private HUIdsFilterData(
+				@Nullable final Collection<Integer> initialHUIds,
+				@Nullable final IHUQueryBuilder initialHUQuery)
 		{
-			this.initialHUIds = initialHUIds != null ? ImmutableSet.copyOf(initialHUIds) : ImmutableSet.of();
-			this.initialHUQuery = initialHUQuery;
+			this.initialHUIds = initialHUIds == null ? null : ImmutableSet.copyOf(initialHUIds);
+			this.initialHUQuery = initialHUQuery != null ? initialHUQuery.copy() : null;
 			mustHUIds = new HashSet<>();
 			shallNotHUIds = new HashSet<>();
 		}
@@ -162,9 +179,8 @@ public final class HUIdsFilterHelper
 
 	public static final String FILTER_ID = "huIds";
 	private static final String FILTER_PARAM_Data = "$data";
-	
-	public static final transient HUIdsSqlDocumentFilterConverter SQL_DOCUMENT_FILTER_CONVERTER = new HUIdsSqlDocumentFilterConverter();
 
+	public static final transient HUIdsSqlDocumentFilterConverter SQL_DOCUMENT_FILTER_CONVERTER = new HUIdsSqlDocumentFilterConverter();
 
 	public static final DocumentFilter findExistingOrNull(final Collection<DocumentFilter> filters)
 	{
@@ -178,7 +194,13 @@ public final class HUIdsFilterHelper
 				.findFirst().orElse(null);
 	}
 
-	public static final DocumentFilter createFilter(final Collection<Integer> huIds)
+	/**
+	 * 
+	 * @param huIds huIds may be empty, but not null. Empty means that <b>no</b> HU will be matched.
+	 * 
+	 * @return
+	 */
+	public static final DocumentFilter createFilter(@NonNull final Collection<Integer> huIds)
 	{
 		final HUIdsFilterData filterData = HUIdsFilterData.ofHUIds(huIds);
 		return DocumentFilter.singleParameterFilter(FILTER_ID, FILTER_PARAM_Data, Operator.EQUAL, filterData);
@@ -216,33 +238,47 @@ public final class HUIdsFilterHelper
 		return !FILTER_ID.equals(filter.getFilterId());
 	}
 
-	public static boolean isHighVolume(final List<DocumentFilter> stickyFilters)
-	{
-		final HUIdsFilterData huIdsFilterData = extractFilterDataOrNull(stickyFilters);
-		if (huIdsFilterData == null)
-		{
-			return true;
-		}
-
-		final Set<Integer> huIds = huIdsFilterData.getInitialHUIds();
-		return huIds.isEmpty() || huIds.size() >= HUEditorViewBuffer_HighVolume.HIGHVOLUME_THRESHOLD;
-	}
-
 	public static final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterConverter
 	{
+		@VisibleForTesting
+		static final String SQL_TRUE = "1=1";
+
 		private HUIdsSqlDocumentFilterConverter()
 		{
 		}
 
 		@Override
-		public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter)
+		public String getSql(
+				@NonNull final SqlParamsCollector sqlParamsOut, 
+				@NonNull final DocumentFilter filter, 
+				final SqlOptions sqlOpts_NOTUSED)
 		{
 			final HUIdsFilterData huIdsFilter = extractFilterData(filter);
-			final ImmutableList<Integer> onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
+			final ImmutableList<Integer> onlyHUIds;
 
-			if (onlyHUIds.isEmpty() && !huIdsFilter.hasInitialHUQuery())
+			final boolean mustHuIdsSpecified = huIdsFilter.getMustHUIds() != null && !huIdsFilter.getMustHUIds().isEmpty();
+			final boolean initialHuIdsSpecified = huIdsFilter.getInitialHUIds() != null;
+
+			if (initialHuIdsSpecified && mustHuIdsSpecified)
 			{
-				return "1=1"; // pass through
+				onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
+			}
+			else if (initialHuIdsSpecified)
+			{
+				onlyHUIds = ImmutableList.copyOf(huIdsFilter.getInitialHUIds()); // huIdsFilter.getMustHUIds() == null
+			}
+			else if (mustHuIdsSpecified)
+			{
+				onlyHUIds = ImmutableList.copyOf(huIdsFilter.getMustHUIds());
+			}
+			else
+			{
+				onlyHUIds = null;
+			}
+
+			if (onlyHUIds == null && !huIdsFilter.hasInitialHUQuery())
+			{
+				return SQL_TRUE; // no restrictions were specified; pass through
 			}
 
 			//
@@ -255,7 +291,7 @@ public final class HUIdsFilterHelper
 			huQuery.setContext(PlainContextAware.newOutOfTrx());
 
 			// Only HUs
-			if (!onlyHUIds.isEmpty())
+			if (onlyHUIds != null)
 			{
 				huQuery.addOnlyHUIds(onlyHUIds);
 			}
@@ -264,10 +300,9 @@ public final class HUIdsFilterHelper
 			huQuery.addHUIdsToExclude(huIdsFilter.getShallNotHUIds());
 
 			final ISqlQueryFilter sqlQueryFilter = ISqlQueryFilter.cast(huQuery.createQueryFilter());
-
 			final String sql = sqlQueryFilter.getSql();
-			final List<Object> sqlParams = sqlQueryFilter.getSqlParams(Env.getCtx());
-			sqlParamsOut.collectAll(sqlParams);
+
+			sqlParamsOut.collectAll(sqlQueryFilter);
 			return sql;
 		}
 

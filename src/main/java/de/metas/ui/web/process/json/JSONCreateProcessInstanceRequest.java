@@ -1,6 +1,6 @@
 package de.metas.ui.web.process.json;
 
-import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -10,14 +10,20 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowIdsSelection;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DetailId;
+import lombok.Data;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -41,9 +47,8 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * #L%
  */
 
-@SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class JSONCreateProcessInstanceRequest implements Serializable
+public class JSONCreateProcessInstanceRequest
 {
 	@JsonProperty("processId")
 	private final String processIdStr;
@@ -51,7 +56,7 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 	private final ProcessId processId;
 
 	//
-	// Called from single row
+	// Called from single row (header or included document)
 	/** Document type (aka AD_Window_ID) */
 	@JsonProperty("windowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -68,54 +73,112 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 	@JsonProperty("rowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String rowId;
+	//
+	@JsonIgnore
+	private final transient DocumentPath singleDocumentPath;
+	//
+	@JsonProperty("selectedTab")
+	private final JSONSelectedIncludedTab selectedTab;
+	//
+	@JsonIgnore
+	private final transient List<DocumentPath> selectedIncludedDocumentPaths;
 
 	//
-	// Called from view
+	// Called from view: viewId and selected rowIds
 	@JsonProperty("viewId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String viewId;
+	private final String viewIdStr;
 	//
 	@JsonProperty("viewDocumentIds")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Set<String> viewDocumentIdsStrings;
-
+	//
 	@JsonIgnore
-	private transient DocumentIdsSelection _viewDocumentIds;
+	private final transient ViewRowIdsSelection viewRowIdsSelection;
 
 	//
-	// Calculated values
-	private final transient DocumentPath _singleDocumentPath;
+	// Called from view: parent viewId and selected rowIds
+	@JsonProperty("parentViewId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String parentViewIdStr;
+	//
+	@JsonProperty("parentViewSelectedIds")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Set<String> parentViewSelectedIdsStrings;
+	//
+	@JsonIgnore
+	private final transient ViewRowIdsSelection parentViewRowIdsSelection;
+
+	//
+	// Called from view: child viewId and selected rowIds
+	@JsonProperty("childViewId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String childViewIdStr;
+	//
+	@JsonProperty("childViewSelectedIds")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Set<String> childViewSelectedIdsStrings;
+	//
+	@JsonIgnore
+	private final transient ViewRowIdsSelection childViewRowIdsSelection;
 
 	@JsonCreator
-	private JSONCreateProcessInstanceRequest( //
-			@JsonProperty("processId") final String processIdStr //
+	private JSONCreateProcessInstanceRequest(
+			@JsonProperty("processId") final String processIdStr,
 			//
-			, @JsonProperty("documentType") final String windowIdStr //
-			, @JsonProperty("documentId") final String documentId //
-			, @JsonProperty("tabId") final String tabId//
+			@JsonProperty("documentType") final String windowIdStr,
+			@JsonProperty("documentId") final String documentId,
+			@JsonProperty("tabId") final String tabId,
+			@JsonProperty("selectedTab") final JSONSelectedIncludedTab selectedTab,
 			//
-			, @JsonProperty("rowId") final String rowId //
-			, @JsonProperty("viewId") final String viewId //
-			, @JsonProperty("viewDocumentIds") final Set<String> viewDocumentIds //
-			)
+			@JsonProperty("rowId") final String rowId,
+			//
+			@JsonProperty("viewId") final String viewIdStr,
+			@JsonProperty("viewDocumentIds") final Set<String> viewDocumentIdsStrings,
+			//
+			@JsonProperty("parentViewId") final String parentViewIdStr,
+			@JsonProperty("parentViewSelectedIds") final Set<String> parentViewDocumentIdsStrings,
+			//
+			@JsonProperty("childViewId") final String childViewIdStr,
+			@JsonProperty("childViewSelectedIds") final Set<String> childViewDocumentIdsStrings)
 	{
 		super();
 		this.processIdStr = processIdStr;
-		this.processId = ProcessId.fromJson(processIdStr);
+		processId = ProcessId.fromJson(processIdStr);
 
 		//
 		// Called from single row
 		// FIXME: atm, the frontend is not providing the windowId. Create a task for that!
-		this.windowId = WindowId.fromNullableJson(windowIdStr);
+		windowId = WindowId.fromNullableJson(windowIdStr);
 		this.documentId = documentId;
 		this.tabId = tabId;
 		this.rowId = rowId;
-		_singleDocumentPath = createDocumentPathOrNull(windowId, documentId, tabId, rowId);
+		singleDocumentPath = createDocumentPathOrNull(windowId, documentId, tabId, rowId);
+		this.selectedTab = selectedTab;
+		selectedIncludedDocumentPaths = createSelectedIncludedDocumentPaths(windowId, documentId, selectedTab);
 
 		//
-		// Called from view
-		this.viewId = viewId;
-		viewDocumentIdsStrings = viewDocumentIds == null ? null : ImmutableSet.copyOf(viewDocumentIds);
+		// When called from view: current viewId and selected rowIds
+		this.viewIdStr = viewIdStr;
+		this.viewDocumentIdsStrings = viewDocumentIdsStrings == null ? null : ImmutableSet.copyOf(viewDocumentIdsStrings);
+		if (viewIdStr != null && !viewIdStr.isEmpty())
+		{
+			final ViewId viewId = ViewId.ofViewIdString(viewIdStr, windowId);
+			final DocumentIdsSelection viewDocumentIds = DocumentIdsSelection.ofStringSet(viewDocumentIdsStrings);
+			viewRowIdsSelection = ViewRowIdsSelection.of(viewId, viewDocumentIds);
+		}
+		else
+		{
+			viewRowIdsSelection = null;
+		}
+
+		this.parentViewIdStr = parentViewIdStr;
+		this.parentViewSelectedIdsStrings = parentViewDocumentIdsStrings;
+		this.parentViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(parentViewIdStr, parentViewDocumentIdsStrings);
+
+		this.childViewIdStr = childViewIdStr;
+		this.childViewSelectedIdsStrings = childViewDocumentIdsStrings;
+		this.childViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(childViewIdStr, childViewDocumentIdsStrings);
 	}
 
 	@Override
@@ -130,8 +193,11 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 				.add("tabId", tabId)
 				.add("rowId", rowId)
 				//
-				.add("viewId", viewId)
-				.add("viewDocumentIds", _viewDocumentIds != null ? _viewDocumentIds : viewDocumentIdsStrings)
+				.add("viewRowIdsSelection", viewRowIdsSelection)
+				.add("parentViewRowIdsSelection", parentViewRowIdsSelection)
+				.add("childViewRowIdsSelection", childViewRowIdsSelection)
+				//
+				.add("selectedTab", selectedTab)
 				.toString();
 	}
 
@@ -159,24 +225,59 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 
 	public DocumentPath getSingleDocumentPath()
 	{
-		return _singleDocumentPath;
+		return singleDocumentPath;
 	}
 
-	public ViewId getViewId()
+	public ViewRowIdsSelection getViewRowIdsSelection()
 	{
-		if(viewId == null || viewId.isEmpty())
-		{
-			return null;
-		}
-		return ViewId.ofViewIdString(viewId, windowId);
+		return viewRowIdsSelection;
 	}
 
-	public DocumentIdsSelection getViewDocumentIds()
+	public ViewRowIdsSelection getParentViewRowIdsSelection()
 	{
-		if (_viewDocumentIds == null)
+		return parentViewRowIdsSelection;
+	}
+
+	public ViewRowIdsSelection getChildViewRowIdsSelection()
+	{
+		return childViewRowIdsSelection;
+	}
+
+	public List<DocumentPath> getSelectedIncludedDocumentPaths()
+	{
+		return selectedIncludedDocumentPaths;
+	}
+
+	private static final List<DocumentPath> createSelectedIncludedDocumentPaths(final WindowId windowId, final String documentIdStr, final JSONSelectedIncludedTab selectedTab)
+	{
+		if (windowId == null || Check.isEmpty(documentIdStr, true) || selectedTab == null)
 		{
-			_viewDocumentIds = DocumentIdsSelection.ofStringSet(viewDocumentIdsStrings);
+			return ImmutableList.of();
 		}
-		return _viewDocumentIds;
+
+		final DocumentId documentId = DocumentId.of(documentIdStr);
+		final DetailId selectedTabId = DetailId.fromJson(selectedTab.getTabId());
+
+		return selectedTab.getRowIds()
+				.stream()
+				.map(DocumentId::of)
+				.map(rowId -> DocumentPath.includedDocumentPath(windowId, documentId, selectedTabId, rowId))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@Data
+	public static final class JSONSelectedIncludedTab
+	{
+		@JsonProperty("tabId")
+		private final String tabId;
+		@JsonProperty("rowIds")
+		private final List<String> rowIds;
+
+		private JSONSelectedIncludedTab(@NonNull @JsonProperty("tabId") final String tabId, @JsonProperty("rowIds") final List<String> rowIds)
+		{
+			this.tabId = tabId;
+			this.rowIds = rowIds != null ? ImmutableList.copyOf(rowIds) : ImmutableList.of();
+		}
 	}
 }

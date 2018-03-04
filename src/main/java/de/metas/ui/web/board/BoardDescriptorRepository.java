@@ -77,6 +77,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
@@ -156,7 +157,7 @@ public class BoardDescriptorRepository
 		{
 			throw new EntityNotFoundException("No board found for ID=" + boardId);
 		}
-
+		
 		//
 		// Board document mappings
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(boardPO.getAD_Table_ID());
@@ -180,7 +181,8 @@ public class BoardDescriptorRepository
 		// Board document lookup provider
 		final int adValRuleId = boardPO.getAD_Val_Rule_ID();
 		final LookupDescriptorProvider documentLookupDescriptorProvider = SqlLookupDescriptor.builder()
-				.setColumnName(keyColumnName)
+				.setCtxTableName(null)
+				.setCtxColumnName(keyColumnName)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setAD_Val_Rule_ID(adValRuleId)
@@ -207,7 +209,12 @@ public class BoardDescriptorRepository
 		// Source document filters: AD_Val_Rule_ID
 		if (adValRuleId > 0)
 		{
-			final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(tableName, adValRuleId);
+			final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(
+					tableName
+					, adValRuleId
+					, null // ctx table name
+					, null // ctx column name
+					);
 			final String sqlWhereClause = validationRule.getPrefilterWhereClause()
 					.evaluate(Evaluatees.ofCtx(Env.getCtx()), OnVariableNotFound.Fail);
 
@@ -291,7 +298,8 @@ public class BoardDescriptorRepository
 		{
 			sqlSelectValues = ImmutableSet.of(fieldBinding.getSqlSelectValue());
 			final DocumentFieldValueLoader documentFieldValueLoader = fieldBinding.getDocumentFieldValueLoader();
-			fieldLoader = (rs, adLanguage) -> documentFieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
+			final LookupDescriptor lookupDescriptor = documentField.getLookupDescriptor(LookupScope.DocumentField);
+			fieldLoader = (rs, adLanguage) -> documentFieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage, lookupDescriptor);
 		}
 
 		return BoardCardFieldDescriptor.builder()
@@ -636,7 +644,7 @@ public class BoardDescriptorRepository
 			}
 			else if (value instanceof JSONLookupValue)
 			{
-				return ImmutableTranslatableString.constant(((JSONLookupValue)value).getName().trim());
+				return ImmutableTranslatableString.constant(((JSONLookupValue)value).getCaption().trim());
 			}
 		}
 		else if (widgetType.isBoolean())

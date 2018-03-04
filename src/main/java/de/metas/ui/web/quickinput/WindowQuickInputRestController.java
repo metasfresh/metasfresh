@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.controller.WindowRestController;
@@ -30,13 +29,13 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONQuickInputLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -85,7 +84,7 @@ public class WindowQuickInputRestController
 	private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 
 	@Autowired
-	private WebsocketSender websocketSender;
+	private DocumentWebsocketPublisher websocketPublisher;
 
 	private final CCache<DocumentId, QuickInput> _quickInputDocuments = CCache.newLRUCache("QuickInputDocuments", 200, 0);
 
@@ -156,9 +155,8 @@ public class WindowQuickInputRestController
 		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 		final DetailId detailId = DetailId.fromJson(tabIdStr);
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return Execution.callInNewExecution("quickInput.create", () -> {
-			final QuickInput quickInput = documentsCollection.forRootDocumentReadonly(rootDocumentPath, changesCollector, rootDocument -> {
+			final QuickInput quickInput = documentsCollection.forRootDocumentReadonly(rootDocumentPath, rootDocument -> {
 				// Make sure we can edit our root document. Fail fast.
 				DocumentPermissionsHelper.assertCanEdit(rootDocument, userSession.getUserRolePermissions());
 
@@ -191,11 +189,10 @@ public class WindowQuickInputRestController
 
 	private final <R> R forQuickInputReadonly(final QuickInputPath quickInputPath, final Function<QuickInput, R> quickInputProcessor)
 	{
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentsCollection.forDocumentReadonly(quickInputPath.getRootDocumentPath(), changesCollector, rootDocument -> {
+		return documentsCollection.forDocumentReadonly(quickInputPath.getRootDocumentPath(), rootDocument -> {
 			try (final IAutoCloseable c = getQuickInputNoLock(quickInputPath).lockForReading())
 			{
-				final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckInReadonly, changesCollector)
+				final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance)
 						.bindRootDocument(rootDocument)
 						.assertTargetWritable();
 				return quickInputProcessor.apply(quickInput);
@@ -287,10 +284,9 @@ public class WindowQuickInputRestController
 				return null; // void
 			});
 
-			final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, newJSONOptions());
-
 			// Extract and send websocket events
-			JSONDocumentChangedWebSocketEvent.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketSender);
+			final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, newJSONOptions());
+			websocketPublisher.convertAndPublish(jsonDocumentEvents);
 
 			return jsonDocumentEvents;
 		});

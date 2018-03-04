@@ -33,7 +33,7 @@ import lombok.NonNull;
  */
 
 // NOTE: don't add it to spring context! i.e. don't annotate it with @Component or similar
-/* package */final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
+public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 {
 	private final Cache<ViewId, IView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
@@ -46,16 +46,11 @@ import lombok.NonNull;
 		throw new UnsupportedOperationException("windowId not available");
 	}
 
-	@Override
-	public void setViewsRepository(final IViewsRepository viewsRepository)
-	{
-		// nothing
-	}
-
 	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
 	{
 		final IView view = (IView)notification.getValue();
-		view.close();
+		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
+		view.close(closeReason);
 	}
 
 	@Override

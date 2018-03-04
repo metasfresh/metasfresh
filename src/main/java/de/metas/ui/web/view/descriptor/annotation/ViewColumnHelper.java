@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
@@ -27,12 +26,17 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
 
@@ -90,12 +94,27 @@ public final class ViewColumnHelper
 		}
 	}
 
-	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClass(final Class<?> dataType, @NonNull final JSONViewDataType viewType)
+	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClass(
+			@NonNull final Class<?> dataType,
+			@NonNull final JSONViewDataType viewType)
 	{
 		return getDescriptor(dataType)
 				.getColumns().stream()
 				.filter(column -> column.isDisplayed(viewType))
 				.sorted(Comparator.comparing(column -> column.getSeqNo(viewType)))
+				.map(column -> createLayoutElement(column))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(
+			@NonNull final Class<?> dataType,
+			@NonNull final String... fieldNames)
+	{
+		Check.assumeNotEmpty(fieldNames, "fieldNames is not empty");
+
+		final ClassViewDescriptor descriptor = getDescriptor(dataType);
+		return Stream.of(fieldNames)
+				.map(descriptor::getColumnByName)
 				.map(column -> createLayoutElement(column))
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -114,7 +133,7 @@ public final class ViewColumnHelper
 		}
 
 		return ClassViewDescriptor.builder()
-				.className(dataType.getName())
+
 				.columns(columns)
 				.build();
 
@@ -129,6 +148,7 @@ public final class ViewColumnHelper
 		final ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType = Stream.of(viewColumnAnn.layouts())
 				.map(layoutAnn -> ClassViewColumnLayoutDescriptor.builder()
 						.viewType(layoutAnn.when())
+						.displayed(layoutAnn.displayed())
 						.seqNo(layoutAnn.seqNo())
 						.build())
 				.collect(GuavaCollectors.toImmutableMapByKey(ClassViewColumnLayoutDescriptor::getViewType));
@@ -137,6 +157,8 @@ public final class ViewColumnHelper
 				.fieldName(fieldName)
 				.caption(Services.get(IMsgBL.class).translatable(captionKey))
 				.widgetType(viewColumnAnn.widgetType())
+				.editorRenderMode(viewColumnAnn.editor())
+				.allowSorting(viewColumnAnn.sorting())
 				.fieldReference(FieldReference.of(field))
 				.layoutsByViewType(layoutsByViewType)
 				.build();
@@ -145,21 +167,27 @@ public final class ViewColumnHelper
 	private static DocumentLayoutElementDescriptor.Builder createLayoutElement(final ClassViewColumnDescriptor column)
 	{
 		return DocumentLayoutElementDescriptor.builder()
+				.setGridElement()
 				.setCaption(column.getCaption())
 				.setWidgetType(column.getWidgetType())
-				.setGridElement()
+				.setViewEditorRenderMode(column.getEditorRenderMode())
+				.setViewAllowSorting(column.isAllowSorting())
 				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName()));
 	}
 
-	public static <T extends IViewRow> ImmutableMap<String, Object> extractJsonMap(final T row)
+	/**
+	 * This helper method is intended to support individual implementations of {@link IViewRow#getFieldNameAndJsonValues()}.
+	 */
+	public static <T extends IViewRow> ImmutableMap<String, Object> extractJsonMap(@NonNull final T row)
 	{
 		final Class<? extends IViewRow> rowClass = row.getClass();
-		final Map<String, Object> result = new LinkedHashMap<>();
+
+		final LinkedHashMap<String, Object> result = new LinkedHashMap<>();
 		getDescriptor(rowClass)
 				.getColumns()
 				.forEach(column -> {
 					final Object value = extractFieldValueAsJson(row, column);
-					if (value != null)
+					if (!JSONNullValue.isNull(value))
 					{
 						result.put(column.getFieldName(), value);
 					}
@@ -186,15 +214,38 @@ public final class ViewColumnHelper
 		}
 	}
 
-	@Value
-	@Builder
+	public static <T extends IViewRow> ImmutableMap<String, DocumentFieldWidgetType> getWidgetTypesByFieldName(@NonNull final Class<T> rowClass)
+	{
+		return getDescriptor(rowClass).getWidgetTypesByFieldName();
+	}
+
+	@ToString
+	@EqualsAndHashCode
 	private static final class ClassViewDescriptor
 	{
 		public static final ClassViewDescriptor EMPTY = builder().build();
 
-		private final String className;
-		@Singular
+		@Getter
 		private final ImmutableList<ClassViewColumnDescriptor> columns;
+
+		@Getter
+		private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
+
+		@Builder
+		private ClassViewDescriptor(@Singular ImmutableList<ClassViewColumnDescriptor> columns)
+		{
+			this.columns = columns;
+			this.widgetTypesByFieldName = columns.stream()
+					.collect(ImmutableMap.toImmutableMap(ClassViewColumnDescriptor::getFieldName, ClassViewColumnDescriptor::getWidgetType));
+		}
+
+		public ClassViewColumnDescriptor getColumnByName(@NonNull final String fieldName)
+		{
+			return columns.stream()
+					.filter(column -> fieldName.equals(column.getFieldName()))
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("No column found for " + fieldName + " in " + this));
+		}
 	}
 
 	@Value
@@ -209,6 +260,9 @@ public final class ViewColumnHelper
 		@NonNull
 		private final DocumentFieldWidgetType widgetType;
 		@NonNull
+		private final ViewEditorRenderMode editorRenderMode;
+		private final boolean allowSorting;
+		@NonNull
 		private final FieldReference fieldReference;
 		@NonNull
 		private final ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType;
@@ -216,7 +270,7 @@ public final class ViewColumnHelper
 		public boolean isDisplayed(final JSONViewDataType viewType)
 		{
 			final ClassViewColumnLayoutDescriptor layout = layoutsByViewType.get(viewType);
-			return layout != null;
+			return layout != null && layout.isDisplayed();
 		}
 
 		public int getSeqNo(final JSONViewDataType viewType)
@@ -238,6 +292,7 @@ public final class ViewColumnHelper
 	{
 		@NonNull
 		private JSONViewDataType viewType;
+		private final boolean displayed;
 		private final int seqNo;
 	}
 }

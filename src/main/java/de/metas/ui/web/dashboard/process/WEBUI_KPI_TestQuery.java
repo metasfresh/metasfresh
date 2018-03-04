@@ -10,12 +10,12 @@ import org.springframework.context.annotation.Profile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.Profiles;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.base.model.I_WEBUI_KPI;
 import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.KPIDataLoader;
@@ -46,7 +46,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
  * #L%
  */
 
-@Profile(WebRestApiApplication.PROFILE_Webui)
+@Profile(Profiles.PROFILE_Webui)
 public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondition
 {
 	@Override

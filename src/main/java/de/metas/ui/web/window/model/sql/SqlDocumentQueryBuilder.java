@@ -425,7 +425,7 @@ public class SqlDocumentQueryBuilder
 		// Document filters
 		{
 			final String sqlFilters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(entityBinding)
-					.getSql(sqlParams, getDocumentFilters());
+					.getSql(sqlParams, getDocumentFilters(), SqlOptions.usingTableAlias(entityBinding.getTableAlias()));
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");

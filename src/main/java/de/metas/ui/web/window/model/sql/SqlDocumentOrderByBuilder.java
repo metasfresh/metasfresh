@@ -42,6 +42,7 @@ public class SqlDocumentOrderByBuilder
 		return new SqlDocumentOrderByBuilder(bindings);
 	}
 
+	@FunctionalInterface
 	public static interface SqlOrderByBindings
 	{
 		IStringExpression getFieldOrderBy(String fieldName);
@@ -77,7 +78,7 @@ public class SqlDocumentOrderByBuilder
 	{
 		final String fieldName = orderBy.getFieldName();
 		final IStringExpression sqlExpression = bindings.getFieldOrderBy(fieldName);
-		return SqlDocumentOrderByBuilder.buildSqlOrderBy(sqlExpression, orderBy.isAscending());
+		return SqlDocumentOrderByBuilder.buildSqlOrderBy(sqlExpression, orderBy.isAscending(), orderBy.isNullsLast());
 	}
 
 	/**
@@ -86,7 +87,7 @@ public class SqlDocumentOrderByBuilder
 	 * @param ascending
 	 * @return ORDER BY SQL or empty
 	 */
-	private static final IStringExpression buildSqlOrderBy(final IStringExpression sqlExpression, final boolean ascending)
+	private static final IStringExpression buildSqlOrderBy(final IStringExpression sqlExpression, final boolean ascending, final boolean nullsLast)
 	{
 		if (sqlExpression.isNullExpression())
 		{
@@ -94,7 +95,9 @@ public class SqlDocumentOrderByBuilder
 		}
 
 		return IStringExpression.composer()
-				.append("(").append(sqlExpression).append(")").append(ascending ? " ASC" : " DESC")
+				.append("(").append(sqlExpression).append(")")
+				.append(ascending ? " ASC" : " DESC")
+				.append(nullsLast ? " NULLS LAST" : " NULLS FIRST")
 				.build();
 	}
 

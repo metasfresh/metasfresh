@@ -43,11 +43,11 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility=Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @lombok.Data
 public final class JSONDocumentFilter
 {
-	public static List<DocumentFilter> unwrapList(final List<JSONDocumentFilter> jsonFilters, final DocumentFilterDescriptorsProvider filterDescriptorProvider)
+	public static ImmutableList<DocumentFilter> unwrapList(final List<JSONDocumentFilter> jsonFilters, final DocumentFilterDescriptorsProvider filterDescriptorProvider)
 	{
 		if (jsonFilters == null || jsonFilters.isEmpty())
 		{
@@ -159,7 +159,6 @@ public final class JSONDocumentFilter
 	public static final JSONDocumentFilter of(final DocumentFilter filter, final String adLanguage)
 	{
 		final String filterId = filter.getFilterId();
-		final boolean stickyFilter = false;
 		final List<JSONDocumentFilterParam> jsonParameters = filter.getParameters()
 				.stream()
 				.map(filterParam -> JSONDocumentFilterParam.of(filterParam))
@@ -167,42 +166,7 @@ public final class JSONDocumentFilter
 				.map(Optional::get)
 				.collect(GuavaCollectors.toImmutableList());
 
-		return new JSONDocumentFilter(filterId, filter.getCaption(adLanguage), stickyFilter, jsonParameters);
-	}
-
-	// TODO: delete after https://github.com/metasfresh/metasfresh-webui-frontend/issues/948 
-	@Deprecated
-	public static final List<JSONDocumentFilter> ofStickyFiltersList(final List<DocumentFilter> filters, final String adLanguage)
-	{
-		if (filters == null || filters.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return filters.stream()
-				.map(filter -> ofStickyFilterOrNull(filter, adLanguage))
-				.filter(filter -> filter != null)
-				.collect(GuavaCollectors.toImmutableList());
-	}
-
-	// TODO: delete after https://github.com/metasfresh/metasfresh-webui-frontend/issues/948 
-	@Deprecated
-	private static final JSONDocumentFilter ofStickyFilterOrNull(final DocumentFilter filter, final String adLanguage)
-	{
-		// Don't expose the sticky filter if it does not have a caption,
-		// because usually that's an internal filter.
-		// (see https://github.com/metasfresh/metasfresh-webui-api/issues/481)
-		final String caption = filter.getCaption(adLanguage);
-		if(Check.isEmpty(caption, true))
-		{
-			return null;
-		}
-		
-		final String filterId = filter.getFilterId();
-		final boolean stickyFilter = true;
-		final List<JSONDocumentFilterParam> jsonParameters = ImmutableList.of(); // don't export the parameters
-		
-		return new JSONDocumentFilter(filterId, caption, stickyFilter, jsonParameters);
+		return new JSONDocumentFilter(filterId, filter.getCaption(adLanguage), jsonParameters);
 	}
 
 	@JsonProperty("filterId")
@@ -212,11 +176,6 @@ public final class JSONDocumentFilter
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String caption;
 
-	// TODO: delete after https://github.com/metasfresh/metasfresh-webui-frontend/issues/948 
-	@JsonProperty("static")
-	@Deprecated
-	private boolean stickyFilter;
-
 	@JsonProperty("parameters")
 	private final List<JSONDocumentFilterParam> parameters;
 
@@ -224,14 +183,12 @@ public final class JSONDocumentFilter
 	private JSONDocumentFilter(
 			@JsonProperty("filterId") final String filterId,
 			@JsonProperty("caption") final String caption,
-			@JsonProperty("static") final boolean stickyFilter,
 			@JsonProperty("parameters") final List<JSONDocumentFilterParam> parameters)
 	{
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
 
 		this.filterId = filterId;
 		this.caption = caption;
-		this.stickyFilter = stickyFilter;
 		this.parameters = parameters == null ? ImmutableList.of() : ImmutableList.copyOf(parameters);
 	}
 }

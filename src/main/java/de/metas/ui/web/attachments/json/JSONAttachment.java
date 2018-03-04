@@ -33,7 +33,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  */
 
 @SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility=Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONAttachment implements Serializable
 {
 	public static JSONAttachment of(IDocumentAttachmentEntry entry)

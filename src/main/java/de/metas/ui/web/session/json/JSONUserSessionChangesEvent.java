@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.Builder;
+import lombok.ToString;
 
 /*
  * #%L
@@ -41,6 +42,7 @@ import lombok.Builder;
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Builder
+@ToString
 public class JSONUserSessionChangesEvent
 {
 	/** user's full name/display name */

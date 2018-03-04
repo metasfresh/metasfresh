@@ -1,6 +1,9 @@
 package de.metas.ui.web.view;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -10,13 +13,18 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.NumberUtils;
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CCache;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -34,8 +42,16 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentSaveStatus;
+import de.metas.ui.web.window.model.DocumentValidStatus;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.ui.web.window.model.sql.SqlOptions;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -62,11 +78,11 @@ import lombok.NonNull;
 
 /**
  * Default {@link IView} implementation.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class DefaultView implements IView
+public final class DefaultView implements IEditableView
 {
 	public static final Builder builder(final IViewDataRepository viewDataRepository)
 	{
@@ -77,18 +93,21 @@ public class DefaultView implements IView
 
 	private final IViewDataRepository viewDataRepository;
 
+	private final ViewId viewId;
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final ViewId parentViewId;
 	private final DocumentId parentRowId;
 	private final JSONViewDataType viewType;
+	private final ViewProfileId profileId;
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
-	private final transient ViewRowIdsOrderedSelection defaultSelection;
-	private final transient ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, ViewRowIdsOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
+	private final ViewEvaluationCtx viewEvaluationCtx;
+	private final ExtendedMemorizingSupplier<ViewRowIdsOrderedSelections> selectionsRef;
+	private final AtomicBoolean defaultSelectionDeleteBeforeCreate = new AtomicBoolean(false);
 
 	//
 	// Filters
-	private final transient DocumentFilterDescriptorsProvider viewFilterDescriptors;
+	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	/** Sticky filters (i.e. active filters which cannot be changed) */
 	private final ImmutableList<DocumentFilter> stickyFilters;
 	/** Regular filters */
@@ -103,13 +122,18 @@ public class DefaultView implements IView
 	// Caching
 	private final transient CCache<DocumentId, IViewRow> cache_rowsById;
 
+	private final IViewInvalidationAdvisor viewInvalidationAdvisor;
+
 	private DefaultView(final Builder builder)
 	{
+		viewId = builder.getViewId();
 		viewDataRepository = builder.getViewDataRepository();
 		parentViewId = builder.getParentViewId();
 		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
+		profileId = builder.getProfileId();
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
+		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
 
 		//
 		// Filters
@@ -120,20 +144,26 @@ public class DefaultView implements IView
 		//
 		// Selection
 		{
-			final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
+			viewEvaluationCtx = ViewEvaluationCtx.newInstanceFromCurrentContext();
 
-			defaultSelection = viewDataRepository.createOrderedSelection(
-					evalCtx //
-					, builder.getWindowId() //
-					, ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)) //
-			);
-			selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
+			selectionsRef = ExtendedMemorizingSupplier.of(() -> {
+				if (defaultSelectionDeleteBeforeCreate.get())
+				{
+					viewDataRepository.deleteSelection(viewId);
+				}
+				final ViewRowIdsOrderedSelection defaultSelection = viewDataRepository.createOrderedSelection(
+						getViewEvaluationCtx(),
+						viewId,
+						ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)));
+
+				return new ViewRowIdsOrderedSelections(defaultSelection);
+			});
 		}
 
 		//
 		// Cache
 		cache_rowsById = CCache.newLRUCache( //
-				viewDataRepository.getTableName() + "#rowById#viewId=" + defaultSelection.getSelectionId() // cache name
+				viewDataRepository.getTableName() + "#rowById#viewId=" + viewId.getViewId() // cache name
 				, 100 // maxSize
 				, 2 // expireAfterMinutes
 		);
@@ -146,6 +176,7 @@ public class DefaultView implements IView
 	{
 		if (_toString == null)
 		{
+			final ViewRowIdsOrderedSelection defaultSelection = selectionsRef.get().getDefaultSelection();
 			// NOTE: keep it short
 			_toString = MoreObjects.toStringHelper(this)
 					.omitNullValues()
@@ -163,7 +194,7 @@ public class DefaultView implements IView
 	{
 		return parentViewId;
 	}
-	
+
 	@Override
 	public DocumentId getParentRowId()
 	{
@@ -173,13 +204,19 @@ public class DefaultView implements IView
 	@Override
 	public ViewId getViewId()
 	{
-		return defaultSelection.getViewId();
+		return viewId;
 	}
 
 	@Override
 	public JSONViewDataType getViewType()
 	{
 		return viewType;
+	}
+
+	@Override
+	public ViewProfileId getProfileId()
+	{
+		return profileId;
 	}
 
 	@Override
@@ -194,8 +231,11 @@ public class DefaultView implements IView
 		return referencingDocumentPaths;
 	}
 
+	/**
+	 * Returns the table name as provided by our internal {@link IViewDataRepository}.
+	 */
 	@Override
-	public String getTableName()
+	public String getTableNameOrNull(@Nullable final DocumentId ignored)
 	{
 		return viewDataRepository.getTableName();
 	}
@@ -203,24 +243,28 @@ public class DefaultView implements IView
 	@Override
 	public long size()
 	{
+		final ViewRowIdsOrderedSelection defaultSelection = selectionsRef.get().getDefaultSelection();
 		return defaultSelection.getSize();
 	}
 
 	@Override
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
+		final ViewRowIdsOrderedSelection defaultSelection = selectionsRef.get().getDefaultSelection();
 		return defaultSelection.getOrderBys();
 	}
 
 	@Override
 	public int getQueryLimit()
 	{
+		final ViewRowIdsOrderedSelection defaultSelection = selectionsRef.get().getDefaultSelection();
 		return defaultSelection.getQueryLimit();
 	}
 
 	@Override
 	public boolean isQueryLimitHit()
 	{
+		final ViewRowIdsOrderedSelection defaultSelection = selectionsRef.get().getDefaultSelection();
 		return defaultSelection.isQueryLimitHit();
 	}
 
@@ -250,25 +294,42 @@ public class DefaultView implements IView
 	}
 
 	@Override
-	public void close()
+	public void close(final ViewCloseReason reason)
 	{
 		if (closed.getAndSet(true))
 		{
 			return; // already closed
 		}
 
-		// nothing now.
-		// TODO in future me might notify somebody to remove the temporary selections from database
+		final ViewRowIdsOrderedSelections selections = selectionsRef.forget();
+		viewDataRepository.scheduleDeleteSelections(selections.getSelectionIds());
 
-		logger.debug("View closed: {}", this);
+		logger.debug("View closed with reason={}: {}", reason, this);
 	}
-	
+
 	@Override
 	public void invalidateAll()
 	{
-		// TODO recreate defaultSelection, clear selectionsByOrderBys etc
 		cache_rowsById.clear();
-		
+	}
+
+	@Override
+	public void invalidateRowById(final DocumentId rowId)
+	{
+		cache_rowsById.remove(rowId);
+	}
+
+	@Override
+	public void invalidateSelection()
+	{
+		defaultSelectionDeleteBeforeCreate.set(true);
+		final ViewRowIdsOrderedSelections selections = selectionsRef.forget();
+		viewDataRepository.scheduleDeleteSelections(selections.getSelectionIds());
+
+		invalidateAll();
+
+		ViewChangesCollector.getCurrentOrAutoflush()
+				.collectFullyChanged(this);
 	}
 
 	private final void assertNotClosed()
@@ -279,20 +340,73 @@ public class DefaultView implements IView
 		}
 	}
 
+	private ViewEvaluationCtx getViewEvaluationCtx()
+	{
+		return viewEvaluationCtx;
+	}
+
 	@Override
 	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
 		assertNotClosed();
 
-		final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
+		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
 
-		final List<IViewRow> page = viewDataRepository.retrievePage(evalCtx, orderedSelection, firstRow, pageLength);
+		final List<IViewRow> rows = viewDataRepository.retrievePage(evalCtx, orderedSelection, firstRow, pageLength);
 
 		// Add to cache
-		page.forEach(row -> cache_rowsById.put(row.getId(), row));
+		rows.forEach(row -> cache_rowsById.put(row.getId(), row));
 
-		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderedSelection.getOrderBys(), page);
+		return ViewResult.builder()
+				.view(this)
+				.firstRow(firstRow)
+				.pageLength(pageLength)
+				.orderBys(orderedSelection.getOrderBys())
+				.rows(rows)
+				.columnInfos(extractViewResultColumns(rows))
+				.build();
+	}
+
+	private List<ViewResultColumn> extractViewResultColumns(final List<IViewRow> rows)
+	{
+		if (rows.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return viewDataRepository.getWidgetTypesByFieldName()
+				.entrySet()
+				.stream()
+				.map(e -> extractViewResultColumnOrNull(e.getKey(), e.getValue(), rows))
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private ViewResultColumn extractViewResultColumnOrNull(final String fieldName, final DocumentFieldWidgetType widgetType, final List<IViewRow> rows)
+	{
+		if (widgetType == DocumentFieldWidgetType.Integer)
+		{
+			return null;
+		}
+		else if (widgetType.isNumeric())
+		{
+			final int maxPrecision = rows.stream()
+					.map(row -> row.getFieldJsonValueAsBigDecimal(fieldName, BigDecimal.ZERO))
+					.mapToInt(valueBD -> NumberUtils.stripTrailingDecimalZeros(valueBD).scale())
+					.max()
+					.orElse(0);
+
+			return ViewResultColumn.builder()
+					.fieldName(fieldName)
+					.widgetType(widgetType)
+					.maxPrecision(maxPrecision)
+					.build();
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	@Override
@@ -300,12 +414,18 @@ public class DefaultView implements IView
 	{
 		assertNotClosed();
 
-		final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
+		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
 
 		final List<DocumentId> rowIds = viewDataRepository.retrieveRowIdsByPage(evalCtx, orderedSelection, firstRow, pageLength);
 
-		return ViewResult.ofViewAndRowIds(this, firstRow, pageLength, orderedSelection.getOrderBys(), rowIds);
+		return ViewResult.builder()
+				.view(this)
+				.firstRow(firstRow)
+				.pageLength(pageLength)
+				.orderBys(orderedSelection.getOrderBys())
+				.rowIds(rowIds)
+				.build();
 	}
 
 	@Override
@@ -317,31 +437,27 @@ public class DefaultView implements IView
 
 	private final IViewRow getOrRetrieveById(final DocumentId rowId)
 	{
-		return cache_rowsById.getOrLoad(rowId, () -> {
-			final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
-			return viewDataRepository.retrieveById(evalCtx, getViewId(), rowId);
-		});
+		return cache_rowsById.getOrLoad(rowId, () -> retrieveRowById(rowId));
+	}
+
+	private final IViewRow retrieveRowById(final DocumentId rowId)
+	{
+		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
+		return viewDataRepository.retrieveById(evalCtx, getViewId(), rowId);
 	}
 
 	private ViewRowIdsOrderedSelection getOrderedSelection(final List<DocumentQueryOrderBy> orderBys)
 	{
-		if (orderBys == null || orderBys.isEmpty())
-		{
-			return defaultSelection;
-		}
-
-		if (Objects.equals(defaultSelection.getOrderBys(), orderBys))
-		{
-			return defaultSelection;
-		}
-
-		return selectionsByOrderBys.computeIfAbsent(ImmutableList.copyOf(orderBys), orderBysImmutable -> viewDataRepository.createOrderedSelectionFromSelection(ViewEvaluationCtx.of(Env.getCtx()), defaultSelection, orderBysImmutable));
+		return selectionsRef.get()
+				.computeIfAbsent(
+						orderBys,
+						(defaultSelection, orderBysImmutable) -> viewDataRepository.createOrderedSelectionFromSelection(getViewEvaluationCtx(), defaultSelection, orderBysImmutable));
 	}
 
 	@Override
-	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
+	public String getSqlWhereClause(final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
 	{
-		return viewDataRepository.getSqlWhereClause(getViewId(), getAllFilters(), rowIds);
+		return viewDataRepository.getSqlWhereClause(getViewId(), getAllFilters(), rowIds, sqlOpts);
 	}
 
 	@Override
@@ -410,13 +526,7 @@ public class DefaultView implements IView
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		final String viewTableName = getTableName();
-
-		final DocumentIdsSelection rowIds = recordRefs.stream()
-				.filter(recordRef -> Objects.equals(viewTableName, recordRef.getTableName()))
-				.map(recordRef -> DocumentId.of(recordRef.getRecord_ID()))
-				.collect(DocumentIdsSelection.toDocumentIdsSelection());
-
+		final Set<DocumentId> rowIds = viewInvalidationAdvisor.findAffectedRowIds(recordRefs, this);
 		if (rowIds.isEmpty())
 		{
 			return;
@@ -430,23 +540,128 @@ public class DefaultView implements IView
 		ViewChangesCollector.getCurrentOrAutoflush().collectRowsChanged(this, rowIds);
 	}
 
+	@Override
+	public void patchViewRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	{
+		final DocumentId rowId = ctx.getRowId();
+		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
+		final DocumentPath documentPath = getById(rowId).getDocumentPath();
+
+		Services.get(ITrxManager.class)
+				.runInThreadInheritedTrx(() -> documentsCollection.forDocumentWritable(documentPath, NullDocumentChangesCollector.instance, document -> {
+					//
+					// Process changes and the save the document
+					document.processValueChanges(fieldChangeRequests, ReasonSupplier.NONE);
+					document.saveIfValidAndHasChanges();
+
+					//
+					// Important: before allowing the document to be stored back in documents collection,
+					// we need to make sure it's valid and saved.
+					final DocumentValidStatus validStatus = document.getValidStatus();
+					if (!validStatus.isValid())
+					{
+						throw new AdempiereException(validStatus.getReason());
+					}
+					final DocumentSaveStatus saveStatus = document.getSaveStatus();
+					if (saveStatus.isNotSaved())
+					{
+						throw new AdempiereException(saveStatus.getReason());
+					}
+
+					//
+					return null; // nothing/not important
+				}));
+
+		invalidateRowById(rowId);
+		ViewChangesCollector.getCurrentOrAutoflush().collectRowChanged(this, rowId);
+
+		documentsCollection.invalidateRootDocument(documentPath);
+	}
+
+	@Override
+	public LookupValuesList getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
+	{
+		final DocumentId rowId = ctx.getRowId();
+		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
+		final DocumentPath documentPath = getById(rowId).getDocumentPath();
+
+		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query));
+	}
+
+	@Override
+	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
+	{
+		final DocumentId rowId = ctx.getRowId();
+		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
+		final DocumentPath documentPath = getById(rowId).getDocumentPath();
+
+		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName));
+	}
+
+	@FunctionalInterface
+	private static interface ViewRowIdsOrderedSelectionFactory
+	{
+		ViewRowIdsOrderedSelection create(ViewRowIdsOrderedSelection defaultSelection, List<DocumentQueryOrderBy> orderBys);
+	}
+
+	private static final class ViewRowIdsOrderedSelections
+	{
+		@Getter
+		private final ViewRowIdsOrderedSelection defaultSelection;
+		private final ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, ViewRowIdsOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
+
+		public ViewRowIdsOrderedSelections(@NonNull final ViewRowIdsOrderedSelection defaultSelection)
+		{
+			this.defaultSelection = defaultSelection;
+		}
+
+		public ViewRowIdsOrderedSelection computeIfAbsent(final List<DocumentQueryOrderBy> orderBys, @NonNull final ViewRowIdsOrderedSelectionFactory factory)
+		{
+			if (orderBys == null || orderBys.isEmpty())
+			{
+				return defaultSelection;
+			}
+
+			if (Objects.equals(defaultSelection.getOrderBys(), orderBys))
+			{
+				return defaultSelection;
+			}
+
+			return selectionsByOrderBys.computeIfAbsent(ImmutableList.copyOf(orderBys), orderBysImmutable -> factory.create(defaultSelection, orderBysImmutable));
+		}
+
+		public Set<String> getSelectionIds()
+		{
+			final ImmutableSet.Builder<String> selectionIds = ImmutableSet.builder();
+			selectionIds.add(defaultSelection.getSelectionId());
+			for (final ViewRowIdsOrderedSelection selection : new ArrayList<>(selectionsByOrderBys.values()))
+			{
+				selectionIds.add(selection.getSelectionId());
+			}
+
+			return selectionIds.build();
+		}
+	}
+
 	//
 	//
 	// Builder
 	//
 	//
-
 	public static final class Builder
 	{
-		private WindowId windowId;
+		private ViewId viewId;
 		private JSONViewDataType viewType;
+		private ViewProfileId profileId;
 		private Set<DocumentPath> referencingDocumentPaths;
 		private ViewId parentViewId;
 		private DocumentId parentRowId;
 		private final IViewDataRepository viewDataRepository;
 
-		private List<DocumentFilter> _stickyFilters;
-		private List<DocumentFilter> _filters;
+		private LinkedHashMap<String, DocumentFilter> _stickyFiltersById;
+		private LinkedHashMap<String, DocumentFilter> _filtersById = new LinkedHashMap<>();
+
+		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
 
 		private Builder(@NonNull final IViewDataRepository viewDataRepository)
 		{
@@ -463,30 +678,31 @@ public class DefaultView implements IView
 			this.parentViewId = parentViewId;
 			return this;
 		}
-		
-		public Builder setParentRowId(DocumentId parentRowId)
+
+		public Builder setParentRowId(final DocumentId parentRowId)
 		{
 			this.parentRowId = parentRowId;
 			return this;
 		}
-		
+
 		private DocumentId getParentRowId()
 		{
 			return parentRowId;
 		}
 
-		public Builder setWindowId(final WindowId windowId)
+		public Builder setViewId(final ViewId viewId)
 		{
-			this.windowId = windowId;
+			this.viewId = viewId;
 			return this;
 		}
 
-		public WindowId getWindowId()
+		@NonNull
+		public ViewId getViewId()
 		{
-			return windowId;
+			return viewId;
 		}
 
-		public Builder setViewType(JSONViewDataType viewType)
+		public Builder setViewType(final JSONViewDataType viewType)
 		{
 			this.viewType = viewType;
 			return this;
@@ -497,7 +713,18 @@ public class DefaultView implements IView
 			return viewType;
 		}
 
-		public Builder setReferencingDocumentPaths(Set<DocumentPath> referencingDocumentPaths)
+		public Builder setProfileId(ViewProfileId profileId)
+		{
+			this.profileId = profileId;
+			return this;
+		}
+
+		public ViewProfileId getProfileId()
+		{
+			return profileId;
+		}
+
+		public Builder setReferencingDocumentPaths(final Set<DocumentPath> referencingDocumentPaths)
 		{
 			this.referencingDocumentPaths = referencingDocumentPaths;
 			return this;
@@ -530,11 +757,11 @@ public class DefaultView implements IView
 				return this;
 			}
 
-			if (_stickyFilters == null)
+			if (_stickyFiltersById == null)
 			{
-				_stickyFilters = new ArrayList<>();
+				_stickyFiltersById = new LinkedHashMap<>();
 			}
-			_stickyFilters.add(stickyFilter);
+			_stickyFiltersById.put(stickyFilter.getFilterId(), stickyFilter);
 
 			return this;
 		}
@@ -546,23 +773,20 @@ public class DefaultView implements IView
 				return this;
 			}
 
-			if (_stickyFilters == null)
-			{
-				_stickyFilters = new ArrayList<>();
-			}
-			_stickyFilters.addAll(stickyFilters);
+			stickyFilters.forEach(this::addStickyFilter);
 
 			return this;
 		}
 
 		private ImmutableList<DocumentFilter> getStickyFilters()
 		{
-			return _stickyFilters == null ? ImmutableList.of() : ImmutableList.copyOf(_stickyFilters);
+			return _stickyFiltersById == null ? ImmutableList.of() : ImmutableList.copyOf(_stickyFiltersById.values());
 		}
 
 		public Builder setFilters(final List<DocumentFilter> filters)
 		{
-			_filters = filters;
+			_filtersById.clear();
+			filters.forEach(filter -> _filtersById.put(filter.getFilterId(), filter));
 			return this;
 		}
 
@@ -574,7 +798,29 @@ public class DefaultView implements IView
 
 		private ImmutableList<DocumentFilter> getFilters()
 		{
-			return _filters == null ? ImmutableList.of() : ImmutableList.copyOf(_filters);
+			return _filtersById.isEmpty() ? ImmutableList.of() : ImmutableList.copyOf(_filtersById.values());
+		}
+
+		public boolean hasFilters()
+		{
+			return !_filtersById.isEmpty();
+		}
+
+		public Builder addFiltersIfAbsent(final Collection<DocumentFilter> filters)
+		{
+			filters.forEach(filter -> _filtersById.putIfAbsent(filter.getFilterId(), filter));
+			return this;
+		}
+
+		public Builder viewInvalidationAdvisor(@NonNull final IViewInvalidationAdvisor viewInvalidationAdvisor)
+		{
+			this.viewInvalidationAdvisor = viewInvalidationAdvisor;
+			return this;
+		}
+		
+		private IViewInvalidationAdvisor getViewInvalidationAdvisor()
+		{
+			return viewInvalidationAdvisor;
 		}
 	}
 }

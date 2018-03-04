@@ -1,7 +1,9 @@
 package de.metas.ui.web.view;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 
 import de.metas.logging.LogManager;
@@ -67,7 +70,7 @@ public class ViewsRepository implements IViewsRepository
 {
 	private static final Logger logger = LogManager.getLogger(ViewsRepository.class);
 
-	private final ConcurrentHashMap<ArrayKey, IViewFactory> factories = new ConcurrentHashMap<>();
+	private final ImmutableMap<ArrayKey, IViewFactory> factories;
 	@Autowired
 	private SqlViewFactory defaultFactory;
 
@@ -85,8 +88,12 @@ public class ViewsRepository implements IViewsRepository
 	 * @param neededForDBAccess not used in here, but we need to cause spring to initialize it <b>before</b> this component can be initialized.
 	 *            So, if you clean this up, please make sure that the webui-API still starts up ^^.
 	 */
-	public ViewsRepository(@NonNull final Adempiere neededForDBAccess)
+	public ViewsRepository(
+			@NonNull final Adempiere neededForDBAccess,
+			@NonNull final Collection<IViewFactory> viewFactories)
 	{
+		factories = createFactoriesMap(viewFactories);
+		logger.info("Registered following view factories: ", factories);
 	}
 
 	@PostConstruct
@@ -108,7 +115,7 @@ public class ViewsRepository implements IViewsRepository
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try
 		{
-			final int no = DB.executeUpdateEx("DELETE FROM " + tableName, ITrx.TRXNAME_NoneNotNull);
+			final int no = DB.executeUpdateEx("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_NoneNotNull);
 			logger.info("Deleted {} records(all) from table {} (Took: {})", no, tableName, stopwatch);
 		}
 		catch (final Exception ex)
@@ -117,15 +124,16 @@ public class ViewsRepository implements IViewsRepository
 		}
 	}
 
-	@Autowired
-	private void registerAnnotatedFactories(final Collection<IViewFactory> viewFactories)
+	private static ImmutableMap<ArrayKey, IViewFactory> createFactoriesMap(final Collection<IViewFactory> viewFactories)
 	{
+		final Map<ArrayKey, IViewFactory> factories = new HashMap<>();
 		for (final IViewFactory factory : viewFactories)
 		{
 			final ViewFactory annotation = factory.getClass().getAnnotation(ViewFactory.class);
 			if (annotation == null)
 			{
-				logger.info("Skip registering {} because it's not annotated with {}", factory, ViewFactory.class);
+				// this might be a development bug
+				logger.warn("Skip {} because it's not annotated with {}", factory, ViewFactory.class);
 				continue;
 			}
 
@@ -139,9 +147,10 @@ public class ViewsRepository implements IViewsRepository
 			for (final JSONViewDataType viewType : viewTypes)
 			{
 				factories.put(mkFactoryKey(windowId, viewType), factory);
-				logger.info("Registered {} for windowId={}, viewType={}", factory, windowId, viewTypes);
 			}
 		}
+
+		return ImmutableMap.copyOf(factories);
 	}
 
 	private final IViewFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
@@ -214,13 +223,20 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	public List<ViewProfile> getAvailableProfiles(final WindowId windowId, final JSONViewDataType viewDataType)
+	{
+		final IViewFactory factory = getFactory(windowId, viewDataType);
+		return factory.getAvailableProfiles(windowId);
+	}
+
+	@Override
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
 		final String viewId = null; // N/A
 		DocumentPermissionsHelper.assertViewAccess(windowId, viewId, UserSession.getCurrentPermissions());
 
 		final IViewFactory factory = getFactory(windowId, viewDataType);
-		return factory.getViewLayout(windowId, viewDataType)
+		return factory.getViewLayout(windowId, viewDataType, profileId)
 				// Enable AllowNew if we have a menu node to create new records
 				.withAllowNewRecordIfPresent(menuTreeRepo.getUserSessionMenuTree()
 						.getNewRecordNodeForWindowId(windowId)
@@ -237,8 +253,8 @@ public class ViewsRepository implements IViewsRepository
 	public IView createView(final CreateViewRequest request)
 	{
 		logger.trace("Creating new view from {}", request);
-		
-		final WindowId windowId = request.getWindowId();
+
+		final WindowId windowId = request.getViewId().getWindowId();
 		final JSONViewDataType viewType = request.getViewType();
 		final IViewFactory factory = getFactory(windowId, viewType);
 		final IView view = factory.createView(request);
@@ -259,7 +275,7 @@ public class ViewsRepository implements IViewsRepository
 	public IView filterView(final ViewId viewId, final JSONFilterViewRequest jsonRequest)
 	{
 		logger.trace("Creating filtered view from {} using {}", viewId, jsonRequest);
-		
+
 		// Get current view
 		final IView view = getView(viewId);
 
@@ -296,7 +312,7 @@ public class ViewsRepository implements IViewsRepository
 	public IView deleteStickyFilter(final ViewId viewId, final String filterId)
 	{
 		logger.trace("Deleting sticky filter {} from {}", filterId, viewId);
-		
+
 		// Get current view
 		final IView view = getView(viewId);
 
@@ -371,7 +387,7 @@ public class ViewsRepository implements IViewsRepository
 
 	@Override
 	@Async
-	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
+	public void notifyRecordsChanged(@NonNull final Set<TableRecordReference> recordRefs)
 	{
 		if (recordRefs.isEmpty())
 		{

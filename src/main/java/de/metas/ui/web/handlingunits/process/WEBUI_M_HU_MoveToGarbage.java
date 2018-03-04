@@ -4,15 +4,20 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 
 /*
  * #%L
@@ -51,10 +56,14 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final Set<Integer> huIds = getSelectedHUIds();
-		if (huIds.isEmpty())
+		if(!isHUEditorView())
 		{
-			return ProcessPreconditionsResolution.reject("No HUs selected");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
+		}
+
+		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -63,7 +72,12 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 	@Override
 	protected String doIt() throws Exception
 	{
-		final List<I_M_HU> husToDestroy = getSelectedHUs();
+		final List<I_M_HU> husToDestroy = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
+		if (husToDestroy.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
 		final Timestamp movementDate = Env.getDate(getCtx());
 		huInventoryBL.moveToGarbage(husToDestroy, movementDate);
 

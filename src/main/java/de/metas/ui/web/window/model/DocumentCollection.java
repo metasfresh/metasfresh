@@ -8,16 +8,27 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.CopyRecordSupport;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.PO;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
@@ -32,26 +43,29 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -90,7 +104,7 @@ public class DocumentCollection
 	private UserSession userSession;
 
 	@Autowired
-	private WebsocketSender websocketSender;
+	private DocumentWebsocketPublisher websocketPublisher;
 
 	private final Cache<DocumentKey, Document> rootDocuments = CacheBuilder.newBuilder().build();
 
@@ -98,12 +112,22 @@ public class DocumentCollection
 
 	/* package */ DocumentCollection()
 	{
-		super();
 	}
 
 	public DocumentDescriptorFactory getDocumentDescriptorFactory()
 	{
 		return documentDescriptorFactory;
+	}
+
+	/**
+	 * Delegates to the {@link DocumentDescriptorFactory#isWindowIdSupported(WindowId)} of this instance's {@code documentDescriptorFactory}.
+	 *
+	 * @param windowId
+	 * @return
+	 */
+	public boolean isWindowIdSupported(@Nullable final WindowId windowId)
+	{
+		return documentDescriptorFactory.isWindowIdSupported(windowId);
 	}
 
 	public final DocumentDescriptor getDocumentDescriptor(final WindowId windowId)
@@ -135,11 +159,16 @@ public class DocumentCollection
 		return windowIds != null && !windowIds.isEmpty() ? ImmutableSet.copyOf(windowIds) : ImmutableSet.of();
 	}
 
-	public <R> R forDocumentReadonly(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector, final Function<Document, R> documentProcessor)
+	public Document getDocumentReadonly(@NonNull final DocumentPath documentPath)
+	{
+		return forDocumentReadonly(documentPath, Function.identity());
+	}
+
+	public <R> R forDocumentReadonly(@NonNull final DocumentPath documentPath, @NonNull final Function<Document, R> documentProcessor)
 	{
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 
-		return forRootDocumentReadonly(rootDocumentPath, changesCollector, rootDocument -> {
+		return forRootDocumentReadonly(rootDocumentPath, rootDocument -> {
 			if (documentPath.isRootDocument())
 			{
 				return documentProcessor.apply(rootDocument);
@@ -158,12 +187,15 @@ public class DocumentCollection
 		});
 	}
 
-	private Document getOrLoadDocument(final DocumentKey documentKey)
+	private Document getOrLoadDocument(@NonNull final DocumentKey documentKey)
 	{
 		try
 		{
 			return rootDocuments.get(documentKey, () -> {
-				final Document rootDocument = retrieveRootDocumentFromRepository(documentKey).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
+
+				final Document rootDocument = retrieveRootDocumentFromRepository(documentKey)
+						.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
+
 				addToTableName2WindowIdsCache(rootDocument.getEntityDescriptor());
 				return rootDocument;
 			});
@@ -174,20 +206,23 @@ public class DocumentCollection
 		}
 	}
 
-	public <R> R forRootDocumentReadonly(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector, final Function<Document, R> rootDocumentProcessor)
+	public <R> R forRootDocumentReadonly(@NonNull final DocumentPath documentPath, final Function<Document, R> rootDocumentProcessor)
 	{
 		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
 
 		try (final IAutoCloseable readLock = getOrLoadDocument(rootDocumentKey).lockForReading())
 		{
-			final Document rootDocument = getOrLoadDocument(rootDocumentKey).copy(CopyMode.CheckInReadonly, changesCollector);
+			final Document rootDocument = getOrLoadDocument(rootDocumentKey).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 			DocumentPermissionsHelper.assertCanView(rootDocument, UserSession.getCurrentPermissions());
 
 			return rootDocumentProcessor.apply(rootDocument);
 		}
 	}
 
-	public <R> R forDocumentWritable(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector, final Function<Document, R> documentProcessor)
+	public <R> R forDocumentWritable(
+			@NonNull final DocumentPath documentPath,
+			final IDocumentChangesCollector changesCollector,
+			final Function<Document, R> documentProcessor)
 	{
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 		return forRootDocumentWritable(rootDocumentPath, changesCollector, rootDocument -> {
@@ -204,7 +239,7 @@ public class DocumentCollection
 			else
 			{
 				document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId());
-				DocumentPermissionsHelper.assertCanEdit(rootDocument, UserSession.getCurrentPermissions());
+				DocumentPermissionsHelper.assertCanEdit(rootDocument);
 			}
 
 			return documentProcessor.apply(document);
@@ -232,7 +267,7 @@ public class DocumentCollection
 			isNewRootDocument = false;
 		}
 
-		try (final IAutoCloseable readLock = lockHolder.lockForWriting())
+		try (final IAutoCloseable writeLock = lockHolder.lockForWriting())
 		{
 			final Document rootDocument;
 			if (isNewRootDocument)
@@ -245,7 +280,7 @@ public class DocumentCollection
 						.copy(CopyMode.CheckOutWritable, changesCollector)
 						.refreshFromRepositoryIfStaled();
 
-				DocumentPermissionsHelper.assertCanEdit(rootDocument, UserSession.getCurrentPermissions());
+				DocumentPermissionsHelper.assertCanEdit(rootDocument);
 			}
 
 			//
@@ -326,7 +361,7 @@ public class DocumentCollection
 
 	public void cacheReset()
 	{
-		// TODO: invalidate only those which are: 1. NOW new; 2. NOT currently editing
+		// TODO: invalidate only those which are: 1. NOT new; 2. NOT currently editing
 		rootDocuments.invalidateAll();
 		rootDocuments.cleanUp();
 	}
@@ -442,7 +477,16 @@ public class DocumentCollection
 			return zoomIntoInfo.getWindowId();
 		}
 
-		final int zoomInto_adWindowId = RecordZoomWindowFinder.findAD_Window_ID(zoomIntoInfo.getTableName());
+		final RecordZoomWindowFinder zoomWindowFinder;
+		if (zoomIntoInfo.isRecordIdPresent())
+		{
+			zoomWindowFinder = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName(), zoomIntoInfo.getRecordId());
+		}
+		else
+		{
+			zoomWindowFinder = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName());
+		}
+		final int zoomInto_adWindowId = zoomWindowFinder.findAD_Window_ID();
 		if (zoomInto_adWindowId <= 0)
 		{
 			throw new EntityNotFoundException("No windowId found")
@@ -520,8 +564,7 @@ public class DocumentCollection
 
 	public DocumentPrint createDocumentPrint(final DocumentPath documentPath)
 	{
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		final Document document = forDocumentReadonly(documentPath, changesCollector, Function.identity());
+		final Document document = getDocumentReadonly(documentPath);
 		final int windowNo = document.getWindowNo();
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 
@@ -529,7 +572,7 @@ public class DocumentCollection
 		final TableRecordReference recordRef = getTableRecordReference(documentPath);
 
 		final ProcessExecutionResult processExecutionResult = ProcessInfo.builder()
-				.setCtx(userSession.getCtx())
+				.setCtx(Env.getCtx())
 				.setAD_Process_ID(printProcessId)
 				.setWindowNo(windowNo) // important: required for ProcessInfo.findReportingLanguage
 				.setRecord(recordRef)
@@ -549,9 +592,14 @@ public class DocumentCollection
 				.build();
 	}
 
+	public DocumentWebsocketPublisher getWebsocketPublisher()
+	{
+		return websocketPublisher;
+	}
+
 	/**
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
-	 * 
+	 *
 	 * @param tableName
 	 * @param recordId
 	 */
@@ -566,16 +614,166 @@ public class DocumentCollection
 				// .filter(documentKey -> rootDocuments.getIfPresent(documentKey) != null) // not needed
 				.collect(ImmutableSet.toImmutableSet());
 
+		// stop here if no document keys found
+		if (documentKeys.isEmpty())
+		{
+			return;
+		}
+
 		//
 		// Invalidate the root documents
 		rootDocuments.invalidateAll(documentKeys);
 
 		//
 		// Notify frontend
-		documentKeys.forEach(documentKey -> {
-			final JSONDocumentChangedWebSocketEvent event = JSONDocumentChangedWebSocketEvent.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
-			websocketSender.convertAndSend(event.getWebsocketEndpoint(), event);
-		});
+		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
+	}
+
+	public void invalidateIncludedDocumentsByRecordId(final String tableName, final int recordId, final String childTableName, final int childRecordId)
+	{
+		final DocumentId documentId = DocumentId.of(recordId);
+		final DocumentId rowId = childRecordId > 0 ? DocumentId.of(childRecordId) : null;
+
+		final Function<DocumentEntityDescriptor, DocumentPath> toDocumentPath;
+		if (rowId != null)
+		{
+			toDocumentPath = includedEntity -> DocumentPath.includedDocumentPath(includedEntity.getWindowId(), documentId, includedEntity.getDetailId(), rowId);
+		}
+		else
+		{
+			// all rows for given tab/detail
+			toDocumentPath = includedEntity -> DocumentPath.includedDocumentPath(includedEntity.getWindowId(), documentId, includedEntity.getDetailId());
+		}
+
+		//
+		// Create possible documentKeys for given tableName/recordId
+		final ImmutableSet<DocumentPath> documentPaths = getCachedWindowIdsForTableName(tableName)
+				.stream()
+				.map(this::getDocumentEntityDescriptor)
+				.flatMap(rootEntity -> rootEntity.streamIncludedEntitiesByTableName(childTableName))
+				.map(toDocumentPath)
+				.collect(ImmutableSet.toImmutableSet());
+
+		documentPaths.forEach(this::invalidateIncludedDocuments);
+	}
+
+	private void invalidateIncludedDocuments(final DocumentPath documentPath)
+	{
+		Check.assume(!documentPath.isRootDocument(), "included document path: {}", documentPath);
+
+		//
+		// Get the root document if exists
+		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
+		final DocumentKey documentKey = DocumentKey.ofRootDocumentPath(rootDocumentPath);
+		final Document document = rootDocuments.getIfPresent(documentKey);
+
+		// Invalidate
+		if (document != null)
+		{
+			try (final IAutoCloseable lock = document.lockForWriting())
+			{
+				document.getIncludedDocumentsCollection(documentPath.getDetailId()).markStale(documentPath.getSingleRowId());
+			}
+		}
+
+		//
+		// Notify frontend, even if the root document does not exist (or it was not cached).
+		websocketPublisher.staleByDocumentPath(documentPath);
+	}
+
+	/**
+	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
+	 *
+	 * @param tableName
+	 * @param recordId
+	 */
+	public void invalidateRootDocument(@NonNull final DocumentPath documentPath)
+	{
+		final DocumentKey documentKey = DocumentKey.ofRootDocumentPath(documentPath);
+
+		//
+		// Invalidate the root documents
+		rootDocuments.invalidate(documentKey);
+
+		//
+		// Notify frontend
+		websocketPublisher.staleByDocumentPath(documentPath);
+	}
+
+	public Document duplicateDocument(final DocumentPath fromDocumentPath)
+	{
+		// NOTE: assume running out of transaction
+
+		// Clone the document in transaction.
+		// One of the reasons of doing this is because for some documents there are events which are triggered on each change (but on trx commit).
+		// If we would run out of transaction, those events would be triggered 10k times.
+		// e.g. copying the AD_Role. Each time a record like AD_Window_Access is created, the UserRolePermissionsEventBus.fireCacheResetEvent() is called.
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final DocumentPath toDocumentPath = trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> duplicateDocumentInTrx(fromDocumentPath));
+
+		return getDocumentReadonly(toDocumentPath);
+	}
+
+	private DocumentPath duplicateDocumentInTrx(final DocumentPath fromDocumentPath)
+	{
+		// NOTE: assume it's already running in transaction
+
+		final TableRecordReference fromRecordRef = getTableRecordReference(fromDocumentPath);
+
+		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
+		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
+
+		final PO toPO = TableModelLoader.instance.newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
+		toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport, CopyRecordFactory.getCopyRecordSupport(tableName)); // set "getValueToCopy" advisor
+		PO.copyValues(fromPO, toPO, true);
+		InterfaceWrapperHelper.save(toPO);
+
+		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(tableName);
+		childCRS.setAD_Window_ID(fromDocumentPath.getAD_Window_ID(-1));
+		childCRS.setParentPO(toPO);
+		childCRS.setBase(true);
+		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
+
+		final DocumentPath toDocumentPath = DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
+		return toDocumentPath;
+	}
+
+	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)
+	{
+		if (documentPath == null)
+		{
+			return BoilerPlateContext.EMPTY;
+		}
+
+		final Document document = getDocumentReadonly(documentPath);
+		final SourceDocument sourceDocument = new DocumentAsTemplateSourceDocument(document);
+		return MADBoilerPlate.createEditorContext(sourceDocument);
+	}
+
+	@AllArgsConstructor
+	private static final class DocumentAsTemplateSourceDocument implements SourceDocument
+	{
+		@NonNull
+		private final Document document;
+
+		@Override
+		public boolean hasFieldValue(final String fieldName)
+		{
+			return document.hasField(fieldName);
+		}
+
+		@Override
+		public Object getFieldValue(final String fieldName)
+		{
+			return document.getFieldView(fieldName).getValue();
+		}
+
+		@Override
+		public int getFieldValueAsInt(final String fieldName, final int defaultValue)
+		{
+			return document.getFieldView(fieldName).getValueAsInt(defaultValue);
+		}
 	}
 
 	@Immutable

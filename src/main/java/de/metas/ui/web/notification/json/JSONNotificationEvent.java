@@ -6,7 +6,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
+
+import lombok.ToString;
 
 /*
  * #%L
@@ -21,11 +22,11 @@ import com.google.common.base.MoreObjects;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,7 +39,7 @@ import com.google.common.base.MoreObjects;
  *
  * <pre>
  * 	{
- * 		eventType: "New" | "Read"
+ * 		eventType: "New" | "Read" | "Delete"
  * 
  * 		notificationId: <the notification id>
  * 
@@ -56,7 +57,8 @@ import com.google.common.base.MoreObjects;
  *
  */
 @SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@ToString
 public final class JSONNotificationEvent implements Serializable
 {
 	public static final JSONNotificationEvent eventNew(final JSONNotification notification, final int unreadCount)
@@ -71,9 +73,15 @@ public final class JSONNotificationEvent implements Serializable
 		return new JSONNotificationEvent(EventType.Read, notificationId, notification, unreadCount);
 	}
 
+	public static final JSONNotificationEvent eventDeleted(final String notificationId, final int unreadCount)
+	{
+		final JSONNotification notification = null;
+		return new JSONNotificationEvent(EventType.Delete, notificationId, notification, unreadCount);
+	}
+
 	public static enum EventType
 	{
-		New, Read
+		New, Read, Delete
 	};
 
 	@JsonProperty("eventType")
@@ -92,41 +100,9 @@ public final class JSONNotificationEvent implements Serializable
 
 	private JSONNotificationEvent(final EventType eventType, final String notificationId, final JSONNotification notification, final Integer unreadCount)
 	{
-		super();
 		this.eventType = eventType;
 		this.notificationId = notificationId;
 		this.notification = notification;
 		this.unreadCount = unreadCount;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("eventType", eventType)
-				.add("notificationId", notificationId)
-				.add("notification", notification)
-				.toString();
-	}
-
-	public EventType getEventType()
-	{
-		return eventType;
-	}
-
-	public String getNotificationId()
-	{
-		return notificationId;
-	}
-
-	public JSONNotification getNotification()
-	{
-		return notification;
-	}
-
-	public Integer getUnreadCount()
-	{
-		return unreadCount;
 	}
 }

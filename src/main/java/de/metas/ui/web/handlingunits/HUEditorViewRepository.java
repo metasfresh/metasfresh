@@ -1,48 +1,17 @@
 package de.metas.ui.web.handlingunits;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
+import org.adempiere.util.collections.PagedIterator.Page;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.handlingunits.storage.IHUStorage;
-import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
-import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
-import de.metas.ui.web.handlingunits.util.HUPackingInfos;
-import de.metas.ui.web.view.descriptor.SqlViewBinding;
-import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
-import lombok.Builder;
-import lombok.NonNull;
+import de.metas.ui.web.view.ViewEvaluationCtx;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
  * #%L
@@ -54,64 +23,29 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class HUEditorViewRepository
+public interface HUEditorViewRepository
 {
-	private static final transient Logger logger = LogManager.getLogger(HUEditorViewRepository.class);
+	void invalidateCache();
 
-	private final WindowId windowId;
-	private final String referencingTableName;
+	ViewRowIdsOrderedSelection createSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, List<DocumentFilter> filters, List<DocumentQueryOrderBy> orderBys);
 
-	private final HUEditorRowAttributesProvider attributesProvider;
-
-	private final SqlViewBinding sqlViewBinding;
-
-	@Builder
-	private HUEditorViewRepository(
-			@NonNull final WindowId windowId //
-			, final String referencingTableName //
-			, final HUEditorRowAttributesProvider attributesProvider //
-			, final SqlViewBinding sqlViewBinding)
-	{
-		super();
-
-		this.windowId = windowId;
-		this.referencingTableName = referencingTableName;
-
-		this.attributesProvider = attributesProvider;
-
-		this.sqlViewBinding = sqlViewBinding;
-	}
-
-	SqlViewBinding getSqlViewBinding()
-	{
-		return sqlViewBinding;
-	}
+	ViewRowIdsOrderedSelection createSelectionFromSelection(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
 	
-	SqlViewRowIdsConverter getRowIdsConverter()
-	{
-		return getSqlViewBinding().getRowIdsConverter();
-	}
+	void deleteSelection(ViewRowIdsOrderedSelection selection);
 
-	public List<HUEditorRow> retrieveHUEditorRows(@NonNull final Set<Integer> huIds)
-	{
-		final int topLevelHUId = -1;
-		return retrieveTopLevelHUs(huIds)
-				.stream()
-				.map(hu -> createHUEditorRow(hu, topLevelHUId))
-				.collect(GuavaCollectors.toImmutableList());
-	}
+	List<HUEditorRow> retrieveHUEditorRows(Set<Integer> huIds, HUEditorRowFilter filter);
 
 	/**
 	 * Retrieves the {@link HUEditorRow} hierarchy for given M_HU_ID, even if that M_HU_ID is not in scope.
@@ -119,284 +53,19 @@ public class HUEditorViewRepository
 	 * @param huId
 	 * @return {@link HUEditorRow} or null if the huId negative or zero.
 	 */
-	public HUEditorRow retrieveForHUId(final int huId)
-	{
-		if (huId <= 0)
-		{
-			return null;
-		}
+	HUEditorRow retrieveForHUId(int huId);
 
-		// TODO: check if the huId is part of our collection
+	List<Integer> retrieveHUIdsEffective(HUIdsFilterData huIdsFilter, List<DocumentFilter> filters);
 
-		final I_M_HU hu = loadOutOfTrx(huId, I_M_HU.class);
-		final int topLevelHUId = -1; // assume given huId is a top level HU
-		return createHUEditorRow(hu, topLevelHUId);
-	}
+	Page<Integer> retrieveHUIdsPage(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection selection, int firstRow, int maxRows);
 
-	private static List<I_M_HU> retrieveTopLevelHUs(@NonNull final Collection<Integer> huIds)
-	{
-		if (huIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
+	ViewRowIdsOrderedSelection addRowIdsToSelection(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIdsToAdd);
 
-		final IQueryBuilder<I_M_HU> queryBuilder = Services.get(IHandlingUnitsDAO.class)
-				.createHUQueryBuilder()
-				.setContext(PlainContextAware.newOutOfTrx())
-				.setOnlyTopLevelHUs()
-				.createQueryBuilder();
+	ViewRowIdsOrderedSelection removeRowIdsFromSelection(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIdsToRemove);
 
-		if (huIds != null && !huIds.isEmpty())
-		{
-			queryBuilder.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds);
-		}
+	boolean containsAnyOfRowIds(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 
-		return queryBuilder
-				.create()
-				.list();
-	}
+	Set<Integer> convertToRecordIds(DocumentIdsSelection rowIds);
 
-	private HUEditorRow createHUEditorRow(
-			@NonNull final I_M_HU hu,
-			final int topLevelHUId)
-	{
-		final boolean aggregatedTU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
-
-		final String huUnitTypeCode = hu.getM_HU_PI_Version().getHU_UnitType();
-		final HUEditorRowType huRecordType;
-		if (aggregatedTU)
-		{
-			huRecordType = HUEditorRowType.TU;
-		}
-		else
-		{
-			huRecordType = HUEditorRowType.ofHU_UnitType(huUnitTypeCode);
-		}
-		final String huUnitTypeDisplayName = huRecordType.getName();
-		final JSONLookupValue huUnitTypeLookupValue = JSONLookupValue.of(huUnitTypeCode, huUnitTypeDisplayName);
-
-		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
-		final boolean processed = extractProcessed(hu);
-		final int huId = hu.getM_HU_ID();
-
-		final HUEditorRow.Builder huEditorRow = HUEditorRow.builder(windowId)
-				.setRowId(HUEditorRowId.ofHU(huId, topLevelHUId))
-				.setType(huRecordType)
-				.setTopLevel(topLevelHUId <= 0)
-				.setProcessed(processed)
-				.setAttributesProvider(attributesProvider)
-				//
-				//.setHUId(huId)
-				.setCode(hu.getValue())
-				.setHUUnitType(huUnitTypeLookupValue)
-				.setHUStatus(huStatus)
-				.setPackingInfo(extractPackingInfo(hu, huRecordType));
-
-		//
-		// Product/UOM/Qty if there is only one product stored
-		final IHUProductStorage singleProductStorage = getSingleProductStorage(hu);
-		if (singleProductStorage != null)
-		{
-			huEditorRow
-					.setProduct(createProductLookupValue(singleProductStorage.getM_Product()))
-					.setUOM(createUOMLookupValue(singleProductStorage.getC_UOM()))
-					.setQtyCU(singleProductStorage.getQty());
-		}
-
-		//
-		// Included HUs
-		final int topLevelHUIdEffective = topLevelHUId > 0 ? topLevelHUId : huId;
-		if (aggregatedTU)
-		{
-			final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
-			storageFactory
-					.getStorage(hu)
-					.getProductStorages()
-					.stream()
-					.map(huStorage -> createHUEditorRow(huId, topLevelHUIdEffective, huStorage, processed))
-					.forEach(huEditorRow::addIncludedRow);
-
-		}
-		else if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitTypeCode))
-		{
-			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-			handlingUnitsDAO.retrieveIncludedHUs(hu)
-					.stream()
-					.map(includedHU -> createHUEditorRow(includedHU, topLevelHUIdEffective))
-					.forEach(huEditorRow::addIncludedRow);
-		}
-		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeCode))
-		{
-			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-			final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
-			handlingUnitsDAO.retrieveIncludedHUs(hu)
-					.stream()
-					.map(includedVHU -> storageFactory.getStorage(includedVHU))
-					.flatMap(vhuStorage -> vhuStorage.getProductStorages().stream())
-					.map(vhuProductStorage -> createHUEditorRow(huId, topLevelHUId, vhuProductStorage, processed))
-					.forEach(huEditorRow::addIncludedRow);
-		}
-		else if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitTypeCode))
-		{
-			// do nothing
-		}
-		else
-		{
-			throw new HUException("Unknown HU_UnitType=" + huUnitTypeCode + " for " + hu);
-		}
-
-		return huEditorRow.build();
-	}
-
-	private static final String extractPackingInfo(final I_M_HU hu, final HUEditorRowType huUnitType)
-	{
-		if (!huUnitType.isPureHU())
-		{
-			return "";
-		}
-		if (huUnitType == HUEditorRowType.VHU)
-		{
-			return "";
-		}
-
-		try
-		{
-			return HUPackingInfoFormatter.newInstance()
-					.setShowLU(true)
-					.format(HUPackingInfos.of(hu));
-		}
-		catch (Exception ex)
-		{
-			logger.warn("Failed extracting packing info for {}", hu, ex);
-			return "?";
-		}
-	}
-
-	/**
-	 * Note (ts): I experimented with injecting this logic from outside, in the form of a {@link java.util.function.Function},<br>
-	 * but it would have made the whole thing much more complex<br>
-	 * <b>If</b> you want to refactor this code, please make sure that it does not get more complicated to debug it.
-	 */
-	private final boolean extractProcessed(@NonNull final I_M_HU hu)
-	{
-		//
-		// Receipt schedule => consider the HU as processed if is not Planning (FIXME HARDCODED)
-		if (I_M_ReceiptSchedule.Table_Name.equals(referencingTableName))
-		{
-			return !X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus());
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	private IHUProductStorage getSingleProductStorage(final I_M_HU hu)
-	{
-		final IHUStorage huStorage = Services.get(IHandlingUnitsBL.class).getStorageFactory()
-				.getStorage(hu);
-
-		final I_M_Product product = huStorage.getSingleProductOrNull();
-		if (product == null)
-		{
-			return null;
-		}
-
-		final IHUProductStorage productStorage = huStorage.getProductStorage(product);
-		return productStorage;
-	}
-
-	private HUEditorRow createHUEditorRow(final int parent_HU_ID, final int topLevelHUId, final IHUProductStorage huStorage, final boolean processed)
-	{
-		final I_M_HU hu = huStorage.getM_HU();
-		final int huId = hu.getM_HU_ID();
-		final I_M_Product product = huStorage.getM_Product();
-		final HUEditorRowAttributesProvider attributesProviderEffective = huId != parent_HU_ID ? attributesProvider : null;
-
-		return HUEditorRow.builder(windowId)
-				.setRowId(HUEditorRowId.ofHUStorage(huId, topLevelHUId, product.getM_Product_ID()))
-				.setType(HUEditorRowType.HUStorage)
-				.setTopLevel(false)
-				.setProcessed(processed)
-				.setAttributesProvider(attributesProviderEffective)
-				//
-				//.setHUId(huId)
-				// .setCode(hu.getValue()) // NOTE: don't show value on storage level
-				.setHUUnitType(JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU"))
-				.setHUStatus(createHUStatusLookupValue(hu))
-				//
-				.setProduct(createProductLookupValue(product))
-				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
-				.setQtyCU(huStorage.getQty())
-				//
-				.build();
-	}
-
-	private static JSONLookupValue createHUStatusLookupValue(final I_M_HU hu)
-	{
-		final String huStatusKey = hu.getHUStatus();
-		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(HUEditorRow.HUSTATUS_AD_Reference_ID, huStatusKey);
-		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);
-	}
-
-	private static JSONLookupValue createProductLookupValue(final I_M_Product product)
-	{
-		if (product == null)
-		{
-			return null;
-		}
-
-		final String displayName = product.getValue() + "_" + product.getName();
-		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
-	}
-
-	private static JSONLookupValue createUOMLookupValue(final I_C_UOM uom)
-	{
-		if (uom == null)
-		{
-			return null;
-		}
-
-		return JSONLookupValue.of(uom.getC_UOM_ID(), uom.getUOMSymbol());
-	}
-
-	public List<Integer> retrieveHUIdsEffective(final HUIdsFilterData huIdsFilter, final List<DocumentFilter> filters)
-	{
-		final ImmutableList<Integer> onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
-
-		if (filters.isEmpty() && !huIdsFilter.hasInitialHUQuery())
-		{
-			return onlyHUIds;
-		}
-
-		//
-		// Create HU query
-		IHUQueryBuilder huQuery = huIdsFilter.getInitialHUQueryOrNull();
-		if (huQuery == null)
-		{
-			huQuery = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder();
-		}
-		huQuery.setContext(PlainContextAware.newOutOfTrx());
-
-		// Only HUs
-		if (!onlyHUIds.isEmpty())
-		{
-			huQuery.addOnlyHUIds(onlyHUIds);
-		}
-
-		// Exclude HUs
-		huQuery.addHUIdsToExclude(huIdsFilter.getShallNotHUIds());
-
-		//
-		// Convert the "filters" to SQL
-		if (!filters.isEmpty())
-		{
-			final SqlParamsCollector sqlFilterParams = SqlParamsCollector.newInstance();
-			final String sqlFilter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding)
-					.getSql(sqlFilterParams, filters);
-			huQuery.addFilter(TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams.toList()));
-		}
-
-		return huQuery.createQuery().listIds();
-	}
+	String buildSqlWhereClause(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 }

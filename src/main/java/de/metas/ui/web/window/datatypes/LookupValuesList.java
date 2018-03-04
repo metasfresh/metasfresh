@@ -1,7 +1,9 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -10,12 +12,16 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import lombok.NonNull;
 
@@ -48,7 +54,7 @@ import lombok.NonNull;
  *
  */
 @Immutable
-public final class LookupValuesList
+public final class LookupValuesList implements Iterable<LookupValue>
 {
 	/**
 	 * Collects {@link LookupValue}s and builds a {@link LookupValuesList} with those values.
@@ -68,28 +74,40 @@ public final class LookupValuesList
 	 */
 	public static final Collector<LookupValue, ?, LookupValuesList> collect(final Map<String, String> debugProperties)
 	{
-		final Supplier<ImmutableMap.Builder<Object, LookupValue>> supplier = ImmutableMap.Builder::new;
-		final BiConsumer<ImmutableMap.Builder<Object, LookupValue>, LookupValue> accumulator = (builder, item) -> builder.put(item.getId(), item);
-		final BinaryOperator<ImmutableMap.Builder<Object, LookupValue>> combiner = (builder1, builder2) -> builder1.putAll(builder2.build());
-		final Function<ImmutableMap.Builder<Object, LookupValue>, LookupValuesList> finisher = (builder) -> build(builder, debugProperties);
+		final Supplier<ImmutableListMultimap.Builder<Object, LookupValue>> supplier = ImmutableListMultimap.Builder::new;
+		final BiConsumer<ImmutableListMultimap.Builder<Object, LookupValue>, LookupValue> accumulator = (builder, item) -> builder.put(item.getId(), item);
+		final BinaryOperator<ImmutableListMultimap.Builder<Object, LookupValue>> combiner = (builder1, builder2) -> builder1.putAll(builder2.build());
+		final Function<ImmutableListMultimap.Builder<Object, LookupValue>, LookupValuesList> finisher = (builder) -> build(builder, debugProperties);
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
 	public static final LookupValuesList fromNullable(final LookupValue lookupValue)
 	{
-		if(lookupValue == null)
+		if (lookupValue == null)
 		{
 			return EMPTY;
 		}
-		
-		final ImmutableMap<Object, LookupValue> valuesById = ImmutableMap.of(lookupValue.getId(), lookupValue);
+
+		final ImmutableListMultimap<Object, LookupValue> valuesById = ImmutableListMultimap.of(lookupValue.getId(), lookupValue);
 		final Map<String, String> debugProperties = ImmutableMap.of();
 		return new LookupValuesList(valuesById, debugProperties);
 	}
 
-	private static final LookupValuesList build(final ImmutableMap.Builder<Object, LookupValue> valuesByIdBuilder, final Map<String, String> debugProperties)
+	public static final LookupValuesList fromCollection(final Collection<? extends LookupValue> lookupValues)
 	{
-		final ImmutableMap<Object, LookupValue> valuesById = valuesByIdBuilder.build();
+		if (lookupValues.isEmpty())
+		{
+			return EMPTY;
+		}
+
+		final ImmutableListMultimap<Object, LookupValue> valuesById = lookupValues.stream().collect(GuavaCollectors.toImmutableListMultimap(LookupValue::getId));
+		final Map<String, String> debugProperties = ImmutableMap.of();
+		return new LookupValuesList(valuesById, debugProperties);
+	}
+
+	private static final LookupValuesList build(final ImmutableListMultimap.Builder<Object, LookupValue> valuesByIdBuilder, final Map<String, String> debugProperties)
+	{
+		final ImmutableListMultimap<Object, LookupValue> valuesById = valuesByIdBuilder.build();
 		if (valuesById.isEmpty() && (debugProperties == null || debugProperties.isEmpty()))
 		{
 			return EMPTY;
@@ -101,12 +119,13 @@ public final class LookupValuesList
 
 	public static final LookupValuesList EMPTY = new LookupValuesList();
 
-	private final Map<Object, LookupValue> valuesById;
+	private final ImmutableListMultimap<Object, LookupValue> valuesById;
 	private final transient ImmutableMap<String, String> debugProperties;
 
-	private LookupValuesList(final ImmutableMap<Object, LookupValue> valuesById, final Map<String, String> debugProperties)
+	private LookupValuesList(
+			@NonNull final ImmutableListMultimap<Object, LookupValue> valuesById,
+			@Nullable final Map<String, String> debugProperties)
 	{
-		super();
 		this.valuesById = valuesById;
 		this.debugProperties = debugProperties == null || debugProperties.isEmpty() ? ImmutableMap.of() : ImmutableMap.copyOf(debugProperties);
 	}
@@ -114,8 +133,7 @@ public final class LookupValuesList
 	/** Empty constructor */
 	private LookupValuesList()
 	{
-		super();
-		valuesById = ImmutableMap.of();
+		valuesById = ImmutableListMultimap.of();
 		debugProperties = ImmutableMap.of();
 	}
 
@@ -170,6 +188,18 @@ public final class LookupValuesList
 		return valuesById.isEmpty() && debugProperties.isEmpty();
 	}
 
+	public Set<Object> getKeys()
+	{
+		return valuesById.keySet();
+	}
+
+	public Set<Integer> getKeysAsInt()
+	{
+		return valuesById.values().stream()
+				.map(LookupValue::getIdAsInt)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	/**
 	 * @return lookup values, respecting the order in which they were initially created.
 	 */
@@ -181,6 +211,12 @@ public final class LookupValuesList
 	public Stream<LookupValue> stream()
 	{
 		return getValues().stream();
+	}
+	
+	@Override
+	public Iterator<LookupValue> iterator()
+	{
+		return getValues().iterator();
 	}
 
 	/**
@@ -203,11 +239,12 @@ public final class LookupValuesList
 
 	/**
 	 * @param id
-	 * @return lookup value or null
+	 * @return first lookup value found for <code>id</code> or null
 	 */
 	public LookupValue getById(final Object id)
 	{
-		return valuesById.get(id);
+		final ImmutableList<LookupValue> values = valuesById.get(id);
+		return values.isEmpty() ? null : values.get(0);
 	}
 
 	public final <T> T transform(final Function<LookupValuesList, T> transformation)
@@ -227,8 +264,7 @@ public final class LookupValuesList
 			return this;
 		}
 
-		return valuesById.values()
-				.stream()
+		return stream()
 				.limit(maxSize)
 				.collect(collect(debugProperties));
 	}
@@ -243,8 +279,7 @@ public final class LookupValuesList
 			return this;
 		}
 
-		return valuesById.values()
-				.stream()
+		return stream()
 				.skip(offsetEffective)
 				.limit(maxSizeEffective)
 				.collect(collect(debugProperties));
@@ -265,8 +300,7 @@ public final class LookupValuesList
 		final int offsetEffective = offset <= 0 ? 0 : offset;
 		final long maxSizeEffective = maxSize <= 0 ? Long.MAX_VALUE : maxSize;
 
-		return valuesById.values()
-				.stream()
+		return stream()
 				.filter(filter)
 				.skip(offsetEffective)
 				.limit(maxSizeEffective)
@@ -281,7 +315,7 @@ public final class LookupValuesList
 		}
 		else
 		{
-			final ImmutableMap<Object, LookupValue> valuesByIdNew = ImmutableMap.<Object, LookupValue> builder()
+			final ImmutableListMultimap<Object, LookupValue> valuesByIdNew = ImmutableListMultimap.<Object, LookupValue> builder()
 					.putAll(valuesById)
 					.put(lookupValue.getId(), lookupValue)
 					.build();
@@ -308,9 +342,9 @@ public final class LookupValuesList
 		}
 
 		// Create a new values map which does not contain the the values to be removed
-		final ImmutableMap<Object, LookupValue> valuesByIdNew = valuesById.entrySet().stream()
+		final ImmutableListMultimap<Object, LookupValue> valuesByIdNew = valuesById.entries().stream()
 				.filter(entry -> !valuesToRemove.containsId(entry.getKey()))
-				.collect(GuavaCollectors.toImmutableMap());
+				.collect(GuavaCollectors.toImmutableListMultimap());
 
 		// If nothing was filtered out, we can return this
 		if (valuesById.size() == valuesByIdNew.size())

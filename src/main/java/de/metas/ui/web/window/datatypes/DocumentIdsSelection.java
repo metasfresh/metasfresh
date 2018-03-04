@@ -114,12 +114,12 @@ public final class DocumentIdsSelection
 
 	public static DocumentIdsSelection ofCommaSeparatedString(final String string)
 	{
-		if (string == null || string.isEmpty())
+		if (string == null || string.trim().isEmpty())
 		{
 			return DocumentIdsSelection.EMPTY;
 		}
 
-		if (ALL_String.equals(string))
+		if (ALL_String.equalsIgnoreCase(string))
 		{
 			return ALL;
 		}

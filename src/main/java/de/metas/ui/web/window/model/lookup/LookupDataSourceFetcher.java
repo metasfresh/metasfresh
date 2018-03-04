@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import org.compiere.util.CCache.CCacheStats;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -49,10 +51,11 @@ public interface LookupDataSourceFetcher
 	//
 	// Caching
 	//@formatter:off
-	String getCachePrefix();
 	/** @return true if this fetcher already has caching embedded so on upper levels, caching is not needed */
 	boolean isCached();
-	List<CCacheStats> getCacheStats();
+	/** @return cache prefix; relevant only if {@link #isCached()} returns <code>false</code> */
+	String getCachePrefix();
+	default List<CCacheStats> getCacheStats() { return ImmutableList.of(); }
 	//@formatter:on
 
 	/** @return tableName if available */

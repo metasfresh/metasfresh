@@ -71,8 +71,10 @@ public final class ViewActionParamDescriptor
 			else
 			{
 				lookupDescriptorProvider = SqlLookupDescriptor.builder()
-						.setColumnName(InterfaceWrapperHelper.getKeyColumnName(parameterAnnotation.sqlLookupTableName()))
+						.setCtxTableName(null) // tableName
+						.setCtxColumnName(InterfaceWrapperHelper.getKeyColumnName(parameterAnnotation.sqlLookupTableName()))
 						.setDisplayType(DisplayType.Search)
+						.setReadOnlyAccess()
 						.buildProvider();
 			}
 		}

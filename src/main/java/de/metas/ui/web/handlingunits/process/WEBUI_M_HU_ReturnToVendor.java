@@ -2,15 +2,20 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 
 /*
  * #%L
@@ -47,10 +52,14 @@ public class WEBUI_M_HU_ReturnToVendor extends HUEditorProcessTemplate implement
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final Set<Integer> huIds = getSelectedHUIds();
-		if (huIds.isEmpty())
+		if(!isHUEditorView())
 		{
-			return ProcessPreconditionsResolution.reject("No HUs selected");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
+		}
+
+		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -59,7 +68,12 @@ public class WEBUI_M_HU_ReturnToVendor extends HUEditorProcessTemplate implement
 	@Override
 	protected String doIt() throws Exception
 	{
-		husToReturn = getSelectedHUs();
+		husToReturn = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
+		if (husToReturn.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
 		final Timestamp movementDate = Env.getDate(getCtx());
 		Services.get(IHUInOutBL.class).createVendorReturnInOutForHUs(husToReturn, movementDate);
 		return MSG_OK;
@@ -70,7 +84,7 @@ public class WEBUI_M_HU_ReturnToVendor extends HUEditorProcessTemplate implement
 	{
 		if (husToReturn != null && !husToReturn.isEmpty())
 		{
-			getView().removeHUsAndInvalidate(getSelectedHUs());
+			getView().removeHUsAndInvalidate(husToReturn);
 		}
 	}
 

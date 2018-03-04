@@ -68,6 +68,12 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	void setDisplayed(LogicExpressionResult displayed);
 
+	/**
+	 * Notify this instance that it's lookup values are staled. So next time they are needed, they need to be reloaded.
+	 * 
+	 * @param triggeringFieldName
+	 * @return
+	 */
 	boolean setLookupValuesStaled(String triggeringFieldName);
 
 	LookupValuesList getLookupValues();
@@ -80,7 +86,11 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	@Override
 	DocumentValidStatus getValidStatus();
 
-	DocumentValidStatus updateStatusIfInvalidAndGet(IDocumentChangesCollector changesCollector);
+	/**
+	 * Note: it's not clear why it is enough to only evaluate the while the <i>initial</i> status is invalid..<br>
+	 * Yet I keep it that way for now, because it works as far as we see. And changing it might result in a performance degradation.
+	 */
+	DocumentValidStatus updateStatusIfInitialInvalidAndGet(IDocumentChangesCollector changesCollector);
 
 	IDocumentField copy(Document document, CopyMode copyMode);
 }

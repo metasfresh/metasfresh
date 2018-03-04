@@ -57,22 +57,25 @@ public final class DocumentFilterDescriptor
 
 	private final String filterId;
 	private final ITranslatableString displayNameTrls;
+
+	/**
+	 * To be displayed outside of the regular filters dropdown list for quicker access.
+	 */
 	private final boolean frequentUsed;
 
 	private final PanelLayoutType parametersLayoutType;
 	private final Map<String, DocumentFilterParamDescriptor> parametersByName;
 	private final List<DocumentFilterParam> internalParameters;
+	private final boolean autoFilter;
 
 	private final Map<String, Object> debugProperties;
 
 	private DocumentFilterDescriptor(final Builder builder)
 	{
-		super();
-
 		filterId = builder.filterId;
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
 
-		displayNameTrls = builder.displayNameTrls;
+		displayNameTrls = builder.getDisplayNameTrls();
 		Check.assumeNotNull(displayNameTrls, "Parameter displayNameTrls is not null");
 
 		frequentUsed = builder.frequentUsed;
@@ -80,6 +83,7 @@ public final class DocumentFilterDescriptor
 		parametersLayoutType = builder.getParametersLayoutType();
 		parametersByName = builder.buildParameters();
 		internalParameters = ImmutableList.copyOf(builder.internalParameters);
+		autoFilter = parametersByName.values().stream().anyMatch(DocumentFilterParamDescriptor::isAutoFilter);
 
 		debugProperties = builder.debugProperties == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.debugProperties);
 	}
@@ -138,6 +142,11 @@ public final class DocumentFilterDescriptor
 	public Map<String, Object> getDebugProperties()
 	{
 		return debugProperties;
+	}
+
+	public boolean isAutoFilter()
+	{
+		return autoFilter;
 	}
 
 	//
@@ -210,6 +219,21 @@ public final class DocumentFilterDescriptor
 		{
 			displayNameTrls = ImmutableTranslatableString.constant(displayName);
 			return this;
+		}
+
+		public ITranslatableString getDisplayNameTrls()
+		{
+			if (displayNameTrls != null)
+			{
+				return displayNameTrls;
+			}
+
+			if (parameters.size() == 1)
+			{
+				return parameters.get(0).getDisplayName();
+			}
+
+			return null;
 		}
 
 		public Builder setFrequentUsed(final boolean frequentUsed)

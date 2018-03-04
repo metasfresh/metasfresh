@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -68,14 +69,13 @@ public class AddressRepository
 	private static final String VERSION_DEFAULT = "0";
 	private static final ReasonSupplier REASON_ProcessAddressDocumentChanges = () -> "process Address document changes";
 
-	public Document createNewFrom(final int fromC_Location_ID, final IDocumentChangesCollector changesCollector)
+	public Document createNewFrom(final int fromC_Location_ID)
 	{
 		final DocumentEntityDescriptor entityDescriptor = descriptorsFactory.getAddressDescriptor()
 				.getEntityDescriptor();
 
 		final Document addressDoc = Document.builder(entityDescriptor)
 				.initializeAsNewDocument(nextAddressDocId::getAndIncrement, VERSION_DEFAULT)
-				.setChangesCollector(changesCollector)
 				.build();
 
 		final I_C_Location fromLocation = fromC_Location_ID <= 0 ? null : InterfaceWrapperHelper.create(Env.getCtx(), fromC_Location_ID, I_C_Location.class, ITrx.TRXNAME_ThreadInherited);
@@ -151,8 +151,9 @@ public class AddressRepository
 		addressDoc.processValueChanges(events, REASON_ProcessAddressDocumentChanges);
 
 		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit()
-				.onAfterCommit(() -> putAddressDocument(addressDoc));
+				.getCurrentTrxListenerManagerOrAutoCommit().newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> putAddressDocument(addressDoc));
+
 	}
 
 	public LookupValue complete(final int addressDocIdInt)
@@ -164,7 +165,8 @@ public class AddressRepository
 
 		Services.get(ITrxManager.class)
 				.getCurrentTrxListenerManagerOrAutoCommit()
-				.onAfterCommit(() -> removeAddressDocumentById(addressDocId));
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> removeAddressDocumentById(addressDocId));
 
 		final String locationStr = Services.get(ILocationBL.class).mkAddress(locationRecord);
 		return IntegerLookupValue.of(locationRecord.getC_Location_ID(), locationStr);

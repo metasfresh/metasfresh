@@ -1,5 +1,6 @@
 package de.metas.ui.web.process.adprocess;
 
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADPInstanceDAO;
@@ -28,6 +30,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfo.ProcessInfoBuilder;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
@@ -39,6 +42,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -51,6 +55,7 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 /*
@@ -127,18 +132,18 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	}
 
 	@Override
-	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request, final IDocumentChangesCollector changesCollector)
+	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request)
 	{
 		if (documentsCollection.isValidDocumentPath(request.getSingleDocumentPath()))
 		{
 			// In case we have a single document path, we shall fetch it as use it as evaluation context.
 			// This will make sure that the parameter's default values will be correctly computed
-			return documentsCollection.forDocumentReadonly(request.getSingleDocumentPath(), changesCollector, document -> createNewProcessInstance0(request, document.asEvaluatee(), changesCollector));
+			return documentsCollection.forDocumentReadonly(request.getSingleDocumentPath(), document -> createNewProcessInstance0(request, document.asEvaluatee()));
 		}
 		else
 		{
 			final IDocumentEvaluatee shadowParentDocumentEvaluatee = null; // N/A
-			return createNewProcessInstance0(request, shadowParentDocumentEvaluatee, changesCollector);
+			return createNewProcessInstance0(request, shadowParentDocumentEvaluatee);
 		}
 	}
 
@@ -150,8 +155,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	 */
 	private IProcessInstanceController createNewProcessInstance0(
 			@NonNull final CreateProcessInstanceRequest request,
-			@Nullable final IDocumentEvaluatee evalCtx,
-			final IDocumentChangesCollector changesCollector)
+			@Nullable final IDocumentEvaluatee evalCtx)
 	{
 		//
 		// Save process info together with it's parameters and get the the newly created AD_PInstance_ID
@@ -166,7 +170,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			// Build the parameters document
 			final ProcessDescriptor processDescriptor = getProcessDescriptor(request.getProcessId());
 			final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
-			final Document parametersDoc = ADProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId, evalCtx, changesCollector);
+			final Document parametersDoc = ADProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId, evalCtx);
 			final int windowNo = parametersDoc.getWindowNo();
 
 			// Set parameters's default values
@@ -178,12 +182,12 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			//
 			// Create (webui) process instance and add it to our internal cache.
 			final ADProcessInstanceController pinstance = ADProcessInstanceController.builder()
-					.setProcessDescriptor(processDescriptor)
-					.setInstanceId(adPInstanceId)
-					.setParameters(parametersDoc)
-					.setViewsRepo(viewsRepo)
-					.setView(request.getViewId(), request.getViewDocumentIds())
-					.setProcessClassInstance(processClassInstance)
+					.processDescriptor(processDescriptor)
+					.instanceId(adPInstanceId)
+					.parameters(parametersDoc)
+					.processClassInstance(processClassInstance)
+					.contextSingleDocumentPath(request.getSingleDocumentPath())
+					.viewId(request.getViewRowIdsSelection() != null ? request.getViewRowIdsSelection().getViewId() : null)
 					.build();
 			processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
 			return pinstance;
@@ -192,51 +196,65 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 
 	private ProcessInfo createProcessInfo(@NonNull final CreateProcessInstanceRequest request)
 	{
+		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
 		final String tableName;
 		final int recordId;
 		final String sqlWhereClause;
+		final int adWindowId;
 
 		//
 		// View
-		final ViewId viewId = request.getViewId();
-		final String viewSelectedIdsAsStr;
-		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
-		if (viewId != null)
+		if (request.getViewRowIdsSelection() != null)
 		{
+			final ViewRowIdsSelection viewRowIdsSelection = request.getViewRowIdsSelection();
+			final ViewId viewId = viewRowIdsSelection.getViewId();
 			final IView view = viewsRepo.getView(viewId);
-			final DocumentIdsSelection viewDocumentIds = request.getViewDocumentIds();
-			viewSelectedIdsAsStr = viewDocumentIds.toCommaSeparatedString();
+			final DocumentIdsSelection viewDocumentIds = viewRowIdsSelection.getRowIds();
+
+			adWindowId = viewId.getWindowId().toIntOr(-1);
 
 			if (viewDocumentIds.isSingleDocumentId())
 			{
 				final DocumentId viewSingleDocumentId = viewDocumentIds.getSingleDocumentId();
 				final TableRecordReference recordRef = view.getTableRecordReferenceOrNull(viewSingleDocumentId);
-				if(recordRef != null)
+				if (recordRef != null)
 				{
 					tableName = recordRef.getTableName();
 					recordId = recordRef.getRecord_ID();
 				}
 				else
 				{
-					tableName = view.getTableName();
+					tableName = view.getTableNameOrNull(viewSingleDocumentId);
 					recordId = -1;
 				}
 			}
 			else
 			{
-				tableName = view.getTableName();
+				tableName = view.getTableNameOrNull(null);
 				recordId = -1;
 			}
 
-			sqlWhereClause = viewDocumentIds.isEmpty() ? null : view.getSqlWhereClause(viewDocumentIds);
+
+			final boolean emptyTableName = Check.isEmpty(tableName);
+			if (viewDocumentIds.isEmpty() || emptyTableName)
+			{
+				// Note: in the case of material cockpit, there is no single tableName to be returned by view.getTableNameOrNull,
+				// so we do have selected rows, but no table name, which is OK
+				sqlWhereClause = null;
+			}
+			else
+			{
+				sqlWhereClause = view.getSqlWhereClause(viewDocumentIds, SqlOptions.usingTableName(tableName));
+			}
 		}
 		//
 		// Single document call
 		else if (singleDocumentPath != null)
 		{
-			viewSelectedIdsAsStr = null;
-
 			final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(singleDocumentPath);
+
+			adWindowId = singleDocumentPath.getWindowId().toIntOr(-1);
+
 			tableName = entityDescriptor.getTableNameOrNull();
 			if (singleDocumentPath.isRootDocument())
 			{
@@ -254,25 +272,56 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		// From menu
 		else
 		{
-			viewSelectedIdsAsStr = null;
 			tableName = null;
 			recordId = -1;
 			sqlWhereClause = null;
+			adWindowId = -1;
 		}
 
-		return ProcessInfo.builder()
+		//
+		final Set<TableRecordReference> selectedIncludedRecords = request.getSelectedIncludedDocumentPaths()
+				.stream()
+				.map(documentDescriptorFactory::getTableRecordReference)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(request.getProcessIdAsInt())
+				.setAD_Window_ID(adWindowId)
 				.setRecord(tableName, recordId)
-				.setWhereClause(sqlWhereClause)
-				//
-				.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
-				.addParameter(ViewBasedProcessTemplate.PARAM_ViewWindowId, viewId == null ? null : viewId.getWindowId().toJson()) // internal parameter
-				.addParameter(ViewBasedProcessTemplate.PARAM_ViewId, viewId == null ? null : viewId.getViewId()) // internal parameter
-				.addParameter(ViewBasedProcessTemplate.PARAM_ViewSelectedIds, viewSelectedIdsAsStr) // internal parameter
-				//
-				.build();
+				.setSelectedIncludedRecords(selectedIncludedRecords)
+				.setWhereClause(sqlWhereClause);
+
+		//
+		// View related internal parameters
+		if (request.getViewRowIdsSelection() != null)
+		{
+			final ViewRowIdsSelection viewRowIdsSelection = request.getViewRowIdsSelection();
+			processInfoBuilder
+					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+					.addParameter(ViewBasedProcessTemplate.PARAM_ViewId, viewRowIdsSelection.getViewId().toJson())
+					.addParameter(ViewBasedProcessTemplate.PARAM_ViewSelectedIds, viewRowIdsSelection.getRowIds().toCommaSeparatedString());
+		}
+		if (request.getParentViewRowIdsSelection() != null)
+		{
+			final ViewRowIdsSelection parentViewRowIdsSelection = request.getParentViewRowIdsSelection();
+			processInfoBuilder
+					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+					.addParameter(ViewBasedProcessTemplate.PARAM_ParentViewId, parentViewRowIdsSelection.getViewId().toJson())
+					.addParameter(ViewBasedProcessTemplate.PARAM_ParentViewSelectedIds, parentViewRowIdsSelection.getRowIds().toCommaSeparatedString());
+
+		}
+		if (request.getChildViewRowIdsSelection() != null)
+		{
+			final ViewRowIdsSelection childViewRowIdsSelection = request.getChildViewRowIdsSelection();
+			processInfoBuilder
+					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+					.addParameter(ViewBasedProcessTemplate.PARAM_ChildViewId, childViewRowIdsSelection.getViewId().toJson())
+					.addParameter(ViewBasedProcessTemplate.PARAM_ChildViewSelectedIds, childViewRowIdsSelection.getRowIds().toCommaSeparatedString());
+		}
+
+		return processInfoBuilder.build();
 	}
 
 	private ADProcessInstanceController retrieveProcessInstance(final DocumentId adPInstanceId)
@@ -310,21 +359,16 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			//
 			// View informations
 			final IRangeAwareParams processInfoParams = processInfo.getParameterAsIParams();
-			final String viewWindowId = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewWindowId);
 			final String viewIdStr = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewId);
-			final ViewId viewId = Strings.isNullOrEmpty(viewIdStr) ? null : ViewId.of(viewWindowId, viewIdStr);
-			//
-			final String viewSelectedIdsStr = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewSelectedIds);
-			final DocumentIdsSelection viewSelectedIds = DocumentIdsSelection.ofCommaSeparatedString(viewSelectedIdsStr);
+			final ViewId viewId = Strings.isNullOrEmpty(viewIdStr) ? null : ViewId.ofViewIdString(viewIdStr);
 
 			//
 			return ADProcessInstanceController.builder()
-					.setProcessDescriptor(processDescriptor)
-					.setInstanceId(adPInstanceId)
-					.setParameters(parametersDoc)
-					.setViewsRepo(viewsRepo)
-					.setView(viewId, viewSelectedIds)
-					.setProcessClassInstance(processClassInstance)
+					.processDescriptor(processDescriptor)
+					.instanceId(adPInstanceId)
+					.parameters(parametersDoc)
+					.processClassInstance(processClassInstance)
+					.viewId(viewId)
 					.build();
 		}
 	}
@@ -334,7 +378,10 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	{
 		try (final IAutoCloseable readLock = getOrLoad(pinstanceId).lockForReading())
 		{
-			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId);
+			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId)
+					.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance)
+					.bindContextSingleDocumentIfPossible(documentsCollection);
+
 			try (final IAutoCloseable c = processInstance.activate())
 			{
 				return processor.apply(processInstance);
@@ -359,7 +406,9 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	{
 		try (final IAutoCloseable writeLock = getOrLoad(pinstanceId).lockForWriting())
 		{
-			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId).copy(CopyMode.CheckOutWritable, changesCollector);
+			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId)
+					.copy(CopyMode.CheckOutWritable, changesCollector)
+					.bindContextSingleDocumentIfPossible(documentsCollection);
 
 			// Make sure the process was not already executed.
 			// If it was executed we are not allowed to change it.

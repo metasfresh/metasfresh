@@ -15,6 +15,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.Password;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.model.DocumentFieldChange;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
@@ -45,13 +47,13 @@ import io.swagger.annotations.ApiModel;
 
 @ApiModel("document-field")
 @JsonPropertyOrder({
-		"field" //
-		, "value", "value-reason" //
-		, "readonly", "readonly-reason" //
-		, "mandatory", "mandatory-reason" //
-		, "displayed", "displayed-reason" //
-		, "lookupValuesStale", "lookupValuesStale-reason" //
-		, "valid", "validReason" //
+		"field",
+		"value", "value-reason",
+		"readonly", "readonly-reason",
+		"mandatory", "mandatory-reason",
+		"displayed", "displayed-reason",
+		"lookupValuesStale", "lookupValuesStale-reason",
+		"valid", "validReason"
 })
 @SuppressWarnings("serial")
 public final class JSONDocumentField implements Serializable
@@ -81,7 +83,7 @@ public final class JSONDocumentField implements Serializable
 
 		return jsonField;
 	}
-
+	
 	public static final JSONDocumentField idField(final Object jsonValue)
 	{
 		final String reason = null; // N/A
@@ -97,7 +99,7 @@ public final class JSONDocumentField implements Serializable
 				.setValue(jsonValue, reason);
 	}
 
-	public static JSONDocumentField ofDocumentFieldChangedEvent(final DocumentFieldChange event)
+	public static JSONDocumentField ofDocumentFieldChangedEvent(final DocumentFieldChange event, final JSONOptions jsonOpts)
 	{
 		final JSONLayoutWidgetType widgetType = JSONLayoutWidgetType.fromNullable(event.getWidgetType());
 		final JSONDocumentField jsonField = new JSONDocumentField(event.getFieldName(), widgetType);
@@ -136,6 +138,8 @@ public final class JSONDocumentField implements Serializable
 		{
 			jsonField.setValidStatus(validStatus);
 		}
+
+		jsonField.setFieldWarning(JSONDocumentFieldWarning.ofNullable(event.getFieldWarning(), jsonOpts.getAD_Language()));
 
 		jsonField.putDebugProperties(event.getDebugProperties());
 
@@ -195,6 +199,14 @@ public final class JSONDocumentField implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private DocumentValidStatus validStatus;
 
+	@JsonProperty("viewEditorRenderMode")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String viewEditorRenderMode;
+
+	@JsonProperty("warning")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private JSONDocumentFieldWarning fieldWarning;
+
 	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
@@ -234,12 +246,21 @@ public final class JSONDocumentField implements Serializable
 		return this;
 	}
 	
+	/* package */ void unboxPasswordField()
+	{
+		final Object value = this.value;
+		if(value instanceof Password)
+		{
+			this.value = ((Password)value).getAsString();
+		}
+	}
+
 	public JSONDocumentField setWidgetType(final JSONLayoutWidgetType widgetType)
 	{
 		this.widgetType = widgetType;
 		return this;
 	}
-	
+
 	public boolean isReadonly()
 	{
 		return readonly != null && readonly;
@@ -251,8 +272,8 @@ public final class JSONDocumentField implements Serializable
 		readonlyReason = reason;
 		return this;
 	}
-	
-	public JSONDocumentField setReadonly(LogicExpressionResult readonly)
+
+	public JSONDocumentField setReadonly(final LogicExpressionResult readonly)
 	{
 		setReadonly(readonly.booleanValue(), readonly.getName());
 		return this;
@@ -272,7 +293,7 @@ public final class JSONDocumentField implements Serializable
 		return this;
 	}
 
-	public JSONDocumentField setMandatory(LogicExpressionResult mandatory)
+	public JSONDocumentField setMandatory(final LogicExpressionResult mandatory)
 	{
 		setMandatory(mandatory.booleanValue(), mandatory.getName());
 		return this;
@@ -292,7 +313,7 @@ public final class JSONDocumentField implements Serializable
 		return this;
 	}
 
-	public JSONDocumentField setDisplayed(LogicExpressionResult displayed)
+	public JSONDocumentField setDisplayed(final LogicExpressionResult displayed)
 	{
 		setDisplayed(displayed.booleanValue(), displayed.getName());
 		return this;
@@ -300,7 +321,7 @@ public final class JSONDocumentField implements Serializable
 
 	public JSONDocumentField setDisplayed(final boolean displayed)
 	{
-		String reason = null; // N/A
+		final String reason = null; // N/A
 		setDisplayed(displayed, reason);
 		return this;
 	}
@@ -404,4 +425,15 @@ public final class JSONDocumentField implements Serializable
 		}
 	}
 
+	public JSONDocumentField setViewEditorRenderMode(final ViewEditorRenderMode viewEditorRenderMode)
+	{
+		this.viewEditorRenderMode = viewEditorRenderMode != null ? viewEditorRenderMode.toJson() : null;
+		return this;
+	}
+
+	public JSONDocumentField setFieldWarning(final JSONDocumentFieldWarning fieldWarning)
+	{
+		this.fieldWarning = fieldWarning;
+		return this;
+	}
 }

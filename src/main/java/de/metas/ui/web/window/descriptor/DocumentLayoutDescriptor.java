@@ -219,38 +219,6 @@ public final class DocumentLayoutDescriptor
 			return new DocumentLayoutDescriptor(this);
 		}
 
-		// private List<DocumentLayoutSectionDescriptor> buildSections()
-		// {
-		// return sectionBuilders
-		// .stream()
-		// .filter(sectionBuilder -> checkValid(sectionBuilder))
-		// .map(sectionBuilder -> sectionBuilder.build())
-		// .filter(section -> checkValid(section))
-		// .collect(ImmutableList.toImmutableList());
-		// }
-		//
-		// private boolean checkValid(final DocumentLayoutSectionDescriptor.Builder sectionBuilder)
-		// {
-		// if (sectionBuilder.isInvalid())
-		// {
-		// logger.trace("Skip adding {} to {} because it's not valid", sectionBuilder, this);
-		// return false;
-		// }
-		//
-		// return true;
-		// }
-		//
-		// private final boolean checkValid(final DocumentLayoutSectionDescriptor section)
-		// {
-		// if (!section.hasColumns())
-		// {
-		// logger.trace("Skip adding {} to {} because it does not have columns", section, this);
-		// return false;
-		// }
-		//
-		// return true;
-		// }
-
 		private Map<DetailId, DocumentLayoutDetailDescriptor> buildDetails()
 		{
 			return detailsBuilders
@@ -283,12 +251,6 @@ public final class DocumentLayoutDescriptor
 			this.docActionElement = docActionElement;
 			return this;
 		}
-
-		// public Builder addSections(final Collection<DocumentLayoutSectionDescriptor.Builder> sectionsBuilders)
-		// {
-		// sectionBuilders.addAll(sectionsBuilders);
-		// return this;
-		// }
 
 		public Builder setGridView(final ViewLayout.Builder gridView)
 		{

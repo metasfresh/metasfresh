@@ -36,6 +36,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -44,6 +45,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
@@ -86,6 +88,8 @@ public class ProcessRestController
 
 	@Autowired
 	private IViewsRepository viewsRepo;
+	@Autowired
+	private DocumentCollection documentsCollection;
 
 	private final ConcurrentHashMap<String, IProcessInstancesRepository> pinstancesRepositoriesByHandlerType = new ConcurrentHashMap<>();
 
@@ -135,7 +139,7 @@ public class ProcessRestController
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
 	public ResponseEntity<JSONProcessLayout> getLayout(
 			@PathVariable("processId") final String adProcessIdStr,
-			WebRequest request)
+			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
@@ -152,28 +156,33 @@ public class ProcessRestController
 	}
 
 	@RequestMapping(value = "/{processId}", method = RequestMethod.POST)
-	public JSONProcessInstance createInstanceFromRequest(@PathVariable("processId") final String processIdStr, @RequestBody final JSONCreateProcessInstanceRequest jsonRequest)
+	public JSONProcessInstance createInstanceFromRequest(
+			@PathVariable("processId") final String processIdStr,
+			@RequestBody final JSONCreateProcessInstanceRequest jsonRequest)
 	{
 		userSession.assertLoggedIn();
 
-		final ViewId viewId = jsonRequest.getViewId();
-		final DocumentIdsSelection viewDocumentIds = jsonRequest.getViewDocumentIds();
+		final ViewRowIdsSelection viewRowIdsSelection = jsonRequest.getViewRowIdsSelection();
+		final ViewId viewId = viewRowIdsSelection != null ? viewRowIdsSelection.getViewId() : null;
+		final DocumentIdsSelection viewSelectedRowIds = viewRowIdsSelection != null ? viewRowIdsSelection.getRowIds() : DocumentIdsSelection.EMPTY;
 
 		// Get the effective singleDocumentPath, i.e.
 		// * if provided, use it
 		// * if not provided and we have a single selected row in the view, ask the view's row to provide the effective document path
 		DocumentPath singleDocumentPath = jsonRequest.getSingleDocumentPath();
-		if (singleDocumentPath == null && viewDocumentIds.isSingleDocumentId())
+		if (singleDocumentPath == null && viewSelectedRowIds.isSingleDocumentId())
 		{
 			final IView view = viewsRepo.getView(viewId);
-			singleDocumentPath = view.getById(viewDocumentIds.getSingleDocumentId()).getDocumentPath();
+			singleDocumentPath = view.getById(viewSelectedRowIds.getSingleDocumentId()).getDocumentPath();
 		}
 
 		final CreateProcessInstanceRequest request = CreateProcessInstanceRequest.builder()
 				.processId(ProcessId.fromJson(processIdStr))
 				.singleDocumentPath(singleDocumentPath)
-				.viewId(viewId)
-				.viewDocumentIds(viewDocumentIds)
+				.selectedIncludedDocumentPaths(jsonRequest.getSelectedIncludedDocumentPaths())
+				.viewRowIdsSelection(viewRowIdsSelection)
+				.parentViewRowIdsSelection(jsonRequest.getParentViewRowIdsSelection())
+				.childViewRowIdsSelection(jsonRequest.getChildViewRowIdsSelection())
 				.build();
 		// Validate request's AD_Process_ID
 		// (we are not using it, but just for consistency)
@@ -182,16 +191,15 @@ public class ProcessRestController
 		final IProcessInstancesRepository instancesRepository = getRepository(request.getProcessId());
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
-			final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request, changesCollector);
+			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request);
 			return JSONProcessInstance.of(processInstance, newJSONOptions());
 		});
 	}
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.GET)
 	public JSONProcessInstance getInstance(
-			@PathVariable("processId") final String processIdStr //
-			, @PathVariable("pinstanceId") final String pinstanceIdStr //
+			@PathVariable("processId") final String processIdStr,
+			@PathVariable("pinstanceId") final String pinstanceIdStr
 	)
 	{
 		userSession.assertLoggedIn();
@@ -219,8 +227,11 @@ public class ProcessRestController
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return Execution.callInNewExecution("", () -> {
-			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+
+			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull(); // get our collector to fill with the changes that we will record
+
 			instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
+
 				processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
 				return null; // void
 			});
@@ -246,7 +257,7 @@ public class ProcessRestController
 				.execute(() -> {
 					final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 					return instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
-						final ProcessInstanceResult result = processInstance.startProcess(viewsRepo);
+						final ProcessInstanceResult result = processInstance.startProcess(viewsRepo, documentsCollection);
 						return JSONProcessInstanceResult.of(result);
 					});
 				});

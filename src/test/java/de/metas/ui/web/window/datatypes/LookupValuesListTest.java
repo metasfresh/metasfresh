@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.datatypes;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -9,6 +11,7 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -197,7 +200,7 @@ public class LookupValuesListTest
 
 		Assert.assertEquals(resultExpected, resultActual);
 	}
-	
+
 	@Test
 	public void test_removeAll_RemoveEmptyList()
 	{
@@ -206,7 +209,7 @@ public class LookupValuesListTest
 		Assert.assertEquals(list, resultActual);
 		Assert.assertSame(list, resultActual);
 	}
-	
+
 	@Test
 	public void test_removeAll_RemoveFromEmpty()
 	{
@@ -217,7 +220,23 @@ public class LookupValuesListTest
 		Assert.assertSame(list, resultActual);
 	}
 
+	/**
+	 * Feature required by those LookupDataSourceFetchers which are returning lookup values with same IDs,
+	 * because they are also attaching different attributes to them.
+	 * See ProductLookupDescriptor.
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh-webui-api/issues/662
+	 */
+	@Test
+	public void test_LookupValuesWithSameId()
+	{
+		IntegerLookupValue lookupValue1 = IntegerLookupValue.of(1, "item1");
+		IntegerLookupValue lookupValue2 = IntegerLookupValue.of(1, "item1 again");
 
+		final LookupValuesList list = LookupValuesList.fromCollection(ImmutableList.of(lookupValue1, lookupValue2));
+		assertThat(list.getValues()).hasSize(2).containsExactly(lookupValue1, lookupValue2);
+		assertThat(list.getById(1)).isEqualTo(lookupValue1);
+	}
 
 	//
 	//

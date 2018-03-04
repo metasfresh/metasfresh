@@ -17,6 +17,7 @@ import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -40,7 +41,6 @@ import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
-import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.config.WebConfig;
@@ -57,13 +57,10 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
-import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentCollection.DocumentPrint;
-import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 
 /*
@@ -141,7 +138,7 @@ public class MailRestController
 					.setParameter("emailId", email.getEmailId());
 		}
 	}
-	
+
 	@PostMapping()
 	@ApiOperation("Creates a new email")
 	public JSONEmail createNewEmail(@RequestBody final JSONEmailRequest request)
@@ -154,7 +151,7 @@ public class MailRestController
 		final IntegerLookupValue from = IntegerLookupValue.of(adUserId, userSession.getUserFullname() + " <" + userSession.getUserEmail() + "> ");
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
 
-		final BoilerPlateContext attributes = extractBoilerPlateAttributes(contextDocumentPath);
+		final BoilerPlateContext attributes = documentCollection.createBoilerPlateContext(contextDocumentPath);
 		final Integer toUserId = attributes.getAD_User_ID();
 		final LookupValue to = mailRepo.getToByUserId(toUserId);
 
@@ -167,7 +164,7 @@ public class MailRestController
 				final DocumentPrint contextDocumentPrint = documentCollection.createDocumentPrint(contextDocumentPath);
 				attachFile(emailId, () -> mailAttachmentsRepo.createAttachment(emailId, contextDocumentPrint.getFilename(), contextDocumentPrint.getReportData()));
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				logger.debug("Failed creating attachment from document print of {}", contextDocumentPath, ex);
 			}
@@ -202,7 +199,7 @@ public class MailRestController
 
 		//
 		// Create the email object
-		final I_AD_Client adClient = Services.get(IClientDAO.class).retriveClient(userSession.getCtx(), userSession.getAD_Client_ID());
+		final I_AD_Client adClient = Services.get(IClientDAO.class).retriveClient(Env.getCtx(), userSession.getAD_Client_ID());
 		final String mailCustomType = null;
 		final I_AD_User from = Services.get(IUserDAO.class).retrieveUser(webuiEmail.getFrom().getIdAsInt());
 		final List<String> toList = extractEMailAddreses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
@@ -316,7 +313,7 @@ public class MailRestController
 
 			@SuppressWarnings("unchecked")
 			final LookupValuesList to = jsonTo.stream()
-					.map(mapObj -> (Map<String, String>)mapObj)
+					.map(mapObj -> (Map<String, Object>)mapObj)
 					.map(map -> JSONLookupValue.integerLookupValueFromJsonMap(map))
 					.collect(LookupValuesList.collect());
 
@@ -339,7 +336,7 @@ public class MailRestController
 
 			@SuppressWarnings("unchecked")
 			final LookupValuesList attachments = jsonAttachments.stream()
-					.map(mapObj -> (Map<String, String>)mapObj)
+					.map(mapObj -> (Map<String, Object>)mapObj)
 					.map(map -> JSONLookupValue.stringLookupValueFromJsonMap(map))
 					.collect(LookupValuesList.collect());
 
@@ -348,7 +345,7 @@ public class MailRestController
 		else if (PATCH_FIELD_TemplateId.equals(fieldName))
 		{
 			@SuppressWarnings("unchecked")
-			final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, String>)event.getValue());
+			final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, Object>)event.getValue());
 			applyTemplate(email, newEmailBuilder, templateId);
 		}
 		else
@@ -415,7 +412,7 @@ public class MailRestController
 	@ApiOperation("Available Email templates")
 	public JSONLookupValuesList getTemplates()
 	{
-		return MADBoilerPlate.getAll(userSession.getCtx())
+		return MADBoilerPlate.getAll(Env.getCtx())
 				.stream()
 				.map(adBoilerPlate -> JSONLookupValue.of(adBoilerPlate.getAD_BoilerPlate_ID(), adBoilerPlate.getName()))
 				.collect(JSONLookupValuesList.collect());
@@ -423,12 +420,12 @@ public class MailRestController
 
 	private void applyTemplate(final WebuiEmail email, final WebuiEmailBuilder newEmailBuilder, final LookupValue templateId)
 	{
-		final Properties ctx = userSession.getCtx();
+		final Properties ctx = Env.getCtx();
 		final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx, templateId.getIdAsInt());
 
 		//
 		// Attributes
-		final BoilerPlateContext attributes = extractBoilerPlateAttributes(email.getContextDocumentPath());
+		final BoilerPlateContext attributes = documentCollection.createBoilerPlateContext(email.getContextDocumentPath());
 
 		//
 		// Subject
@@ -437,44 +434,5 @@ public class MailRestController
 
 		// Message
 		newEmailBuilder.message(boilerPlate.getTextSnippetParsed(attributes));
-	}
-
-	private BoilerPlateContext extractBoilerPlateAttributes(final DocumentPath documentPath)
-	{
-		if (documentPath == null)
-		{
-			return BoilerPlateContext.EMPTY;
-		}
-
-		return documentCollection.forDocumentReadonly(documentPath, NullDocumentChangesCollector.instance, document -> {
-			final SourceDocument sourceDocument = new DocumentAsTemplateSourceDocument(document);
-			return MADBoilerPlate.createEditorContext(sourceDocument);
-		});
-	}
-
-	@AllArgsConstructor
-	private static final class DocumentAsTemplateSourceDocument implements SourceDocument
-	{
-		@NonNull
-		private final Document document;
-
-		@Override
-		public boolean hasFieldValue(final String fieldName)
-		{
-			return document.hasField(fieldName);
-		}
-
-		@Override
-		public Object getFieldValue(final String fieldName)
-		{
-			return document.getFieldView(fieldName).getValue();
-		}
-
-		@Override
-		public int getFieldValueAsInt(final String fieldName, final int defaultValue)
-		{
-			return document.getFieldView(fieldName).getValueAsInt(defaultValue);
-		}
-
 	}
 }

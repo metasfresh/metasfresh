@@ -1,6 +1,9 @@
 package de.metas.ui.web.view.json;
 
 import java.util.List;
+import java.util.Map;
+
+import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -13,7 +16,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONStickyDocumentFilter;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.window.datatypes.WindowId;
 
@@ -42,13 +47,13 @@ import de.metas.ui.web.window.datatypes.WindowId;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONViewResult
 {
-	public static final JSONViewResult of(final ViewResult viewResult, final String adLanguage)
+	public static final JSONViewResult of(final ViewResult viewResult, IViewRowOverrides rowOverrides, final String adLanguage)
 	{
 		List<? extends JSONViewRowBase> jsonRows;
 		if (viewResult.isPageLoaded())
 		{
 			final List<IViewRow> rows = viewResult.getPage();
-			jsonRows = JSONViewRow.ofViewRows(rows, adLanguage);
+			jsonRows = JSONViewRow.ofViewRows(rows, rowOverrides, adLanguage);
 		}
 		else
 		{
@@ -72,6 +77,10 @@ public final class JSONViewResult
 	//
 	@JsonProperty("viewId")
 	private final String viewId;
+
+	@JsonProperty("profileId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final ViewProfileId profileId;
 
 	@JsonProperty("parentWindowId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -113,6 +122,10 @@ public final class JSONViewResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final List<? extends JSONViewRowBase> result;
 
+	@JsonProperty("columnsByFieldName")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Map<String, JSONViewResultColumn> columnsByFieldName;
+
 	@JsonProperty("firstRow")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer firstRow;
@@ -138,6 +151,7 @@ public final class JSONViewResult
 		this.viewId = viewId.getViewId();
 		windowId = viewId.getWindowId();
 		type = windowId;
+		profileId = viewResult.getProfileId();
 
 		final ViewId parentViewId = viewResult.getParentViewId();
 		parentWindowId = parentViewId == null ? null : parentViewId.getWindowId();
@@ -149,14 +163,7 @@ public final class JSONViewResult
 		this.size = size >= 0 ? size : null;
 
 		staticFilters = JSONStickyDocumentFilter.ofStickyFiltersList(viewResult.getStickyFilters(), adLanguage);
-
-		// FIXME: after https://github.com/metasfresh/metasfresh-webui-frontend/issues/948 is implemented,
-		// we shall NOT add the sticky filters to "filters" list.
-		// filters = JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage);
-		filters = ImmutableList.<JSONDocumentFilter> builder()
-				.addAll(JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage))
-				.addAll(JSONDocumentFilter.ofStickyFiltersList(viewResult.getStickyFilters(), adLanguage))
-				.build();
+		filters = JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage);
 
 		orderBy = JSONViewOrderBy.ofList(viewResult.getOrderBys());
 
@@ -175,6 +182,12 @@ public final class JSONViewResult
 			pageLength = null;
 		}
 
+		columnsByFieldName = viewResult.getColumnInfosByFieldName()
+				.values()
+				.stream()
+				.map(JSONViewResultColumn::of)
+				.collect(GuavaCollectors.toImmutableMapByKey(JSONViewResultColumn::getFieldName));
+
 		//
 		// Query limit informations
 		queryLimit = viewResult.getQueryLimit() > 0 ? viewResult.getQueryLimit() : null;
@@ -185,6 +198,7 @@ public final class JSONViewResult
 	private JSONViewResult( //
 			@JsonProperty("windowId") final WindowId windowId,
 			@JsonProperty("viewId") final String viewId,
+			@JsonProperty("profileId") final ViewProfileId profileId,
 			//
 			@JsonProperty("parentWindowId") final WindowId parentWindowId,
 			@JsonProperty("parentViewId") final String parentViewId,
@@ -197,6 +211,7 @@ public final class JSONViewResult
 			@JsonProperty("orderBy") final List<JSONViewOrderBy> orderBy,
 			//
 			@JsonProperty("result") final List<JSONViewRowBase> result,
+			@JsonProperty("columnsByFieldName") final Map<String, JSONViewResultColumn> columnsByFieldName,
 			@JsonProperty("firstRow") final Integer firstRow,
 			@JsonProperty("pageLength") final Integer pageLength,
 			//
@@ -210,6 +225,7 @@ public final class JSONViewResult
 		this.viewId = viewId;
 		type = windowId;
 		this.windowId = windowId;
+		this.profileId = profileId;
 		//
 		this.parentWindowId = parentWindowId;
 		this.parentViewId = parentViewId;
@@ -224,6 +240,7 @@ public final class JSONViewResult
 		//
 		// Page informations
 		this.result = result;
+		this.columnsByFieldName = columnsByFieldName;
 		this.firstRow = firstRow;
 		this.pageLength = pageLength;
 

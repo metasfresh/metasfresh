@@ -44,7 +44,9 @@ import lombok.NonNull;
  */
 public interface IViewsRepository
 {
-	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType);
+	List<ViewProfile> getAvailableProfiles(WindowId windowId, JSONViewDataType viewDataType);
+
+	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, final ViewProfileId profileId);
 
 	/** @return view or <code>null</code> */
 	IView getViewIfExists(ViewId viewId);
@@ -78,7 +80,7 @@ public interface IViewsRepository
 	IView createView(CreateViewRequest request);
 
 	IView filterView(ViewId viewId, JSONFilterViewRequest jsonRequest);
-	
+
 	IView deleteStickyFilter(ViewId viewId, String filterId);
 
 	void deleteView(ViewId viewId);

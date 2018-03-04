@@ -40,11 +40,11 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -91,6 +91,24 @@ public class JSONLookupValuesList implements Serializable
 		};
 		final Function<List<JSONLookupValue>, JSONLookupValuesList> finisher = JSONLookupValuesList::ofJSONLookupValuesList;
 		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	public static final LookupValuesList lookupValuesListFromJsonMap(final Map<String, Object> map)
+	{
+		@SuppressWarnings("unchecked")
+		final List<Object> values = (List<Object>)map.get("values");
+		if (values == null || values.isEmpty())
+		{
+			return LookupValuesList.EMPTY;
+		}
+
+		return values.stream()
+				.map(valueObj -> {
+					@SuppressWarnings("unchecked")
+					final Map<String, Object> valueAsMap = (Map<String, Object>)valueObj;
+					return JSONLookupValue.stringLookupValueFromJsonMap(valueAsMap);
+				})
+				.collect(LookupValuesList.collect());
 	}
 
 	private static final JSONLookupValuesList EMPTY = new JSONLookupValuesList();

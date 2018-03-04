@@ -12,8 +12,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -21,8 +19,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
+import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -37,14 +34,18 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
-import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
+import de.metas.ui.web.view.descriptor.SqlViewSelectData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 /*
@@ -74,26 +75,25 @@ class SqlViewDataRepository implements IViewDataRepository
 	private static final Logger logger = LogManager.getLogger(SqlViewDataRepository.class);
 
 	private final String tableName;
-	private final IStringExpression sqlSelectById;
-	private final IStringExpression sqlSelectByPage;
-	private final IStringExpression sqlSelectRowIdsByPage;
-	private final IStringExpression sqlSelectLinesByRowIds;
+	private final String tableAlias;
+	private final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName;
+	private final SqlViewSelectData sqlViewSelect;
 	private final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory;
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	private final List<DocumentQueryOrderBy> defaultOrderBys;
 
 	private final String keyFieldName;
 	private final ImmutableMap<String, SqlViewRowFieldLoader> rowFieldLoaders;
+	private final ViewRowCustomizer rowCustomizer;
 
 	private final SqlDocumentFilterConverter filterConverters;
 
 	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings)
 	{
 		tableName = sqlBindings.getTableName();
-		sqlSelectById = sqlBindings.getSqlSelectById();
-		sqlSelectByPage = sqlBindings.getSqlSelectByPage();
-		sqlSelectRowIdsByPage = sqlBindings.getSqlSelectRowIdsByPage();
-		sqlSelectLinesByRowIds = sqlBindings.getSqlSelectLinesByRowIds();
+		tableAlias = sqlBindings.getTableAlias();
+		widgetTypesByFieldName = sqlBindings.getWidgetTypesByFieldName();
+		sqlViewSelect = sqlBindings.getSqlViewSelect();
 		viewFilterDescriptors = sqlBindings.getViewFilterDescriptors();
 		viewRowIdsOrderedSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings);
 		defaultOrderBys = sqlBindings.getDefaultOrderBys();
@@ -113,6 +113,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 		this.keyFieldName = keyFieldName;
 		this.rowFieldLoaders = rowFieldLoaders.build();
+		this.rowCustomizer = sqlBindings.getRowCustomizer();
 
 		this.filterConverters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlBindings);
 	}
@@ -130,15 +131,20 @@ class SqlViewDataRepository implements IViewDataRepository
 	{
 		return tableName;
 	}
+	
+	private String getTableAlias()
+	{
+		return tableAlias;
+	}
 
 	@Override
-	public String getSqlWhereClause(final ViewId viewId, List<DocumentFilter> filters, final DocumentIdsSelection rowIds)
+	public String getSqlWhereClause(final ViewId viewId, final List<DocumentFilter> filters, final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
 	{
 		final StringBuilder sqlWhereClause = new StringBuilder();
 
 		// Convert filters to SQL
 		{
-			final String sqlFilters = filterConverters.getSql(SqlParamsCollector.notCollecting(), filters);
+			final String sqlFilters = filterConverters.getSql(SqlParamsCollector.notCollecting(), filters, sqlOpts);
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				if (sqlWhereClause.length() > 0)
@@ -148,11 +154,11 @@ class SqlViewDataRepository implements IViewDataRepository
 				sqlWhereClause.append("(").append(sqlFilters).append(")");
 			}
 		}
-		
+
 		// Filter by rowIds
 		{
 			final String sqlFilterByRowIds = viewRowIdsOrderedSelectionFactory.getSqlWhereClause(viewId, rowIds);
-			if(!Check.isEmpty(sqlFilterByRowIds, true))
+			if (!Check.isEmpty(sqlFilterByRowIds, true))
 			{
 				if (sqlWhereClause.length() > 0)
 				{
@@ -161,14 +167,20 @@ class SqlViewDataRepository implements IViewDataRepository
 				sqlWhereClause.append("(").append(sqlFilterByRowIds).append(")");
 			}
 		}
-		
+
 		return sqlWhereClause.toString();
+	}
+	
+	@Override
+	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	{
+		return widgetTypesByFieldName;
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx, final WindowId windowId, final List<DocumentFilter> filters)
+	public ViewRowIdsOrderedSelection createOrderedSelection(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final List<DocumentFilter> filters)
 	{
-		return viewRowIdsOrderedSelectionFactory.createOrderedSelection(viewEvalCtx, windowId, filters, defaultOrderBys);
+		return viewRowIdsOrderedSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, defaultOrderBys);
 	}
 
 	@Override
@@ -176,23 +188,36 @@ class SqlViewDataRepository implements IViewDataRepository
 	{
 		return viewRowIdsOrderedSelectionFactory.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, orderBys);
 	}
+	
+	@Override
+	public void deleteSelection(final ViewId viewId)
+	{
+		viewRowIdsOrderedSelectionFactory.deleteSelection(viewId);
+	}
+	
+	@Override
+	public void scheduleDeleteSelections(final Set<String> viewIds)
+	{
+		viewRowIdsOrderedSelectionFactory.scheduleDeleteSelections(viewIds);
+	}
 
 	@Override
 	public IViewRow retrieveById(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentId rowId)
 	{
-		final String viewSelectionId = viewId.getViewId();
+		final SqlAndParams sqlAndParams = sqlViewSelect.selectById()
+				.viewEvalCtx(viewEvalCtx)
+				.viewId(viewId)
+				.rowId(rowId)
+				.build();
 
-		final String sql = sqlSelectById.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
-
-		final Object[] sqlParams = new Object[] { viewSelectionId, rowId.toInt() };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			final int limit = 2;
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			pstmt = DB.prepareStatement(sqlAndParams.getSql(), ITrx.TRXNAME_ThreadInherited);
 			pstmt.setMaxRows(limit);
-			DB.setParameters(pstmt, sqlParams);
+			DB.setParameters(pstmt, sqlAndParams.getSqlParams());
 
 			rs = pstmt.executeQuery();
 
@@ -214,7 +239,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		catch (final SQLException | DBException e)
 		{
 			throw DBException.wrapIfNeeded(e)
-					.setSqlIfAbsent(sql, sqlParams);
+					.setSqlIfAbsent(sqlAndParams.getSql(), sqlAndParams.getSqlParams());
 		}
 		finally
 		{
@@ -274,9 +299,15 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	private ViewRow.Builder loadViewRow(final ResultSet rs, final WindowId windowId, final String adLanguage) throws SQLException
 	{
+		final boolean isRecordMissing = DisplayType.toBoolean(rs.getString(SqlViewSelectData.COLUMNNAME_IsRecordMissing));
+		if(isRecordMissing)
+		{
+			return null;
+		}
+		
 		final ViewRow.Builder viewRowBuilder = ViewRow.builder(windowId);
-
-		final int parentIdInt = rs.getInt(SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_Parent_ID);
+		
+		final int parentIdInt = rs.getInt(SqlViewSelectData.COLUMNNAME_Paging_Parent_ID);
 		if (!rs.wasNull())
 		{
 			viewRowBuilder.setParentRowId(DocumentId.of(parentIdInt));
@@ -295,7 +326,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 			if (Objects.equals(fieldName, keyFieldName))
 			{
-				if (value == null)
+				if(JSONNullValue.isNull(value))
 				{
 					logger.warn("No ID found for current row. Skipping the row.");
 					return null;
@@ -305,6 +336,11 @@ class SqlViewDataRepository implements IViewDataRepository
 			}
 
 			viewRowBuilder.putFieldValue(fieldName, value);
+		}
+		
+		if(rowCustomizer != null)
+		{
+			rowCustomizer.customizeViewRow(viewRowBuilder);
 		}
 
 		return viewRowBuilder;
@@ -320,36 +356,32 @@ class SqlViewDataRepository implements IViewDataRepository
 	public List<IViewRow> retrievePage(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection orderedSelection, final int firstRow, final int pageLength) throws DBException
 	{
 		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
-
-		Check.assume(firstRow >= 0, "firstRow >= 0 but it was {}", firstRow);
-		Check.assume(pageLength > 0, "pageLength > 0 but it was {}", pageLength);
-
 		logger.debug("Using: {}", orderedSelection);
+		
 		final ViewId viewId = orderedSelection.getViewId();
-		final String viewSelectionId = viewId.getViewId();
+		final SqlAndParams sqlAndParams = sqlViewSelect.selectByPage()
+				.viewEvalCtx(viewEvalCtx)
+				.viewId(viewId)
+				.firstRowZeroBased(firstRow)
+				.pageLength(pageLength)
+				.build();
 
-		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
-		final int lastSeqNo = firstRow + pageLength;
-
-		final String sql = sqlSelectByPage.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
-		final Object[] sqlParams = new Object[] { viewSelectionId, firstSeqNo, lastSeqNo };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			pstmt = DB.prepareStatement(sqlAndParams.getSql(), ITrx.TRXNAME_ThreadInherited);
 			pstmt.setMaxRows(pageLength);
-			DB.setParameters(pstmt, sqlParams);
+			DB.setParameters(pstmt, sqlAndParams.getSqlParams());
 
 			rs = pstmt.executeQuery();
-
 			final List<IViewRow> page = loadViewRows(rs, viewEvalCtx, viewId, pageLength);
 			return page;
 		}
 		catch (final SQLException | DBException e)
 		{
 			throw DBException.wrapIfNeeded(e)
-					.setSqlIfAbsent(sql, sqlParams);
+					.setSqlIfAbsent(sqlAndParams.getSql(), sqlAndParams.getSqlParams());
 		}
 		finally
 		{
@@ -361,9 +393,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	public List<DocumentId> retrieveRowIdsByPage(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection orderedSelection, final int firstRow, final int pageLength)
 	{
 		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
-
-		Check.assume(firstRow >= 0, "firstRow >= 0 but it was {}", firstRow);
-		Check.assume(pageLength > 0, "pageLength > 0 but it was {}", pageLength);
+		logger.debug("Using: {}", orderedSelection);
 
 		SqlViewRowFieldLoader rowIdFieldLoader = rowFieldLoaders.get(keyFieldName);
 		if (rowIdFieldLoader == null)
@@ -371,22 +401,21 @@ class SqlViewDataRepository implements IViewDataRepository
 			throw new AdempiereException("No rowId loader found in " + this);
 		}
 
-		logger.debug("Using: {}", orderedSelection);
 		final ViewId viewId = orderedSelection.getViewId();
-		final String viewSelectionId = viewId.getViewId();
-
-		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
-		final int lastSeqNo = firstRow + pageLength;
-
-		final String sql = sqlSelectRowIdsByPage.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
-		final Object[] sqlParams = new Object[] { viewSelectionId, firstSeqNo, lastSeqNo };
+		final SqlAndParams sqlAndParams = sqlViewSelect.selectRowIdsByPage()
+				.viewEvalCtx(viewEvalCtx)
+				.viewId(viewId)
+				.firstRowZeroBased(firstRow)
+				.pageLength(pageLength)
+				.build();
+		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			pstmt = DB.prepareStatement(sqlAndParams.getSql(), ITrx.TRXNAME_ThreadInherited);
 			pstmt.setMaxRows(pageLength);
-			DB.setParameters(pstmt, sqlParams);
+			DB.setParameters(pstmt, sqlAndParams.getSqlParams());
 
 			rs = pstmt.executeQuery();
 
@@ -396,7 +425,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			while (rs.next())
 			{
 				final Object rowIdObj = rowIdFieldLoader.retrieveValueAsJson(rs, adLanguage);
-				if (rowIdObj == null)
+				if(JSONNullValue.isNull(rowIdObj))
 				{
 					continue;
 				}
@@ -409,7 +438,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		catch (final SQLException | DBException e)
 		{
 			throw DBException.wrapIfNeeded(e)
-					.setSqlIfAbsent(sql, sqlParams);
+					.setSqlIfAbsent(sqlAndParams.getSql(), sqlAndParams.getSqlParams());
 		}
 		finally
 		{
@@ -420,23 +449,20 @@ class SqlViewDataRepository implements IViewDataRepository
 	private List<IViewRow> retrieveRowLines(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentIdsSelection rowIds)
 	{
 		logger.debug("Getting row lines: rowId={} - {}", rowIds, this);
-
 		logger.debug("Using: {}", viewId);
-		final String viewSelectionId = viewId.getViewId();
 
-		// TODO: apply the ORDER BY from orderedSelection
-		final String sqlRecordIds = DB.buildSqlList(rowIds.toIntSet());
-		final Evaluatee viewEvalCtxEffective = Evaluatees.ofSingleton(SqlViewSelectionQueryBuilder.Paging_Record_IDsPlaceholder.getName(), sqlRecordIds)
-				.andComposeWith(viewEvalCtx.toEvaluatee());
-
-		final String sql = sqlSelectLinesByRowIds.evaluate(viewEvalCtxEffective, OnVariableNotFound.Fail);
-		final Object[] sqlParams = new Object[] { viewSelectionId };
+		final SqlAndParams sqlAndParams = sqlViewSelect.selectIncludedLines()
+				.viewEvalCtx(viewEvalCtx)
+				.viewId(viewId)
+				.rowIds(rowIds)
+				.build();
+		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			DB.setParameters(pstmt, sqlParams);
+			pstmt = DB.prepareStatement(sqlAndParams.getSql(), ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlAndParams.getSqlParams());
 
 			rs = pstmt.executeQuery();
 
@@ -446,7 +472,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		catch (final SQLException | DBException e)
 		{
 			throw DBException.wrapIfNeeded(e)
-					.setSqlIfAbsent(sql, sqlParams);
+					.setSqlIfAbsent(sqlAndParams.getSql(), sqlAndParams.getSqlParams());
 		}
 		finally
 		{
@@ -463,7 +489,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 
 		final List<DocumentFilter> filters = ImmutableList.of();
-		final String sqlWhereClause = getSqlWhereClause(viewId, filters, rowIds);
+		final String sqlWhereClause = getSqlWhereClause(viewId, filters, rowIds, SqlOptions.usingTableAlias(getTableAlias()));
 		if (Check.isEmpty(sqlWhereClause, true))
 		{
 			logger.warn("Could get the SQL where clause for {}/{}. Returning empty", viewId, rowIds);

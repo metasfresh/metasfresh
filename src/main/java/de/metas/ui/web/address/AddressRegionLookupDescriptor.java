@@ -12,6 +12,8 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Region;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CCacheStats;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -41,46 +43,56 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-	private static final Optional<String> LookupTableName = Optional.of(I_C_Region.Table_Name); 
+	public static final AddressRegionLookupDescriptor newInstance()
+	{
+		return new AddressRegionLookupDescriptor();
+	}
+
+	private static final Optional<String> LookupTableName = Optional.of(I_C_Region.Table_Name);
 	private static final String CACHE_PREFIX = I_C_Region.Table_Name;
 	private static final String CONTEXT_LookupTableName = I_C_Region.Table_Name;
-	private static final Set<String> PARAMETERS = ImmutableSet.of(
-			I_C_Location.COLUMNNAME_C_Country_ID //
-			, LookupDataSourceContext.PARAM_Filter.getName() //
-			, LookupDataSourceContext.PARAM_Offset.getName() //
-			, LookupDataSourceContext.PARAM_Limit.getName() //
-	);
+
+	private static final Set<CtxName> PARAMETERS = ImmutableSet.of(
+			CtxNames.parse(I_C_Location.COLUMNNAME_C_Country_ID),
+			LookupDataSourceContext.PARAM_Filter,
+			LookupDataSourceContext.PARAM_Offset,
+			LookupDataSourceContext.PARAM_Limit);
 
 	private final CCache<Integer, LookupValuesList> regionsByCountryId = CCache.newLRUCache(CACHE_PREFIX + "RegionLookupValues", 100, 0);
+
+	private AddressRegionLookupDescriptor()
+	{
+	}
 
 	@Override
 	public Optional<String> getLookupTableName()
 	{
 		return LookupTableName;
 	}
+
 	@Override
 	public String getCachePrefix()
 	{
 		return CACHE_PREFIX;
 	}
-	
+
 	@Override
 	public boolean isCached()
 	{
 		return true;
 	}
-	
+
 	@Override
 	public List<CCacheStats> getCacheStats()
 	{
@@ -108,7 +120,7 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	@Override
 	public Set<String> getDependsOnFieldNames()
 	{
-		return PARAMETERS;
+		return CtxNames.toNames(PARAMETERS);
 	}
 
 	@Override
@@ -240,7 +252,6 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	{
 		return IntegerLookupValue.of(regionRecord.getC_Region_ID(), regionRecord.getName());
 	}
-
 
 	@Override
 	public Optional<WindowId> getZoomIntoWindowId()

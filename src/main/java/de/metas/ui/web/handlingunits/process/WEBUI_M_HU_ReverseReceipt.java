@@ -8,29 +8,21 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
+import de.metas.Profiles;
 import de.metas.handlingunits.inout.ReceiptCorrectHUsProcessor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
-import de.metas.ui.web.process.ViewAsPreconditionsContext;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
@@ -61,70 +53,30 @@ import de.metas.ui.web.window.model.DocumentCollection;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Profile(value = WebRestApiApplication.PROFILE_Webui)
-public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPrecondition
+@Profile(value = Profiles.PROFILE_Webui)
+public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implements IProcessPrecondition
 {
-	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
-	{
-		final ViewAsPreconditionsContext viewContext = ViewAsPreconditionsContext.castOrNull(context);
-		if (viewContext == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("webui view not available");
-		}
-
-		if (viewContext.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-
-		final MutableInt checkedDocumentsCount = new MutableInt(0);
-		final ProcessPreconditionsResolution firstRejection = viewContext.getView(HUEditorView.class)
-				.streamByIds(viewContext.getSelectedDocumentIds())
-				.filter(document -> document.isPureHU())
-				//
-				.peek(document -> checkedDocumentsCount.incrementAndGet()) // count checked documents
-				.map(document -> rejectResolutionOrNull(document)) // create reject resolution if any
-				.filter(resolution -> resolution != null) // filter out those which are not errors
-				.findFirst()
-				.orElse(null);
-		if (firstRejection != null)
-		{
-			// found a record which is not eligible => don't run the process
-			return firstRejection;
-		}
-		if (checkedDocumentsCount.getValue() <= 0)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible rows");
-		}
-
-		return ProcessPreconditionsResolution.accept();
-	}
-
-	private static final ProcessPreconditionsResolution rejectResolutionOrNull(final HUEditorRow document)
-	{
-		if (!document.isHUStatusActive())
-		{
-			return ProcessPreconditionsResolution.reject("Only active HUs can be reversed"); // TODO: trl
-		}
-
-		return null;
-	}
-
 	@Autowired
 	private IViewsRepository viewsRepo;
 	@Autowired
 	private DocumentCollection documentsCollection;
 
-	@Param(parameterName = ViewBasedProcessTemplate.PARAM_ViewWindowId, mandatory = true)
-	private String p_WebuiViewWindowId;
-	@Param(parameterName = ViewBasedProcessTemplate.PARAM_ViewId, mandatory = true)
-	private String p_WebuiViewIdStr;
-
-	public WEBUI_M_HU_ReverseReceipt()
+	/**
+	 * Only allows rows whose HUs are in the "active" status.
+	 */
+	@Override
+	final ProcessPreconditionsResolution rejectResolutionOrNull(final HUEditorRow document)
 	{
-		super();
-		Adempiere.autowire(this);
+		if (!document.isHUStatusActive())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Only active HUs can be reversed");
+		}
+		final List<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();
+		if(receiptSchedules.isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Thre are no receipt schedules");
+		}
+		return null;
 	}
 
 	@Override
@@ -163,7 +115,7 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 			if (hasChanges)
 			{
 				// Reset the view's affected HUs
-				getView().invalidateAll();
+				getView().removeHUIdsAndInvalidate(huIdsToReverse);
 
 				// Notify all active views that given receipt schedules were changed
 				viewsRepo.notifyRecordsChanged(TableRecordReference.ofSet(receiptSchedules));
@@ -178,10 +130,10 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 		return MSG_OK;
 	}
 
-	private HUEditorView getView()
+	@Override
+	protected HUEditorView getView()
 	{
-		final ViewId viewId = ViewId.of(p_WebuiViewWindowId, p_WebuiViewIdStr);
-		return viewsRepo.getView(viewId, HUEditorView.class);
+		return getView(HUEditorView.class);
 	}
 
 	private List<I_M_ReceiptSchedule> getM_ReceiptSchedules()

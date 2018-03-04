@@ -52,7 +52,7 @@ public final class LookupDataSourceFactory
 		return lookupDataSourcesCache.getOrLoad(lookupDescriptor, () -> createLookupDataSource(lookupDescriptor));
 	}
 
-	private LookupDataSource createLookupDataSource(final LookupDescriptor lookupDescriptor)
+	public LookupDataSource createLookupDataSource(final LookupDescriptor lookupDescriptor)
 	{
 		Check.assumeNotNull(lookupDescriptor, "Parameter lookupDescriptor is not null");
 		

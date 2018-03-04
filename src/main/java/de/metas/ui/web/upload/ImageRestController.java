@@ -9,6 +9,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.FileUtils;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.MImage;
+import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -84,7 +85,7 @@ public class ImageRestController
 		final String contentType = file.getContentType();
 		final String filenameNorm = normalizeUploadFilename(name, contentType);
 
-		final MImage adImage = new MImage(userSession.getCtx(), 0, ITrx.TRXNAME_None);
+		final MImage adImage = new MImage(Env.getCtx(), 0, ITrx.TRXNAME_None);
 		adImage.setName(filenameNorm);
 		adImage.setBinaryData(data);
 		// TODO: introduce adImage.setTemporary(true);
@@ -138,7 +139,7 @@ public class ImageRestController
 			throw new IllegalArgumentException("Invalid image id");
 		}
 
-		final MImage adImage = MImage.get(userSession.getCtx(), imageId);
+		final MImage adImage = MImage.get(Env.getCtx(), imageId);
 		if (adImage == null || adImage.getAD_Image_ID() <= 0)
 		{
 			throw new EntityNotFoundException("Image id not found: " + imageId);

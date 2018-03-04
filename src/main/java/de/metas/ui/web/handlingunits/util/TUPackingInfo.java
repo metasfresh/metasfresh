@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits.util;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
@@ -15,6 +14,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,9 +43,8 @@ class TUPackingInfo implements IHUPackingInfo
 	private final I_M_HU tuHU;
 	private final Supplier<IHUProductStorage> huProductStorageSupplier;
 
-	TUPackingInfo(final I_M_HU tuHU)
+	TUPackingInfo(@NonNull final I_M_HU tuHU)
 	{
-		Check.assumeNotNull(tuHU, "Parameter tuHU is not null");
 		this.tuHU = tuHU;
 
 		huProductStorageSupplier = Suppliers.memoize(() -> {

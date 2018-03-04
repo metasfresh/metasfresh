@@ -2,8 +2,10 @@ package de.metas.ui.web.document.filter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
@@ -38,6 +40,12 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Also see {@link de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Immutable
 public final class DocumentFilter
 {
@@ -76,11 +84,9 @@ public final class DocumentFilter
 
 	private DocumentFilter(final Builder builder)
 	{
-		super();
-
 		filterId = builder.filterId;
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
-		
+
 		caption = builder.caption;
 
 		parameters = builder.parameters == null ? ImmutableList.of() : ImmutableList.copyOf(builder.parameters);
@@ -101,24 +107,86 @@ public final class DocumentFilter
 	{
 		return filterId;
 	}
-	
-	public String getCaption(final String adLanguage)
+
+	public String getCaption(@Nullable final String adLanguage)
 	{
 		return caption != null ? caption.translate(adLanguage) : null;
 	}
 
+	/**
+	 * @return never returns {@code null}
+	 */
 	public List<DocumentFilterParam> getParameters()
 	{
 		return parameters;
 	}
 
-	public DocumentFilterParam getParameter(@NonNull final String fieldName)
+	public DocumentFilterParam getParameter(@NonNull final String parameterName)
 	{
 		return parameters
 				.stream()
-				.filter(param -> fieldName.equals(param.getFieldName()))
+				.filter(param -> parameterName.equals(param.getFieldName()))
 				.findFirst()
-				.orElseThrow(() -> new IllegalArgumentException("Parameter " + fieldName + " not found in " + this));
+				.orElseThrow(() -> new IllegalArgumentException("Parameter " + parameterName + " not found in " + this));
+	}
+
+	public DocumentFilterParam getParameterOrNull(@NonNull final String parameterName)
+	{
+		return parameters
+				.stream()
+				.filter(param -> parameterName.equals(param.getFieldName()))
+				.findFirst()
+				.orElse(null);
+	}
+
+	public String getParameterValueAsString(@NonNull final String parameterName)
+	{
+		final DocumentFilterParam param = getParameter(parameterName);
+		return param.getValueAsString();
+	}
+
+	public String getParameterValueAsString(@NonNull final String parameterName, final String defaultValue)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return null;
+		}
+
+		return param.getValueAsString();
+	}
+
+	public int getParameterValueAsInt(@NonNull final String parameterName, final int defaultValue)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return defaultValue;
+		}
+
+		return param.getValueAsInt(defaultValue);
+	}
+
+	public Boolean getParameterValueAsBoolean(@NonNull final String parameterName, final Boolean defaultValue)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return defaultValue;
+		}
+
+		return param.getValueAsBoolean(defaultValue);
+	}
+
+	public Date getParameterValueAsDate(@NonNull final String parameterName, final Date defaultValue)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return defaultValue;
+		}
+
+		return param.getValueAsDate(defaultValue);
 	}
 
 	public static final class Builder

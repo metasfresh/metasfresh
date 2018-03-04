@@ -1,6 +1,7 @@
 package de.metas.ui.web.view;
 
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
@@ -9,6 +10,7 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Suppliers;
 
 import lombok.NonNull;
 
@@ -34,26 +36,36 @@ import lombok.NonNull;
  * #L%
  */
 
-public class ViewEvaluationCtx
+public final class ViewEvaluationCtx
 {
-	public static final ViewEvaluationCtx of(final Properties ctx)
+	public static final ViewEvaluationCtx newInstanceFromCurrentContext()
 	{
+		final Properties ctx = Env.getCtx();
 		final String adLanguage = Env.getAD_Language(ctx);
 		final UserRolePermissionsKey permissionsKey = UserRolePermissionsKey.of(ctx);
-		return new ViewEvaluationCtx(ctx, adLanguage, permissionsKey);
+		return new ViewEvaluationCtx(adLanguage, permissionsKey);
 	}
 
-	private final Properties ctx; // needed for global context vars
 	private final String adLanguage;
 	private final UserRolePermissionsKey permissionsKey;
-	
-	private Evaluatee _evaluatee; // lazy
+	private final Supplier<Evaluatee> evaluateeSupplier;
 
-	private ViewEvaluationCtx(@NonNull final Properties ctx, @NonNull final String adLanguage, @NonNull final UserRolePermissionsKey permissionsKey)
+	private ViewEvaluationCtx(@NonNull final String adLanguage, @NonNull final UserRolePermissionsKey permissionsKey)
 	{
-		this.ctx = ctx;
 		this.adLanguage = adLanguage;
 		this.permissionsKey = permissionsKey;
+		this.evaluateeSupplier = Suppliers.memoize(() -> createEvaluatee(adLanguage, permissionsKey));
+	}
+
+	private static final Evaluatee createEvaluatee(final String adLanguage, final UserRolePermissionsKey permissionsKey)
+	{
+		return Evaluatees.mapBuilder()
+				.put(Env.CTXNAME_AD_Language, adLanguage)
+				.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), permissionsKey.toPermissionsKeyString())
+				.build();
+		// // Fallback to global context
+		// // TODO: consider dropping the fallback because AFAIK only AD_Language and PermissionsKey is required
+		// .andComposeWith(Evaluatees.ofCtx(ctx));
 	}
 
 	@Override
@@ -64,7 +76,7 @@ public class ViewEvaluationCtx
 				.add("permissionsKey", permissionsKey)
 				.toString();
 	}
-	
+
 	public String getAD_Language()
 	{
 		return adLanguage;
@@ -77,20 +89,6 @@ public class ViewEvaluationCtx
 
 	public Evaluatee toEvaluatee()
 	{
-		Evaluatee evaluatee = _evaluatee;
-		
-		if (evaluatee == null)
-		{
-			evaluatee = _evaluatee = Evaluatees.mapBuilder()
-					.put(Env.CTXNAME_AD_Language, adLanguage)
-					.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), permissionsKey.toPermissionsKeyString())
-					.build()
-					// Fallback to global context
-					// TODO: consider dropping the fallback because AFAIK only AD_Language and PermissionsKey is required
-					.andComposeWith(Evaluatees.ofCtx(ctx));
-			return evaluatee;
-		}
-		
-		return evaluatee;
+		return evaluateeSupplier.get();
 	}
 }

@@ -3,6 +3,7 @@ package de.metas.ui.web.pattribute;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -21,8 +22,6 @@ import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Component;
-
-import com.hazelcast.util.function.BiConsumer;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -125,7 +124,7 @@ public class ASIDescriptorFactory
 	{
 		if (attributes.isEmpty())
 		{
-			throw new AdempiereException("Attributes not allowed")
+			throw new AdempiereException("No attributes are configured")
 					.setParameter("asiDescriptorId", asiDescriptorId);
 		}
 
@@ -196,8 +195,8 @@ public class ASIDescriptorFactory
 			throw new IllegalArgumentException("@NotSupported@ @AttributeValueType@=" + attributeValueType + ", @M_Attribute_ID@=" + attribute);
 		}
 
-		final ILogicExpression readonlyLogic = ILogicExpression.FALSE;
-		final ILogicExpression displayLogic = ILogicExpression.TRUE;
+		final ILogicExpression readonlyLogic = ConstantLogicExpression.FALSE;
+		final ILogicExpression displayLogic = ConstantLogicExpression.TRUE;
 		final ILogicExpression mandatoryLogic = ConstantLogicExpression.of(attribute.isMandatory());
 
 		final Optional<IExpression<?>> defaultValueExpr = Optional.empty();

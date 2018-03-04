@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -59,10 +61,10 @@ public final class DocumentValidStatus
 
 	public static final DocumentValidStatus invalidFieldMandatoryNotFilled(final String fieldName, final boolean isInitialValue)
 	{
-		return new DocumentValidStatus(VALID_No, "Mandatory field not filled", fieldName, isInitialValue);
+		return new DocumentValidStatus(VALID_No, "Mandatory field " + fieldName + " not filled", fieldName, isInitialValue);
 	}
 
-	public static final DocumentValidStatus invalid(final Throwable error)
+	public static final DocumentValidStatus invalid(@NonNull final Throwable error)
 	{
 		return new DocumentValidStatus(VALID_No, error.getLocalizedMessage(), FIELDNAME_Null, INITIALVALUE_Unknown);
 	}

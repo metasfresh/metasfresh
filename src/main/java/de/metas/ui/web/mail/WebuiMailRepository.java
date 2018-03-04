@@ -69,7 +69,8 @@ public class WebuiMailRepository
 	public WebuiMailRepository()
 	{
 		final LookupDescriptor emailToLookupDescriptor = SqlLookupDescriptor.builder()
-				.setColumnName(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID)
+				.setCtxTableName(null)
+				.setCtxColumnName(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.buildProvider()

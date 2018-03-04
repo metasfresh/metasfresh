@@ -3,7 +3,9 @@ package de.metas.ui.web.address;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -11,6 +13,7 @@ import org.compiere.model.I_C_Region;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Component;
 
+import de.metas.adempiere.model.I_C_Postal;
 import de.metas.i18n.IMsgBL;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -54,10 +57,18 @@ public class AddressDescriptorFactory
 {
 	private final CCache<Integer, AddressDescriptor> cache = CCache.newLRUCache("AddressDescriptor", 1, 0);
 
+	private static final String SYSCONFIG_UsePostalLookup = "de.metas.ui.web.address.UsePostalLookup";
+
 	public AddressDescriptor getAddressDescriptor()
 	{
 		final int key = 0; // some dummy key
 		return cache.getOrLoad(key, () -> createAddressDescriptor());
+	}
+
+	private boolean isUsePostalLookup()
+	{
+		final boolean defaultWhenNotFound = false; // don't use postal lookup by default
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_UsePostalLookup, defaultWhenNotFound);
 	}
 
 	private AddressDescriptor createAddressDescriptor()
@@ -77,6 +88,8 @@ public class AddressDescriptorFactory
 		//
 		;
 
+		//
+		// Address1 ... Address4 fields
 		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address1)
 				.setValueClass(String.class)
 				.setWidgetType(DocumentFieldWidgetType.Text)
@@ -96,50 +109,67 @@ public class AddressDescriptorFactory
 				.setValueClass(String.class)
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address4, false, I_C_Location::getAddress4, AddressFieldBinding::writeValue_Address4)));
-		//
-		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Postal)
-				.setValueClass(String.class)
-				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Postal, false, I_C_Location::getPostal, AddressFieldBinding::writeValue_Postal)));
-		//
-		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_City)
-				.setValueClass(String.class)
-				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_City, false, I_C_Location::getCity, AddressFieldBinding::writeValue_City)));
-		//
-		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_Region_ID)
-				.setValueClass(IntegerLookupValue.class)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setDisplayLogic("@" + IAddressModel.COLUMNNAME_HasRegion + "/N@=Y")
-				.setLookupDescriptorProvider(new AddressRegionLookupDescriptor())
-				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Region_ID, false, AddressFieldBinding::readValue_C_Region_ID, AddressFieldBinding::writeValue_C_Region_ID)));
-		//
 
-		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_HasRegion)
-				.setWidgetType(DocumentFieldWidgetType.YesNo)
-				.removeCharacteristic(Characteristic.PublicField)
-				.setDataBinding(AddressFieldBinding.internalField(IAddressModel.COLUMNNAME_HasRegion)));
+		//
+		// Postal, City, Region and Country fields
+		final boolean usePostalLookup = isUsePostalLookup();
+		if (usePostalLookup)
+		{
+			final AddressPostalLookupDescriptor postalLookup = AddressPostalLookupDescriptor.builder()
+					.countryLookup(AddressCountryLookupDescriptor.newInstance())
+					.build();
+			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_Postal_ID)
+					.setValueClass(IntegerLookupValue.class)
+					.setWidgetType(DocumentFieldWidgetType.Lookup)
+					.setLookupDescriptorProvider(postalLookup)
+					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Postal_ID, false, postalLookup::getLookupValueFromLocation, AddressFieldBinding::writeValue_C_Postal_ID)));
 
-		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_Country_ID)
-				.setValueClass(IntegerLookupValue.class)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setMandatoryLogic(true)
-				.setLookupDescriptorProvider(new AddressCountryLookupDescriptor())
-				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Country_ID, false, AddressFieldBinding::readValue_C_Country_ID, AddressFieldBinding::writeValue_C_Country_ID))
-				.addCallout(calloutField -> {
-					final IAddressModel location = calloutField.getModel(IAddressModel.class);
-					final I_C_Country country = location.getC_Country();
-					final boolean hasRegions = country != null && country.isHasRegion();
-					location.setHasRegion(hasRegions);
-				}));
+		}
+		else
+		{
+			//
+			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Postal)
+					.setValueClass(String.class)
+					.setWidgetType(DocumentFieldWidgetType.Text)
+					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Postal, false, I_C_Location::getPostal, AddressFieldBinding::writeValue_Postal)));
+			//
+			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_City)
+					.setValueClass(String.class)
+					.setWidgetType(DocumentFieldWidgetType.Text)
+					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_City, false, I_C_Location::getCity, AddressFieldBinding::writeValue_City)));
 
+			//
+			// Region and Country fields
+			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_Region_ID)
+					.setValueClass(IntegerLookupValue.class)
+					.setWidgetType(DocumentFieldWidgetType.Lookup)
+					.setDisplayLogic("@" + IAddressModel.COLUMNNAME_HasRegion + "/N@=Y")
+					.setLookupDescriptorProvider(AddressRegionLookupDescriptor.newInstance())
+					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Region_ID, false, AddressFieldBinding::readValue_C_Region_ID, AddressFieldBinding::writeValue_C_Region_ID)));
+			//
+			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_HasRegion)
+					.setWidgetType(DocumentFieldWidgetType.YesNo)
+					.removeCharacteristic(Characteristic.PublicField) // internal field (not displayed!)
+					.setDataBinding(AddressFieldBinding.internalField(IAddressModel.COLUMNNAME_HasRegion)));
+			//
+			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_C_Country_ID)
+					.setValueClass(IntegerLookupValue.class)
+					.setWidgetType(DocumentFieldWidgetType.Lookup)
+					.setMandatoryLogic(true)
+					.setLookupDescriptorProvider(AddressCountryLookupDescriptor.newInstance())
+					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_C_Country_ID, false, AddressFieldBinding::readValue_C_Country_ID, AddressFieldBinding::writeValue_C_Country_ID))
+					.addCallout(AddressCallout::onC_Country_ID));
+		}
+
+		//
+		// Build it and return
 		return addressDescriptor.build();
 	}
 
 	private DocumentFieldDescriptor.Builder buildFieldDescriptor(final String columnName)
 	{
 		return DocumentFieldDescriptor.builder(columnName)
-				.setCaption(Services.get(IMsgBL.class).getTranslatableMsgText(columnName))
+				.setCaption(Services.get(IMsgBL.class).translatable(columnName))
 				//
 				// .setValueClass()
 				// .setWidgetType()
@@ -204,6 +234,18 @@ public class AddressDescriptorFactory
 		}
 	}
 
+	private static final class AddressCallout
+	{
+		private static final void onC_Country_ID(final ICalloutField calloutField)
+		{
+			final IAddressModel location = calloutField.getModel(IAddressModel.class);
+			final I_C_Country country = location.getC_Country();
+			final boolean hasRegions = country != null && country.isHasRegion();
+			location.setHasRegion(hasRegions);
+		}
+
+	}
+
 	public static final class AddressFieldBinding implements DocumentFieldDataBindingDescriptor
 	{
 		public static final AddressFieldBinding internalField(final String columnName)
@@ -225,7 +267,7 @@ public class AddressDescriptorFactory
 				, final boolean mandatory //
 				, final Function<I_C_Location, Object> readMethod //
 				, final BiConsumer<I_C_Location, IDocumentFieldView> writeMethod //
-				)
+		)
 		{
 			super();
 			this.columnName = columnName;
@@ -368,6 +410,33 @@ public class AddressDescriptorFactory
 			else
 			{
 				toLocationRecord.setC_Country_ID(country.getIdAsInt());
+			}
+		}
+
+		private static void writeValue_C_Postal_ID(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
+		{
+			final IntegerLookupValue postalLookupValue = fromField.getValueAs(IntegerLookupValue.class);
+			final int postalId = postalLookupValue != null ? postalLookupValue.getIdAsInt() : -1;
+			if (postalId <= 0)
+			{
+				toLocationRecord.setC_Postal_ID(-1);
+				toLocationRecord.setPostal(null);
+				toLocationRecord.setCity(null);
+				toLocationRecord.setC_City_ID(-1);
+			}
+			else
+			{
+				final I_C_Postal postalRecord = InterfaceWrapperHelper.load(postalId, I_C_Postal.class);
+				toLocationRecord.setC_Postal_ID(postalRecord.getC_Postal_ID());
+				toLocationRecord.setPostal(postalRecord.getPostal());
+				toLocationRecord.setPostal_Add(postalRecord.getPostal_Add());
+				toLocationRecord.setC_City_ID(postalRecord.getC_City_ID());
+				toLocationRecord.setCity(postalRecord.getCity());
+
+				toLocationRecord.setC_Country_ID(postalRecord.getC_Country_ID());
+
+				toLocationRecord.setC_Region_ID(postalRecord.getC_Region_ID());
+				toLocationRecord.setRegionName(postalRecord.getRegionName());
 			}
 		}
 

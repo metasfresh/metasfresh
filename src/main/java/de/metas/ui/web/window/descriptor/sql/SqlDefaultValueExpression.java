@@ -16,17 +16,18 @@ import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
+import org.compiere.util.CtxName;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -41,11 +42,11 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,10 +54,10 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 @JsonSerialize(using = JsonStringExpressionSerializer.class)
 public final class SqlDefaultValueExpression<V> implements IExpression<V>
 {
-	public static final <V> SqlDefaultValueExpression<?> of(final IStringExpression stringExpression, final Class<V> valueClass)
+	public static final <V> SqlDefaultValueExpression<?> of(
+			@NonNull final IStringExpression stringExpression,
+			@NonNull final Class<V> valueClass)
 	{
-		Check.assumeNotNull(valueClass, "Parameter valueClass is not null");
-
 		if (Integer.class.equals(valueClass)
 				|| IntegerLookupValue.class.equals(valueClass))
 		{
@@ -103,10 +104,12 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 		V get(final ResultSet rs) throws SQLException;
 	}
 
-	private SqlDefaultValueExpression(final IStringExpression stringExpression, final Class<V> valueType, final ValueLoader<V> valueRetriever)
+	private SqlDefaultValueExpression(
+			@NonNull final IStringExpression stringExpression,
+			final Class<V> valueType,
+			final ValueLoader<V> valueRetriever)
 	{
-		super();
-		this.stringExpression = Preconditions.checkNotNull(stringExpression);
+		this.stringExpression = stringExpression;
 		this.valueClass = valueType;
 		this.noResultValue = null; // IStringExpression.EMPTY_RESULT
 		this.valueRetriever = valueRetriever;
@@ -149,7 +152,13 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 	}
 
 	@Override
-	public Set<String> getParameters()
+	public Set<String> getParameterNames()
+	{
+		return stringExpression.getParameterNames();
+	}
+
+	@Override
+	public Set<CtxName> getParameters()
 	{
 		return stringExpression.getParameters();
 	}

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
@@ -20,6 +22,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 /*
@@ -48,14 +51,32 @@ public interface IView
 {
 	ViewId getViewId();
 
-	ITranslatableString getDescription();
-
 	JSONViewDataType getViewType();
+
+	default ViewProfileId getProfileId()
+	{
+		return ViewProfileId.NULL;
+	}
+
+	default ITranslatableString getDescription()
+	{
+		return ITranslatableString.empty();
+	}
 
 	Set<DocumentPath> getReferencingDocumentPaths();
 
-	/** @return table name or null */
-	String getTableName();
+	/**
+	 * @param documentId can be used by multi-table implementations to return the correct table name for a given row.
+	 *
+	 * @return table name for the given row; might also return {@code null}.
+	 */
+	String getTableNameOrNull(@Nullable DocumentId documentId);
+	
+	default String getTableNameOrNull()
+	{
+		return getTableNameOrNull(null);
+	}
+
 
 	/**
 	 * @return In case this is an included view, this method will return the parent's viewId. Else null will be returned.
@@ -73,30 +94,47 @@ public interface IView
 
 	long size();
 
-	void close();
+	default void close(final ViewCloseReason reason)
+	{
+		// nothing
+	}
 
 	int getQueryLimit();
 
 	boolean isQueryLimitHit();
 
 	/**
-	 * NOTE: don't call this directly it shall be called by API.
+	 * Invalidate ALL view rows.
+	 *
+	 * NOTE: this method is NOT sending websocket notifications
 	 */
 	void invalidateAll();
 
+	default void invalidateSelection()
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Invalidate given row by ID.
+	 *
+	 * If there is no custom implementation then this method will invoke {@link #invalidateAll()}.
+	 *
+	 * @param rowId
+	 */
+	default void invalidateRowById(final DocumentId rowId)
+	{
+		invalidateAll();
+	}
+
 	ViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
-	default ViewResult getPageWithRowIdsOnly(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys)
+	default ViewResult getPageWithRowIdsOnly(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
 		return getPage(firstRow, pageLength, orderBys);
 	}
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;
-
-	default List<? extends IViewRow> getByIds(final DocumentIdsSelection rowIds)
-	{
-		return streamByIds(rowIds).collect(ImmutableList.toImmutableList());
-	}
 
 	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
 
@@ -110,25 +148,30 @@ public interface IView
 	List<DocumentFilter> getStickyFilters();
 
 	/**
-	 * @return active filters
+	 * Return the active filters for this view.<br>
+	 * Note that whenever the user changes the filter settings on the frontend, a new view is created.<br>
+	 * Therefore, if you implement a view yourself, you probably will want to give it a "static" list of filters to be returned by this method.
 	 */
 	List<DocumentFilter> getFilters();
 
 	List<DocumentQueryOrderBy> getDefaultOrderBys();
-	
+
 	default TableRecordReference getTableRecordReferenceOrNull(@NonNull final DocumentId rowId)
 	{
 		final int recordId = rowId.toIntOr(-1);
-		if(recordId < 0)
+		if (recordId < 0)
 		{
 			return null;
 		}
-		return TableRecordReference.of(getTableName(), recordId);
+		return TableRecordReference.of(getTableNameOrNull(rowId), recordId);
 	}
 
-	String getSqlWhereClause(DocumentIdsSelection rowIds);
+	String getSqlWhereClause(DocumentIdsSelection rowIds, SqlOptions sqlOpts);
 
-	boolean hasAttributesSupport();
+	default boolean hasAttributesSupport()
+	{
+		return false;
+	}
 
 	<T> List<T> retrieveModelsByIds(DocumentIdsSelection rowIds, Class<T> modelClass);
 

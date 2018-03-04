@@ -1,11 +1,13 @@
 package de.metas.ui.web.view.event;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.util.Services;
@@ -21,7 +23,9 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -71,7 +75,9 @@ public class ViewChangesCollector implements AutoCloseable
 			return currentTrx
 					.getProperty(TRXPROPERTY_Name, trx -> {
 						final ViewChangesCollector collector = new ViewChangesCollector();
-						trx.getTrxListenerManager().onAfterCommit(() -> collector.close());
+						trx.getTrxListenerManager()
+								.newEventListener(TrxEventTiming.AFTER_COMMIT)
+								.registerHandlingMethod(innerTrx -> collector.close());
 						return collector;
 					});
 		}
@@ -154,7 +160,7 @@ public class ViewChangesCollector implements AutoCloseable
 		}
 	}
 
-	private ViewChanges viewChanges(final IView view)
+	private ViewChanges viewChanges(@NonNull final IView view)
 	{
 		return viewChanges(view.getViewId());
 	}
@@ -165,16 +171,30 @@ public class ViewChangesCollector implements AutoCloseable
 		return viewChangesMap.computeIfAbsent(viewId, ViewChanges::new);
 	}
 
-	public void collectFullyChanged(final IView view)
+	public void collectFullyChanged(@NonNull final IView view)
 	{
 		viewChanges(view).setFullyChanged();
 
 		autoflushIfEnabled();
 	}
 
-	public void collectRowsChanged(final IView view, final DocumentIdsSelection rowIds)
+	public void collectRowsChanged(@NonNull final IView view, final DocumentIdsSelection rowIds)
 	{
 		viewChanges(view).addChangedRowIds(rowIds);
+
+		autoflushIfEnabled();
+	}
+	
+	public void collectRowsChanged(@NonNull final IView view, final Collection<DocumentId> rowIds)
+	{
+		viewChanges(view).addChangedRowIds(rowIds);
+
+		autoflushIfEnabled();
+	}
+
+	public void collectRowChanged(@NonNull final IView view, final DocumentId rowId)
+	{
+		viewChanges(view).addChangedRowId(rowId);
 
 		autoflushIfEnabled();
 	}

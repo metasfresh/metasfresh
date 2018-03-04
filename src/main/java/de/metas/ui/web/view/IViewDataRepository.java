@@ -1,6 +1,8 @@
 package de.metas.ui.web.view;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.exceptions.DBException;
 
@@ -8,8 +10,9 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 
 /*
  * #%L
@@ -44,7 +47,9 @@ public interface IViewDataRepository
 {
 	String getTableName();
 
-	String getSqlWhereClause(ViewId viewId, List<DocumentFilter> filters, DocumentIdsSelection rowIds);
+	String getSqlWhereClause(ViewId viewId, List<DocumentFilter> filters, DocumentIdsSelection rowIds, SqlOptions sqlOpts);
+	
+	Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName();
 
 	DocumentFilterDescriptorsProvider getViewFilterDescriptors();
 
@@ -56,8 +61,11 @@ public interface IViewDataRepository
 
 	<T> List<T> retrieveModelsByIds(ViewId viewId, DocumentIdsSelection rowIds, Class<T> modelClass);
 
-	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, WindowId windowId, List<DocumentFilter> filters);
+	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, List<DocumentFilter> filters);
 
 	ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(final ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
 
+	void deleteSelection(ViewId viewId);
+
+	void scheduleDeleteSelections(Set<String> viewIds);
 }

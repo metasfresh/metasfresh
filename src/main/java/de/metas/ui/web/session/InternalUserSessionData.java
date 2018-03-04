@@ -6,7 +6,6 @@ import java.util.Locale;
 import java.util.Properties;
 
 import org.compiere.util.Env;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -55,7 +54,7 @@ import de.metas.ui.web.base.session.UserPreference;
 @Primary
 @SessionScope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @lombok.Data
-/* package */ class InternalUserSessionData implements Serializable, InitializingBean
+/* package */ class InternalUserSessionData implements Serializable
 {
 	private static final long serialVersionUID = 4046535476486036184L;
 
@@ -65,11 +64,13 @@ import de.metas.ui.web.base.session.UserPreference;
 
 	//
 	// Actual session data
+	private volatile boolean initialized = false;
 	private String sessionId = null;
 	private UserPreference userPreference = null;
 	private boolean loggedIn = false;
 	private Locale locale = null;
-	
+	private Properties ctx;
+
 	//
 	// User info
 	private String userFullname;
@@ -85,16 +86,15 @@ import de.metas.ui.web.base.session.UserPreference;
 	@Value("${metasfresh.webui.debug.allowDeprecatedRestAPI:false}")
 	private boolean defaultAllowDeprecatedRestAPI;
 	private boolean allowDeprecatedRestAPI;
-	
+
 	@Value("${metasfresh.webui.http.cache.maxAge:60}")
 	private int defaultHttpCacheMaxAge;
 	private int httpCacheMaxAge;
-	
+
 	// TODO: set default to "true" after https://github.com/metasfresh/metasfresh-webui-frontend/issues/819
 	@Value("${metasfresh.webui.http.use.AcceptLanguage:false}")
 	private boolean defaultUseHttpAcceptLanguage;
 	private boolean useHttpAcceptLanguage;
-
 
 	//
 	public InternalUserSessionData()
@@ -105,24 +105,30 @@ import de.metas.ui.web.base.session.UserPreference;
 		userPreference = new UserPreference();
 		loggedIn = false;
 
-		//
-		// Set initial language
-		try
-		{
-			final Locale locale = LocaleContextHolder.getLocale();
-			final Language language = Language.getLanguage(locale);
-			verifyLanguageAndSet(language);
-		}
-		catch (final Exception e)
-		{
-			UserSession.logger.warn("Failed setting the language, but moving on", e);
-		}
+		// Context
+		ctx = new Properties();
+		Env.setContext(ctx, WebRestApiContextProvider.CTXNAME_IsServerContext, false);
+		Env.setContext(ctx, WebRestApiContextProvider.CTXNAME_IsWebUI, true);
 
 		UserSession.logger.trace("User session created: {}", this);
 	}
 
-	@Override
-	public void afterPropertiesSet() throws Exception
+	void initializeIfNeeded()
+	{
+		if (!initialized)
+		{
+			synchronized (this)
+			{
+				if (!initialized)
+				{
+					initializeNow();
+					initialized = true;
+				}
+			}
+		}
+	}
+
+	private void initializeNow()
 	{
 		//
 		// Set initial properties
@@ -130,6 +136,33 @@ import de.metas.ui.web.base.session.UserPreference;
 		setAllowDeprecatedRestAPI(defaultAllowDeprecatedRestAPI);
 		setHttpCacheMaxAge(defaultHttpCacheMaxAge);
 		setUseHttpAcceptLanguage(defaultUseHttpAcceptLanguage);
+
+		//
+		// Set initial language
+		try
+		{
+			final Language language = findInitialLanguage();
+			verifyLanguageAndSet(language);
+		}
+		catch (final Throwable ex)
+		{
+			UserSession.logger.warn("Failed setting the language, but moving on", ex);
+		}
+	}
+
+	private static final Language findInitialLanguage()
+	{
+		final Locale locale = LocaleContextHolder.getLocale();
+		if (locale != null)
+		{
+			final Language language = Language.findLanguageByLocale(locale);
+			if (language != null)
+			{
+				return language;
+			}
+		}
+
+		return Language.getBaseLanguage();
 	}
 
 	@Override
@@ -158,15 +191,20 @@ import de.metas.ui.web.base.session.UserPreference;
 
 		UserSession.logger.trace("User session deserialized: {}", this);
 	}
-	
+
 	Properties getCtx()
 	{
-		return Env.getCtx();
+		return ctx;
 	}
 
 	public int getAD_Client_ID()
 	{
 		return Env.getAD_Client_ID(getCtx());
+	}
+
+	public int getAD_Org_ID()
+	{
+		return Env.getAD_Org_ID(getCtx());
 	}
 
 	public int getAD_User_ID()
@@ -199,6 +237,10 @@ import de.metas.ui.web.base.session.UserPreference;
 		return Env.getLanguage(getCtx());
 	}
 
+	/**
+	 * @param lang
+	 * @return previous language
+	 */
 	String verifyLanguageAndSet(final Language lang)
 	{
 		final Properties ctx = getCtx();

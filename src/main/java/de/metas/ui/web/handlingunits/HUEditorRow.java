@@ -1,13 +1,15 @@
 package de.metas.ui.web.handlingunits;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -38,6 +40,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /*
@@ -68,6 +71,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@EqualsAndHashCode
 public final class HUEditorRow implements IViewRow
 {
 	public static final Builder builder(final WindowId windowId)
@@ -88,51 +92,69 @@ public final class HUEditorRow implements IViewRow
 	private final boolean topLevel;
 	private final boolean processed;
 
-	static final String COLUMNNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
-	@ViewColumn(fieldName = COLUMNNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
+	public static final String FIELDNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
+	@ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
 	private final int huId;
 
-	@ViewColumn(captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts = {
+	public static final String FIELDNAME_HUCode = I_M_HU.COLUMNNAME_Value;
+	@ViewColumn(fieldName = FIELDNAME_HUCode, captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
 	})
 	private final String code;
 
-	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+	public static final String FIELDNAME_Product = I_M_HU.COLUMNNAME_M_Product_ID;
+	@ViewColumn(fieldName = FIELDNAME_Product, widgetType = DocumentFieldWidgetType.Lookup, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
 	})
 	private final JSONLookupValue product;
 
-	@ViewColumn(captionKey = "HU_UnitType", widgetType = DocumentFieldWidgetType.Text, layouts = {
+	public static final String FIELDNAME_HU_UnitType = "HU_UnitType";
+	@ViewColumn(fieldName = FIELDNAME_HU_UnitType, widgetType = DocumentFieldWidgetType.Text, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
-			// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
 	})
 	private final JSONLookupValue huUnitType;
 
-	@ViewColumn(captionKey = "M_HU_PI_Item_Product_ID", widgetType = DocumentFieldWidgetType.Text, layouts = {
+	public static final String FIELDNAME_PackingInfo = I_M_HU.COLUMNNAME_M_HU_PI_Item_Product_ID;
+	@ViewColumn(fieldName = FIELDNAME_PackingInfo, widgetType = DocumentFieldWidgetType.Text, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
 	})
 	private final String packingInfo;
 
-	@ViewColumn(captionKey = "QtyCU", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
+	public static final String FIELDNAME_QtyCU = "QtyCU";
+	@ViewColumn(fieldName = FIELDNAME_QtyCU, widgetType = DocumentFieldWidgetType.Quantity, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
 	})
 	private final BigDecimal qtyCU;
 
-	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+	public static final String FIELDNAME_UOM = "C_UOM_ID";
+	@ViewColumn(fieldName = FIELDNAME_UOM, widgetType = DocumentFieldWidgetType.Lookup, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60),
-			// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 60)
 	})
 	private final JSONLookupValue uom;
 
-	@ViewColumn(captionKey = "HUStatus", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+	public static final String FIELDNAME_HUStatus = I_M_HU.COLUMNNAME_HUStatus;
+	@ViewColumn(fieldName = FIELDNAME_HUStatus, widgetType = DocumentFieldWidgetType.Lookup, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
-			// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 70)
 	})
 	private final JSONLookupValue huStatus;
+
+	public static final String FIELDNAME_BestBeforeDate = "BestBeforeDate";
+	@ViewColumn(fieldName = FIELDNAME_BestBeforeDate, widgetType = DocumentFieldWidgetType.Date, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80, displayed = false),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 80, displayed = false)
+	})
+	private final Date bestBeforeDate;
+
+	public static final String FIELDNAME_Locator = I_M_HU.COLUMNNAME_M_Locator_ID;
+	@ViewColumn(fieldName = FIELDNAME_Locator, widgetType = DocumentFieldWidgetType.Lookup, sorting = false, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90, displayed = false),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 90, displayed = false)
+	})
+	private final JSONLookupValue locator;
 
 	private final Supplier<HUEditorRowAttributes> attributesSupplier;
 
@@ -141,7 +163,7 @@ public final class HUEditorRow implements IViewRow
 	private transient String _summary; // lazy
 	private transient Map<String, Object> _values; // lazy
 
-	private HUEditorRow(final Builder builder)
+	private HUEditorRow(@NonNull final Builder builder)
 	{
 		documentPath = builder.getDocumentPath();
 		rowId = builder.getRowId();
@@ -158,6 +180,8 @@ public final class HUEditorRow implements IViewRow
 		product = builder.product;
 		uom = builder.uom;
 		qtyCU = builder.qtyCU;
+		bestBeforeDate = builder.getBestBeforeDate();
+		locator = builder.getLocator();
 
 		includedRows = builder.buildIncludedRows();
 
@@ -198,7 +222,7 @@ public final class HUEditorRow implements IViewRow
 	{
 		return getHURowId().toDocumentId();
 	}
-	
+
 	/**
 	 * @return {@link HUEditorRowType}; never returns null.
 	 */
@@ -258,37 +282,26 @@ public final class HUEditorRow implements IViewRow
 	}
 
 	@Override
-	public boolean hasIncludedView()
-	{
-		return false;
-	}
-
-	@Override
 	public List<HUEditorRow> getIncludedRows()
 	{
 		return includedRows;
 	}
 
-	/** @return a stream of this row and all it's included rows recursively */
-	public Stream<HUEditorRow> streamRecursive()
-	{
-		return streamRecursive(this);
-	}
-
-	/** @return a stream of given row and all it's included rows recursively */
-	private static Stream<HUEditorRow> streamRecursive(final HUEditorRow row)
-	{
-		return row.getIncludedRows()
-				.stream()
-				.map(includedRow -> streamRecursive(includedRow))
-				.reduce(Stream.of(row), Stream::concat);
-	}
-	
 	public Optional<HUEditorRow> getIncludedRowById(final DocumentId rowId)
 	{
 		return streamRecursive()
 				.filter(row -> rowId.equals(row.getId()))
+				.map(HUEditorRow::cast)
 				.findFirst();
+	}
+
+	public boolean hasDirectChild(final DocumentId childId)
+	{
+		return getIncludedRows()
+				.stream()
+				.filter(row -> childId.equals(row.getId()))
+				.findAny()
+				.isPresent();
 	}
 
 	/**
@@ -311,7 +324,7 @@ public final class HUEditorRow implements IViewRow
 		{
 			return null;
 		}
-		return InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+		return load(huId, I_M_HU.class);
 	}
 
 	public boolean isHUPlanningReceiptOwnerPM()
@@ -330,7 +343,7 @@ public final class HUEditorRow implements IViewRow
 		return code;
 	}
 
-	private JSONLookupValue getHUStatus()
+	public JSONLookupValue getHUStatus()
 	{
 		return huStatus;
 	}
@@ -374,6 +387,11 @@ public final class HUEditorRow implements IViewRow
 	public boolean isLU()
 	{
 		return getType() == HUEditorRowType.LU;
+	}
+
+	public boolean hasIncludedTUs()
+	{
+		return getIncludedRows().stream().anyMatch(HUEditorRow::isTU);
 	}
 
 	public boolean isTopLevel()
@@ -426,7 +444,7 @@ public final class HUEditorRow implements IViewRow
 	public String getM_Product_DisplayName()
 	{
 		final JSONLookupValue productLV = getProduct();
-		return productLV == null ? null : productLV.getName();
+		return productLV == null ? null : productLV.getCaption();
 	}
 
 	public I_M_Product getM_Product()
@@ -527,6 +545,8 @@ public final class HUEditorRow implements IViewRow
 		private JSONLookupValue product;
 		private JSONLookupValue uom;
 		private BigDecimal qtyCU;
+		private Date bestBeforeDate;
+		private JSONLookupValue locator;
 
 		private List<HUEditorRow> includedRows = null;
 
@@ -545,7 +565,7 @@ public final class HUEditorRow implements IViewRow
 		private DocumentPath getDocumentPath()
 		{
 			final HUEditorRowId rowId = getRowId();
-			return DocumentPath.rootDocumentPath(windowId, rowId.toDocumentId());
+			return DocumentPath.rootDocumentPath(windowId, rowId.getHuId());
 		}
 
 		public Builder setRowId(final HUEditorRowId rowId)
@@ -560,7 +580,7 @@ public final class HUEditorRow implements IViewRow
 			Check.assumeNotNull(_rowId, "Parameter rowId is not null");
 			return _rowId;
 		}
-		
+
 		private HUEditorRowType getType()
 		{
 			Check.assumeNotNull(type, "Parameter type is not null");
@@ -647,6 +667,28 @@ public final class HUEditorRow implements IViewRow
 			return this;
 		}
 
+		public Builder setBestBeforeDate(final Date bestBeforeDate)
+		{
+			this.bestBeforeDate = bestBeforeDate;
+			return this;
+		}
+
+		private Date getBestBeforeDate()
+		{
+			return bestBeforeDate != null ? (Date)bestBeforeDate.clone() : null;
+		}
+
+		public Builder setLocator(final JSONLookupValue locator)
+		{
+			this.locator = locator;
+			return this;
+		}
+
+		private JSONLookupValue getLocator()
+		{
+			return locator;
+		}
+
 		private HUEditorRowAttributesProvider getAttributesProviderOrNull()
 		{
 			return attributesProvider;
@@ -679,5 +721,14 @@ public final class HUEditorRow implements IViewRow
 
 			return ImmutableList.copyOf(includedRows);
 		}
+	}
+
+	@lombok.Builder
+	@lombok.Value
+	public static class HUEditorRowHierarchy
+	{
+		@NonNull private final HUEditorRow cuRow;
+		@Nullable private final HUEditorRow parentRow;
+		@Nullable private final HUEditorRow topLevelRow;
 	}
 }

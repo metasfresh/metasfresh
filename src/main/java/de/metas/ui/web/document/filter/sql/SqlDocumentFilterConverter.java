@@ -2,10 +2,14 @@ package de.metas.ui.web.document.filter.sql;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.compiere.util.DB;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.window.model.sql.SqlOptions;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -37,6 +41,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@FunctionalInterface
 public interface SqlDocumentFilterConverter
 {
 	/**
@@ -47,9 +52,12 @@ public interface SqlDocumentFilterConverter
 	 * @param filter
 	 * @return SQL
 	 */
-	String getSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter);
+	String getSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter, final SqlOptions sqlOpts);
 
-	default String getSql(SqlParamsCollector sqlParamsOut, final List<DocumentFilter> filters)
+	default String getSql(
+			@NonNull final SqlParamsCollector sqlParamsOut,
+			@NonNull final List<DocumentFilter> filters,
+			@NonNull final SqlOptions sqlOpts)
 	{
 		if (filters.isEmpty())
 		{
@@ -60,7 +68,7 @@ public interface SqlDocumentFilterConverter
 
 		for (final DocumentFilter filter : filters)
 		{
-			final String sqlFilter = getSql(sqlParamsOut, filter);
+			final String sqlFilter = getSql(sqlParamsOut, filter, sqlOpts);
 			if (Check.isEmpty(sqlFilter, true))
 			{
 				continue;
@@ -74,5 +82,12 @@ public interface SqlDocumentFilterConverter
 		}
 
 		return sqlWhereClauseBuilder.toString();
+	}
+	
+	default <T> IQueryFilter<T> createQueryFilter(@NonNull final List<DocumentFilter> filters, @NonNull final SqlOptions sqlOpts)
+	{
+		final SqlParamsCollector sqlFilterParams = SqlParamsCollector.newInstance();
+		final String sqlFilter = getSql(sqlFilterParams, filters, sqlOpts);
+		return TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams.toList());
 	}
 }

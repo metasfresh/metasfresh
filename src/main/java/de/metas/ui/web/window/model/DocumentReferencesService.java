@@ -9,6 +9,7 @@ import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Column;
 import org.compiere.util.Evaluatee;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,7 +55,7 @@ public class DocumentReferencesService
 
 	public List<DocumentReference> getDocumentReferences(final DocumentPath documentPath)
 	{
-		return documentCollection.forDocumentReadonly(documentPath, NullDocumentChangesCollector.instance, document -> {
+		return documentCollection.forDocumentReadonly(documentPath, document -> {
 			if (document.isNew())
 			{
 				return ImmutableList.of();
@@ -64,8 +65,7 @@ public class DocumentReferencesService
 			final ITranslatableString filterCaption = extractFilterCaption(document);
 
 			return ZoomInfoFactory.get()
-					.retrieveZoomInfos(zoomSource)
-					.stream()
+					.streamZoomInfos(zoomSource)
 					.map(zoomInfo -> createDocumentReference(zoomInfo, filterCaption))
 					.collect(ImmutableList.toImmutableList());
 		});
@@ -73,7 +73,7 @@ public class DocumentReferencesService
 
 	public DocumentReference getDocumentReference(final DocumentPath sourceDocumentPath, final WindowId targetWindowId)
 	{
-		return documentCollection.forDocumentReadonly(sourceDocumentPath, NullDocumentChangesCollector.instance, sourceDocument -> {
+		return documentCollection.forDocumentReadonly(sourceDocumentPath, sourceDocument -> {
 			if (sourceDocument.isNew())
 			{
 				throw new IllegalArgumentException("New documents cannot be referenced: " + sourceDocument);
@@ -86,28 +86,28 @@ public class DocumentReferencesService
 			return createDocumentReference(zoomInfo, filterCaption);
 		});
 	}
-	
+
 	private final ITranslatableString extractFilterCaption(final Document sourceDocument)
 	{
 		//
 		// Window caption
 		final ITranslatableString windowCaption = sourceDocument.getEntityDescriptor().getCaption();
-		
+
 		//
 		// Document info
 		// TODO: i think we shall use lookup to fetch the document description
 		final ITranslatableString documentSummary;
-		if(sourceDocument.hasField(WindowConstants.FIELDNAME_DocumentSummary))
+		if (sourceDocument.hasField(WindowConstants.FIELDNAME_DocumentSummary))
 		{
 			final String documentSummaryStr = sourceDocument.getFieldView(WindowConstants.FIELDNAME_DocumentSummary).getValueAs(String.class);
 			documentSummary = ImmutableTranslatableString.constant(documentSummaryStr);
 		}
-		else if(sourceDocument.hasField(WindowConstants.FIELDNAME_DocumentNo))
+		else if (sourceDocument.hasField(WindowConstants.FIELDNAME_DocumentNo))
 		{
 			final String documentNoStr = sourceDocument.getFieldView(WindowConstants.FIELDNAME_DocumentNo).getValueAs(String.class);
 			documentSummary = ImmutableTranslatableString.constant(documentNoStr);
 		}
-		else if(sourceDocument.hasField(WindowConstants.FIELDNAME_Name))
+		else if (sourceDocument.hasField(WindowConstants.FIELDNAME_Name))
 		{
 			final String nameStr = sourceDocument.getFieldView(WindowConstants.FIELDNAME_Name).getValueAs(String.class);
 			documentSummary = ImmutableTranslatableString.constant(nameStr);
@@ -129,6 +129,7 @@ public class DocumentReferencesService
 				.windowId(WindowId.of(zoomInfo.getAD_Window_ID()))
 				.documentsCount(zoomInfo.getRecordCount())
 				.filter(MQueryDocumentFilterHelper.createDocumentFilterFromMQuery(zoomInfo.getQuery(), filterCaption))
+				.loadDuration(zoomInfo.getRecordCountDuration())
 				.build();
 	}
 
@@ -142,12 +143,10 @@ public class DocumentReferencesService
 		private final int adTableId;
 		private final int recordId;
 		private final String keyColumnName;
-		private final List<String> keyColumnNames;
 		private final Document document;
 
 		private DocumentAsZoomSource(final Document document)
 		{
-			super();
 			ctx = document.getCtx();
 			this.document = document;
 			evaluationContext = document.asEvaluatee();
@@ -157,8 +156,13 @@ public class DocumentReferencesService
 			tableName = entityDescriptor.getTableName();
 			adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 			recordId = document.getDocumentId().toInt();
-			keyColumnName = entityDescriptor.getIdFieldName();
-			keyColumnNames = keyColumnName == null ? ImmutableList.of() : ImmutableList.of(keyColumnName);
+
+			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+			final I_AD_Column idColumn = adTableDAO.retrieveColumn(tableName, entityDescriptor.getIdFieldName());
+
+			keyColumnName = idColumn.isGenericZoomOrigin()
+					? entityDescriptor.getIdFieldName()
+					: null;
 		}
 
 		@Override
@@ -202,15 +206,9 @@ public class DocumentReferencesService
 		}
 
 		@Override
-		public String getKeyColumnName()
+		public String getKeyColumnNameOrNull()
 		{
 			return keyColumnName;
-		}
-
-		@Override
-		public List<String> getKeyColumnNames()
-		{
-			return keyColumnNames;
 		}
 
 		@Override

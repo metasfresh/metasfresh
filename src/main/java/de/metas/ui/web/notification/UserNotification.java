@@ -5,19 +5,16 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.util.DisplayType;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.event.Event;
 import de.metas.i18n.IMsgBL;
+import lombok.Builder;
 
 /*
  * #%L
@@ -43,16 +40,10 @@ import de.metas.i18n.IMsgBL;
 
 public class UserNotification
 {
-	/* package */static final UserNotification of(final Event event)
-	{
-		return new UserNotification(event);
-	}
-
-	public static final String EVENT_PARAM_Important = "important";
-
 	private final String id;
 	private final long timestamp;
 	private final boolean important;
+	private final int recipientUserId;
 
 	private final String detailPlain;
 	private final String detailADMessage;
@@ -61,7 +52,7 @@ public class UserNotification
 
 	//
 	// Mutable: read flag
-	private final AtomicBoolean read;
+	private final AtomicBoolean read = new AtomicBoolean(false);
 
 	//
 	// Target
@@ -98,73 +89,39 @@ public class UserNotification
 	private final String target_tableName;
 	private final int target_recordId;
 
-	private UserNotification(final Event event)
+	@Builder
+	private UserNotification(
+			final String id,
+			final long timestamp,
+			final boolean important,
+			final boolean read,
+			final int recipientUserId,
+			//
+			final String detailPlain,
+			final String detailADMessage,
+			final Map<String, Object> detailADMessageParams,
+			//
+			final TargetType targetType,
+			//
+			// Target: Window/Document
+			final int targetADWindowId,
+			final String targetTableName,
+			final int targetRecordId)
 	{
-		super();
+		this.id = id;
+		this.timestamp = timestamp;
+		this.important = important;
+		this.read.set(read);
+		this.recipientUserId = recipientUserId;
+		
+		this.detailPlain = detailPlain;
+		this.detailADMessage = detailADMessage;
+		this.detailADMessageParams = detailADMessageParams != null ? ImmutableMap.copyOf(detailADMessageParams) : ImmutableMap.of();
 
-		id = event.getId();
-		timestamp = System.currentTimeMillis(); // TODO: introduce Event.getTimestamp()
-		important = DisplayType.toBoolean(event.getProperty(EVENT_PARAM_Important), false);
-
-		detailPlain = event.getDetailPlain();
-		detailADMessage = event.getDetailADMessage();
-		detailADMessageParams = ImmutableMap.copyOf(event.getProperties());
-
-		read = new AtomicBoolean(false);
-
-		//
-		// Target: window (from document record)
-		final ITableRecordReference targetRecord = event.getRecord();
-		if (targetRecord != null)
-		{
-			targetType = TargetType.Window;
-
-			final Object suggestedWindowIdObj = event.getProperty(Event.PROPERTY_SuggestedWindowId);
-			final int suggestedWindowId = (suggestedWindowIdObj instanceof Number) ? ((Number)suggestedWindowIdObj).intValue() : -1;
-			if (suggestedWindowId > 0)
-			{
-				target_adWindowId = suggestedWindowId;
-				target_tableName = targetRecord.getTableName();
-				target_recordId = targetRecord.getRecord_ID();
-			}
-			else
-			{
-				final RecordZoomWindowFinder recordWindowFinder = RecordZoomWindowFinder.newInstance(targetRecord);
-				target_adWindowId = recordWindowFinder.findAD_Window_ID();
-				target_tableName = recordWindowFinder.getTableName();
-				target_recordId = recordWindowFinder.getRecord_ID();
-			}
-		}
-		//
-		// Target: none
-		else
-		{
-			targetType = TargetType.None;
-			target_adWindowId = -1;
-			target_tableName = null;
-			target_recordId = -1;
-		}
-	}
-
-	private UserNotification(final UserNotification from)
-	{
-		super();
-
-		id = from.id;
-		timestamp = from.timestamp;
-		important = from.important;
-
-		detailPlain = from.detailPlain;
-		detailADMessage = from.detailADMessage;
-		detailADMessageParams = from.detailADMessageParams;
-		adLanguage2message.putAll(from.adLanguage2message);
-
-		read = new AtomicBoolean(from.read.get());
-
-		targetType = from.targetType;
-		target_adWindowId = from.target_adWindowId;
-		target_tableName = from.target_tableName;
-		target_recordId = from.target_recordId;
+		this.targetType = targetType;
+		this.target_adWindowId = targetADWindowId;
+		this.target_tableName = targetTableName;
+		this.target_recordId = targetRecordId;
 	}
 
 	@Override
@@ -184,11 +141,6 @@ public class UserNotification
 				.add("target_RecordId", target_recordId)
 				//
 				.toString();
-	}
-
-	public UserNotification copy()
-	{
-		return new UserNotification(this);
 	}
 
 	public String getId()
@@ -248,13 +200,18 @@ public class UserNotification
 	{
 		return important;
 	}
+	
+	public int getRecipientUserId()
+	{
+		return recipientUserId;
+	}
 
 	public boolean isRead()
 	{
 		return read.get();
 	}
 
-	boolean setRead(final boolean read)
+	/* package */ boolean setRead(final boolean read)
 	{
 		return this.read.getAndSet(read);
 	}

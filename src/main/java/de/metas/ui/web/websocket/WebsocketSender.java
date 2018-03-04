@@ -1,25 +1,23 @@
 package de.metas.ui.web.websocket;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,100 +41,208 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
+/**
+ * Websocket events sender.
+ *
+ * NOTE: by default, all methods will send the events after the current DB transaction is committed.
+ * If there is no current transaction, the events will be sent right away.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Component
 public class WebsocketSender implements InitializingBean
 {
 	private static final transient Logger logger = LogManager.getLogger(WebsocketSender.class);
 
-	@Autowired
-	private SimpMessagingTemplate websocketMessagingTemplate;
+	private final SimpMessagingTemplate websocketMessagingTemplate;
+	private final WebsocketEventsLog eventsLog = new WebsocketEventsLog();
+	private final WebsocketEventsQueue autoflushQueue;
 
 	@Value("${metasfresh.webui.websocket.logEventsEnabled:false}")
 	private boolean logEventsEnabledDefault;
 
-	private final AtomicBoolean logEventsEnabled = new AtomicBoolean(false);
-	private final AtomicInteger logEventsMaxSize = new AtomicInteger(500);
-	private final List<WebsocketEvent> loggedEvents = new LinkedList<>();
+	public WebsocketSender(final SimpMessagingTemplate websocketMessagingTemplate)
+	{
+		this.websocketMessagingTemplate = websocketMessagingTemplate;
+		autoflushQueue = new WebsocketEventsQueue("AUTOFLUSH", websocketMessagingTemplate, eventsLog, /* autoflush */true);
+	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception
 	{
-		setLogEventsEnabled(logEventsEnabledDefault);
+		eventsLog.setLogEventsEnabled(logEventsEnabledDefault);
+	}
+
+	public void convertAndSend(final Collection<? extends WebsocketEndpointAware> events)
+	{
+		events.forEach(this::convertAndSend);
+	}
+
+	public void convertAndSend(final WebsocketEndpointAware event)
+	{
+		convertAndSend(event.getWebsocketEndpoint(), event);
 	}
 
 	public void convertAndSend(final String destination, final Object event)
 	{
-		websocketMessagingTemplate.convertAndSend(destination, event);
-		logEvent(destination, event);
+		getQueue().enqueueObject(destination, event);
 	}
 
-	public void send(final String destination, final Message<?> message)
+	public void sendMessage(final String destination, final Message<?> message)
 	{
-		websocketMessagingTemplate.send(destination, message);
+		getQueue().enqueueMessage(destination, message);
 	}
 
-	private final void logEvent(final String destination, final Object event)
+	private WebsocketEventsQueue getQueue()
 	{
-		if (!logEventsEnabled.get())
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (!trxManager.isActive(trx))
 		{
-			return;
+			return autoflushQueue;
 		}
+		else if (!trx.getTrxListenerManager().canRegisterOnTiming(TrxEventTiming.AFTER_COMMIT))
+		{
+			return autoflushQueue;
+		}
+		else
+		{
+			return trx.getProperty(WebsocketEventsQueue.class.getName(), () -> createAndBindTrxQueue(trx));
+		}
+	}
 
-		synchronized (loggedEvents)
-		{
-			loggedEvents.add(new WebsocketEvent(destination, event));
-			final int maxSize = logEventsMaxSize.get();
-			while (loggedEvents.size() > maxSize)
-			{
-				loggedEvents.remove(0);
-			}
-		}
+	private WebsocketEventsQueue createAndBindTrxQueue(@NonNull final ITrx trx)
+	{
+		final String name = trx.getTrxName();
+		final boolean autoflush = false;
+		final WebsocketEventsQueue queue = new WebsocketEventsQueue(name, websocketMessagingTemplate, eventsLog, autoflush);
+
+		// Bind
+		trx.getTrxListenerManager()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> queue.sendEventsAndClear());
+
+		return queue;
 	}
 
 	public void setLogEventsEnabled(final boolean enabled)
 	{
-		final boolean enabledOld = logEventsEnabled.getAndSet(enabled);
-		logger.info("Changed logEventsEnabled from {} to {}", enabledOld, enabled);
+		eventsLog.setLogEventsEnabled(enabled);
 	}
 
-	public void setLogEventsMaxSize(final int logEventsMaxSizeNew)
+	public void setLogEventsMaxSize(final int logEventsMaxSize)
 	{
-		Preconditions.checkArgument(logEventsMaxSizeNew > 0, "logEventsMaxSize > 0");
-		final int logEventsMaxSizeOld = logEventsMaxSize.getAndSet(logEventsMaxSizeNew);
-		logger.info("Changed logEventsMaxSize from {} to {}", logEventsMaxSizeOld, logEventsMaxSizeNew);
+		eventsLog.setLogEventsMaxSize(logEventsMaxSize);
 	}
 
-	public List<WebsocketEvent> getLoggedEvents()
+	public List<WebsocketEventLogRecord> getLoggedEvents(final String destinationFilter)
 	{
-		synchronized (loggedEvents)
-		{
-			return new ArrayList<>(loggedEvents);
-		}
+		return eventsLog.getLoggedEvents(destinationFilter);
 	}
 
-	public List<WebsocketEvent> getLoggedEvents(final String destinationFilter)
-	{
-		return getLoggedEvents()
-				.stream()
-				.filter(websocketEvent -> websocketEvent.isDestinationMatching(destinationFilter))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@lombok.Value
-	public static final class WebsocketEvent
+	@lombok.Builder
+	private static final class WebsocketEvent
 	{
 		private final String destination;
 		private final Object payload;
+		private final boolean converted;
+	}
 
-		private boolean isDestinationMatching(final String destinationFilter)
+	private static class WebsocketEventsQueue
+	{
+		/** internal name, used for logging */
+		private final String name;
+		private final SimpMessagingTemplate websocketMessagingTemplate;
+		private final WebsocketEventsLog eventsLog;
+		private final boolean autoflush;
+		private final List<WebsocketEvent> events = new ArrayList<>();
+
+		public WebsocketEventsQueue(
+				@NonNull final String name,
+				@NonNull final SimpMessagingTemplate websocketMessagingTemplate,
+				@NonNull final WebsocketEventsLog eventsLog,
+				final boolean autoflush)
 		{
-			if (destinationFilter == null || destinationFilter.isEmpty())
-			{
-				return true;
-			}
+			this.name = name;
+			this.websocketMessagingTemplate = websocketMessagingTemplate;
+			this.eventsLog = eventsLog;
+			this.autoflush = autoflush;
+		}
 
-			return destination.toLowerCase().contains(destinationFilter.toLowerCase().trim());
+		public void enqueueObject(final String destination, final Object payload)
+		{
+			final boolean converted = false;
+			if (autoflush)
+			{
+				sendEvent(destination, payload, converted);
+			}
+			else
+			{
+				enqueue(WebsocketEvent.builder()
+						.destination(destination)
+						.payload(payload)
+						.converted(converted)
+						.build());
+			}
+		}
+
+		public void enqueueMessage(final String destination, final Message<?> message)
+		{
+			final boolean converted = true;
+			if (autoflush)
+			{
+				sendEvent(destination, message, converted);
+			}
+			else
+			{
+				enqueue(WebsocketEvent.builder()
+						.destination(destination)
+						.payload(message)
+						.converted(converted)
+						.build());
+			}
+		}
+
+		private void enqueue(@NonNull final WebsocketEvent event)
+		{
+			events.add(event);
+			logger.info("[name={}] Enqueued event={}", name, event);
+		}
+
+		public void sendEventsAndClear()
+		{
+			logger.info("Sending all queued events");
+
+			final List<WebsocketEvent> eventsToSend = new ArrayList<>(events);
+			events.clear();
+
+			eventsToSend.forEach(this::sendEvent);
+		}
+
+		private void sendEvent(final WebsocketEvent event)
+		{
+			final String destination = event.getDestination();
+			final Object payload = event.getPayload();
+			final boolean converted = event.isConverted();
+			sendEvent(destination, payload, converted);
+		}
+
+		private void sendEvent(final String destination, final Object payload, final boolean converted)
+		{
+			logger.info("[name={}] Sending to destination={}: payload={}", name, destination, payload);
+
+			if (converted)
+			{
+				final Message<?> message = (Message<?>)payload;
+				websocketMessagingTemplate.send(destination, message);
+			}
+			else
+			{
+				websocketMessagingTemplate.convertAndSend(destination, payload);
+				eventsLog.logEvent(destination, payload);
+			}
 		}
 	}
 }

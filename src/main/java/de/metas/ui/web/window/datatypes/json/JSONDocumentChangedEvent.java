@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -12,6 +13,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import io.swagger.annotations.ApiModel;
 import lombok.Value;
 
@@ -39,9 +42,9 @@ import lombok.Value;
 
 /**
  * Document changed event.
- * 
+ *
  * Event sent by frontend when the user wants to change some fields.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -79,6 +82,11 @@ public class JSONDocumentChangedEvent
 		return operation == JSONOperation.replace;
 	}
 
+	public String getValueAsString(final String defaultValueIfNull)
+	{
+		return value != null ? value.toString() : defaultValueIfNull;
+	}
+
 	public Boolean getValueAsBoolean(final Boolean defaultValue)
 	{
 		return DisplayType.toBoolean(value, defaultValue);
@@ -86,11 +94,7 @@ public class JSONDocumentChangedEvent
 
 	public int getValueAsInteger(final int defaultValueIfNull)
 	{
-		if (value == null)
-		{
-			return defaultValueIfNull;
-		}
-		return Integer.parseInt(value.toString());
+		return Values.toInt(value, defaultValueIfNull);
 	}
 
 	public List<Integer> getValueAsIntegersList()
@@ -114,6 +118,16 @@ public class JSONDocumentChangedEvent
 		{
 			throw new AdempiereException("Cannot convert value to int list").setParameter("event", this);
 		}
+	}
+
+	public BigDecimal getValueAsBigDecimal()
+	{
+		return Values.toBigDecimal(value);
+	}
+
+	public java.util.Date getValueAsDateTime()
+	{
+		return JSONDate.fromObject(value, DocumentFieldWidgetType.DateTime);
 	}
 
 }

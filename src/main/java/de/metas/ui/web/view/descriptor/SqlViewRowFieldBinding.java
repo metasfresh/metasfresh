@@ -10,6 +10,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -33,6 +34,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Value
 public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 {
 	/**
@@ -51,6 +53,7 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 	private final DocumentFieldWidgetType widgetType;
 
 	private final Class<?> sqlValueClass;
+	/** i.e. columnName/columnSql AS columnName */
 	private final String sqlSelectValue;
 	private final IStringExpression sqlSelectDisplayValue;
 	private final boolean usingDisplayColumn;
@@ -58,7 +61,7 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 	private final IStringExpression sqlOrderBy;
 
 	private final SqlViewRowFieldLoader fieldLoader;
-	
+
 	@Builder
 	private SqlViewRowFieldBinding(
 			@NonNull final String fieldName,
@@ -67,14 +70,13 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 			final boolean keyColumn,
 			@NonNull final DocumentFieldWidgetType widgetType,
 			//
-			@NonNull final Class<?> sqlValueClass,
+			final Class<?> sqlValueClass,
 			final String sqlSelectValue,
 			final IStringExpression sqlSelectDisplayValue,
 			final boolean usingDisplayColumn, //
 			//
 			final IStringExpression sqlOrderBy,
-			@NonNull final SqlViewRowFieldLoader fieldLoader
-	)
+			@NonNull final SqlViewRowFieldLoader fieldLoader)
 	{
 		this.fieldName = fieldName;
 		this.columnName = columnName != null ? columnName : this.fieldName;
@@ -82,72 +84,12 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 		this.keyColumn = keyColumn;
 		this.widgetType = widgetType;
 
-		this.sqlValueClass = sqlValueClass;
+		this.sqlValueClass = sqlValueClass != null ? sqlValueClass : widgetType.getValueClass();
 		this.sqlSelectValue = sqlSelectValue != null ? sqlSelectValue : this.columnSql;
 		this.sqlSelectDisplayValue = sqlSelectDisplayValue != null ? sqlSelectDisplayValue : IStringExpression.NULL;
 		this.usingDisplayColumn = usingDisplayColumn;
 
 		this.sqlOrderBy = sqlOrderBy != null ? sqlOrderBy : ConstantStringExpression.of(this.columnSql);
 		this.fieldLoader = fieldLoader;
-	}
-
-	public String getFieldName()
-	{
-		return fieldName;
-	}
-
-	@Override
-	public String getColumnName()
-	{
-		return columnName;
-	}
-
-	public boolean isKeyColumn()
-	{
-		return keyColumn;
-	}
-
-	@Override
-	public String getColumnSql()
-	{
-		return columnSql;
-	}
-
-	@Override
-	public DocumentFieldWidgetType getWidgetType()
-	{
-		return widgetType;
-	}
-
-	@Override
-	public Class<?> getSqlValueClass()
-	{
-		return sqlValueClass;
-	}
-
-	public String getSqlSelectValue()
-	{
-		return sqlSelectValue;
-	}
-
-	public boolean isUsingDisplayColumn()
-	{
-		return usingDisplayColumn;
-	}
-
-	public IStringExpression getSqlSelectDisplayValue()
-	{
-		return sqlSelectDisplayValue;
-	}
-
-	public SqlViewRowFieldLoader getFieldLoader()
-	{
-		return fieldLoader;
-	}
-
-	@Override
-	public IStringExpression getSqlOrderBy()
-	{
-		return sqlOrderBy;
 	}
 }

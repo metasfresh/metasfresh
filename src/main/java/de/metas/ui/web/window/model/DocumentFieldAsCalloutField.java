@@ -5,14 +5,19 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParameter;
-import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,6 +54,8 @@ public final class DocumentFieldAsCalloutField implements ICalloutField, IProces
 		final DocumentFieldAsCalloutField documentFieldAsCalloutField = (DocumentFieldAsCalloutField)calloutField;
 		return documentFieldAsCalloutField.getDocument();
 	}
+
+	private static final Logger logger = LogManager.getLogger(DocumentFieldAsCalloutField.class);
 
 	private final IDocumentField documentField;
 
@@ -123,13 +130,6 @@ public final class DocumentFieldAsCalloutField implements ICalloutField, IProces
 	}
 
 	@Override
-	public int getTabNo()
-	{
-		final DetailId detailId = getDocument().getEntityDescriptor().getDetailId();
-		return DetailId.getTabNo(detailId);
-	}
-
-	@Override
 	public boolean isRecordCopyingMode()
 	{
 		// TODO Auto-generated method stub
@@ -150,17 +150,32 @@ public final class DocumentFieldAsCalloutField implements ICalloutField, IProces
 	}
 
 	@Override
-	public void fireDataStatusEEvent(final String AD_Message, final String info, final boolean isError)
+	public void fireDataStatusEEvent(@NonNull final String captionAD_Message, final String message, final boolean isError)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("fireDataStatusEEvent: AD_Message=" + AD_Message + ", info=" + info + ", isError=" + isError);
+		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+		if (NullDocumentChangesCollector.isNull(changesCollector))
+		{
+			logger.warn("Got WARNING on field {} but there is no changes collector to dispatch"
+					+ "\n captionAD_Message={}"
+					+ "\n message={}"
+					+ "\n isError={}",
+					documentField, captionAD_Message, message, isError);
+		}
+		else
+		{
+			changesCollector.collectFieldWarning(documentField, DocumentFieldWarning.builder()
+					.caption(Services.get(IMsgBL.class).translatable(captionAD_Message))
+					.message(message)
+					.error(isError)
+					.build());
+		}
 	}
 
 	@Override
 	public void fireDataStatusEEvent(final ValueNamePair errorLog)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("fireDataStatusEEvent: errorLog=" + errorLog);
+		final boolean isError = true;
+		fireDataStatusEEvent(errorLog.getValue(), errorLog.getName(), isError);
 	}
 
 	@Override

@@ -71,19 +71,24 @@ public final class ViewId
 		final WindowId windowId = WindowId.fromJson(parts.get(0));
 		if (expectedWindowId != null)
 		{
-			Preconditions.checkArgument(Objects.equals(windowId, expectedWindowId), "Invalid windowId: %s (viewId=%s)", windowId, viewIdStr);
+			Preconditions.checkArgument(Objects.equals(windowId, expectedWindowId), "Invalid windowId: %s (viewId=%s). Expected windowId was %s", windowId, viewIdStr, expectedWindowId);
 		}
 
-		return new ViewId(viewIdStr, parts, windowId);
+		return new ViewId(viewIdStr, ImmutableList.copyOf(parts), windowId);
 	}
 
 	public static ViewId random(@NonNull final WindowId windowId)
 	{
 		// TODO: find a way to generate smaller viewIds
-		final String viewIdPart = toString(UUID.randomUUID());
-		final List<String> parts = ImmutableList.of(windowId.toJson(), viewIdPart);
+		final String viewIdPart = randomViewIdPart();
+		final ImmutableList<String> parts = ImmutableList.of(windowId.toJson(), viewIdPart);
 		final String viewIdStr = JOINER.join(parts);
 		return new ViewId(viewIdStr, parts, windowId);
+	}
+
+	public static String randomViewIdPart()
+	{
+		return toString(UUID.randomUUID());
 	}
 
 	private static final String toString(final UUID uuid)
@@ -92,20 +97,20 @@ public final class ViewId
 		final long leastSigBits = uuid.getLeastSignificantBits();
 
 		// copy/paste from java.util.UUID.toString(), with our changes
-		return (digits(mostSigBits >> 32, 8) + // "-" +
+		return digits(mostSigBits >> 32, 8) + // "-" +
 				digits(mostSigBits >> 16, 4) + // "-" +
 				digits(mostSigBits, 4) + // "-" +
 				digits(leastSigBits >> 48, 4) + // "-" +
-				digits(leastSigBits, 12));
+				digits(leastSigBits, 12);
 	}
 
 	/**
 	 * @author java.util.UUID.digits(long, int)
 	 */
-	private static String digits(long val, int digits)
+	private static String digits(final long val, final int digits)
 	{
-		long hi = 1L << (digits * 4);
-		return Long.toHexString(hi | (val & (hi - 1))).substring(1);
+		final long hi = 1L << digits * 4;
+		return Long.toHexString(hi | val & hi - 1).substring(1);
 	}
 
 	/**
@@ -138,16 +143,21 @@ public final class ViewId
 
 	private final WindowId windowId;
 	private final String viewId;
-	private final List<String> parts;
+	private final ImmutableList<String> parts;
 
-	private ViewId(@NonNull final String viewIdStr, @NonNull final List<String> parts, @NonNull final WindowId windowId)
+	private ViewId(
+			@NonNull final String viewIdStr,
+			@NonNull final ImmutableList<String> parts,
+			@NonNull final WindowId windowId)
 	{
-		super();
 		this.windowId = windowId;
-		viewId = viewIdStr;
+		this.viewId = viewIdStr;
 		this.parts = parts;
 	}
 
+	/**
+	 * @return never {@code null}
+	 */
 	public WindowId getWindowId()
 	{
 		return windowId;
@@ -170,9 +180,45 @@ public final class ViewId
 		return parts.get(index);
 	}
 
+	public int getPartAsInt(final int index)
+	{
+		try
+		{
+			final String partStr = getPart(index);
+			return Integer.parseInt(partStr);
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Cannot extract part with index " + index + " as integer from " + this, ex);
+		}
+	}
+
 	/** @return just the viewId part (without the leading WindowId, without other parts etc) */
 	public String getViewIdPart()
 	{
 		return parts.get(1);
+	}
+
+	/** @return other parts (those which come after viewId part) */
+	public ImmutableList<String> getOtherParts()
+	{
+		return parts.size() > 2 ? parts.subList(2, parts.size()) : ImmutableList.of();
+	}
+
+	public ViewId deriveWithWindowId(@NonNull final WindowId windowId)
+	{
+		if (this.windowId.equals(windowId))
+		{
+			return this;
+		}
+
+		final ImmutableList<String> parts = ImmutableList.<String> builder()
+				.add(windowId.toJson())
+				.addAll(this.parts.subList(1, this.parts.size()))
+				.build();
+
+		final String viewId = JOINER.join(parts);
+
+		return new ViewId(viewId, parts, windowId);
 	}
 }

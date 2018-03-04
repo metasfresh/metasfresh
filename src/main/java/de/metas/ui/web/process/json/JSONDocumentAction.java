@@ -1,8 +1,11 @@
 package de.metas.ui.web.process.json;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.Map;
+
+import org.compiere.util.TimeUtil;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -64,6 +67,10 @@ public final class JSONDocumentAction implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String disabledReason;
 
+	@JsonProperty("evaluateDuration")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String evaluateDurationStr;
+
 	private final Map<String, Object> debugProperties;
 
 	JSONDocumentAction(final WebuiRelatedProcessDescriptor relatedProcessDescriptor, final JSONOptions jsonOpts)
@@ -81,6 +88,9 @@ public final class JSONDocumentAction implements Serializable
 		
 		disabled = relatedProcessDescriptor.isDisabled() ? Boolean.TRUE : null;
 		disabledReason = relatedProcessDescriptor.getDisabledReason(adLanguage);
+		
+		final Duration preconditionsResolutionCalcDuration = relatedProcessDescriptor.getPreconditionsResolutionCalcDuration();
+		evaluateDurationStr = preconditionsResolutionCalcDuration != null ? TimeUtil.formatElapsed(preconditionsResolutionCalcDuration) : null;
 
 		//
 		// Debug properties

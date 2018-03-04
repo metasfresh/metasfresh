@@ -1,11 +1,17 @@
 package de.metas.ui.web.notification;
 
+import java.util.List;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.google.common.base.Splitter;
 
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.notification.json.JSONNotificationsList;
@@ -25,11 +31,11 @@ import io.swagger.annotations.Api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -93,6 +99,34 @@ public class NotificationRestController
 
 		final int adUserId = userSession.getAD_User_ID();
 		userNotificationsService.markAllNotificationsAsRead(adUserId);
+	}
+
+	@DeleteMapping("/{notificationId}")
+	public void deleteById(@PathVariable("notificationId") final String notificationId)
+	{
+		userSession.assertLoggedIn();
+
+		final int adUserId = userSession.getAD_User_ID();
+		userNotificationsService.deleteNotification(adUserId, notificationId);
+	}
+
+	@DeleteMapping
+	public void deleteByIds(@RequestParam(name = "ids") final String notificationIdsListStr)
+	{
+		userSession.assertLoggedIn();
+
+		final int adUserId = userSession.getAD_User_ID();
+
+		final List<String> notificationIds = Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(notificationIdsListStr);
+		if (notificationIds.isEmpty())
+		{
+			throw new AdempiereException("No IDs provided");
+		}
+
+		notificationIds.forEach(notificationId -> userNotificationsService.deleteNotification(adUserId, notificationId));
 	}
 
 }

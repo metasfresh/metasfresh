@@ -3,6 +3,7 @@ package de.metas.ui.web.view.json;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.adempiere.util.GuavaCollectors;
@@ -13,11 +14,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentBase;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
+import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Value;
 
 /*
@@ -50,14 +56,14 @@ import lombok.Value;
  */
 public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 {
-	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows, final String adLanguage)
+	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows, final IViewRowOverrides rowOverrides, final String adLanguage)
 	{
 		return rows.stream()
-				.map(row -> ofRow(row, adLanguage))
+				.map(row -> ofRow(row, rowOverrides, adLanguage))
 				.collect(Collectors.toList());
 	}
 
-	private static JSONViewRow ofRow(final IViewRow row, final String adLanguage)
+	public static JSONViewRow ofRow(final IViewRow row, final IViewRowOverrides rowOverrides, final String adLanguage)
 	{
 		//
 		// Document view record
@@ -85,10 +91,9 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 			}
 
 			// Append the other fields
-			row.getFieldNameAndJsonValues()
-					.entrySet()
+			row.getFieldNames()
 					.stream()
-					.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue()))
+					.map(createJSONDocumentField(row))
 					.forEach(jsonField -> jsonFields.put(jsonField.getField(), jsonField));
 
 			jsonRow.setFields(jsonFields);
@@ -102,26 +107,23 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 			{
 				jsonRow.includedDocuments = includedDocuments
 						.stream()
-						.map(includedRow -> ofRow(includedRow, adLanguage))
+						.map(includedRow -> ofRow(includedRow, rowOverrides, adLanguage))
 						.collect(GuavaCollectors.toImmutableList());
 			}
 		}
 
 		//
 		// Attributes
-		if (row.hasAttributes())
-		{
-			jsonRow.supportAttributes = true;
-		}
+		jsonRow.supportAttributes = row.hasAttributes();
 
 		//
 		// Included views
-		if (row.hasIncludedView())
+		if (ViewRowOverridesHelper.extractSupportIncludedViews(row, rowOverrides))
 		{
 			jsonRow.supportIncludedViews = true;
-			
-			final ViewId includedViewId = row.getIncludedViewId();
-			if(includedViewId != null)
+
+			final ViewId includedViewId = ViewRowOverridesHelper.extractIncludedViewId(row, rowOverrides);
+			if (includedViewId != null)
 			{
 				jsonRow.includedView = new JSONIncludedViewId(includedViewId.getWindowId(), includedViewId.getViewId());
 			}
@@ -136,6 +138,20 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		}
 
 		return jsonRow;
+	}
+
+	private static final Function<String, JSONDocumentField> createJSONDocumentField(final IViewRow row)
+	{
+		final Map<String, Object> valuesByFieldName = row.getFieldNameAndJsonValues();
+		final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName = row.getWidgetTypesByFieldName();
+		final Map<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName = row.getViewEditorRenderModeByFieldName();
+
+		return fieldName -> {
+			final Object value = valuesByFieldName.get(fieldName);
+			return JSONDocumentField.ofNameAndValue(fieldName, value)
+					.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetTypesByFieldName.get(fieldName)))
+					.setViewEditorRenderMode(viewEditorRenderModeByFieldName.get(fieldName));
+		};
 	}
 
 	/**
@@ -179,7 +195,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 	{
 		super(documentId);
 	}
-	
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@Value
 	private static final class JSONIncludedViewId

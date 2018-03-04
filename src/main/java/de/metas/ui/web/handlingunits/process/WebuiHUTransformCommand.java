@@ -8,17 +8,21 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowId;
+import de.metas.ui.web.handlingunits.process.WebuiHUTransformCommandResult.WebuiHUTransformCommandResultBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -71,12 +75,12 @@ public class WebuiHUTransformCommand
 	public static enum ActionType
 	{
 		/**
-		 * Invokes {@link HUTransferService#cuToNewCU(I_M_HU, BigDecimal)}.
+		 * Invokes {@link HUTransformService#cuToNewCU(I_M_HU, BigDecimal)}.
 		 */
 		CU_To_NewCU,
 
 		/**
-		 * Invokes {@link HUTransferService#cuToNewTUs(I_M_HU, BigDecimal, I_M_HU_PI_Item_Product, boolean)}.
+		 * Invokes {@link HUTransformService#cuToNewTUs(I_M_HU, BigDecimal, I_M_HU_PI_Item_Product, boolean)}.
 		 */
 		CU_To_NewTUs,
 
@@ -92,22 +96,22 @@ public class WebuiHUTransformCommand
 		TU_Set_Ownership,
 
 		/**
-		 * Invokes {@link HUTransferService#cuToExistingTU(I_M_HU, BigDecimal, I_M_HU)}.
+		 * Invokes {@link HUTransformService#cuToExistingTU(I_M_HU, BigDecimal, I_M_HU)}.
 		 */
 		CU_To_ExistingTU,
 
 		/**
-		 * Invokes {@link HUTransferService#tuToNewTUs(I_M_HU, BigDecimal, boolean)}.
+		 * Invokes {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal, boolean)}.
 		 */
 		TU_To_NewTUs,
 
 		/**
-		 * Invokes {@link HUTransferService#tuToNewLUs(I_M_HU, BigDecimal, I_M_HU_PI_Item, boolean)}.
+		 * Invokes {@link HUTransformService#tuToNewLUs(I_M_HU, BigDecimal, I_M_HU_PI_Item, boolean)}.
 		 */
 		TU_To_NewLUs,
 
 		/**
-		 * Invokes {@link HUTransferService#tuToExistingLU(I_M_HU, BigDecimal, I_M_HU).
+		 * Invokes {@link HUTransformService#tuToExistingLU(I_M_HU, BigDecimal, I_M_HU).
 		 */
 		TU_To_ExistingLU,
 
@@ -133,7 +137,8 @@ public class WebuiHUTransformCommand
 	private WebuiHUTransformCommand(
 			@NonNull final HUEditorRow selectedRow,
 			@Nullable final List<TableRecordReference> contextDocumentLines,
-			@NonNull final WebuiHUTransformParameters parameters)
+			@NonNull final WebuiHUTransformParameters parameters,
+			final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy)
 	{
 		this._selectedRow = selectedRow;
 		this._contextDocumentLines = contextDocumentLines != null ? ImmutableList.copyOf(contextDocumentLines) : ImmutableList.of();
@@ -162,8 +167,9 @@ public class WebuiHUTransformCommand
 
 	private final HUTransformService newHUTransformation()
 	{
-		return HUTransformService.get()
-				.withReferencedObjects(getContextDocumentLines());
+		return HUTransformService.builder()
+				.referencedObjects(getContextDocumentLines())
+				.build();
 	}
 
 	public final WebuiHUTransformCommandResult execute()
@@ -171,6 +177,7 @@ public class WebuiHUTransformCommand
 		final HUEditorRow row = getSelectedRow();
 		final ActionType action = getActionType();
 		final WebuiHUTransformParameters parameters = getParameters();
+
 		switch (action)
 		{
 			case CU_To_NewCU:
@@ -221,6 +228,8 @@ public class WebuiHUTransformCommand
 		}
 	}
 
+	
+
 	/**
 	 *
 	 * @param row
@@ -249,11 +258,12 @@ public class WebuiHUTransformCommand
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_ExistingTU(final HUEditorRow cuRow, final I_M_HU tuHU, final BigDecimal qtyCU)
 	{
-		newHUTransformation().cuToExistingTU(cuRow.getM_HU(), qtyCU, tuHU);
+		final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(cuRow.getM_HU(), qtyCU, tuHU);
 
 		return WebuiHUTransformCommandResult.builder()
-				.huIdChanged(cuRow.getM_HU_ID())
-				.huIdChanged(tuHU.getM_HU_ID())
+				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
+				.huIdChanged(Services.get(IHandlingUnitsBL.class).getTopLevelParent(tuHU).getM_HU_ID())
+				.huIdsCreated(createdCUs.stream().map(hu -> hu.getM_HU_ID()).collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -269,8 +279,12 @@ public class WebuiHUTransformCommand
 		// TODO: if qtyCU is the "maximum", then don't do anything, but show a user message
 		final List<I_M_HU> createdHUs = newHUTransformation().cuToNewCU(cuRow.getM_HU(), qtyCU);
 
+		final ImmutableSet<Integer> createdHUIds = createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
+
 		return WebuiHUTransformCommandResult.builder()
-				.huIdsToAddToView(createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()))
+				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
+				.huIdsToAddToView(createdHUIds)
+				.huIdsCreated(createdHUIds)
 				.build();
 	}
 
@@ -287,9 +301,11 @@ public class WebuiHUTransformCommand
 			final HUEditorRow cuRow, final I_M_HU_PI_Item_Product tuPIItemProduct, final BigDecimal qtyCU, final boolean isOwnPackingMaterials)
 	{
 		final List<I_M_HU> createdHUs = newHUTransformation().cuToNewTUs(cuRow.getM_HU(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
-
+		final ImmutableSet<Integer> createdHUIds = createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
 		return WebuiHUTransformCommandResult.builder()
-				.huIdsToAddToView(createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()))
+				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
+				.huIdsToAddToView(createdHUIds)
+				.huIdsCreated(createdHUIds)
 				.build();
 	}
 
@@ -297,8 +313,9 @@ public class WebuiHUTransformCommand
 	{
 		newHUTransformation().tuToExistingLU(tuRow.getM_HU(), qtyTU, luHU);
 
+		final HUEditorRowId tuRowId = tuRow.getHURowId();
 		return WebuiHUTransformCommandResult.builder()
-				.huIdToRemoveFromView(tuRow.getM_HU_ID()) // TODO check and remove the tuRow only if is empty (consider the Aggregated TUs case too)
+				.huIdChanged(tuRowId.getTopLevelHUId())
 				.huIdChanged(luHU.getM_HU_ID())
 				.fullViewInvalidation(true) // because it might be that the TU is inside an LU of which we don't know the ID
 				.build();
@@ -321,7 +338,7 @@ public class WebuiHUTransformCommand
 
 		return WebuiHUTransformCommandResult.builder()
 				.huIdsToAddToView(createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()))
-				.huIdToRemoveFromView(tuRow.getM_HU_ID()) // TODO check and remove the tuRow only if is empty (consider the Aggregated TUs case too)
+				.huIdChanged(tuRow.getHURowId().getTopLevelHUId())
 				.fullViewInvalidation(true) // because it might be that the TU is inside an LU of which we don't know the ID
 				.build();
 	}
@@ -336,13 +353,27 @@ public class WebuiHUTransformCommand
 	 */
 	private WebuiHUTransformCommandResult action_SplitTU_To_NewTUs(final HUEditorRow tuRow, final BigDecimal qtyTU)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 		// TODO: if qtyTU is the "maximum", then don't do anything, but show a user message
-		final I_M_HU sourceTuHU = tuRow.getM_HU();
+		final I_M_HU fromTU = tuRow.getM_HU();
+		final I_M_HU fromTopLevelHU = handlingUnitsBL.getTopLevelParent(fromTU);
 
-		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewTUs(sourceTuHU, qtyTU, sourceTuHU.isHUPlanningReceiptOwnerPM());
+		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewTUs(fromTU, qtyTU);
 
-		return WebuiHUTransformCommandResult.builder()
-				.huIdsToAddToView(createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()))
-				.build();
+		final WebuiHUTransformCommandResultBuilder resultBuilder = WebuiHUTransformCommandResult.builder()
+				.huIdsToAddToView(createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()));
+
+		if (handlingUnitsBL.isDestroyedRefreshFirst(fromTopLevelHU))
+		{
+			resultBuilder.huIdToRemoveFromView(fromTopLevelHU.getM_HU_ID());
+		}
+		else
+		{
+			resultBuilder.huIdChanged(fromTopLevelHU.getM_HU_ID());
+		}
+
+		return resultBuilder.build();
 	}
+
 }

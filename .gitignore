@@ -5,8 +5,6 @@
 **/bin/
 **/metasfresh*.properties
 
-*.launch
-
 /activemq-data/
 /data/
 /log/
@@ -19,3 +17,4 @@ hs_err*.log
 *.diff
 
 *.jar
+*.launch

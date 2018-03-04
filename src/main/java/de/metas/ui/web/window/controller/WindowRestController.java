@@ -1,10 +1,13 @@
 package de.metas.ui.web.window.controller;
 
 import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
@@ -33,12 +38,12 @@ import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
@@ -52,6 +57,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -120,7 +126,7 @@ public class WindowRestController
 	private MenuTreeRepository menuTreeRepository;
 
 	@Autowired
-	private WebsocketSender websocketSender;
+	private DocumentWebsocketPublisher websocketPublisher;
 
 	private JSONOptions.Builder newJSONOptions()
 	{
@@ -196,7 +202,9 @@ public class WindowRestController
 			@RequestParam(name = "orderBy", required = false) final String orderBysListStr)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr);
+		final DocumentId documentId = DocumentId.of(documentIdStr);
+		final DetailId tabId = DetailId.fromJson(tabIdStr);
+		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId);
 		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
 		return getData(documentPath, fieldsListStr, advanced, orderBys);
 	}
@@ -226,8 +234,7 @@ public class WindowRestController
 				.setDataFieldsList(fieldsListStr)
 				.build();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentCollection.forRootDocumentReadonly(documentPath, changesCollector, rootDocument -> {
+		return documentCollection.forRootDocumentReadonly(documentPath, rootDocument -> {
 			List<Document> documents;
 			if (documentPath.isRootDocument())
 			{
@@ -250,6 +257,14 @@ public class WindowRestController
 		});
 	}
 
+	/**
+	 * 
+	 * @param windowIdStr
+	 * @param documentIdStr the string to identify the document to be returned. May also be {@link DocumentId#NEW_ID_STRING}, if a new record shall be created.
+	 * @param advanced
+	 * @param events
+	 * @return
+	 */
 	@PatchMapping("/{windowId}/{documentId}")
 	public List<JSONDocument> patchRootDocument(
 			@PathVariable("windowId") final String windowIdStr //
@@ -300,18 +315,34 @@ public class WindowRestController
 	private List<JSONDocument> patchDocument0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events, final JSONOptions jsonOpts)
 	{
 		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
-		documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
-			document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
-			changesCollector.setPrimaryChange(document.getDocumentPath());
-			return null; // void
-		});
-
-		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
+		documentCollection.forDocumentWritable(
+				documentPath,
+				changesCollector,
+				document -> {
+					document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
+					changesCollector.setPrimaryChange(document.getDocumentPath());
+					return null; // void
+				});
 
 		// Extract and send websocket events
-		JSONDocumentChangedWebSocketEvent.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketSender);
+		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
+		websocketPublisher.convertAndPublish(jsonDocumentEvents);
 
 		return jsonDocumentEvents;
+	}
+
+	@PostMapping("/{windowId}/{documentId}/duplicate")
+	public JSONDocument duplicate(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
+	{
+		userSession.assertLoggedIn();
+
+		final DocumentPath fromDocumentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
+
+		final Document documentCopy = documentCollection.duplicateDocument(fromDocumentPath);
+		return JSONDocument.ofDocument(documentCopy, newJSONOptions().setShowAdvancedFields(advanced).build());
 	}
 
 	@DeleteMapping("/{windowId}/{documentId}")
@@ -429,8 +460,7 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> document.getFieldLookupValuesForQuery(fieldName, query))
+		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
@@ -464,8 +494,7 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> document.getFieldLookupValues(fieldName))
+		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
@@ -501,8 +530,7 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		final DocumentZoomIntoInfo zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
+		final DocumentZoomIntoInfo zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, document -> {
 			final IDocumentFieldView field = document.getFieldView(fieldName);
 
 			// Generic ZoomInto button
@@ -573,39 +601,65 @@ public class WindowRestController
 	}
 
 	@GetMapping("/{windowId}/{documentId}/actions")
-	public JSONDocumentActionsList getDocumentActions(@PathVariable("windowId") final String windowIdStr, @PathVariable("documentId") final String documentId)
+	public JSONDocumentActionsList getDocumentActions(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentId,
+			@RequestParam(name = "selectedTabId", required = false) final String selectedTabIdStr,
+			@RequestParam(name = "selectedRowIds", required = false) final String selectedRowIdsAsStr,
+			@RequestParam(name = "disabled", defaultValue = "false") final boolean returnDisabled)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
-		return getDocumentActions(documentPath);
+
+		final DetailId selectedTabId = DetailId.fromJson(selectedTabIdStr);
+		final DocumentIdsSelection selectedRowIds = DocumentIdsSelection.ofCommaSeparatedString(selectedRowIdsAsStr);
+		final Set<TableRecordReference> selectedIncludedRecords = selectedRowIds.stream()
+				.map(rowId -> documentPath.createChildPath(selectedTabId, rowId))
+				.map(documentCollection::getTableRecordReference)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return getDocumentActions(documentPath, selectedIncludedRecords, returnDisabled);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/actions")
-	public JSONDocumentActionsList getDocumentActions(
+	public JSONDocumentActionsList getIncludedDocumentActions(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@PathVariable("tabId") final String tabIdStr,
-			@PathVariable("rowId") final String rowIdStr)
+			@PathVariable("rowId") final String rowIdStr,
+			@RequestParam(name = "disabled", defaultValue = "false") final boolean returnDisabled)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
-		return getDocumentActions(documentPath);
+		final Set<TableRecordReference> selectedIncludedRecords = ImmutableSet.of();
+		return getDocumentActions(documentPath, selectedIncludedRecords, returnDisabled);
 	}
 
-	private JSONDocumentActionsList getDocumentActions(final DocumentPath documentPath)
+	private JSONDocumentActionsList getDocumentActions(
+			final DocumentPath documentPath,
+			final Set<TableRecordReference> selectedIncludedRecords,
+			final boolean returnDisabled)
 	{
 		userSession.assertLoggedIn();
 
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
-			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document);
+		final Predicate<WebuiRelatedProcessDescriptor> filter;
+		if (returnDisabled)
+		{
+			filter = WebuiRelatedProcessDescriptor::isEnabledOrNotSilent;
+		}
+		else
+		{
+			filter = WebuiRelatedProcessDescriptor::isEnabled;
+		}
+
+		return documentCollection.forDocumentReadonly(documentPath, document -> {
+			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document, selectedIncludedRecords);
 
 			return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
-					.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent)
+					.filter(filter)
 					.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 		});
 	}
-
 
 	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/references")
 	public JSONDocumentReferencesGroup getDocumentReferences(
@@ -703,4 +757,27 @@ public class WindowRestController
 			return newRecordId;
 		}));
 	}
+
+	@PostMapping("/{windowId}/{documentId}/discardChanges")
+	public void discardChanges(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
+		documentCollection.invalidateRootDocument(documentPath);
+	}
+
+	@PostMapping("/{windowId}/{documentId}/{tabId}/{rowId}/discardChanges")
+	public void discardChanges(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr_NOTUSED,
+			@PathVariable("rowId") final String rowIdStr_NOTUSED)
+	{
+		// For now it's OK if we invalidate the whole root document
+		discardChanges(windowIdStr, documentIdStr);
+	}
+
 }

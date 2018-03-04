@@ -38,9 +38,12 @@ import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
@@ -260,7 +263,7 @@ public class BoardRestController
 
 		final BoardDescriptor boardDescriptor = boardsRepo.getBoardDescriptor(boardId);
 
-		final ViewLayout documentsViewLayout = viewsRepo.getViewLayout(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list);
+		final ViewLayout documentsViewLayout = viewsRepo.getViewLayout(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list, ViewProfileId.NULL);
 
 		final JSONOptions jsonOpts = newJSONOptions();
 		final String adLanguage = jsonOpts.getAD_Language();
@@ -363,6 +366,7 @@ public class BoardRestController
 	private final JSONViewResult toJSONCardsViewResult(final int boardId, final IView view, final String adLanguage)
 	{
 		final ViewResult viewResult = ViewResult.ofView(view);
-		return JSONViewResult.of(viewResult, adLanguage);
+		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
+		return JSONViewResult.of(viewResult, rowOverrides, adLanguage);
 	}
 }

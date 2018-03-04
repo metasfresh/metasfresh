@@ -46,7 +46,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
  * <li>parameters (if any) can be: {@link LookupDataSourceContext}
  * </ul>
  *
- *
+ * Note: please take care that the respective parameter's default value is among the list returned by your method implementation.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -61,11 +61,11 @@ public @interface ProcessParamLookupValuesProvider
 	String parameterName();
 
 	/** list of parameter names on which the lookup values fetching depends on */
-	String[] dependsOn();
+	String[] dependsOn() default {};
 
 	/** true if we will provide {@link IntegerLookupValue}s, else {@link StringLookupValue}s are assumed */
 	boolean numericKey();
-	
+
 	LookupSource lookupSource() default LookupSource.list;
 
 	/** optional lookup table name; needed for zoom into */

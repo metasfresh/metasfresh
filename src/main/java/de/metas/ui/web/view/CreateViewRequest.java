@@ -3,6 +3,7 @@ package de.metas.ui.web.view;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -11,13 +12,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.ListUtils;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
@@ -57,31 +59,42 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@lombok.Data
+@lombok.Value
 public final class CreateViewRequest
 {
 	public static final Builder builder(final WindowId windowId, final JSONViewDataType viewType)
 	{
-		return new Builder(windowId, viewType);
+		final ViewId viewId = ViewId.random(windowId);
+		return new Builder(viewId, viewType);
 	}
 
-	public static final Builder filterViewBuilder(@NonNull final IView view, @NonNull final JSONFilterViewRequest filterViewRequest)
+	public static final Builder builder(final ViewId viewId, final JSONViewDataType viewType)
+	{
+		return new Builder(viewId, viewType);
+	}
+
+	public static final Builder filterViewBuilder(
+			@NonNull final IView view,
+			@NonNull final JSONFilterViewRequest filterViewRequest)
 	{
 		final List<JSONDocumentFilter> jsonFilters = filterViewRequest.getFilters();
 
 		return builder(view.getViewId().getWindowId(), view.getViewType())
+				.setProfileId(view.getProfileId())
 				.setParentViewId(view.getParentViewId())
 				.setParentRowId(view.getParentRowId())
 				.setReferencingDocumentPaths(view.getReferencingDocumentPaths())
 				.setStickyFilters(view.getStickyFilters())
 				.setFiltersFromJSON(jsonFilters)
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
+				.setUseAutoFilters(false)
 				.addActions(view.getActions())
-				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors())
-				;
+				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors());
 	}
 
-	public static final Builder deleteStickyFilterBuilder(@NonNull final IView view, @NonNull final String stickyFilterIdToDelete)
+	public static final Builder deleteStickyFilterBuilder(
+			@NonNull final IView view,
+			@NonNull final String stickyFilterIdToDelete)
 	{
 		final List<DocumentFilter> stickyFilters = view.getStickyFilters()
 				.stream()
@@ -89,38 +102,68 @@ public final class CreateViewRequest
 				.collect(ImmutableList.toImmutableList());
 
 		// FIXME: instead of removing all referencing document paths (to prevent creating sticky filters from them),
-		// we shall remove only those is are related to "stickyFilterIdToDelete". 
+		// we shall remove only those is are related to "stickyFilterIdToDelete".
 		final Set<DocumentPath> referencingDocumentPaths = ImmutableSet.of(); // view.getReferencingDocumentPaths();
-		
+
 		return builder(view.getViewId().getWindowId(), view.getViewType())
+				.setProfileId(view.getProfileId())
 				.setParentViewId(view.getParentViewId())
 				.setParentRowId(view.getParentRowId())
 				.setReferencingDocumentPaths(referencingDocumentPaths)
 				.setStickyFilters(stickyFilters)
 				.setFilters(view.getFilters())
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
+				.setUseAutoFilters(false)
 				.addActions(view.getActions())
 				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors());
 	}
 
-	private final WindowId windowId;
-	private final JSONViewDataType viewType;
+	ViewId viewId;
+	JSONViewDataType viewType;
+	ViewProfileId profileId;
 
-	private final ViewId parentViewId;
-	private final DocumentId parentRowId;
+	ViewId parentViewId;
+	DocumentId parentRowId;
 
-	private final Set<DocumentPath> referencingDocumentPaths;
-	private final List<DocumentFilter> stickyFilters;
-	private final DocumentFiltersList filters;
-	private final Set<Integer> filterOnlyIds;
+	Set<DocumentPath> referencingDocumentPaths;
 
-	private final ViewActionDescriptorsList actions;
-	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
+	/**
+	 * Sticky filters can't be changed by the user.<br>
+	 * Use them to e.g. restrict the available HUs to a particular warehouse if it doesn't make sense to select HUs from foreign WHs in a given window.
+	 * <p>
+	 * Multiple sticky filters are always <code>AND</code>ed.
+	 */
+	List<DocumentFilter> stickyFilters;
+
+	/**
+	 * Filters can be changed by the user.
+	 * <p>
+	 * Multiple filters are always <code>AND</code>ed.
+	 */
+	DocumentFiltersList filters;
+
+	/**
+	 * This one is becoming kind of legacy.... it's a particular kind of sticky filter which filters by given IDs.<br>
+	 * <b>Important:</b> never null, empty means "no restriction"
+	 * 
+	 * @deprecated please rather use {@link #getFilters()} {@link #getStickyFilters()}.
+	 */
+	@Deprecated
+	Set<Integer> filterOnlyIds;
+
+	boolean useAutoFilters;
+
+	ViewActionDescriptorsList actions;
+	ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 	
+	ImmutableMap<String, Object> parameters;
+
+
 	private CreateViewRequest(final Builder builder)
 	{
-		windowId = builder.getWindowId();
+		viewId = builder.getViewId();
 		viewType = builder.getViewType();
+		profileId = builder.getProfileId();
 
 		parentViewId = builder.getParentViewId();
 		parentRowId = builder.getParentRowId();
@@ -129,9 +172,33 @@ public final class CreateViewRequest
 		filterOnlyIds = builder.getFilterOnlyIds();
 		filters = builder.getFilters();
 		stickyFilters = builder.getStickyFilters();
+		useAutoFilters = builder.isUseAutoFilters();
 
 		actions = builder.getActions();
 		additionalRelatedProcessDescriptors = ImmutableList.copyOf(builder.getAdditionalRelatedProcessDescriptors());
+		
+		parameters = builder.getParameters();
+	}
+
+	private CreateViewRequest(@NonNull final CreateViewRequest from, @NonNull final DocumentFiltersList filters)
+	{
+		viewId = from.viewId;
+		viewType = from.viewType;
+		profileId = from.profileId;
+
+		parentViewId = from.parentViewId;
+		parentRowId = from.parentRowId;
+
+		referencingDocumentPaths = from.referencingDocumentPaths;
+		filterOnlyIds = from.filterOnlyIds;
+		this.filters = filters;
+		stickyFilters = from.stickyFilters;
+		useAutoFilters = from.useAutoFilters;
+
+		actions = from.actions;
+		additionalRelatedProcessDescriptors = from.additionalRelatedProcessDescriptors;
+		
+		parameters = from.parameters;
 	}
 
 	public Characteristic getViewTypeRequiredFieldCharacteristic()
@@ -164,6 +231,30 @@ public final class CreateViewRequest
 		return getFilters().getOrUnwrapFilters(descriptors);
 	}
 
+	public CreateViewRequest unwrapFiltersAndCopy(final DocumentFilterDescriptorsProvider descriptors)
+	{
+		final DocumentFiltersList filters = getFilters();
+		final DocumentFiltersList filtersNew = filters.unwrapAndCopy(descriptors);
+		if (Objects.equals(filters, filtersNew))
+		{
+			return this;
+		}
+
+		return new CreateViewRequest(this, filtersNew);
+	}
+
+	public void assertNoParentViewOrRow()
+	{
+		if (parentViewId != null)
+		{
+			throw new AdempiereException("parentViewId '" + parentViewId + "' is not supported in " + this);
+		}
+		if (parentRowId != null)
+		{
+			throw new AdempiereException("parentViewId '" + parentRowId + "' is not supported in " + this);
+		}
+	}
+
 	//
 	//
 	//
@@ -171,25 +262,35 @@ public final class CreateViewRequest
 	//
 	public static final class Builder
 	{
-		private final WindowId windowId;
+		private final ViewId viewId;
 		private final JSONViewDataType viewType;
+		private ViewProfileId profileId = ViewProfileId.NULL;
 
 		private ViewId parentViewId;
 		private DocumentId parentRowId;
 
 		private Set<DocumentPath> referencingDocumentPaths;
+
+		/**
+		 * @deprecated see {@link CreateViewRequest#filterOnlyIds}
+		 */
+		@Deprecated
 		private Set<Integer> filterOnlyIds;
+
 		private List<DocumentFilter> stickyFilters;
 		private DocumentFiltersList filters;
+		private boolean useAutoFilters;
 
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 		private final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = new ArrayList<>();
+		
+		private LinkedHashMap<String, Object> parameters;
 
 		private Builder(
-				@NonNull final WindowId windowId, 
+				@NonNull final ViewId viewId,
 				@NonNull final JSONViewDataType viewType)
 		{
-			this.windowId = windowId;
+			this.viewId = viewId;
 			this.viewType = viewType;
 		}
 
@@ -198,14 +299,25 @@ public final class CreateViewRequest
 			return new CreateViewRequest(this);
 		}
 
-		private WindowId getWindowId()
+		public ViewId getViewId()
 		{
-			return windowId;
+			return viewId;
 		}
 
 		private JSONViewDataType getViewType()
 		{
 			return viewType;
+		}
+
+		public Builder setProfileId(ViewProfileId profileId)
+		{
+			this.profileId = profileId;
+			return this;
+		}
+
+		private ViewProfileId getProfileId()
+		{
+			return profileId;
 		}
 
 		public Builder setParentViewId(final ViewId parentViewId)
@@ -218,13 +330,13 @@ public final class CreateViewRequest
 		{
 			return parentViewId;
 		}
-		
+
 		public Builder setParentRowId(DocumentId parentRowId)
 		{
 			this.parentRowId = parentRowId;
 			return this;
 		}
-		
+
 		private DocumentId getParentRowId()
 		{
 			return parentRowId;
@@ -310,6 +422,17 @@ public final class CreateViewRequest
 			return filterOnlyIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(filterOnlyIds);
 		}
 
+		public Builder setUseAutoFilters(boolean useAutoFilters)
+		{
+			this.useAutoFilters = useAutoFilters;
+			return this;
+		}
+
+		private boolean isUseAutoFilters()
+		{
+			return useAutoFilters;
+		}
+
 		public Builder addActionsFromUtilityClass(final Class<?> utilityClass)
 		{
 			final ViewActionDescriptorsList actionsToAdd = ViewActionDescriptorsFactory.instance.getFromClass(utilityClass);
@@ -327,12 +450,12 @@ public final class CreateViewRequest
 		{
 			return actions;
 		}
-		
+
 		private List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 		{
 			return additionalRelatedProcessDescriptors;
 		}
-		
+
 		public Builder addAdditionalRelatedProcessDescriptor(@NonNull final RelatedProcessDescriptor relatedProcessDescriptor)
 		{
 			additionalRelatedProcessDescriptors.add(relatedProcessDescriptor);
@@ -345,94 +468,30 @@ public final class CreateViewRequest
 			return this;
 		}
 
-	}
-
-	public static final class DocumentFiltersList
-	{
-		private static DocumentFiltersList ofFilters(final List<DocumentFilter> filters)
+		public Builder setParameter(final String name, final Object value)
 		{
-			if (filters == null || filters.isEmpty())
+			if (value == null)
 			{
-				return EMPTY;
+				if (parameters != null)
+				{
+					parameters.remove(name);
+				}
+			}
+			else
+			{
+				if (parameters == null)
+				{
+					parameters = new LinkedHashMap<>();
+					parameters.put(name, value);
+				}
 			}
 
-			final List<JSONDocumentFilter> jsonFiltersEffective = null;
-			final List<DocumentFilter> filtersEffective = ImmutableList.copyOf(filters);
-			return new DocumentFiltersList(jsonFiltersEffective, filtersEffective);
+			return this;
 		}
 
-		private static DocumentFiltersList ofJSONFilters(final List<JSONDocumentFilter> jsonFilters)
+		private ImmutableMap<String, Object> getParameters()
 		{
-			if (jsonFilters == null || jsonFilters.isEmpty())
-			{
-				return EMPTY;
-			}
-
-			final List<JSONDocumentFilter> jsonFiltersEffective = ImmutableList.copyOf(jsonFilters);
-			final List<DocumentFilter> filtersEffective = null;
-			return new DocumentFiltersList(jsonFiltersEffective, filtersEffective);
-		}
-
-		private static final DocumentFiltersList EMPTY = new DocumentFiltersList();
-
-		private final List<JSONDocumentFilter> jsonFilters;
-		private final List<DocumentFilter> filters;
-
-		private DocumentFiltersList(final List<JSONDocumentFilter> jsonFilters, final List<DocumentFilter> filters)
-		{
-			this.jsonFilters = jsonFilters;
-			this.filters = filters;
-		}
-
-		/** empty constructor */
-		private DocumentFiltersList()
-		{
-			filters = ImmutableList.of();
-			jsonFilters = null;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this).omitNullValues().addValue(jsonFilters).addValue(filters).toString();
-		}
-
-		public boolean isJson()
-		{
-			return jsonFilters != null;
-		}
-
-		public List<JSONDocumentFilter> getJsonFilters()
-		{
-			if (jsonFilters == null)
-			{
-				throw new AdempiereException("Json filters are not available for " + this);
-			}
-			return jsonFilters;
-		}
-
-		public List<DocumentFilter> getFilters()
-		{
-			if (filters == null)
-			{
-				throw new AdempiereException("Filters are not available for " + this);
-			}
-			return filters;
-		}
-
-		private List<DocumentFilter> getOrUnwrapFilters(final DocumentFilterDescriptorsProvider descriptors)
-		{
-			if (filters != null)
-			{
-				return filters;
-			}
-
-			if (jsonFilters == null || jsonFilters.isEmpty())
-			{
-				return ImmutableList.of();
-			}
-
-			return JSONDocumentFilter.unwrapList(jsonFilters, descriptors);
+			return parameters != null ? ImmutableMap.copyOf(parameters) : ImmutableMap.of();
 		}
 	}
 }

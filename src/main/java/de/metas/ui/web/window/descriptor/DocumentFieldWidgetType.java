@@ -5,10 +5,12 @@ import java.util.Set;
 
 import org.compiere.util.DisplayType;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
+import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.Password;
 
 /*
  * #%L
@@ -39,13 +41,14 @@ public enum DocumentFieldWidgetType
 	Text(LayoutAlign.Left, String.class, DisplayType.Text) //
 	, LongText(LayoutAlign.Left, String.class, DisplayType.TextLong) //
 	, URL(LayoutAlign.Left, String.class, DisplayType.URL) //
-	, Password(LayoutAlign.Left, String.class, DisplayType.Text) //
+	, Password(LayoutAlign.Left, Password.class, DisplayType.Text) //
 
 	//
 	// Dates
 	, Date(LayoutAlign.Right, java.util.Date.class, DisplayType.Date) //
 	, Time(LayoutAlign.Right, java.util.Date.class, DisplayType.Time) //
 	, DateTime(LayoutAlign.Right, java.util.Date.class, DisplayType.DateTime) //
+	, DateRange(LayoutAlign.Left, DateRangeValue.class, -1) //
 
 	// Numbers, Amounts, Prices
 	, Integer(LayoutAlign.Right, Integer.class, DisplayType.Integer) //
@@ -58,12 +61,14 @@ public enum DocumentFieldWidgetType
 	// General Lookups
 	, List(LayoutAlign.Left, null, DisplayType.Search) //
 	, Lookup(LayoutAlign.Left, null, DisplayType.Search) //
+	, Labels(LayoutAlign.Left, LookupValuesList.class, -1) //
 
 	//
 	// Special lookups
 	, Address(LayoutAlign.Left, IntegerLookupValue.class, DisplayType.Location) //
 	, ProductAttributes(LayoutAlign.Left, IntegerLookupValue.class, DisplayType.PAttribute) //
-	, Image(LayoutAlign.Left, Integer.class, DisplayType.Image)
+	, Image(LayoutAlign.Left, Integer.class, DisplayType.Image) //
+	, BinaryData(LayoutAlign.Left, byte[].class, DisplayType.Binary) // TODO: not supported, search for references and see
 
 	//
 	// Checkboxes
@@ -82,7 +87,6 @@ public enum DocumentFieldWidgetType
 
 	private static final Set<DocumentFieldWidgetType> TYPES_Date = Sets.immutableEnumSet(Date, Time, DateTime);
 	private static final Set<DocumentFieldWidgetType> TYPES_Numeric = Sets.immutableEnumSet(Integer, Number, Amount, Quantity, CostPrice);
-	private static final Set<DocumentFieldWidgetType> TYPES_WithRageFilteringSupport = Sets.immutableEnumSet(Iterables.concat(TYPES_Date, TYPES_Numeric));
 
 	private final LayoutAlign gridAlign;
 	private final Class<?> valueClass;
@@ -119,11 +123,6 @@ public enum DocumentFieldWidgetType
 			default:
 				return null;
 		}
-	}
-
-	public final boolean isRangeFilteringSupported()
-	{
-		return TYPES_WithRageFilteringSupport.contains(this);
 	}
 
 	public final boolean isDateOrTime()

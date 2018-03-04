@@ -62,4 +62,9 @@ public interface LookupDescriptorProvider
 	 * @return lookup descriptor or null
 	 */
 	LookupDescriptor provideForScope(LookupScope scope);
+	
+	default boolean isNumericKey()
+	{
+		return provideForScope(LookupScope.DocumentField).isNumericKey();
+	}
 }

@@ -1,5 +1,7 @@
 package de.metas.ui.web.process.adprocess;
 
+import java.util.stream.Stream;
+
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.util.Check;
@@ -17,8 +19,10 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
 /*
@@ -57,20 +61,34 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 
 	//
 	// View (internal) parameters
-	public static final String PARAM_ViewWindowId = "$WEBUI_ViewWindowId";
-	@Param(parameterName = PARAM_ViewWindowId, mandatory = true)
-	private String p_WebuiViewWindowId;
-	//
-	public static final String PARAM_ViewId = "$WEBUI_ViewId";
+	static final String PARAM_ViewId = "$WEBUI_ViewId";
 	@Param(parameterName = PARAM_ViewId, mandatory = true)
 	private String p_WebuiViewId;
 	//
-	public static final String PARAM_ViewSelectedIds = "$WEBUI_ViewSelectedIds";
+	static final String PARAM_ViewSelectedIds = "$WEBUI_ViewSelectedIds";
 	@Param(parameterName = PARAM_ViewSelectedIds, mandatory = true)
 	private String p_WebuiViewSelectedIdsStr;
+	//
+	static final String PARAM_ParentViewId = "$WEBUI_ParentViewId";
+	@Param(parameterName = PARAM_ParentViewId, mandatory = false)
+	private String p_WebuiParentViewId;
+	//
+	public static final String PARAM_ParentViewSelectedIds = "$WEBUI_ParentViewSelectedIds";
+	@Param(parameterName = PARAM_ParentViewSelectedIds, mandatory = false)
+	private String p_WebuiParentViewSelectedIdsStr;
+	//
+	public static final String PARAM_ChildViewId = "$WEBUI_ChildViewId";
+	@Param(parameterName = PARAM_ChildViewId, mandatory = false)
+	private String p_WebuiChildViewId;
+	//
+	public static final String PARAM_ChildViewSelectedIds = "$WEBUI_ChildViewSelectedIds";
+	@Param(parameterName = PARAM_ChildViewSelectedIds, mandatory = false)
+	private String p_WebuiChildViewSelectedIdsStr;
 
 	private IView _view;
-	private transient DocumentIdsSelection _selectedDocumentIds;
+	private ViewRowIdsSelection _viewRowIdsSelection;
+	private ViewRowIdsSelection _parentViewRowIdsSelection;
+	private ViewRowIdsSelection _childViewRowIdsSelection;
 
 	protected ViewBasedProcessTemplate()
 	{
@@ -89,6 +107,9 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		return checkPreconditionsApplicable();
 	}
 
+	/**
+	 * WARNING: The preconditions will be checked only if the extending class implements the {@link de.metas.process.IProcessPrecondition} interface.
+	 */
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		return ProcessPreconditionsResolution.accept();
@@ -100,8 +121,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		super.init(context);
 
 		// Fetch and set view and view selected IDs from autowired process parameters
-		final ViewAsPreconditionsContext viewContext = ViewAsPreconditionsContext.cast(context);
-		setView(viewContext.getView(), viewContext.getSelectedDocumentIds());
+		setViewInfos(ViewAsPreconditionsContext.cast(context));
 	}
 
 	@Override
@@ -109,32 +129,45 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	{
 		super.loadParametersFromContext(failIfNotValid);
 
-		// Fetch and set view and view selected IDs from autowired process parameters
-		// NOTE: we assume a view ID is always provided
+		Check.assumeNotEmpty(p_WebuiViewId, "Process parameter {} is set", PARAM_ViewId); // shall not happen
 		final IView view = viewsRepo.getView(p_WebuiViewId);
-		final DocumentIdsSelection selectedDocumentIds = DocumentIdsSelection.ofCommaSeparatedString(p_WebuiViewSelectedIdsStr);
-		setView(view, selectedDocumentIds);
+
+		final ViewRowIdsSelection viewRowIdsSelection = ViewRowIdsSelection.of(view.getViewId(), DocumentIdsSelection.ofCommaSeparatedString(p_WebuiViewSelectedIdsStr));
+		final ViewRowIdsSelection parentViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(p_WebuiParentViewId, p_WebuiParentViewSelectedIdsStr);
+		final ViewRowIdsSelection childViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(p_WebuiChildViewId, p_WebuiChildViewSelectedIdsStr);
+
+		setViewInfos(ViewAsPreconditionsContext.builder()
+				.view(view)
+				.viewRowIdsSelection(viewRowIdsSelection)
+				.parentViewRowIdsSelection(parentViewRowIdsSelection)
+				.childViewRowIdsSelection(childViewRowIdsSelection)
+				.build());
 	}
 
-	@OverridingMethodsMustInvokeSuper
-	protected void setView(final IView view, final DocumentIdsSelection selectedDocumentIds)
+	protected final WindowId getWindowId()
 	{
-		_view = view;
-		_selectedDocumentIds = selectedDocumentIds;
+		return getView().getViewId().getWindowId();
+	}
+
+	private final void setViewInfos(@NonNull final ViewAsPreconditionsContext viewContext)
+	{
+		_view = viewContext.getView();
+		_viewRowIdsSelection = viewContext.getViewRowIdsSelection();
+		_parentViewRowIdsSelection = viewContext.getParentViewRowIdsSelection();
+		_childViewRowIdsSelection = viewContext.getChildViewRowIdsSelection();
 
 		// Update result from view
 		// Do this only when view is not null to avoid reseting previous set info (shall not happen)
 		final ProcessExecutionResult result = getResultOrNull();
-		if (result != null) // might be null when preconditions are checked (for example)
+		if (result != null // might be null when preconditions are checked (for example)
+				&& _view != null)
 		{
-			if (view != null)
-			{
-				result.setWebuiViewId(view.getViewId().getViewId());
-			}
+			result.setWebuiViewId(_view.getViewId().getViewId());
 		}
+
 	}
 
-	protected final <T extends IView> T getView(final Class<T> type)
+	protected final <T extends IView> T getView(@NonNull final Class<T> type)
 	{
 		Check.assumeNotNull(_view, "View loaded");
 		return type.cast(_view);
@@ -145,6 +178,17 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	{
 		Check.assumeNotNull(_view, "View loaded");
 		return _view;
+	}
+
+	protected final <T extends IView> boolean isViewClass(@NonNull final Class<T> expectedViewClass)
+	{
+		final IView view = _view;
+		if (view == null)
+		{
+			return false;
+		}
+
+		return expectedViewClass.isAssignableFrom(view.getClass());
 	}
 
 	protected final void invalidateView(@NonNull final ViewId viewId)
@@ -168,17 +212,57 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		}
 	}
 
-	protected final DocumentIdsSelection getSelectedDocumentIds()
+	protected final DocumentIdsSelection getSelectedRowIds()
 	{
-		Check.assumeNotNull(_selectedDocumentIds, "View loaded");
-		return _selectedDocumentIds;
+		Check.assumeNotNull(_viewRowIdsSelection, "View loaded");
+		return _viewRowIdsSelection.getRowIds();
 	}
 
 	@OverridingMethodsMustInvokeSuper
 	protected IViewRow getSingleSelectedRow()
 	{
-		final DocumentIdsSelection selectedDocumentIds = getSelectedDocumentIds();
-		final DocumentId documentId = selectedDocumentIds.getSingleDocumentId();
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+		final DocumentId documentId = selectedRowIds.getSingleDocumentId();
 		return getView().getById(documentId);
 	}
+
+	@OverridingMethodsMustInvokeSuper
+	protected Stream<? extends IViewRow> streamSelectedRows()
+	{
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+		return getView().streamByIds(selectedRowIds);
+	}
+
+	protected final ViewRowIdsSelection getParentViewRowIdsSelection()
+	{
+		return _parentViewRowIdsSelection;
+	}
+
+	protected final ViewRowIdsSelection getChildViewRowIdsSelection()
+	{
+		return _childViewRowIdsSelection;
+	}
+
+	protected final <T extends IView> T getChildView(@NonNull final Class<T> viewType)
+	{
+		final ViewRowIdsSelection childViewRowIdsSelection = getChildViewRowIdsSelection();
+		Check.assumeNotNull(childViewRowIdsSelection, "child view is set");
+		final IView childView = viewsRepo.getView(childViewRowIdsSelection.getViewId());
+
+		return viewType.cast(childView);
+	}
+
+	protected final DocumentIdsSelection getChildViewSelectedRowIds()
+	{
+		final ViewRowIdsSelection childViewRowIdsSelection = getChildViewRowIdsSelection();
+		return childViewRowIdsSelection != null ? childViewRowIdsSelection.getRowIds() : DocumentIdsSelection.EMPTY;
+	}
+
+	protected IViewRow getChildViewSingleSelectedRow()
+	{
+		final DocumentIdsSelection selectedRowIds = getChildViewSelectedRowIds();
+		final DocumentId rowId = selectedRowIds.getSingleDocumentId();
+		return getChildView(IView.class).getById(rowId);
+	}
+
 }

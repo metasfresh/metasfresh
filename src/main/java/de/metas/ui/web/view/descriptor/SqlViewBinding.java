@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -13,6 +14,7 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
@@ -24,13 +26,19 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
+import de.metas.ui.web.view.DefaultViewInvalidationAdvisor;
+import de.metas.ui.web.view.IViewInvalidationAdvisor;
 import de.metas.ui.web.view.ViewEvaluationCtx;
+import de.metas.ui.web.view.ViewRowCustomizer;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
+import lombok.Singular;
 
 /*
  * #%L
@@ -56,80 +64,60 @@ import lombok.NonNull;
 
 public class SqlViewBinding implements SqlEntityBinding
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
 	private final String _tableName;
 	private final String _tableAlias;
 
 	private final ImmutableMap<String, SqlViewRowFieldBinding> _fieldsByFieldName;
 	private final SqlViewRowFieldBinding _keyField;
+	private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 
+	private final SqlViewSelectData sqlViewSelect;
 	private final IStringExpression sqlWhereClause;
-	private final IStringExpression sqlSelectByPage;
-	private final IStringExpression sqlSelectRowIdsByPage;
-	private final IStringExpression sqlSelectById;
-	private final IStringExpression sqlSelectLinesByRowIds;
 	private final List<SqlViewRowFieldLoader> rowFieldLoaders;
+	private final ViewRowCustomizer rowCustomizer;
 
 	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
-	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
-	private final SqlDocumentFilterConvertersList viewFilterConverters;
+	private final OrderByFieldNameAliasMap orderByFieldNameAliasMap;
+
+	private final DocumentFilterDescriptorsProvider filterDescriptors;
+	private final SqlDocumentFilterConvertersList filterConverters;
 
 	private final SqlViewRowIdsConverter rowIdsConverter;
 
 	private final SqlViewGroupingBinding groupingBinding;
+	private final SqlDocumentFilterConverterDecorator filterConverterDecorator;
+
+	private final IViewInvalidationAdvisor viewInvalidationAdvisor;
+
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
 
 	private SqlViewBinding(final Builder builder)
 	{
-		super();
 		_tableName = builder.getTableName();
 		_tableAlias = builder.getTableAlias();
 
 		_fieldsByFieldName = ImmutableMap.copyOf(builder.getFieldsByFieldName());
 		_keyField = builder.getKeyField();
+		widgetTypesByFieldName = _fieldsByFieldName.values()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(SqlViewRowFieldBinding::getFieldName, SqlViewRowFieldBinding::getWidgetType));
 
 		final Collection<String> displayFieldNames = builder.getDisplayFieldNames();
 
 		final Collection<SqlViewRowFieldBinding> allFields = _fieldsByFieldName.values();
 		this.groupingBinding = builder.groupingBinding;
-		final IStringExpression sqlSelect = SqlViewSelectionQueryBuilder.buildSqlSelect(_tableName, _tableAlias, _keyField.getColumnName(), displayFieldNames, allFields, groupingBinding);
-
+		sqlViewSelect = SqlViewSelectData.builder()
+				.sqlTableName(_tableName)
+				.sqlTableAlias(_tableAlias)
+				.keyField(_keyField)
+				.displayFieldNames(displayFieldNames)
+				.allFields(allFields)
+				.groupingBinding(groupingBinding)
+				.build();
 		sqlWhereClause = builder.getSqlWhereClause();
-		sqlSelectByPage = sqlSelect.toComposer()
-				.append("\n WHERE ")
-				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
-				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?")
-				.append("\n ORDER BY " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo)
-				.build();
-
-		sqlSelectRowIdsByPage = SqlViewSelectionQueryBuilder.buildSqlSelect(_tableName, _tableAlias,
-				_keyField.getColumnName(),
-				ImmutableList.of(), // displayFieldNames
-				ImmutableList.of(_keyField), // allFields
-				groupingBinding)
-				//
-				.toComposer()
-				.append("\n WHERE ")
-				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
-				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?")
-				.append("\n ORDER BY " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo)
-				.build();
-
-		sqlSelectById = sqlSelect.toComposer()
-				.append("\n WHERE ")
-				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
-				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_Record_ID + "=?")
-				.build();
-
-		sqlSelectLinesByRowIds = SqlViewSelectionQueryBuilder.buildSqlSelectLines(_tableName, _tableAlias, _keyField.getColumnName(), displayFieldNames, allFields)
-				.toComposer()
-				.append("\n WHERE ")
-				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
-				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_Record_ID + " IN ").append(SqlViewSelectionQueryBuilder.Paging_Record_IDsPlaceholder)
-				.build();
 
 		final List<SqlViewRowFieldLoader> rowFieldLoaders = new ArrayList<>(allFields.size());
 		for (final SqlViewRowFieldBinding field : allFields)
@@ -148,18 +136,24 @@ public class SqlViewBinding implements SqlEntityBinding
 			}
 		}
 		this.rowFieldLoaders = ImmutableList.copyOf(rowFieldLoaders);
+		this.rowCustomizer = builder.getRowCustomizer();
 
+		orderByFieldNameAliasMap = builder.buildOrderByFieldNameAliasMap();
 		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
-		viewFilterDescriptors = builder.getViewFilterDescriptors();
-		viewFilterConverters = builder.buildViewFilterConverters();
-		
+
+		filterDescriptors = builder.getViewFilterDescriptors();
+		filterConverters = builder.buildViewFilterConverters();
+
+		filterConverterDecorator = builder.sqlDocumentFilterConverterDecorator;
+
 		rowIdsConverter = builder.getRowIdsConverter();
+
+		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
 	}
 
 	@Override
-	public String toString()
+	public String toString() // NOTE: keep it short
 	{
-		// NOTE: keep it short
 		return MoreObjects.toStringHelper(this)
 				.add("tableName", _tableName)
 				.toString();
@@ -179,8 +173,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	private SqlViewRowFieldBinding getKeyField()
 	{
-		Preconditions.checkNotNull(_keyField, "View %s does not have a key column defined", this);
-		return _keyField;
+		return Preconditions.checkNotNull(_keyField, "View %s does not have a key column defined", this);
 	}
 
 	@Override
@@ -214,30 +207,20 @@ public class SqlViewBinding implements SqlEntityBinding
 		return field;
 	}
 
+	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	{
+		return widgetTypesByFieldName;
+	}
+
+	public SqlViewSelectData getSqlViewSelect()
+	{
+		return sqlViewSelect;
+	}
+
 	@Override
 	public IStringExpression getSqlWhereClause()
 	{
 		return sqlWhereClause;
-	}
-
-	public IStringExpression getSqlSelectByPage()
-	{
-		return sqlSelectByPage;
-	}
-
-	public IStringExpression getSqlSelectRowIdsByPage()
-	{
-		return sqlSelectRowIdsByPage;
-	}
-
-	public IStringExpression getSqlSelectById()
-	{
-		return sqlSelectById;
-	}
-
-	public IStringExpression getSqlSelectLinesByRowIds()
-	{
-		return sqlSelectLinesByRowIds;
 	}
 
 	public List<SqlViewRowFieldLoader> getRowFieldLoaders()
@@ -245,25 +228,47 @@ public class SqlViewBinding implements SqlEntityBinding
 		return rowFieldLoaders;
 	}
 
+	public ViewRowCustomizer getRowCustomizer()
+	{
+		return rowCustomizer;
+	}
+
+	@Override
+	public DocumentFilterDescriptorsProvider getFilterDescriptors()
+	{
+		return getViewFilterDescriptors();
+	}
+
 	public DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 	{
-		return viewFilterDescriptors;
+		return filterDescriptors;
 	}
 
 	@Override
 	public SqlDocumentFilterConvertersList getFilterConverters()
 	{
-		return viewFilterConverters;
+		return filterConverters;
 	}
-	
+
+	@Override
+	public SqlDocumentFilterConverterDecorator getFilterConverterDecoratorOrNull()
+	{
+		return filterConverterDecorator;
+	}
+
 	public SqlViewRowIdsConverter getRowIdsConverter()
 	{
 		return rowIdsConverter;
 	}
 
-	public List<DocumentQueryOrderBy> getDefaultOrderBys()
+	public ImmutableList<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
 		return defaultOrderBys;
+	}
+
+	public final Stream<DocumentQueryOrderBy> flatMapEffectiveFieldNames(final DocumentQueryOrderBy orderBy)
+	{
+		return orderByFieldNameAliasMap.flatMapEffectiveFieldNames(orderBy);
 	}
 
 	public Map<String, String> getSqlOrderBysIndexedByFieldName(final ViewEvaluationCtx viewEvalCtx)
@@ -322,9 +327,40 @@ public class SqlViewBinding implements SqlEntityBinding
 		return groupingBinding.isAggregated(fieldName);
 	}
 
+	public IViewInvalidationAdvisor getViewInvalidationAdvisor()
+	{
+		return viewInvalidationAdvisor;
+	}
+
+	@lombok.Value
+	private static final class OrderByFieldNameAliasMap
+	{
+		private final ImmutableMap<String, ImmutableList<String>> orderByAliasFieldNames;
+
+		@lombok.Builder
+		private OrderByFieldNameAliasMap(@NonNull @Singular final Map<String, List<String>> orderByAliasFieldNames)
+		{
+			this.orderByAliasFieldNames = orderByAliasFieldNames.entrySet()
+					.stream()
+					.map(e -> GuavaCollectors.entry(e.getKey(), ImmutableList.copyOf(e.getValue())))
+					.collect(GuavaCollectors.toImmutableMap());
+		}
+
+		public Stream<DocumentQueryOrderBy> flatMapEffectiveFieldNames(@NonNull final DocumentQueryOrderBy orderBy)
+		{
+			final List<String> aliasFieldNames = orderByAliasFieldNames.get(orderBy.getFieldName());
+			if (aliasFieldNames == null || aliasFieldNames.isEmpty())
+			{
+				return Stream.of(orderBy);
+			}
+
+			return aliasFieldNames.stream().map(orderBy::copyOverridingFieldName);
+		}
+	}
+
 	//
 	//
-	//
+	// -----------
 	//
 	//
 
@@ -337,19 +373,22 @@ public class SqlViewBinding implements SqlEntityBinding
 		private Collection<String> displayFieldNames;
 		private final Map<String, SqlViewRowFieldBinding> _fieldsByFieldName = new LinkedHashMap<>();
 		private SqlViewRowFieldBinding _keyField;
+		private ViewRowCustomizer rowCustomizer;
 
-		private List<DocumentQueryOrderBy> defaultOrderBys;
-		private DocumentFilterDescriptorsProvider viewFilterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
-		private SqlDocumentFilterConvertersList.Builder viewFilterConverters = null;
-		
-		private SqlViewRowIdsConverter rowIdsConverter = DefaultSqlViewRowIdsConverter.instance;
+		private ArrayList<DocumentQueryOrderBy> defaultOrderBys;
+		private OrderByFieldNameAliasMap.OrderByFieldNameAliasMapBuilder orderByFieldNameAliasMap = OrderByFieldNameAliasMap.builder();
+		private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
+		private SqlDocumentFilterConvertersList.Builder filterConverters = null;
 
+		private SqlViewRowIdsConverter rowIdsConverter = null;
 
 		private SqlViewGroupingBinding groupingBinding;
+		private SqlDocumentFilterConverterDecorator sqlDocumentFilterConverterDecorator = null;
+
+		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
 
 		private Builder()
 		{
-			super();
 		}
 
 		public SqlViewBinding build()
@@ -357,7 +396,7 @@ public class SqlViewBinding implements SqlEntityBinding
 			return new SqlViewBinding(this);
 		}
 
-		public Builder setTableName(final String sqlTableName)
+		public Builder tableName(final String sqlTableName)
 		{
 			_sqlTableName = sqlTableName;
 			return this;
@@ -368,13 +407,13 @@ public class SqlViewBinding implements SqlEntityBinding
 			return _sqlTableName;
 		}
 
-		public Builder setTableAlias(final String sqlTableAlias)
+		public Builder tableAlias(final String sqlTableAlias)
 		{
 			_tableAlias = sqlTableAlias;
 			return this;
 		}
 
-		private String getTableAlias()
+		public String getTableAlias()
 		{
 			if (_tableAlias == null)
 			{
@@ -383,13 +422,13 @@ public class SqlViewBinding implements SqlEntityBinding
 			return _tableAlias;
 		}
 
-		public Builder setSqlWhereClause(final IStringExpression sqlWhereClause)
+		public Builder sqlWhereClause(final IStringExpression sqlWhereClause)
 		{
 			this.sqlWhereClause = sqlWhereClause == null ? IStringExpression.NULL : sqlWhereClause;
 			return this;
 		}
 
-		public Builder setSqlWhereClause(final String sqlWhereClause)
+		public Builder sqlWhereClause(final String sqlWhereClause)
 		{
 			this.sqlWhereClause = ConstantStringExpression.ofNullable(sqlWhereClause);
 			return this;
@@ -409,13 +448,13 @@ public class SqlViewBinding implements SqlEntityBinding
 			return _keyField;
 		}
 
-		public Builder setDisplayFieldNames(final Collection<String> displayFieldNames)
+		public Builder displayFieldNames(final Collection<String> displayFieldNames)
 		{
 			this.displayFieldNames = displayFieldNames;
 			return this;
 		}
 
-		public Builder setDisplayFieldNames(final String... displayFieldNames)
+		public Builder displayFieldNames(final String... displayFieldNames)
 		{
 			this.displayFieldNames = ImmutableSet.copyOf(displayFieldNames);
 			return this;
@@ -435,7 +474,7 @@ public class SqlViewBinding implements SqlEntityBinding
 			return _fieldsByFieldName;
 		}
 
-		public final Builder addField(final SqlViewRowFieldBinding field)
+		public final Builder field(final SqlViewRowFieldBinding field)
 		{
 			Check.assumeNotNull(field, "Parameter field is not null");
 
@@ -447,9 +486,25 @@ public class SqlViewBinding implements SqlEntityBinding
 			return this;
 		}
 
-		public Builder setOrderBys(final List<DocumentQueryOrderBy> defaultOrderBys)
+		public Builder clearDefaultOrderBys()
 		{
-			this.defaultOrderBys = defaultOrderBys;
+			defaultOrderBys = null;
+			return this;
+		}
+
+		public Builder defaultOrderBys(final List<DocumentQueryOrderBy> defaultOrderBys)
+		{
+			this.defaultOrderBys = defaultOrderBys != null ? new ArrayList<>(defaultOrderBys) : null;
+			return this;
+		}
+
+		public Builder defaultOrderBy(@NonNull final DocumentQueryOrderBy defaultOrderBy)
+		{
+			if (defaultOrderBys == null)
+			{
+				defaultOrderBys = new ArrayList<>();
+			}
+			defaultOrderBys.add(defaultOrderBy);
 			return this;
 		}
 
@@ -458,51 +513,101 @@ public class SqlViewBinding implements SqlEntityBinding
 			return defaultOrderBys == null ? ImmutableList.of() : defaultOrderBys;
 		}
 
-		public Builder setViewFilterDescriptors(@NonNull final DocumentFilterDescriptorsProvider viewFilterDescriptors)
+		private OrderByFieldNameAliasMap buildOrderByFieldNameAliasMap()
 		{
-			this.viewFilterDescriptors = viewFilterDescriptors;
+			return orderByFieldNameAliasMap.build();
+		}
+
+		public Builder orderByAliasFieldNames(@NonNull final String fieldName, @NonNull final String... aliasFieldNames)
+		{
+			Check.assumeNotEmpty(aliasFieldNames, "aliasFieldNames is not empty");
+			orderByFieldNameAliasMap.orderByAliasFieldName(fieldName, ImmutableList.copyOf(aliasFieldNames));
+			return this;
+		}
+
+		public Builder filterDescriptors(@NonNull final DocumentFilterDescriptorsProvider filterDescriptors)
+		{
+			this.filterDescriptors = filterDescriptors;
 			return this;
 		}
 
 		private DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 		{
-			return viewFilterDescriptors;
+			return filterDescriptors;
 		}
 
-		public Builder addViewFilterConverter(final String filterId, final SqlDocumentFilterConverter converter)
+		public Builder filterConverter(
+				@NonNull final String filterId,
+				@NonNull final SqlDocumentFilterConverter converter)
 		{
-			if (viewFilterConverters == null)
+			if (filterConverters == null)
 			{
-				viewFilterConverters = SqlDocumentFilterConverters.listBuilder();
+				filterConverters = SqlDocumentFilterConverters.listBuilder();
 			}
-			viewFilterConverters.addConverter(filterId, converter);
+			filterConverters.addConverter(filterId, converter);
 			return this;
 		}
 
 		private SqlDocumentFilterConvertersList buildViewFilterConverters()
 		{
-			if (viewFilterConverters == null)
+			if (filterConverters == null)
 			{
 				return SqlDocumentFilterConverters.emptyList();
 			}
-			return viewFilterConverters.build();
+			return filterConverters.build();
 		}
-		
-		public Builder setRowIdsConverter(@NonNull SqlViewRowIdsConverter rowIdsConverter)
+
+		public Builder rowIdsConverter(@NonNull SqlViewRowIdsConverter rowIdsConverter)
 		{
 			this.rowIdsConverter = rowIdsConverter;
 			return this;
 		}
-		
+
 		private SqlViewRowIdsConverter getRowIdsConverter()
 		{
-			return rowIdsConverter;
+			if (rowIdsConverter != null)
+			{
+				return rowIdsConverter;
+			}
+			if (groupingBinding != null)
+			{
+				return groupingBinding.getRowIdsConverter();
+			}
+			return SqlViewRowIdsConverters.TO_INT_STRICT;
 		}
 
-		public Builder setGroupingBinding(SqlViewGroupingBinding groupingBinding)
+		public Builder groupingBinding(SqlViewGroupingBinding groupingBinding)
 		{
 			this.groupingBinding = groupingBinding;
 			return this;
+		}
+
+		public Builder filterConverterDecorator(@NonNull final SqlDocumentFilterConverterDecorator sqlDocumentFilterConverterDecorator)
+		{
+			this.sqlDocumentFilterConverterDecorator = sqlDocumentFilterConverterDecorator;
+			return this;
+		}
+
+		public Builder rowCustomizer(ViewRowCustomizer rowCustomizer)
+		{
+			this.rowCustomizer = rowCustomizer;
+			return this;
+		}
+
+		private ViewRowCustomizer getRowCustomizer()
+		{
+			return rowCustomizer;
+		}
+
+		public Builder viewInvalidationAdvisor(@NonNull final IViewInvalidationAdvisor viewInvalidationAdvisor)
+		{
+			this.viewInvalidationAdvisor = viewInvalidationAdvisor;
+			return this;
+		}
+
+		private IViewInvalidationAdvisor getViewInvalidationAdvisor()
+		{
+			return viewInvalidationAdvisor;
 		}
 	}
 }

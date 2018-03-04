@@ -3,7 +3,9 @@ package de.metas.ui.web.receiptSchedule;
 import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.ui.web.handlingunits.HUEditorView.Builder;
+import de.metas.ui.web.handlingunits.HUEditorRowIsProcessedPredicate;
+import de.metas.ui.web.handlingunits.HUEditorRowIsProcessedPredicates;
+import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewCustomizer;
 import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Transform;
 
@@ -39,9 +41,20 @@ public class HUEditorView_ReceiptScheduleCustomizer implements HUEditorViewCusto
 	}
 
 	@Override
-	public void beforeCreate(final Builder viewBuilder)
+	public HUEditorRowIsProcessedPredicate getHUEditorRowIsProcessedPredicate()
+	{
+		return HUEditorRowIsProcessedPredicates.IF_NOT_PLANNING_HUSTATUS;
+	}
+
+	@Override
+	public Boolean isAttributesAlwaysReadonly()
+	{
+		return Boolean.FALSE;
+	}
+
+	@Override
+	public void beforeCreate(final HUEditorViewBuilder viewBuilder)
 	{
 		viewBuilder.setParameter(WEBUI_M_HU_Transform.PARAM_CheckExistingHUsInsideView, true);
 	}
-
 }

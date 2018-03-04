@@ -1,8 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.io.Serializable;
 import java.util.LinkedHashMap;
-import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -43,8 +41,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public final class DocumentLayoutElementDescriptor implements Serializable
+public final class DocumentLayoutElementDescriptor
 {
 	public static final Builder builder()
 	{
@@ -75,19 +72,22 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	}
 
 	private final String internalName;
+	private final boolean gridElement;
 
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
 
 	private final DocumentFieldWidgetType widgetType;
-	private final Optional<Integer> precision;
 	private final boolean allowShowPassword; // in case widgetType is Password
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
 
 	private final LayoutType layoutType;
 	private final WidgetSize widgetSize;
-	private final LayoutAlign gridAlign;
 	private final boolean advancedField;
+
+	private final LayoutAlign gridAlign;
+	private final ViewEditorRenderMode viewEditorRenderMode;
+	private final boolean viewAllowSorting;
 
 	private final Set<DocumentLayoutElementFieldDescriptor> fields;
 
@@ -97,20 +97,22 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private DocumentLayoutElementDescriptor(final Builder builder)
 	{
-		super();
-
 		internalName = builder.getInternalName();
+		gridElement = builder.isGridElement();
+		
 		caption = builder.getCaption();
 		description = builder.getDescription();
 
 		widgetType = builder.getWidgetType();
-		precision = Optional.ofNullable(builder.getPrecision());
 		allowShowPassword = builder.isAllowShowPassword();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
 
 		layoutType = builder.getLayoutType();
 		widgetSize = builder.getWidgetSize();
+
 		gridAlign = builder.getGridAlign();
+		viewEditorRenderMode = builder.getViewEditorRenderMode();
+		viewAllowSorting = builder.isViewAllowSorting();
 
 		advancedField = builder.isAdvancedField();
 
@@ -129,6 +131,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 				.add("advancedField", advancedField)
 				.add("fields", fields.isEmpty() ? null : fields)
 				.toString();
+	}
+
+	public boolean isGridElement()
+	{
+		return gridElement;
 	}
 
 	public String getCaption(final String adLanguage)
@@ -159,11 +166,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		return widgetType;
 	}
 
-	public Optional<Integer> getPrecision()
-	{
-		return precision;
-	}
-	
 	public boolean isAllowShowPassword()
 	{
 		return allowShowPassword;
@@ -173,7 +175,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return layoutType;
 	}
-	
+
 	public WidgetSize getWidgetSize()
 	{
 		return widgetSize;
@@ -184,6 +186,16 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		return gridAlign;
 	}
 
+	public ViewEditorRenderMode getViewEditorRenderMode()
+	{
+		return viewEditorRenderMode;
+	}
+
+	public boolean isViewAllowSorting()
+	{
+		return viewAllowSorting;
+	}
+	
 	public boolean isAdvancedField()
 	{
 		return advancedField;
@@ -198,6 +210,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return !fields.isEmpty();
 	}
+	
+	public String getFirstFieldName()
+	{
+		return fields.iterator().next().getField();
+	}
 
 	public ButtonFieldActionDescriptor getButtonActionDescriptor()
 	{
@@ -211,14 +228,18 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private String _internalName;
 		private ITranslatableString _caption = null;
 		private ITranslatableString _description = null;
-		
+
 		private DocumentFieldWidgetType _widgetType;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
-		
+
 		private LayoutType _layoutType;
 		private WidgetSize _widgetSize;
+
 		private boolean _gridElement = false;
+		private ViewEditorRenderMode viewEditorRenderMode = null;
+		private boolean viewAllowSorting = true;
+
 		private boolean _advancedField = false;
 		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> _fieldsBuilders = new LinkedHashMap<>();
 		private boolean excludeSpecialFields = false;
@@ -365,26 +386,21 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return _widgetType != null;
 		}
 
-		private DocumentFieldWidgetType getWidgetType()
+		public DocumentFieldWidgetType getWidgetType()
 		{
 			Check.assumeNotNull(_widgetType, DocumentLayoutBuildException.class, "Parameter widgetType is not null for {}", this);
 			return _widgetType;
 		}
-		
+
 		public Builder setAllowShowPassword(boolean allowShowPassword)
 		{
 			this._allowShowPassword = allowShowPassword;
 			return this;
 		}
-		
+
 		private boolean isAllowShowPassword()
 		{
 			return _allowShowPassword;
-		}
-
-		private Integer getPrecision()
-		{
-			return getWidgetType().getStandardNumberPrecision();
 		}
 
 		public Builder setLayoutType(final LayoutType layoutType)
@@ -409,7 +425,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			_widgetSize = widgetSize;
 			return this;
 		}
-		
+
 		private WidgetSize getWidgetSize()
 		{
 			return _widgetSize;
@@ -480,6 +496,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return consumed;
 		}
 
+		public boolean isGridElement()
+		{
+			return _gridElement;
+		}
+
 		/**
 		 * Flags this element as a "grid element".
 		 */
@@ -504,7 +525,29 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		private LayoutAlign getGridAlign()
 		{
-			return _gridElement ? getWidgetType().getGridAlign() : null;
+			return isGridElement() ? getWidgetType().getGridAlign() : null;
+		}
+
+		public Builder setViewEditorRenderMode(final ViewEditorRenderMode gridEditorRenderMode)
+		{
+			this.viewEditorRenderMode = gridEditorRenderMode;
+			return this;
+		}
+
+		private ViewEditorRenderMode getViewEditorRenderMode()
+		{
+			return viewEditorRenderMode;
+		}
+
+		public Builder setViewAllowSorting(boolean viewAllowSorting)
+		{
+			this.viewAllowSorting = viewAllowSorting;
+			return this;
+		}
+		
+		private boolean isViewAllowSorting()
+		{
+			return viewAllowSorting;
 		}
 
 		public Builder setButtonActionDescriptor(final ButtonFieldActionDescriptor buttonActionDescriptor)

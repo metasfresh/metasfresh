@@ -271,4 +271,11 @@ public class DocumentChangesCollector implements IDocumentChangesCollector
 		documentChanges(event.getDocumentPath())
 				.collectEvent(event);
 	}
+
+	@Override
+	public void collectFieldWarning(final IDocumentFieldView documentField, final DocumentFieldWarning fieldWarning)
+	{
+		documentChanges(documentField)
+				.collectFieldWarning(documentField, fieldWarning);
+	}
 }

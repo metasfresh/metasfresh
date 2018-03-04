@@ -70,7 +70,7 @@ public class UserSession
 		//
 		// Quickly check if the session scoped UserSession bean will be really available
 		// NOTE: it's not about that the object will be null but if it's method calls will be really working
-		if (RequestContextHolder.getRequestAttributes() == null)
+		if (!isWebuiThread())
 		{
 			return null;
 		}
@@ -134,6 +134,12 @@ public class UserSession
 		return getCurrent().getUserRolePermissions();
 	}
 
+	/** @return true if we are running in a webui thread (i.e. NOT a background daemon thread) */
+	public static boolean isWebuiThread()
+	{
+		return RequestContextHolder.getRequestAttributes() != null;
+	}
+
 	// services
 	static final transient Logger logger = LogManager.getLogger(UserSession.class);
 	private final transient ApplicationEventPublisher eventPublisher;
@@ -141,45 +147,53 @@ public class UserSession
 	private static UserSession _staticUserSession = null;
 
 	@Autowired
-	private InternalUserSessionData data; // session scoped
+	private InternalUserSessionData _data; // session scoped
 
 	@Autowired
 	public UserSession(final ApplicationEventPublisher eventPublisher)
 	{
 		this.eventPublisher = eventPublisher;
 	}
+	
+	private InternalUserSessionData getData()
+	{
+		_data.initializeIfNeeded();
+		return _data;
+	}
 
 	public String getSessionId()
 	{
-		return data.getSessionId();
+		return getData().getSessionId();
 	}
 
 	/**
-	 * @return session's context
-	 * @see de.metas.ui.web.session.WebRestApiContextProvider
+	 * Never call it directly. Consider calling {@link Env#getCtx()}.
+	 * 
+	 * @return effective session context
 	 */
-	public Properties getCtx()
+	Properties getCtx()
 	{
-		return data.getCtx();
+		return getData().getCtx();
 	}
 
 	public Evaluatee toEvaluatee()
 	{
-		return Evaluatees.ofCtx(data.getCtx());
+		return Evaluatees.ofCtx(getData().getCtx());
 	}
 
 	public UserPreference getUserPreference()
 	{
-		return data.getUserPreference();
+		return getData().getUserPreference();
 	}
 
 	public boolean isLoggedIn()
 	{
-		return data.isLoggedIn();
+		return getData().isLoggedIn();
 	}
 
 	public void setLoggedIn(final boolean loggedIn)
 	{
+		final InternalUserSessionData data = getData();
 		final boolean currentlyLoggedIn = data.isLoggedIn();
 		if (currentlyLoggedIn == loggedIn)
 		{
@@ -202,27 +216,26 @@ public class UserSession
 
 	public void assertLoggedIn()
 	{
-		if (!data.isLoggedIn())
+		if (!getData().isLoggedIn())
 		{
 			throw new NotLoggedInException();
 		}
 	}
-	
+
 	public void assertLoggedInAsSysAdmin()
 	{
 		assertLoggedIn();
-		
-		final int adRoleId = data.getAD_Role_ID();
-		if(adRoleId != IUserRolePermissions.SYSTEM_ROLE_ID)
+
+		final int adRoleId = getData().getAD_Role_ID();
+		if (adRoleId != IUserRolePermissions.SYSTEM_ROLE_ID)
 		{
 			throw new NotLoggedInAsSysAdminException();
 		}
 	}
 
-
 	public void assertNotLoggedIn()
 	{
-		if (data.isLoggedIn())
+		if (getData().isLoggedIn())
 		{
 			throw new AlreadyLoggedInException();
 		}
@@ -240,6 +253,7 @@ public class UserSession
 	{
 		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
 		final Language lang = Language.getLanguage(adLanguage);
+		final InternalUserSessionData data = getData();
 		final String adLanguageOld = data.verifyLanguageAndSet(lang);
 		final String adLanguageNew = data.getAdLanguage();
 		logger.info("Changed AD_Language: {} -> {}, {}", adLanguageOld, adLanguageNew, lang);
@@ -255,17 +269,22 @@ public class UserSession
 
 	public int getAD_Client_ID()
 	{
-		return data.getAD_Client_ID();
+		return getData().getAD_Client_ID();
+	}
+
+	public int getAD_Org_ID()
+	{
+		return getData().getAD_Org_ID();
 	}
 
 	public String getAD_Language()
 	{
-		return data.getAdLanguage();
+		return getData().getAdLanguage();
 	}
-
+	
 	public Language getLanguage()
 	{
-		return data.getLanguage();
+		return getData().getLanguage();
 	}
 
 	public JSONLookupValue getLanguageAsJson()
@@ -276,16 +295,22 @@ public class UserSession
 
 	public Locale getLocale()
 	{
-		return data.getLocale();
+		return getData().getLocale();
+	}
+
+	public UserSessionLocale getUserSessionLocale()
+	{
+		return UserSessionLocale.get(getAD_Language());
 	}
 
 	public boolean isUseHttpAcceptLanguage()
 	{
-		return data.isUseHttpAcceptLanguage();
+		return getData().isUseHttpAcceptLanguage();
 	}
 
 	public void setUseHttpAcceptLanguage(final boolean useHttpAcceptLanguage)
 	{
+		final InternalUserSessionData data = getData();
 		final boolean useHttpAcceptLanguageOld = data.isUseHttpAcceptLanguage();
 		data.setUseHttpAcceptLanguage(useHttpAcceptLanguage);
 		logSettingChanged("UseHttpAcceptLanguage", useHttpAcceptLanguage, useHttpAcceptLanguageOld);
@@ -293,47 +318,48 @@ public class UserSession
 
 	public int getAD_User_ID()
 	{
-		return data.getAD_User_ID();
+		return getData().getAD_User_ID();
 	}
 
 	public String getUserName()
 	{
-		return data.getUserName();
+		return getData().getUserName();
 	}
 
 	public String getRoleName()
 	{
-		return data.getRoleName();
+		return getData().getRoleName();
 	}
 
 	public UserRolePermissionsKey getUserRolePermissionsKey()
 	{
 		// TODO: cache the permissions key
-		return UserRolePermissionsKey.of(data.getCtx());
+		return UserRolePermissionsKey.of(getData().getCtx());
 	}
 
 	public IUserRolePermissions getUserRolePermissions()
 	{
-		return Env.getUserRolePermissions(data.getCtx());
+		return Env.getUserRolePermissions(getData().getCtx());
 	}
 
 	public String getAvatarId()
 	{
-		return data.getAvatarId();
+		return getData().getAvatarId();
 	}
 
 	public String getUserEmail()
 	{
-		return data.getUserEmail();
+		return getData().getUserEmail();
 	}
 
 	public String getUserFullname()
 	{
-		return data.getUserFullname();
+		return getData().getUserFullname();
 	}
 
 	String setAvatarId(final String avatarId)
 	{
+		final InternalUserSessionData data = getData();
 		final String avatarIdOld = data.getAvatarId();
 		data.setAvatarId(avatarId);
 		return avatarIdOld;
@@ -341,6 +367,7 @@ public class UserSession
 
 	String setUserEmail(final String userEmail)
 	{
+		final InternalUserSessionData data = getData();
 		final String userEmailOld = data.getUserEmail();
 		data.setUserEmail(userEmail);
 		return userEmailOld;
@@ -348,20 +375,21 @@ public class UserSession
 
 	String setUserFullname(final String userFullname)
 	{
+		final InternalUserSessionData data = getData();
 		final String userFullnameOld = data.getUserFullname();
 		data.setUserFullname(userFullname);
 		return userFullnameOld;
 	}
-	
+
 	/** @return websocket notifications endpoint on which the frontend shall listen */
 	public String getWebsocketEndpoint()
-	{		
+	{
 		return WebSocketConfig.buildUserSessionTopicName(getAD_User_ID());
 	}
 
 	public void assertDeprecatedRestAPIAllowed()
 	{
-		if (!data.isAllowDeprecatedRestAPI())
+		if (!getData().isAllowDeprecatedRestAPI())
 		{
 			throw new DeprecatedRestAPINotAllowedException();
 		}
@@ -376,11 +404,12 @@ public class UserSession
 
 	public boolean isAllowDeprecatedRestAPI()
 	{
-		return data.isAllowDeprecatedRestAPI();
+		return getData().isAllowDeprecatedRestAPI();
 	}
 
 	public void setAllowDeprecatedRestAPI(final boolean allowDeprecatedRestAPI)
 	{
+		final InternalUserSessionData data = getData();
 		final boolean allowDeprecatedRestAPIOld = data.isAllowDeprecatedRestAPI();
 		data.setAllowDeprecatedRestAPI(allowDeprecatedRestAPI);
 		logSettingChanged("AllowDeprecatedRestAPI", allowDeprecatedRestAPI, allowDeprecatedRestAPIOld);
@@ -388,11 +417,12 @@ public class UserSession
 
 	public boolean isShowColumnNamesForCaption()
 	{
-		return data.isShowColumnNamesForCaption();
+		return getData().isShowColumnNamesForCaption();
 	}
 
 	public void setShowColumnNamesForCaption(final boolean showColumnNamesForCaption)
 	{
+		final InternalUserSessionData data = getData();
 		final boolean showColumnNamesForCaptionOld = data.isShowColumnNamesForCaption();
 		data.setShowColumnNamesForCaption(showColumnNamesForCaption);
 		logSettingChanged("ShowColumnNamesForCaption", showColumnNamesForCaption, showColumnNamesForCaptionOld);
@@ -400,6 +430,7 @@ public class UserSession
 
 	public void setHttpCacheMaxAge(final int httpCacheMaxAge)
 	{
+		final InternalUserSessionData data = getData();
 		final int httpCacheMaxAgeOld = data.getHttpCacheMaxAge();
 		data.setHttpCacheMaxAge(httpCacheMaxAge);
 		logSettingChanged("HttpCacheMaxAge", httpCacheMaxAge, httpCacheMaxAgeOld);
@@ -407,7 +438,7 @@ public class UserSession
 
 	public int getHttpCacheMaxAge()
 	{
-		return data.getHttpCacheMaxAge();
+		return getData().getHttpCacheMaxAge();
 	}
 
 	/**

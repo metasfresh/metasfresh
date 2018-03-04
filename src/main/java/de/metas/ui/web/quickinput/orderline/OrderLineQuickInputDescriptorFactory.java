@@ -1,13 +1,17 @@
 package de.metas.ui.web.quickinput.orderline;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
@@ -15,19 +19,27 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInput;
+import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -54,6 +66,9 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 @Component
 /* package */ final class OrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
+	@Autowired
+	private AvailableToPromiseAdapter availableToPromiseAdapter;
+
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
 	{
@@ -61,70 +76,99 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 	}
 
 	@Override
-	public QuickInputDescriptor createQuickInputEntityDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final DetailId detailId)
+	public QuickInputDescriptor createQuickInputEntityDescriptor(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final DetailId detailId,
+			@NonNull final Optional<Boolean> soTrx)
 	{
-		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentType, documentTypeId, detailId);
-		final QuickInputLayoutDescriptor layout = createLayout(entityDescriptor);
+		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(
+				documentType,
+				documentTypeId,
+				detailId,
+				soTrx);
 
-		return QuickInputDescriptor.of(entityDescriptor, layout, OrderLineQuickInputProcessor.class);
+		final QuickInputLayoutDescriptor layout = createLayout(
+				entityDescriptor);
+
+		return QuickInputDescriptor.of(
+				entityDescriptor,
+				layout,
+				OrderLineQuickInputProcessor.class);
 	}
 
-	private DocumentEntityDescriptor createEntityDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final DetailId detailId)
+	private DocumentEntityDescriptor createEntityDescriptor(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final DetailId detailId,
+			@NonNull final Optional<Boolean> soTrx)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		return createDescriptorBuilder(documentTypeId, detailId, soTrx)
+				.addField(createProductFieldBuilder(soTrx))
+				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), () -> createPackingInstructionFieldBuilder())
+				.addField(createQuantityFieldBuilder())
+				.build();
+	}
 
+	private static DocumentEntityDescriptor.Builder createDescriptorBuilder(
+			final DocumentId documentTypeId,
+			final DetailId detailId,
+			@NonNull final Optional<Boolean> soTrx)
+	{
 		final DocumentEntityDescriptor.Builder entityDescriptor = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.QuickInput, documentTypeId)
+				.setIsSOTrx(soTrx)
 				.disableDefaultTableCallouts()
 				// Defaults:
 				.setDetailId(detailId)
 				.setTableName(I_C_OrderLine.Table_Name) // TODO: figure out if it's needed
-		//
 		;
+		return entityDescriptor;
+	}
 
-		entityDescriptor.addField(DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_Product_ID)
-				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_M_Product_ID))
-				//
+	private Builder createProductFieldBuilder(
+			@NonNull final Optional<Boolean> soTrx)
+	{
+		final ProductLookupDescriptor productLookupDescriptor = createProductLookupDescriptor(soTrx);
+		final ITranslatableString caption = Services.get(IMsgBL.class).translatable(IOrderLineQuickInput.COLUMNNAME_M_Product_ID);
+
+		final Builder productFieldBuilder = DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_Product_ID)
+				.setLookupDescriptorProvider(productLookupDescriptor)
+				.setCaption(caption)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
-						.setColumnName(IOrderLineQuickInput.COLUMNNAME_M_Product_ID)
-						.setDisplayType(DisplayType.Search)
-						.setAD_Val_Rule_ID(540051) // FIXME: hardcoded
-						.buildProvider())
-				.setValueClass(IntegerLookupValue.class)
-				.setReadonlyLogic(ILogicExpression.FALSE)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ILogicExpression.TRUE)
-				.setDisplayLogic(ILogicExpression.TRUE)
+				.setMandatoryLogic(ConstantLogicExpression.TRUE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCallout(OrderLineQuickInputDescriptorFactory::onProductChangedCallout)
-				.addCharacteristic(Characteristic.PublicField));
+				.addCharacteristic(Characteristic.PublicField);
+		return productFieldBuilder;
+	}
 
-		entityDescriptor.addField(DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
-				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
-				//
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
-						.setColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
-						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(540199) // FIXME: hardcoded
-						.buildProvider())
-				.setValueClass(IntegerLookupValue.class)
-				.setReadonlyLogic(ILogicExpression.FALSE)
-				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ILogicExpression.FALSE)
-				.setDisplayLogic(ILogicExpression.TRUE)
-				.addCharacteristic(Characteristic.PublicField));
-
-		entityDescriptor.addField(DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_Qty)
-				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_Qty))
-				.setWidgetType(DocumentFieldWidgetType.Quantity)
-				.setReadonlyLogic(ILogicExpression.FALSE)
-				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ILogicExpression.TRUE)
-				.setDisplayLogic(ILogicExpression.TRUE)
-				.addCharacteristic(Characteristic.PublicField));
-
-		return entityDescriptor.build();
+	private ProductLookupDescriptor createProductLookupDescriptor(@NonNull final Optional<Boolean> soTrx)
+	{
+		final ProductLookupDescriptor productLookupDescriptor;
+		if (soTrx.orElse(false))
+		{
+			productLookupDescriptor = ProductLookupDescriptor
+					.builderWithStockInfo()
+					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
+					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
+					.availableStockDateParamName(I_C_Order.COLUMNNAME_PreparationDate)
+					.availableToPromiseAdapter(availableToPromiseAdapter)
+					.build();
+		}
+		else
+		{
+			productLookupDescriptor = ProductLookupDescriptor
+					.builderWithStockInfo()
+					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
+					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
+					.availableStockDateParamName(I_C_Order.COLUMNNAME_DatePromised)
+					.availableToPromiseAdapter(availableToPromiseAdapter)
+					.build();
+		}
+		return productLookupDescriptor;
 	}
 
 	private static void onProductChangedCallout(final ICalloutField calloutField)
@@ -136,18 +180,58 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 		}
 
 		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
-		final I_M_Product quickInputProduct = quickInputModel.getM_Product();
+		final LookupValue productLookupValue = quickInputModel.getM_Product_ID();
+		if (productLookupValue == null)
+		{
+			return;
+		}
+
+		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(productLookupValue);
+		final I_M_Product quickInputProduct = load(productAndAttributes.getProductId(), I_M_Product.class);
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		Services.get(IHUOrderBL.class).findM_HU_PI_Item_Product(order, quickInputProduct, quickInputModel::setM_HU_PI_Item_Product);
 	}
 
-	private QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
+	private static Builder createPackingInstructionFieldBuilder()
+	{
+		final Builder packingInstructionFieldBuilder = DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.setCaption(Services.get(IMsgBL.class).translatable(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
+				//
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
+						.setCtxTableName(null) // ctxTableName
+						.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
+						.setDisplayType(DisplayType.TableDir)
+						.setAD_Val_Rule_ID(540199) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DateOrdered"
+						.buildProvider())
+				.setValueClass(IntegerLookupValue.class)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ConstantLogicExpression.FALSE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField);
+		return packingInstructionFieldBuilder;
+	}
+
+	private static Builder createQuantityFieldBuilder()
+	{
+		final Builder qtyFieldBuilder = DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_Qty)
+				.setCaption(Services.get(IMsgBL.class).translatable(IOrderLineQuickInput.COLUMNNAME_Qty))
+				.setWidgetType(DocumentFieldWidgetType.Quantity)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ConstantLogicExpression.TRUE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField);
+		return qtyFieldBuilder;
+	}
+
+	private static QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
 		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
 				{ "M_Product_ID", "M_HU_PI_Item_Product_ID" } //
 				, { "Qty" }
 		});
 	}
-
 }

@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -31,11 +30,16 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONRange;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
@@ -67,8 +71,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public final class DocumentFieldDescriptor implements Serializable
+public final class DocumentFieldDescriptor
 {
 	public static final Builder builder(final String fieldName)
 	{
@@ -110,7 +113,6 @@ public final class DocumentFieldDescriptor implements Serializable
 		, AdvancedField //
 		, SideListField //
 		, GridViewField //
-		, AllowFiltering //
 		//
 		, SpecialField_DocumentNo //
 		, SpecialField_DocStatus //
@@ -136,6 +138,10 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final Optional<DocumentFieldDataBindingDescriptor> dataBinding;
 
 	private final DocumentFieldDependencyMap dependencies;
+
+	//
+	// Default filtering options
+	private final DocumentFieldDefaultFilterDescriptor defaultFilterInfo;
 
 	private DocumentFieldDescriptor(final Builder builder)
 	{
@@ -173,6 +179,10 @@ public final class DocumentFieldDescriptor implements Serializable
 		dependencies = builder.buildDependencies();
 
 		callouts = builder.buildCallouts();
+
+		//
+		// Default filtering
+		defaultFilterInfo = builder.defaultFilterInfo;
 	}
 
 	@Override
@@ -237,7 +247,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return widgetType;
 	}
-	
+
 	public boolean isAllowShowPassword()
 	{
 		return allowShowPassword;
@@ -443,12 +453,12 @@ public final class DocumentFieldDescriptor implements Serializable
 				if (value instanceof String)
 				{
 					final String valueStr = (String)value;
-					if(valueStr.isEmpty())
+					if (valueStr.isEmpty())
 					{
 						return null;
 					}
-					
-					final BigDecimal valueBD = new BigDecimal(valueStr); 
+
+					final BigDecimal valueBD = new BigDecimal(valueStr);
 					@SuppressWarnings("unchecked")
 					final T valueConv = (T)(Integer)valueBD.intValueExact();
 					return valueConv;
@@ -468,7 +478,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				else if (value instanceof Map)
 				{
 					@SuppressWarnings("unchecked")
-					final Map<String, String> map = (Map<String, String>)value;
+					final Map<String, Object> map = (Map<String, Object>)value;
 					final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 					@SuppressWarnings("unchecked")
 					final T valueConv = (T)(Integer)lookupValue.getIdAsInt();
@@ -518,7 +528,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				if (Map.class.isAssignableFrom(fromType))
 				{
 					@SuppressWarnings("unchecked")
-					final Map<String, String> map = (Map<String, String>)value;
+					final Map<String, Object> map = (Map<String, Object>)value;
 					final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 
 					if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
@@ -577,7 +587,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				if (Map.class.isAssignableFrom(fromType))
 				{
 					@SuppressWarnings("unchecked")
-					final Map<String, String> map = (Map<String, String>)value;
+					final Map<String, Object> map = (Map<String, Object>)value;
 					final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
 
 					if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
@@ -619,12 +629,52 @@ public final class DocumentFieldDescriptor implements Serializable
 					return valueConv;
 				}
 			}
+			else if (LookupValuesList.class == targetType)
+			{
+				if (Map.class.isAssignableFrom(fromType))
+				{
+					@SuppressWarnings("unchecked")
+					final Map<String, Object> map = (Map<String, Object>)value;
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)JSONLookupValuesList.lookupValuesListFromJsonMap(map);
+					return valueConv;
+				}
+			}
+			else if (DateRangeValue.class == targetType)
+			{
+				if (Map.class.isAssignableFrom(fromType))
+				{
+					@SuppressWarnings("unchecked")
+					final Map<String, String> map = (Map<String, String>)value;
+					final DateRangeValue dateRange = JSONRange.dateRangeFromJSONMap(map);
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)dateRange;
+					return valueConv;
+				}
+			}
+			else if(Password.class == targetType)
+			{
+				final Password password = Password.ofNullableString(value.toString());
+				@SuppressWarnings("unchecked")
+				final T valueConv = (T)password;
+				return valueConv;
+			}
 		}
 		catch (final Exception e)
 		{
 			throw new AdempiereException("Failed converting " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
 					+ "\n LookupDataSource: " + lookupDataSource //
-					+ "\n Widget type: " + widgetType, e);
+					+ "\n Widget type: " + widgetType
+					+ "\n Reason: " + e.getLocalizedMessage(), e);
+		}
+		
+		//
+		// Fallbacks
+		
+		// consider empty strings as null objects
+		if(value instanceof String || value.toString().isEmpty())
+		{
+			return null;
 		}
 
 		throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
@@ -635,6 +685,16 @@ public final class DocumentFieldDescriptor implements Serializable
 	/* package */List<IDocumentFieldCallout> getCallouts()
 	{
 		return callouts;
+	}
+
+	public boolean isDefaultFilterField()
+	{
+		return defaultFilterInfo != null;
+	}
+
+	public DocumentFieldDefaultFilterDescriptor getDefaultFilterInfo()
+	{
+		return defaultFilterInfo;
 	}
 
 	/**
@@ -659,19 +719,19 @@ public final class DocumentFieldDescriptor implements Serializable
 		private Class<?> _valueClass;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
 
-
 		// Lookup
 		private LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProvider.NULL;
 
 		private Optional<IExpression<?>> defaultValueExpression = Optional.empty();
 
 		private final Set<Characteristic> characteristics = new TreeSet<>();
-		private ILogicExpression _entityReadonlyLogic = ILogicExpression.FALSE;
-		private ILogicExpression _readonlyLogic = ILogicExpression.FALSE;
+		private ILogicExpression _entityReadonlyLogic = ConstantLogicExpression.FALSE;
+		private ILogicExpression _readonlyLogic = ConstantLogicExpression.FALSE;
 		private ILogicExpression _readonlyLogicEffective = null;
+
 		private boolean alwaysUpdateable = false;
-		private ILogicExpression displayLogic = ILogicExpression.TRUE;
-		private ILogicExpression _mandatoryLogic = ILogicExpression.FALSE;
+		private ILogicExpression displayLogic = ConstantLogicExpression.TRUE;
+		private ILogicExpression _mandatoryLogic = ConstantLogicExpression.FALSE;
 		private ILogicExpression _mandatoryLogicEffective = null;
 
 		private Optional<DocumentFieldDataBindingDescriptor> _dataBinding = Optional.empty();
@@ -680,9 +740,12 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
 
+		//
+		// Default filtering options
+		private DocumentFieldDefaultFilterDescriptor defaultFilterInfo = null;
+
 		private Builder(final String fieldName)
 		{
-			super();
 			Check.assumeNotEmpty(fieldName, "fieldName is not empty");
 			this.fieldName = fieldName;
 		}
@@ -874,13 +937,13 @@ public final class DocumentFieldDescriptor implements Serializable
 			Preconditions.checkNotNull(_widgetType, "widgetType is null");
 			return _widgetType;
 		}
-		
-		public Builder setAllowShowPassword(boolean allowShowPassword)
+
+		public Builder setAllowShowPassword(final boolean allowShowPassword)
 		{
 			this._allowShowPassword = allowShowPassword;
 			return this;
 		}
-		
+
 		private boolean isAllowShowPassword()
 		{
 			return _allowShowPassword;
@@ -937,7 +1000,18 @@ public final class DocumentFieldDescriptor implements Serializable
 			}
 
 			final DocumentFieldWidgetType widgetType = getWidgetType();
-			return widgetType.getValueClass();
+			if (widgetType.getValueClassOrNull() != null)
+			{
+				return widgetType.getValueClassOrNull();
+			}
+
+			final LookupDescriptorProvider lookupDescriptor = getLookupDescriptorProvider();
+			if (lookupDescriptor != null)
+			{
+				return lookupDescriptor.isNumericKey() ? IntegerLookupValue.class : StringLookupValue.class;
+			}
+
+			throw new AdempiereException("valueClass is unknown for " + this);
 		}
 
 		public Builder setDefaultValueExpression(final Optional<IExpression<?>> defaultValueExpression)
@@ -1016,7 +1090,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			return _readonlyLogic;
 		}
 
-		private ILogicExpression getReadonlyLogicEffective()
+		public ILogicExpression getReadonlyLogicEffective()
 		{
 			if (_readonlyLogicEffective == null)
 			{
@@ -1029,55 +1103,49 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			if (isParentLinkEffective())
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			if (isVirtualField())
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			if (isKey())
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			// If the tab is always readonly, we can assume any field in that tab is readonly
 			final ILogicExpression entityReadonlyLogic = getEntityReadonlyLogic();
 			if (entityReadonlyLogic.isConstantTrue())
 			{
-				return ILogicExpression.TRUE;
-			}
-
-			// Case: DocumentNo/Value special field not be readonly
-			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
-			{
-				return ILogicExpression.FALSE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			// Case: DocAction
 			if (hasCharacteristic(Characteristic.SpecialField_DocAction))
 			{
-				return ILogicExpression.FALSE;
+				return ConstantLogicExpression.FALSE;
 			}
 
 			final ILogicExpression fieldReadonlyLogic = getReadonlyLogic();
 			if (fieldReadonlyLogic.isConstantTrue())
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			final String fieldName = getFieldName();
 			if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(fieldName))
 			{
 				// NOTE: from UI perspective those are readonly (i.e. it will be managed by persistence layer)
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			if (hasCharacteristic(Characteristic.SpecialField_DocStatus))
 			{
 				// NOTE: DocStatus field shall always be readonly
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			ILogicExpression readonlyLogic = fieldReadonlyLogic;
@@ -1171,19 +1239,19 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			if (isParentLinkEffective())
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			final String fieldName = getFieldName();
 			if (WindowConstants.FIELDNAMES_CreatedUpdated.contains(fieldName))
 			{
 				// NOTE: from UI perspective those are not mandatory (i.e. it will be managed by persistence layer)
-				return ILogicExpression.FALSE;
+				return ConstantLogicExpression.FALSE;
 			}
 
 			if (isVirtualField())
 			{
-				return ILogicExpression.FALSE;
+				return ConstantLogicExpression.FALSE;
 			}
 
 			// FIXME: hardcoded M_AttributeSetInstance_ID mandatory logic = false
@@ -1191,7 +1259,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			// and then the document saving API is failing because it considers this column as NOT filled.
 			if (WindowConstants.FIELDNAME_M_AttributeSetInstance_ID.equals(fieldName))
 			{
-				return ILogicExpression.FALSE;
+				return ConstantLogicExpression.FALSE;
 			}
 
 			// Corner case:
@@ -1205,18 +1273,18 @@ public final class DocumentFieldDescriptor implements Serializable
 			final boolean mandatoryDB = fieldDataBinding != null && fieldDataBinding.isMandatory();
 			if (!publicField && mandatory && !mandatoryDB)
 			{
-				return ILogicExpression.FALSE;
+				return ConstantLogicExpression.FALSE;
 			}
 
 			// Case: DocumentNo special field shall always be mandatory
 			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			if (mandatory)
 			{
-				return ILogicExpression.TRUE;
+				return ConstantLogicExpression.TRUE;
 			}
 
 			return mandatoryLogic;
@@ -1237,9 +1305,9 @@ public final class DocumentFieldDescriptor implements Serializable
 		private DocumentFieldDependencyMap buildDependencies()
 		{
 			final DocumentFieldDependencyMap.Builder dependencyMapBuilder = DocumentFieldDependencyMap.builder()
-					.add(fieldName, getReadonlyLogicEffective().getParameters(), DependencyType.ReadonlyLogic)
-					.add(fieldName, getDisplayLogic().getParameters(), DependencyType.DisplayLogic)
-					.add(fieldName, getMandatoryLogicEffective().getParameters(), DependencyType.MandatoryLogic);
+					.add(fieldName, getReadonlyLogicEffective().getParameterNames(), DependencyType.ReadonlyLogic)
+					.add(fieldName, getDisplayLogic().getParameterNames(), DependencyType.DisplayLogic)
+					.add(fieldName, getMandatoryLogicEffective().getParameterNames(), DependencyType.MandatoryLogic);
 
 			final LookupDescriptor lookupDescriptor = getLookupDescriptorProvider().provideForScope(LookupScope.DocumentField);
 			if (lookupDescriptor != null)
@@ -1297,11 +1365,11 @@ public final class DocumentFieldDescriptor implements Serializable
 			// Allow zooming into key column. It shall open precisely this record in a new window
 			// (see https://github.com/metasfresh/metasfresh/issues/1687 to understand the use-case)
 			// In future we shall think to narrow it down only to included tabs and only for those tables which also have a window where they are the header document.
-			if(isKey())
+			if (isKey())
 			{
 				return true;
 			}
-			
+
 			final DocumentFieldWidgetType widgetType = getWidgetType();
 			if (!widgetType.isSupportZoomInto())
 			{
@@ -1321,6 +1389,33 @@ public final class DocumentFieldDescriptor implements Serializable
 			}
 
 			return true;
+		}
+
+		public Builder setDefaultFilterInfo(DocumentFieldDefaultFilterDescriptor defaultFilterInfo)
+		{
+			this.defaultFilterInfo = defaultFilterInfo;
+			return this;
+		}
+
+		/**
+		 * @return true if this field has ORDER BY instructions
+		 */
+		public boolean isDefaultOrderBy()
+		{
+			final DocumentFieldDataBindingDescriptor dataBinding = getDataBinding().orElse(null);
+			return dataBinding != null ? dataBinding.isDefaultOrderBy() : false;
+		}
+
+		public int getDefaultOrderByPriority()
+		{
+			// we assume isDefaultOrderBy() was checked before calling this method
+			return getDataBinding().get().getDefaultOrderByPriority();
+		}
+
+		public boolean isDefaultOrderByAscending()
+		{
+			// we assume isDefaultOrderBy() was checked before calling this method
+			return getDataBinding().get().isDefaultOrderByAscending();
 		}
 	}
 }

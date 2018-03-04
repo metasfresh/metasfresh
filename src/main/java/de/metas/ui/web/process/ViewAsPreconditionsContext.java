@@ -18,10 +18,13 @@ import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -45,6 +48,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Value
 public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 {
 	public static final ViewAsPreconditionsContext cast(final IProcessPreconditionsContext context)
@@ -64,43 +68,47 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		}
 	}
 
-	public static final ViewAsPreconditionsContext newInstance(final IView view, final DocumentIdsSelection selectedDocumentIds)
-	{
-		return new ViewAsPreconditionsContext(view, selectedDocumentIds);
-	}
-
 	private static final Logger logger = LogManager.getLogger(ViewAsPreconditionsContext.class);
 
 	private final IView view;
 	private final String tableName;
 	private final WindowId windowId;
-	private final DocumentIdsSelection selectedDocumentIds;
+
+	private final ViewRowIdsSelection viewRowIdsSelection;
+	private final ViewRowIdsSelection parentViewRowIdsSelection;
+	private final ViewRowIdsSelection childViewRowIdsSelection;
 
 	private final MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
 
-	private ViewAsPreconditionsContext(@NonNull final IView view, @NonNull final DocumentIdsSelection selectedDocumentIds)
+	@Builder
+	private ViewAsPreconditionsContext(
+			@NonNull final IView view,
+			@NonNull final ViewRowIdsSelection viewRowIdsSelection,
+			final ViewRowIdsSelection parentViewRowIdsSelection,
+			final ViewRowIdsSelection childViewRowIdsSelection)
 	{
 		Check.assumeNotNull(view, "Parameter view is not null");
 		this.view = view;
 		this.windowId = view.getViewId().getWindowId();
-		this.tableName = view.getTableName();
-		this.selectedDocumentIds = selectedDocumentIds;
+
+		this.viewRowIdsSelection = viewRowIdsSelection;
+		this.parentViewRowIdsSelection = parentViewRowIdsSelection;
+		this.childViewRowIdsSelection = childViewRowIdsSelection;
+
+		final DocumentIdsSelection selectedRowIds = viewRowIdsSelection.getRowIds();
+		if (selectedRowIds.isSingleDocumentId())
+		{
+			this.tableName = view.getTableNameOrNull(selectedRowIds.getSingleDocumentId());
+		}
+		else
+		{
+			this.tableName = view.getTableNameOrNull(null);
+		}
 	}
 
-	@Override
-	public String toString()
+	public DocumentIdsSelection getSelectedRowIds()
 	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("tableName", tableName)
-				.add("view", view)
-				.add("selectedDocumentIds", selectedDocumentIds)
-				.toString();
-	}
-
-	public IView getView()
-	{
-		return view;
+		return viewRowIdsSelection.getRowIds();
 	}
 
 	public <T extends IView> T getView(final Class<T> viewType)
@@ -123,25 +131,9 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	}
 
 	@Override
-	public String getTableName()
-	{
-		return tableName;
-	}
-
-	public DocumentIdsSelection getSelectedDocumentIds()
-	{
-		return selectedDocumentIds;
-	}
-
-	public DocumentId getSingleSelectedDocumentId()
-	{
-		return selectedDocumentIds.getSingleDocumentId();
-	}
-
-	@Override
 	public int getSingleSelectedRecordId()
 	{
-		final DocumentId rowId = getSingleSelectedDocumentId();
+		final DocumentId rowId = getSelectedRowIds().getSingleDocumentId();
 		final TableRecordReference recordRef = view.getTableRecordReferenceOrNull(rowId);
 		if (recordRef == null)
 		{
@@ -177,24 +169,24 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	@Override
 	public int getSelectionSize()
 	{
-		return getSelectedDocumentIds().size();
+		return getSelectedRowIds().size();
 	}
 
 	@Override
 	public boolean isNoSelection()
 	{
-		return getSelectedDocumentIds().isEmpty();
+		return getSelectedRowIds().isEmpty();
 	}
 
 	@Override
 	public boolean isMoreThanOneSelected()
 	{
-		return getSelectedDocumentIds().isMoreThanOneDocumentId();
+		return getSelectedRowIds().isMoreThanOneDocumentId();
 	}
 
 	private final SelectedModelsList retrieveSelectedModels(final Class<?> modelClass)
 	{
-		final List<?> models = view.retrieveModelsByIds(getSelectedDocumentIds(), modelClass);
+		final List<?> models = view.retrieveModelsByIds(getSelectedRowIds(), modelClass);
 		return SelectedModelsList.of(models, modelClass);
 	}
 

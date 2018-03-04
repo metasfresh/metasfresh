@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Profile;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.Profiles;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -32,7 +33,6 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.quantity.Quantity;
-import de.metas.ui.web.WebRestApiApplication;
 
 /*
  * #%L
@@ -66,7 +66,7 @@ import de.metas.ui.web.WebRestApiApplication;
  * @task https://github.com/metasfresh/metasfresh-webui/issues/182
  *
  */
-@Profile(WebRestApiApplication.PROFILE_Webui)
+@Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends JavaProcess implements IProcessPrecondition
 {
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
@@ -155,7 +155,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends JavaProcess implements I
 				.filter(hu -> hu != null)
 				.collect(GuavaCollectors.toImmutableList());
 
-		getResult().setRecordsToOpen(TableRecordReference.ofList(hus));
+		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus));
 
 		return MSG_OK;
 	}
@@ -214,7 +214,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends JavaProcess implements I
 		final BigDecimal qty = receiptScheduleBL.getQtyToMove(rs);
 		return qty == null || qty.signum() <= 0 ? BigDecimal.ZERO : qty;
 	}
-	
+
 	protected BigDecimal getEffectiveQtyToReceive(final I_M_ReceiptSchedule rs)
 	{
 		BigDecimal defaultAvailableQtyToReceive = getDefaultAvailableQtyToReceive(rs);

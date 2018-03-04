@@ -1,6 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
-import org.junit.Assert;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -35,11 +36,13 @@ public class HUEditorRowIdTest
 		final HUEditorRowId rowId = HUEditorRowId.ofTopLevelHU(12345);
 		testToFromJson(rowId);
 
-		Assert.assertEquals("huId", 12345, rowId.getHuId());
-		Assert.assertEquals("topLevelHUId", 12345, rowId.getTopLevelHUId());
+		assertThat(rowId.getHuId()).as("huId").isEqualTo(12345);;
+		assertThat(rowId.getTopLevelHUId()).as("topLevelHUId").isEqualTo(12345);;
 
 		// IMPORTANT: top level rowIds shall be perfectly convertible to int.
-		Assert.assertEquals("rowId.toJson() as int", 12345, Integer.parseInt(rowId.toJson()));
+		assertThat(Integer.parseInt(rowId.toJson())).as("rowId.toJson() as int").isEqualTo(12345);
+
+		assertThat(rowId.toDocumentId().toString()).isEqualTo("12345");
 	}
 
 	@Test
@@ -48,8 +51,10 @@ public class HUEditorRowIdTest
 		final HUEditorRowId rowId = HUEditorRowId.ofHU(2, 1);
 		testToFromJson(rowId);
 
-		Assert.assertEquals("huId", 2, rowId.getHuId());
-		Assert.assertEquals("topLevelHUId", 1, rowId.getTopLevelHUId());
+		assertThat(rowId.getHuId()).as("huId").isEqualTo(2);
+		assertThat(rowId.getTopLevelHUId()).as("topLevelHUId").isEqualTo(1);
+
+		assertThat(rowId.toDocumentId().toString()).isEqualTo("2_T1");
 	}
 
 	@Test
@@ -58,23 +63,32 @@ public class HUEditorRowIdTest
 		final HUEditorRowId rowId = HUEditorRowId.ofHUStorage(2, 1, 123);
 		testToFromJson(rowId);
 
-		Assert.assertEquals("huId", 2, rowId.getHuId());
-		Assert.assertEquals("topLevelHUId", 1, rowId.getTopLevelHUId());
+		assertThat(rowId.getHuId()).as("huId").isEqualTo(2);
+		assertThat(rowId.getTopLevelHUId()).as("topLevelHUId").isEqualTo(1);
+		assertThat(rowId.getStorageProductId()).as("storageProductId").isEqualTo(123);
+
+		assertThat(rowId.toDocumentId().toString()).isEqualTo("2-123_T1");
 	}
+
 
 	private static void testToFromJson(final HUEditorRowId rowId)
 	{
 		{
 			final String json = rowId.toJson();
 			final HUEditorRowId rowId2 = HUEditorRowId.fromJson(json);
-			Assert.assertEquals(rowId, rowId2);
+			assertThat(rowId2).isEqualTo(rowId);
 		}
 
 		{
 			final String json = rowId.toJson();
 			final DocumentId documentId = DocumentId.of(json);
 			final HUEditorRowId rowId2 = HUEditorRowId.ofDocumentId(documentId);
-			Assert.assertEquals(rowId, rowId2);
+			assertThat(rowId2).isEqualTo(rowId);
+		}
+
+		{
+			final HUEditorRowId rowId2 = HUEditorRowId.ofDocumentId(rowId.toDocumentId());
+			assertThat(rowId2).isEqualTo(rowId);
 		}
 	}
 }

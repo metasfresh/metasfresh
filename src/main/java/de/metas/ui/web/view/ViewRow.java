@@ -15,6 +15,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -139,7 +140,7 @@ public final class ViewRow implements IViewRow
 	{
 		return processed;
 	}
-
+	
 	@Override
 	public Map<String, Object> getFieldNameAndJsonValues()
 	{
@@ -156,12 +157,6 @@ public final class ViewRow implements IViewRow
 	public IViewRowAttributes getAttributes()
 	{
 		throw new EntityNotFoundException("row does not support attributes");
-	}
-
-	@Override
-	public boolean hasIncludedView()
-	{
-		return false;
 	}
 
 	@Override
@@ -261,7 +256,7 @@ public final class ViewRow implements IViewRow
 					// NOTE: we have to do this because usually, the root row can have the same ID as one of the included rows,
 					// because the root/aggregated rows are build on demand and they don't really exist in database.
 					// Also see https://github.com/metasfresh/metasfresh-webui-frontend/issues/835#issuecomment-307783959
-					_rowIdEffective = DocumentId.ofString("D" + rowId.toJson());
+					_rowIdEffective = DocumentId.ofString(DocumentId.DOCUMENT_ID_PREFIX + rowId.toJson());
 				}
 			}
 			
@@ -318,7 +313,7 @@ public final class ViewRow implements IViewRow
 
 		public Builder putFieldValue(final String fieldName, final Object jsonValue)
 		{
-			if (jsonValue == null)
+			if (JSONNullValue.isNull(jsonValue))
 			{
 				values.remove(fieldName);
 			}
@@ -333,6 +328,11 @@ public final class ViewRow implements IViewRow
 		private Map<String, Object> getValues()
 		{
 			return values;
+		}
+		
+		public Object getFieldValue(final String fieldName)
+		{
+			return values.get(fieldName);
 		}
 
 		public Builder addIncludedRow(final IViewRow includedRow)

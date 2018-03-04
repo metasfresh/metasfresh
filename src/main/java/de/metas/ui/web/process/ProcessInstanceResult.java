@@ -11,6 +11,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -49,6 +50,19 @@ public final class ProcessInstanceResult implements Serializable
 	public static final Builder builder(final DocumentId instanceId)
 	{
 		return new Builder(instanceId);
+	}
+
+	public static final ProcessInstanceResult ok(final DocumentId instanceId)
+	{
+		return builder(instanceId).build();
+	}
+
+	public static final ProcessInstanceResult error(final DocumentId instanceId, final Throwable error)
+	{
+		return builder(instanceId)
+				.setError(true)
+				.setSummary(error.getLocalizedMessage())
+				.build();
 	}
 
 	private final DocumentId instanceId;
@@ -164,7 +178,9 @@ public final class ProcessInstanceResult implements Serializable
 	@lombok.Builder
 	public static class OpenIncludedViewAction implements ResultAction
 	{
+		@NonNull
 		private final ViewId viewId;
+		private final ViewProfileId profileId;
 	}
 
 	@lombok.Value

@@ -3,6 +3,8 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -11,7 +13,7 @@ import org.adempiere.ad.expression.api.impl.BooleanStringExpressionSupport.Boole
 import org.adempiere.ad.expression.api.impl.DateStringExpressionSupport.DateStringExpression;
 import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.IntegerStringExpression;
 import org.adempiere.ad.expression.api.impl.SysDateDateExpression;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -21,7 +23,9 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.AutoSequenceDefaultValueExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,6 +51,19 @@ import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 
 public class DefaultValueExpressionsFactory
 {
+	/** @return new default instance */
+	public static final DefaultValueExpressionsFactory newInstance()
+	{
+		final String tableName = null; // N/A
+		final boolean isDetailTab = false;
+		return new DefaultValueExpressionsFactory(tableName, isDetailTab);
+	}
+	
+	public static final DefaultValueExpressionsFactory newInstance(@NonNull final String tableName, final boolean isDetailTab)
+	{
+		return new DefaultValueExpressionsFactory(tableName, isDetailTab);
+	}
+
 	// services
 	private static final Logger logger = LogManager.getLogger(DefaultValueExpressionsFactory.class);
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
@@ -71,7 +88,7 @@ public class DefaultValueExpressionsFactory
 		DEFAULT_VALUE_EXPRESSION_No = Optional.of(expressionFactory.compile(DisplayType.toBooleanString(false), BooleanStringExpression.class));
 		DEFAULT_VALUE_EXPRESSION_Zero_BigDecimal = Optional.of(expressionFactory.compile("0", BigDecimalStringExpression.class));
 		DEFAULT_VALUE_EXPRESSION_Zero_Integer = Optional.of(expressionFactory.compile("0", IntegerStringExpression.class));
-		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = Optional.of(expressionFactory.compile(String.valueOf(IAttributeDAO.M_AttributeSetInstance_ID_None), IntegerStringExpression.class));
+		DEFAULT_VALUE_EXPRESSION_M_AttributeSetInstance_ID = Optional.of(expressionFactory.compile(String.valueOf(AttributeConstants.M_AttributeSetInstance_ID_None), IntegerStringExpression.class));
 		DEFAULT_VALUE_EXPRESSION_NextLineNo = Optional.of(expressionFactory.compile("@" + WindowConstants.CONTEXTVAR_NextLineNo + "@", IntegerStringExpression.class));
 
 		DEFAULT_VALUE_AD_Client_ID = Optional.of(expressionFactory.compile("@" + WindowConstants.FIELDNAME_AD_Client_ID + "@", IntegerStringExpression.class));
@@ -82,12 +99,19 @@ public class DefaultValueExpressionsFactory
 
 	//
 	// Parameters
+	@Nullable private final String _tableName;
 	private final boolean _isDetailTab;
 
-	public DefaultValueExpressionsFactory(final boolean isDetailTab)
+	private DefaultValueExpressionsFactory(final String tableName, final boolean isDetailTab)
 	{
-		super();
+		_tableName = tableName;
 		_isDetailTab = isDetailTab;
+	}
+
+	@Nullable
+	private String getTableName()
+	{
+		return _tableName;
 	}
 
 	private boolean isDetailTab()
@@ -96,12 +120,12 @@ public class DefaultValueExpressionsFactory
 	}
 
 	public Optional<IExpression<?>> extractDefaultValueExpression(
-			final String defaultValueStr //
-			, final String columnName //
-			, final DocumentFieldWidgetType widgetType //
-			, final Class<?> fieldValueClass //
-			, final boolean isMandatory //
-	)
+			final String defaultValueStr,
+			final String columnName,
+			final DocumentFieldWidgetType widgetType,
+			final Class<?> fieldValueClass,
+			final boolean isMandatory,
+			final boolean allowUsingAutoSequence)
 	{
 		final boolean isDetailTab = isDetailTab();
 
@@ -135,6 +159,13 @@ public class DefaultValueExpressionsFactory
 					|| WindowConstants.FIELDNAME_UpdatedBy.equals(columnName))
 			{
 				return DEFAULT_VALUE_ContextUser_ID;
+			}
+			//
+			else if(WindowConstants.FIELDNAME_Value.equals(columnName)
+					&& getTableName() != null
+					&& allowUsingAutoSequence)
+			{
+				return Optional.of(AutoSequenceDefaultValueExpression.of(getTableName()));
 			}
 			else if (Boolean.class.equals(fieldValueClass))
 			{

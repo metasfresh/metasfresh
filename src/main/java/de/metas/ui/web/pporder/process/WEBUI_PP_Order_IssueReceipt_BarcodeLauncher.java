@@ -9,7 +9,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.pporder.WebPPOrderConfig;
+import de.metas.ui.web.pporder.PPOrderConstants;
 import de.metas.ui.web.process.adprocess.WebuiProcess;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 
@@ -58,7 +58,7 @@ public class WEBUI_PP_Order_IssueReceipt_BarcodeLauncher extends JavaProcess
 		}
 
 		final TableRecordReference ppOrderRef = TableRecordReference.of(org.eevolution.model.I_PP_Order.Table_Name, ppOrderId);
-		getResult().setRecordToOpen(ppOrderRef, WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt.toInt(), OpenTarget.GridView);
+		getResult().setRecordToOpen(ppOrderRef, PPOrderConstants.AD_WINDOW_ID_IssueReceipt.toInt(), OpenTarget.GridView);
 		return MSG_OK;
 	}
 }

@@ -156,6 +156,11 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	public void markStaleAll()
 	{
 	}
+	
+	@Override
+	public void markStale(final DocumentId rowId)
+	{
+	}
 
 	@Override
 	public boolean isStale()

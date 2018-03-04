@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Getter;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 
@@ -38,11 +41,16 @@ public final class SqlViewGroupingBinding
 	@Singular("columnSql")
 	private final ImmutableMap<String, String> columnSqlByFieldName;
 
+	@NonNull
+	@Default
+	@Getter
+	private final SqlViewRowIdsConverter rowIdsConverter = SqlViewRowIdsConverters.TO_INT_STRICT;
+
 	public ImmutableSet<String> getGroupByFieldNames()
 	{
 		return groupByFieldNames;
 	}
-	
+
 	public boolean isGroupBy(final String fieldName)
 	{
 		return groupByFieldNames.contains(fieldName);
@@ -52,7 +60,7 @@ public final class SqlViewGroupingBinding
 	{
 		return columnSqlByFieldName.get(fieldName);
 	}
-	
+
 	public boolean isAggregated(final String fieldName)
 	{
 		return columnSqlByFieldName.containsKey(fieldName);

@@ -80,7 +80,6 @@ import lombok.NonNull;
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
-		super();
 		this.descriptor = descriptor;
 		_document = document;
 
@@ -490,7 +489,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public DocumentValidStatus updateStatusIfInvalidAndGet(final IDocumentChangesCollector changesCollector)
+	public DocumentValidStatus updateStatusIfInitialInvalidAndGet(final IDocumentChangesCollector changesCollector)
 	{
 		if (_validStatus.isInitialInvalid())
 		{

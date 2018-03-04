@@ -23,7 +23,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -151,8 +151,8 @@ public class UserDashboardRepository
 				.create()
 				.list(I_WEBUI_DashboardItem.class)
 				.stream()
-				.map(webuiDashboardItem -> createUserDashboardItem(webuiDashboardItem))
-				.forEach(userDashboardItem -> userDashboardBuilder.addItem(userDashboardItem));
+				.map(this::createUserDashboardItem)
+				.forEach(userDashboardBuilder::addItem);
 
 		return userDashboardBuilder.build();
 	}
@@ -518,7 +518,7 @@ public class UserDashboardRepository
 				.addEqualsFilter(I_WEBUI_DashboardItem.COLUMN_WEBUI_Dashboard_ID, dashboardId)
 				.addEqualsFilter(I_WEBUI_DashboardItem.COLUMN_WEBUI_DashboardWidgetType, dashboardWidgetType.getCode())
 				.create()
-				.aggregate(I_WEBUI_DashboardItem.COLUMN_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_WEBUI_DashboardItem.COLUMN_SeqNo, Aggregate.MAX, Integer.class);
 
 		return maxSeqNo != null ? maxSeqNo : 0;
 	}

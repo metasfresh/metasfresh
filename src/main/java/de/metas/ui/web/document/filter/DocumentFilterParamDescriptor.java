@@ -2,8 +2,6 @@ package de.metas.ui.web.document.filter;
 
 import org.adempiere.util.Check;
 
-import com.google.common.base.MoreObjects;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -13,6 +11,7 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import lombok.Value;
 
 /*
  * #%L
@@ -36,6 +35,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
  * #L%
  */
 
+@Value
 public final class DocumentFilterParamDescriptor
 {
 	public static final Builder builder()
@@ -49,19 +49,20 @@ public final class DocumentFilterParamDescriptor
 	private final DocumentFieldWidgetType widgetType;
 	private final Class<?> valueClass;
 	private final ITranslatableString displayName;
+	private final boolean showIncrementDecrementButtons;
 
 	private final Operator operator;
 	private final Object defaultValue;
 	private final Object defaultValueTo;
 
+	private final boolean mandatory;
 	private final LookupDescriptor lookupDescriptor;
 
-	private final boolean mandatory;
+	public static final String AUTOFILTER_INITIALVALUE_DATE_NOW = new String("NOW");
+	private final Object autoFilterInitialValue;
 
 	private DocumentFilterParamDescriptor(final Builder builder)
 	{
-		super();
-
 		joinAnd = builder.joinAnd;
 
 		parameterName = builder.parameterName;
@@ -77,6 +78,8 @@ public final class DocumentFilterParamDescriptor
 		displayName = builder.getDisplayName();
 		Check.assumeNotNull(displayName, "Parameter displayNameTrls is not null");
 
+		showIncrementDecrementButtons = builder.showIncrementDecrementButtons;
+
 		operator = builder.operator;
 
 		defaultValue = builder.defaultValue;
@@ -85,48 +88,8 @@ public final class DocumentFilterParamDescriptor
 		lookupDescriptor = builder.lookupDescriptor;
 
 		mandatory = builder.mandatory;
-	}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("join", joinAnd ? "AND" : "OR")
-				.add("parameterName", parameterName)
-				.add("fieldName", fieldName)
-				.add("widgetType", widgetType)
-				.add("operator", operator)
-				.add("defaultValue", defaultValue)
-				.add("defaultValueTo", defaultValueTo)
-				.add("lookupDescriptor", lookupDescriptor)
-				.add("required", mandatory)
-				.toString();
-	}
-
-	public boolean isJoinAnd()
-	{
-		return joinAnd;
-	}
-
-	public String getParameterName()
-	{
-		return parameterName;
-	}
-
-	public String getFieldName()
-	{
-		return fieldName;
-	}
-
-	public DocumentFieldWidgetType getWidgetType()
-	{
-		return widgetType;
-	}
-
-	public Class<?> getValueClass()
-	{
-		return valueClass;
+		autoFilterInitialValue = builder.autoFilterInitialValue;
 	}
 
 	public String getDisplayName(final String adLanguage)
@@ -134,24 +97,9 @@ public final class DocumentFilterParamDescriptor
 		return displayName.translate(adLanguage);
 	}
 
-	public Operator getOperator()
-	{
-		return operator;
-	}
-
 	public boolean isRange()
 	{
 		return operator != null && operator.isRangeOperator();
-	}
-
-	public Object getDefaultValue()
-	{
-		return defaultValue;
-	}
-
-	public Object getDefaultValueTo()
-	{
-		return defaultValueTo;
 	}
 
 	public LookupDataSource getLookupDataSource()
@@ -168,14 +116,19 @@ public final class DocumentFilterParamDescriptor
 		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
 	}
 
-	public boolean isMandatory()
-	{
-		return mandatory;
-	}
-
 	public Object convertValueFromJson(final Object jsonValue)
 	{
 		return DocumentFieldDescriptor.convertToValueClass(getFieldName(), jsonValue, getWidgetType(), getValueClass(), getLookupDataSourceOrNull());
+	}
+
+	public boolean isAutoFilter()
+	{
+		return autoFilterInitialValue != null;
+	}
+
+	public boolean isAutoFilterInitialValueIsDateNow()
+	{
+		return widgetType.isDateOrTime() && AUTOFILTER_INITIALVALUE_DATE_NOW.equals(autoFilterInitialValue);
 	}
 
 	public static final class Builder
@@ -190,10 +143,12 @@ public final class DocumentFilterParamDescriptor
 		private Object defaultValueTo;
 		private LookupDescriptor lookupDescriptor;
 		private boolean mandatory = false;
+		private boolean showIncrementDecrementButtons;
+
+		private Object autoFilterInitialValue;
 
 		private Builder()
 		{
-			super();
 		}
 
 		/* package */DocumentFilterParamDescriptor build()
@@ -218,7 +173,7 @@ public final class DocumentFilterParamDescriptor
 			return fieldName;
 		}
 
-		public Builder setParameterName(final String parameterName)
+		Builder setParameterName(final String parameterName)
 		{
 			this.parameterName = parameterName;
 			return this;
@@ -280,6 +235,18 @@ public final class DocumentFilterParamDescriptor
 		public Builder setMandatory(final boolean mandatory)
 		{
 			this.mandatory = mandatory;
+			return this;
+		}
+
+		public Builder setShowIncrementDecrementButtons(final boolean showIncrementDecrementButtons)
+		{
+			this.showIncrementDecrementButtons = showIncrementDecrementButtons;
+			return this;
+		}
+
+		public Builder setAutoFilterInitialValue(Object autoFilterInitialValue)
+		{
+			this.autoFilterInitialValue = autoFilterInitialValue;
 			return this;
 		}
 	}

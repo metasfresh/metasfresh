@@ -7,8 +7,12 @@ import org.adempiere.ad.security.permissions.ElementPermission;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IRolePermLoggingBL;
+import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -42,6 +46,9 @@ import lombok.NonNull;
 
 public class DocumentPermissionsHelper
 {
+
+	private static final Logger logger = LogManager.getLogger(DocumentPermissionsHelper.class);
+
 	public static ElementPermission checkWindowAccess(@NonNull final DocumentEntityDescriptor entityDescriptor, final IUserRolePermissions permissions)
 	{
 		final int adWindowId = entityDescriptor.getWindowId().toInt();
@@ -57,10 +64,7 @@ public class DocumentPermissionsHelper
 					.setParameter("WindowName", entityDescriptor.getCaption())
 					.setParameter("AD_Window_ID", adWindowId);
 
-			final Boolean readWriteAccess = null; // none
-			Services.get(IRolePermLoggingBL.class).logWindowAccess(permissions.getAD_Role_ID(), adWindowId, readWriteAccess, ex.getLocalizedMessage());
-
-			throw ex;
+			logAccessIfWindowExistsAndThrowEx(permissions, adWindowId, ex);
 		}
 
 		return windowPermission;
@@ -93,13 +97,29 @@ public class DocumentPermissionsHelper
 					.setParameter("view", viewId)
 					.setParameter("windowId", adWindowId);
 
-			final Boolean readWriteAccess = null; // none
-			Services.get(IRolePermLoggingBL.class).logWindowAccess(permissions.getAD_Role_ID(), adWindowId, readWriteAccess, ex.getLocalizedMessage());
-
-			throw ex;
+			logAccessIfWindowExistsAndThrowEx(permissions, adWindowId, ex);
 		}
 	}
 
+	private static void logAccessIfWindowExistsAndThrowEx(
+			@NonNull final IUserRolePermissions permissions,
+			final int adWindowId,
+			@NonNull final AdempiereException ex)
+	{
+		final IRolePermLoggingBL rolePermLoggingBL = Services.get(IRolePermLoggingBL.class);
+		final Boolean readWriteAccess = null; // none
+
+		try
+		{
+			rolePermLoggingBL.logWindowAccess(permissions.getAD_Role_ID(), adWindowId, readWriteAccess, ex.getLocalizedMessage());
+		}
+		catch (final NoSuchForeignKeyException noSuchForeignKeyException)
+		{
+			logger.warn("Caught NoSuchForeignKeyException for AD_Window_ID=" + adWindowId, noSuchForeignKeyException); // log it, but throw the "important" one, i.e. ex
+		}
+		throw ex;
+	}
+	
 	public static void assertCanView(@NonNull final Document document, @NonNull final IUserRolePermissions permissions)
 	{
 		// In case document type is not Window, return OK because we cannot validate
@@ -132,12 +152,17 @@ public class DocumentPermissionsHelper
 		}
 	}
 
-	/**
-	 * Assets given document can be edited by given permissions
-	 * 
-	 * @param document
-	 * @param userSession
-	 */
+	public static void assertCanEdit(final Document document)
+	{
+		// If running from a background thread, consider it editable
+		if(!UserSession.isWebuiThread())
+		{
+			return;
+		}
+		
+		assertCanEdit(document, UserSession.getCurrentPermissions());
+	}
+
 	public static void assertCanEdit(final Document document, final IUserRolePermissions permissions)
 	{
 		final String errmsg = checkCanEdit(document, permissions);

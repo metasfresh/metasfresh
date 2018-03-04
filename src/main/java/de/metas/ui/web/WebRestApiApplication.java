@@ -1,6 +1,7 @@
 package de.metas.ui.web;
 
 import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -10,7 +11,6 @@ import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableAsync;
 
-import de.metas.logging.LogManager;
+import de.metas.Profiles;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
@@ -53,7 +53,7 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 
 @SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
 @EnableAsync
-@Profile(WebRestApiApplication.PROFILE_Webui)
+@Profile(Profiles.PROFILE_Webui)
 public class WebRestApiApplication
 {
 	/**
@@ -62,14 +62,6 @@ public class WebRestApiApplication
 	 */
 	public static final String SYSTEM_PROPERTY_HEADLESS = "webui-api-run-headless";
 
-	public static final String PROFILE_Test = "test";
-	public static final String PROFILE_NotTest = "!" + PROFILE_Test;
-	public static final String PROFILE_Webui = "metasfresh-webui";
-	/** Profile activate when running from IDE */
-	public static final String PROFILE_Development = "development";
-
-	private static final Logger logger = LogManager.getLogger(WebRestApiApplication.class);
-
 	public static void main(final String[] args)
 	{
 		if (Check.isEmpty(System.getProperty("PropertyFile"), true))
@@ -77,7 +69,9 @@ public class WebRestApiApplication
 			System.setProperty("PropertyFile", "./metasfresh.properties");
 		}
 
-		// important because in Ini, there is a org.springframework.context.annotation.Condition that userwise wouldn't e.g. let the jasper servlet start
+		AdempiereException.enableCaptureLanguageOnConstructionTime(); // because usually at the time the message is (lazy) parsed the user session context is no longer available.
+
+		// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
 		Ini.setRunMode(RunMode.WEBUI);
 
 		final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
@@ -85,36 +79,15 @@ public class WebRestApiApplication
 		new SpringApplicationBuilder(WebRestApiApplication.class)
 				.headless(Boolean.parseBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
-				.profiles(PROFILE_Webui)
+				.profiles(Profiles.PROFILE_Webui)
 				.run(args);
 
-	}
-
-	/** @return true if {@link #PROFILE_Development} is active (i.e. we are running from IDE) */
-	public static boolean isDevelopmentProfileActive()
-	{
-		return isProfileActive(PROFILE_Development);
-	}
-
-	/** @return true if given profile is active */
-	public static boolean isProfileActive(final String profile)
-	{
-		final ApplicationContext context = Adempiere.getSpringApplicationContext();
-		if (context == null)
-		{
-			logger.warn("No application context found to determine if '{}' profile is active", profile);
-			return true;
-		}
-
-		return context.getEnvironment().acceptsProfiles(profile);
 	}
 
 	@Autowired
 	private ApplicationContext applicationContext;
 
-	public static final String BEANNAME_Adempiere = "adempiere";
-
-	@Bean(BEANNAME_Adempiere)
+	@Bean(Adempiere.BEAN_NAME)
 	public Adempiere adempiere(final WebRestApiContextProvider webuiContextProvider)
 	{
 		Env.setContextProvider(webuiContextProvider);
@@ -123,7 +96,7 @@ public class WebRestApiApplication
 
 		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
 		adempiere.startup(RunMode.WEBUI);
-		
+
 		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
 
 		return adempiere;

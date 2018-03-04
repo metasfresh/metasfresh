@@ -1,16 +1,18 @@
 package de.metas.ui.web.pporder.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
@@ -24,7 +26,10 @@ import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.pporder.PPOrderLinesView;
+import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -56,37 +61,54 @@ public class WEBUI_PP_Order_Receipt
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final transient IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
 
-	//
-	// Parameters
-	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID)
-	private int p_M_HU_PI_Item_Product_ID;
-	//
-	@Param(parameterName = PackingInfoProcessParams.PARAM_M_LU_HU_PI_ID)
-	private int p_M_LU_HU_PI_ID;
-	//
-	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyCU)
+	// parameters
+	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
+	private I_M_HU_PI_Item_Product p_M_HU_PI_Item_Product;
+
+	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID, mandatory = false)
+	private I_M_HU_PI_Item p_M_HU_PI_Item;
+
+	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyCU, mandatory = true)
 	private BigDecimal p_QtyCU;
-	//
-	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyTU)
+
+	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyTU, mandatory = true)
 	private BigDecimal p_QtyTU;
-	//
-	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyLU)
+
+	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyLU, mandatory = false)
 	private BigDecimal p_QtyLU;
 
 	private transient PackingInfoProcessParams _packingInfoParams;
 
+	/**
+	 * Makes sure that an instance exists and is in sync with this processe's parameters.
+	 * 
+	 * @return
+	 */
 	private PackingInfoProcessParams getPackingInfoParams()
 	{
 		if (_packingInfoParams == null)
 		{
 			_packingInfoParams = PackingInfoProcessParams.builder()
 					.defaultLUTUConfigManager(createDefaultLUTUConfigManager(getSingleSelectedRow()))
+					.enforcePhysicalTU(false) // allow to to produce just the CU, without a TU etc..maybe later we'll add a sysconfig for this
 					.build();
 		}
 
-		// Update it
-		_packingInfoParams.setTU_HU_PI_Item_Product_ID(p_M_HU_PI_Item_Product_ID);
-		_packingInfoParams.setLU_HU_PI_ID(p_M_LU_HU_PI_ID);
+		// Update it from the user-selected process parameters
+		if (p_M_HU_PI_Item_Product != null)
+		{
+			_packingInfoParams.setTU_HU_PI_Item_Product_ID(p_M_HU_PI_Item_Product.getM_HU_PI_Item_Product_ID());
+		}
+
+		if (p_M_HU_PI_Item != null) // this parameter is not mandatory
+		{
+			_packingInfoParams.setLuPiItemId(p_M_HU_PI_Item.getM_HU_PI_Item_ID());
+		}
+		else
+		{
+			_packingInfoParams.setLuPiItemId(0);
+		}
+
 		_packingInfoParams.setQtyLU(p_QtyLU);
 		_packingInfoParams.setQtyTU(p_QtyTU);
 		_packingInfoParams.setQtyCU(p_QtyCU);
@@ -94,19 +116,19 @@ public class WEBUI_PP_Order_Receipt
 		return _packingInfoParams;
 	}
 
-	private IDocumentLUTUConfigurationManager createDefaultLUTUConfigManager(final PPOrderLineRow row)
+	private IDocumentLUTUConfigurationManager createDefaultLUTUConfigManager(@NonNull final PPOrderLineRow row)
 	{
 		final PPOrderLineType type = row.getType();
 		if (type == PPOrderLineType.MainProduct)
 		{
 			final int ppOrderId = row.getPP_Order_ID();
-			final I_PP_Order ppOrder = InterfaceWrapperHelper.create(getCtx(), ppOrderId, I_PP_Order.class, ITrx.TRXNAME_ThreadInherited);
+			final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
 			return huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrder);
 		}
 		else if (type == PPOrderLineType.BOMLine_ByCoProduct)
 		{
 			final int ppOrderBOMLineId = row.getPP_Order_BOMLine_ID();
-			final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.create(getCtx(), ppOrderBOMLineId, I_PP_Order_BOMLine.class, ITrx.TRXNAME_ThreadInherited);
+			final I_PP_Order_BOMLine ppOrderBOMLine = load(ppOrderBOMLineId, I_PP_Order_BOMLine.class);
 			return huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrderBOMLine);
 		}
 		else
@@ -121,13 +143,13 @@ public class WEBUI_PP_Order_Receipt
 		if (type == PPOrderLineType.MainProduct)
 		{
 			final int ppOrderId = row.getPP_Order_ID();
-			final I_PP_Order ppOrder = InterfaceWrapperHelper.create(getCtx(), ppOrderId, I_PP_Order.class, ITrx.TRXNAME_ThreadInherited);
+			final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
 			return IPPOrderReceiptHUProducer.receiveMainProduct(ppOrder);
 		}
 		else if (type == PPOrderLineType.BOMLine_ByCoProduct)
 		{
 			final int ppOrderBOMLineId = row.getPP_Order_BOMLine_ID();
-			final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.create(getCtx(), ppOrderBOMLineId, I_PP_Order_BOMLine.class, ITrx.TRXNAME_ThreadInherited);
+			final I_PP_Order_BOMLine ppOrderBOMLine = load(ppOrderBOMLineId, I_PP_Order_BOMLine.class);
 			return IPPOrderReceiptHUProducer.receiveByOrCoProduct(ppOrderBOMLine);
 		}
 		else
@@ -139,7 +161,7 @@ public class WEBUI_PP_Order_Receipt
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSelectedDocumentIds().isSingleDocumentId())
+		if (!getSelectedRowIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
@@ -150,14 +172,14 @@ public class WEBUI_PP_Order_Receipt
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not planning or in review");
 		}
 
-		final PPOrderLineRow ppOrderLine = getSingleSelectedRow();
-		if (!ppOrderLine.isReceipt())
+		final PPOrderLineRow ppOrderLineRow = getSingleSelectedRow();
+		if (!ppOrderLineRow.isReceipt())
 		{
-			return ProcessPreconditionsResolution.reject("not a receipt line");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("ppOrderLineRow is not a receipt line; ppOrderLineRow=" + ppOrderLineRow);
 		}
-		if (ppOrderLine.isProcessed())
+		if (ppOrderLineRow.isProcessed())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("row processed");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("ppOrderLineRow is already processed; ppOrderLineRow=" + ppOrderLineRow);
 		}
 
 		//
@@ -175,10 +197,34 @@ public class WEBUI_PP_Order_Receipt
 		return ProcessPreconditionsResolution.accept();
 	}
 
+	/**
+	 * <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/528">metasfresh/metasfresh-webui-api#528</a>: never return the "No Packing Item" a.k.a. virtual {@code M_HU_PI_Item_Product_ID}.
+	 */
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
 		return getPackingInfoParams().getParameterDefaultValue(parameter.getColumnName());
+	}
+
+	/**
+	 *
+	 * @return a list of PI item products that match the selected CU's product and partner, sorted by name.
+	 */
+	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, dependsOn = {}, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
+	public LookupValuesList getM_HU_PI_Item_Products()
+	{
+		return getPackingInfoParams().getM_HU_PI_Item_Products();
+	}
+
+	/**
+	 * For the currently selected pip this method loads att
+	 * 
+	 * @return
+	 */
+	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID, dependsOn = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, numericKey = true, lookupTableName = I_M_HU_PI_Item.Table_Name)
+	public LookupValuesList getM_HU_PI_Item_IDs()
+	{
+		return getPackingInfoParams().getM_HU_PI_Item_IDs(p_M_HU_PI_Item_Product);
 	}
 
 	@Override
@@ -188,13 +234,10 @@ public class WEBUI_PP_Order_Receipt
 		final PPOrderLineRow selectedRow = getSingleSelectedRow();
 		final IPPOrderReceiptHUProducer receiptCandidatesProducer = createReceiptCandidatesProducer(selectedRow);
 
-		//
 		// Calculate and set the LU/TU config from packing info params and defaults
-		final I_M_HU_LUTU_Configuration lutuConfig = getPackingInfoParams().createNewLUTUConfig();
+		final I_M_HU_LUTU_Configuration lutuConfig = getPackingInfoParams().createAndSaveNewLUTUConfig();
 		receiptCandidatesProducer.setM_HU_LUTU_Configuration(lutuConfig);
 
-		//
-		// Create
 		receiptCandidatesProducer.createReceiptCandidatesAndPlanningHUs();
 
 		return MSG_OK;

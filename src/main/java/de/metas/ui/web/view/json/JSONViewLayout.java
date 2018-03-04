@@ -1,6 +1,5 @@
 package de.metas.ui.web.view.json;
 
-import java.io.Serializable;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -11,11 +10,15 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
+import de.metas.ui.web.view.ViewProfileId;
+import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -39,14 +42,10 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
  * #L%
  */
 
-@SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JSONViewLayout implements Serializable
+public final class JSONViewLayout
 {
-	public static JSONViewLayout of(
-			final ViewLayout gridLayout //
-			, final JSONOptions jsonOpts //
-	)
+	public static JSONViewLayout of(final ViewLayout gridLayout, final JSONOptions jsonOpts)
 	{
 		return new JSONViewLayout(gridLayout, jsonOpts);
 	}
@@ -63,6 +62,10 @@ public final class JSONViewLayout implements Serializable
 	@JsonProperty("windowId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final WindowId windowId;
+
+	@JsonProperty("profileId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final ViewProfileId profileId;
 
 	@JsonProperty("caption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -100,9 +103,15 @@ public final class JSONViewLayout implements Serializable
 	@JsonProperty("expandedDepth")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer expandedDepth;
+
 	//
+	@JsonProperty("includedView")
+	private final JSONIncludedViewSupport includedView;
+	//
+	@Deprecated
 	@JsonProperty("supportIncludedView")
 	private final boolean supportIncludedView;
+	@Deprecated
 	@JsonProperty("supportIncludedViewOnSelect")
 	private final Boolean supportIncludedViewOnSelect;
 
@@ -118,6 +127,8 @@ public final class JSONViewLayout implements Serializable
 	{
 		windowId = layout.getWindowId();
 		type = windowId;
+
+		profileId = layout.getProfileId();
 
 		final String adLanguage = jsonOpts.getAD_Language();
 		caption = layout.getCaption(adLanguage);
@@ -138,12 +149,23 @@ public final class JSONViewLayout implements Serializable
 		}
 		this.elements = elements;
 
-		this.filters = JSONDocumentFilterDescriptor.ofCollection(layout.getFilters(), jsonOpts);
+		filters = JSONDocumentFilterDescriptor.ofCollection(layout.getFilters(), jsonOpts);
 
 		supportAttributes = layout.isAttributesSupport();
-		
-		supportIncludedView = layout.isIncludedViewSupport();
-		supportIncludedViewOnSelect = layout.isIncludedViewOnSelectSupport() ? Boolean.TRUE : null;
+
+		//
+		// Included view
+		includedView = JSONIncludedViewSupport.fromNullable(layout.getIncludedViewLayout());
+		if (includedView != null)
+		{
+			supportIncludedView = true;
+			supportIncludedViewOnSelect = includedView.isOpenOnSelect() ? Boolean.TRUE : null;
+		}
+		else
+		{
+			supportIncludedView = false;
+			supportIncludedViewOnSelect = null;
+		}
 
 		//
 		// Tree
@@ -219,7 +241,7 @@ public final class JSONViewLayout implements Serializable
 		return supportAttributes;
 	}
 
-	public void setSupportAttributes(boolean supportAttributes)
+	public void setSupportAttributes(final boolean supportAttributes)
 	{
 		this.supportAttributes = supportAttributes;
 	}
@@ -238,5 +260,27 @@ public final class JSONViewLayout implements Serializable
 	public void setViewId(final String viewId)
 	{
 		this.viewId = viewId;
+	}
+
+	@Value
+	@Builder
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	public static final class JSONIncludedViewSupport
+	{
+		public static JSONIncludedViewSupport fromNullable(final IncludedViewLayout includedViewLayout)
+		{
+			if (includedViewLayout == null)
+			{
+				return null;
+			}
+
+			return builder()
+					.openOnSelect(includedViewLayout.isOpenOnSelect())
+					.blurWhenOpen(includedViewLayout.isBlurWhenOpen())
+					.build();
+		}
+
+		private final boolean openOnSelect;
+		private final boolean blurWhenOpen;
 	}
 }

@@ -43,13 +43,16 @@ import lombok.NonNull;
 @Immutable
 public final class HUEditorRowId
 {
-	public static HUEditorRowId ofTopLevelHU(final int huId)
+	public static HUEditorRowId ofTopLevelHU(final int topLevelHUId)
 	{
-		final int topLevelHUId = -1;
 		final int storageProductId = -1;
 		final String json = null; // to be computed when needed
 		final DocumentId documentId = null; // to be computed when needed
-		return new HUEditorRowId(huId, topLevelHUId, storageProductId, json, documentId);
+
+		return new HUEditorRowId(topLevelHUId,
+				-1, //  topLevelHUId parameter
+				storageProductId,
+				json, documentId);
 	}
 
 	public static HUEditorRowId ofHU(final int huId, final int topLevelHUId)
@@ -90,7 +93,7 @@ public final class HUEditorRowId
 			final List<String> parts = PARTS_SPLITTER.splitToList(json);
 			if (parts.isEmpty())
 			{
-				throw new IllegalArgumentException("Invalid HU rowId: " + documentId);
+				throw new IllegalArgumentException("Invalid HU rowId: " + json);
 			}
 			partsIterator = parts.iterator();
 		}
@@ -114,7 +117,7 @@ public final class HUEditorRowId
 			}
 			else
 			{
-				throw new IllegalArgumentException("Invalid HU rowId: " + documentId + ". Cannot parse ID part: " + idStrPart);
+				throw new IllegalArgumentException("Invalid HU rowId: " + json + ". Cannot parse ID part: " + idStrPart);
 			}
 		}
 
@@ -131,7 +134,7 @@ public final class HUEditorRowId
 			}
 			else
 			{
-				throw new IllegalArgumentException("Invalid HU rowId: " + documentId + ". Cannot parse part: " + part);
+				throw new IllegalArgumentException("Invalid HU rowId: " + json + ". Cannot parse part: " + part);
 			}
 		}
 
@@ -292,5 +295,10 @@ public final class HUEditorRowId
 		}
 
 		return huId;
+	}
+
+	public int getStorageProductId()
+	{
+		return storageProductId;
 	}
 }

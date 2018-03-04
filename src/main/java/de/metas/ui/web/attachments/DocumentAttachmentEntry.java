@@ -1,8 +1,14 @@
 package de.metas.ui.web.attachments;
 
-import org.compiere.model.MAttachmentEntry;
+import java.net.URI;
 
+import org.adempiere.util.Services;
+
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryType;
+import de.metas.attachments.IAttachmentDAO;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.ToString;
 
 /*
  * #%L
@@ -32,17 +38,18 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@ToString
 class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 {
-	/* package */static DocumentAttachmentEntry of(final DocumentId id, final MAttachmentEntry entry)
+	/* package */static DocumentAttachmentEntry of(final DocumentId id, final AttachmentEntry entry)
 	{
 		return new DocumentAttachmentEntry(id, entry);
 	}
 
-	private DocumentId id;
-	private final MAttachmentEntry entry;
+	private final DocumentId id;
+	private final AttachmentEntry entry;
 
-	private DocumentAttachmentEntry(final DocumentId id, final MAttachmentEntry entry)
+	private DocumentAttachmentEntry(final DocumentId id, final AttachmentEntry entry)
 	{
 		this.id = id;
 		this.entry = entry;
@@ -55,6 +62,12 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	}
 
 	@Override
+	public AttachmentEntryType getType()
+	{
+		return entry.getType();
+	}
+
+	@Override
 	public String getFilename()
 	{
 		return entry.getFilename();
@@ -63,12 +76,18 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	@Override
 	public byte[] getData()
 	{
-		return entry.getData();
+		return Services.get(IAttachmentDAO.class).retrieveData(entry);
 	}
 
 	@Override
 	public String getContentType()
 	{
 		return entry.getContentType();
+	}
+
+	@Override
+	public URI getUrl()
+	{
+		return entry.getUrl();
 	}
 }

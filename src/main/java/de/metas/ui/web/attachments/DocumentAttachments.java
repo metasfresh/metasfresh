@@ -1,19 +1,19 @@
 package de.metas.ui.web.attachments;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Stream;
 
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IAttachmentBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.MAttachmentEntry;
+import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.util.Env;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,10 +21,20 @@ import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.jgoodies.common.base.Objects;
 
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.IAttachmentBL;
 import de.metas.ui.web.attachments.json.JSONAttachment;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -58,11 +68,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  */
 final class DocumentAttachments
 {
-	public static DocumentAttachments of(final ITableRecordReference recordRef)
-	{
-		return new DocumentAttachments(recordRef);
-	}
-
 	public static final String ID_PREFIX_Attachment = "ATT";
 	public static final String ID_PREFIX_Archive = "ARR";
 	private static final String ID_SEPARATOR = "_";
@@ -71,12 +76,22 @@ final class DocumentAttachments
 
 	private final transient IAttachmentBL attachmentsBL = Services.get(IAttachmentBL.class);
 
+	private final DocumentPath documentPath;
 	private final ITableRecordReference recordRef;
+	private final DocumentEntityDescriptor entityDescriptor;
+	private final DocumentWebsocketPublisher websocketPublisher;
 
-	private DocumentAttachments(final ITableRecordReference recordRef)
+	@Builder
+	private DocumentAttachments(
+			@NonNull final DocumentPath documentPath,
+			@NonNull final ITableRecordReference recordRef,
+			@NonNull final DocumentEntityDescriptor entityDescriptor,
+			@NonNull final DocumentWebsocketPublisher websocketPublisher)
 	{
-		Check.assumeNotNull(recordRef, "Parameter recordRef is not null");
+		this.documentPath = documentPath;
 		this.recordRef = recordRef;
+		this.entityDescriptor = entityDescriptor;
+		this.websocketPublisher = websocketPublisher;
 	}
 
 	@Override
@@ -89,7 +104,7 @@ final class DocumentAttachments
 
 	public List<JSONAttachment> toJson()
 	{
-		final Stream<IDocumentAttachmentEntry> attachments = attachmentsBL.getEntiresForModel(recordRef)
+		final Stream<IDocumentAttachmentEntry> attachments = attachmentsBL.getEntries(recordRef)
 				.stream()
 				.map(entry -> DocumentAttachmentEntry.of(buildId(ID_PREFIX_Attachment, entry.getId()), entry));
 
@@ -108,7 +123,16 @@ final class DocumentAttachments
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 
-		attachmentsBL.createAttachment(recordRef, name, data);
+		attachmentsBL.addEntry(recordRef, name, data);
+
+		notifyRelatedDocumentTabsChanged();
+	}
+
+	public void addURLEntry(final String name, final URI url)
+	{
+		attachmentsBL.addURLEntry(recordRef, name, url);
+
+		notifyRelatedDocumentTabsChanged();
 	}
 
 	public IDocumentAttachmentEntry getEntry(final DocumentId id)
@@ -119,7 +143,7 @@ final class DocumentAttachments
 
 		if (ID_PREFIX_Attachment.equals(idPrefix))
 		{
-			final MAttachmentEntry entry = attachmentsBL.getEntryForModelById(recordRef, entryId);
+			final AttachmentEntry entry = attachmentsBL.getEntryById(recordRef, entryId);
 			if (entry == null)
 			{
 				throw new EntityNotFoundException(id.toJson());
@@ -150,6 +174,7 @@ final class DocumentAttachments
 		if (ID_PREFIX_Attachment.equals(idPrefix))
 		{
 			attachmentsBL.deleteEntryForModel(recordRef, entryId);
+			notifyRelatedDocumentTabsChanged();
 		}
 		else if (ID_PREFIX_Archive.equals(idPrefix))
 		{
@@ -183,6 +208,25 @@ final class DocumentAttachments
 	private static final DocumentId buildId(final String idPrefix, final int entryId)
 	{
 		return DocumentId.ofString(ID_Joiner.join(idPrefix, entryId));
+	}
+
+	/**
+	 * If the document contains some attachment related tabs, it will send an "stale" notification to frontend.
+	 * In this way, frontend will be aware of this and will have to refresh the tab.
+	 */
+	private void notifyRelatedDocumentTabsChanged()
+	{
+		final ImmutableSet<DetailId> attachmentRelatedTabIds = entityDescriptor
+				.getIncludedEntities().stream()
+				.filter(includedEntityDescriptor -> Objects.equals(includedEntityDescriptor.getTableNameOrNull(), I_AD_AttachmentEntry.Table_Name))
+				.map(includedEntityDescriptor -> includedEntityDescriptor.getDetailId())
+				.collect(ImmutableSet.toImmutableSet());
+		if (attachmentRelatedTabIds.isEmpty())
+		{
+			return;
+		}
+
+		websocketPublisher.staleTabs(documentPath.getWindowId(), documentPath.getDocumentId(), attachmentRelatedTabIds);
 	}
 
 }

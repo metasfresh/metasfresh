@@ -23,7 +23,6 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
-import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import io.swagger.annotations.Api;
 
 /*
@@ -72,8 +71,7 @@ public class AddressRestController
 		userSession.assertLoggedIn();
 
 		return Execution.callInNewExecution("createAddressDocument", () -> {
-			final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-			final Document addressDoc = addressRepo.createNewFrom(request.getTemplateId(), changesCollector);
+			final Document addressDoc = addressRepo.createNewFrom(request.getTemplateId());
 			return JSONDocument.ofDocument(addressDoc, newJsonOpts());
 		});
 	}

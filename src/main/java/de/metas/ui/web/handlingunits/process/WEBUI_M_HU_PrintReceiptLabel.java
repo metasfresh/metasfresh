@@ -6,6 +6,7 @@ import java.util.Properties;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 
+import de.metas.Profiles;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
@@ -13,7 +14,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.WebRestApiApplication;
+import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 
 /*
  * #%L
@@ -36,7 +37,7 @@ import de.metas.ui.web.WebRestApiApplication;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Profile(WebRestApiApplication.PROFILE_Webui)
+@Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_HU_PrintReceiptLabel
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition
@@ -47,15 +48,20 @@ public class WEBUI_M_HU_PrintReceiptLabel
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
+		if(!isHUEditorView())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
+		}
+
 		final HUReportService huReportService = HUReportService.get();
 
 		final Properties ctx = Env.getCtx(); // note: at this point, the JavaProces's ctx was not set so we are using the global context
-		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId(ctx);
+		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId();
 		if (adProcessId <= 0)
 		{
 			return ProcessPreconditionsResolution.reject("Receipt label process not configured via sysconfig " + HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
 		}
-		if (!getSelectedDocumentIds().isSingleDocumentId())
+		if (!getSelectedRowIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.reject("No (single) row selected");
 		}
@@ -81,14 +87,14 @@ public class WEBUI_M_HU_PrintReceiptLabel
 	{
 		final HUReportService huReportService = HUReportService.get();
 
-		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId(getCtx());
+		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId();
 		final I_M_HU hu = getSingleSelectedRow().getM_HU();
 
 		final List<I_M_HU> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
 
-		HUReportExecutor.get(getCtx())
-				.withWindowNo(getProcessInfo().getWindowNo())
-				.withNumberOfCopies(p_copies)
+		HUReportExecutor.newInstance(getCtx())
+				.windowNo(getProcessInfo().getWindowNo())
+				.numberOfCopies(p_copies)
 				.executeHUReportAfterCommit(adProcessId, husToProcess);
 
 		return MSG_OK;

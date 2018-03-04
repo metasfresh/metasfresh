@@ -1,15 +1,20 @@
 package de.metas.ui.web.document.filter;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Services;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
+
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -29,11 +34,11 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -96,13 +101,14 @@ public final class DocumentFilterDescriptorsProviderFactory
 		final DocumentFilterDescriptor.Builder defaultDateFilter = DocumentFilterDescriptor.builder()
 				.setFilterId(FILTER_ID_DefaultDate)
 				.setFrequentUsed(true);
-		for (final DocumentFieldDescriptor field : fields)
-		{
-			if (!field.hasCharacteristic(Characteristic.AllowFiltering))
-			{
-				continue;
-			}
 
+		final List<DocumentFieldDescriptor> filteringFields = fields.stream()
+				.filter(DocumentFieldDescriptor::isDefaultFilterField)
+				.sorted(Ordering.natural().onResultOf(field -> field.getDefaultFilterInfo().getSeqNo()))
+				.collect(ImmutableList.toImmutableList());
+
+		for (final DocumentFieldDescriptor field : filteringFields)
+		{
 			final DocumentFilterParamDescriptor.Builder filterParam = createFilterParam(field);
 			if (!defaultDateFilter.hasParameters() && filterParam.getWidgetType().isDateOrTime())
 			{
@@ -125,16 +131,17 @@ public final class DocumentFilterDescriptorsProviderFactory
 	{
 		final ITranslatableString displayName = field.getCaption();
 		final String fieldName = field.getFieldName();
-		final DocumentFieldWidgetType widgetType = field.getWidgetType();
+		final DocumentFieldWidgetType widgetType = extractFilterWidgetType(field);
+		final DocumentFieldDefaultFilterDescriptor filteringInfo = field.getDefaultFilterInfo();
 
 		final LookupDescriptor lookupDescriptor = field.getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentFilter);
 
 		final Operator operator;
-		if(widgetType.isText())
+		if (widgetType.isText())
 		{
 			operator = Operator.LIKE_I;
 		}
-		else if (widgetType.isRangeFilteringSupported())
+		else if (filteringInfo.isRangeFilter())
 		{
 			operator = Operator.BETWEEN;
 		}
@@ -149,7 +156,21 @@ public final class DocumentFilterDescriptorsProviderFactory
 				.setWidgetType(widgetType)
 				.setOperator(operator)
 				.setLookupDescriptor(lookupDescriptor)
-				.setMandatory(false);
+				.setMandatory(false)
+				.setShowIncrementDecrementButtons(filteringInfo.isShowFilterIncrementButtons())
+				.setAutoFilterInitialValue(filteringInfo.getAutoFilterInitialValue());
+	}
+
+	private DocumentFieldWidgetType extractFilterWidgetType(final DocumentFieldDescriptor field)
+	{
+		final DocumentFieldWidgetType widgetType = field.getWidgetType();
+		if (widgetType == DocumentFieldWidgetType.DateTime)
+		{
+			return DocumentFieldWidgetType.Date;
+		}
+
+		return widgetType;
+
 	}
 
 }

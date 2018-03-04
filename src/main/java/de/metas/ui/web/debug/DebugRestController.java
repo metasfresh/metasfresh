@@ -45,16 +45,19 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
-import de.metas.ui.web.notification.UserNotification;
 import de.metas.ui.web.notification.UserNotification.TargetType;
+import de.metas.ui.web.notification.UserNotificationRepository;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.SqlViewFactory;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewResult;
+import de.metas.ui.web.websocket.WebsocketEventLogRecord;
 import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.websocket.WebsocketSender.WebsocketEvent;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -102,6 +105,9 @@ public class DebugRestController
 	@Autowired
 	@Lazy
 	private IViewsRepository viewsRepo;
+	@Autowired
+	@Lazy
+	private SqlViewFactory sqlViewFactory;
 
 	@Autowired
 	@Lazy
@@ -175,8 +181,14 @@ public class DebugRestController
 		return viewsRepo.getViews()
 				.stream()
 				.map(ViewResult::ofView)
-				.map(view -> JSONViewResult.of(view, adLanguage))
+				.map(viewResult -> JSONViewResult.of(viewResult, ViewRowOverridesHelper.NULL, adLanguage))
 				.collect(GuavaCollectors.toImmutableList());
+	}
+
+	@PostMapping("/viewDefaultProfile/{windowId}")
+	public void setDefaultViewProfile(@PathVariable("windowId") final String windowIdStr, @RequestBody final String profileIdStr)
+	{
+		sqlViewFactory.setDefaultProfileId(WindowId.fromJson(windowIdStr), ViewProfileId.fromJson(profileIdStr));
 	}
 
 	@RequestMapping(value = "/lookups/cacheStats", method = RequestMethod.GET)
@@ -201,14 +213,14 @@ public class DebugRestController
 	)
 	{
 		final Topic topic = Topic.builder()
-				.setName(topicName)
-				.setType(Type.LOCAL)
+				.name(topicName)
+				.type(Type.LOCAL)
 				.build();
 
 		final Builder eventBuilder = Event.builder()
 				.setSummary("summary")
 				.setDetailPlain(message)
-				.putProperty(UserNotification.EVENT_PARAM_Important, important);
+				.putProperty(UserNotificationRepository.EVENT_PARAM_Important, important);
 		if (toUserId > 0)
 		{
 			eventBuilder.addRecipient_User_ID(toUserId);
@@ -243,7 +255,7 @@ public class DebugRestController
 				.put("contentType", new MimeType("application", "json", charset))
 				.build();
 		final Message<?> message = new GenericMessage<>(messageStr.getBytes(charset), headers);
-		websocketSender.send(endpoint, message);
+		websocketSender.sendMessage(endpoint, message);
 	}
 
 	@RequestMapping(value = "/sql/loadLimit/warn", method = RequestMethod.PUT)
@@ -295,7 +307,7 @@ public class DebugRestController
 	public static enum LoggingModule
 	{
 		websockets(de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName()),
-		view(de.metas.ui.web.view.IView.class.getPackage().getName()), 
+		view(de.metas.ui.web.view.IView.class.getPackage().getName()),
 		cache(
 				org.compiere.util.CCache.class.getName() //
 				, org.compiere.util.CacheMgt.class.getName() //
@@ -368,7 +380,7 @@ public class DebugRestController
 				throw new IllegalStateException("For some reason " + logger + " could not be set to level " + level);
 			}
 		}
-		
+
 		return loggerNamesEffective;
 	}
 
@@ -398,7 +410,7 @@ public class DebugRestController
 	}
 
 	@GetMapping("websocketEvents")
-	public List<WebsocketEvent> getWebsocketLoggedEvents(@RequestParam(value = "destinationFilter", required = false) final String destinationFilter)
+	public List<WebsocketEventLogRecord> getWebsocketLoggedEvents(@RequestParam(value = "destinationFilter", required = false) final String destinationFilter)
 	{
 		return websocketSender.getLoggedEvents(destinationFilter);
 	}

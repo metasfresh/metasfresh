@@ -1,5 +1,6 @@
 package de.metas.ui.web.process.adprocess;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -23,8 +24,11 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessParams;
@@ -37,6 +41,7 @@ import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
+import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
@@ -51,6 +56,7 @@ import de.metas.ui.web.window.descriptor.factory.standard.DefaultValueExpression
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.DocumentsRepository;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -86,7 +92,7 @@ import lombok.NonNull;
 	// services
 	// private static final transient Logger logger = LogManager.getLogger(ProcessDescriptorsFactory.class);
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-	private final transient DefaultValueExpressionsFactory defaultValueExpressions = new DefaultValueExpressionsFactory(false);
+	private final transient DefaultValueExpressionsFactory defaultValueExpressions = DefaultValueExpressionsFactory.newInstance();
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
@@ -101,10 +107,13 @@ import lombok.NonNull;
 
 		final Stream<RelatedProcessDescriptor> relatedProcessDescriptors;
 		{
-			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessDAO.retrieveRelatedProcessesForTableIndexedByProcessId(Env.getCtx(), adTableId, adWindowId).values().stream();
-			final Stream<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = preconditionsContext.getAdditionalRelatedProcessDescriptors().stream();
+			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessDAO.retrieveRelatedProcessesForTableIndexedByProcessId(Env.getCtx(), adTableId, adWindowId)
+					.values()
+					.stream();
+			final Stream<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = preconditionsContext.getAdditionalRelatedProcessDescriptors()
+					.stream();
 
-			relatedProcessDescriptors = Stream.concat(tableRelatedProcessDescriptors, additionalRelatedProcessDescriptors)
+			relatedProcessDescriptors = Stream.concat(additionalRelatedProcessDescriptors, tableRelatedProcessDescriptors)
 					.collect(GuavaCollectors.distinctBy(RelatedProcessDescriptor::getProcessId));
 		}
 
@@ -117,7 +126,11 @@ import lombok.NonNull;
 	{
 		final ProcessId processId = ProcessId.ofAD_Process_ID(relatedProcessDescriptor.getProcessId());
 		final ProcessDescriptor processDescriptor = getProcessDescriptor(processId);
-		final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier = () -> processDescriptor.checkPreconditionsApplicable(preconditionsContext);
+		final ProcessPreconditionsResolutionSupplier preconditionsResolutionSupplier = ProcessPreconditionsResolutionSupplier.builder()
+				.preconditionsContext(preconditionsContext)
+				.processPreconditionsCheckers(relatedProcessDescriptor.getProcessPreconditionsCheckers())
+				.processDescriptor(processDescriptor)
+				.build();
 
 		return WebuiRelatedProcessDescriptor.builder()
 				.processId(processDescriptor.getProcessId())
@@ -194,7 +207,6 @@ import lombok.NonNull;
 	{
 		final IModelTranslationMap adProcessParaTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcessParam);
 		final String parameterName = adProcessParam.getColumnName();
-		final boolean isParameterTo = false; // TODO: implement range parameters support
 
 		//
 		// Ask the provider if it has some custom lookup descriptor
@@ -203,16 +215,18 @@ import lombok.NonNull;
 		if (lookupDescriptorProvider == null)
 		{
 			lookupDescriptorProvider = SqlLookupDescriptor.builder()
-					.setColumnName(parameterName)
+					.setCtxTableName(null)
+					.setCtxColumnName(parameterName)
 					.setDisplayType(adProcessParam.getAD_Reference_ID())
 					.setAD_Reference_Value_ID(adProcessParam.getAD_Reference_Value_ID())
 					.setAD_Val_Rule_ID(adProcessParam.getAD_Val_Rule_ID())
+					.setReadOnlyAccess()
 					.buildProvider();
 		}
 		//
 		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupDescriptorProvider.LookupScope.DocumentField);
 
-		final DocumentFieldWidgetType widgetType = DescriptorsFactoryHelper.extractWidgetType(parameterName, adProcessParam.getAD_Reference_ID(), lookupDescriptor);
+		final DocumentFieldWidgetType widgetType = extractWidgetType(parameterName, adProcessParam.getAD_Reference_ID(), lookupDescriptor, adProcessParam.isRange());
 		final Class<?> valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
 		final boolean allowShowPassword = widgetType == DocumentFieldWidgetType.Password ? true : false; // process parameters shall always allow displaying the password
 
@@ -221,11 +235,12 @@ import lombok.NonNull;
 		final ILogicExpression mandatoryLogic = ConstantLogicExpression.of(adProcessParam.isMandatory());
 
 		final Optional<IExpression<?>> defaultValueExpr = defaultValueExpressions.extractDefaultValueExpression(
-				adProcessParam.getDefaultValue() //
-				, parameterName //
-				, widgetType //
-				, valueClass //
-				, mandatoryLogic.isConstantTrue() //
+				adProcessParam.getDefaultValue(),
+				parameterName,
+				widgetType,
+				valueClass,
+				mandatoryLogic.isConstantTrue(),
+				false // don't allow using auto sequence
 		);
 
 		final DocumentFieldDescriptor.Builder paramDescriptor = DocumentFieldDescriptor.builder(parameterName)
@@ -248,31 +263,28 @@ import lombok.NonNull;
 		;
 
 		// Add a callout to forward process parameter value (UI) to current process instance
-		if (webuiProcesClassInfo.isForwardValueToJavaProcessInstance(parameterName, isParameterTo))
+		if (webuiProcesClassInfo.isForwardValueToJavaProcessInstance(parameterName))
 		{
-			paramDescriptor.addCallout(calloutField -> forwardValueToCurrentProcessInstance(calloutField, isParameterTo));
+			paramDescriptor.addCallout(ProcessParametersCallout::forwardValueToCurrentProcessInstance);
 		}
 
 		return paramDescriptor;
 	}
 
-	private static final void forwardValueToCurrentProcessInstance(final ICalloutField calloutField, final boolean isParameterTo)
+	private static DocumentFieldWidgetType extractWidgetType(final String parameterName, final int adReferenceId, final LookupDescriptor lookupDescriptor, final boolean isRange)
 	{
-		final JavaProcess processInstance = JavaProcess.currentInstance();
+		final DocumentFieldWidgetType widgetType = DescriptorsFactoryHelper.extractWidgetType(parameterName, adReferenceId, lookupDescriptor);
 
-		final String parameterName = calloutField.getColumnName();
-
-		//
-		// Build up our value source
-		Object parameterValue = calloutField.getValue();
-		if (parameterValue instanceof LookupValue)
+		// Date range:
+		if (isRange && widgetType == DocumentFieldWidgetType.Date)
 		{
-			parameterValue = ((LookupValue)parameterValue).getId();
+			return DocumentFieldWidgetType.DateRange;
 		}
-		final IRangeAwareParams source = ProcessParams.ofValue(parameterName, parameterValue);
-
-		// Ask the instance to load the parameter
-		processInstance.loadParameterValueNoFail(parameterName, isParameterTo, source);
+		// Others
+		else
+		{
+			return widgetType;
+		}
 	}
 
 	private static final ProcessDescriptorType extractType(final I_AD_Process adProcess)
@@ -313,6 +325,77 @@ import lombok.NonNull;
 		}
 
 		return null;
+	}
+
+	private static final class ProcessPreconditionsResolutionSupplier implements Supplier<ProcessPreconditionsResolution>
+	{
+		private final IProcessPreconditionsContext preconditionsContext;
+		private final ImmutableList<IProcessPrecondition> processPreconditionsCheckers;
+		private final ProcessDescriptor processDescriptor;
+
+		@Builder
+		private ProcessPreconditionsResolutionSupplier(
+				@NonNull final IProcessPreconditionsContext preconditionsContext,
+				final List<IProcessPrecondition> processPreconditionsCheckers,
+				@NonNull final ProcessDescriptor processDescriptor)
+		{
+			this.preconditionsContext = preconditionsContext;
+			this.processPreconditionsCheckers = !processPreconditionsCheckers.isEmpty() ? ImmutableList.copyOf(processPreconditionsCheckers) : ImmutableList.of();
+			this.processDescriptor = processDescriptor;
+		}
+
+		@Override
+		public ProcessPreconditionsResolution get()
+		{
+			//
+			// Check registered preconditions
+			final ProcessPreconditionsResolution rejectResolution = processPreconditionsCheckers.stream()
+					.map(processPreconditionsChecker -> processPreconditionsChecker.checkPreconditionsApplicable(preconditionsContext))
+					.filter(resolution -> !resolution.isAccepted())
+					.findFirst()
+					.orElse(null);
+			if (rejectResolution != null)
+			{
+				return rejectResolution;
+			}
+
+			//
+			// Ask the process descriptor
+			return processDescriptor.checkPreconditionsApplicable(preconditionsContext);
+		}
+
+	}
+
+	private static final class ProcessParametersCallout
+	{
+		private static final void forwardValueToCurrentProcessInstance(final ICalloutField calloutField)
+		{
+			final JavaProcess processInstance = JavaProcess.currentInstance();
+
+			final String parameterName = calloutField.getColumnName();
+
+			//
+			// Build up our value source
+			final IRangeAwareParams source;
+			final Object fieldValue = calloutField.getValue();
+			if (fieldValue instanceof LookupValue)
+			{
+				final Object idObj = ((LookupValue)fieldValue).getId();
+				source = ProcessParams.ofValueObject(parameterName, idObj);
+			}
+			else if (fieldValue instanceof DateRangeValue)
+			{
+				final DateRangeValue dateRange = (DateRangeValue)fieldValue;
+				source = ProcessParams.of(parameterName, dateRange.getFrom(), dateRange.getTo());
+			}
+			else
+			{
+				source = ProcessParams.ofValueObject(parameterName, fieldValue);
+			}
+
+			// Ask the instance to load the parameter
+			processInstance.loadParameterValueNoFail(parameterName, source);
+		}
 	}
 
 	private static final class ProcessParametersDataBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder

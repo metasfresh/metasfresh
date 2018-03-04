@@ -211,6 +211,10 @@ public final class DescriptorsFactoryHelper
 		{
 			return DocumentFieldWidgetType.Image;
 		}
+		else if (displayType == DisplayType.Binary)
+		{
+			return DocumentFieldWidgetType.BinaryData;
+		}
 		//
 		//
 		else
@@ -252,7 +256,7 @@ public final class DescriptorsFactoryHelper
 		return widgetType;
 	}
 
-	public static final DocumentFieldWidgetType extractWidgetType(final DocumentLayoutElementFieldDescriptor.LookupSource lookupSource)
+	private static final DocumentFieldWidgetType extractWidgetType(final DocumentLayoutElementFieldDescriptor.LookupSource lookupSource)
 	{
 		Check.assumeNotNull(lookupSource, "Parameter lookupSource is not null");
 		switch (lookupSource)

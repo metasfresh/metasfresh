@@ -1,18 +1,21 @@
 package de.metas.ui.web.pporder.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -20,11 +23,13 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.quantity.Quantity;
+import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -58,9 +63,9 @@ public class PackingInfoProcessParams
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID)
 	private int tu_HU_PI_Item_Product_ID;
 	//
-	public static final String PARAM_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
-	@Param(parameterName = PARAM_M_LU_HU_PI_ID)
-	private int lu_HU_PI_ID;
+	public static final String PARAM_M_HU_PI_Item_ID = "M_HU_PI_Item_ID";
+	@Param(parameterName = PARAM_M_HU_PI_Item_ID)
+	private int lu_PI_Item_ID;
 	//
 	public static final String PARAM_QtyCU = "QtyCU";
 	@Param(parameterName = PARAM_QtyCU)
@@ -79,13 +84,16 @@ public class PackingInfoProcessParams
 	private final BigDecimal enforceAvailableQtyTU;
 	private final boolean enforceOneLUorTU;
 
+	private final boolean enforcePhysicalTU;
+
 	@Builder
-	public PackingInfoProcessParams( //
-			@NonNull final IDocumentLUTUConfigurationManager defaultLUTUConfigManager //
-			, final BigDecimal enforceAvailableQtyTU //
-			, final boolean enforceOneLUorTU //
-	)
+	public PackingInfoProcessParams(
+			@NonNull final IDocumentLUTUConfigurationManager defaultLUTUConfigManager,
+			@Nullable final BigDecimal enforceAvailableQtyTU,
+			final boolean enforceOneLUorTU,
+			final boolean enforcePhysicalTU)
 	{
+		this.enforcePhysicalTU = enforcePhysicalTU;
 		this.defaultLUTUConfigManager = defaultLUTUConfigManager;
 		this.enforceAvailableQtyTU = enforceAvailableQtyTU;
 		this.enforceOneLUorTU = enforceOneLUorTU;
@@ -94,12 +102,13 @@ public class PackingInfoProcessParams
 	public Object getParameterDefaultValue(final String parameterName)
 	{
 		final I_M_HU_LUTU_Configuration defaultLUTUConfig = getDefaultLUTUConfig();
+
 		switch (parameterName)
 		{
 			case PARAM_M_HU_PI_Item_Product_ID:
 				return defaultLUTUConfig.getM_HU_PI_Item_Product_ID();
-			case PARAM_M_LU_HU_PI_ID:
-				return defaultLUTUConfig.getM_LU_HU_PI_ID();
+			case PARAM_M_HU_PI_Item_ID:
+				return defaultLUTUConfig.getM_LU_HU_PI_Item_ID();
 			case PARAM_QtyCU:
 				return defaultLUTUConfig.getQtyCU();
 			case PARAM_QtyTU:
@@ -109,6 +118,51 @@ public class PackingInfoProcessParams
 			default:
 				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 		}
+	}
+
+	/**
+	 *
+	 * @return a list of PI item products that match the selected CU's product and partner, sorted by name.
+	 */
+	public LookupValuesList getM_HU_PI_Item_Products()
+	{
+		final I_M_HU_LUTU_Configuration defaultLUTUConfig = getDefaultLUTUConfig();
+
+		final I_M_Product product = defaultLUTUConfig.getM_Product();
+		final I_C_BPartner bPartner = defaultLUTUConfig.getC_BPartner();
+
+		final boolean includeVirtualItem = !enforcePhysicalTU;
+		final LookupValuesList huPIItemProducts = WEBUI_ProcessHelper.retrieveHUPIItemProducts(Env.getCtx(), product, bPartner, includeVirtualItem);
+
+		return huPIItemProducts;
+	}
+
+	public LookupValuesList getM_HU_PI_Item_IDs(@Nullable final I_M_HU_PI_Item_Product pip)
+	{
+		if (pip == null)
+		{
+			return LookupValuesList.EMPTY;
+		}
+
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, getDefaultLUTUConfig().getC_BPartner());
+
+		return luPIItems.stream()
+				.map(luPIItem -> IntegerLookupValue.of(luPIItem.getM_HU_PI_Item_ID(), WEBUI_ProcessHelper.buildHUPIItemString(luPIItem)))
+				.collect(LookupValuesList.collect());
+	}
+
+	private List<I_M_HU_PI_Item> getAvailableLuPIItems(
+			@NonNull final I_M_HU_PI_Item_Product pip,
+			@Nullable final I_C_BPartner bPartner)
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		final I_M_HU_PI piOfCurrentPip = pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
+
+		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(piOfCurrentPip,
+				null, // huUnitType
+				bPartner);
+		return luPIItems;
 	}
 
 	public I_M_HU_LUTU_Configuration getDefaultLUTUConfig()
@@ -129,19 +183,79 @@ public class PackingInfoProcessParams
 				adjustDefaultLUTUConfig_EnforceAvailableTUs(defaultLUTUConfig, enforceAvailableQtyTU);
 			}
 
+			if (enforcePhysicalTU)
+			{
+				// check if we need to do something
+				boolean needToFallback;
+				if (defaultLUTUConfig.getM_HU_PI_Item_Product_ID() <= 0)
+				{
+					needToFallback = true; // no piip specified at all
+				}
+				else
+				{
+					// check if the piip that we got is the virtual one. If yes, we need to fallback
+					final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+					needToFallback = defaultLUTUConfig.getM_HU_PI_Item_Product_ID() == hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx()).getM_HU_PI_Item_Product_ID();
+				}
+				if (needToFallback)
+				{
+					insertPhysicalFallbackTU(defaultLUTUConfig);
+				}
+			}
+
 			//
 			// Make sure nobody is overriding the existing configuration
 			if (defaultLUTUConfig.getM_HU_LUTU_Configuration_ID() > 0)
 			{
 				InterfaceWrapperHelper.setSaveDeleteDisabled(defaultLUTUConfig, true);
 			}
-
 			_defaultLUTUConfig = defaultLUTUConfig;
 		}
 		return _defaultLUTUConfig;
+
 	}
 
-	private void adjustDefaultLUTUConfig_EnforceOneLUorTU(@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig, @Nullable final BigDecimal availableQtyTU)
+	private void insertPhysicalFallbackTU(@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig)
+	{
+		final List<I_M_HU_PI_Item_Product> availableHUPIItemProductRecords = WEBUI_ProcessHelper.retrieveHUPIItemProductRecords(
+				Env.getCtx(),
+				defaultLUTUConfig.getM_Product(),
+				defaultLUTUConfig.getC_BPartner(),
+				false); // includeVirtualItem == false
+
+		Check.errorIf(availableHUPIItemProductRecords.isEmpty(),
+				"There is no non-virtual M_HU_PI_Item_Product value for the given product and bPartner; product={}; bPartner={}",
+				defaultLUTUConfig.getM_Product(), defaultLUTUConfig.getC_BPartner());
+
+		final I_M_HU_PI_Item_Product pip = availableHUPIItemProductRecords.get(0);
+		defaultLUTUConfig.setM_HU_PI_Item_Product(pip);
+		defaultLUTUConfig.setM_TU_HU_PI_ID(pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
+		defaultLUTUConfig.setQtyCU(pip.getQty());
+
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, defaultLUTUConfig.getC_BPartner());
+		if (luPIItems.isEmpty())
+		{
+			defaultLUTUConfig.setM_LU_HU_PI_Item(null);
+			defaultLUTUConfig.setM_LU_HU_PI(null);
+		}
+		else
+		{
+			final I_M_HU_PI_Item luPiItem = luPIItems.get(0);
+			defaultLUTUConfig.setM_LU_HU_PI_Item(luPiItem);
+			defaultLUTUConfig.setQtyTU(luPiItem.getQty());
+			defaultLUTUConfig.setM_LU_HU_PI_ID(luPiItem.getM_HU_PI_Version().getM_HU_PI_ID());
+		}
+	}
+
+	/**
+	 * Modifies the given {@code defaultLUTUConfig} such that <b>one</b> top level HU (either LU or TU) is created.
+	 * 
+	 * @param defaultLUTUConfig
+	 * @param availableQtyTU optional, may be {@code null}. If given, and the given {@code defaultLUTUConfig}'s top level HU is an LU, then this is the number of TUs within the LU.
+	 */
+	private void adjustDefaultLUTUConfig_EnforceOneLUorTU(
+			@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig,
+			@Nullable final BigDecimal availableQtyTU)
 	{
 		if (lutuConfigurationFactory.isNoLU(defaultLUTUConfig))
 		{
@@ -169,10 +283,17 @@ public class PackingInfoProcessParams
 				}
 			}
 		}
-
 	}
 
-	private void adjustDefaultLUTUConfig_EnforceAvailableTUs(@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig, @NonNull final BigDecimal availableQtyTU)
+	/**
+	 * Modifies the given {@code defaultLUTUConfig} such that the TU quantity and (if applicable) also the LU quantity are consistent with the given {@code availableQtyTU}.
+	 * 
+	 * @param defaultLUTUConfig
+	 * @param availableQtyTU
+	 */
+	private void adjustDefaultLUTUConfig_EnforceAvailableTUs(
+			@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig,
+			@NonNull final BigDecimal availableQtyTU)
 	{
 		//
 		// TU
@@ -225,16 +346,18 @@ public class PackingInfoProcessParams
 		return defaultLUTUConfigNewCopy;
 	}
 
-	public I_M_HU_LUTU_Configuration createNewLUTUConfig()
+	public I_M_HU_LUTU_Configuration createAndSaveNewLUTUConfig()
 	{
 		final I_M_HU_LUTU_Configuration defaultLUTUConfig = getDefaultLUTUConfig();
 
 		// Validate parameters
-		final int M_LU_HU_PI_ID = getLU_HU_PI_ID(); // not mandatory
+		final int lu_PI_Item_ID = getLuPiItemId(); // not mandatory
 		final int M_HU_PI_Item_Product_ID = getTU_HU_PI_Item_Product_ID();
 		final BigDecimal qtyCU = getQtyCU();
-		final BigDecimal qtyTU = getQtyTU();
-		
+
+		final boolean isVirtualHU = M_HU_PI_Item_Product_ID == IHUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID;
+		final BigDecimal qtyTU = isVirtualHU ? BigDecimal.ONE : this.qtyTU;
+
 		if (M_HU_PI_Item_Product_ID <= 0)
 		{
 			throw new FillMandatoryException(PARAM_M_HU_PI_Item_Product_ID);
@@ -251,50 +374,51 @@ public class PackingInfoProcessParams
 		final I_M_HU_LUTU_Configuration lutuConfigNew = InterfaceWrapperHelper.copy()
 				.setFrom(defaultLUTUConfig)
 				.copyToNew(I_M_HU_LUTU_Configuration.class);
-		//
+
 		// CU
 		lutuConfigNew.setQtyCU(qtyCU);
 		lutuConfigNew.setIsInfiniteQtyCU(false);
 
-		//
 		// TU
-		final I_M_HU_PI_Item_Product tuPIItemProduct = InterfaceWrapperHelper.create(Env.getCtx(), M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
+		configureLUTUConfigTU(lutuConfigNew, M_HU_PI_Item_Product_ID, qtyTU);
+
+		// LU
+		configureLUTUConfigLU(lutuConfigNew, lu_PI_Item_ID);
+
+		lutuConfigurationFactory.save(lutuConfigNew);
+		return lutuConfigNew;
+	}
+
+	private void configureLUTUConfigTU(
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfigNew,
+			final int M_HU_PI_Item_Product_ID,
+			@NonNull final BigDecimal qtyTU)
+	{
+		final I_M_HU_PI_Item_Product tuPIItemProduct = loadOutOfTrx(M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class);
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
+
 		lutuConfigNew.setM_HU_PI_Item_Product(tuPIItemProduct);
 		lutuConfigNew.setM_TU_HU_PI(tuPI);
 		lutuConfigNew.setQtyTU(qtyTU);
 		lutuConfigNew.setIsInfiniteQtyTU(false);
+	}
 
-		//
-		// LU
-		if (M_LU_HU_PI_ID > 0)
+	private void configureLUTUConfigLU(
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfigNew,
+			final int lu_PI_Item_ID)
+	{
+		if (lu_PI_Item_ID > 0)
 		{
 			final BigDecimal qtyLU = getQtyLU();
 			if (qtyLU == null || qtyLU.signum() <= 0)
 			{
 				throw new FillMandatoryException(PARAM_QtyLU);
 			}
-			
-			final I_M_HU_PI luPI = InterfaceWrapperHelper.create(Env.getCtx(), M_LU_HU_PI_ID, I_M_HU_PI.class, ITrx.TRXNAME_None);
 
-			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-			final I_M_HU_PI_Version luPIV = handlingUnitsDAO.retrievePICurrentVersion(luPI);
-			final List<I_M_HU_PI_Item> luPI_ItemsAvailable = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, lutuConfigNew.getC_BPartner());
-			final I_M_HU_PI_Item luPI_Item = luPI_ItemsAvailable
-					.stream()
-					.filter(piItem -> piItem.getM_HU_PI_Version_ID() == luPIV.getM_HU_PI_Version_ID())
-					.findFirst()
-					.orElseThrow(() -> {
-						final String luPI_ItemsAvailableStr = luPI_ItemsAvailable.stream()
-								.map(item -> item.getM_HU_PI_Version().getM_HU_PI().getName())
-								.distinct()
-								.collect(Collectors.joining(", "));
-						return new AdempiereException(tuPI.getName() + " cannot be loaded to " + luPI.getName()
-								+ "\n Available LU PI items: " + luPI_ItemsAvailableStr);
-					});;
+			final I_M_HU_PI_Item luPI_Item = loadOutOfTrx(lu_PI_Item_ID, I_M_HU_PI_Item.class);
 
-			lutuConfigNew.setM_LU_HU_PI(luPI);
 			lutuConfigNew.setM_LU_HU_PI_Item(luPI_Item);
+			lutuConfigNew.setM_LU_HU_PI(luPI_Item.getM_HU_PI_Version().getM_HU_PI());
 			lutuConfigNew.setQtyLU(qtyLU);
 			lutuConfigNew.setIsInfiniteQtyLU(false);
 		}
@@ -304,19 +428,16 @@ public class PackingInfoProcessParams
 			lutuConfigNew.setM_LU_HU_PI_Item(null);
 			lutuConfigNew.setQtyLU(BigDecimal.ZERO);
 		}
-
-		lutuConfigurationFactory.save(lutuConfigNew);
-		return lutuConfigNew;
 	}
 
-	public int getLU_HU_PI_ID()
+	public int getLuPiItemId()
 	{
-		return lu_HU_PI_ID;
+		return lu_PI_Item_ID;
 	}
 
-	public void setLU_HU_PI_ID(final int lu_HU_PI_ID)
+	public void setLuPiItemId(final int lu_PI_Item_ID)
 	{
-		this.lu_HU_PI_ID = lu_HU_PI_ID;
+		this.lu_PI_Item_ID = lu_PI_Item_ID;
 	}
 
 	public int getTU_HU_PI_Item_Product_ID()
@@ -339,11 +460,11 @@ public class PackingInfoProcessParams
 		this.qtyCU = qtyCU;
 	}
 
-	public BigDecimal getQtyTU()
-	{
-		return qtyTU;
-	}
-
+	/**
+	 * Called from the process class to set the TU qty from the process parameter.
+	 * 
+	 * @param qtyTU
+	 */
 	public void setQtyTU(final BigDecimal qtyTU)
 	{
 		this.qtyTU = qtyTU;

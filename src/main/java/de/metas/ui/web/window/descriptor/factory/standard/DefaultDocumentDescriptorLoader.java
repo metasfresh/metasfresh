@@ -113,6 +113,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 			{
 				continue;
 			}
+			
+			// Skip tabs which were already used/embedded in root layout
+			if(rootLayoutFactory.isSkipAD_Tab_ID(detailTabVO.getAD_Tab_ID()))
+			{
+				continue;
+			}
 
 			final LayoutFactory detailLayoutFactory = LayoutFactory.ofIncludedTab(gridWindowVO, mainTabVO, detailTabVO);
 			final DocumentLayoutDetailDescriptor.Builder layoutDetail = detailLayoutFactory.layoutDetail();

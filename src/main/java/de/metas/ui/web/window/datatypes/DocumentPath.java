@@ -127,16 +127,11 @@ public final class DocumentPath
 				.build();
 	}
 
-	public static final DocumentPath includedDocumentPath(final WindowId windowId, final String idStr, final String detailId)
+	public static final DocumentPath includedDocumentPath(@NonNull final WindowId windowId, @NonNull final DocumentId documentId, @NonNull final DetailId detailId)
 	{
-		if (Check.isEmpty(detailId, true))
-		{
-			throw new IllegalArgumentException("No detailId provided");
-		}
-
 		return builder()
 				.setDocumentType(windowId)
-				.setDocumentId(idStr)
+				.setDocumentId(documentId)
 				.setDetailId(detailId)
 				.allowNullRowId()
 				.build();

@@ -1,14 +1,17 @@
 package de.metas.ui.web.process;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.model.Document;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -34,20 +37,21 @@ import de.metas.ui.web.window.model.Document;
 
 public final class DocumentPreconditionsAsContext implements WebuiPreconditionsContext
 {
-	public static final DocumentPreconditionsAsContext of(final Document document)
+	public static final DocumentPreconditionsAsContext of(final Document document, final Set<TableRecordReference> selectedIncludedRecords)
 	{
-		return new DocumentPreconditionsAsContext(document);
+		return new DocumentPreconditionsAsContext(document, selectedIncludedRecords);
 	}
 
 	private final Document document;
 	private final String tableName;
+	private final Set<TableRecordReference> selectedIncludedRecords;
 
-	private DocumentPreconditionsAsContext(final Document document)
+	private DocumentPreconditionsAsContext(@NonNull final Document document, final Set<TableRecordReference> selectedIncludedRecords)
 	{
-		super();
-		Check.assumeNotNull(document, "Parameter document is not null");
 		this.document = document;
 		tableName = document.getEntityDescriptor().getTableName();
+		
+		this.selectedIncludedRecords = selectedIncludedRecords != null ? ImmutableSet.copyOf(selectedIncludedRecords) : ImmutableSet.of();
 	}
 
 	@Override
@@ -55,6 +59,7 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 	{
 		return MoreObjects.toStringHelper(this)
 				.addValue(document)
+				.add("selectedIncludedRecords", selectedIncludedRecords)
 				.toString();
 	}
 	
@@ -94,5 +99,10 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 	{
 		return 1;
 	}
-
+	
+	@Override
+	public Set<TableRecordReference> getSelectedIncludedRecords()
+	{
+		return selectedIncludedRecords;
+	}
 }

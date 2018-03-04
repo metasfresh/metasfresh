@@ -14,8 +14,13 @@
             document.getElementById('disconnect').disabled = !connected;
             document.getElementById('socksjs_url').disabled = connected;
             document.getElementById('topic').disabled = connected;
-            document.getElementById('response').innerHTML = '';
+            clearResponsesLog();
         }
+        
+        function clearResponsesLog()
+        {
+			document.getElementById('response').innerHTML = '';
+		}
 
         function connect()
         {
@@ -50,12 +55,15 @@
 
         function showResult(message) {
             var response = document.getElementById('response');
-            var p = document.createElement('p');
+            var p = document.createElement('pre');
             p.style.wordWrap = 'break-word';
             p.appendChild(document.createTextNode(message));
             response.appendChild(p);
         }
     </script>
+    <style>
+    	pre { border: 1px solid gray; }
+    </style>
 </head>
 <body>
 <noscript><h2>Enable Java script and reload this page</h2></noscript>
@@ -63,7 +71,9 @@
 <div>
     <div>
         <button id="connect" onclick="connect();">Connect</button>
-        <button id="disconnect" disabled="disabled" onclick="disconnect();">Disconnect</button><br/><br/>
+        <button id="disconnect" disabled="disabled" onclick="disconnect();">Disconnect</button>
+        <button id="clearResponsesLog" onclick="clearResponsesLog();">Clear log</button>
+        <br/><br/>
     </div>
     <div>
     	<label>SocksJS URL: </label><input type="text" id="socksjs_url" value="/stomp"/> (e.g. /stomp, http://localhost:8080/stomp etc)<br/> 

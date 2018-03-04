@@ -48,12 +48,16 @@ public class WEBUI_PP_Order_ReverseCandidate
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSelectedDocumentIds().isSingleDocumentId())
+		if (!getSelectedRowIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.reject("Select one line");
 		}
 
 		final PPOrderLineRow row = getSingleSelectedRow();
+		if(row.isSourceHU())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Not available for source HU line");
+		}
 
 		if (row.getPP_Order_Qty_ID() <= 0)
 		{

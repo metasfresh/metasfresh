@@ -5,8 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -39,12 +41,17 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
@@ -56,6 +63,8 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.OrderedDocumentsList;
+import de.metas.ui.web.window.model.lookup.LabelsLookup;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -349,7 +358,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			}
 
 			final Object idObj = getValue(idField);
-			if (idObj == null)
+			if (JSONNullValue.isNull(idObj))
 			{
 				throw new NullPointerException("Null id");
 			}
@@ -364,6 +373,12 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			{
 				final int idInt = ((IntegerLookupValue)idObj).getIdAsInt();
 				id = DocumentId.of(idInt);
+				idAquired = true;
+				return id;
+			}
+			else if (idObj instanceof String)
+			{
+				id = DocumentId.of(idObj.toString());
 				idAquired = true;
 				return id;
 			}
@@ -408,10 +423,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 			final DocumentFieldValueLoader fieldValueLoader = fieldDataBinding.getDocumentFieldValueLoader();
 			final boolean isDisplayColumnAvailable = true;
+			final LookupDescriptor lookupDescriptor = fieldDescriptor.getLookupDescriptor(LookupScope.DocumentField);
 
 			try
 			{
-				return fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
+				return fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage, lookupDescriptor);
 			}
 			catch (final SQLException e)
 			{
@@ -482,7 +498,10 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 		assertThisRepository(document.getEntityDescriptor());
-		DocumentPermissionsHelper.assertCanEdit(document, UserSession.getCurrentPermissions());
+		DocumentPermissionsHelper.assertCanEdit(document);
+
+		// Runnables to be executed after the PO is saved
+		final List<Runnable> afterSaveRunnables = new ArrayList<>();
 
 		//
 		// Load the PO / Create new PO instance
@@ -500,12 +519,21 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				continue;
 			}
 
+			if (DocumentFieldWidgetType.Labels == documentField.getWidgetType())
+			{
+				// save labels after PO is saved because we want to make sure it's not new (so we can link to it)
+				afterSaveRunnables.add(() -> saveLabels(document, documentField));
+			}
+
 			if (setPOValue(po, documentField))
 			{
 				changes = true;
 			}
 		}
 
+		//
+		// Save the PO
+		boolean needsRefresh = false;
 		if (changes)
 		{
 			//
@@ -513,17 +541,30 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			// TODO: advice the PO to not reload after save.
 			InterfaceWrapperHelper.save(po);
 			document.markAsNotNew();
-
-			//
-			// Reload the document
-			final DocumentId idNew = DocumentId.of(InterfaceWrapperHelper.getId(po));
-			refresh(document, idNew);
+			needsRefresh = true;
 		}
 		else
 		{
 			logger.trace("Skip saving {} because there was no actual change", po);
 		}
 
+		//
+		// Execute after save runnables
+		if (!afterSaveRunnables.isEmpty())
+		{
+			afterSaveRunnables.forEach(r -> r.run());
+			needsRefresh = true;
+		}
+
+		//
+		// Reload the document
+		if (needsRefresh)
+		{
+			final DocumentId idNew = DocumentId.of(InterfaceWrapperHelper.getId(po));
+			refresh(document, idNew);
+		}
+
+		//
 		// Notify the parent document that one of it's children were saved
 		if (!document.isRootDocument())
 		{
@@ -575,7 +616,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	 * @param documentField
 	 * @return true if value was set and really changed
 	 */
-	private boolean setPOValue(final PO po, final IDocumentFieldView documentField)
+	private static boolean setPOValue(final PO po, final IDocumentFieldView documentField)
 	{
 		final DocumentFieldDataBindingDescriptor dataBinding = documentField.getDescriptor().getDataBinding().orElse(null);
 		if (dataBinding == null)
@@ -615,7 +656,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 					return false; // no change
 				}
 
-				final boolean idSet = po.set_ValueNoCheck(poColumnIndex, id);
+				final boolean idSet = po.set_ValueNoCheck(columnName, id);
 				if (!idSet)
 				{
 					throw new AdempiereException("Failed setting ID=" + id + " to " + po);
@@ -674,7 +715,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 			//
 			// Try setting the value
-			final boolean valueSet = po.set_ValueReturningBoolean(poColumnIndex, fieldValueConv);
+			final boolean valueSet = po.set_ValueOfColumn(columnName, fieldValueConv);
 			if (!valueSet)
 			{
 				logger.warn("Failed setting PO's column: {}={} (old={}) -- PO={}", columnName, fieldValueConv, poValue, po);
@@ -722,7 +763,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 	public static Object convertValueToPO(final Object value, final String columnName, final DocumentFieldWidgetType widgetType, final Class<?> targetClass)
 	{
-		final Class<?> valueClass = value == null ? null : value.getClass();
+		final Class<?> valueClass = JSONNullValue.isNull(value) ? null : value.getClass();
 
 		if (valueClass != null && targetClass.isAssignableFrom(valueClass))
 		{
@@ -730,7 +771,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 		else if (int.class.equals(targetClass) || Integer.class.equals(targetClass))
 		{
-			if (value == null)
+			if (JSONNullValue.isNull(value))
 			{
 				return null;
 			}
@@ -749,14 +790,14 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			else if (Map.class.isAssignableFrom(valueClass))
 			{
 				@SuppressWarnings("unchecked")
-				final Map<String, String> map = (Map<String, String>)value;
+				final Map<String, Object> map = (Map<String, Object>)value;
 				final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 				return lookupValue == null ? null : lookupValue.getIdAsInt();
 			}
 		}
 		else if (String.class.equals(targetClass))
 		{
-			if (value == null)
+			if (JSONNullValue.isNull(value))
 			{
 				return null;
 			}
@@ -767,14 +808,19 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			else if (Map.class.isAssignableFrom(valueClass))
 			{
 				@SuppressWarnings("unchecked")
-				final Map<String, String> map = (Map<String, String>)value;
+				final Map<String, Object> map = (Map<String, Object>)value;
 				final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
 				return lookupValue == null ? null : lookupValue.getIdAsString();
+			}
+			else if(Password.class.isAssignableFrom(valueClass))
+			{
+				final Password password = (Password)value;
+				return password.getAsString();
 			}
 		}
 		else if (Timestamp.class.equals(targetClass))
 		{
-			if (value == null)
+			if (JSONNullValue.isNull(value))
 			{
 				return null;
 			}
@@ -790,7 +836,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 		else if (Boolean.class.equals(targetClass) || boolean.class.equals(targetClass))
 		{
-			if (value == null)
+			if (JSONNullValue.isNull(value))
 			{
 				return false;
 			}
@@ -859,5 +905,51 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final String sql = sqlBuilder.getSqlMaxLineNo(sqlParams);
 
 		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
+	}
+
+	private static final void saveLabels(final Document document, final IDocumentFieldView documentField)
+	{
+		final LabelsLookup lookup = LabelsLookup.cast(documentField.getDescriptor().getLookupDescriptor(LookupScope.DocumentField));
+
+		final int linkId = document.getFieldView(lookup.getLinkColumnName()).getValueAsInt(-1);
+		final Set<Object> listValuesInDatabase = lookup.retrieveExistingValues(linkId).getKeys();
+
+        final LookupValuesList lookupValuesList = documentField.getValueAs(LookupValuesList.class);
+        final Set<Object> listValuesToSave = lookupValuesList != null ? new HashSet<>(lookupValuesList.getKeys()) : new HashSet<>();
+
+		//
+		// Delete removed labels
+		{
+			final Set<Object> listValuesToDelete = new HashSet<>(listValuesInDatabase);
+			listValuesToDelete.removeAll(listValuesToSave);
+			if (!listValuesToDelete.isEmpty())
+			{
+				final int countDeleted = lookup.retrieveExistingValuesRecordQuery(linkId)
+						.addInArrayFilter(lookup.getLabelsValueColumnName(), listValuesToDelete)
+						.create()
+						.delete();
+				if (countDeleted != listValuesToDelete.size())
+				{
+					logger.warn("Possible issue while deleting labels for linkId={}: listValuesToDelete={}, countDeleted={}", linkId, listValuesToDelete, countDeleted);
+				}
+			}
+		}
+
+		//
+		// Create new labels
+		{
+			final Set<Object> listValuesToSaveEffective = new HashSet<>(listValuesToSave);
+			listValuesToSaveEffective.removeAll(listValuesInDatabase);
+			listValuesToSaveEffective.forEach(listValueToSave -> createLabelPORecord(listValueToSave, linkId, lookup));
+		}
+	}
+
+	private static final void createLabelPORecord(@NonNull final Object listValueObj, final int linkId, @NonNull final LabelsLookup lookup)
+	{
+		final String listValue = listValueObj.toString();
+		final PO labelPO = TableModelLoader.instance.newPO(lookup.getLabelsTableName());
+		labelPO.set_ValueNoCheck(lookup.getLabelsLinkColumnName(), linkId);
+		labelPO.set_ValueNoCheck(lookup.getLabelsValueColumnName(), listValue);
+		InterfaceWrapperHelper.save(labelPO);
 	}
 }

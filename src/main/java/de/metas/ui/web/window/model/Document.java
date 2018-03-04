@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +39,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
+import de.metas.letters.model.Letters;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -597,9 +599,8 @@ public final class Document
 		private final IDocumentEvaluatee _evaluatee;
 		private final DocumentId parentDocumentId;
 
-		private InitialFieldValueSupplier(final Document document, final DocumentValuesSupplier parentSupplier)
+		private InitialFieldValueSupplier(@NonNull final Document document, @NonNull final DocumentValuesSupplier parentSupplier)
 		{
-			super();
 			this.parentSupplier = parentSupplier;
 
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
@@ -1137,7 +1138,7 @@ public final class Document
 		}
 	}
 
-	public void processValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason) throws DocumentFieldReadonlyException
+	public void processValueChanges(@NonNull final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason) throws DocumentFieldReadonlyException
 	{
 		for (final JSONDocumentChangedEvent event : events)
 		{
@@ -1187,7 +1188,7 @@ public final class Document
 		// TODO: trigger the document workflow instead!
 		final String docAction = docActionField.getValueAs(StringLookupValue.class).getIdAsString();
 		final String expectedDocStatus = null; // N/A
-		Services.get(IDocActionBL.class).processEx(this, docAction, expectedDocStatus);
+		Services.get(IDocumentBL.class).processEx(this, docAction, expectedDocStatus);
 
 		//
 		// Refresh it
@@ -1451,6 +1452,21 @@ public final class Document
 			final boolean lookupValuesStaled = documentField.setLookupValuesStaled(triggeringFieldName);
 			if (lookupValuesStaled && !lookupValuesStaledOld)
 			{
+				// https://github.com/metasfresh/metasfresh-webui-api/issues/551 check if we can leave the old value as it is
+				final Object valueOld = documentField.getValue();
+				if (valueOld != null)
+				{
+					final boolean currentValueStillValid = documentField.getLookupValues() // because we did setLookupValuesStaled(), this causes a reload
+							.stream()
+							.anyMatch(value -> Objects.equals(value, valueOld)); // check if the current value is still value after we reloaded the list
+					if (!currentValueStillValid)
+					{
+						documentField.setValue(null, changesCollector);
+						changesCollector.collectValueIfChanged(documentField, valueOld, reason);
+					}
+				}
+
+				// https://github.com/metasfresh/metasfresh-webui-frontend/issues/1165 - the value was not stale, but now it is => notify the frontend so it shall invalidate its cache
 				changesCollector.collectLookupValuesStaled(documentField, reason);
 			}
 		}
@@ -1490,9 +1506,8 @@ public final class Document
 	public LookupValuesList getFieldLookupValuesForQuery(final String fieldName, final String query)
 	{
 		return getField(fieldName).getLookupValuesForQuery(query);
-
 	}
-
+	
 	public Document getIncludedDocument(final DetailId detailId, final DocumentId rowId)
 	{
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
@@ -1692,7 +1707,7 @@ public final class Document
 				continue;
 			}
 
-			final DocumentValidStatus validState = documentField.updateStatusIfInvalidAndGet(changesCollector);
+			final DocumentValidStatus validState = documentField.updateStatusIfInitialInvalidAndGet(changesCollector);
 			if (!validState.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid: {}", documentField, validState);
@@ -1948,6 +1963,31 @@ public final class Document
 	{
 		getIncludedDocumentsCollection(document.getDetailId()).onChildSaved(document);
 	}
+	
+	public Set<DocumentStandardAction> getStandardActions()
+	{
+		final EnumSet<DocumentStandardAction> standardActions = EnumSet.allOf(DocumentStandardAction.class);
+
+		// Remove Clone action if not supported
+		if(!getEntityDescriptor().isCloneEnabled())
+		{
+			standardActions.remove(DocumentStandardAction.Clone);
+		}
+		
+		// Remove Print action if document is not printable (https://github.com/metasfresh/metasfresh-webui-api/issues/570)
+		if(!getEntityDescriptor().isPrintable())
+		{
+			standardActions.remove(DocumentStandardAction.Print);
+		}
+
+		// Remove letter action if functionality is not enabled (https://github.com/metasfresh/metasfresh-webui-api/issues/178)
+		if(!Letters.isEnabled())
+		{
+			standardActions.remove(DocumentStandardAction.Letter);
+		}
+		
+		return standardActions;
+	}
 
 	//
 	//
@@ -2063,26 +2103,6 @@ public final class Document
 		private IDocumentChangesCollector getChangesCollector()
 		{
 			return changesCollector;
-			// final FieldInitializationMode mode = getFieldInitializerMode();
-			// // Determine changes collector to be used.
-			// // i.e. if we want to collect the changes to current collector or if we don't want to collect them at all.
-			// if (FieldInitializationMode.NewDocument == mode)
-			// {
-			// // TODO: not sure why is not null... but preserving old logic for now
-			// return changesCollector;
-			// }
-			// else if (FieldInitializationMode.Load == mode)
-			// {
-			// return NullDocumentChangesCollector.instance;
-			// }
-			// else if (FieldInitializationMode.Refresh == mode)
-			// {
-			// return changesCollector;
-			// }
-			// else
-			// {
-			// throw new IllegalArgumentException("Unknown mode: " + mode);
-			// }
 		}
 
 		public Builder setChangesCollector(@NonNull final IDocumentChangesCollector changesCollector)

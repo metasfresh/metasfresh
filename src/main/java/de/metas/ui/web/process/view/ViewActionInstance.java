@@ -27,8 +27,8 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentValidStatus;
-import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import lombok.Builder;
@@ -78,8 +78,7 @@ import lombok.ToString;
 			@NonNull final DocumentId pinstanceId,
 			@NonNull final IView view,
 			@NonNull final ViewActionDescriptor viewActionDescriptor,
-			@NonNull final DocumentIdsSelection selectedDocumentIds,
-			@NonNull final IDocumentChangesCollector changesCollector)
+			@NonNull final DocumentIdsSelection selectedDocumentIds)
 	{
 		processId = ViewProcessInstancesRepository.buildProcessId(view.getViewId(), viewActionDescriptor.getActionId());
 		this.pinstanceId = pinstanceId;
@@ -93,7 +92,6 @@ import lombok.ToString;
 		if (parametersDescriptor != null)
 		{
 			parametersDocument = Document.builder(parametersDescriptor)
-					.setChangesCollector(changesCollector)
 					.initializeAsNewDocument(pinstanceId, VERSION_DEFAULT);
 		}
 		else
@@ -159,7 +157,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public ProcessInstanceResult startProcess(final IViewsRepository viewsRepo)
+	public ProcessInstanceResult startProcess(final IViewsRepository viewsRepo, final DocumentCollection documentsCollection_NOTUSED)
 	{
 		assertNotExecuted();
 
