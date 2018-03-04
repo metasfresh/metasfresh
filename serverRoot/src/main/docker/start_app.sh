@@ -73,8 +73,8 @@ run_metasfresh()
  -Xmx1024M \
  -XX:MaxPermSize=512M \
  -XX:+HeapDumpOnOutOfMemoryError \
- -DPropertyFile=/opt/metasfresh/metasfresh.properties \
  -Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port} \
+ -DPropertyFile=/opt/metasfresh/metasfresh.properties \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788 \
  -jar metasfresh-app.jar
 }
