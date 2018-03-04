@@ -4,8 +4,9 @@
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
-import de.metas.jenkins.MvnConf
+import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
+import de.metas.jenkins.MvnConf
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
@@ -46,24 +47,24 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 {
     configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
     {
-			// create our config instance to be used further on
-			final MvnConf mvnConf = new MvnConf(
-				'pom.xml', // pomFile
-				MAVEN_SETTINGS, // settingsFile
-				"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
-				'https://repo.metasfresh.com' // mvnRepoBaseURL - for resolve and deploy
-			)
-			echo "mvnConf=${mvnConf.toString()}"
+		// create our config instance to be used further on
+		final MvnConf mvnConf = new MvnConf(
+			'pom.xml', // pomFile
+			MAVEN_SETTINGS, // settingsFile
+			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
+			'https://repo.metasfresh.com' // mvnRepoBaseURL - for resolve and deploy
+		)
+		echo "mvnConf=${mvnConf.toString()}"
 
-			stage('Set versions and build metasfresh-webui-frontend')
-			{
-				checkout scm; // i hope this to do all the magic we need
-				sh 'git clean -d --force -x' // clean the workspace
+		stage('Set versions and build metasfresh-webui-frontend')
+		{
+			checkout scm; // i hope this to do all the magic we need
+			sh 'git clean -d --force -x' // clean the workspace
 
-				nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
+			nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
-        withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
-        {
+        	withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
+        	{
 
 				sh "if [ -d ~/.npm ]; then rm -r ~/.npm; fi" // make sure the .npm folder isn't there. it caused us problems in the past when it contained "stale files".
 
@@ -88,7 +89,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// add a file info.json whose shall look similar to the info which spring-boot provides unter the /info URL
 				final version_info_json = """{
   \"build\": {
-		\"releaseVersion\": \"${MF_VERSION}\",
+	\"releaseVersion\": \"${MF_VERSION}\",
     \"jenkinsBuildUrl\": \"${env.BUILD_URL}\",
     \"jenkinsBuildNo\": \"${env.BUILD_NUMBER}\",
     \"jenkinsJobName\": \"${env.JOB_NAME}\",
@@ -96,7 +97,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
     \"gitSHA1\": \"${env.BUILD_GIT_SHA1}\"
   }
 }""";
-
 				writeFile encoding: 'UTF-8', file: 'dist/info.json', text: version_info_json;
 
 				sh "tar cvzf webui-dist-${MF_VERSION}.tar.gz dist"
@@ -109,13 +109,26 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 <ul>
 <li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${MF_VERSION}.tar.gz</a></li>
 </ul>""";
+			} // withMaven
 
-				// gh #968:
-				// set env variables which will be available to a possible upstream job that might have called us
-				// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
-				env.MF_VERSION="${MF_VERSION}"
-			} // stage
-		} // withMaven
+			// gh #968:
+			// set env variables which will be available to a possible upstream job that might have called us
+			// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
+			env.MF_VERSION="${MF_VERSION}"
+		} // stage
+
+		stage 'Build&push docker image'
+		{
+			sh 'cp -r dist docker/prod'
+
+			final DockerConf materialDispoDockerConf = new DockerConf(
+				'metasfresh-webui-dev', // artifactName
+				MF_UPSTREAM_BRANCH, // branchName
+				MF_VERSION, // versionSuffix
+				'docker/prod' // workDir
+			);
+			dockerBuildAndPush(materialDispoDockerConf)
+		}
 	} // configFileProvider
  } // node
 
