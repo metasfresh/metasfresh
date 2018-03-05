@@ -40,7 +40,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -234,7 +234,7 @@ public class ShipmentScheduleWithHU
 
 		if (getM_AttributeSetInstance_ID() > 0)
 		{
-			final I_M_AttributeInstance attributeSetInstance = load(getM_AttributeSetInstance_ID(), I_M_AttributeInstance.class);
+			final I_M_AttributeSetInstance attributeSetInstance = load(getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
 			final IAttributeStorage asiAttributeStorage = attributeStorageFactory.getAttributeStorage(attributeSetInstance);
 			allAttributeValues.addAll(asiAttributeStorage.getAttributeValues());
 		}
