@@ -129,7 +129,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	public static final <T extends JavaProcess> T currentInstance()
 	{
 		@SuppressWarnings("unchecked")
-		T currentInstances = (T)currentInstanceHolder.get();
+		final T currentInstances = (T)currentInstanceHolder.get();
 		if (currentInstances == null)
 		{
 			throw new AdempiereException("No active process found in this thread");
@@ -556,7 +556,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 					{
 						m_trx.commit(true);
 					}
-					catch (Exception e)
+					catch (final Exception e)
 					{
 						log.error("Commit failed.", e);
 						final ProcessExecutionResult result = getResult();

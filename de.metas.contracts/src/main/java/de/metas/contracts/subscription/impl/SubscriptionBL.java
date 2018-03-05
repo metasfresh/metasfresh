@@ -44,6 +44,7 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_PriceList;
@@ -84,6 +85,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -540,8 +542,11 @@ public class SubscriptionBL implements ISubscriptionBL
 			return sp;
 		}
 
-		logger.info("Creating initial SPs for term={}", term);
-		return createSubscriptionEntries(term);
+		try (final IAutoCloseable c = Services.get(IShipmentScheduleBL.class).postponeMissingSchedsCreationUntilClose())
+		{
+			logger.info("Creating initial SPs for term={}", term);
+			return createSubscriptionEntries(term);
+		}
 	}
 
 	private boolean markPlannedPauseRecordAsExecuted(

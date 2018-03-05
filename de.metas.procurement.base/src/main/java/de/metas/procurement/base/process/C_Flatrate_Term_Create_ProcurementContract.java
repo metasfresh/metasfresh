@@ -2,12 +2,16 @@ package de.metas.procurement.base.process;
 
 import java.sql.Timestamp;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxRunConfig;
+import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.Ini;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.process.IProcessDefaultParameter;
@@ -15,6 +19,8 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.Process;
+import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
+import de.metas.process.RunOutOfTrx;
 import de.metas.procurement.base.IPMMContractsBL;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
@@ -79,31 +85,54 @@ public class C_Flatrate_Term_Create_ProcurementContract
 
 	@Param(mandatory = true, parameterName = "C_Currency_ID")
 	private I_C_Currency p_C_Currency;
-	
-	@Param (mandatory = true, parameterName = "IsComplete")
+
+	@Param(mandatory = true, parameterName = "IsComplete")
 	private boolean p_isComplete;
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final I_C_Flatrate_Term term = PMMContractBuilder.newBuilder()
-				.setCtx(getCtx())
-				.setFailIfNotCreated(true)
-				.setComplete(true)
-				.setC_Flatrate_Conditions(p_C_Flatrate_Conditions)
-				.setC_BPartner(p_C_BPartner)
-				.setStartDate(p_StartDate)
-				.setEndDate(p_EndDate)
-				.setPMM_Product(p_PMM_Product)
-				.setC_UOM(p_C_UOM)
-				.setAD_User_InCharge(p_AD_User_Incharge)
-				.setC_Currency(p_C_Currency)
-				.setComplete(p_isComplete) // complete if flag on true, do not complete otherwise
-				.build();
+		final I_C_Flatrate_Term term = createTermInOwnTrx();
 
-		setRecordToSelectAfterExecution(TableRecordReference.of(term));
-
+		// TODO check out and cleanup those different methods
+		final int adWindowId = getProcessInfo().getAD_Window_ID();
+		if (adWindowId > 0 && !Ini.isClient())
+		{
+			// this works for the webui
+			getResult().setRecordToOpen(TableRecordReference.of(term), adWindowId, OpenTarget.SingleDocument);
+		}
+		else
+		{
+			// this is the old code that works for swing
+			getResult().setRecordToSelectAfterExecution(TableRecordReference.of(term));
+		}
 		return MSG_OK;
+	}
+
+	private I_C_Flatrate_Term createTermInOwnTrx()
+	{
+		final TrxCallable<I_C_Flatrate_Term> callable = () -> {
+			final I_C_Flatrate_Term term = PMMContractBuilder.newBuilder()
+					.setCtx(getCtx())
+					.setFailIfNotCreated(true)
+					.setComplete(true)
+					.setC_Flatrate_Conditions(p_C_Flatrate_Conditions)
+					.setC_BPartner(p_C_BPartner)
+					.setStartDate(p_StartDate)
+					.setEndDate(p_EndDate)
+					.setPMM_Product(p_PMM_Product)
+					.setC_UOM(p_C_UOM)
+					.setAD_User_InCharge(p_AD_User_Incharge)
+					.setC_Currency(p_C_Currency)
+					.setComplete(p_isComplete) // complete if flag on true, do not complete otherwise
+					.build();
+			return term;
+		};
+
+		// the default config is fine for us
+		final ITrxRunConfig config = trxManager.newTrxRunConfigBuilder().build();
+		return trxManager.call(ITrx.TRXNAME_None, config, callable);
 	}
 
 	/**

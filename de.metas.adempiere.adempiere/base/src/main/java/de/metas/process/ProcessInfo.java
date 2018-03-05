@@ -59,10 +59,11 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Process Instance informations.
- * 
+ *
  * NOTE to developers: when changing this class, please keep in mind that it always shall be fully restorable from AD_PInstance_ID.
  *
  * @author authors of earlier versions of this class are: Jorg Janke, victor.perez@e-evolution.com
@@ -78,7 +79,9 @@ public final class ProcessInfo implements Serializable
 		return new ProcessInfoBuilder();
 	}
 
-	private ProcessInfo(final Properties ctx, final ProcessInfoBuilder builder)
+	private ProcessInfo(
+			@NonNull final Properties ctx,
+			@NonNull final ProcessInfoBuilder builder)
 	{
 		this.ctx = ctx;
 
@@ -89,6 +92,8 @@ public final class ProcessInfo implements Serializable
 		adOrgId = builder.getAD_Org_ID();
 		adUserId = builder.getAD_User_ID();
 		adRoleId = builder.getAD_Role_ID();
+
+		adWindowId = builder.getAD_Window_ID();
 
 		title = builder.getTitle();
 
@@ -151,8 +156,11 @@ public final class ProcessInfo implements Serializable
 	private final int adOrgId;
 	private final int adUserId;
 	private final int adRoleId;
+	private final int adWindowId;
+
 	private final int windowNo;
 	private final int tabNo;
+
 	/** Class Name */
 	private final Optional<String> className;
 	private transient ProcessClassInfo _processClassInfo = null; // lazy
@@ -225,7 +233,7 @@ public final class ProcessInfo implements Serializable
 
 	/**
 	 * Shall only be called once. Intended to be called by {@link ProcessExecutor} only.
-	 * 
+	 *
 	 * @param async
 	 */
 	/* package */ void setAsync(final boolean async)
@@ -278,7 +286,7 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Creates a new instance of {@link #getClassName()}.
 	 * If the classname is empty, null will be returned.
-	 * 
+	 *
 	 * @return new instance or null
 	 */
 	public final IProcess newProcessClassInstanceOrNull()
@@ -486,6 +494,11 @@ public final class ProcessInfo implements Serializable
 		return adRoleId;
 	}
 
+	public int getAD_Window_ID()
+	{
+		return adWindowId;
+	}
+
 	private static final List<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
 	{
 		if (parametersOverride == null || parametersOverride.isEmpty())
@@ -567,23 +580,27 @@ public final class ProcessInfo implements Serializable
 	}
 	// metas: end
 
-	// metas: end
-
 	// metas: cg
 	// 03040
 	/**
-	 * @return Parent's WindowNo
+	 * @return Parent's WindowNo or -1
+	 * @deprecated this only work in the context of the swing client.
 	 */
+	@Deprecated
 	public int getWindowNo()
 	{
 		return windowNo;
 	}
 
+	/**
+	 * @return the current WindowNo or -1
+	 * @deprecated this only works in the context of the swing client.
+	 */
+	@Deprecated
 	public int getTabNo()
 	{
 		return this.tabNo;
 	}
-
 	// metas end
 
 	/**
@@ -600,7 +617,7 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @return a query filter for the current {@code whereClause}, or an "all inclusive" {@link ConstantQueryFilter} if the {@code whereClause} is empty.<br>
 	 *         gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
-	 * 
+	 *
 	 * @task 03685
 	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
@@ -725,6 +742,7 @@ public final class ProcessInfo implements Serializable
 		private Integer _adClientId;
 		private Integer _adUserId;
 		private Integer _adRoleId;
+		private int _adWindowId = -1;
 		private String title = null;
 		private Optional<String> classname;
 		private Boolean refreshAllAfterExecution;
@@ -928,7 +946,6 @@ public final class ProcessInfo implements Serializable
 			{
 				return _adRoleId;
 			}
-
 			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
 			if (adPInstance != null)
 			{
@@ -936,6 +953,27 @@ public final class ProcessInfo implements Serializable
 			}
 
 			return Env.getAD_Role_ID(getCtx());
+		}
+
+		public ProcessInfoBuilder setAD_Window_ID(int adWindowId)
+		{
+			_adWindowId = adWindowId;
+			return this;
+		}
+
+		private int getAD_Window_ID()
+		{
+			if (_adWindowId > 0)
+			{
+				return _adWindowId;
+			}
+
+			final I_AD_PInstance adPInstance = getAD_PInstanceOrNull();
+			if (adPInstance != null && adPInstance.getAD_Window_ID() > 0)
+			{
+				return adPInstance.getAD_Window_ID();
+			}
+			return _adWindowId;
 		}
 
 		private String getTitle()
@@ -1277,17 +1315,17 @@ public final class ProcessInfo implements Serializable
 
 		private Set<TableRecordReference> getSelectedIncludedRecords()
 		{
-			if(selectedIncludedRecords != null)
+			if (selectedIncludedRecords != null)
 			{
 				return selectedIncludedRecords;
 			}
-			
+
 			final int adPInstanceId = getAD_PInstance_ID();
-			if(adPInstanceId > 0)
+			if (adPInstanceId > 0)
 			{
 				return Services.get(IADPInstanceDAO.class).retrieveSelectedIncludedRecords(adPInstanceId);
 			}
-			
+
 			return ImmutableSet.of();
 		}
 
@@ -1448,7 +1486,7 @@ public final class ProcessInfo implements Serializable
 
 		/**
 		 * Advises the builder to also try loading the parameters from database.
-		 * 
+		 *
 		 * @param loadParametersFromDB
 		 *            <ul>
 		 *            <li><code>true</code> - the parameters will be loaded from database and the parameters which were added here will be used as overrides.
@@ -1527,7 +1565,7 @@ public final class ProcessInfo implements Serializable
 
 		/**
 		 * Extracts reporting language.
-		 * 
+		 *
 		 * @param pi
 		 * @return Language; never returns null
 		 */
