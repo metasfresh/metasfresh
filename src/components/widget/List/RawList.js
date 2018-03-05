@@ -7,6 +7,9 @@ import classnames from 'classnames';
 
 import RawListDropdown from './RawListDropdown';
 
+const UP = Symbol('up');
+const DOWN = Symbol('down');
+
 const setSelectedValue = function(dropdownList, selected) {
   const changedValues = {};
   let idx = 0;
@@ -34,6 +37,7 @@ class RawList extends PureComponent {
 
     this.state = {
       selected: props.selected || null,
+      direction: null,
       dropdownList: props.list,
     };
   }
@@ -111,8 +115,42 @@ class RawList extends PureComponent {
       );
     }
 
-    this.checkIfDropDownListOutOfFilter();
+    // Delaying with requestAnimationFrame is needed to get the latest ref
+    requestAnimationFrame(() => {
+      this.checkIfDropDownListOutOfFilter();
+      this.scrollIntoView();
+    });
   }
+
+  scrollIntoView = () => {
+    const { list, selected } = this;
+
+    if (!list || !selected) {
+      return;
+    }
+
+    const { direction } = this.state;
+
+    const { top: topMax, bottom: bottomMax } = list.getBoundingClientRect();
+
+    const { top, bottom } = selected.getBoundingClientRect();
+
+    switch (direction) {
+      case UP:
+        if (top < topMax) {
+          selected.scrollIntoView(true);
+        }
+
+        break;
+
+      case DOWN:
+        if (bottom > bottomMax) {
+          selected.scrollIntoView(false);
+        }
+
+        break;
+    }
+  };
 
   checkIfDropDownListOutOfFilter = () => {
     if (!this.list) {
@@ -199,14 +237,14 @@ class RawList extends PureComponent {
       switch (e.key) {
         case 'ArrowUp':
           e.preventDefault();
-          this.navigate(false);
+          this.navigate(true);
           break;
         case 'ArrowDown':
           e.preventDefault();
           if (!isToggled) {
             onOpenDropdown();
           } else {
-            this.navigate(true);
+            this.navigate(false);
           }
           break;
         case 'Enter':
@@ -292,13 +330,14 @@ class RawList extends PureComponent {
       item => item.caption === selected.caption
     );
 
-    const next = up ? selectedIndex + 1 : selectedIndex - 1;
+    const next = up ? selectedIndex - 1 : selectedIndex + 1;
 
     this.setState({
       selected:
         next >= 0 && next <= dropdownList.size - 1
           ? dropdownList.get(next)
           : selected,
+      direction: up ? UP : DOWN,
     });
   };
 
@@ -314,6 +353,12 @@ class RawList extends PureComponent {
       selectedRow = true;
     }
 
+    const props = {};
+
+    if (selectedRow) {
+      props.ref = ref => (this.selected = ref);
+    }
+
     return (
       <div
         key={option.key}
@@ -325,6 +370,7 @@ class RawList extends PureComponent {
         )}
         onMouseEnter={() => this.handleSwitch(option)}
         onClick={() => this.handleSelect(option)}
+        {...props}
       >
         <p className="input-dropdown-item-title">{option.caption}</p>
       </div>
