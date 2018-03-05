@@ -133,8 +133,7 @@ public final class ProcessInfo implements Serializable
 			this.parametersOverride = null;
 		}
 
-		result = new ProcessExecutionResult();
-		result.setAD_PInstance_ID(adPInstanceId);
+		result = ProcessExecutionResult.newInstanceForADPInstanceId(adPInstanceId);
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
 
