@@ -235,8 +235,11 @@ public class ShipmentScheduleWithHU
 		if (getM_AttributeSetInstance_ID() > 0)
 		{
 			final I_M_AttributeInstance attributeSetInstance = load(getM_AttributeSetInstance_ID(), I_M_AttributeInstance.class);
-			final IAttributeStorage asiAttributeStorage = attributeStorageFactory.getAttributeStorage(attributeSetInstance);
-			allAttributeValues.addAll(asiAttributeStorage.getAttributeValues());
+			if (attributeSetInstance != null)
+			{
+				final IAttributeStorage asiAttributeStorage = attributeStorageFactory.getAttributeStorage(attributeSetInstance);
+				allAttributeValues.addAll(asiAttributeStorage.getAttributeValues());
+			}
 		}
 
 		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerFor(shipmentSchedule);
