@@ -136,7 +136,7 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 			from.includedTabsInfoByTabId.forEach((key, tabInfo) -> includedTabsInfoByTabId.put(key, tabInfo.copy()));
 		}
 	}
-	
+
 	public JSONDocumentChangedWebSocketEvent copy()
 	{
 		return new JSONDocumentChangedWebSocketEvent(this);
@@ -211,12 +211,11 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 					.appendParametersToMessage();
 		}
 
-		if (from.stale)
+		if (from.stale != null && from.stale)
 		{
 			stale = from.stale;
 		}
 
 		from.getIncludedTabsInfo().values().forEach(this::addIncludedTabInfo);
 	}
-
 }
