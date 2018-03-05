@@ -7,6 +7,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -73,6 +75,7 @@ public class HUReportExecutor
 	private final Properties ctx;
 	private int windowNo = Env.WINDOW_None;
 	private int numberOfCopies = 1;
+	private Boolean printPreview = null;
 
 	private HUReportExecutor(final Properties ctx)
 	{
@@ -95,6 +98,12 @@ public class HUReportExecutor
 	{
 		Check.assume(numberOfCopies > 0, "numberOfCopies > 0");
 		this.numberOfCopies = numberOfCopies;
+		return this;
+	}
+	
+	public HUReportExecutor printPreview(final boolean printPreview)
+	{
+		this.printPreview = printPreview;
 		return this;
 	}
 
@@ -156,6 +165,7 @@ public class HUReportExecutor
 				.adProcessId(adProcessId)
 				.windowNo(windowNo)
 				.copies(numberOfCopies)
+				.printPreview(printPreview)
 				.adLanguage(extractReportingLanguageFromHUs(husToProcess))
 				.huIdsToProcess(extractHUIds(husToProcess))
 				.onErrorThrowException(true)
@@ -211,6 +221,7 @@ public class HUReportExecutor
 				.setReportLanguage(reportLanguageToUse)
 				.addParameter(PARA_BarcodeURL, getBarcodeServlet(ctx))
 				.addParameter(IJasperService.PARAM_PrintCopies, request.getCopies())
+				.setPrintPreview(request.getPrintPreview())
 				//
 				// Execute report in a new transaction
 				.buildAndPrepareExecution()
@@ -330,6 +341,7 @@ public class HUReportExecutor
 		int adProcessId;
 		int windowNo;
 		int copies;
+		Boolean printPreview;
 		String adLanguage;
 		boolean onErrorThrowException;
 		ImmutableSet<Integer> huIdsToProcess;
@@ -340,6 +352,7 @@ public class HUReportExecutor
 				final int adProcessId,
 				final int windowNo,
 				final int copies,
+				@Nullable final Boolean printPreview,
 				final String adLanguage,
 				final boolean onErrorThrowException,
 				final ImmutableSet<Integer> huIdsToProcess)
@@ -354,6 +367,7 @@ public class HUReportExecutor
 			this.adProcessId = adProcessId;
 			this.windowNo = windowNo > 0 ? windowNo : Env.WINDOW_None;
 			this.copies = copies;
+			this.printPreview = printPreview;
 			this.adLanguage = adLanguage;
 			this.onErrorThrowException = onErrorThrowException;
 			this.huIdsToProcess = huIdsToProcess;

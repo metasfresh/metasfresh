@@ -1394,7 +1394,7 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 
-		public ProcessInfoBuilder setPrintPreview(final boolean printPreview)
+		public ProcessInfoBuilder setPrintPreview(final Boolean printPreview)
 		{
 			this.printPreview = printPreview;
 			return this;
