@@ -1,0 +1,152 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: F:\kubernetes\kompose.exe convert
+    kompose.version: 1.9.0 (093c756)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ui-api-app-db-es
+  name: ui-api-app-db-es
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: ui-api-app-db-es
+    spec:
+      containers:
+#
+# metasfresh-db
+      - env:
+        - name: DB_SYSPASS
+          value: System
+        - name: METASFRESH_DBNAME
+          value: metasfresh
+        - name: METASFRESH_PASSWORD
+          value: metasfresh
+        - name: METASFRESH_USERNAME
+          value: metasfresh
+# get it from dockerhub for now..we don't push metasfresh-db to docker.metasfresh.com yet          
+        name: db
+        image: metasfresh/metasfresh-db:latest
+        imagePullPolicy: Always
+        resources: {}
+        volumeMounts:
+#        - mountPath: /var/lib/postgresql/data
+#          name: db-claim0
+#        - mountPath: /var/log/postgresql
+#          name: db-claim1
+        - mountPath: /etc/localtime
+          name: host-localtime # was db-claim2
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone # was db-claim3
+          readOnly: true
+#
+# metasfresh-app          
+      - env:
+        - name: METASFRESH_HOME
+          value: /opt/metasfresh
+        - name: DB_HOST
+          value: localhost
+        - name: APP_HOST
+          value: localhost
+        - name: ES_HOST
+          value: loccalhost
+        - name: ES_PORT
+          value: '9300'
+# this one we have on docker.metasfresh.com, so let's try getting from there
+        name: app
+        image: docker.metasfresh.com/metasfresh/metasfresh-app-dev:gh18_dist_LATEST
+        imagePullPolicy: Always
+        resources: {}
+        volumeMounts:
+#        - mountPath: /opt/metasfresh/log
+#          name: app-claim0
+        - mountPath: /etc/localtime
+          name: host-localtime # was app-claim1
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone # was app-claim2
+          readOnly: true
+#
+# metasfresh-webui-api
+      - env:
+        - name: DB_HOST
+          value: localhost
+        - name: APP_HOST
+          value: localhost
+        - name: ES_HOST
+          value: loccalhost
+        - name: ES_PORT
+          value: '9300'
+# this one we have on docker.metasfresh.com, so let's try getting from there
+        name: webapi
+        image: docker.metasfresh.com/metasfresh/metasfresh-webui-api-dev:master_LATEST
+        imagePullPolicy: Always
+        resources: {}
+        volumeMounts:
+#        - mountPath: /opt/metasfresh-webui-api/log
+#          name: webapi-claim0
+        - mountPath: /etc/localtime
+          name: host-localtime # was webapi-claim1
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone # was webapi-claim2
+          readOnly: true
+#
+# Elastic search
+      - env:
+        - name: ES_JAVA_OPTS
+          value: -Xms128M -Xmx256m
+# i just buid&pushed this in a very Q&D fashion..          
+        name: search
+        image: docker.metasfresh.com/metasfresh/search:latest
+        imagePullPolicy: Always
+        resources: {}
+        securityContext:
+          capabilities:
+            add:
+            - IPC_LOCK
+        volumeMounts:
+#        - mountPath: /usr/share/elasticsearch/data
+#          name: search-claim0
+        - mountPath: /etc/localtime
+          name: host-localtime # was search-claim1
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone # was search-claim2
+          readOnly: true
+# webui
+      - env:
+        - name: WEBUI_API_HOST
+          value: localhost 
+        - name: WEBUI_API_PORT
+          value: '8080'         
+        name: webui
+        image: docker.metasfresh.com/metasfresh/metasfresh-webui-dev:gh18_dist_LATEST
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: host-localtime # was webui-claim0
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone # was webui-claim1
+          readOnly: true
+      restartPolicy: Always
+      volumes:
+      - name: host-localtime # was app-claim1
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone # was app-claim2
+        hostPath:
+          path: /etc/timezone
+status: {}
