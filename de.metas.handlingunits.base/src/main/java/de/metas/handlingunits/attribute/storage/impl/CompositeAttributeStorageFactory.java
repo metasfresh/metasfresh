@@ -167,33 +167,6 @@ public class CompositeAttributeStorageFactory implements IAttributeStorageFactor
 		return null;
 	}
 
-	// @Override
-	// public void setParentAttributeStorageFactory(final IAttributeStorageFactory parentAttributeStorageFactory)
-	// {
-	// this.parentAttributeStorageFactory = parentAttributeStorageFactory;
-	// }
-	//
-	// @Override
-	// public IAttributeStorageFactory getParentAttributeStorageFactory()
-	// {
-	// return parentAttributeStorageFactory;
-	// }
-	//
-	// @Override
-	// public IAttributeStorageFactory getRootAttributeStorageFactory()
-	// {
-	// if (parentAttributeStorageFactory == null)
-	// {
-	// // this is the root
-	// return this;
-	// }
-	// else
-	// {
-	// // ask parent for root
-	// return parentAttributeStorageFactory.getRootAttributeStorageFactory();
-	// }
-	// }
-
 	@Override
 	public final IHUAttributesDAO getHUAttributesDAO()
 	{
