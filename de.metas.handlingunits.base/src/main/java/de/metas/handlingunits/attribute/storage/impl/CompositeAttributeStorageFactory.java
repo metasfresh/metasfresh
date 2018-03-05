@@ -144,12 +144,11 @@ public class CompositeAttributeStorageFactory implements IAttributeStorageFactor
 		final IAttributeStorage storage = getAttributeStorageIfHandled(model);
 		if (storage == null)
 		{
-			throw new AdempiereException("No factory included in this instance can handle the given model")
+			throw new AdempiereException("None of the registered factories can handle the given model")
 					.appendParametersToMessage()
 					.setParameter("model", model)
 					.setParameter("this instance", this);
 		}
-
 		return storage;
 	}
 
