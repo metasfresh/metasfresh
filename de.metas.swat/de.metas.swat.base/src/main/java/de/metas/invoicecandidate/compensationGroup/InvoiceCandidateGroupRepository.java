@@ -24,6 +24,7 @@ import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupRepository;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import lombok.NonNull;
 
 /*
@@ -209,7 +210,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 
 	private IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForGroupQuery(final GroupId groupId)
 	{
-		final int orderId = groupId.getDocumentIdAssumingTableName(I_C_Order.Table_Name);
+		final int orderId = OrderGroupRepository.extractOrderIdFromGroupId(groupId);
 		final int orderCompensationGroupId = groupId.getOrderCompensationGroupId();
 
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
