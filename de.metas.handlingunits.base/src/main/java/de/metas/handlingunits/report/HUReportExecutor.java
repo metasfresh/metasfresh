@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.Language;
+import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import lombok.NonNull;
 
@@ -148,9 +149,9 @@ public class HUReportExecutor
 		huReportTrxListener.setListenerWasRegistered();
 	}
 
-	public void executeNow(final int adProcessId, @NonNull final List<I_M_HU> husToProcess)
+	public HUReportExecutorResult executeNow(final int adProcessId, @NonNull final List<I_M_HU> husToProcess)
 	{
-		executeNow(HUReportRequest.builder()
+		return executeNow(HUReportRequest.builder()
 				.ctx(ctx)
 				.adProcessId(adProcessId)
 				.windowNo(windowNo)
@@ -194,20 +195,15 @@ public class HUReportExecutor
 		}
 	}
 
-	private static void executeNow(final HUReportRequest request)
+	private static HUReportExecutorResult executeNow(final HUReportRequest request)
 	{
 		final Properties ctx = request.getCtx();
 
 		final ImmutableSet<Integer> huIdsToProcess = request.getHuIdsToProcess();
-		if (huIdsToProcess.isEmpty())
-		{
-			return;
-		}
-
 		final String adLanguage = request.getAdLanguage();
 		final String reportLanguageToUse = Objects.equals(REPORT_LANG_NONE, adLanguage) ? null : adLanguage;
 
-		ProcessInfo.builder()
+		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setAD_Process_ID(request.getAdProcessId())
 				.setWindowNo(request.getWindowNo())
@@ -221,6 +217,11 @@ public class HUReportExecutor
 				.onErrorThrowException(request.isOnErrorThrowException())
 				.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIdsToProcess, ITrx.TRXNAME_ThreadInherited))
 				.executeSync();
+
+		return HUReportExecutorResult.builder()
+				.processInfo(processExecutor.getProcessInfo())
+				.processExecutionResult(processExecutor.getResult())
+				.build();
 	}
 
 	private static String getBarcodeServlet(final Properties ctx)
@@ -274,13 +275,13 @@ public class HUReportExecutor
 
 		public void setLanguage(@NonNull final String language)
 		{
-			if (this.adLanguage == null)
+			if (adLanguage == null)
 			{
-				this.adLanguage = language;
+				adLanguage = language;
 			}
-			else if (!Objects.equals(this.adLanguage, language))
+			else if (!Objects.equals(adLanguage, language))
 			{
-				this.adLanguage = REPORT_LANG_NONE;
+				adLanguage = REPORT_LANG_NONE;
 			}
 		}
 
@@ -291,7 +292,7 @@ public class HUReportExecutor
 
 		public void setListenerWasRegistered()
 		{
-			this.listenerWasRegistered = true;
+			listenerWasRegistered = true;
 		}
 
 		public void afterCommit(final ITrx trx)
@@ -302,6 +303,11 @@ public class HUReportExecutor
 		public void afterClose(final ITrx trx)
 		{
 			if (!commitWasDone)
+			{
+				return;
+			}
+
+			if (huIdsToProcess.isEmpty())
 			{
 				return;
 			}
@@ -318,7 +324,6 @@ public class HUReportExecutor
 	}
 
 	@lombok.Value
-	@lombok.Builder
 	private static class HUReportRequest
 	{
 		Properties ctx;
@@ -328,5 +333,31 @@ public class HUReportExecutor
 		String adLanguage;
 		boolean onErrorThrowException;
 		ImmutableSet<Integer> huIdsToProcess;
+
+		@lombok.Builder
+		private HUReportRequest(
+				final Properties ctx,
+				final int adProcessId,
+				final int windowNo,
+				final int copies,
+				final String adLanguage,
+				final boolean onErrorThrowException,
+				final ImmutableSet<Integer> huIdsToProcess)
+		{
+			Check.assumeNotNull(ctx, "Parameter ctx is not null");
+			Check.assume(adProcessId > 0, "adProcessId > 0");
+			Check.assume(copies > 0, "copies > 0");
+			Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
+			Check.assumeNotEmpty(huIdsToProcess, "huIdsToProcess is not empty");
+
+			this.ctx = ctx;
+			this.adProcessId = adProcessId;
+			this.windowNo = windowNo > 0 ? windowNo : Env.WINDOW_None;
+			this.copies = copies;
+			this.adLanguage = adLanguage;
+			this.onErrorThrowException = onErrorThrowException;
+			this.huIdsToProcess = huIdsToProcess;
+		}
+
 	}
 }
