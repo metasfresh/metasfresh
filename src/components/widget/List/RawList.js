@@ -115,14 +115,11 @@ class RawList extends PureComponent {
   }
 
   checkIfDropDownListOutOfFilter = () => {
-    if (
-      !this.tetheredList ||
-      (this.tetheredList && !this.tetheredList.getBoundingClientRect)
-    ) {
+    if (!this.list) {
       return;
     }
 
-    const { top } = this.tetheredList.getBoundingClientRect();
+    const { top } = this.list.getBoundingClientRect();
     const { filter, isToggled, onCloseDropdown } = this.props;
     if (
       isToggled &&
@@ -450,7 +447,7 @@ class RawList extends PureComponent {
           {isFocused &&
             isToggled && (
               <RawListDropdown
-                ref={c => (this.tetheredList = c)}
+                childRef={ref => (this.list = ref)}
                 isListEmpty={isListEmpty}
                 offsetWidth={this.dropdown.offsetWidth}
                 loading={loading}
