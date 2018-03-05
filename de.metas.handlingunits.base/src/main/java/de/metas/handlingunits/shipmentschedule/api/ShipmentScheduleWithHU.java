@@ -30,6 +30,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
@@ -39,12 +40,14 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.Null;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -54,6 +57,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -62,9 +66,13 @@ import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
@@ -198,14 +206,6 @@ public class ShipmentScheduleWithHU
 
 	private Object computeAttributesAggregationKey()
 	{
-		final Object attributesAggregationKey = createAttributesAggregationKey();
-		logger.trace("AttributesAggregationKey created: {}", attributesAggregationKey);
-
-		return attributesAggregationKey;
-	}
-
-	private Object createAttributesAggregationKey()
-	{
 		final ImmutableMap.Builder<String, Object> keyBuilder = ImmutableMap.builder();
 
 		for (final IAttributeValue attributeValue : getAttributeValues())
@@ -214,7 +214,10 @@ public class ShipmentScheduleWithHU
 			final Object value = attributeValue.getValue();
 			keyBuilder.put(name, Null.box(value));
 		}
-		return keyBuilder.build();
+		final ImmutableMap<String, Object> attributesAggregationKey = keyBuilder.build();
+		logger.trace("AttributesAggregationKey created: {}", attributesAggregationKey);
+
+		return attributesAggregationKey;
 	}
 
 	private List<IAttributeValue> computeAttributeValues()
@@ -408,5 +411,44 @@ public class ShipmentScheduleWithHU
 			qtyTU = ONE;
 		}
 		return qtyTU;
+	}
+
+	public I_M_HU_PI_Item_Product retrieveM_HU_PI_Item_ProductOrNull()
+	{
+		final I_M_HU topLevelHU = getTopLevelHU();
+		if (topLevelHU.getM_HU_PI_Item_Product_ID() > 0)
+		{
+			return topLevelHU.getM_HU_PI_Item_Product();
+		}
+
+		final ImmutableList<I_M_HU_Item> huMaterialItems = Services.get(IHandlingUnitsDAO.class).retrieveItems(topLevelHU).stream()
+				.filter(item -> X_M_HU_Item.ITEMTYPE_Material.equals(item.getItemType()))
+				.collect(ImmutableList.toImmutableList());
+		if (huMaterialItems.isEmpty())
+		{
+			return Services.get(IHUShipmentScheduleBL.class).getM_HU_PI_Item_Product_IgnoringPickedHUs(shipmentSchedule);
+		}
+
+		Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, topLevelHU, huMaterialItems);
+		final I_M_HU_Item huMaterialItem = huMaterialItems.get(0);
+
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
+		final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(shipmentSchedule);
+		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+
+		final I_M_HU_PI_Item_Product matchingPiip = hupiItemProductDAO.retrievePIMaterialItemProduct(
+				huMaterialItem.getM_HU_PI_Item(),
+				bPartner,
+				getM_Product(),
+				preparationDate);
+		if(matchingPiip != null)
+		{
+			return matchingPiip;
+		}
+
+		// return "No Packing Item"
+		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
 	}
 }
