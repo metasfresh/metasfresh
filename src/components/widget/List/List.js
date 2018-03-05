@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { List } from 'immutable';
+import { findKey } from 'lodash';
 
 import { dropdownRequest } from '../../../actions/GenericActions';
 import { getViewAttributeDropdown } from '../../../actions/ViewAttributesActions';
@@ -234,8 +235,12 @@ class ListWidget extends Component {
               patchResult[0] &&
               patchResult[0].fieldsByName
             ) {
-              let patchFields = patchResult[0].fieldsByName;
-              if (patchFields.lookupValuesStale === true) {
+              const patchFields = patchResult[0].fieldsByName;
+
+              if (
+                patchFields.lookupValuesStale === true ||
+                findKey(patchFields, ['widgetType', 'List'])
+              ) {
                 this.setState({
                   list: null,
                 });
@@ -252,6 +257,9 @@ class ListWidget extends Component {
           });
         }
       } else {
+        this.setState({
+          list: null,
+        });
         onChange(option);
       }
     }
