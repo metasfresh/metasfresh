@@ -18,7 +18,7 @@ package org.compiere.model;
 
 /**
  * Database Null Indicator
- * 
+ *
  * @author Jorg Janke
  */
 public final class Null
@@ -36,7 +36,7 @@ public final class Null
 
 	/**
 	 * Unbox {@value #NULL} object
-	 * 
+	 *
 	 * @param obj
 	 * @return <code>obj</code> or <code>null</code>
 	 */
@@ -47,7 +47,7 @@ public final class Null
 
 	/**
 	 * Box <code>null</code> to {@link #NULL}.
-	 * 
+	 *
 	 * @param obj
 	 * @return <code>obj</code> or {@link #NULL} if the <code>obj</code> was <code>null</code>; this method never returns <code>null</code>.
 	 */
@@ -60,6 +60,9 @@ public final class Null
 	{
 	}
 
+	/**
+	 * @return the string {@code "NULL"}.
+	 */
 	@Override
 	public String toString()
 	{

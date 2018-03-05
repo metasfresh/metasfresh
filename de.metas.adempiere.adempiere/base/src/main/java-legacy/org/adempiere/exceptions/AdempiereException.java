@@ -497,7 +497,7 @@ public class AdempiereException extends RuntimeException
 	 * Sets parameter.
 	 *
 	 * @param name parameter name
-	 * @param value parameter value or <code>null</code> if you want the parameter to be removed.
+	 * @param value parameter value; {@code null} is added as {@link Null}
 	 */
 	@OverridingMethodsMustInvokeSuper
 	public AdempiereException setParameter(@NonNull final String name, @Nullable final Object value)
