@@ -154,6 +154,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		final HUEditorView view = HUEditorView.cast(viewsRepo.getView(viewId));
 		final HUReportExecutorResult reportExecutorResult = HUReportExecutor.newInstance(context.getCtx())
 				.numberOfCopies(numberOfCopies)
+				.printPreview(true)
 				.executeNow(reportADProcessId, extractHUsToReport(view));
 
 		final ADProcessPostProcessService postProcessService = ADProcessPostProcessService.builder()
