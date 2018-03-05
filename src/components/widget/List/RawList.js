@@ -135,20 +135,8 @@ class RawList extends PureComponent {
 
     const { top, bottom } = selected.getBoundingClientRect();
 
-    switch (direction) {
-      case UP:
-        if (top < topMax) {
-          selected.scrollIntoView(true);
-        }
-
-        break;
-
-      case DOWN:
-        if (bottom > bottomMax) {
-          selected.scrollIntoView(false);
-        }
-
-        break;
+    if (top < topMax || bottom > bottomMax) {
+      selected.scrollIntoView(direction === UP ? true : false);
     }
   };
 
