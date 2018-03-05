@@ -58,6 +58,11 @@ import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ProcessExecutionResult
 {
+	public static ProcessExecutionResult newInstanceForADPInstanceId(final int adPInstanceId)
+	{
+		return new ProcessExecutionResult(adPInstanceId);
+	}
+	
 	private static final transient Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
 
 	private int AD_PInstance_ID;
@@ -130,8 +135,9 @@ public class ProcessExecutionResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String webuiViewProfileId = null;
 
-	public ProcessExecutionResult()
+	private ProcessExecutionResult(final int adPInstanceId)
 	{
+		this.AD_PInstance_ID = adPInstanceId;
 		logs = new ArrayList<>();
 	}
 
