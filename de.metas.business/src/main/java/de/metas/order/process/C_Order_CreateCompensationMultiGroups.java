@@ -2,13 +2,10 @@ package de.metas.order.process;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
@@ -19,10 +16,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.order.IOrderDAO;
 import de.metas.order.compensationGroup.Group;
-import de.metas.order.compensationGroup.GroupCompensationLine;
-import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
@@ -117,7 +111,8 @@ public class C_Order_CreateCompensationMultiGroups extends JavaProcess implement
 				.map(e -> createGroup(e.getKey(), e.getValue()))
 				.collect(ImmutableList.toImmutableList());
 
-		renumberOrderLines(groups);
+		final int orderId = OrderGroupRepository.extractOrderIdFromGroups(groups);
+		groupsRepo.renumberOrderLinesForOrderId(orderId);
 
 		return MSG_OK;
 	}
@@ -167,60 +162,4 @@ public class C_Order_CreateCompensationMultiGroups extends JavaProcess implement
 				.createGroup();
 	}
 
-	private void renumberOrderLines(final List<Group> groups)
-	{
-		final int orderId = OrderGroupRepository.extractOrderIdFromGroups(groups);
-
-		final LinkedHashMap<Integer, I_C_OrderLine> allOrderLinesById = Services.get(IOrderDAO.class).retrieveOrderLines(orderId)
-				.stream()
-				.sorted(Comparator.comparing(I_C_OrderLine::getLine))
-				.map(orderLine -> GuavaCollectors.entry(orderLine.getC_OrderLine_ID(), orderLine))
-				.collect(GuavaCollectors.toLinkedHashMap());
-
-		int nextLineNo = 10;
-
-		//
-		// Renumber grouped order lines first
-		for (final Group group : groups)
-		{
-			for (final GroupRegularLine line : group.getRegularLines())
-			{
-				final int orderLineId = line.getRepoId();
-				final I_C_OrderLine orderLine = allOrderLinesById.remove(orderLineId);
-				if (orderLine == null)
-				{
-					// shall not happen
-					continue;
-				}
-
-				orderLine.setLine(nextLineNo);
-				InterfaceWrapperHelper.save(orderLine);
-				nextLineNo += 10;
-			}
-
-			for (final GroupCompensationLine line : group.getCompensationLines())
-			{
-				final int orderLineId = line.getRepoId();
-				final I_C_OrderLine orderLine = allOrderLinesById.remove(orderLineId);
-				if (orderLine == null)
-				{
-					// shall not happen
-					continue;
-				}
-
-				orderLine.setLine(nextLineNo);
-				InterfaceWrapperHelper.save(orderLine);
-				nextLineNo += 10;
-			}
-		}
-
-		//
-		// Remaining ungrouped order lines
-		for (final I_C_OrderLine orderLine : allOrderLinesById.values())
-		{
-			orderLine.setLine(nextLineNo);
-			InterfaceWrapperHelper.save(orderLine);
-			nextLineNo += 10;
-		}
-	}
 }
