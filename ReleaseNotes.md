@@ -10,6 +10,12 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.48 (2018-11)
+**release for week 2018-11**
+
+## Features
+* metasfresh
+
 # metasfresh 5.47 (2018-10)
 **release for week 2018-10**
 
