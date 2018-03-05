@@ -355,7 +355,10 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
 			final Date dateValue = attributeSet.getValueAsDate(attribute);
-			attributeInstance.setValueDate(new Timestamp(dateValue.getTime()));
+			if (dateValue != null)
+			{
+				attributeInstance.setValueDate(new Timestamp(dateValue.getTime()));
+			}
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 		{
