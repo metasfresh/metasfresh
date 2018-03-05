@@ -46,16 +46,16 @@ public class JSONProcessInstance implements Serializable
 
 	/** Parameters */
 	@JsonProperty("fieldsByName")
-	private final Map<String, JSONDocumentField> fieldsByName;
+	private final Map<String, JSONDocumentField> parametersByName;
 
 	private JSONProcessInstance(final IProcessInstanceController pinstance, final JSONOptions jsonOpts)
 	{
 		super();
 		pinstanceId = pinstance.getInstanceId().toJson();
 
-		fieldsByName = pinstance.getParameters()
+		parametersByName = pinstance.getParameters()
 				.stream()
-				.map(param -> JSONDocumentField.ofDocumentField(param, jsonOpts.getAD_Language()))
+				.map(param -> JSONDocumentField.ofProcessParameter(param, jsonOpts.getAD_Language()))
 				.collect(GuavaCollectors.toImmutableMapByKey(JSONDocumentField::getField));
 	}
 }

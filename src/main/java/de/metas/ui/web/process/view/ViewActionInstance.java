@@ -14,11 +14,14 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.process.IProcessInstanceController;
+import de.metas.ui.web.process.IProcessInstanceParameter;
+import de.metas.ui.web.process.ProcessExecutionContext;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.CreateAndOpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.ResultAction;
+import de.metas.ui.web.process.adprocess.DocumentFieldAsProcessInstanceParameter;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -27,10 +30,8 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.ui.web.window.model.IDocumentFieldView;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -122,13 +123,16 @@ import lombok.ToString;
 	}
 
 	@Override
-	public Collection<IDocumentFieldView> getParameters()
+	public Collection<IProcessInstanceParameter> getParameters()
 	{
 		if (parametersDocument == null)
 		{
 			return ImmutableList.of();
 		}
-		return parametersDocument.getFieldViews();
+		return parametersDocument.getFieldViews()
+				.stream()
+				.map(DocumentFieldAsProcessInstanceParameter::of)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -157,7 +161,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public ProcessInstanceResult startProcess(final IViewsRepository viewsRepo, final DocumentCollection documentsCollection_NOTUSED)
+	public ProcessInstanceResult startProcess(@NonNull final ProcessExecutionContext context)
 	{
 		assertNotExecuted();
 
@@ -182,10 +186,10 @@ import lombok.ToString;
 			final Object targetObject = Modifier.isStatic(viewActionMethod.getModifiers()) ? null : view;
 			final Object resultActionObj = viewActionMethod.invoke(targetObject, viewActionParams);
 			final ResultAction resultAction = viewActionDescriptor.convertReturnType(resultActionObj);
-			final ResultAction resultActionProcessed = processResultAction(resultAction, viewsRepo);
+			final ResultAction resultActionProcessed = processResultAction(resultAction, context.getViewsRepo());
 
 			final ProcessInstanceResult result = ProcessInstanceResult.builder(pinstanceId)
-					.setAction(resultActionProcessed)
+					.action(resultActionProcessed)
 					.build();
 
 			this.result = result;

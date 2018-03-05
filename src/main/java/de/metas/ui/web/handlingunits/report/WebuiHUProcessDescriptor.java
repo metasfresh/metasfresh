@@ -5,6 +5,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -57,6 +58,11 @@ class WebuiHUProcessDescriptor
 	public int getReportADProcessId()
 	{
 		return huProcessDescriptor.getProcessId();
+	}
+
+	public DocumentEntityDescriptor getParametersDescriptor()
+	{
+		return processDescriptor.getParametersDescriptor();
 	}
 
 	public WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor()

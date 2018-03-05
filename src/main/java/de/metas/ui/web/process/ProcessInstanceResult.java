@@ -1,13 +1,8 @@
 package de.metas.ui.web.process;
 
 import java.io.File;
-import java.io.Serializable;
-
-import javax.annotation.concurrent.Immutable;
 
 import org.compiere.util.Util;
-
-import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewId;
@@ -17,9 +12,11 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.Value;
 
 /*
  * #%L
@@ -43,25 +40,25 @@ import lombok.Setter;
  * #L%
  */
 
-@Immutable
-@SuppressWarnings("serial")
-public final class ProcessInstanceResult implements Serializable
+@Value
+public final class ProcessInstanceResult
 {
-	public static final Builder builder(final DocumentId instanceId)
+	public static final ProcessInstanceResultBuilder builder(@NonNull final DocumentId instanceId)
 	{
-		return new Builder(instanceId);
+		return new ProcessInstanceResultBuilder()
+				.instanceId(instanceId);
 	}
 
-	public static final ProcessInstanceResult ok(final DocumentId instanceId)
+	public static final ProcessInstanceResult ok(@NonNull final DocumentId instanceId)
 	{
 		return builder(instanceId).build();
 	}
 
-	public static final ProcessInstanceResult error(final DocumentId instanceId, final Throwable error)
+	public static final ProcessInstanceResult error(@NonNull final DocumentId instanceId, @NonNull final Throwable error)
 	{
 		return builder(instanceId)
-				.setError(true)
-				.setSummary(error.getLocalizedMessage())
+				.error(true)
+				.summary(error.getLocalizedMessage())
 				.build();
 	}
 
@@ -70,52 +67,22 @@ public final class ProcessInstanceResult implements Serializable
 	private final boolean error;
 	private final ResultAction action;
 
-	private ProcessInstanceResult(final Builder builder)
+	@Builder
+	private ProcessInstanceResult(
+			@NonNull final DocumentId instanceId,
+			final String summary,
+			final boolean error,
+			final ResultAction action)
 	{
-		super();
-		instanceId = builder.instanceId;
-		summary = builder.summary;
-		error = builder.error;
-
-		action = builder.action;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("instanceId", instanceId)
-				.add("summary", summary)
-				.add("error", error)
-				.add("action", action)
-				.toString();
-	}
-
-	public DocumentId getInstanceId()
-	{
-		return instanceId;
-	}
-
-	public String getSummary()
-	{
-		return summary;
+		this.instanceId = instanceId;
+		this.summary = summary;
+		this.error = error;
+		this.action = action;
 	}
 
 	public boolean isSuccess()
 	{
 		return !isError();
-	}
-
-	public boolean isError()
-	{
-		return error;
-	}
-
-	/** @return action or null */
-	public ResultAction getAction()
-	{
-		return action;
 	}
 
 	/** @return action of given type; never returns null */
@@ -206,43 +173,5 @@ public final class ProcessInstanceResult implements Serializable
 	{
 		private @NonNull final ViewId viewId;
 		private @NonNull final DocumentIdsSelection rowIds;
-	}
-
-	public static final class Builder
-	{
-		private DocumentId instanceId;
-		private String summary;
-		private boolean error;
-
-		private ResultAction action;
-
-		private Builder(@NonNull DocumentId instanceId)
-		{
-			super();
-			this.instanceId = instanceId;
-		}
-
-		public ProcessInstanceResult build()
-		{
-			return new ProcessInstanceResult(this);
-		}
-
-		public Builder setSummary(final String summary)
-		{
-			this.summary = summary;
-			return this;
-		}
-
-		public Builder setError(final boolean error)
-		{
-			this.error = error;
-			return this;
-		}
-
-		public Builder setAction(final ResultAction action)
-		{
-			this.action = action;
-			return this;
-		}
 	}
 }

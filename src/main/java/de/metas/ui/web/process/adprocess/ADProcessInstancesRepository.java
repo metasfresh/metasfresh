@@ -50,7 +50,6 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
@@ -182,14 +181,14 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			//
 			// Create (webui) process instance and add it to our internal cache.
 			final ADProcessInstanceController pinstance = ADProcessInstanceController.builder()
-					.processDescriptor(processDescriptor)
+					.caption(processDescriptor.getCaption())
 					.instanceId(adPInstanceId)
 					.parameters(parametersDoc)
 					.processClassInstance(processClassInstance)
 					.contextSingleDocumentPath(request.getSingleDocumentPath())
 					.viewId(request.getViewRowIdsSelection() != null ? request.getViewRowIdsSelection().getViewId() : null)
 					.build();
-			processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
+			processInstances.put(adPInstanceId, pinstance.copyReadonly());
 			return pinstance;
 		}
 	}
@@ -364,7 +363,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 
 			//
 			return ADProcessInstanceController.builder()
-					.processDescriptor(processDescriptor)
+					.caption(processDescriptor.getCaption())
 					.instanceId(adPInstanceId)
 					.parameters(parametersDoc)
 					.processClassInstance(processClassInstance)
@@ -379,7 +378,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		try (final IAutoCloseable readLock = getOrLoad(pinstanceId).lockForReading())
 		{
 			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId)
-					.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance)
+					.copyReadonly()
 					.bindContextSingleDocumentIfPossible(documentsCollection);
 
 			try (final IAutoCloseable c = processInstance.activate())
@@ -407,7 +406,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		try (final IAutoCloseable writeLock = getOrLoad(pinstanceId).lockForWriting())
 		{
 			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId)
-					.copy(CopyMode.CheckOutWritable, changesCollector)
+					.copyReadWrite(changesCollector)
 					.bindContextSingleDocumentIfPossible(documentsCollection);
 
 			// Make sure the process was not already executed.
@@ -421,7 +420,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 
 				// Actually put it back
 				processInstance.saveIfValidAndHasChanges(false); // throwEx=false
-				processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
+				processInstances.put(pinstanceId, processInstance.copyReadonly());
 
 				return result;
 			}
