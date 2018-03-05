@@ -51,6 +51,7 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 	private final String columnSql;
 	private final boolean keyColumn;
 	private final DocumentFieldWidgetType widgetType;
+	private final boolean virtualColumn; 
 
 	private final Class<?> sqlValueClass;
 	/** i.e. columnName/columnSql AS columnName */
@@ -69,6 +70,7 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 			final String columnSql,
 			final boolean keyColumn,
 			@NonNull final DocumentFieldWidgetType widgetType,
+			final boolean virtualColumn,
 			//
 			final Class<?> sqlValueClass,
 			final String sqlSelectValue,
@@ -83,6 +85,7 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 		this.columnSql = columnSql != null ? columnSql : this.columnName;
 		this.keyColumn = keyColumn;
 		this.widgetType = widgetType;
+		this.virtualColumn = virtualColumn;
 
 		this.sqlValueClass = sqlValueClass != null ? sqlValueClass : widgetType.getValueClass();
 		this.sqlSelectValue = sqlSelectValue != null ? sqlSelectValue : this.columnSql;

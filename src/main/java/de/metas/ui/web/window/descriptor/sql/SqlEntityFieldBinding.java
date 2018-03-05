@@ -38,4 +38,6 @@ public interface SqlEntityFieldBinding
 
 	/** @return field's SQL expression to be used in ORDER BY constructions */
 	IStringExpression getSqlOrderBy();
+
+	boolean isVirtualColumn();
 }
