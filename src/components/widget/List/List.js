@@ -173,6 +173,7 @@ class ListWidget extends Component {
     this.setState(
       {
         listFocused: false,
+        list: null,
       },
       () => {
         onHandleBlur && onHandleBlur();
@@ -257,9 +258,6 @@ class ListWidget extends Component {
           });
         }
       } else {
-        this.setState({
-          list: null,
-        });
         onChange(option);
       }
     }

@@ -7,6 +7,27 @@ import classnames from 'classnames';
 
 import RawListDropdown from './RawListDropdown';
 
+const setSelectedValue = function(dropdownList, selected) {
+  const changedValues = {};
+  let idx = 0;
+
+  if (selected) {
+    idx = dropdownList.findIndex(item => item.caption === selected.caption);
+  }
+
+  if (idx !== 0) {
+    const item = dropdownList.get(idx);
+    dropdownList = dropdownList.delete(idx);
+    dropdownList = dropdownList.insert(0, item);
+    changedValues.dropdownList = dropdownList;
+    idx = 0;
+  }
+
+  changedValues.selected = dropdownList.get(idx);
+
+  return changedValues;
+};
+
 class RawList extends PureComponent {
   constructor(props) {
     super(props);
@@ -36,7 +57,7 @@ class RawList extends PureComponent {
     } = this.props;
 
     let dropdownList = List(list);
-    const changedValues = {};
+    let changedValues = {};
 
     if (prevProps.list !== list) {
       if (!mandatory && emptyText) {
@@ -49,25 +70,15 @@ class RawList extends PureComponent {
       changedValues.dropdownList = dropdownList;
 
       if (dropdownList.size > 0) {
-        let idx = 0;
+        let selectedOption = null;
 
         if (selected || defaultValue) {
-          const selectedCaption = selected ? selected : defaultValue;
-
-          idx = dropdownList.findIndex(
-            item => item.caption === selectedCaption.caption
-          );
+          selectedOption = selected ? selected : defaultValue;
         }
-
-        if (idx !== 0) {
-          const item = dropdownList.get(idx);
-          dropdownList = dropdownList.delete(idx);
-          dropdownList = dropdownList.insert(0, item);
-          idx = 0;
-        }
-
-        changedValues.selected = dropdownList.get(idx);
-        changedValues.dropdownList = dropdownList;
+        changedValues = {
+          ...changedValues,
+          ...setSelectedValue(dropdownList, selectedOption),
+        };
       } else {
         changedValues.selected = null;
       }
@@ -82,25 +93,10 @@ class RawList extends PureComponent {
         dropdownList.size > 0 &&
         (prevProps.list !== list || !this.state.selected)
       ) {
-        let idx = 0;
-
-        if (selected || defaultValue) {
-          const selectedCaption = selected ? selected : defaultValue;
-
-          idx = dropdownList.findIndex(
-            item => item.caption === selectedCaption.caption
-          );
-        }
-
-        if (idx !== 0) {
-          const item = dropdownList.get(idx);
-          dropdownList = dropdownList.delete(idx);
-          dropdownList = dropdownList.insert(0, item);
-          idx = 0;
-        }
-
-        changedValues.selected = dropdownList.get(idx);
-        changedValues.dropdownList = dropdownList;
+        changedValues = {
+          ...changedValues,
+          ...setSelectedValue(dropdownList, defaultValue),
+        };
       }
     }
 
