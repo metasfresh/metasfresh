@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, Fragment } from 'react';
 import { List } from 'immutable';
 import onClickOutside from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
@@ -337,7 +337,7 @@ class RawList extends PureComponent {
   renderOptions = () => {
     const { dropdownList } = this.state;
 
-    return <div>{dropdownList.map(this.getRow)}</div>;
+    return <Fragment>{dropdownList.map(this.getRow)}</Fragment>;
   };
 
   render() {
