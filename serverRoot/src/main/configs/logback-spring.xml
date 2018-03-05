@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+	this log config aims at just sending everything to std-out
+-->
+<configuration scan="true" scanPeriod="30 seconds" debug="true">
+	<include resource="de/metas/logging/stdout.xml" />
+</configuration>
