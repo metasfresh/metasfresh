@@ -40,6 +40,8 @@ import lombok.Value;
 @Builder
 public class ProductionDetailsQuery
 {
+	public static final int NO_PP_ORDER_LINE_ID = Integer.MIN_VALUE;
+
 	public static final ProductionDetailsQuery NO_PRODUCTION_DETAIL = ProductionDetailsQuery.builder()
 			.productPlanningId(-10)
 			.productBomLineId(-10)
@@ -116,9 +118,15 @@ public class ProductionDetailsQuery
 				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Order_ID, ppOrderId);
 				doFilter = true;
 			}
+
 			if (ppOrderLineId > 0)
 			{
 				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Order_BOMLine_ID, ppOrderLineId);
+				doFilter = true;
+			}
+			else if (ppOrderLineId == NO_PP_ORDER_LINE_ID)
+			{
+				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Order_BOMLine_ID, null);
 				doFilter = true;
 			}
 
@@ -129,7 +137,5 @@ public class ProductionDetailsQuery
 						productDetailSubQueryBuilder.create());
 			}
 		}
-
 	}
-
 }
