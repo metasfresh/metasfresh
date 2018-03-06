@@ -50,16 +50,18 @@ import lombok.Value;
 @Repository
 public class BPartnerCreditLimitRepository
 {
-	private final static CCache<Integer, CreditLimitType> cache_creditLimitById = CCache.newCache(
+	private final CCache<Integer, CreditLimitType> cache_creditLimitById = CCache.newCache(
 			I_C_CreditLimit_Type.Table_Name + "#by#" + I_C_CreditLimit_Type.COLUMNNAME_C_CreditLimit_Type_ID,
 			10, // initial size
 			CCache.EXPIREMINUTES_Never);
+
+	private final Comparator<I_C_BPartner_CreditLimit> comparator = createComparator();
 
 	public BigDecimal retrieveCreditLimitByBPartnerId(final int bpartnerId, @NonNull final Timestamp date)
 	{
 		return retrieveCreditLimitsByBPartnerId(bpartnerId, date)
 				.stream()
-				.sorted(createComparator())
+				.sorted(comparator)
 				.findFirst()
 				.map(I_C_BPartner_CreditLimit::getAmount)
 				.orElse(BigDecimal.ZERO);
@@ -78,7 +80,7 @@ public class BPartnerCreditLimitRepository
 				.list();
 	}
 
-	private static Comparator<I_C_BPartner_CreditLimit> createComparator()
+	private Comparator<I_C_BPartner_CreditLimit> createComparator()
 	{
 		final Comparator<I_C_BPartner_CreditLimit> byTypeSeqNoReversed = //
 				Comparator.<I_C_BPartner_CreditLimit, Integer> comparing(bpCreditLimit -> getCreditLimitTypeById(bpCreditLimit.getC_CreditLimit_Type_ID()).getSeqNo()).reversed();
@@ -97,12 +99,12 @@ public class BPartnerCreditLimitRepository
 		private final int creditLimitTypeId;
 	}
 
-	private static CreditLimitType getCreditLimitTypeById(final int C_CreditLimit_Type_ID)
+	private CreditLimitType getCreditLimitTypeById(final int C_CreditLimit_Type_ID)
 	{
 		return cache_creditLimitById.getOrLoad(C_CreditLimit_Type_ID, () -> retrieveCreditLimitTypePOJO(C_CreditLimit_Type_ID));
 	}
 
-	private static CreditLimitType retrieveCreditLimitTypePOJO(final int C_CreditLimit_Type_ID)
+	private CreditLimitType retrieveCreditLimitTypePOJO(final int C_CreditLimit_Type_ID)
 	{
 		final I_C_CreditLimit_Type type = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_CreditLimit_Type.class)
@@ -115,6 +117,5 @@ public class BPartnerCreditLimitRepository
 				.creditLimitTypeId(type.getC_CreditLimit_Type_ID())
 				.seqNo(type.getSeqNo())
 				.build();
-
 	}
 }
