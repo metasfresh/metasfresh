@@ -16,4 +16,28 @@
 
 	<dependencies>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<generatePackage>de.metas.vertical.pharma.vendor.gateway.msv3.schema</generatePackage>
+					<wsdl>true</wsdl>
+					<xmlschema>false</xmlschema>
+					<schemaIncludes>*.wsdl</schemaIncludes>
+					<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/pharma/vendor/gateway/msv3/schema/</schemaDirectory>
+					<schemaFiles>*.wsdl</schemaFiles>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
