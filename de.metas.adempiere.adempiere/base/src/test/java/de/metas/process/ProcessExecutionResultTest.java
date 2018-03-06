@@ -26,12 +26,12 @@ import de.metas.adempiere.model.I_C_Invoice;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -62,13 +62,13 @@ public class ProcessExecutionResultTest
 		result.setWebuiIncludedViewIdToOpen("123-dummyIncludedViewId");
 		result.setWebuiViewProfileId("dummyProfile");
 		//
-		System.out.println("result: " + result);
+		// System.out.println("result: " + result);
 
 		final String json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
-		System.out.println("json: \n" + json);
+		// System.out.println("json: \n" + json);
 
 		final ProcessExecutionResult resultFromJson = jsonMapper.readValue(json, ProcessExecutionResult.class);
-		System.out.println("result (from json): " + resultFromJson);
+		// System.out.println("result (from json): " + resultFromJson);
 
 		// Compare
 		Assert.assertEquals(result.getAD_PInstance_ID(), resultFromJson.getAD_PInstance_ID());
