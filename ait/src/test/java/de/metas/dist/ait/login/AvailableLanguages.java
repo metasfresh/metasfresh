@@ -1,10 +1,10 @@
 package de.metas.dist.ait.login;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.common.collect.ImmutableMap;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,12 +19,12 @@ import lombok.Data;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,11 +42,15 @@ public class AvailableLanguages
 
 	public Map<String, String> getValuesMap()
 	{
-		final Map<String, String> map = new HashMap<>();
-		values.stream()
-				.flatMap(value -> value.entrySet().stream())
-				.forEach(entry -> map.put(entry.getKey(), entry.getValue()));
+		final ImmutableMap.Builder<String, String> result = ImmutableMap.builder();
 
-		return map;
+		for (final Map<String, String> value : values)
+		{
+			final String key = value.get("key");
+			final String caption = value.get("caption");
+			result.put(key, caption);
+		}
+
+		return result.build();
 	}
 }
