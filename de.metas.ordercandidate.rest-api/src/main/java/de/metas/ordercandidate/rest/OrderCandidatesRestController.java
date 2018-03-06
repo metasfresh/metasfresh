@@ -1,5 +1,11 @@
 package de.metas.ordercandidate.rest;
 
+import java.util.Properties;
+
+import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -8,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.ordercandidate.model.I_C_OLCand;
 
 /*
  * #%L
@@ -45,9 +52,27 @@ public class OrderCandidatesRestController
 	@PostMapping
 	public JsonOLCand createOrder(@RequestBody final JsonOLCandCreateRequest request)
 	{
+		assertCanCreateNewOLCand();
+
 		final OLCand olCand = olCandRepo.create(JsonConverters.toOLCandCreateRequest(request)
 				.adInputDataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
 				.build());
 		return JsonConverters.toJson(olCand);
+	}
+
+	private void assertCanCreateNewOLCand()
+	{
+		final IUserRolePermissions userPermissions = Env.getUserRolePermissions();
+		final Properties ctx = Env.getCtx();
+		final int adClientId = Env.getAD_Client_ID(ctx);
+		final int adOrgId = Env.getAD_Org_ID(ctx);
+		final int adTableId = InterfaceWrapperHelper.getTableId(I_C_OLCand.class);
+		final int recordId = -1; // NEW
+		final String errmsg = userPermissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
+		if (errmsg != null)
+		{
+			throw new AdempiereException(errmsg);
+		}
+
 	}
 }
