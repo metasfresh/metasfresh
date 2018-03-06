@@ -32,6 +32,11 @@ const setSelectedValue = function(dropdownList, selected) {
 };
 
 class RawList extends PureComponent {
+  /* This is an instance variable since no rendering needs to be done based on
+   * this property. Additionally, setState can't be used with the callback in
+   * an event listener since it needs to return synchronously */
+  ignoreMouse = false;
+
   constructor(props) {
     super(props);
 
@@ -131,6 +136,10 @@ class RawList extends PureComponent {
 
     const { direction } = this.state;
 
+    if (direction === null) {
+      return;
+    }
+
     const { top: topMax, bottom: bottomMax } = list.getBoundingClientRect();
 
     const { top, bottom } = selected.getBoundingClientRect();
@@ -204,6 +213,7 @@ class RawList extends PureComponent {
 
   handleSwitch = selected => {
     this.setState({
+      direction: null,
       selected,
     });
   };
@@ -217,7 +227,10 @@ class RawList extends PureComponent {
       onOpenDropdown,
       onCloseDropdown,
     } = this.props;
+
     const { selected } = this.state;
+
+    this.ignoreMouse = true;
 
     if (e.keyCode > 47 && e.keyCode < 123) {
       this.navigateToAlphanumeric(e.key);
@@ -259,6 +272,18 @@ class RawList extends PureComponent {
           break;
       }
     }
+  };
+
+  handleKeyUp = () => {
+    this.ignoreMouse = false;
+  };
+
+  handleMouseEnter = option => {
+    if (this.ignoreMouse) {
+      return;
+    }
+
+    this.handleSwitch(option);
   };
 
   handleTab = e => {
@@ -356,7 +381,7 @@ class RawList extends PureComponent {
             'input-dropdown-list-option-key-on': selectedRow,
           }
         )}
-        onMouseEnter={() => this.handleSwitch(option)}
+        onMouseEnter={() => this.handleMouseEnter(option)}
         onClick={() => this.handleSelect(option)}
         {...props}
       >
@@ -426,6 +451,7 @@ class RawList extends PureComponent {
         onFocus={readonly ? null : onFocus}
         onClick={readonly ? null : this.handleClick}
         onKeyDown={this.handleKeyDown}
+        onKeyUp={this.handleKeyUp}
       >
         <TetherComponent
           attachment="top left"
