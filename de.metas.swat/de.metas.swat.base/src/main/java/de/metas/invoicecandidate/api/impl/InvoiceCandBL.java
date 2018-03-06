@@ -1965,7 +1965,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                                // Immediate
 			{
-				newQtyToInvoice = computeInvoicableQty(ic, factor);
+				newQtyToInvoice = computeQtyToInvoiceWhenRuleImmediate(ic, factor);
 			}
 			else if (X_C_Invoice_Candidate.INVOICERULE_NachLieferungAuftrag.equals(invoiceRule))
 			{
