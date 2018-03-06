@@ -29,7 +29,7 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -72,7 +72,7 @@ public class C_Order
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.load(order.getC_BPartner_ID(), I_C_BPartner.class);
-		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
 		final BigDecimal crediUsed = stats.getSOCreditUsed();
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final Timestamp dateOrdered = order.getDateOrdered();

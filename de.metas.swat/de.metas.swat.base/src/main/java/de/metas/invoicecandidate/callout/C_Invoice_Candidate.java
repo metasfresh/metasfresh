@@ -144,7 +144,7 @@ public class C_Invoice_Candidate
 	{
 		ic.setIsInDispute(false);
 	}
-	
+
 	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_GroupCompensationPercentage)
 	public void onGroupCompensationPercentageChanged(final I_C_Invoice_Candidate ic)
 	{

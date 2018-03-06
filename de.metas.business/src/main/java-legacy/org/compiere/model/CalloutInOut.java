@@ -24,7 +24,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -257,7 +257,7 @@ public class CalloutInOut extends CalloutEngine
 		// Check SO credit available
 		if (isSOTrx)
 		{
-			final IBPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
+			final BPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
 			final BigDecimal soCreditUsed = bpartnerStats.getSOCreditUsed();
 			if (soCreditUsed.signum() < 0)
 			{
