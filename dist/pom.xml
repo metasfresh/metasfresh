@@ -449,7 +449,7 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 		<dependency>
 			<groupId>de.metas.vertical.pharma</groupId>
-			<artifactId>metasfresh-pharma.vendor.gateway.mvs3</artifactId>
+			<artifactId>metasfresh-pharma.vendor.gateway.msv3</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
