@@ -102,6 +102,8 @@ public class EventLogServiceTest
 		eventLogService.storeEvent(event, eventBus);
 		final EventLogEntry eventLog1 = EventLogEntry.builder()
 				.uuid(event.getUuid())
+				.clientId(20)
+				.orgId(30)
 				.processed(true)
 				.message("logs as processed, but doesn't provide handler class info")
 				.build();
@@ -109,6 +111,8 @@ public class EventLogServiceTest
 
 		final EventLogEntry eventLog2 = EventLogEntry.builder()
 				.uuid(event.getUuid())
+				.clientId(20)
+				.orgId(30)
 				.processed(false)
 				.eventHandlerClass(String.class)
 				.message("logs as not (yet) processed and provides handler class info")
@@ -117,6 +121,8 @@ public class EventLogServiceTest
 
 		final EventLogEntry eventLog3 = EventLogEntry.builder()
 				.uuid(event.getUuid())
+				.clientId(20)
+				.orgId(30)
 				.processed(true)
 				.eventHandlerClass(String.class)
 				.message("logs as processed and provides handler class info")
@@ -125,6 +131,8 @@ public class EventLogServiceTest
 
 		final EventLogEntry eventLog4 = EventLogEntry.builder()
 				.uuid(event.getUuid())
+				.clientId(20)
+				.orgId(30)
 				.processed(true)
 				.eventHandlerClass(Integer.class)
 				.message("logs as processed and provides handler class info")
@@ -133,6 +141,8 @@ public class EventLogServiceTest
 
 		final EventLogEntry eventLog5 = EventLogEntry.builder()
 				.uuid(event.getUuid())
+				.clientId(20)
+				.orgId(30)
 				.processed(false)
 				.eventHandlerClass(Boolean.class)
 				.message("logs as not processed and provides handler class info")

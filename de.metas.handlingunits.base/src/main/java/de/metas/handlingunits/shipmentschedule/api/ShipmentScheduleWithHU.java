@@ -438,7 +438,13 @@ public class ShipmentScheduleWithHU
 				.collect(ImmutableList.toImmutableList());
 		if (huMaterialItems.isEmpty())
 		{
-			return Services.get(IHUShipmentScheduleBL.class).getM_HU_PI_Item_Product_IgnoringPickedHUs(shipmentSchedule);
+			final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+			final I_M_HU_PI_Item_Product piipIgnoringPickedHUs = huShipmentScheduleBL.getM_HU_PI_Item_Product_IgnoringPickedHUs(shipmentSchedule);
+			if (piipIgnoringPickedHUs != null)
+			{
+				return piipIgnoringPickedHUs;
+			}
+			return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
 		}
 
 		Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, topLevelHU, huMaterialItems);

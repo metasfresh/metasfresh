@@ -11,6 +11,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Issue;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import de.metas.event.Event;
@@ -65,6 +66,9 @@ public class EventLogUserService
 		String message;
 		Class<?> eventHandlerClass;
 
+		private int clientId;
+		private int orgId;
+
 		@Builder(buildMethodName = "createAndStore")
 		public EventLogEntryRequest(
 				final boolean processed,
@@ -77,6 +81,9 @@ public class EventLogUserService
 			this.adIssueId = adIssueId;
 			this.message = message;
 			this.eventHandlerClass = eventHandlerClass;
+
+			this.clientId = Env.getAD_Client_ID(Env.getCtx());
+			this.orgId = Env.getAD_Org_ID(Env.getCtx());
 
 			final EventLogEntryCollector eventLogCollector = EventLogEntryCollector.getThreadLocal();
 			eventLogCollector.addEventLog(this);
