@@ -12,7 +12,7 @@
 
 	<version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
 	<groupId>de.metas.ordercandidate</groupId>
-	<artifactId>de.metas.ordercandidate.rest-api</artifactId>
+	<artifactId>de.metas.ordercandidate.rest-api-impl</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -22,9 +22,19 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-			<scope>provided</scope>
+			<groupId>de.metas.ordercandidate</groupId>
+			<artifactId>de.metas.ordercandidate.rest-api</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
 		</dependency>
 
 		<dependency>
