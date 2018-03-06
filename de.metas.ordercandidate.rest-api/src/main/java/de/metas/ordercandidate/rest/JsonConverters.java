@@ -85,6 +85,8 @@ class JsonConverters
 	public static JsonOLCand toJson(final OLCand olCand)
 	{
 		return JsonOLCand.builder()
+				.id(olCand.getId())
+				//
 				.bpartner(toJson(olCand.getBPartnerInfo()))
 				.billBPartner(toJson(olCand.getBillBPartnerInfo()))
 				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo()))
