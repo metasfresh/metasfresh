@@ -454,5 +454,10 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void closePartiallyInvoiced_InvoiceCandidates(I_C_Invoice invoice);
 
-	BigDecimal computeQtyToInvoiceWhenRuleImmediate(I_C_Invoice_Candidate ic, BigDecimal factor);
+	/**
+	 * Compute the qty (in stocking UOM) that was ordered but not yet invoiced.<br>
+	 * Also account for negative ordered quantities.<br>
+	 * The result does not depend on the given ic's invoice rule.
+	 */
+	BigDecimal computeOpenQty(I_C_Invoice_Candidate ic);
 }

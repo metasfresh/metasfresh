@@ -1927,7 +1927,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// return SystemTime.asDayTimestamp();
 	}
 
-	BigDecimal computeQtyToInvoice(final Properties ctx, final I_C_Invoice_Candidate ic, final BigDecimal factor, final boolean useEffectiveQtyDeliviered)
+	BigDecimal computeQtyToInvoice(
+			final Properties ctx,
+			final I_C_Invoice_Candidate ic,
+			final BigDecimal factor,
+			final boolean useEffectiveQtyDeliviered)
 	{
 		final BigDecimal newQtyToInvoice;
 
@@ -1961,7 +1965,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                                // Immediate
 			{
-				newQtyToInvoice = computeQtyToInvoiceWhenRuleImmediate(ic, factor);
+				newQtyToInvoice = computeInvoicableQty(ic, factor);
 			}
 			else if (X_C_Invoice_Candidate.INVOICERULE_NachLieferungAuftrag.equals(invoiceRule))
 			{
@@ -1989,7 +1993,23 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public BigDecimal computeQtyToInvoiceWhenRuleImmediate(@NonNull final I_C_Invoice_Candidate ic, @NonNull final BigDecimal factor)
+	public BigDecimal computeOpenQty(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final BigDecimal factor;
+		if (ic.getQtyOrdered().signum() < 0)
+		{
+			factor = BigDecimal.ONE.negate();
+		}
+		else
+		{
+			factor = BigDecimal.ONE;
+		}
+		return computeQtyToInvoiceWhenRuleImmediate(ic, factor);
+	}
+
+	private BigDecimal computeQtyToInvoiceWhenRuleImmediate(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final BigDecimal factor)
 	{
 		// 07847
 		// Use the maximum between qtyOrdered and qtyDelivered

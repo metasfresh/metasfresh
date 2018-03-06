@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.spi;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -72,13 +72,14 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		return model;
 	}
 
-	/**
-	 * Sets NetAmtToInvoice = PriceActual * QtyToInvoice - DiscountAmt, rounded to currency precision.
-	 */
 	@Override
 	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final BigDecimal netAmtToInvoice = computeNetAmt(ic, false);
+		// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and QtDdelivered)
+		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore we don't use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
+		final BigDecimal qtyToInvoice = ic.getQtyToInvoice();
+		final BigDecimal netAmtToInvoice = computeNetAmtUsingQty(ic, qtyToInvoice);
+
 		ic.setNetAmtToInvoice(netAmtToInvoice);
 		ic.setSplitAmt(BigDecimal.ZERO);
 	}
@@ -86,50 +87,23 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	@Override
 	public void setLineNetAmt(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final boolean force = ic.getQtyToInvoice().signum() ==  0 ? true : false;
-		final BigDecimal netAmt = computeNetAmt(ic, force);
-		ic.setLineNetAmt(netAmt);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+		final BigDecimal openQty = invoiceCandBL.computeOpenQty(ic);
+		final BigDecimal netAmtToInvoice = computeNetAmtUsingQty(ic, openQty);
+
+		ic.setLineNetAmt(netAmtToInvoice);
 	}
 
-	/**
-	 * compute netAmt
-	 * <br> if <code>useComputedQty</code> is true, compute the qty to be used and use it for computing netAmt
-	 * @param ic
-	 * @param useComputedQty
-	 * @return
-	 */
-	private BigDecimal computeNetAmt(@NonNull final I_C_Invoice_Candidate ic, final boolean useComputedQty)
+	private BigDecimal computeNetAmtUsingQty(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final BigDecimal qty)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final int precision = invoiceCandBL.getPrecisionFromCurrency(ic);
 
 		final BigDecimal priceActual = invoiceCandBL.getPriceActual(ic);
-
-		//
-		// task 07202: Adapt the qtyToInvoice for different UOMs on product and pricing.
-		// This is used only internally, for the calculation of net amount. qtyToInvoice in ic is not changed.
-		//
-		// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and QtDdelivered)
-		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore we don'T use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
-		final BigDecimal qty;
-		if (useComputedQty)
-		{
-			final BigDecimal factor;
-			if (ic.getQtyOrdered().signum() < 0)
-			{
-				factor = BigDecimal.ONE.negate();
-			}
-			else
-			{
-				factor = BigDecimal.ONE;
-			}
-			qty = invoiceCandBL.computeQtyToInvoiceWhenRuleImmediate(ic, factor);
-		}
-		else
-		{
-			qty = ic.getQtyToInvoice();
-		}
 		final BigDecimal qtyToInvoice = invoiceCandBL.convertToPriceUOM(
 				qty,
 				ic);

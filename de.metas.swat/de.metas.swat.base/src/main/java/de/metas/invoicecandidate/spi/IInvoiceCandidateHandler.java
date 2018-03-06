@@ -176,11 +176,15 @@ public interface IInvoiceCandidateHandler
 	boolean isUserInChargeUserEditable();
 
 	/**
-	 * Method responsible for setting {@link I_C_Invoice_Candidate#setNetAmtToInvoice(java.math.BigDecimal)}.
-	 *
-	 * @param ic
+	 * Set NetAmtToInvoice = PriceActual * QtyToInvoice - DiscountAmt, rounded to currency precision.<br>
+	 * (i.e. method responsible for setting {@link I_C_Invoice_Candidate#setNetAmtToInvoice(java.math.BigDecimal)}).
 	 */
 	void setNetAmtToInvoice(I_C_Invoice_Candidate ic);
+
+	/**
+	 * Set the "full" open invoicable amount, no matter what the invoice rule is.
+	 */
+	void setLineNetAmt(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Method responsible for setting
@@ -263,6 +267,4 @@ public interface IInvoiceCandidateHandler
 
 		BigDecimal compensationGroupBaseAmt;
 	}
-
-	void setLineNetAmt(I_C_Invoice_Candidate ic);
 }
