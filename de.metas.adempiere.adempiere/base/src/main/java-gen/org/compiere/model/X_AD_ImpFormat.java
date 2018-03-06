@@ -14,7 +14,7 @@ public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1201182869L;
+	private static final long serialVersionUID = 1422151824L;
 
     /** Standard Constructor */
     public X_AD_ImpFormat (Properties ctx, int AD_ImpFormat_ID, String trxName)
@@ -134,6 +134,8 @@ public class X_AD_ImpFormat extends org.compiere.model.PO implements I_AD_ImpFor
 	public static final String FORMATTYPE_TabSeparated = "T";
 	/** XML = X */
 	public static final String FORMATTYPE_XML = "X";
+	/** SemicolonSeparated = S */
+	public static final String FORMATTYPE_SemicolonSeparated = "S";
 	/** Set Format.
 		@param FormatType 
 		Format of the data
