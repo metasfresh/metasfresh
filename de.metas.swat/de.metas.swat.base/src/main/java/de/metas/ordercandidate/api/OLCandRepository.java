@@ -1,9 +1,14 @@
 package de.metas.ordercandidate.api;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import lombok.NonNull;
 
@@ -75,6 +80,7 @@ public class OLCandRepository
 			// olCandPO.setHandOver_User_ID(bpartner.getContactId());
 		}
 
+		olCandPO.setDateCandidate(SystemTime.asDayTimestamp());
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()));
 		olCandPO.setC_Flatrate_Conditions_ID(request.getFlatrateConditionsId());
 
@@ -88,8 +94,18 @@ public class OLCandRepository
 		olCandPO.setPriceEntered(request.getPrice());
 		olCandPO.setDiscount(request.getDiscount());
 
+		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
+		olCandPO.setAD_InputDataSource_ID(getInputDataSourceId(request.getAdInputDataSourceInternalName()));
+
 		InterfaceWrapperHelper.save(olCandPO);
 
 		return OLCand.of(olCandPO);
+	}
+
+	private int getInputDataSourceId(final String internalName)
+	{
+		return Services.get(IInputDataSourceDAO.class)
+				.retrieveInputDataSource(Env.getCtx(), internalName, /* throwEx */true, ITrx.TRXNAME_None)
+				.getAD_InputDataSource_ID();
 	}
 }

@@ -5,6 +5,7 @@ import org.compiere.util.TimeUtil;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
+import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -32,7 +33,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 class JsonConverters
 {
-	public static final OLCandCreateRequest toOLCandCreateRequest(final JsonOLCandCreateRequest request)
+	public static final OLCandCreateRequestBuilder toOLCandCreateRequest(final JsonOLCandCreateRequest request)
 	{
 		return OLCandCreateRequest.builder()
 				.bpartner(toOLCandBPartnerInfo(request.getBpartner()))
@@ -51,9 +52,7 @@ class JsonConverters
 				//
 				.pricingSystemId(request.getPricingSystemId())
 				.price(request.getPrice())
-				.discount(request.getDiscount())
-				//
-				.build();
+				.discount(request.getDiscount());
 	}
 
 	private static final OLCandBPartnerInfo toOLCandBPartnerInfo(final JsonBPartnerInfo json)

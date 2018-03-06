@@ -37,13 +37,17 @@ public class OrderCandidatesRestController
 {
 	public static final String ENDPOINT = "/api/sales/order/candidates";
 
+	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestController.class.getName();
+
 	@Autowired
 	private OLCandRepository olCandRepo;
 
 	@PostMapping
 	public JsonOLCand createOrder(@RequestBody final JsonOLCandCreateRequest request)
 	{
-		final OLCand olCand = olCandRepo.create(JsonConverters.toOLCandCreateRequest(request));
+		final OLCand olCand = olCandRepo.create(JsonConverters.toOLCandCreateRequest(request)
+				.adInputDataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
+				.build());
 		return JsonConverters.toJson(olCand);
 	}
 }

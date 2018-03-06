@@ -52,6 +52,8 @@ public class OLCandCreateRequest
 	private BigDecimal price;
 	private BigDecimal discount;
 	// private String currencyCode; // shall come from pricingSystem/priceList
+	
+	private String adInputDataSourceInternalName;
 
 	@Builder
 	private OLCandCreateRequest(
@@ -68,14 +70,17 @@ public class OLCandCreateRequest
 			final int huPIItemProductId,
 			final int pricingSystemId,
 			final BigDecimal price,
-			final BigDecimal discount)
+			final BigDecimal discount,
+			//
+			final String adInputDataSourceInternalName)
 	{
-		Check.assume(productId > 0, "productId > 0");
-		Check.assume(uomId > 0, "uomId > 0");
-		Check.assume(pricingSystemId > 0, "pricingSystemId > 0");
+		Check.assume(productId > 0, "productId is set");
+		Check.assume(uomId > 0, "uomId is set");
+		Check.assume(pricingSystemId > 0, "pricingSystemId is set");
 		Check.assume(qty.signum() > 0, "qty > 0");
 		Check.assume(price == null || price.signum() >= 0, "price >= 0");
 		Check.assume(discount == null || discount.signum() >= 0, "discount >= 0");
+		Check.assumeNotEmpty(adInputDataSourceInternalName, "adInputDataSourceInternalName is not empty");
 
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;
@@ -91,6 +96,8 @@ public class OLCandCreateRequest
 		this.pricingSystemId = pricingSystemId;
 		this.price = price;
 		this.discount = discount;
+		
+		this.adInputDataSourceInternalName = adInputDataSourceInternalName;
 	}
 
 }
