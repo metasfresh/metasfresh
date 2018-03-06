@@ -15,6 +15,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#882](https://github.com/metasfresh/metasfresh-webui-api/issues/882) WebUI: Pimp Data Import window
+    * New Window for Date Import in WebUI. now allows to do the data import into metasfresh with drag&drop file attachment upload.
 
 ## Fixes
 * metasfresh-webui-frontend

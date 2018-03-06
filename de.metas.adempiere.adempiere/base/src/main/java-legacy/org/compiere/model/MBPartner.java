@@ -26,7 +26,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -749,7 +749,7 @@ public class MBPartner extends X_C_BPartner
 	public boolean isCreditStopHold()
 	{
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+		final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(partner);
 
 		final String status = stats.getSOCreditStatus();
 

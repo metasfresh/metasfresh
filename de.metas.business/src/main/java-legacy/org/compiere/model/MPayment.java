@@ -22,7 +22,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -31,7 +30,8 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -1890,7 +1890,7 @@ public final class MPayment extends X_C_Payment
 		}
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+		final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(partner);
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final BigDecimal crediUsed = stats.getSOCreditUsed();
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
@@ -1989,9 +1989,10 @@ public final class MPayment extends X_C_Payment
 		if (getC_BPartner_ID() != 0 && getC_Invoice_ID() == 0 && getC_Charge_ID() == 0)
 		{
 			// task FRESH-152. Update bpartner stats
-			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 			Services.get(IBPartnerStatisticsUpdater.class)
-					.updateBPartnerStatistics(getCtx(), Collections.singleton(partner.getC_BPartner_ID()), get_TrxName());
+					.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+							.bpartnerId(getC_BPartner_ID())
+							.build());
 		}
 
 		// Counter Doc
@@ -2679,7 +2680,9 @@ public final class MPayment extends X_C_Payment
 		if (getC_BPartner_ID() > 0)
 		{
 			Services.get(IBPartnerStatisticsUpdater.class)
-					.updateBPartnerStatistics(getCtx(), Collections.singleton(getC_BPartner_ID()), get_TrxName());
+					.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+							.bpartnerId(getC_BPartner_ID())
+							.build());
 
 		}
 		// After reverseCorrect
