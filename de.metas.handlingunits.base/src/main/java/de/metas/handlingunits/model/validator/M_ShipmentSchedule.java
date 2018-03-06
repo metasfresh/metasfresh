@@ -140,8 +140,7 @@ public class M_ShipmentSchedule
 		}
 
 		final int hupipCalculatedID = shipmentSchedule.getM_HU_PI_Item_Product_Calculated_ID();
-
-		final int currentHUPIPID = shipmentSchedule.getM_HU_PI_Item_Product_Override_ID();
+		final int currentHUPIPID = shipmentSchedule.getM_HU_PI_Item_Product_ID();
 
 		if (hupipCalculatedID != currentHUPIPID)
 		{

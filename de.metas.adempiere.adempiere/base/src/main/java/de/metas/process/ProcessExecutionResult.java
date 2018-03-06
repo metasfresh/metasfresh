@@ -58,6 +58,11 @@ import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ProcessExecutionResult
 {
+	public static ProcessExecutionResult newInstanceForADPInstanceId(final int adPInstanceId)
+	{
+		return new ProcessExecutionResult(adPInstanceId);
+	}
+	
 	private static final transient Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
 
 	private int AD_PInstance_ID;
@@ -130,9 +135,9 @@ public class ProcessExecutionResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String webuiViewProfileId = null;
 
-	public ProcessExecutionResult()
+	private ProcessExecutionResult(final int adPInstanceId)
 	{
-		super();
+		this.AD_PInstance_ID = adPInstanceId;
 		logs = new ArrayList<>();
 	}
 
@@ -392,7 +397,7 @@ public class ProcessExecutionResult
 
 	/**
 	 * Sets webui's viewId on which this process was executed.
-	 * 
+	 *
 	 * @param webuiIncludedViewIdToOpen
 	 */
 	public void setWebuiViewId(String webuiViewId)
@@ -407,7 +412,7 @@ public class ProcessExecutionResult
 
 	/**
 	 * Sets webui's included view to be opened if the process was successfully executed.
-	 * 
+	 *
 	 * @param webuiIncludedViewIdToOpen
 	 */
 	public void setWebuiIncludedViewIdToOpen(final String webuiIncludedViewIdToOpen)
@@ -424,7 +429,7 @@ public class ProcessExecutionResult
 	{
 		this.webuiViewProfileId = webuiViewProfileId;
 	}
-	
+
 	public String getWebuiViewProfileId()
 	{
 		return webuiViewProfileId;
@@ -727,7 +732,6 @@ public class ProcessExecutionResult
 				, @JsonProperty("target") final OpenTarget target //
 		)
 		{
-			super();
 			Check.assumeNotEmpty(records, "records is not empty");
 
 			this.records = ImmutableList.copyOf(records);

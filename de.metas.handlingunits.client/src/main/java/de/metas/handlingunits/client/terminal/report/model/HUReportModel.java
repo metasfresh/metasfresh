@@ -26,7 +26,6 @@ package de.metas.handlingunits.client.terminal.report.model;
  */
 
 import java.beans.PropertyChangeListener;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -183,22 +182,19 @@ public class HUReportModel implements IDisposable
 		return reportKeyLayout;
 	}
 
-	public final void executeReport(final BigDecimal printCopies)
+	public final void executeReport(final int printCopies)
 	{
-		HUADProcessKey selectedKey = this.selectedKey;
+		final HUADProcessKey selectedKey = this.selectedKey;
 		if (selectedKey == null)
 		{
 			throw new TerminalException("@" + HUReportModel.MSG_NoReportProcessSelected + "@");
 		}
+		
 		final int adProcessId = selectedKey.getAD_Process_ID();
-		executeReport0(adProcessId, printCopies);
-	}
-
-	private final void executeReport0(final int adProcessId, final BigDecimal printCopies)
-	{
+		
 		HUReportExecutor.newInstance(getCtx())
 				.windowNo(getTerminalContext().getWindowNo())
-				.numberOfCopies(printCopies.intValueExact())
+				.numberOfCopies(printCopies)
 				.executeHUReportAfterCommit(adProcessId, getHUsToReport());
 	}
 }

@@ -30,6 +30,7 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.IPackingContext;
@@ -73,6 +74,7 @@ import lombok.Singular;
  */
 public class ProcessPickingCandidateCommand
 {
+
 	private static final Logger logger = LogManager.getLogger(ProcessPickingCandidateCommand.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IPackingService packingService = Services.get(IPackingService.class);
@@ -80,6 +82,7 @@ public class ProcessPickingCandidateCommand
 
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
+	private final PickingConfigRepository pickingConfigRepository;
 
 	private final List<Integer> huIds;
 	private final int pickingSlotId;
@@ -91,12 +94,14 @@ public class ProcessPickingCandidateCommand
 	private ProcessPickingCandidateCommand(
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
+			@NonNull final PickingConfigRepository pickingConfigRepository,
 			@NonNull @Singular final List<Integer> huIds,
 			final int pickingSlotId,
 			final int shipmentScheduleId)
 	{
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
+		this.pickingConfigRepository = pickingConfigRepository;
 
 		Preconditions.checkArgument(!huIds.isEmpty(), "huIds not empty");
 		this.huIds = ImmutableList.copyOf(huIds);
@@ -139,9 +144,12 @@ public class ProcessPickingCandidateCommand
 		packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
 		packingContext.setPackingItemsMapKey(pickingSlotId);
 
+		final boolean isAllowOverdelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery();
+
 		// Allocate given HUs to "itemToPack"
 		new HU2PackingItemsAllocator()
 				.setItemToPack(itemToPack)
+				.setAllowOverdelivery(isAllowOverdelivery)
 				.setPackingContext(packingContext)
 				.setFromHUs(ImmutableList.of(hu))
 				.allocate();

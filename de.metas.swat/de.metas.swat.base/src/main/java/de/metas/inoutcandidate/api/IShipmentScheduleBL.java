@@ -43,6 +43,24 @@ public interface IShipmentScheduleBL extends ISingletonService
 	public static final String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
 
 	/**
+	 * Please use this method before calling {@link CreateMissingShipmentSchedulesWorkpackageProcessor#schedule(Properties, String)}, to avoid unneeded work packages.
+	 *
+	 * @return {@code true} if the caller can (and should) skip scheduling a workpackage processor.
+	 */
+	boolean allMissingSchedsWillBeCreatedLater();
+
+	/**
+	 * Use this closable in a try-with-resource block if you create a number of shipment-schedule related records and want to avoid some model
+	 * interceptors etc to schedule one {@link CreateMissingShipmentSchedulesWorkpackageProcessor} for each of them.<br>
+	 * The closable will schedule one work package at the end.
+	 * <p>
+	 * Note:
+	 * <li>This behavior is "thread-local"
+	 * <li>calling this method multiple times within the same stack is no problem.
+	 */
+	IAutoCloseable postponeMissingSchedsCreationUntilClose();
+
+	/**
 	 * Updates the given {@link I_M_ShipmentSchedule}s by setting these columns:
 	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_QtyToDeliver}
@@ -168,17 +186,4 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @param shipmentSchedule
 	 */
 	void openShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);
-
-	/**
-	 * Please use this method before calling {@link CreateMissingShipmentSchedulesWorkpackageProcessor#schedule(Properties, String)}, to avoid unneeded work packages.
-	 *
-	 * @return {@code true} if the caller can (and should) skip scheduling a workpackage processor.
-	 */
-	boolean isMissingSchedsCreatedLater();
-
-	/**
-	 * Use this closable in a try-with-resource block if you create a number shipment-schedule related records and want to avoid some model
-	 * interceptors etc to schedule one {@link CreateMissingShipmentSchedulesWorkpackageProcessor} for each of them. The closable will schedule one work package at the end.
-	 */
-	IAutoCloseable createMissingSchedsOnClose();
 }

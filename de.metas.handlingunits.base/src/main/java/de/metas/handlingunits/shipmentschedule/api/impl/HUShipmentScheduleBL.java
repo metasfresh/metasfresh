@@ -416,25 +416,15 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product(
+	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_IgnoringPickedHUs(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final I_M_ShipmentSchedule shipmentScheduleHU = create(shipmentSchedule, I_M_ShipmentSchedule.class);
-		//
-		// Check shipment schedule's M_HU_PI_Item_Product_Override_ID
-		if (shipmentScheduleHU.getM_HU_PI_Item_Product_Override_ID() > 0)
-		{
-			return shipmentScheduleHU.getM_HU_PI_Item_Product_Override();
-		}
-
-		//
-		// Check shipment schedule's M_HU_PI_Item_Product_ID
 		if (shipmentScheduleHU.getM_HU_PI_Item_Product_ID() > 0)
 		{
 			return shipmentScheduleHU.getM_HU_PI_Item_Product();
 		}
 
-		//
 		// Check order line's M_HU_PI_Item_Product_ID
 		if (shipmentScheduleHU.getC_OrderLine_ID() > 0)
 		{
@@ -517,7 +507,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	public I_M_HU_LUTU_Configuration deriveM_HU_LUTU_Configuration(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule schedule)
 	{
-		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(schedule);
+		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product_IgnoringPickedHUs(schedule);
 		if (tuPIItemProduct == null || tuPIItemProduct.getM_HU_PI_Item_Product_ID() <= 0)
 		{
 			throw new HUException("@NotFound@ @M_HU_PI_Item_Product_ID@ (" + schedule + ")");
@@ -649,8 +639,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_HU_PI_Item_Product piItemProduct_Effective = hupip;
 
 		shipmentSchedule.setM_HU_PI_Item_Product_Calculated(piItemProduct_Effective);
-		shipmentSchedule.setM_HU_PI_Item_Product(piItemProduct_Effective);
 		shipmentSchedule.setM_HU_PI_Item_Product_Override(piItemProduct_Effective);
+		shipmentSchedule.setM_HU_PI_Item_Product(piItemProduct_Effective);
 	}
 
 	private void updateTuQuantitiesFromOrderLine(@NonNull final I_M_ShipmentSchedule shipmentSchedule)

@@ -14,7 +14,7 @@ Equipped with wide and detailed functionality, metasfresh fits for companies fro
 It has a 3-tier architecture with Rest-API and a Web User Frontend developed in HTML5/ ReactJS/ Redux.
 
 
-![metasfresh-sales-order](https://user-images.githubusercontent.com/13365687/36795926-8cd2a88e-1ca4-11e8-8f4c-87487c7ff448.gif)
+![metasfresh-sales-order](https://user-images.githubusercontent.com/13365687/36896187-f5ed2e48-1e11-11e8-9c41-a7878c148f81.gif)
 
 ## Screenshots
 <img src="/images/screenshot-kpi-dashboard.png" width="33%" alt="KPI Dashboard"></img> <img src="/images/screenshot-sales-order.png" width="33%" alt="Sales Order Window"></img> <img src="/images/screenshot-material-receipt.png" width="33%" alt="Material Receipt Window"></img>
@@ -31,7 +31,7 @@ metasfresh can be installed via **Docker** or **Ubuntu Installer**
 >**First steps:**
 >- [How do I log on?](http://docs.metasfresh.org/webui_collection/EN/Logon.html)
 >- [How do I change the Interface Language?](http://docs.metasfresh.org/webui_collection/EN/SwitchLanguage)
->- [How do I Setup me Company?](http://docs.metasfresh.org/webui_collection/EN/InitialSetupWizard)
+>- [How do I Setup my Company?](http://docs.metasfresh.org/webui_collection/EN/InitialSetupWizard)
 >- [How do I create my first Sales Order?](http://docs.metasfresh.org/webui_collection/EN/SalesOrder_recording)
 >- [How do I create my first Shipment?](http://docs.metasfresh.org/webui_collection/EN/Ship_SalesOrder)
 >- [How do I create my first Invoice?](http://docs.metasfresh.org/webui_collection/EN/Invoice_SalesOrder)
@@ -53,10 +53,10 @@ Do you want to help improving documentation, contribute some code or participate
 ### Frequently used github URLs
 
 * [open pull requests](https://github.com/pulls?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+user%3Ametasfresh)
-* Issues
-  * [in `master` branch but not yet in `release` branch](https://github.com/issues?utf8=?&q=is%3Aissue+user%3Ametasfresh+-label%3Abranch%3Arelease+label%3Abranch%3Amaster+updated%3A>2017-04-01+sort%3Aupdated-desc+)
-  * [in `release` branch but not yet closed](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+user%3Ametasfresh+label%3Abranch%3Arelease+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
-  * [in `release` branch but with a failed IT](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aissue+user%3Ametasfresh+label%3Abranch%3Arelease+label%3Astatus%3AIT-failed+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
+* Issues/PRs
+  * [in `master` branch but not yet in `release` branch](https://github.com/issues?utf8=%E2%9C%93&q=user%3Ametasfresh+-label%3Abranch%3Arelease+label%3Abranch%3Amaster+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
+  * [in `release` branch but not yet closed](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+user%3Ametasfresh+label%3Abranch%3Arelease+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
+  * [in `release` branch but with a failed IT](https://github.com/issues?utf8=%E2%9C%93&q=user%3Ametasfresh+label%3Abranch%3Arelease+label%3Astatus%3AIT-failed+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
   
 ## What's new in metasfresh ERP?
 If you are interested in latest improvements or bug fixes of metasfresh ERP, then take a look in our [Release Notes](https://github.com/metasfresh/metasfresh/blob/master/ReleaseNotes.md).

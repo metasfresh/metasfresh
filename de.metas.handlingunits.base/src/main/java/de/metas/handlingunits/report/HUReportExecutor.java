@@ -1,13 +1,13 @@
 package de.metas.handlingunits.report;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -22,8 +22,11 @@ import org.compiere.report.IJasperService;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.Language;
+import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import lombok.NonNull;
 
@@ -63,19 +66,16 @@ public class HUReportExecutor
 		return new HUReportExecutor(ctx);
 	}
 
-	/**
-	 * AD_SysConfig for "BarcodeServlet".
-	 */
+	/** AD_SysConfig for "BarcodeServlet" */
 	private static final String SYSCONFIG_BarcodeServlet = "de.metas.adempiere.report.barcode.BarcodeServlet";
 	private static final String PARA_BarcodeURL = "barcodeURL";
 
 	private static final String REPORT_LANG_NONE = "NO-COMMON-LANGUAGE-FOUND";
 
 	private final Properties ctx;
-
 	private int windowNo = Env.WINDOW_None;
-
 	private int numberOfCopies = 1;
+	private Boolean printPreview = null;
 
 	private HUReportExecutor(final Properties ctx)
 	{
@@ -100,6 +100,12 @@ public class HUReportExecutor
 		this.numberOfCopies = numberOfCopies;
 		return this;
 	}
+	
+	public HUReportExecutor printPreview(final boolean printPreview)
+	{
+		this.printPreview = printPreview;
+		return this;
+	}
 
 	/**
 	 * Prepares everything and creates a trx-listener to run the report after the current trx is committed (or right now, if there is no currently open trx).
@@ -109,26 +115,8 @@ public class HUReportExecutor
 	 */
 	public void executeHUReportAfterCommit(final int adProcessId, @NonNull final List<I_M_HU> husToProcess)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-		//
-		// Collect HU's C_BPartner_IDs and M_HU_IDs
-		final Set<Integer> huBPartnerIds = new HashSet<>();
-		final List<Integer> huIds = new ArrayList<>();
-		for (final I_M_HU hu : husToProcess)
-		{
-			final int huId = hu.getM_HU_ID();
-			huIds.add(huId);
-
-			// Collect HU's BPartner ID ... we will need that to advice the report to use HU's BPartner Language Locale
-			final int bpartnerId = hu.getC_BPartner_ID();
-			if (bpartnerId > 0)
-			{
-				huBPartnerIds.add(bpartnerId);
-			}
-		}
-
 		// check if we actually got any new M_HU_ID
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 		final HUReportTrxListener huReportTrxListener;
 		if (trx != null)
@@ -140,13 +128,14 @@ public class HUReportExecutor
 			huReportTrxListener = newHUReportTrxListener(adProcessId);
 		}
 
+		final Set<Integer> huIds = extractHUIds(husToProcess);
 		if (!huReportTrxListener.addAll(huIds))
 		{
 			return; // there are no new HU IDs
 		}
 
 		// Use BPartner's Language, if all HUs' partners have a common language
-		huReportTrxListener.setLanguage(extractReportingLanguage(huBPartnerIds));
+		huReportTrxListener.setLanguage(extractReportingLanguageFromHUs(husToProcess));
 
 		if (huReportTrxListener.isListenerWasRegistered())
 		{
@@ -169,12 +158,40 @@ public class HUReportExecutor
 		huReportTrxListener.setListenerWasRegistered();
 	}
 
+	public HUReportExecutorResult executeNow(final int adProcessId, @NonNull final List<I_M_HU> husToProcess)
+	{
+		return executeNow(HUReportRequest.builder()
+				.ctx(ctx)
+				.adProcessId(adProcessId)
+				.windowNo(windowNo)
+				.copies(numberOfCopies)
+				.printPreview(printPreview)
+				.adLanguage(extractReportingLanguageFromHUs(husToProcess))
+				.huIdsToProcess(extractHUIds(husToProcess))
+				.onErrorThrowException(true)
+				.build());
+	}
+
 	private HUReportTrxListener newHUReportTrxListener(final int adProcessId)
 	{
 		return new HUReportTrxListener(ctx, adProcessId, windowNo, numberOfCopies);
 	}
-	
-	private String extractReportingLanguage(final Set<Integer> huBPartnerIds)
+
+	private ImmutableSet<Integer> extractHUIds(final Collection<I_M_HU> hus)
+	{
+		return hus.stream().map(I_M_HU::getM_HU_ID).filter(huId -> huId > 0).collect(ImmutableSet.toImmutableSet());
+	}
+
+	private String extractReportingLanguageFromHUs(final Collection<I_M_HU> hus)
+	{
+		final Set<Integer> huBPartnerIds = hus.stream()
+				.map(I_M_HU::getC_BPartner_ID)
+				.filter(bpartnerId -> bpartnerId > 0)
+				.collect(ImmutableSet.toImmutableSet());
+		return extractReportingLanguageFromBPartnerIds(huBPartnerIds);
+	}
+
+	private String extractReportingLanguageFromBPartnerIds(final Set<Integer> huBPartnerIds)
 	{
 		if (huBPartnerIds.size() == 1)
 		{
@@ -188,16 +205,56 @@ public class HUReportExecutor
 		}
 	}
 
+	private static HUReportExecutorResult executeNow(final HUReportRequest request)
+	{
+		final Properties ctx = request.getCtx();
+
+		final ImmutableSet<Integer> huIdsToProcess = request.getHuIdsToProcess();
+		final String adLanguage = request.getAdLanguage();
+		final String reportLanguageToUse = Objects.equals(REPORT_LANG_NONE, adLanguage) ? null : adLanguage;
+
+		final ProcessExecutor processExecutor = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setAD_Process_ID(request.getAdProcessId())
+				.setWindowNo(request.getWindowNo())
+				.setTableName(I_M_HU.Table_Name)
+				.setReportLanguage(reportLanguageToUse)
+				.addParameter(PARA_BarcodeURL, getBarcodeServlet(ctx))
+				.addParameter(IJasperService.PARAM_PrintCopies, request.getCopies())
+				.setPrintPreview(request.getPrintPreview())
+				//
+				// Execute report in a new transaction
+				.buildAndPrepareExecution()
+				.onErrorThrowException(request.isOnErrorThrowException())
+				.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIdsToProcess, ITrx.TRXNAME_ThreadInherited))
+				.executeSync();
+
+		return HUReportExecutorResult.builder()
+				.processInfo(processExecutor.getProcessInfo())
+				.processExecutionResult(processExecutor.getResult())
+				.build();
+	}
+
+	private static String getBarcodeServlet(final Properties ctx)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final String barcodeServlet = sysConfigBL.getValue(SYSCONFIG_BarcodeServlet,
+				null,  // defaultValue,
+				Env.getAD_Client_ID(ctx),
+				Env.getAD_Org_ID(ctx));
+		return barcodeServlet;
+	}
+
 	private static final class HUReportTrxListener
 	{
-		private final Properties listenerCtx;
-		private final int listenerAdProcessId;
-		private final int listenerWindowNo;
-		private final int listenerCopies;
+		private final Properties ctx;
+		private final int adProcessId;
+		private final int windowNo;
+		private final int copies;
 
-		private final Set<Integer> husToProcess = new LinkedHashSet<>(); // using a linked set to preserve the order in which HUs were added
+		private final Set<Integer> huIdsToProcess = new LinkedHashSet<>(); // using a linked set to preserve the order in which HUs were added
 
-		private String language;
+		private String adLanguage;
 
 		/**
 		 * It turned out that afterCommit() is called twice and also, on the first time some things were not ready.
@@ -216,26 +273,26 @@ public class HUReportExecutor
 				final int windowNo,
 				final int copies)
 		{
-			this.listenerCtx = ctx;
-			this.listenerAdProcessId = adProcessId;
-			this.listenerWindowNo = windowNo;
-			this.listenerCopies = copies;
+			this.ctx = ctx;
+			this.adProcessId = adProcessId;
+			this.windowNo = windowNo;
+			this.copies = copies;
 		}
 
-		public boolean addAll(@NonNull final List<Integer> huIds)
+		public boolean addAll(@NonNull final Collection<Integer> huIds)
 		{
-			return husToProcess.addAll(huIds);
+			return huIdsToProcess.addAll(huIds);
 		}
 
 		public void setLanguage(@NonNull final String language)
 		{
-			if (this.language == null)
+			if (adLanguage == null)
 			{
-				this.language = language;
+				adLanguage = language;
 			}
-			else if (!Objects.equals(this.language, language))
+			else if (!Objects.equals(adLanguage, language))
 			{
-				this.language = REPORT_LANG_NONE;
+				adLanguage = REPORT_LANG_NONE;
 			}
 		}
 
@@ -246,7 +303,7 @@ public class HUReportExecutor
 
 		public void setListenerWasRegistered()
 		{
-			this.listenerWasRegistered = true;
+			listenerWasRegistered = true;
 		}
 
 		public void afterCommit(final ITrx trx)
@@ -261,32 +318,60 @@ public class HUReportExecutor
 				return;
 			}
 
-			if (husToProcess.isEmpty())
+			if (huIdsToProcess.isEmpty())
 			{
 				return;
 			}
 
-			final String reportLanguageToUse = Objects.equals(REPORT_LANG_NONE, language) ? null : language;
-
-			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-			final String barcodeServlet = sysConfigBL.getValue(SYSCONFIG_BarcodeServlet,
-					null,  // defaultValue,
-					Env.getAD_Client_ID(listenerCtx),
-					Env.getAD_Org_ID(listenerCtx));
-
-			ProcessInfo.builder()
-					.setCtx(listenerCtx)
-					.setAD_Process_ID(listenerAdProcessId)
-					.setWindowNo(listenerWindowNo)
-					.setTableName(I_M_HU.Table_Name)
-					.setReportLanguage(reportLanguageToUse)
-					.addParameter(PARA_BarcodeURL, barcodeServlet)
-					.addParameter(IJasperService.PARAM_PrintCopies, BigDecimal.valueOf(listenerCopies))
-					//
-					// Execute report in a new transaction
-					.buildAndPrepareExecution()
-					.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), husToProcess, ITrx.TRXNAME_ThreadInherited))
-					.executeSync();
+			executeNow(HUReportRequest.builder()
+					.ctx(ctx)
+					.adProcessId(adProcessId)
+					.windowNo(windowNo)
+					.copies(copies)
+					.adLanguage(adLanguage)
+					.huIdsToProcess(ImmutableSet.copyOf(huIdsToProcess))
+					.build());
 		}
+	}
+
+	@lombok.Value
+	private static class HUReportRequest
+	{
+		Properties ctx;
+		int adProcessId;
+		int windowNo;
+		int copies;
+		Boolean printPreview;
+		String adLanguage;
+		boolean onErrorThrowException;
+		ImmutableSet<Integer> huIdsToProcess;
+
+		@lombok.Builder
+		private HUReportRequest(
+				final Properties ctx,
+				final int adProcessId,
+				final int windowNo,
+				final int copies,
+				@Nullable final Boolean printPreview,
+				final String adLanguage,
+				final boolean onErrorThrowException,
+				final ImmutableSet<Integer> huIdsToProcess)
+		{
+			Check.assumeNotNull(ctx, "Parameter ctx is not null");
+			Check.assume(adProcessId > 0, "adProcessId > 0");
+			Check.assume(copies > 0, "copies > 0");
+			Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
+			Check.assumeNotEmpty(huIdsToProcess, "huIdsToProcess is not empty");
+
+			this.ctx = ctx;
+			this.adProcessId = adProcessId;
+			this.windowNo = windowNo > 0 ? windowNo : Env.WINDOW_None;
+			this.copies = copies;
+			this.printPreview = printPreview;
+			this.adLanguage = adLanguage;
+			this.onErrorThrowException = onErrorThrowException;
+			this.huIdsToProcess = huIdsToProcess;
+		}
+
 	}
 }
