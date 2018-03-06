@@ -267,11 +267,8 @@ import lombok.NonNull;
 		// Enqueue candidate's LU/TU to list of HUs to be assigned
 		appendHUsFromCandidate(candidate);
 
-		final I_M_HU_PI_Item_Product piipOrNull = candidate.retrieveM_HU_PI_Item_ProductOrNull();
-		if (piipOrNull != null)
-		{
-			packingMaterial_huPIItemProduct.add(piipOrNull);
-		}
+		final I_M_HU_PI_Item_Product piip = candidate.retrieveM_HU_PI_Item_Product();
+		packingMaterial_huPIItemProduct.add(piip);
 
 		// Add current candidate to the list of candidates that will compose the generated shipment line
 		candidates.add(candidate);
