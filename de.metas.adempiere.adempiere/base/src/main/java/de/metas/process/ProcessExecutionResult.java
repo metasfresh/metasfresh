@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
+import lombok.AllArgsConstructor;
 
 /*
  * #%L
@@ -56,13 +57,27 @@ import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@AllArgsConstructor
 public class ProcessExecutionResult
 {
 	public static ProcessExecutionResult newInstanceForADPInstanceId(final int adPInstanceId)
 	{
 		return new ProcessExecutionResult(adPInstanceId);
 	}
-	
+
+	/**
+	 * Display process logs to user policy
+	 */
+	public static enum ShowProcessLogs
+	{
+		/** Always display them */
+		Always,
+		/** Display them only if the process failed */
+		OnError,
+		/** Never display them */
+		Never
+	};
+
 	private static final transient Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
 
 	private int AD_PInstance_ID;
@@ -90,19 +105,6 @@ public class ProcessExecutionResult
 	private String reportFilename;
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private String reportContentType;
-
-	/**
-	 * Display process logs to user policy
-	 */
-	public static enum ShowProcessLogs
-	{
-		/** Always display them */
-		Always,
-		/** Display them only if the process failed */
-		OnError,
-		/** Never display them */
-		Never,
-	};
 
 	/**
 	 * If the process fails with an Throwable, the Throwable is caught and stored here
@@ -138,7 +140,7 @@ public class ProcessExecutionResult
 	private ProcessExecutionResult(final int adPInstanceId)
 	{
 		this.AD_PInstance_ID = adPInstanceId;
-		logs = new ArrayList<>();
+		this.logs = new ArrayList<>();
 	}
 
 	@Override
