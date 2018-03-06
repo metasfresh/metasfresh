@@ -1,23 +1,15 @@
 package org.adempiere.bpartner.model.interceptor;
 
-import java.util.Collections;
-
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 
 import de.metas.interfaces.I_C_BPartner;
 import lombok.NonNull;
@@ -68,30 +60,18 @@ public class C_BPartner
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void createBPartnerStatsRecord(@NonNull final I_C_BPartner bpartner)
 	{
-		Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
+		Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE}, ifColumnsChanged = {I_C_BPartner.COLUMNNAME_C_BP_Group_ID})
-	public void updateBPartnerStatsRecord(@NonNull final I_C_BPartner bpartner)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_C_BP_Group_ID })
+	public void updateSO_CreditStatus(@NonNull final I_C_BPartner bpartner)
 	{
-		final IBPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
-		final I_C_BP_Group bpGroup = bpartner.getC_BP_Group();
-		final String creditStatus = bpGroup.getSOCreditStatus();
-		if (!Check.isEmpty(creditStatus,true))
-		{
-			setSO_CreditStatus(bpartnerStats, creditStatus);
-
-			// make sure the status is correct
-			Services.get(IBPartnerStatisticsUpdater.class)
-			.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(bpartner.getC_BPartner_ID()), ITrx.TRXNAME_None);
-
-		}
+		// make sure that the SO_CreditStatus is correct
+		Services.get(IBPartnerStatisticsUpdater.class)
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+						.bpartnerId(bpartner.getC_BPartner_ID())
+						.updateFromBPGroup(true)
+						.build());
 	}
 
-	private void setSO_CreditStatus(@NonNull final IBPartnerStats bpartnerStats, @NonNull final String creditStatus)
-	{
-		final I_C_BPartner_Stats stats = bpartnerStats.getC_BPartner_Stats();
-		stats.setSOCreditStatus(creditStatus);
-		InterfaceWrapperHelper.save(stats);
-	}
 }

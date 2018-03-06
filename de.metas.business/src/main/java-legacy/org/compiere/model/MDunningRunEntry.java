@@ -271,7 +271,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 			{
 				MBPartner thisBPartner = MBPartner.get(getCtx(), getC_BPartner_ID());
 
-				final IBPartnerStats stats =bpartnerStatsDAO.retrieveBPartnerStats(thisBPartner);
+				final IBPartnerStats stats =bpartnerStatsDAO.getCreateBPartnerStats(thisBPartner);
 				
 				if (level.isSetCreditStop())
 				{

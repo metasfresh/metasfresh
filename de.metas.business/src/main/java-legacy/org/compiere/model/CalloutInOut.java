@@ -257,7 +257,7 @@ public class CalloutInOut extends CalloutEngine
 		// Check SO credit available
 		if (isSOTrx)
 		{
-			final IBPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
+			final IBPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
 			final BigDecimal soCreditUsed = bpartnerStats.getSOCreditUsed();
 			if (soCreditUsed.signum() < 0)
 			{

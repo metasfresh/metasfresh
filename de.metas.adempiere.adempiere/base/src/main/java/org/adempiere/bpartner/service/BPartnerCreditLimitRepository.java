@@ -7,12 +7,10 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
 import org.compiere.util.CCache;
@@ -51,23 +49,23 @@ import lombok.Value;
 @Repository
 public class BPartnerCreditLimitRepository
 {
-	public BigDecimal getCreditLimitByBPartner(@NonNull final I_C_BPartner bpartner, @NonNull final Timestamp date)
-	{
-		final List<I_C_BPartner_CreditLimit> bpCreditLimits = retrieveCreditLimitsByBPartner(bpartner, date);
-		if (bpCreditLimits.isEmpty())
-		{
-			return BigDecimal.ZERO;
-		}
+	private final CCache<Integer, CreditLimitType> cache_creditLimitById = CCache.newCache(I_C_CreditLimit_Type.Table_Name + "#CreditLimitType#by#Id", 10, CCache.EXPIREMINUTES_Never);
 
-		sort(bpCreditLimits);
-		return bpCreditLimits.get(0).getAmount();
+	public BigDecimal getCreditLimitByBPartnerId(final int bpartnerId, @NonNull final Timestamp date)
+	{
+		return retrieveCreditLimitsByBPartnerId(bpartnerId, date)
+				.stream()
+				.sorted(sort())
+				.findFirst()
+				.map(I_C_BPartner_CreditLimit::getAmount)
+				.orElse(BigDecimal.ZERO);
 	}
 
-	public List<I_C_BPartner_CreditLimit> retrieveCreditLimitsByBPartner(@NonNull final I_C_BPartner bpartner, @NonNull final Timestamp date)
+	private List<I_C_BPartner_CreditLimit> retrieveCreditLimitsByBPartnerId(final int bpartnerId, @NonNull final Timestamp date)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_CreditLimit.class, bpartner)
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_IsApproved, true)
 				.addCompareFilter(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, Operator.LESS_OR_EQUAL, date)
 				.addOnlyActiveRecordsFilter()
@@ -76,47 +74,42 @@ public class BPartnerCreditLimitRepository
 				.list();
 	}
 
-	private void sort(final List<I_C_BPartner_CreditLimit> bpCreditLimits)
+	private Comparator<I_C_BPartner_CreditLimit> sort()
 	{
-		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByTypeSeqNo = Comparator.comparing(bpCreditLimit -> getCreditLimitTypeById(bpCreditLimit.getC_CreditLimit_Type_ID()).getSeqNo());
-		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByTypeSeqNoReversed = ORDERING_BPCreditLimitByTypeSeqNo.reversed();
+		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByTypeSeqNoReversed = Comparator.<I_C_BPartner_CreditLimit, Integer> comparing(bpCreditLimit -> getCreditLimitTypeById(bpCreditLimit.getC_CreditLimit_Type_ID()).getSeqNo()).reversed();
 
 		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByDateFrom = Comparator.comparing(bpCreditLimit -> bpCreditLimit.getDateFrom());
 		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByDateFromReversed = ORDERING_BPCreditLimitByDateFrom.reversed();
 
-		bpCreditLimits.sort(ORDERING_BPCreditLimitByTypeSeqNoReversed.thenComparing(ORDERING_BPCreditLimitByDateFromReversed));
+		return ORDERING_BPCreditLimitByTypeSeqNoReversed.thenComparing(ORDERING_BPCreditLimitByDateFromReversed);
 	}
-
-	private final CCache<Integer, I_C_CreditLimit_Type> cache_creditLimitById = CCache.newCache(I_C_CreditLimit_Type.Table_Name + "#CreditLimitType#by#Id", 10, CCache.EXPIREMINUTES_Never);
 
 	@Builder
 	@Value
-	private static class CreditLimitTypePOJO
+	private static class CreditLimitType
 	{
 		private final int seqNo;
-		private final int C_CreditLimit_Type_ID;
+		private final int creditLimitTypeId;
 	}
 
-	private CreditLimitTypePOJO getCreditLimitTypeById(final int C_CreditLimit_Type_ID)
+	private CreditLimitType getCreditLimitTypeById(final int C_CreditLimit_Type_ID)
 	{
-		final Supplier<I_C_CreditLimit_Type> recordLoader = () -> retrieveRecordFromDB(C_CreditLimit_Type_ID);
-		final I_C_CreditLimit_Type type = cache_creditLimitById.get(C_CreditLimit_Type_ID, recordLoader);
-
-		return CreditLimitTypePOJO.builder()
-				.C_CreditLimit_Type_ID(type.getC_CreditLimit_Type_ID())
-				.seqNo(type.getSeqNo())
-				.build();
+		return cache_creditLimitById.getOrLoad(C_CreditLimit_Type_ID, () -> retrieveCreditLimitTypePOJO(C_CreditLimit_Type_ID));
 	}
 
-	private I_C_CreditLimit_Type retrieveRecordFromDB(final int C_CreditLimit_Type_ID)
+	private CreditLimitType retrieveCreditLimitTypePOJO(final int C_CreditLimit_Type_ID)
 	{
-		final I_C_CreditLimit_Type result = Services.get(IQueryBL.class)
+		final I_C_CreditLimit_Type type = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_CreditLimit_Type.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_CreditLimit_Type.COLUMN_C_CreditLimit_Type_ID, C_CreditLimit_Type_ID)
 				.create()
-				.firstOnly(I_C_CreditLimit_Type.class);
+				.firstOnlyNotNull(I_C_CreditLimit_Type.class);
 
-		return result;
+		return CreditLimitType.builder()
+				.creditLimitTypeId(type.getC_CreditLimit_Type_ID())
+				.seqNo(type.getSeqNo())
+				.build();
+
 	}
 }

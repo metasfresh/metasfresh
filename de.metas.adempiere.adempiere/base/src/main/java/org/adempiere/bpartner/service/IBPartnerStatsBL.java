@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner;
 
 /*
  * #%L
@@ -64,4 +65,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 	 * @return
 	 */
 	BigDecimal getCreditWatchRatio(IBPartnerStats stats);
+
+
+	void setCreditStatusBasedOnBPGroup(I_C_BPartner bpartner);
 }

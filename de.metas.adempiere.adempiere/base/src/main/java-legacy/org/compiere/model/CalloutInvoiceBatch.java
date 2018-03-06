@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -186,8 +185,7 @@ public class CalloutInvoiceBatch extends CalloutEngine
 
 					final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 					final Date dateInvoiced = mTab.get_ValueAsDate("DateInvoiced", SystemTime.asDate());
-					final I_C_BPartner partner = InterfaceWrapperHelper.load(C_BPartner_ID.intValue(), I_C_BPartner.class);
-					final BigDecimal CreditLimit = creditLimitRepo.getCreditLimitByBPartner(partner, TimeUtil.asTimestamp(dateInvoiced));
+					final BigDecimal CreditLimit = creditLimitRepo.getCreditLimitByBPartnerId(C_BPartner_ID.intValue(), TimeUtil.asTimestamp(dateInvoiced));
 					if (CreditLimit.signum() > 0)
 					{
 						final double creditUsed = rs.getDouble("SO_CreditUsed");

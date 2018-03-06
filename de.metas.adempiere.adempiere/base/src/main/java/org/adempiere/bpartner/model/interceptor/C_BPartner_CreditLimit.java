@@ -1,16 +1,13 @@
 package org.adempiere.bpartner.model.interceptor;
 
-import java.util.Collections;
-
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import lombok.NonNull;
@@ -45,7 +42,9 @@ public class C_BPartner_CreditLimit
 	public void updateBPartnerStatsRecord(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
 	{
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(bpCreditLimit.getC_BPartner_ID()), ITrx.TRXNAME_None);
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+						.bpartnerId(bpCreditLimit.getC_BPartner_ID())
+						.build());
 	}
 
 

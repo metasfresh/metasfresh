@@ -83,7 +83,7 @@ public class OnlyOneOpenInvoiceCandProcessor implements IShipmentSchedulesAfterF
 
 		final I_C_BPartner billPartner = InterfaceWrapperHelper.create(inOutLine.getShipmentSchedule().getBill_BPartner(), I_C_BPartner.class);
 
-		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(billPartner);
+		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(billPartner);
 
 		final String creditStatus = I_C_BPartner.SO_CREDITSTATUS_ONE_OPEN_INVOICE;
 
