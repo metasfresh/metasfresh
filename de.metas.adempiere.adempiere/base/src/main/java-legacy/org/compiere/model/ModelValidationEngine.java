@@ -17,10 +17,12 @@
 package org.compiere.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -216,13 +218,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 			//
 			// Load from Spring context
-			final ApplicationContext context = Adempiere.getSpringApplicationContext();
-			// NOTE: atm it returns null only when started from our tools (like the "model generator")
-			// but it's not preventing the tool execution because this is the last thing we do here and also because usually it's configured to not fail on init error.
-			// so we can leave with the NPE here
-			for (final Object modelInterceptor : context.getBeansWithAnnotation(org.adempiere.ad.modelvalidator.annotations.Interceptor.class).values())
+			for (final Object modelInterceptor : getSpringInterceptors())
 			{
-				addModelValidator(modelInterceptor, null);
+				addModelValidator(modelInterceptor, /*client*/null);
 			}
 		}
 		catch (Exception e)
@@ -255,6 +253,20 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 		// metas: 02504: end
 	}	// ModelValidatorEngine
+	
+	private static Collection<Object> getSpringInterceptors()
+	{
+		final ApplicationContext context = Adempiere.getSpringApplicationContext();
+		// NOTE: atm it returns null only when started from our tools (like the "model generator")
+		// but it's not preventing the tool execution because this is the last thing we do here and also because usually it's configured to not fail on init error.
+		// so we can leave with the NPE here
+		
+		final LinkedHashMap<String, Object> interceptorsByName = new LinkedHashMap<>();
+		interceptorsByName.putAll(context.getBeansWithAnnotation(org.adempiere.ad.modelvalidator.annotations.Interceptor.class));
+		interceptorsByName.putAll(context.getBeansOfType(IModelInterceptor.class));
+		
+		return interceptorsByName.values();
+	}
 
 	private final void addModelInterceptorInitError(final String modelInterceptorClassName, final I_AD_Client client, final Throwable error)
 	{
