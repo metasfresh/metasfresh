@@ -1,11 +1,10 @@
-package org.adempiere.bpartner.service.impl;
+package org.adempiere.bpartner.service;
 
 import java.math.BigDecimal;
 
-import org.adempiere.bpartner.service.IBPartnerStats;
 import org.compiere.model.I_C_BPartner_Stats;
 
-import com.google.common.base.MoreObjects;
+import lombok.Value;
 
 /*
  * #%L
@@ -29,82 +28,48 @@ import com.google.common.base.MoreObjects;
  * #L%
  */
 
-class BPartnerStats implements IBPartnerStats
+/**
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ *         Immutable object to keep the {@link I_C_BPartner_Stats} values in one place.
+ *         It is useful because database operations will not be needed during compact pieces of logic.
+ *         See implementations in org.adempiere.bpartner.service.impl.BPartnerStatsBL
+ *
+ */
+@Value
+public class BPartnerStats
 {
-	public static IBPartnerStats of(final I_C_BPartner_Stats stats)
+	public static BPartnerStats ofDataRecord(final I_C_BPartner_Stats stats)
 	{
 		return new BPartnerStats(stats);
 	}
 
-	/**
-	 * This field is added just in case there will be another implementation of IBPartnerStats which will not include the I_C_BPartner_Stats field.
-	 * Using this ID, it would still be possible to load the data for further processing
-	 */
-	private int bpartnerID;
+	int recordId;
 
-	private final BigDecimal openItems;
+	BigDecimal openItems;
 
-	private final BigDecimal actualLifeTimeValue;
+	BigDecimal actualLifeTimeValue;
 
-	private BigDecimal soCreditUsed;
+	BigDecimal soCreditUsed;
 
-	private String soCreditStatus;
-
-	private I_C_BPartner_Stats stats;
+	String soCreditStatus;
 
 	private BPartnerStats(final I_C_BPartner_Stats stats)
 	{
-		super();
-
-		this.stats = stats;
+		recordId = stats.getC_BPartner_Stats_ID();
 		openItems = stats.getOpenItems();
 		actualLifeTimeValue = stats.getActualLifeTimeValue();
 		soCreditUsed = stats.getSO_CreditUsed();
 		soCreditStatus = stats.getSOCreditStatus();
 	}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("totalOpenBalance", openItems)
-				.toString();
-	}
-
-	@Override
-	public BigDecimal getOpenItems()
-	{
-		return openItems;
-	}
-
-	@Override
-	public BigDecimal getActualLifeTimeValue()
-	{
-		return actualLifeTimeValue;
-	}
-
-	@Override
 	public BigDecimal getSOCreditUsed()
 	{
 		return soCreditUsed;
 	}
 
-	@Override
 	public String getSOCreditStatus()
 	{
 		return soCreditStatus;
 	}
-
-	@Override
-	public I_C_BPartner_Stats getC_BPartner_Stats()
-	{
-		return stats;
-	}
-
-	@Override
-	public int getC_BPartner_ID()
-	{
-		return bpartnerID;
-	}
-
 }

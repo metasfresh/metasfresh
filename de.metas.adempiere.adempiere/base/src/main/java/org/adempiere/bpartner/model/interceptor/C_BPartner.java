@@ -57,20 +57,20 @@ public class C_BPartner
 	 * @param bpartner
 	 * @task https://github.com/metasfresh/metasfresh/issues/2121
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void createBPartnerStatsRecord(@NonNull final I_C_BPartner bpartner)
 	{
 		Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_C_BP_Group_ID })
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_BPartner.COLUMNNAME_C_BP_Group_ID)
 	public void updateSO_CreditStatus(@NonNull final I_C_BPartner bpartner)
 	{
 		// make sure that the SO_CreditStatus is correct
 		Services.get(IBPartnerStatisticsUpdater.class)
 				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
 						.bpartnerId(bpartner.getC_BPartner_ID())
-						.updateFromBPGroup(true)
+						.alsoResetCreditStatusFromBPGroup(true)
 						.build());
 	}
 

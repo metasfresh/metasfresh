@@ -6,6 +6,7 @@ package org.adempiere.bpartner.service;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -49,13 +50,16 @@ import lombok.Value;
 @Repository
 public class BPartnerCreditLimitRepository
 {
-	private final CCache<Integer, CreditLimitType> cache_creditLimitById = CCache.newCache(I_C_CreditLimit_Type.Table_Name + "#CreditLimitType#by#Id", 10, CCache.EXPIREMINUTES_Never);
+	private final CCache<Integer, CreditLimitType> cache_creditLimitById = CCache.newCache(
+			I_C_CreditLimit_Type.Table_Name + "#by#" + I_C_CreditLimit_Type.COLUMNNAME_C_CreditLimit_Type_ID,
+			10, // initial size
+			CCache.EXPIREMINUTES_Never);
 
-	public BigDecimal getCreditLimitByBPartnerId(final int bpartnerId, @NonNull final Timestamp date)
+	public BigDecimal retrieveCreditLimitByBPartnerId(final int bpartnerId, @NonNull final Timestamp date)
 	{
 		return retrieveCreditLimitsByBPartnerId(bpartnerId, date)
 				.stream()
-				.sorted(sort())
+				.sorted(createComparator())
 				.findFirst()
 				.map(I_C_BPartner_CreditLimit::getAmount)
 				.orElse(BigDecimal.ZERO);
@@ -74,14 +78,15 @@ public class BPartnerCreditLimitRepository
 				.list();
 	}
 
-	private Comparator<I_C_BPartner_CreditLimit> sort()
+	private Comparator<I_C_BPartner_CreditLimit> createComparator()
 	{
-		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByTypeSeqNoReversed = Comparator.<I_C_BPartner_CreditLimit, Integer> comparing(bpCreditLimit -> getCreditLimitTypeById(bpCreditLimit.getC_CreditLimit_Type_ID()).getSeqNo()).reversed();
+		final Comparator<I_C_BPartner_CreditLimit> byTypeSeqNoReversed = //
+				Comparator.<I_C_BPartner_CreditLimit, Integer> comparing(bpCreditLimit -> getCreditLimitTypeById(bpCreditLimit.getC_CreditLimit_Type_ID()).getSeqNo()).reversed();
 
-		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByDateFrom = Comparator.comparing(bpCreditLimit -> bpCreditLimit.getDateFrom());
-		final Comparator<I_C_BPartner_CreditLimit> ORDERING_BPCreditLimitByDateFromReversed = ORDERING_BPCreditLimitByDateFrom.reversed();
+		final Comparator<I_C_BPartner_CreditLimit> byDateFromRevesed = //
+				Comparator.<I_C_BPartner_CreditLimit, Date> comparing(bpCreditLimit -> bpCreditLimit.getDateFrom()).reversed();
 
-		return ORDERING_BPCreditLimitByTypeSeqNoReversed.thenComparing(ORDERING_BPCreditLimitByDateFromReversed);
+		return byTypeSeqNoReversed.thenComparing(byDateFromRevesed);
 	}
 
 	@Builder

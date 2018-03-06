@@ -35,7 +35,7 @@ import org.compiere.model.I_C_BPartner;
 public interface IBPartnerStatsBL extends ISingletonService
 {
 	/**
-	 * Calculate the future/simulated SOCreditStatus for the given {@link IBPartnerStats} object at a certain date
+	 * Calculate the future/simulated SOCreditStatus for the given {@link BPartnerStats} object at a certain date
 	 * No updating
 	 *
 	 * @param stat
@@ -43,7 +43,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 	 * @param date
 	 * @return
 	 */
-	String calculateSOCreditStatus(IBPartnerStats stat, BigDecimal additionalAmt, Timestamp date);
+	String calculateSOCreditStatus(BPartnerStats stat, BigDecimal additionalAmt, Timestamp date);
 
 
 	/**
@@ -55,7 +55,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 	 * @param date
 	 * @return
 	 */
-	boolean isCreditStopSales(IBPartnerStats stat, BigDecimal grandTotal, Timestamp date);
+	boolean isCreditStopSales(BPartnerStats stat, BigDecimal grandTotal, Timestamp date);
 
 
 	/**
@@ -64,8 +64,8 @@ public interface IBPartnerStatsBL extends ISingletonService
 	 * @param stats
 	 * @return
 	 */
-	BigDecimal getCreditWatchRatio(IBPartnerStats stats);
+	BigDecimal getCreditWatchRatio(BPartnerStats stats);
 
 
-	void setCreditStatusBasedOnBPGroup(I_C_BPartner bpartner);
+	void resetCreditStatusFromBPGroup(I_C_BPartner bpartner);
 }

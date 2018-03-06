@@ -23,35 +23,29 @@ public interface IBPartnerStatisticsUpdater extends ISingletonService
 {
 	ModelDynAttributeAccessor<I_C_AllocationHdr, Boolean> DYNATTR_DisableUpdateTotalOpenBalances = new ModelDynAttributeAccessor<>("org.adempiere.bpartner.service.IBPartnerTotalOpenBalanceUpdater.DisableUpdateTotalOpenBalances", Boolean.class);
 
-	/**
-	 * This method will update all the bpartner statistics based on the legacy sql.
-	 *
-	 * @param ctx
-	 * @param bpartnerIDs
-	 * @param trxName
-	 */
 	void updateBPartnerStatistics(@NonNull final BPartnerStatisticsUpdateRequest request);
 
 	@Value
 	public static class BPartnerStatisticsUpdateRequest
 	{
-
 		final ImmutableSet<Integer> bpartnerIds;
-		final boolean updateFromBPGroup;
+
+		/**
+		 * This flag decides if {@link IBPartnerStatsBL#resetCreditStatusFromBPGroup(org.compiere.model.I_C_BPartner)} will also be invoked
+		 */
+		final boolean alsoResetCreditStatusFromBPGroup;
 
 		@Builder
 		private BPartnerStatisticsUpdateRequest(
 				@NonNull @Singular final ImmutableSet<Integer> bpartnerIds,
-				final boolean updateFromBPGroup)
+				final boolean alsoResetCreditStatusFromBPGroup)
 		{
 			this.bpartnerIds = bpartnerIds.stream()
 					.filter(bpartnerId -> bpartnerId > 0)
 					.collect(ImmutableSet.toImmutableSet());
 			Check.assumeNotEmpty(this.bpartnerIds, "bpartnerIds is not empty");
 
-			this.updateFromBPGroup = updateFromBPGroup;
+			this.alsoResetCreditStatusFromBPGroup = alsoResetCreditStatusFromBPGroup;
 		}
-
 	}
-
 }

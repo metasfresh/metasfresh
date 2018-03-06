@@ -26,7 +26,7 @@ import java.math.BigDecimal;
 
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
@@ -83,7 +83,7 @@ public class OnlyOneOpenInvoiceCandProcessor implements IShipmentSchedulesAfterF
 
 		final I_C_BPartner billPartner = InterfaceWrapperHelper.create(inOutLine.getShipmentSchedule().getBill_BPartner(), I_C_BPartner.class);
 
-		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(billPartner);
+		final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(billPartner);
 
 		final String creditStatus = I_C_BPartner.SO_CREDITSTATUS_ONE_OPEN_INVOICE;
 

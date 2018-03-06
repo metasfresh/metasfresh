@@ -31,7 +31,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -1890,11 +1890,11 @@ public final class MPayment extends X_C_Payment
 		}
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(partner);
+		final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(partner);
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final BigDecimal crediUsed = stats.getSOCreditUsed();
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartnerId(getC_BPartner_ID(), getDateTrx());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateTrx());
 
 
 		if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getPayAmt(true), getDateTrx()))

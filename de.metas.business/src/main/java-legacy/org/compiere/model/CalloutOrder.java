@@ -28,7 +28,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
 import org.adempiere.uom.api.IUOMConversionContext;
@@ -557,7 +557,7 @@ public class CalloutOrder extends CalloutEngine
 			@NonNull final I_C_Order order)
 	{
 		final I_C_BPartner bPartner = order.getC_BPartner();
-		final IBPartnerStats bPartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bPartner);
+		final BPartnerStats bPartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bPartner);
 
 		final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
 				.bpartnerId(bPartner.getC_BPartner_ID())
@@ -572,7 +572,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartnerId(bPartner.getC_BPartner_ID(), order.getDateOrdered());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bPartner.getC_BPartner_ID(), order.getDateOrdered());
 
 		final BigDecimal CreditAvailable = creditLimit.subtract(bPartnerStats.getSOCreditUsed());
 		if (CreditAvailable.signum() < 0)
@@ -725,7 +725,7 @@ public class CalloutOrder extends CalloutEngine
 					if (isChkCreditLimit(creditLimitRequest))
 					{
 						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-						final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartnerId(bill_BPartner_ID, order.getDateOrdered());
+						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bill_BPartner_ID, order.getDateOrdered());
 						final double creditUsed = rs.getDouble("SO_CreditUsed");
 						final BigDecimal CreditAvailable = creditLimit.subtract(BigDecimal.valueOf(creditUsed));
 						if (!rs.wasNull() && CreditAvailable.signum() < 0)
@@ -1484,7 +1484,7 @@ public class CalloutOrder extends CalloutEngine
 		final Timestamp evaluationDate = creditlimitrequest.getEvaluationDate();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.getCreditLimitByBPartnerId(bpartnerId, evaluationDate);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartnerId, evaluationDate);
 		boolean dontCheck = true;
 		if (evalCreditstatus)
 		{

@@ -37,9 +37,9 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * Instead, create a new IBPartnerStats object based on the found bp stats and return it.
 	 *
 	 * @param partner
-	 * @return the {@link IBPartnerStats} object
+	 * @return the {@link BPartnerStats} object
 	 */
-	IBPartnerStats getCreateBPartnerStats(I_C_BPartner partner);
+	BPartnerStats getCreateBPartnerStats(I_C_BPartner partner);
 
 	/**
 	 * Retrieve the total open balance value for the given stats using the old legacy sql
@@ -48,7 +48,7 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @param stats
 	 * @return
 	 */
-	BigDecimal retrieveOpenItems(IBPartnerStats stats);
+	BigDecimal retrieveOpenItems(BPartnerStats stats);
 
 	/**
 	 * Retrieve the SOCreditUsed value for the given stats using the old legacy sql
@@ -57,7 +57,7 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @param stats
 	 * @return
 	 */
-	void updateSOCreditUsed(IBPartnerStats stats);
+	void updateSOCreditUsed(BPartnerStats stats);
 
 	/**
 	 * Retrieve the ActualLifeTimeValue for the given stats using the old legacy sql
@@ -66,14 +66,14 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @param stats
 	 * @return
 	 */
-	void updateActualLifeTimeValue(IBPartnerStats stats);
+	void updateActualLifeTimeValue(BPartnerStats stats);
 
 	/**
 	 * Set the given soCreditStatus value to the I_C_BPartner_Stats entry linked with the stats object
 	 *
 	 * @param stats
 	 */
-	void setSOCreditStatus(IBPartnerStats stats, String soCreditStatus);
+	void setSOCreditStatus(BPartnerStats stats, String soCreditStatus);
 
 	/**
 	 * Retrieve the bpartner for which the bpStats object was made
@@ -81,23 +81,23 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @param bpStats
 	 * @return
 	 */
-	I_C_BPartner retrieveC_BPartner(IBPartnerStats bpStats);
+	I_C_BPartner retrieveC_BPartner(BPartnerStats bpStats);
 
 	/**
 	 * Update the SOCreditStatus based on the legacy sql
 	 *
 	 * @param bpStats
 	 */
-	void updateSOCreditStatus(IBPartnerStats bpStats);
+	void updateSOCreditStatus(BPartnerStats bpStats);
 
 	/**
 	 * Update the TotalOpenBalance based on the legacy sql
 	 *
 	 * @param bpStats
 	 */
-	void updateOpenItems(IBPartnerStats bpStats);
+	void updateOpenItems(BPartnerStats bpStats);
 
-	BigDecimal retrieveSOCreditUsed(IBPartnerStats bpStats);
+	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 
-	void updateCreditLimitIndicator(IBPartnerStats bstats);
+	void updateCreditLimitIndicator(BPartnerStats bstats);
 }

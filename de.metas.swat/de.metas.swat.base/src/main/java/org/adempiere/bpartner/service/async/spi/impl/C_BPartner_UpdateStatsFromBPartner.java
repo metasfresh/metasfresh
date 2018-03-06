@@ -28,7 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.util.Services;
@@ -54,7 +54,7 @@ import lombok.Value;
  */
 public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdapter
 {
-	final static private String PARAM_IsUpdateFromBPGroup = "IsUpdateFromBPGroup";
+	final static private String PARAM_ALSO_RESET_CREDITSTATUS_FROM_BP_GROUP = "alsoResetCreditStatusFromBPGroup";
 
 	public static void createWorkpackage(@NonNull final BPartnerStatisticsUpdateRequest request)
 	{
@@ -62,7 +62,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		{
 			SCHEDULER.schedule(BPartnerToUpdate.builder()
 					.bpartnerId(bpartnerId)
-					.updateFromBPGroup(request.isUpdateFromBPGroup())
+					.alsoResetCreditStatusFromBPGroup(request.isAlsoResetCreditStatusFromBPGroup())
 					.build());
 		}
 	}
@@ -72,7 +72,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 	private static final class BPartnerToUpdate
 	{
 		private final int bpartnerId;
-		private final boolean updateFromBPGroup;
+		private final boolean alsoResetCreditStatusFromBPGroup;
 	}
 
 	private static final WorkpackagesOnCommitSchedulerTemplate<BPartnerToUpdate> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<BPartnerToUpdate>(C_BPartner_UpdateStatsFromBPartner.class)
@@ -98,12 +98,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		@Override
 		protected Map<String, Object> extractParametersFromItem(BPartnerToUpdate item)
 		{
-			final ImmutableMap.Builder<String, Object> params = ImmutableMap.builder();
-			if (item.isUpdateFromBPGroup())
-			{
-				params.put(PARAM_IsUpdateFromBPGroup, item.isUpdateFromBPGroup());
-			}
-			return params.build();
+			return ImmutableMap.of(PARAM_ALSO_RESET_CREDITSTATUS_FROM_BP_GROUP, item.isAlsoResetCreditStatusFromBPGroup());
 		}
 	};
 
@@ -114,19 +109,18 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
-
 		final List<I_C_BPartner> bpartners = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_BPartner.class, localTrxName);
 
-		final boolean isUpdateFromBPGroup = getParameters().getParameterAsBool(PARAM_IsUpdateFromBPGroup);
+		final boolean alsoSetCreditStatusBaseOnBPGroup = getParameters().getParameterAsBool(PARAM_ALSO_RESET_CREDITSTATUS_FROM_BP_GROUP);
 
 		for (final I_C_BPartner bpartner : bpartners)
 		{
-			if (isUpdateFromBPGroup)
+			if (alsoSetCreditStatusBaseOnBPGroup)
 			{
-				Services.get(IBPartnerStatsBL.class).setCreditStatusBasedOnBPGroup(bpartner);
+				Services.get(IBPartnerStatsBL.class).resetCreditStatusFromBPGroup(bpartner);
 			}
 
-			final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
+			final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
 			bpartnerStatsDAO.updateOpenItems(stats);
 			bpartnerStatsDAO.updateActualLifeTimeValue(stats);
 			bpartnerStatsDAO.updateSOCreditUsed(stats);
