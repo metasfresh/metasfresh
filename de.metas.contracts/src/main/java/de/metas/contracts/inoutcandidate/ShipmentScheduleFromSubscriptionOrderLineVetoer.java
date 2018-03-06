@@ -33,7 +33,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
-import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 
 /**
@@ -52,7 +52,7 @@ public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWit
 	 *            {@link InterfaceWrapperHelper}.
 	 * @param handler
 	 *            the handler that wants to create a shipment schedule for the given <code>model</code>. The method
-	 *            assume that this handler's {@link IShipmentScheduleHandler#getSourceTable()} invocation returns
+	 *            assume that this handler's {@link ShipmentScheduleHandler#getSourceTable()} invocation returns
 	 *            <code>"C_OrderLine"</code>.
 	 */
 	@Override

@@ -75,7 +75,7 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * @param shipmentSchedule
 	 * @return PI item product or null.
 	 */
-	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product(I_M_ShipmentSchedule shipmentSchedule);
+	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_IgnoringPickedHUs(I_M_ShipmentSchedule shipmentSchedule);
 
 	I_M_ShipmentSchedule getShipmentScheduleOrNull(I_M_HU hu);
 

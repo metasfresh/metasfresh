@@ -235,6 +235,35 @@ public interface I_AD_PInstance
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set Fenster.
+	 * Eingabe- oder Anzeige-Fenster
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Window_ID (int AD_Window_ID);
+
+	/**
+	 * Get Fenster.
+	 * Eingabe- oder Anzeige-Fenster
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Window_ID();
+
+	public org.compiere.model.I_AD_Window getAD_Window();
+
+	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window);
+
+    /** Column definition for AD_Window_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new org.adempiere.model.ModelColumn<I_AD_PInstance, org.compiere.model.I_AD_Window>(I_AD_PInstance.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
+    /** Column name AD_Window_ID */
+    public static final String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *

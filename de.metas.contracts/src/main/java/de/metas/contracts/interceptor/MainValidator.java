@@ -99,7 +99,7 @@ public class MainValidator extends AbstractModuleInterceptor
 	public void registerFactories()
 	{
 		Services.get(IShipmentScheduleHandlerBL.class).registerVetoer(new ShipmentScheduleFromSubscriptionOrderLineVetoer(), I_C_OrderLine.Table_Name);
-		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(Env.getCtx(), new SubscriptionShipmentScheduleHandler());
+		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(SubscriptionShipmentScheduleHandler.class);
 
 		Services.get(IShipmentScheduleBL.class).registerCandidateProcessor(new ShipmentScheduleSubscriptionProcessor());
 

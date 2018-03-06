@@ -25,8 +25,8 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 
 public interface I_M_ShipmentSchedule extends
-		de.metas.inoutcandidate.model.I_M_ShipmentSchedule //,
-		//IHUDeliveryQuantities
+		de.metas.inoutcandidate.model.I_M_ShipmentSchedule // ,
+// IHUDeliveryQuantities
 {
 	// code formatter will be off to maintain aspect
 
@@ -41,7 +41,6 @@ public interface I_M_ShipmentSchedule extends
 	public java.math.BigDecimal getQtyOrdered_LU();
     public static final String COLUMNNAME_QtyOrdered_LU = "QtyOrdered_LU";
     // @formatter:on
-
 
 	// begin task 05130
 	// @formatter:off
@@ -73,6 +72,10 @@ public interface I_M_ShipmentSchedule extends
 	// @formatter:on
 
 	// @formatter:off
+	/**
+	 * This is the "effective" value, coming from either {@link #getM_HU_PI_Item_Product_Calculated_ID()}<br>
+	 * or {@link #getM_HU_PI_Item_Product_Override_ID()}.
+	 */
 	public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 	public void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
 	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product M_HU_PI_Item_Product);

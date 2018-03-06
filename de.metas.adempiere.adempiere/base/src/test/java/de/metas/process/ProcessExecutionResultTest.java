@@ -52,8 +52,7 @@ public class ProcessExecutionResultTest
 	@Test
 	public void testJsonSerializeDeserialize() throws Exception
 	{
-		ProcessExecutionResult result = new ProcessExecutionResult();
-		result.setAD_PInstance_ID(12345);
+		final ProcessExecutionResult result = ProcessExecutionResult.newInstanceForADPInstanceId(12345);
 		result.setRecordToSelectAfterExecution(createDummyTableRecordReference());
 		result.markAsError("error summary1");
 		result.setReportData(new byte[] { 1, 2, 3 }, "report.pdf", "application/pdf");

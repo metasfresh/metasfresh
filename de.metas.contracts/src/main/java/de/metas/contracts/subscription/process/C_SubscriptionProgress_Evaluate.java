@@ -77,7 +77,7 @@ public class C_SubscriptionProgress_Evaluate extends JavaProcess
 	{
 
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		try (final IAutoCloseable createMissingScheds = shipmentScheduleBL.createMissingSchedsOnClose())
+		try (final IAutoCloseable createMissingScheds = shipmentScheduleBL.postponeMissingSchedsCreationUntilClose())
 		{
 			return createOrUpdateSubscriptionProgress0();
 		}

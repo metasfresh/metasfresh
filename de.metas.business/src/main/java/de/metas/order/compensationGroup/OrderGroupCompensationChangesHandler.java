@@ -54,10 +54,7 @@ public class OrderGroupCompensationChangesHandler
 		final Group group = groupsRepo.retrieveGroup(groupId);
 		if (group.getGroupTemplateId() > 0 && !orderLine.isGroupCompensationLine())
 		{
-			final GroupTemplate groupTemplate = groupTemplateRepo.getById(group.getGroupTemplateId());
-			groupsRepo.prepareNewGroup()
-					.groupTemplate(groupTemplate)
-					.recreateGroup(group);
+			recreateGroup(group);
 		}
 		else
 		{
@@ -85,11 +82,19 @@ public class OrderGroupCompensationChangesHandler
 		{
 			return;
 		}
-		
+
+		recreateGroup(group);
+	}
+	
+	private void recreateGroup(final Group group)
+	{
 		final GroupTemplate groupTemplate = groupTemplateRepo.getById(group.getGroupTemplateId());
 		groupsRepo.prepareNewGroup()
 				.groupTemplate(groupTemplate)
 				.recreateGroup(group);
+		
+		final int orderId = OrderGroupRepository.extractOrderIdFromGroup(group);
+		groupsRepo.renumberOrderLinesForOrderId(orderId);
 	}
 
 	private boolean isEligible(final I_C_OrderLine orderLine)

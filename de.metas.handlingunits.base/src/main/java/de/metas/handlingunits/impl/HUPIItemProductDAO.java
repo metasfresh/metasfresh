@@ -220,7 +220,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Cached(cacheName = I_M_HU_PI_Item_Product.Table_Name
 			+ "#By"
 			+ "#IHUPIItemProductQuery")
-	/* package */I_M_HU_PI_Item_Product retrieveFirst(@CacheCtx final Properties ctx,
+	/* package */I_M_HU_PI_Item_Product retrieveFirst(
+			@CacheCtx final Properties ctx,
 			@CacheAllowMutable final IHUPIItemProductQuery queryVO,
 			@CacheTrx final String trxName)
 	{
@@ -242,10 +243,10 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				.list(I_M_HU_PI_Item_Product.class);
 	}
 
-	private IQueryFilter<I_M_HU_PI_Item_Product> createQueryFilter(final Properties ctx, final IHUPIItemProductQuery queryVO)
+	private IQueryFilter<I_M_HU_PI_Item_Product> createQueryFilter(
+			final Properties ctx,
+			@NonNull final IHUPIItemProductQuery queryVO)
 	{
-		Check.assumeNotNull(queryVO, "Param 'queryVO' is not null");
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final String trxName = ITrx.TRXNAME_None;
 

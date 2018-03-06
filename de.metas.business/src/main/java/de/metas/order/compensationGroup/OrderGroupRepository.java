@@ -6,10 +6,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -19,15 +22,19 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.MutableInt;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
 
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import lombok.Builder;
@@ -184,7 +191,7 @@ public class OrderGroupRepository implements GroupRepository
 
 	public IQueryBuilder<I_C_OrderLine> retrieveGroupOrderLinesQuery(@NonNull final GroupId groupId)
 	{
-		final int orderId = groupId.getDocumentIdAssumingTableName(I_C_Order.Table_Name);
+		final int orderId = extractOrderIdFromGroupId(groupId);
 		return queryBL
 				.createQueryBuilder(I_C_OrderLine.class)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
@@ -256,7 +263,7 @@ public class OrderGroupRepository implements GroupRepository
 	public void saveGroup(@NonNull final Group group, final OrderLinesStorage orderLinesStorage)
 	{
 		final GroupId groupId = group.getGroupId();
-		final int orderId = groupId.getDocumentIdAssumingTableName(I_C_Order.Table_Name);
+		final int orderId = extractOrderIdFromGroupId(groupId);
 		final I_C_Order order = load(orderId, I_C_Order.class);
 		assertOrderNotProcessed(order);
 
@@ -366,10 +373,21 @@ public class OrderGroupRepository implements GroupRepository
 	public static int extractOrderIdFromGroups(final List<Group> groups)
 	{
 		return groups.stream()
-				.map(group -> group.getGroupId().getDocumentIdAssumingTableName(I_C_Order.Table_Name))
+				.map(group -> extractOrderIdFromGroup(group))
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("All groups shall be from same order")));
 	}
+
+	public static int extractOrderIdFromGroup(@NonNull final Group group)
+	{
+		return extractOrderIdFromGroupId(group.getGroupId());
+	}
+	
+	public static int extractOrderIdFromGroupId(@NonNull final GroupId groupId)
+	{
+		return groupId.getDocumentIdAssumingTableName(I_C_Order.Table_Name);
+	}
+	
 
 	private List<I_C_OrderLine> retrieveC_OrderLines(final Collection<Integer> orderLineIds)
 	{
@@ -526,5 +544,43 @@ public class OrderGroupRepository implements GroupRepository
 					.collect(ImmutableList.toImmutableList());
 			orderLinesToDelete.forEach(InterfaceWrapperHelper::delete);
 		}
+	}
+	
+	public void renumberOrderLinesForOrderId(final int orderId)
+	{
+		Check.assume(orderId > 0, "orderId > 0");
+		
+		final List<I_C_OrderLine> allOrderLines = Services.get(IOrderDAO.class).retrieveOrderLines(orderId)
+				.stream()
+				.sorted(Comparator.comparing(I_C_OrderLine::getLine))
+				.collect(ImmutableList.toImmutableList());
+
+		final ListMultimap<GroupId, I_C_OrderLine> orderLinesByGroupId = allOrderLines
+				.stream()
+				.filter(OrderGroupCompensationUtils::isInGroup)
+				.collect(ImmutableListMultimap.toImmutableListMultimap(OrderGroupRepository::extractGroupId, Function.identity()));
+
+		final List<I_C_OrderLine> notGroupedOrderLines = allOrderLines
+				.stream()
+				.filter(OrderGroupCompensationUtils::isNotInGroup)
+				.collect(ImmutableList.toImmutableList());
+
+		final MutableInt nextLineNo = new MutableInt(10);
+		final Consumer<I_C_OrderLine> orderLineSequenceUpdater = orderLine -> {
+			orderLine.setLine(nextLineNo.getValue());
+			InterfaceWrapperHelper.save(orderLine);
+			nextLineNo.add(10);
+		};
+
+		//
+		// Renumber grouped order lines first
+		orderLinesByGroupId
+				.values()
+				.stream()
+				.forEach(orderLineSequenceUpdater);
+
+		//
+		// Remaining ungrouped order lines
+		notGroupedOrderLines.forEach(orderLineSequenceUpdater);
 	}
 }

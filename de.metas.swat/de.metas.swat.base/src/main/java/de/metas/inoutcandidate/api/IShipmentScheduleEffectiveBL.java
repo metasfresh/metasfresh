@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,9 +36,9 @@ import de.metas.interfaces.I_C_BPartner;
 
 /**
  * Returns the "effective" values for a given shipment schedules when it has both an "original" and an "override" column.
- * 
+ *
  * @author ts
- * 
+ *
  */
 // TODO 06178: clean up the method names (both ID and Object getters are fine, but the names should be alligned)
 public interface IShipmentScheduleEffectiveBL extends ISingletonService
@@ -52,8 +52,8 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	I_C_BPartner_Location getBPartnerLocation(I_M_ShipmentSchedule sched);
 
 	/**
-	 * return the "effective" C_BPartner_ID (either C_BPArtner_ID or if set C_BPartner_Override_ID)
-	 * 
+	 * return the "effective" C_BPartner_ID (either C_BPartner_ID or if set C_BPartner_Override_ID)
+	 *
 	 * @param sched
 	 * @return
 	 */
@@ -79,7 +79,7 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 
 	/**
 	 * Get the delivery date effective based on DeliveryDate and DeliveryDate_Override
-	 * 
+	 *
 	 * @param sched
 	 * @return
 	 */
@@ -89,7 +89,7 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	 * Get the preparation date effective based on PreparationDate and PreparationDate_Override.
 	 * If none of them is set, try to fallback to the given {@code sched}'s order's preparation date. If the order has no proparation date, falls back to the order's promised date.
 	 * If the given {@code sched} doesn't have an order, return the current time.,
-	 * 
+	 *
 	 * @param sched
 	 * @return
 	 */

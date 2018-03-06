@@ -24,11 +24,13 @@ package de.metas.handlingunits.client.terminal.report.model;
 
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.process.IADProcessDAO;
 
 public class HUADProcessKey extends TerminalKey
 {
@@ -37,18 +39,18 @@ public class HUADProcessKey extends TerminalKey
 	private final String name;
 	private final KeyNamePair value;
 
-	public HUADProcessKey(final ITerminalContext terminalContext, final I_AD_Process process)
+	public HUADProcessKey(final ITerminalContext terminalContext, final int adProcessId)
 	{
 		super(terminalContext);
 
-		Check.assumeNotNull(process, "process not null");
-		this.adProcessId = process.getAD_Process_ID();
+		Check.assume(adProcessId > 0, "processId > 0");
+		final I_AD_Process process = Services.get(IADProcessDAO.class).retrieveProcessById(terminalContext.getCtx(), adProcessId);
+		this.adProcessId = adProcessId;
 
-		final int processId = process.getAD_Process_ID();
-		id = getClass().getName() + "-" + processId;
+		id = getClass().getName() + "-" + adProcessId;
 
 		final String processName = process.getName();
-		value = new KeyNamePair(processId, processName);
+		value = new KeyNamePair(adProcessId, processName);
 
 		name = processName;
 	}
