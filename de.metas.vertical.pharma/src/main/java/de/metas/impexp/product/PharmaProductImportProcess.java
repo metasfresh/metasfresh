@@ -231,17 +231,17 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	{
 		final I_M_Product product = newInstance(I_M_Product.class, importRecord);
 		product.setValue(importRecord.getA00PZN());
-		if (Check.isEmpty(importRecord.getA00PBEZ()))
+		if (Check.isEmpty(importRecord.getA00PNAM()))
 		{
 			product.setName(importRecord.getA00PZN());
 		}
 		else
 		{
-			product.setName(importRecord.getA00PBEZ());
+			product.setName(importRecord.getA00PNAM());
 		}
-		if (!Check.isEmpty(importRecord.getA00PNAM()))
+		if (!Check.isEmpty(importRecord.getA00PBEZ()))
 		{
-			product.setDescription(importRecord.getA00PNAM());
+			product.setDescription(importRecord.getA00PBEZ());
 		}
 		if (!Check.isEmpty(importRecord.getA00GTIN()))
 		{
@@ -273,13 +273,13 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		}
 
 		product.setValue(importRecord.getA00PZN());
-		if (!Check.isEmpty(importRecord.getA00PBEZ()))
-		{
-			product.setName(importRecord.getA00PBEZ());
-		}
 		if (!Check.isEmpty(importRecord.getA00PNAM()))
 		{
-			product.setDescription(importRecord.getA00PNAM());
+			product.setName(importRecord.getA00PNAM());
+		}
+		if (!Check.isEmpty(importRecord.getA00PBEZ()))
+		{
+			product.setDescription(importRecord.getA00PBEZ());
 		}
 		if (!Check.isEmpty(importRecord.getA00GTIN()))
 		{
