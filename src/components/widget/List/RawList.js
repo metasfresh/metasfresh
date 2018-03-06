@@ -7,6 +7,27 @@ import classnames from 'classnames';
 
 import RawListDropdown from './RawListDropdown';
 
+const setSelectedValue = function(dropdownList, selected) {
+  const changedValues = {};
+  let idx = 0;
+
+  if (selected) {
+    idx = dropdownList.findIndex(item => item.caption === selected.caption);
+  }
+
+  if (idx !== 0) {
+    const item = dropdownList.get(idx);
+    dropdownList = dropdownList.delete(idx);
+    dropdownList = dropdownList.insert(0, item);
+    changedValues.dropdownList = dropdownList;
+    idx = 0;
+  }
+
+  changedValues.selected = dropdownList.get(idx);
+
+  return changedValues;
+};
+
 class RawList extends PureComponent {
   constructor(props) {
     super(props);
@@ -25,7 +46,7 @@ class RawList extends PureComponent {
     window.removeEventListener('keydown', this.handleTab);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     const {
       list,
       mandatory,
@@ -33,12 +54,12 @@ class RawList extends PureComponent {
       selected,
       autoFocus,
       emptyText,
-      lookupList,
     } = this.props;
 
-    if (prevProps.list !== list) {
-      let dropdownList = List(list);
+    let dropdownList = List(list);
+    let changedValues = {};
 
+    if (prevProps.list !== list) {
       if (!mandatory && emptyText) {
         dropdownList = dropdownList.unshift({
           caption: emptyText,
@@ -46,46 +67,48 @@ class RawList extends PureComponent {
         });
       }
 
+      changedValues.dropdownList = dropdownList;
+
       if (dropdownList.size > 0) {
-        let idx = 0;
+        let selectedOption = null;
 
         if (selected || defaultValue) {
-          const selectedCaption = selected ? selected.caption : defaultValue;
-
-          idx = dropdownList.findIndex(
-            item => item.caption === selectedCaption
-          );
+          selectedOption = selected ? selected : defaultValue;
         }
-
-        if (idx !== 0) {
-          const item = dropdownList.get(idx);
-          dropdownList = dropdownList.delete(idx);
-          dropdownList = dropdownList.insert(0, item);
-          idx = 0;
-        }
-
-        const selectedValue = {
-          selected: dropdownList.get(idx),
+        changedValues = {
+          ...changedValues,
+          ...setSelectedValue(dropdownList, selectedOption),
         };
-
-        this.setState(
-          {
-            dropdownList,
-            selected: selectedValue.selected,
-          },
-          () => {
-            autoFocus && this.dropdown.focus();
-          }
-        );
       } else {
-        // list changed so we reset selected value no matter what
-        this.handleSwitch(null);
+        changedValues.selected = null;
       }
     }
 
-    // for lookups
-    if (lookupList && prevProps.selected !== selected) {
-      this.handleSwitch(selected);
+    if (
+      !changedValues.selected &&
+      (prevProps.selected !== selected ||
+        prevState.selected !== this.state.selected)
+    ) {
+      if (
+        dropdownList.size > 0 &&
+        (prevProps.list !== list || !this.state.selected)
+      ) {
+        changedValues = {
+          ...changedValues,
+          ...setSelectedValue(dropdownList, defaultValue),
+        };
+      }
+    }
+
+    if (Object.keys(changedValues).length) {
+      this.setState(
+        {
+          ...changedValues,
+        },
+        () => {
+          autoFocus && this.dropdown.focus();
+        }
+      );
     }
 
     this.checkIfDropDownListOutOfFilter();
@@ -112,11 +135,18 @@ class RawList extends PureComponent {
   };
 
   handleClickOutside() {
-    const { isToggled, onCloseDropdown, onBlur } = this.props;
+    const { isToggled, onCloseDropdown, onBlur, selected } = this.props;
 
     if (isToggled) {
-      onCloseDropdown();
-      onBlur();
+      this.setState(
+        {
+          selected: selected || null,
+        },
+        () => {
+          onCloseDropdown();
+          onBlur();
+        }
+      );
     }
   }
 
@@ -136,7 +166,7 @@ class RawList extends PureComponent {
 
     this.setState(
       {
-        selected,
+        selected: null,
       },
       () => {
         if (selected.key === null) {
@@ -197,6 +227,8 @@ class RawList extends PureComponent {
           break;
         case 'Escape':
           e.preventDefault();
+
+          this.handleSwitch(null);
           onCloseDropdown();
           break;
         case 'Tab':
