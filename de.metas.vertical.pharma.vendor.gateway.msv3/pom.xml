@@ -11,7 +11,7 @@
 
 	<version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
 	<groupId>de.metas.vertical.pharma</groupId>
-	<artifactId>metasfresh-pharma.vendor.gateway.mvs3</artifactId>
+	<artifactId>metasfresh-pharma.vendor.gateway.msv3</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>

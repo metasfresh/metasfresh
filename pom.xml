@@ -148,7 +148,7 @@
 		<module>de.metas.datev</module>
 
 		<module>de.metas.vertical.pharma</module>
-		<module>de.metas.vertical.pharma.vendor.gateway.mvs3</module>
+		<module>de.metas.vertical.pharma.vendor.gateway.msv3</module>
 		<!-- commented out because we currently don't work with them <module>de.metas.reactor.ait</module> -->
 	</modules>
 
