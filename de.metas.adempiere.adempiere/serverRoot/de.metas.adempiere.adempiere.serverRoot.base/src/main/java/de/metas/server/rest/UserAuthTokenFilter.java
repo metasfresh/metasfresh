@@ -140,11 +140,12 @@ public class UserAuthTokenFilter implements Filter
 				.date(SystemTime.asDayTimestamp())
 				.build());
 
-		final Properties ctx = Env.deriveCtx(Env.getCtx());
+		final Properties ctx = Env.newTemporaryCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, userRolePermissions.getAD_Client_ID());
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, token.getOrgId());
 		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, userRolePermissions.getAD_User_ID());
 		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, userRolePermissions.getAD_Role_ID());
+		// TODO: set other properties like language, warehouse etc...
 		return ctx;
 	}
 }
