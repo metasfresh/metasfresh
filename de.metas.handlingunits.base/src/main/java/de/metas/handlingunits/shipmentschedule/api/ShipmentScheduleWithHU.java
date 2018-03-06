@@ -413,9 +413,21 @@ public class ShipmentScheduleWithHU
 		return qtyTU;
 	}
 
-	public I_M_HU_PI_Item_Product retrieveM_HU_PI_Item_ProductOrNull()
+	/**
+	 *
+	 * @return never returns {@code null}. If none is found, it returns the "virtual" packing instruction (i.e. "No Packing Item").
+	 */
+	public I_M_HU_PI_Item_Product retrieveM_HU_PI_Item_Product()
 	{
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		final I_M_HU topLevelHU = getTopLevelHU();
+
+		if (topLevelHU == null)
+		{
+			// this instance has no HU; return "No Packing Item"
+			return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
+		}
+
 		if (topLevelHU.getM_HU_PI_Item_Product_ID() > 0)
 		{
 			return topLevelHU.getM_HU_PI_Item_Product();
@@ -436,19 +448,18 @@ public class ShipmentScheduleWithHU
 
 		final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(shipmentSchedule);
 		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
-		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
 		final I_M_HU_PI_Item_Product matchingPiip = hupiItemProductDAO.retrievePIMaterialItemProduct(
 				huMaterialItem.getM_HU_PI_Item(),
 				bPartner,
 				getM_Product(),
 				preparationDate);
-		if(matchingPiip != null)
+		if (matchingPiip != null)
 		{
 			return matchingPiip;
 		}
 
-		// return "No Packing Item"
+		// could not find a packing instruction; return "No Packing Item"
 		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
 	}
 }

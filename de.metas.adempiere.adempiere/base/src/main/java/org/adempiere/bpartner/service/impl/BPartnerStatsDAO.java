@@ -1,17 +1,18 @@
 package org.adempiere.bpartner.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.DBException;
@@ -23,7 +24,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import lombok.NonNull;
 
@@ -52,24 +52,26 @@ import lombok.NonNull;
 public class BPartnerStatsDAO implements IBPartnerStatsDAO
 {
 	@Override
-	public IBPartnerStats retrieveBPartnerStats(final I_C_BPartner partner)
+	public BPartnerStats getCreateBPartnerStats(@NonNull final I_C_BPartner partner)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(partner);
-		I_C_BPartner_Stats stat = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Stats.class, ctx, ITrx.TRXNAME_ThreadInherited) // using current trx, because we will save in current trx too
+		I_C_BPartner_Stats statsRecord = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Stats.class) // using current trx, because we will save in current trx too
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
 				.create()
 				.firstOnly(I_C_BPartner_Stats.class);
 
-		if (stat == null)
+		if (statsRecord == null)
 		{
-			stat = createBPartnerStats(partner);
+			statsRecord = createBPartnerStats(partner);
 		}
-
-		final IBPartnerStats bpStats = BPartnerStats.of(stat);
-
-		return bpStats;
+		return BPartnerStats.builder()
+				.actualLifeTimeValue(statsRecord.getActualLifeTimeValue())
+				.openItems(statsRecord.getOpenItems())
+				.recordId(statsRecord.getC_BPartner_Stats_ID())
+				.soCreditStatus(statsRecord.getSOCreditStatus())
+				.soCreditUsed(statsRecord.getSO_CreditUsed())
+				.build();
 	}
 
 	/**
@@ -94,9 +96,9 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
-	public BigDecimal retrieveOpenItems(@NonNull final IBPartnerStats bpStats)
+	public BigDecimal retrieveOpenItems(@NonNull final BPartnerStats bpStats)
 	{
-		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
@@ -115,7 +117,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-
 				openItems = rs.getBigDecimal(1);
 			}
 		}
@@ -132,14 +133,14 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
-	public BigDecimal retrieveSOCreditUsed(@NonNull final IBPartnerStats bpStats)
+	public BigDecimal retrieveSOCreditUsed(@NonNull final BPartnerStats bpStats)
 	{
-		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 		final String trxName = ITrx.TRXNAME_None;
 
-		BigDecimal SO_CreditUsed = null;
+		BigDecimal SO_CreditUsed = BigDecimal.ZERO;
 
-		final Object[] sqlParams = new Object[] {stats.getC_BPartner_ID() };
+		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
 				// open invoices
 				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)) FROM C_Invoice_v i "
@@ -149,7 +150,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				+ "WHERE p.C_BPartner_ID=bp.C_BPartner_ID AND p.IsAllocated='N'"
 				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0)*(-1), "
 				// open invoice candidates
-				+ "COALESCE((SELECT SUM(currencyBase(ic.NetAmtToInvoice,ic.C_Currency_ID,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
+				+ "COALESCE((SELECT SUM(currencyBase(ic.LineNetAmt,ic.C_Currency_ID,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
 				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N'),0) "
 				+ "FROM C_BPartner bp " + "WHERE C_BPartner_ID=?";
 		PreparedStatement pstmt = null;
@@ -177,20 +178,19 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		return SO_CreditUsed;
 	}
 
-
 	@Override
-	public void updateSOCreditUsed(final IBPartnerStats bpStats)
+	public void updateSOCreditUsed(final BPartnerStats bpStats)
 	{
 		final BigDecimal SO_CreditUsed = retrieveSOCreditUsed(bpStats);
-		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 		stats.setSO_CreditUsed(SO_CreditUsed);
 		InterfaceWrapperHelper.save(stats);
 	}
 
 	@Override
-	public void updateActualLifeTimeValue(final IBPartnerStats bpStats)
+	public void updateActualLifeTimeValue(final BPartnerStats bpStats)
 	{
-		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 
 		BigDecimal actualLifeTimeValue = null;
 		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
@@ -232,7 +232,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
-	public void updateSOCreditStatus(final IBPartnerStats bpStats)
+	public void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
 
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
@@ -278,10 +278,10 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
-	public void updateOpenItems(final IBPartnerStats bpStats)
+	public void updateOpenItems(@NonNull final BPartnerStats bpStats)
 	{
 		// load the statistics
-		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 
 		final BigDecimal openItems = retrieveOpenItems(bpStats);
 
@@ -292,13 +292,13 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		InterfaceWrapperHelper.save(stats);
 	}
 
-
 	@Override
-	public void updateCreditLimitIndicator(final IBPartnerStats bstats)
+	public void updateCreditLimitIndicator(@NonNull final BPartnerStats bstats)
 	{
 		// load the statistics
-		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bstats);
-		final  BigDecimal creditUsed = retrieveSOCreditUsed(bstats);
+		final I_C_BPartner_Stats stats = loadDataRecord(bstats);
+		final BigDecimal creditUsed = retrieveSOCreditUsed(bstats);
+
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
 
@@ -313,11 +313,10 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		InterfaceWrapperHelper.save(stats);
 	}
 
-
 	@Override
-	public void setSOCreditStatus(final IBPartnerStats bpStats, final String soCreditStatus)
+	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final String soCreditStatus)
 	{
-		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 
 		stats.setSOCreditStatus(soCreditStatus);
 
@@ -326,35 +325,16 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
-	public I_C_BPartner retrieveC_BPartner(final IBPartnerStats bpStats)
+	public I_C_BPartner retrieveC_BPartner(@NonNull final BPartnerStats bpStats)
 	{
-		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 
 		return stats.getC_BPartner();
 	}
 
-	private I_C_BPartner_Stats getC_BPartner_Stats(final IBPartnerStats bpStats)
+	private I_C_BPartner_Stats loadDataRecord(@NonNull final BPartnerStats bpStats)
 	{
-		final BPartnerStats bpStatsInstance;
-
-		if (InterfaceWrapperHelper.isInstanceOf(bpStats, BPartnerStats.class))
-		{
-			bpStatsInstance = (BPartnerStats)bpStats;
-		}
-
-		else
-		{
-			// in case there is another implementation of IBPartnerStats, create a new BPartnerStats instance
-
-			final int bpartnerID = bpStats.getC_BPartner_ID();
-
-			final I_C_BPartner partner = InterfaceWrapperHelper.create(Env.getCtx(), bpartnerID, I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
-
-			bpStatsInstance = (BPartnerStats)retrieveBPartnerStats(partner);
-
-		}
-
-		return bpStatsInstance.getC_BPartner_Stats();
+		return load(bpStats.getRecordId(), I_C_BPartner_Stats.class);
 	}
 
 }

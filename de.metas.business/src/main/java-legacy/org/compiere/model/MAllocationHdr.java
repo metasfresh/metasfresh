@@ -30,8 +30,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -83,7 +83,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 				+ "WHERE IsActive='Y'"
 				+ " AND EXISTS (SELECT * FROM C_AllocationLine l "
 				+ "WHERE h.C_AllocationHdr_ID=l.C_AllocationHdr_ID AND l.C_Payment_ID=?)";
-		final ArrayList<MAllocationHdr> list = new ArrayList<MAllocationHdr>();
+		final ArrayList<MAllocationHdr> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -125,7 +125,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 				+ "WHERE IsActive='Y'"
 				+ " AND EXISTS (SELECT * FROM C_AllocationLine l "
 				+ "WHERE h.C_AllocationHdr_ID=l.C_AllocationHdr_ID AND l.C_Invoice_ID=?)";
-		final ArrayList<MAllocationHdr> list = new ArrayList<MAllocationHdr>();
+		final ArrayList<MAllocationHdr> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -369,11 +369,10 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 
 		// Unlink
-		final HashSet<Integer> bps = new HashSet<Integer>();
+		final HashSet<Integer> bps = new HashSet<>();
 		final MAllocationLine[] lines = getLines(true);
-		for (int i = 0; i < lines.length; i++)
+		for (final MAllocationLine line : lines)
 		{
-			final MAllocationLine line = lines[i];
 			bps.add(line.getC_BPartner_ID());
 			line.deleteEx(true, trxName);
 		}
@@ -475,9 +474,8 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		// Add up Amounts & validate
 		lines = getLines(true);
 		BigDecimal approval = Env.ZERO;
-		for (int i = 0; i < lines.length; i++)
+		for (final MAllocationLine line : lines)
 		{
-			final MAllocationLine line = lines[i];
 			approval = approval.add(line.getWriteOffAmt()).add(line.getDiscountAmt());
 			// Make sure there is BP
 			if (line.getC_BPartner_ID() <= 0)
@@ -562,10 +560,9 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 
 		// Link
 		final MAllocationLine[] lines = getLines(false);
-		final Set<Integer> bpartnerIds = new HashSet<Integer>();
-		for (int i = 0; i < lines.length; i++)
+		final Set<Integer> bpartnerIds = new HashSet<>();
+		for (final MAllocationLine line : lines)
 		{
-			final MAllocationLine line = lines[i];
 			final int bpartnerId = line.processIt(false); // not reverse
 			bpartnerIds.add(bpartnerId);
 		}
@@ -573,7 +570,9 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		// Update BP Statistics
 
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(Env.getCtx(), bpartnerIds, ITrx.TRXNAME_None);
+		.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+				.bpartnerIds(bpartnerIds)
+				.build());
 
 		// User Validation
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -897,10 +896,9 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 
 		// Unlink Invoices
 		final MAllocationLine[] lines = getLines(true);
-		final Set<Integer> bpartnerIds = new HashSet<Integer>();
-		for (int i = 0; i < lines.length; i++)
+		final Set<Integer> bpartnerIds = new HashSet<>();
+		for (final MAllocationLine line : lines)
 		{
-			final MAllocationLine line = lines[i];
 			line.setIsActive(false);
 			line.save();
 			final int bpartnerId = line.processIt(true); // reverse
@@ -924,9 +922,10 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 
 		// FRESH-152 update bpartner stats
-		final IBPartnerStatisticsUpdater bpartnerTotalOpenBalanceUpdater = Services.get(IBPartnerStatisticsUpdater.class);
-
-		bpartnerTotalOpenBalanceUpdater.updateBPartnerStatistics(getCtx(), bpartnerIds, get_TrxName());
+		Services.get(IBPartnerStatisticsUpdater.class)
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+						.bpartnerIds(bpartnerIds)
+						.build());
 
 	}	// updateBP
 
@@ -974,8 +973,8 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		InterfaceWrapperHelper.save(this);
 
 		// task 09610: needed to set the correct counter-IDs if any
-		final Map<Integer, Integer> lineId2reversalLineId = new HashMap<Integer, Integer>();
-		final Map<Integer, I_C_AllocationLine> reversalLineId2reversalLine = new HashMap<Integer, I_C_AllocationLine>();
+		final Map<Integer, Integer> lineId2reversalLineId = new HashMap<>();
+		final Map<Integer, I_C_AllocationLine> reversalLineId2reversalLine = new HashMap<>();
 
 		for (final MAllocationLine line : getLines(true))
 		{
