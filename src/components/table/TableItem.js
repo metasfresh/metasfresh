@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import classnames from 'classnames';
 
 import {
   VIEW_EDITOR_RENDER_MODES_ALWAYS,
@@ -19,6 +20,27 @@ class TableItem extends Component {
     };
   }
 
+  handleKeyDown = (e, property, widgetData) => {
+    const { changeListenOnTrue } = this.props;
+    const { listenOnKeys, edited } = this.state;
+
+    switch (e.key) {
+      case 'Enter':
+        if (listenOnKeys) {
+          this.handleEditProperty(e, property, true, widgetData);
+        }
+        break;
+      case 'Tab':
+      case 'Escape':
+        if (edited === property) {
+          e.stopPropagation();
+          this.handleEditProperty(e);
+          changeListenOnTrue();
+        }
+        break;
+    }
+  };
+
   handleEditProperty = (e, property, callback, item) => {
     const { activeCell } = this.state;
     const elem = document.activeElement;
@@ -34,14 +56,14 @@ class TableItem extends Component {
 
   prepareWidgetData = item => {
     const { fieldsByName } = this.props;
-
-    let widgetData = item.fields.map(prop => fieldsByName[prop.field]);
+    const widgetData = item.fields.map(prop => fieldsByName[prop.field]);
 
     return widgetData;
   };
 
   initPropertyEditor = fieldName => {
     const { cols, fieldsByName } = this.props;
+
     if (cols && fieldsByName) {
       cols.map(item => {
         const property = item.fields[0].field;
@@ -171,12 +193,13 @@ class TableItem extends Component {
                 isEditable ||
                 (supportFieldEdit && typeof cellWidget === 'object')
               ) {
-                cellWidget = Object.assign({}, cellWidget, {
+                cellWidget = {
+                  ...cellWidget,
                   widgetType: item.widgetType,
                   displayed: true,
                   mandatory: true,
                   readonly: false,
-                });
+                };
               }
 
               return cellWidget;
@@ -216,6 +239,9 @@ class TableItem extends Component {
               onCellChange={onItemChange}
               updatedRow={updatedRow || newRow}
               updateRow={this.updateRow}
+              onKeyDown={e =>
+                this.handleKeyDown(e, property, true, widgetData[0])
+              }
               listenOnKeysTrue={this.listenOnKeysTrue}
               listenOnKeysFalse={this.listenOnKeysFalse}
               closeTableField={e => this.closeTableField(e)}
@@ -302,17 +328,16 @@ class TableItem extends Component {
       indentation.push(
         <div
           key={i}
-          className={
-            'indent-item-mid ' +
-            (collapsible ? 'indent-collapsible-item-mid ' : '')
-          }
+          className={classnames('indent-item-mid', {
+            'indent-collapsible-item-mid': collapsible,
+          })}
         >
           {i === indent.length - 1 && <div className="indent-mid" />}
           <div
-            className={
-              (indent[i] ? 'indent-sign ' : '') +
-              (lastChild && i === indent.length - 1 ? 'indent-sign-bot ' : '')
-            }
+            className={classnames({
+              'indent-sign': indent[i],
+              'indent-sign-bot': lastChild && i === indent.length - 1,
+            })}
           />
         </div>
       );
@@ -324,9 +349,9 @@ class TableItem extends Component {
         {includedDocuments &&
           !collapsed && (
             <div
-              className={
-                'indent-bot ' + (collapsible ? 'indent-collapsible-bot ' : '')
-              }
+              className={classnames('indent-bot', {
+                'indent-collapsible-bot': collapsible,
+              })}
             />
           )}
         {includedDocuments && collapsible ? (
@@ -376,16 +401,15 @@ class TableItem extends Component {
       <tr
         onClick={onClick}
         onDoubleClick={onDoubleClick}
-        className={
-          (isSelected ? 'row-selected ' : '') +
-          (odd ? 'tr-odd ' : 'tr-even ') +
-          (processed ? 'row-disabled ' : '') +
-          (processed && lastChild && !includedDocuments
-            ? 'row-boundary '
-            : '') +
-          (notSaved ? 'row-not-saved ' : '') +
-          (caption ? 'item-caption ' : '')
-        }
+        className={classnames({
+          'row-selected': isSelected,
+          'tr-odd': odd,
+          'tr-even': !odd,
+          'row-disabled': processed,
+          'row-boundary': processed && lastChild && !includedDocuments,
+          'row-not-saved': notSaved,
+          'item-caption': caption,
+        })}
       >
         {indentSupported &&
           indent && (
