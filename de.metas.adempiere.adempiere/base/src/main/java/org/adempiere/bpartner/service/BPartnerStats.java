@@ -2,8 +2,10 @@ package org.adempiere.bpartner.service;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.I_C_BPartner_Stats;
+import org.adempiere.util.Check;
 
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -28,22 +30,9 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * @author metas-dev <dev@metasfresh.com>
- *
- *         Immutable object to keep the {@link I_C_BPartner_Stats} values in one place.
- *         It is useful because database operations will not be needed during compact pieces of logic.
- *         See implementations in org.adempiere.bpartner.service.impl.BPartnerStatsBL
- *
- */
 @Value
 public class BPartnerStats
 {
-	public static BPartnerStats ofDataRecord(final I_C_BPartner_Stats stats)
-	{
-		return new BPartnerStats(stats);
-	}
-
 	int recordId;
 
 	BigDecimal openItems;
@@ -54,13 +43,21 @@ public class BPartnerStats
 
 	String soCreditStatus;
 
-	private BPartnerStats(final I_C_BPartner_Stats stats)
+	@Builder
+	public BPartnerStats(
+			final int recordId,
+			@NonNull final BigDecimal openItems,
+			@NonNull final BigDecimal actualLifeTimeValue,
+			@NonNull final BigDecimal soCreditUsed,
+			@NonNull final String soCreditStatus)
 	{
-		recordId = stats.getC_BPartner_Stats_ID();
-		openItems = stats.getOpenItems();
-		actualLifeTimeValue = stats.getActualLifeTimeValue();
-		soCreditUsed = stats.getSO_CreditUsed();
-		soCreditStatus = stats.getSOCreditStatus();
+		Check.assume(recordId > 0, "Given parameter recordId is > 0");
+		this.recordId = recordId;
+
+		this.openItems = openItems;
+		this.actualLifeTimeValue = actualLifeTimeValue;
+		this.soCreditUsed = soCreditUsed;
+		this.soCreditStatus = soCreditStatus;
 	}
 
 	public BigDecimal getSOCreditUsed()

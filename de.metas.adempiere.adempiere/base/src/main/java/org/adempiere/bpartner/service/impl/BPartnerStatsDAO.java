@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -53,24 +52,26 @@ import lombok.NonNull;
 public class BPartnerStatsDAO implements IBPartnerStatsDAO
 {
 	@Override
-	public BPartnerStats getCreateBPartnerStats(final I_C_BPartner partner)
+	public BPartnerStats getCreateBPartnerStats(@NonNull final I_C_BPartner partner)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(partner);
-		I_C_BPartner_Stats stat = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Stats.class, ctx, ITrx.TRXNAME_ThreadInherited) // using current trx, because we will save in current trx too
+		I_C_BPartner_Stats statsRecord = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Stats.class) // using current trx, because we will save in current trx too
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
 				.create()
 				.firstOnly(I_C_BPartner_Stats.class);
 
-		if (stat == null)
+		if (statsRecord == null)
 		{
-			stat = createBPartnerStats(partner);
+			statsRecord = createBPartnerStats(partner);
 		}
-
-		final BPartnerStats bpStats = BPartnerStats.ofDataRecord(stat);
-
-		return bpStats;
+		return BPartnerStats.builder()
+				.actualLifeTimeValue(statsRecord.getActualLifeTimeValue())
+				.openItems(statsRecord.getOpenItems())
+				.recordId(statsRecord.getC_BPartner_Stats_ID())
+				.soCreditStatus(statsRecord.getSOCreditStatus())
+				.soCreditUsed(statsRecord.getSO_CreditUsed())
+				.build();
 	}
 
 	/**
