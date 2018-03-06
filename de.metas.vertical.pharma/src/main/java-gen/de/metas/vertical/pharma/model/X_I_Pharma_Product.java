@@ -15,7 +15,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1211921978L;
+	private static final long serialVersionUID = -28956965L;
 
     /** Standard Constructor */
     public X_I_Pharma_Product (Properties ctx, int I_Pharma_Product_ID, String trxName)
@@ -284,20 +284,20 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/** Set A00PPN.
 		@param A00PPN A00PPN	  */
 	@Override
-	public void setA00PPN (int A00PPN)
+	public void setA00PPN (java.math.BigDecimal A00PPN)
 	{
-		set_Value (COLUMNNAME_A00PPN, Integer.valueOf(A00PPN));
+		set_Value (COLUMNNAME_A00PPN, A00PPN);
 	}
 
 	/** Get A00PPN.
 		@return A00PPN	  */
 	@Override
-	public int getA00PPN () 
+	public java.math.BigDecimal getA00PPN () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A00PPN);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A00PPN);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set A00PZN.
