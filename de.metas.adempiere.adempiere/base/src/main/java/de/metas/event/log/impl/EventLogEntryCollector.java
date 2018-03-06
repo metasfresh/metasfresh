@@ -54,8 +54,6 @@ public class EventLogEntryCollector implements IAutoCloseable
 	{
 		assertNoCurrentLogCollector();
 
-
-
 		final EventLogEntryCollector newInstance = new EventLogEntryCollector(event);
 		threadLocalCollector.set(newInstance);
 
@@ -83,6 +81,8 @@ public class EventLogEntryCollector implements IAutoCloseable
 	public void addEventLog(@NonNull final EventLogEntryRequest eventLogRequest)
 	{
 		final EventLogEntry eventLog = EventLogEntry.builder().uuid(event.getUuid())
+				.clientId(eventLogRequest.getClientId())
+				.orgId(eventLogRequest.getOrgId())
 				.processed(eventLogRequest.isProcessed())
 				.error(eventLogRequest.isError())
 				.adIssueId(eventLogRequest.getAdIssueId())

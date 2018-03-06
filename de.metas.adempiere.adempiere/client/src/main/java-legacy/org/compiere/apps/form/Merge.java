@@ -15,10 +15,10 @@ package org.compiere.apps.form;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Collections;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -68,17 +68,25 @@ public class Merge
 	public String[] m_columnName = null;
 	public String[] m_deleteTables = null;
 
-	public void updateDeleteTable(String columnName)
+	public void updateDeleteTable(final String columnName)
 	{
 		// ** Update **
 		if (columnName.equals(AD_ORG_ID))
+		{
 			m_deleteTables = s_delete_Org;
+		}
 		else if (columnName.equals(AD_USER_ID))
+		{
 			m_deleteTables = s_delete_User;
+		}
 		else if (columnName.equals(C_BPARTNER_ID))
+		{
 			m_deleteTables = s_delete_BPartner;
+		}
 		else if (columnName.equals(M_PRODUCT_ID))
+		{
 			m_deleteTables = s_delete_Product;
+		}
 	}
 
 	/**
@@ -89,9 +97,9 @@ public class Merge
 	 * @param to_ID to
 	 * @return true if merged
 	 */
-	public boolean merge(String ColumnName, int from_ID, int to_ID)
+	public boolean merge(final String ColumnName, final int from_ID, final int to_ID)
 	{
-		String TableName = ColumnName.substring(0, ColumnName.length() - 3);
+		final String TableName = ColumnName.substring(0, ColumnName.length() - 3);
 		log.info(ColumnName
 				+ " - From=" + from_ID + ",To=" + to_ID);
 
@@ -122,18 +130,22 @@ public class Merge
 			pstmt = DB.prepareStatement(sql, Trx.createTrxName());
 			pstmt.setString(1, ColumnName);
 			pstmt.setString(2, ColumnName);
-			ResultSet rs = pstmt.executeQuery();
+			final ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				String tName = rs.getString(1);
-				String cName = rs.getString(2);
+				final String tName = rs.getString(1);
+				final String cName = rs.getString(2);
 				if (!TableName.equals(tName))      	// to be sure - sql should prevent it
 				{
-					int count = mergeTable(tName, cName, from_ID, to_ID);
+					final int count = mergeTable(tName, cName, from_ID, to_ID);
 					if (count < 0)
+					{
 						success = false;
+					}
 					else
+					{
 						m_totalCount += count;
+					}
 				}
 			}
 			rs.close();
@@ -159,14 +171,18 @@ public class Merge
 			}
 			//
 			if (success)
+			{
 				m_trx.commit();
+			}
 			else
+			{
 				m_trx.rollback();
+			}
 
 			m_trx.close();
 
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			log.error(ColumnName, ex);
 		}
@@ -174,10 +190,12 @@ public class Merge
 		try
 		{
 			if (pstmt != null)
+			{
 				pstmt.close();
+			}
 
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 		}
 		pstmt = null;
@@ -193,16 +211,16 @@ public class Merge
 	 * @param to_ID to
 	 * @return -1 for error or number of changes
 	 */
-	public int mergeTable(String TableName, String ColumnName, int from_ID, int to_ID)
+	public int mergeTable(final String TableName, final String ColumnName, final int from_ID, final int to_ID)
 	{
 		log.debug(TableName + "." + ColumnName + " - From=" + from_ID + ",To=" + to_ID);
 		String sql = "UPDATE " + TableName
 				+ " SET " + ColumnName + "=" + to_ID
 				+ " WHERE " + ColumnName + "=" + from_ID;
 		boolean delete = false;
-		for (int i = 0; i < m_deleteTables.length; i++)
+		for (final String m_deleteTable : m_deleteTables)
 		{
-			if (m_deleteTables[i].equals(TableName))
+			if (m_deleteTable.equals(TableName))
 			{
 				delete = true;
 				sql = "DELETE FROM " + TableName + " WHERE " + ColumnName + "=" + from_ID;
@@ -243,7 +261,7 @@ public class Merge
 	 * @param ColumnName column name
 	 * @param to_ID ID
 	 */
-	public void postMerge(String ColumnName, int to_ID)
+	public void postMerge(final String ColumnName, final int to_ID)
 	{
 		if (ColumnName.equals(AD_ORG_ID))
 		{
@@ -261,24 +279,28 @@ public class Merge
 
 			if (partner != null)
 			{
-				MPayment[] payments = MPayment.getOfBPartner(Env.getCtx(), partner.getC_BPartner_ID(), null);
-				for (int i = 0; i < payments.length; i++)
+				final MPayment[] payments = MPayment.getOfBPartner(Env.getCtx(), partner.getC_BPartner_ID(), null);
+				for (final MPayment payment : payments)
 				{
-					MPayment payment = payments[i];
 					if (payment.testAllocation())
+					{
 						payment.save();
+					}
 				}
-				MInvoice[] invoices = MInvoice.getOfBPartner(Env.getCtx(), partner.getC_BPartner_ID(), null);
-				for (int i = 0; i < invoices.length; i++)
+				final MInvoice[] invoices = MInvoice.getOfBPartner(Env.getCtx(), partner.getC_BPartner_ID(), null);
+				for (final MInvoice invoice : invoices)
 				{
-					MInvoice invoice = invoices[i];
 					if (invoice.testAllocation())
+					{
 						invoice.save();
+					}
 				}
 
 				// task FRESH-152. Update bpartner stats
 				Services.get(IBPartnerStatisticsUpdater.class)
-						.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(partner.getC_BPartner_ID()), ITrx.TRXNAME_None);
+						.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+								.bpartnerId(to_ID)
+								.build());
 			}
 		}
 		else if (ColumnName.equals(M_PRODUCT_ID))

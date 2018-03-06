@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.util.Services;
@@ -271,7 +271,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 			{
 				MBPartner thisBPartner = MBPartner.get(getCtx(), getC_BPartner_ID());
 
-				final IBPartnerStats stats =bpartnerStatsDAO.retrieveBPartnerStats(thisBPartner);
+				final BPartnerStats stats =bpartnerStatsDAO.getCreateBPartnerStats(thisBPartner);
 				
 				if (level.isSetCreditStop())
 				{

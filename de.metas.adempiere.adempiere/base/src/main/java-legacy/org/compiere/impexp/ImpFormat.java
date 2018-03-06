@@ -91,13 +91,14 @@ public final class ImpFormat
 		this.name = name;
 
 		if (formatType.equals(FORMATTYPE_FIXED) || formatType.equals(FORMATTYPE_COMMA)
+				|| formatType.equals(FORMATTYPE_SEMICOLON)
 				|| formatType.equals(FORMATTYPE_TAB) || formatType.equals(FORMATTYPE_XML))
 		{
 			this.formatType = formatType;
 		}
 		else
 		{
-			throw new IllegalArgumentException("FormatType must be F/C/T/X");
+			throw new IllegalArgumentException("FormatType must be F/C/S/T/X");
 		}
 
 		this.multiLine = multiLine;
@@ -112,7 +113,7 @@ public final class ImpFormat
 
 	/**
 	 * Import Table
-	 * 
+	 *
 	 * @param AD_Table_ID table
 	 */
 	private void setTable(final int AD_Table_ID)
@@ -163,7 +164,7 @@ public final class ImpFormat
 
 	/**
 	 * Get Import Table Name
-	 * 
+	 *
 	 * @return AD_Table_ID
 	 */
 	public int getAD_Table_ID()
@@ -175,14 +176,16 @@ public final class ImpFormat
 	public static final String FORMATTYPE_FIXED = X_AD_ImpFormat.FORMATTYPE_FixedPosition;
 	/** Format Type - Comma Separated C */
 	public static final String FORMATTYPE_COMMA = X_AD_ImpFormat.FORMATTYPE_CommaSeparated;
-	/** Format Type - Tab Separated T */
+	/** Format Type - Semicolon Separated S */
+	public static final String FORMATTYPE_SEMICOLON = X_AD_ImpFormat.FORMATTYPE_SemicolonSeparated;
+		/** Format Type - Tab Separated T */
 	public static final String FORMATTYPE_TAB = X_AD_ImpFormat.FORMATTYPE_TabSeparated;
 	/** Format Type - XML X */
 	public static final String FORMATTYPE_XML = X_AD_ImpFormat.FORMATTYPE_XML;
 
 	/*************************************************************************
 	 * Add Format Row
-	 * 
+	 *
 	 * @param row row
 	 */
 	public void addRow(final ImpFormatRow row)
@@ -192,20 +195,22 @@ public final class ImpFormat
 
 	/**
 	 * Get Row
-	 * 
+	 *
 	 * @param index index
 	 * @return Import Format Row
 	 */
 	public ImpFormatRow getRow(final int index)
 	{
 		if (index >= 0 && index < m_rows.size())
+		{
 			return m_rows.get(index);
+		}
 		return null;
 	}	// getRow
 
 	/**
 	 * Get Row Count
-	 * 
+	 *
 	 * @return row count
 	 */
 	public int getRowCount()
@@ -215,7 +220,7 @@ public final class ImpFormat
 
 	/*************************************************************************
 	 * Factory load
-	 * 
+	 *
 	 * @param name name
 	 * @return Import Format
 	 * @deprecated Please use {@link #load(I_AD_ImpFormat)}
@@ -259,7 +264,7 @@ public final class ImpFormat
 
 	/**
 	 * Load Format Rows with ID
-	 * 
+	 *
 	 * @param format format
 	 * @param adImpFormatId id
 	 */
@@ -330,7 +335,9 @@ public final class ImpFormat
 			{
 				// check length
 				if (impFormatRow.getStartNo() > 0 && impFormatRow.getEndNo() <= line.length())
+				{
 					cellValueRaw = line.substring(impFormatRow.getStartNo() - 1, impFormatRow.getEndNo());
+				}
 			}
 			else
 			{
@@ -364,13 +371,25 @@ public final class ImpFormat
 		// check input
 		char delimiter = ' ';
 		if (formatType.equals(FORMATTYPE_COMMA))
+		{
 			delimiter = ',';
+		}
+		if (formatType.equals(FORMATTYPE_SEMICOLON))
+		{
+			delimiter = ';';
+		}
 		else if (formatType.equals(FORMATTYPE_TAB))
+		{
 			delimiter = '\t';
+		}
 		else
+		{
 			throw new IllegalArgumentException("ImpFormat.parseFlexFormat - unknown format: " + formatType);
+		}
 		if (line == null || line.length() == 0 || fieldNo < 0)
+		{
 			return "";
+		}
 
 		// We need to read line sequentially as the fields may be delimited
 		// with quotes (") when fields contain the delimiter
@@ -407,22 +426,30 @@ public final class ImpFormat
 					}
 					// normal character
 					else
+					{
 						content.append(line.charAt(pos++));
+					}
 				}
 				// we should be at end of line or a delimiter
 				if (pos < length && line.charAt(pos) != delimiter)
+				{
 					log.info("Did not find delimiter at pos " + pos + " " + line);
+				}
 				pos++;  // move over delimiter
 			}
 			else
 			// plain copy
 			{
 				while (pos < length && line.charAt(pos) != delimiter)
+				{
 					content.append(line.charAt(pos++));
+				}
 				pos++;  // move over delimiter
 			}
 			if (field == fieldNo)
+			{
 				return content.toString();
+			}
 		}
 
 		// nothing found
@@ -451,7 +478,7 @@ public final class ImpFormat
 
 	/*************************************************************************
 	 * Insert/Update Database.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param line line
 	 * @param trxName transaction
@@ -532,9 +559,13 @@ public final class ImpFormat
 				else if (columnName.equals(m_tableUniqueParent) || columnName.equals(m_tableUniqueChild))
 				{
 					if (whereParentChild == null)
+					{
 						whereParentChild = node.getColumnNameEqualsValueSql();
+					}
 					else
+					{
 						whereParentChild += " AND " + node.getColumnNameEqualsValueSql();
+					}
 				}
 			}
 
@@ -546,15 +577,21 @@ public final class ImpFormat
 			if (where2 != null)
 			{
 				if (sqlFindExistingRecord.length() > 0)
+				{
 					sqlFindExistingRecord.append(" OR ");
+				}
 				sqlFindExistingRecord.append(where2);
 			}
 			if (whereParentChild != null && whereParentChild.indexOf(" AND ") != -1)	// need to have both criteria
 			{
 				if (sqlFindExistingRecord.length() > 0)
+				{
 					sqlFindExistingRecord.append(" OR (").append(whereParentChild).append(")");	// may have only one
+				}
 				else
+				{
 					sqlFindExistingRecord.append(whereParentChild);
+				}
 			}
 			sql.append(sqlFindExistingRecord).append(")");
 			//
@@ -570,7 +607,9 @@ public final class ImpFormat
 					{
 						final int count = rs.getInt(1);
 						if (count == 1)
+						{
 							importRecordId = rs.getInt(2);
+						}
 					}
 				}
 			}

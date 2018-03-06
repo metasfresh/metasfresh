@@ -27,16 +27,15 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -1374,7 +1373,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-			final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
 			final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 			final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateInvoiced());
 
@@ -1844,7 +1843,9 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// FRESH-152 Update BP Statistics
 		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(getC_BPartner_ID()), ITrx.TRXNAME_None);
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+						.bpartnerId(getC_BPartner_ID())
+						.build());
 
 		// Update Project
 		if (isSOTrx() && getC_Project_ID() != 0)

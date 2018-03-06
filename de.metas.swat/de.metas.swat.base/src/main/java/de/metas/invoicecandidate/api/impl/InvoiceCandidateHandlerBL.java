@@ -39,7 +39,6 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -135,14 +134,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	@Override
 	public void createMissingCandidates(@NonNull final List<I_C_ILCandHandler> handlerRecords)
 	{
-		Services.get(ITrxManager.class).run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String trxName) throws Exception
-			{
-				createInvoiceCandidates(handlerRecords, InvoiceCandidateHandlerBL.NO_MODEL);
-			}
-		});
+		Services.get(ITrxManager.class).run(trxName -> createInvoiceCandidates(handlerRecords, InvoiceCandidateHandlerBL.NO_MODEL));
 	}
 
 	@Override
@@ -465,6 +457,13 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	{
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
 		handler.setNetAmtToInvoice(ic);
+	}
+
+	@Override
+	public void setLineNetAmt(final I_C_Invoice_Candidate ic)
+	{
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+		handler.setLineNetAmt(ic);
 	}
 
 	@Override

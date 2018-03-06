@@ -15,6 +15,15 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#882](https://github.com/metasfresh/metasfresh-webui-api/issues/882) WebUI: Pimp Data Import window
+    * New Window for Date Import in WebUI. now allows to do the data import into metasfresh with drag&drop file attachment upload.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1646](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1646) List dropdown improvements
+    * Improved behavior of lookup and list widget drop-down. Now keeping the field content selected when reopening the drop-down after hover and leave.
+  * [#1650](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1650) Edit mode in grid view when focus lost
+    * Improvement of the display status of grid fields in edit mode. Now the edit modus and display is left as soon the field is left.
 
 # metasfresh 5.47 (2018-10)
 **release for week 2018-10**

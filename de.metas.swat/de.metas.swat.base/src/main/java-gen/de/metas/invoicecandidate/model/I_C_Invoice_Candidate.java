@@ -2035,10 +2035,8 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setLineNetAmt (java.math.BigDecimal LineNetAmt);
 
 	/**
@@ -2047,7 +2045,7 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
 	 */
 	public java.math.BigDecimal getLineNetAmt();
 
@@ -2144,7 +2142,7 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
-	 * Set Produkt-Kategorie.
+	 * Set Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: Search
@@ -2156,7 +2154,7 @@ public interface I_C_Invoice_Candidate
 	public void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
-	 * Get Produkt-Kategorie.
+	 * Get Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: Search
@@ -2626,8 +2624,8 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Bestellte Menge
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -2636,8 +2634,8 @@ public interface I_C_Invoice_Candidate
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Bestellte Menge
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
