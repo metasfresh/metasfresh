@@ -99,7 +99,7 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(materialDescriptorWithAlotOfDigits)
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleId, 30, orderId))
+				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleId, 30, orderId))
 				.build();
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 
@@ -121,7 +121,7 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(20, -1, -1))
+				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(20, -1, -1))
 				.build();
 
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
@@ -219,7 +219,7 @@ public class CandidateRepositoryWriteServiceTests
 				.materialDescriptor(createMaterialDescriptor())
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
-				.productionDetail(ProductionDetail.builder()
+				.businessCaseDetail(ProductionDetail.builder()
 						.description("description")
 						.plantId(60)
 						.productBomLineId(70)
@@ -320,7 +320,7 @@ public class CandidateRepositoryWriteServiceTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(createMaterialDescriptor())
-				.distributionDetail(DistributionDetail.builder()
+				.businessCaseDetail(DistributionDetail.builder()
 						.productPlanningId(80)
 						.plantId(85)
 						.networkDistributionLineId(90)
@@ -360,7 +360,7 @@ public class CandidateRepositoryWriteServiceTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(createMaterialDescriptor())
-				.demandDetail(DemandDetail.forForecastLineId(61, 71))
+				.businessCaseDetail(DemandDetail.forForecastLineId(61, 71))
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 
@@ -389,7 +389,7 @@ public class CandidateRepositoryWriteServiceTests
 				.orgId(ORG_ID)
 				.materialDescriptor(createMaterialDescriptor()
 						.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
-				.demandDetail(DemandDetail.forForecastLineId(61, 62))
+				.businessCaseDetail(DemandDetail.forForecastLineId(61, 62))
 				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 33))
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);

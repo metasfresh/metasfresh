@@ -402,7 +402,7 @@ public class CandidateChangeHandlerTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(materialDescr)
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
+				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
 						shipmentScheduleIdForDemandDetail,
 						0,
 						0))
@@ -426,7 +426,7 @@ public class CandidateChangeHandlerTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(supplyMaterialDescriptor)
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
+				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
 						shipmentScheduleIdForDemandDetail,
 						0,
 						0))

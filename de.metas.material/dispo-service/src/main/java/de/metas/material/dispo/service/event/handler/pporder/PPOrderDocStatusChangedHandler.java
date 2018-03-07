@@ -82,41 +82,26 @@ public class PPOrderDocStatusChangedHandler implements MaterialEventHandler<PPOr
 		final CandidateStatus newCandidateStatus = EventUtil
 				.getCandidateStatus(newDocStatusFromEvent);
 
-		final Function<ProductionDetail, BigDecimal> produtionDetail2Qty = createProdutionDetail2QtyProvider(newCandidateStatus);
+		final Function<Candidate, BigDecimal> produtionDetail2Qty = //
+				EventUtil.deriveDistributionDetail2QtyProvider(newCandidateStatus);
 
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();
 
 		for (final Candidate candidateForPPOrderId : candidatesForPPOrderId)
 		{
-			final BigDecimal newQuantity = produtionDetail2Qty.apply(candidateForPPOrderId.getProductionDetail());
+			final BigDecimal newQuantity = produtionDetail2Qty.apply(candidateForPPOrderId);
+			final ProductionDetail productionDetail = //
+					ProductionDetail.cast(candidateForPPOrderId.getBusinessCaseDetail());
 
 			final Candidate updatedCandidateToPersist = candidateForPPOrderId.toBuilder()
 					.status(newCandidateStatus)
 					.materialDescriptor(candidateForPPOrderId.getMaterialDescriptor().withQuantity(newQuantity))
-					.productionDetail(candidateForPPOrderId.getProductionDetail().toBuilder().ppOrderDocStatus(newDocStatusFromEvent).build())
+					.businessCaseDetail(productionDetail.toBuilder().ppOrderDocStatus(newDocStatusFromEvent).build())
 					.build();
 
 			updatedCandidatesToPersist.add(updatedCandidateToPersist);
 		}
 
 		updatedCandidatesToPersist.forEach(candidate -> candidateChangeService.onCandidateNewOrChange(candidate));
-	}
-
-	private Function<ProductionDetail, BigDecimal> createProdutionDetail2QtyProvider(
-			@NonNull final CandidateStatus candidateStatus)
-	{
-		final Function<ProductionDetail, BigDecimal> provider;
-
-		if (CandidateStatus.doc_closed.equals(candidateStatus))
-		{
-			// update candidates , take the "actualQty" instead of max(actual, planned)
-			provider = productionDetail -> productionDetail.getActualQty();
-		}
-		else
-		{
-			// update candidates , take the max(actual, planned)
-			provider = productionDetail -> productionDetail.getActualQty().max(productionDetail.getPlannedQty());
-		}
-		return provider;
 	}
 }

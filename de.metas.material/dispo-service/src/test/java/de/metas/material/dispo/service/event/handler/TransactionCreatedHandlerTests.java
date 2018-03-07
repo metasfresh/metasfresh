@@ -131,10 +131,8 @@ public class TransactionCreatedHandlerTests
 		}}; // @formatter:on
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
-		assertThat(candidate.getDemandDetail()).isNull();
-		assertThat(candidate.getDistributionDetail()).isNull();
-		assertThat(candidate.getProductionDetail()).isNull();
-		assertThat(candidate.getTransactionDetails()).hasSize(1);
+		assertThat(candidate.getAdditionalDemandDetail()).isNull();
+		assertThat(candidate.getBusinessCaseDetail()).isNull();
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("10");
 	}
 
@@ -179,9 +177,8 @@ public class TransactionCreatedHandlerTests
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
 		assertThat(candidate.getId()).isEqualTo(11);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("11");
-		assertThat(candidate.getDemandDetail()).isNull();
-		assertThat(candidate.getDistributionDetail()).isNull();
-		assertThat(candidate.getProductionDetail()).isNull();
+		assertThat(candidate.getAdditionalDemandDetail()).isNull();
+		assertThat(candidate.getBusinessCaseDetail()).isNull();
 		assertThat(candidate.getTransactionDetails()).hasSize(2);
 
 		assertThat(candidate.getTransactionDetails()).anySatisfy(transactionDetail -> {
@@ -222,10 +219,9 @@ public class TransactionCreatedHandlerTests
 		}}; // @formatter:on
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_DECREASE);
-		assertThat(candidate.getDistributionDetail()).isNull();
-		assertThat(candidate.getProductionDetail()).isNull();
-		assertThat(candidate.getDemandDetail()).as("created candidate shall have a demand detail").isNotNull();
-		assertThat(candidate.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
+		final DemandDetail demandDetail = DemandDetail.castOrNull(candidate.getBusinessCaseDetail());
+		assertThat(demandDetail).as("created candidate shall have a demand detail").isNotNull();
+		assertThat(demandDetail.getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("-10");
 	}
@@ -242,7 +238,7 @@ public class TransactionCreatedHandlerTests
 						.quantity(new BigDecimal("63"))
 						.date(SystemTime.asTimestamp())
 						.build())
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(SHIPMENT_SCHEDULE_ID,
+				.additionalDemandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(SHIPMENT_SCHEDULE_ID,
 						-1,
 						-1))
 				.build();
@@ -277,10 +273,9 @@ public class TransactionCreatedHandlerTests
 				.isEqualByComparingTo("63");
 		makeCommonAssertions(candidate);
 
-		assertThat(candidate.getDistributionDetail()).isNull();
-		assertThat(candidate.getProductionDetail()).isNull();
-		assertThat(candidate.getDemandDetail()).as("created candidate shall have a demand detail").isNotNull();
-		assertThat(candidate.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
+		assertThat(candidate.getBusinessCaseDetail()).isNull();
+		assertThat(candidate.getAdditionalDemandDetail()).as("created candidate shall have a demand detail").isNotNull();
+		assertThat(candidate.getAdditionalDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
 		assertThat(candidate.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("-10");

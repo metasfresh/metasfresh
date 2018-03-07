@@ -2,6 +2,8 @@ package de.metas.material.dispo.commons.candidate;
 
 import java.math.BigDecimal;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -33,6 +35,7 @@ import lombok.Value;
  */
 @Value
 public class ProductionDetail
+		implements BusinessCaseDetail
 {
 	public enum Flag
 	{
@@ -64,6 +67,21 @@ public class ProductionDetail
 		}
 	}
 
+	public static ProductionDetail castOrNull(@Nullable final BusinessCaseDetail businessCaseDetail)
+	{
+		final boolean canBeCast = businessCaseDetail != null && businessCaseDetail instanceof ProductionDetail;
+		if (canBeCast)
+		{
+			return cast(businessCaseDetail);
+		}
+		return null;
+	}
+
+	public static ProductionDetail cast(@NonNull final BusinessCaseDetail businessCaseDetail)
+	{
+		return (ProductionDetail)businessCaseDetail;
+	}
+
 	public static ProductionDetail forProductionDetailRecord(
 			@NonNull final I_MD_Candidate_Prod_Detail productionDetailRecord)
 	{
@@ -78,7 +96,6 @@ public class ProductionDetail
 				.ppOrderLineId(productionDetailRecord.getPP_Order_BOMLine_ID())
 				.ppOrderDocStatus(productionDetailRecord.getPP_Order_DocStatus())
 				.plannedQty(productionDetailRecord.getPlannedQty())
-				.actualQty(productionDetailRecord.getActualQty())
 				.build();
 
 		return productionDetail;
@@ -104,8 +121,6 @@ public class ProductionDetail
 
 	BigDecimal plannedQty;
 
-	BigDecimal actualQty;
-
 	@Builder(toBuilder = true)
 	private ProductionDetail(
 			final int plantId,
@@ -117,8 +132,7 @@ public class ProductionDetail
 			final int ppOrderLineId,
 			@NonNull final Flag advised,
 			@NonNull final Flag pickDirectlyIfFeasible,
-			final BigDecimal plannedQty,
-			final BigDecimal actualQty)
+			final BigDecimal plannedQty)
 	{
 		this.advised = advised;
 		this.pickDirectlyIfFeasible = pickDirectlyIfFeasible;
@@ -139,6 +153,11 @@ public class ProductionDetail
 		this.ppOrderDocStatus = ppOrderDocStatus;
 		this.ppOrderLineId = ppOrderLineId;
 		this.plannedQty = plannedQty;
-		this.actualQty = actualQty;
+	}
+
+	@Override
+	public CandidateBusinessCase getCandidateBusinessCase()
+	{
+		return CandidateBusinessCase.PRODUCTION;
 	}
 }

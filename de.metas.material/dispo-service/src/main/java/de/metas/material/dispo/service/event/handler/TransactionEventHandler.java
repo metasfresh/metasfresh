@@ -132,9 +132,10 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			return;
 		}
 
-		final Flag pickDirectlyIfFeasible = candidateForPPorder
-				.getProductionDetail()
-				.getPickDirectlyIfFeasible();
+		final Flag pickDirectlyIfFeasible = //
+				ProductionDetail
+						.cast(candidateForPPorder.getBusinessCaseDetail())
+						.getPickDirectlyIfFeasible();
 		final boolean dontPickDirectly = !pickDirectlyIfFeasible
 				.toBoolean();
 		if (dontPickDirectly)
@@ -206,12 +207,14 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
 		if (unrelatedNewTransaction)
 		{
-			candidate = createBuilderForNewUnrelatedCandidate(
+			final CandidateBuilder builder = createBuilderForNewUnrelatedCandidate(
 					(TransactionCreatedEvent)event,
-					shipmentScheduleId2Qty.getValue())
-							.demandDetail(demandDetail)
-							.transactionDetail(createTransactionDetail(event))
-							.build();
+					shipmentScheduleId2Qty.getValue());
+
+			candidate = builder
+					.businessCaseDetail(demandDetail)
+					.transactionDetail(createTransactionDetail(event))
+					.build();
 		}
 		else if (existingCandidate != null)
 		{
@@ -253,13 +256,12 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.toProductionDetailBuilder()
 					.advised(Flag.FALSE_DONT_UPDATE)
 					.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
-					.actualQty(event.getQuantity())
 					.build();
 
 			candidate = createBuilderForNewUnrelatedCandidate(
 					(TransactionCreatedEvent)event,
 					event.getQuantity())
-							.productionDetail(productionDetail)
+							.businessCaseDetail(productionDetail)
 							.transactionDetail(transactionDetailOfEvent)
 							.build();
 		}
@@ -296,13 +298,12 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		if (unrelatedNewTransaction)
 		{
 			final DistributionDetail distributionDetail = distributionDetailsQuery
-					.toDistributionDetailBuilder()
-					.actualQty(event.getQuantity()).build();
+					.toDistributionDetailBuilder().build();
 
 			candidate = createBuilderForNewUnrelatedCandidate(
 					(TransactionCreatedEvent)event,
 					event.getQuantity())
-							.distributionDetail(distributionDetail)
+							.businessCaseDetail(distributionDetail)
 							.transactionDetail(transactionDetailOfEvent)
 							.build();
 		}
@@ -390,7 +391,11 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 						.addAll(candidate.getTransactionDetails())
 						.add(transactionDetail);
 
-		return candidate.withTransactionDetails(newTransactionDetailsList.build());
+		final Candidate withTransactionDetails = candidate.withTransactionDetails(newTransactionDetailsList.build());
+		final BigDecimal actualQty = withTransactionDetails.computeActualQty();
+		final BigDecimal plannedQty = candidate.getBusinessCaseDetail().getPlannedQty();
+
+		return withTransactionDetails.withQuantity(actualQty.max(plannedQty));
 	}
 
 	/**

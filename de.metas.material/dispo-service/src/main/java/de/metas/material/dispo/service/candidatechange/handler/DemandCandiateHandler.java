@@ -85,36 +85,36 @@ public class DemandCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(demandCandidate);
 
-		final Candidate demandCandidateWithId = candidateRepositoryWriteService
+		final Candidate demandCandidateDeltaWithId = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
 
-		if (demandCandidateWithId.getQuantity().signum() == 0)
+		if (demandCandidateDeltaWithId.getQuantity().signum() == 0)
 		{
 			// this candidate didn't change anything
-			return demandCandidateWithId;
+			return demandCandidateDeltaWithId;
 		}
 
 		// this is the seqno which the new stock candidate shall get according to the demand candidate
-		final int expectedStockSeqNo = demandCandidateWithId.getSeqNo() + 1;
+		final int expectedStockSeqNo = demandCandidateDeltaWithId.getSeqNo() + 1;
 
 		final Candidate childStockWithDemand;
 		final Candidate childStockWithDemandDelta;
 
-		final Optional<Candidate> possibleChildStockCandidate = candidateRepository.retrieveSingleChild(demandCandidateWithId.getId());
+		final Optional<Candidate> possibleChildStockCandidate = candidateRepository.retrieveSingleChild(demandCandidateDeltaWithId.getId());
 		if (possibleChildStockCandidate.isPresent())
 		{
-			childStockWithDemand = possibleChildStockCandidate.get().withQuantity(demandCandidate.getQuantity().negate());
+			childStockWithDemand = possibleChildStockCandidate.get().withQuantity(demandCandidateDeltaWithId.getQuantity().negate());
 			childStockWithDemandDelta = stockCandidateService.updateQty(childStockWithDemand);
 		}
 		else
 		{
 			// check if there is a supply record with the same demand detail and material descriptor
-			final Candidate existingSupplyParentStockWithoutParentId = retrieveSupplyParentStockWithoutParentIdOrNull(demandCandidateWithId);
+			final Candidate existingSupplyParentStockWithoutParentId = retrieveSupplyParentStockWithoutParentIdOrNull(demandCandidateDeltaWithId);
 			if (existingSupplyParentStockWithoutParentId != null)
 			{
 				//
 				final Candidate existingSupplyParentStockWithUpdatedQty = existingSupplyParentStockWithoutParentId
-						.withQuantity(existingSupplyParentStockWithoutParentId.getQuantity().subtract(demandCandidateWithId.getQuantity()))
+						.withQuantity(existingSupplyParentStockWithoutParentId.getQuantity().subtract(demandCandidateDeltaWithId.getQuantity()))
 						.withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID);
 
 				childStockWithDemandDelta = stockCandidateService.updateQty(existingSupplyParentStockWithUpdatedQty);
@@ -122,7 +122,7 @@ public class DemandCandiateHandler implements CandidateHandler
 			}
 			else
 			{
-				final Candidate newDemandCandidateChild = stockCandidateService.createStockCandidate(demandCandidateWithId.withNegatedQuantity());
+				final Candidate newDemandCandidateChild = stockCandidateService.createStockCandidate(demandCandidateDeltaWithId.withNegatedQuantity());
 				childStockWithDemandDelta = candidateRepositoryWriteService
 						.addOrUpdatePreserveExistingSeqNo(newDemandCandidateChild);
 				childStockWithDemand = childStockWithDemandDelta.withQuantity(newDemandCandidateChild.getQuantity());
@@ -130,7 +130,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		}
 
 		candidateRepositoryWriteService
-				.updateCandidateById(childStockWithDemand.withParentId(demandCandidateWithId.getId()));
+				.updateCandidateById(childStockWithDemand.withParentId(demandCandidateDeltaWithId.getId()));
 
 		stockCandidateService
 				.applyDeltaToMatchingLaterStockCandidates(childStockWithDemandDelta);
@@ -147,12 +147,12 @@ public class DemandCandiateHandler implements CandidateHandler
 		}
 		else
 		{
-			demandCandidateToReturn = demandCandidateWithId;
+			demandCandidateToReturn = demandCandidateDeltaWithId;
 		}
 
-		if (demandCandidateWithId.getType() == CandidateType.DEMAND)
+		if (demandCandidateDeltaWithId.getType() == CandidateType.DEMAND)
 		{
-			fireSupplyRequiredEventIfQtyBelowZero(demandCandidateWithId);
+			fireSupplyRequiredEventIfQtyBelowZero(demandCandidateDeltaWithId);
 		}
 		return demandCandidateToReturn;
 	}

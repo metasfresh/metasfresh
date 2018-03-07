@@ -1,5 +1,7 @@
 package de.metas.material.dispo.commons.candidate;
 
+import java.math.BigDecimal;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
@@ -36,8 +38,8 @@ import lombok.Value;
  * #L%
  */
 @Value
-@Builder
-public class DemandDetail
+@Builder(toBuilder = true)
+public class DemandDetail implements BusinessCaseDetail
 {
 	public static DemandDetail forDocumentDescriptor(
 			final int shipmentScheduleId,
@@ -101,7 +103,8 @@ public class DemandDetail
 				.forecastLineId(demandDetailRecord.getM_ForecastLine_ID())
 				.orderId(demandRecord.getC_Order_ID())
 				.orderLineId(demandDetailRecord.getC_OrderLine_ID())
-				.subscriptionProgressId(demandDetailRecord.getC_SubscriptionProgress_ID()).build();
+				.subscriptionProgressId(demandDetailRecord.getC_SubscriptionProgress_ID())
+				.plannedQty(demandDetailRecord.getPlannedQty()).build();
 	}
 
 	public static DemandDetail forShipmentScheduleIdAndOrderLineId(
@@ -136,9 +139,27 @@ public class DemandDetail
 
 	int subscriptionProgressId;
 
+	BigDecimal plannedQty;
+
 	/**
 	 * Used when a new supply candidate is created, to link it to it's respective demand candidate;
-	 * When a demand detail is loaded from DB, this filed is always <= 0.
+	 * When a demand detail is loaded from DB, this field is always <= 0.
 	 */
 	int demandCandidateId;
+
+	@Override
+	public CandidateBusinessCase getCandidateBusinessCase()
+	{
+		return CandidateBusinessCase.SHIPMENT;
+	}
+
+	public static DemandDetail castOrNull(@Nullable final BusinessCaseDetail businessCaseDetail)
+	{
+		final boolean canBeCast = businessCaseDetail != null && businessCaseDetail instanceof DemandDetail;
+		if (canBeCast)
+		{
+			return (DemandDetail)businessCaseDetail;
+		}
+		return null;
+	}
 }

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import org.compiere.util.Util;
+
 import com.google.common.base.Preconditions;
 
 import de.metas.material.event.commons.EventDescriptor;
@@ -79,20 +81,9 @@ public class Candidate
 	@NonNull
 	MaterialDescriptor materialDescriptor;
 
-	/**
-	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#PRODUCTION}.
-	 */
-	ProductionDetail productionDetail;
+	BusinessCaseDetail businessCaseDetail;
 
-	/**
-	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#DISTRIBUTION}.
-	 */
-	DistributionDetail distributionDetail;
-
-	/**
-	 * Used for additional infos if this candidate relates to particular demand
-	 */
-	DemandDetail demandDetail;
+	DemandDetail additionalDemandDetail;
 
 	@Singular
 	List<TransactionDetail> transactionDetails;
@@ -164,9 +155,8 @@ public class Candidate
 			final int groupId,
 			final int seqNo,
 			@NonNull final MaterialDescriptor materialDescriptor,
-			final ProductionDetail productionDetail,
-			final DistributionDetail distributionDetail,
-			final DemandDetail demandDetail,
+			final BusinessCaseDetail businessCaseDetail,
+			final DemandDetail additionalDemandDetail,
 			final List<TransactionDetail> transactionDetails)
 	{
 		this.clientId = clientId;
@@ -181,9 +171,8 @@ public class Candidate
 
 		this.materialDescriptor = materialDescriptor;
 
-		this.productionDetail = productionDetail;
-		this.distributionDetail = distributionDetail;
-		this.demandDetail = demandDetail;
+		this.businessCaseDetail = businessCaseDetail;
+		this.additionalDemandDetail = additionalDemandDetail;
 
 		for (final TransactionDetail transactionDetail : transactionDetails)
 		{
@@ -192,5 +181,18 @@ public class Candidate
 					transactionDetail);
 		}
 		this.transactionDetails = transactionDetails;
+	}
+
+	public BigDecimal computeActualQty()
+	{
+		return getTransactionDetails()
+				.stream()
+				.map(TransactionDetail::getQuantity)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	public DemandDetail getDemandDetail()
+	{
+		return Util.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
 	}
 }
