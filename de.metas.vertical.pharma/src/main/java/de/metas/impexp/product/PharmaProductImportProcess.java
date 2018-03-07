@@ -104,15 +104,13 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		else if (!DEACTIVATE_OPERATION_CODE.equals(operationCode))
 		{
 			final I_M_Product product;
-			final boolean newProduct;
-			if (existentProduct == null || importRecord.getM_Product_ID() <= 0)
+			final boolean newProduct = existentProduct == null || importRecord.getM_Product_ID() <= 0;
+			if (newProduct)
 			{
-				newProduct = true;
 				product = createProduct(importRecord);
 			}
 			else
 			{
-				newProduct = false;
 				product = updateProduct(importRecord, existentProduct);
 			}
 
