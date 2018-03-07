@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -413006417L;
+	private static final long serialVersionUID = 43974340L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -292,6 +292,40 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_Charge_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.order.model.I_C_CompensationGroup_SchemaLine getC_CompensationGroup_SchemaLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CompensationGroup_SchemaLine_ID, de.metas.order.model.I_C_CompensationGroup_SchemaLine.class);
+	}
+
+	@Override
+	public void setC_CompensationGroup_SchemaLine(de.metas.order.model.I_C_CompensationGroup_SchemaLine C_CompensationGroup_SchemaLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CompensationGroup_SchemaLine_ID, de.metas.order.model.I_C_CompensationGroup_SchemaLine.class, C_CompensationGroup_SchemaLine);
+	}
+
+	/** Set Compensation Group Schema Line.
+		@param C_CompensationGroup_SchemaLine_ID Compensation Group Schema Line	  */
+	@Override
+	public void setC_CompensationGroup_SchemaLine_ID (int C_CompensationGroup_SchemaLine_ID)
+	{
+		if (C_CompensationGroup_SchemaLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_CompensationGroup_SchemaLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_CompensationGroup_SchemaLine_ID, Integer.valueOf(C_CompensationGroup_SchemaLine_ID));
+	}
+
+	/** Get Compensation Group Schema Line.
+		@return Compensation Group Schema Line	  */
+	@Override
+	public int getC_CompensationGroup_SchemaLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_CompensationGroup_SchemaLine_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
