@@ -286,7 +286,10 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 			product.setUPC(importRecord.getA00GTIN());
 		}
 
-		product.setM_Product_Category_ID(importRecord.getM_Product_Category_ID());
+		if (importRecord.getM_Product_Category_ID() > 0)
+		{
+			product.setM_Product_Category_ID(importRecord.getM_Product_Category_ID());
+		}
 
 		setPackageFields(importRecord, product);
 		setPharmaFields(importRecord, product);
