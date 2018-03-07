@@ -119,8 +119,6 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 	private SqlLookupDescriptor(final Builder builder)
 	{
-		super();
-
 		tableName = Optional.of(builder.sqlTableName);
 		zoomIntoWindowId = builder.getZoomIntoWindowId();
 		sqlForFetchingExpression = builder.sqlForFetchingExpression;
