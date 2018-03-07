@@ -1,12 +1,6 @@
 package org.eevolution.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.createOld;
-
-import java.math.BigDecimal;
-
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.InterceptorUtil;
-import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 
 /*
@@ -36,19 +30,13 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.Adempiere;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent;
-import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent.PPOrderProductionQtyChangedEventBuilder;
 import de.metas.material.planning.pporder.LiberoException;
-import lombok.NonNull;
 
 @Interceptor(I_PP_Cost_Collector.class)
 public class PP_Cost_Collector
@@ -57,62 +45,6 @@ public class PP_Cost_Collector
 	public void init()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Cost_Collector());
-	}
-
-	@ModelChange(timings = {
-			ModelValidator.TYPE_AFTER_NEW,
-			ModelValidator.TYPE_AFTER_CHANGE,
-			ModelValidator.TYPE_BEFORE_DELETE })
-	public void postMaterialEvent(@NonNull final I_PP_Cost_Collector costCollector,
-			@NonNull final ModelChangeType type)
-	{
-		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-		final boolean receipt = ppCostCollectorBL.isMaterialReceipt(costCollector);
-
-		final boolean considerCoProductsAsIssue = false;
-		final boolean issue = ppCostCollectorBL.isMaterialIssue(costCollector, considerCoProductsAsIssue);
-
-		if (!receipt && !issue)
-		{
-			return;
-		}
-
-		final boolean created = type.isNew() || InterceptorUtil.isJustActivated(costCollector);
-		final boolean deleted = type.isDelete() || InterceptorUtil.isJustDeactivated(costCollector);
-
-		final PPOrderProductionQtyChangedEventBuilder eventBuilder = PPOrderProductionQtyChangedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(costCollector))
-				.ppOrderId(costCollector.getPP_Order_ID())
-				.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID());
-		if (created)
-		{
-			eventBuilder
-					.oldQuantity(BigDecimal.ZERO)
-					.newQuantity(costCollector.getMovementQty());
-		}
-		else if (deleted)
-		{
-			final I_PP_Cost_Collector oldCostCollector = createOld(costCollector, I_PP_Cost_Collector.class);
-			eventBuilder
-					.oldQuantity(oldCostCollector.getMovementQty())
-					.newQuantity(BigDecimal.ZERO);
-		}
-		else
-		{
-			// changed
-			final I_PP_Cost_Collector oldCostCollector = createOld(costCollector, I_PP_Cost_Collector.class);
-			eventBuilder
-					.oldQuantity(oldCostCollector.getMovementQty())
-					.newQuantity(costCollector.getMovementQty());
-		}
-		final PPOrderProductionQtyChangedEvent event = eventBuilder.build();
-		if (event.getNewQuantity().compareTo(event.getOldQuantity()) == 0)
-		{
-			// nothing to do
-		}
-
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-		materialEventService.postEventAfterNextCommit(event);
 	}
 
 	/**

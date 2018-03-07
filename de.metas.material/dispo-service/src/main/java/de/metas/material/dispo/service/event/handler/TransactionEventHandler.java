@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Loggables;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -131,12 +132,15 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			return;
 		}
 
-		final boolean dontPickDirectly = !candidateForPPorder
+		final Flag pickDirectlyIfFeasible = candidateForPPorder
 				.getProductionDetail()
-				.getPickDirectlyIfFeasible()
+				.getPickDirectlyIfFeasible();
+		final boolean dontPickDirectly = !pickDirectlyIfFeasible
 				.toBoolean();
 		if (dontPickDirectly)
 		{
+			Loggables.get().addLog("Not posting PickingRequestedEvent: this event's candidate has pickDirectlyIfFeasible={}; candidate={}",
+					pickDirectlyIfFeasible, candidateForPPorder);
 			return;
 		}
 
@@ -144,6 +148,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean noShipmentScheduleForPicking = demandDetail == null || demandDetail.getShipmentScheduleId() <= 0;
 		if (noShipmentScheduleForPicking)
 		{
+			Loggables.get().addLog("Not posting PickingRequestedEvent: this event's candidate has no shipmentScheduleId; candidate={}",
+					candidateForPPorder);
 			return;
 		}
 
@@ -151,6 +157,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean noHUsToPick = huOnHandQtyChangeDescriptors == null || huOnHandQtyChangeDescriptors.isEmpty();
 		if (noHUsToPick)
 		{
+			Loggables.get().addLog("Not posting PickingRequestedEvent: this event has no HuOnHandQtyChangeDescriptors");
 			return;
 		}
 
@@ -225,9 +232,13 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final Candidate candidate;
 		final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
 
+		final int ppOrderLineIdForQuery = event.getPpOrderLineId() > 0
+				? event.getPpOrderLineId()
+				: ProductionDetailsQuery.NO_PP_ORDER_LINE_ID;
+
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.ppOrderId(event.getPpOrderId())
-				.ppOrderLineId(event.getPpOrderLineId()).build();
+				.ppOrderLineId(ppOrderLineIdForQuery).build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.productionDetailsQuery(productionDetailsQuery)

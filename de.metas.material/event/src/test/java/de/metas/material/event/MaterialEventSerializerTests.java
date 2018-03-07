@@ -40,7 +40,6 @@ import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
@@ -233,20 +232,6 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(createEventDescriptor())
 				.ppOrderId(10)
 				.newDocStatus("newDocStatus")
-				.build();
-
-		assertEventEqualAfterSerializeDeserialize(event);
-	}
-
-	@Test
-	public void ppOrderProductionQtyChangedEvent()
-	{
-		final PPOrderProductionQtyChangedEvent event = PPOrderProductionQtyChangedEvent.builder()
-				.eventDescriptor(createEventDescriptor())
-				.ppOrderId(10)
-				.ppOrderLineId(20)
-				.oldQuantity(new BigDecimal("30"))
-				.newQuantity(new BigDecimal("40"))
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(event);

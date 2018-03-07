@@ -99,7 +99,7 @@ public class M_Transaction_TransactionEventCreatorTest
 
 		// invoke the method under test
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
-				.createEventsForTransaction(transaction, false);
+				.createEventsForTransaction(TransactionDescriptor.ofRecord(transaction), false);
 		assertThat(events).hasSize(1);
 
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
@@ -123,7 +123,7 @@ public class M_Transaction_TransactionEventCreatorTest
 
 		// invoke the method under test
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
-				.createEventsForTransaction(transaction, false);
+				.createEventsForTransaction(TransactionDescriptor.ofRecord(transaction), false);
 
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
@@ -150,7 +150,7 @@ public class M_Transaction_TransactionEventCreatorTest
 
 		// invoke the method under test
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
-				.createEventsForTransaction(transaction, false);
+				.createEventsForTransaction(TransactionDescriptor.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
 
@@ -191,7 +191,7 @@ public class M_Transaction_TransactionEventCreatorTest
 
 		// invoke the method under test
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
-				.createEventsForTransaction(transaction, false);
+				.createEventsForTransaction(TransactionDescriptor.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
