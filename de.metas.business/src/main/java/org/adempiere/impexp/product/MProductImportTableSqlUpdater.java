@@ -69,6 +69,8 @@ public class MProductImportTableSqlUpdater
 
 		dbUpdateProductCategories(whereClause, ctx);
 
+		dbUpdatePharmaProductCategory(whereClause);
+
 		dbUpdateIProductFromProduct(whereClause);
 
 		dbUpdateIProductFromProductPO(whereClause);
@@ -84,6 +86,10 @@ public class MProductImportTableSqlUpdater
 		dbUpdateTaxCategories(whereClause, ctx);
 
 		dbUpdatePriceListVersion(whereClause, ctx);
+
+		dbUpdatePriceLists(whereClause, ctx, priceName_APU);
+
+		dbUpdatePriceLists(whereClause, ctx, priceName_AEP);
 
 		dbUpdateDosageForm(whereClause);
 
@@ -443,6 +449,19 @@ public class MProductImportTableSqlUpdater
 				.append(" WHERE d.AD_Client_ID=i.AD_Client_ID AND i.A00DARFO = d.Name) ")
 				.append("WHERE M_DosageForm_ID IS NULL AND A00DARFO IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void dbUpdatePharmaProductCategory(@NonNull final String whereClause)
+	{
+
+		final StringBuilder sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET M_PharmaProductCategory_ID=(SELECT M_PharmaProductCategory_ID FROM M_PharmaProductCategory c")
+				.append(" WHERE i.PharmaProductCategory_Value=c.Value AND i.AD_Client_ID=c.AD_Client_ID) ")
+				.append("WHERE PharmaProductCategory_Value IS NOT NULL AND M_PharmaProductCategory_ID IS NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
