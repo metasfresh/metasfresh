@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-// import { is } from 'immutable';
+import { is } from 'immutable';
 import * as _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -70,14 +70,14 @@ class Table extends Component {
     }
   }
 
-  shouldComponentUpdate(nextProps) {
-    let isDataChanged = nextProps.rowData === this.props.rowData;
-    if (!isDataChanged) {
-      return false
-    }
+  // shouldComponentUpdate(nextProps) {
+  //   let isDataChanged = nextProps.rowData === this.props.rowData;
+  //   if (!isDataChanged) {
+  //     return false
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   componentDidUpdate(prevProps, prevState) {
     const {
@@ -141,51 +141,46 @@ class Table extends Component {
       );
     }
 
-// <<<<<<< HEAD
-//     if (
-//       !_.isEqual(prevProps.rowData, rowData) ||
-//       prevProps.rowData !== rowData
-//     ) {
-// =======
-//     // Perf.start()
-//     // console.time("test immutable");
-//     // let test1 = is(prevProps.rowData, rowData)
-//     // // Perf.stop()
-//     // console.timeEnd("test immutable");
+    // Perf.start()
+    // console.time("test immutable");
+    // let test1 = is(prevProps.rowData, rowData)
+    // // Perf.stop()
+    // console.timeEnd("test immutable");
 
-//     // // Perf.start()
-//     // console.time("test lodash");
-//     // let test2 = _.isEqual(prevProps.rowData, rowData);
-//     // // Perf.stop()
-//     // console.timeEnd("test lodash");
+    // // Perf.start()
+    // console.time("test lodash");
+    // let test2 = _.isEqual(prevProps.rowData, rowData);
+    // // Perf.stop()
+    // console.timeEnd("test lodash");
 
-//     console.time("test immutable 2");
-//     let test3 = prevProps.rowData === rowData;
-//     console.timeEnd("test immutable 2");
+    // console.time("test immutable 2");
+    let test3 = is(prevProps.rowData, rowData);
+    // console.timeEnd("test immutable 2");
     
-//     // console.log('IMMUTABLE: ', test1, test2, test3);
-//     // if (!is(prevProps.rowData, rowData)) {
-//     if (!test3) {
-//     // if (!_.isEqual(prevProps.rowData, rowData)) { //|| (prevProps.rowData !== rowData)) {
-//       console.log('dupa3: ', prevProps.rowData, rowData)
-// >>>>>>> - [tmp] moving to Immutable data for table rows #1615
-//       this.getIndentData();
-//     }
-
-//     if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
-//       console.log('dupa4')
-//       this.getIndentData(true);
-//     }
-    if (
-      !_.isEqual(prevProps.rowData, rowData) ||
-      prevProps.rowData !== rowData
-    ) {
+    console.log('IMMUTABLE: ', test3, rowData.first());
+    // if (!is(prevProps.rowData, rowData)) {
+    if (!test3) {
+    // if (!_.isEqual(prevProps.rowData, rowData)) { //|| (prevProps.rowData !== rowData)) {
+      console.log('dupa3: ', prevProps.rowData, rowData.first())
       this.getIndentData();
     }
 
     if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
+      console.log('dupa4')
       this.getIndentData(true);
     }
+
+
+    // if (
+    //   !_.isEqual(prevProps.rowData, rowData) ||
+    //   prevProps.rowData !== rowData
+    // ) {
+    //   this.getIndentData();
+    // }
+
+    // if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
+    //   this.getIndentData(true);
+    // }
   }
 
   componentWillUnmount() {
@@ -235,8 +230,13 @@ class Table extends Component {
       keyProperty,
     } = this.props;
 
-    if (indentSupported && rowData[tabid]) {
-      let rowsData = getRowsData(rowData[tabid]);
+    // console.log('rowdata other ?: ', rowData, tabid, rowData.keySeq().toArray())
+    // console.log('getindentdata: ', rowData.has(`${tabid}`), indentSupported)
+
+    if (indentSupported && rowData.get(`${tabid}`)) {
+      let rowsData = getRowsData(rowData.get(`${tabid}`));
+
+      // console.log('rowsdata1: ', rowsData)
 
       this.setState(
         {
@@ -285,10 +285,12 @@ class Table extends Component {
         }
       );
     } else {
-      const rowsData = rowData[tabid] || [];
+      // debugger;
+      const rowsData = rowData.get(`${tabid}`) ? rowData.get(`${tabid}`).toJS() : [];
+      // console.log('rowsdata2: ', rowsData)
       this.setState({
         rows: rowsData,
-        pendingInit: !rowData[tabid],
+        pendingInit: !rowData.get(`${tabid}`),
       });
     }
   };
@@ -423,7 +425,7 @@ class Table extends Component {
   deselectAllProducts = cb => {
     const { dispatch, tabInfo, type, viewId } = this.props;
 
-    console.log('deselectAllProducts po co to zaznacza ? ', tabInfo)
+    // console.log('deselectAllProducts po co to zaznacza ? ', tabInfo)
 
     this.setState(
       {
@@ -488,11 +490,11 @@ class Table extends Component {
         }
       }
 
-      console.log('whatishapenin ?')
+      // console.log('whatishapenin ?')
 
       this.deselectAllProducts();
       if (showIncludedViewOnSelect) {
-        console.log('showincludedwhatever ?')
+        // console.log('showincludedwhatever ?')
         showIncludedViewOnSelect({
           showIncludedView: false,
           windowType,
@@ -758,7 +760,7 @@ class Table extends Component {
   handleOpenNewTab = selected => {
     const { type } = this.props;
     for (let i = 0; i < selected.length; i++) {
-      window.open('/window/' + type + '/' + selected[i], '_blank');
+      window.open(`/window/${type}/${selected[i]}`, '_blank');
     }
   };
 
@@ -824,10 +826,9 @@ class Table extends Component {
       res &&
         res.data &&
         window.open(
-          '/window/' +
-            res.data.documentPath.windowId +
-            '/' +
-            res.data.documentPath.documentId,
+          `/window/${res.data.documentPath.windowId}/${
+            res.data.documentPath.documentId
+          }`,
           '_blank'
         );
     });
@@ -1022,11 +1023,9 @@ class Table extends Component {
                 showIncludedViewOnSelect({
                   showIncludedView: selected && item.supportIncludedViews,
                   forceClose: !selected,
-
                   windowType: item.supportIncludedViews
                     ? item.includedView.windowType || item.includedView.windowId
                     : null,
-
                   viewId: item.supportIncludedViews
                     ? item.includedView.viewId
                     : '',
@@ -1081,8 +1080,8 @@ class Table extends Component {
     }
 
     if (
-      (data && data[tabId] && Object.keys(data[tabId]).length === 0) ||
-      !data[tabId]
+      (data && data.get(`${tabId}`) && data.get(`${tabId}`).size === 0) ||
+      !data.get(`${tabId}`)
     ) {
       return (
         <div className="empty-info-text">
@@ -1134,6 +1133,8 @@ class Table extends Component {
       isBatchEntry,
       rows,
     } = this.state;
+
+    // console.log('ROWDATA: ', rowData, rowData.has(`${tabid}`), rowData.get(`${tabid}`));
 
     return (
       <div className="table-flex-wrapper">
@@ -1202,9 +1203,9 @@ class Table extends Component {
               {
                 'table-content-empty':
                   (rowData &&
-                    rowData[tabid] &&
-                    Object.keys(rowData[tabid]).length === 0) ||
-                  !rowData[tabid],
+                    rowData.get(`${tabid}`) &&
+                    rowData.get(`${tabid}`).size === 0) ||
+                  !rowData.get(`${tabid}`),
               }
             )}
           >

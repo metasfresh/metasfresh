@@ -269,6 +269,7 @@ class DocumentList extends Component {
     if (!data) {
       return;
     }
+    // console.log('here1')
     const rows = getRowsData(data.result);
 
     if (selected.length === 1) {
@@ -467,6 +468,8 @@ class DocumentList extends Component {
     } = this.props;
     const { viewId } = this.state;
 
+    console.log('getdata')
+
     if (setNotFound) {
       setNotFound(false);
     }
@@ -485,24 +488,26 @@ class DocumentList extends Component {
       pageLength: this.pageLength,
       orderBy: sortingQuery,
     }).then(response => {
-      console.log('getData: ', response)
+      const result = List(response.data.result)
+      result.hashCode()
+
+      console.log('getData: ', result, response.data.result, viewId)
+
       const selection = getSelectionDirect(selections, windowType, viewId);
       const forceSelection =
         (type === 'includedView' || isIncluded) &&
         response.data &&
-        response.data.result &&
-        response.data.result.length > 0 &&
+        result.size > 0 &&
         (selection.length === 0 ||
           !this.doesSelectionExist({
-            // data: {
-            //   ...response.data,
-            //   result: List(response.data.result),
-            // },
-            data: response.data,
+            data: {
+              ...response.data,
+              result,
+            },
             selected: selection,
           }));
 
-      response.data.result.map(row => {
+      result.map(row => {
         row.fieldsByName = parseToDisplay(row.fieldsByName);
       });
 
@@ -511,13 +516,10 @@ class DocumentList extends Component {
         pageColumnInfosByFieldName,
         response.data.result
       );
-      const result = List(response.data.result)
-      result.hashCode()
 
       if (this.mounted) {
         this.setState(
           {
-            // data: response.data,
             data: {
               ...response.data,
               result,
@@ -526,8 +528,8 @@ class DocumentList extends Component {
             filters: response.data.filters,
           },
           () => {
-            if (forceSelection && response.data && response.data.result) {
-              const selection = [response.data.result[0].id];
+            if (forceSelection && response.data && result && result.size > 0) {
+              const selection = [result.get(0).id];
 
               dispatch(
                 selectTableItems({
@@ -827,7 +829,7 @@ class DocumentList extends Component {
                   c.getWrappedInstance() &&
                   c.getWrappedInstance().instanceRef)
               }
-              rowData={{ 1: data.result }}
+              rowData={Map({ 1: data.result })}
               cols={layout.elements}
               collapsible={layout.collapsible}
               expandedDepth={layout.expandedDepth}

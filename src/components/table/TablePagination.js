@@ -1,6 +1,7 @@
 import counterpart from 'counterpart';
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 
 import PaginationContextShortcuts from '../shortcuts/PaginationContextShortcuts';
 

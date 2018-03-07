@@ -1,4 +1,5 @@
 import update from 'react-addons-update';
+import { Map, List, fromJS } from 'immutable';
 
 import {
   ACTIVATE_TAB,
@@ -52,7 +53,7 @@ const initialState = {
     viewId: null,
     layout: {},
     data: {},
-    rowData: {},
+    rowData: Map(),
     modalTitle: '',
     modalType: '',
     isAdvanced: false,
@@ -76,7 +77,7 @@ const initialState = {
       activeTab: null,
     },
     data: [],
-    rowData: {},
+    rowData: Map(),
     saveStatus: {},
     validStatus: {},
     includedTabsInfo: {},
@@ -183,7 +184,7 @@ export default function windowHandler(state = initialState, action) {
           data: action.data,
           docId: action.docId,
           layout: {},
-          rowData: {},
+          rowData: Map(),
           saveStatus: action.saveStatus,
           standardActions: new Set(action.standardActions),
           validStatus: action.validStatus,
@@ -197,7 +198,7 @@ export default function windowHandler(state = initialState, action) {
         master: {
           ...state.master,
           data: {},
-          rowData: {},
+          rowData: Map(),
           docId: undefined,
         },
       };
@@ -238,31 +239,46 @@ export default function windowHandler(state = initialState, action) {
         },
       });
     case ADD_ROW_DATA:
-      return Object.assign({}, state, {
-        [action.scope]: Object.assign({}, state[action.scope], {
-          rowData: Object.assign({}, state[action.scope].rowData, action.data),
-        }),
-      });
+      // const dataList = List();
+      // const actionData = action.data.forEach();
+      console.log('ADDROWDATA: ', action)
+      return {
+        ...state,
+        [action.scope]: {
+          ...state[action.scope],
+          rowData: state[action.scope].rowData.merge(fromJS(action.data)),
+        },
+      };
     case ADD_NEW_ROW:
+      const newRowData = state[action.scope].rowData.set('$push', [action.item]); //List(action.item));
+
+      console.log('ADD NEW ROW: ', action)
+
       return update(state, {
         [action.scope]: {
-          rowData: {
-            [action.tabid]: {
-              $push: [action.item],
-            },
-          },
+          // rowData: {
+          //   [action.tabid]: {
+          //     $push: [action.item],
+          //   },
+          // },
+          rowData: newRowData,
         },
       });
     case DELETE_ROW:
+      const deletedData = state[action.scope].rowData[action.tabid].set('$set', state[action.scope].rowData[action.tabid].filter(item => item.rowId !== action.rowid));
+
+      console.log('DELETED: ', )
+
       return update(state, {
         [action.scope]: {
-          rowData: {
-            [action.tabid]: {
-              $set: state[action.scope].rowData[action.tabid].filter(
-                item => item.rowId !== action.rowid
-              ),
-            },
-          },
+          // rowData: {
+          //   [action.tabid]: {
+          //     $set: state[action.scope].rowData[action.tabid].filter(
+          //       item => item.rowId !== action.rowid
+          //     ),
+          //   },
+          // },
+          rowData: deletedData,
         },
       });
     case UPDATE_DATA_FIELD_PROPERTY:
@@ -312,8 +328,8 @@ export default function windowHandler(state = initialState, action) {
       const property = action.property;
       const scState = state[scope];
 
-      if (scState && scState.rowData && scState.rowData[tabid]) {
-        const scRowData = scState.rowData[tabid];
+      if (scState && scState.rowData && scState.rowData.get(`${tabid}`)) {
+        const scRowData = scState.rowData.get(`${tabid}`);
 
         return update(state, {
           [action.scope]: {
@@ -347,7 +363,7 @@ export default function windowHandler(state = initialState, action) {
         [action.scope]: {
           rowData: {
             [action.tabid]: {
-              $set: state[action.scope].rowData[action.tabid].map(
+              $set: state[action.scope].rowData.get(`${action.tabid}`).map(
                 (item, index) =>
                   item.rowId === action.rowid
                     ? {
