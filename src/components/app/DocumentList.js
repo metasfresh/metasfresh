@@ -211,15 +211,12 @@ class DocumentList extends Component {
   connectWebSocket = viewId => {
     const { windowType } = this.props;
     connectWS.call(this, `/view/${viewId}`, msg => {
-      console.log('WS call')
       const { fullyChanged, changedIds } = msg;
       if (changedIds) {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
-            console.log('getViewRowsByIds')
-
             const rows = mergeRows({
-              toRows: [...this.state.data.result],
+              toRows: this.state.data.result.toArray(),
               fromRows: [...response.data],
               columnInfosByFieldName: this.state.pageColumnInfosByFieldName,
             });
@@ -227,7 +224,7 @@ class DocumentList extends Component {
             this.setState({
               data: {
                 ...this.state.data,
-                result: [...rows],
+                result: List(rows),
               },
             });
           }
@@ -269,7 +266,6 @@ class DocumentList extends Component {
     if (!data) {
       return;
     }
-    // console.log('here1')
     const rows = getRowsData(data.result);
 
     if (selected.length === 1) {
@@ -358,14 +354,11 @@ class DocumentList extends Component {
             },
             () => {
               if (viewId && !isNewFilter) {
-                console.log(1)
                 this.browseView();
               } else {
                 if (viewId) {
-                  console.log(2);
                   this.filterView();
                 } else {
-                  console.log(3);
                   this.createView();
                 }
               }
@@ -421,7 +414,6 @@ class DocumentList extends Component {
       refTabId,
       refRowIds,
     }).then(response => {
-      console.log('createView response: ', response)
       this.mounted &&
         this.setState(
           {
@@ -440,7 +432,6 @@ class DocumentList extends Component {
     const { page, sort, filters, viewId } = this.state;
 
     filterViewRequest(windowType, viewId, filters).then(response => {
-      console.log('filterView response: ', response)
       this.mounted &&
         this.setState(
           {
@@ -468,8 +459,6 @@ class DocumentList extends Component {
     } = this.props;
     const { viewId } = this.state;
 
-    console.log('getdata')
-
     if (setNotFound) {
       setNotFound(false);
     }
@@ -490,8 +479,6 @@ class DocumentList extends Component {
     }).then(response => {
       const result = List(response.data.result)
       result.hashCode()
-
-      console.log('getData: ', result, response.data.result, viewId)
 
       const selection = getSelectionDirect(selections, windowType, viewId);
       const forceSelection =
@@ -539,7 +526,6 @@ class DocumentList extends Component {
                 })
               );
             }
-
             this.connectWebSocket(response.data.viewId);
           }
         );
@@ -636,8 +622,6 @@ class DocumentList extends Component {
     forceClose,
   } = {}) => {
     const { dispatch } = this.props;
-
-    console.log('DocumentList showIncludedViewOnSelect')
 
     this.setState(
       {

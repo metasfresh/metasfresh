@@ -70,15 +70,6 @@ class Table extends Component {
     }
   }
 
-  // shouldComponentUpdate(nextProps) {
-  //   let isDataChanged = nextProps.rowData === this.props.rowData;
-  //   if (!isDataChanged) {
-  //     return false
-  //   }
-
-  //   return true;
-  // }
-
   componentDidUpdate(prevProps, prevState) {
     const {
       dispatch,
@@ -100,7 +91,6 @@ class Table extends Component {
     if (!_.isEqual(prevState.rows, rows)) {
       if (isModal && !hasIncluded) {
         if (rows) {
-          console.log('dupa1')
           let firstRow = rows[0];
 
           if (firstRow) {
@@ -124,7 +114,6 @@ class Table extends Component {
       !_.isEqual(prevProps.defaultSelected, defaultSelected) ||
       (refreshSelection && prevProps.refreshSelection !== refreshSelection)
     ) {
-      console.log('dupa2')
       this.setState({
         selected: defaultSelected,
       });
@@ -141,46 +130,13 @@ class Table extends Component {
       );
     }
 
-    // Perf.start()
-    // console.time("test immutable");
-    // let test1 = is(prevProps.rowData, rowData)
-    // // Perf.stop()
-    // console.timeEnd("test immutable");
-
-    // // Perf.start()
-    // console.time("test lodash");
-    // let test2 = _.isEqual(prevProps.rowData, rowData);
-    // // Perf.stop()
-    // console.timeEnd("test lodash");
-
-    // console.time("test immutable 2");
-    let test3 = is(prevProps.rowData, rowData);
-    // console.timeEnd("test immutable 2");
-    
-    console.log('IMMUTABLE: ', test3, rowData.first());
-    // if (!is(prevProps.rowData, rowData)) {
-    if (!test3) {
-    // if (!_.isEqual(prevProps.rowData, rowData)) { //|| (prevProps.rowData !== rowData)) {
-      console.log('dupa3: ', prevProps.rowData, rowData.first())
+    if (!is(prevProps.rowData, rowData)) {
       this.getIndentData();
     }
 
     if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
-      console.log('dupa4')
       this.getIndentData(true);
     }
-
-
-    // if (
-    //   !_.isEqual(prevProps.rowData, rowData) ||
-    //   prevProps.rowData !== rowData
-    // ) {
-    //   this.getIndentData();
-    // }
-
-    // if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
-    //   this.getIndentData(true);
-    // }
   }
 
   componentWillUnmount() {
@@ -230,13 +186,8 @@ class Table extends Component {
       keyProperty,
     } = this.props;
 
-    // console.log('rowdata other ?: ', rowData, tabid, rowData.keySeq().toArray())
-    // console.log('getindentdata: ', rowData.has(`${tabid}`), indentSupported)
-
     if (indentSupported && rowData.get(`${tabid}`)) {
       let rowsData = getRowsData(rowData.get(`${tabid}`));
-
-      // console.log('rowsdata1: ', rowsData)
 
       this.setState(
         {
@@ -285,9 +236,7 @@ class Table extends Component {
         }
       );
     } else {
-      // debugger;
-      const rowsData = rowData.get(`${tabid}`) ? rowData.get(`${tabid}`).toJS() : [];
-      // console.log('rowsdata2: ', rowsData)
+      const rowsData = rowData.get(`${tabid}`) ? rowData.get(`${tabid}`).toArray() : [];
       this.setState({
         rows: rowsData,
         pendingInit: !rowData.get(`${tabid}`),
@@ -425,8 +374,6 @@ class Table extends Component {
   deselectAllProducts = cb => {
     const { dispatch, tabInfo, type, viewId } = this.props;
 
-    // console.log('deselectAllProducts po co to zaznacza ? ', tabInfo)
-
     this.setState(
       {
         selected: [],
@@ -490,11 +437,8 @@ class Table extends Component {
         }
       }
 
-      // console.log('whatishapenin ?')
-
       this.deselectAllProducts();
       if (showIncludedViewOnSelect) {
-        // console.log('showincludedwhatever ?')
         showIncludedViewOnSelect({
           showIncludedView: false,
           windowType,
@@ -1133,8 +1077,6 @@ class Table extends Component {
       isBatchEntry,
       rows,
     } = this.state;
-
-    // console.log('ROWDATA: ', rowData, rowData.has(`${tabid}`), rowData.get(`${tabid}`));
 
     return (
       <div className="table-flex-wrapper">
