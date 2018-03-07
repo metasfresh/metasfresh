@@ -36,8 +36,12 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
+import lombok.NonNull;
 
 /**
  * Auswahl Liefern: Enqueue selected {@link I_M_ShipmentSchedule}s and let {@link GenerateInOutFromShipmentSchedules} process them.
@@ -45,7 +49,9 @@ import de.metas.process.Param;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29
  */
-public class M_ShipmentSchedule_EnqueueSelection extends JavaProcess
+public class M_ShipmentSchedule_EnqueueSelection
+		extends JavaProcess
+		implements IProcessPrecondition
 {
 
 	@Param(parameterName = "IsUseQtyPicked", mandatory = true)
@@ -58,10 +64,16 @@ public class M_ShipmentSchedule_EnqueueSelection extends JavaProcess
 	private boolean isShipToday; // introduced in task #2940
 
 	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
+	{
+		return ProcessPreconditionsResolution.acceptIf(context.getSelectionSize() > 0);
+	}
+
+	@Override
 	protected String doIt() throws Exception
 	{
 		final IQueryFilter<I_M_ShipmentSchedule> queryFilters = createShipmentSchedulesQueryFilters();
-		
+
 		Check.assumeNotNull(queryFilters, "Shipment Schedule queryFiletrs shall not be null");
 
 		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
