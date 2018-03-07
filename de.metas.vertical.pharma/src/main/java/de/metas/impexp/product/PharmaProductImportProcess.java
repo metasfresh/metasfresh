@@ -45,7 +45,7 @@ import lombok.NonNull;
 
 public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma_Product>
 {
-
+	private final String DEACTIVATE_OPERATION_CODE = "2";
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@Override
@@ -94,26 +94,42 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_Pharma_Product importRecord) throws Exception
 	{
 		final org.compiere.model.I_M_Product existentProduct = productDAO.retrieveProductByValue(getCtx(), importRecord.getA00PZN());
-		final I_M_Product product;
-		final boolean newProduct;
-		if (existentProduct == null || importRecord.getM_Product_ID() <= 0)
+
+		final String operationCode = importRecord.getA00SSATZ();
+		if (DEACTIVATE_OPERATION_CODE.equals(operationCode) && existentProduct != null)
 		{
-			newProduct = true;
-			product = createProduct(importRecord);
+			deactivateProduct(existentProduct);
+			return ImportRecordResult.Updated;
 		}
-		else
+		else if (!DEACTIVATE_OPERATION_CODE.equals(operationCode))
 		{
-			newProduct = false;
-			product = updateProduct(importRecord, existentProduct);
+			final I_M_Product product;
+			final boolean newProduct = existentProduct == null || importRecord.getM_Product_ID() <= 0;
+			if (newProduct)
+			{
+				product = createProduct(importRecord);
+			}
+			else
+			{
+				product = updateProduct(importRecord, existentProduct);
+			}
+
+			importRecord.setM_Product_ID(product.getM_Product_ID());
+
+			ModelValidationEngine.get().fireImportValidate(this, importRecord, importRecord.getM_Product(), IImportInterceptor.TIMING_AFTER_IMPORT);
+
+			importPrices(importRecord);
+
+			return newProduct ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 		}
 
-		importRecord.setM_Product_ID(product.getM_Product_ID());
+		return ImportRecordResult.Nothing;
+	}
 
-		ModelValidationEngine.get().fireImportValidate(this, importRecord, importRecord.getM_Product(), IImportInterceptor.TIMING_AFTER_IMPORT);
-
-		importPrices(importRecord);
-
-		return newProduct ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
+	private void deactivateProduct(@NonNull final org.compiere.model.I_M_Product product)
+	{
+		product.setIsActive(false);
+		InterfaceWrapperHelper.save(product);
 	}
 
 	@Override
@@ -213,17 +229,17 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	{
 		final I_M_Product product = newInstance(I_M_Product.class, importRecord);
 		product.setValue(importRecord.getA00PZN());
-		if (Check.isEmpty(importRecord.getA00PBEZ()))
+		if (Check.isEmpty(importRecord.getA00PNAM()))
 		{
 			product.setName(importRecord.getA00PZN());
 		}
 		else
 		{
-			product.setName(importRecord.getA00PBEZ());
+			product.setName(importRecord.getA00PNAM());
 		}
-		if (!Check.isEmpty(importRecord.getA00PNAM()))
+		if (!Check.isEmpty(importRecord.getA00PBEZ()))
 		{
-			product.setDescription(importRecord.getA00PNAM());
+			product.setDescription(importRecord.getA00PBEZ());
 		}
 		if (!Check.isEmpty(importRecord.getA00GTIN()))
 		{
@@ -255,20 +271,23 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		}
 
 		product.setValue(importRecord.getA00PZN());
-		if (!Check.isEmpty(importRecord.getA00PBEZ()))
-		{
-			product.setName(importRecord.getA00PBEZ());
-		}
 		if (!Check.isEmpty(importRecord.getA00PNAM()))
 		{
-			product.setDescription(importRecord.getA00PNAM());
+			product.setName(importRecord.getA00PNAM());
+		}
+		if (!Check.isEmpty(importRecord.getA00PBEZ()))
+		{
+			product.setDescription(importRecord.getA00PBEZ());
 		}
 		if (!Check.isEmpty(importRecord.getA00GTIN()))
 		{
 			product.setUPC(importRecord.getA00GTIN());
 		}
 
-		product.setM_Product_Category_ID(importRecord.getM_Product_Category_ID());
+		if (importRecord.getM_Product_Category_ID() > 0)
+		{
+			product.setM_Product_Category_ID(importRecord.getM_Product_Category_ID());
+		}
 
 		setPackageFields(importRecord, product);
 		setPharmaFields(importRecord, product);
