@@ -2,12 +2,10 @@ package de.metas.impexp.product;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -19,7 +17,9 @@ import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
+import org.adempiere.impexp.product.CreateProductPriceCommand;
 import org.adempiere.impexp.product.MProductImportTableSqlUpdater;
+import org.adempiere.impexp.product.ProductPriceRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.uom.api.IUOMDAO;
@@ -29,18 +29,14 @@ import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
 import org.compiere.process.MProductPriceCloningCommand;
 
-import de.metas.pricing.ProductPrices;
 import de.metas.product.IProductDAO;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
-import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 
 public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma_Product>
@@ -369,7 +365,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private void createKAEP(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
+		final ProductPriceRequest request = ProductPriceRequest.builder()
 				.price(importRecord.getA01KAEP())
 				.priceList(importRecord.getKAEP_Price_List())
 				.product(importRecord.getM_Product())
@@ -377,12 +373,13 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
+		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
 	private void createAPU(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
+		final ProductPriceRequest request = ProductPriceRequest.builder()
 				.price(importRecord.getA01APU())
 				.priceList(importRecord.getAPU_Price_List())
 				.product(importRecord.getM_Product())
@@ -390,12 +387,13 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
+		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
 	private void createAEP(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
+		final ProductPriceRequest request = ProductPriceRequest.builder()
 				.price(importRecord.getA01AEP())
 				.priceList(importRecord.getAEP_Price_List())
 				.product(importRecord.getM_Product())
@@ -403,12 +401,13 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
+		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
 	private void createAVP(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
+		final ProductPriceRequest request = ProductPriceRequest.builder()
 				.price(importRecord.getA01AVP())
 				.priceList(importRecord.getAVP_Price_List())
 				.product(importRecord.getM_Product())
@@ -416,12 +415,13 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
+		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
 	private void createUVP(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
+		final ProductPriceRequest request = ProductPriceRequest.builder()
 				.price(importRecord.getA01UVP())
 				.priceList(importRecord.getUVP_Price_List())
 				.product(importRecord.getM_Product())
@@ -429,12 +429,13 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
+		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
 	private void createZBV(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
+		final ProductPriceRequest request = ProductPriceRequest.builder()
 				.price(importRecord.getA01ZBV())
 				.priceList(importRecord.getZBV_Price_List())
 				.product(importRecord.getM_Product())
@@ -442,20 +443,8 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
-	}
-
-	@Builder
-	@Getter
-	private static class ProductPriceContext
-	{
-		private final org.compiere.model.I_M_Product product;
-		private final I_M_PriceList priceList;
-		@NonNull
-		private final BigDecimal price;
-		final Timestamp validDate;
-		@NonNull
-		final I_C_TaxCategory taxCategory;
+		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
 	private I_C_TaxCategory findTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
@@ -509,71 +498,5 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		return X_I_Pharma_Product.A01MWST_2.equals(importRecord.getA01MWST());
 	}
 
-	private void createProductPrice_And_PriceListVersionIfNeeded(@NonNull final ProductPriceContext productPriceCtx)
-	{
-		if (!isValidPriceRecord(productPriceCtx))
-		{
-			return;
-		}
 
-		final I_M_PriceList priceList = productPriceCtx.getPriceList();
-		final Timestamp validDate = productPriceCtx.getValidDate();
-		I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceList.getM_PriceList_ID(), validDate);
-
-		if (plv == null)
-		{
-			plv = createPriceListVersion(priceList, validDate);
-		}
-
-		createProductPriceOrUpdateExistentOne(productPriceCtx, plv);
-	}
-
-	private boolean isValidPriceRecord(@NonNull final ProductPriceContext productPriceCtx)
-	{
-		return productPriceCtx.getProduct() != null
-				&& productPriceCtx.getPrice().signum() > 0
-				&& productPriceCtx.getPriceList() != null
-				&& productPriceCtx.getValidDate() != null;
-	}
-
-	private I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull final ProductPriceContext productPriceCtx, @NonNull final I_M_PriceList_Version plv)
-	{
-		final I_C_TaxCategory taxCategory = productPriceCtx.getTaxCategory();
-		final BigDecimal price = productPriceCtx.getPrice();
-		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, productPriceCtx.getProduct().getM_Product_ID());
-		if (pp == null)
-		{
-			pp = newInstance(I_M_ProductPrice.class, plv);
-		}
-		pp.setM_PriceList_Version(plv);
-		pp.setM_Product(productPriceCtx.getProduct());
-		pp.setPriceLimit(price);
-		pp.setPriceList(price);
-		pp.setPriceStd(price);
-		pp.setC_UOM(productPriceCtx.getProduct().getC_UOM());
-		pp.setC_TaxCategory(taxCategory);
-		save(pp);
-
-		return pp;
-	}
-
-	private I_M_PriceList_Version createPriceListVersion(@NonNull final I_M_PriceList priceList, @NonNull final Timestamp validFrom)
-	{
-		final I_M_PriceList_Version plv = newInstance(I_M_PriceList_Version.class, priceList);
-		plv.setName(priceList.getName() + validFrom);
-		plv.setValidFrom(validFrom);
-		plv.setM_PriceList(priceList);
-		plv.setProcessed(true);
-		save(plv);
-
-		// now set the previous one as base list
-		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv);
-		if (previousPlv != null)
-		{
-			plv.setM_Pricelist_Version_Base(previousPlv);
-			save(plv);
-		}
-
-		return plv;
-	}
 }

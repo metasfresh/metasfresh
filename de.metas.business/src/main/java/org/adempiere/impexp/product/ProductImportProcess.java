@@ -329,5 +329,4 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		pp.setC_UOM_ID(uomId);
 		InterfaceWrapperHelper.save(pp);
 	}
-
 }
