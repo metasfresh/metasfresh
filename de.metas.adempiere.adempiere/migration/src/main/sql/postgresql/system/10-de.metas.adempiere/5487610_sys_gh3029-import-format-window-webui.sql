@@ -823,3 +823,58 @@ UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-03-07 10:01:5
 UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-03-07 10:01:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551188
 ;
 
+-- 2018-03-07T10:03:44.828
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='DB Tabelle',Updated=TO_TIMESTAMP('2018-03-07 10:03:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3737
+;
+
+-- 2018-03-07T10:03:52.146
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Multi Zeilen',Updated=TO_TIMESTAMP('2018-03-07 10:03:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560324
+;
+
+-- 2018-03-07T10:03:56.302
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Import Format',Updated=TO_TIMESTAMP('2018-03-07 10:03:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3713
+;
+
+-- 2018-03-07T10:05:00.847
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-07 10:05:00','YYYY-MM-DD HH24:MI:SS') WHERE AD_Field_ID=560324 AND AD_Language='nl_NL'
+;
+
+-- 2018-03-07T10:05:04.299
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-07 10:05:04','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=560324 AND AD_Language='en_US'
+;
+
+-- 2018-03-07T10:05:44.638
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-07 10:05:44','YYYY-MM-DD HH24:MI:SS'),Name='SeqNo' WHERE AD_Field_ID=3728 AND AD_Language='en_US'
+;
+
+-- 2018-03-07T10:13:33.580
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Start Nr.',Updated=TO_TIMESTAMP('2018-03-07 10:13:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3730
+;
+
+-- 2018-03-07T10:13:37.027
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='End Nr.',Updated=TO_TIMESTAMP('2018-03-07 10:13:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3731
+;
+
+-- 2018-03-07T10:13:42.306
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Import Format',Updated=TO_TIMESTAMP('2018-03-07 10:13:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3727
+;
+
+-- 2018-03-07T10:13:44.952
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Daten Typ',Updated=TO_TIMESTAMP('2018-03-07 10:13:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3732
+;
+
+-- 2018-03-07T10:13:55.904
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Dezimal Zeichen',Updated=TO_TIMESTAMP('2018-03-07 10:13:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3734
+;
+
