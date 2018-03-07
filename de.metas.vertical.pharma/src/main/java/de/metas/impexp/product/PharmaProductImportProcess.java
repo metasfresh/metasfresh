@@ -105,7 +105,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		{
 			final I_M_Product product;
 			final boolean newProduct;
-			if (existentProduct == null || (existentProduct == null && importRecord.getM_Product_ID() <= 0))
+			if (existentProduct == null || importRecord.getM_Product_ID() <= 0)
 			{
 				newProduct = true;
 				product = createProduct(importRecord);
