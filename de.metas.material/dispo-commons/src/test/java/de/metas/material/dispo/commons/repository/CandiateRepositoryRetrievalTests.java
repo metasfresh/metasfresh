@@ -176,23 +176,11 @@ public class CandiateRepositoryRetrievalTests
 
 	private IPair<Candidate, I_MD_Candidate> perform_retrieve_with_ProductionDetail()
 	{
-		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
-		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
-		record.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION);
-		save(record);
+		final I_MD_Candidate_Prod_Detail productionDetailRecord = createProdDetailRecord(101, 111);
 
-		final I_MD_Candidate_Prod_Detail productionDetailRecord = newInstance(I_MD_Candidate_Prod_Detail.class);
-		productionDetailRecord.setDescription("description1");
-		productionDetailRecord.setPP_Plant_ID(61);
-		productionDetailRecord.setPP_Product_BOMLine_ID(71);
-		productionDetailRecord.setPP_Product_Planning_ID(81);
-		productionDetailRecord.setMD_Candidate(record);
-		productionDetailRecord.setPP_Order_ID(101);
-		productionDetailRecord.setPP_Order_BOMLine_ID(111);
-		productionDetailRecord.setPP_Order_DocStatus("ppOrderDocStatus1");
-		save(productionDetailRecord);
+		final CandidatesQuery query = CandidatesQuery.fromId(productionDetailRecord.getMD_Candidate().getMD_Candidate_ID());
 
-		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(record.getMD_Candidate_ID()));
+		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 		assertThat(cand).isNotNull();
 
 		final MaterialDescriptor materialDescriptor = cand.getMaterialDescriptor();
@@ -211,7 +199,28 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(productionDetail.getPpOrderLineId()).isEqualTo(111);
 		assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo("ppOrderDocStatus1");
 
-		return ImmutablePair.of(cand, record);
+		return ImmutablePair.of(cand, productionDetailRecord.getMD_Candidate());
+	}
+
+	private I_MD_Candidate_Prod_Detail createProdDetailRecord(final int ppOrderId, final int ppOrderLineId)
+	{
+		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
+		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
+		record.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION);
+		save(record);
+
+		final I_MD_Candidate_Prod_Detail productionDetailRecord = newInstance(I_MD_Candidate_Prod_Detail.class);
+		productionDetailRecord.setDescription("description1");
+		productionDetailRecord.setPP_Plant_ID(61);
+		productionDetailRecord.setPP_Product_BOMLine_ID(71);
+		productionDetailRecord.setPP_Product_Planning_ID(81);
+		productionDetailRecord.setMD_Candidate(record);
+		productionDetailRecord.setPP_Order_ID(ppOrderId);
+		productionDetailRecord.setPP_Order_BOMLine_ID(ppOrderLineId);
+		productionDetailRecord.setPP_Order_DocStatus("ppOrderDocStatus1");
+		save(productionDetailRecord);
+
+		return productionDetailRecord;
 	}
 
 	/**
@@ -243,6 +252,43 @@ public class CandiateRepositoryRetrievalTests
 				.retrieveLatestMatchOrNull(querqWithoutProdDetails);
 		assertThat(expectedRecordWithoutProdDetails).isNotNull();
 		assertThat(expectedRecordWithoutProdDetails.getId()).isEqualTo(otherRecord.getMD_Candidate_ID());
+	}
+
+	@Test
+	public void retrieveExact_with_ProductionDetail_ppOrderId_only()
+	{
+
+		final I_MD_Candidate_Prod_Detail prodDetailRecord = createProdDetailRecord(101, 0);
+		createProdDetailRecord(101, 112);
+		createProdDetailRecord(101, 113);
+
+		final ProductionDetailsQuery poductionDetailsQuery = ProductionDetailsQuery.builder()
+				.ppOrderId(101)
+				.ppOrderLineId(ProductionDetailsQuery.NO_PP_ORDER_LINE_ID)
+				.build();
+		final CandidatesQuery candidatesQuery = CandidatesQuery.builder().productionDetailsQuery(poductionDetailsQuery).build();
+
+		final List<Candidate> retrievedCandidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(candidatesQuery);
+		assertThat(retrievedCandidates).hasSize(1);
+		assertThat(retrievedCandidates.get(0).getId()).isEqualTo(prodDetailRecord.getMD_Candidate_ID());
+	}
+
+	@Test
+	public void retrieveExact_with_ProductionDetail_ppOrderLineId()
+	{
+		createProdDetailRecord(101, 0);
+		final I_MD_Candidate_Prod_Detail prodDetailRecord = createProdDetailRecord(101, 112);
+		createProdDetailRecord(101, 113);
+
+		final ProductionDetailsQuery poductionDetailsQuery = ProductionDetailsQuery.builder()
+				.ppOrderId(101)
+				.ppOrderLineId(112)
+				.build();
+		final CandidatesQuery candidatesQuery = CandidatesQuery.builder().productionDetailsQuery(poductionDetailsQuery).build();
+
+		final List<Candidate> retrievedCandidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(candidatesQuery);
+		assertThat(retrievedCandidates).hasSize(1);
+		assertThat(retrievedCandidates.get(0).getId()).isEqualTo(prodDetailRecord.getMD_Candidate_ID());
 	}
 
 	@Test

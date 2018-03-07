@@ -127,6 +127,9 @@ public interface ITrxListenerManager
 			return this;
 		}
 
+		/**
+		 * Sets the given handling method (can be lambda) and registers the listener.
+		 */
 		public void registerHandlingMethod(@NonNull final EventHandlingMethod handlingMethod)
 		{
 			this.handlingMethod = handlingMethod;

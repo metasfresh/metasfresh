@@ -45,6 +45,12 @@ public class EventLogEntry
 	@Default
 	int adIssueId = 0;
 
+	@NonNull
+	Integer clientId;
+
+	@NonNull
+	Integer orgId;
+
 	String message;
 	Class<?> eventHandlerClass;
 

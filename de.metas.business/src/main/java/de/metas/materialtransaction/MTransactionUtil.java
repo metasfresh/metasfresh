@@ -2,6 +2,7 @@ package de.metas.materialtransaction;
 
 import java.math.BigDecimal;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Transaction;
 
 import lombok.NonNull;
@@ -11,14 +12,26 @@ public class MTransactionUtil
 
 	public static boolean isInboundTransaction(@NonNull final I_M_Transaction mtrx)
 	{
-		final String movementType = mtrx.getMovementType();
-		if (movementType == null || movementType.length() != 2)
+		try
 		{
-			throw new IllegalArgumentException("Invalid movement type '" + movementType + "' for " + mtrx);
+			return isInboundMovementType(mtrx.getMovementType());
+		}
+		catch (final Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("transaction", mtrx);
+		}
+	}
+
+	public static boolean isInboundMovementType(@NonNull final String transactionMovementType)
+	{
+
+		if (transactionMovementType == null || transactionMovementType.length() != 2)
+		{
+			throw new AdempiereException("Invalid movement type '" + transactionMovementType + "'");
 		}
 
 		final boolean isInbound;
-		final char sign = movementType.charAt(1);
+		final char sign = transactionMovementType.charAt(1);
 		switch (sign)
 		{
 			case '+':
@@ -28,9 +41,8 @@ public class MTransactionUtil
 				isInbound = false;
 				break;
 			default:
-				throw new IllegalArgumentException("Invalid movement type '" + movementType + "' for " + mtrx);
+				throw new AdempiereException("Invalid movement type '" + transactionMovementType + "'");
 		}
-
 		return isInbound;
 	}
 
