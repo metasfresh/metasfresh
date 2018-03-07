@@ -419,13 +419,12 @@ public class ShipmentScheduleWithHU
 	 */
 	public I_M_HU_PI_Item_Product retrieveM_HU_PI_Item_Product()
 	{
-		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		final I_M_HU topLevelHU = getTopLevelHU();
 
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		if (topLevelHU == null)
 		{
-			// this instance has no HU; return "No Packing Item"
-			return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
+			return retrievePiipForReferencedRecord();
 		}
 
 		if (topLevelHU.getM_HU_PI_Item_Product_ID() > 0)
@@ -438,13 +437,7 @@ public class ShipmentScheduleWithHU
 				.collect(ImmutableList.toImmutableList());
 		if (huMaterialItems.isEmpty())
 		{
-			final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-			final I_M_HU_PI_Item_Product piipIgnoringPickedHUs = huShipmentScheduleBL.getM_HU_PI_Item_Product_IgnoringPickedHUs(shipmentSchedule);
-			if (piipIgnoringPickedHUs != null)
-			{
-				return piipIgnoringPickedHUs;
-			}
-			return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
+			return retrievePiipForReferencedRecord();
 		}
 
 		Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, topLevelHU, huMaterialItems);
@@ -466,6 +459,20 @@ public class ShipmentScheduleWithHU
 		}
 
 		// could not find a packing instruction; return "No Packing Item"
+		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
+	}
+
+	private I_M_HU_PI_Item_Product retrievePiipForReferencedRecord()
+	{
+		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+
+		final I_M_HU_PI_Item_Product piipIgnoringPickedHUs = huShipmentScheduleBL.getM_HU_PI_Item_Product_IgnoringPickedHUs(shipmentSchedule);
+		if (piipIgnoringPickedHUs != null)
+		{
+			return piipIgnoringPickedHUs;
+		}
+
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
 	}
 }

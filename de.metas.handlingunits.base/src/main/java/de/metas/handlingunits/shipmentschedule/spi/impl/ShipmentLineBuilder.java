@@ -1,5 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -34,7 +37,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
@@ -50,6 +52,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
+import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
@@ -75,6 +78,7 @@ import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Capacity;
 import lombok.NonNull;
 
 /**
@@ -124,7 +128,7 @@ import lombok.NonNull;
 	// Manual packing materials related:
 	private boolean manualPackingMaterial = false;
 
-	private final TreeSet<I_M_HU_PI_Item_Product> packingMaterial_huPIItemProduct = new TreeSet<>(Comparator.comparing(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID));
+	private final TreeSet<I_M_HU_PI_Item_Product> packingMaterial_huPIItemProducts = new TreeSet<>(Comparator.comparing(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID));
 
 	final TreeSet<IAttributeValue> attributeValues = //
 			new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
@@ -268,7 +272,7 @@ import lombok.NonNull;
 		appendHUsFromCandidate(candidate);
 
 		final I_M_HU_PI_Item_Product piip = candidate.retrieveM_HU_PI_Item_Product();
-		packingMaterial_huPIItemProduct.add(piip);
+		packingMaterial_huPIItemProducts.add(piip);
 
 		// Add current candidate to the list of candidates that will compose the generated shipment line
 		candidates.add(candidate);
@@ -321,7 +325,7 @@ import lombok.NonNull;
 			throw new AdempiereException("Cannot create shipment line when no candidates were added");
 		}
 
-		final I_M_InOutLine shipmentLine = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class, currentShipment);
+		final I_M_InOutLine shipmentLine = newInstance(I_M_InOutLine.class, currentShipment);
 		shipmentLine.setAD_Org_ID(currentShipment.getAD_Org_ID());
 		shipmentLine.setM_InOut(currentShipment);
 
@@ -376,22 +380,30 @@ import lombok.NonNull;
 		shipmentLine.setIsManualPackingMaterial(manualPackingMaterial);
 
 		// https://github.com/metasfresh/metasfresh/issues/3503
-		if (packingMaterial_huPIItemProduct != null && packingMaterial_huPIItemProduct.size() == 1)
+		if (packingMaterial_huPIItemProducts != null && packingMaterial_huPIItemProducts.size() == 1)
 		{
-			final I_M_HU_PI_Item_Product piipForShipmentLine = packingMaterial_huPIItemProduct.iterator().next();
+			final I_M_HU_PI_Item_Product piipForShipmentLine = packingMaterial_huPIItemProducts.iterator().next();
 			shipmentLine.setM_HU_PI_Item_Product_Override(piipForShipmentLine); // this field is currently displayed in the swing client, so we set it, even if it's redundant
 			shipmentLine.setM_HU_PI_Item_Product_Calculated(piipForShipmentLine);
+
+			if (manualPackingMaterial)
+			{
+				// there are no real HUs, so we need to calculate what the tu-qty would be
+				final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, product, product.getC_UOM());
+				final Integer qtyTU = capacity.calculateQtyTU(movementQty, product.getC_UOM());
+				shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTU));
+			}
 		}
 		else
 		{
 			Loggables.get()
 					.withLogger(logger, Level.INFO)
 					.addLog("Not setting the shipment line's M_HU_PI_Item_Product, because the assigned HUs have different ones; huPIItemProducts={}",
-							packingMaterial_huPIItemProduct);
+							packingMaterial_huPIItemProducts);
 		}
 		//
 		// Save Shipment Line
-		InterfaceWrapperHelper.save(shipmentLine);
+		save(shipmentLine);
 
 		//
 		// Notify candidates that we have a shipment line
@@ -472,10 +484,7 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * Sets if shipment line shall be flagged as manual packing materials
-	 *
-	 * @param manualPackingMaterial
-	 * @see I_M_InOutLine#setIsManualPackingMaterial(boolean)
+	 * {@code false} by default. Set to {@code} true if there aren't any real picked HUs, but we still want to createa a shipment line.
 	 */
 	public void setManualPackingMaterial(final boolean manualPackingMaterial)
 	{
