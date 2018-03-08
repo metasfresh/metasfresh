@@ -52,4 +52,7 @@ public interface IHUInventoryBL extends ISingletonService
 
 	void assignHU(I_M_InventoryLine inventoryLine, I_M_HU topLevelHU);
 
+	List<I_M_HU> getAssignedTopLevelHUs(final I_M_InventoryLine inventoryLine);
+
+	List<I_M_HU> getAssignedTopLevelHUsByInventoryId(int inventoryId);
 }

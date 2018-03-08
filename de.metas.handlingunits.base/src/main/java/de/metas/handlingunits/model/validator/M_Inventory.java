@@ -9,15 +9,13 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.minventory.api.IInventoryBL;
 import org.adempiere.minventory.api.IInventoryDAO;
 import org.adempiere.mmovement.api.IMovementDAO;
-import org.adempiere.model.IContextAware;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
 
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -52,9 +50,12 @@ public class M_Inventory
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void beforeComplete(final I_M_Inventory inventory)
 	{
-		for (final I_M_InventoryLine line : Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(inventory.getM_Inventory_ID(), I_M_InventoryLine.class))
+		final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+		final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+		
+		for (final I_M_InventoryLine line : inventoryDAO.retrieveLinesForInventoryId(inventory.getM_Inventory_ID(), I_M_InventoryLine.class))
 		{
-			final BigDecimal qtyDiff = Services.get(IInventoryBL.class).getMovementQty(line);
+			final BigDecimal qtyDiff = inventoryBL.getMovementQty(line);
 			if (qtyDiff.signum() == 0)
 			{
 				continue;
@@ -81,7 +82,6 @@ public class M_Inventory
 	public void reverseDisposal(final I_M_Inventory inventory)
 	{
 		final IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
 		if (!(huInventoryBL.isMaterialDisposal(inventory)))
 		{
@@ -94,18 +94,15 @@ public class M_Inventory
 			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + inventory + ")");
 		}
 
-		final List<I_M_InventoryLine> inventoryLines = Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(inventory.getM_Inventory_ID(), I_M_InventoryLine.class);
-		for (final I_M_InventoryLine inventoryLine : inventoryLines)
+		//
+		// restore HUs from snapshots
 		{
-			final List<I_M_HU> topLevelHUsForInventoryLine = huAssignmentDAO.retrieveTopLevelHUsForModel(inventoryLine);
-			final IContextAware context = InterfaceWrapperHelper.getContextAware(inventory);
-
-			// restore HUs from snapshots
+			final List<I_M_HU> topLevelHUs = huInventoryBL.getAssignedTopLevelHUsByInventoryId(inventory.getM_Inventory_ID());
 			Services.get(IHUSnapshotDAO.class).restoreHUs()
-					.setContext(context)
+					.setContext(PlainContextAware.newWithThreadInheritedTrx())
 					.setSnapshotId(snapshotId)
 					.setDateTrx(inventory.getMovementDate())
-					.addModels(topLevelHUsForInventoryLine)
+					.addModels(topLevelHUs)
 					.setReferencedModel(inventory)
 					.restoreFromSnapshot();
 		}
