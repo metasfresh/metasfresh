@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -174,6 +175,7 @@ public class Group
 				.price(price)
 				.qty(qty)
 				.lineNetAmt(lineNetAmt)
+				.groupTemplateLineId(request.getGroupTemplateLineId())
 				.build();
 
 		if (compensationLine.isPercentage())
@@ -183,9 +185,36 @@ public class Group
 
 		compensationLines.add(compensationLine);
 	}
-	
-	public void removeAllCompensationLines()
+
+	public void removeAllGeneratedCompensationLines()
 	{
-		compensationLines.clear();
+		for (final Iterator<GroupCompensationLine> it = compensationLines.iterator(); it.hasNext();)
+		{
+			final GroupCompensationLine compensationLine = it.next();
+			if (compensationLine.isGeneratedLine())
+			{
+				it.remove();
+			}
+		}
+	}
+
+	public void moveAllManualCompensationLinesToEnd()
+	{
+		final ArrayList<GroupCompensationLine> manualCompensationLines = new ArrayList<>();
+		for (final Iterator<GroupCompensationLine> it = compensationLines.iterator(); it.hasNext();)
+		{
+			final GroupCompensationLine compensationLine = it.next();
+			if (compensationLine.isManualLine())
+			{
+				manualCompensationLines.add(compensationLine);
+				it.remove();
+			}
+		}
+
+		if (!manualCompensationLines.isEmpty())
+		{
+			compensationLines.addAll(manualCompensationLines);
+			updateAllPercentageLines();
+		}
 	}
 }

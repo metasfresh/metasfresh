@@ -45,6 +45,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
@@ -68,10 +69,12 @@ public class C_OrderLine
 		// NOTE: in unit test mode and while running tools like model generators,
 		// the groupsRepo is not Autowired because there is no spring context,
 		// so we have to instantiate it directly
-		if (groupChangesHandler == null)
+		if (groupChangesHandler == null && Adempiere.isUnitTestMode())
 		{
 			groupChangesHandler = new OrderGroupCompensationChangesHandler(
-					new OrderGroupRepository(Optional.empty()),
+					new OrderGroupRepository(
+							new GroupCompensationLineCreateRequestFactory(),
+							Optional.empty()),
 					new GroupTemplateRepository(Optional.empty()));
 		}
 	};
@@ -238,7 +241,8 @@ public class C_OrderLine
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
 			I_C_OrderLine.COLUMNNAME_LineNetAmt,
-			I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage
+			I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage,
+			I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID
 	})
 	public void handleCompensantionGroupChange(final I_C_OrderLine orderLine)
 	{

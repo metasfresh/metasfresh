@@ -69,7 +69,7 @@ public class OrderGroupCompensationUtils
 	{
 		return orderLine.getC_Order_CompensationGroup_ID() > 0;
 	}
-	
+
 	public static boolean isNotInGroup(final I_C_OrderLine orderLine)
 	{
 		return !isInGroup(orderLine);
@@ -89,5 +89,15 @@ public class OrderGroupCompensationUtils
 		{
 			throw new AdempiereException("Unknown compensationType: " + compensationType);
 		}
+	}
+
+	public static boolean isGeneratedCompensationLine(final I_C_OrderLine orderLine)
+	{
+		return isGeneratedCompensationLine(orderLine.getC_CompensationGroup_SchemaLine_ID());
+	}
+
+	public static boolean isGeneratedCompensationLine(final int groupSchemaLineId)
+	{
+		return groupSchemaLineId > 0;
 	}
 }
