@@ -40,6 +40,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 
 /**
  * Physical Inventory Model
@@ -298,7 +299,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 		}
 
 		// Get Quantity to Inventory Inernal Use
-		final BigDecimal qtyDiff = Services.get(IInventoryBL.class).getMovementQty(line);
+		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQtyInStockingUOM(line);
 		final String movementType = qtyDiff.signum() > 0 ? X_M_Transaction.MOVEMENTTYPE_InventoryIn : X_M_Transaction.MOVEMENTTYPE_InventoryOut;
 
 		// Transaction
@@ -308,7 +309,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 				line.getM_Locator_ID(),
 				line.getM_Product_ID(),
 				line.getM_AttributeSetInstance_ID(),
-				qtyDiff,
+				qtyDiff.getQty(),
 				getMovementDate(),
 				get_TrxName());
 		mtrx.setM_InventoryLine_ID(line.getM_InventoryLine_ID());
@@ -316,7 +317,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 
 		if (qtyDiff.signum() != 0)
 		{
-			final String err = createCostDetail(line, line.getM_AttributeSetInstance_ID(), qtyDiff);
+			final String err = createCostDetail(line, line.getM_AttributeSetInstance_ID(), qtyDiff.getQty());
 			if (err != null && !err.isEmpty())
 			{
 				throw new AdempiereException(err);

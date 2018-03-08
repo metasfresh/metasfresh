@@ -1,10 +1,10 @@
 package de.metas.inventory;
 
-import java.math.BigDecimal;
-
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
+
+import de.metas.quantity.Quantity;
 
 /**
  * @author ad
@@ -36,6 +36,8 @@ public interface IInventoryBL extends ISingletonService
 	 *
 	 * @return movement qty
 	 */
-	BigDecimal getMovementQty(I_M_InventoryLine inventoryLine);
+	Quantity getMovementQty(I_M_InventoryLine inventoryLine);
+
+	Quantity getMovementQtyInStockingUOM(I_M_InventoryLine inventoryLine);
 
 }

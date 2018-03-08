@@ -1,5 +1,7 @@
 package de.metas.inventory.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 
 /*
@@ -28,14 +30,17 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.util.Env;
 
 import de.metas.document.engine.IDocument;
 import de.metas.inventory.IInventoryBL;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 public class InventoryBL implements IInventoryBL
@@ -55,7 +60,7 @@ public class InventoryBL implements IInventoryBL
 		{
 			throw new AdempiereException("@NotFound@ @AD_SysConfig_ID@: " + InventoryBL.SYSCONFIG_QuickInput_Charge_ID);
 		}
-		
+
 		return chargeId;
 	}
 
@@ -97,16 +102,27 @@ public class InventoryBL implements IInventoryBL
 	}
 
 	@Override
-	public BigDecimal getMovementQty(final I_M_InventoryLine inventoryLine)
+	public Quantity getMovementQty(final I_M_InventoryLine inventoryLine)
 	{
+		final I_C_UOM uom = loadOutOfTrx(inventoryLine.getC_UOM_ID(), I_C_UOM.class);
+
 		if (isInternalUseInventory(inventoryLine))
 		{
-			return inventoryLine.getQtyInternalUse().negate();
+			final BigDecimal qtyValue = inventoryLine.getQtyInternalUse().negate();
+			return Quantity.of(qtyValue, uom);
 		}
 		else
 		{
-			return inventoryLine.getQtyCount().subtract(inventoryLine.getQtyBook());
+			BigDecimal qtyValue = inventoryLine.getQtyCount().subtract(inventoryLine.getQtyBook());
+			return Quantity.of(qtyValue, uom);
 		}
+	}
+
+	@Override
+	public Quantity getMovementQtyInStockingUOM(final I_M_InventoryLine inventoryLine)
+	{
+		final Quantity movementQty = getMovementQty(inventoryLine);
+		return Services.get(IUOMConversionBL.class).convertToProductUOM(movementQty, inventoryLine.getM_Product_ID());
 	}
 
 	@Override

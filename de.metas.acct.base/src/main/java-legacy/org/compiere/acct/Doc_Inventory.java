@@ -33,6 +33,7 @@ import org.compiere.util.Env;
 
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.quantity.Quantity;
 
 /**
  *  Post Inventory Documents.
@@ -96,7 +97,7 @@ public class Doc_Inventory extends Doc
 		ArrayList<DocLine> list = new ArrayList<>();
 		for (final I_M_InventoryLine line : Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(inventory.getM_Inventory_ID()))
 		{
-			final BigDecimal qty = Services.get(IInventoryBL.class).getMovementQty(line);
+			final Quantity qty = Services.get(IInventoryBL.class).getMovementQty(line);
 			if(qty.signum() == 0)
 			{
 				//	nothing to post
@@ -104,7 +105,7 @@ public class Doc_Inventory extends Doc
 			}
 			//
 			DocLine docLine = new DocLine (InterfaceWrapperHelper.getPO(line), this); 
-			docLine.setQty (qty, false);		// -5 => -5
+			docLine.setQty (qty.getQty(), false);		// -5 => -5
 			docLine.setReversalLine_ID(line.getReversalLine_ID());
 			log.debug(docLine.toString());
 			list.add (docLine);
