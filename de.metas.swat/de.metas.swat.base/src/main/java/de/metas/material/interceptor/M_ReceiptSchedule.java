@@ -130,7 +130,7 @@ public class M_ReceiptSchedule
 				.orderLineId(receiptSchedule.getC_OrderLine_ID())
 				.orderId(receiptSchedule.getC_Order_ID())
 				.orderBPartnerId(receiptSchedule.getC_Order().getC_BPartner_ID())
-				.docTypeId(receiptSchedule.getC_DocType_ID())
+				.docTypeId(receiptSchedule.getC_Order().getC_DocType_ID())
 				.build();
 	}
 
