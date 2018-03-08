@@ -26,10 +26,18 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1544](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1544) List Widget does not scroll down with arrow-down
     * Improved scrolling behavior of list widgets.
+  * [#1615](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1615) picking terminal window: switching rows is very very slow
+    * Performance Improvement of Picking Terminal Window.
+  * [#1637](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1637) Collapsible lines in Create Purchase Order modal
+    * Fixes the behavior of collapsible lines in modal overlay of create purchase orders.
   * [#1646](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1646) List dropdown improvements
     * Improved behavior of lookup and list widget drop-down. Now keeping the field content selected when reopening the drop-down after hover and leave.
   * [#1650](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1650) Edit mode in grid view when focus lost
     * Improvement of the display status of grid fields in edit mode. Now the edit modus and display is left as soon the field is left.
+  * [#1653](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1653) Line in modal overlay for creating purchase order from SO disappears
+    * Fixes an Issue in Create Purchase Orders from Sales Order Lines. Now it's possible to enter the purchase Quantity again.
+  * [#1658](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1658) Improve WebUI performance
+    * General Performance Improvement for Grid Views in WebUI.
 
 # metasfresh 5.47 (2018-10)
 **release for week 2018-10**
