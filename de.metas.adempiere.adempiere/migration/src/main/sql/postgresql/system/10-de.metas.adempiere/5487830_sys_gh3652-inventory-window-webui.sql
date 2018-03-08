@@ -687,3 +687,33 @@ UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2018-03-08 18:48:
 UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2018-03-08 18:48:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551246
 ;
 
+-- 2018-03-08T18:51:16.274
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-08 18:51:16','YYYY-MM-DD HH24:MI:SS'),Name='Date' WHERE AD_Field_ID=2686 AND AD_Language='en_US'
+;
+
+-- 2018-03-08T18:51:50.388
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-08 18:51:50','YYYY-MM-DD HH24:MI:SS'),Name='Status' WHERE AD_Field_ID=10560 AND AD_Language='en_US'
+;
+
+-- 2018-03-08T18:53:16.411
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Inventur Art',Updated=TO_TIMESTAMP('2018-03-08 18:53:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=8290
+;
+
+-- 2018-03-08T18:53:37.591
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Description='Bestandszählung Position',Updated=TO_TIMESTAMP('2018-03-08 18:53:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=256
+;
+
+-- 2018-03-08T18:53:45.955
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Description='Bestandszählung',Updated=TO_TIMESTAMP('2018-03-08 18:53:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=255
+;
+
+-- 2018-03-08T18:55:40.429
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Bestandszählungs Position',Updated=TO_TIMESTAMP('2018-03-08 18:55:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=256
+;
+
