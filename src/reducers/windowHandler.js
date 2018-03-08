@@ -1,5 +1,4 @@
 import update from 'immutability-helper';
-import { map } from 'lodash';
 import { Map, List } from 'immutable';
 
 import {
@@ -242,13 +241,14 @@ export default function windowHandler(state = initialState, action) {
           },
         },
       });
+    /* eslint-disable no-case-declarations */
     case ADD_ROW_DATA:
       let addRowData = Map();
 
-      map(action.data, (item, key) => {
+      for (const [key, item] of Object.entries(action.data)) {
         const arrayItem = item.length ? item : [];
         addRowData = addRowData.set(key, List(arrayItem));
-      });
+      }
 
       return {
         ...state,
@@ -258,7 +258,10 @@ export default function windowHandler(state = initialState, action) {
         },
       };
     case ADD_NEW_ROW:
-      const newRowData = state[action.scope].rowData.update(`${action.tabid}`, list => list.push(action.item));
+      const newRowData = state[action.scope].rowData.update(
+        `${action.tabid}`,
+        list => list.push(action.item)
+      );
 
       return {
         ...state,
@@ -268,7 +271,8 @@ export default function windowHandler(state = initialState, action) {
         },
       };
     case DELETE_ROW:
-      const deletedRowData = state[action.scope].rowData.update(`${action.tabid}`,
+      const deletedRowData = state[action.scope].rowData.update(
+        `${action.tabid}`,
         list => list.filter(item => item.rowId !== action.rowid)
       );
 
@@ -322,25 +326,27 @@ export default function windowHandler(state = initialState, action) {
     case UPDATE_ROW_FIELD_PROPERTY: {
       const { scope, tabid, rowid, property } = action;
       const scState = state[scope];
+      const scRowData = scState.rowData.get(`${tabid}`);
 
-      if (scState && scState.rowData && scState.rowData.get(`${tabid}`)) {
-        const scRowData = scState.rowData.get(`${tabid}`);
-
-        const updateRowFieldProperty = state[action.scope].rowData.update(`${tabid}`,
-          list => list.map((item, idx) =>
-            item.rowId !== action.rowid
-              ? {
-                  ...item,
-                  fieldsByName: {
-                    ...item.fieldsByName,
-                    [property]: {
-                      ...item.fieldsByName[property],
-                      ...action.item,
-                    },
-                  },
-                }
-              : item
-          )
+      if (scState && scState.rowData && scRowData) {
+        const updateRowFieldProperty = state[action.scope].rowData.update(
+          `${tabid}`,
+          list =>
+            list.map(
+              item =>
+                item.rowId !== rowid
+                  ? {
+                      ...item,
+                      fieldsByName: {
+                        ...item.fieldsByName,
+                        [property]: {
+                          ...item.fieldsByName[property],
+                          ...action.item,
+                        },
+                      },
+                    }
+                  : item
+            )
         );
 
         return {
@@ -355,15 +361,18 @@ export default function windowHandler(state = initialState, action) {
       }
     }
     case UPDATE_ROW_PROPERTY:
-      const updateRowPropertyData = state[action.scope].rowData.update(`${action.tabid}`,
-        list => list.map((item, idx) =>
-          item.rowId === action.rowid
-            ? {
-                ...item,
-                [action.property]: action.item,
-              }
-            : item
-        )
+      const updateRowPropertyData = state[action.scope].rowData.update(
+        `${action.tabid}`,
+        list =>
+          list.map(
+            item =>
+              item.rowId === action.rowid
+                ? {
+                    ...item,
+                    [action.property]: action.item,
+                  }
+                : item
+          )
       );
 
       return {
@@ -374,15 +383,18 @@ export default function windowHandler(state = initialState, action) {
         },
       };
     case UPDATE_ROW_STATUS:
-      const updateRowStatusData = state[action.scope].rowData.update(`${action.tabid}`,
-        list => list.map((item, idx) =>
-          item.rowId !== action.rowid
-            ? {
-                ...item,
-                saveStatus: action.saveStatus,
-              }
-            : item
-        )
+      const updateRowStatusData = state[action.scope].rowData.update(
+        `${action.tabid}`,
+        list =>
+          list.map(
+            item =>
+              item.rowId !== action.rowid
+                ? {
+                    ...item,
+                    saveStatus: action.saveStatus,
+                  }
+                : item
+          )
       );
 
       return {
@@ -392,6 +404,7 @@ export default function windowHandler(state = initialState, action) {
           rowData: updateRowStatusData,
         },
       };
+    /* eslint-enable no-case-declarations */
     case UPDATE_DATA_VALID_STATUS:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {

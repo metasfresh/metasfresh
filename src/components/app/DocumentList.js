@@ -477,8 +477,8 @@ class DocumentList extends Component {
       pageLength: this.pageLength,
       orderBy: sortingQuery,
     }).then(response => {
-      const result = List(response.data.result)
-      result.hashCode()
+      const result = List(response.data.result);
+      result.hashCode();
 
       const selection = getSelectionDirect(selections, windowType, viewId);
       const forceSelection =

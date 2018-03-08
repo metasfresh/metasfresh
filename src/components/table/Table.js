@@ -236,7 +236,9 @@ class Table extends Component {
         }
       );
     } else {
-      const rowsData = rowData.get(`${tabid}`) ? rowData.get(`${tabid}`).toArray() : [];
+      const rowsData = rowData.get(`${tabid}`)
+        ? rowData.get(`${tabid}`).toArray()
+        : [];
       this.setState({
         rows: rowsData,
         pendingInit: !rowData.get(`${tabid}`),
@@ -382,7 +384,6 @@ class Table extends Component {
     );
 
     if (tabInfo) {
-      
       dispatch(
         selectTableItems({
           windowType: type,
