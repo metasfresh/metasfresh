@@ -17,7 +17,7 @@ import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
-import org.adempiere.impexp.product.CreateProductPriceCommand;
+import org.adempiere.impexp.product.ProductPriceImporter;
 import org.adempiere.impexp.product.MProductImportTableSqlUpdater;
 import org.adempiere.impexp.product.ProductPriceRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -373,7 +373,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		final ProductPriceImporter command = new ProductPriceImporter(request);
 		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
@@ -387,7 +387,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		final ProductPriceImporter command = new ProductPriceImporter(request);
 		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
@@ -401,7 +401,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		final ProductPriceImporter command = new ProductPriceImporter(request);
 		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
@@ -415,7 +415,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		final ProductPriceImporter command = new ProductPriceImporter(request);
 		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
@@ -429,7 +429,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		final ProductPriceImporter command = new ProductPriceImporter(request);
 		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
@@ -443,7 +443,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		final ProductPriceImporter command = new ProductPriceImporter(request);
 		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 

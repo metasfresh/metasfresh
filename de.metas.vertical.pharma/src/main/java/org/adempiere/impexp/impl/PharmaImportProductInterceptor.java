@@ -8,7 +8,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.impexp.IImportProcess;
-import org.adempiere.impexp.product.CreateProductPriceCommand;
+import org.adempiere.impexp.product.ProductPriceImporter;
 import org.adempiere.impexp.product.ProductPriceRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -111,7 +111,7 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		final ProductPriceImporter command = new ProductPriceImporter(request);
 		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
@@ -125,7 +125,7 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
-		final CreateProductPriceCommand command = new CreateProductPriceCommand(request);
+		final ProductPriceImporter command = new ProductPriceImporter(request);
 		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 

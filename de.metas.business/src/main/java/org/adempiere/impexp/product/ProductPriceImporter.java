@@ -45,12 +45,12 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class CreateProductPriceCommand
+public class ProductPriceImporter
 {
 
-	final ProductPriceRequest request;
+	private final ProductPriceRequest request;
 
-	public CreateProductPriceCommand(@NonNull final ProductPriceRequest request)
+	public ProductPriceImporter(@NonNull final ProductPriceRequest request)
 	{
 		this.request = request;
 	}
