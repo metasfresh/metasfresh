@@ -3,6 +3,8 @@ package de.metas.order.compensationGroup;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -36,7 +38,9 @@ public class GroupId
 		return new GroupId(documentTableName, documentId, orderCompensationGroupId);
 	}
 
+	@Getter(AccessLevel.PRIVATE)
 	private final String documentTableName;
+	@Getter(AccessLevel.PRIVATE)
 	private final int documentId;
 	private final int orderCompensationGroupId;
 
@@ -53,7 +57,7 @@ public class GroupId
 
 	public void assertDocumentTableName(final String expectedDocumentTableName)
 	{
-		if (!documentTableName.equals(expectedDocumentTableName))
+		if (!getDocumentTableName().equals(expectedDocumentTableName))
 		{
 			throw new AdempiereException("Invalid group document table name: " + this + ". Expected " + expectedDocumentTableName);
 		}

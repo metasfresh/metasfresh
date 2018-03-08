@@ -83,6 +83,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
@@ -94,6 +95,7 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 		OrderGroupRepository.class,
 		OrderGroupCompensationChangesHandler.class,
 		GroupTemplateRepository.class,
+		GroupCompensationLineCreateRequestFactory.class,
 		PPOrderPojoConverter.class,
 		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class
 		})

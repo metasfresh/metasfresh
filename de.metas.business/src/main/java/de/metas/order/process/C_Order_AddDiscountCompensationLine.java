@@ -1,10 +1,12 @@
 package de.metas.order.process;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequest;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
+import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupTemplateLine;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
@@ -14,7 +16,7 @@ import de.metas.process.ProcessPreconditionsResolution;
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,49 +34,39 @@ import de.metas.process.ProcessPreconditionsResolution;
  * #L%
  */
 
-public class C_Order_CreateCompensationGroup extends OrderCompensationGroupProcess
+/**
+ * Add compensation order line to existing group.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ */
+public class C_Order_AddDiscountCompensationLine extends OrderCompensationGroupProcess
 {
+	@Autowired
+	private GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
+
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_ID, mandatory = true)
 	private int compensationProductId;
-
-	@Param(parameterName = I_M_Product_Category.COLUMNNAME_M_Product_Category_ID, mandatory = false)
-	private I_M_Product_Category productCategory;
-
-	@Param(parameterName = "Name", mandatory = false)
-	private String groupName;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		return acceptIfEligibleOrder(context)
-				.and(() -> acceptIfOrderLinesNotInGroup(context));
+				.and(() -> acceptIfOrderLinesHaveSameGroupId(context));
 	}
 
 	@Override
 	protected String doIt()
 	{
-		groupsRepo.prepareNewGroup()
-				.linesToGroup(getSelectedOrderLineIds())
-				.groupTemplate(createNewGroupTemplate())
-				.createGroup();
-
+		final GroupId groupId = groupsRepo.extractSingleGroupIdFromOrderLineIds(getSelectedOrderLineIds());
+		final Group group = groupsRepo.retrieveGroup(groupId);
+		group.addNewCompensationLine(createGroupCompensationLineCreateRequest(group));
+		groupsRepo.saveGroup(group);
 		return MSG_OK;
 	}
 
-	private GroupTemplate createNewGroupTemplate()
+	private GroupCompensationLineCreateRequest createGroupCompensationLineCreateRequest(final Group group)
 	{
-		String groupNameEffective = this.groupName;
-		if (Check.isEmpty(groupNameEffective, true) && productCategory != null)
-		{
-			groupNameEffective = productCategory.getName();
-		}
-
-		return GroupTemplate.builder()
-				.name(groupNameEffective)
-				.productCategoryId(productCategory != null ? productCategory.getM_Product_Category_ID() : 0)
-				.line(GroupTemplateLine.builder()
-						.productId(compensationProductId)
-						.build())
-				.build();
+		final GroupTemplateLine templateLine = GroupTemplateLine.ofProductId(compensationProductId);
+		return compensationLineCreateRequestFactory.createGroupCompensationLineCreateRequest(templateLine, group);
 	}
 }

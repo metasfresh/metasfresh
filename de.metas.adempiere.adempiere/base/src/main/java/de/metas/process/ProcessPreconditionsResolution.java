@@ -1,5 +1,7 @@
 package de.metas.process;
 
+import java.util.function.Supplier;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
@@ -41,7 +43,7 @@ public final class ProcessPreconditionsResolution
 	 * {@code AD_Message} value that is used by {@link #rejectBecauseNotSingleSelection()}. This constant can also be used with {@link #rejectWithInternalReason(String)}.
 	 */
 	public static final String MSG_ONLY_ONE_SELECTED_ROW_ALLOWED = "ProcessPreconditionsResolution_OnlyOneSelectedRowAllowed";
-	
+
 	/**
 	 * {@code AD_Message} value that is used by {@link #rejectBecauseNoSelection()}. This constant can also be used with {@link #rejectWithInternalReason(String)}.
 	 */
@@ -122,7 +124,7 @@ public final class ProcessPreconditionsResolution
 	public static final ProcessPreconditionsResolution rejectBecauseNotSingleSelection()
 	{
 		final boolean accepted = false;
-		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ONLY_ONE_SELECTED_ROW_ALLOWED); 
+		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ONLY_ONE_SELECTED_ROW_ALLOWED);
 		final boolean internal = false;
 		return new ProcessPreconditionsResolution(accepted, reason, internal);
 	}
@@ -310,6 +312,16 @@ public final class ProcessPreconditionsResolution
 		return toBuilder()
 				.setCaptionOverride(captionOverrideNew)
 				.build();
+	}
+
+	public ProcessPreconditionsResolution and(Supplier<ProcessPreconditionsResolution> resolutionSupplier)
+	{
+		if (isRejected())
+		{
+			return this;
+		}
+
+		return resolutionSupplier.get();
 	}
 
 }

@@ -40,7 +40,7 @@ import de.metas.logging.LogManager;
 public final class POInfoColumn implements Serializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1667303121090497293L;
 
@@ -70,15 +70,27 @@ public final class POInfoColumn implements Serializable
 	 * @param isAllowLogging allow logging
 	 */
 	public POInfoColumn(
-			int ad_Column_ID, String tableName, String columnName, String columnSQL, int displayType,
-			boolean isMandatory, boolean isUpdateable, String defaultLogic,
-			String columnLabel, String columnDescription,
-			boolean isKey, boolean isParent,
-			int ad_Reference_Value_ID, int AD_Val_Rule_ID,
-			int fieldLength, String valueMin, String valueMax,
-			boolean isTranslated, boolean isEncrypted, boolean isAllowLogging)
+			int ad_Column_ID,
+			String tableName,
+			String columnName,
+			String columnSQL,
+			int displayType,
+			boolean isMandatory,
+			boolean isUpdateable,
+			String defaultLogic,
+			String columnLabel,
+			String columnDescription,
+			boolean isKey,
+			boolean isParent,
+			int ad_Reference_Value_ID,
+			int AD_Val_Rule_ID,
+			int fieldLength,
+			String valueMin,
+			String valueMax,
+			boolean isTranslated,
+			boolean isEncrypted,
+			boolean isAllowLogging)
 	{
-		super();
 		AD_Column_ID = ad_Column_ID;
 		ColumnName = columnName;
 		TableName = tableName;
@@ -160,7 +172,7 @@ public final class POInfoColumn implements Serializable
 
 	/**
 	 * Return true only for Search display type
-	 * 
+	 *
 	 * @param displayType
 	 * @return
 	 */
@@ -175,7 +187,7 @@ public final class POInfoColumn implements Serializable
 
 	/**
 	 * Return true only for Table display type
-	 * 
+	 *
 	 * @param displayType
 	 * @return
 	 */
@@ -192,9 +204,9 @@ public final class POInfoColumn implements Serializable
 	final int AD_Column_ID;
 	/** Column Name */
 	private final String ColumnName;
-	
+
 	private final String TableName;
-	
+
 	/** Virtual Column SQL */
 	private final String ColumnSQL;
 	/** Is Virtual Column */
@@ -252,13 +264,13 @@ public final class POInfoColumn implements Serializable
 	/* package */boolean IsSelectionColumn;
 
 	private final String sqlColumnForSelect;
-	
+
 	/** Cached {@link MLookupInfo} for {@link Env#WINDOW_None} (most used case) */
 	private Optional<MLookupInfo> _lookupInfoForWindowNone = null;
 
 	/**
 	 * String representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -336,12 +348,12 @@ public final class POInfoColumn implements Serializable
 	{
 		return DisplayType;
 	}
-	
+
 	public int getAD_Reference_Value_ID()
 	{
 		return AD_Reference_Value_ID;
 	}
-	
+
 	public boolean isSelectionColumn()
 	{
 		return IsSelectionColumn;
@@ -351,22 +363,22 @@ public final class POInfoColumn implements Serializable
 	{
 		return IsMandatory;
 	}
-	
+
 	public boolean isParent()
 	{
 		return IsParent;
 	}
-	
+
 	public int getAD_Val_Rule_ID()
 	{
 		return AD_Val_Rule_ID;
 	}
-	
+
 	public boolean isLookup()
 	{
 		return org.compiere.util.DisplayType.isLookup(DisplayType);
 	}
-	
+
 	public String getReferencedTableNameOrNull()
 	{
 		// Special lookups (Location, Locator etc)
@@ -382,11 +394,11 @@ public final class POInfoColumn implements Serializable
 		{
 			return lookupInfo.getTableName();
 		}
-		
+
 		return null;
 	}
 
-	
+
 	public MLookupInfo getLookupInfo(final int windowNo)
 	{
 		//
@@ -409,7 +421,7 @@ public final class POInfoColumn implements Serializable
 				}
 				return _lookupInfoForWindowNone.orElse(null);
 			}
-			
+
 			final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(
 					windowNo
 					, DisplayType
@@ -425,7 +437,7 @@ public final class POInfoColumn implements Serializable
 			return null;
 		}
 	}
-	
+
 	public Lookup getLookup(final Properties ctx, final int windowNo)
 	{
 		//
@@ -439,11 +451,11 @@ public final class POInfoColumn implements Serializable
 				{
 					return null;
 				}
-				
+
 				final Lookup lookup = MLookupFactory.ofLookupInfo(ctx, lookupInfo, AD_Column_ID);
 				return lookup;
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				return null;
 			}
@@ -452,6 +464,6 @@ public final class POInfoColumn implements Serializable
 		{
 			return null;
 		}
-		
+
 	}
 }	// POInfoColumn

@@ -41,6 +41,8 @@ public final class GroupCompensationLineCreateRequest
 	private final GroupCompensationAmtType amtType;
 
 	private final BigDecimal percentage;
-	private BigDecimal qty;
-	private BigDecimal price;
+	private final BigDecimal qty;
+	private final BigDecimal price;
+	
+	private final int groupTemplateLineId;
 }

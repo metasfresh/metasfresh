@@ -20,7 +20,9 @@ import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupCompensationType;
+import de.metas.order.compensationGroup.GroupCreator;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupRepository;
@@ -54,6 +56,18 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 {
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
+
+	public InvoiceCandidateGroupRepository(@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory)
+	{
+		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
+	}
+
+	@Override
+	public GroupCreator prepareNewGroup()
+	{
+		return new GroupCreator(this, compensationLineCreateRequestFactory);
+	}
 
 	@Override
 	public Group retrieveGroup(final GroupId groupId)
@@ -166,7 +180,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	public GroupId extractGroupId(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		InvoiceCandidateCompensationGroupUtils.assertInGroup(invoiceCandidate);
-		return GroupId.of(I_C_Order.Table_Name, invoiceCandidate.getC_Order_ID(), invoiceCandidate.getC_Order_CompensationGroup_ID());
+		return OrderGroupRepository.createGroupId(invoiceCandidate.getC_Order_ID(), invoiceCandidate.getC_Order_CompensationGroup_ID());
 	}
 
 	@Override
