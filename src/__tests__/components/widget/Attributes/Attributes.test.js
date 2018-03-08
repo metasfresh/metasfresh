@@ -53,7 +53,7 @@ describe('Attributes component', () => {
         } catch (e) {
           done.fail(e);
         }
-      }, 100);
+      }, 1000);
     });
 
     it.skip('keydown triggers onHandleKeyDown', () => {

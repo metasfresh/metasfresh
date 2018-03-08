@@ -16,25 +16,19 @@ export default class Shortcut extends PureComponent {
     handler: PropTypes.func.isRequired,
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      name: props.name,
-      handler: props.handler,
-    };
-  }
-
   componentWillMount() {
     const { subscribe } = this.context.shortcuts;
-    const { name, handler } = this.state;
+    const { name, handler } = this.props;
+
+    this.name = name;
+    this.handler = handler;
 
     subscribe(name, handler);
   }
 
   componentWillUnmount() {
     const { unsubscribe } = this.context.shortcuts;
-    const { name, handler } = this.state;
+    const { name, handler } = this;
 
     unsubscribe(name, handler);
   }
