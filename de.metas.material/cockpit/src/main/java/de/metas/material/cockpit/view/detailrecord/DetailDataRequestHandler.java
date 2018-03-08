@@ -2,6 +2,7 @@ package de.metas.material.cockpit.view.detailrecord;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.util.NumberUtils.stripTrailingDecimalZeros;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -53,8 +54,8 @@ public class DetailDataRequestHandler
 		documentDetailRecord.setM_ReceiptSchedule_ID(detailDataRecordIdentifier.getReceiptScheduleId());
 
 		documentDetailRecord.setC_BPartner_ID(insertDetailRequest.getBPartnerId());
-		documentDetailRecord.setQtyOrdered(insertDetailRequest.getQtyOrdered());
-		documentDetailRecord.setQtyReserved(insertDetailRequest.getQtyReserved());
+		documentDetailRecord.setQtyOrdered(stripTrailingDecimalZeros(insertDetailRequest.getQtyOrdered()));
+		documentDetailRecord.setQtyReserved(stripTrailingDecimalZeros(insertDetailRequest.getQtyReserved()));
 
 		documentDetailRecord.setC_Order_ID(insertDetailRequest.getOrderId());
 		documentDetailRecord.setC_OrderLine_ID(insertDetailRequest.getOrderLineId());
@@ -85,8 +86,12 @@ public class DetailDataRequestHandler
 	{
 		final ICompositeQueryUpdater<I_MD_Cockpit_DocumentDetail> updater = Services.get(IQueryBL.class)
 				.createCompositeQueryUpdater(I_MD_Cockpit_DocumentDetail.class)
-				.addSetColumnValue(I_MD_Cockpit_DocumentDetail.COLUMNNAME_QtyOrdered, updateDetailRequest.getQtyOrdered())
-				.addSetColumnValue(I_MD_Cockpit_DocumentDetail.COLUMNNAME_QtyReserved, updateDetailRequest.getQtyReserved());
+				.addSetColumnValue(
+						I_MD_Cockpit_DocumentDetail.COLUMNNAME_QtyOrdered,
+						stripTrailingDecimalZeros(updateDetailRequest.getQtyOrdered()))
+				.addSetColumnValue(
+						I_MD_Cockpit_DocumentDetail.COLUMNNAME_QtyReserved,
+						stripTrailingDecimalZeros(updateDetailRequest.getQtyReserved()));
 
 		return updateDetailRequest.getDetailDataRecordIdentifier()
 				.createQuery()

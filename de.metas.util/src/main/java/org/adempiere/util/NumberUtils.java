@@ -10,12 +10,12 @@ package org.adempiere.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,9 +27,9 @@ import java.math.RoundingMode;
 
 /**
  * Number Utils
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public final class NumberUtils
 {
@@ -40,9 +40,9 @@ public final class NumberUtils
 
 	/**
 	 * Remove trailing zeros after decimal separator
-	 * 
+	 *
 	 * @param bd
-	 * @return <code>bd</code> without trailing zeros after separator; if argument is NULL then NULL will be retu
+	 * @return <code>bd</code> without trailing zeros after separator; if argument is NULL then NULL will be returned
 	 */
 	public static BigDecimal stripTrailingDecimalZeros(final BigDecimal bd)
 	{
@@ -75,9 +75,9 @@ public final class NumberUtils
 
 	/**
 	 * Converts given <code>bd</code> to a big decimal which has at least <code>minScale</code> decimals.
-	 * 
+	 *
 	 * If it has more decimals (and not trailing zeros) the value will not be changed.
-	 * 
+	 *
 	 * @param bd
 	 * @param minScale
 	 */
@@ -100,7 +100,7 @@ public final class NumberUtils
 
 	/**
 	 * Creates the error margin absolute value for given scale.
-	 * 
+	 *
 	 * e.g.
 	 * <ul>
 	 * <li>for scale=0 it will return 0
@@ -109,7 +109,7 @@ public final class NumberUtils
 	 * <li>for scale=-1 it will return 10
 	 * <li>for scale=-2 it will return 100
 	 * </ul>
-	 * 
+	 *
 	 * @param scale
 	 * @return error mergin (absolute value)
 	 */
@@ -124,7 +124,7 @@ public final class NumberUtils
 
 	/**
 	 * Converts given <code>value</code> to BigDecimal.
-	 * 
+	 *
 	 * @param value
 	 * @param defaultValue
 	 * @return
@@ -150,7 +150,7 @@ public final class NumberUtils
 			{
 				return new BigDecimal(valueStr);
 			}
-			catch (NumberFormatException e)
+			catch (final NumberFormatException e)
 			{
 				System.err.println("Cannot convert " + value + " to BigDecimal.");
 				e.printStackTrace();
@@ -162,7 +162,7 @@ public final class NumberUtils
 
 	/**
 	 * Converts given <code>value</code> to integer.
-	 * 
+	 *
 	 * @param value
 	 * @param defaultValue
 	 * @return
@@ -188,7 +188,7 @@ public final class NumberUtils
 				final BigDecimal bd = new BigDecimal(value.toString());
 				return bd.intValue();
 			}
-			catch (NumberFormatException e)
+			catch (final NumberFormatException e)
 			{
 				System.err.println("Cannot convert " + value + " to integer.");
 				e.printStackTrace();
