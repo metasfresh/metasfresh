@@ -68,7 +68,7 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Retrieve inventory lines
-		final List<I_M_InventoryLine> linesForInventory = inventoryDAO.retrieveLinesForInventory(inventory);
+		final List<I_M_InventoryLine> linesForInventory = inventoryDAO.retrieveLinesForInventoryId(inventory.getM_Inventory_ID());
 		if (linesForInventory.isEmpty())
 		{
 			return ImmutableList.of();
@@ -113,7 +113,7 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 
 		for (final IInvoiceCandidateHandler handler : inventoryLineHandlers)
 		{
-			for (final I_M_InventoryLine line : inventoryDAO.retrieveLinesForInventory(inventory))
+			for (final I_M_InventoryLine line : inventoryDAO.retrieveLinesForInventoryId(inventory.getM_Inventory_ID()))
 			{
 				handler.invalidateCandidatesFor(line);
 			}

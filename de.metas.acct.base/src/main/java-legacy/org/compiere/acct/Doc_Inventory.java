@@ -19,13 +19,16 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import org.adempiere.minventory.api.IInventoryBL;
+import org.adempiere.minventory.api.IInventoryDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MInventory;
-import org.compiere.model.MInventoryLine;
 import org.compiere.model.MProduct;
 import org.compiere.model.ProductCost;
 import org.compiere.util.Env;
@@ -67,6 +70,7 @@ public class Doc_Inventory extends Doc
 	 *  Load Document Details
 	 *  @return error message or null
 	 */
+	@Override
 	protected String loadDocumentDetails()
 	{
 		setC_Currency_ID (NO_CURRENCY);
@@ -88,27 +92,18 @@ public class Doc_Inventory extends Doc
 	 */
 	private DocLine[] loadLines(MInventory inventory)
 	{
-		ArrayList<DocLine> list = new ArrayList<DocLine>();
-		MInventoryLine[] lines = inventory.getLines(false);
-		for (int i = 0; i < lines.length; i++)
+		ArrayList<DocLine> list = new ArrayList<>();
+		for (final I_M_InventoryLine line : Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(inventory.getM_Inventory_ID()))
 		{
-			MInventoryLine line = lines[i];
-			//	nothing to post
-			if (line.getQtyBook().compareTo(line.getQtyCount()) == 0
-				&& line.getQtyInternalUse().signum() == 0)
-				continue;
-			//
-			DocLine docLine = new DocLine (line, this); 
-			BigDecimal Qty = line.getQtyInternalUse();
-			if (Qty.signum() != 0)
-				Qty = Qty.negate();		//	Internal Use entered positive
-			else
+			final BigDecimal qty = Services.get(IInventoryBL.class).getMovementQty(line);
+			if(qty.signum() == 0)
 			{
-				BigDecimal QtyBook = line.getQtyBook();
-				BigDecimal QtyCount = line.getQtyCount();
-				Qty = QtyCount.subtract(QtyBook);
+				//	nothing to post
+				continue;
 			}
-			docLine.setQty (Qty, false);		// -5 => -5
+			//
+			DocLine docLine = new DocLine (InterfaceWrapperHelper.getPO(line), this); 
+			docLine.setQty (qty, false);		// -5 => -5
 			docLine.setReversalLine_ID(line.getReversalLine_ID());
 			log.debug(docLine.toString());
 			list.add (docLine);
@@ -124,6 +119,7 @@ public class Doc_Inventory extends Doc
 	 *  Get Balance
 	 *  @return Zero (always balanced)
 	 */
+	@Override
 	public BigDecimal getBalance()
 	{
 		BigDecimal retValue = Env.ZERO;
@@ -141,6 +137,7 @@ public class Doc_Inventory extends Doc
 	 *  @param as account schema
 	 *  @return Fact
 	 */
+	@Override
 	public ArrayList<Fact> createFacts (MAcctSchema as)
 	{
 		//  create Fact Header
@@ -225,7 +222,7 @@ public class Doc_Inventory extends Doc
 				line.getDescription(), getTrxName());*/
 		}
 		//
-		ArrayList<Fact> facts = new ArrayList<Fact>();
+		ArrayList<Fact> facts = new ArrayList<>();
 		facts.add(fact);
 		return facts;
 	}   //  createFact
