@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.impl;
+package de.metas.handlingunits.inventory.impl;
 
 /*
  * #%L
@@ -66,6 +66,8 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.exceptions.HUException;
@@ -98,7 +100,7 @@ import lombok.NonNull;
  *
  * @task http://dewiki908/mediawiki/index.php/07050_Eigenverbrauch_metas_in_Existing_Window_Handling_Unit_Pos
  */
-public class InventoryAllocationDestination implements IAllocationDestination
+class InventoryAllocationDestination implements IAllocationDestination
 {
 	// services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);

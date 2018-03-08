@@ -25,7 +25,6 @@ import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.InventoryAllocationDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.inventory.event.InventoryProcessedEventBus;
