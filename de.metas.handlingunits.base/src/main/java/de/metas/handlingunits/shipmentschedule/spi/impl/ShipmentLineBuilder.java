@@ -426,7 +426,6 @@ import lombok.NonNull;
 	 */
 	private final void createShipmentLineHUAssignments(final I_M_InOutLine shipmentLine)
 	{
-		//
 		// Assign Handling Units to shipment line
 		boolean haveHUAssigments = false;
 		for (final HUTopLevel huToAssign : husToAssign)
