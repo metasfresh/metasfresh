@@ -29,10 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -46,11 +43,9 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Inventory;
@@ -119,19 +114,12 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
-	private final Map<Integer, ISnapshotProducer<I_M_HU>> huSnapshotProducerByInventoryId = new HashMap<>();
-
-	private final I_M_Warehouse warehouse;
+	private final int warehouseId;
+	private final int warehouseLocatorId;
+	private final int inventoryDocTypeId;
 	private final int chargeId;
-	private final I_M_Locator defaultLocator;
 
 	private final List<I_M_Inventory> inventories = new ArrayList<>();
-
-	private final I_C_DocType inventoryDocType;
-
-	/**
-	 * There will be an inventory entry for each partner
-	 */
 	private final Map<Integer, I_M_Inventory> orderIdToInventory = new HashMap<>();
 
 	//
@@ -142,20 +130,17 @@ class InventoryAllocationDestination implements IAllocationDestination
 	// NOTE: using a shared collector for counting because we want to avoid counting same HU in multiple places
 	private HUPackingMaterialsCollector pmCollectorForCountingTUs; // will be created on demand
 
-	/**
-	 * Map the inventory lines to the base inout lines
-	 */
+	/** Map the inventory lines to the base receipt lines */
 	private final Map<Integer, I_M_InventoryLine> inOutLineId2InventoryLine = new HashMap<>();
 
-	public InventoryAllocationDestination(@NonNull final I_M_Warehouse warehouse, @Nullable final I_C_DocType inventoryDocType)
+	private final Map<Integer, ISnapshotProducer<I_M_HU>> huSnapshotProducerByInventoryId = new HashMap<>();
+
+	public InventoryAllocationDestination(@NonNull final I_M_Warehouse warehouse, final int inventoryDocTypeId)
 	{
-		this.warehouse = warehouse;
-		defaultLocator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
-
-		this.inventoryDocType = inventoryDocType;
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(warehouse);
-		chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId(ctx);
+		warehouseId = warehouse.getM_Warehouse_ID();
+		warehouseLocatorId = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse).getM_Locator_ID();
+		this.inventoryDocTypeId = inventoryDocTypeId;
+		chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
 	}
 
 	/** @return created inventory documents */
@@ -167,8 +152,6 @@ class InventoryAllocationDestination implements IAllocationDestination
 	@Override
 	public IAllocationResult load(final IAllocationRequest request)
 	{
-		//
-		// Create result
 		final IMutableAllocationResult result = AllocationUtils.createMutableAllocationResult(request);
 
 		final I_M_HU hu = extractHUOrNull(request);
@@ -400,7 +383,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		inventoryLine.setM_Inventory_ID(inventoryHeader.getM_Inventory_ID());
 		inventoryLine.setM_Product_ID(receiptLine.getM_Product_ID());
 		inventoryLine.setC_Charge_ID(chargeId);
-		inventoryLine.setM_Locator_ID(defaultLocator.getM_Locator_ID());
+		inventoryLine.setM_Locator_ID(warehouseLocatorId);
 		inventoryLine.setM_InOutLine(receiptLine);
 
 		inventoryLine.setC_UOM(receiptLine.getC_UOM());
@@ -426,11 +409,11 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 		final I_M_Inventory inventory = InterfaceWrapperHelper.newInstance(I_M_Inventory.class);
 		inventory.setMovementDate(TimeUtil.asTimestamp(movementDate));
-		inventory.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		inventory.setM_Warehouse_ID(warehouseId);
 
-		if (inventoryDocType != null)
+		if (inventoryDocTypeId > 0)
 		{
-			inventory.setC_DocType_ID(inventoryDocType.getC_DocType_ID());
+			inventory.setC_DocType_ID(inventoryDocTypeId);
 		}
 
 		inventory.setPOReference(purchaseOrder.getPOReference());

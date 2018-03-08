@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.minventory.api.IInventoryBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -39,17 +40,23 @@ import lombok.NonNull;
 
 public class InventoryBL implements IInventoryBL
 {
-
 	public static final String SYSCONFIG_QuickInput_Charge_ID = "de.metas.adempiere.callout.M_Inventory.QuickInput.C_Charge_ID";
 
 	@Override
-	public int getDefaultInternalChargeId(final Properties ctx)
+	public int getDefaultInternalChargeId()
 	{
-		return Services.get(ISysConfigBL.class).getIntValue(
+		final Properties ctx = Env.getCtx();
+		final int chargeId = Services.get(ISysConfigBL.class).getIntValue(
 				SYSCONFIG_QuickInput_Charge_ID,
 				-1, // defaultValue
 				Env.getAD_Client_ID(ctx),
 				Env.getAD_Org_ID(ctx));
+		if (chargeId <= 0)
+		{
+			throw new AdempiereException("@NotFound@ @AD_SysConfig_ID@: " + InventoryBL.SYSCONFIG_QuickInput_Charge_ID);
+		}
+		
+		return chargeId;
 	}
 
 	@Override
