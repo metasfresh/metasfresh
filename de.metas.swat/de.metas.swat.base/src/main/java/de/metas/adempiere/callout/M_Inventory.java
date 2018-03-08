@@ -46,6 +46,7 @@ import de.metas.adempiere.model.I_M_Inventory;
  * @author tsa
  * 
  */
+//FIXME: adapt to webui
 public class M_Inventory extends CalloutEngine
 {
 	
