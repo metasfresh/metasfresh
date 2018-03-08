@@ -1,12 +1,12 @@
 import Moment from 'moment';
 import numeral from 'numeral';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
 
 import MasterWidget from '../widget/MasterWidget';
 
-class TableCell extends Component {
+class TableCell extends PureComponent {
   componentWillReceiveProps(nextProps) {
     const { widgetData, updateRow, readonly, rowId } = this.props;
     // We should avoid highlighting when whole row is exchanged (sorting)

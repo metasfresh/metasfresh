@@ -1,24 +1,11 @@
 import counterpart from 'counterpart';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 
 import PaginationContextShortcuts from '../shortcuts/PaginationContextShortcuts';
 
-const propTypes = {
-  selected: PropTypes.array,
-  handleSelectAll: PropTypes.func,
-  handleSelectRange: PropTypes.func,
-  handleChangePage: PropTypes.func,
-  rowLength: PropTypes.number.isRequired,
-  compressed: PropTypes.any, // Looks like it's not used
-  size: PropTypes.number.isRequired,
-  queryLimitHit: PropTypes.number,
-  pageLength: PropTypes.number.isRequired,
-  disablePaginationShortcuts: PropTypes.bool,
-  page: PropTypes.number.isRequired,
-};
-
-class TablePagination extends Component {
+class TablePagination extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -42,7 +29,6 @@ class TablePagination extends Component {
       handleSelectAll,
       handleSelectRange,
     } = this.props;
-
     const selectedWholePage = selected && selected.length === rowLength;
 
     return selectedWholePage ? handleSelectRange(['all']) : handleSelectAll();
@@ -125,6 +111,7 @@ class TablePagination extends Component {
   renderFirstPartPagination = (pagination, pages) => {
     const { handleChangePage, compressed } = this.props;
     const { firstDotsState, value } = this.state;
+
     pagination.push(
       <li
         className="page-item"
@@ -135,17 +122,22 @@ class TablePagination extends Component {
         }}
       >
         <a
-          className={'page-link ' + (compressed ? 'page-link-compressed ' : '')}
+          className={classnames('page-link', {
+            'page-link-compressed': compressed,
+          })}
         >
           {1}
         </a>
       </li>
     );
+
     pagination.push(
       <li className="page-item page-dots" key={0}>
         {firstDotsState && this.renderGoToPage(pages, value)}
         <a
-          className={'page-link ' + (compressed ? 'page-link-compressed ' : '')}
+          className={classnames('page-link', {
+            'page-link-compressed': compressed,
+          })}
           onClick={() => this.handleFirstDotsState()}
         >
           {'...'}
@@ -162,7 +154,9 @@ class TablePagination extends Component {
       <li className="page-item page-dots" key={99990}>
         {secondDotsState && this.renderGoToPage(pages, value)}
         <a
-          className={'page-link ' + (compressed ? 'page-link-compressed ' : '')}
+          className={classnames('page-link', {
+            'page-link-compressed': compressed,
+          })}
           onClick={() => this.handleSecondDotsState()}
         >
           {'...'}
@@ -179,7 +173,9 @@ class TablePagination extends Component {
         }}
       >
         <a
-          className={'page-link ' + (compressed ? 'page-link-compressed ' : '')}
+          className={classnames('page-link', {
+            'page-link-compressed': compressed,
+          })}
         >
           {pages}
         </a>
@@ -189,10 +185,13 @@ class TablePagination extends Component {
 
   renderPaginationContent = (pagination, page, start, end) => {
     const { handleChangePage, compressed } = this.props;
+
     for (let i = start; i <= end; i++) {
       pagination.push(
         <li
-          className={'page-item ' + (page === i ? 'active' : '')}
+          className={classnames('page-item', {
+            active: page === i,
+          })}
           key={i}
           onClick={() => {
             this.resetGoToPage();
@@ -200,9 +199,9 @@ class TablePagination extends Component {
           }}
         >
           <a
-            className={
-              'page-link ' + (compressed ? 'page-link-compressed ' : '')
-            }
+            className={classnames('page-link', {
+              'page-link-compressed': compressed,
+            })}
           >
             {i}
           </a>
@@ -213,6 +212,7 @@ class TablePagination extends Component {
 
   renderTotalItems = () => {
     const { size, queryLimitHit } = this.props;
+
     return (
       <div className="hidden-sm-down">
         <div>
@@ -225,9 +225,9 @@ class TablePagination extends Component {
 
   renderSelectAll = () => {
     const { selected, size, rowLength, pageLength } = this.props;
-
     const selectedWholePage = selected && selected.length === rowLength;
     const isShowSelectAllItems = size > pageLength;
+
     return (
       <div className="hidden-sm-down">
         <div>
@@ -259,7 +259,9 @@ class TablePagination extends Component {
     return (
       <li className="page-item">
         <a
-          className={'page-link ' + (compressed ? 'page-link-compressed ' : '')}
+          className={classnames('page-link', {
+            'page-link-compressed': compressed,
+          })}
           onClick={() => {
             this.resetGoToPage();
             handleChangePage(left ? 'down' : 'up');
@@ -349,6 +351,18 @@ class TablePagination extends Component {
   }
 }
 
-TablePagination.propTypes = propTypes;
+TablePagination.propTypes = {
+  selected: PropTypes.array,
+  handleSelectAll: PropTypes.func,
+  handleSelectRange: PropTypes.func,
+  handleChangePage: PropTypes.func,
+  rowLength: PropTypes.number.isRequired,
+  compressed: PropTypes.any, // Looks like it's not used
+  size: PropTypes.number.isRequired,
+  queryLimitHit: PropTypes.number,
+  pageLength: PropTypes.number.isRequired,
+  disablePaginationShortcuts: PropTypes.bool,
+  page: PropTypes.number.isRequired,
+};
 
 export default TablePagination;

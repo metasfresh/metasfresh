@@ -100,7 +100,7 @@
     "d3": "4.10.0",
     "file-loader": "~0.8.5",
     "immutability-helper": "^2.1.2",
-    "immutable": "^3.8.2",
+    "immutable": "^4.0.0-rc.9",
     "intro.js": "^2.7.0",
     "intro.js-react": "^0.1.5",
     "lodash": "^4.17.4",
@@ -111,7 +111,6 @@
     "react": "^16.2.0",
     "react-addons-css-transition-group": "~15.6.2",
     "react-addons-transition-group": "~15.6.2",
-    "react-addons-update": "~15.6.2",
     "react-autosuggest": "~9.3.2",
     "react-bootstrap-daterangepicker": "~3.4.1",
     "react-datetime": "^2.11.0",
@@ -133,6 +132,7 @@
     "redux": "~3.7.2",
     "redux-thunk": "~2.2.0",
     "sockjs-client": "1.0.0",
-    "stompjs": "~2.3.3"
+    "stompjs": "~2.3.3",
+    "why-did-you-update": "^0.1.1"
   }
 }

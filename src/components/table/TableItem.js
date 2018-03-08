@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
@@ -9,7 +9,7 @@ import {
 } from '../../constants/Constants';
 import TableCell from './TableCell';
 
-class TableItem extends Component {
+class TableItem extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
