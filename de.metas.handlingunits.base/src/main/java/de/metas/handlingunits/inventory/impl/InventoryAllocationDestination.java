@@ -43,7 +43,6 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -85,7 +84,7 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 import de.metas.inventory.IInventoryBL;
-import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /**
@@ -106,7 +105,6 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final transient IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
-	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -162,14 +160,14 @@ class InventoryAllocationDestination implements IAllocationDestination
 		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
 
 		final Date movementDate = request.getDate(); // to be used for inventory documents
-		final BigDecimal qtySource = request.getQty(); // Qty to add, in request's UOM
-		final BigDecimal qty = getQtyInStockingUOM(request);
+		final Quantity qtySource = request.getQuantity(); // Qty to add, in request's UOM
+		final Quantity qty = getQtyInStockingUOM(request);
 
 		//
 		// For each receipt line which received this HU
 		for (final I_M_InOutLine receiptLine : getReceiptLines(topLevelHU, request.getProductId()))
 		{
-			final BigDecimal qtyToMoveTotal = qty;
+			final BigDecimal qtyToMoveTotal = qty.getQty();
 			final BigDecimal qualityDiscountPerc = huAttributesBL.getQualityDiscountPercent(hu);
 			final BigDecimal qtyToMoveInDispute = qtyToMoveTotal.multiply(qualityDiscountPerc);
 			final BigDecimal qtyToMove = qtyToMoveTotal.subtract(qtyToMoveInDispute);
@@ -232,7 +230,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			//
 			// Update the result
 			{
-				result.subtractAllocatedQty(qtySource);
+				result.subtractAllocatedQty(qtySource.getQty());
 
 				final IHUTransactionCandidate trx = new HUTransactionCandidate(
 						inventoryLine, // Reference model
@@ -261,16 +259,10 @@ class InventoryAllocationDestination implements IAllocationDestination
 		return huItem.getM_HU();
 	}
 
-	private BigDecimal getQtyInStockingUOM(final IAllocationRequest request)
+	private Quantity getQtyInStockingUOM(final IAllocationRequest request)
 	{
-		final BigDecimal qtySource = request.getQty(); // Qty to add, in request's UOM
-		final I_M_Product product = request.getProduct();
-		final I_C_UOM uomTo = productBL.getStockingUOM(product);
-		return uomConversionBL.convertQty(product,
-				qtySource,
-				request.getC_UOM(),// uomFrom
-				uomTo // uomTo
-		);
+		final Quantity qtySource = request.getQuantity(); // Qty to add, in request's UOM
+		return uomConversionBL.convertToProductUOM(qtySource, request.getProductId());
 	}
 
 	private List<I_M_InOutLine> getReceiptLines(final I_M_HU topLevelHU, final int productId)
