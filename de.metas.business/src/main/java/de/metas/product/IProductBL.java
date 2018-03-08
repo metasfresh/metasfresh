@@ -13,15 +13,14 @@ package de.metas.product;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -39,7 +38,7 @@ import org.compiere.model.I_M_Product;
 public interface IProductBL extends ISingletonService
 {
 	int getUOMPrecision(I_M_Product product);
-	
+
 	default int getUOMPrecision(final int productId)
 	{
 		Check.assume(productId > 0, "productId > 0");
@@ -67,9 +66,8 @@ public interface IProductBL extends ISingletonService
 	 * @return true if stocked and item
 	 */
 	boolean isStocked(I_M_Product product);
-	
-	boolean isStocked(int productId);
 
+	boolean isStocked(int productId);
 
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
@@ -114,13 +112,11 @@ public interface IProductBL extends ISingletonService
 	 */
 	String getCostingMethod(I_M_Product product, I_C_AcctSchema as);
 
-	/**
-	 * Gets UOM used in material storage of given <code>product</code>.
-	 *
-	 * @param product
-	 * @return UOM; never return null;
-	 */
+	/** @return UOM used in material storage; never return null; */
 	I_C_UOM getStockingUOM(I_M_Product product);
+
+	/** @return UOM used in material storage; never return null; */
+	I_C_UOM getStockingUOM(int productId);
 
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.
