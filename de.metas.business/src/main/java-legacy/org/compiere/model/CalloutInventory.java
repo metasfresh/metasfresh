@@ -21,8 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -33,6 +31,7 @@ import org.compiere.util.Env;
  *  @author Jorg Janke
  *  @version $Id: CalloutInventory.java,v 1.2 2006/07/30 00:51:03 jjanke Exp $
  */
+// TODO: consider dropping this callout
 public class CalloutInventory extends CalloutEngine
 {
 	/**
