@@ -112,8 +112,8 @@ public class PPOrderPojoSupplier
 
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(productPlanningData);
 
-		final BigDecimal ppOrderQuantity = Services.get(IUOMConversionBL.class)
-				.convertToProductUOM(qtyToSupply, mrpContext.getM_Product());
+		final Quantity ppOrderQuantity = Services.get(IUOMConversionBL.class)
+				.convertToProductUOM(qtyToSupply, mrpContext.getM_Product_ID());
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
 				.orgId(mrpContext.getAD_Org_ID())
@@ -130,7 +130,7 @@ public class PPOrderPojoSupplier
 				.datePromised(dateFinishSchedule)
 				.dateStartSchedule(dateStartSchedule)
 
-				.quantity(ppOrderQuantity)
+				.quantity(ppOrderQuantity.getQty())
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
 				.bPartnerId(request.getMrpDemandBPartnerId());
