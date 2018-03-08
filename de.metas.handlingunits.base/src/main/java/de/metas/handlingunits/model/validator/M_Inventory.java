@@ -6,8 +6,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.minventory.api.IInventoryBL;
-import org.adempiere.minventory.api.IInventoryDAO;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -22,6 +20,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
+import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.IInventoryDAO;
 
 /*
  * #%L

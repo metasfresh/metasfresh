@@ -26,7 +26,6 @@ package de.metas.adempiere.callout;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.minventory.api.IInventoryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -39,6 +38,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_M_Inventory;
+import de.metas.inventory.IInventoryBL;
 
 /**
  * Callout for {@link I_M_Inventory} table

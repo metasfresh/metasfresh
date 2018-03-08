@@ -19,8 +19,6 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-import org.adempiere.minventory.api.IInventoryBL;
-import org.adempiere.minventory.api.IInventoryDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Inventory;
@@ -32,6 +30,9 @@ import org.compiere.model.MInventory;
 import org.compiere.model.MProduct;
 import org.compiere.model.ProductCost;
 import org.compiere.util.Env;
+
+import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.IInventoryDAO;
 
 /**
  *  Post Inventory Documents.

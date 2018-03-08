@@ -1,4 +1,4 @@
-package org.adempiere.minventory.api;
+package de.metas.inventory;
 
 import java.util.List;
 

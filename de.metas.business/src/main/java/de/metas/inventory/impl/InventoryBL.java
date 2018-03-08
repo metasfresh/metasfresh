@@ -1,4 +1,4 @@
-package org.adempiere.minventory.api.impl;
+package de.metas.inventory.impl;
 
 import java.math.BigDecimal;
 
@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.minventory.api.IInventoryBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -36,6 +35,7 @@ import org.compiere.model.I_M_InventoryLine;
 import org.compiere.util.Env;
 
 import de.metas.document.engine.IDocument;
+import de.metas.inventory.IInventoryBL;
 import lombok.NonNull;
 
 public class InventoryBL implements IInventoryBL

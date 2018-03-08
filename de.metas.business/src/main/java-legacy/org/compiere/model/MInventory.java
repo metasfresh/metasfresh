@@ -24,8 +24,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.minventory.api.IInventoryBL;
-import org.adempiere.minventory.api.IInventoryDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -39,6 +37,8 @@ import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.IInventoryDAO;
 import de.metas.product.IProductBL;
 
 /**

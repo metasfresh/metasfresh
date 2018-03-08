@@ -22,10 +22,10 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.minventory.api.IInventoryBL;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 
+import de.metas.inventory.IInventoryBL;
 import de.metas.product.IProductBL;
 
 /**

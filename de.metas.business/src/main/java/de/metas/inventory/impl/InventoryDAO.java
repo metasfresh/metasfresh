@@ -1,16 +1,16 @@
-package org.adempiere.minventory.api.impl;
+package de.metas.inventory.impl;
 
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.minventory.api.IInventoryDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InventoryLine;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.inventory.IInventoryDAO;
 import lombok.NonNull;
 
 /*
