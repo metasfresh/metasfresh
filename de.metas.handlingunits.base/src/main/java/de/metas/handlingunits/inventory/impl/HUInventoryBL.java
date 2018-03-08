@@ -8,7 +8,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.minventory.api.IInventoryDAO;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.X_C_DocType;
 
@@ -57,30 +56,15 @@ public class HUInventoryBL implements IHUInventoryBL
 	@Override
 	public boolean isMaterialDisposal(final I_M_Inventory inventory)
 	{
-		// in the case of returns the docSubType is null
-
-		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
-				.getDocTypeOrNull(DocTypeQuery.builder()
+		final int disposalDocTypeId = Services.get(IDocTypeDAO.class)
+				.getDocTypeIdOrNull(DocTypeQuery.builder()
 						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
 						.docSubType(X_C_DocType.DOCSUBTYPE_MaterialDisposal)
-						.isSOTrx(false)
 						.adClientId(inventory.getAD_Client_ID())
 						.adOrgId(inventory.getAD_Org_ID())
 						.build());
-		if (returnsDocType == null)
-		{
-			// there is no material disposal doc type defined in the project. Return false by default
-			return false;
-		}
 
-		if (returnsDocType.getC_DocType_ID() != inventory.getC_DocType_ID())
-		{
-			// the inventory is not a material disposal
-			return false;
-		}
-
-		// the inout is a material disposal
-		return true;
+		return disposalDocTypeId > 0 && disposalDocTypeId == inventory.getC_DocType_ID();
 	}
 
 	@Override
