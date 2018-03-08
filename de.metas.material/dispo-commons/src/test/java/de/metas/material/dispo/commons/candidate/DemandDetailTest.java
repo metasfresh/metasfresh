@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons.candidate;
 import static de.metas.material.event.EventTestHelper.CLIENT_ID;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,7 +58,7 @@ public class DemandDetailTest
 				.orderId(50)
 				.orderLineId(60)
 				.build();
-		final DemandDetail demandDetail = DemandDetail.forDocumentDescriptor(20, orderLineDescriptor);
+		final DemandDetail demandDetail = DemandDetail.forDocumentDescriptor(20, orderLineDescriptor, TEN);
 		assertThat(demandDetail.getShipmentScheduleId()).isEqualTo(20);
 
 		assertThat(demandDetail.getForecastId()).isLessThanOrEqualTo(0);
@@ -67,6 +68,8 @@ public class DemandDetailTest
 
 		assertThat(demandDetail.getOrderId()).isEqualTo(50);
 		assertThat(demandDetail.getOrderLineId()).isEqualTo(60);
+
+		assertThat(demandDetail.getPlannedQty()).isEqualByComparingTo(TEN);
 	}
 
 	@Test
@@ -77,7 +80,7 @@ public class DemandDetailTest
 				.subscriptionProgressId(20)
 				.subscriptionBillBPartnerId(30).build();
 
-		final DemandDetail demandDetail = DemandDetail.forDocumentDescriptor(20, subscriptionLineDescriptor);
+		final DemandDetail demandDetail = DemandDetail.forDocumentDescriptor(20, subscriptionLineDescriptor, TEN);
 
 		assertThat(demandDetail.getShipmentScheduleId()).isEqualTo(20);
 
@@ -88,12 +91,14 @@ public class DemandDetailTest
 
 		assertThat(demandDetail.getOrderId()).isLessThanOrEqualTo(0);
 		assertThat(demandDetail.getOrderLineId()).isLessThanOrEqualTo(0);
+
+		assertThat(demandDetail.getPlannedQty()).isEqualByComparingTo(TEN);
 	}
 
 	@Test
 	public void forForecastLineId()
 	{
-		final DemandDetail demandDetail = DemandDetail.forForecastLineId(30, 20);
+		final DemandDetail demandDetail = DemandDetail.forForecastLineId(30, 20, TEN);
 
 		assertThat(demandDetail.getShipmentScheduleId()).isLessThanOrEqualTo(0);
 
@@ -104,6 +109,8 @@ public class DemandDetailTest
 
 		assertThat(demandDetail.getOrderId()).isLessThanOrEqualTo(0);
 		assertThat(demandDetail.getOrderLineId()).isLessThanOrEqualTo(0);
+
+		assertThat(demandDetail.getPlannedQty()).isEqualByComparingTo(TEN);
 	}
 
 	@Test

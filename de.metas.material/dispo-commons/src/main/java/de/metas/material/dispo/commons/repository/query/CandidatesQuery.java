@@ -9,6 +9,8 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import lombok.Builder;
@@ -73,10 +75,10 @@ public final class CandidatesQuery
 		}
 
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery
-				.ofProductionDetailOrNull(candidate.getProductionDetail());
+				.ofProductionDetailOrNull(ProductionDetail.castOrNull(candidate.getBusinessCaseDetail()));
 
 		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery
-				.ofDistributionDetailOrNull(candidate.getDistributionDetail());
+				.ofDistributionDetailOrNull(DistributionDetail.castOrNull(candidate.getBusinessCaseDetail()));
 
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
 				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(candidate.getMaterialDescriptor()))
