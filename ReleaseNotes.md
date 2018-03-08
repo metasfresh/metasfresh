@@ -36,6 +36,8 @@ Here come the actual release notes:
     * Improvement of the display status of grid fields in edit mode. Now the edit modus and display is left as soon the field is left.
   * [#1653](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1653) Line in modal overlay for creating purchase order from SO disappears
     * Fixes an Issue in Create Purchase Orders from Sales Order Lines. Now it's possible to enter the purchase Quantity again.
+  * [#1658](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1658) Improve WebUI performance
+    * General Performance Improvement for Grid Views in WebUI.
 
 # metasfresh 5.47 (2018-10)
 **release for week 2018-10**
