@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, Fragment } from 'react';
 import { List } from 'immutable';
 import onClickOutside from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
@@ -6,6 +6,9 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 import RawListDropdown from './RawListDropdown';
+
+const UP = Symbol('up');
+const DOWN = Symbol('down');
 
 const setSelectedValue = function(dropdownList, selected) {
   const changedValues = {};
@@ -29,11 +32,17 @@ const setSelectedValue = function(dropdownList, selected) {
 };
 
 class RawList extends PureComponent {
+  /* This is an instance variable since no rendering needs to be done based on
+   * this property. Additionally, setState can't be used with the callback in
+   * an event listener since it needs to return synchronously */
+  ignoreMouse = false;
+
   constructor(props) {
     super(props);
 
     this.state = {
       selected: props.selected || null,
+      direction: null,
       dropdownList: props.list,
     };
   }
@@ -111,18 +120,41 @@ class RawList extends PureComponent {
       );
     }
 
-    this.checkIfDropDownListOutOfFilter();
+    // Delaying with requestAnimationFrame is needed to get the latest ref
+    requestAnimationFrame(() => {
+      this.checkIfDropDownListOutOfFilter();
+      this.scrollIntoView();
+    });
   }
 
-  checkIfDropDownListOutOfFilter = () => {
-    if (
-      !this.tetheredList ||
-      (this.tetheredList && !this.tetheredList.getBoundingClientRect)
-    ) {
+  scrollIntoView = () => {
+    const { list, selected } = this;
+
+    if (!list || !selected) {
       return;
     }
 
-    const { top } = this.tetheredList.getBoundingClientRect();
+    const { direction } = this.state;
+
+    if (direction === null) {
+      return;
+    }
+
+    const { top: topMax, bottom: bottomMax } = list.getBoundingClientRect();
+
+    const { top, bottom } = selected.getBoundingClientRect();
+
+    if (top < topMax || bottom > bottomMax) {
+      selected.scrollIntoView(direction === UP ? true : false);
+    }
+  };
+
+  checkIfDropDownListOutOfFilter = () => {
+    if (!this.list) {
+      return;
+    }
+
+    const { top } = this.list.getBoundingClientRect();
     const { filter, isToggled, onCloseDropdown } = this.props;
     if (
       isToggled &&
@@ -181,6 +213,7 @@ class RawList extends PureComponent {
 
   handleSwitch = selected => {
     this.setState({
+      direction: null,
       selected,
     });
   };
@@ -194,7 +227,10 @@ class RawList extends PureComponent {
       onOpenDropdown,
       onCloseDropdown,
     } = this.props;
+
     const { selected } = this.state;
+
+    this.ignoreMouse = true;
 
     if (e.keyCode > 47 && e.keyCode < 123) {
       this.navigateToAlphanumeric(e.key);
@@ -202,14 +238,14 @@ class RawList extends PureComponent {
       switch (e.key) {
         case 'ArrowUp':
           e.preventDefault();
-          this.navigate(false);
+          this.navigate(true);
           break;
         case 'ArrowDown':
           e.preventDefault();
           if (!isToggled) {
             onOpenDropdown();
           } else {
-            this.navigate(true);
+            this.navigate(false);
           }
           break;
         case 'Enter':
@@ -236,6 +272,18 @@ class RawList extends PureComponent {
           break;
       }
     }
+  };
+
+  handleKeyUp = () => {
+    this.ignoreMouse = false;
+  };
+
+  handleMouseEnter = option => {
+    if (this.ignoreMouse) {
+      return;
+    }
+
+    this.handleSwitch(option);
   };
 
   handleTab = e => {
@@ -295,13 +343,14 @@ class RawList extends PureComponent {
       item => item.caption === selected.caption
     );
 
-    const next = up ? selectedIndex + 1 : selectedIndex - 1;
+    const next = up ? selectedIndex - 1 : selectedIndex + 1;
 
     this.setState({
       selected:
         next >= 0 && next <= dropdownList.size - 1
           ? dropdownList.get(next)
           : selected,
+      direction: up ? UP : DOWN,
     });
   };
 
@@ -317,6 +366,12 @@ class RawList extends PureComponent {
       selectedRow = true;
     }
 
+    const props = {};
+
+    if (selectedRow) {
+      props.ref = ref => (this.selected = ref);
+    }
+
     return (
       <div
         key={option.key}
@@ -326,8 +381,9 @@ class RawList extends PureComponent {
             'input-dropdown-list-option-key-on': selectedRow,
           }
         )}
-        onMouseEnter={() => this.handleSwitch(option)}
+        onMouseEnter={() => this.handleMouseEnter(option)}
         onClick={() => this.handleSelect(option)}
+        {...props}
       >
         <p className="input-dropdown-item-title">{option.caption}</p>
       </div>
@@ -337,7 +393,7 @@ class RawList extends PureComponent {
   renderOptions = () => {
     const { dropdownList } = this.state;
 
-    return <div>{dropdownList.map(this.getRow)}</div>;
+    return <Fragment>{dropdownList.map(this.getRow)}</Fragment>;
   };
 
   render() {
@@ -395,6 +451,7 @@ class RawList extends PureComponent {
         onFocus={readonly ? null : onFocus}
         onClick={readonly ? null : this.handleClick}
         onKeyDown={this.handleKeyDown}
+        onKeyUp={this.handleKeyUp}
       >
         <TetherComponent
           attachment="top left"
@@ -450,7 +507,7 @@ class RawList extends PureComponent {
           {isFocused &&
             isToggled && (
               <RawListDropdown
-                ref={c => (this.tetheredList = c)}
+                childRef={ref => (this.list = ref)}
                 isListEmpty={isListEmpty}
                 offsetWidth={this.dropdown.offsetWidth}
                 loading={loading}
