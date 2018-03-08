@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.List;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 
 /*
  * #%L
@@ -31,6 +31,9 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 
 public interface VendorGatewayInvoker
 {
+	/**
+	 * @return the result with can be either purchase orders or errors.
+	 */
 	List<PurchaseItem> placeRemotePurchaseOrder(Collection<PurchaseCandidate> purchaseCandidates);
 
 	void updateRemoteLineReferences(Collection<PurchaseOrderItem> purchaseOrderItem);
