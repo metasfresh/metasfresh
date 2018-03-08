@@ -34,7 +34,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.minventory.api.IInventoryBL;
@@ -59,7 +58,6 @@ import org.compiere.util.TimeUtil;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -72,6 +70,7 @@ import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
+import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -104,7 +103,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private final transient IHUPIItemProductDAO huPiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final transient IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
 	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final transient IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
@@ -267,7 +266,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 			//
 			// Save the inventory line and assign the top level HU to it
 			InterfaceWrapperHelper.save(inventoryLine, trxName);
-			huAssignmentBL.assignHU(inventoryLine, topLevelHU, ITrx.TRXNAME_ThreadInherited);
+			huInventoryBL.assignHU(inventoryLine, topLevelHU);
 
 			//
 			// Update the result

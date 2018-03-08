@@ -4,12 +4,15 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
@@ -77,4 +80,10 @@ public class HUInventoryBL implements IHUInventoryBL
 		return true;
 	}
 
+	@Override
+	public void assignHU(final I_M_InventoryLine inventoryLine, final I_M_HU topLevelHU)
+	{
+		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+		huAssignmentBL.assignHU(inventoryLine, topLevelHU, ITrx.TRXNAME_ThreadInherited);
+	}
 }
