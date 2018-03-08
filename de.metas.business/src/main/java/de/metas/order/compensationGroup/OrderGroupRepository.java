@@ -640,12 +640,19 @@ public class OrderGroupRepository implements GroupRepository
 			nextLineNo.add(10);
 		};
 
+		final Consumer<Collection<I_C_OrderLine>> orderLinesSequenceUpdater = orderLines -> orderLines.stream()
+				.sorted(Comparator.<I_C_OrderLine, Integer> comparing(orderLine -> !orderLine.isGroupCompensationLine() ? 0 : 1)
+						.thenComparing(orderLine -> OrderGroupCompensationUtils.isGeneratedCompensationLine(orderLine) ? 0 : 1)
+						.thenComparing(I_C_OrderLine::getLine)
+						.thenComparing(I_C_OrderLine::getC_OrderLine_ID))
+				.forEach(orderLineSequenceUpdater);
+
 		//
 		// Renumber grouped order lines first
 		orderLinesByGroupId
+				.asMap()
 				.values()
-				.stream()
-				.forEach(orderLineSequenceUpdater);
+				.forEach(orderLinesSequenceUpdater);
 
 		//
 		// Remaining ungrouped order lines

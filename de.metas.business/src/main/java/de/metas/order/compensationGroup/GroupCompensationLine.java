@@ -153,7 +153,7 @@ public final class GroupCompensationLine
 
 	public boolean isGeneratedLine()
 	{
-		return getGroupTemplateLineId() > 0;
+		return OrderGroupCompensationUtils.isGeneratedCompensationLine(getGroupTemplateLineId());
 	}
 
 	public boolean isManualLine()

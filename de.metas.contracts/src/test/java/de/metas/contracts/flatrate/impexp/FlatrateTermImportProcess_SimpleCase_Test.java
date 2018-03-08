@@ -36,6 +36,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
@@ -70,7 +71,8 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 		ShipmentScheduleSubscriptionReferenceProvider.class,
 		OrderGroupRepository.class,
 		OrderGroupCompensationChangesHandler.class,
-		GroupTemplateRepository.class })
+		GroupTemplateRepository.class,
+		GroupCompensationLineCreateRequestFactory.class })
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {
 	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
