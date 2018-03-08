@@ -80,6 +80,7 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3422](https://github.com/metasfresh/metasfresh/issues/3422) Material Cockpit Document Details Doctype, DocNo wrong/ missing
+  * [#3569](https://github.com/metasfresh/metasfresh/issues/3569) Purchase order from purchase candidate not working 
   * [#3571](https://github.com/metasfresh/metasfresh/issues/3571) AD_Element_trl problem with autocomplete fields
   * [#3572](https://github.com/metasfresh/metasfresh/issues/3572) Internal usage (Materialentnahme partial) broken
   * [#3595](https://github.com/metasfresh/metasfresh/issues/3595) Tax Error on w101 Sales Order Batch entry

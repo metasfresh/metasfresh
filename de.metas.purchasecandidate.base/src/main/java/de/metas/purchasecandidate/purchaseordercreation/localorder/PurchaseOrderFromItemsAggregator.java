@@ -1,7 +1,13 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.adempiere.util.collections.MapReduceAggregator;
 import org.compiere.model.I_C_Order;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
@@ -45,6 +51,8 @@ public class PurchaseOrderFromItemsAggregator
 
 	private final OrderUserNotifications userNotifications = OrderUserNotifications.newInstance();
 
+	private final List<I_C_Order> createdPurchaseOrders = new ArrayList<>();
+
 	private PurchaseOrderFromItemsAggregator()
 	{
 		setItemAggregationKeyBuilder(PurchaseOrderAggregationKey::formPurchaseOrderItem);
@@ -66,7 +74,8 @@ public class PurchaseOrderFromItemsAggregator
 	@Override
 	protected void closeGroup(final PurchaseOrderFromItemFactory orderFactory)
 	{
-		orderFactory.createAndComplete();
+		final I_C_Order newPurchaseOrder = orderFactory.createAndComplete();
+		createdPurchaseOrders.add(newPurchaseOrder);
 	}
 
 	@Override
@@ -75,5 +84,11 @@ public class PurchaseOrderFromItemsAggregator
 			@NonNull final PurchaseOrderItem candidate)
 	{
 		orderFactory.addCandidate(candidate);
+	}
+
+	@VisibleForTesting
+	List<I_C_Order> getCreatedPurchaseOrders()
+	{
+		return ImmutableList.copyOf(createdPurchaseOrders);
 	}
 }
