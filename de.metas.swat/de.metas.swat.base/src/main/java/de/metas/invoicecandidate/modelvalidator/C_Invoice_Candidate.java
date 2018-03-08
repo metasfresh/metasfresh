@@ -54,6 +54,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.tax.api.ITaxDAO;
 
 @Interceptor(I_C_Invoice_Candidate.class)
@@ -73,9 +74,9 @@ public class C_Invoice_Candidate
 		// NOTE: in unit test mode and while running tools like model generators,
 		// the groupsRepo is not Autowired because there is no spring context,
 		// so we have to instantiate it directly
-		if (groupsRepo == null)
+		if (groupsRepo == null && Adempiere.isUnitTestMode())
 		{
-			groupsRepo = new InvoiceCandidateGroupRepository();
+			groupsRepo = new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory());
 		}
 
 		groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()

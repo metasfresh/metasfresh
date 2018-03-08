@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2018-02-28T10:26:07 -->
+<!-- 2018-03-07T13:29:30 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="label" pageWidth="294" pageHeight="198" columnWidth="294" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="7f6f4715-2c9f-4a69-8fdd-c5a5d8b66d53">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
@@ -17,7 +17,7 @@
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_sp80_reports.picking_tu_label($P{m_hu_id});]]>
+		<![CDATA[SELECT * FROM report.picking_tu_label($P{m_hu_id});]]>
 	</queryString>
 	<field name="org_name" class="java.lang.String"/>
 	<field name="bp_gln" class="java.lang.String"/>

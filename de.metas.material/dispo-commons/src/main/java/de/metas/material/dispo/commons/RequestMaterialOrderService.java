@@ -114,7 +114,7 @@ public class RequestMaterialOrderService
 				ppOrderBuilder.orderLineId(groupMember.getDemandDetail().getOrderLineId());
 			}
 
-			final ProductionDetail prodDetail = groupMember.getProductionDetail();
+			final ProductionDetail prodDetail = ProductionDetail.cast(groupMember.getBusinessCaseDetail());
 			final MaterialDescriptor materialDescriptor = groupMember.getMaterialDescriptor();
 			if (prodDetail.getProductBomLineId() <= 0)
 			{
@@ -206,7 +206,7 @@ public class RequestMaterialOrderService
 				ddOrderLineBuilder.salesOrderLineId(groupMember.getDemandDetail().getOrderLineId());
 			}
 
-			final DistributionDetail distributionDetail = groupMember.getDistributionDetail();
+			final DistributionDetail distributionDetail = DistributionDetail.cast(groupMember.getBusinessCaseDetail());
 			ddOrderBuilder
 					.plantId(distributionDetail.getPlantId())
 					.productPlanningId(distributionDetail.getProductPlanningId())

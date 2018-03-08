@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_Order;
+import org.adempiere.util.Check;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -15,15 +15,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_M_Product_Category;
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 
 /*
@@ -54,50 +51,23 @@ import de.metas.process.ProcessPreconditionsResolution;
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh-webui-api/issues/853
  */
-public class C_Order_CreateCompensationMultiGroups extends JavaProcess implements IProcessPrecondition
+public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGroupProcess
 {
 	@Autowired
-	private OrderGroupRepository groupsRepo;
-	@Autowired
 	private GroupTemplateRepository groupTemplateRepo;
-
-	public C_Order_CreateCompensationMultiGroups()
-	{
-		Adempiere.autowire(this);
-	}
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if (!context.isSingleSelection())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("one and only one order shall be selected");
-		}
-
-		// Only draft orders
-		final I_C_Order order = context.getSelectedModel(I_C_Order.class);
-		if (order.isProcessed())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("only draft orders are allowed");
-		}
-
-		// Only sales orders
-		if (!order.isSOTrx())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");
-		}
-
-		return ProcessPreconditionsResolution.accept();
+		return acceptIfEligibleOrder(context)
+				.and(() -> acceptIfOrderLinesNotInGroup(context));
 	}
 
 	@Override
 	protected String doIt()
 	{
-		final List<I_C_OrderLine> selectedOrderLines = getSelectedIncludedRecords(I_C_OrderLine.class);
-		if (selectedOrderLines.isEmpty())
-		{
-			throw new AdempiereException("@NoSelection@");
-		}
+		final List<I_C_OrderLine> selectedOrderLines = getSelectedOrderLines();
+		Check.assumeNotEmpty(selectedOrderLines, "selectedOrderLines is not empty");
 
 		final ListMultimap<GroupTemplate, Integer> orderLineIdsByGroupTemplate = extractOrderLineIdsByGroupTemplate(selectedOrderLines);
 		if (orderLineIdsByGroupTemplate.isEmpty())

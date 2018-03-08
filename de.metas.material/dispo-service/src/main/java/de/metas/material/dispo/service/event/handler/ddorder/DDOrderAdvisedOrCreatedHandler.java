@@ -108,8 +108,8 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.status(candidateStatus)
 				.materialDescriptor(supplyMaterialDescriptor)
-				.demandDetail(demanddetail)
-				.distributionDetail(distributionDetail)
+				.businessCaseDetail(distributionDetail)
+				.additionalDemandDetail(demanddetail)
 				.build();
 
 		final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
@@ -136,8 +136,8 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.status(candidateStatus)
 				.materialDescriptor(demandMaterialDescriptor)
-				.demandDetail(demanddetail)
-				.distributionDetail(distributionDetail)
+				.businessCaseDetail(distributionDetail)
+				.additionalDemandDetail(demanddetail)
 				.seqNo(expectedSeqNoForDemandCandidate)
 				.build();
 
@@ -293,6 +293,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.ddOrderId(ddOrder.getDdOrderId())
 				.ddOrderLineId(ddOrderLine.getDdOrderLineId())
 				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
+				.plannedQty(ddOrderLine.getQty())
 				.plantId(ddOrder.getPlantId())
 				.productPlanningId(ddOrder.getProductPlanningId())
 				.shipperId(ddOrder.getShipperId())

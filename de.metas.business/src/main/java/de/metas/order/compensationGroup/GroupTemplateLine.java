@@ -37,6 +37,13 @@ import lombok.Value;
 @Value
 public class GroupTemplateLine
 {
+	public static GroupTemplateLine ofProductId(final int productId)
+	{
+		return builder()
+				.productId(productId)
+				.build();
+	}
+
 	int id;
 	int productId;
 	private BigDecimal percentage;
