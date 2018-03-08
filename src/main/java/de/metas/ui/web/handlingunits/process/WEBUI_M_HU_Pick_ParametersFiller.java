@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.List;
 
 import org.adempiere.ad.validationRule.IValidationRule;
@@ -7,6 +9,7 @@ import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
@@ -15,11 +18,15 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.api.IPickingSlotDAO;
+import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -27,6 +34,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -57,14 +65,24 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 
 	private final int salesOrderLineId;
 	private final LookupDataSource shipmentScheduleDataSource;
-	private final LookupDataSource pickingSlotDataSource;
+	private final int shipmentScheduleId;
 
-	@Builder
-	private WEBUI_M_HU_Pick_ParametersFiller(final int huId, final int salesOrderLineId)
+	@Builder(builderClassName = "DefaultFillerBuilder", builderMethodName = "defaultFillerBuilder")
+	private WEBUI_M_HU_Pick_ParametersFiller(
+			final int huId,
+			final int salesOrderLineId)
 	{
 		this.salesOrderLineId = salesOrderLineId;
-		shipmentScheduleDataSource = createShipmentScheduleDataSource(huId);
-		pickingSlotDataSource = createPickingSlotDataSource();
+		this.shipmentScheduleDataSource = createShipmentScheduleDataSource(huId);
+		this.shipmentScheduleId = -1;
+	}
+
+	@Builder(builderClassName = "PickingSlotFillerBuilder", builderMethodName = "pickingSlotFillerBuilder")
+	private WEBUI_M_HU_Pick_ParametersFiller(final int shipmentScheduleId)
+	{
+		this.salesOrderLineId = -1;
+		this.shipmentScheduleDataSource = null;
+		this.shipmentScheduleId = shipmentScheduleId;
 	}
 
 	public LookupValuesList getShipmentScheduleValues(final LookupDataSourceContext context)
@@ -77,7 +95,7 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 	{
 		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
 				.setCtxTableName(null)
-				.setCtxColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)				
+				.setCtxColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
 				.setDisplayType(DisplayType.Search)
 				.addValidationRule(createShipmentSchedulesValidationRule(huId))
 				.buildForDefaultScope();
@@ -90,11 +108,22 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 		sqlWhereClause.append(I_M_ShipmentSchedule.COLUMNNAME_Processed).append("=").append(DB.TO_BOOLEAN(false));
 
 		final int productId = getSingleProductId(huId);
-		sqlWhereClause.append(" AND ").append(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID).append("=").append(productId);
+		sqlWhereClause.append(" AND ")
+				.append(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID)
+				.append("=")
+				.append(productId);
 
-		// TODO: filter by selected HU's BPartner, Location etc.
-		// Also consult Tobi because he did it somewhere else (in picking terminal?).
-
+		final I_M_HU hu = load(huId, I_M_HU.class);
+		if (hu.getC_BPartner_ID() > 0)
+		{
+			sqlWhereClause
+					.append(" AND COALESCE(")
+					.append(I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID)
+					.append(", ")
+					.append(I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID)
+					.append(") = ")
+					.append(hu.getC_BPartner_ID());
+		}
 		return Services.get(IValidationRuleFactory.class).createSQLValidationRule(sqlWhereClause.toString());
 	}
 
@@ -123,23 +152,36 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 		return productIds.get(0);
 	}
 
-	public LookupValuesList getPickingSlotValues(final LookupDataSourceContext context)
+	public LookupValuesList getPickingSlotValues(@NonNull final LookupDataSourceContext context)
 	{
-		final LookupValuesList result = pickingSlotDataSource.findEntities(context, context.getFilter(), context.getOffset(0), context.getLimit(10));
-		return result;
+		if (shipmentScheduleId <= 0)
+		{
+			return LookupValuesList.EMPTY;
+		}
+
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+
+		final PickingSlotQuery pickingSlotQuery = PickingSlotQuery.builder()
+				.availableForBPartnerId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
+				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
+				.build();
+		final List<I_M_PickingSlot> availablePickingSlots = Services.get(IPickingSlotDAO.class).retrievePickingSlots(pickingSlotQuery);
+
+		return availablePickingSlots.stream()
+				.map(pickingSlot -> IntegerLookupValue.of(pickingSlot.getM_PickingSlot_ID(), createPickingSlotLabel(pickingSlot)))
+				.collect(LookupValuesList.collect());
 	}
 
-	private static final LookupDataSource createPickingSlotDataSource()
+	private String createPickingSlotLabel(@NonNull final I_M_PickingSlot pickingslot)
 	{
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
-				.setCtxTableName(null)
-				.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID)
-				.setDisplayType(DisplayType.Search)
-				.buildForDefaultScope();
-
-		// TODO: filter by selected shipment schedule's BPartner. Don't show already reserved picking slots.
-
-		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
+		final StringBuilder result = new StringBuilder(pickingslot.getPickingSlot());
+		if (pickingslot.getC_BPartner_ID() > 1)
+		{
+			final I_C_BPartner bPartner = pickingslot.getC_BPartner();
+			result.append("_").append(bPartner.getName()).append("_").append(bPartner.getValue());
+		}
+		return result.toString();
 	}
 
 	public Object getDefaultValue(final IProcessDefaultParameter parameter)
