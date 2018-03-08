@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1423365144L;
+	private static final long serialVersionUID = -1776266296L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -497,6 +497,42 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public java.math.BigDecimal getQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Zusagbar (ATP).
+		@param Qty_AvailableToPromise Zusagbar (ATP)	  */
+	@Override
+	public void setQty_AvailableToPromise (java.math.BigDecimal Qty_AvailableToPromise)
+	{
+		throw new IllegalArgumentException ("Qty_AvailableToPromise is virtual column");	}
+
+	/** Get Zusagbar (ATP).
+		@return Zusagbar (ATP)	  */
+	@Override
+	public java.math.BigDecimal getQty_AvailableToPromise () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_AvailableToPromise);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Menge.
+		@param Qty_Display Menge	  */
+	@Override
+	public void setQty_Display (java.math.BigDecimal Qty_Display)
+	{
+		throw new IllegalArgumentException ("Qty_Display is virtual column");	}
+
+	/** Get Menge.
+		@return Menge	  */
+	@Override
+	public java.math.BigDecimal getQty_Display () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Display);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

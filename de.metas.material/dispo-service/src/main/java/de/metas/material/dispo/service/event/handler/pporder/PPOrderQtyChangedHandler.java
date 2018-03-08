@@ -90,7 +90,8 @@ public class PPOrderQtyChangedHandler implements MaterialEventHandler<PPOrderCha
 		final List<Candidate> updatedCandidates = new ArrayList<>();
 		for (final Candidate candidateToUpdate : candidatesToUpdate)
 		{
-			final ProductionDetail productionDetailToUpdate = candidateToUpdate.getProductionDetail();
+			final ProductionDetail productionDetailToUpdate = //
+					ProductionDetail.cast(candidateToUpdate.getBusinessCaseDetail());
 			if (productionDetailToUpdate.getPpOrderLineId() > 0)
 			{
 				continue;
@@ -101,10 +102,10 @@ public class PPOrderQtyChangedHandler implements MaterialEventHandler<PPOrderCha
 					.plannedQty(newPlannedQty)
 					.build();
 
-			final BigDecimal newCandidateQty = newPlannedQty.max(productionDetailToUpdate.getActualQty());
+			final BigDecimal newCandidateQty = newPlannedQty.max(candidateToUpdate.computeActualQty());
 
-			Candidate updatedCandidate = candidateToUpdate.toBuilder()
-					.productionDetail(updatedProductionDetail)
+			final Candidate updatedCandidate = candidateToUpdate.toBuilder()
+					.businessCaseDetail(updatedProductionDetail)
 					.materialDescriptor(candidateToUpdate.getMaterialDescriptor().withQuantity(newCandidateQty))
 					.build();
 			updatedCandidates.add(updatedCandidate);
@@ -122,7 +123,8 @@ public class PPOrderQtyChangedHandler implements MaterialEventHandler<PPOrderCha
 
 		for (final Candidate candidateToUpdate : candidatesToUpdate)
 		{
-			final ProductionDetail productionDetailToUpdate = candidateToUpdate.getProductionDetail();
+			final ProductionDetail productionDetailToUpdate = //
+					ProductionDetail.cast(candidateToUpdate.getBusinessCaseDetail());
 
 			if (productionDetailToUpdate.getPpOrderLineId() <= 0)
 			{
@@ -139,10 +141,10 @@ public class PPOrderQtyChangedHandler implements MaterialEventHandler<PPOrderCha
 					.plannedQty(newPlannedQty)
 					.build();
 
-			final BigDecimal newCandidateQty = newPlannedQty.max(productionDetailToUpdate.getActualQty());
+			final BigDecimal newCandidateQty = newPlannedQty.max(candidateToUpdate.computeActualQty());
 
 			final Candidate updatedCandidate = candidateToUpdate.toBuilder()
-					.productionDetail(updatedProductionDetail)
+					.businessCaseDetail(updatedProductionDetail)
 					.materialDescriptor(candidateToUpdate.getMaterialDescriptor().withQuantity(newCandidateQty))
 					.build();
 
