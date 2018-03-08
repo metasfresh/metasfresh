@@ -53,6 +53,8 @@ public interface IHUInOutDAO extends ISingletonService
 	 * @return
 	 */
 	I_M_InOutLine retrieveCompletedReceiptLineOrNull(I_M_HU hu);
+	
+	List<I_M_InOutLine> retrieveInOutLinesForHU(I_M_HU topLevelHU);
 
 	/**
 	 * Retrieve the handling units assigned to the lines of a given inout if and only if they have status shipped.

@@ -58,7 +58,6 @@ import org.compiere.util.TimeUtil;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -70,6 +69,7 @@ import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
+import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -104,7 +104,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 	private final transient IHUPIItemProductDAO huPiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final transient IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
-	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final transient IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
@@ -190,8 +190,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		// Get receipt line(s) which received this HU
 		final I_M_HU hu = huItem.getM_HU();
 		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
-		final List<I_M_InOutLine> receiptLines = huAssignmentDAO.retrieveModelsForHU(topLevelHU, I_M_InOutLine.class);
-
+		final List<I_M_InOutLine> receiptLines = huInOutDAO.retrieveInOutLinesForHU(topLevelHU);
 		for (final I_M_InOutLine receiptLine : receiptLines)
 		{
 			final I_M_InOut receipt = receiptLine.getM_InOut();
