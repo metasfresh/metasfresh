@@ -9,6 +9,7 @@ import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +37,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
@@ -402,10 +404,13 @@ public class CandidateChangeHandlerTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(materialDescr)
+
+				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
 						shipmentScheduleIdForDemandDetail,
 						0,
-						0))
+						0,
+						TEN))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
@@ -426,10 +431,13 @@ public class CandidateChangeHandlerTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(supplyMaterialDescriptor)
+
+				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
 						shipmentScheduleIdForDemandDetail,
 						0,
-						0))
+						0,
+						TEN))
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);

@@ -132,7 +132,7 @@ public class ProductionDetail
 			final int ppOrderLineId,
 			@NonNull final Flag advised,
 			@NonNull final Flag pickDirectlyIfFeasible,
-			final BigDecimal plannedQty)
+			@NonNull final BigDecimal plannedQty)
 	{
 		this.advised = advised;
 		this.pickDirectlyIfFeasible = pickDirectlyIfFeasible;

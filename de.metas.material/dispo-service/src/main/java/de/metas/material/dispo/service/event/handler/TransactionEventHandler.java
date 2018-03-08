@@ -104,14 +104,14 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 		else if (event.getPpOrderId() > 0)
 		{
-			final Candidate candidateForPPorder = prepareCandidateForPPorder(event);
+			final Candidate candidateForPPorder = createCandidateForPPorder(event);
 			firePickRequiredEvent(candidateForPPorder, event);
 
 			candidates.add(candidateForPPorder);
 		}
 		else if (event.getDdOrderLineId() > 0)
 		{
-			final Candidate candidateForDDorder = prepareCandidateForDDorder(event);
+			final Candidate candidateForDDorder = createCandidateForDDorder(event);
 			firePickRequiredEvent(candidateForDDorder, event);
 
 			candidates.add(candidateForDDorder);
@@ -190,12 +190,15 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return result.build();
 	}
 
-	private Candidate createCandidateForShipmentSchedule(final AbstractTransactionEvent event, final Entry<Integer, BigDecimal> shipmentScheduleId2Qty)
+	private Candidate createCandidateForShipmentSchedule(
+			@NonNull final AbstractTransactionEvent event,
+			@NonNull final Entry<Integer, BigDecimal> shipmentScheduleId2Qty)
 	{
 		final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(
 				shipmentScheduleId2Qty.getKey(),
 				-1,
-				-1);
+				-1,
+				shipmentScheduleId2Qty.getValue());
 
 		final CandidatesQuery query = CandidatesQuery.builder().type(CandidateType.DEMAND)
 				.demandDetail(demandDetail) // only search via demand detail ..the product and warehouse will also match, but e.g. the date probably won't!
@@ -230,7 +233,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return candidate;
 	}
 
-	private Candidate prepareCandidateForPPorder(@NonNull final AbstractTransactionEvent event)
+	private Candidate createCandidateForPPorder(@NonNull final AbstractTransactionEvent event)
 	{
 		final Candidate candidate;
 		final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
@@ -256,6 +259,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.toProductionDetailBuilder()
 					.advised(Flag.FALSE_DONT_UPDATE)
 					.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
+					.plannedQty(event.getQuantity())
 					.build();
 
 			candidate = createBuilderForNewUnrelatedCandidate(
@@ -278,7 +282,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return candidate;
 	}
 
-	private Candidate prepareCandidateForDDorder(@NonNull final AbstractTransactionEvent event)
+	private Candidate createCandidateForDDorder(@NonNull final AbstractTransactionEvent event)
 	{
 		final Candidate candidate;
 		final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
@@ -298,7 +302,9 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		if (unrelatedNewTransaction)
 		{
 			final DistributionDetail distributionDetail = distributionDetailsQuery
-					.toDistributionDetailBuilder().build();
+					.toDistributionDetailBuilder()
+					.plannedQty(event.getQuantity())
+					.build();
 
 			candidate = createBuilderForNewUnrelatedCandidate(
 					(TransactionCreatedEvent)event,
@@ -393,7 +399,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final Candidate withTransactionDetails = candidate.withTransactionDetails(newTransactionDetailsList.build());
 		final BigDecimal actualQty = withTransactionDetails.computeActualQty();
-		final BigDecimal plannedQty = candidate.getBusinessCaseDetail().getPlannedQty();
+		final BigDecimal plannedQty = candidate.getPlannedQty();
 
 		return withTransactionDetails.withQuantity(actualQty.max(plannedQty));
 	}

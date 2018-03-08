@@ -103,7 +103,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		final Optional<Candidate> possibleChildStockCandidate = candidateRepository.retrieveSingleChild(demandCandidateDeltaWithId.getId());
 		if (possibleChildStockCandidate.isPresent())
 		{
-			childStockWithDemand = possibleChildStockCandidate.get().withQuantity(demandCandidateDeltaWithId.getQuantity().negate());
+			childStockWithDemand = possibleChildStockCandidate.get().withQuantity(demandCandidate.getQuantity().negate());
 			childStockWithDemandDelta = stockCandidateService.updateQty(childStockWithDemand);
 		}
 		else

@@ -4,9 +4,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.util.Check;
 import org.compiere.util.Util;
-
-import com.google.common.base.Preconditions;
 
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -146,6 +145,28 @@ public class Candidate
 		return materialDescriptor.getWarehouseId();
 	}
 
+	public BigDecimal computeActualQty()
+	{
+		return getTransactionDetails()
+				.stream()
+				.map(TransactionDetail::getQuantity)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	public DemandDetail getDemandDetail()
+	{
+		return Util.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
+	}
+
+	public BigDecimal getPlannedQty()
+	{
+		if (businessCaseDetail == null)
+		{
+			return BigDecimal.ZERO;
+		}
+		return businessCaseDetail.getPlannedQty();
+	}
+
 	private Candidate(final int clientId, final int orgId,
 			@NonNull final CandidateType type,
 			final CandidateBusinessCase businessCase,
@@ -174,25 +195,48 @@ public class Candidate
 		this.businessCaseDetail = businessCaseDetail;
 		this.additionalDemandDetail = additionalDemandDetail;
 
-		for (final TransactionDetail transactionDetail : transactionDetails)
-		{
-			Preconditions.checkArgument(transactionDetail == null || transactionDetail.isComplete(),
-					"Every element from the given parameter transactionDetails needs to have iscomplete==true; transactionDetail=%s",
-					transactionDetail);
-		}
 		this.transactionDetails = transactionDetails;
 	}
 
-	public BigDecimal computeActualQty()
+	/** we don't call this from the constructor, because some tests don't need a "valid" candidate to get particular aspects. */
+	public void validate()
 	{
-		return getTransactionDetails()
-				.stream()
-				.map(TransactionDetail::getQuantity)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-	}
+		switch (type)
+		{
+			case DEMAND:
+			case STOCK_UP:
+			case SUPPLY:
+				Check.errorIf(
+						businessCaseDetail == null,
+						"If type={}, then the given businessCaseDetail may not be null; this={}",
+						type, this);
+				break;
+			case UNRELATED_INCREASE:
+			case UNRELATED_DECREASE:
+				Check.errorIf(
+						transactionDetails == null || transactionDetails.isEmpty(),
+						"If type={}, then the given transactionDetails may not be null or empty; this={}",
+						type, this);
+				break;
+			default:
+				Check.errorIf(true, "Unexpected candidateType={}; this={}", type, this);
+		}
 
-	public DemandDetail getDemandDetail()
-	{
-		return Util.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
+		for (final TransactionDetail transactionDetail : transactionDetails)
+		{
+			Check.errorIf(
+					!transactionDetail.isComplete(),
+					"Every element from the given parameter transactionDetails needs to have iscomplete==true; transactionDetail={}; this={}",
+					transactionDetail, this);
+		}
+
+		Check.errorIf((businessCase != null) != (businessCaseDetail != null),
+				"The given paramters businessCase and businessCaseDetail need to be both null or both not-null; businessCase={}; businessCaseDetail={}; this={}",
+				businessCase, businessCaseDetail, this);
+
+		Check.errorIf(
+				businessCase != null && !businessCase.getDetailClass().isAssignableFrom(businessCaseDetail.getClass()),
+				"The given paramters businessCase and businessCaseDetail don't match; businessCase={}; businessCaseDetail={}; this={}",
+				businessCase, businessCaseDetail, this);
 	}
 }

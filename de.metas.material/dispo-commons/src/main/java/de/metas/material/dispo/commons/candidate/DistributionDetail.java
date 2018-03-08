@@ -50,6 +50,7 @@ public class DistributionDetail implements BusinessCaseDetail
 
 	boolean pickDirectlyIfFeasible;
 
+	@NonNull
 	BigDecimal plannedQty;
 
 	public static DistributionDetail castOrNull(@Nullable final BusinessCaseDetail businessCaseDetail)

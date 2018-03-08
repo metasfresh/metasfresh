@@ -9,6 +9,7 @@ import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.TRANSACTION_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -442,7 +443,7 @@ public class CandiateRepositoryRetrievalTests
 				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(
 						cand
 								.withId(0)
-								.withBusinessCaseDetail(DemandDetail.forForecastLineId(74, 84)),
+								.withBusinessCaseDetail(DemandDetail.forForecastLineId(74, 84, TEN)),
 						false));
 
 		assertThat(expectedRecordWithoutDemandDetails).isNotNull();
@@ -556,7 +557,7 @@ public class CandiateRepositoryRetrievalTests
 		createCandiateRecordWithShipmentScheduleId(35);
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(25, -1, -1))
+				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(25, -1, -1, TEN))
 				.build();
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 
@@ -584,7 +585,7 @@ public class CandiateRepositoryRetrievalTests
 		createCandiateRecordWithForecastLineId(35, 36);
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.demandDetail(DemandDetail.forForecastLineId(25, 35))
+				.demandDetail(DemandDetail.forForecastLineId(25, 35, TEN))
 				.build();
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 

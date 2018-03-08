@@ -96,7 +96,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 			final Candidate parentStockCandidate = candidateRepository
 					.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateWithIdAndParentId.getParentId()));
 			parentStockCandidateWithIdAndDelta = stockCandidateService.updateQty(
-					parentStockCandidate.withQuantity(supplyCandidateDeltaWithId.getQuantity()));
+					parentStockCandidate.withQuantity(supplyCandidate.getQuantity()));
 		}
 		else
 		{

@@ -43,7 +43,8 @@ public class DemandDetail implements BusinessCaseDetail
 {
 	public static DemandDetail forDocumentDescriptor(
 			final int shipmentScheduleId,
-			@NonNull final DocumentLineDescriptor documentDescriptor)
+			@NonNull final DocumentLineDescriptor documentDescriptor,
+			@NonNull final BigDecimal plannedQty)
 	{
 		final int orderId;
 		final int orderLineId;
@@ -72,7 +73,8 @@ public class DemandDetail implements BusinessCaseDetail
 				.shipmentScheduleId(shipmentScheduleId)
 				.orderLineId(orderLineId)
 				.orderId(orderId)
-				.subscriptionProgressId(subscriptionProgressId).build();
+				.subscriptionProgressId(subscriptionProgressId)
+				.plannedQty(plannedQty).build();
 	}
 
 	public static DemandDetail forSupplyRequiredDescriptorOrNull(
@@ -89,7 +91,9 @@ public class DemandDetail implements BusinessCaseDetail
 				.orderId(supplyRequiredDescriptor.getOrderId())
 				.orderLineId(supplyRequiredDescriptor.getOrderLineId())
 				.shipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
-				.subscriptionProgressId(supplyRequiredDescriptor.getSubscriptionProgressId()).build();
+				.subscriptionProgressId(supplyRequiredDescriptor.getSubscriptionProgressId())
+				.plannedQty(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
+				.build();
 	}
 
 	public static DemandDetail forDemandDetailRecord(
@@ -110,21 +114,25 @@ public class DemandDetail implements BusinessCaseDetail
 	public static DemandDetail forShipmentScheduleIdAndOrderLineId(
 			final int shipmentScheduleId,
 			final int orderLineId,
-			final int orderId)
+			final int orderId,
+			@NonNull final BigDecimal plannedQty)
 	{
 		return DemandDetail.builder()
 				.shipmentScheduleId(shipmentScheduleId)
 				.orderLineId(orderLineId)
-				.orderId(orderId).build();
+				.orderId(orderId)
+				.plannedQty(plannedQty).build();
 	}
 
 	public static DemandDetail forForecastLineId(
 			final int forecastLineId,
-			final int forecastId)
+			final int forecastId,
+			@NonNull final BigDecimal plannedQty)
 	{
 		return DemandDetail.builder()
 				.forecastLineId(forecastLineId)
-				.forecastId(forecastId).build();
+				.forecastId(forecastId)
+				.plannedQty(plannedQty).build();
 	}
 
 	int forecastId;
@@ -158,8 +166,13 @@ public class DemandDetail implements BusinessCaseDetail
 		final boolean canBeCast = businessCaseDetail != null && businessCaseDetail instanceof DemandDetail;
 		if (canBeCast)
 		{
-			return (DemandDetail)businessCaseDetail;
+			return cast(businessCaseDetail);
 		}
 		return null;
+	}
+
+	public static DemandDetail cast(@NonNull final BusinessCaseDetail businessCaseDetail)
+	{
+		return (DemandDetail)businessCaseDetail;
 	}
 }

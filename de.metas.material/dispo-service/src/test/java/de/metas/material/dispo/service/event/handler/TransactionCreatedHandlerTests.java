@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
@@ -56,6 +57,10 @@ import mockit.Verifications;
 
 public class TransactionCreatedHandlerTests
 {
+	private static final BigDecimal SIXTY_THREE = new BigDecimal("63");
+
+	private static final BigDecimal SIXTY_FOUR = new BigDecimal("65");
+
 	private static final int TRANSACTION_ID = 60;
 
 	private static final int SHIPMENT_SCHEDULE_ID = 40;
@@ -98,7 +103,8 @@ public class TransactionCreatedHandlerTests
 
 		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(
 				event,
-				event.getQuantity()).build();
+				event.getQuantity())
+				.build();
 
 		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_INCREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");
@@ -235,13 +241,19 @@ public class TransactionCreatedHandlerTests
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
-						.quantity(new BigDecimal("63"))
+						.quantity(SIXTY_THREE)
 						.date(SystemTime.asTimestamp())
 						.build())
-				.additionalDemandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(SHIPMENT_SCHEDULE_ID,
+
+				.businessCase(CandidateBusinessCase.SHIPMENT)
+				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
+						SHIPMENT_SCHEDULE_ID,
 						-1,
-						-1))
+						-1,
+						SIXTY_FOUR))
 				.build();
+
+		exisitingCandidate.validate();
 
 		// @formatter:off
 		new Expectations()
@@ -269,13 +281,13 @@ public class TransactionCreatedHandlerTests
 		assertThat(candidate.getId()).isEqualTo(11);
 		assertThat(candidate.getType()).isEqualTo(CandidateType.DEMAND);
 		assertThat(candidate.getQuantity())
-				.as("The demand candidate's (planned) quantity may not be changed from the transaction event")
-				.isEqualByComparingTo("63");
+				.as("The demand candidate's quantity needs to be updated because there is now a transaction with a real qty that is bigger")
+				.isEqualByComparingTo(SIXTY_FOUR);
 		makeCommonAssertions(candidate);
 
-		assertThat(candidate.getBusinessCaseDetail()).isNull();
-		assertThat(candidate.getAdditionalDemandDetail()).as("created candidate shall have a demand detail").isNotNull();
-		assertThat(candidate.getAdditionalDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
+		assertThat(candidate.getBusinessCaseDetail()).isNotNull();
+		assertThat(candidate.getBusinessCaseDetail()).isInstanceOf(DemandDetail.class);
+		assertThat(DemandDetail.cast(candidate.getBusinessCaseDetail()).getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
 		assertThat(candidate.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("-10");
