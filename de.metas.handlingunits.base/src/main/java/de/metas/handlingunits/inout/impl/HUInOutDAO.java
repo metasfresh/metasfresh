@@ -78,7 +78,7 @@ public class HUInOutDAO implements IHUInOutDAO
 	}
 
 	/**
-	 * NOTE: keep in sync with {@link #retrieveInOutLineOrNull(I_M_HU)} logic
+	 * NOTE: keep in sync with {@link #retrieveCompletedReceiptLineOrNull(I_M_HU)} logic
 	 */
 	@Override
 	public List<I_M_HU> retrieveHandlingUnits(final I_M_InOut inOut)
@@ -128,7 +128,7 @@ public class HUInOutDAO implements IHUInOutDAO
 	 * NOTE: keep in sync with {@link #retrieveHandlingUnits(I_M_InOut)} logic
 	 */
 	@Override
-	public I_M_InOutLine retrieveInOutLineOrNull(final I_M_HU hu)
+	public I_M_InOutLine retrieveCompletedReceiptLineOrNull(final I_M_HU hu)
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
