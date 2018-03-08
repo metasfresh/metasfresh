@@ -163,6 +163,21 @@ public final class ProductBL implements IProductBL
 
 		return isItem(product);
 	}
+	
+	@Override
+	public boolean isStocked(final int productId)
+	{
+		if(productId <= 0)
+		{
+			return false; 
+		}
+		
+		// NOTE: we rely on table cache config
+		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		
+		return isStocked(product);
+	}
+
 
 	@Override
 	public int getM_AttributeSet_ID(final I_M_Product product)

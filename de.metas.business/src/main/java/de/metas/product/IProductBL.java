@@ -27,6 +27,8 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
@@ -37,6 +39,13 @@ import org.compiere.model.I_M_Product;
 public interface IProductBL extends ISingletonService
 {
 	int getUOMPrecision(I_M_Product product);
+	
+	default int getUOMPrecision(final int productId)
+	{
+		Check.assume(productId > 0, "productId > 0");
+		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		return getUOMPrecision(product);
+	}
 
 	String getMMPolicy(I_M_Product product);
 
@@ -58,6 +67,9 @@ public interface IProductBL extends ISingletonService
 	 * @return true if stocked and item
 	 */
 	boolean isStocked(I_M_Product product);
+	
+	boolean isStocked(int productId);
+
 
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
