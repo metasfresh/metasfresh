@@ -1,27 +1,43 @@
 package de.metas.handlingunits.model.validator;
 
-import java.math.BigDecimal;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mmovement.api.IMovementDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.allocation.IAllocationDestination;
+import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
+import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -52,29 +68,123 @@ public class M_Inventory
 	{
 		final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 		final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
-		
-		for (final I_M_InventoryLine line : inventoryDAO.retrieveLinesForInventoryId(inventory.getM_Inventory_ID(), I_M_InventoryLine.class))
+
+		for (final I_M_InventoryLine inventoryLine : inventoryDAO.retrieveLinesForInventoryId(inventory.getM_Inventory_ID(), I_M_InventoryLine.class))
 		{
-			final BigDecimal qtyDiff = inventoryBL.getMovementQty(line);
+			final Quantity qtyDiff = inventoryBL.getMovementQty(inventoryLine);
 			if (qtyDiff.signum() == 0)
 			{
 				continue;
 			}
 			else if (qtyDiff.signum() > 0)
 			{
-				// TODO: add to HU or create one
+				addQtyDiffToHU(inventoryLine);
 			}
 			else // qtyDiff < 0
 			{
-				if (line.getM_HU_ID() <= 0)
-				{
-					throw new FillMandatoryException(I_M_InventoryLine.COLUMNNAME_M_HU_ID)
-							.setParameter(I_M_InventoryLine.COLUMNNAME_Line, line.getLine())
-							.appendParametersToMessage();
-				}
-
-				// TODO subtract from HU
+				subtractQtyDiffFromHU(inventoryLine);
 			}
+		}
+	}
+
+	private void addQtyDiffToHU(final I_M_InventoryLine inventoryLine)
+	{
+		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQty(inventoryLine);
+
+		final IAllocationSource source = createInventoryLineAllocationSourceOrDestination(inventoryLine);
+		final IAllocationDestination huDestination = createHUAllocationDestination(inventoryLine);
+
+		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
+				.setHUContext(Services.get(IHUContextFactory.class).createMutableHUContext())
+				.setDateAsToday()
+				.setProduct(inventoryLine.getM_Product())
+				.setQuantity(qtyDiff)
+				.setFromReferencedModel(inventoryLine)
+				.setForceQtyAllocation(true)
+				.create();
+
+		HULoader.of(source, huDestination)
+				.load(request);
+
+		if (inventoryLine.getM_HU_ID() <= 0)
+		{
+			inventoryLine.setM_HU_ID(extractSingleCreatedHUId(huDestination));
+			InterfaceWrapperHelper.save(inventoryLine);
+		}
+	}
+
+	private void subtractQtyDiffFromHU(final I_M_InventoryLine inventoryLine)
+	{
+		final int huId = inventoryLine.getM_HU_ID();
+		if (huId <= 0)
+		{
+			throw new FillMandatoryException(I_M_InventoryLine.COLUMNNAME_M_HU_ID)
+					.setParameter(I_M_InventoryLine.COLUMNNAME_Line, inventoryLine.getLine())
+					.appendParametersToMessage();
+		}
+
+		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQty(inventoryLine).negate();
+
+		final IAllocationSource source = HUListAllocationSourceDestination.ofHUId(huId);
+		final IAllocationDestination destination = createInventoryLineAllocationSourceOrDestination(inventoryLine);
+
+		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
+				.setHUContext(Services.get(IHUContextFactory.class).createMutableHUContext())
+				.setDateAsToday()
+				.setProduct(inventoryLine.getM_Product())
+				.setQuantity(qtyDiff)
+				.setFromReferencedModel(inventoryLine)
+				.setForceQtyAllocation(true)
+				.create();
+
+		HULoader.of(source, destination)
+				.load(request);
+	}
+
+	private GenericAllocationSourceDestination createInventoryLineAllocationSourceOrDestination(final I_M_InventoryLine inventoryLine)
+	{
+		final I_M_Product product = loadOutOfTrx(inventoryLine.getM_Product_ID(), I_M_Product.class);
+		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQty(inventoryLine);
+		final PlainProductStorage productStorage = new PlainProductStorage(product, qtyDiff.getUOM(), qtyDiff.getQty());
+		return new GenericAllocationSourceDestination(productStorage, inventoryLine);
+	}
+
+	private IAllocationDestination createHUAllocationDestination(final I_M_InventoryLine inventoryLine)
+	{
+		if (inventoryLine.getM_HU_ID() > 0)
+		{
+			return HUListAllocationSourceDestination.ofHUId(inventoryLine.getM_HU_ID());
+		}
+		// TODO handle: else if(inventoryLine.getM_HU_PI_Item_Product_ID() > 0)
+		else
+		{
+			return HUProducerDestination.ofVirtualPI()
+					.setHUStatus(X_M_HU.HUSTATUS_Active)
+					.setM_Locator(inventoryLine.getM_Locator());
+		}
+	}
+
+	private int extractSingleCreatedHUId(final IAllocationDestination huDestination)
+	{
+		if (huDestination instanceof IHUProducerAllocationDestination)
+		{
+			final List<I_M_HU> createdHUs = ((IHUProducerAllocationDestination)huDestination).getCreatedHUs();
+			if (createdHUs.isEmpty())
+			{
+				throw new HUException("No HU was created by " + huDestination);
+			}
+			else if (createdHUs.size() > 1)
+			{
+				throw new HUException("Only one HU expected to be created by " + huDestination);
+			}
+			else
+			{
+				return createdHUs.get(0).getM_HU_ID();
+			}
+		}
+		else
+		{
+			throw new HUException("No HU was created by " + huDestination);
 		}
 	}
 
