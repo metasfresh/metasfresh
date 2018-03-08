@@ -62,15 +62,7 @@ public class CreateProductPriceCommand
 			return;
 		}
 
-		final I_M_PriceList priceList = request.getPriceList();
-		final Timestamp validDate = request.getValidDate();
-		I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceList.getM_PriceList_ID(), validDate);
-
-		if (plv == null)
-		{
-			plv = createPriceListVersion(priceList, validDate);
-		}
-
+		final I_M_PriceList_Version plv = getCreatePriceListVersion(request.getPriceList(), request.getValidDate());
 		createProductPriceOrUpdateExistentOne(plv);
 	}
 
@@ -80,6 +72,12 @@ public class CreateProductPriceCommand
 				&& request.getPrice().signum() > 0
 				&& request.getPriceList() != null
 				&& request.getValidDate() != null;
+	}
+
+	private I_M_PriceList_Version getCreatePriceListVersion(@NonNull final I_M_PriceList priceList, @NonNull final Timestamp validDate)
+	{
+		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceList.getM_PriceList_ID(), validDate);
+		return plv == null ? createPriceListVersion(priceList, validDate) : plv;
 	}
 
 	private I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull final I_M_PriceList_Version plv)
