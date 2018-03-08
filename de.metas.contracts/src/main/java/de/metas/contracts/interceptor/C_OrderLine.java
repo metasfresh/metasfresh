@@ -68,7 +68,7 @@ public class C_OrderLine
 		final int excludeOrderLineId = orderLine.getC_OrderLine_ID();
 		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, excludeOrderLineId);
 
-		groupChangesHandler.recreateGroupOnRegularOrderLineChanged(orderLine);
+		groupChangesHandler.recreateGroupOnOrderLineChanged(orderLine);
 	}
 
 	private int retrieveFirstFlatrateConditionsIdForCompensationGroup(final GroupId groupId)
