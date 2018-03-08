@@ -22,11 +22,13 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 
 import de.metas.inventory.IInventoryBL;
 import de.metas.product.IProductBL;
+import lombok.NonNull;
 
 /**
  * Physical Inventory Line Model
@@ -41,9 +43,6 @@ import de.metas.product.IProductBL;
 public class MInventoryLine extends X_M_InventoryLine
 {
 	private static final long serialVersionUID = 1336000922103246463L;
-
-	/** Manually created */
-	private boolean m_isManualEntry = true;
 
 	public MInventoryLine(Properties ctx, int M_InventoryLine_ID, String trxName)
 	{
@@ -71,21 +70,22 @@ public class MInventoryLine extends X_M_InventoryLine
 	/**
 	 * Detail Constructor.
 	 * Locator/Product/AttributeSetInstance must be unique
-	 *
-	 * @param inventory parent
-	 * @param M_Locator_ID locator
-	 * @param M_Product_ID product
-	 * @param M_AttributeSetInstance_ID instance
-	 * @param QtyBook book value
-	 * @param QtyCount count value
 	 */
-	public MInventoryLine(MInventory inventory,
-			int M_Locator_ID, int M_Product_ID, int M_AttributeSetInstance_ID,
-			BigDecimal QtyBook, BigDecimal QtyCount)
+	public MInventoryLine(
+			@NonNull final I_M_Inventory inventory,
+			final int M_Locator_ID,
+			final int M_Product_ID,
+			final int M_AttributeSetInstance_ID,
+			final BigDecimal QtyBook,
+			final BigDecimal QtyCount)
 	{
-		this(inventory.getCtx(), 0, inventory.get_TrxName());
+		this(InterfaceWrapperHelper.getCtx(inventory),
+				0,
+				InterfaceWrapperHelper.getTrxName(inventory));
 		if (inventory.getM_Inventory_ID() <= 0)
+		{
 			throw new IllegalArgumentException("Header not saved");
+		}
 		setM_Inventory(inventory);
 		setClientOrg(inventory.getAD_Client_ID(), inventory.getAD_Org_ID());
 		setM_Locator_ID(M_Locator_ID);		// FK
@@ -96,25 +96,25 @@ public class MInventoryLine extends X_M_InventoryLine
 			setQtyBook(QtyBook);
 		if (QtyCount != null && QtyCount.signum() != 0)
 			setQtyCount(QtyCount);
-		m_isManualEntry = false;
-	}	// MInventoryLine
+	}
 
 	private final BigDecimal adjustQtyToUOMPrecision(final BigDecimal qty)
 	{
-		if(qty == null)
+		if (qty == null)
 		{
 			return null;
 		}
-		
+
 		final int productId = getM_Product_ID();
-		if(productId <= 0)
+		if (productId <= 0)
 		{
 			return qty;
 		}
-			
+
 		final int precision = Services.get(IProductBL.class).getUOMPrecision(productId);
 		return qty.setScale(precision, BigDecimal.ROUND_HALF_UP);
 	}
+
 	/**
 	 * Set Count Qty - enforce UOM
 	 *
@@ -163,8 +163,8 @@ public class MInventoryLine extends X_M_InventoryLine
 		{
 			throw new AdempiereException("@ParentComplete@ @M_Inventory_ID@");
 		}
-		
-		if (newRecord && m_isManualEntry)
+
+		if (newRecord && is_ManualUserAction())
 		{
 			// Product requires ASI
 			if (getM_AttributeSetInstance_ID() <= 0)
@@ -201,7 +201,7 @@ public class MInventoryLine extends X_M_InventoryLine
 		}
 
 		// InternalUse Inventory
-		if(isInternalUseInventory())
+		if (isInternalUseInventory())
 		{
 			if (!INVENTORYTYPE_ChargeAccount.equals(getInventoryType()))
 			{
