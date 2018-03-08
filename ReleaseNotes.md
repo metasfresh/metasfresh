@@ -32,6 +32,8 @@ Here come the actual release notes:
     * Improved behavior of lookup and list widget drop-down. Now keeping the field content selected when reopening the drop-down after hover and leave.
   * [#1650](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1650) Edit mode in grid view when focus lost
     * Improvement of the display status of grid fields in edit mode. Now the edit modus and display is left as soon the field is left.
+  * [#1653](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1653) Line in modal overlay for creating purchase order from SO disappears
+    * Fixes an Issue in Create Purchase Orders from Sales Order Lines. Now it's possible to enter the purchase Quantity again.
 
 # metasfresh 5.47 (2018-10)
 **release for week 2018-10**
