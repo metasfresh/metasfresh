@@ -38,6 +38,8 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.util.Env;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.document.engine.IDocument;
 import de.metas.inventory.IInventoryBL;
 import de.metas.quantity.Quantity;
@@ -45,6 +47,7 @@ import lombok.NonNull;
 
 public class InventoryBL implements IInventoryBL
 {
+	@VisibleForTesting
 	public static final String SYSCONFIG_QuickInput_Charge_ID = "de.metas.adempiere.callout.M_Inventory.QuickInput.C_Charge_ID";
 
 	@Override
