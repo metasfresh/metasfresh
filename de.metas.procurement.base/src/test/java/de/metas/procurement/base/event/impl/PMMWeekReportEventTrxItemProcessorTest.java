@@ -129,7 +129,8 @@ public class PMMWeekReportEventTrxItemProcessorTest
 									.setStrictMatching(true)
 									.newExpectation()
 										.bpartner(bpartner)
-										.product(pmmProduct.getM_Product_ID()).asi(pmmProduct.getM_AttributeSetInstance_ID())
+										.product(pmmProduct.getM_Product_ID())
+										.asi(pmmProduct.getM_AttributeSetInstance_ID())
 										.dateWeek(weekDate)
 										.trend(pmmTrend)
 										.endExpectation()
@@ -185,12 +186,12 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		PMMWeekReportEventsProcessor.newInstance().processAll();
 		//
 		//@formatter:off
-		PMM_Week_Expectations lastExpectations = PMM_Week_Expectations.newExpectations()
+		final PMM_Week_Expectations lastExpectations = PMM_Week_Expectations.newExpectations()
 				.setStrictMatching(true)
 				.newExpectation().bpartner(bpartner).product(pmmProduct.getM_Product_ID()).asi(pmmProduct.getM_AttributeSetInstance_ID()).dateWeek(weekDate).trend(X_PMM_WeekReport_Event.PMM_TREND_Zero).endExpectation()
 				.assertExpected();
 		//@formatter:on
-		
+
 		//
 		// Unlock all other events
 		for (final I_PMM_WeekReport_Event event : lockedEvents)
@@ -198,7 +199,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 			event.setProcessed(false);
 			InterfaceWrapperHelper.save(event);
 		}
-		
+
 		//
 		// Process all events again
 		// Expectation: aggregations shall look the same because the events which we processed were actually reported BEFORE our last event
@@ -320,7 +321,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		}
 		return weekDates;
 	}
-	
+
 	public void assertAllEventsProcessed()
 	{
 		for (final I_PMM_WeekReport_Event event : POJOLookupMap.get().getRecords(I_PMM_WeekReport_Event.class))

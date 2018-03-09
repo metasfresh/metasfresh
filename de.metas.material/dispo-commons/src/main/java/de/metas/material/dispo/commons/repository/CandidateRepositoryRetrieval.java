@@ -169,7 +169,7 @@ public class CandidateRepositoryRetrieval
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				candidateRecord.getM_Product_ID(),
-				getEfferciveStorageAttributesKey(candidateRecord),
+				getEffectiveStorageAttributesKey(candidateRecord),
 				candidateRecord.getM_AttributeSetInstance_ID());
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
@@ -199,7 +199,7 @@ public class CandidateRepositoryRetrieval
 		return candidateBuilder;
 	}
 
-	private AttributesKey getEfferciveStorageAttributesKey(@NonNull final I_MD_Candidate candidateRecord)
+	private AttributesKey getEffectiveStorageAttributesKey(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final AttributesKey attributesKey;
 		if (Check.isEmpty(candidateRecord.getStorageAttributesKey(), true))

@@ -13,11 +13,9 @@ import org.compiere.model.I_M_InOutLine;
 import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inout.IInOutDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.api.impl.ShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_AttributeConfig;
-import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -64,21 +62,6 @@ public class HUShipmentProcess_AttributesAggregation_WithDifferentTemplateAttrib
 	{
 		super.initialize();
 
-		//
-		// set up the attribute config for this test case
-		final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
-		assertThat(shipmentScheduleHandlerBL).as("this rest requires a particular instance").isInstanceOf(ShipmentScheduleHandlerBL.class);
-
-		final I_M_IolCandHandler handlerRecord = ((ShipmentScheduleHandlerBL)shipmentScheduleHandlerBL)
-				.retrieveHandlerRecordOrNull(OrderLineShipmentScheduleHandler.class.getName());
-		assertThat(handlerRecord).isNotNull(); // should have been registered by super.initialize();
-
-		final I_M_ShipmentSchedule_AttributeConfig attributeConfigRecord = newInstance(I_M_ShipmentSchedule_AttributeConfig.class);
-		attributeConfigRecord.setM_Attribute(attribute);
-		attributeConfigRecord.setOnlyIfInReferencedASI(false);
-		attributeConfigRecord.setM_IolCandHandler(handlerRecord);
-		save(attributeConfigRecord);
-
 
 		template_huPIAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
 				.setM_HU_PI(helper.huDefNone)
@@ -98,6 +81,16 @@ public class HUShipmentProcess_AttributesAggregation_WithDifferentTemplateAttrib
 
 		lu1_attributeValue = "value1";
 		lu2_attributeValue = "value2";
+	}
+
+	@Override
+	protected void initializeAttributeConfig(@NonNull final I_M_IolCandHandler handlerRecord)
+	{
+		final I_M_ShipmentSchedule_AttributeConfig attributeConfigRecord = newInstance(I_M_ShipmentSchedule_AttributeConfig.class);
+		attributeConfigRecord.setM_Attribute(attribute);
+		attributeConfigRecord.setOnlyIfInReferencedASI(false);
+		attributeConfigRecord.setM_IolCandHandler(handlerRecord);
+		save(attributeConfigRecord);
 	}
 
 	@Override

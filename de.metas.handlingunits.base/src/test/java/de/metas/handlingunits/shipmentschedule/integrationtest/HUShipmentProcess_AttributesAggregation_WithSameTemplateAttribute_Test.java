@@ -1,5 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.util.List;
 
 import org.adempiere.util.Services;
@@ -10,6 +13,9 @@ import org.junit.Assert;
 import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inout.IInOutDAO;
+import de.metas.inoutcandidate.model.I_M_IolCandHandler;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_AttributeConfig;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -76,6 +82,16 @@ public class HUShipmentProcess_AttributesAggregation_WithSameTemplateAttribute_T
 	}
 
 	@Override
+	protected void initializeAttributeConfig(@NonNull final I_M_IolCandHandler handlerRecord)
+	{
+		final I_M_ShipmentSchedule_AttributeConfig attributeConfigRecord = newInstance(I_M_ShipmentSchedule_AttributeConfig.class);
+		attributeConfigRecord.setM_Attribute(attribute);
+		attributeConfigRecord.setOnlyIfInReferencedASI(false);
+		attributeConfigRecord.setM_IolCandHandler(handlerRecord);
+		save(attributeConfigRecord);
+	}
+
+	@Override
 	protected void step50_GenerateShipment_validateGeneratedShipments()
 	{
 		//
@@ -89,6 +105,7 @@ public class HUShipmentProcess_AttributesAggregation_WithSameTemplateAttribute_T
 		Assert.assertEquals("Invalid generated shipment lines count", 1, shipmentLines.size());
 		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
 
+		// this shall work because we implemeted initializeAttributeConfig
 		assertShipmentLineASIAttributeValueString(lu1_attributeValue, shipmentLine1, attribute);
 		assertShipmentLineASIAttributeValueString(lu2_attributeValue, shipmentLine1, attribute);
 
