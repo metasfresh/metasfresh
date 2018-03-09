@@ -458,8 +458,8 @@ public class MProductImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET M_PharmaProductCategory_ID=(SELECT M_PharmaProductCategory_ID FROM M_PharmaProductCategory c")
-				.append(" WHERE i.PharmaProductCategory_Value=c.Name AND i.AD_Client_ID=c.AD_Client_ID) ")
-				.append("WHERE PharmaProductCategory_Value IS NOT NULL AND M_PharmaProductCategory_ID IS NULL")
+				.append(" WHERE i.PharmaProductCategory_Name=c.Name AND i.AD_Client_ID=c.AD_Client_ID) ")
+				.append("WHERE PharmaProductCategory_Name IS NOT NULL AND M_PharmaProductCategory_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);

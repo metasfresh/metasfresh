@@ -32,9 +32,9 @@ public interface I_I_Product  extends org.compiere.model.I_I_Product
 	public void setFAM_ZUB (String FAM_ZUB);
 	public String getFAM_ZUB();
 
-	public static final String COLUMNNAME_PharmaProductCategory_Value = "PharmaProductCategory_Value";
-	public void setPharmaProductCategory_Value(String PharmaProductCategory_Value);
-	public String getPharmaProductCategory_Value();
+	public static final String COLUMNNAME_PharmaProductCategory_Name = "PharmaProductCategory_Name";
+	public void setPharmaProductCategory_Name(String PharmaProductCategory_Name);
+	public String getPharmaProductCategory_Name();
 
 	public static final String COLUMNNAME_M_PharmaProductCategory_ID = "M_PharmaProductCategory_ID";
 	public void setM_PharmaProductCategory_ID(int M_PharmaProductCategory_ID);
@@ -43,7 +43,6 @@ public interface I_I_Product  extends org.compiere.model.I_I_Product
 	public static final String COLUMNNAME_AEP_Price_List_ID = "AEP_Price_List_ID";
 	public void setAEP_Price_List_ID(int AEP_Price_List_ID);
 	public int getAEP_Price_List_ID();
-	public org.compiere.model.I_M_PriceList getAEP_Price_List();
 
 	public static final String COLUMNNAME_A01AEP = "A01AEP";
 	public void setA01AEP(BigDecimal A01AEP);
@@ -52,7 +51,6 @@ public interface I_I_Product  extends org.compiere.model.I_I_Product
 	public static final String COLUMNNAME_APU_Price_List_ID = "APU_Price_List_ID";
 	public void setAPU_Price_List_ID(int APU_Price_List_ID);
 	public int getAPU_Price_List_ID();
-	public org.compiere.model.I_M_PriceList getAPU_Price_List();
 
 	public static final String COLUMNNAME_A01APU = "A01APU";
 	public void setA01APU(BigDecimal A01APU);
