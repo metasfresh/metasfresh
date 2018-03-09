@@ -26,6 +26,7 @@ import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -69,10 +70,13 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.logging.LogManager;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import lombok.NonNull;
 
 /**
  * HU Shipment Process:
@@ -216,6 +220,21 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 			shipperTransportation.setM_Shipper(shipper);
 			save(shipperTransportation);
 		}
+
+		// allow subclasses to set up the attribute config for their test case
+		final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+		assertThat(shipmentScheduleHandlerBL).as("this rest requires a particular instance").isInstanceOf(ShipmentScheduleHandlerBL.class);
+
+		final I_M_IolCandHandler handlerRecord = ((ShipmentScheduleHandlerBL)shipmentScheduleHandlerBL)
+				.retrieveHandlerRecordOrNull(OrderLineShipmentScheduleHandler.class.getName());
+		assertThat(handlerRecord).isNotNull(); // should have been registered by super.initialize();
+
+		initializeAttributeConfig(handlerRecord);
+	}
+
+	protected void initializeAttributeConfig(@NonNull final I_M_IolCandHandler handlerRecord)
+	{
+		// nothing
 	}
 
 	@Test

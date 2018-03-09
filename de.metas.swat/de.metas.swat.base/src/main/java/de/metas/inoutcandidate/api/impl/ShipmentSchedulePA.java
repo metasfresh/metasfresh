@@ -126,8 +126,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// Order Line
 			+ "\n   s." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID;
 
-	private static final String WHERE_INCOMPLETE =               //
-			"\n   AND ("
+	private static final String WHERE_ACTIVE_AND_INCOMPLETE = //
+			"\n   s." + I_M_ShipmentSchedule.COLUMNNAME_IsActive + "=" + DB.TO_BOOLEAN(true)
+					+ "\n   AND ("
 					// if the param '?' is set to 0, only those entries are loaded that
 					// don't have an inOutLine yet.
 					+ "\n      ?=1" //
@@ -147,7 +148,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ " FROM M_ShipmentSchedule s " //
 			+ "   JOIN C_OrderLine ol ON ol.C_OrderLine_ID=s.C_OrderLine_ID " //
 			+ " WHERE ol.M_Product_ID=? AND ol.AD_Client_ID=? "
-			+ WHERE_INCOMPLETE;
+			+ WHERE_ACTIVE_AND_INCOMPLETE;
 
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
 
@@ -167,18 +168,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 					+ " FROM M_ShipmentSchedule s" //
 					+ "   LEFT JOIN C_OrderLine ol ON s.C_OrderLine_ID=ol.C_OrderLine_ID " //
 					+ " WHERE ol.M_Product_ID=? AND s.AD_Client_ID=? "
-					+ WHERE_INCOMPLETE;
+					+ WHERE_ACTIVE_AND_INCOMPLETE;
 
 	private static final String SQL_SCHED =               //
 			SELECT_SCHED_OL //
 					+ "\n WHERE s.AD_Client_ID=? " //
-					+ WHERE_INCOMPLETE //
+					+ WHERE_ACTIVE_AND_INCOMPLETE //
 					+ ORDER_CLAUSE;
 
 	private static final String SQL_OL_SCHED =               //
 			SELECT_OL_SCHED //
 					+ "\n WHERE s.AD_Client_ID=?" //
-					+ WHERE_INCOMPLETE;
+					+ WHERE_ACTIVE_AND_INCOMPLETE;
 
 	private static final String SQL_SCHED_INVALID_3P =               //
 			SELECT_SCHED_OL
@@ -186,7 +187,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 					+ "            select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr "
 					+ "            where sr." + COLUMNNAME_M_ShipmentSchedule_ID + "=s." + COLUMNNAME_M_ShipmentSchedule_ID + " AND sr.AD_PInstance_ID=? "
 					+ "      )"
-					+ WHERE_INCOMPLETE
+					+ WHERE_ACTIVE_AND_INCOMPLETE
 					+ ORDER_CLAUSE;
 
 	private static final String SQL_OL_SCHED_INVALID_3P =               //
@@ -195,23 +196,23 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 					+ "            select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr "
 					+ "            where sr." + COLUMNNAME_M_ShipmentSchedule_ID + "=s." + COLUMNNAME_M_ShipmentSchedule_ID + " AND sr.AD_PInstance_ID=? "
 					+ "      )"
-					+ WHERE_INCOMPLETE;
+					+ WHERE_ACTIVE_AND_INCOMPLETE;
 
 	private static final String SQL_SCHED_BPARTNER =               //
 			SELECT_SCHED_OL //
 					+ " WHERE s.AD_Client_ID=? AND ol.C_Bpartner_ID=? " //
-					+ WHERE_INCOMPLETE //
+					+ WHERE_ACTIVE_AND_INCOMPLETE //
 					+ ORDER_CLAUSE;
 
 	private static final String SQL_OL_SCHED_BPARTNER =               //
 			SELECT_OL_SCHED //
 					+ " WHERE s.AD_Client_ID=? AND ol.C_Bpartner_ID=?" //
-					+ WHERE_INCOMPLETE;
+					+ WHERE_ACTIVE_AND_INCOMPLETE;
 
 	private static final String SQL_BPARTNER =               //
 			SELECT_SCHED_OL //
 					+ " WHERE s.AD_Client_ID=? AND ol.C_Bpartner_ID=? "
-					+ WHERE_INCOMPLETE;
+					+ WHERE_ACTIVE_AND_INCOMPLETE;
 
 	/**
 	 * Marks shipment schedule records with a given product-id for update by {@link IShipmentScheduleUpdater#updateShipmentSchedule(int, int, int, String)}. This is done by creating
@@ -400,10 +401,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public List<OlAndSched> retrieveInvalid(final int adPinstanceId, final String trxName)
 	{
-
-		final String sqlSched;
-		final String sqlOlSched;
-
 		// 1.
 		// Mark the M_ShipmentSchedule_Recompute records that point to the scheds which we will work with
 		// This allows us to distinguish them from records created later
