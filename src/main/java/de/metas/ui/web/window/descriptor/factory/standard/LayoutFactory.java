@@ -552,7 +552,7 @@ public class LayoutFactory
 				.setDescription(entityDescriptor.getDescription())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.setIdFieldName(entityDescriptor.getIdFieldName())
+				.setIdFieldName(entityDescriptor.getIdFieldNameOrNull())
 				.setDefaultOrderBys(entityDescriptor.getDefaultOrderBys());
 
 		//
