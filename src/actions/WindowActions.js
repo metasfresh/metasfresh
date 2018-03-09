@@ -1248,6 +1248,7 @@ export function getRowsData(rowData) {
     rowData.map(item => {
       data = data.concat(mapIncluded(item));
     });
+
   return data;
 }
 

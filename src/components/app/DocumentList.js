@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
+import { Map, List } from 'immutable';
 
 import {
   closeListIncludedView,
@@ -215,7 +216,7 @@ class DocumentList extends Component {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
             const rows = mergeRows({
-              toRows: [...this.state.data.result],
+              toRows: this.state.data.result.toArray(),
               fromRows: [...response.data],
               columnInfosByFieldName: this.state.pageColumnInfosByFieldName,
             });
@@ -223,7 +224,7 @@ class DocumentList extends Component {
             this.setState({
               data: {
                 ...this.state.data,
-                result: [...rows],
+                result: List(rows),
               },
             });
           }
@@ -476,19 +477,24 @@ class DocumentList extends Component {
       pageLength: this.pageLength,
       orderBy: sortingQuery,
     }).then(response => {
+      const result = List(response.data.result);
+      result.hashCode();
+
       const selection = getSelectionDirect(selections, windowType, viewId);
       const forceSelection =
         (type === 'includedView' || isIncluded) &&
         response.data &&
-        response.data.result &&
-        response.data.result.length > 0 &&
+        result.size > 0 &&
         (selection.length === 0 ||
           !this.doesSelectionExist({
-            data: response.data,
+            data: {
+              ...response.data,
+              result,
+            },
             selected: selection,
           }));
 
-      response.data.result.map(row => {
+      result.map(row => {
         row.fieldsByName = parseToDisplay(row.fieldsByName);
       });
 
@@ -501,13 +507,16 @@ class DocumentList extends Component {
       if (this.mounted) {
         this.setState(
           {
-            data: response.data,
+            data: {
+              ...response.data,
+              result,
+            },
             pageColumnInfosByFieldName: pageColumnInfosByFieldName,
             filters: response.data.filters,
           },
           () => {
-            if (forceSelection && response.data && response.data.result) {
-              const selection = [response.data.result[0].id];
+            if (forceSelection && response.data && result && result.size > 0) {
+              const selection = [result.get(0).id];
 
               dispatch(
                 selectTableItems({
@@ -517,7 +526,6 @@ class DocumentList extends Component {
                 })
               );
             }
-
             this.connectWebSocket(response.data.viewId);
           }
         );
@@ -805,7 +813,7 @@ class DocumentList extends Component {
                   c.getWrappedInstance() &&
                   c.getWrappedInstance().instanceRef)
               }
-              rowData={{ 1: data.result }}
+              rowData={Map({ 1: data.result })}
               cols={layout.elements}
               collapsible={layout.collapsible}
               expandedDepth={layout.expandedDepth}

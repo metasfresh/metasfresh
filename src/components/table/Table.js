@@ -1,4 +1,5 @@
 import update from 'immutability-helper';
+import { is } from 'immutable';
 import * as _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -111,7 +112,7 @@ class Table extends Component {
 
     if (
       !_.isEqual(prevProps.defaultSelected, defaultSelected) ||
-      (prevProps.refreshSelection !== refreshSelection && refreshSelection)
+      (refreshSelection && prevProps.refreshSelection !== refreshSelection)
     ) {
       this.setState({
         selected: defaultSelected,
@@ -129,10 +130,7 @@ class Table extends Component {
       );
     }
 
-    if (
-      !_.isEqual(prevProps.rowData, rowData) ||
-      prevProps.rowData !== rowData
-    ) {
+    if (!is(prevProps.rowData, rowData)) {
       this.getIndentData();
     }
 
@@ -188,8 +186,8 @@ class Table extends Component {
       keyProperty,
     } = this.props;
 
-    if (indentSupported && rowData[tabid]) {
-      let rowsData = getRowsData(rowData[tabid]);
+    if (indentSupported && rowData.get(`${tabid}`)) {
+      let rowsData = getRowsData(rowData.get(`${tabid}`));
 
       this.setState(
         {
@@ -238,10 +236,12 @@ class Table extends Component {
         }
       );
     } else {
-      const rowsData = rowData[tabid] || [];
+      const rowsData = rowData.get(`${tabid}`)
+        ? rowData.get(`${tabid}`).toArray()
+        : [];
       this.setState({
         rows: rowsData,
-        pendingInit: !rowData[tabid],
+        pendingInit: !rowData.get(`${tabid}`),
       });
     }
   };
@@ -705,7 +705,7 @@ class Table extends Component {
   handleOpenNewTab = selected => {
     const { type } = this.props;
     for (let i = 0; i < selected.length; i++) {
-      window.open('/window/' + type + '/' + selected[i], '_blank');
+      window.open(`/window/${type}/${selected[i]}`, '_blank');
     }
   };
 
@@ -771,10 +771,9 @@ class Table extends Component {
       res &&
         res.data &&
         window.open(
-          '/window/' +
-            res.data.documentPath.windowId +
-            '/' +
-            res.data.documentPath.documentId,
+          `/window/${res.data.documentPath.windowId}/${
+            res.data.documentPath.documentId
+          }`,
           '_blank'
         );
     });
@@ -969,11 +968,9 @@ class Table extends Component {
                 showIncludedViewOnSelect({
                   showIncludedView: selected && item.supportIncludedViews,
                   forceClose: !selected,
-
                   windowType: item.supportIncludedViews
                     ? item.includedView.windowType || item.includedView.windowId
                     : null,
-
                   viewId: item.supportIncludedViews
                     ? item.includedView.viewId
                     : '',
@@ -1028,8 +1025,8 @@ class Table extends Component {
     }
 
     if (
-      (data && data[tabId] && Object.keys(data[tabId]).length === 0) ||
-      !data[tabId]
+      (data && data.get(`${tabId}`) && data.get(`${tabId}`).size === 0) ||
+      !data.get(`${tabId}`)
     ) {
       return (
         <div className="empty-info-text">
@@ -1149,9 +1146,9 @@ class Table extends Component {
               {
                 'table-content-empty':
                   (rowData &&
-                    rowData[tabid] &&
-                    Object.keys(rowData[tabid]).length === 0) ||
-                  !rowData[tabid],
+                    rowData.get(`${tabid}`) &&
+                    rowData.get(`${tabid}`).size === 0) ||
+                  !rowData.get(`${tabid}`),
               }
             )}
           >

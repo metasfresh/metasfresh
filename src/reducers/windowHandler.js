@@ -1,4 +1,5 @@
-import update from 'react-addons-update';
+import update from 'immutability-helper';
+import { Map, List } from 'immutable';
 
 import {
   ACTIVATE_TAB,
@@ -52,7 +53,7 @@ const initialState = {
     viewId: null,
     layout: {},
     data: {},
-    rowData: {},
+    rowData: Map(),
     modalTitle: '',
     modalType: '',
     isAdvanced: false,
@@ -76,7 +77,10 @@ const initialState = {
       activeTab: null,
     },
     data: [],
-    rowData: {},
+
+    // rowData is an immutable Map with tabId's as keys, and Lists as values.
+    // List's elements are plain objects for now
+    rowData: Map(),
     saveStatus: {},
     validStatus: {},
     includedTabsInfo: {},
@@ -183,7 +187,7 @@ export default function windowHandler(state = initialState, action) {
           data: action.data,
           docId: action.docId,
           layout: {},
-          rowData: {},
+          rowData: Map(),
           saveStatus: action.saveStatus,
           standardActions: new Set(action.standardActions),
           validStatus: action.validStatus,
@@ -197,7 +201,7 @@ export default function windowHandler(state = initialState, action) {
         master: {
           ...state.master,
           data: {},
-          rowData: {},
+          rowData: Map(),
           docId: undefined,
         },
       };
@@ -237,34 +241,48 @@ export default function windowHandler(state = initialState, action) {
           },
         },
       });
+    /* eslint-disable no-case-declarations */
     case ADD_ROW_DATA:
-      return Object.assign({}, state, {
-        [action.scope]: Object.assign({}, state[action.scope], {
-          rowData: Object.assign({}, state[action.scope].rowData, action.data),
-        }),
-      });
+      let addRowData = Map();
+
+      for (const [key, item] of Object.entries(action.data)) {
+        const arrayItem = item.length ? item : [];
+        addRowData = addRowData.set(key, List(arrayItem));
+      }
+
+      return {
+        ...state,
+        [action.scope]: {
+          ...state[action.scope],
+          rowData: state[action.scope].rowData.merge(addRowData),
+        },
+      };
     case ADD_NEW_ROW:
-      return update(state, {
-        [action.scope]: {
-          rowData: {
-            [action.tabid]: {
-              $push: [action.item],
-            },
-          },
+      const newRowData = state[action.scope].rowData.update(
+        `${action.tabid}`,
+        list => list.push(action.item)
+      );
+
+      return {
+        ...state,
+        [`${action.scope}`]: {
+          ...state[`${action.scope}`],
+          rowData: newRowData,
         },
-      });
+      };
     case DELETE_ROW:
-      return update(state, {
-        [action.scope]: {
-          rowData: {
-            [action.tabid]: {
-              $set: state[action.scope].rowData[action.tabid].filter(
-                item => item.rowId !== action.rowid
-              ),
-            },
-          },
+      const deletedRowData = state[action.scope].rowData.update(
+        `${action.tabid}`,
+        list => list.filter(item => item.rowId !== action.rowid)
+      );
+
+      return {
+        ...state,
+        [`${action.scope}`]: {
+          ...state[`${action.scope}`],
+          rowData: deletedRowData,
         },
-      });
+      };
     case UPDATE_DATA_FIELD_PROPERTY:
       return update(state, {
         [action.scope]: {
@@ -306,75 +324,87 @@ export default function windowHandler(state = initialState, action) {
     }
 
     case UPDATE_ROW_FIELD_PROPERTY: {
-      const scope = action.scope;
-      const tabid = action.tabid;
-      const rowid = action.rowid;
-      const property = action.property;
+      const { scope, tabid, rowid, property } = action;
       const scState = state[scope];
+      const scRowData = scState.rowData.get(`${tabid}`);
 
-      if (scState && scState.rowData && scState.rowData[tabid]) {
-        const scRowData = scState.rowData[tabid];
+      if (scState && scState.rowData && scRowData) {
+        const updateRowFieldProperty = state[action.scope].rowData.update(
+          `${tabid}`,
+          list =>
+            list.map(
+              item =>
+                item.rowId === rowid
+                  ? {
+                      ...item,
+                      fieldsByName: {
+                        ...item.fieldsByName,
+                        [property]: {
+                          ...item.fieldsByName[property],
+                          ...action.item,
+                        },
+                      },
+                    }
+                  : item
+            )
+        );
 
-        return update(state, {
-          [action.scope]: {
-            rowData: {
-              [tabid]: {
-                $set: scRowData.map(
-                  (item, index) =>
-                    item.rowId === rowid
-                      ? {
-                          ...scRowData[index],
-                          fieldsByName: {
-                            ...scRowData[index].fieldsByName,
-                            [property]: {
-                              ...scRowData[index].fieldsByName[property],
-                              ...action.item,
-                            },
-                          },
-                        }
-                      : item
-                ),
-              },
-            },
+        return {
+          ...state,
+          [`${action.scope}`]: {
+            ...state[`${action.scope}`],
+            rowData: updateRowFieldProperty,
           },
-        });
+        };
       } else {
         return state;
       }
     }
     case UPDATE_ROW_PROPERTY:
-      return update(state, {
-        [action.scope]: {
-          rowData: {
-            [action.tabid]: {
-              $set: state[action.scope].rowData[action.tabid].map(
-                (item, index) =>
-                  item.rowId === action.rowid
-                    ? {
-                        ...state[action.scope].rowData[action.tabid][index],
-                        [action.property]: action.item,
-                      }
-                    : item
-              ),
-            },
-          },
+      const updateRowPropertyData = state[action.scope].rowData.update(
+        `${action.tabid}`,
+        list =>
+          list.map(
+            item =>
+              item.rowId === action.rowid
+                ? {
+                    ...item,
+                    [action.property]: action.item,
+                  }
+                : item
+          )
+      );
+
+      return {
+        ...state,
+        [`${action.scope}`]: {
+          ...state[`${action.scope}`],
+          rowData: updateRowPropertyData,
         },
-      });
+      };
     case UPDATE_ROW_STATUS:
-      return update(state, {
-        [action.scope]: {
-          rowData: {
-            [action.tabid]: {
-              $set: state[action.scope].rowData[action.tabid].map(
-                item =>
-                  item.rowId === action.rowid
-                    ? { $set: action.saveStatus }
-                    : item
-              ),
-            },
-          },
+      const updateRowStatusData = state[action.scope].rowData.update(
+        `${action.tabid}`,
+        list =>
+          list.map(
+            item =>
+              item.rowId !== action.rowid
+                ? {
+                    ...item,
+                    saveStatus: action.saveStatus,
+                  }
+                : item
+          )
+      );
+
+      return {
+        ...state,
+        [`${action.scope}`]: {
+          ...state[`${action.scope}`],
+          rowData: updateRowStatusData,
         },
-      });
+      };
+    /* eslint-enable no-case-declarations */
     case UPDATE_DATA_VALID_STATUS:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {

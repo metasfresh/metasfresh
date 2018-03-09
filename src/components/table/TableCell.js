@@ -1,20 +1,12 @@
 import Moment from 'moment';
 import numeral from 'numeral';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
 
 import MasterWidget from '../widget/MasterWidget';
 
-class TableCell extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      backdropLock: false,
-    };
-  }
-
+class TableCell extends PureComponent {
   componentWillReceiveProps(nextProps) {
     const { widgetData, updateRow, readonly, rowId } = this.props;
     // We should avoid highlighting when whole row is exchanged (sorting)
@@ -31,25 +23,12 @@ class TableCell extends Component {
     }
   }
 
-  handleBackdropLock = state => {
-    this.setState({
-      backdropLock: !!state,
-    });
-  };
-
   handleClickOutside = e => {
-    const { onClickOutside, isEdited } = this.props;
-    const { backdropLock } = this.state;
+    const { onClickOutside } = this.props;
 
-    //We can handle click outside only if
-    //nested elements has no click oustide listening pending
-    if (!backdropLock && !isEdited) {
-      //it is important to change focus before collapsing to
-      //blur Widget field and patch data
-      this.cell && this.cell.focus();
+    this.cell && this.cell.focus();
 
-      onClickOutside(e);
-    }
+    onClickOutside(e);
   };
 
   static AMOUNT_FIELD_TYPES = ['Amount', 'CostPrice'];
@@ -215,7 +194,6 @@ class TableCell extends Component {
             tabId={mainTable ? null : tabId}
             noLabel={true}
             gridAlign={item.gridAlign}
-            handleBackdropLock={this.handleBackdropLock}
             listenOnKeys={listenOnKeys}
             listenOnKeysTrue={listenOnKeysTrue}
             listenOnKeysFalse={listenOnKeysFalse}

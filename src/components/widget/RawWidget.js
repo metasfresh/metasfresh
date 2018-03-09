@@ -90,9 +90,7 @@ class RawWidget extends Component {
     } = this.props;
 
     enableOnClickOutside && enableOnClickOutside();
-
     dispatch(allowShortcut());
-
     handleBlur && handleBlur(this.willPatch(value));
 
     this.setState({
@@ -102,7 +100,7 @@ class RawWidget extends Component {
 
     listenOnKeysTrue && listenOnKeysTrue();
 
-    if (widgetField && value) {
+    if (widgetField) {
       this.handlePatch(widgetField, value, id);
     }
   };
@@ -121,6 +119,7 @@ class RawWidget extends Component {
 
   handleKeyDown = (e, property, value, widgetType) => {
     if (e.key === 'Enter' && widgetType !== 'LongText') {
+      e.stopPropagation();
       this.handlePatch(property, value);
     }
   };

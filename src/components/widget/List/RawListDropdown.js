@@ -7,6 +7,7 @@ export default class RawListDropdown extends PureComponent {
     isListEmpty: PropTypes.bool,
     offsetWidth: PropTypes.number,
     loading: PropTypes.bool,
+    childRef: PropTypes.func,
     children: PropTypes.any,
   };
 
@@ -17,6 +18,7 @@ export default class RawListDropdown extends PureComponent {
       <div
         className="input-dropdown-list"
         style={{ width: `${offsetWidth}px` }}
+        ref={this.props.childRef}
       >
         {isListEmpty &&
           loading === false && (

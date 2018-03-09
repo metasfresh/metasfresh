@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
-import { Component } from 'react';
+import { PureComponent } from 'react';
 
 import keymap from '../../shortcuts/keymap';
 
-export default class Shortcut extends Component {
+export default class Shortcut extends PureComponent {
   static contextTypes = {
     shortcuts: PropTypes.shape({
       subscribe: PropTypes.func.isRequired,
