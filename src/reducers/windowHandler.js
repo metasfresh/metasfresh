@@ -334,7 +334,7 @@ export default function windowHandler(state = initialState, action) {
           list =>
             list.map(
               item =>
-                item.rowId !== rowid
+                item.rowId === rowid
                   ? {
                       ...item,
                       fieldsByName: {
