@@ -661,7 +661,9 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			if (propertyNameLowerCase.endsWith("_ID"))
 			{
-				value = idForNewModel(propertyNameLowerCase);
+				// e.g. if a PP_Order has no ASI, we still return 0 because that's the "NO-ASI"-asi's ID
+				// value = idForNewModel(propertyNameLowerCase);
+				value = ID_ZERO;
 			}
 			else
 			{
@@ -713,7 +715,8 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			final Map<String, Object> values = getInnerValuesToSet();
 			values.remove(propertyName);
-			values.put(idPropertyName, idForNewModel(idPropertyName));
+			// also for e.g. the M_AttributeSetInstance, we put null as zero (and not -1), because there is a "no-asi"-ASI with ID=null
+			values.put(idPropertyName, ID_ZERO);
 			return;
 		}
 
@@ -1065,7 +1068,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		return InterfaceWrapperHelper.getFirstValidIdByColumnName(idColumnName) - 1;
 	}
-
 
 	public void setId(final int id)
 	{
