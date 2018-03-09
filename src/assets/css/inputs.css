@@ -877,6 +877,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
 }
 
 .attributes-dropdown {
+    user-select: none;
     position: absolute;
     z-index: 50;
     margin-top:5px;
