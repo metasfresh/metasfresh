@@ -133,8 +133,8 @@ public class TaxDAO implements ITaxDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class)
 				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, query.isDefault())
-				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, query.isReduced())
-				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, query.isWithout())
+				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsReduced, query.isReduced())
+				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsWithout, query.isWithout())
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
