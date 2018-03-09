@@ -23,10 +23,6 @@
 			Issue: https://github.com/metasfresh/metasfresh/issues/695 
 		    Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features -->
 		<spring.jarLauncherClass>org.springframework.boot.loader.PropertiesLauncher</spring.jarLauncherClass>
-
-		<!-- AFAIK, only digits and dots are allowed with launch4j  -->
-		<launch4j.versionInfo>${env.MF_RELEASE_VERSION}.0.0</launch4j.versionInfo>
-		<launch4j.preCp></launch4j.preCp>
 		
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
 			and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
@@ -202,68 +198,6 @@
 									</includes>
 								</resource>
 							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<!--  
-				IMPORTANT: needs 32bit libs in order to run on linux! you can install them like this:
-				apt install libc6:i386
-				
-				Also see https://github.com/lukaszlenart/launch4j-maven-plugin/issues/4
-				-->
-				<groupId>com.akathist.maven.plugins.launch4j</groupId>
-				<artifactId>launch4j-maven-plugin</artifactId>
-				<version>1.7.16</version>
-				<executions>
-					<execution>
-						<id>l4j-clui</id>
-						<phase>package</phase>
-						<goals>
-							<goal>launch4j</goal>
-						</goals>
-						<configuration>
-							<headerType>gui</headerType>
-							<outfile>${dist.dir}/metasfresh/RUN_metasfresh.exe</outfile>
-							<dontWrapJar>true</dontWrapJar>
-							<jar>lib/${mainJar}</jar>
-							<errTitle>metas Fresh</errTitle>
-							<icon>src/main/resources/misc/favicon_64.ico</icon>
-							<classPath>
-								<mainClass>${spring.jarLauncherClass}</mainClass>
-								<addDependencies>false</addDependencies>
-								<jarLocation>lib/</jarLocation>
-								<preCp>${launch4j.preCp}</preCp>
-							</classPath>
-							<jre>
-								<minVersion>1.7.0</minVersion>
-								<path>jre</path>
-								<opts>
-									<opt>-Xms32m</opt>
-									<opt>-Xmx1024m</opt>
-									<opt>-XX:MaxPermSize=256m</opt>
-									<opt>-XX:+HeapDumpOnOutOfMemoryError</opt>
-									<!-- xml-comment: java.util.Arrays.useLegacyMergeSort: related to task "07072 Comparison method violates its general contract (100965620270)" -->
-									<opt>-Djava.util.Arrays.useLegacyMergeSort=true</opt>
-									<!-- always create a log file because there is no other way to check the console when running gui/javaw -->
-									<opt>-DTraceFile=true</opt>
-									<!-- See https://github.com/metasfresh/metasfresh/issues/695 -->
-									<opt>-Dloader.path="%userprofile%\.metasfresh\userlib"</opt>
-								</opts>
-							</jre>
-							<versionInfo>
-								<fileVersion>${launch4j.versionInfo}</fileVersion>
-								<txtFileVersion>${launch4j.versionInfo}</txtFileVersion>
-								<fileDescription>metas Fresh ERP client</fileDescription>
-								<copyright>${project.organization.name}</copyright>
-								<productVersion>${launch4j.versionInfo}</productVersion>
-								<txtProductVersion>${launch4j.versionInfo}</txtProductVersion>
-								<productName>metas fresh ERP</productName>
-								<internalName>metasfresh</internalName>
-								<originalFilename>metasfresh.exe</originalFilename>
-							</versionInfo>
 						</configuration>
 					</execution>
 				</executions>
