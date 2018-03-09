@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -44,6 +43,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.model.I_C_VAT_SmallBusiness;
+import lombok.NonNull;
 
 public class TaxDAO implements ITaxDAO
 {
@@ -129,14 +129,17 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
-	public int findTaxCategoryId(IQueryFilter<I_C_TaxCategory> filter)
+	public int findTaxCategoryId(@NonNull final TaxCategoryQuery query)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class)
-				.filter(filter)
+				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, query.isDefault())
+				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, query.isReduced())
+				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, query.isWithout())
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
 				.create()
 				.firstId();
 	}
+
 }

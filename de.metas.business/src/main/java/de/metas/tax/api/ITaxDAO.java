@@ -26,11 +26,14 @@ package de.metas.tax.api;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 public interface ITaxDAO extends ISingletonService
 {
@@ -60,5 +63,14 @@ public interface ITaxDAO extends ISingletonService
 	 */
 	I_C_TaxCategory retrieveNoTaxCategoryFound(Properties ctx);
 
-	int findTaxCategoryId(IQueryFilter<I_C_TaxCategory> filter);
+	int findTaxCategoryId(@NonNull final TaxCategoryQuery query);
+
+	@Builder
+	@Value
+	public static class TaxCategoryQuery
+	{
+		final private boolean isDefault;
+		final private boolean isReduced;
+		final private boolean isWithout;
+	}
 }

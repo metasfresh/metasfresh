@@ -5,7 +5,6 @@ package org.adempiere.impexp.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.product.ProductPriceCreateRequest;
@@ -14,8 +13,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_C_TaxCategory;
 
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.ITaxDAO.TaxCategoryQuery;
 import de.metas.vertical.pharma.model.I_I_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
 import lombok.NonNull;
@@ -48,6 +48,7 @@ import lombok.NonNull;
  */
 public class PharmaImportProductInterceptor implements IImportInterceptor
 {
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	public static final PharmaImportProductInterceptor instance = new PharmaImportProductInterceptor();
 
 	private PharmaImportProductInterceptor()
@@ -103,12 +104,16 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 
 	private void createAPU(@NonNull final I_I_Product importRecord)
 	{
+		final TaxCategoryQuery query = TaxCategoryQuery.builder()
+				.isDefault(true)
+				.build();
+
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
 				.price(importRecord.getA01APU())
 				.priceListId(importRecord.getAPU_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
 				.validDate(SystemTime.asDayTimestamp())
-				.taxCategoryId(findTaxCategory(importRecord))
+				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 
 		final ProductPriceImporter command = new ProductPriceImporter(request);
@@ -117,26 +122,19 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 
 	private void createAEP(@NonNull final I_I_Product importRecord)
 	{
+		final TaxCategoryQuery query = TaxCategoryQuery.builder()
+				.isDefault(true)
+				.build();
+
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
 				.price(importRecord.getA01AEP())
 				.priceListId(importRecord.getAEP_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
 				.validDate(SystemTime.asDayTimestamp())
-				.taxCategoryId(findTaxCategory(importRecord))
+				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 
 		final ProductPriceImporter command = new ProductPriceImporter(request);
 		command.createProductPrice_And_PriceListVersionIfNeeded();
-	}
-
-	private int findTaxCategory(@NonNull final I_I_Product importRecord)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class, importRecord)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, true)
-				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
-				.create()
-				.firstId();
 	}
 }
