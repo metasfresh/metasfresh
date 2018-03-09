@@ -661,7 +661,9 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			if (propertyNameLowerCase.endsWith("_ID"))
 			{
-				value = idForNewModel(propertyNameLowerCase);
+				// e.g. if a PP_Order has no ASI, we still return 0 because that's the "NO-ASI"-asi's ID
+				//value = idForNewModel(propertyNameLowerCase);
+				value = 0;
 			}
 			else
 			{
