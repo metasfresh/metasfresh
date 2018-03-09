@@ -21,6 +21,8 @@ Here come the actual release notes:
     * New Indow in WebUI for Import Formats, now allowing to maintain data formats to import migration data.
   * [#3637](https://github.com/metasfresh/metasfresh/issues/3637) Standalone Product Translation Window
     * New Standalone Product Translation window in WebUI.
+  * [#3652](https://github.com/metasfresh/metasfresh/issues/3652) WebUI: New Inventory Window
+    * New Window in WebUI that allows the maintenance of Inventory recrdings and adjustments.
 
 ## Fixes
 * metasfresh-webui-frontend
@@ -34,6 +36,8 @@ Here come the actual release notes:
     * Improved behavior of lookup and list widget drop-down. Now keeping the field content selected when reopening the drop-down after hover and leave.
   * [#1650](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1650) Edit mode in grid view when focus lost
     * Improvement of the display status of grid fields in edit mode. Now the edit modus and display is left as soon the field is left.
+  * [#1651](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1651) Multi Line Text Field ist not patched when text is removed
+    * Fixes the patching of empty Text Fields.
   * [#1653](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1653) Line in modal overlay for creating purchase order from SO disappears
     * Fixes an Issue in Create Purchase Orders from Sales Order Lines. Now it's possible to enter the purchase Quantity again.
   * [#1658](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1658) Improve WebUI performance
@@ -47,18 +51,27 @@ Here come the actual release notes:
   * [#3540](https://github.com/metasfresh/metasfresh/issues/3540) WebUI: Show GuaranteeDaysMin on Product and Product Category windows
     * Improved Product and Product Category windows, added new field for Min. Guarantee Days ad part of the best before management.
   * [#3541](https://github.com/metasfresh/metasfresh/issues/3541) Div material dispo issues
+    * Implements various detailed features in the material disposition feature.
   * [#3549](https://github.com/metasfresh/metasfresh/issues/3549) Refactor config for Distribution Order/ Movement after Material Receipt
+    * Improvement of the new Distribution Order generation after material receipt to allow a better understanding of configuration switches.
   * [#3556](https://github.com/metasfresh/metasfresh/issues/3556) Webui: Pimp Compensation Group Schema window
     * Enhanced Window Compensation group Schema, added fields for the new automatic Discount Functionality.
   * [#3561](https://github.com/metasfresh/metasfresh/issues/3561) Add relation between Invoice and Shipment Constraint
+    * New relation added for the navigation between invoices and shipments.
   * [#3562](https://github.com/metasfresh/metasfresh/issues/3562) Primary Layout in Product Planning Subtabs
     * Layout adjustment for the Subtabs in Product planning window, now added primary background to all of them.
   * [#3565](https://github.com/metasfresh/metasfresh/issues/3565) Initial Promised Date calculation and default Preparation Date
+    * New Feature that allows to calculate an initial promised date in sales order based on date ordered.
   * [#3570](https://github.com/metasfresh/metasfresh/issues/3570) CustomerLabelName in M_Product and Translation
-  * [#3575](https://github.com/metasfresh/metasfresh/issues/3575) make shipment HU aggregation configurable
+    * New translateable field in the product masterdata that allws to record the default Customer Label Name for a product.
+  * [#3575](https://github.com/metasfresh/metasfresh/issues/3575) Make shipment HU aggregation configurable
+    * New feature that allows to configure the aggregation of shipment lines for shipped Handling Units.
   * [#3576](https://github.com/metasfresh/metasfresh/issues/3576) TU label in picking
+    * New Label for Transportation Units that can be created in the picking workflow.
   * [#3578](https://github.com/metasfresh/metasfresh/issues/3578) Introduce AD_Column.IsForceIncludeInGeneratedModel to force including a column to generated java models
+    * Internal Housekeeping issue that allows to force include columns in model generation no matter what entity type the corresponding table has.
   * [#3582](https://github.com/metasfresh/metasfresh/issues/3582) Avoid mass-creation of "MissingShipmentSchedulesWorkpackages"
+    * Performamce Improvements to the Subscription evaluation process, now avioiding the creation of mass workpackages when not needed.
   * [#3588](https://github.com/metasfresh/metasfresh/issues/3588) Drop support for org.adempiere.server.embedded
   * [#3587](https://github.com/metasfresh/metasfresh/issues/3587) Implement user token authentication for future REST APIs
   * [#3590](https://github.com/metasfresh/metasfresh/issues/3590) Make shipment line attribute set instance (ASI) configurable
