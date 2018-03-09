@@ -1,5 +1,5 @@
 
-#Note: I played with openjdk:8-jdk-alpine, but wasn't able to get event the entrypoint shell script to actually run
+#Note: I played with openjdk:8-jdk-alpine, but wasn't able to get even the entrypoint shell script to actually run
 
 FROM ubuntu:16.04
 
@@ -10,7 +10,7 @@ RUN apt update \
     && apt -y full-upgrade \
     && apt -y install netcat \
     && apt -y install openjdk-8-jdk-headless \
-    && apt install dos2unix \
+    && apt -y install dos2unix \
     && apt -y autoremove \
     && apt -y autoclean
 
