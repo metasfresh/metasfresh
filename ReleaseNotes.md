@@ -71,7 +71,7 @@ Here come the actual release notes:
   * [#3578](https://github.com/metasfresh/metasfresh/issues/3578) Introduce AD_Column.IsForceIncludeInGeneratedModel to force including a column to generated java models
     * Internal Housekeeping issue that allows to force include columns in model generation no matter what entity type the corresponding table has.
   * [#3582](https://github.com/metasfresh/metasfresh/issues/3582) Avoid mass-creation of "MissingShipmentSchedulesWorkpackages"
-    * Performance Improvements to the Subscription evaluation process, now avioiding the creation of mass workpackages when not needed.
+    * Performance Improvements to the Subscription evaluation process, now avioiding the creation of mass work packages when not needed.
   * [#3588](https://github.com/metasfresh/metasfresh/issues/3588) Drop support for org.adempiere.server.embedded
     * Internal Housekeeping improvement.
   * [#3587](https://github.com/metasfresh/metasfresh/issues/3587) Implement user token authentication for future REST APIs
@@ -109,17 +109,25 @@ Here come the actual release notes:
   * [#1622](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1622) List widget with only 1 entry shall still show the drop-down
     * Now the List widget also shows a drop-down list with only 1 entry.
   * [#1635](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1635) Check code formatting on CI
+    * Adding code formatting rules to continuous integration platform.
   * [#1644](https://github.com/metasfresh/metasfresh-webui-frontend/pull/1644) Add cypress e2e test setup
+    * Adding cypress setup for end-2-end tests of the webui frontend project.
 
 
 ## Fixes
 * metasfresh
   * [#3422](https://github.com/metasfresh/metasfresh/issues/3422) Material Cockpit Document Details Doctype, DocNo wrong/ missing
+    * Fixes the document detailes modal overlay in material cockpit. Now showing the document details with document no and document type.
   * [#3569](https://github.com/metasfresh/metasfresh/issues/3569) Purchase order from purchase candidate not working 
+    * Fixes a bug that prevented the automatic creation of purchase orders from purchase candidates.
   * [#3571](https://github.com/metasfresh/metasfresh/issues/3571) AD_Element_trl problem with autocomplete fields
+    * Fixes an issue that occurred when adding translation elements via autocomplete widgets.
   * [#3572](https://github.com/metasfresh/metasfresh/issues/3572) Internal usage (Materialentnahme partial) broken
+    * Fix for the internal usage action when removing partial customer unit quantities, mostly weight unit of measure..
   * [#3595](https://github.com/metasfresh/metasfresh/issues/3595) Tax Error on w101 Sales Order Batch entry
+    * Improved error message for Tax errors, now elaborating more whats the reason for the errors.
   * [#3644](https://github.com/metasfresh/metasfresh/issues/3644) "No Selection" error when generating shipments
+    * Improvement of action/ Quickaction availability in Shipment Schedule. Now only showing line dependent actions if a line is selected. 
 
 * metasfresh-webui-frontend
   * [#1550](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1550) Dropdown List Widget does not show 1st line as selected with keyboard scroll
@@ -135,7 +143,9 @@ Here come the actual release notes:
   * [#1645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1645) Mandatory List Widget
     * Fixes the visibility of List Widget fields that are mandatory.
   * [#1638](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1638) Cannot use the dropdown in login
+    * Fixes the dropdown widget in login window.
   * [#1645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1645) Mandatory List Widget
+    * Fixes the visibility for empty mandatory list widget fields.
 
 # metasfresh 5.46 (2018-09)
 **release for week 2018-09**
