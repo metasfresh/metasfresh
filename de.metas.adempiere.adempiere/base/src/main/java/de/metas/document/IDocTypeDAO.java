@@ -50,7 +50,7 @@ public interface IDocTypeDAO extends ISingletonService
 	@Deprecated
 	int getDocTypeId(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
 
-	int getDocTypeId(DocTypeQuery query);
+	int getDocTypeId(DocTypeQuery query) throws DocTypeNotFoundException;
 
 	/**
 	 *

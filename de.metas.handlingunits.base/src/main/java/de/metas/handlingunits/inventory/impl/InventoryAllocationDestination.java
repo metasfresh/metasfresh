@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.impl;
+package de.metas.handlingunits.inventory.impl;
 
 /*
  * #%L
@@ -23,44 +23,36 @@ package de.metas.handlingunits.allocation.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.minventory.api.IInventoryBL;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Inventory;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.IHUAssignmentBL;
-import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -68,15 +60,20 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.empties.IHUEmptiesService;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
+import de.metas.handlingunits.inout.IHUInOutDAO;
+import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_InventoryLine;
@@ -87,7 +84,8 @@ import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
-import de.metas.product.IProductBL;
+import de.metas.inventory.IInventoryBL;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /**
@@ -97,126 +95,86 @@ import lombok.NonNull;
  *
  * @task http://dewiki908/mediawiki/index.php/07050_Eigenverbrauch_metas_in_Existing_Window_Handling_Unit_Pos
  */
-public class InventoryAllocationDestination implements IAllocationDestination
+class InventoryAllocationDestination implements IAllocationDestination
 {
 	// services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private final transient IHUPIItemProductDAO huPiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
-	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final transient IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
+	private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final transient IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
-	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
-	private final Map<Integer, ISnapshotProducer<I_M_HU>> huSnapshotProducerByInventoryId = new HashMap<>();
-
-	private final I_M_Warehouse warehouse;
+	private final int warehouseId;
+	private final int warehouseLocatorId;
+	private final int inventoryDocTypeId;
 	private final int chargeId;
-	private final I_M_Locator defaultLocator;
 
-	private final List<I_M_Inventory> inventories = new ArrayList<>();
-
-	private final I_C_DocType inventoryDocType;
-
-	/**
-	 * There will be an inventory entry for each partner
-	 */
-	private final Map<Integer, I_M_Inventory> orderIdToInventory = new HashMap<>();
+	private final Map<Integer, I_M_Inventory> inventoriesByOrderId = new LinkedHashMap<>();
+	/** Map the inventory lines to the base receipt lines */
+	private final Map<ArrayKey, I_M_InventoryLine> inventoryLinesByKey = new HashMap<>();
 
 	//
 	// Packing materials
 	private final Map<Integer, HUPackingMaterialsCollector> packingMaterialsCollectorByInventoryId = new HashMap<>();
 	private final Set<Integer> packingMaterialsCollectedHUIds = new HashSet<>();
-
 	// NOTE: using a shared collector for counting because we want to avoid counting same HU in multiple places
 	private HUPackingMaterialsCollector pmCollectorForCountingTUs; // will be created on demand
 
-	/**
-	 * Map the inventory lines to the base inout lines
-	 */
-	private final Map<Integer, I_M_InventoryLine> inOutLineId2InventoryLine = new HashMap<>();
+	//
+	// HU snapshoting
+	private final Map<Integer, ISnapshotProducer<I_M_HU>> huSnapshotProducerByInventoryId = new HashMap<>();
 
-	public InventoryAllocationDestination(@NonNull final I_M_Warehouse warehouse, @Nullable final I_C_DocType inventoryDocType)
+	public InventoryAllocationDestination(@NonNull final I_M_Warehouse warehouse, final int inventoryDocTypeId)
 	{
-		this.warehouse = warehouse;
-		defaultLocator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
-
-		this.inventoryDocType = inventoryDocType;
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(warehouse);
-		chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId(ctx);
+		warehouseId = warehouse.getM_Warehouse_ID();
+		warehouseLocatorId = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse).getM_Locator_ID();
+		this.inventoryDocTypeId = inventoryDocTypeId;
+		chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
 	}
 
 	/** @return created inventory documents */
 	private List<I_M_Inventory> getInventories()
 	{
-		return ImmutableList.copyOf(inventories);
+		return ImmutableList.copyOf(inventoriesByOrderId.values());
 	}
 
 	@Override
 	public IAllocationResult load(final IAllocationRequest request)
 	{
-		final BigDecimal qtySource = request.getQty(); // Qty to add, in request's UOM
-		final I_M_Product product = request.getProduct();
-		final String trxName = request.getHUContext().getTrxName(); // We are using the huContext's trxName in case we have more than one line.
-		final I_C_UOM uomTo = productBL.getStockingUOM(product);
-		final BigDecimal qty = uomConversionBL.convertQty(product,
-				qtySource,
-				request.getC_UOM(),// uomFrom
-				uomTo // uomTo
-		);
-
-		//
-		// Create result
 		final IMutableAllocationResult result = AllocationUtils.createMutableAllocationResult(request);
 
-		//
-		// Get the HU Item from were we are unloading
-		// If no HU Item found then return immediately.
-		final ITableRecordReference reference = request.getReference();
-		if (reference == null || !I_M_HU_Item.Table_Name.equals(reference.getTableName()))
+		final I_M_HU hu = extractHUOrNull(request);
+		if (hu == null)
 		{
 			return result;
 		}
-		final I_M_HU_Item huItem = reference.getModel(request.getHUContext(), I_M_HU_Item.class);
+		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
+
+		final Date movementDate = request.getDate(); // to be used for inventory documents
+		final Quantity qtySource = request.getQuantity(); // Qty to add, in request's UOM
+		final Quantity qty = getQtyInStockingUOM(request);
 
 		//
-		// Get receipt line(s) which received this HU
-		final I_M_HU hu = huItem.getM_HU();
-		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
-		final List<I_M_InOutLine> receiptLines = huAssignmentDAO.retrieveModelsForHU(topLevelHU, I_M_InOutLine.class);
-
-		for (final I_M_InOutLine receiptLine : receiptLines)
+		// For each receipt line which received this HU
+		for (final I_M_InOutLine receiptLine : getReceiptLines(topLevelHU, request.getProductId()))
 		{
-			final I_M_InOut receipt = receiptLine.getM_InOut();
-			if (receipt.isSOTrx())
-			{
-				// in case the base inout line is from a shipment, it is not relevant for the material disposal (for the time being)
-				throw new AdempiereException("Document type {0} is not suitable for material disposal", new Object[] { receipt.getC_DocType() });
-			}
-
-			// #1604: skip inoutlines for other products; request.getProduct() is not null, see AllocationRequest constructor
-			if (receiptLine.getM_Product_ID() != request.getProduct().getM_Product_ID())
-			{
-				continue;
-			}
-
-			final BigDecimal qtyToMoveTotal = qty;
-
+			final BigDecimal qtyToMoveTotal = qty.getQty();
 			final BigDecimal qualityDiscountPerc = huAttributesBL.getQualityDiscountPercent(hu);
 			final BigDecimal qtyToMoveInDispute = qtyToMoveTotal.multiply(qualityDiscountPerc);
 			final BigDecimal qtyToMove = qtyToMoveTotal.subtract(qtyToMoveInDispute);
 
 			//
 			// Get/create the inventory line based on the info from material receipt and request
-			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(receiptLine, request);
+			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(receiptLine, hu.getM_HU_ID(), movementDate);
 
 			// #2143 hu snapshots
 			snapshotHUForInventoryLine(topLevelHU, inventoryLine);
@@ -233,7 +191,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 			if (qtyToMoveInDispute.signum() != 0)
 			{
-				final I_M_InventoryLine inventoryLineInDispute = getCreateInventoryLineInDispute(receiptLine, request);
+				final I_M_InventoryLine inventoryLineInDispute = getCreateInventoryLineInDispute(receiptLine, hu.getM_HU_ID(), movementDate);
 
 				final BigDecimal inventoryLine_Qty_Old = inventoryLineInDispute.getQtyInternalUse();
 				final BigDecimal inventoryLine_Qty_New = inventoryLine_Qty_Old.add(qtyToMoveInDispute);
@@ -243,9 +201,9 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				InterfaceWrapperHelper.save(inventoryLineInDispute);
 			}
 
-			setInventoryLinePiip(hu, inventoryLine);
+			inventoryLine.setM_HU_PI_Item_Product(extractPackingOrNull(hu, inventoryLine));
 
-			final I_M_HU tuHU = retrieveTu(hu);
+			final I_M_HU tuHU = retrieveTU(hu);
 			//
 			// Calculate and update inventory line's QtyTU
 			{
@@ -266,13 +224,13 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 			//
 			// Save the inventory line and assign the top level HU to it
-			InterfaceWrapperHelper.save(inventoryLine, trxName);
-			huAssignmentBL.assignHU(inventoryLine, topLevelHU, ITrx.TRXNAME_ThreadInherited);
+			InterfaceWrapperHelper.save(inventoryLine);
+			huInventoryBL.assignHU(inventoryLine, topLevelHU);
 
 			//
 			// Update the result
 			{
-				result.subtractAllocatedQty(qtySource);
+				result.subtractAllocatedQty(qtySource.getQty());
 
 				final IHUTransactionCandidate trx = new HUTransactionCandidate(
 						inventoryLine, // Reference model
@@ -287,35 +245,76 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return result;
 	}
 
-	private I_M_InventoryLine getCreateInventoryLineInDispute(final I_M_InOutLine receiptLine, final IAllocationRequest request)
+	private I_M_HU extractHUOrNull(final IAllocationRequest request)
 	{
-		final I_M_InOutLine originInOutLineInDispute = InterfaceWrapperHelper.create(inOutDAO.retrieveLineWithQualityDiscount(receiptLine), I_M_InOutLine.class);
+		//
+		// Get the HU Item from were we are unloading
+		// If no HU Item found then return immediately.
+		final ITableRecordReference reference = request.getReference();
+		if (reference == null || !I_M_HU_Item.Table_Name.equals(reference.getTableName()))
+		{
+			return null;
+		}
+		final I_M_HU_Item huItem = reference.getModel(I_M_HU_Item.class);
+		return huItem.getM_HU();
+	}
 
-		if (originInOutLineInDispute == null)
+	private Quantity getQtyInStockingUOM(final IAllocationRequest request)
+	{
+		final Quantity qtySource = request.getQuantity(); // Qty to add, in request's UOM
+		return uomConversionBL.convertToProductUOM(qtySource, request.getProductId());
+	}
+
+	private List<I_M_InOutLine> getReceiptLines(final I_M_HU topLevelHU, final int productId)
+	{
+		final List<I_M_InOutLine> receiptLines = huInOutDAO.retrieveInOutLinesForHU(topLevelHU)
+				.stream()
+				.filter(inoutLine -> inoutLine.getM_Product_ID() == productId) // #1604: skip inoutlines for other products
+				.peek(this::assertReceipt) // make sure it's a material receipt (and NOT a shipment)
+				.collect(ImmutableList.toImmutableList());
+		if (receiptLines.isEmpty())
+		{
+			throw new HUException("No receipt lines found for " + topLevelHU);
+		}
+		return receiptLines;
+	}
+
+	private void assertReceipt(final I_M_InOutLine inoutLine)
+	{
+		final I_M_InOut receipt = inoutLine.getM_InOut();
+		if (receipt.isSOTrx())
+		{
+			throw new AdempiereException("Document type {0} is not suitable for material disposal", new Object[] { receipt.getC_DocType() });
+		}
+	}
+
+	private I_M_InventoryLine getCreateInventoryLineInDispute(final I_M_InOutLine receiptLine, final int huId, final Date movementDate)
+	{
+		final I_M_InOutLine originReceiptLineInDispute = InterfaceWrapperHelper.create(inOutDAO.retrieveLineWithQualityDiscount(receiptLine), I_M_InOutLine.class);
+		if (originReceiptLineInDispute == null)
 		{
 			return null;
 		}
 
-		final I_M_InventoryLine inoutLineInDispute = getCreateInventoryLine(originInOutLineInDispute, request);
-
+		final I_M_InventoryLine inoutLineInDispute = getCreateInventoryLine(originReceiptLineInDispute, huId, movementDate);
 		inoutLineInDispute.setIsInDispute(true);
-		inoutLineInDispute.setQualityDiscountPercent(originInOutLineInDispute.getQualityDiscountPercent());
-		inoutLineInDispute.setQualityNote(originInOutLineInDispute.getQualityNote());
+		inoutLineInDispute.setQualityDiscountPercent(originReceiptLineInDispute.getQualityDiscountPercent());
+		inoutLineInDispute.setQualityNote(originReceiptLineInDispute.getQualityNote());
 		return inoutLineInDispute;
 	}
 
 	public List<I_M_Inventory> processInventories()
 	{
-
 		final List<I_M_Inventory> inventories = getInventories();
-
-		for (final I_M_Inventory inventory : inventories)
-		{
-			createHUSnapshotsForInventory(inventory);
-			completeInventory(inventory);
-			createEmptiesMovementForInventory(inventory);
-		}
+		inventories.forEach(this::processInventory);
 		return inventories;
+	}
+
+	private void processInventory(final I_M_Inventory inventory)
+	{
+		createHUSnapshotsForInventory(inventory);
+		completeInventory(inventory);
+		createEmptiesMovementForInventory(inventory);
 	}
 
 	/**
@@ -323,7 +322,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	 * 
 	 * @param inventory
 	 */
-	private void completeInventory(I_M_Inventory inventory)
+	private void completeInventory(final I_M_Inventory inventory)
 	{
 		docActionBL.processEx(inventory, X_M_Inventory.DOCACTION_Complete, X_M_Inventory.DOCSTATUS_Completed);
 	}
@@ -359,115 +358,88 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 	/**
 	 * Return inventoryLine for inoutLine if it exists, create an inventory line otherwise
-	 * 
-	 * @param inOutLine
-	 * @param request
-	 * @return
 	 */
 	private I_M_InventoryLine getCreateInventoryLine(
-			@NonNull final I_M_InOutLine inOutLine,
-			@NonNull final IAllocationRequest request)
+			@NonNull final I_M_InOutLine receiptLine,
+			final int huId,
+			@NonNull final Date movementDate)
 	{
-		final int inOutLineId = inOutLine.getM_InOutLine_ID();
+		return inventoryLinesByKey.computeIfAbsent(
+				createInventoryLineKey(receiptLine.getM_InOutLine_ID(), huId),
+				k -> createInventoryLine(receiptLine, huId, movementDate));
+	}
 
-		if (inOutLineId2InventoryLine.containsKey(inOutLineId))
-		{
-			return inOutLineId2InventoryLine.get(inOutLineId);
-		}
-
-		final I_M_InventoryLine inventoryLine = createInventoryLine(inOutLine, request);
-
-		return inventoryLine;
-
+	private ArrayKey createInventoryLineKey(final int receiptLineId, final int huId)
+	{
+		return ArrayKey.of(receiptLineId, huId);
 	}
 
 	private I_M_InventoryLine createInventoryLine(
-			@NonNull final I_M_InOutLine inOutLine,
-			@NonNull final IAllocationRequest request)
+			@NonNull final I_M_InOutLine receiptLine,
+			final int huId,
+			@NonNull final Date movementDate)
 	{
-		//
-		// Create a new Inventory Line
-		final IHUContext huContext = request.getHUContext();
-		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class, huContext);
+		final I_M_Inventory inventoryHeader = getCreateInventoryHeader(receiptLine, movementDate);
 
-		final I_M_Inventory inventoryHeader = getCreateInventoryHeader(inOutLine, request);
-
+		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
 		inventoryLine.setM_Inventory_ID(inventoryHeader.getM_Inventory_ID());
-		inventoryLine.setM_Product_ID(inOutLine.getM_Product_ID());
+		inventoryLine.setM_Product_ID(receiptLine.getM_Product_ID());
 		inventoryLine.setC_Charge_ID(chargeId);
-		inventoryLine.setM_Locator_ID(defaultLocator.getM_Locator_ID());
-		inventoryLine.setM_InOutLine(inOutLine);
+		inventoryLine.setM_Locator_ID(warehouseLocatorId);
+		inventoryLine.setM_InOutLine(receiptLine);
+		inventoryLine.setC_UOM(receiptLine.getC_UOM());
+		inventoryLine.setM_HU_ID(huId);
 
-		inventoryLine.setC_UOM(inOutLine.getC_UOM());
-
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(inventoryLine, inOutLine);
-
-		inOutLineId2InventoryLine.put(inOutLine.getM_InOutLine_ID(), inventoryLine);
+		attributeSetInstanceBL.cloneASI(inventoryLine, receiptLine);
 
 		// NOTE: we are not saving here
 		return inventoryLine;
 	}
 
-	private I_M_Inventory getCreateInventoryHeader(final I_M_InOutLine inOutLine, final IAllocationRequest request)
+	private I_M_Inventory getCreateInventoryHeader(final I_M_InOutLine receiptLine, final Date movementDate)
 	{
-		final I_M_InOut inout = inOutLine.getM_InOut();
-		final I_C_Order order = inout.getC_Order();
-		Check.assumeNotNull(order, "Inout {0} does not have an order", inout);
-		final int orderId = order.getC_Order_ID();
+		final I_M_InOut receipt = receiptLine.getM_InOut();
+		final int purchaseOrderId = receipt.getC_Order_ID();
+		Check.assume(purchaseOrderId > 0, "Receipt {0} does not have a purchase order set", receipt);
 
-		// Existing inventory
-		if (orderIdToInventory.containsKey(orderId))
-		{
-			return orderIdToInventory.get(orderId);
-		}
-
-		final I_M_Inventory inventory = createInventoryHeader(order, request);
-
-		return inventory;
-
+		return inventoriesByOrderId.computeIfAbsent(purchaseOrderId, k -> createInventoryHeader(receipt.getC_Order(), movementDate));
 	}
 
-	private I_M_Inventory createInventoryHeader(final I_C_Order order, final IAllocationRequest request)
+	private I_M_Inventory createInventoryHeader(final I_C_Order purchaseOrder, final Date movementDate)
 	{
-		// No inventory for the given partner. Create it now.
-		final IHUContext huContext = request.getHUContext();
-		trxManager.assertTrxNotNull(huContext);
-		final I_M_Inventory inventory = InterfaceWrapperHelper.newInstance(I_M_Inventory.class, huContext);
-		inventory.setMovementDate(TimeUtil.asTimestamp(request.getDate()));
-		inventory.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		trxManager.assertThreadInheritedTrxExists();
 
-		if (inventoryDocType != null)
+		final I_M_Inventory inventory = InterfaceWrapperHelper.newInstance(I_M_Inventory.class);
+		inventory.setMovementDate(TimeUtil.asTimestamp(movementDate));
+		inventory.setM_Warehouse_ID(warehouseId);
+
+		if (inventoryDocTypeId > 0)
 		{
-			inventory.setC_DocType_ID(inventoryDocType.getC_DocType_ID());
+			inventory.setC_DocType_ID(inventoryDocTypeId);
 		}
 
-		inventory.setPOReference(order.getPOReference());
+		inventory.setPOReference(purchaseOrder.getPOReference());
 		InterfaceWrapperHelper.save(inventory);
 
-		orderIdToInventory.put(order.getC_Order_ID(), inventory);
-		inventories.add(inventory);
-
-		createAndLinkSnapshotProducerForInventory(huContext, inventory);
+		createAndLinkSnapshotProducerForInventory(inventory);
 
 		return inventory;
 	}
 
-	private void createAndLinkSnapshotProducerForInventory(final IHUContext huContext, final I_M_Inventory inventory)
+	private void createAndLinkSnapshotProducerForInventory(final I_M_Inventory inventory)
 	{
-		final ISnapshotProducer<I_M_HU> snapshotProducerForInventory = createSnapshotProducerForInventory(huContext, inventory);
-
+		final ISnapshotProducer<I_M_HU> snapshotProducerForInventory = createSnapshotProducerForInventory(inventory.getM_Inventory_ID());
 		linkHUSnapshotProducerWithInventory(snapshotProducerForInventory, inventory);
-
 	}
 
-	private ISnapshotProducer<I_M_HU> createSnapshotProducerForInventory(final IHUContext huContext, final I_M_Inventory inventory)
+	private ISnapshotProducer<I_M_HU> createSnapshotProducerForInventory(final int inventoryId)
 	{
 		// #2143 HU snapshots
 		final ISnapshotProducer<I_M_HU> huSnapshotProducer = huSnapshotDAO
 				.createSnapshot()
-				.setContext(huContext);
+				.setContext(PlainContextAware.newWithThreadInheritedTrx());
 
-		huSnapshotProducerByInventoryId.put(inventory.getM_Inventory_ID(), huSnapshotProducer);
+		huSnapshotProducerByInventoryId.put(inventoryId, huSnapshotProducer);
 
 		return huSnapshotProducer;
 
@@ -477,7 +449,6 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	{
 		inventory.setSnapshot_UUID(snapshotProducerForInventory.getSnapshotId());
 		InterfaceWrapperHelper.save(inventory);
-
 	}
 
 	private ISnapshotProducer<I_M_HU> snapshotHUForInventoryLine(
@@ -493,40 +464,42 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return currentSnapshotProducer;
 	}
 
-	/**
-	 * Sets the given {@code inventoryLine}'s {@code M_HU_PI_Item_Product} according to the given {@code hu}.<br>
-	 * If the hu does not have one, we make a very educated guess based on the hu's (effective) PI version.
-	 * 
-	 * @param hu
-	 * @param inventoryLine
-	 */
-	private void setInventoryLinePiip(
-			@NonNull final I_M_HU hu,
-			@NonNull final I_M_InventoryLine inventoryLine)
+	private I_M_HU_PI_Item_Product extractPackingOrNull(@NonNull final I_M_HU hu, @NonNull final I_M_InventoryLine inventoryLine)
 	{
-		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
-
-		final I_M_InOut inout = receiptLine.getM_InOut();
-		final I_C_BPartner partner = inout.getC_BPartner();
-		final I_M_Product product = receiptLine.getM_Product();
-		final Date date = inout.getMovementDate();
-
-		I_M_HU_PI_Item_Product huPIP = hu.getM_HU_PI_Item_Product();
-		if (huPIP == null)
+		//
+		// Direct
 		{
-			final I_M_HU_PI_Version effectivePIVersion = handlingUnitsBL.getEffectivePIVersion(hu);
-
-			final I_M_HU_PI_Item materialItem = handlingUnitsDAO
-					.retrievePIItems(effectivePIVersion.getM_HU_PI(), partner).stream()
-					.filter(i -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(i.getItemType()))
-					.findFirst().orElse(null);
-
-			if (materialItem != null)
+			final I_M_HU_PI_Item_Product huPIP = hu.getM_HU_PI_Item_Product();
+			if (huPIP != null)
 			{
-				huPIP = huPiItemProductDAO.retrievePIMaterialItemProduct(materialItem, partner, product, date);
+				return huPIP;
 			}
 		}
-		inventoryLine.setM_HU_PI_Item_Product(huPIP);
+
+		//
+		// From HU's PI and material receipt's bpartner, date and product
+		{
+			final I_M_HU_PI effectivePI = handlingUnitsBL.getEffectivePI(hu);
+			final I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
+			final I_M_InOut receipt = receiptLine.getM_InOut();
+			final I_C_BPartner bpartner = receipt.getC_BPartner();
+
+			final I_M_HU_PI_Item materialItem = handlingUnitsDAO
+					.retrievePIItems(effectivePI, bpartner)
+					.stream()
+					.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(piItem.getItemType()))
+					.findFirst()
+					.orElse(null);
+			if (materialItem != null)
+			{
+				final I_M_Product product = receiptLine.getM_Product();
+				final Date date = receipt.getMovementDate();
+				return huPiItemProductDAO.retrievePIMaterialItemProduct(materialItem, bpartner, product, date);
+			}
+		}
+
+		//
+		return null;
 	}
 
 	/**
@@ -558,28 +531,22 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 	/**
 	 * Find get the TU for the given {@code hu}. Might be the HU itself or its parent.
-	 * 
-	 * @param hu
-	 * @return
 	 */
-	private I_M_HU retrieveTu(@NonNull final I_M_HU hu)
+	private I_M_HU retrieveTU(@NonNull final I_M_HU hu)
 	{
-		final I_M_HU tuHU;
-
-		if (handlingUnitsBL.isAggregateHU(hu))
+		if (handlingUnitsBL.isTransportUnitOrAggregate(hu))
 		{
-			tuHU = hu;
+			return hu;
 		}
 		else if (handlingUnitsBL.isVirtual(hu))
 		{
-			tuHU = handlingUnitsDAO.retrieveParent(hu);
+			final I_M_HU parentHU = handlingUnitsDAO.retrieveParent(hu);
+			return retrieveTU(parentHU);
 		}
 		else
 		{
-			// neither aggregate nor virtual. since we know from the start that we don't deal with an LU, hu must be a TU
-			tuHU = hu;
+			throw new HUException("HU shall be TU or VHU: " + hu);
 		}
-		return tuHU;
 	}
 
 	private void collectPackingMaterials(final IHUContext huContext, final int inventoryId, final I_M_HU hu)

@@ -78,7 +78,7 @@ public class HUInOutDAO implements IHUInOutDAO
 	}
 
 	/**
-	 * NOTE: keep in sync with {@link #retrieveInOutLineOrNull(I_M_HU)} logic
+	 * NOTE: keep in sync with {@link #retrieveCompletedReceiptLineOrNull(I_M_HU)} logic
 	 */
 	@Override
 	public List<I_M_HU> retrieveHandlingUnits(final I_M_InOut inOut)
@@ -88,7 +88,7 @@ public class HUInOutDAO implements IHUInOutDAO
 
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 
-		final LinkedHashMap<Integer, I_M_HU> hus = new LinkedHashMap<Integer, I_M_HU>();
+		final LinkedHashMap<Integer, I_M_HU> hus = new LinkedHashMap<>();
 		for (final I_M_InOutLine line : lines)
 		{
 			final List<I_M_HU> lineHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(line);
@@ -109,7 +109,7 @@ public class HUInOutDAO implements IHUInOutDAO
 
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 
-		final LinkedHashMap<Integer, I_M_HU> hus = new LinkedHashMap<Integer, I_M_HU>();
+		final LinkedHashMap<Integer, I_M_HU> hus = new LinkedHashMap<>();
 		for (final I_M_InOutLine line : lines)
 		{
 			final List<I_M_HU> lineHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(line);
@@ -128,7 +128,7 @@ public class HUInOutDAO implements IHUInOutDAO
 	 * NOTE: keep in sync with {@link #retrieveHandlingUnits(I_M_InOut)} logic
 	 */
 	@Override
-	public I_M_InOutLine retrieveInOutLineOrNull(final I_M_HU hu)
+	public I_M_InOutLine retrieveCompletedReceiptLineOrNull(final I_M_HU hu)
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
@@ -157,5 +157,12 @@ public class HUInOutDAO implements IHUInOutDAO
 			return null;
 		}
 		return inoutLine;
+	}
+	
+	@Override
+	public List<I_M_InOutLine> retrieveInOutLinesForHU(final I_M_HU topLevelHU)
+	{
+		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+		return huAssignmentDAO.retrieveModelsForHU(topLevelHU, I_M_InOutLine.class);
 	}
 }

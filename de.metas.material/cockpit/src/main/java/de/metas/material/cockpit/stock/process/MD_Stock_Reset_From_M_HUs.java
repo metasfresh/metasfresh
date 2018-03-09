@@ -1,6 +1,5 @@
 package de.metas.material.cockpit.stock.process;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -124,11 +123,11 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 		final StockDataRecordIdentifier recordIdentifier = createDataRecordIdentifier(huBasedDataRecord);
 
 		final Quantity qtyInStorageUOM = Quantity.of(huBasedDataRecord.getQtyOnHand(), huBasedDataRecord.getC_UOM());
-		final BigDecimal qtyInStockingUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, huBasedDataRecord.getM_Product());
+		final Quantity qtyInStockingUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, huBasedDataRecord.getM_Product_ID());
 
 		final StockDataUpdateRequest dataUpdateRequest = StockDataUpdateRequest.builder()
 				.identifier(recordIdentifier)
-				.onHandQtyChange(qtyInStockingUOM)
+				.onHandQtyChange(qtyInStockingUOM.getQty())
 				.build();
 		return dataUpdateRequest;
 	}

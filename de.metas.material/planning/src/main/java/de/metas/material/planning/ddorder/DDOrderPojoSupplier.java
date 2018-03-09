@@ -288,13 +288,13 @@ public class DDOrderPojoSupplier
 
 		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
 
-		final BigDecimal qtyToMoveInProductUOM = Services.get(IUOMConversionBL.class).convertToProductUOM(qtyToMove, asiAware.getM_Product());
+		final Quantity qtyToMoveInProductUOM = Services.get(IUOMConversionBL.class).convertToProductUOM(qtyToMove, asiAware.getM_Product_ID());
 
 		final DDOrderLine ddOrderline = DDOrderLine.builder()
 				.salesOrderLineId(request.getMrpDemandOrderLineSOId())
 				.bPartnerId(request.getMrpDemandBPartnerId())
 				.productDescriptor(productDescriptor)
-				.qty(qtyToMoveInProductUOM)
+				.qty(qtyToMoveInProductUOM.getQty())
 				.networkDistributionLineId(networkLine.getDD_NetworkDistributionLine_ID())
 				.durationDays(durationDays)
 				.build();
