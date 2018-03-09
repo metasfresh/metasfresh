@@ -26,6 +26,7 @@ import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -36,10 +37,12 @@ import java.util.List;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
@@ -69,10 +72,13 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.logging.LogManager;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import lombok.NonNull;
 
 /**
  * HU Shipment Process:
@@ -144,6 +150,11 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	@Override
 	protected void initialize()
 	{
+		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
+		asi.setM_AttributeSetInstance_ID(AttributeConstants.M_AttributeSetInstance_ID_None);
+		save(asi);
+		assertThat(asi.getM_AttributeSetInstance_ID()).isEqualTo(0); // guard
+
 		LogManager.setLevel(Level.WARN); // reset the log level. other tests might have set it to trace, which might bring a giant performance penalty.
 
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
@@ -216,6 +227,21 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 			shipperTransportation.setM_Shipper(shipper);
 			save(shipperTransportation);
 		}
+
+		// allow subclasses to set up the attribute config for their test case
+		final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+		assertThat(shipmentScheduleHandlerBL).as("this rest requires a particular instance").isInstanceOf(ShipmentScheduleHandlerBL.class);
+
+		final I_M_IolCandHandler handlerRecord = ((ShipmentScheduleHandlerBL)shipmentScheduleHandlerBL)
+				.retrieveHandlerRecordOrNull(OrderLineShipmentScheduleHandler.class.getName());
+		assertThat(handlerRecord).isNotNull(); // should have been registered by super.initialize();
+
+		initializeAttributeConfig(handlerRecord);
+	}
+
+	protected void initializeAttributeConfig(@NonNull final I_M_IolCandHandler handlerRecord)
+	{
+		// nothing
 	}
 
 	@Test
