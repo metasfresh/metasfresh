@@ -7,7 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
@@ -16,6 +16,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.TimeUtil;
 
 import de.metas.pricing.ProductPrices;
 import lombok.NonNull;
@@ -75,9 +76,9 @@ public class ProductPriceImporter
 				&& request.getValidDate() != null;
 	}
 
-	private I_M_PriceList_Version getCreatePriceListVersion(final int priceListId, @NonNull final Timestamp validDate)
+	private I_M_PriceList_Version getCreatePriceListVersion(final int priceListId, @NonNull final LocalDate validDate)
 	{
-		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceListId, validDate);
+		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceListId, TimeUtil.asTimestamp(validDate));
 		return plv == null ? createPriceListVersion(priceListId, validDate) : plv;
 	}
 
@@ -102,11 +103,11 @@ public class ProductPriceImporter
 		return pp;
 	}
 
-	private I_M_PriceList_Version createPriceListVersion(final int priceListId, @NonNull final Timestamp validFrom)
+	private I_M_PriceList_Version createPriceListVersion(final int priceListId, @NonNull final LocalDate validFrom)
 	{
 		final I_M_PriceList_Version plv = newInstance(I_M_PriceList_Version.class);
 		plv.setName(validFrom.toString());
-		plv.setValidFrom(validFrom);
+		plv.setValidFrom(TimeUtil.asTimestamp(validFrom));
 		plv.setM_PriceList_ID(priceListId);
 		plv.setProcessed(true);
 		save(plv);

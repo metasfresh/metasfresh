@@ -5,6 +5,8 @@ package org.adempiere.impexp.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.time.LocalDate;
+
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.product.ProductPriceCreateRequest;
@@ -12,7 +14,6 @@ import org.adempiere.impexp.product.ProductPriceImporter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery;
@@ -112,7 +113,7 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 				.price(importRecord.getA01APU())
 				.priceListId(importRecord.getAPU_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
-				.validDate(SystemTime.asDayTimestamp())
+				.validDate(LocalDate.now())
 				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 
@@ -130,7 +131,7 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 				.price(importRecord.getA01AEP())
 				.priceListId(importRecord.getAEP_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
-				.validDate(SystemTime.asDayTimestamp())
+				.validDate(LocalDate.now())
 				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 

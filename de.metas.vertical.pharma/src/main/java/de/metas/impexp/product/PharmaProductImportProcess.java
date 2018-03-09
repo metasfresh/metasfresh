@@ -30,6 +30,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
 import org.compiere.process.MProductPriceCloningCommand;
+import org.compiere.util.TimeUtil;
 
 import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxDAO;
@@ -376,7 +377,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.price(importRecord.getA01KAEP())
 				.priceListId(importRecord.getKAEP_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
-				.validDate(importRecord.getA01GDAT())
+				.validDate(TimeUtil.asLocalDate(importRecord.getA01GDAT()))
 				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 
@@ -396,7 +397,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.price(importRecord.getA01APU())
 				.priceListId(importRecord.getAPU_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
-				.validDate(importRecord.getA01GDAT())
+				.validDate(TimeUtil.asLocalDate(importRecord.getA01GDAT()))
 				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 
@@ -416,7 +417,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.price(importRecord.getA01AEP())
 				.priceListId(importRecord.getAEP_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
-				.validDate(importRecord.getA01GDAT())
+				.validDate(TimeUtil.asLocalDate(importRecord.getA01GDAT()))
 				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 
@@ -436,7 +437,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.price(importRecord.getA01AVP())
 				.priceListId(importRecord.getAVP_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
-				.validDate(importRecord.getA01GDAT())
+				.validDate(TimeUtil.asLocalDate(importRecord.getA01GDAT()))
 				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 
@@ -456,7 +457,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.price(importRecord.getA01UVP())
 				.priceListId(importRecord.getUVP_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
-				.validDate(importRecord.getA01GDAT())
+				.validDate(TimeUtil.asLocalDate(importRecord.getA01GDAT()))
 				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 
@@ -476,7 +477,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.price(importRecord.getA01ZBV())
 				.priceListId(importRecord.getZBV_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
-				.validDate(importRecord.getA01GDAT())
+				.validDate(TimeUtil.asLocalDate(importRecord.getA01GDAT()))
 				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 

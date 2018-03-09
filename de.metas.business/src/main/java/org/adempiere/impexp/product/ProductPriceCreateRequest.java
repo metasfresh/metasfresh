@@ -4,7 +4,7 @@
 package org.adempiere.impexp.product;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -45,6 +45,6 @@ public class ProductPriceCreateRequest
 	@NonNull
 	private final BigDecimal price;
 	@NonNull
-	private final Timestamp validDate;
+	private final LocalDate validDate;
 	private final int taxCategoryId;
 }
