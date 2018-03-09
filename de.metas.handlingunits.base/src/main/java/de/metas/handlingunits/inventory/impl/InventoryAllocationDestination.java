@@ -23,10 +23,10 @@ package de.metas.handlingunits.inventory.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +48,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Inventory;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableList;
 
@@ -117,20 +118,19 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private final int inventoryDocTypeId;
 	private final int chargeId;
 
-	private final List<I_M_Inventory> inventories = new ArrayList<>();
-	private final Map<Integer, I_M_Inventory> orderIdToInventory = new HashMap<>();
+	private final Map<Integer, I_M_Inventory> inventoriesByOrderId = new LinkedHashMap<>();
+	/** Map the inventory lines to the base receipt lines */
+	private final Map<ArrayKey, I_M_InventoryLine> inventoryLinesByKey = new HashMap<>();
 
 	//
 	// Packing materials
 	private final Map<Integer, HUPackingMaterialsCollector> packingMaterialsCollectorByInventoryId = new HashMap<>();
 	private final Set<Integer> packingMaterialsCollectedHUIds = new HashSet<>();
-
 	// NOTE: using a shared collector for counting because we want to avoid counting same HU in multiple places
 	private HUPackingMaterialsCollector pmCollectorForCountingTUs; // will be created on demand
 
-	/** Map the inventory lines to the base receipt lines */
-	private final Map<Integer, I_M_InventoryLine> inOutLineId2InventoryLine = new HashMap<>();
-
+	//
+	// HU snapshoting
 	private final Map<Integer, ISnapshotProducer<I_M_HU>> huSnapshotProducerByInventoryId = new HashMap<>();
 
 	public InventoryAllocationDestination(@NonNull final I_M_Warehouse warehouse, final int inventoryDocTypeId)
@@ -144,7 +144,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	/** @return created inventory documents */
 	private List<I_M_Inventory> getInventories()
 	{
-		return ImmutableList.copyOf(inventories);
+		return ImmutableList.copyOf(inventoriesByOrderId.values());
 	}
 
 	@Override
@@ -174,7 +174,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 			//
 			// Get/create the inventory line based on the info from material receipt and request
-			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(receiptLine, movementDate);
+			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(receiptLine, hu.getM_HU_ID(), movementDate);
 
 			// #2143 hu snapshots
 			snapshotHUForInventoryLine(topLevelHU, inventoryLine);
@@ -191,7 +191,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 			if (qtyToMoveInDispute.signum() != 0)
 			{
-				final I_M_InventoryLine inventoryLineInDispute = getCreateInventoryLineInDispute(receiptLine, movementDate);
+				final I_M_InventoryLine inventoryLineInDispute = getCreateInventoryLineInDispute(receiptLine, hu.getM_HU_ID(), movementDate);
 
 				final BigDecimal inventoryLine_Qty_Old = inventoryLineInDispute.getQtyInternalUse();
 				final BigDecimal inventoryLine_Qty_New = inventoryLine_Qty_Old.add(qtyToMoveInDispute);
@@ -267,34 +267,36 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 	private List<I_M_InOutLine> getReceiptLines(final I_M_HU topLevelHU, final int productId)
 	{
-		return huInOutDAO.retrieveInOutLinesForHU(topLevelHU)
+		final List<I_M_InOutLine> receiptLines = huInOutDAO.retrieveInOutLinesForHU(topLevelHU)
 				.stream()
-				//
-				// #1604: skip inoutlines for other products; request.getProduct() is not null, see AllocationRequest constructor:
-				.filter(inoutLine -> inoutLine.getM_Product_ID() != productId)
-				//
-				// in case the base inout line is from a shipment, it is not relevant for the material disposal (for the time being)
-				.peek(inoutLine -> {
-					final I_M_InOut receipt = inoutLine.getM_InOut();
-					if (receipt.isSOTrx())
-					{
-						throw new AdempiereException("Document type {0} is not suitable for material disposal", new Object[] { receipt.getC_DocType() });
-					}
-				})
-				//
+				.filter(inoutLine -> inoutLine.getM_Product_ID() == productId) // #1604: skip inoutlines for other products
+				.peek(this::assertReceipt) // make sure it's a material receipt (and NOT a shipment)
 				.collect(ImmutableList.toImmutableList());
+		if (receiptLines.isEmpty())
+		{
+			throw new HUException("No receipt lines found for " + topLevelHU);
+		}
+		return receiptLines;
 	}
 
-	private I_M_InventoryLine getCreateInventoryLineInDispute(final I_M_InOutLine receiptLine, final Date movementDate)
+	private void assertReceipt(final I_M_InOutLine inoutLine)
+	{
+		final I_M_InOut receipt = inoutLine.getM_InOut();
+		if (receipt.isSOTrx())
+		{
+			throw new AdempiereException("Document type {0} is not suitable for material disposal", new Object[] { receipt.getC_DocType() });
+		}
+	}
+
+	private I_M_InventoryLine getCreateInventoryLineInDispute(final I_M_InOutLine receiptLine, final int huId, final Date movementDate)
 	{
 		final I_M_InOutLine originReceiptLineInDispute = InterfaceWrapperHelper.create(inOutDAO.retrieveLineWithQualityDiscount(receiptLine), I_M_InOutLine.class);
-
 		if (originReceiptLineInDispute == null)
 		{
 			return null;
 		}
 
-		final I_M_InventoryLine inoutLineInDispute = getCreateInventoryLine(originReceiptLineInDispute, movementDate);
+		final I_M_InventoryLine inoutLineInDispute = getCreateInventoryLine(originReceiptLineInDispute, huId, movementDate);
 		inoutLineInDispute.setIsInDispute(true);
 		inoutLineInDispute.setQualityDiscountPercent(originReceiptLineInDispute.getQualityDiscountPercent());
 		inoutLineInDispute.setQualityNote(originReceiptLineInDispute.getQualityNote());
@@ -359,16 +361,24 @@ class InventoryAllocationDestination implements IAllocationDestination
 	 */
 	private I_M_InventoryLine getCreateInventoryLine(
 			@NonNull final I_M_InOutLine receiptLine,
+			final int huId,
 			@NonNull final Date movementDate)
 	{
-		return inOutLineId2InventoryLine.computeIfAbsent(receiptLine.getM_InOutLine_ID(), receiptLineId -> createInventoryLine(receiptLine, movementDate));
+		return inventoryLinesByKey.computeIfAbsent(
+				createInventoryLineKey(receiptLine.getM_InOutLine_ID(), huId),
+				k -> createInventoryLine(receiptLine, huId, movementDate));
+	}
+
+	private ArrayKey createInventoryLineKey(final int receiptLineId, final int huId)
+	{
+		return ArrayKey.of(receiptLineId, huId);
 	}
 
 	private I_M_InventoryLine createInventoryLine(
 			@NonNull final I_M_InOutLine receiptLine,
+			final int huId,
 			@NonNull final Date movementDate)
 	{
-
 		final I_M_Inventory inventoryHeader = getCreateInventoryHeader(receiptLine, movementDate);
 
 		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
@@ -377,8 +387,8 @@ class InventoryAllocationDestination implements IAllocationDestination
 		inventoryLine.setC_Charge_ID(chargeId);
 		inventoryLine.setM_Locator_ID(warehouseLocatorId);
 		inventoryLine.setM_InOutLine(receiptLine);
-
 		inventoryLine.setC_UOM(receiptLine.getC_UOM());
+		inventoryLine.setM_HU_ID(huId);
 
 		attributeSetInstanceBL.cloneASI(inventoryLine, receiptLine);
 
@@ -389,10 +399,10 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private I_M_Inventory getCreateInventoryHeader(final I_M_InOutLine receiptLine, final Date movementDate)
 	{
 		final I_M_InOut receipt = receiptLine.getM_InOut();
-		final I_C_Order purchaseOrder = receipt.getC_Order();
-		Check.assumeNotNull(purchaseOrder, "Receipt {0} does not have a purchase order set", receipt);
+		final int purchaseOrderId = receipt.getC_Order_ID();
+		Check.assume(purchaseOrderId > 0, "Receipt {0} does not have a purchase order set", receipt);
 
-		return orderIdToInventory.computeIfAbsent(purchaseOrder.getC_Order_ID(), orderId -> createInventoryHeader(purchaseOrder, movementDate));
+		return inventoriesByOrderId.computeIfAbsent(purchaseOrderId, k -> createInventoryHeader(receipt.getC_Order(), movementDate));
 	}
 
 	private I_M_Inventory createInventoryHeader(final I_C_Order purchaseOrder, final Date movementDate)
@@ -410,8 +420,6 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 		inventory.setPOReference(purchaseOrder.getPOReference());
 		InterfaceWrapperHelper.save(inventory);
-
-		inventories.add(inventory);
 
 		createAndLinkSnapshotProducerForInventory(inventory);
 

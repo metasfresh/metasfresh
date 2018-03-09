@@ -80,12 +80,12 @@ public class HUInternalUseInventoryProducer
 
 	public List<I_M_Inventory> createInventories()
 	{
-		final Map<Integer, List<I_M_HU>> husByWarehouseId = getTopLevelHUs()
+		final Map<Integer, List<I_M_HU>> topLevelHUsByWarehouseId = getTopLevelHUs()
 				.stream()
 				.collect(Collectors.groupingBy(hu -> hu.getM_Locator().getM_Warehouse_ID())); // we asserted earlier that each HU has a locator
 
 		final List<I_M_Inventory> result = new ArrayList<>();
-		for (final Map.Entry<Integer, List<I_M_HU>> warehouseIdAndHUs : husByWarehouseId.entrySet())
+		for (final Map.Entry<Integer, List<I_M_HU>> warehouseIdAndHUs : topLevelHUsByWarehouseId.entrySet())
 		{
 			final int warehouseId = warehouseIdAndHUs.getKey();
 			final List<I_M_HU> hus = warehouseIdAndHUs.getValue();
@@ -201,17 +201,16 @@ public class HUInternalUseInventoryProducer
 	 */
 	public HUInternalUseInventoryProducer addHUs(@NonNull final Collection<I_M_HU> hus)
 	{
-		assertEveryHUHasLocator(hus);
-		_hus.addAll(hus);
+		hus.forEach(this::addHU);
 		return this;
 	}
 
-	private void assertEveryHUHasLocator(@NonNull final Collection<I_M_HU> hus)
+	public HUInternalUseInventoryProducer addHU(@NonNull final I_M_HU hu)
 	{
-		hus.stream()
-				.filter(hu -> hu.getM_Locator_ID() <= 0)
-				.findAny()
-				.ifPresent(hu -> Check.fail("Every given HU needs to have a locator, but at least one hu doesn't; hu=", hu));
+		Check.assume(hu.getM_Locator_ID() > 0, "HU needs to have a locator: {}", hu);
+
+		_hus.add(hu);
+		return this;
 	}
 
 	private List<I_M_HU> getTopLevelHUs()
