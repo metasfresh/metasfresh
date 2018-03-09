@@ -1,5 +1,8 @@
 package de.metas.handlingunits.client.terminal.report.model;
 
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+
 /*
  * #%L
  * de.metas.handlingunits.client
@@ -13,15 +16,14 @@ package de.metas.handlingunits.client.terminal.report.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -43,16 +45,27 @@ public class HUADProcessKey extends TerminalKey
 	{
 		super(terminalContext);
 
-		Check.assume(adProcessId > 0, "processId > 0");
-		final I_AD_Process process = Services.get(IADProcessDAO.class).retrieveProcessById(terminalContext.getCtx(), adProcessId);
-		this.adProcessId = adProcessId;
-
 		id = getClass().getName() + "-" + adProcessId;
 
-		final String processName = process.getName();
-		value = new KeyNamePair(adProcessId, processName);
+		value = extractKeyNamePair(adProcessId);
+		this.adProcessId = adProcessId;
+		name = value.getName();
+	}
 
-		name = processName;
+	private static final KeyNamePair extractKeyNamePair(final int adProcessId)
+	{
+		Check.assume(adProcessId > 0, "processId > 0");
+
+		final I_AD_Process process = Services.get(IADProcessDAO.class).retrieveProcessById(adProcessId);
+		final I_AD_Process processTrl = InterfaceWrapperHelper.translate(process, I_AD_Process.class);
+
+		String caption = processTrl.getName();
+		if (Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			caption += " (" + adProcessId + ")";
+		}
+
+		return KeyNamePair.of(adProcessId, caption);
 	}
 
 	@Override
@@ -81,6 +94,6 @@ public class HUADProcessKey extends TerminalKey
 
 	public int getAD_Process_ID()
 	{
-		return adProcessId; 
+		return adProcessId;
 	}
 }
