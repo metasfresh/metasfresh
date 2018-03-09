@@ -25,10 +25,13 @@ package de.metas.handlingunits.storage;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import lombok.NonNull;
 
 /**
  * Factory for HU related quantities.<br>
@@ -58,4 +61,9 @@ public interface IHUStorageFactory
 	List<IHUProductStorage> getHUProductStorages(List<I_M_HU> hus, int productId);
 
 	Stream<IHUProductStorage> streamHUProductStorages(List<I_M_HU> hus);
+
+	default Stream<IHUProductStorage> streamHUProductStorages(@NonNull final I_M_HU hu)
+	{
+		return streamHUProductStorages(ImmutableList.of(hu));
+	}
 }

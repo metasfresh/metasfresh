@@ -106,6 +106,7 @@ import lombok.NonNull;
 	private final Set<Integer> _onlyInWarehouseIds = new HashSet<>();
 	@ToStringBuilder(skip = true)
 	private final Set<Integer> _onlyInWarehouseIdsRO = Collections.unmodifiableSet(_onlyInWarehouseIds);
+	private final Set<Integer> _onlyInLocatorIds = new HashSet<>();
 	private boolean _excludeAfterPickingLocator = false;
 	/**
 	 * Flag to set determine if the query shall only retrieve the HUs from AfterPicking locators or not
@@ -163,11 +164,11 @@ import lombok.NonNull;
 	// Data retrieval options
 	private boolean _errorIfNoHUs = false;
 	private String _errorIfNoHUs_ADMessage = null;
-	
+
 	public HUQueryBuilder()
 	{
 	}
-	
+
 	private HUQueryBuilder(final HUQueryBuilder from)
 	{
 		this._contextProvider = from._contextProvider;
@@ -175,6 +176,7 @@ import lombok.NonNull;
 		this.parentHUItemId = from.parentHUItemId;
 		this.parentHUId = from.parentHUId;
 		this._onlyInWarehouseIds.addAll(from._onlyInWarehouseIds);
+		this._onlyInLocatorIds.addAll(from._onlyInLocatorIds);
 		this._excludeAfterPickingLocator = from._excludeAfterPickingLocator;
 		this._includeAfterPickingLocator = from._includeAfterPickingLocator;
 		this.onlyIfAssignedToBPartner = from.onlyIfAssignedToBPartner;
@@ -237,6 +239,7 @@ import lombok.NonNull;
 				.append(parentHUItemId)
 				.append(parentHUId)
 				.append(_onlyInWarehouseIds)
+				.append(_onlyInLocatorIds)
 				.append(_excludeAfterPickingLocator)
 				.append(_includeAfterPickingLocator)
 				.append(onlyIfAssignedToBPartner)
@@ -281,6 +284,7 @@ import lombok.NonNull;
 				.append(parentHUItemId, other.parentHUItemId)
 				.append(parentHUId, other.parentHUId)
 				.append(_onlyInWarehouseIds, other._onlyInWarehouseIds)
+				.append(_onlyInLocatorIds, other._onlyInLocatorIds)
 				.append(_excludeAfterPickingLocator, other._excludeAfterPickingLocator)
 				.append(onlyIfAssignedToBPartner, other.onlyIfAssignedToBPartner)
 				.append(_onlyInBpartnerIds, other._onlyInBpartnerIds)
@@ -407,6 +411,14 @@ import lombok.NonNull;
 			final IQuery<I_M_Locator> locatorsQuery = locatorsQueryBuilder.create();
 			filters.addInSubQueryFilter(I_M_HU.COLUMN_M_Locator_ID,
 					I_M_Locator.COLUMN_M_Locator_ID, locatorsQuery);
+		}
+
+		//
+		// Filter by Locators
+		final Set<Integer> onlyInLocatorIds = getOnlyInLocatorIds();
+		if (!onlyInLocatorIds.isEmpty())
+		{
+			filters.addInArrayFilter(I_M_HU.COLUMN_M_Locator_ID, onlyInLocatorIds);
 		}
 
 		//
@@ -802,6 +814,19 @@ import lombok.NonNull;
 	public Set<Integer> getOnlyInWarehouseIds()
 	{
 		return _onlyInWarehouseIdsRO;
+	}
+
+	@Override
+	public HUQueryBuilder addOnlyInLocatorId(final int locatorId)
+	{
+		Check.assume(locatorId > 0, "locatorId > 0");
+		_onlyInLocatorIds.add(locatorId);
+		return this;
+	}
+
+	private Set<Integer> getOnlyInLocatorIds()
+	{
+		return _onlyInLocatorIds;
 	}
 
 	@Override
