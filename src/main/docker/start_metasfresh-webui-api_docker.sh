@@ -13,6 +13,10 @@ db_password=${DB_PASSWORD:-metasfresh}
 es_host=${ES_HOST:-search}
 es_port=${ES_PORT:-9300}
 
+# metasfresh-admin
+admin_host=${ADMIN_HOST:-localhost}
+admin_port=${ADMIN_PORT:-9090}
+
 # app
 app_host=${APP_HOST:-app}
 
@@ -48,6 +52,8 @@ run_metasfresh()
  -XX:+HeapDumpOnOutOfMemoryError \
  -Dsun.misc.URLClassPath.disableJarChecking=true \
  -Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port} \
+ -Dspring.boot.admin.url=http://${admin_host}:${admin_port} \
+ -Dmanagement.security.enabled=false \
  -DPropertyFile=/opt/metasfresh/metasfresh-webui-api/metasfresh.properties \
  -Djava.security.egd=file:/dev/./urandom \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789 \
