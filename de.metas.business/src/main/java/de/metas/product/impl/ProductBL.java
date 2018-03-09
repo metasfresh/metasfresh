@@ -1,5 +1,7 @@
 package de.metas.product.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -80,6 +82,14 @@ public final class ProductBL implements IProductBL
 	public I_C_UOM getStockingUOM(@NonNull final I_M_Product product)
 	{
 		return product.getC_UOM();
+	}
+	
+	@Override
+	public I_C_UOM getStockingUOM(final int productId)
+	{
+		Check.assume(productId > 0, "productId > 0");
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		return getStockingUOM(product);
 	}
 
 	/**
@@ -163,6 +173,21 @@ public final class ProductBL implements IProductBL
 
 		return isItem(product);
 	}
+	
+	@Override
+	public boolean isStocked(final int productId)
+	{
+		if(productId <= 0)
+		{
+			return false; 
+		}
+		
+		// NOTE: we rely on table cache config
+		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		
+		return isStocked(product);
+	}
+
 
 	@Override
 	public int getM_AttributeSet_ID(final I_M_Product product)

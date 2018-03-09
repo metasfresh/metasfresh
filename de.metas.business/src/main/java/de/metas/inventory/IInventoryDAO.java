@@ -1,9 +1,8 @@
-package org.adempiere.minventory.api;
+package de.metas.inventory;
 
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
 /*
@@ -37,6 +36,15 @@ public interface IInventoryDAO extends ISingletonService
 	 * @param inventory
 	 * @return
 	 */
-	public List<I_M_InventoryLine> retrieveLinesForInventory(final I_M_Inventory inventory);
+	<T extends I_M_InventoryLine> List<T> retrieveLinesForInventoryId(int inventoryId, Class<T> type);
+	
+	default List<I_M_InventoryLine> retrieveLinesForInventoryId(final int inventoryId)
+	{
+		return retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class);
+	}
 
+
+	boolean hasLines(int inventoryId);
+
+	void setInventoryLinesProcessed(int inventoryId, boolean processed);
 }
