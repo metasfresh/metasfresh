@@ -21,6 +21,8 @@ Here come the actual release notes:
     * New Indow in WebUI for Import Formats, now allowing to maintain data formats to import migration data.
   * [#3637](https://github.com/metasfresh/metasfresh/issues/3637) Standalone Product Translation Window
     * New Standalone Product Translation window in WebUI.
+  * [#3652](https://github.com/metasfresh/metasfresh/issues/3652) WebUI: New Inventory Window
+    * New Window in WebUI that allows the maintenance of Inventory recrdings and adjustments.
 
 ## Fixes
 * metasfresh-webui-frontend
