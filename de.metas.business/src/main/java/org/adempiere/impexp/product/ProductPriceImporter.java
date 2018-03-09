@@ -9,11 +9,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
 import de.metas.pricing.ProductPrices;
@@ -48,9 +49,9 @@ import lombok.NonNull;
 public class ProductPriceImporter
 {
 
-	private final ProductPriceRequest request;
+	private final ProductPriceCreateRequest request;
 
-	public ProductPriceImporter(@NonNull final ProductPriceRequest request)
+	public ProductPriceImporter(@NonNull final ProductPriceCreateRequest request)
 	{
 		this.request = request;
 	}
@@ -62,51 +63,51 @@ public class ProductPriceImporter
 			return;
 		}
 
-		final I_M_PriceList_Version plv = getCreatePriceListVersion(request.getPriceList(), request.getValidDate());
+		final I_M_PriceList_Version plv = getCreatePriceListVersion(request.getPriceListId(), request.getValidDate());
 		createProductPriceOrUpdateExistentOne(plv);
 	}
 
 	private boolean isValidPriceRecord()
 	{
-		return request.getProduct() != null
+		return request.getProductId() > 0
 				&& request.getPrice().signum() > 0
-				&& request.getPriceList() != null
+				&& request.getPriceListId() > 0
 				&& request.getValidDate() != null;
 	}
 
-	private I_M_PriceList_Version getCreatePriceListVersion(@NonNull final I_M_PriceList priceList, @NonNull final Timestamp validDate)
+	private I_M_PriceList_Version getCreatePriceListVersion(final int priceListId, @NonNull final Timestamp validDate)
 	{
-		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceList.getM_PriceList_ID(), validDate);
-		return plv == null ? createPriceListVersion(priceList, validDate) : plv;
+		final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceListId, validDate);
+		return plv == null ? createPriceListVersion(priceListId, validDate) : plv;
 	}
 
 	private I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull final I_M_PriceList_Version plv)
 	{
-		final I_C_TaxCategory taxCategory = request.getTaxCategory();
 		final BigDecimal price = request.getPrice();
-		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, request.getProduct().getM_Product_ID());
+		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, request.getProductId());
 		if (pp == null)
 		{
 			pp = newInstance(I_M_ProductPrice.class, plv);
 		}
 		pp.setM_PriceList_Version(plv);
-		pp.setM_Product(request.getProduct());
+		pp.setM_Product_ID(request.getProductId());
 		pp.setPriceLimit(price);
 		pp.setPriceList(price);
 		pp.setPriceStd(price);
-		pp.setC_UOM(request.getProduct().getC_UOM());
-		pp.setC_TaxCategory(taxCategory);
+		final I_C_UOM uom = InterfaceWrapperHelper.load(request.getProductId(), I_M_Product.class).getC_UOM();
+		pp.setC_UOM(uom);
+		pp.setC_TaxCategory_ID(request.getTaxCategoryId());
 		save(pp);
 
 		return pp;
 	}
 
-	private I_M_PriceList_Version createPriceListVersion(@NonNull final I_M_PriceList priceList, @NonNull final Timestamp validFrom)
+	private I_M_PriceList_Version createPriceListVersion(final int priceListId, @NonNull final Timestamp validFrom)
 	{
-		final I_M_PriceList_Version plv = newInstance(I_M_PriceList_Version.class, priceList);
-		plv.setName(priceList.getName() + validFrom);
+		final I_M_PriceList_Version plv = newInstance(I_M_PriceList_Version.class);
+		plv.setName(validFrom.toString());
 		plv.setValidFrom(validFrom);
-		plv.setM_PriceList(priceList);
+		plv.setM_PriceList_ID(priceListId);
 		plv.setProcessed(true);
 		save(plv);
 

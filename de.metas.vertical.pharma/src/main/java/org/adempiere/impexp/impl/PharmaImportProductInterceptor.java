@@ -8,8 +8,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.impexp.IImportProcess;
+import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.impexp.product.ProductPriceImporter;
-import org.adempiere.impexp.product.ProductPriceRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -103,12 +103,12 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 
 	private void createAPU(@NonNull final I_I_Product importRecord)
 	{
-		final ProductPriceRequest request = ProductPriceRequest.builder()
+		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
 				.price(importRecord.getA01APU())
-				.priceList(importRecord.getAPU_Price_List())
-				.product(importRecord.getM_Product())
+				.priceListId(importRecord.getAPU_Price_List_ID())
+				.productId(importRecord.getM_Product_ID())
 				.validDate(SystemTime.asDayTimestamp())
-				.taxCategory(findTaxCategory(importRecord))
+				.taxCategoryId(findTaxCategory(importRecord))
 				.build();
 
 		final ProductPriceImporter command = new ProductPriceImporter(request);
@@ -117,19 +117,19 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 
 	private void createAEP(@NonNull final I_I_Product importRecord)
 	{
-		final ProductPriceRequest request = ProductPriceRequest.builder()
+		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
 				.price(importRecord.getA01AEP())
-				.priceList(importRecord.getAEP_Price_List())
-				.product(importRecord.getM_Product())
+				.priceListId(importRecord.getAEP_Price_List_ID())
+				.productId(importRecord.getM_Product_ID())
 				.validDate(SystemTime.asDayTimestamp())
-				.taxCategory(findTaxCategory(importRecord))
+				.taxCategoryId(findTaxCategory(importRecord))
 				.build();
 
 		final ProductPriceImporter command = new ProductPriceImporter(request);
 		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
-	private I_C_TaxCategory findTaxCategory(@NonNull final I_I_Product importRecord)
+	private int findTaxCategory(@NonNull final I_I_Product importRecord)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class, importRecord)
 				.addOnlyActiveRecordsFilter()
@@ -137,6 +137,6 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, true)
 				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
 				.create()
-				.first(I_C_TaxCategory.class);
+				.firstId();
 	}
 }

@@ -17,9 +17,9 @@ import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
-import org.adempiere.impexp.product.ProductPriceImporter;
 import org.adempiere.impexp.product.MProductImportTableSqlUpdater;
-import org.adempiere.impexp.product.ProductPriceRequest;
+import org.adempiere.impexp.product.ProductPriceCreateRequest;
+import org.adempiere.impexp.product.ProductPriceImporter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.uom.api.IUOMDAO;
@@ -34,6 +34,7 @@ import org.compiere.model.X_I_Product;
 import org.compiere.process.MProductPriceCloningCommand;
 
 import de.metas.product.IProductDAO;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
@@ -43,6 +44,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 {
 	private final String DEACTIVATE_OPERATION_CODE = "2";
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	@Override
 	public Class<I_I_Pharma_Product> getImportModelClass()
@@ -365,12 +367,12 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private void createKAEP(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final ProductPriceRequest request = ProductPriceRequest.builder()
+		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
 				.price(importRecord.getA01KAEP())
-				.priceList(importRecord.getKAEP_Price_List())
-				.product(importRecord.getM_Product())
+				.priceListId(importRecord.getKAEP_Price_List_ID())
+				.productId(importRecord.getM_Product_ID())
 				.validDate(importRecord.getA01GDAT())
-				.taxCategory(findTaxCategory(importRecord))
+				.taxCategoryId(taxDAO.findTaxCategoryId(createTaxCategoryFilter(importRecord)))
 				.build();
 
 		final ProductPriceImporter command = new ProductPriceImporter(request);
@@ -379,12 +381,12 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private void createAPU(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final ProductPriceRequest request = ProductPriceRequest.builder()
+		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
 				.price(importRecord.getA01APU())
-				.priceList(importRecord.getAPU_Price_List())
-				.product(importRecord.getM_Product())
+				.priceListId(importRecord.getAPU_Price_List_ID())
+				.productId(importRecord.getM_Product_ID())
 				.validDate(importRecord.getA01GDAT())
-				.taxCategory(findTaxCategory(importRecord))
+				.taxCategoryId(taxDAO.findTaxCategoryId(createTaxCategoryFilter(importRecord)))
 				.build();
 
 		final ProductPriceImporter command = new ProductPriceImporter(request);
@@ -393,12 +395,12 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private void createAEP(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final ProductPriceRequest request = ProductPriceRequest.builder()
+		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
 				.price(importRecord.getA01AEP())
-				.priceList(importRecord.getAEP_Price_List())
-				.product(importRecord.getM_Product())
+				.priceListId(importRecord.getAEP_Price_List_ID())
+				.productId(importRecord.getM_Product_ID())
 				.validDate(importRecord.getA01GDAT())
-				.taxCategory(findTaxCategory(importRecord))
+				.taxCategoryId(taxDAO.findTaxCategoryId(createTaxCategoryFilter(importRecord)))
 				.build();
 
 		final ProductPriceImporter command = new ProductPriceImporter(request);
@@ -407,12 +409,12 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private void createAVP(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final ProductPriceRequest request = ProductPriceRequest.builder()
+		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
 				.price(importRecord.getA01AVP())
-				.priceList(importRecord.getAVP_Price_List())
-				.product(importRecord.getM_Product())
+				.priceListId(importRecord.getAVP_Price_List_ID())
+				.productId(importRecord.getM_Product_ID())
 				.validDate(importRecord.getA01GDAT())
-				.taxCategory(findTaxCategory(importRecord))
+				.taxCategoryId(taxDAO.findTaxCategoryId(createTaxCategoryFilter(importRecord)))
 				.build();
 
 		final ProductPriceImporter command = new ProductPriceImporter(request);
@@ -421,12 +423,12 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private void createUVP(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final ProductPriceRequest request = ProductPriceRequest.builder()
+		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
 				.price(importRecord.getA01UVP())
-				.priceList(importRecord.getUVP_Price_List())
-				.product(importRecord.getM_Product())
+				.priceListId(importRecord.getUVP_Price_List_ID())
+				.productId(importRecord.getM_Product_ID())
 				.validDate(importRecord.getA01GDAT())
-				.taxCategory(findTaxCategory(importRecord))
+				.taxCategoryId(taxDAO.findTaxCategoryId(createTaxCategoryFilter(importRecord)))
 				.build();
 
 		final ProductPriceImporter command = new ProductPriceImporter(request);
@@ -435,28 +437,17 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private void createZBV(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final ProductPriceRequest request = ProductPriceRequest.builder()
+		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
 				.price(importRecord.getA01ZBV())
-				.priceList(importRecord.getZBV_Price_List())
-				.product(importRecord.getM_Product())
+				.priceListId(importRecord.getZBV_Price_List_ID())
+				.productId(importRecord.getM_Product_ID())
 				.validDate(importRecord.getA01GDAT())
-				.taxCategory(findTaxCategory(importRecord))
+				.taxCategoryId(taxDAO.findTaxCategoryId(createTaxCategoryFilter(importRecord)))
 				.build();
+
 
 		final ProductPriceImporter command = new ProductPriceImporter(request);
 		command.createProductPrice_And_PriceListVersionIfNeeded();
-	}
-
-	private I_C_TaxCategory findTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
-	{
-		final IQueryFilter<I_C_TaxCategory> filter = createTaxCategoryFilter(importRecord);
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class, importRecord)
-				.filter(filter)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
-				.create()
-				.first(I_C_TaxCategory.class);
 	}
 
 	private IQueryFilter<I_C_TaxCategory> createTaxCategoryFilter(@NonNull final I_I_Pharma_Product importRecord)
