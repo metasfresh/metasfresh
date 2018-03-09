@@ -172,7 +172,7 @@ public class SourceHUsService
 		}
 
 		Services.get(IHUSnapshotDAO.class).restoreHUs()
-				.addModel(destroyedHU)
+				.addModelId(destroyedHU.getM_HU_ID())
 				.setContext(PlainContextAware.newWithThreadInheritedTrx())
 				.setDateTrx(SystemTime.asDate())
 				.setSnapshotId(sourceHuRecord.getPreDestroy_Snapshot_UUID())
