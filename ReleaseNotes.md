@@ -71,14 +71,21 @@ Here come the actual release notes:
   * [#3578](https://github.com/metasfresh/metasfresh/issues/3578) Introduce AD_Column.IsForceIncludeInGeneratedModel to force including a column to generated java models
     * Internal Housekeeping issue that allows to force include columns in model generation no matter what entity type the corresponding table has.
   * [#3582](https://github.com/metasfresh/metasfresh/issues/3582) Avoid mass-creation of "MissingShipmentSchedulesWorkpackages"
-    * Performamce Improvements to the Subscription evaluation process, now avioiding the creation of mass workpackages when not needed.
+    * Performance Improvements to the Subscription evaluation process, now avioiding the creation of mass workpackages when not needed.
   * [#3588](https://github.com/metasfresh/metasfresh/issues/3588) Drop support for org.adempiere.server.embedded
+    * Internal Housekeeping improvement.
   * [#3587](https://github.com/metasfresh/metasfresh/issues/3587) Implement user token authentication for future REST APIs
+    * Implementation for the user token authentication to our REST APIs.
   * [#3590](https://github.com/metasfresh/metasfresh/issues/3590) Make shipment line attribute set instance (ASI) configurable
+    * New Feature that allows to configure the creation of shipment line Attributre set instances instead of just creating a copy from sales orderline.
   * [#3592](https://github.com/metasfresh/metasfresh/issues/3592) Add invoice related virtual columns in Shipment Restrictions
+    * New searchable Fields in Shipment Restrictions for Invoice ID and isPaid.
   * [#3599](https://github.com/metasfresh/metasfresh/issues/3599) Pharma: Use IFA category when importing IFA products
+    * Now using the IFA Category as Product Category after Import of Pharma Products.
   * [#3604](https://github.com/metasfresh/metasfresh/issues/3604) Provide AD_Window_ID to running process
-  * [#3605](https://github.com/metasfresh/metasfresh/pull/3605) add mvnw so that users don't need to install mvn to build from cmdline
+    * Improvement of the Process Info, now adding the Window ID to it and storing it in the Process Instance record. This allows to retrieve more infomration about from where a Process was triggered.
+  * [#3605](https://github.com/metasfresh/metasfresh/pull/3605) Add mvnw so that users don't need to install mvn to build from cmdline
+    * Internal Housekeeping solution for maven build via commandline.
   * [#3609](https://github.com/metasfresh/metasfresh/issues/3609) Default Product Window take out Pharma specific fields
     * Adjustment of the default product window, removing all pharma vertical fields. These are included in the Pharma product window.
 
