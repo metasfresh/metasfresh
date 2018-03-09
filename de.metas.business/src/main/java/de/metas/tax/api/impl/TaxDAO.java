@@ -10,12 +10,12 @@ package de.metas.tax.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -93,7 +94,9 @@ public class TaxDAO implements ITaxDAO
 				.setParameters(taxCategory.getC_TaxCategory_ID())
 				.list(I_C_Tax.class);
 		if (list.size() == 1)
+		{
 			tax = list.get(0);
+		}
 		else
 		{
 			// Error - should only be one default
@@ -123,5 +126,17 @@ public class TaxDAO implements ITaxDAO
 				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, noTaxCategoryFoundID)
 				.create()
 				.firstOnlyNotNull(I_C_TaxCategory.class);
+	}
+
+	@Override
+	public int findTaxCategoryId(IQueryFilter<I_C_TaxCategory> filter)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class)
+				.filter(filter)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
+				.create()
+				.firstId();
 	}
 }
