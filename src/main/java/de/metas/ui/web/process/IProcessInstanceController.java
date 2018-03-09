@@ -3,13 +3,10 @@ package de.metas.ui.web.process;
 import java.util.Collection;
 import java.util.List;
 
-import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.ui.web.window.model.IDocumentFieldView;
 
 /*
  * #%L
@@ -49,7 +46,7 @@ public interface IProcessInstanceController
 {
 	DocumentId getInstanceId();
 
-	ProcessInstanceResult startProcess(IViewsRepository viewsRepo, DocumentCollection documentsCollection);
+	ProcessInstanceResult startProcess(ProcessExecutionContext context);
 
 	/**
 	 * @return execution result or throws exception if the process was not already executed
@@ -59,7 +56,7 @@ public interface IProcessInstanceController
 	//
 	// Process parameters
 	//@formatter:off
-	Collection<IDocumentFieldView> getParameters();
+	Collection<IProcessInstanceParameter> getParameters();
 	LookupValuesList getParameterLookupValues(String parameterName);
 	LookupValuesList getParameterLookupValuesForQuery(String parameterName, String query);
 	void processParameterValueChanges(List<JSONDocumentChangedEvent> events, ReasonSupplier reason);

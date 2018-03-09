@@ -463,6 +463,7 @@ public class SqlViewFactory implements IViewFactory
 				.columnSql(documentField.getColumnSql())
 				.keyColumn(documentField.isKeyColumn())
 				.widgetType(documentField.getWidgetType())
+				.virtualColumn(documentField.isVirtualColumn())
 				//
 				.sqlValueClass(documentField.getSqlValueClass())
 				.sqlSelectValue(documentField.getSqlSelectValue())

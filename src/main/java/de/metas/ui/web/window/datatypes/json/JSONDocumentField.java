@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.process.IProcessInstanceParameter;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
@@ -83,6 +84,28 @@ public final class JSONDocumentField implements Serializable
 
 		return jsonField;
 	}
+	
+	public static final JSONDocumentField ofProcessParameter(final IProcessInstanceParameter parameter, final String adLanguage)
+	{
+		final String name = parameter.getParameterName();
+		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(parameter.getWidgetType());
+		final Object valueJSON = parameter.getValueAsJsonObject(adLanguage);
+		final String reason = null; // N/A
+
+		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
+				.setValue(valueJSON, reason)
+				.setReadonly(parameter.getReadonly())
+				.setMandatory(parameter.getMandatory())
+				.setDisplayed(parameter.getDisplayed())
+				.setValidStatus(parameter.getValidStatus());
+		if (WindowConstants.isProtocolDebugging())
+		{
+			jsonField.putDebugProperty(DocumentFieldChange.DEBUGPROPERTY_FieldInfo, parameter.toString());
+		}
+
+		return jsonField;
+	}
+
 	
 	public static final JSONDocumentField idField(final Object jsonValue)
 	{

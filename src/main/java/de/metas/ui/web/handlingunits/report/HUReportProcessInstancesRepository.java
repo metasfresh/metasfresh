@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,7 @@ import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IADProcessDAO;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -40,6 +42,11 @@ import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import lombok.NonNull;
 
@@ -118,15 +125,27 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		final ITranslatableString caption = adProcessTrl.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName());
 		final ITranslatableString description = adProcessTrl.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription());
 
+		final DocumentEntityDescriptor parametersDescriptor = DocumentEntityDescriptor.builder()
+				.setDocumentType(DocumentType.Process, processId.toDocumentId())
+				.setCaption(caption)
+				.setDescription(description)
+				.disableDefaultTableCallouts()
+				.addField(DocumentFieldDescriptor.builder(HUReportProcessInstance.PARAM_Copies)
+						.setCaption(Services.get(IMsgBL.class).translatable(HUReportProcessInstance.PARAM_Copies))
+						.setWidgetType(DocumentFieldWidgetType.Integer))
+				.build();
+
 		return WebuiHUProcessDescriptor.builder()
 				.huProcessDescriptor(huProcessDescriptor)
 				.processDescriptor(ProcessDescriptor.builder()
 						.setProcessId(processId)
 						.setType(ProcessDescriptorType.Report)
+						.setParametersDescriptor(parametersDescriptor)
 						.setLayout(ProcessLayout.builder()
 								.setProcessId(processId)
 								.setCaption(caption)
 								.setDescription(description)
+								.addElements(parametersDescriptor)
 								.build())
 						.build())
 				.build();
@@ -184,16 +203,28 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	{
 		final WebuiHUProcessDescriptor descriptor = getWebuiHUProcessDescriptor(request.getProcessId());
 
+		final DocumentId instanceId = nextPInstanceId();
+
+		final Document parameters = Document.builder(descriptor.getParametersDescriptor())
+				.initializeAsNewDocument(instanceId, /* version */"0");
+
 		final HUReportProcessInstance instance = HUReportProcessInstance.builder()
-				.instanceId(nextPInstanceId())
+				.instanceId(instanceId)
 				.viewRowIdsSelection(request.getViewRowIdsSelection())
 				.reportADProcessId(descriptor.getReportADProcessId())
+				.parameters(parameters)
 				.build();
+		instance.setCopies(1);
 
-		instances.put(instance.getInstanceId(), instance);
-		instances.cleanUp();
+		putInstance(instance);
 
 		return instance;
+	}
+
+	private void putInstance(@NonNull final HUReportProcessInstance instance)
+	{
+		instances.cleanUp();
+		instances.put(instance.getInstanceId(), instance.copyReadonly());
 	}
 
 	private HUReportProcessInstance getInstance(final DocumentId instanceId)
@@ -209,13 +240,28 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	@Override
 	public <R> R forProcessInstanceReadonly(final DocumentId pinstanceId, final Function<IProcessInstanceController, R> processor)
 	{
-		return processor.apply(getInstance(pinstanceId));
+		try (final IAutoCloseable readLock = getInstance(pinstanceId).lockForReading())
+		{
+			final HUReportProcessInstance processInstance = getInstance(pinstanceId)
+					.copyReadonly();
+
+			return processor.apply(processInstance);
+		}
 	}
 
 	@Override
 	public <R> R forProcessInstanceWritable(final DocumentId pinstanceId, final IDocumentChangesCollector changesCollector, final Function<IProcessInstanceController, R> processor)
 	{
-		return processor.apply(getInstance(pinstanceId));
+		try (final IAutoCloseable readLock = getInstance(pinstanceId).lockForWriting())
+		{
+			final HUReportProcessInstance processInstance = getInstance(pinstanceId)
+					.copyReadWrite(changesCollector);
+
+			final R result = processor.apply(processInstance);
+			putInstance(processInstance);
+
+			return result;
+		}
 	}
 
 	@Override

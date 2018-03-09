@@ -78,7 +78,7 @@ public class SqlDocumentOrderByBuilder
 	{
 		final String fieldName = orderBy.getFieldName();
 		final IStringExpression sqlExpression = bindings.getFieldOrderBy(fieldName);
-		return SqlDocumentOrderByBuilder.buildSqlOrderBy(sqlExpression, orderBy.isAscending(), orderBy.isNullsLast());
+		return buildSqlOrderBy(sqlExpression, orderBy.isAscending(), orderBy.isNullsLast());
 	}
 
 	/**

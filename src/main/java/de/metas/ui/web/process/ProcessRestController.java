@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import org.adempiere.util.Check;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -199,8 +201,7 @@ public class ProcessRestController
 	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.GET)
 	public JSONProcessInstance getInstance(
 			@PathVariable("processId") final String processIdStr,
-			@PathVariable("pinstanceId") final String pinstanceIdStr
-	)
+			@PathVariable("pinstanceId") final String pinstanceIdStr)
 	{
 		userSession.assertLoggedIn();
 
@@ -220,6 +221,7 @@ public class ProcessRestController
 	)
 	{
 		userSession.assertLoggedIn();
+		Check.assumeNotEmpty(events, "events is not empty");
 
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
@@ -255,9 +257,13 @@ public class ProcessRestController
 		return Execution.prepareNewExecution()
 				.outOfTransaction()
 				.execute(() -> {
-					final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-					return instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
-						final ProcessInstanceResult result = processInstance.startProcess(viewsRepo, documentsCollection);
+					return instancesRepository.forProcessInstanceWritable(pinstanceId, NullDocumentChangesCollector.instance, processInstance -> {
+						final ProcessInstanceResult result = processInstance.startProcess(ProcessExecutionContext.builder()
+								.ctx(Env.getCtx())
+								.adLanguage(userSession.getAD_Language())
+								.viewsRepo(viewsRepo)
+								.documentsCollection(documentsCollection)
+								.build());
 						return JSONProcessInstanceResult.of(result);
 					});
 				});

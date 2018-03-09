@@ -32,12 +32,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,12 +52,12 @@ public class WEBUI_ProcessHelper
 	/**
 	 * This method can be used by process methods that are annotated with {@link de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvide}.
 	 * It returns the eligible PIIPs for the given product and partner.
-	 * 
+	 *
 	 * @param ctx
 	 * @param product
 	 * @param bPartner optional, may be {@code null}
 	 * @param includeVirtualItem if {@code true}, then the resulting list also contains the "virtual" PiiP.
-	 * 
+	 *
 	 * @return
 	 */
 	public LookupValuesList retrieveHUPIItemProducts(
@@ -98,7 +98,7 @@ public class WEBUI_ProcessHelper
 
 	/**
 	 * Creates a string of the form "PI-Version-Name (Qty x Included-PI)", e.g. "Palette (20 x IFCO)".
-	 * 
+	 *
 	 * @param huPIItem may not be {@code null}
 	 * @return
 	 */
@@ -108,7 +108,7 @@ public class WEBUI_ProcessHelper
 				huPIItem.getM_HU_PI_Version().getName(),
 				huPIItem.getQty().setScale(0, RoundingMode.HALF_UP), // it's always integer quantities
 				huPIItem.getIncluded_HU_PI().getName());
-		
+
 		return result;
 	}
 }

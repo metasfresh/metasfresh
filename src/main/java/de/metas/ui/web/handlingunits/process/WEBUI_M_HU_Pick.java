@@ -67,8 +67,6 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, mandatory = true)
 	private int shipmentScheduleId;
 
-	private WEBUI_M_HU_Pick_ParametersFiller _parametersFiller; // lazy
-
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -113,32 +111,39 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		return getParametersFiller().getDefaultValue(parameter);
+		return createNewDefaultParametersFiller().getDefaultValue(parameter);
 	}
 
-	@ProcessParamLookupValuesProvider(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, numericKey = true, lookupSource = LookupSource.lookup)
+	@ProcessParamLookupValuesProvider(//
+			parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, //
+			numericKey = true, //
+			lookupSource = LookupSource.lookup)
 	private LookupValuesList getShipmentScheduleValues(final LookupDataSourceContext context)
 	{
-		return getParametersFiller().getShipmentScheduleValues(context);
+		return createNewDefaultParametersFiller().getShipmentScheduleValues(context);
 	}
 
-	@ProcessParamLookupValuesProvider(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_PickingSlot_ID, numericKey = true, lookupSource = LookupSource.lookup)
+	private WEBUI_M_HU_Pick_ParametersFiller createNewDefaultParametersFiller()
+	{
+		final HURow row = getSingleHURow();
+		return WEBUI_M_HU_Pick_ParametersFiller.defaultFillerBuilder()
+				.huId(row.getHuId())
+				.salesOrderLineId(getSalesOrderLineId())
+				.build();
+	}
+
+	@ProcessParamLookupValuesProvider(//
+			parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_PickingSlot_ID, //
+			dependsOn = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, //
+			numericKey = true, //
+			lookupSource = LookupSource.lookup)
 	private LookupValuesList getPickingSlotValues(final LookupDataSourceContext context)
 	{
-		return getParametersFiller().getPickingSlotValues(context);
-	}
+		final WEBUI_M_HU_Pick_ParametersFiller filler = WEBUI_M_HU_Pick_ParametersFiller
+				.pickingSlotFillerBuilder()
+				.shipmentScheduleId(shipmentScheduleId).build();
 
-	private WEBUI_M_HU_Pick_ParametersFiller getParametersFiller()
-	{
-		if (_parametersFiller == null)
-		{
-			final HURow row = getSingleHURow();
-			_parametersFiller = WEBUI_M_HU_Pick_ParametersFiller.builder()
-					.huId(row.getHuId())
-					.salesOrderLineId(getSalesOrderLineId())
-					.build();
-		}
-		return _parametersFiller;
+		return filler.getPickingSlotValues(context);
 	}
 
 	private int getSalesOrderLineId()

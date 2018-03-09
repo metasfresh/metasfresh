@@ -115,6 +115,16 @@ public final class SqlViewSelectionQueryBuilder
 		return _viewBinding.isKeyFieldName(fieldName);
 	}
 
+	private boolean isVirtualColumn(final String fieldName)
+	{
+		return _viewBinding.getFieldByFieldName(fieldName).isVirtualColumn();
+	}
+
+	private String getColumnSql(final String fieldName)
+	{
+		return _viewBinding.getFieldByFieldName(fieldName).getColumnSql();
+	}
+
 	private IStringExpression getFieldOrderBy(final String fieldName)
 	{
 		return _viewBinding.getFieldOrderBy(fieldName);
@@ -473,17 +483,54 @@ public final class SqlViewSelectionQueryBuilder
 			final String fromSelectionId,
 			final List<DocumentQueryOrderBy> orderBys)
 	{
-		final String sqlTableName = getTableName();
 		final String sqlTableAlias = getTableAlias();
 		final String keyColumnName = getKeyColumnName();
 		final String keyColumnNameFQ = sqlTableAlias + "." + keyColumnName;
 
+		final List<DocumentQueryOrderBy> orderBysEffective = orderBys.stream()
+				.flatMap(this::flatMapEffectiveFieldNames)
+				.collect(ImmutableList.toImmutableList());
 		final String sqlOrderBys = replaceTableNameWithTableAlias(
-				SqlDocumentOrderByBuilder.newInstance(this::getFieldOrderBy)
-						.buildSqlOrderBy(orderBys.stream()
-								.flatMap(this::flatMapEffectiveFieldNames)
-								.collect(ImmutableList.toImmutableList()))
+				SqlDocumentOrderByBuilder.newInstance(fieldName -> ConstantStringExpression.of(sqlTableAlias + "." + fieldName))
+						.buildSqlOrderBy(orderBysEffective)
 						.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail));
+
+		//
+		// Build the table we will join.
+		// In case we are ordering by some virtual columns we shall build an INLINE view which contains those virtual columns.
+		// Else, we will just simply join by table name.
+		final String sqlSourceTable;
+		{
+			final boolean isOrderBySomeVirtualColumns = orderBysEffective.stream()
+					.anyMatch(orderBy -> isVirtualColumn(orderBy.getFieldName()));
+
+			if (isOrderBySomeVirtualColumns)
+			{
+				final StringBuilder sqlSourceTableBuilder = new StringBuilder();
+				sqlSourceTableBuilder.append("SELECT ")
+						.append("\n").append(getColumnSql(keyColumnName)).append(" AS ").append(getKeyColumnName());
+				orderBysEffective.forEach(orderBy -> {
+					final String fieldName = orderBy.getFieldName();
+					if (isVirtualColumn(fieldName))
+					{
+						final String columnSql = getColumnSql(fieldName);
+						sqlSourceTableBuilder.append("\n, (").append(columnSql).append(") AS ").append(fieldName);
+					}
+					else
+					{
+						sqlSourceTableBuilder.append("\n, ").append(fieldName);
+					}
+				});
+
+				sqlSourceTableBuilder.append("\n FROM ").append(getTableName());
+
+				sqlSourceTable = sqlSourceTableBuilder.insert(0, "(").append(")").toString();
+			}
+			else
+			{
+				sqlSourceTable = getTableName();
+			}
+		}
 
 		//
 		// INSERT INTO T_WEBUI_ViewSelection (UUID, Line, Record_ID)
@@ -503,7 +550,7 @@ public final class SqlViewSelectionQueryBuilder
 					.append("\n, ").append("row_number() OVER (ORDER BY ").append(sqlOrderBys).append(")") // Line
 					.append("\n, ").append(keyColumnNameFQ) // Record_ID
 					.append("\n FROM ").append(I_T_WEBUI_ViewSelection.Table_Name).append(" sel")
-					.append("\n LEFT OUTER JOIN ").append(sqlTableName).append(" ").append(sqlTableAlias).append(" ON (").append(keyColumnNameFQ).append("=").append("sel.")
+					.append("\n LEFT OUTER JOIN ").append(sqlSourceTable).append(" ").append(sqlTableAlias).append(" ON (").append(keyColumnNameFQ).append("=").append("sel.")
 					.append(I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID).append(")")
 					.append("\n WHERE sel.").append(I_T_WEBUI_ViewSelection.COLUMNNAME_UUID).append("=?") // fromUUID
 			;

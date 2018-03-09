@@ -177,6 +177,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	/**
 	 * @return true if this is a virtual SQL column (i.e. it's has an SQL expression to compute the value, instead of having just the field name)
 	 */
+	@Override
 	public boolean isVirtualColumn()
 	{
 		return virtualColumn;

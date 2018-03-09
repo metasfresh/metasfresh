@@ -640,7 +640,7 @@ public class DocumentEntityDescriptor
 			return _idField.orElse(null);
 		}
 
-		public String getIdFieldName()
+		public String getIdFieldNameOrNull()
 		{
 			final List<DocumentFieldDescriptor.Builder> idFields = _fieldBuilders
 					.values()

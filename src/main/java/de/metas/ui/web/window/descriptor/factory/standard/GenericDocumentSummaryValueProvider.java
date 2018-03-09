@@ -82,7 +82,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 	{
 		try
 		{
-			final String idFieldName = entityDescriptor.getIdFieldName();
+			final String idFieldName = entityDescriptor.getIdFieldNameOrNull();
 			if (idFieldName == null)
 			{
 				return ImmutableList.of();
