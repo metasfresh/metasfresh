@@ -100,7 +100,7 @@ class RawWidget extends Component {
 
     listenOnKeysTrue && listenOnKeysTrue();
 
-    if (widgetField && value) {
+    if (widgetField) {
       this.handlePatch(widgetField, value, id);
     }
   };
