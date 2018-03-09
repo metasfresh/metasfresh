@@ -1,5 +1,6 @@
 package org.adempiere.ad.wrapper;
 
+import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /*
@@ -12,12 +13,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,7 +50,7 @@ public class POJOWrapperTests
 		String COLUMNNNAME_Table1_ID = "Table1_ID";
 		void setTable1_ID(int value);
 		int getTable1_ID();
-		
+
 		String COLUMNNNAME_Name = "Name";
 		String getName();
 		void setName(String name);
@@ -92,7 +93,7 @@ public class POJOWrapperTests
 	public void test_DefaultValues()
 	{
 		assertEquals("Invalid Default Value for Integer", POJOWrapper.DEFAULT_VALUE_int, 0);
-		assertEquals("Invalid Default Value for IDs", POJOWrapper.DEFAULT_VALUE_ID, 0);
+		assertEquals("Invalid Default Value for BigDecimals", POJOWrapper.DEFAULT_VALUE_BigDecimal, ZERO);
 	}
 
 	@Test
@@ -100,15 +101,15 @@ public class POJOWrapperTests
 	{
 		POJOWrapper.setDefaultStrictValues(false);
 		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
-		assertThat(table2.getTable2_ID()).isEqualTo(POJOWrapper.DEFAULT_VALUE_ID);
-		assertThat(table2.getTable1_ID()).isEqualTo(POJOWrapper.DEFAULT_VALUE_ID);
+		assertThat(table2.getTable2_ID()).isEqualTo(POJOWrapper.ID_ZERO);
+		assertThat(table2.getTable1_ID()).isEqualTo(POJOWrapper.ID_ZERO);
 	}
 
 	@Test
 	public void test_SetGet_IDColumn()
 	{
 		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
-		assertThat(table2.getTable2_ID()).isEqualTo(POJOWrapper.DEFAULT_VALUE_ID);
+		assertThat(table2.getTable2_ID()).isEqualTo(POJOWrapper.ID_ZERO);
 
 		table2.setTable1_ID(123);
 		assertThat(table2.getTable1_ID()).as("Invalid Table1_ID").isEqualTo(123);
@@ -130,10 +131,10 @@ public class POJOWrapperTests
 	public void test_SetGetModel_Unsaved()
 	{
 		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
-		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
+		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", POJOWrapper.ID_ZERO, table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 	}
 
@@ -141,14 +142,14 @@ public class POJOWrapperTests
 	public void test_SetGetModel_Unsaved_ResetID()
 	{
 		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
-		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
+		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		assertThat(table2.getTable1_ID()).as("Invalid Table1_ID").isEqualTo(POJOWrapper.DEFAULT_VALUE_ID);
+		assertThat(table2.getTable1_ID()).as("Invalid Table1_ID").isEqualTo(POJOWrapper.ID_ZERO);
 		assertThat(table2.getTable1()).as("Invalid Table1").isSameAs(table1);
 
-		table2.setTable1_ID(POJOWrapper.DEFAULT_VALUE_ID);
-		assertThat(table2.getTable1_ID()).as("Invalid Table1_ID").isEqualTo(POJOWrapper.DEFAULT_VALUE_ID);
+		table2.setTable1_ID(POJOWrapper.ID_ZERO);
+		assertThat(table2.getTable1_ID()).as("Invalid Table1_ID").isEqualTo(POJOWrapper.ID_ZERO);
 		assertThat(table2.getTable1()).as("Invalid Table1").isNull();
 	}
 
@@ -158,7 +159,7 @@ public class POJOWrapperTests
 		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
 		POJOWrapper.save(table1);
 
-		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
+		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
 		assertEquals("Invalid Table1_ID", table1.getTable1_ID(), table2.getTable1_ID());
@@ -173,14 +174,14 @@ public class POJOWrapperTests
 	public void test_SetGetModel_Unsaved_ResetModel()
 	{
 		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
-		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
+		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", POJOWrapper.ID_ZERO, table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 
 		table2.setTable1(null);
-		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", POJOWrapper.ID_ZERO, table2.getTable1_ID());
 		assertEquals("Invalid Table1", null, table2.getTable1());
 	}
 
@@ -190,14 +191,14 @@ public class POJOWrapperTests
 		final ITable1 table1 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
 		POJOWrapper.save(table1);
 
-		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
+		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
 		assertEquals("Invalid Table1_ID", table1.getTable1_ID(), table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 
 		table2.setTable1(null);
-		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", POJOWrapper.ID_ZERO, table2.getTable1_ID());
 		assertEquals("Invalid Table1", null, table2.getTable1());
 	}
 
@@ -209,7 +210,7 @@ public class POJOWrapperTests
 		final ITable1 table1_2 = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
 		POJOWrapper.save(table1_2);
 
-		ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
+		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1_1);
 		assertEquals("Invalid Table1_ID", table1_1.getTable1_ID(), table2.getTable1_ID());
@@ -229,7 +230,7 @@ public class POJOWrapperTests
 		final ITable2 table2 = POJOWrapper.create(contextProvider.getCtx(), ITable2.class);
 
 		table2.setTable1(table1);
-		assertEquals("Invalid Table1_ID", POJOWrapper.DEFAULT_VALUE_ID, table2.getTable1_ID());
+		assertEquals("Invalid Table1_ID", POJOWrapper.ID_ZERO, table2.getTable1_ID());
 		Assert.assertSame("Invalid Table1", table1, table2.getTable1());
 
 		final ITable1 table1_saved = POJOWrapper.create(contextProvider.getCtx(), ITable1.class);
@@ -301,7 +302,7 @@ public class POJOWrapperTests
 
 	/**
 	 * Making sure that if {@link POJOWrapper#refresh(Object, String)} is called, then the pojo's <code>trxName</code> is updated.
-	 * 
+	 *
 	 * We need this in order to make the {@link POJOWrapper} behave similar to the {@link POWrapper},
 	 * when they are called by {@link InterfaceWrapperHelper#refresh(Object, String)}.
 	 */

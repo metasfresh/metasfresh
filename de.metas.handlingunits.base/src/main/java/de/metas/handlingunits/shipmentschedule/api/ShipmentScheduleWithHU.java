@@ -206,6 +206,8 @@ public class ShipmentScheduleWithHU
 
 	private Object computeAttributesAggregationKey()
 	{
+		logger.trace("Creating AttributesAggregationKey");
+
 		final ImmutableMap.Builder<String, Object> keyBuilder = ImmutableMap.builder();
 
 		for (final IAttributeValue attributeValue : getAttributeValues())
@@ -215,15 +217,13 @@ public class ShipmentScheduleWithHU
 			keyBuilder.put(name, Null.box(value));
 		}
 		final ImmutableMap<String, Object> attributesAggregationKey = keyBuilder.build();
-		logger.trace("AttributesAggregationKey created: {}", attributesAggregationKey);
 
+		logger.trace("AttributesAggregationKey created: {}", attributesAggregationKey);
 		return attributesAggregationKey;
 	}
 
 	private List<IAttributeValue> computeAttributeValues()
 	{
-		logger.trace("Creating AttributesAggregationKey");
-
 		final TreeSet<IAttributeValue> allAttributeValues = //
 				new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
 
@@ -231,8 +231,8 @@ public class ShipmentScheduleWithHU
 		final I_M_HU hu = getTopLevelHU();
 		if (hu != null)
 		{
-			final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
-			allAttributeValues.addAll(attributeStorage.getAttributeValues());
+			final IAttributeStorage huAttributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+			allAttributeValues.addAll(huAttributeStorage.getAttributeValues());
 		}
 
 		if (getM_AttributeSetInstance_ID() > 0)

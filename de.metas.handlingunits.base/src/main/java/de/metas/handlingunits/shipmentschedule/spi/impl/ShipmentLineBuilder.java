@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
@@ -345,7 +346,7 @@ import lombok.NonNull;
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		if (attributeValues.isEmpty())
 		{
-			newASI = attributeSetInstanceBL.createASI(product);
+			newASI = Services.get(IAttributeDAO.class).retrieveNoAttributeSetInstance();
 		}
 		else
 		{
@@ -426,7 +427,6 @@ import lombok.NonNull;
 	 */
 	private final void createShipmentLineHUAssignments(final I_M_InOutLine shipmentLine)
 	{
-		//
 		// Assign Handling Units to shipment line
 		boolean haveHUAssigments = false;
 		for (final HUTopLevel huToAssign : husToAssign)
@@ -450,7 +450,6 @@ import lombok.NonNull;
 
 	private final void transferAttributesToShipmentLine(final I_M_InOutLine shipmentLine, final I_M_HU hu)
 	{
-		//
 		// Transfer attributes from HU to receipt line's ASI
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(huContext);
 		executor.run((IHUContextProcessor)huContext -> {

@@ -1,5 +1,6 @@
 package de.metas.order.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -119,9 +120,11 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void setM_PricingSystem_ID(final I_C_Order order, final boolean overridePricingSystem)
+	public void setM_PricingSystem_ID(final I_C_Order order, final boolean overridePricingSystemAndDontThrowExIfNotFound)
 	{
 		final int previousPricingSystemId = order.getM_PricingSystem_ID();
+
+		final boolean overridePricingSystem = overridePricingSystemAndDontThrowExIfNotFound;
 		if (overridePricingSystem || previousPricingSystemId <= 0)
 		{
 			final BillBPartnerAndShipToLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
@@ -137,6 +140,13 @@ public class OrderBL implements IOrderBL
 			final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
 			final int pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, bPartnerId, order.isSOTrx(), trxName);
 
+			final boolean throwExIfNotFound = !overridePricingSystemAndDontThrowExIfNotFound;
+			if (pricingSysId <= 0 && throwExIfNotFound)
+			{
+				final I_C_BPartner bPartner = load(bPartnerId, I_C_BPartner.class);
+				Check.errorIf(true, "Unable to find pricing system for BPartner {}_{}; SOTrx={}", bPartner.getName(), bPartner.getValue(), order.isSOTrx());
+			}
+
 			order.setM_PricingSystem_ID(pricingSysId);
 		}
 
@@ -146,7 +156,7 @@ public class OrderBL implements IOrderBL
 		// * pricing system really changed => we need to set to correct price list
 		// Cases we want to avoid:
 		// * overridePriceSystem is false and M_PricingSystem_ID was not changed: in this case we shall NOT update the price list because it might be that we were called for a completed Order and we don't want to change the data.
-		if (overridePricingSystem || previousPricingSystemId != order.getM_PricingSystem_ID()
+		if (overridePricingSystemAndDontThrowExIfNotFound || previousPricingSystemId != order.getM_PricingSystem_ID()
 				|| order.getM_PriceList_ID() <= 0 // gh #936: attempt to set the pricelist, if we don't have it yet (i don't understand the error, but this might solve it. going to try it out)
 		)
 		{
@@ -362,17 +372,17 @@ public class OrderBL implements IOrderBL
 	public void updateDescriptionFromDocTypeTargetId(final I_C_Order order)
 	{
 		final int docTypeId = order.getC_DocTypeTarget_ID();
-		if(docTypeId <= 0)
+		if (docTypeId <= 0)
 		{
 			return;
 		}
 		org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
-		if(docType == null)
+		if (docType == null)
 		{
 			return;
 		}
 
-		if(!docType.isCopyDescriptionToDocument())
+		if (!docType.isCopyDescriptionToDocument())
 		{
 			return;
 		}

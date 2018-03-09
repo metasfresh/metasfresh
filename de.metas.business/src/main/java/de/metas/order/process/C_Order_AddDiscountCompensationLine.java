@@ -8,6 +8,7 @@ import de.metas.order.compensationGroup.GroupCompensationLineCreateRequest;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupTemplateLine;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -61,6 +62,7 @@ public class C_Order_AddDiscountCompensationLine extends OrderCompensationGroupP
 		final Group group = groupsRepo.retrieveGroup(groupId);
 		group.addNewCompensationLine(createGroupCompensationLineCreateRequest(group));
 		groupsRepo.saveGroup(group);
+		groupsRepo.renumberOrderLinesForOrderId(OrderGroupRepository.extractOrderIdFromGroupId(groupId));
 		return MSG_OK;
 	}
 

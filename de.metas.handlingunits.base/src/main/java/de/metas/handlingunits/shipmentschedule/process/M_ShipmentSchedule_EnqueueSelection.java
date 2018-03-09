@@ -66,7 +66,18 @@ public class M_ShipmentSchedule_EnqueueSelection
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		return ProcessPreconditionsResolution.acceptIf(context.getSelectionSize() > 0);
+		if (context.getSelectionSize() <= 0)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No items are selected");
+		}
+
+		final boolean foundAtLeastOneUnprocessedSchedule = context.getSelectedModels(I_M_ShipmentSchedule.class).stream()
+				.filter(sched -> sched.isActive())
+				.filter(sched -> !sched.isProcessed())
+				.findAny()
+				.isPresent();
+
+		return ProcessPreconditionsResolution.acceptIf(foundAtLeastOneUnprocessedSchedule);
 	}
 
 	@Override
