@@ -91,10 +91,15 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#878](https://github.com/metasfresh/metasfresh-webui-api/issues/878) Distribution Editor Move HU dropdown list HU
+    * Improvement of the Move Handling Unit Action in distribution editor, now pre-filtering the entries and matching base data.
   * [#879](https://github.com/metasfresh/metasfresh-webui-api/issues/879) Import File Loader substitute in WebUI
+    * New feature in Webui as substitute for the file-loader form in swing client. This enables the import of date via webui.
   * [#880](https://github.com/metasfresh/metasfresh-webui-api/issues/880) Collapse Purchase Order dispo in Sales Order modal
+    * Improved visibility in Create Purchase Order from Sales Orderlines, now collapsing the top level entries initially.
   * [#883](https://github.com/metasfresh/metasfresh-webui-api/issues/883) HU Labels in WebUI
+    * Refined Handling Unit Labels actio now available in WebUI Handling Unit Editor.
   * [#886](https://github.com/metasfresh/metasfresh-webui-api/issues/886) Field Readonly = 'Y' but still updateable in WebUI
+    * Refined Implementation of the Field Readonly Logic in Applicaiton Dictionary.
 
 * metasfresh-webui-frontend
   * [#1620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1620) List widgets with focus shall have dark grey color underline
