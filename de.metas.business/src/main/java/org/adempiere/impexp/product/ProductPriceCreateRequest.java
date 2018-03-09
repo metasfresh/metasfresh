@@ -6,12 +6,9 @@ package org.adempiere.impexp.product;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_M_PriceList;
-
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -40,14 +37,14 @@ import lombok.NonNull;
  *
  */
 @Builder
-@Getter
-public class ProductPriceRequest
+@Value
+public class ProductPriceCreateRequest
 {
-	private final org.compiere.model.I_M_Product product;
-	private final I_M_PriceList priceList;
+	private final int productId;
+	private final int priceListId;
 	@NonNull
 	private final BigDecimal price;
-	final Timestamp validDate;
 	@NonNull
-	final I_C_TaxCategory taxCategory;
+	private final Timestamp validDate;
+	private final int taxCategoryId;
 }
