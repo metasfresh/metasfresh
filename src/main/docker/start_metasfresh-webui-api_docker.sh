@@ -20,6 +20,23 @@ admin_port=${ADMIN_PORT:-9090}
 # app
 app_host=${APP_HOST:-app}
 
+echo_variable_values()
+{
+ echo "Note: all these variables can be set using the -e parameter."
+ echo ""
+ echo "DB_HOST=${db_host}"
+ echo "DB_PORT=${db_port}"
+ echo "DB_NAME=${db_name}"
+ echo "DB_USER=${db_user}"
+ echo "DB_PASSWORD=*******"
+ echo "ES_HOST=${es_host}"
+ echo "ES_PORT=${es_port}"
+ echo "ADMIN_HOST=${admin_host}"
+ echo "ADMIN_PORT=${admin_port}"
+ echo "APP_HOST=${app_host}"
+}
+
+
 set_properties()
 {
  echo "set_properties BEGIN"
@@ -46,14 +63,19 @@ wait_dbms()
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
 run_metasfresh()
 {
+
+ admin_url="http://${admin_host}:${admin_port}"
+ metasfresh_admin_params="-Dspring.boot.admin.url=${admin_url} -Dmanagement.security.enabled=false -Dspring.boot.admin.client.prefer-ip=true"
+
+ es_params="-Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port}"
+ 
  cd /opt/metasfresh/metasfresh-webui-api/ \
  && java \
  -Xmx512M \
  -XX:+HeapDumpOnOutOfMemoryError \
  -Dsun.misc.URLClassPath.disableJarChecking=true \
- -Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port} \
- -Dspring.boot.admin.url=http://${admin_host}:${admin_port} \
- -Dmanagement.security.enabled=false \
+ ${es_params} \
+ ${metasfresh_admin_params} \
  -DPropertyFile=/opt/metasfresh/metasfresh-webui-api/metasfresh.properties \
  -Djava.security.egd=file:/dev/./urandom \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789 \
@@ -61,6 +83,8 @@ run_metasfresh()
 }
 
 set_properties /opt/metasfresh/metasfresh-webui-api/metasfresh.properties
+
+echo_variable_values
 
 echo "************************************************************"
 echo "Waiting for the database server to start on DB_HOST=$DB_HOST"
