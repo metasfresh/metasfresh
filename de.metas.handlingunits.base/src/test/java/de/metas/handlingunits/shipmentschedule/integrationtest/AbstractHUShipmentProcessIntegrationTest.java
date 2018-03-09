@@ -37,12 +37,10 @@ import java.util.List;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
@@ -150,11 +148,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	@Override
 	protected void initialize()
 	{
-		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
-		asi.setM_AttributeSetInstance_ID(AttributeConstants.M_AttributeSetInstance_ID_None);
-		save(asi);
-		assertThat(asi.getM_AttributeSetInstance_ID()).isEqualTo(0); // guard
-
 		LogManager.setLevel(Level.WARN); // reset the log level. other tests might have set it to trace, which might bring a giant performance penalty.
 
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
