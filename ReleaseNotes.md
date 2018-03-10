@@ -26,6 +26,10 @@ Here come the actual release notes:
   * [#3591](https://github.com/metasfresh/metasfresh/issues/3591) Add translations for headers in shipment statistics
     * New WebUI window for shipment statistics.
 
+* metasfresh-webui-api
+  * [#773](https://github.com/metasfresh/metasfresh-webui-api/issues/773) Add name and menu entry for WebUI window Package
+    * New Window in WebUI for Package maintenance.
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#1544](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1544) List Widget does not scroll down with arrow-down
