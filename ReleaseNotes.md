@@ -99,7 +99,7 @@ Here come the actual release notes:
   * [#883](https://github.com/metasfresh/metasfresh-webui-api/issues/883) HU Labels in WebUI
     * Refined Handling Unit Labels actio now available in WebUI Handling Unit Editor.
   * [#886](https://github.com/metasfresh/metasfresh-webui-api/issues/886) Field Readonly = 'Y' but still updateable in WebUI
-    * Refined Implementation of the Field Readonly Logic in Applicaiton Dictionary.
+    * Refined Implementation of the Field Readonly Logic in Application Dictionary.
 
 * metasfresh-webui-frontend
   * [#1620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1620) List widgets with focus shall have dark grey color underline
@@ -123,7 +123,7 @@ Here come the actual release notes:
   * [#3571](https://github.com/metasfresh/metasfresh/issues/3571) AD_Element_trl problem with autocomplete fields
     * Fixes an issue that occurred when adding translation elements via autocomplete widgets.
   * [#3572](https://github.com/metasfresh/metasfresh/issues/3572) Internal usage (Materialentnahme partial) broken
-    * Fix for the internal usage action when removing partial customer unit quantities, mostly weight unit of measure..
+    * Fix for the internal usage action when removing partial customer unit quantities, mostly weight unit of measure.
   * [#3595](https://github.com/metasfresh/metasfresh/issues/3595) Tax Error on w101 Sales Order Batch entry
     * Improved error message for Tax errors, now elaborating more whats the reason for the errors.
   * [#3644](https://github.com/metasfresh/metasfresh/issues/3644) "No Selection" error when generating shipments
@@ -137,11 +137,9 @@ Here come the actual release notes:
   * [#1625](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1625) Show Attribute Editor for selected CU Level HU
     * Fix for the Handling Unit Editor when selectin the first entry of an HU. Now initially showing the Attributes view again.
   * [#1628](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1628) Clicking in field w/ 1 value in dropdown sets the value directly
-    * Fixes the List widget with only 1 entry. Now opeing the list widget drop-down instead of directly setting the single entry.
+    * Fixes the List widget with only 1 entry. Now opening the list widget drop-down instead of directly setting the single entry.
   * [#1630](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1630) Setting attributes in orderline not working
-    * Fixes the Listr widget for attributes in documentlines.
-  * [#1645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1645) Mandatory List Widget
-    * Fixes the visibility of List Widget fields that are mandatory.
+    * Fixes the Listr widget for attributes in document lines.
   * [#1638](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1638) Cannot use the dropdown in login
     * Fixes the dropdown widget in login window.
   * [#1645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1645) Mandatory List Widget
