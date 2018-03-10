@@ -51,6 +51,7 @@ import {
   setNotificationProgress,
   setProcessPending,
   setProcessSaved,
+  deleteNotification,
 } from './AppActions';
 import { getData, openFile, patchRequest } from './GenericActions';
 import { initLayout } from '../api';
@@ -802,7 +803,7 @@ export function attachFileAction(windowType, docId, data) {
           requestConfig
         );
       } finally {
-        dispatch(setNotificationProgress(titlePending, 100));
+        dispatch(deleteNotification(titlePending));
       }
 
       dispatch(
