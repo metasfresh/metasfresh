@@ -96,7 +96,7 @@ class Notification extends Component {
       >
         <div className="notification-header">
           {item.title}{' '}
-          {item.count ? (
+          {item.count > 1 && (
             <span
               className={
                 'tag tag-sm tag-default ' +
@@ -105,8 +105,6 @@ class Notification extends Component {
             >
               {item.count}
             </span>
-          ) : (
-            ''
           )}
           <i
             onClick={() => this.handleCloseButton()}

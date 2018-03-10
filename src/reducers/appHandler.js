@@ -63,7 +63,7 @@ export default function appHandler(state = initialState, action) {
             notifType: action.notifType,
             count: state.notifications[action.title]
               ? state.notifications[action.title].count + 1
-              : 0,
+              : 1,
           },
         },
       };
