@@ -15,8 +15,8 @@ class Translation extends Component {
       counterpart.setLocale('lang');
       counterpart.setMissingEntryGenerator(function(key) {
         // eslint-disable-next-line no-console
-        console.error('Missing translation: ' + key);
-        return '';
+        console.error(`Missing translation: ${key}`);
+        return `{${key}}`;
       });
 
       deepForceUpdate(this);
