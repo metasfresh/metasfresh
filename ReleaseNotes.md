@@ -23,6 +23,8 @@ Here come the actual release notes:
     * New Standalone Product Translation window in WebUI.
   * [#3652](https://github.com/metasfresh/metasfresh/issues/3652) WebUI: New Inventory Window
     * New Window in WebUI that allows the maintenance of Inventory recrdings and adjustments.
+  * [#3591](https://github.com/metasfresh/metasfresh/issues/3591) Add translations for headers in shipment statistics
+    * New WebUI window for shipment statistics.
 
 ## Fixes
 * metasfresh-webui-frontend
