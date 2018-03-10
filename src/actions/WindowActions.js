@@ -774,7 +774,7 @@ function handleUploadProgress(dispatch, notificationTitle, progressEvent) {
 }
 
 export function attachFileAction(windowType, docId, data) {
-  return dispatch => {
+  return async dispatch => {
     const titlePending = counterpart.translate(
       'window.attachment.title.pending'
     );
@@ -790,38 +790,39 @@ export function attachFileAction(windowType, docId, data) {
       )
     );
 
-    let requestConfig = {
+    const requestConfig = {
       onUploadProgress: handleUploadProgress.bind(this, dispatch, titlePending),
     };
 
-    return axios
-      .post(
-        `${config.API_URL}/window/${windowType}/${docId}/attachments`,
-        data,
-        requestConfig
-      )
-      .then(() => {
+    try {
+      try {
+        await axios.post(
+          `${config.API_URL}/window/${windowType}/${docId}/attachments`,
+          data,
+          requestConfig
+        );
+      } finally {
         dispatch(setNotificationProgress(titlePending, 100));
+      }
 
-        dispatch(
-          addNotification(
-            titleDone,
-            counterpart.translate('window.attachment.upload.success'),
-            5000,
-            'primary'
-          )
-        );
-      })
-      .catch(() => {
-        dispatch(
-          addNotification(
-            titleError,
-            counterpart.translate('window.attachment.upload.error'),
-            5000,
-            'error'
-          )
-        );
-      });
+      dispatch(
+        addNotification(
+          titleDone,
+          counterpart.translate('window.attachment.upload.success'),
+          5000,
+          'primary'
+        )
+      );
+    } catch (error) {
+      dispatch(
+        addNotification(
+          titleError,
+          counterpart.translate('window.attachment.upload.error'),
+          5000,
+          'error'
+        )
+      );
+    }
   };
 }
 
