@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: metasfresh-admin
+  labels:
+    de.metas.service: metasfresh-admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+       de.metas.service: metasfresh-admin
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        de.metas.service: metasfresh-admin
+    spec:
+      containers:
+      - name: metasfresh-admin
+        image: docker.metasfresh.com/metasfresh/metasfresh-admin:latest
+        ports:
+        - containerPort: 9090
+        resources:
+          limits:
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi

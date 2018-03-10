@@ -6,8 +6,10 @@ metadata:
     kompose.version: 1.9.0 (093c756)
   creationTimestamp: null
   labels:
-    io.kompose.service: ui-api-app-db-es
-  name: ui-api-app-db-es
+    de.metas.deployment.type: metasfresh-all-in-one
+    de.metas.deployment.stage: "%STAGE%"
+    de.metas.deployment.user: "%USER-ID%"
+  name: "metasfresh-all-in-one-%USER-ID%"
 spec:
   replicas: 1
   strategy:
@@ -16,7 +18,9 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        io.kompose.service: ui-api-app-db-es
+        de.metas.deployment.type: metasfresh-all-in-one
+        de.metas.deployment.stage: "%STAGE%"
+        de.metas.deployment.user: "%USER-ID%"
     spec:
       containers:
 #
@@ -56,14 +60,21 @@ spec:
         - name: APP_HOST
           value: localhost
         - name: ES_HOST
-          value: loccalhost
+          value: localhost
         - name: ES_PORT
           value: '9300'
+        - name: ADMIN_HOST
+          value: metasfresh-admin
+        - name: ADMIN_PORT
+          value: '9090'
 # this one we have on docker.metasfresh.com, so let's try getting from there
         name: app
         image: docker.metasfresh.com/metasfresh/metasfresh-app-dev:gh18_dist_LATEST
         imagePullPolicy: Always
-        resources: {}
+        resources: 
+          requests:
+            memory: 1124M
+            cpu: 500m
         volumeMounts:
 #        - mountPath: /opt/metasfresh/log
 #          name: app-claim0
@@ -81,14 +92,21 @@ spec:
         - name: APP_HOST
           value: localhost
         - name: ES_HOST
-          value: loccalhost
+          value: localhost
         - name: ES_PORT
           value: '9300'
+        - name: ADMIN_HOST
+          value: metasfresh-admin
+        - name: ADMIN_PORT
+          value: '9090'          
 # this one we have on docker.metasfresh.com, so let's try getting from there
         name: webapi
-        image: docker.metasfresh.com/metasfresh/metasfresh-webui-api-dev:master_LATEST
+        image: docker.metasfresh.com/metasfresh/metasfresh-webui-api-dev:gh18_dist_LATEST
         imagePullPolicy: Always
-        resources: {}
+        resources: 
+          requests:
+            memory: 600M
+            cpu: 500m
         volumeMounts:
 #        - mountPath: /opt/metasfresh-webui-api/log
 #          name: webapi-claim0
