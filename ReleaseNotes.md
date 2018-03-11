@@ -38,6 +38,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1544](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1544) List Widget does not scroll down with arrow-down
     * Improved scrolling behavior of list widgets.
+  * [#1557](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1557) Double click on attributes in orderline
+    * Improves the behavopr of the attributes dropdown widget when double clicking cell in subtab grid view. Now the elements are not all selected.
   * [#1615](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1615) picking terminal window: switching rows is very very slow
     * Performance Improvement of Picking Terminal Window.
   * [#1637](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1637) Collapsible lines in Create Purchase Order modal
