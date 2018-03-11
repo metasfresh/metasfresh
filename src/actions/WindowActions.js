@@ -51,6 +51,7 @@ import {
   setNotificationProgress,
   setProcessPending,
   setProcessSaved,
+  deleteNotification,
 } from './AppActions';
 import { getData, openFile, patchRequest } from './GenericActions';
 import { initLayout } from '../api';
@@ -774,54 +775,55 @@ function handleUploadProgress(dispatch, notificationTitle, progressEvent) {
 }
 
 export function attachFileAction(windowType, docId, data) {
-  return dispatch => {
-    const notificationTitle = counterpart.translate('window.attachment.title');
+  return async dispatch => {
+    const titlePending = counterpart.translate(
+      'window.attachment.title.pending'
+    );
+    const titleDone = counterpart.translate('window.attachment.title.done');
+    const titleError = counterpart.translate('window.attachment.title.error');
 
     dispatch(
       addNotification(
-        notificationTitle,
+        titlePending,
         counterpart.translate('window.attachment.uploading'),
         0,
         'primary'
       )
     );
 
-    let requestConfig = {
-      onUploadProgress: handleUploadProgress.bind(
-        this,
-        dispatch,
-        notificationTitle
-      ),
+    const requestConfig = {
+      onUploadProgress: handleUploadProgress.bind(this, dispatch, titlePending),
     };
 
-    return axios
-      .post(
-        `${config.API_URL}/window/${windowType}/${docId}/attachments`,
-        data,
-        requestConfig
-      )
-      .then(() => {
-        dispatch(setNotificationProgress(notificationTitle, 100));
+    try {
+      try {
+        await axios.post(
+          `${config.API_URL}/window/${windowType}/${docId}/attachments`,
+          data,
+          requestConfig
+        );
+      } finally {
+        dispatch(deleteNotification(titlePending));
+      }
 
-        dispatch(
-          addNotification(
-            notificationTitle,
-            counterpart.translate('window.attachment.upload.success'),
-            5000,
-            'primary'
-          )
-        );
-      })
-      .catch(() => {
-        dispatch(
-          addNotification(
-            notificationTitle,
-            counterpart.translate('window.attachment.upload.error'),
-            5000,
-            'error'
-          )
-        );
-      });
+      dispatch(
+        addNotification(
+          titleDone,
+          counterpart.translate('window.attachment.upload.success'),
+          5000,
+          'primary'
+        )
+      );
+    } catch (error) {
+      dispatch(
+        addNotification(
+          titleError,
+          counterpart.translate('window.attachment.upload.error'),
+          5000,
+          'error'
+        )
+      );
+    }
   };
 }
 
