@@ -48,14 +48,11 @@ import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
+import de.metas.handlingunits.report.HUToReport;
 import lombok.NonNull;
 
 /**
@@ -70,7 +67,7 @@ public class HUReportModel implements IDisposable
 	private final WeakPropertyChangeSupport pcs;
 	private final ITerminalContext terminalContext;
 
-	private final List<I_M_HU> husToReport;
+	private final List<HUToReport> husToReport;
 
 	private HUADProcessKey selectedKey;
 
@@ -83,8 +80,8 @@ public class HUReportModel implements IDisposable
 	 * @param referenceModel this model will be used to attach to it
 	 */
 	public HUReportModel(final ITerminalContext terminalContext,
-			final I_M_HU currentHU,
-			final Set<I_M_HU> selectedHUs)
+			final HUToReport currentHU,
+			final Set<HUToReport> selectedHUs)
 	{
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		this.terminalContext = terminalContext;
@@ -102,8 +99,8 @@ public class HUReportModel implements IDisposable
 
 		// HUs to report on
 		{
-			final Set<I_M_HU> husToCheck = !selectedHUs.isEmpty() ? selectedHUs : ImmutableSet.of(currentHU);
-			final List<I_M_HU> husToProcess = HUReportService.get().getHUsToProcess(husToCheck);
+			final Set<HUToReport> husToCheck = !selectedHUs.isEmpty() ? selectedHUs : ImmutableSet.of(currentHU);
+			final List<HUToReport> husToProcess = HUReportService.get().getHUsToProcess(husToCheck);
 
 			// if there are still no HUs to process, try to take the current HU
 			this.husToReport = !husToProcess.isEmpty() ? husToProcess : ImmutableList.of(currentHU);
@@ -120,7 +117,7 @@ public class HUReportModel implements IDisposable
 		terminalContext.addToDisposableComponents(this);
 	}
 
-	private static final List<ITerminalKey> createHUADProcessKeys(@NonNull final ITerminalContext terminalContext, final List<I_M_HU> husToReport)
+	private static final List<ITerminalKey> createHUADProcessKeys(@NonNull final ITerminalContext terminalContext, final List<HUToReport> husToReport)
 	{
 		final IMHUProcessDAO huProcessDAO = Services.get(IMHUProcessDAO.class);
 		return huProcessDAO
@@ -132,37 +129,15 @@ public class HUReportModel implements IDisposable
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static final Predicate<HUProcessDescriptor> createHUProcessDescriptorFilter(final List<I_M_HU> husToReport)
+	private static final Predicate<HUProcessDescriptor> createHUProcessDescriptorFilter(final List<HUToReport> husToReport)
 	{
 		Check.assumeNotEmpty(husToReport, "husToReport is not empty");
 
 		final ImmutableSet<String> requiredHUUnitTypes = husToReport.stream()
-				.map(hu -> extractHUType(hu))
+				.map(hu -> hu.getHUUnitType())
 				.collect(ImmutableSet.toImmutableSet());
 
 		return huProcessDescriptor -> huProcessDescriptor.appliesToAllHUUnitTypes(requiredHUUnitTypes);
-	}
-
-	private static final String extractHUType(final I_M_HU hu)
-	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-		if (handlingUnitsBL.isLoadingUnit(hu))
-		{
-			return X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit;
-		}
-		else if (handlingUnitsBL.isTransportUnitOrAggregate(hu))
-		{
-			return X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
-		}
-		else if (handlingUnitsBL.isVirtual(hu))
-		{
-			return X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI;
-		}
-		else
-		{
-			throw new HUException("Unknown HU type: " + hu); // shall hot happen
-		}
 	}
 
 	private final void onReportKeyPressed(final ITerminalKey currentKey)
@@ -210,7 +185,7 @@ public class HUReportModel implements IDisposable
 		pcs.addPropertyChangeListener(propertyName, listener);
 	}
 
-	private final List<I_M_HU> getHUsToReport()
+	private final List<HUToReport> getHUsToReport()
 	{
 		return husToReport;
 	}
