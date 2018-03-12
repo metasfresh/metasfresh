@@ -10,19 +10,19 @@ class DropzoneWrapper extends Component {
     };
   }
 
-  handleDropFile(accepted, rejected) {
+  handleDropFile = (accepted, rejected) => {
     const { handleDropFile, handleRejectDropped } = this.props;
 
     this.handleDragEnd();
 
-    if (accepted.length) {
-      handleDropFile(accepted);
+    for (const file of accepted) {
+      handleDropFile(file);
     }
 
-    if (rejected.length) {
-      handleRejectDropped(rejected);
+    for (const file of rejected) {
+      handleRejectDropped(file);
     }
-  }
+  };
 
   handleDragStart = () => {
     const { handleDragStart } = this.props;
@@ -38,11 +38,11 @@ class DropzoneWrapper extends Component {
     );
   };
 
-  handleDragEnd() {
+  handleDragEnd = () => {
     this.setState({
       dragActive: false,
     });
-  }
+  };
 
   render() {
     const { dragActive } = this.state;
@@ -54,11 +54,10 @@ class DropzoneWrapper extends Component {
           (dragActive ? ' document-file-dropzone-active' : '')
         }
         disablePreview={true}
-        multiple={false}
         disableClick={true}
-        onDragEnter={() => this.handleDragStart()}
-        onDragLeave={() => this.handleDragEnd()}
-        onDrop={(accepted, rejected) => this.handleDropFile(accepted, rejected)}
+        onDragEnter={this.handleDragStart}
+        onDragLeave={this.handleDragEnd}
+        onDrop={this.handleDropFile}
       >
         {this.props.children}
         <div className="document-file-dropzone-backdrop">

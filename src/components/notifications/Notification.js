@@ -22,9 +22,8 @@ class Notification extends Component {
       this.setClosing();
     }
 
-    const th = this;
     setTimeout(() => {
-      th.setState({
+      this.setState({
         isClosing: true,
       });
     }, 10);
@@ -36,10 +35,8 @@ class Notification extends Component {
     if (item.count !== nextProps.item.count) {
       this.handleClosing(false);
 
-      const th = this;
-
       setTimeout(() => {
-        th.handleClosing(true);
+        this.handleClosing(true);
       }, 10);
     }
   }
@@ -96,7 +93,7 @@ class Notification extends Component {
       >
         <div className="notification-header">
           {item.title}{' '}
-          {item.count ? (
+          {item.count > 1 && (
             <span
               className={
                 'tag tag-sm tag-default ' +
@@ -105,8 +102,6 @@ class Notification extends Component {
             >
               {item.count}
             </span>
-          ) : (
-            ''
           )}
           <i
             onClick={() => this.handleCloseButton()}

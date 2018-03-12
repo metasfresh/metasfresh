@@ -15,6 +15,7 @@ export default class Attributes extends Component {
       dropdown: false,
       layout: null,
       data: null,
+      loading: false,
     };
   }
 
@@ -31,62 +32,76 @@ export default class Attributes extends Component {
     } = this.props;
     const tmpId = widgetData.value.key;
 
-    return getAttributesInstance(
-      attributeType,
-      tmpId,
-      docType,
-      dataId,
-      tabId,
-      rowId,
-      fieldName,
-      entity
-    )
-      .then(response => {
-        const { id, fieldsByName } = response.data;
+    this.setState(
+      {
+        loading: true,
+      },
+      () => {
+        return getAttributesInstance(
+          attributeType,
+          tmpId,
+          docType,
+          dataId,
+          tabId,
+          rowId,
+          fieldName,
+          entity
+        )
+          .then(response => {
+            const { id, fieldsByName } = response.data;
 
-        this.setState({
-          data: parseToDisplay(fieldsByName),
-        });
+            this.setState({
+              data: parseToDisplay(fieldsByName),
+            });
 
-        return initLayout(attributeType, id);
-      })
-      .then(response => {
-        const { elements } = response.data;
+            return initLayout(attributeType, id);
+          })
+          .then(response => {
+            const { elements } = response.data;
 
-        this.setState({
-          layout: elements,
-        });
-      })
-      .then(() => {
-        this.setState({
-          dropdown: true,
-        });
-      })
-      .catch(error => {
-        // eslint-disable-next-line no-console
-        console.error('Attributes handleInit error: ', error.message);
-      });
+            this.setState({
+              layout: elements,
+              loading: false,
+            });
+          })
+          .then(() => {
+            this.setState({
+              dropdown: true,
+            });
+          })
+          .catch(error => {
+            // eslint-disable-next-line no-console
+            console.error('Attributes handleInit error: ', error.message);
+            this.setState({
+              loading: false,
+            });
+          });
+      }
+    );
   };
 
   handleToggle = option => {
     const { handleBackdropLock } = this.props;
+    const { loading } = this.state;
 
-    this.setState(
-      {
-        data: null,
-        layout: null,
-        dropdown: null,
-      },
-      () => {
-        //Method is disabling outside click in parents
-        //elements if there is some
-        handleBackdropLock && handleBackdropLock(!!option);
+    if (!loading) {
+      this.setState(
+        {
+          data: null,
+          layout: null,
+          dropdown: null,
+        },
+        () => {
+          //Method is disabling outside click in parents
+          //elements if there is some
+          handleBackdropLock && handleBackdropLock(!!option);
 
-        if (option) {
-          this.handleInit();
+          if (option) {
+            this.handleInit();
+          }
         }
-      }
-    );
+      );
+    }
   };
 
   handleKeyDown = e => {
@@ -107,55 +122,61 @@ export default class Attributes extends Component {
   };
 
   handlePatch = (prop, value, id, cb) => {
-    const { attributeType } = this.props;
+    const { attributeType, onBlur } = this.props;
+    const { data, loading } = this.state;
 
-    patchRequest({
-      entity: attributeType,
-      docType: null,
-      docId: id,
-      property: prop,
-      value,
-    }).then(response => {
-      if (response.data && response.data.length) {
-        const fields = response.data[0].fieldsByName;
-        Object.keys(fields).map(fieldName => {
-          this.setState(
-            prevState => ({
-              data: {
-                ...prevState.data,
-                [fieldName]: {
-                  ...prevState.data[fieldName],
-                  value,
+    if (!loading && data) {
+      patchRequest({
+        entity: attributeType,
+        docType: null,
+        docId: id,
+        property: prop,
+        value,
+      }).then(response => {
+        if (response.data && response.data.length) {
+          const fields = response.data[0].fieldsByName;
+          Object.keys(fields).map(fieldName => {
+            this.setState(
+              prevState => ({
+                data: {
+                  ...prevState.data,
+                  [fieldName]: {
+                    ...prevState.data[fieldName],
+                    value,
+                  },
                 },
-              },
-            }),
-            () => {
-              cb && cb();
-              this.props.onBlur && this.props.onBlur();
-            }
-          );
-        });
-      }
-    });
+              }),
+              () => {
+                cb && cb();
+                onBlur && onBlur();
+              }
+            );
+          });
+        }
+      });
+    }
   };
 
   handleCompletion = () => {
-    const { data } = this.state;
-    const mandatory = Object.keys(data).filter(
-      fieldName => data[fieldName].mandatory
-    );
-    const valid = !mandatory.filter(field => !data[field].value).length;
+    const { data, loading } = this.state;
 
-    //there are required values that are not set. just close
-    if (mandatory.length && !valid) {
-      if (window.confirm('Do you really want to leave?')) {
-        this.handleToggle(false);
+    if (!loading && data) {
+      const mandatory = Object.keys(data).filter(
+        fieldName => data[fieldName].mandatory
+      );
+      const valid = !mandatory.filter(field => !data[field].value).length;
+
+      //there are required values that are not set. just close
+      if (mandatory.length && !valid) {
+        if (window.confirm('Do you really want to leave?')) {
+          this.handleToggle(false);
+        }
+        return;
       }
-      return;
-    }
 
-    this.doCompleteRequest();
-    this.handleToggle(false);
+      this.doCompleteRequest();
+      this.handleToggle(false);
+    }
   };
 
   doCompleteRequest = () => {

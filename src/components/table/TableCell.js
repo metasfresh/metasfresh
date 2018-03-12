@@ -1,12 +1,19 @@
 import Moment from 'moment';
 import numeral from 'numeral';
 import React, { PureComponent } from 'react';
-import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
 
 import MasterWidget from '../widget/MasterWidget';
 
 class TableCell extends PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      backdropLock: false,
+    };
+  }
+
   componentWillReceiveProps(nextProps) {
     const { widgetData, updateRow, readonly, rowId } = this.props;
     // We should avoid highlighting when whole row is exchanged (sorting)
@@ -22,14 +29,6 @@ class TableCell extends PureComponent {
       updateRow();
     }
   }
-
-  handleClickOutside = e => {
-    const { onClickOutside } = this.props;
-
-    this.cell && this.cell.focus();
-
-    onClickOutside(e);
-  };
 
   static AMOUNT_FIELD_TYPES = ['Amount', 'CostPrice'];
   static AMOUNT_FIELD_FORMATS_BY_PRECISION = [
@@ -122,6 +121,19 @@ class TableCell extends PureComponent {
     }
   };
 
+  handleBackdropLock = state => {
+    this.setState(
+      {
+        backdropLock: !state,
+      },
+      () => {
+        if (!state) {
+          this.props.onClickOutside();
+        }
+      }
+    );
+  };
+
   render() {
     const {
       isEdited,
@@ -194,6 +206,7 @@ class TableCell extends PureComponent {
             tabId={mainTable ? null : tabId}
             noLabel={true}
             gridAlign={item.gridAlign}
+            handleBackdropLock={this.handleBackdropLock}
             listenOnKeys={listenOnKeys}
             listenOnKeysTrue={listenOnKeysTrue}
             listenOnKeysFalse={listenOnKeysFalse}
@@ -221,5 +234,5 @@ class TableCell extends PureComponent {
   }
 }
 
-export default onClickOutside(TableCell);
+export default TableCell;
 export { TableCell };

@@ -20,6 +20,23 @@ class TableItem extends PureComponent {
     };
   }
 
+  initPropertyEditor = fieldName => {
+    const { cols, fieldsByName } = this.props;
+
+    if (cols && fieldsByName) {
+      cols.map(item => {
+        const property = item.fields[0].field;
+        if (property === fieldName) {
+          const widgetData = this.prepareWidgetData(item);
+
+          if (widgetData) {
+            this.handleEditProperty(null, property, true, widgetData[0]);
+          }
+        }
+      });
+    }
+  };
+
   handleKeyDown = (e, property, widgetData) => {
     const { changeListenOnTrue } = this.props;
     const { listenOnKeys, edited } = this.state;
@@ -59,23 +76,6 @@ class TableItem extends PureComponent {
     const widgetData = item.fields.map(prop => fieldsByName[prop.field]);
 
     return widgetData;
-  };
-
-  initPropertyEditor = fieldName => {
-    const { cols, fieldsByName } = this.props;
-
-    if (cols && fieldsByName) {
-      cols.map(item => {
-        const property = item.fields[0].field;
-        if (property === fieldName) {
-          const widgetData = this.prepareWidgetData(item);
-
-          if (widgetData) {
-            this.handleEditProperty(null, property, true, widgetData[0]);
-          }
-        }
-      });
-    }
   };
 
   editProperty = (e, property, callback, item) => {
@@ -175,7 +175,7 @@ class TableItem extends PureComponent {
     } else {
       return (
         cols &&
-        cols.map((item, index) => {
+        cols.map(item => {
           const { supportZoomInto } = item.fields[0];
           const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
           const property = item.fields[0].field;
@@ -226,7 +226,8 @@ class TableItem extends PureComponent {
                 mainTable,
                 viewId,
               }}
-              key={index}
+              key={`${rowId}-${property}`}
+              isRowSelected={this.props.isSelected}
               isEdited={isEditable || edited === property}
               onDoubleClick={e =>
                 this.handleEditProperty(e, property, true, widgetData[0])

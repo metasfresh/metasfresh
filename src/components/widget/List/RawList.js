@@ -167,9 +167,9 @@ class RawList extends PureComponent {
   };
 
   handleClickOutside() {
-    const { isToggled, onCloseDropdown, onBlur, selected } = this.props;
+    const { isFocused, onCloseDropdown, onBlur, selected } = this.props;
 
-    if (isToggled) {
+    if (isFocused) {
       this.setState(
         {
           selected: selected || null,
