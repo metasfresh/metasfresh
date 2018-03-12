@@ -1,5 +1,8 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -10,12 +13,12 @@ package de.metas.handlingunits.pporder.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,7 +47,7 @@ import lombok.NonNull;
 
 /**
  * This class has the job of managing a {@link I_M_HU_LUTU_Configuration} for a particular {@link I_PP_Order}..it might retrieve that ppOrder's lutuConfig or create a new default one.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -75,9 +78,17 @@ import lombok.NonNull;
 				bpartner,
 				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
 
-		//
+
+		final BigDecimal cuPerTu = lutuConfiguration.getM_HU_PI_Item_Product().getQty();
+		if (cuPerTu.signum() > 0)
+		{
+			final BigDecimal undeliveredQtyCU = ppOrder.getQtyOrdered().subtract(ppOrder.getQtyDelivered());
+			final BigDecimal undeliveredQtyTU = undeliveredQtyCU.divide(cuPerTu, 0, RoundingMode.CEILING);
+			lutuConfiguration.setQtyTU(undeliveredQtyTU.min(lutuConfiguration.getQtyTU()));
+		}
+
 		// Update LU/TU configuration
-		updateLUTUConfiguration(lutuConfiguration, ppOrder);
+		updateLUTUConfigurationFromPPOrder(lutuConfiguration, ppOrder);
 
 		return lutuConfiguration;
 	}
@@ -117,13 +128,16 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void updateLUTUConfiguration(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_PP_Order ppOrder)
+	public void updateLUTUConfigurationFromPPOrder(
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
+			@NonNull final I_PP_Order ppOrder)
 	{
 		final I_C_BPartner bpartner = ppOrder.getC_BPartner();
-		final I_M_Locator ppOrderReceiptLocator = ppOrder.getM_Locator();
-
 		lutuConfiguration.setC_BPartner(bpartner);
+
+		final I_M_Locator ppOrderReceiptLocator = ppOrder.getM_Locator();
 		lutuConfiguration.setM_Locator(ppOrderReceiptLocator);
+
 		lutuConfiguration.setHUStatus(X_M_HU.HUSTATUS_Active);
 	}
 
