@@ -14,6 +14,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
@@ -26,8 +27,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.report.HUEditorRowAsHUToReport;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
@@ -91,6 +94,7 @@ public final class HUEditorRow implements IViewRow
 	private final HUEditorRowType type;
 	private final boolean topLevel;
 	private final boolean processed;
+	private final int bpartnerId;
 
 	public static final String FIELDNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
 	@ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
@@ -171,6 +175,7 @@ public final class HUEditorRow implements IViewRow
 		type = builder.getType();
 		topLevel = builder.isTopLevel();
 		processed = builder.isProcessed();
+		bpartnerId = builder.getBPartnerId();
 
 		huId = rowId.getHuId();
 		code = builder.code;
@@ -236,6 +241,11 @@ public final class HUEditorRow implements IViewRow
 	public boolean isProcessed()
 	{
 		return processed;
+	}
+	
+	public int getBPartnerId()
+	{
+		return bpartnerId;
 	}
 
 	Object getFieldValueAsJson(final String fieldName)
@@ -325,6 +335,26 @@ public final class HUEditorRow implements IViewRow
 			return null;
 		}
 		return load(huId, I_M_HU.class);
+	}
+
+	public HUToReport getAsHUToReport()
+	{
+		final HUToReport huToReport = getAsHUToReportOrNull();
+		if (huToReport == null)
+		{
+			throw new AdempiereException("Cannot convert " + this + " to " + HUToReport.class);
+		}
+		return huToReport;
+	}
+
+	public HUToReport getAsHUToReportOrNull()
+	{
+		if (!isPureHU())
+		{
+			return null;
+		}
+
+		return HUEditorRowAsHUToReport.of(this);
 	}
 
 	public boolean isHUPlanningReceiptOwnerPM()
@@ -547,6 +577,7 @@ public final class HUEditorRow implements IViewRow
 		private BigDecimal qtyCU;
 		private Date bestBeforeDate;
 		private JSONLookupValue locator;
+		private int bpartnerId;
 
 		private List<HUEditorRow> includedRows = null;
 
@@ -688,6 +719,17 @@ public final class HUEditorRow implements IViewRow
 		{
 			return locator;
 		}
+		
+		public Builder setBPartnerId(final int bpartnerId)
+		{
+			this.bpartnerId = bpartnerId;
+			return this;
+		}
+		
+		private int getBPartnerId()
+		{
+			return bpartnerId;
+		}
 
 		private HUEditorRowAttributesProvider getAttributesProviderOrNull()
 		{
@@ -727,8 +769,11 @@ public final class HUEditorRow implements IViewRow
 	@lombok.Value
 	public static class HUEditorRowHierarchy
 	{
-		@NonNull private final HUEditorRow cuRow;
-		@Nullable private final HUEditorRow parentRow;
-		@Nullable private final HUEditorRow topLevelRow;
+		@NonNull
+		private final HUEditorRow cuRow;
+		@Nullable
+		private final HUEditorRow parentRow;
+		@Nullable
+		private final HUEditorRow topLevelRow;
 	}
 }

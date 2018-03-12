@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -77,6 +79,16 @@ public enum HUEditorRowType implements IViewRowType
 	public String toHUUnitTypeOrNull()
 	{
 		return huUnitType2type.inverse().get(this);
+	}
+
+	public String toHUUnitType()
+	{
+		final String unitType = toHUUnitTypeOrNull();
+		if (unitType == null)
+		{
+			throw new AdempiereException("Cannot convert " + this + " to HU_UnitType");
+		}
+		return unitType;
 	}
 
 	private static final BiMap<String, HUEditorRowType> huUnitType2type = ImmutableBiMap.<String, HUEditorRowType> builder()
