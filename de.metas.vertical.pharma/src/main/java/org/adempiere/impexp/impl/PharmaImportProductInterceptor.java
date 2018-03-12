@@ -14,6 +14,8 @@ import org.adempiere.impexp.product.ProductPriceImporter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
+import org.compiere.util.TimeUtil;
 
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery;
@@ -51,6 +53,7 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 {
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	public static final PharmaImportProductInterceptor instance = new PharmaImportProductInterceptor();
+	private final LocalDate firstDayYear =  TimeUtil.asLocalDate(TimeUtil.getYearFirstDay(SystemTime.asDate()));
 
 	private PharmaImportProductInterceptor()
 	{
@@ -106,14 +109,15 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 	private void createAPU(@NonNull final I_I_Product importRecord)
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
-				.isDefault(true)
+				.isDefaultTax(true)
 				.build();
+
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
 				.price(importRecord.getA01APU())
 				.priceListId(importRecord.getAPU_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
-				.validDate(LocalDate.now())
+				.validDate(firstDayYear)
 				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 
@@ -124,14 +128,14 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 	private void createAEP(@NonNull final I_I_Product importRecord)
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
-				.isDefault(true)
+				.isDefaultTax(true)
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
 				.price(importRecord.getA01AEP())
 				.priceListId(importRecord.getAEP_Price_List_ID())
 				.productId(importRecord.getM_Product_ID())
-				.validDate(LocalDate.now())
+				.validDate(firstDayYear)
 				.taxCategoryId(taxDAO.findTaxCategoryId(query))
 				.build();
 
