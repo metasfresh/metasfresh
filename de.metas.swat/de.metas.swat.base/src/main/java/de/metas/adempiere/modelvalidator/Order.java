@@ -73,7 +73,7 @@ public class Order implements ModelValidator
 		{
 			final I_C_Order order = InterfaceWrapperHelper.create(po, I_C_Order.class);
 			final org.compiere.model.I_C_BPartner bpartner = order.getC_BPartner();
-			if (bpartner.isProspect())
+			if (bpartner.isProspect() && order.isSOTrx())
 			{
 				bpartner.setIsCustomer(true);
 				bpartner.setIsProspect(false);
