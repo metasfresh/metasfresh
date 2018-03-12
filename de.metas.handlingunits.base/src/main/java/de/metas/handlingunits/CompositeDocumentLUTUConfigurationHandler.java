@@ -55,12 +55,12 @@ public class CompositeDocumentLUTUConfigurationHandler<T> implements IDocumentLU
 	}
 
 	@Override
-	public void updateLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfiguration, final List<T> documentLines)
+	public void updateLUTUConfigurationFromPPOrder(final I_M_HU_LUTU_Configuration lutuConfiguration, final List<T> documentLines)
 	{
 		Check.assumeNotEmpty(documentLines, "documentLines not empty");
 
 		final T documentLine = documentLines.get(0);
-		handler.updateLUTUConfiguration(lutuConfiguration, documentLine);
+		handler.updateLUTUConfigurationFromPPOrder(lutuConfiguration, documentLine);
 	}
 
 	@Override
