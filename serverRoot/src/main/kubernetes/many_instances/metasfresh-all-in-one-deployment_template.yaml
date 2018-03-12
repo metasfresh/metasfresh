@@ -1,15 +1,13 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: F:\kubernetes\kompose.exe convert
-    kompose.version: 1.9.0 (093c756)
+  annotations: {}
   creationTimestamp: null
   labels:
     de.metas.deployment.type: metasfresh-all-in-one
     de.metas.deployment.stage: "%STAGE%"
     de.metas.deployment.user: "%USER-ID%"
-  name: "metasfresh-all-in-one-%USER-ID%"
+  name: "metasfresh-all-in-one-%USER-ID%-%STAGE%"
 spec:
   replicas: 1
   strategy:
