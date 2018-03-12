@@ -23,11 +23,23 @@ Here come the actual release notes:
     * New Standalone Product Translation window in WebUI.
   * [#3652](https://github.com/metasfresh/metasfresh/issues/3652) WebUI: New Inventory Window
     * New Window in WebUI that allows the maintenance of Inventory recrdings and adjustments.
+  * [#3591](https://github.com/metasfresh/metasfresh/issues/3591) Add translations for headers in shipment statistics
+    * New WebUI window for shipment statistics.
+
+* metasfresh-webui-api
+  * [#773](https://github.com/metasfresh/metasfresh-webui-api/issues/773) Add name and menu entry for WebUI window Package
+    * New Window in WebUI for Package maintenance.
+
+* metasfresh-webui-frontend
+  * [#1640](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1640) Drag and Drop Attachments
+    * Adds the functionality to upload multiple files at once.
 
 ## Fixes
 * metasfresh-webui-frontend
   * [#1544](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1544) List Widget does not scroll down with arrow-down
     * Improved scrolling behavior of list widgets.
+  * [#1557](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1557) Double click on attributes in orderline
+    * Improves the behavopr of the attributes dropdown widget when double clicking cell in subtab grid view. Now the elements are not all selected.
   * [#1615](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1615) picking terminal window: switching rows is very very slow
     * Performance Improvement of Picking Terminal Window.
   * [#1637](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1637) Collapsible lines in Create Purchase Order modal
@@ -42,6 +54,8 @@ Here come the actual release notes:
     * Fixes an Issue in Create Purchase Orders from Sales Order Lines. Now it's possible to enter the purchase Quantity again.
   * [#1658](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1658) Improve WebUI performance
     * General Performance Improvement for Grid Views in WebUI.
+  * [#1662](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1662) Attributes in OrderLine grid view are not saved
+    * Fixes the recording of attributes in document lines. Now they are saved again.
 
 # metasfresh 5.47 (2018-10)
 **release for week 2018-10**
@@ -99,7 +113,7 @@ Here come the actual release notes:
   * [#883](https://github.com/metasfresh/metasfresh-webui-api/issues/883) HU Labels in WebUI
     * Refined Handling Unit Labels actio now available in WebUI Handling Unit Editor.
   * [#886](https://github.com/metasfresh/metasfresh-webui-api/issues/886) Field Readonly = 'Y' but still updateable in WebUI
-    * Refined Implementation of the Field Readonly Logic in Applicaiton Dictionary.
+    * Refined Implementation of the Field Readonly Logic in Application Dictionary.
 
 * metasfresh-webui-frontend
   * [#1620](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1620) List widgets with focus shall have dark grey color underline
@@ -123,7 +137,7 @@ Here come the actual release notes:
   * [#3571](https://github.com/metasfresh/metasfresh/issues/3571) AD_Element_trl problem with autocomplete fields
     * Fixes an issue that occurred when adding translation elements via autocomplete widgets.
   * [#3572](https://github.com/metasfresh/metasfresh/issues/3572) Internal usage (Materialentnahme partial) broken
-    * Fix for the internal usage action when removing partial customer unit quantities, mostly weight unit of measure..
+    * Fix for the internal usage action when removing partial customer unit quantities, mostly weight unit of measure.
   * [#3595](https://github.com/metasfresh/metasfresh/issues/3595) Tax Error on w101 Sales Order Batch entry
     * Improved error message for Tax errors, now elaborating more whats the reason for the errors.
   * [#3644](https://github.com/metasfresh/metasfresh/issues/3644) "No Selection" error when generating shipments
@@ -137,11 +151,9 @@ Here come the actual release notes:
   * [#1625](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1625) Show Attribute Editor for selected CU Level HU
     * Fix for the Handling Unit Editor when selectin the first entry of an HU. Now initially showing the Attributes view again.
   * [#1628](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1628) Clicking in field w/ 1 value in dropdown sets the value directly
-    * Fixes the List widget with only 1 entry. Now opeing the list widget drop-down instead of directly setting the single entry.
+    * Fixes the List widget with only 1 entry. Now opening the list widget drop-down instead of directly setting the single entry.
   * [#1630](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1630) Setting attributes in orderline not working
-    * Fixes the Listr widget for attributes in documentlines.
-  * [#1645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1645) Mandatory List Widget
-    * Fixes the visibility of List Widget fields that are mandatory.
+    * Fixes the Listr widget for attributes in document lines.
   * [#1638](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1638) Cannot use the dropdown in login
     * Fixes the dropdown widget in login window.
   * [#1645](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1645) Mandatory List Widget
