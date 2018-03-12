@@ -2,10 +2,17 @@ import React, { Component } from 'react';
 
 import MasterWidget from '../widget/MasterWidget';
 import RawWidget from '../widget/RawWidget';
+import BarcodeScanner, { BarcodeScannerResult } from './BarcodeScanner';
+import Result from './BarcodeScanner'
 
 class OverlayField extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      scanning: false,
+      results: [],
+    };
   }
 
   handleKeyDown = e => {
@@ -21,24 +28,54 @@ class OverlayField extends Component {
     }
   };
 
+  _scan = () => {
+    this.setState({
+      scanning: !this.state.scanning,
+    });
+  };
+
+  _onDetected = result => {
+    this.setState({
+      results: this.state.results.concat([result]),
+    });
+  };
+
   renderElements = (layout, data, type) => {
     const { disabled } = this.props;
     const elements = layout.elements;
     return elements.map((elem, id) => {
       const widgetData = elem.fields.map(item => data[item.field] || -1);
-      return (
-        <MasterWidget
-          entity="process"
-          key={'element' + id}
-          windowType={type}
-          dataId={layout.pinstanceId}
-          widgetData={widgetData}
-          isModal={true}
-          disabled={disabled}
-          autoFocus={id === 0}
-          {...elem}
-        />
-      );
+
+      if (elem.caption === 'Barcode') {
+        console.log('barcodescanner !')
+        return (
+          <div key={id}>
+            <button onClick={this._scan}>{this.state.scanning ? 'Stop' : 'Start'}</button>
+            <ul className="results">
+              {this.state.results.map(result => (
+                <BarcodeScannerResult key={result.codeResult.code} result={result} />
+              ))}
+            </ul>
+            {this.state.scanning ? (
+              <BarcodeScanner onDetected={this._onDetected} />
+            ) : null}
+          </div>
+        );
+      } else {
+        return (
+          <MasterWidget
+            entity="process"
+            key={'element' + id}
+            windowType={type}
+            dataId={layout.pinstanceId}
+            widgetData={widgetData}
+            isModal={true}
+            disabled={disabled}
+            autoFocus={id === 0}
+            {...elem}
+          />
+        );
+      }
     });
   };
 
