@@ -27,7 +27,6 @@ echo_variable_values()
  echo "APP_HOST=${app_host}"
  echo "DEBUG_PORT=${debug_port}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
- 
 }
 
 set_properties()

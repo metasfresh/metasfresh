@@ -78,7 +78,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 				continue;
 			}
 
-			final I_M_InOutLine inoutLine = Services.get(IHUInOutDAO.class).retrieveInOutLineOrNull(hu);
+			final I_M_InOutLine inoutLine = Services.get(IHUInOutDAO.class).retrieveCompletedReceiptLineOrNull(hu);
 			if (inoutLine == null || !inoutLine.getM_InOut().isProcessed())
 			{
 				// there is no iol
@@ -116,7 +116,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 			for (final I_M_HU_Assignment assignment : huAssignmentsForModel)
 			{
 				final I_M_HU hu = assignment.getM_HU();
-				final I_M_InOutLine inoutLine = huInOutDAO.retrieveInOutLineOrNull(hu);
+				final I_M_InOutLine inoutLine = huInOutDAO.retrieveCompletedReceiptLineOrNull(hu);
 				if (inoutLine == null || !inoutLine.getM_InOut().isProcessed())
 				{
 					// there is no iol

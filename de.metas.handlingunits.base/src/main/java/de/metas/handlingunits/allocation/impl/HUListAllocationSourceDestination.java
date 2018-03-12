@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
@@ -37,7 +38,7 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import com.google.common.base.Preconditions;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
@@ -58,6 +59,7 @@ import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IProductStorage;
+import lombok.NonNull;
 
 /**
  * An Allocation Source/Destination which has a list of HUs in behind. Usually used to load from HUs.
@@ -68,9 +70,15 @@ import de.metas.handlingunits.storage.IProductStorage;
 public class HUListAllocationSourceDestination implements IAllocationSource, IAllocationDestination
 {
 	/** @return single HU allocation source/destination */
-	public static HUListAllocationSourceDestination of(final I_M_HU sourceHU)
+	public static HUListAllocationSourceDestination of(@NonNull final I_M_HU sourceHU)
 	{
-		return new HUListAllocationSourceDestination(sourceHU);
+		return new HUListAllocationSourceDestination(ImmutableList.of(sourceHU));
+	}
+
+	public static HUListAllocationSourceDestination ofHUId(final int huId)
+	{
+		Check.assume(huId > 0, "huId > 0");
+		return of(InterfaceWrapperHelper.load(huId, I_M_HU.class));
 	}
 
 	/** @return multi-HUs allocation source/destination */
@@ -83,7 +91,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IAllocationStrategyFactory allocationStrategyFactory = Services.get(IAllocationStrategyFactory.class);
 
-	private final List<I_M_HU> sourceHUs;
+	private final ImmutableList<I_M_HU> sourceHUs;
 	private final int lastIndex;
 	private int currentIndex = -1;
 
@@ -99,15 +107,8 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 
 	private HUListAllocationSourceDestination(final Collection<I_M_HU> sourceHUs)
 	{
-		this.sourceHUs = new ArrayList<>(sourceHUs);
+		this.sourceHUs = ImmutableList.copyOf(sourceHUs);
 		lastIndex = sourceHUs.size() - 1;
-	}
-
-	private HUListAllocationSourceDestination(final I_M_HU sourceHU)
-	{
-		this(ImmutableList.of(
-				Preconditions.checkNotNull(
-						sourceHU, "Param 'sourceHU' may not be null")));
 	}
 
 	public boolean isDestroyEmptyHUs()
@@ -119,7 +120,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	 * Shall we destroy HUs which are empty after {@link #unloadAll(IHUContext)}.
 	 *
 	 * @param destroyEmptyHUs true if HUs shall be destroyed if they are empty
-	 * @return 
+	 * @return
 	 */
 	public HUListAllocationSourceDestination setDestroyEmptyHUs(final boolean destroyEmptyHUs)
 	{
@@ -134,7 +135,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	 * The snapshot ID will be accessible by {@link #getSnapshotId()}.
 	 *
 	 * @param createHUSnapshots
-	 * @return 
+	 * @return
 	 */
 	public HUListAllocationSourceDestination setCreateHUSnapshots(final boolean createHUSnapshots)
 	{
@@ -149,7 +150,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	 * If you don't want this behavior (e.g. gh #943: because we are adjusting the HU's storage from the net weight), then just call this method with {@code false}. If you don't use this setter, the default will be {@code true}.
 	 *
 	 * @param storeCUQtyBeforeProcessing
-	 * @return 
+	 * @return
 	 */
 	public HUListAllocationSourceDestination setStoreCUQtyBeforeProcessing(final boolean storeCUQtyBeforeProcessing)
 	{
@@ -160,11 +161,11 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	@Override
 	public String toString()
 	{
-		return "HUListAllocationSourceDestination["
-				+ "\nHU Count: " + sourceHUs.size()
-				+ "\nCurrent HU Index: " + currentIndex
-				+ "\nHUs: " + sourceHUs
-				+ "]";
+		return MoreObjects.toStringHelper(this)
+				.add("HUs Count", sourceHUs.size())
+				.add("Current HU index", currentIndex)
+				.add("HUs", sourceHUs)
+				.toString();
 	}
 
 	@Override

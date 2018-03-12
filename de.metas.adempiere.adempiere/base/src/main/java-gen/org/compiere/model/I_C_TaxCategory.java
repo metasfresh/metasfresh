@@ -223,6 +223,7 @@ public interface I_C_TaxCategory
 
 	/**
 	 * Set Ermäßigt.
+	 * There is a discount tax
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -232,6 +233,7 @@ public interface I_C_TaxCategory
 
 	/**
 	 * Get Ermäßigt.
+	 * There is a discount tax
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -246,6 +248,7 @@ public interface I_C_TaxCategory
 
 	/**
 	 * Set Ohne.
+	 * Means no tax
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -255,6 +258,7 @@ public interface I_C_TaxCategory
 
 	/**
 	 * Get Ohne.
+	 * Means no tax
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

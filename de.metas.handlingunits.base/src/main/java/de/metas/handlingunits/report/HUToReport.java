@@ -1,16 +1,13 @@
-package org.adempiere.minventory.api;
+package de.metas.handlingunits.report;
 
 import java.util.List;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_InventoryLine;
+import java.util.stream.Stream;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,15 +25,23 @@ import org.compiere.model.I_M_InventoryLine;
  * #L%
  */
 
-public interface IInventoryDAO extends ISingletonService
+public interface HUToReport
 {
+	int getHUId();
 
-	/**
-	 * Retrieve all the active lines of the given inventory
-	 * 
-	 * @param inventory
-	 * @return
-	 */
-	public List<I_M_InventoryLine> retrieveLinesForInventory(final I_M_Inventory inventory);
+	int getBPartnerId();
 
+	String getHUUnitType();
+
+	boolean isTopLevel();
+
+	List<HUToReport> getIncludedHUs();
+
+	default Stream<HUToReport> streamRecursivelly()
+	{
+		return getIncludedHUs()
+				.stream()
+				.map(HUToReport::streamRecursivelly)
+				.reduce(Stream.of(this), Stream::concat);
+	}
 }

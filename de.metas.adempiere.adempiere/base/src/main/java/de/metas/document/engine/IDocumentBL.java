@@ -75,6 +75,12 @@ public interface IDocumentBL extends ISingletonService
 	 */
 	void processEx(Object document, String docAction, String expectedDocStatus);
 
+	default void processEx(final Object document, final String docAction)
+	{
+		final String expectedDocStatus = null;
+		processEx(document, docAction, expectedDocStatus);
+	}
+
 	/**
 	 * Check if a document is completed via it's {@code DocStatus} value.
 	 *

@@ -41,6 +41,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.DisplayType;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IFocusableComponent;
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -75,7 +77,8 @@ import de.metas.handlingunits.client.terminal.mmovement.view.impl.HUSplitPanel;
 import de.metas.handlingunits.client.terminal.report.model.HUReportModel;
 import de.metas.handlingunits.client.terminal.report.view.HUReportPanel;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
-import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.report.HUToReport;
+import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.i18n.IMsgBL;
 
 public class HUEditorPanel
@@ -545,8 +548,7 @@ public class HUEditorPanel
 				getCurrentWarehouse());
 
 	}
-	
-	
+
 	/**
 	 * #2144
 	 * Move the HUs to a quality warehouse
@@ -913,7 +915,7 @@ public class HUEditorPanel
 		boolean selectableAll = false;
 		boolean selectAll = false;
 
-		final List<IHUKey> children = new ArrayList<IHUKey>(currentHUKey.getChildren());
+		final List<IHUKey> children = new ArrayList<>(currentHUKey.getChildren());
 		for (final IHUKey child : children)
 		{
 			// Don't count readonly/locked HUs when counting selectable/selected HUs
@@ -965,18 +967,21 @@ public class HUEditorPanel
 		}
 
 		final boolean currentHUKeySelectable = model.isSelectable(currentHUKey);
-		final Set<I_M_HU> selectedHUs = model.getSelectedHUs();
+		final Set<HUToReport> selectedHUs = model.getSelectedHUs()
+				.stream()
+				.map(HUToReportWrapper::of)
+				.collect(ImmutableSet.toImmutableSet());
 
 		if (!currentHUKeySelectable && selectedHUs.isEmpty())
 		{
 			factory.showWarning(this, ITerminalFactory.TITLE_ERROR, new TerminalException("@" + HUEditorPanel.MSG_InvalidKeySelected + "@"));
 			return;
 		}
-		I_M_HU currentHU = null;
 
+		HUToReport currentHU = null;
 		if (currentHUKeySelectable)
 		{
-			currentHU = ((HUKey)currentHUKey).getM_HU();
+			currentHU = HUToReportWrapper.of(((HUKey)currentHUKey).getM_HU());
 		}
 
 		try (final ITerminalContextReferences references = getTerminalContext().newReferences())

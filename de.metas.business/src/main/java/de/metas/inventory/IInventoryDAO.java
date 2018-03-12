@@ -1,11 +1,8 @@
-package org.adempiere.minventory.api.impl;
+package de.metas.inventory;
 
 import java.util.List;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.minventory.api.IInventoryDAO;
-import org.adempiere.util.Services;
-import org.compiere.model.I_M_Inventory;
+import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InventoryLine;
 
 /*
@@ -30,16 +27,24 @@ import org.compiere.model.I_M_InventoryLine;
  * #L%
  */
 
-public class InventoryDAO implements IInventoryDAO
+public interface IInventoryDAO extends ISingletonService
 {
 
-	@Override
-	public List<I_M_InventoryLine> retrieveLinesForInventory(final I_M_Inventory inventory)
+	/**
+	 * Retrieve all the active lines of the given inventory
+	 * 
+	 * @param inventory
+	 * @return
+	 */
+	<T extends I_M_InventoryLine> List<T> retrieveLinesForInventoryId(int inventoryId, Class<T> type);
+	
+	default List<I_M_InventoryLine> retrieveLinesForInventoryId(final int inventoryId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class, inventory)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventory.getM_Inventory_ID())
-				.create().list();
+		return retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class);
 	}
 
+
+	boolean hasLines(int inventoryId);
+
+	void setInventoryLinesProcessed(int inventoryId, boolean processed);
 }
