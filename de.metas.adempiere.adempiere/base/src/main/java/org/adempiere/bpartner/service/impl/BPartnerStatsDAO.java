@@ -138,8 +138,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 		final String trxName = ITrx.TRXNAME_None;
 
-		BigDecimal SO_CreditUsed = BigDecimal.ZERO;
-
 		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
 				// open invoices
@@ -152,7 +150,8 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				// open invoice candidates
 				+ "COALESCE((SELECT SUM(currencyBase(ic.LineNetAmt,ic.C_Currency_ID,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
 				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N'),0) "
-				+ "FROM C_BPartner bp " + "WHERE C_BPartner_ID=?";
+				+ "FROM C_BPartner bp "
+				+ "WHERE C_BPartner_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -162,7 +161,21 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				SO_CreditUsed = rs.getBigDecimal(1).add(rs.getBigDecimal(2)).add(rs.getBigDecimal(3));
+				final BigDecimal openInvoiceAmt = rs.getBigDecimal(1);
+				final BigDecimal unallocatedPaymentAmt = rs.getBigDecimal(2);
+				final BigDecimal openInvoiceCandidateAmt = rs.getBigDecimal(3);
+				final BigDecimal SO_CreditUsed = openInvoiceAmt.add(unallocatedPaymentAmt).add(openInvoiceCandidateAmt);
+				System.out.println("------------------------------------------------------------------------------------------------------");
+				System.out.println("BPartner " + stats.getC_BPartner() + " openInvoiceAmt: " +openInvoiceAmt);
+				System.out.println("BPartner " + stats.getC_BPartner() + " unallocatedPaymentAmt: " +unallocatedPaymentAmt);
+				System.out.println("BPartner " + stats.getC_BPartner() + " openInvoiceCandidateAmt: " +openInvoiceCandidateAmt);
+				System.out.println("BPartner " + stats.getC_BPartner() + " SO_CreditUsed: " +SO_CreditUsed);
+				System.out.println("------------------------------------------------------------------------------------------------------");
+				return SO_CreditUsed;
+			}
+			else
+			{
+				return BigDecimal.ZERO;
 			}
 
 		}
@@ -174,8 +187,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		{
 			DB.close(rs, pstmt);
 		}
-
-		return SO_CreditUsed;
 	}
 
 	@Override
