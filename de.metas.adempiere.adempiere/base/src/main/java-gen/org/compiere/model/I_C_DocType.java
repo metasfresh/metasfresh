@@ -323,7 +323,7 @@ public interface I_C_DocType
 	/**
 	 * Set Beschreibung.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -332,7 +332,7 @@ public interface I_C_DocType
 	/**
 	 * Get Beschreibung.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

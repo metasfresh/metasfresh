@@ -98,7 +98,7 @@ public class HUInternalUseInventoryProducerTests
 
 		final I_C_DocType dt = newInstance(I_C_DocType.class);
 		dt.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
-		dt.setDocSubType(X_C_DocType.DOCSUBTYPE_MaterialDisposal);
+		dt.setDocSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory);
 		save(dt);
 
 		final I_M_Warehouse wh = newInstance(I_M_Warehouse.class);

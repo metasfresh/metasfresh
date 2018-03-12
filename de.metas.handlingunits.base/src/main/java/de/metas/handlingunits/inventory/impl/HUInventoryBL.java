@@ -42,7 +42,7 @@ public class HUInventoryBL implements IHUInventoryBL
 	{
 		return HUInternalUseInventoryProducer.newInstance()
 				.setMovementDate(movementDate)
-				.setDocSubType(X_C_DocType.DOCSUBTYPE_MaterialDisposal)
+				.setDocSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
 				.addHUs(husToDestroy)
 				.createInventories();
 	}
@@ -53,7 +53,7 @@ public class HUInventoryBL implements IHUInventoryBL
 		final int disposalDocTypeId = Services.get(IDocTypeDAO.class)
 				.getDocTypeIdOrNull(DocTypeQuery.builder()
 						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-						.docSubType(X_C_DocType.DOCSUBTYPE_MaterialDisposal)
+						.docSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
 						.adClientId(inventory.getAD_Client_ID())
 						.adOrgId(inventory.getAD_Org_ID())
 						.build());
