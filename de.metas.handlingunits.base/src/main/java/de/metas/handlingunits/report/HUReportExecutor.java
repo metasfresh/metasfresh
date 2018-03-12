@@ -17,7 +17,6 @@ import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Table_Process;
 import org.compiere.report.IJasperService;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -53,8 +52,7 @@ import lombok.NonNull;
  */
 
 /**
- * This little class is specialized on executing jasper report processes
- * that are assigned to the {@link I_M_HU} table by {@link I_AD_Table_Process} records.
+ * This little class is specialized on executing HU report processes.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -113,7 +111,7 @@ public class HUReportExecutor
 	 * @param adProcessId the (jasper-)process to be executed
 	 * @param husToProcess the HUs to be processed/shown in the report. These HUs' IDs are added to the {@code T_Select} table and can be accessed by the jasper file.
 	 */
-	public void executeHUReportAfterCommit(final int adProcessId, @NonNull final List<I_M_HU> husToProcess)
+	public void executeHUReportAfterCommit(final int adProcessId, @NonNull final List<HUToReport> husToProcess)
 	{
 		// check if we actually got any new M_HU_ID
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -158,7 +156,7 @@ public class HUReportExecutor
 		huReportTrxListener.setListenerWasRegistered();
 	}
 
-	public HUReportExecutorResult executeNow(final int adProcessId, @NonNull final List<I_M_HU> husToProcess)
+	public HUReportExecutorResult executeNow(final int adProcessId, @NonNull final List<HUToReport> husToProcess)
 	{
 		return executeNow(HUReportRequest.builder()
 				.ctx(ctx)
@@ -177,15 +175,15 @@ public class HUReportExecutor
 		return new HUReportTrxListener(ctx, adProcessId, windowNo, numberOfCopies);
 	}
 
-	private ImmutableSet<Integer> extractHUIds(final Collection<I_M_HU> hus)
+	private ImmutableSet<Integer> extractHUIds(final Collection<HUToReport> hus)
 	{
-		return hus.stream().map(I_M_HU::getM_HU_ID).filter(huId -> huId > 0).collect(ImmutableSet.toImmutableSet());
+		return hus.stream().map(HUToReport::getHUId).filter(huId -> huId > 0).collect(ImmutableSet.toImmutableSet());
 	}
 
-	private String extractReportingLanguageFromHUs(final Collection<I_M_HU> hus)
+	private String extractReportingLanguageFromHUs(final Collection<HUToReport> hus)
 	{
 		final Set<Integer> huBPartnerIds = hus.stream()
-				.map(I_M_HU::getC_BPartner_ID)
+				.map(HUToReport::getBPartnerId)
 				.filter(bpartnerId -> bpartnerId > 0)
 				.collect(ImmutableSet.toImmutableSet());
 		return extractReportingLanguageFromBPartnerIds(huBPartnerIds);
