@@ -218,6 +218,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setType(huRecordType)
 				.setTopLevel(topLevelHUId <= 0)
 				.setProcessed(processed)
+				.setBPartnerId(hu.getC_BPartner_ID())
 				.setAttributesProvider(attributesProvider)
 				//
 				.setCode(hu.getValue())

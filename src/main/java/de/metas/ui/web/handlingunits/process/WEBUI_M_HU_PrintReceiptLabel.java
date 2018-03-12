@@ -7,9 +7,9 @@ import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
+import de.metas.handlingunits.report.HUToReport;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -66,13 +66,13 @@ public class WEBUI_M_HU_PrintReceiptLabel
 			return ProcessPreconditionsResolution.reject("No (single) row selected");
 		}
 
-		final I_M_HU hu = getSingleSelectedRow().getM_HU();
+		final HUToReport hu = getSingleSelectedRow().getAsHUToReportOrNull();
 		if (hu == null)
 		{
 			return ProcessPreconditionsResolution.reject("No (single) HU selected");
 		}
 
-		final List<I_M_HU> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
+		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
 		if (husToProcess.isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject("current HU's type does not match the receipt label process");
@@ -88,9 +88,9 @@ public class WEBUI_M_HU_PrintReceiptLabel
 		final HUReportService huReportService = HUReportService.get();
 
 		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId();
-		final I_M_HU hu = getSingleSelectedRow().getM_HU();
+		final HUToReport hu = getSingleSelectedRow().getAsHUToReport();
 
-		final List<I_M_HU> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
+		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
 
 		HUReportExecutor.newInstance(getCtx())
 				.windowNo(getProcessInfo().getWindowNo())
