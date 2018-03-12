@@ -1,5 +1,6 @@
 package de.metas.handlingunits.process.api;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.adempiere.util.Check;
@@ -58,4 +59,11 @@ public class HUProcessDescriptor
 	{
 		return acceptHUUnitTypes.contains(huUnitType);
 	}
+
+	public boolean appliesToAllHUUnitTypes(@NonNull final Collection<String> huUnitTypes)
+	{
+		final boolean doesNotApply = huUnitTypes.stream().anyMatch(huUnitType -> !appliesToHUUnitType(huUnitType));
+		return !doesNotApply;
+	}
+
 }
