@@ -133,7 +133,7 @@ class RawLookup extends Component {
   navigate = reverse => {
     const { selected, list } = this.state;
 
-    let selectedNew;
+    let selectedNew = selected;
 
     if (list.length === 0) {
       // Case of selecting row for creting new instance
@@ -146,8 +146,6 @@ class RawLookup extends Component {
         if (typeof list[selectTarget] !== 'undefined') {
           selectedNew = selectTarget;
         }
-      } else if (typeof list[0] !== 'undefined') {
-        selectedNew = 0;
       }
     }
 
