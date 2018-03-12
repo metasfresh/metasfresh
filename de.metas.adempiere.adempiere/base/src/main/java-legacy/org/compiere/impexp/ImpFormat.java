@@ -374,7 +374,7 @@ public final class ImpFormat
 		{
 			delimiter = ',';
 		}
-		if (formatType.equals(FORMATTYPE_SEMICOLON))
+		else if (formatType.equals(FORMATTYPE_SEMICOLON))
 		{
 			delimiter = ';';
 		}

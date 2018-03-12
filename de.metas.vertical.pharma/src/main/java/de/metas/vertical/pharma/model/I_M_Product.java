@@ -30,4 +30,8 @@ public interface I_M_Product extends org.compiere.model.I_M_Product
 	public static final String COLUMNNAME_FAM_ZUB = "FAM_ZUB";
 	public void setFAM_ZUB (String FAM_ZUB);
 	public String getFAM_ZUB();
+
+	public static final String COLUMNNAME_M_PharmaProductCategory_ID = "M_PharmaProductCategory_ID";
+	public void setM_PharmaProductCategory_ID(int M_PharmaProductCategory_ID);
+	public int getM_PharmaProductCategory_ID();
 }
