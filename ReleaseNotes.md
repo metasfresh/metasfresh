@@ -15,10 +15,11 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
-  * [#882](https://github.com/metasfresh/metasfresh-webui-api/issues/882) WebUI: Pimp Data Import window
-    * New Window for Date Import in WebUI. now allows to do the data import into metasfresh with drag&drop file attachment upload.
+  * [#2647](https://github.com/metasfresh/metasfresh/issues/2647) Inventory Functionality w/ Handling Unit Assignments
   * [#3029](https://github.com/metasfresh/metasfresh/issues/3029) WebUI: New Window for Import Formats
     * New Indow in WebUI for Import Formats, now allowing to maintain data formats to import migration data.
+  * [#3580](https://github.com/metasfresh/metasfresh/issues/3580) TU label in picking process in webui
+  * [#3634](https://github.com/metasfresh/metasfresh/issues/3634) Pick in manufacturing Order: Picking Slot Filter on selected BPartner from Shipment Schedule
   * [#3637](https://github.com/metasfresh/metasfresh/issues/3637) Standalone Product Translation Window
     * New Standalone Product Translation window in WebUI.
   * [#3652](https://github.com/metasfresh/metasfresh/issues/3652) WebUI: New Inventory Window
@@ -29,12 +30,21 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#773](https://github.com/metasfresh/metasfresh-webui-api/issues/773) Add name and menu entry for WebUI window Package
     * New Window in WebUI for Package maintenance.
+  * [#882](https://github.com/metasfresh/metasfresh-webui-api/issues/882) WebUI: Pimp Data Import window
+    * New Window for Date Import in WebUI. now allows to do the data import into metasfresh with drag&drop file attachment upload.
 
 * metasfresh-webui-frontend
   * [#1640](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1640) Drag and Drop Attachments
     * Adds the functionality to upload multiple files at once.
 
+* metasfresh-dist
+  * [#35](https://github.com/metasfresh/metasfresh-dist/issues/35) Remove swing-client exe via launch4j
+
 ## Fixes
+* metasfresh
+  * [#3612](https://github.com/metasfresh/metasfresh/issues/3612) Sorting defect: Change of Flatrate Term in Sales Orderline after grouping
+  * [#3639](https://github.com/metasfresh/metasfresh/issues/3639) material dispo - problem with multiple cost collectors
+
 * metasfresh-webui-frontend
   * [#1544](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1544) List Widget does not scroll down with arrow-down
     * Improved scrolling behavior of list widgets.
