@@ -84,10 +84,8 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		int sumOdd = 0;
 		int sumEven = 0;
 
-		System.out.println("stringSSCC18ToVerify");
 		for (int i = 1; i <= stringSSCC18ToVerify.length(); i++)
 		{
-			System.out.println("Pos " + i+ "value " + stringSSCC18ToVerify.charAt(i-1));
 			// odd
 			if (i % 2 != 0)
 			{
