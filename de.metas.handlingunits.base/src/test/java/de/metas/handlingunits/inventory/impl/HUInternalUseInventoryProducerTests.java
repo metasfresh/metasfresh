@@ -18,7 +18,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
@@ -112,11 +111,8 @@ public class HUInternalUseInventoryProducerTests
 		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, 0);
 	}
 
-	/**
-	 * TODO find out why this invocation currently does not create any I_M_Inventories and fix it
-	 */
+	
 	@Test
-	@Ignore // TODO: atm it fails because there is no receipt line found
 	public void test()
 	{
 		final I_M_HU lu = mkAggregateCUs("50", 10);

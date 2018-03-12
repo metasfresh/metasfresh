@@ -163,7 +163,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 		//
 		// For each receipt line which received this HU
-		for (final I_M_InOutLine receiptLine : getReceiptLines(topLevelHU, request.getProductId()))
+		for (final I_M_InOutLine receiptLine : getReceiptLinesOrEmpty(topLevelHU, request.getProductId()))
 		{
 			final BigDecimal qtyToMoveTotal = qty.getQty();
 			final BigDecimal qualityDiscountPerc = huAttributesBL.getQualityDiscountPercent(hu);
@@ -265,17 +265,14 @@ class InventoryAllocationDestination implements IAllocationDestination
 		return uomConversionBL.convertToProductUOM(qtySource, request.getProductId());
 	}
 
-	private List<I_M_InOutLine> getReceiptLines(final I_M_HU topLevelHU, final int productId)
+	private List<I_M_InOutLine> getReceiptLinesOrEmpty(final I_M_HU topLevelHU, final int productId)
 	{
 		final List<I_M_InOutLine> receiptLines = huInOutDAO.retrieveInOutLinesForHU(topLevelHU)
 				.stream()
 				.filter(inoutLine -> inoutLine.getM_Product_ID() == productId) // #1604: skip inoutlines for other products
 				.peek(this::assertReceipt) // make sure it's a material receipt (and NOT a shipment)
 				.collect(ImmutableList.toImmutableList());
-		if (receiptLines.isEmpty())
-		{
-			throw new HUException("No receipt lines found for " + topLevelHU);
-		}
+		
 		return receiptLines;
 	}
 
