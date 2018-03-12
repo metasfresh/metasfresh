@@ -182,8 +182,9 @@ public class PP_Order
 		createWorkflowAndBOM(ppOrderRecord);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyEntered)
-	public void updateAndFireEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
+	@ModelChange(//
+			timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyEntered)
+	public void updateAndPEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
 		final boolean delivered = Services.get(IPPOrderBL.class).isDelivered(ppOrderRecord);
 		if (delivered)
@@ -191,7 +192,7 @@ public class PP_Order
 			throw new LiberoException("Cannot Change Quantity, Only is allow with Draft or In Process Status"); // TODO: Create Message for Translation
 		}
 
-		final PPOrderChangeEventFactory eventfactory = PPOrderChangeEventFactory.newWithPPOrderBeforeChange(ppOrderRecord);
+		final PPOrderChangedEventFactory eventfactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderRecord);
 
 		deleteWorkflowAndBOM(ppOrderRecord);
 		createWorkflowAndBOM(ppOrderRecord);

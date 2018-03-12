@@ -193,7 +193,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(ppOrder.getDatePromised())
 				.productDescriptor(ppOrder.getProductDescriptor())
-				.quantity(ppOrder.getQuantity())
+				.quantity(ppOrder.getQtyRequired())
 				.warehouseId(ppOrder.getWarehouseId())
 				.bPartnerId(ppOrder.getBPartnerId())
 				.build();
@@ -249,7 +249,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		final ProductionDetail newProductionDetailForPPOrder = initialBuilder
 				.advised(extractIsAdviseEvent(ppOrderEvent))
 				.pickDirectlyIfFeasible(extractIsDirectlyPickSupply(ppOrderEvent))
-				.plannedQty(ppOrder.getQuantity())
+				.plannedQty(ppOrder.getQtyRequired())
 				.plantId(ppOrder.getPlantId())
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.ppOrderId(ppOrder.getPpOrderId())

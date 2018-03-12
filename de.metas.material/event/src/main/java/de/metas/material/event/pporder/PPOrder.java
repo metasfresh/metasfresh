@@ -63,7 +63,6 @@ public class PPOrder
 	 */
 	int materialDispoGroupId;
 
-	@NonNull
 	ProductDescriptor productDescriptor;
 
 	/**
@@ -81,22 +80,20 @@ public class PPOrder
 	/**
 	 * This is usually the respective supply candidates' date value.
 	 */
-	@NonNull
 	Date datePromised;
 
 	/**
 	 * This is usually the respective demand candiates' date value.
 	 */
-	@NonNull
 	Date dateStartSchedule;
 
-	@NonNull
-	BigDecimal quantity;
+	BigDecimal qtyRequired;
+
+	BigDecimal qtyDelivered;
 
 	/**
 	 * Attention, might be {@code null}.
 	 */
-	@Singular
 	List<PPOrderLine> lines;
 
 	@JsonCreator
@@ -113,7 +110,8 @@ public class PPOrder
 			@JsonProperty("docStatus") @Nullable final String docStatus,
 			@JsonProperty("datePromised") @NonNull final Date datePromised,
 			@JsonProperty("dateStartSchedule") @NonNull final Date dateStartSchedule,
-			@JsonProperty("quantity") @NonNull final BigDecimal quantity,
+			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
+			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
 			@JsonProperty("lines") @Singular final List<PPOrderLine> lines,
 			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
 	{
@@ -130,7 +128,10 @@ public class PPOrder
 		this.docStatus = docStatus;
 		this.datePromised = datePromised;
 		this.dateStartSchedule = dateStartSchedule;
-		this.quantity = quantity;
+
+		this.qtyRequired = qtyRequired;
+		this.qtyDelivered = qtyDelivered;
+
 		this.lines = lines;
 
 		this.materialDispoGroupId = materialDispoGroupId;

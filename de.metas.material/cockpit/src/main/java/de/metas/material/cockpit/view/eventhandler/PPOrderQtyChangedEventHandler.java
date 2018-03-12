@@ -1,5 +1,6 @@
 package de.metas.material.cockpit.view.eventhandler;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -14,10 +15,10 @@ import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderChangedEvent.DeletedPPOrderLineDescriptor;
+import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
 
 /*
@@ -72,38 +73,52 @@ public class PPOrderQtyChangedEventHandler implements MaterialEventHandler<PPOrd
 					.date(TimeUtil.getDay(newPPOrderLine.getIssueOrReceiveDate()))
 					.build();
 
+			final BigDecimal qtyRequiredForProduction = //
+					newPPOrderLine.getQtyRequired()
+							.subtract(newPPOrderLine.getQtyDelivered());
+
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
-					.requiredForProductionQty(newPPOrderLine.getQtyRequired())
+					.requiredForProductionQty(qtyRequiredForProduction)
 					.build();
 			requests.add(request);
 		}
 
 		final List<DeletedPPOrderLineDescriptor> deletedPPOrderLines = ppOrderQtyChangedEvent.getDeletedPPOrderLines();
-		for(final DeletedPPOrderLineDescriptor deletedPPOrderLine: deletedPPOrderLines)
+		for (final DeletedPPOrderLineDescriptor deletedPPOrderLine : deletedPPOrderLines)
 		{
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(deletedPPOrderLine.getProductDescriptor())
 					.date(TimeUtil.getDay(deletedPPOrderLine.getIssueOrReceiveDate()))
 					.build();
+
+			final BigDecimal qtyRequiredForProduction = //
+					deletedPPOrderLine.getQtyRequired()
+							.subtract(deletedPPOrderLine.getQtyDelivered())
+							.negate();
+
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
-					.requiredForProductionQty(deletedPPOrderLine.getQuantity().negate())
+					.requiredForProductionQty(qtyRequiredForProduction)
 					.build();
 			requests.add(request);
 		}
 
 		final List<ChangedPPOrderLineDescriptor> changedPPOrderLines = ppOrderQtyChangedEvent.getPpOrderLineChanges();
-		for(final ChangedPPOrderLineDescriptor changedPPOrderLine: changedPPOrderLines)
+		for (final ChangedPPOrderLineDescriptor changedPPOrderLine : changedPPOrderLines)
 		{
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(changedPPOrderLine.getProductDescriptor())
 					.date(TimeUtil.getDay(changedPPOrderLine.getIssueOrReceiveDate()))
 					.build();
 
+			final BigDecimal qtyRequiredForProduction = //
+					changedPPOrderLine.getQtyRequiredDelta()
+							.subtract(changedPPOrderLine.getQtyDeliveredDelta());
+
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
-					.requiredForProductionQty(changedPPOrderLine.getQtyDelta())
+					.requiredForProductionQty(qtyRequiredForProduction)
 					.build();
 			requests.add(request);
 		}

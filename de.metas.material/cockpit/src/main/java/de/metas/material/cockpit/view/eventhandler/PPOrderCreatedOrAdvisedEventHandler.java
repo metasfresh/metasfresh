@@ -63,10 +63,6 @@ public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler
 	@Override
 	public void handleEvent(@NonNull final AbstractPPOrderEvent ppOrderAdvisedOrCreatedEvent)
 	{
-		// if not "planned", but "done", then *DO NOT, because the old impl doesn't either*:
-		// * "undo" the former change, i.e. subtract on the "supply" side, add on the "demand" side
-		// * update things similar to transactionEvent
-
 		final PPOrder ppOrder = ppOrderAdvisedOrCreatedEvent.getPpOrder();
 		final List<PPOrderLine> lines = ppOrder.getLines();
 

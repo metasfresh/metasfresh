@@ -12,7 +12,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
+import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
@@ -29,7 +29,8 @@ import lombok.NonNull;
 public class PP_Order_PostMaterialEvent
 {
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	@ModelChange(//
+			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void postMaterialEvent_newPPOrder(
 			@NonNull final I_PP_Order ppOrder,
 			@NonNull final ModelChangeType type)
@@ -43,14 +44,13 @@ public class PP_Order_PostMaterialEvent
 		final PPOrderPojoConverter pojoSupplier = Adempiere.getBean(PPOrderPojoConverter.class);
 		final PPOrder ppOrderPojo = pojoSupplier.asPPOrderPojo(ppOrder);
 
-
-		final PPOrderCreatedEvent event = PPOrderCreatedEvent.builder()
+		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(ppOrder))
 				.ppOrder(ppOrderPojo)
 				.build();
 
 		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-		materialEventService.postEventAfterNextCommit(event);
+		materialEventService.postEventAfterNextCommit(ppOrderCreatedEvent);
 	}
 
 	@ModelChange(//
@@ -77,15 +77,13 @@ public class PP_Order_PostMaterialEvent
 	@ModelChange(//
 			timings = ModelValidator.TYPE_AFTER_CHANGE, //
 			ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
-	public void postMaterialEvent_ppOrderDocStatusChange(@NonNull final I_PP_Order ppOrder)
+	public void postMaterialEvent_ppOrderDocStatusChange(@NonNull final I_PP_Order ppOrderRecord)
 	{
-		final PPOrderDocStatusChangedEvent event = PPOrderDocStatusChangedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(ppOrder))
-				.ppOrderId(ppOrder.getPP_Order_ID())
-				.newDocStatus(ppOrder.getDocStatus())
-				.build();
+		final PPOrderChangedEvent changeEvent = PPOrderChangedEventFactory
+				.newWithPPOrderBeforeChange(ppOrderRecord)
+				.inspectPPOrderAfterChange();
 
 		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-		materialEventService.postEventAfterNextCommit(event);
+		materialEventService.postEventAfterNextCommit(changeEvent);
 	}
 }
