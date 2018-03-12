@@ -31,7 +31,8 @@
       "^.+\\.js$": "babel-jest"
     },
     "unmockedModulePathPatterns": [
-      "<rootDir>/node_modules/babel-polyfill/"
+      "<rootDir>/node_modules/babel-polyfill/",
+      "<rootDir>/node_modules/immutable"
     ]
   },
   "devDependencies": {

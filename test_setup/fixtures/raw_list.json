@@ -1,0 +1,64 @@
+{
+  "data1": {
+    "widgetProps": {
+      "dataId": "2156441",
+      "entity": "window",
+      "defaultValue": "none",
+      "selected": {
+        "key": "2000835",
+        "caption": "Testpreisliste Lieferanten"
+      },
+      "properties": [
+        {
+          "field": "PO_PricingSystem_ID",
+          "source": "list",
+          "emptyText": "none",
+          "supportZoomInto": true
+        }
+      ],
+      "mandatory": false,
+      "windowType": "123",
+      "rowId": "2156441",
+      "tabId": "224",
+      "align": "left",
+      "updated": false,
+      "emptyText": "none",
+      "validStatus": {
+        "valid": true,
+        "initialValue": true,
+        "fieldName": "PO_PricingSystem_ID"
+      },
+      "filter": {},
+      "doNotOpenOnFocus": true,
+      "loading": false,
+      "list": [],
+      "isToggled": false,
+      "isFocused": false,
+      "eventTypes": [
+        "mousedown",
+        "touchstart"
+      ],
+      "outsideClickIgnoreClass": "ignore-react-onclickoutside",
+      "preventDefault": false,
+      "stopPropagation": false
+    },
+    "listData": [
+      {
+        "key": "2000284",
+        "caption": "Divers"
+      },
+      {
+        "key": "2000838",
+        "caption": "Lagerkonferenz"
+      },
+      {
+        "key": "2000835",
+        "caption": "Testpreisliste Lieferanten"
+      },
+      {
+        "key": "2000836",
+        "caption": "Testpreisliste Verpackung"
+      }
+    ]
+  }
+}

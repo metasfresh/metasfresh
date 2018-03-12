@@ -15,5 +15,8 @@ dist
 # Coverage report
 .nyc_output
 coverage
+test_setup
+src/__tests__
+cypress
 
 package-lock.json
