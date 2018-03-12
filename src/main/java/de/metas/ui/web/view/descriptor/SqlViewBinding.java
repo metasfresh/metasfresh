@@ -391,6 +391,14 @@ public class SqlViewBinding implements SqlEntityBinding
 		{
 		}
 
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("tableName", _sqlTableName)
+					.toString();
+		}
+
 		public SqlViewBinding build()
 		{
 			return new SqlViewBinding(this);
