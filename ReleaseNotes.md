@@ -10,6 +10,9 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.49 (2018-12)
+**release for week 2018-12**
+
 # metasfresh 5.48 (2018-11)
 **release for week 2018-11**
 
@@ -19,6 +22,7 @@ Here come the actual release notes:
   * [#3029](https://github.com/metasfresh/metasfresh/issues/3029) WebUI: New Window for Import Formats
     * New Indow in WebUI for Import Formats, now allowing to maintain data formats to import migration data.
   * [#3580](https://github.com/metasfresh/metasfresh/issues/3580) TU label in picking process in webui
+  * [#3622](https://github.com/metasfresh/metasfresh/issues/3622) Make AD_EventLog available for admin
   * [#3634](https://github.com/metasfresh/metasfresh/issues/3634) Pick in manufacturing Order: Picking Slot Filter on selected BPartner from Shipment Schedule
   * [#3637](https://github.com/metasfresh/metasfresh/issues/3637) Standalone Product Translation Window
     * New Standalone Product Translation window in WebUI.
@@ -26,6 +30,11 @@ Here come the actual release notes:
     * New Window in WebUI that allows the maintenance of Inventory recrdings and adjustments.
   * [#3591](https://github.com/metasfresh/metasfresh/issues/3591) Add translations for headers in shipment statistics
     * New WebUI window for shipment statistics.
+  * [#3618](https://github.com/metasfresh/metasfresh/issues/3618) Add "technical note" field to AD_Column
+  * [#3620](https://github.com/metasfresh/metasfresh/issues/3620) Spring model interceptors: support those who implement IModelInterceptor
+  * [#3621](https://github.com/metasfresh/metasfresh/issues/3621) Allow semikolon delimiter for Import Format
+  * [#3624](https://github.com/metasfresh/metasfresh/issues/3624) Pharma: When Operation Code is 2, deactivate the product
+  * [#3655](https://github.com/metasfresh/metasfresh/issues/3655) POJOWrapper support for model classes with zero ID
 
 * metasfresh-webui-api
   * [#773](https://github.com/metasfresh/metasfresh-webui-api/issues/773) Add name and menu entry for WebUI window Package
@@ -44,6 +53,10 @@ Here come the actual release notes:
 * metasfresh
   * [#3612](https://github.com/metasfresh/metasfresh/issues/3612) Sorting defect: Change of Flatrate Term in Sales Orderline after grouping
   * [#3639](https://github.com/metasfresh/metasfresh/issues/3639) material dispo - problem with multiple cost collectors
+
+* metasfresh-api
+  * [#850](https://github.com/metasfresh/metasfresh-webui-api/issues/850) Sorting by Virtual Column Follow-up
+  * [#890](https://github.com/metasfresh/metasfresh-webui-api/issues/890) Exception when adding request from partner window for sales rep
 
 * metasfresh-webui-frontend
   * [#1544](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1544) List Widget does not scroll down with arrow-down
