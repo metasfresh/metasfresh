@@ -49,6 +49,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
@@ -943,5 +944,35 @@ public class OrderBL implements IOrderBL
 			fOrder.setQtyOrdered(DYNATTR_QtyOrderedSum.getValue(queriedOrder));
 		}
 		InterfaceWrapperHelper.save(fOrder);
+	}
+
+	@Override
+	public boolean isQuotation(final I_C_Order order)
+	{
+		final boolean isSOTrx = order.isSOTrx();
+
+		if (!isSOTrx)
+		{
+			// purchase orders are not quotations
+			return false;
+		}
+
+		final I_C_DocType docType = order.getC_DocType();
+
+		if (!(X_C_DocType.DOCBASETYPE_SalesOrder.equals(docType.getDocBaseType())))
+		{
+			// Quotation must be of BaseType Sales Order
+			return false;
+		}
+
+		final String docSubType = docType.getDocSubType();
+
+		if (docSubType == null)
+		{
+			// Quotation must have a docSubType
+			return false;
+		}
+
+		return (docSubType.equals(X_C_DocType.DOCSUBTYPE_Proposal) || docSubType.equals(X_C_DocType.DOCSUBTYPE_Quotation));
 	}
 }

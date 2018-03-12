@@ -6,6 +6,7 @@ import static de.metas.material.event.EventTestHelper.CLIENT_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.SHIPMENT_SCHEDULE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,6 +31,7 @@ import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -156,7 +158,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 			@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1); //
-		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // we have two different inputs
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // the ppOrder has two different input/issue lines
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(3); // one stock record per supply, one per demand
 
 		final I_MD_Candidate t2Stock = DispoTestUtils.filter(CandidateType.STOCK, AFTER_NOW).get(0);
@@ -208,14 +210,26 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOorderId(r, ppOrderId));
 		assertThat(DispoTestUtils.retrieveAllRecords()).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
 
-		if (ppOrderEvent instanceof PPOrderAdvisedEvent)
-		{
-			final List<I_MD_Candidate_Prod_Detail> allProductionDetails = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
-					.create().list();
-			final boolean pickIfFeasibleFromEvent = ppOrderAdvisedHandler.extractIsDirectlyPickSupply(ppOrderEvent).toBoolean();
-			assertThat(allProductionDetails).allSatisfy(d -> assertThat(d.isPickDirectlyIfFeasible()).isEqualTo(pickIfFeasibleFromEvent));
-		}
+		// verify the production details' isPickDirectlyIfFeasible flag
+		final List<I_MD_Candidate_Prod_Detail> allProductionDetails = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
+				.create().list();
+		assertThat(allProductionDetails).as("each (non-stock) candidate shall have one production detail").hasSize(3);
+
+ 		assertThat(allProductionDetails)
+				.allSatisfy(d -> assertThat(d.isPickDirectlyIfFeasible()).isTrue());
+
+		// verify the demand details
+		final List<I_MD_Candidate_Demand_Detail> allDemandDetails = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
+				.create().list();
+
+		assertThat(allDemandDetails).as("each (non-stock) candidate shall have one demand detail").hasSize(3);
+
+		// note: SHIPMENT_SCHEDULE_ID is the constant used when the event's demand detail was created
+		assertThat(allDemandDetails)
+				.allSatisfy(d -> assertThat(d.getM_ShipmentSchedule_ID()).isEqualTo(SHIPMENT_SCHEDULE_ID));
+
 		return supplyDemandGroupId;
 	}
 
