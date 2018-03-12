@@ -63,11 +63,10 @@ wait_dbms()
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
 run_metasfresh()
 {
+ local admin_url="http://${admin_host}:${admin_port}"
+ local metasfresh_admin_params="-Dspring.boot.admin.url=${admin_url} -Dmanagement.security.enabled=false -Dspring.boot.admin.client.prefer-ip=true"
 
- admin_url="http://${admin_host}:${admin_port}"
- metasfresh_admin_params="-Dspring.boot.admin.url=${admin_url} -Dmanagement.security.enabled=false -Dspring.boot.admin.client.prefer-ip=true"
-
- es_params="-Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port}"
+ local es_params="-Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port}"
  
  cd /opt/metasfresh/metasfresh-webui-api/ \
  && java \
@@ -82,9 +81,9 @@ run_metasfresh()
  -jar metasfresh-webui-api.jar
 }
 
-set_properties /opt/metasfresh/metasfresh-webui-api/metasfresh.properties
-
 echo_variable_values
+
+set_properties /opt/metasfresh/metasfresh-webui-api/metasfresh.properties
 
 echo "************************************************************"
 echo "Waiting for the database server to start on DB_HOST=$DB_HOST"
