@@ -866,7 +866,7 @@ public final class DocumentFieldDescriptor
 			return this;
 		}
 
-		public boolean isKey()
+		boolean isKey()
 		{
 			return key;
 		}
@@ -878,7 +878,7 @@ public final class DocumentFieldDescriptor
 			return this;
 		}
 
-		public boolean isParentLinkEffective()
+		private boolean isParentLinkEffective()
 		{
 			return parentLink && isDetail();
 		}
