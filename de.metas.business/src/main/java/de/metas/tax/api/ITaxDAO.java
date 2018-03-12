@@ -69,8 +69,8 @@ public interface ITaxDAO extends ISingletonService
 	@Value
 	public static class TaxCategoryQuery
 	{
-		final private boolean isDefault;
-		final private boolean isReduced;
-		final private boolean isWithout;
+		final private Boolean isDefaultTax;
+		final private Boolean isReducedTax;
+		final private Boolean isWithoutTax;
 	}
 }
