@@ -1,7 +1,9 @@
 package org.eevolution.model.validator;
 
+import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.InterceptorUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.Adempiere;
@@ -74,10 +76,18 @@ public class PP_Order_PostMaterialEvent
 		materialEventService.postEventAfterNextCommit(event);
 	}
 
-	@ModelChange(//
-			timings = ModelValidator.TYPE_AFTER_CHANGE, //
-			ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
-	public void postMaterialEvent_ppOrderDocStatusChange(@NonNull final I_PP_Order ppOrderRecord)
+//	@ModelChange(//
+//			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
+//			ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
+	@DocValidate(timings = {
+			ModelValidator.TIMING_AFTER_COMPLETE,
+			ModelValidator.TIMING_AFTER_REACTIVATE,
+			ModelValidator.TIMING_AFTER_UNCLOSE,
+			ModelValidator.TIMING_AFTER_VOID
+	})
+	public void postMaterialEvent_ppOrderDocStatusChange(
+			@NonNull final I_PP_Order ppOrderRecord,
+			@NonNull final DocTimingType type)
 	{
 		final PPOrderChangedEvent changeEvent = PPOrderChangedEventFactory
 				.newWithPPOrderBeforeChange(ppOrderRecord)

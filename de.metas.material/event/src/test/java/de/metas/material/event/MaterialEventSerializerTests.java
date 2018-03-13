@@ -83,6 +83,14 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 
 public class MaterialEventSerializerTests
 {
+
+
+	private static final BigDecimal ELEVEN = TEN.add(ONE);
+
+	private static final BigDecimal TWELVE = ELEVEN.add(ONE);
+
+	private static final BigDecimal THIRTEEN = TWELVE.add(ONE);
+
 	@Test
 	public void ddOrderRequestedEvent()
 	{
@@ -242,10 +250,18 @@ public class MaterialEventSerializerTests
 	@Test
 	public void ppOrderQtyEnteredChangedEvent()
 	{
+
 		final PPOrderChangedEvent event = PPOrderChangedEvent.builder()
 				.productDescriptor(createProductDescriptor())
-				.datePromised(NOW)
+				.newDatePromised(NOW)
+				.oldDatePromised(SystemTime.asTimestamp())
 				.ppOrderId(10)
+				.oldDocStatus("CO")
+				.newDocStatus("CL")
+				.oldQtyRequired(TEN)
+				.newQtyRequired(ELEVEN)
+				.oldQtyDelivered(TWELVE)
+				.newQtyDelivered(THIRTEEN)
 				.deletedPPOrderLine(DeletedPPOrderLineDescriptor.builder()
 						.productDescriptor(createProductDescriptorWithOffSet(1))
 						.issueOrReceiveDate(NOW)

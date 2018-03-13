@@ -90,7 +90,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		updatedCandidatesToPersist.addAll(
 				processPPOrderLineChanges(
 						candidatesToUpdate,
-						ppOrderChangedEvent.getDocStatus(),
+						ppOrderChangedEvent.getNewDocStatus(),
 						ppOrderChangedEvent.getPpOrderLineChanges()));
 
 		// TODO: handle delete and creation of new lines
@@ -102,7 +102,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			@NonNull final List<Candidate> candidatesToUpdate,
 			@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
 	{
-		final String newDocStatusFromEvent = ppOrderChangedEvent.getDocStatus();
+		final String newDocStatusFromEvent = ppOrderChangedEvent.getNewDocStatus();
 		final CandidateStatus newCandidateStatus = EventUtil
 				.getCandidateStatus(newDocStatusFromEvent);
 

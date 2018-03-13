@@ -1,6 +1,7 @@
 package de.metas.material.event.pporder;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -9,6 +10,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_S_Resource;
+import org.compiere.util.Util;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -57,8 +59,8 @@ public class PPOrder
 	int productPlanningId;
 
 	/**
-	 * Not persisted in the {@code PP_Order} data record, but
-	 * when material-dispo posts {@link PPOrderRequestedEvent}, it contains a group-ID,
+	 * Not persisted in the {@code PP_Order} data record.
+	 * When the material-dispo posts a {@link PPOrderRequestedEvent}, it contains a group-ID,
 	 * and the respective {@link PPOrderCreatedEvent} contains the same group-ID.
 	 */
 	int materialDispoGroupId;
@@ -130,7 +132,7 @@ public class PPOrder
 		this.dateStartSchedule = dateStartSchedule;
 
 		this.qtyRequired = qtyRequired;
-		this.qtyDelivered = qtyDelivered;
+		this.qtyDelivered =Util.coalesce(qtyDelivered, ZERO);
 
 		this.lines = lines;
 

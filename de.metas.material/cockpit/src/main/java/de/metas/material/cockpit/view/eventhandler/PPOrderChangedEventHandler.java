@@ -45,11 +45,11 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
-public class PPOrderQtyChangedEventHandler implements MaterialEventHandler<PPOrderChangedEvent>
+public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderChangedEvent>
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 
-	public PPOrderQtyChangedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
+	public PPOrderChangedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 	}
@@ -61,9 +61,9 @@ public class PPOrderQtyChangedEventHandler implements MaterialEventHandler<PPOrd
 	}
 
 	@Override
-	public void handleEvent(@NonNull final PPOrderChangedEvent ppOrderQtyChangedEvent)
+	public void handleEvent(@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
 	{
-		final List<PPOrderLine> newPPOrderLines = ppOrderQtyChangedEvent.getNewPPOrderLines();
+		final List<PPOrderLine> newPPOrderLines = ppOrderChangedEvent.getNewPPOrderLines();
 
 		final ImmutableList.Builder<UpdateMainDataRequest> requests = ImmutableList.builder();
 		for (final PPOrderLine newPPOrderLine : newPPOrderLines)
@@ -84,7 +84,7 @@ public class PPOrderQtyChangedEventHandler implements MaterialEventHandler<PPOrd
 			requests.add(request);
 		}
 
-		final List<DeletedPPOrderLineDescriptor> deletedPPOrderLines = ppOrderQtyChangedEvent.getDeletedPPOrderLines();
+		final List<DeletedPPOrderLineDescriptor> deletedPPOrderLines = ppOrderChangedEvent.getDeletedPPOrderLines();
 		for (final DeletedPPOrderLineDescriptor deletedPPOrderLine : deletedPPOrderLines)
 		{
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
@@ -104,21 +104,23 @@ public class PPOrderQtyChangedEventHandler implements MaterialEventHandler<PPOrd
 			requests.add(request);
 		}
 
-		final List<ChangedPPOrderLineDescriptor> changedPPOrderLines = ppOrderQtyChangedEvent.getPpOrderLineChanges();
+		final List<ChangedPPOrderLineDescriptor> changedPPOrderLines = ppOrderChangedEvent.getPpOrderLineChanges();
 		for (final ChangedPPOrderLineDescriptor changedPPOrderLine : changedPPOrderLines)
 		{
+			final BigDecimal qtyDelta = changedPPOrderLine.computeOpenQtyDelta();
+			if (qtyDelta.signum() == 0)
+			{
+				continue;
+			}
+
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(changedPPOrderLine.getProductDescriptor())
 					.date(TimeUtil.getDay(changedPPOrderLine.getIssueOrReceiveDate()))
 					.build();
 
-			final BigDecimal qtyRequiredForProduction = //
-					changedPPOrderLine.getQtyRequiredDelta()
-							.subtract(changedPPOrderLine.getQtyDeliveredDelta());
-
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
-					.requiredForProductionQty(qtyRequiredForProduction)
+					.requiredForProductionQty(qtyDelta)
 					.build();
 			requests.add(request);
 		}

@@ -58,6 +58,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
+import lombok.NonNull;
 
 @Interceptor(I_PP_Order.class)
 public class PP_Order
@@ -184,7 +185,7 @@ public class PP_Order
 
 	@ModelChange(//
 			timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyEntered)
-	public void updateAndPEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
+	public void updateAndPostEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
 		final boolean delivered = Services.get(IPPOrderBL.class).isDelivered(ppOrderRecord);
 		if (delivered)
@@ -220,8 +221,8 @@ public class PP_Order
 		Services.get(IPPOrderBOMBL.class).createOrderBOMAndLines(ppOrder);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void beforeDelete(final I_PP_Order ppOrder)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void beforeDelete(@NonNull final I_PP_Order ppOrder)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		final IPPOrderCostDAO ppOrderCostDAO = Services.get(IPPOrderCostDAO.class);

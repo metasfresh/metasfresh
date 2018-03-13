@@ -44,22 +44,33 @@ public class PPOrderChangedEvent implements MaterialEvent
 	private final EventDescriptor eventDescriptor;
 
 	@NonNull
-	Date datePromised;
+	Date newDatePromised;
+
+	@NonNull
+	Date oldDatePromised;
 
 	@NonNull
 	ProductDescriptor productDescriptor;
 
 	int ppOrderId;
 
+	@NonNull
 	BigDecimal oldQtyRequired;
 
+	@NonNull
 	BigDecimal newQtyRequired;
 
+	@NonNull
 	BigDecimal oldQtyDelivered;
 
+	@NonNull
 	BigDecimal newQtyDelivered;
 
-	String docStatus;
+	@NonNull
+	String oldDocStatus;
+
+	@NonNull
+	String newDocStatus;
 
 	@Singular
 	List<ChangedPPOrderLineDescriptor> ppOrderLineChanges;
@@ -96,14 +107,12 @@ public class PPOrderChangedEvent implements MaterialEvent
 		@NonNull
 		BigDecimal newQtyDelivered;
 
-		public BigDecimal getQtyRequiredDelta()
+		public BigDecimal computeOpenQtyDelta()
 		{
-			return oldQtyRequired.subtract(newQtyRequired);
-		}
+			final BigDecimal oldOpenQty = oldQtyRequired.subtract(oldQtyDelivered);
+			final BigDecimal newOpenQty = newQtyRequired.subtract(newQtyDelivered);
 
-		public BigDecimal getQtyDeliveredDelta()
-		{
-			return oldQtyDelivered.subtract(newQtyDelivered);
+			return newOpenQty.subtract(oldOpenQty);
 		}
 	}
 

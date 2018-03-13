@@ -64,8 +64,6 @@ public class PPOrderChangedEventFactory
 		this.eventBuilder = createAndInitEventBuilderWithOldValues(ppOrderRecord);
 
 		final PPOrder ppOrderPojo = ppOrderConverter.asPPOrderPojo(ppOrderRecord);
-		this.eventBuilder.newQtyRequired(ppOrderPojo.getQtyRequired());
-		this.eventBuilder.newQtyDelivered(ppOrderPojo.getQtyDelivered());
 
 		final Map<Boolean, List<PPOrderLine>> linesWithAndWithoutProductBomLineId = //
 				collectLinesWithAndWithoutProductBomLineId(ppOrderPojo);
@@ -102,6 +100,8 @@ public class PPOrderChangedEventFactory
 				.eventDescriptor(EventDescriptor.createNew(ppOrderRecord))
 				.productDescriptor(oldPPOrderPojo.getProductDescriptor())
 				.ppOrderId(oldPPOrderPojo.getPpOrderId())
+				.oldDatePromised(oldPPOrderPojo.getDatePromised())
+				.oldDocStatus(oldPPOrderPojo.getDocStatus())
 				.oldQtyRequired(oldPPOrderPojo.getQtyRequired())
 				.oldQtyDelivered(oldPPOrderPojo.getQtyDelivered());
 
@@ -119,10 +119,13 @@ public class PPOrderChangedEventFactory
 
 	public PPOrderChangedEvent inspectPPOrderAfterChange()
 	{
-		eventBuilder.datePromised(ppOrderRecord.getDatePromised());
-		eventBuilder.docStatus(ppOrderRecord.getDocStatus());
-
 		final PPOrder updatedPPOrder = ppOrderConverter.asPPOrderPojo(ppOrderRecord);
+
+		eventBuilder.newDatePromised(updatedPPOrder.getDatePromised());
+		eventBuilder.newDocStatus(updatedPPOrder.getDocStatus());
+
+		eventBuilder.newQtyRequired(updatedPPOrder.getQtyRequired());
+		eventBuilder.newQtyDelivered(updatedPPOrder.getQtyDelivered());
 
 		for (final PPOrderLine updatedPPOrderLine : updatedPPOrder.getLines())
 		{
@@ -151,7 +154,7 @@ public class PPOrderChangedEventFactory
 			final DeletedPPOrderLineDescriptor deletedDescriptor = DeletedPPOrderLineDescriptor.builder()
 					.issueOrReceiveDate(descriptor.getIssueOrReceiveDate())
 					.ppOrderLineId(descriptor.getOldPPOrderLineId())
-					.productDescriptor(descriptor.getProductDescriptor())
+					 .productDescriptor(descriptor.getProductDescriptor())
 					.qtyRequired(descriptor.getOldQtyRequired())
 					.qtyDelivered(descriptor.getOldQtyDelivered())
 					.build();
