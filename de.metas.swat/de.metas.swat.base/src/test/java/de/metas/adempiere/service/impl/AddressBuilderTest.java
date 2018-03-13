@@ -82,7 +82,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0020()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
 				prepareCountry("Country1", "@A1@ @A2@ @C@ @CO@"));
 		final boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -100,7 +100,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0030()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
 				prepareCountry("Country1", "@A1@ @A2@ @C@ @R@ @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -122,7 +122,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0040_UK_Address()
 	{
-		I_C_Location location = prepareLocation("street", "12", null, null, "London", null, "121212", false, "",
+		final I_C_Location location = prepareLocation("street", "12", null, null, "London", null, "121212", false, "",
 				prepareCountry("UK", "@A1@ @A2@@CR@@P@@CR@@C@ @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -144,7 +144,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0050_DE_Address()
 	{
-		I_C_Location location = prepareLocation("street", "12", null, null, "Berlin", null, "121212", false, "",
+		final I_C_Location location = prepareLocation("street", "12", null, null, "Berlin", null, "121212", false, "",
 				prepareCountry("Deutschland", "@BP@ @A1@ @A2@ @A3@ D-@P@ @C@ @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = "BPartner1";
@@ -167,7 +167,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0060()
 	{
-		I_C_Location location = prepareLocation("street", "12", null, null, "Berlin", null, "121212", false, "",
+		final I_C_Location location = prepareLocation("street", "12", null, null, "Berlin", null, "121212", false, "",
 				prepareCountry("Deutschland", "@BP@ @CON@ @A1@ @A2@ @A3@ D-@P@ @C@ @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = "BPartner1";
@@ -193,7 +193,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0070()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
 				prepareCountry("Country1", "@A1@ @A2@ @P@ @C@ (Region @R@) @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -221,7 +221,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0080_EscapeBrackets()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", false, "",
 				prepareCountry("Country1", "@A1@ @A2@ @P@ @C@ \\(Region @R@\\) @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -249,7 +249,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0090_EmptyVariable()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "", "121212", false, "",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "", "121212", false, "",
 				prepareCountry("Country1", "@A1@ @A2@ @P@ @C@ (Region @R@) @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -277,7 +277,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0100_EscapeBrackets_EmptyVariable()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "", "121212", false, "",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "", "121212", false, "",
 				prepareCountry("Country1", "@A1@ @A2@ @P@ @C@ \\(Region @R@\\) @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -301,7 +301,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0110()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "",
 				prepareCountry("Country1", "@A1@ @A2@ @P@ @C@ (Postfach @PB@) @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -325,7 +325,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0120()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234",
 				prepareCountry("Country1", "@A1@ @A2@ @P@ @C@ (Postfach @PB@) @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -349,7 +349,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0130()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234",
 				prepareCountry("Country1", "@A1@ @A2@ @P@ @C@ TEST (Postfach @PB@) @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -373,7 +373,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0140()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "",
 				prepareCountry("Country1", "@A2@ @A1@ (Postfach @PB@) @P@ @C@ @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -397,7 +397,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0150()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234",
 				prepareCountry("Country1", "@A2@ @A1@ (Postfach @PB@) @P@ @C@ @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -421,7 +421,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0160()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "",
 				prepareCountry("Country1", "@A2@ @A1@ @PB@ @P@ @C@ @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -445,7 +445,7 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0170()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234",
 				prepareCountry("Country1", "@A2@ @A1@ @PB@ @P@ @C@ @CO@"));
 		boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
@@ -469,9 +469,9 @@ public class AddressBuilderTest
 	@Test
 	public void test_buildAddressString_0180()
 	{
-		I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234",
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234",
 				prepareCountry("Country1", "@A2@ @A1@ (TEST) @P@ @C@ @CO@"));
-		boolean isLocalAddress = false;
+		final boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
 		final String userBlock = null;
 
@@ -492,7 +492,7 @@ public class AddressBuilderTest
 		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234", country);
 		prepareCountrySequence(country, "@A2@ @A1@ Italien @P@ @C@ @CO@", "it_IT");
 
-		boolean isLocalAddress = false;
+		final boolean isLocalAddress = false;
 		final String bPartnerBlock = null;
 		final String userBlock = null;
 
@@ -508,17 +508,18 @@ public class AddressBuilderTest
 	 */
 	@Test
 	public void test_buildAddressString_0200()
-	{I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234",
-			prepareCountry("Country1", "@A2@ @A1@ (TEST) @P@ @C@ @CO@"));
-	boolean isLocalAddress = true;
-	final String bPartnerBlock = null;
-	final String userBlock = null;
+	{
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", true, "1234",
+				prepareCountry("Country1", "@A2@ @A1@ (TEST) @P@ @C@ @CO@"));
+		final boolean isLocalAddress = true;
+		final String bPartnerBlock = null;
+		final String userBlock = null;
 
-	Assert.assertEquals(
-			"LOCAL: addr2\naddr1\n121212 City1\nCountry1",
-			builder
-					.setLanguage("de_CH")
-					.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock));
+		Assert.assertEquals(
+				"LOCAL: addr2\naddr1\n121212 City1\nCountry1",
+				builder
+						.setLanguage("de_CH")
+						.buildAddressString(location, isLocalAddress, bPartnerBlock, userBlock));
 	}
 
 	@Test
@@ -750,7 +751,7 @@ public class AddressBuilderTest
 		return country;
 	}
 
-	private I_C_Country_Sequence prepareCountrySequence(I_C_Country country, final String displaySequence, final String language)
+	private I_C_Country_Sequence prepareCountrySequence(final I_C_Country country, final String displaySequence, final String language)
 	{
 		final I_C_Country_Sequence countrySeq = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Country_Sequence.class, ITrx.TRXNAME_None);
 
