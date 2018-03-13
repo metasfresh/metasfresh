@@ -110,7 +110,6 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 		final List<I_C_BPartner> bpartners = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_BPartner.class, localTrxName);
-		System.out.println("bpartners: " + bpartners);
 		final boolean alsoSetCreditStatusBaseOnBPGroup = getParameters().getParameterAsBool(PARAM_ALSO_RESET_CREDITSTATUS_FROM_BP_GROUP);
 
 		for (final I_C_BPartner bpartner : bpartners)
@@ -123,8 +122,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 			final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
 			bpartnerStatsDAO.updateOpenItems(stats);
 			bpartnerStatsDAO.updateActualLifeTimeValue(stats);
-			bpartnerStatsDAO.updateSOCreditUsed(stats);
-			bpartnerStatsDAO.updateSOCreditStatus(stats);
+			bpartnerStatsDAO.updateSO_CreditUsedAndCreditStatus(stats);;
 			bpartnerStatsDAO.updateCreditLimitIndicator(stats);
 		}
 

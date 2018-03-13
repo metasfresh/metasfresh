@@ -165,12 +165,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				final BigDecimal unallocatedPaymentAmt = rs.getBigDecimal(2);
 				final BigDecimal openInvoiceCandidateAmt = rs.getBigDecimal(3);
 				final BigDecimal SO_CreditUsed = openInvoiceAmt.add(unallocatedPaymentAmt).add(openInvoiceCandidateAmt);
-				System.out.println("------------------------------------------------------------------------------------------------------");
-				System.out.println("BPartner " + stats.getC_BPartner() + " openInvoiceAmt: " +openInvoiceAmt);
-				System.out.println("BPartner " + stats.getC_BPartner() + " unallocatedPaymentAmt: " +unallocatedPaymentAmt);
-				System.out.println("BPartner " + stats.getC_BPartner() + " openInvoiceCandidateAmt: " +openInvoiceCandidateAmt);
-				System.out.println("BPartner " + stats.getC_BPartner() + " SO_CreditUsed: " +SO_CreditUsed);
-				System.out.println("------------------------------------------------------------------------------------------------------");
 				return SO_CreditUsed;
 			}
 			else
@@ -257,7 +251,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		updateSOCreditStatus(bpStats);
 	}
 
-	@Override
 	public void updateSOCreditUsed(final BPartnerStats bpStats)
 	{
 		final BigDecimal SO_CreditUsed = retrieveSOCreditUsed(bpStats);

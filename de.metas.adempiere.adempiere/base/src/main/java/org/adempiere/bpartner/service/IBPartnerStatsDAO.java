@@ -50,14 +50,6 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 */
 	BigDecimal retrieveOpenItems(BPartnerStats stats);
 
-	/**
-	 * Retrieve the SOCreditUsed value for the given stats using the old legacy sql
-	 * Note: This will have to be re-implemented in order to not search in the db each time a new document is created.
-	 *
-	 * @param stats
-	 * @return
-	 */
-	void updateSOCreditUsed(BPartnerStats stats);
 
 	/**
 	 * Retrieve the ActualLifeTimeValue for the given stats using the old legacy sql
