@@ -32,6 +32,7 @@ class OverlayField extends Component {
   _scanBarcode = val => {
     this.setState({
       scanning: typeof val !== 'undefined' ? val : !this.state.scanning,
+      result: null,
       barcodeSelected: null,
     });
   };
@@ -42,11 +43,10 @@ class OverlayField extends Component {
     });
   };
 
-  selectBarcode = (result) => {
-    const barcode = result || null;
-
+  selectBarcode = result => {
     this.setState({
-      barcodeSelected: result,
+      barcodeSelected: result.codeResult.code,
+      scanning: false,
     });
   };
 
@@ -62,16 +62,15 @@ class OverlayField extends Component {
       if (elem.caption === 'Barcode') {
         captionElement = (
           <button
-            className="btn btn-sm btn-block btn-meta-success"
-            onClick={this._scanBarcode}
+            className="btn btn-sm btn-meta-success"
+            onClick={() => this._scanBarcode(true)}
           >
-            {/*{counterpart.translate('barcodescan.caption')}*/}
             Scan using camera
           </button>
         );
 
         if (barcodeSelected) {
-
+          widgetData[0].value = barcodeSelected;
         }
       }
 
@@ -96,20 +95,22 @@ class OverlayField extends Component {
     const { result } = this.state;
 
     return (
-      <div className="barcode-scanner-widget">
-        <BarcodeScanner
-          onDetected={this._onBarcodeDetected}
-          onClose={() => this._scanBarcode(false)}
-          onReset={this.selectBarcode}
-        />
-        <div className="scanning-result">
-          <span className="form-control-label col-sm-3 ">
-            Barcode
-          </span>
-          <BarcodeScannerResult
-            result={result}
-            onSelect={(result) => this.selectBarcode(result)}
+      <div className="row barcode-scanner-widget">
+        <div className="col-sm-12">
+          <BarcodeScanner
+            onDetected={this._onBarcodeDetected}
+            onClose={() => this._scanBarcode(false)}
+            onReset={() => this._scanBarcode(true)}
           />
+          <div className="row scanning-result">
+            <span className="label col-sm-2">
+              Barcode
+            </span>
+            <BarcodeScannerResult
+              result={result}
+              onSelect={result => this.selectBarcode(result)}
+            />
+          </div>
         </div>
       </div>
     );

@@ -7,12 +7,14 @@ const BarcodeScannerResult = function({ result, onSelect }) {
     return null;
   }
   return (
-    <button
-      className="btn btn-filter btn-meta-outline-secondary btn-distance btn-s"
-      onClick={() => onSelect(result)}
-    >
-      {result.codeResult.code}
-    </button>
+    <div className="col-sm-9">
+      <button
+        className="btn btn-filter btn-meta-outline-secondary btn-distance btn-s"
+        onClick={() => onSelect(result)}
+      >
+        {result.codeResult.code}
+      </button>
+    </div>
   );
 };
 
@@ -28,8 +30,8 @@ export default class BarcodeScanner extends Component {
         inputStream: {
           type: 'LiveStream',
           constraints: {
-            width: 640,
-            height: 480,
+            width: 1280,
+            height: 720,
             facingMode: 'environment',
           },
         },
@@ -38,7 +40,7 @@ export default class BarcodeScanner extends Component {
           halfSample: true,
         },
         numOfWorkers: 4,
-        frequency: 10,
+        frequency: 5,
         decoder: {
           readers: ['ean_reader'],
         },
@@ -60,20 +62,20 @@ export default class BarcodeScanner extends Component {
   }
 
   _handleStop = () => {
-    Quagga.stop();
+    Quagga.offDetected(this._onDetected);
 
     this.props.onClose();
-  }
+  };
 
   _handleStart = () => {
     this.props.onReset();
-    Quagga.start();
-  }
+    Quagga.onDetected(this._onDetected);
+  };
 
   _onDetected = result => {
-    Quagga.stop();
+    Quagga.offDetected(this._onDetected);
     this.props.onDetected(result);
-  }
+  };
 
   _onProcessed(result) {
     const drawingCtx = Quagga.canvas.ctx.overlay;
@@ -115,13 +117,19 @@ export default class BarcodeScanner extends Component {
 
   render() {
     return (
-      <div className="scanner-wrapper">
-        <div id="interactive" className="viewport scanner-window"/>
-        <div className="scanner-controls">
-          <button onClick={this._handleStart}>
+      <div className="row scanner-wrapper">
+        <div id="interactive" className="col-sm-12 viewport scanner-window" />
+        <div className="col-sm-12 scanner-controls">
+          <button
+            className="btn btn-filter btn-meta-outline-secondary btn-distance btn-s"
+            onClick={this._handleStart}
+          >
             Scan again
           </button>
-          <button onClick={this._handleStop}>
+          <button
+            className="btn btn-filter btn-meta-outline-secondary btn-distance btn-s"
+            onClick={this._handleStop}
+          >
             Close
           </button>
         </div>
