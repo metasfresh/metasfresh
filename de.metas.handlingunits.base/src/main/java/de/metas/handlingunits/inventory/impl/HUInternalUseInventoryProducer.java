@@ -71,7 +71,7 @@ public class HUInternalUseInventoryProducer
 	//
 	// Parameters
 	private Timestamp _movementDate;
-	private String _docSubType = X_C_DocType.DOCSUBTYPE_MaterialDisposal;
+	private String _docSubType = X_C_DocType.DOCSUBTYPE_InternalUseInventory;
 	private final List<I_M_HU> _hus = new ArrayList<>();
 
 	private HUInternalUseInventoryProducer()
