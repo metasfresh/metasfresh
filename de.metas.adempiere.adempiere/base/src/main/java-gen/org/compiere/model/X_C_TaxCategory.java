@@ -14,7 +14,7 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1115727675L;
+	private static final long serialVersionUID = 1142687976L;
 
     /** Standard Constructor */
     public X_C_TaxCategory (Properties ctx, int C_TaxCategory_ID, String trxName)
@@ -200,5 +200,33 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * VATType AD_Reference_ID=540842
+	 * Reference name: VATType
+	 */
+	public static final int VATTYPE_AD_Reference_ID=540842;
+	/** RegularVAT = N */
+	public static final String VATTYPE_RegularVAT = "N";
+	/** ReducedVAT = R */
+	public static final String VATTYPE_ReducedVAT = "R";
+	/** TaxExempt = E */
+	public static final String VATTYPE_TaxExempt = "E";
+	/** Set MwSt-Typ.
+		@param VATType MwSt-Typ	  */
+	@Override
+	public void setVATType (java.lang.String VATType)
+	{
+
+		set_Value (COLUMNNAME_VATType, VATType);
+	}
+
+	/** Get MwSt-Typ.
+		@return MwSt-Typ	  */
+	@Override
+	public java.lang.String getVATType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_VATType);
 	}
 }

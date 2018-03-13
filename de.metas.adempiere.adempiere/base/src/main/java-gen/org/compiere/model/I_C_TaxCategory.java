@@ -325,4 +325,27 @@ public interface I_C_TaxCategory
     public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_TaxCategory, org.compiere.model.I_AD_User>(I_C_TaxCategory.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set MwSt-Typ.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setVATType (java.lang.String VATType);
+
+	/**
+	 * Get MwSt-Typ.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getVATType();
+
+    /** Column definition for VATType */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_VATType = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "VATType", null);
+    /** Column name VATType */
+    public static final String COLUMNNAME_VATType = "VATType";
 }
