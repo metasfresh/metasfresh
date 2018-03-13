@@ -14,7 +14,7 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 464401347L;
+	private static final long serialVersionUID = 1115727675L;
 
     /** Standard Constructor */
     public X_C_TaxCategory (Properties ctx, int C_TaxCategory_ID, String trxName)
@@ -132,7 +132,9 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	}
 
 	/** Set Ermäßigt.
-		@param IsReduced Ermäßigt	  */
+		@param IsReduced 
+		There is a discount tax
+	  */
 	@Override
 	public void setIsReduced (boolean IsReduced)
 	{
@@ -140,7 +142,8 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	}
 
 	/** Get Ermäßigt.
-		@return Ermäßigt	  */
+		@return There is a discount tax
+	  */
 	@Override
 	public boolean isReduced () 
 	{
@@ -155,7 +158,9 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	}
 
 	/** Set Ohne.
-		@param IsWithout Ohne	  */
+		@param IsWithout 
+		Means no tax
+	  */
 	@Override
 	public void setIsWithout (boolean IsWithout)
 	{
@@ -163,7 +168,8 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	}
 
 	/** Get Ohne.
-		@return Ohne	  */
+		@return Means no tax
+	  */
 	@Override
 	public boolean isWithout () 
 	{

@@ -241,4 +241,10 @@ public interface IOrderBL extends ISingletonService
 	void updateOrderQtySums(I_C_Order order);
 
 	void updateDescriptionFromDocTypeTargetId(I_C_Order order);
+
+	/**
+	 * @param order
+	 * @return true if the order is a quotation (C_Order's C_DocType.docBaseType = SSO and DocSubType in ('OB' , 'ON' = Quotation or Proposal)
+	 */
+	boolean isQuotation(I_C_Order order);
 }

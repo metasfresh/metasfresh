@@ -10,12 +10,12 @@ package de.metas.tax.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 public interface ITaxDAO extends ISingletonService
 {
 	boolean retrieveIsTaxExempt(Properties ctx, int bPartnerId, Timestamp date, String trxName);
@@ -39,13 +43,13 @@ public interface ITaxDAO extends ISingletonService
 
 	/**
 	 * getDefaultTax Get the default tax id associated with this tax category
-	 * 
+	 *
 	 */
 	I_C_Tax getDefaultTax(I_C_TaxCategory taxCategory);
 
 	/**
 	 * If the taxBL can't find a tax, it shall return this one instead
-	 * 
+	 *
 	 * @param ctx
 	 * @return placeholder tax that is used when no other tax was found
 	 */
@@ -53,9 +57,20 @@ public interface ITaxDAO extends ISingletonService
 
 	/**
 	 * If the taxBL can't find a tax category, it shall return this one instead
-	 * 
+	 *
 	 * @param ctx
 	 * @return placeholder tax category that is used when no other tax was found (note: not used yet; may be helpful in the future)
 	 */
 	I_C_TaxCategory retrieveNoTaxCategoryFound(Properties ctx);
+
+	int findTaxCategoryId(@NonNull final TaxCategoryQuery query);
+
+	@Builder
+	@Value
+	public static class TaxCategoryQuery
+	{
+		final private Boolean isDefaultTax;
+		final private Boolean isReducedTax;
+		final private Boolean isWithoutTax;
+	}
 }

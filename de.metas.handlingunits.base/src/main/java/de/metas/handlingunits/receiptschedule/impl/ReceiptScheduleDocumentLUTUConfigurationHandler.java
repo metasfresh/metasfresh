@@ -90,7 +90,7 @@ import de.metas.interfaces.I_C_BPartner;
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 
 		// Update LU/TU configuration
-		updateLUTUConfiguration(lutuConfiguration, documentLine);
+		updateLUTUConfigurationFromPPOrder(lutuConfiguration, documentLine);
 		
 		// NOTE: don't save it...we might use it as "in-memory POJO"
 
@@ -98,7 +98,7 @@ import de.metas.interfaces.I_C_BPartner;
 	}
 
 	@Override
-	public void updateLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfiguration, final I_M_ReceiptSchedule documentLine)
+	public void updateLUTUConfigurationFromPPOrder(final I_M_HU_LUTU_Configuration lutuConfiguration, final I_M_ReceiptSchedule documentLine)
 	{
 		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");
 		Check.assumeNotNull(documentLine, "documentLine not null");

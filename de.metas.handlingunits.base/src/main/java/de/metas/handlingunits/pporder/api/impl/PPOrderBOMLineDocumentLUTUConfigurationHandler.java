@@ -75,7 +75,7 @@ import lombok.NonNull;
 				cuUOM, 
 				bpartner,
 				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
-		updateLUTUConfiguration(lutuConfiguration, ppOrderBOMLine);
+		updateLUTUConfigurationFromPPOrder(lutuConfiguration, ppOrderBOMLine);
 
 		return lutuConfiguration;
 	}
@@ -101,10 +101,10 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void updateLUTUConfiguration(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_PP_Order_BOMLine documentLine)
+	public void updateLUTUConfigurationFromPPOrder(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_PP_Order_BOMLine documentLine)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(documentLine.getPP_Order(), I_PP_Order.class);
-		PPOrderDocumentLUTUConfigurationHandler.instance.updateLUTUConfiguration(lutuConfiguration, ppOrder);
+		PPOrderDocumentLUTUConfigurationHandler.instance.updateLUTUConfigurationFromPPOrder(lutuConfiguration, ppOrder);
 	}
 
 	@Override

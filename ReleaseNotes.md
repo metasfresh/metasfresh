@@ -35,6 +35,7 @@ Here come the actual release notes:
   * [#3621](https://github.com/metasfresh/metasfresh/issues/3621) Allow semikolon delimiter for Import Format
   * [#3624](https://github.com/metasfresh/metasfresh/issues/3624) Pharma: When Operation Code is 2, deactivate the product
   * [#3655](https://github.com/metasfresh/metasfresh/issues/3655) POJOWrapper support for model classes with zero ID
+  * [#3667](https://github.com/metasfresh/metasfresh/issues/3667) prospect is converted to customer when completing a quotation
 
 * metasfresh-webui-api
   * [#773](https://github.com/metasfresh/metasfresh-webui-api/issues/773) Add name and menu entry for WebUI window Package
