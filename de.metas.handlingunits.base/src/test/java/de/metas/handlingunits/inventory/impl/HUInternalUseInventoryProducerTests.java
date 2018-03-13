@@ -18,7 +18,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
@@ -99,7 +98,7 @@ public class HUInternalUseInventoryProducerTests
 
 		final I_C_DocType dt = newInstance(I_C_DocType.class);
 		dt.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
-		dt.setDocSubType(X_C_DocType.DOCSUBTYPE_MaterialDisposal);
+		dt.setDocSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory);
 		save(dt);
 
 		final I_M_Warehouse wh = newInstance(I_M_Warehouse.class);
@@ -112,11 +111,8 @@ public class HUInternalUseInventoryProducerTests
 		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, 0);
 	}
 
-	/**
-	 * TODO find out why this invocation currently does not create any I_M_Inventories and fix it
-	 */
+	
 	@Test
-	@Ignore // TODO: atm it fails because there is no receipt line found
 	public void test()
 	{
 		final I_M_HU lu = mkAggregateCUs("50", 10);
