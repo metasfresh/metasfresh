@@ -60,13 +60,14 @@ public class ShipmentScheduleCreatedHandler implements MaterialEventHandler<Ship
 	{
 		final DemandDetail demandDetail = DemandDetail.forDocumentDescriptor(
 				event.getShipmentScheduleId(),
-				event.getDocumentLineDescriptor());
+				event.getDocumentLineDescriptor(),
+				event.getMaterialDescriptor().getQuantity());
 
 		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescriptor())
 				.materialDescriptor(event.getMaterialDescriptor())
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)
-				.demandDetail(demandDetail)
+				.businessCaseDetail(demandDetail)
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}

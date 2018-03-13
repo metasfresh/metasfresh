@@ -455,6 +455,12 @@ public final class Check
 			throwOrLogEx(exceptionClass, "Error: " + errMsgFormated);
 		}
 	}
+	
+	public static void fail(final String errMsg, final Object... params)
+	{
+		final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
+		throwOrLogEx(defaultExClazz, "Error: " + errMsgFormated);
+	}
 
 	/**
 	 * Supplier for an exception. Can be used with {@link Optional#orElseThrow(Supplier)}.

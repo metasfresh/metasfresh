@@ -91,8 +91,13 @@ public class PurchaseItemRepository
 		record.setC_OrderLinePO_ID(purchaseOrderItem.getPurchaseOrderLineId());
 		record.setDatePromised(TimeUtil.asTimestamp(purchaseOrderItem.getDatePromised()));
 		record.setRemotePurchaseOrderId(purchaseOrderItem.getRemotePurchaseOrderId());
-		record.setAD_Table_ID(purchaseOrderItem.getTransactionReference().getAD_Table_ID());
-		record.setRecord_ID(purchaseOrderItem.getTransactionReference().getRecord_ID());
+
+		final ITableRecordReference transactionReference = purchaseOrderItem.getTransactionReference();
+		if (transactionReference != null)
+		{
+			record.setAD_Table_ID(transactionReference.getAD_Table_ID());
+			record.setRecord_ID(transactionReference.getRecord_ID());
+		}
 		save(record);
 	}
 

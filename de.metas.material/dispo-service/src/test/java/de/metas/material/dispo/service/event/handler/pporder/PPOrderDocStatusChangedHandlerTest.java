@@ -63,8 +63,7 @@ public class PPOrderDocStatusChangedHandlerTest
 				.status(CandidateStatus.doc_closed)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(EventTestHelper.createMaterialDescriptor())
-				.productionDetail(ProductionDetail.builder()
-						.actualQty(BigDecimal.ONE)
+				.businessCaseDetail(ProductionDetail.builder()
 						.plannedQty(BigDecimal.TEN)
 						.advised(Flag.FALSE)
 						.pickDirectlyIfFeasible(Flag.FALSE)
@@ -104,9 +103,9 @@ public class PPOrderDocStatusChangedHandlerTest
 				.isEqualByComparingTo(BigDecimal.TEN);
 			assertThat(updatedCandidate.getStatus()).isEqualTo(CandidateStatus.doc_completed);
 
-			final ProductionDetail productionDetail = updatedCandidate.getProductionDetail();
+			final ProductionDetail productionDetail = ProductionDetail.castOrNull(updatedCandidate.getBusinessCaseDetail());
 			assertThat(productionDetail).isNotNull();
-			assertThat(updatedCandidate.getProductionDetail().getPpOrderDocStatus()).isEqualTo("CO");
+			assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo("CO");
 		}};	// @formatter:on
 	}
 

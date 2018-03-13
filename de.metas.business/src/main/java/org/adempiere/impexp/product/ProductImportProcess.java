@@ -140,13 +140,15 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 					+ "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
 					+ "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
 					+ "Volume,Weight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
-					+ "Discontinued,DiscontinuedBy,Updated,UpdatedBy)= "
-					+ "(SELECT Value,coalesce(Name, Value),Description,DocumentNote,Help,"
+					+ "Discontinued,DiscontinuedBy,Updated,UpdatedBy"
+					+ ", " + I_I_Product.COLUMNNAME_M_ProductPlanningSchema_Selector // #3406
+					+ ")= "
+					+ "(SELECT Value,coalesce(I_Product.Name, I_Product.Value),Description,DocumentNote,Help,"
 					+ "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
 					+ "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
 					+ "Volume,Weight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
 					+ "Discontinued,DiscontinuedBy,now(),UpdatedBy"
-					+ ", " + org.compiere.model.I_M_Product.COLUMNNAME_M_ProductPlanningSchema_Selector // #3406
+					+ ", " + I_M_Product.COLUMNNAME_M_ProductPlanningSchema_Selector // #3406
 					+ " FROM I_Product WHERE I_Product_ID=" + I_Product_ID + ") "
 					+ "WHERE M_Product_ID=" + M_Product_ID);
 			PreparedStatement pstmt_updateProduct = null;
@@ -329,5 +331,4 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		pp.setC_UOM_ID(uomId);
 		InterfaceWrapperHelper.save(pp);
 	}
-
 }

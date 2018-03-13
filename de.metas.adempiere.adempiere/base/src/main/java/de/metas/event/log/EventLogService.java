@@ -2,6 +2,7 @@ package de.metas.event.log;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -141,6 +142,9 @@ public class EventLogService
 		final int eventLogRecordId = retrieveOrCreateRecordIdUsingCache(eventLogEntry.getUuid());
 
 		final I_AD_EventLog_Entry eventLogEntryRecord = newInstance(I_AD_EventLog_Entry.class);
+		setValue(eventLogEntryRecord, I_AD_EventLog_Entry.COLUMNNAME_AD_Client_ID, eventLogEntry.getClientId());
+		eventLogEntryRecord.setAD_Org_ID(eventLogEntry.getOrgId());
+
 		eventLogEntryRecord.setAD_EventLog_ID(eventLogRecordId);
 		eventLogEntryRecord.setAD_Issue_ID(eventLogEntry.getAdIssueId());
 		eventLogEntryRecord.setIsError(eventLogEntry.isError());
@@ -149,12 +153,19 @@ public class EventLogService
 		eventLogEntryRecord.setClassname(eventLogEntry.getEventHandlerClassName());
 		save(eventLogEntryRecord);
 
-		if(eventLogEntry.isError())
+		final I_AD_EventLog eventLogRecord = eventLogEntryRecord.getAD_EventLog();
+		if (eventLogEntry.isError())
 		{
-			final I_AD_EventLog eventLogRecord = eventLogEntryRecord.getAD_EventLog();
 			eventLogRecord.setIsError(true);
-			save(eventLogRecord);
 		}
+		// update eventLogRecord's client and org; they weren't known when the eventLogRecord was created
+		if (eventLogRecord.getAD_Client_ID() == 0 && eventLogEntry.getClientId() > 0)
+		{
+			setValue(eventLogRecord, I_AD_EventLog.COLUMNNAME_AD_Client_ID, eventLogEntry.getClientId());
+			eventLogRecord.setAD_Org_ID(eventLogEntry.getOrgId()); // different event log entries with different orgs: sort them out when they occur
+		}
+
+		save(eventLogRecord);
 	}
 
 	private int retrieveOrCreateRecordIdUsingCache(@NonNull final UUID uuid)

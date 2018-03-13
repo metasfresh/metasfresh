@@ -16,17 +16,9 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
 import org.compiere.model.MInventory;
-import org.compiere.model.MInventoryLine;
-import org.compiere.model.MInventoryLineMA;
-import org.compiere.model.MStorage;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -90,9 +82,6 @@ public class InventoryCountUpdate extends JavaProcess
 		int multiple = DB.executeUpdate(sql, get_TrxName());
 		log.info("Multiple=" + multiple);
 
-		int delMA = MInventoryLineMA.deleteInventoryMA(p_M_Inventory_ID, get_TrxName());
-		log.info("DeletedMA=" + delMA);
-
 		//	ASI
 		sql = DB.convertSqlToNative("UPDATE M_InventoryLine l "
 			+ "SET (QtyBook,QtyCount) = "
@@ -109,9 +98,6 @@ public class InventoryCountUpdate extends JavaProcess
 		int no = DB.executeUpdate(sql, get_TrxName());
 		log.info("Update with ASI=" + no);
 
-		//	No ASI
-		int noMA = updateWithMA();
-
 		//	Set Count to Zero
 		if (p_InventoryCountSetZero)
 		{
@@ -123,76 +109,10 @@ public class InventoryCountUpdate extends JavaProcess
 		}
 
 		if (multiple > 0)
-			return "@M_InventoryLine_ID@ - #" + (no + noMA) + " --> @InventoryProductMultiple@";
+			return "@M_InventoryLine_ID@ - #" + (no) + " --> @InventoryProductMultiple@";
 
 		return "@M_InventoryLine_ID@ - #" + no;
 	}	//	doIt
-
-	/**
-	 * 	Update Inventory Lines With Material Allocation
-	 *	@return no updated
-	 */
-	private int updateWithMA()
-	{
-		int no = 0;
-		//
-		String sql = "SELECT * FROM M_InventoryLine WHERE M_Inventory_ID=? AND M_AttributeSetInstance_ID=0";
-		PreparedStatement pstmt = null;
-		try
-		{
-			pstmt = DB.prepareStatement (sql, get_TrxName());
-			pstmt.setInt (1, p_M_Inventory_ID);
-			ResultSet rs = pstmt.executeQuery ();
-			while (rs.next ())
-			{
-				MInventoryLine il = new MInventoryLine (getCtx(), rs, get_TrxName());
-				BigDecimal onHand = Env.ZERO;
-				MStorage[] storages = MStorage.getAll(getCtx(), il.getM_Product_ID(), il.getM_Locator_ID(), get_TrxName());
-				MInventoryLineMA ma = null;
-				for (int i = 0; i < storages.length; i++)
-				{
-					MStorage storage = storages[i];
-					if (storage.getQtyOnHand().signum() == 0)
-						continue;
-					onHand = onHand.add(storage.getQtyOnHand());
-					//	No ASI
-					if (storage.getM_AttributeSetInstance_ID() == 0
-						&& storages.length == 1)
-						continue;
-					//	Save ASI
-					ma = new MInventoryLineMA (il,
-						0, // storage.getM_AttributeSetInstance_ID(),
-						storage.getQtyOnHand());
-					if (!ma.save())
-						;
-				}
-				il.setQtyBook(onHand);
-				il.setQtyCount(onHand);
-				if (il.save())
-					no++;
-			}
-			rs.close ();
-			pstmt.close ();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			log.error(sql, e);
-		}
-		try
-		{
-			if (pstmt != null)
-				pstmt.close ();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			pstmt = null;
-		}
-		//
-		log.info("#" + no);
-		return no;
-	}	//	updateWithMA
 
 
 }	//	InventoryCountUpdate

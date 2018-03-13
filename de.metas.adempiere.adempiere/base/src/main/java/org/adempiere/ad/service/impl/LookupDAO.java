@@ -10,12 +10,12 @@ package org.adempiere.ad.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -101,7 +101,6 @@ public class LookupDAO implements ILookupDAO
 
 		public ColumnInfo(final String tableName, final String columnName, final int adReferenceValueId, final boolean isParent, final int adValRuleId)
 		{
-			super();
 			TableName = tableName;
 			ColumnName = columnName;
 			AD_Reference_Value_ID = adReferenceValueId;
@@ -166,7 +165,7 @@ public class LookupDAO implements ILookupDAO
 		private final String displayColumnSQL;
 		private final int zoomAD_Window_ID_Override;
 		private final boolean autoComplete;
-	
+
 		private TableRefInfo(final TableRefInfoBuilder builder)
 		{
 			super();
@@ -244,7 +243,7 @@ public class LookupDAO implements ILookupDAO
 					.add("zoomWindowPO", zoomPO_Window_ID)
 					.add("overrideZoomWindow", zoomAD_Window_ID_Override)
 					.add("autoComplete", autoComplete)
-					
+
 					.toString();
 		}
 
@@ -264,7 +263,7 @@ public class LookupDAO implements ILookupDAO
 					.append(zoomPO_Window_ID)
 					.append(zoomAD_Window_ID_Override)
 					.append(autoComplete)
-					
+
 					.toHashcode();
 		}
 
@@ -385,7 +384,7 @@ public class LookupDAO implements ILookupDAO
 
 		}
 
-		
+
 
 	}
 
@@ -494,7 +493,7 @@ public class LookupDAO implements ILookupDAO
 			return this;
 		}
 
-		
+
 
 	}
 
@@ -509,8 +508,6 @@ public class LookupDAO implements ILookupDAO
 				final int zoomWindow, final int zoomWindowPO,
 				final boolean translated)
 		{
-			super();
-
 			Check.assumeNotEmpty(lookupDisplayColumns, "lookupDisplayColumns not empty");
 			this.lookupDisplayColumns = ImmutableList.copyOf(lookupDisplayColumns);
 
@@ -572,9 +569,9 @@ public class LookupDAO implements ILookupDAO
 				final int AD_Reference_Value_ID = rs.getInt(2);
 				final boolean IsParent = "Y".equals(rs.getString(3));
 				final int AD_Val_Rule_ID = rs.getInt(4);
-				
+
 				final int tableID = rs.getInt(5);
-				
+
 				final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableID);
 
 				final IColumnInfo columnInfo = new ColumnInfo(tableName, columnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);

@@ -301,20 +301,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A00PPN.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA00PPN (int A00PPN);
+	public void setA00PPN (java.math.BigDecimal A00PPN);
 
 	/**
 	 * Get A00PPN.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA00PPN();
+	public java.math.BigDecimal getA00PPN();
 
     /** Column definition for A00PPN */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A00PPN = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A00PPN", null);

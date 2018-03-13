@@ -178,8 +178,8 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
 
-		// #2143: update HUs after inventory reversal
-		engine.addModelValidator(new M_Inventory(), client);
+		// Inventory
+		engine.addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(), client);
 
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inout.callout.M_InOutLine.instance);
 		// replace the default implementation with our own HU-aware one

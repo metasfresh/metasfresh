@@ -3,8 +3,11 @@ package de.metas.material.cockpit.stock;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.math.BigDecimal;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Service;
@@ -86,6 +89,7 @@ public class StockDataUpdateRequestHandler
 			final I_MD_Stock dataRecord,
 			final StockDataUpdateRequest dataUpdateRequest)
 	{
-		dataRecord.setQtyOnHand(dataRecord.getQtyOnHand().add(dataUpdateRequest.getOnHandQtyChange()));
+		final BigDecimal newQtyOnHand = dataRecord.getQtyOnHand().add(dataUpdateRequest.getOnHandQtyChange());
+		dataRecord.setQtyOnHand(NumberUtils.stripTrailingDecimalZeros(newQtyOnHand));
 	}
 }

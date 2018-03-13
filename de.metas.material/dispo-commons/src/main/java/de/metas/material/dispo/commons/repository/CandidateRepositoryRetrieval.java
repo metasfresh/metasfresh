@@ -13,21 +13,23 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.material.dispo.commons.candidate.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -123,9 +125,23 @@ public class CandidateRepositoryRetrieval
 		final CandidateBusinessCase businessCase = getBusinesCaseOrNull(candidateRecordOrNull);
 		builder.businessCase(businessCase);
 
-		builder.productionDetail(createProductionDetailOrNull(candidateRecordOrNull));
-		builder.distributionDetail(createDistributionDetailOrNull(candidateRecordOrNull));
-		builder.demandDetail(createDemandDetailOrNull(candidateRecordOrNull));
+		final ProductionDetail productionDetailOrNull = createProductionDetailOrNull(candidateRecordOrNull);
+		final DistributionDetail distributionDetailOrNull = createDistributionDetailOrNull(candidateRecordOrNull);
+
+		final boolean hasProductionDetail = productionDetailOrNull != null;
+		final boolean hasDistributionDetail = distributionDetailOrNull != null;
+
+		Check.errorIf(hasProductionDetail && hasDistributionDetail,
+				"A candidate may not have both a distribution and a production detail; candidateRecord={}", candidateRecordOrNull);
+
+		final DemandDetail demandDetailOrNull = createDemandDetailOrNull(candidateRecordOrNull);
+
+		final BusinessCaseDetail businessCaseDetail = Util.coalesce(productionDetailOrNull, distributionDetailOrNull, demandDetailOrNull);
+		builder.businessCaseDetail(businessCaseDetail);
+		if (hasProductionDetail || hasDistributionDetail)
+		{
+			builder.additionalDemandDetail(demandDetailOrNull);
+		}
 
 		builder.transactionDetails(createTransactionDetails(candidateRecordOrNull));
 
@@ -153,7 +169,7 @@ public class CandidateRepositoryRetrieval
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				candidateRecord.getM_Product_ID(),
-				getEfferciveStorageAttributesKey(candidateRecord),
+				getEffectiveStorageAttributesKey(candidateRecord),
 				candidateRecord.getM_AttributeSetInstance_ID());
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
@@ -183,7 +199,7 @@ public class CandidateRepositoryRetrieval
 		return candidateBuilder;
 	}
 
-	private AttributesKey getEfferciveStorageAttributesKey(@NonNull final I_MD_Candidate candidateRecord)
+	private AttributesKey getEffectiveStorageAttributesKey(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final AttributesKey attributesKey;
 		if (Check.isEmpty(candidateRecord.getStorageAttributesKey(), true))

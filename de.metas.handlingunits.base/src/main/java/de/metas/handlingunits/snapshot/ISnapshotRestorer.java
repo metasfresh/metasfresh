@@ -89,4 +89,7 @@ public interface ISnapshotRestorer<ModelType>
 	 */
 	ISnapshotRestorer<ModelType> addModels(Collection<? extends ModelType> models);
 
+	ISnapshotRestorer<ModelType> addModelId(int modelId);
+	
+	ISnapshotRestorer<ModelType> addModelIds(Collection<Integer> modelIds);
 }

@@ -91,7 +91,7 @@ public class CustomerReturnLUTUConfigurationHandler
 
 		//
 		// Update LU/TU configuration
-		updateLUTUConfiguration(lutuConfiguration, documentLine);
+		updateLUTUConfigurationFromPPOrder(lutuConfiguration, documentLine);
 
 		// NOTE: don't save it
 
@@ -99,7 +99,7 @@ public class CustomerReturnLUTUConfigurationHandler
 	}
 
 	@Override
-	public void updateLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfiguration, final I_M_InOutLine documentLine)
+	public void updateLUTUConfigurationFromPPOrder(final I_M_HU_LUTU_Configuration lutuConfiguration, final I_M_InOutLine documentLine)
 	{
 		// TODO
 		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");

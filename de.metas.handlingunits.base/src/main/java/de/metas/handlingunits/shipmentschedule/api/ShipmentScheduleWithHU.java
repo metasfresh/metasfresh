@@ -206,6 +206,8 @@ public class ShipmentScheduleWithHU
 
 	private Object computeAttributesAggregationKey()
 	{
+		logger.trace("Creating AttributesAggregationKey");
+
 		final ImmutableMap.Builder<String, Object> keyBuilder = ImmutableMap.builder();
 
 		for (final IAttributeValue attributeValue : getAttributeValues())
@@ -215,15 +217,13 @@ public class ShipmentScheduleWithHU
 			keyBuilder.put(name, Null.box(value));
 		}
 		final ImmutableMap<String, Object> attributesAggregationKey = keyBuilder.build();
-		logger.trace("AttributesAggregationKey created: {}", attributesAggregationKey);
 
+		logger.trace("AttributesAggregationKey created: {}", attributesAggregationKey);
 		return attributesAggregationKey;
 	}
 
 	private List<IAttributeValue> computeAttributeValues()
 	{
-		logger.trace("Creating AttributesAggregationKey");
-
 		final TreeSet<IAttributeValue> allAttributeValues = //
 				new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
 
@@ -231,8 +231,8 @@ public class ShipmentScheduleWithHU
 		final I_M_HU hu = getTopLevelHU();
 		if (hu != null)
 		{
-			final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
-			allAttributeValues.addAll(attributeStorage.getAttributeValues());
+			final IAttributeStorage huAttributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+			allAttributeValues.addAll(huAttributeStorage.getAttributeValues());
 		}
 
 		if (getM_AttributeSetInstance_ID() > 0)
@@ -419,13 +419,12 @@ public class ShipmentScheduleWithHU
 	 */
 	public I_M_HU_PI_Item_Product retrieveM_HU_PI_Item_Product()
 	{
-		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		final I_M_HU topLevelHU = getTopLevelHU();
 
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		if (topLevelHU == null)
 		{
-			// this instance has no HU; return "No Packing Item"
-			return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
+			return retrievePiipForReferencedRecord();
 		}
 
 		if (topLevelHU.getM_HU_PI_Item_Product_ID() > 0)
@@ -438,7 +437,7 @@ public class ShipmentScheduleWithHU
 				.collect(ImmutableList.toImmutableList());
 		if (huMaterialItems.isEmpty())
 		{
-			return Services.get(IHUShipmentScheduleBL.class).getM_HU_PI_Item_Product_IgnoringPickedHUs(shipmentSchedule);
+			return retrievePiipForReferencedRecord();
 		}
 
 		Check.assume(huMaterialItems.size() == 1, "Each hu has just one M_HU_Item with type={}; hu={}; huMaterialItems={}", X_M_HU_Item.ITEMTYPE_Material, topLevelHU, huMaterialItems);
@@ -460,6 +459,20 @@ public class ShipmentScheduleWithHU
 		}
 
 		// could not find a packing instruction; return "No Packing Item"
+		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
+	}
+
+	private I_M_HU_PI_Item_Product retrievePiipForReferencedRecord()
+	{
+		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+
+		final I_M_HU_PI_Item_Product piipIgnoringPickedHUs = huShipmentScheduleBL.getM_HU_PI_Item_Product_IgnoringPickedHUs(shipmentSchedule);
+		if (piipIgnoringPickedHUs != null)
+		{
+			return piipIgnoringPickedHUs;
+		}
+
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
 	}
 }

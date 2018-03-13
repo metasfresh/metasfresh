@@ -126,7 +126,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// Order Line
 			+ "\n   s." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID;
 
-	private static final String WHERE_INCOMPLETE =               //
+	private static final String WHERE_INCOMPLETE = //
 			"\n   AND ("
 					// if the param '?' is set to 0, only those entries are loaded that
 					// don't have an inOutLine yet.
@@ -146,43 +146,43 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	private static final String SQL_SELECT_OLS_FOR_PRODUCT = " SELECT ol.* " //
 			+ " FROM M_ShipmentSchedule s " //
 			+ "   JOIN C_OrderLine ol ON ol.C_OrderLine_ID=s.C_OrderLine_ID " //
-			+ " WHERE ol.M_Product_ID=? AND ol.AD_Client_ID=? "
+			+ " WHERE s.IsActive='Y' AND ol.M_Product_ID=? AND ol.AD_Client_ID=? "
 			+ WHERE_INCOMPLETE;
 
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
 
 	private static final String SQL_ALL =               //
 			" SELECT * FROM " + I_M_ShipmentSchedule.Table_Name
-					+ " WHERE AD_Client_ID=?" //
+					+ " WHERE s.IsActive='Y' AND AD_Client_ID=?" //
 					+ ORDER_CLAUSE;
 
 	private static final String SQL_FOR_ORDER =               //
 			" SELECT s.* FROM "
 					+ I_M_ShipmentSchedule.Table_Name //
 					+ " s LEFT JOIN C_OrderLine ol ON s.C_OrderLine_ID=ol.C_OrderLine_ID "
-					+ " WHERE ol.C_Order_ID=? AND s.AD_Client_ID=?";
+					+ " WHERE s.IsActive='Y' AND ol.C_Order_ID=? AND s.AD_Client_ID=?";
 
 	private static final String SQL_SELECT_SCHEDS_FOR_PRODUCT =               //
 			" SELECT s.* " //
 					+ " FROM M_ShipmentSchedule s" //
 					+ "   LEFT JOIN C_OrderLine ol ON s.C_OrderLine_ID=ol.C_OrderLine_ID " //
-					+ " WHERE ol.M_Product_ID=? AND s.AD_Client_ID=? "
+					+ " WHERE s.IsActive='Y' AND ol.M_Product_ID=? AND s.AD_Client_ID=? "
 					+ WHERE_INCOMPLETE;
 
 	private static final String SQL_SCHED =               //
 			SELECT_SCHED_OL //
-					+ "\n WHERE s.AD_Client_ID=? " //
+					+ "\n WHERE s.IsActive='Y' AND s.AD_Client_ID=? " //
 					+ WHERE_INCOMPLETE //
 					+ ORDER_CLAUSE;
 
 	private static final String SQL_OL_SCHED =               //
 			SELECT_OL_SCHED //
-					+ "\n WHERE s.AD_Client_ID=?" //
+					+ "\n WHERE s.IsActive='Y' AND s.AD_Client_ID=?" //
 					+ WHERE_INCOMPLETE;
 
 	private static final String SQL_SCHED_INVALID_3P =               //
 			SELECT_SCHED_OL
-					+ "\n WHERE EXISTS ( "
+					+ "\n WHERE s.IsActive='Y' AND EXISTS ( "
 					+ "            select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr "
 					+ "            where sr." + COLUMNNAME_M_ShipmentSchedule_ID + "=s." + COLUMNNAME_M_ShipmentSchedule_ID + " AND sr.AD_PInstance_ID=? "
 					+ "      )"
@@ -191,7 +191,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	private static final String SQL_OL_SCHED_INVALID_3P =               //
 			SELECT_OL_SCHED //
-					+ "\n WHERE EXISTS ( "
+					+ "\n WHERE s.IsActive='Y' AND EXISTS ( "
 					+ "            select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr "
 					+ "            where sr." + COLUMNNAME_M_ShipmentSchedule_ID + "=s." + COLUMNNAME_M_ShipmentSchedule_ID + " AND sr.AD_PInstance_ID=? "
 					+ "      )"
@@ -199,18 +199,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	private static final String SQL_SCHED_BPARTNER =               //
 			SELECT_SCHED_OL //
-					+ " WHERE s.AD_Client_ID=? AND ol.C_Bpartner_ID=? " //
+					+ " WHERE s.IsActive='Y' AND s.AD_Client_ID=? AND ol.C_Bpartner_ID=? " //
 					+ WHERE_INCOMPLETE //
 					+ ORDER_CLAUSE;
 
 	private static final String SQL_OL_SCHED_BPARTNER =               //
 			SELECT_OL_SCHED //
-					+ " WHERE s.AD_Client_ID=? AND ol.C_Bpartner_ID=?" //
+					+ " WHERE s.IsActive='Y' AND s.AD_Client_ID=? AND ol.C_Bpartner_ID=?" //
 					+ WHERE_INCOMPLETE;
 
 	private static final String SQL_BPARTNER =               //
 			SELECT_SCHED_OL //
-					+ " WHERE s.AD_Client_ID=? AND ol.C_Bpartner_ID=? "
+					+ " WHERE s.IsActive='Y' AND s.AD_Client_ID=? AND ol.C_Bpartner_ID=? "
 					+ WHERE_INCOMPLETE;
 
 	/**
@@ -224,7 +224,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ " FROM " + I_M_ShipmentSchedule.Table_Name + " s "
 			+ "   INNER JOIN " + I_C_OrderLine.Table_Name + " ol ON ol." + COLUMNNAME_C_OrderLine_ID + "=s." + COLUMNNAME_C_OrderLine_ID
 			+ " WHERE true "
-			+ "   AND s." + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N' "
+			+ "   AND s.IsActive='Y' AND s." + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N' "
 			+ "   AND NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=s." + COLUMNNAME_M_ShipmentSchedule_ID + ")"
 			+ "   AND ol.M_Product_ID=? ";
 
@@ -239,7 +239,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 					+ " SELECT s." + COLUMNNAME_M_ShipmentSchedule_ID
 					+ " FROM " + I_M_ShipmentSchedule.Table_Name + " s "
 					+ " WHERE true "
-					+ "   AND s." + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N' "
+					+ "   AND s.IsActive='Y' AND s." + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N' "
 					+ "   AND NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=s." + COLUMNNAME_M_ShipmentSchedule_ID + ")"
 					+ "   AND (s.DELIVERYDATE>=? OR s.DELIVERYDATE IS NULL)";
 
@@ -247,7 +247,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			"INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID) "
 					+ " SELECT " + COLUMNNAME_M_ShipmentSchedule_ID
 					+ " FROM " + I_M_ShipmentSchedule.Table_Name
-					+ " WHERE " + I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID + "=?"
+					+ " WHERE s.IsActive='Y' AND " + I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID + "=?"
 					+ "   AND " + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'";
 
 	private static final String SQL_SET_DISPLAYED =               //
@@ -400,10 +400,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public List<OlAndSched> retrieveInvalid(final int adPinstanceId, final String trxName)
 	{
-
-		final String sqlSched;
-		final String sqlOlSched;
-
 		// 1.
 		// Mark the M_ShipmentSchedule_Recompute records that point to the scheds which we will work with
 		// This allows us to distinguish them from records created later

@@ -1,0 +1,1 @@
+UPDATE AD_ImpFormat_Row SET DataType='S', DecimalPoint='',Updated=TO_TIMESTAMP('2018-03-07 11:17:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540402;

@@ -34,10 +34,7 @@ public interface GroupRepository
 
 	void saveGroup(Group group);
 
-	default GroupCreator prepareNewGroup()
-	{
-		return new GroupCreator(this);
-	}
+	GroupCreator prepareNewGroup();
 
 	Group retrieveOrCreateGroup(RetrieveOrCreateGroupRequest request);
 	
