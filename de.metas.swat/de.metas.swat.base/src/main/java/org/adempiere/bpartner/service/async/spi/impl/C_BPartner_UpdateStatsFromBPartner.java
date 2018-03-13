@@ -120,10 +120,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 			}
 
 			final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
-			bpartnerStatsDAO.updateOpenItems(stats);
-			bpartnerStatsDAO.updateActualLifeTimeValue(stats);
-			bpartnerStatsDAO.updateSO_CreditUsedAndCreditStatus(stats);;
-			bpartnerStatsDAO.updateCreditLimitIndicator(stats);
+			bpartnerStatsDAO.updateBPartnerStatistics(stats);
 		}
 
 		return Result.SUCCESS;

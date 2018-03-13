@@ -185,7 +185,54 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 
 	@Override
-	public void updateActualLifeTimeValue(final BPartnerStats bpStats)
+	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final String soCreditStatus)
+	{
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+
+		stats.setSOCreditStatus(soCreditStatus);
+
+		InterfaceWrapperHelper.save(stats);
+
+	}
+
+	@Override
+	public I_C_BPartner retrieveC_BPartner(@NonNull final BPartnerStats bpStats)
+	{
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+
+		return stats.getC_BPartner();
+	}
+
+	private I_C_BPartner_Stats loadDataRecord(@NonNull final BPartnerStats bpStats)
+	{
+		return load(bpStats.getRecordId(), I_C_BPartner_Stats.class);
+	}
+
+	@Override
+	public void updateBPartnerStatistics(BPartnerStats bpStats)
+	{
+		updateOpenItems(bpStats);
+		updateActualLifeTimeValue(bpStats);
+		updateSOCreditUsed(bpStats);
+		updateSOCreditStatus(bpStats);
+		updateCreditLimitIndicator(bpStats);
+	}
+
+	private void updateOpenItems(@NonNull final BPartnerStats bpStats)
+	{
+		// load the statistics
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+
+		final BigDecimal openItems = retrieveOpenItems(bpStats);
+
+		// update the statistics with the up tp date openItems
+		stats.setOpenItems(openItems);
+
+		// save in db
+		InterfaceWrapperHelper.save(stats);
+	}
+
+	private void updateActualLifeTimeValue(final BPartnerStats bpStats)
 	{
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 
@@ -228,30 +275,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		InterfaceWrapperHelper.save(stats);
 	}
 
-
-	@Override
-	public void updateOpenItems(@NonNull final BPartnerStats bpStats)
-	{
-		// load the statistics
-		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
-
-		final BigDecimal openItems = retrieveOpenItems(bpStats);
-
-		// update the statistics with the up tp date openItems
-		stats.setOpenItems(openItems);
-
-		// save in db
-		InterfaceWrapperHelper.save(stats);
-	}
-
-	@Override
-	public void updateSO_CreditUsedAndCreditStatus(@NonNull final BPartnerStats bpStats)
-	{
-		updateSOCreditUsed(bpStats);
-		updateSOCreditStatus(bpStats);
-	}
-
-	public void updateSOCreditUsed(final BPartnerStats bpStats)
+	private void updateSOCreditUsed(final BPartnerStats bpStats)
 	{
 		final BigDecimal SO_CreditUsed = retrieveSOCreditUsed(bpStats);
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
@@ -259,7 +283,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		InterfaceWrapperHelper.save(stats);
 	}
 
-	public void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
+	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
 
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
@@ -308,8 +332,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		setSOCreditStatus(bpStats, creditStatusToSet);
 	}
 
-	@Override
-	public void updateCreditLimitIndicator(@NonNull final BPartnerStats bstats)
+	private void updateCreditLimitIndicator(@NonNull final BPartnerStats bstats)
 	{
 		// load the statistics
 		final I_C_BPartner_Stats stats = loadDataRecord(bstats);
@@ -327,30 +350,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		stats.setCreditLimitIndicator(percentSring);
 		InterfaceWrapperHelper.save(stats);
-	}
-
-	@Override
-	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final String soCreditStatus)
-	{
-		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
-
-		stats.setSOCreditStatus(soCreditStatus);
-
-		InterfaceWrapperHelper.save(stats);
-
-	}
-
-	@Override
-	public I_C_BPartner retrieveC_BPartner(@NonNull final BPartnerStats bpStats)
-	{
-		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
-
-		return stats.getC_BPartner();
-	}
-
-	private I_C_BPartner_Stats loadDataRecord(@NonNull final BPartnerStats bpStats)
-	{
-		return load(bpStats.getRecordId(), I_C_BPartner_Stats.class);
 	}
 
 }
