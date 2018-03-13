@@ -59,8 +59,3 @@ DELETE FROM AD_Element WHERE AD_Element_ID=541157
 ;
 
 delete from AD_Sequence where Name='C_OLCandGenerator' and IsTableID='Y';
-
-drop table if exists C_OLCandGenerator;
-drop sequence if exists C_OLCandGenerator_Seq;
-
-
