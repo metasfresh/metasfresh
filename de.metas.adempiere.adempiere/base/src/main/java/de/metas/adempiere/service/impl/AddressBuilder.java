@@ -232,7 +232,9 @@ public class AddressBuilder
 				j = i + 1;
 			}
 			else
+			{
 				token = inStr.substring(0, j);
+			}
 			// Tokens
 			if (token.equals("C"))
 			{
@@ -247,29 +249,37 @@ public class AddressBuilder
 			}
 			else if (token.equals("R"))
 			{
-				if (location.getC_Region() != null) // we have a region
+				if (location.getC_Region() != null)
+				{
 					outStr.append(location.getC_Region().getName());
+				}
 				else if (location.getRegionName() != null
 						&& location.getRegionName().length() > 0)
+				 {
 					outStr.append(location.getRegionName()); // local region name
+				}
 			}
 			else if (token.equals("P"))
 			{
 				if (location.getPostal() != null)
+				{
 					outStr.append(location.getPostal());
+				}
 			}
 			else if (token.equals("A"))
 			{
 				final String add = location.getPostal_Add();
 				if (add != null && add.length() > 0)
+				{
 					outStr.append("-").append(add);
+				}
 			}
 			else if (token.equals("CO"))
 			{
 				final String countryName;
 				if (isLocalAddress)
 				{
-					countryName = null;
+					countryName = country.getName();
 				}
 				else
 				{
@@ -585,12 +595,16 @@ public class AddressBuilder
 				j = i + 1;
 			}
 			else
+			{
 				token = inStr.substring(0, j);
+			}
 			// Tokens
 			if (token.equals("TI"))
 			{
 				if (!Check.isEmpty(userTitle, true))
+				{
 					outStr.append(userTitle);
+				}
 			}
 			else if (token.equals("GR"))
 			{
@@ -603,12 +617,16 @@ public class AddressBuilder
 			else if (token.equals("FN"))
 			{
 				if (!Check.isEmpty(userVorname, true))
+				{
 					outStr.append(userVorname);
+				}
 			}
 			else if (token.equals("LN"))
 			{
 				if (!Check.isEmpty(userName, true))
+				{
 					outStr.append(userName);
+				}
 			}
 			else if ("CR".equals(token))
 			{
