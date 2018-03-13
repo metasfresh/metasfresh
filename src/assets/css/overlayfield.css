@@ -28,3 +28,19 @@
     font-size: 30px;
     text-align: center;
 }
+
+.barcode-scanner-widget {
+    display: flex;
+}
+
+.scanner-wrapper {
+    
+}
+
+.scanning-result {
+
+}
+
+.scanning-result .form-control-label {
+
+}

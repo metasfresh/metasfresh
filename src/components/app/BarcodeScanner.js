@@ -2,17 +2,23 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Quagga from 'quagga';
 
-const BarcodeScannerResult = function() {
-  const result = this.props.result;
-
+const BarcodeScannerResult = function({ result, onSelect }) {
   if (!result) {
     return null;
   }
   return (
-    <li>
-      {result.codeResult.code} [{result.codeResult.format}]
-    </li>
+    <button
+      className="btn btn-filter btn-meta-outline-secondary btn-distance btn-s"
+      onClick={() => onSelect(result)}
+    >
+      {result.codeResult.code}
+    </button>
   );
+};
+
+BarcodeScannerResult.propTypes = {
+  result: PropTypes.object,
+  onSelect: PropTypes.func.isRequired,
 };
 
 export default class BarcodeScanner extends Component {
@@ -34,7 +40,7 @@ export default class BarcodeScanner extends Component {
         numOfWorkers: 4,
         frequency: 10,
         decoder: {
-          readers: ['code_128_reader'],
+          readers: ['ean_reader'],
         },
         locate: true,
       },
@@ -53,8 +59,19 @@ export default class BarcodeScanner extends Component {
     Quagga.offDetected(this._onDetected);
   }
 
-  _onDetected(result) {
-    console.log('ondetected')
+  _handleStop = () => {
+    Quagga.stop();
+
+    this.props.onClose();
+  }
+
+  _handleStart = () => {
+    this.props.onReset();
+    Quagga.start();
+  }
+
+  _onDetected = result => {
+    Quagga.stop();
     this.props.onDetected(result);
   }
 
@@ -86,18 +103,37 @@ export default class BarcodeScanner extends Component {
       }
 
       if (result.codeResult && result.codeResult.code) {
-        Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: 'red', lineWidth: 3 });
+        Quagga.ImageDebug.drawPath(
+          result.line,
+          { x: 'x', y: 'y' },
+          drawingCtx,
+          { color: 'red', lineWidth: 3 }
+        );
       }
     }
   }
 
   render() {
-    return <div id="interactive" className="viewport"/>;
+    return (
+      <div className="scanner-wrapper">
+        <div id="interactive" className="viewport scanner-window"/>
+        <div className="scanner-controls">
+          <button onClick={this._handleStart}>
+            Scan again
+          </button>
+          <button onClick={this._handleStop}>
+            Close
+          </button>
+        </div>
+      </div>
+    );
   }
 }
 
 BarcodeScanner.propTypes = {
   onDetected: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onReset: PropTypes.func.isRequired,
 };
 
 export { BarcodeScannerResult };

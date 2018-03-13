@@ -824,6 +824,7 @@ class RawWidget extends Component {
   render() {
     const {
       caption,
+      captionElement,
       fields,
       type,
       noLabel,
@@ -873,6 +874,7 @@ class RawWidget extends Component {
           widgetFieldsName
         }
       >
+        {captionElement || null}
         {!noLabel &&
           caption && (
             <div

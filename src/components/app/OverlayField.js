@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
+import counterpart from 'counterpart';
 
 import MasterWidget from '../widget/MasterWidget';
 import RawWidget from '../widget/RawWidget';
 import BarcodeScanner, { BarcodeScannerResult } from './BarcodeScanner';
-import Result from './BarcodeScanner'
 
 class OverlayField extends Component {
   constructor(props) {
@@ -11,7 +11,8 @@ class OverlayField extends Component {
 
     this.state = {
       scanning: false,
-      results: [],
+      result: null,
+      barcodeSelected: null,
     };
   }
 
@@ -28,56 +29,91 @@ class OverlayField extends Component {
     }
   };
 
-  _scan = () => {
+  _scanBarcode = val => {
     this.setState({
-      scanning: !this.state.scanning,
+      scanning: typeof val !== 'undefined' ? val : !this.state.scanning,
+      barcodeSelected: null,
     });
   };
 
-  _onDetected = result => {
+  _onBarcodeDetected = result => {
     this.setState({
-      results: this.state.results.concat([result]),
+      result,
+    });
+  };
+
+  selectBarcode = (result) => {
+    const barcode = result || null;
+
+    this.setState({
+      barcodeSelected: result,
     });
   };
 
   renderElements = (layout, data, type) => {
     const { disabled } = this.props;
+    const { barcodeSelected } = this.state;
     const elements = layout.elements;
+
     return elements.map((elem, id) => {
       const widgetData = elem.fields.map(item => data[item.field] || -1);
+      let captionElement = null;
 
       if (elem.caption === 'Barcode') {
-        console.log('barcodescanner !')
-        return (
-          <div key={id}>
-            <button onClick={this._scan}>{this.state.scanning ? 'Stop' : 'Start'}</button>
-            <ul className="results">
-              {this.state.results.map(result => (
-                <BarcodeScannerResult key={result.codeResult.code} result={result} />
-              ))}
-            </ul>
-            {this.state.scanning ? (
-              <BarcodeScanner onDetected={this._onDetected} />
-            ) : null}
-          </div>
+        captionElement = (
+          <button
+            className="btn btn-sm btn-block btn-meta-success"
+            onClick={this._scanBarcode}
+          >
+            {/*{counterpart.translate('barcodescan.caption')}*/}
+            Scan using camera
+          </button>
         );
-      } else {
-        return (
-          <MasterWidget
-            entity="process"
-            key={'element' + id}
-            windowType={type}
-            dataId={layout.pinstanceId}
-            widgetData={widgetData}
-            isModal={true}
-            disabled={disabled}
-            autoFocus={id === 0}
-            {...elem}
-          />
-        );
+
+        if (barcodeSelected) {
+
+        }
       }
+
+      return (
+        <MasterWidget
+          entity="process"
+          key={'element' + id}
+          windowType={type}
+          dataId={layout.pinstanceId}
+          widgetData={widgetData}
+          isModal={true}
+          disabled={disabled}
+          autoFocus={id === 0}
+          captionElement={captionElement}
+          {...elem}
+        />
+      );
     });
   };
+
+  renderScanner = () => {
+    const { result } = this.state;
+
+    return (
+      <div className="barcode-scanner-widget">
+        <BarcodeScanner
+          onDetected={this._onBarcodeDetected}
+          onClose={() => this._scanBarcode(false)}
+          onReset={this.selectBarcode}
+        />
+        <div className="scanning-result">
+          <span className="form-control-label col-sm-3 ">
+            Barcode
+          </span>
+          <BarcodeScannerResult
+            result={result}
+            onSelect={(result) => this.selectBarcode(result)}
+          />
+        </div>
+      </div>
+    );
+  }
 
   renderParameters = layout => {
     const {
@@ -124,6 +160,18 @@ class OverlayField extends Component {
 
   render() {
     const { data, layout, type, filter } = this.props;
+    const { scanning } = this.state;
+    let renderedContent = null;
+
+    if (scanning) {
+      renderedContent = this.renderScanner();
+    } else {
+      if (filter) {
+        renderedContent = this.renderParameters(layout);
+      } else if (!filter && layout && layout.elements) {
+        renderedContent = this.renderElements(layout, data, type);
+      }
+    }
 
     return (
       <div
@@ -131,11 +179,7 @@ class OverlayField extends Component {
         onKeyDown={e => this.handleKeyDown(e)}
         tabIndex={-1}
       >
-        {filter
-          ? this.renderParameters(layout)
-          : layout &&
-            layout.elements &&
-            this.renderElements(layout, data, type)}
+        {renderedContent}
       </div>
     );
   }
