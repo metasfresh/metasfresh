@@ -74,14 +74,15 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 		// Above (reduced) Credit Limit
 		creditLimit = creditLimit.subtract(additionalAmt);
-		if (creditLimit.compareTo(bpStatsDAO.retrieveSOCreditUsed(bpStats)) < 0)
+		final BigDecimal so_creditUsed = bpStats.getSOCreditUsed();
+		if (creditLimit.compareTo(so_creditUsed) < 0)
 		{
 			return X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
 		}
 
 		// Above Watch Limit
 		final BigDecimal watchAmt = creditLimit.multiply(getCreditWatchRatio(bpStats));
-		if (watchAmt.compareTo(bpStats.getSOCreditUsed()) < 0)
+		if (watchAmt.compareTo(so_creditUsed) < 0)
 		{
 			return X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
 		}

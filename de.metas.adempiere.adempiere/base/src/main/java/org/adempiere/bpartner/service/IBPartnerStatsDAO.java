@@ -84,13 +84,6 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	I_C_BPartner retrieveC_BPartner(BPartnerStats bpStats);
 
 	/**
-	 * Update the SOCreditStatus based on the legacy sql
-	 *
-	 * @param bpStats
-	 */
-	void updateSOCreditStatus(BPartnerStats bpStats);
-
-	/**
 	 * Update the TotalOpenBalance based on the legacy sql
 	 *
 	 * @param bpStats
@@ -100,4 +93,6 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 
 	void updateCreditLimitIndicator(BPartnerStats bstats);
+
+	void updateSO_CreditUsedAndCreditStatus(BPartnerStats bpStats);
 }

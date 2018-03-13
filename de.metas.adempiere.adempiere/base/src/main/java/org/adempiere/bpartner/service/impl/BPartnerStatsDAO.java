@@ -189,14 +189,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		}
 	}
 
-	@Override
-	public void updateSOCreditUsed(final BPartnerStats bpStats)
-	{
-		final BigDecimal SO_CreditUsed = retrieveSOCreditUsed(bpStats);
-		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
-		stats.setSO_CreditUsed(SO_CreditUsed);
-		InterfaceWrapperHelper.save(stats);
-	}
 
 	@Override
 	public void updateActualLifeTimeValue(final BPartnerStats bpStats)
@@ -242,51 +234,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		InterfaceWrapperHelper.save(stats);
 	}
 
-	@Override
-	public void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
-	{
-
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-		final I_C_BPartner partner = retrieveC_BPartner(bpStats);
-
-		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), SystemTime.asDayTimestamp());
-
-		final String initialCreditStatus = bpStats.getSOCreditStatus();
-
-		String creditStatusToSet;
-
-		// Nothing to do
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
-				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
-				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
-		{
-			return;
-		}
-
-		// Above Credit Limit
-		if (creditLimit.compareTo(retrieveSOCreditUsed(bpStats)) < 0)
-		{
-			creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
-		}
-		else
-		{
-			// Above Watch Limit
-			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
-
-			if (watchAmt.compareTo(bpStats.getSOCreditUsed()) < 0)
-			{
-				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
-			}
-			else
-			{
-				// is OK
-				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
-			}
-		}
-
-		setSOCreditStatus(bpStats, creditStatusToSet);
-	}
 
 	@Override
 	public void updateOpenItems(@NonNull final BPartnerStats bpStats)
@@ -304,11 +251,76 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
+	public void updateSO_CreditUsedAndCreditStatus(@NonNull final BPartnerStats bpStats)
+	{
+		updateSOCreditUsed(bpStats);
+		updateSOCreditStatus(bpStats);
+	}
+
+	@Override
+	public void updateSOCreditUsed(final BPartnerStats bpStats)
+	{
+		final BigDecimal SO_CreditUsed = retrieveSOCreditUsed(bpStats);
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+		stats.setSO_CreditUsed(SO_CreditUsed);
+		InterfaceWrapperHelper.save(stats);
+	}
+
+	public void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
+	{
+
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+		final I_C_BPartner partner = retrieveC_BPartner(bpStats);
+
+		// load the statistics
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+		final BigDecimal creditUsed = stats.getSO_CreditUsed();
+
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+
+		final String initialCreditStatus = bpStats.getSOCreditStatus();
+
+		String creditStatusToSet;
+
+		// Nothing to do
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
+				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
+				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
+		{
+			return;
+		}
+
+		// Above Credit Limit
+		if (creditLimit.compareTo(creditUsed) < 0)
+		{
+			creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
+		}
+		else
+		{
+			// Above Watch Limit
+			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
+
+			if (watchAmt.compareTo(creditUsed) < 0)
+			{
+				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
+			}
+			else
+			{
+				// is OK
+				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
+			}
+		}
+
+		setSOCreditStatus(bpStats, creditStatusToSet);
+	}
+
+	@Override
 	public void updateCreditLimitIndicator(@NonNull final BPartnerStats bstats)
 	{
 		// load the statistics
 		final I_C_BPartner_Stats stats = loadDataRecord(bstats);
-		final BigDecimal creditUsed = retrieveSOCreditUsed(bstats);
+		final BigDecimal creditUsed = stats.getSO_CreditUsed();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
