@@ -97,6 +97,7 @@
     "bootstrap": "4.0.0-alpha.5",
     "classnames": "^2.2.5",
     "counterpart": "~0.18.0",
+    "current-device": "^0.7.2",
     "d3": "4.10.0",
     "file-loader": "~0.8.5",
     "immutability-helper": "^2.1.2",
