@@ -358,12 +358,15 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private void importPrices(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		createKAEP(importRecord);
-		createAPU(importRecord);
-		createAEP(importRecord);
-		createAVP(importRecord);
-		createUVP(importRecord);
-		createZBV(importRecord);
+		if (importRecord.getA01GDAT() != null)
+		{
+			createKAEP(importRecord);
+			createAPU(importRecord);
+			createAEP(importRecord);
+			createAVP(importRecord);
+			createUVP(importRecord);
+			createZBV(importRecord);
+		}
 	}
 
 	private void createKAEP(@NonNull final I_I_Pharma_Product importRecord)
