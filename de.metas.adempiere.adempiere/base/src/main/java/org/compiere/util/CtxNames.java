@@ -98,7 +98,7 @@ public class CtxNames
 	{
 		return new CtxName(
 				name, ImmutableList.of(), // modifiers
-				toNullValueIfNull(defaultValue) // defaultValue
+				defaultValue // defaultValue
 				);
 	}
 
@@ -112,23 +112,9 @@ public class CtxNames
 		final List<String> modifiers = new ArrayList<>();
 		final String name = extractNameAndModifiers(contextWithoutMarkers, modifiers);
 
-		final String defaultValue = toNullValueIfNull(extractDefaultValue(modifiers));
+		final String defaultValue = extractDefaultValue(modifiers);
 
 		return new CtxName(name, modifiers, defaultValue);
-	}
-
-	private static String toNullValueIfNull(@Nullable final String defaultValue)
-	{
-		String defaultValueToUse;
-		if ("NULL".equalsIgnoreCase(defaultValue))
-		{
-			defaultValueToUse = CtxNames.VALUE_NULL;
-		}
-		else
-		{
-			defaultValueToUse = defaultValue;
-		}
-		return defaultValueToUse;
 	}
 
 	/**
