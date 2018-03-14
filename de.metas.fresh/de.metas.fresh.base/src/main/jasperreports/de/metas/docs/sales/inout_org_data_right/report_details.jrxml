@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-11-07T19:26:30 -->
+<!-- 2018-03-13T15:59:58 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout_org_data_right/report" uuid="00f4c9e2-84b8-491d-9fc8-375751dc873d">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -93,7 +93,7 @@ new Boolean (false)]]></printWhenExpression>
 				<textFieldExpression><![CDATA[$R{charge}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="360" y="6" width="45" height="12" uuid="821e106b-e319-472d-bb41-7fafb82eb50f">
+				<reportElement x="360" y="6" width="50" height="12" uuid="821e106b-e319-472d-bb41-7fafb82eb50f">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>

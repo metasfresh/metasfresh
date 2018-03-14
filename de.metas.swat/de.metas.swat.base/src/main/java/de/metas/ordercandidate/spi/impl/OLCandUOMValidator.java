@@ -27,12 +27,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
+import org.springframework.stereotype.Component;
 
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.spi.IOLCandValdiator;
+import de.metas.ordercandidate.spi.IOLCandValidator;
 
-public class OLCandUOMValidator implements IOLCandValdiator
+@Component
+public class OLCandUOMValidator implements IOLCandValidator
 {
 	/**
 	 * Validates the UOM conversion; we will need convertToProductUOM in order to get the QtyOrdered in the order line.

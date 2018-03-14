@@ -10,12 +10,12 @@ package de.metas.ordercandidate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,17 +34,21 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.ordercandidate.AbstractOLCandTestSupport;
+import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.model.I_C_OLCand;
 
-/**
- * {@link C_OLCand} model validator test
- *
- * @author al
- */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
+		OLCandRegistry.class })
 public class C_OLCandMVTest extends AbstractOLCandTestSupport
 {
 	private final Properties ctx;
@@ -65,8 +69,6 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 
 	public C_OLCandMVTest()
 	{
-		super();
-
 		ctx = Env.getCtx();
 	}
 
@@ -118,7 +120,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	@Test
 	public void testMVSetProductDescriptionNoFallback()
 	{
-		final IContextAware context = new PlainContextAware(ctx);
+		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
 		final I_C_OLCand olCand = olCand(context, I_C_OLCand.class, false); // save=false
 		olCand.setC_BPartner(bpartner1);
@@ -135,7 +137,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	@Test
 	public void testMVSetProductDescriptionFallback_BPP_ProductDescription()
 	{
-		final IContextAware context = new PlainContextAware(ctx);
+		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
 		final I_C_OLCand olCand = olCand(context, I_C_OLCand.class, false); // save=false
 		olCand.setC_BPartner(bpartner1);
@@ -150,7 +152,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	@Test
 	public void testMVSetProductDescriptionFallback_BPP_ProductName()
 	{
-		final IContextAware context = new PlainContextAware(ctx);
+		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
 		final I_C_OLCand olCand = olCand(context, I_C_OLCand.class, false); // save=false
 		olCand.setC_BPartner(bpartner2);
@@ -165,7 +167,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	@Test
 	public void testMVSetProductDescriptionFallback_MProduct_Name()
 	{
-		final IContextAware context = new PlainContextAware(ctx);
+		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
 		final I_C_OLCand olCand = olCand(context, I_C_OLCand.class, false); // save=false
 		olCand.setC_BPartner(bpartner3);
