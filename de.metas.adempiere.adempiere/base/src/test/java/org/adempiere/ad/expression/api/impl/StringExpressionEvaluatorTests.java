@@ -1,5 +1,7 @@
 package org.adempiere.ad.expression.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,12 +12,12 @@ package org.adempiere.ad.expression.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -82,6 +84,15 @@ public class StringExpressionEvaluatorTests
 	public void test_evaluate_missing_IDParameter_OnVariableNotFound_Fail()
 	{
 		expression1.evaluate(ctx, OnVariableNotFound.Fail);
+	}
+
+	public void test_evaluate_missing_IDParameter_OnVariableNotFound_Return_NULL_default()
+	{
+		final String sqlWithNULLDefault = "select @M_Product_ID/NULL@ from M_Storage";
+		final IStringExpression expression = expressionFactory.compile(sqlWithNULLDefault, IStringExpression.class);
+
+		final String expressionEvaluated = expression.evaluate(ctx, OnVariableNotFound.Fail);
+		assertThat(expressionEvaluated).isEqualTo("select NULL from M_Storage");
 	}
 
 	@Test
