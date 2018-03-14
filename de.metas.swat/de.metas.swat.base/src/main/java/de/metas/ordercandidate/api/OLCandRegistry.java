@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.compiere.model.I_C_OrderLine;
@@ -45,13 +46,24 @@ public class OLCandRegistry
 	private final IOLCandValidator validators;
 
 	public OLCandRegistry(
-			final List<IOLCandListener> listeners,
-			final List<IOLCandGroupingProvider> groupingValuesProviders,
-			final List<IOLCandValidator> validators)
+			final Optional<List<IOLCandListener>> optionalListeners,
+			final Optional<List<IOLCandGroupingProvider>> optionalGroupingValuesProviders,
+			final Optional<List<IOLCandValidator>> optionalValidators)
 	{
-		this.listeners = !listeners.isEmpty() ? new CompositeOLCandListener(listeners) : NullOLCandListener.instance;
-		this.groupingValuesProviders = !groupingValuesProviders.isEmpty() ? new CompositeOLCandGroupingProvider(groupingValuesProviders) : NullOLCandGroupingProvider.instance;
-		this.validators = !validators.isEmpty() ? new CompositeOLCandValidator(validators) : NullOLCandValidator.instance;
+		final List<IOLCandListener> listeners = optionalListeners.orElse(ImmutableList.of());
+		this.listeners = !listeners.isEmpty()
+				? new CompositeOLCandListener(listeners)
+				: NullOLCandListener.instance;
+
+		final List<IOLCandGroupingProvider> groupingValuesProviders = optionalGroupingValuesProviders.orElse(ImmutableList.of());
+		this.groupingValuesProviders = !groupingValuesProviders.isEmpty()
+				? new CompositeOLCandGroupingProvider(groupingValuesProviders)
+				: NullOLCandGroupingProvider.instance;
+
+		final List<IOLCandValidator> validators = optionalValidators.orElse(ImmutableList.of());
+		this.validators = !validators.isEmpty()
+				? new CompositeOLCandValidator(validators)
+				: NullOLCandValidator.instance;
 	}
 
 	public IOLCandListener getListeners()

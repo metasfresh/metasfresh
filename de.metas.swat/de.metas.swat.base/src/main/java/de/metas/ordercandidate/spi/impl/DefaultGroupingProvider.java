@@ -10,12 +10,12 @@ package de.metas.ordercandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,12 +30,6 @@ import org.springframework.stereotype.Component;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 
-/**
- * The default grouping provider.
- * 
- * @author ts
- * 
- */
 @Component
 public class DefaultGroupingProvider implements IOLCandGroupingProvider
 {
@@ -43,7 +37,7 @@ public class DefaultGroupingProvider implements IOLCandGroupingProvider
 	/**
 	 * The method returns those candidate values such as <code>M_Product_ID</code> or <code>C_BPartner_ID</code>, that
 	 * always result in different order lines if they are different.
-	 * 
+	 *
 	 * @return a list of values that will be transformed into a grouping key
 	 */
 	@Override
