@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.modelvalidator;
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,15 +15,14 @@ package de.metas.ordercandidate.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -38,15 +39,9 @@ import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.ordercandidate.OrderCandidate_Constants;
-import de.metas.ordercandidate.api.IOLCandBL;
-import de.metas.ordercandidate.api.IOLCandValdiatorBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.spi.impl.DefaultGroupingProvider;
 import de.metas.ordercandidate.spi.impl.OLCandASIAwareFactory;
-import de.metas.ordercandidate.spi.impl.OLCandLocationValidator;
-import de.metas.ordercandidate.spi.impl.OLCandPriceValidator;
 import de.metas.ordercandidate.spi.impl.OLCandPricingASIListener;
-import de.metas.ordercandidate.spi.impl.OLCandUOMValidator;
 
 /**
  * Main model interceptor of <code>de.metas.ordercandidate</code> module.
@@ -59,19 +54,11 @@ public class OrderCandidate extends AbstractModuleInterceptor
 	{
 		super.onInit(engine, client);
 
-		Services.get(IOLCandBL.class).registerCustomerGroupingValuesProvider(new DefaultGroupingProvider());
-
-		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandPriceValidator());
-		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandUOMValidator());
-		//task 09623
-		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandLocationValidator());
-
 		Services.get(IAttributeSetInstanceAwareFactoryService.class).registerFactoryForTableName(I_C_OLCand.Table_Name, new OLCandASIAwareFactory()); // task 08803
 
 		engine.addModelValidator(new AD_Scheduler(), client);
 		engine.addModelValidator(new AD_Note(), client);
 		engine.addModelValidator(new C_OLCand(), client);
-		engine.addModelValidator(new OLCandGenerator(), client);
 		engine.addModelValidator(new C_OLCandProcessor(), client);
 		engine.addModelValidator(new C_OrderLine(), client);
 
@@ -83,6 +70,12 @@ public class OrderCandidate extends AbstractModuleInterceptor
 		{
 			ensureDataDestExists();
 		}
+	}
+
+	@Override
+	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
+	{
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.ordercandidate.callout.C_OLCandAggAndOrder());
 	}
 
 	private void ensureDataDestExists()

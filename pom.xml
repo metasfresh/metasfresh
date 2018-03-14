@@ -94,12 +94,7 @@
 		<module>de.metas.elasticsearch</module>
 		<module>de.metas.elasticsearch.server</module>
 
-		<module>de.metas.storage</module>
-
-		<module>de.metas.swat</module>
-
 		<module>de.metas.banking</module>
-
 		<module>de.metas.contracts</module>
 
 		<module>de.metas.device.adempiere</module>
@@ -123,6 +118,9 @@
 		<module>de.metas.handlingunits.base</module>
 		<module>de.metas.handlingunits.client</module>
 
+		<module>de.metas.ordercandidate.rest-api</module>
+		<module>de.metas.ordercandidate.rest-api-impl</module>
+
 		<module>de.metas.payment.esr</module>
 		<module>de.metas.payment.sepa</module>
 		<module>de.metas.printing</module>
@@ -137,6 +135,9 @@
 		<module>de.metas.purchasecandidate.base</module>
 
 		<module>de.metas.rfq</module>
+		<module>de.metas.storage</module>
+
+		<module>de.metas.swat</module>
 
 		<module>de.metas.shipper.gateway.api</module>
 		<module>de.metas.shipper.gateway.go</module>
@@ -148,7 +149,10 @@
 		<module>de.metas.datev</module>
 
 		<module>de.metas.vertical.pharma</module>
-		<module>de.metas.vertical.pharma.vendor.gateway.msv3</module>
+		<module>de.metas.vertical.pharma.msv3.commons</module>
+		<module>de.metas.vertical.pharma.msv3.server</module>
+		<module>de.metas.vertical.pharma.vendor.gateway.msv3</module>		
+
 		<!-- commented out because we currently don't work with them <module>de.metas.reactor.ait</module> -->
 	</modules>
 
@@ -310,8 +314,8 @@
 						<artifactId>guava</artifactId>
 					</exclusion>
 					<exclusion>
-					    <groupId>org.reflections</groupId>
-					    <artifactId>reflections</artifactId>
+						<groupId>org.reflections</groupId>
+						<artifactId>reflections</artifactId>
 					</exclusion>
 				</exclusions>
 			</dependency>

@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.ordercandidate.model;
 
 
@@ -32,7 +16,7 @@ public interface I_C_OLCandProcessor
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -114,29 +98,6 @@ public interface I_C_OLCandProcessor
     public static final String COLUMNNAME_AD_Scheduler_ID = "AD_Scheduler_ID";
 
 	/**
-	 * Set Ausführungsplan.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Scheduler_OLCandProcessor (java.lang.String AD_Scheduler_OLCandProcessor);
-
-	/**
-	 * Get Ausführungsplan.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAD_Scheduler_OLCandProcessor();
-
-    /** Column definition for AD_Scheduler_OLCandProcessor */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_AD_Scheduler_OLCandProcessor = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "AD_Scheduler_OLCandProcessor", null);
-    /** Column name AD_Scheduler_OLCandProcessor */
-    public static final String COLUMNNAME_AD_Scheduler_OLCandProcessor = "AD_Scheduler_OLCandProcessor";
-
-	/**
 	 * Set Betreuer.
 	 * Person, die bei einem fachlichen Problem vom System informiert wird.
 	 *
@@ -164,29 +125,6 @@ public interface I_C_OLCandProcessor
     public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_User> COLUMN_AD_User_InCharge_ID = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_User>(I_C_OLCandProcessor.class, "AD_User_InCharge_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_InCharge_ID */
     public static final String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
-
-	/**
-	 * Set Auftragskand. Zuordnen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAssignOLCands (java.lang.String AssignOLCands);
-
-	/**
-	 * Get Auftragskand. Zuordnen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAssignOLCands();
-
-    /** Column definition for AssignOLCands */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_AssignOLCands = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "AssignOLCands", null);
-    /** Column name AssignOLCands */
-    public static final String COLUMNNAME_AssignOLCands = "AssignOLCands";
 
 	/**
 	 * Set Zielbelegart.
@@ -264,7 +202,7 @@ public interface I_C_OLCandProcessor
     public static final String COLUMNNAME_C_OLCandProcessor_ID = "C_OLCandProcessor_ID";
 
 	/**
-	 * Set Zahlungskondition.
+	 * Set Zahlungsbedingung.
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: TableDir
@@ -274,7 +212,7 @@ public interface I_C_OLCandProcessor
 	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
 	/**
-	 * Get Zahlungskondition.
+	 * Get Zahlungsbedingung.
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: TableDir

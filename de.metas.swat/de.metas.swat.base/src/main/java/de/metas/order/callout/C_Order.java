@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.metas.callout;
+package de.metas.order.callout;
 
 /*
  * #%L
