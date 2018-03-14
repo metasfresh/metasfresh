@@ -1,5 +1,5 @@
 import React, { PureComponent, Fragment } from 'react';
-import { List } from 'immutable';
+import { is, List } from 'immutable';
 import onClickOutside from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
@@ -14,8 +14,16 @@ const setSelectedValue = function(dropdownList, selected) {
   const changedValues = {};
   let idx = 0;
 
+  let selectedOption = selected;
+
   if (selected) {
-    idx = dropdownList.findIndex(item => item.caption === selected.caption);
+    if (!selected.caption) {
+      selectedOption = { caption: selected, key: null };
+    }
+
+    idx = dropdownList.findIndex(
+      item => item.caption === selectedOption.caption
+    );
   }
 
   if (idx !== 0) {
@@ -27,6 +35,7 @@ const setSelectedValue = function(dropdownList, selected) {
   }
 
   changedValues.selected = dropdownList.get(idx);
+  changedValues.dropdownList = dropdownList;
 
   return changedValues;
 };
@@ -55,7 +64,7 @@ class RawList extends PureComponent {
     window.removeEventListener('keydown', this.handleTab);
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps) {
     const {
       list,
       mandatory,
@@ -65,10 +74,11 @@ class RawList extends PureComponent {
       emptyText,
     } = this.props;
 
-    let dropdownList = List(list);
+    let dropdownList = this.state.dropdownList;
     let changedValues = {};
 
-    if (prevProps.list !== list) {
+    if (!is(prevProps.list, list)) {
+      dropdownList = List(list);
       if (!mandatory && emptyText) {
         dropdownList = dropdownList.unshift({
           caption: emptyText,
@@ -93,18 +103,17 @@ class RawList extends PureComponent {
       }
     }
 
-    if (
-      !changedValues.selected &&
-      (prevProps.selected !== selected ||
-        prevState.selected !== this.state.selected)
-    ) {
-      if (
-        dropdownList.size > 0 &&
-        (prevProps.list !== list || !this.state.selected)
-      ) {
+    if (!changedValues.selected && dropdownList.size > 0) {
+      let newSelected = null;
+
+      if (prevProps.selected !== selected) {
+        newSelected = selected;
+      }
+
+      if (newSelected) {
         changedValues = {
           ...changedValues,
-          ...setSelectedValue(dropdownList, defaultValue),
+          ...setSelectedValue(dropdownList, newSelected),
         };
       }
     }
@@ -129,19 +138,13 @@ class RawList extends PureComponent {
 
   scrollIntoView = () => {
     const { list, selected } = this;
-
-    if (!list || !selected) {
-      return;
-    }
-
     const { direction } = this.state;
 
-    if (direction === null) {
+    if (!list || !selected || direction === null) {
       return;
     }
 
     const { top: topMax, bottom: bottomMax } = list.getBoundingClientRect();
-
     const { top, bottom } = selected.getBoundingClientRect();
 
     if (top < topMax || bottom > bottomMax) {
@@ -195,20 +198,19 @@ class RawList extends PureComponent {
 
   handleSelect = selected => {
     const { onSelect, onCloseDropdown } = this.props;
+    const { dropdownList } = this.state;
+    const changedValues = {
+      ...setSelectedValue(dropdownList, selected),
+    };
 
-    this.setState(
-      {
-        selected: null,
-      },
-      () => {
-        if (selected.key === null) {
-          onSelect(null);
-        } else {
-          onSelect(selected);
-        }
-        onCloseDropdown();
+    this.setState(changedValues, () => {
+      if (selected.key === null) {
+        onSelect(null);
+      } else {
+        onSelect(selected);
       }
-    );
+      onCloseDropdown();
+    });
   };
 
   handleSwitch = selected => {
