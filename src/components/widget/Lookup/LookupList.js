@@ -38,11 +38,36 @@ class LookupList extends Component {
 
       if (container && element && element.scrollIntoView) {
         if (container.scrollHeight > container.offsetHeight) {
-          element.scrollIntoView();
+          this.scrollIntoView({
+            container,
+            element,
+            direction: nextProps.direction,
+          });
         }
       }
     }
   }
+
+  scrollIntoView = ({ container, element, direction }) => {
+    if (!container || !element) {
+      return;
+    }
+
+    if (direction === null) {
+      return;
+    }
+
+    const {
+      top: topMax,
+      bottom: bottomMax,
+    } = container.getBoundingClientRect();
+
+    const { top, bottom } = element.getBoundingClientRect();
+
+    if (top < topMax || bottom > bottomMax) {
+      element.scrollIntoView(direction === 'up' ? true : false);
+    }
+  };
 
   getDropdownComponent = (index, item) => {
     const { handleSelect, selected } = this.props;
