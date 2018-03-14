@@ -14,7 +14,7 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1142687976L;
+	private static final long serialVersionUID = 113169582L;
 
     /** Standard Constructor */
     public X_C_TaxCategory (Properties ctx, int C_TaxCategory_ID, String trxName)
@@ -24,8 +24,6 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
         {
 			setC_TaxCategory_ID (0);
 			setIsDefault (false);
-			setIsReduced (false); // N
-			setIsWithout (false); // N
 			setName (null);
         } */
     }
@@ -122,58 +120,6 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	public boolean isDefault () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDefault);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Ermäßigt.
-		@param IsReduced 
-		There is a discount tax
-	  */
-	@Override
-	public void setIsReduced (boolean IsReduced)
-	{
-		set_Value (COLUMNNAME_IsReduced, Boolean.valueOf(IsReduced));
-	}
-
-	/** Get Ermäßigt.
-		@return There is a discount tax
-	  */
-	@Override
-	public boolean isReduced () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsReduced);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Ohne.
-		@param IsWithout 
-		Means no tax
-	  */
-	@Override
-	public void setIsWithout (boolean IsWithout)
-	{
-		set_Value (COLUMNNAME_IsWithout, Boolean.valueOf(IsWithout));
-	}
-
-	/** Get Ohne.
-		@return Means no tax
-	  */
-	@Override
-	public boolean isWithout () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsWithout);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
