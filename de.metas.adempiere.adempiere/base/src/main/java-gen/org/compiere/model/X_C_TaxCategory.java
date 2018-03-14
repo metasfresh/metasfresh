@@ -14,7 +14,7 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 113169582L;
+	private static final long serialVersionUID = 1985832056L;
 
     /** Standard Constructor */
     public X_C_TaxCategory (Properties ctx, int C_TaxCategory_ID, String trxName)
@@ -23,7 +23,6 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
       /** if (C_TaxCategory_ID == 0)
         {
 			setC_TaxCategory_ID (0);
-			setIsDefault (false);
 			setName (null);
         } */
     }
@@ -101,32 +100,6 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
-	}
-
-	/** Set Standard.
-		@param IsDefault 
-		Default value
-	  */
-	@Override
-	public void setIsDefault (boolean IsDefault)
-	{
-		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
-	}
-
-	/** Get Standard.
-		@return Default value
-	  */
-	@Override
-	public boolean isDefault () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsDefault);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	/** Set Name.

@@ -197,31 +197,6 @@ public interface I_C_TaxCategory
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Standard.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsDefault (boolean IsDefault);
-
-	/**
-	 * Get Standard.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isDefault();
-
-    /** Column definition for IsDefault */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_IsDefault = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "IsDefault", null);
-    /** Column name IsDefault */
-    public static final String COLUMNNAME_IsDefault = "IsDefault";
-
-	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *
