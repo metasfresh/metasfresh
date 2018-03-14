@@ -48,6 +48,7 @@ export default class BarcodeScanner extends Component {
       },
       err => {
         if (err) {
+          // eslint-disable-next-line no-console
           return console.log(err);
         }
         Quagga.start();

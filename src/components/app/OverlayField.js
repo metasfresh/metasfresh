@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import counterpart from 'counterpart';
 
 import MasterWidget from '../widget/MasterWidget';
 import RawWidget from '../widget/RawWidget';
@@ -106,9 +105,7 @@ class OverlayField extends Component {
             onReset={() => this._scanBarcode(true)}
           />
           <div className="row scanning-result">
-            <span className="label col-xs-3 col-sm-2">
-              Barcode
-            </span>
+            <span className="label col-xs-3 col-sm-2">Barcode</span>
             <BarcodeScannerResult
               result={result}
               onSelect={result => this.selectBarcode(result)}
@@ -117,7 +114,7 @@ class OverlayField extends Component {
         </div>
       </div>
     );
-  }
+  };
 
   renderParameters = layout => {
     const {
