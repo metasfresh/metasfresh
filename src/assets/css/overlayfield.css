@@ -9,6 +9,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow-y: scroll;
+}
+
+@media (min-width: $breakpoint-md){
+    overflow-y: auto;
 }
 
 .overlay-field .form-group {
@@ -36,14 +41,21 @@
     border: solid 1px #C9D5DC;
 }
 
-.scanner-wrapper {
-    width: 640px;
-}
-
 .scanner-wrapper .drawingBuffer {
     position: absolute;
     top: 0;
     left:0;
+}
+
+.scanner-window {
+    width: 320px;
+}
+
+@media (min-width: $breakpoint-md){
+    .scanner-window {
+        width: 640px;
+        float: none;
+    }
 }
 
 .scanner-window video {

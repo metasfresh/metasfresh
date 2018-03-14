@@ -16,9 +16,9 @@ class MasterWidget extends Component {
   };
 
   componentDidMount() {
-    const { widgetData } = this.props;
+    const { data, widgetData } = this.props;
     this.setState({
-      data: widgetData[0].value,
+      data: data || widgetData[0].value,
     });
   }
 
@@ -214,7 +214,6 @@ class MasterWidget extends Component {
 
   render() {
     const { handleBackdropLock } = this.props;
-
     const { updated, data } = this.state;
     const handleFocusFn = handleBackdropLock ? handleBackdropLock : () => {};
 

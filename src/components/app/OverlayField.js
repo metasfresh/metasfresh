@@ -26,6 +26,11 @@ class OverlayField extends Component {
       case 'Escape':
         closeOverlay();
         break;
+      default:
+        this.setState({
+          barcodeSelected: null,
+        });
+        break;
     }
   };
 
@@ -68,10 +73,6 @@ class OverlayField extends Component {
             Scan using camera
           </button>
         );
-
-        if (barcodeSelected) {
-          widgetData[0].value = barcodeSelected;
-        }
       }
 
       return (
@@ -85,6 +86,7 @@ class OverlayField extends Component {
           disabled={disabled}
           autoFocus={id === 0}
           captionElement={captionElement}
+          data={barcodeSelected || undefined}
           {...elem}
         />
       );
@@ -98,12 +100,13 @@ class OverlayField extends Component {
       <div className="row barcode-scanner-widget">
         <div className="col-sm-12">
           <BarcodeScanner
+            result={result}
             onDetected={this._onBarcodeDetected}
             onClose={() => this._scanBarcode(false)}
             onReset={() => this._scanBarcode(true)}
           />
           <div className="row scanning-result">
-            <span className="label col-sm-2">
+            <span className="label col-xs-3 col-sm-2">
               Barcode
             </span>
             <BarcodeScannerResult

@@ -7,7 +7,7 @@ const BarcodeScannerResult = function({ result, onSelect }) {
     return null;
   }
   return (
-    <div className="col-sm-9">
+    <div className="col-xs-9">
       <button
         className="btn btn-filter btn-meta-outline-secondary btn-distance btn-s"
         onClick={() => onSelect(result)}
@@ -54,7 +54,10 @@ export default class BarcodeScanner extends Component {
       }
     );
     Quagga.onDetected(this._onDetected);
-    Quagga.onProcessed(this._onProcessed);
+
+    if (this.props.debug) {
+      Quagga.onProcessed(this._onProcessed);
+    }
   }
 
   componentWillUnmount() {
@@ -116,11 +119,14 @@ export default class BarcodeScanner extends Component {
   }
 
   render() {
+    const { result } = this.props;
+
     return (
       <div className="row scanner-wrapper">
         <div id="interactive" className="col-sm-12 viewport scanner-window" />
         <div className="col-sm-12 scanner-controls">
           <button
+            disabled={!result}
             className="btn btn-filter btn-meta-outline-secondary btn-distance btn-s"
             onClick={this._handleStart}
           >
@@ -139,6 +145,7 @@ export default class BarcodeScanner extends Component {
 }
 
 BarcodeScanner.propTypes = {
+  result: PropTypes.object,
   onDetected: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
   onReset: PropTypes.func.isRequired,
