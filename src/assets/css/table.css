@@ -57,8 +57,16 @@
 
 .table td,
 .table th {
-    padding: .50rem .75rem;
-    height: 42px;
+    padding: .5rem .5rem;
+    height: 28px;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .table td,
+    .table th {
+        padding: .50rem .75rem;
+        height: 42px;
+    }  
 }
 
 .table td {
@@ -339,20 +347,31 @@ th {
 }
 
 .table.table-bordered-vertically td.indented {
-    min-width:0;
-    border-right:0;
-    padding-top:0;
-    padding-bottom:0;
-    line-height: 42px;
-    vertical-align: middle;
+    line-height: 28px;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .table.table-bordered-vertically td.indented {
+        line-height: 42px;
+    }
 }
 
 /* INDENT SIGN ================ */
+
+/*$indent-height: 28px;
+$indent-height-mid: 12px;
+$indent-signs-offset: 4px;
+$indent-collapsible-offset: 16px;*/
 
 $indent-height: 42px;
 $indent-height-mid: 18px;
 $indent-signs-offset: 6px;
 $indent-collapsible-offset: 24px;
+
+/*$indent-height-lg: 42px;
+$indent-height-mid-lg: 18px;
+$indent-signs-offset-lg: 6px;
+$indent-collapsible-offset-lg: 24px;*/
 
 .indent {
     position: relative;
@@ -403,7 +422,7 @@ $indent-collapsible-offset: 24px;
     bottom:-1px;
     margin-left: $indent-signs-offset;
     width: 1px;
-    height: 6px;
+    height: 4px;
     border-left: 1px solid #afbfca;
 }
 
@@ -414,6 +433,48 @@ $indent-collapsible-offset: 24px;
 .indent-collapse-icon {
     margin-right: 10px;
 }
+
+/*@media only screen and (min-width: $breakpoint-md){
+    .indent {
+        height: $indent-height-lg;
+    }
+
+    .indent-item-mid,
+    .indent-icon,
+    .indent-bot,
+    .indent-mid {
+        height: $indent-height-lg;
+    }
+
+    .indent-item-mid{
+        padding-left:$indent-signs-offset-lg;
+    }
+
+    .indent-collapsible-item-mid {
+        padding-left: calc($indent-signs-offset-lg + $indent-collapsible-offset-lg);
+    }
+
+    .indent-item-mid .indent-sign {
+        height: $indent-height-lg;
+    }
+
+    .indent-item-mid .indent-sign.indent-sign-bot {
+        height: $indent-height-mid-lg;
+    }
+
+    .indent-mid {
+        top: $indent-height-mid-lg;
+    }
+
+    .indent-bot {
+        margin-left: $indent-signs-offset-lg;
+        height: 6px;
+    }
+
+    .indent-collapsible-bot {
+        margin-left: calc($indent-signs-offset-lg + $indent-collapsible-offset-lg);
+    }
+}*/
 
 /* END OF INDENT SIGN ============ */
 

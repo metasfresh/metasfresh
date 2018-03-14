@@ -492,6 +492,19 @@ body {
     flex-direction: column;
 }
 
+.column-size-button {
+    display: block;
+    width: 24px;
+    height: 24px;
+    position: absolute;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .column-size-button  {
+        display: none;
+    }
+}
+
 .map-tree-wrapper {
     padding-top: 55px;
 }
@@ -836,6 +849,16 @@ td.pulse-off input {
     display: inline-block;
 }
 
+.filter-wrapper span {
+    display: none;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .filter-wrapper span {
+        display: inline;
+    }
+}
+
 .filter-menu {
     border: 1px solid $brand-light-color;
     background: white;
@@ -955,7 +978,14 @@ td.pulse-off input {
 }
 
 .spacer-right {
-    margin-right: .2rem;
+    display: none;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .spacer-right {
+        display: block;
+        margin-right: .2rem;
+    }
 }
 
 .quick-actions-wrapper {
@@ -967,8 +997,9 @@ td.pulse-off input {
     position: absolute;
     z-index:1;
     width: 100%;
-    left: 0;
+    right: 0;
     top: 100%;
+    min-width: 100px;
 
     margin-top: .2rem;
     padding: .3rem;
@@ -976,6 +1007,13 @@ td.pulse-off input {
     background-color: #fff;
     border:1px solid $brand-border-color;
     border-radius: 4px;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .quick-actions-dropdown {
+        right: auto;
+        left: 0;
+    }
 }
 
 .quick-actions-dropdown small {
