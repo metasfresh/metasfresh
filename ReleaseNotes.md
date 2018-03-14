@@ -13,6 +13,13 @@ Here come the actual release notes:
 # metasfresh 5.49 (2018-12)
 **release for week 2018-12**
 
+## Features
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1669](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1669) Empty option missing in dropdown
+    * Fixes the empty selected elements in list widgets after selecting entry.
+
 # metasfresh 5.48 (2018-11)
 **release for week 2018-11**
 
