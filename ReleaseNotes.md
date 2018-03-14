@@ -17,6 +17,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-webui-frontend
+  * [#1642](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1642) Lookup Widget drop-down list scroll behavior
+    * Improves the behavior of drop-down list scroll behavior.
   * [#1669](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1669) Empty option missing in dropdown
     * Fixes the empty selected elements in list widgets after selecting entry.
 
