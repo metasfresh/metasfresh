@@ -1,9 +1,12 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -18,7 +21,8 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.PPOrderChangedEvent;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -45,7 +49,7 @@ import mockit.Verifications;
  * #L%
  */
 
-public class PPOrderDocStatusChangedHandlerTest
+public class PPOrderChangedHandlerTest
 {
 
 	@Mocked
@@ -57,12 +61,13 @@ public class PPOrderDocStatusChangedHandlerTest
 	@Test
 	public void handleEvent()
 	{
-		//
+		final MaterialDescriptor materialDescriptor = EventTestHelper.createMaterialDescriptor();
+
 		// setup a candidate to be updated
 		final Candidate candidatetoUpdate = Candidate.builder()
 				.status(CandidateStatus.doc_closed)
 				.type(CandidateType.DEMAND)
-				.materialDescriptor(EventTestHelper.createMaterialDescriptor())
+				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(ProductionDetail.builder()
 						.plannedQty(BigDecimal.TEN)
 						.advised(Flag.FALSE)
@@ -77,18 +82,27 @@ public class PPOrderDocStatusChangedHandlerTest
 			result = ImmutableList.of(candidatetoUpdate);
 		}};	// @formatter:on
 
-		final PPOrderDocStatusChangedEvent ppOrderChangedDocStatusEvent = PPOrderDocStatusChangedEvent.builder()
+		final PPOrderChangedEvent ppOrderChangedEvent = PPOrderChangedEvent.builder()
 				.eventDescriptor(new EventDescriptor(10, 20))
+				.oldDocStatus("CO")
 				.newDocStatus("CO")
-				.ppOrderId(30).build();
+				.oldDatePromised(SystemTime.asTimestamp())
+				.newDatePromised(SystemTime.asTimestamp())
+				.newQtyDelivered(ONE)
+				.newQtyRequired(TEN)
+				.oldQtyDelivered(ONE)
+				.oldQtyRequired(TEN)
+				.productDescriptor(materialDescriptor)
+				.ppOrderId(30)
+				.build();
 
-		final PPOrderDocStatusChangedHandler ppOrderDocStatusChangedHandler = new PPOrderDocStatusChangedHandler(
+		final PPOrderChangedHandler ppOrderDocStatusChangedHandler = new PPOrderChangedHandler(
 				candidateRepositoryRetrieval,
 				candidateChangeService);
 
 		//
 		// invoke the method under test
-		ppOrderDocStatusChangedHandler.handleEvent(ppOrderChangedDocStatusEvent);
+		ppOrderDocStatusChangedHandler.handleEvent(ppOrderChangedEvent);
 
 		//
 		// verify the updated candidate created by the handler
@@ -99,7 +113,6 @@ public class PPOrderDocStatusChangedHandlerTest
 			candidateChangeService.onCandidateNewOrChange(updatedCandidate = withCapture());
 
 			assertThat(updatedCandidate.getQuantity())
-				.as("if docstatus is not 'closed' the qty needs to be the max of planned and actual")
 				.isEqualByComparingTo(BigDecimal.TEN);
 			assertThat(updatedCandidate.getStatus()).isEqualTo(CandidateStatus.doc_completed);
 

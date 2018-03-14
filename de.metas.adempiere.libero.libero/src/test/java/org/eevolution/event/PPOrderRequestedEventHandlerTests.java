@@ -1,13 +1,14 @@
 package org.eevolution.event;
 
 import static de.metas.document.engine.IDocument.STATUS_Completed;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -165,7 +166,8 @@ public class PPOrderRequestedEventHandlerTests
 				.orderLineId(orderLine.getC_OrderLine_ID())
 				.productDescriptor(productDescriptor)
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
-				.quantity(BigDecimal.TEN)
+				.qtyRequired(TEN)
+				.qtyDelivered(ONE)
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.build();
 
