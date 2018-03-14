@@ -37,7 +37,6 @@ import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_EDI_Document;
-import de.metas.impex.model.I_AD_InputDataSource;
 
 @Validator(I_C_Order.class)
 public class C_Order
@@ -122,16 +121,15 @@ public class C_Order
 			)
 	public void updateEdiEnabled(final I_C_Order order)
 	{
+		final int orderInputDataSourceId = order.getAD_InputDataSource_ID();
 
-		final I_AD_InputDataSource orderInputDataSource = order.getAD_InputDataSource();
-
-		if (orderInputDataSource == null)
+		if (orderInputDataSourceId <= 0)
 		{
 			// nothing to ro
 			return;
 		}
 
-		final boolean isEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(orderInputDataSource);
+		final boolean isEdiEnabled = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(orderInputDataSourceId);
 		if (isEdiEnabled)
 		{
 			order.setIsEdiEnabled(true);

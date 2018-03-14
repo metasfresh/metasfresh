@@ -13,11 +13,11 @@ package de.metas.ordercandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -26,17 +26,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.util.ILoggable;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.spi.IOLCandCreator;
-import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
-import de.metas.ordercandidate.spi.IOLCandListener;
-import de.metas.relation.grid.ModelRelationTarget;
 
 /**
  * @author RC
@@ -49,37 +45,9 @@ public interface IOLCandBL extends ISingletonService
 	/**
 	 * Creates and updates orders.
 	 *
-	 * @param ctx
 	 * @param processor
-	 * @param process Optional. If set, progress info is logged to the given instance
-	 * @param trxName
 	 */
-	void process(Properties ctx, I_C_OLCandProcessor processor, ILoggable process, String trxName);
-
-	String mkRelationTypeInternalName(I_C_OLCandProcessor processor);
-
-	/**
-	 * Method creates a <code>ModelRelationTarget</code> instance that contains the basic data required to add an explicit relation between the given <code>processor</code> and a set of
-	 * {@link I_C_OLCand}s.
-	 *
-	 * @param processor
-	 * @param sourceWindowId
-	 * @param sourceTabName
-	 * @param whereClause
-	 * @return
-	 */
-	ModelRelationTarget mkModelRelationTarget(I_C_OLCandProcessor processor, int sourceWindowId, String sourceTabName, String whereClause);
-
-	/**
-	 * Registers a listener to be informed about events regarding order line candidates.
-	 *
-	 * @param l
-	 */
-	void registerOLCandListener(IOLCandListener l);
-
-	void registerCustomerGroupingValuesProvider(IOLCandGroupingProvider groupingValuesProvider);
-
-	I_C_OLCand invokeOLCandCreator(PO po);
+	void process(OLCandProcessorDescriptor processor);
 
 	I_C_OLCand invokeOLCandCreator(PO po, IOLCandCreator olCandCreator);
 
@@ -101,4 +69,20 @@ public interface IOLCandBL extends ISingletonService
 	 * @return
 	 */
 	IPricingResult computePriceActual(I_C_OLCand olCand, BigDecimal qtyOverride, int pricingSystemIdOverride, Timestamp date);
+
+	/**
+	 * Returning the pricing system to use for the given {@code olCand}.
+	 * <ul>
+	 * <li>if C_OLCand.M_PricingSystem_ID > 0, then we return that</li>
+	 * <li>else, if the processor has a pricing system set, then we return that</li>
+	 * <li>else, if the C_OLCand has a bill partner set, then we return that partner's (or her C_BP_Group's) pricing system</li>
+	 * <li>else we return the C_OLCand's C_BPartner's (or her C_BP_Group's) pricing system</li>
+	 * </ul>
+	 *
+	 * @param olCand
+	 * @param orderDefaults
+	 * @return
+	 * @see IBPartnerDAO#retrievePricingSystemId(Properties, int, boolean, String)
+	 */
+	int getPricingSystemId(I_C_OLCand olCand, OLCandOrderDefaults orderDefaults);
 }

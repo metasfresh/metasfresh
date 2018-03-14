@@ -5,8 +5,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.Env;
-
 /** Generated Model for C_OLCand
  *  @author Adempiere (generated) 
  */
@@ -17,7 +15,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1780410571L;
+	private static final long serialVersionUID = -1732060382L;
 
     /** Standard Constructor */
     public X_C_OLCand (Properties ctx, int C_OLCand_ID, String trxName)
@@ -26,24 +24,18 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
       /** if (C_OLCand_ID == 0)
         {
 			setAD_InputDataSource_ID (0);
-			setAD_User_EnteredBy_ID (0);
-// @#AD_User@
+			setAD_User_EnteredBy_ID (0); // @#AD_User@
 			setC_BPartner_Location_ID (0);
 			setC_OLCand_ID (0);
 			setC_UOM_ID (0);
-			setDateCandidate (new Timestamp( System.currentTimeMillis() ));
-// @Created@
-			setDeliveryRule (null);
-// A
-			setDeliveryViaRule (null);
-// P
-			setIsError (false);
-// N
-			setIsManualDiscount (false);
-// N
-			setIsManualPrice (false);
-// N
-			setQty (Env.ZERO);
+			setDateCandidate (new Timestamp( System.currentTimeMillis() )); // @Created@
+			setDeliveryRule (null); // A
+			setDeliveryViaRule (null); // P
+			setIsError (false); // N
+			setIsExplicitProductPriceAttribute (false); // N
+			setIsManualDiscount (false); // N
+			setIsManualPrice (false); // N
+			setQty (BigDecimal.ZERO);
         } */
     }
 
@@ -61,18 +53,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public de.metas.impex.model.I_AD_InputDataSource getAD_DataDestination() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_DataDestination_ID, de.metas.impex.model.I_AD_InputDataSource.class);
-	}
-
-	@Override
-	public void setAD_DataDestination(de.metas.impex.model.I_AD_InputDataSource AD_DataDestination)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_DataDestination_ID, de.metas.impex.model.I_AD_InputDataSource.class, AD_DataDestination);
-	}
 
 	/** Set Data Destination.
 		@param AD_DataDestination_ID Data Destination	  */
@@ -94,18 +74,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.impex.model.I_AD_InputDataSource getAD_InputDataSource() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_InputDataSource_ID, de.metas.impex.model.I_AD_InputDataSource.class);
-	}
-
-	@Override
-	public void setAD_InputDataSource(de.metas.impex.model.I_AD_InputDataSource AD_InputDataSource)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_InputDataSource_ID, de.metas.impex.model.I_AD_InputDataSource.class, AD_InputDataSource);
 	}
 
 	/** Set Eingabequelle.
@@ -387,6 +355,76 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Effective() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setC_BP_Location_Effective(org.compiere.model.I_C_BPartner_Location C_BP_Location_Effective)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Effective);
+	}
+
+	/** Set Standort eff..
+		@param C_BP_Location_Effective_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID)
+	{
+		throw new IllegalArgumentException ("C_BP_Location_Effective_ID is virtual column");	}
+
+	/** Get Standort eff..
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BP_Location_Effective_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Effective_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Override);
+	}
+
+	/** Set Standort abw..
+		@param C_BP_Location_Override_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
+	{
+		if (C_BP_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
+	}
+
+	/** Get Standort abw..
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BP_Location_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_BPartner getC_BPartner_Effective() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BPartner_Effective_ID, org.compiere.model.I_C_BPartner.class);
@@ -528,76 +566,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Effective() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BP_Location_Effective(org.compiere.model.I_C_BPartner_Location C_BP_Location_Effective)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Effective);
-	}
-
-	/** Set Standort eff..
-		@param C_BP_Location_Effective_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID)
-	{
-		throw new IllegalArgumentException ("C_BP_Location_Effective_ID is virtual column");	}
-
-	/** Get Standort eff..
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_Location_Effective_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Effective_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Override);
-	}
-
-	/** Set Standort abw..
-		@param C_BP_Location_Override_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
-	{
-		if (C_BP_Location_Override_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
-	}
-
-	/** Get Standort abw..
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_Location_Override_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
 	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
@@ -666,6 +634,28 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Vertragsbedingungen.
+		@param C_Flatrate_Conditions_ID Vertragsbedingungen	  */
+	@Override
+	public void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID)
+	{
+		if (C_Flatrate_Conditions_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Conditions_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Conditions_ID, Integer.valueOf(C_Flatrate_Conditions_ID));
+	}
+
+	/** Get Vertragsbedingungen.
+		@return Vertragsbedingungen	  */
+	@Override
+	public int getC_Flatrate_Conditions_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Conditions_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -853,7 +843,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public static final String DELIVERYRULE_Force = "F";
 	/** Manual = M */
 	public static final String DELIVERYRULE_Manual = "M";
-	/** Mit nächster Abolieferung = S */
+	/** MitNaechsterAbolieferung = S */
 	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
@@ -972,7 +962,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1416,6 +1406,29 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return false;
 	}
 
+	/** Set Explicit Product Price Attributes.
+		@param IsExplicitProductPriceAttribute Explicit Product Price Attributes	  */
+	@Override
+	public void setIsExplicitProductPriceAttribute (boolean IsExplicitProductPriceAttribute)
+	{
+		set_Value (COLUMNNAME_IsExplicitProductPriceAttribute, Boolean.valueOf(IsExplicitProductPriceAttribute));
+	}
+
+	/** Get Explicit Product Price Attributes.
+		@return Explicit Product Price Attributes	  */
+	@Override
+	public boolean isExplicitProductPriceAttribute () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsExplicitProductPriceAttribute);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Manueller Rabatt.
 		@param IsManualDiscount 
 		Ein Rabatt, der von Hand eingetragen wurde, wird vom Provisionssystem nicht überschrieben
@@ -1536,9 +1549,9 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Instanz des Merkmals-Satzes zum Produkt
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -1549,13 +1562,75 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Instanz des Merkmals-Satzes zum Produkt
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Packvorschrift-Produkt Zuordnung eff..
+		@param M_HU_PI_Item_Product_Effective_ID Packvorschrift-Produkt Zuordnung eff.	  */
+	@Override
+	public void setM_HU_PI_Item_Product_Effective_ID (int M_HU_PI_Item_Product_Effective_ID)
+	{
+		throw new IllegalArgumentException ("M_HU_PI_Item_Product_Effective_ID is virtual column");	}
+
+	/** Get Packvorschrift-Produkt Zuordnung eff..
+		@return Packvorschrift-Produkt Zuordnung eff.	  */
+	@Override
+	public int getM_HU_PI_Item_Product_Effective_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Item_Product_Effective_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Packvorschrift.
+		@param M_HU_PI_Item_Product_ID Packvorschrift	  */
+	@Override
+	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
+	{
+		if (M_HU_PI_Item_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
+	}
+
+	/** Get Packvorschrift.
+		@return Packvorschrift	  */
+	@Override
+	public int getM_HU_PI_Item_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Item_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Packvorschrift-Produkt Zuordnung abw..
+		@param M_HU_PI_Item_Product_Override_ID Packvorschrift-Produkt Zuordnung abw.	  */
+	@Override
+	public void setM_HU_PI_Item_Product_Override_ID (int M_HU_PI_Item_Product_Override_ID)
+	{
+		if (M_HU_PI_Item_Product_Override_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_Override_ID, Integer.valueOf(M_HU_PI_Item_Product_Override_ID));
+	}
+
+	/** Get Packvorschrift-Produkt Zuordnung abw..
+		@return Packvorschrift-Produkt Zuordnung abw.	  */
+	@Override
+	public int getM_HU_PI_Item_Product_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Item_Product_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1699,6 +1774,62 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
+	/** Set Attribute price.
+		@param M_ProductPrice_Attribute_ID Attribute price	  */
+	@Override
+	public void setM_ProductPrice_Attribute_ID (int M_ProductPrice_Attribute_ID)
+	{
+		if (M_ProductPrice_Attribute_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_ProductPrice_Attribute_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_ProductPrice_Attribute_ID, Integer.valueOf(M_ProductPrice_Attribute_ID));
+	}
+
+	/** Get Attribute price.
+		@return Attribute price	  */
+	@Override
+	public int getM_ProductPrice_Attribute_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ProductPrice_Attribute_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_ProductPrice getM_ProductPrice() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_ProductPrice_ID, org.compiere.model.I_M_ProductPrice.class);
+	}
+
+	@Override
+	public void setM_ProductPrice(org.compiere.model.I_M_ProductPrice M_ProductPrice)
+	{
+		set_ValueFromPO(COLUMNNAME_M_ProductPrice_ID, org.compiere.model.I_M_ProductPrice.class, M_ProductPrice);
+	}
+
+	/** Set Produkt-Preis.
+		@param M_ProductPrice_ID Produkt-Preis	  */
+	@Override
+	public void setM_ProductPrice_ID (int M_ProductPrice_ID)
+	{
+		if (M_ProductPrice_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_ProductPrice_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_ProductPrice_ID, Integer.valueOf(M_ProductPrice_ID));
+	}
+
+	/** Get Produkt-Preis.
+		@return Produkt-Preis	  */
+	@Override
+	public int getM_ProductPrice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ProductPrice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_M_Warehouse getM_Warehouse_Dest() throws RuntimeException
 	{
@@ -1752,90 +1883,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}
 
-	/** Set Einzelpreis.
-		@param PriceActual 
-		Effektiver Preis
-	  */
-	@Override
-	public void setPriceActual (java.math.BigDecimal PriceActual)
-	{
-		set_Value (COLUMNNAME_PriceActual, PriceActual);
-	}
-
-	/** Get Einzelpreis.
-		@return Effektiver Preis
-	  */
-	@Override
-	public java.math.BigDecimal getPriceActual () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Preisdifferenz (imp. - int.).
-		@param PriceDifference Preisdifferenz (imp. - int.)	  */
-	@Override
-	public void setPriceDifference (java.math.BigDecimal PriceDifference)
-	{
-		throw new IllegalArgumentException ("PriceDifference is virtual column");	}
-
-	/** Get Preisdifferenz (imp. - int.).
-		@return Preisdifferenz (imp. - int.)	  */
-	@Override
-	public java.math.BigDecimal getPriceDifference () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceDifference);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Preis.
-		@param PriceEntered 
-		Eingegebener Preis - der Preis basierend auf der gewählten Mengeneinheit
-	  */
-	@Override
-	public void setPriceEntered (java.math.BigDecimal PriceEntered)
-	{
-		set_Value (COLUMNNAME_PriceEntered, PriceEntered);
-	}
-
-	/** Get Preis.
-		@return Eingegebener Preis - der Preis basierend auf der gewählten Mengeneinheit
-	  */
-	@Override
-	public java.math.BigDecimal getPriceEntered () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Preis int..
-		@param PriceInternal 
-		Interner Preis laut Stammdaten
-	  */
-	@Override
-	public void setPriceInternal (java.math.BigDecimal PriceInternal)
-	{
-		set_Value (COLUMNNAME_PriceInternal, PriceInternal);
-	}
-
-	/** Get Preis int..
-		@return Interner Preis laut Stammdaten
-	  */
-	@Override
-	public java.math.BigDecimal getPriceInternal () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceInternal);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
 	@Override
 	public org.compiere.model.I_C_UOM getPrice_UOM_Internal() throws RuntimeException
 	{
@@ -1871,6 +1918,90 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Einzelpreis.
+		@param PriceActual 
+		Effektiver Preis
+	  */
+	@Override
+	public void setPriceActual (java.math.BigDecimal PriceActual)
+	{
+		set_Value (COLUMNNAME_PriceActual, PriceActual);
+	}
+
+	/** Get Einzelpreis.
+		@return Effektiver Preis
+	  */
+	@Override
+	public java.math.BigDecimal getPriceActual () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Preisdifferenz (imp. - int.).
+		@param PriceDifference Preisdifferenz (imp. - int.)	  */
+	@Override
+	public void setPriceDifference (java.math.BigDecimal PriceDifference)
+	{
+		throw new IllegalArgumentException ("PriceDifference is virtual column");	}
+
+	/** Get Preisdifferenz (imp. - int.).
+		@return Preisdifferenz (imp. - int.)	  */
+	@Override
+	public java.math.BigDecimal getPriceDifference () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceDifference);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Preis.
+		@param PriceEntered 
+		Eingegebener Preis - der Preis basierend auf der gewählten Mengeneinheit
+	  */
+	@Override
+	public void setPriceEntered (java.math.BigDecimal PriceEntered)
+	{
+		set_Value (COLUMNNAME_PriceEntered, PriceEntered);
+	}
+
+	/** Get Preis.
+		@return Eingegebener Preis - der Preis basierend auf der gewählten Mengeneinheit
+	  */
+	@Override
+	public java.math.BigDecimal getPriceEntered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceEntered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Preis int..
+		@param PriceInternal 
+		Interner Preis laut Stammdaten
+	  */
+	@Override
+	public void setPriceInternal (java.math.BigDecimal PriceInternal)
+	{
+		set_Value (COLUMNNAME_PriceInternal, PriceInternal);
+	}
+
+	/** Get Preis int..
+		@return Interner Preis laut Stammdaten
+	  */
+	@Override
+	public java.math.BigDecimal getPriceInternal () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceInternal);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Verarbeitet.
@@ -1936,7 +2067,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

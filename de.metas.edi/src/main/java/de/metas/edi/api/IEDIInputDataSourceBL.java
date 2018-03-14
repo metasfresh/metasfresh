@@ -26,5 +26,5 @@ import org.adempiere.util.ISingletonService;
 
 public interface IEDIInputDataSourceBL extends ISingletonService
 {
-	boolean isEDIInputDataSource(final de.metas.impex.model.I_AD_InputDataSource inputDataSource);
+	boolean isEDIInputDataSource(int inputDataSourceId);
 }
