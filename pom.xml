@@ -125,6 +125,8 @@
 		<module>de.metas.payment.sepa</module>
 		<module>de.metas.printing</module>
 
+		<module>de.metas.printing.rest-api-impl</module>
+
 		<module>de.metas.printing.common</module>
 		<module>de.metas.printing.client</module>
 

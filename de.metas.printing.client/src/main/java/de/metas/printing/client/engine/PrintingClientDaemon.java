@@ -145,9 +145,11 @@ public class PrintingClientDaemon implements Runnable
 		final String username = context.getProperty(Context.CTX_Login_Username);
 		final String password = context.getProperty(Context.CTX_Login_Password);
 		final String hostkey = context.getProperty(Context.CTX_Login_HostKey);
+
 		loginRequest.setUsername(username);
 		loginRequest.setPassword(password);
 		loginRequest.setHostKey(hostkey);
+
 		final IPrintConnectionEndpoint connection = getConnection();
 		final LoginResponse loginResponse = connection.login(loginRequest);
 

@@ -42,8 +42,6 @@ public class ConfigFileContext implements IContext
 
 	public ConfigFileContext()
 	{
-		super();
-
 		String configFilename = System.getProperty("config");
 
 		// Fallback: use config.properties
