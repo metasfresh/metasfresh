@@ -216,6 +216,10 @@
 
 /* Pagination */
 
+.page-item {
+    display: inline-block;
+}
+
 .page-item.active .page-link,
 .page-item.active .page-link:focus,
 .page-item.active .page-link:hover {
@@ -224,9 +228,16 @@
 }
 
 .page-link {
-    min-width: 38px;
+    display: inline-block;
     text-align: center;
 }
+
+@media only screen and (min-width: $breakpoint-md){
+    .page-link {
+        min-width: 38px;
+    }
+}
+
 .page-link-compressed{
     border:0;
     background-color: transparent;
@@ -292,13 +303,19 @@ th {
 }
 
 .pagination-row {
-    margin: 1rem;
+    margin: .3125rem;
     font-size: .7rem;
     display: flex;
     flex-wrap: nowrap;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .pagination-row {
+        margin: 1rem;
+    }
 }
 
 .order-list-panel-body .pagination-wrapper {
