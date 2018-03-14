@@ -14,3 +14,6 @@ DELETE FROM AD_Column WHERE AD_Column_ID=3885
 SELECT public.db_alter_table('C_TaxCategory','ALTER TABLE public.C_TaxCategory DROP COLUMN IsDefault')
 ;
 
+DROP TRIGGER IF EXISTS isdefault_tg ON public.c_taxcategory;
+DROP FUNCTION public.isdefault_tgfn();
+
