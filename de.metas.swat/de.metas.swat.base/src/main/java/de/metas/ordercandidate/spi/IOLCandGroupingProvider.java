@@ -26,7 +26,7 @@ package de.metas.ordercandidate.spi;
 import java.util.List;
 
 import de.metas.ordercandidate.api.IOLCandBL;
-import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.api.OLCand;
 
 /**
  * Interface can be implemented by modules to add specific objects to the grouping key and thus prevent e.g. candidates
@@ -34,6 +34,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
  * 
  * @see IOLCandBL#registerCustomerGroupingValuesProvider(IOLCandGroupingProvider)
  */
+@FunctionalInterface
 public interface IOLCandGroupingProvider
 {
 
@@ -43,5 +44,5 @@ public interface IOLCandGroupingProvider
 	 * @return a list of values that will be transformed into a grouping key. Two candidates with different keys won't
 	 *         be aggregated into the same order line.
 	 */
-	public List<Object> provideLineGroupingValues(I_C_OLCand cand);
+	public List<Object> provideLineGroupingValues(OLCand cand);
 }

@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.ordercandidate.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_Order_Line_Alloc
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_C_Order_Line_Alloc extends org.compiere.model.PO implements I_C_O
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -209983382L;
+	private static final long serialVersionUID = -216211607L;
 
     /** Standard Constructor */
     public X_C_Order_Line_Alloc (Properties ctx, int C_Order_Line_Alloc_ID, String trxName)
@@ -43,8 +26,7 @@ public class X_C_Order_Line_Alloc extends org.compiere.model.PO implements I_C_O
 			setC_OLCand_ID (0);
 			setC_Order_Line_Alloc_ID (0);
 			setC_OrderLine_ID (0);
-			setQtyOrdered (Env.ZERO);
-// 0
+			setQtyOrdered (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -238,9 +220,9 @@ public class X_C_Order_Line_Alloc extends org.compiere.model.PO implements I_C_O
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Bestellte Menge.
+	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
-		Bestellte Menge
+		Bestellt/ Beauftragt
 	  */
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
@@ -248,15 +230,15 @@ public class X_C_Order_Line_Alloc extends org.compiere.model.PO implements I_C_O
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellte Menge.
-		@return Bestellte Menge
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
 	  */
 	@Override
 	public java.math.BigDecimal getQtyOrdered () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

@@ -30,23 +30,11 @@ import org.adempiere.util.ISingletonService;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.model.I_C_OLCandAggAndOrder;
-import de.metas.ordercandidate.model.I_C_OLCandGenerator;
-import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 
 public interface IOLCandDAO extends ISingletonService
 {
 	<T extends I_C_OLCand> List<T> retrieveOLCands(I_C_OrderLine ol, Class<T> clazz);
-
-	/**
-	 * Loads the order line candidates whose AD_Table_ID and Record_ID columns match the given model.
-	 * 
-	 * @param model
-	 * @return matched order candidates
-	 * @see #retrieveReferencing(Properties, String, int, String)
-	 */
-	List<I_C_OLCand> retrieveReferencing(Object model);
 
 	/**
 	 * Loads the order line candidates whose AD_Table_ID and Record_ID columns match the given parameters.
@@ -76,12 +64,4 @@ public interface IOLCandDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_Order_Line_Alloc> retrieveAllOlas(I_C_OLCand olCand);
-
-	List<I_C_OLCandGenerator> retrieveforTable(Properties ctx, int adTableId, String trxName);
-
-	I_C_OLCandGenerator retrieveOlCandCreator(Properties ctx, int tableId, String trxName);
-
-	List<I_C_OLCandGenerator> retrieveOlCandCreatorForOrg(Properties ctx, int adOrgId);
-
-	List<I_C_OLCandAggAndOrder> retrieveOLCandAggAndOrderForProcessor(Properties ctx, I_C_OLCandProcessor processor, String trxName);
 }
