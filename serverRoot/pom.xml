@@ -61,6 +61,11 @@
 			<artifactId>de.metas.ordercandidate.rest-api-impl</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.rest-api-impl</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
