@@ -2,6 +2,7 @@ package de.metas.material.cockpit.view.mainrecord;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.util.NumberUtils.stripTrailingDecimalZeros;
 
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
@@ -73,36 +74,44 @@ public class MainDataRequestHandler
 			final UpdateMainDataRequest dataUpdateRequest)
 	{
 		// was QtyMaterialentnahme
-		dataRecord.setQtyMaterialentnahme(dataRecord.getQtyMaterialentnahme().add(dataUpdateRequest.getDirectMovementQty()));
+		dataRecord.setQtyMaterialentnahme(
+				stripTrailingDecimalZeros(dataRecord.getQtyMaterialentnahme().add(dataUpdateRequest.getDirectMovementQty())));
 
 		// this column was not in the old data model
-		dataRecord.setQtyOnHandCount(dataRecord.getQtyOnHandCount().add(dataUpdateRequest.getCountedQty()));
+		dataRecord.setQtyOnHandCount(stripTrailingDecimalZeros(
+				dataRecord.getQtyOnHandCount().add(dataUpdateRequest.getCountedQty())));
 
 		// was PMM_QtyPromised_OnDate
-		dataRecord.setPMM_QtyPromised_OnDate(dataRecord.getPMM_QtyPromised_OnDate().add(dataUpdateRequest.getOfferedQty()));
+		dataRecord.setPMM_QtyPromised_OnDate(stripTrailingDecimalZeros(
+				dataRecord.getPMM_QtyPromised_OnDate().add(dataUpdateRequest.getOfferedQty())));
 
 		// this column was not in the old data model
-		dataRecord.setQtyStockChange(dataRecord.getQtyStockChange().add(dataUpdateRequest.getOnHandQtyChange()));
+		dataRecord.setQtyStockChange(stripTrailingDecimalZeros(
+				dataRecord.getQtyStockChange().add(dataUpdateRequest.getOnHandQtyChange())));
 
 		// was QtyOrdered_OnDate => sum of RV_C_OrderLine_QtyOrderedReservedPromised_OnDate_V.QtyReserved_Purchase => ol.QtyReserved of purchaseOrders
-		dataRecord.setQtyReserved_Purchase(dataRecord.getQtyReserved_Purchase().add(dataUpdateRequest.getReservedPurchaseQty()));
+		dataRecord.setQtyReserved_Purchase(stripTrailingDecimalZeros(
+				dataRecord.getQtyReserved_Purchase().add(dataUpdateRequest.getReservedPurchaseQty())));
 
 		// was QtyReserved_OnDate
-		dataRecord.setQtyReserved_Sale(dataRecord.getQtyReserved_Sale().add(dataUpdateRequest.getReservedSalesQty()));
+		dataRecord.setQtyReserved_Sale(stripTrailingDecimalZeros(
+				dataRecord.getQtyReserved_Sale().add(dataUpdateRequest.getReservedSalesQty())));
 
 		// was Fresh_QtyMRP
-		dataRecord.setQtyRequiredForProduction(dataRecord.getQtyRequiredForProduction().add(dataUpdateRequest.getRequiredForProductionQty()));
+		dataRecord.setQtyRequiredForProduction(stripTrailingDecimalZeros(
+				dataRecord.getQtyRequiredForProduction().add(dataUpdateRequest.getRequiredForProductionQty())));
 
 		// was Fresh_QtyOnHand_OnDate
 		dataRecord.setQtyOnHandEstimate(
-				dataRecord.getQtyOnHandCount()
-						.add(dataRecord.getQtyStockChange())
-						.subtract(dataRecord.getQtyMaterialentnahme()));
+				stripTrailingDecimalZeros(
+						dataRecord.getQtyOnHandCount()
+								.add(dataRecord.getQtyStockChange())
+								.subtract(dataRecord.getQtyMaterialentnahme())));
 
 		// was Fresh_QtyPromised
-		dataRecord.setQtyAvailableToPromise(
+		dataRecord.setQtyAvailableToPromise(stripTrailingDecimalZeros(
 				dataRecord.getQtyOnHandEstimate()
 						.add(dataRecord.getQtyReserved_Purchase())
-						.subtract(dataRecord.getQtyReserved_Sale()));
+						.subtract(dataRecord.getQtyReserved_Sale())));
 	}
 }

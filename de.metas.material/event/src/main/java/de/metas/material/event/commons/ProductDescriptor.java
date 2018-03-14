@@ -45,7 +45,7 @@ public class ProductDescriptor
 {
 	public static final ProductDescriptor completeForProductIdAndEmptyAttribute(final int productId)
 	{
-		return new ProductDescriptor(productId,	AttributesKey.NONE, 0);
+		return new ProductDescriptor(productId, AttributesKey.NONE, 0);
 	}
 
 	public static final ProductDescriptor forProductAndAttributes(
@@ -80,8 +80,8 @@ public class ProductDescriptor
 
 		Preconditions.checkArgument(productId > 0,
 				"Given parameter productId=%s needs to be >0", productId);
-		Preconditions.checkArgument(attributeSetInstanceId >= 0,
-				"Given parameter attributeSetInstanceId needs to >=0");
+		Preconditions.checkArgument(attributeSetInstanceId >= -1,
+				"Given parameter attributeSetInstanceId needs to >=-1");
 		Preconditions.checkNotNull(storageAttributesKey,
 				"Given storageAttributeKey date needs to not-null");
 	}

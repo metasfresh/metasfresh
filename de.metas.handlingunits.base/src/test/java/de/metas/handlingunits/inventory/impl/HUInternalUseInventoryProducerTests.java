@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
@@ -37,6 +38,7 @@ import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.inventory.impl.InventoryBL;
 import lombok.NonNull;
 import mockit.Mocked;
 
@@ -96,7 +98,7 @@ public class HUInternalUseInventoryProducerTests
 
 		final I_C_DocType dt = newInstance(I_C_DocType.class);
 		dt.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
-		dt.setDocSubType(X_C_DocType.DOCSUBTYPE_MaterialDisposal);
+		dt.setDocSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory);
 		save(dt);
 
 		final I_M_Warehouse wh = newInstance(I_M_Warehouse.class);
@@ -105,11 +107,11 @@ public class HUInternalUseInventoryProducerTests
 		locator = newInstance(I_M_Locator.class);
 		locator.setM_Warehouse(wh);
 		save(locator);
+		
+		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, 0);
 	}
 
-	/**
-	 * TODO find out why this invocation currently does not create any I_M_Inventories and fix it
-	 */
+	
 	@Test
 	public void test()
 	{

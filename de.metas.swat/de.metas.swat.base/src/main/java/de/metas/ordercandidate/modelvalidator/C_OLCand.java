@@ -47,7 +47,7 @@ import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
-import de.metas.ordercandidate.api.IOLCandValdiatorBL;
+import de.metas.ordercandidate.api.IOLCandValidatorBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.purchasing.api.IBPartnerProductDAO;
@@ -89,10 +89,10 @@ public class C_OLCand
 	}
 
 	/**
-	 * Calls {@link IOLCandValdiatorBL#validate(I_C_OLCand)}.<br>
+	 * Calls {@link IOLCandValidatorBL#validate(I_C_OLCand)}.<br>
 	 * 
 	 * Before that it resets the pricing system if there is a new C_BPartner or C_BPartner_Override.<br>
-	 * The {@link de.metas.ordercandidate.spi.IOLCandValdiator} framework is then supposed to call {@link de.metas.ordercandidate.api.IOLCandBL} to come up with the then-correct pricing system.
+	 * The {@link de.metas.ordercandidate.spi.IOLCandValidator} framework is then supposed to call {@link de.metas.ordercandidate.api.IOLCandBL} to come up with the then-correct pricing system.
 	 * 
 	 * @param olCand
 	 * @task http://dewiki908/mediawiki/index.php/09686_PricingSystem_sometimes_not_updated_in_C_OLCand_%28105127201494%29
@@ -100,7 +100,7 @@ public class C_OLCand
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
 	public void validateC_OLCand(final I_C_OLCand olCand)
 	{
-		final IOLCandValdiatorBL olCandValdiatorBL = Services.get(IOLCandValdiatorBL.class);
+		final IOLCandValidatorBL olCandValdiatorBL = Services.get(IOLCandValidatorBL.class);
 		if (olCandValdiatorBL.isValidationProcessInProgress())
 		{
 			return; // we are already within the validation process. no need to call the logic from here.

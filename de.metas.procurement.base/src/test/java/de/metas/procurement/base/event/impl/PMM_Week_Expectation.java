@@ -120,15 +120,9 @@ public class PMM_Week_Expectation
 		return this;
 	}
 
-	public PMM_Week_Expectation setM_AttributeSetInstance_ID(final int m_AttributeSetInstance_ID)
-	{
-		M_AttributeSetInstance_ID = m_AttributeSetInstance_ID;
-		return this;
-	}
-
 	public PMM_Week_Expectation asi(final int m_AttributeSetInstance_ID)
 	{
-		setM_AttributeSetInstance_ID(m_AttributeSetInstance_ID);
+		M_AttributeSetInstance_ID = m_AttributeSetInstance_ID;
 		return this;
 	}
 

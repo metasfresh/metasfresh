@@ -1,7 +1,8 @@
 package de.metas.vertical.pharma.model;
 
+import java.math.BigDecimal;
 
-public interface I_I_Product extends org.compiere.model.I_I_Product
+public interface I_I_Product  extends org.compiere.model.I_I_Product
 {
 	public static final String COLUMNNAME_M_DosageForm_ID = "M_DosageForm_ID";
 	public void setM_DosageForm_ID(int M_DosageForm_ID);
@@ -30,4 +31,28 @@ public interface I_I_Product extends org.compiere.model.I_I_Product
 	public static final String COLUMNNAME_FAM_ZUB = "FAM_ZUB";
 	public void setFAM_ZUB (String FAM_ZUB);
 	public String getFAM_ZUB();
+
+	public static final String COLUMNNAME_PharmaProductCategory_Name = "PharmaProductCategory_Name";
+	public void setPharmaProductCategory_Name(String PharmaProductCategory_Name);
+	public String getPharmaProductCategory_Name();
+
+	public static final String COLUMNNAME_M_PharmaProductCategory_ID = "M_PharmaProductCategory_ID";
+	public void setM_PharmaProductCategory_ID(int M_PharmaProductCategory_ID);
+	public int getM_PharmaProductCategory_ID();
+
+	public static final String COLUMNNAME_AEP_Price_List_ID = "AEP_Price_List_ID";
+	public void setAEP_Price_List_ID(int AEP_Price_List_ID);
+	public int getAEP_Price_List_ID();
+
+	public static final String COLUMNNAME_A01AEP = "A01AEP";
+	public void setA01AEP(BigDecimal A01AEP);
+	public BigDecimal getA01AEP();
+
+	public static final String COLUMNNAME_APU_Price_List_ID = "APU_Price_List_ID";
+	public void setAPU_Price_List_ID(int APU_Price_List_ID);
+	public int getAPU_Price_List_ID();
+
+	public static final String COLUMNNAME_A01APU = "A01APU";
+	public void setA01APU(BigDecimal A01APU);
+	public BigDecimal getA01APU();
 }

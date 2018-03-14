@@ -26,16 +26,13 @@ import org.adempiere.util.Check;
  *
  *  @author Jorg Janke
  *  @version $Id: LookupDisplayColumn.java,v 1.3 2006/07/30 00:58:18 jjanke Exp $
- * 
+ *
  * @author Teo Sarca
  * 		<li>BF [ 2933367 ] Virtual Column Identifiers are not working
  * 			https://sourceforge.net/tracker/?func=detail&aid=2933367&group_id=176962&atid=879332
  */
 public class LookupDisplayColumn implements ILookupDisplayColumn, Serializable
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5876427657897043394L;
 
 	/**
@@ -55,7 +52,6 @@ public class LookupDisplayColumn implements ILookupDisplayColumn, Serializable
 			final int ad_Reference_Value_ID,
 			final String formatPattern)
 	{
-		super();
 		ColumnName = columnName;
 		IsTranslated = isTranslated;
 		DisplayType = ad_Reference_ID;

@@ -49,8 +49,8 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
-		calloutsRegistry.registerAnnotatedCallout(new de.metas.callout.C_Order());
-		calloutsRegistry.registerAnnotatedCallout(new de.metas.ordercandidate.callout.C_OrderLine());
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.order.callout.C_Order());
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.order.callout.C_OrderLine());
 	}
 
 }

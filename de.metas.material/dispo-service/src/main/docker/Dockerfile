@@ -1,7 +1,7 @@
 
 #Note: I played with openjdk:8-jdk-alpine, but wasn't able to get event the entrypoint shell script to actually run
 
-FROM ubuntu:16.04
+FROM docker.metasfresh.com:6000/ubuntu:16.04
 
 # note that we put all of this into one command
 # because otherwise, the update and full-update might not be performed (still in cache)

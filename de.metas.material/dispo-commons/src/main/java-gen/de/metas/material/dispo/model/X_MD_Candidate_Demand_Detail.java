@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.material.dispo.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1910542388L;
+	private static final long serialVersionUID = 2094397327L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Demand_Detail (Properties ctx, int MD_Candidate_Demand_Detail_ID, String trxName)
@@ -41,6 +42,25 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Istmenge.
+		@param ActualQty Istmenge	  */
+	@Override
+	public void setActualQty (java.math.BigDecimal ActualQty)
+	{
+		set_Value (COLUMNNAME_ActualQty, ActualQty);
+	}
+
+	/** Get Istmenge.
+		@return Istmenge	  */
+	@Override
+	public java.math.BigDecimal getActualQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
 
 	@Override
 	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
@@ -214,5 +234,24 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Geplante Menge.
+		@param PlannedQty Geplante Menge	  */
+	@Override
+	public void setPlannedQty (java.math.BigDecimal PlannedQty)
+	{
+		set_Value (COLUMNNAME_PlannedQty, PlannedQty);
+	}
+
+	/** Get Geplante Menge.
+		@return Geplante Menge	  */
+	@Override
+	public java.math.BigDecimal getPlannedQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 }

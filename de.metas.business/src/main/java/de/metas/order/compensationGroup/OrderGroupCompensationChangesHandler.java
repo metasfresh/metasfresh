@@ -63,15 +63,9 @@ public class OrderGroupCompensationChangesHandler
 		}
 	}
 	
-	public void recreateGroupOnRegularOrderLineChanged(final I_C_OrderLine orderLine)
+	public void recreateGroupOnOrderLineChanged(final I_C_OrderLine orderLine)
 	{
 		if (!isEligible(orderLine))
-		{
-			return;
-		}
-		
-		// skip if not regular line
-		if(orderLine.isGroupCompensationLine())
 		{
 			return;
 		}

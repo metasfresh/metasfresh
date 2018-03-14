@@ -42,8 +42,8 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeProcessor;
 import de.metas.handlingunits.attribute.impl.HUTransactionAttributeProcessor;
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionProcessor;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
@@ -63,12 +63,8 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 
 	private final IHUContext _huContext;
 
-	public HUTransactionProcessor(final IHUContext huContext)
+	public HUTransactionProcessor(@NonNull final IHUContext huContext)
 	{
-		super();
-
-		Check.assumeNotNull(huContext, "huContext not null");
-		// TODO: shall we assume that trxName is not null???
 		_huContext = huContext;
 	}
 
@@ -285,8 +281,8 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		//
 		// Create Transaction Line for each transaction line candidate
 		// Also build some indexes to be able to set counterparts after
-		final List<I_M_HU_Trx_Line> trxLines = new ArrayList<I_M_HU_Trx_Line>();
-		final Map<IHUTransactionCandidate, I_M_HU_Trx_Line> trxCandidate2trxLine = new IdentityHashMap<IHUTransactionCandidate, I_M_HU_Trx_Line>();
+		final List<I_M_HU_Trx_Line> trxLines = new ArrayList<>();
+		final Map<IHUTransactionCandidate, I_M_HU_Trx_Line> trxCandidate2trxLine = new IdentityHashMap<>();
 
 		for (final IHUTransactionCandidate trxCandidate : trxCandidates)
 		{
@@ -337,7 +333,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 
 		//
 		// Build ID to M_HU_Trx_Line map
-		final Map<Integer, I_M_HU_Trx_Line> id2trxLine = new HashMap<Integer, I_M_HU_Trx_Line>(trxLines.size());
+		final Map<Integer, I_M_HU_Trx_Line> id2trxLine = new HashMap<>(trxLines.size());
 		for (final I_M_HU_Trx_Line trxLine : trxLines)
 		{
 			final int trxLineId = trxLine.getM_HU_Trx_Line_ID();
@@ -350,7 +346,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 
 		//
 		// Iterate trxLines and it's counterpart until we reversed everything
-		final List<I_M_HU_Trx_Line> reversalTrxLines = new ArrayList<I_M_HU_Trx_Line>(trxLines.size());
+		final List<I_M_HU_Trx_Line> reversalTrxLines = new ArrayList<>(trxLines.size());
 		while (!id2trxLine.isEmpty())
 		{
 			final int trxLineId = id2trxLine.keySet().iterator().next();

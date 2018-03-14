@@ -10,11 +10,12 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_C_Order;
+//import de.metas.adempiere.model.I_C_Order;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
@@ -101,7 +102,7 @@ import lombok.NonNull;
 		purchaseItem2OrderLine.put(pruchaseOrderItem, orderLineBuilder);
 	}
 
-	public void createAndComplete()
+	public I_C_Order createAndComplete()
 	{
 		final I_C_Order order = orderFactory.createAndComplete();
 
@@ -111,7 +112,7 @@ import lombok.NonNull;
 		final Set<Integer> userIdsToNotify = getUserIdsToNotify();
 		if (userIdsToNotify.isEmpty())
 		{
-			return;
+			return order;
 		}
 
 		final IPair<String, Object[]> adMessageAndParams = createMessageAndParamsOrNull(order);
@@ -124,6 +125,8 @@ import lombok.NonNull;
 
 		userNotifications.queueEventsUntilCurrentTrxCommit();
 		userNotifications.notifyOrderCompleted(request);
+
+		return order;
 	}
 
 	private void updatePurchaseCandidateFromOrderLineBuilder(

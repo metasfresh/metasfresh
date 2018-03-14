@@ -102,6 +102,12 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	{
 		return orderLine.getM_Product();
 	}
+	
+	@Override
+	public int getProductId()
+	{
+		return orderLine.getM_Product_ID();
+	}
 
 	@Override
 	public I_C_UOM getC_UOM()
