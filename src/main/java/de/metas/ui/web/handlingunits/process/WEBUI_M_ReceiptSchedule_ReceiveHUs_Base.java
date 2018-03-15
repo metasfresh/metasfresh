@@ -21,6 +21,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.quantity.Quantity;
+import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
 
 /*
  * #%L
@@ -146,7 +147,7 @@ import de.metas.quantity.Quantity;
 		//
 		// Generate the HUs
 		final List<I_M_HU> hus = huGenerator.generate();
-		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus));
+		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus), HUsToReceiveViewFactory.WINDOW_ID_STRING);
 
 		return MSG_OK;
 	}

@@ -1,7 +1,5 @@
 package de.metas.ui.web.receiptSchedule;
 
-import org.springframework.stereotype.Component;
-
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.ui.web.handlingunits.HUEditorRowIsProcessedPredicate;
 import de.metas.ui.web.handlingunits.HUEditorRowIsProcessedPredicates;
@@ -31,9 +29,14 @@ import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Transform;
  * #L%
  */
 
-@Component
-public class HUEditorView_ReceiptScheduleCustomizer implements HUEditorViewCustomizer
+final class HUsToReceiveHUEditorViewCustomizer implements HUEditorViewCustomizer
 {
+	public static final transient HUsToReceiveHUEditorViewCustomizer instance = new HUsToReceiveHUEditorViewCustomizer();
+
+	private HUsToReceiveHUEditorViewCustomizer()
+	{
+	}
+
 	@Override
 	public String getReferencingTableNameToMatch()
 	{
