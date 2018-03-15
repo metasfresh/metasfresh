@@ -126,11 +126,30 @@ class OverlayField extends Component {
       handleChange,
       captionValue,
     } = this.props;
+    const { barcodeSelected } = this.state;
     const parameters = layout.parameters;
     return parameters.map((item, index) => {
+      let captionElement = null;
+
+      if (item.parameterName === 'Barcode') {
+        captionElement = (
+          <button
+            className="btn btn-sm btn-meta-success"
+            onClick={() => this._scanBarcode(true)}
+          >
+            Scan using camera
+          </button>
+        );
+      }
+
+      if (barcodeSelected) {
+        item.value = barcodeSelected;
+      }
+
       return (
         <RawWidget
           defaultValue={captionValue}
+          captionElement={captionElement}
           entity="documentView"
           subentity="filter"
           subentityId={layout.filterId}
@@ -167,6 +186,8 @@ class OverlayField extends Component {
     if (scanning) {
       renderedContent = this.renderScanner();
     } else {
+      // TODO: Why sometimes it's wrapped in MasterWidget, and other
+      // times it's not ? Needs refactoring.
       if (filter) {
         renderedContent = this.renderParameters(layout);
       } else if (!filter && layout && layout.elements) {
