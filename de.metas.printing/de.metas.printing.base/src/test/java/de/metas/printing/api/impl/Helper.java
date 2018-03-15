@@ -1,5 +1,7 @@
 package de.metas.printing.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.printing.base
@@ -10,12 +12,12 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +37,6 @@ import java.util.UUID;
 
 import javax.print.attribute.standard.MediaSize;
 
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -273,7 +274,7 @@ public class Helper
 		{
 			final I_C_Print_Job_Detail detail = printingDAO.newInstance(ctx, I_C_Print_Job_Detail.class, trxName);
 			detail.setC_Print_Job_Line(printJobLine);
-			detail.setAD_PrinterRouting(routing);
+			detail.setAD_PrinterRouting_ID(routing.getAD_PrinterRouting_ID());
 			printingDAO.save(detail);
 		}
 		return printJobLine;
@@ -281,7 +282,7 @@ public class Helper
 
 	/**
 	 * Calls {@link #createPrintJobInstructions(I_C_Print_Job, int)} with copies == 1.
-	 * 
+	 *
 	 * @param printJob
 	 * @return
 	 */
@@ -310,15 +311,7 @@ public class Helper
 
 	public I_AD_Printer getCreatePrinter(final String printerName)
 	{
-		I_AD_Printer printer = printingDAO.getLookupMap().getFirstOnly(I_AD_Printer.class, new IQueryFilter<I_AD_Printer>()
-		{
-
-			@Override
-			public boolean accept(final I_AD_Printer pojo)
-			{
-				return Objects.equals(pojo.getPrinterName(), printerName);
-			}
-		});
+		I_AD_Printer printer = printingDAO.getLookupMap().getFirstOnly(I_AD_Printer.class, pojo -> Objects.equals(pojo.getPrinterName(), printerName));
 		if (printer == null)
 		{
 			printer = printingDAO.newInstance(ctx, I_AD_Printer.class, ITrx.TRXNAME_None);
@@ -331,14 +324,7 @@ public class Helper
 
 	public I_AD_PrinterHW getCreatePrinterHW(final String printerName)
 	{
-		I_AD_PrinterHW printer = printingDAO.getLookupMap().getFirstOnly(I_AD_PrinterHW.class, new IQueryFilter<I_AD_PrinterHW>()
-		{
-			@Override
-			public boolean accept(final I_AD_PrinterHW pojo)
-			{
-				return Objects.equals(pojo.getName(), printerName);
-			}
-		});
+		I_AD_PrinterHW printer = printingDAO.getLookupMap().getFirstOnly(I_AD_PrinterHW.class, pojo -> Objects.equals(pojo.getName(), printerName));
 		if (printer == null)
 		{
 			printer = printingDAO.newInstance(ctx, I_AD_PrinterHW.class, ITrx.TRXNAME_None);
@@ -351,19 +337,16 @@ public class Helper
 	public I_AD_Printer_Tray getCreatePrinterTray(final String printerName, final String trayName)
 	{
 		final I_AD_Printer printer = getCreatePrinter(printerName);
-		I_AD_Printer_Tray tray = printingDAO.getLookupMap().getFirstOnly(I_AD_Printer_Tray.class, new IQueryFilter<I_AD_Printer_Tray>()
-		{
-			@Override
-			public boolean accept(final I_AD_Printer_Tray pojo)
-			{
-				return Objects.equals(pojo.getAD_Printer(), printer)
-						&& Objects.equals(pojo.getName(), trayName);
-			}
-		});
+		I_AD_Printer_Tray tray = printingDAO
+				.getLookupMap()
+				.getFirstOnly(
+						I_AD_Printer_Tray.class,
+						pojo -> Objects.equals(load(pojo.getAD_Printer_ID(), I_AD_Printer.class), printer)
+								&& Objects.equals(pojo.getName(), trayName));
 		if (tray == null)
 		{
 			tray = printingDAO.newInstance(ctx, I_AD_Printer_Tray.class, ITrx.TRXNAME_None);
-			tray.setAD_Printer(printer);
+			tray.setAD_Printer_ID(printer.getAD_Printer_ID());
 			tray.setName(trayName);
 			printingDAO.save(tray);
 
@@ -399,15 +382,8 @@ public class Helper
 	public I_AD_PrinterHW_MediaTray getCreatePrinterTrayHW(final String printerName, final String trayName)
 	{
 		final I_AD_PrinterHW printer = getCreatePrinterHW(printerName);
-		I_AD_PrinterHW_MediaTray tray = printingDAO.getLookupMap().getFirstOnly(I_AD_PrinterHW_MediaTray.class, new IQueryFilter<I_AD_PrinterHW_MediaTray>()
-		{
-			@Override
-			public boolean accept(final I_AD_PrinterHW_MediaTray pojo)
-			{
-				return Objects.equals(pojo.getAD_PrinterHW(), printer)
-						&& Objects.equals(pojo.getName(), trayName);
-			}
-		});
+		I_AD_PrinterHW_MediaTray tray = printingDAO.getLookupMap().getFirstOnly(I_AD_PrinterHW_MediaTray.class, pojo -> Objects.equals(pojo.getAD_PrinterHW(), printer)
+				&& Objects.equals(pojo.getName(), trayName));
 		if (tray == null)
 		{
 			tray = printingDAO.newInstance(ctx, I_AD_PrinterHW_MediaTray.class, ITrx.TRXNAME_None);
@@ -421,7 +397,7 @@ public class Helper
 
 	/**
 	 * Create printer routing for {@link I_AD_PrinterRouting#ROUTINGTYPE_PageRange}.
-	 * 
+	 *
 	 * @param printerName
 	 * @param trayName
 	 * @param C_DocType_ID if > 0, then this is set to be the new routing's matching-doctype ID.
@@ -464,7 +440,7 @@ public class Helper
 
 	/**
 	 * Create printer routing for {@link I_AD_PrinterRouting#ROUTINGTYPE_LastPages}.
-	 * 
+	 *
 	 * @param printerName
 	 * @param trayName
 	 * @param C_DocType_ID
@@ -499,22 +475,22 @@ public class Helper
 		return routing;
 	}
 
-	public void createPrinterConfigAndMatching(final String hostKey, final String hwPrinterName, final String hwTrayName, final String printerName, final String trayName)
+	public void createPrinterConfigAndMatching(
+			final String hostKey,
+			final String hwPrinterName,
+			final String hwTrayName,
+			final String printerName,
+			final String trayName)
 	{
-		I_AD_Printer_Config printerConfig = printingDAO.getLookupMap().getFirstOnly(I_AD_Printer_Config.class, new IQueryFilter<I_AD_Printer_Config>()
-		{
-			@Override
-			public boolean accept(I_AD_Printer_Config model)
-			{
-				return Objects.equals(hostKey, model.getHostKey());
-			}
-		});
+		final I_AD_Printer_Config printerConfig = printingDAO
+				.getLookupMap()
+				.getFirstOnly(I_AD_Printer_Config.class, model -> Objects.equals(hostKey, model.getConfigHostKey()));
 
 		final I_AD_Printer_Config printerConfigToUse;
 		if (printerConfig == null)
 		{
 			printerConfigToUse = printingDAO.newInstance(ctx, I_AD_Printer_Config.class, ITrx.TRXNAME_None);
-			printerConfigToUse.setHostKey(hostKey);
+			printerConfigToUse.setConfigHostKey(hostKey);
 			printingDAO.save(printerConfigToUse);
 		}
 		else
@@ -522,38 +498,27 @@ public class Helper
 			printerConfigToUse = printerConfig;
 		}
 
-		I_AD_Printer_Matching printerMatching = printingDAO.getLookupMap().getFirstOnly(I_AD_Printer_Matching.class, new IQueryFilter<I_AD_Printer_Matching>()
-		{
-			@Override
-			public boolean accept(final I_AD_Printer_Matching pojo)
-			{
-				return Objects.equals(pojo.getAD_Printer_Config_ID(), printerConfigToUse.getAD_Printer_Config_ID())
-						&& Objects.equals(pojo.getHostKey(), hostKey)
-						&& Objects.equals(pojo.getAD_Printer().getPrinterName(), printerName)
-						&& Objects.equals(pojo.getAD_PrinterHW().getName(), hwPrinterName);
-			}
-		});
+		I_AD_Printer_Matching printerMatching = printingDAO
+				.getLookupMap()
+				.getFirstOnly(I_AD_Printer_Matching.class,
+						pojo -> Objects.equals(pojo.getAD_Printer_Config_ID(), printerConfigToUse.getAD_Printer_Config_ID())
+								&& Objects.equals(pojo.getHostKey(), hostKey)
+								&& Objects.equals(load(pojo.getAD_Printer_ID(), I_AD_Printer.class).getPrinterName(), printerName)
+								&& Objects.equals(pojo.getAD_PrinterHW().getName(), hwPrinterName));
 		if (printerMatching == null)
 		{
 			printerMatching = printingDAO.newInstance(ctx, I_AD_Printer_Matching.class, ITrx.TRXNAME_None);
 			printerMatching.setAD_Printer_Config(printerConfigToUse);
 			printerMatching.setHostKey(hostKey);
-			printerMatching.setAD_Printer(getCreatePrinter(printerName));
+			printerMatching.setAD_Printer_ID(getCreatePrinter(printerName).getAD_Printer_ID());
 			printerMatching.setAD_PrinterHW(getCreatePrinterHW(hwPrinterName));
 			printingDAO.save(printerMatching);
 		}
 
 		final int printerMatchingID = printerMatching.getAD_Printer_Matching_ID();
-		I_AD_PrinterTray_Matching trayMatching = printingDAO.getLookupMap().getFirstOnly(I_AD_PrinterTray_Matching.class, new IQueryFilter<I_AD_PrinterTray_Matching>()
-		{
-			@Override
-			public boolean accept(final I_AD_PrinterTray_Matching pojo)
-			{
-				return Objects.equals(pojo.getAD_Printer_Tray().getName(), trayName)
-						&& Objects.equals(pojo.getAD_PrinterHW_MediaTray(), hwTrayName)
-						&& Objects.equals(pojo.getAD_Printer_Matching_ID(), printerMatchingID);
-			}
-		});
+		I_AD_PrinterTray_Matching trayMatching = printingDAO.getLookupMap().getFirstOnly(I_AD_PrinterTray_Matching.class, pojo -> Objects.equals(pojo.getAD_Printer_Tray().getName(), trayName)
+				&& Objects.equals(pojo.getAD_PrinterHW_MediaTray(), hwTrayName)
+				&& Objects.equals(pojo.getAD_Printer_Matching_ID(), printerMatchingID));
 		if (trayMatching == null)
 		{
 

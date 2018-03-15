@@ -1,5 +1,7 @@
 package de.metas.printing.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.printing.base
@@ -10,12 +12,12 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,8 +35,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.print.attribute.standard.MediaSize;
 
@@ -49,6 +49,7 @@ import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -56,6 +57,7 @@ import com.lowagie.text.pdf.BadPdfFormatException;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfReader;
 
+import de.metas.logging.LogManager;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintJobLinesAggregator;
 import de.metas.printing.api.IPrintPackageCtx;
@@ -92,10 +94,10 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	private final String trxName;
 	private I_C_Print_Package printPackageToUse;
 
-	private final List<Map<ArrayKey, I_C_Print_PackageInfo>> printPackageInfos = new ArrayList<Map<ArrayKey, I_C_Print_PackageInfo>>();
+	private final List<Map<ArrayKey, I_C_Print_PackageInfo>> printPackageInfos = new ArrayList<>();
 
 	// NOTE: we shall use IdentityHashMap instead of HashMap because key content (I_C_Print_PackageInfo) is changing
-	private final Map<I_C_Print_PackageInfo, List<ArchivePart>> mapArchiveParts = new IdentityHashMap<I_C_Print_PackageInfo, List<ArchivePart>>();
+	private final Map<I_C_Print_PackageInfo, List<ArchivePart>> mapArchiveParts = new IdentityHashMap<>();
 
 	/**
 	 * True if aggregator was already executed
@@ -187,7 +189,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		final List<ArchivePart> archiveParts = new ArrayList<>(printJobDetails.size());
 		for (final I_C_Print_Job_Detail detail : printJobDetails)
 		{
-			final I_AD_PrinterRouting routing = detail.getAD_PrinterRouting();
+			final I_AD_PrinterRouting routing = loadOutOfTrx(detail.getAD_PrinterRouting_ID(), I_AD_PrinterRouting.class);
 			final ArchivePart archivePart = new ArchivePart(archiveData, routing);
 			archiveParts.add(archivePart);
 		}
@@ -452,7 +454,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	}
 
 	/**
-	 * 
+	 *
 	 * @param routing
 	 * @param preceedingGroupKey used to prevent multiple job lines from from being split, i.e 50-times the first part of each job line, then 50-time the 2nd part.
 	 * @return
@@ -505,14 +507,14 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	}
 
 	/**
-	 * 
+	 *
 	 * @param hwPrinterId
 	 * @param hwTrayId
 	 * @param calX
 	 * @param calY
 	 * @param preceedingGroupKey used to check if the current parameters (the other 4 params of this method) match the key of the preceeding invocation. If yes, then the last element of
 	 *            {@link #printPackageInfos} is used to check if and existing print package info can be reused. Otherwise, a new map is created.
-	 * 
+	 *
 	 * @return
 	 */
 	private Pair<ArrayKey, I_C_Print_PackageInfo> getCreatePrintPackageInfo(final int hwPrinterId,
@@ -549,7 +551,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			currentPrintPackageInfos.put(groupKey, printPackageInfo);
 		}
 
-		final Pair<ArrayKey, I_C_Print_PackageInfo> result = new Pair<ArrayKey, I_C_Print_PackageInfo>(groupKey, printPackageInfo);
+		final Pair<ArrayKey, I_C_Print_PackageInfo> result = new Pair<>(groupKey, printPackageInfo);
 		return result;
 	}
 
@@ -565,7 +567,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		List<ArchivePart> archiveParts = mapArchiveParts.get(printPackageInfo);
 		if (archiveParts == null)
 		{
-			archiveParts = new ArrayList<ArchivePart>();
+			archiveParts = new ArrayList<>();
 			mapArchiveParts.put(printPackageInfo, archiveParts);
 		}
 
@@ -576,7 +578,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	/**
 	 * Iterates all values of the {@link #mapPrintPackageInfos} map and appends their PDF data to the given <code>out</code> stream, while updating the individual {@link I_C_Print_PackageInfo}s'
 	 * <code>pageFrom</code> and <code>pageTo</code> values.
-	 * 
+	 *
 	 * @param out
 	 * @return number of pages created in out stream
 	 */

@@ -220,7 +220,7 @@ public interface I_AD_PrinterHW
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Output Type.
+	 * Set Ausgabe Art.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -229,7 +229,7 @@ public interface I_AD_PrinterHW
 	public void setOutputType (java.lang.String OutputType);
 
 	/**
-	 * Get Output Type.
+	 * Get Ausgabe Art.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false

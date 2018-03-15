@@ -179,6 +179,56 @@ public interface I_RV_Printing_Bericht_List_Per_Print_Job
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
+	 * Set Firmenname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCompanyname (java.lang.String Companyname);
+
+	/**
+	 * Get Firmenname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCompanyname();
+
+    /** Column definition for Companyname */
+    public static final org.adempiere.model.ModelColumn<I_RV_Printing_Bericht_List_Per_Print_Job, Object> COLUMN_Companyname = new org.adempiere.model.ModelColumn<I_RV_Printing_Bericht_List_Per_Print_Job, Object>(I_RV_Printing_Bericht_List_Per_Print_Job.class, "Companyname", null);
+    /** Column name Companyname */
+    public static final String COLUMNNAME_Companyname = "Companyname";
+
+	/**
+	 * Set Druck-Warteschlangendatensatz.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID);
+
+	/**
+	 * Get Druck-Warteschlangendatensatz.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Printing_Queue_ID();
+
+	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue();
+
+	public void setC_Printing_Queue(de.metas.printing.model.I_C_Printing_Queue C_Printing_Queue);
+
+    /** Column definition for C_Printing_Queue_ID */
+    public static final org.adempiere.model.ModelColumn<I_RV_Printing_Bericht_List_Per_Print_Job, de.metas.printing.model.I_C_Printing_Queue> COLUMN_C_Printing_Queue_ID = new org.adempiere.model.ModelColumn<I_RV_Printing_Bericht_List_Per_Print_Job, de.metas.printing.model.I_C_Printing_Queue>(I_RV_Printing_Bericht_List_Per_Print_Job.class, "C_Printing_Queue_ID", de.metas.printing.model.I_C_Printing_Queue.class);
+    /** Column name C_Printing_Queue_ID */
+    public static final String COLUMNNAME_C_Printing_Queue_ID = "C_Printing_Queue_ID";
+
+	/**
 	 * Set Druck-Job.
 	 *
 	 * <br>Type: TableDir
@@ -227,56 +277,6 @@ public interface I_RV_Printing_Bericht_List_Per_Print_Job
     public static final org.adempiere.model.ModelColumn<I_RV_Printing_Bericht_List_Per_Print_Job, Object> COLUMN_c_print_job_name = new org.adempiere.model.ModelColumn<I_RV_Printing_Bericht_List_Per_Print_Job, Object>(I_RV_Printing_Bericht_List_Per_Print_Job.class, "c_print_job_name", null);
     /** Column name c_print_job_name */
     public static final String COLUMNNAME_c_print_job_name = "c_print_job_name";
-
-	/**
-	 * Set Druck-Warteschlangendatensatz.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID);
-
-	/**
-	 * Get Druck-Warteschlangendatensatz.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Printing_Queue_ID();
-
-	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue();
-
-	public void setC_Printing_Queue(de.metas.printing.model.I_C_Printing_Queue C_Printing_Queue);
-
-    /** Column definition for C_Printing_Queue_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_Printing_Bericht_List_Per_Print_Job, de.metas.printing.model.I_C_Printing_Queue> COLUMN_C_Printing_Queue_ID = new org.adempiere.model.ModelColumn<I_RV_Printing_Bericht_List_Per_Print_Job, de.metas.printing.model.I_C_Printing_Queue>(I_RV_Printing_Bericht_List_Per_Print_Job.class, "C_Printing_Queue_ID", de.metas.printing.model.I_C_Printing_Queue.class);
-    /** Column name C_Printing_Queue_ID */
-    public static final String COLUMNNAME_C_Printing_Queue_ID = "C_Printing_Queue_ID";
-
-	/**
-	 * Set Firmenname.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCompanyname (java.lang.String Companyname);
-
-	/**
-	 * Get Firmenname.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCompanyname();
-
-    /** Column definition for Companyname */
-    public static final org.adempiere.model.ModelColumn<I_RV_Printing_Bericht_List_Per_Print_Job, Object> COLUMN_Companyname = new org.adempiere.model.ModelColumn<I_RV_Printing_Bericht_List_Per_Print_Job, Object>(I_RV_Printing_Bericht_List_Per_Print_Job.class, "Companyname", null);
-    /** Column name Companyname */
-    public static final String COLUMNNAME_Companyname = "Companyname";
 
 	/**
 	 * Get Erstellt.
@@ -332,7 +332,7 @@ public interface I_RV_Printing_Bericht_List_Per_Print_Job
     public static final String COLUMNNAME_document = "document";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: Text
@@ -342,7 +342,7 @@ public interface I_RV_Printing_Bericht_List_Per_Print_Job
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: Text

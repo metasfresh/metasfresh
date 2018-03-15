@@ -10,12 +10,12 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -94,7 +94,7 @@ public class PrinterBLTest extends AbstractPrintingTest
 
 		final I_AD_Printer_Config config = db.newInstance(I_AD_Printer_Config.class);
 		db.save(config);
-		
+
 		final I_AD_Printer printer = db.newInstance(I_AD_Printer.class);
 		db.save(printer);
 
@@ -130,7 +130,7 @@ public class PrinterBLTest extends AbstractPrintingTest
 		db.save(printerHW);
 
 		final I_AD_Printer_Tray tray = db.newInstance(I_AD_Printer_Tray.class);
-		tray.setAD_Printer(printer);
+		tray.setAD_Printer_ID(printer.getAD_Printer_ID());
 		db.save(tray);
 
 		final I_AD_PrinterHW_MediaTray printerTrayHW = db.newInstance(I_AD_PrinterHW_MediaTray.class);
@@ -138,7 +138,7 @@ public class PrinterBLTest extends AbstractPrintingTest
 		db.save(printerTrayHW);
 
 		final I_AD_Printer_Matching matching = db.newInstance(I_AD_Printer_Matching.class);
-		matching.setAD_Printer(printer);
+		matching.setAD_Printer_ID(printer.getAD_Printer_ID());
 		matching.setAD_PrinterHW(printerHW);
 		db.save(matching);
 
@@ -168,7 +168,7 @@ public class PrinterBLTest extends AbstractPrintingTest
 		db.save(printerHW);
 
 		final I_AD_Printer_Tray tray = db.newInstance(I_AD_Printer_Tray.class);
-		tray.setAD_Printer(printer);
+		tray.setAD_Printer_ID(printer.getAD_Printer_ID());
 		db.save(tray);
 
 		final I_AD_PrinterHW_MediaTray firstPrinterTrayHW = db.newInstance(I_AD_PrinterHW_MediaTray.class);
@@ -176,7 +176,7 @@ public class PrinterBLTest extends AbstractPrintingTest
 		db.save(firstPrinterTrayHW);
 
 		final I_AD_Printer_Matching matching = db.newInstance(I_AD_Printer_Matching.class);
-		matching.setAD_Printer(printer);
+		matching.setAD_Printer_ID(printer.getAD_Printer_ID());
 		matching.setAD_PrinterHW(printerHW);
 		db.save(matching);
 
@@ -212,12 +212,12 @@ public class PrinterBLTest extends AbstractPrintingTest
 		db.save(printerHW);
 
 		final I_AD_Printer_Matching matching = db.newInstance(I_AD_Printer_Matching.class);
-		matching.setAD_Printer(printer);
+		matching.setAD_Printer_ID(printer.getAD_Printer_ID());
 		matching.setAD_PrinterHW(printerHW);
 		db.save(matching);
 
 		final I_AD_Printer_Tray tray = db.newInstance(I_AD_Printer_Tray.class);
-		tray.setAD_Printer(printer);
+		tray.setAD_Printer_ID(printer.getAD_Printer_ID());
 		db.save(tray);
 
 		final I_AD_PrinterHW_MediaTray printerTrayHW = db.newInstance(I_AD_PrinterHW_MediaTray.class);
@@ -252,12 +252,12 @@ public class PrinterBLTest extends AbstractPrintingTest
 		db.save(printerHW);
 
 		final I_AD_Printer_Matching matching = db.newInstance(I_AD_Printer_Matching.class);
-		matching.setAD_Printer(printer);
+		matching.setAD_Printer_ID(printer.getAD_Printer_ID());
 		matching.setAD_PrinterHW(printerHW);
 		db.save(matching);
 
 		final I_AD_Printer_Tray tray = db.newInstance(I_AD_Printer_Tray.class);
-		tray.setAD_Printer(printer);
+		tray.setAD_Printer_ID(printer.getAD_Printer_ID());
 		db.save(tray);
 
 		final I_AD_PrinterHW_MediaTray printerTrayHW = db.newInstance(I_AD_PrinterHW_MediaTray.class);
@@ -310,7 +310,7 @@ public class PrinterBLTest extends AbstractPrintingTest
 		InterfaceWrapperHelper.save(printer);
 
 		final I_AD_Printer_Tray tray = db.newInstance(I_AD_Printer_Tray.class);
-		tray.setAD_Printer(printer);
+		tray.setAD_Printer_ID(printer.getAD_Printer_ID());
 		InterfaceWrapperHelper.save(tray);
 
 		//
@@ -318,7 +318,7 @@ public class PrinterBLTest extends AbstractPrintingTest
 		// printer -> printerHW1
 		// tray -> printerTrayHW
 		final I_AD_Printer_Matching printerMatching = db.newInstance(I_AD_Printer_Matching.class);
-		printerMatching.setAD_Printer(printer);
+		printerMatching.setAD_Printer_ID(printer.getAD_Printer_ID());
 		printerMatching.setAD_PrinterHW(printerHW1);
 		InterfaceWrapperHelper.save(printerMatching);
 
@@ -375,12 +375,12 @@ public class PrinterBLTest extends AbstractPrintingTest
 		db.save(printer);
 
 		final I_AD_Printer_Tray tray = db.newInstance(I_AD_Printer_Tray.class);
-		tray.setAD_Printer(printer);
+		tray.setAD_Printer_ID(printer.getAD_Printer_ID());
 		db.save(tray);
 
 		// create printer matching
 		final I_AD_Printer_Matching printerMatching = db.newInstance(I_AD_Printer_Matching.class);
-		printerMatching.setAD_Printer(printer);
+		printerMatching.setAD_Printer_ID(printer.getAD_Printer_ID());
 		printerMatching.setAD_PrinterHW(printerHW1);
 		db.save(printerMatching);
 
@@ -426,12 +426,12 @@ public class PrinterBLTest extends AbstractPrintingTest
 		db.save(printer);
 
 		final I_AD_Printer_Tray tray = db.newInstance(I_AD_Printer_Tray.class);
-		tray.setAD_Printer(printer);
+		tray.setAD_Printer_ID(printer.getAD_Printer_ID());
 		db.save(tray);
 
 		// create printer and tray matching
 		final I_AD_Printer_Matching printerMatching = db.newInstance(I_AD_Printer_Matching.class);
-		printerMatching.setAD_Printer(printer);
+		printerMatching.setAD_Printer_ID(printer.getAD_Printer_ID());
 		printerMatching.setAD_PrinterHW(printerHW1);
 		db.save(printerMatching);
 
@@ -479,12 +479,12 @@ public class PrinterBLTest extends AbstractPrintingTest
 		db.save(printer);
 
 		final I_AD_Printer_Tray tray = db.newInstance(I_AD_Printer_Tray.class);
-		tray.setAD_Printer(printer);
+		tray.setAD_Printer_ID(printer.getAD_Printer_ID());
 		db.save(tray);
 
 		// create printer and tray matching
 		final I_AD_Printer_Matching printerMatching = db.newInstance(I_AD_Printer_Matching.class);
-		printerMatching.setAD_Printer(printer);
+		printerMatching.setAD_Printer_ID(printer.getAD_Printer_ID());
 		printerMatching.setAD_PrinterHW(printerHW1);
 		db.save(printerMatching);
 

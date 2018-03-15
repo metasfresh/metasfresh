@@ -14,7 +14,7 @@ public class X_AD_Printer_Matching extends org.compiere.model.PO implements I_AD
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1896204380L;
+	private static final long serialVersionUID = -568370510L;
 
     /** Standard Constructor */
     public X_AD_Printer_Matching (Properties ctx, int AD_Printer_Matching_ID, String trxName)
@@ -23,9 +23,9 @@ public class X_AD_Printer_Matching extends org.compiere.model.PO implements I_AD
       /** if (AD_Printer_Matching_ID == 0)
         {
 			setAD_Printer_Config_ID (0);
+			setAD_PrinterHW_ID (0);
 			setAD_Printer_ID (0);
 			setAD_Printer_Matching_ID (0);
-			setAD_PrinterHW_ID (0);
         } */
     }
 
@@ -79,15 +79,37 @@ public class X_AD_Printer_Matching extends org.compiere.model.PO implements I_AD
 	}
 
 	@Override
-	public I_AD_Printer getAD_Printer() throws RuntimeException
+	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_AD_Printer_ID, I_AD_Printer.class);
+		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_ID, de.metas.printing.model.I_AD_PrinterHW.class);
 	}
 
 	@Override
-	public void setAD_Printer(I_AD_Printer AD_Printer)
+	public void setAD_PrinterHW(de.metas.printing.model.I_AD_PrinterHW AD_PrinterHW)
 	{
-		set_ValueFromPO(COLUMNNAME_AD_Printer_ID, I_AD_Printer.class, AD_Printer);
+		set_ValueFromPO(COLUMNNAME_AD_PrinterHW_ID, de.metas.printing.model.I_AD_PrinterHW.class, AD_PrinterHW);
+	}
+
+	/** Set Hardware-Drucker.
+		@param AD_PrinterHW_ID Hardware-Drucker	  */
+	@Override
+	public void setAD_PrinterHW_ID (int AD_PrinterHW_ID)
+	{
+		if (AD_PrinterHW_ID < 1) 
+			set_Value (COLUMNNAME_AD_PrinterHW_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_PrinterHW_ID, Integer.valueOf(AD_PrinterHW_ID));
+	}
+
+	/** Get Hardware-Drucker.
+		@return Hardware-Drucker	  */
+	@Override
+	public int getAD_PrinterHW_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrinterHW_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Logischer Drucker.
@@ -129,40 +151,6 @@ public class X_AD_Printer_Matching extends org.compiere.model.PO implements I_AD
 	public int getAD_Printer_Matching_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Printer_Matching_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_ID, de.metas.printing.model.I_AD_PrinterHW.class);
-	}
-
-	@Override
-	public void setAD_PrinterHW(de.metas.printing.model.I_AD_PrinterHW AD_PrinterHW)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_PrinterHW_ID, de.metas.printing.model.I_AD_PrinterHW.class, AD_PrinterHW);
-	}
-
-	/** Set Hardware-Drucker.
-		@param AD_PrinterHW_ID Hardware-Drucker	  */
-	@Override
-	public void setAD_PrinterHW_ID (int AD_PrinterHW_ID)
-	{
-		if (AD_PrinterHW_ID < 1) 
-			set_Value (COLUMNNAME_AD_PrinterHW_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_PrinterHW_ID, Integer.valueOf(AD_PrinterHW_ID));
-	}
-
-	/** Get Hardware-Drucker.
-		@return Hardware-Drucker	  */
-	@Override
-	public int getAD_PrinterHW_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrinterHW_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
