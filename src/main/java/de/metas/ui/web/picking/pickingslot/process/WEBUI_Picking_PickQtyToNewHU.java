@@ -132,9 +132,9 @@ public class WEBUI_Picking_PickQtyToNewHU
 		return MSG_OK;
 	}
 
-	private void printPickingLabel(final HUToReportWrapper hu)
+	private void printPickingLabel(final HUToReportWrapper huToReport)
 	{
-		if (hu == null)
+		if (huToReport == null)
 		{
 			addLog("Param 'hu'==null; nothing to do");
 			return;
@@ -147,9 +147,9 @@ public class WEBUI_Picking_PickQtyToNewHU
 			return;
 		}
 
-		if (!hu.isTopLevel())
+		if (!huToReport.isTopLevel())
 		{
-			addLog("We only print top level HUs; nothing to do; hu={}", hu);
+			addLog("We only print top level HUs; nothing to do; hu={}", huToReport);
 			return;
 		}
 
@@ -161,20 +161,20 @@ public class WEBUI_Picking_PickQtyToNewHU
 		}
 
 		final List<HUToReport> husToProcess = huReportService
-				.getHUsToProcess(hu, adProcessId)
+				.getHUsToProcess(huToReport, adProcessId)
 				.stream()
 				.filter(HUToReport::isTopLevel) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
 				.collect(ImmutableList.toImmutableList());
 
 		if (husToProcess.isEmpty())
 		{
-			addLog("hu's type does not match process {}; nothing to do; hu={}", adProcessId, hu);
+			addLog("hu's type does not match process {}; nothing to do; hu={}", adProcessId, huToReport);
 			return;
 		}
 
 		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount();
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
+		final Properties ctx = getCtx();
 		HUReportExecutor.newInstance(ctx)
 				.numberOfCopies(copies)
 				.executeHUReportAfterCommit(adProcessId, husToProcess);
