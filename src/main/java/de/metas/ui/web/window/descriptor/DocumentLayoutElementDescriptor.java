@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
@@ -17,7 +19,9 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -84,6 +88,7 @@ public final class DocumentLayoutElementDescriptor
 	private final LayoutType layoutType;
 	private final WidgetSize widgetSize;
 	private final boolean advancedField;
+	private final ImmutableSet<MediaType> restrictToMediaTypes;
 
 	private final LayoutAlign gridAlign;
 	private final ViewEditorRenderMode viewEditorRenderMode;
@@ -99,7 +104,7 @@ public final class DocumentLayoutElementDescriptor
 	{
 		internalName = builder.getInternalName();
 		gridElement = builder.isGridElement();
-		
+
 		caption = builder.getCaption();
 		description = builder.getDescription();
 
@@ -109,6 +114,7 @@ public final class DocumentLayoutElementDescriptor
 
 		layoutType = builder.getLayoutType();
 		widgetSize = builder.getWidgetSize();
+		restrictToMediaTypes = builder.getRestrictToMediaTypes();
 
 		gridAlign = builder.getGridAlign();
 		viewEditorRenderMode = builder.getViewEditorRenderMode();
@@ -166,6 +172,11 @@ public final class DocumentLayoutElementDescriptor
 		return widgetType;
 	}
 
+	public Set<MediaType> getRestrictToMediaTypes()
+	{
+		return restrictToMediaTypes;
+	}
+
 	public boolean isAllowShowPassword()
 	{
 		return allowShowPassword;
@@ -195,7 +206,7 @@ public final class DocumentLayoutElementDescriptor
 	{
 		return viewAllowSorting;
 	}
-	
+
 	public boolean isAdvancedField()
 	{
 		return advancedField;
@@ -210,7 +221,7 @@ public final class DocumentLayoutElementDescriptor
 	{
 		return !fields.isEmpty();
 	}
-	
+
 	public String getFirstFieldName()
 	{
 		return fields.iterator().next().getField();
@@ -235,6 +246,7 @@ public final class DocumentLayoutElementDescriptor
 
 		private LayoutType _layoutType;
 		private WidgetSize _widgetSize;
+		private Set<MediaType> restrictToMediaTypes = new HashSet<>();
 
 		private boolean _gridElement = false;
 		private ViewEditorRenderMode viewEditorRenderMode = null;
@@ -392,6 +404,23 @@ public final class DocumentLayoutElementDescriptor
 			return _widgetType;
 		}
 
+		public Builder restrictToMediaType(@NonNull final MediaType mediaType)
+		{
+			restrictToMediaTypes.add(mediaType);
+			return this;
+		}
+
+		public Builder restrictToMediaTypes(@NonNull final Collection<MediaType> mediaTypes)
+		{
+			restrictToMediaTypes.addAll(mediaTypes);
+			return this;
+		}
+
+		private ImmutableSet<MediaType> getRestrictToMediaTypes()
+		{
+			return ImmutableSet.copyOf(restrictToMediaTypes);
+		}
+
 		public Builder setAllowShowPassword(boolean allowShowPassword)
 		{
 			this._allowShowPassword = allowShowPassword;
@@ -544,7 +573,7 @@ public final class DocumentLayoutElementDescriptor
 			this.viewAllowSorting = viewAllowSorting;
 			return this;
 		}
-		
+
 		private boolean isViewAllowSorting()
 		{
 			return viewAllowSorting;
