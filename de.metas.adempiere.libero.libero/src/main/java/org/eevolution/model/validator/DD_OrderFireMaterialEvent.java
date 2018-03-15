@@ -19,9 +19,9 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
+import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
-import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 import lombok.NonNull;
 
@@ -116,9 +116,9 @@ public class DD_OrderFireMaterialEvent
 			ifColumnsChanged = I_DD_Order.COLUMNNAME_DocStatus)
 	public void postMaterialEvent_ddOrderDocStatusChange(@NonNull final I_DD_Order ddOrder)
 	{
-		final PPOrderDocStatusChangedEvent event = PPOrderDocStatusChangedEvent.builder()
+		final DDOrderDocStatusChangedEvent event = DDOrderDocStatusChangedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(ddOrder))
-				.ppOrderId(ddOrder.getDD_Order_ID())
+				.ddOrderId(ddOrder.getDD_Order_ID())
 				.newDocStatus(ddOrder.getDocStatus())
 				.build();
 

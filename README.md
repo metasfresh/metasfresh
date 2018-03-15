@@ -1,5 +1,6 @@
 # <img src='/images/metasfresh_logo_green.jpg' height='60' alt='metasfresh Logo' aria-label='metasfresh.com' /></a>
 
+[![release](https://img.shields.io/badge/release-5.47-blue.svg)](https://github.com/metasfresh/metasfresh/releases/tag/5.47)
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/metasfresh)
 [![Krihelimeter](http://krihelinator.xyz/badge/metasfresh/metasfresh)](http://krihelinator.xyz)
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md)

@@ -144,7 +144,7 @@ public class PPOrderPojoSupplier
 				.datePromised(dateFinishSchedule)
 				.dateStartSchedule(dateStartSchedule)
 
-				.quantity(ppOrderQuantity.getQty())
+				.qtyRequired(ppOrderQuantity.getQty())
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
 				.bPartnerId(request.getMrpDemandBPartnerId());
@@ -232,7 +232,7 @@ public class PPOrderPojoSupplier
 					.build();
 
 			final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-			final BigDecimal qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder, ppOrder.getQuantity());
+			final BigDecimal qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder, ppOrder.getQtyRequired());
 
 			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.toBuilder()
 					.qtyRequired(qtyRequired).build();
