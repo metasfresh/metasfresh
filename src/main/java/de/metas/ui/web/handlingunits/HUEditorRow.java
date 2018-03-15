@@ -40,6 +40,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -115,16 +116,20 @@ public final class HUEditorRow implements IViewRow
 	private final JSONLookupValue product;
 
 	public static final String FIELDNAME_HU_UnitType = "HU_UnitType";
-	@ViewColumn(fieldName = FIELDNAME_HU_UnitType, widgetType = DocumentFieldWidgetType.Text, sorting = false, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
-	})
+	@ViewColumn(fieldName = FIELDNAME_HU_UnitType, widgetType = DocumentFieldWidgetType.Text, sorting = false, //
+			restrictToMediaTypes = { MediaType.SCREEN }, //
+			layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
+			})
 	private final JSONLookupValue huUnitType;
 
 	public static final String FIELDNAME_PackingInfo = I_M_HU.COLUMNNAME_M_HU_PI_Item_Product_ID;
-	@ViewColumn(fieldName = FIELDNAME_PackingInfo, widgetType = DocumentFieldWidgetType.Text, sorting = false, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
-	})
+	@ViewColumn(fieldName = FIELDNAME_PackingInfo, widgetType = DocumentFieldWidgetType.Text, sorting = false, //
+			restrictToMediaTypes = { MediaType.SCREEN }, //
+			layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
+			})
 	private final String packingInfo;
 
 	public static final String FIELDNAME_QtyCU = "QtyCU";
@@ -242,7 +247,7 @@ public final class HUEditorRow implements IViewRow
 	{
 		return processed;
 	}
-	
+
 	public int getBPartnerId()
 	{
 		return bpartnerId;
@@ -719,13 +724,13 @@ public final class HUEditorRow implements IViewRow
 		{
 			return locator;
 		}
-		
+
 		public Builder setBPartnerId(final int bpartnerId)
 		{
 			this.bpartnerId = bpartnerId;
 			return this;
 		}
-		
+
 		private int getBPartnerId()
 		{
 			return bpartnerId;
