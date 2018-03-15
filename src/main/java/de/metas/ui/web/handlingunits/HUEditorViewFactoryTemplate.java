@@ -232,9 +232,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return layouts.getOrLoad(key, () -> createHUViewLayout(windowId, viewDataType));
 	}
 
-	protected ViewLayout createHUViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	private final ViewLayout createHUViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
-		return ViewLayout.builder()
+		final ViewLayout.Builder viewLayoutBuilder = ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption("HU Editor")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
@@ -245,9 +245,11 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
 				//
-				.addElementsFromViewRowClass(HUEditorRow.class, viewDataType)
-				//
-				.build();
+				.addElementsFromViewRowClass(HUEditorRow.class, viewDataType);
+
+		customizeViewLayout(viewLayoutBuilder, viewDataType);
+
+		return viewLayoutBuilder.build();
 	}
 
 	@Override
@@ -311,6 +313,11 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 			return huViewBuilder.build();
 		}
+	}
+
+	protected void customizeViewLayout(final ViewLayout.Builder viewLayoutBuilder, final JSONViewDataType viewDataType)
+	{
+		// nothing on this level
 	}
 
 	protected void customizeHUEditorViewRepository(final SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder huEditorViewRepositoryBuilder)

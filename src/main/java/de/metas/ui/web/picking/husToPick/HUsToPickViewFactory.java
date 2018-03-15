@@ -23,7 +23,6 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColu
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
 
@@ -81,19 +80,10 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	}
 
 	@Override
-	protected ViewLayout createHUViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	protected void customizeViewLayout(final ViewLayout.Builder viewLayoutBuilder, final JSONViewDataType viewDataType)
 	{
-		return ViewLayout.builder()
-				.setWindowId(windowId)
-				.setCaption("HU Editor")
-				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.setIdFieldName(HUEditorRow.FIELDNAME_M_HU_ID)
-				.setFilters(getViewFilterDescriptors().getAll())
-				//
-				.setHasAttributesSupport(true)
-				.setHasTreeSupport(true)
-				//
+		viewLayoutBuilder
+				.clearElements()
 				.addElementsFromViewRowClassAndFieldNames(HUEditorRow.class,
 						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
 						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
@@ -103,9 +93,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
 						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build(),
 						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_BestBeforeDate),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Locator))
-				//
-				.build();
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Locator));
 	}
 
 	@Override
@@ -117,7 +105,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	}
 
 	@Override
-	protected void customizeHUEditorView(HUEditorViewBuilder huViewBuilder)
+	protected void customizeHUEditorView(final HUEditorViewBuilder huViewBuilder)
 	{
 		huViewBuilder
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_PickHU.class))
