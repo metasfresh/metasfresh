@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
@@ -114,7 +115,10 @@ public final class JSONDocumentLayoutElement
 	@JsonProperty("sortable")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean viewAllowSorting;
-
+	
+	@JsonProperty("restrictToMediaTypes")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Set<MediaType> restrictToMediaTypes;
 
 	@JsonProperty("fields")
 	@JsonInclude(Include.NON_EMPTY)
@@ -156,6 +160,8 @@ public final class JSONDocumentLayoutElement
 		gridAlign = JSONLayoutAlign.fromNullable(element.getGridAlign());
 		viewEditorRenderMode = element.getViewEditorRenderMode() != null ? element.getViewEditorRenderMode().toJson() : null;
 		viewAllowSorting = element.isGridElement() ? element.isViewAllowSorting() : null;
+		
+		restrictToMediaTypes = ImmutableSet.copyOf(element.getRestrictToMediaTypes());
 
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonOpts);
 	}
@@ -175,6 +181,8 @@ public final class JSONDocumentLayoutElement
 		gridAlign = JSONLayoutAlign.right;
 		viewEditorRenderMode = ViewEditorRenderMode.NEVER.toJson();
 		viewAllowSorting = null;
+		
+		restrictToMediaTypes = null;
 
 		fields = ImmutableSet.of(new JSONDocumentLayoutElementField( //
 				fieldName, (JSONFieldType)null // type

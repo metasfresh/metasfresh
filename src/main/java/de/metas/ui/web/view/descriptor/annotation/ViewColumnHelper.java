@@ -19,12 +19,14 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -161,6 +163,7 @@ public final class ViewColumnHelper
 				.allowSorting(viewColumnAnn.sorting())
 				.fieldReference(FieldReference.of(field))
 				.layoutsByViewType(layoutsByViewType)
+				.restrictToMediaTypes(ImmutableSet.copyOf(viewColumnAnn.restrictToMediaTypes()))
 				.build();
 	}
 
@@ -172,6 +175,7 @@ public final class ViewColumnHelper
 				.setWidgetType(column.getWidgetType())
 				.setViewEditorRenderMode(column.getEditorRenderMode())
 				.setViewAllowSorting(column.isAllowSorting())
+				.restrictToMediaTypes(column.getRestrictToMediaTypes())
 				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName()));
 	}
 
@@ -254,6 +258,8 @@ public final class ViewColumnHelper
 	{
 		@NonNull
 		private final String fieldName;
+		@NonNull
+		private final FieldReference fieldReference;
 
 		@NonNull
 		private final ITranslatableString caption;
@@ -263,9 +269,9 @@ public final class ViewColumnHelper
 		private final ViewEditorRenderMode editorRenderMode;
 		private final boolean allowSorting;
 		@NonNull
-		private final FieldReference fieldReference;
-		@NonNull
 		private final ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType;
+		@NonNull
+		private final ImmutableSet<MediaType> restrictToMediaTypes;
 
 		public boolean isDisplayed(final JSONViewDataType viewType)
 		{
