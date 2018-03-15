@@ -1017,8 +1017,26 @@ public class FlatrateBL implements IFlatrateBL
 			final I_C_Flatrate_Term currentTerm = context.getContract();
 			currentTerm.setAD_PInstance_EndOfTerm_ID(context.getAD_PInstance_ID());
 			InterfaceWrapperHelper.save(currentTerm);
+
+			final I_C_Flatrate_Term nextTerm = currentTerm.getC_FlatrateTerm_Next();
+			final I_C_Flatrate_Conditions nextconditions = nextTerm.getC_Flatrate_Conditions();
+			final I_C_Flatrate_Transition nextTransition = nextconditions.getC_Flatrate_Transition();
+			if (nextTransition.isAutoExtension() && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0)
+			{
+				final ContractExtendingRequest nextContext = ContractExtendingRequest.builder()
+						.AD_PInstance_ID(context.getAD_PInstance_ID())
+						.contract(nextTerm)
+						.forceExtend(true)
+						.forceComplete(true)
+						.nextTermStartDate(null)
+						.build();
+				extendContract(nextContext);
+			}
+
 		});
 	}
+
+
 
 	private void extendContract0(final @NonNull ContractExtendingRequest context, final String trxName)
 	{
