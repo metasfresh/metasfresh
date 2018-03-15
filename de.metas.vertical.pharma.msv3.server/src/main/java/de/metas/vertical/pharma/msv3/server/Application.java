@@ -16,6 +16,7 @@ import org.springframework.ws.wsdl.wsdl11.Wsdl11Definition;
 import org.springframework.xml.xsd.SimpleXsdSchema;
 import org.springframework.xml.xsd.XsdSchema;
 
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
 import lombok.NonNull;
 
 /*
@@ -54,6 +55,12 @@ public class Application
 				.headless(true)
 				.web(true)
 				.run(args);
+	}
+
+	@Bean
+	public ObjectFactory jaxbObjectFactory()
+	{
+		return new ObjectFactory();
 	}
 
 	@Bean(MessageDispatcherServlet.DEFAULT_MESSAGE_FACTORY_BEAN_NAME)
