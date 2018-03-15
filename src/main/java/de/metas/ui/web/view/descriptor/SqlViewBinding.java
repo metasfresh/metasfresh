@@ -395,6 +395,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		private String getTableName()
 		{
+			Check.assumeNotEmpty(_sqlTableName, "sqlTableName is not empty");
 			return _sqlTableName;
 		}
 
