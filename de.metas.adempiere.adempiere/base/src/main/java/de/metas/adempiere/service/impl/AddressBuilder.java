@@ -174,7 +174,7 @@ public class AddressBuilder
 	 * replace variables
 	 *
 	 * @param location
-	 * @param isLocalAddress
+	 * @param isLocalAddress {@code true} the given {@code inStr} is the *local* address sequence
 	 * @param inStr
 	 * @param outStr
 	 * @param bPartnerBlock
@@ -255,7 +255,7 @@ public class AddressBuilder
 				}
 				else if (location.getRegionName() != null
 						&& location.getRegionName().length() > 0)
-				 {
+				{
 					outStr.append(location.getRegionName()); // local region name
 				}
 			}
@@ -276,16 +276,8 @@ public class AddressBuilder
 			}
 			else if (token.equals("CO"))
 			{
-				final String countryName;
-				if (isLocalAddress)
-				{
-					countryName = country.getName();
-				}
-				else
-				{
-					final I_C_Country countryTrl = InterfaceWrapperHelper.translate(country, I_C_Country.class);
-					countryName = countryTrl.getName();
-				}
+				final I_C_Country countryTrl = InterfaceWrapperHelper.translate(country, I_C_Country.class);
+				final String countryName = countryTrl.getName();
 
 				if (countryName != null && countryName.length() > 0)
 				{
