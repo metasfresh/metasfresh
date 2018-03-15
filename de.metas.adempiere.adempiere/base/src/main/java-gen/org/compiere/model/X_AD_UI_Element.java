@@ -14,7 +14,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1126591526L;
+	private static final long serialVersionUID = 1664430908L;
 
     /** Standard Constructor */
     public X_AD_UI_Element (Properties ctx, int AD_UI_Element_ID, String trxName)
@@ -433,6 +433,22 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Media Types.
+		@param MediaTypes Media Types	  */
+	@Override
+	public void setMediaTypes (java.lang.String MediaTypes)
+	{
+		set_Value (COLUMNNAME_MediaTypes, MediaTypes);
+	}
+
+	/** Get Media Types.
+		@return Media Types	  */
+	@Override
+	public java.lang.String getMediaTypes () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MediaTypes);
 	}
 
 	/** Set Name.

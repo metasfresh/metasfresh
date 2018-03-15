@@ -76,11 +76,9 @@ public class PP_Order_PostMaterialEvent
 		materialEventService.postEventAfterNextCommit(event);
 	}
 
-//	@ModelChange(//
-//			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
-//			ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,
+			// Note: close is currently handled in MPPOrder.closeIt()
 			ModelValidator.TIMING_AFTER_REACTIVATE,
 			ModelValidator.TIMING_AFTER_UNCLOSE,
 			ModelValidator.TIMING_AFTER_VOID
