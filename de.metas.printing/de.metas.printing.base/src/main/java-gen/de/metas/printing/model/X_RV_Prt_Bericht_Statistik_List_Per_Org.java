@@ -15,7 +15,7 @@ public class X_RV_Prt_Bericht_Statistik_List_Per_Org extends org.compiere.model.
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -583390157L;
+	private static final long serialVersionUID = 1216426387L;
 
     /** Standard Constructor */
     public X_RV_Prt_Bericht_Statistik_List_Per_Org (Properties ctx, int RV_Prt_Bericht_Statistik_List_Per_Org_ID, String trxName)
@@ -111,6 +111,22 @@ public class X_RV_Prt_Bericht_Statistik_List_Per_Org extends org.compiere.model.
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Firmenname.
+		@param Companyname Firmenname	  */
+	@Override
+	public void setCompanyname (java.lang.String Companyname)
+	{
+		set_ValueNoCheck (COLUMNNAME_Companyname, Companyname);
+	}
+
+	/** Get Firmenname.
+		@return Firmenname	  */
+	@Override
+	public java.lang.String getCompanyname () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Companyname);
 	}
 
 	@Override
@@ -231,22 +247,6 @@ public class X_RV_Prt_Bericht_Statistik_List_Per_Org extends org.compiere.model.
 		return ii.intValue();
 	}
 
-	/** Set Firmenname.
-		@param Companyname Firmenname	  */
-	@Override
-	public void setCompanyname (java.lang.String Companyname)
-	{
-		set_ValueNoCheck (COLUMNNAME_Companyname, Companyname);
-	}
-
-	/** Get Firmenname.
-		@return Firmenname	  */
-	@Override
-	public java.lang.String getCompanyname () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Companyname);
-	}
-
 	/** Set Rechnungsdatum.
 		@param DateInvoiced 
 		Datum auf der Rechnung
@@ -282,7 +282,7 @@ public class X_RV_Prt_Bericht_Statistik_List_Per_Org extends org.compiere.model.
 		return (java.lang.String)get_Value(COLUMNNAME_document);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -292,7 +292,7 @@ public class X_RV_Prt_Bericht_Statistik_List_Per_Org extends org.compiere.model.
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override

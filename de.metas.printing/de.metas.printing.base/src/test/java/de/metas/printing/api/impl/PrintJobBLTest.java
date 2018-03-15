@@ -48,7 +48,7 @@ public class PrintJobBLTest extends AbstractPrintingTest
 	@Before
 	public final void beforeRunningTest()
 	{
-		I_AD_SysConfig sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class);
+		final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class);
 		sysConfig.setAD_Org_ID(0);
 		InterfaceWrapperHelper.setValue(sysConfig, I_AD_SysConfig.COLUMNNAME_AD_Client_ID, 0);
 		sysConfig.setName(PrintJobBL.SYSCONFIG_MAX_LINES_PER_JOB);
@@ -99,8 +99,8 @@ public class PrintJobBLTest extends AbstractPrintingTest
 		final List<I_C_Print_Job_Detail> jobDetails = printingDAO.retrievePrintJobDetails(jobLine);
 		assertThat("expecting one detail per routing", jobDetails.size(), is(2));
 
-		assertThat(jobDetails.get(0).getAD_PrinterRouting(), is(routing11));
-		assertThat(jobDetails.get(1).getAD_PrinterRouting(), is(routing12));
+		assertThat(jobDetails.get(0).getAD_PrinterRouting_ID(), is(routing11.getAD_PrinterRouting_ID()));
+		assertThat(jobDetails.get(1).getAD_PrinterRouting_ID(), is(routing12.getAD_PrinterRouting_ID()));
 
 		final I_C_Print_Job_Instructions instructions1 = helper.getDAO().retrievePrintJobInstructionsForPrintJob(printJob);
 		assertThat(instructions1.getC_Print_Job(), is(printJob));

@@ -10,12 +10,12 @@ package de.metas.printing.test.integration;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -181,7 +181,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 
 		//
 		// Setup expected PDFs
-		final List<byte[]> pdfDataExpected = new ArrayList<byte[]>();
+		final List<byte[]> pdfDataExpected = new ArrayList<>();
 		pdfDataExpected.add(new PdfCollator()
 				.addPages(helper.getPdf("01"), 1, 20)
 				.toByteArray()
@@ -236,7 +236,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 
 			final I_C_Print_Job_Line line = lines.get(0);
 			final I_C_Print_Job_Detail detail = helper.getDAO().retrievePrintJobDetails(line).get(0);
-			Assert.assertEquals("Job1 - Invalid routing used", routing1, detail.getAD_PrinterRouting());
+			Assert.assertEquals("Job1 - Invalid routing used", routing1.getAD_PrinterRouting_ID(), detail.getAD_PrinterRouting_ID());
 		}
 		// Validate PrintJob 2
 		final I_C_Print_Job printJob2 = printJobs.get(1);
@@ -246,7 +246,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 
 			final I_C_Print_Job_Line line = lines.get(0);
 			final I_C_Print_Job_Detail detail = helper.getDAO().retrievePrintJobDetails(line).get(0);
-			Assert.assertEquals("Job2 - Invalid routing used", routing2, detail.getAD_PrinterRouting());
+			Assert.assertEquals("Job2 - Invalid routing used", routing2.getAD_PrinterRouting_ID(), detail.getAD_PrinterRouting_ID());
 		}
 
 		//
