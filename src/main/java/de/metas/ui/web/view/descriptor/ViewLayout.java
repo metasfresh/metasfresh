@@ -565,6 +565,12 @@ public class ViewLayout implements ETagAware
 			this.emptyResultHint = emptyResultHint;
 			return this;
 		}
+		
+		public Builder clearElements()
+		{
+			elementBuilders.clear();
+			return this;
+		}
 
 		public Builder addElement(final DocumentLayoutElementDescriptor.Builder elementBuilder)
 		{
