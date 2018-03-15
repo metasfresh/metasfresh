@@ -156,7 +156,7 @@ public class PurchaseCandidateRepository
 			{
 				final int repoId = purchaseCandidate.getPurchaseCandidateId();
 				final I_C_PurchaseCandidate existingRecord = repoId > 0 ? existingRecordsById.get(repoId) : null;
-				save(purchaseCandidate, existingRecord);
+				createOrUpdateRecord(purchaseCandidate, existingRecord);
 
 				purchaseItemRepository.storeRecords(purchaseCandidate.getPurchaseOrderItems());
 				purchaseItemRepository.storeRecords(purchaseCandidate.getPurchaseErrorItems());
@@ -184,7 +184,7 @@ public class PurchaseCandidateRepository
 	/**
 	 * Note to dev: keep in sync with {@link #toPurchaseCandidate(I_C_PurchaseCandidate)}
 	 */
-	private final void save(final PurchaseCandidate purchaseCandidate, final I_C_PurchaseCandidate existingRecord)
+	private final void createOrUpdateRecord(final PurchaseCandidate purchaseCandidate, final I_C_PurchaseCandidate existingRecord)
 	{
 		if (existingRecord != null)
 		{
@@ -230,7 +230,7 @@ public class PurchaseCandidateRepository
 	}
 
 	/**
-	 * Note to dev: keep in sync with {@link #save(PurchaseCandidate, I_C_PurchaseCandidate)}
+	 * Note to dev: keep in sync with {@link #createOrUpdateRecord(PurchaseCandidate, I_C_PurchaseCandidate)}
 	 */
 	private PurchaseCandidate toPurchaseCandidate(@NonNull final I_C_PurchaseCandidate purchaseCandidatePO)
 	{

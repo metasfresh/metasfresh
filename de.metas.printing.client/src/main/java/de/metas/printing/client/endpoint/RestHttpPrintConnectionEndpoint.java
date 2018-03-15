@@ -13,11 +13,11 @@ package de.metas.printing.client.endpoint;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -86,7 +86,6 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 
 	public RestHttpPrintConnectionEndpoint()
 	{
-		super();
 		_ctx = Context.getContext();
 		_sessionId = _ctx.getProperty(Context.CTX_SessionId);
 
@@ -146,6 +145,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 
 		final URL url = getURL(PRTRestServiceConstants.PATH_AddPrinterHW);
 		final PostMethod httpPost = new PostMethod(url.toString());
+		addApiTokenIfAvailable(httpPost);
 
 		final RequestEntity entity = new ByteArrayRequestEntity(data, beanEncoder.getContentType());
 		httpPost.setRequestEntity(entity);
@@ -177,6 +177,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		final URL url = getURL(PRTRestServiceConstants.PATH_GetNextPrintPackage, params);
 
 		final PostMethod httpPost = new PostMethod(url.toString());
+		addApiTokenIfAvailable(httpPost);
 
 		int result = -1;
 		InputStream in = null;
@@ -229,6 +230,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		final URL url = getURL(PRTRestServiceConstants.PATH_GetPrintPackageData, params);
 
 		final PostMethod httpPost = new PostMethod(url.toString());
+		addApiTokenIfAvailable(httpPost);
 
 		int result = -1;
 		try
@@ -266,7 +268,9 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 	}
 
 	@Override
-	public void sendPrintPackageResponse(final PrintPackage printPackage, final PrintJobInstructionsConfirm response)
+	public void sendPrintPackageResponse(
+			final PrintPackage printPackage,
+			final PrintJobInstructionsConfirm response)
 	{
 		final byte[] data = beanEncoder.encode(response);
 
@@ -278,6 +282,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		final URL url = getURL(PRTRestServiceConstants.PATH_SendPrintPackageResponse, params);
 
 		final PostMethod httpPost = new PostMethod(url.toString());
+		addApiTokenIfAvailable(httpPost);
 
 		final RequestEntity entity = new ByteArrayRequestEntity(data, beanEncoder.getContentType());
 		httpPost.setRequestEntity(entity);
@@ -334,7 +339,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 	// protected because we want to make them testable
 	protected Map<String, String> createInitialUrlParams()
 	{
-		final Map<String, String> params = new HashMap<String, String>();
+		final Map<String, String> params = new HashMap<>();
 		params.put(PRTRestServiceConstants.PARAM_SessionId, getSessionId());
 		return params;
 	}
@@ -455,6 +460,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		final URL url = getURL(PRTRestServiceConstants.PATH_Login, params);
 
 		final PostMethod httpPost = new PostMethod(url.toString());
+		addApiTokenIfAvailable(httpPost);
 
 		final RequestEntity entity = new ByteArrayRequestEntity(data, beanEncoder.getContentType());
 		httpPost.setRequestEntity(entity);
@@ -476,13 +482,24 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		}
 		catch (final Exception e)
 		{
-			throw e instanceof LoginFailedPrintConnectionEndpointException ? (LoginFailedPrintConnectionEndpointException)e : new LoginFailedPrintConnectionEndpointException("Cannot POST to " + url,
-					e);
+			throw e instanceof LoginFailedPrintConnectionEndpointException ? (LoginFailedPrintConnectionEndpointException)e
+					: new LoginFailedPrintConnectionEndpointException("Cannot POST to " + url,
+							e);
 		}
 		finally
 		{
 			Util.close(in);
 			in = null;
+		}
+	}
+
+	private void addApiTokenIfAvailable(final PostMethod httpPost)
+	{
+		final String apiToken = getContext().getProperty(Context.CTX_Login_ApiToken);
+
+		if (apiToken != null && apiToken.trim().length() > 0)
+		{
+			httpPost.setRequestHeader("Authorization", apiToken.trim());
 		}
 	}
 }
