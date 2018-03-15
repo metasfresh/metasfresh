@@ -546,7 +546,7 @@ public final class SqlViewSelectionQueryBuilder
 				.append("INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
 						+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
 						+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line
-						+ ", " + keyColumnNamesMap.getKeyColumnNamesCommaSeparated()
+						+ ", " + keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated()
 						+ ")");
 
 		//
