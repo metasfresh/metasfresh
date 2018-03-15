@@ -1,8 +1,11 @@
 package de.metas.ui.web.handlingunits;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -33,9 +36,9 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 public class DefaultHUEditorViewFactory extends HUEditorViewFactoryTemplate
 {
 	@Autowired
-	protected DefaultHUEditorViewFactory(final List<HUEditorViewCustomizer> viewCustomizers)
+	protected DefaultHUEditorViewFactory(final Optional<List<HUEditorViewCustomizer>> viewCustomizers)
 	{
-		super(viewCustomizers);
+		super(viewCustomizers.orElse(ImmutableList.of()));
 	}
 
 }
