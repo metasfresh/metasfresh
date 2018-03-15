@@ -126,7 +126,7 @@ public class RequestMaterialOrderService
 						.plantId(prodDetail.getPlantId())
 						.productDescriptor(materialDescriptor)
 						.bPartnerId(materialDescriptor.getBPartnerId())
-						.quantity(groupMember.getQuantity())
+						.qtyRequired(groupMember.getQuantity())
 						.warehouseId(groupMember.getWarehouseId());
 			}
 			else

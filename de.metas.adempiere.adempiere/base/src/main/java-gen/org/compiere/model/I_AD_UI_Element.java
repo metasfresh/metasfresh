@@ -478,6 +478,29 @@ public interface I_AD_UI_Element
     public static final String COLUMNNAME_Labels_Tab_ID = "Labels_Tab_ID";
 
 	/**
+	 * Set Media Types.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMediaTypes (java.lang.String MediaTypes);
+
+	/**
+	 * Get Media Types.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMediaTypes();
+
+    /** Column definition for MediaTypes */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_MediaTypes = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "MediaTypes", null);
+    /** Column name MediaTypes */
+    public static final String COLUMNNAME_MediaTypes = "MediaTypes";
+
+	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *

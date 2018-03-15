@@ -5,6 +5,9 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.valueOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -38,7 +41,6 @@ import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDes
 import de.metas.material.event.pporder.PPOrderChangedEvent.DeletedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
-import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
@@ -81,6 +83,14 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 
 public class MaterialEventSerializerTests
 {
+
+
+	private static final BigDecimal ELEVEN = TEN.add(ONE);
+
+	private static final BigDecimal TWELVE = ELEVEN.add(ONE);
+
+	private static final BigDecimal THIRTEEN = TWELVE.add(ONE);
+
 	@Test
 	public void ddOrderRequestedEvent()
 	{
@@ -147,7 +157,7 @@ public class MaterialEventSerializerTests
 						.ddOrderLineId(21)
 						.durationDays(31)
 						.networkDistributionLineId(41)
-						.qty(BigDecimal.TEN)
+						.qty(TEN)
 						.salesOrderLineId(61)
 						.build())
 				.orgId(40)
@@ -185,7 +195,8 @@ public class MaterialEventSerializerTests
 						.plantId(110)
 						.productDescriptor(createProductDescriptor())
 						.productPlanningId(130)
-						.quantity(BigDecimal.TEN)
+						.qtyRequired(TEN)
+						.qtyDelivered(ONE)
 						.warehouseId(WAREHOUSE_ID)
 						.line(createPPOrderLine())
 						.line(PPOrderLine.builder()
@@ -193,7 +204,7 @@ public class MaterialEventSerializerTests
 								.issueOrReceiveDate(NOW)
 								.description("desc2")
 								.productBomLineId(380)
-								.qtyRequired(BigDecimal.valueOf(320))
+								.qtyRequired(valueOf(320))
 								.receipt(false)
 								.build())
 						.build())
@@ -226,18 +237,6 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
-	public void ppOrderChangedDocStatusEvent()
-	{
-		final PPOrderDocStatusChangedEvent event = PPOrderDocStatusChangedEvent.builder()
-				.eventDescriptor(createEventDescriptor())
-				.ppOrderId(10)
-				.newDocStatus("newDocStatus")
-				.build();
-
-		assertEventEqualAfterSerializeDeserialize(event);
-	}
-
-	@Test
 	public void ppOrderDeletedEvent()
 	{
 		final PPOrderDeletedEvent event = PPOrderDeletedEvent.builder()
@@ -251,21 +250,31 @@ public class MaterialEventSerializerTests
 	@Test
 	public void ppOrderQtyEnteredChangedEvent()
 	{
+
 		final PPOrderChangedEvent event = PPOrderChangedEvent.builder()
 				.productDescriptor(createProductDescriptor())
-				.datePromised(NOW)
+				.newDatePromised(NOW)
+				.oldDatePromised(SystemTime.asTimestamp())
 				.ppOrderId(10)
+				.oldDocStatus("CO")
+				.newDocStatus("CL")
+				.oldQtyRequired(TEN)
+				.newQtyRequired(ELEVEN)
+				.oldQtyDelivered(TWELVE)
+				.newQtyDelivered(THIRTEEN)
 				.deletedPPOrderLine(DeletedPPOrderLineDescriptor.builder()
 						.productDescriptor(createProductDescriptorWithOffSet(1))
 						.issueOrReceiveDate(NOW)
 						.ppOrderLineId(20)
-						.quantity(new BigDecimal("40"))
+						.qtyRequired(new BigDecimal("40"))
+						.qtyDelivered(new BigDecimal("41"))
 						.build())
 				.deletedPPOrderLine(DeletedPPOrderLineDescriptor.builder()
 						.productDescriptor(createProductDescriptorWithOffSet(2))
 						.issueOrReceiveDate(NOW)
 						.ppOrderLineId(30)
-						.quantity(new BigDecimal("50"))
+						.qtyRequired(new BigDecimal("50"))
+						.qtyDelivered(new BigDecimal("51"))
 						.build())
 				.eventDescriptor(createEventDescriptor())
 				.newPPOrderLine(createPPOrderLine())
@@ -274,8 +283,10 @@ public class MaterialEventSerializerTests
 						.issueOrReceiveDate(NOW)
 						.oldPPOrderLineId(40)
 						.newPPOrderLineId(50)
-						.oldQuantity(new BigDecimal("60"))
-						.newQuantity(new BigDecimal("70"))
+						.oldQtyRequired(new BigDecimal("60"))
+						.newQtyRequired(new BigDecimal("70"))
+						.oldQtyDelivered(new BigDecimal("61"))
+						.newQtyDelivered(new BigDecimal("71"))
 						.build())
 				.build();
 		assertEventEqualAfterSerializeDeserialize(event);
@@ -290,7 +301,8 @@ public class MaterialEventSerializerTests
 				.plantId(110)
 				.productDescriptor(createProductDescriptor())
 				.productPlanningId(130)
-				.quantity(BigDecimal.TEN)
+				.qtyRequired(TEN)
+				.qtyDelivered(ONE)
 				.warehouseId(150)
 				.line(createPPOrderLine())
 				.line(PPOrderLine.builder()
@@ -298,7 +310,7 @@ public class MaterialEventSerializerTests
 						.issueOrReceiveDate(NOW)
 						.description("desc2")
 						.productBomLineId(380)
-						.qtyRequired(BigDecimal.valueOf(320))
+						.qtyRequired(valueOf(320))
 						.receipt(false)
 						.build())
 				.build();
@@ -311,7 +323,7 @@ public class MaterialEventSerializerTests
 				.issueOrReceiveDate(NOW)
 				.description("desc1")
 				.productBomLineId(280)
-				.qtyRequired(BigDecimal.valueOf(220))
+				.qtyRequired(valueOf(220))
 				.receipt(true)
 				.build();
 	}
@@ -527,12 +539,12 @@ public class MaterialEventSerializerTests
 				.transactionId(10)
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.shipmentScheduleIds2Qty(20, BigDecimal.TEN)
-				.shipmentScheduleIds2Qty(21, BigDecimal.ONE.negate())
+				.shipmentScheduleIds2Qty(20, TEN)
+				.shipmentScheduleIds2Qty(21, ONE.negate())
 				.huOnHandQtyChangeDescriptor(HUOnHandQtyChangeDescriptor.builder()
 						.huId(30)
-						.quantity(BigDecimal.TEN)
-						.quantityDelta(BigDecimal.ONE)
+						.quantity(TEN)
+						.quantityDelta(ONE)
 						.build())
 				.build();
 		return evt;
@@ -546,8 +558,8 @@ public class MaterialEventSerializerTests
 				.transactionId(10)
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.shipmentScheduleIds2Qty(20, BigDecimal.TEN)
-				.shipmentScheduleIds2Qty(21, BigDecimal.ONE.negate())
+				.shipmentScheduleIds2Qty(20, TEN)
+				.shipmentScheduleIds2Qty(21, ONE.negate())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(evt);

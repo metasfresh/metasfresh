@@ -13,11 +13,11 @@ package de.metas.printing.client.engine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,8 +53,6 @@ public class PrintingClientDaemon implements Runnable
 
 	public PrintingClientDaemon()
 	{
-		super();
-
 		final Context ctx = Context.getContext();
 
 		pollInterval = ctx.getPropertyAsInt(CTX_PollIntervalMs, DEFAULT_PollIntervalMs);
@@ -78,6 +76,7 @@ public class PrintingClientDaemon implements Runnable
 		{
 			final PrinterHWList printerHWList = PrintingEngine.get().createPrinterHW();
 			connection.addPrinterHW(printerHWList);
+			log.info("Posted our locally available printers to the printing API: " + printerHWList);
 		}
 		catch (final Exception e)
 		{

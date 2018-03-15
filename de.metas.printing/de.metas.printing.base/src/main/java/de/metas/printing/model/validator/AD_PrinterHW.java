@@ -10,23 +10,20 @@ package de.metas.printing.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -34,6 +31,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrinterBL;
 import de.metas.printing.api.IPrintingDAO;
@@ -93,14 +93,16 @@ public class AD_PrinterHW
 		dao.removeMediaSizes(sizes);
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_NEW_REPLICATION})
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW,
+			ModelValidator.TYPE_AFTER_NEW_REPLICATION })
 	public void createConfigAndDefaultMatching(final I_AD_PrinterHW printerHW)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printerHW);
-		
+
 		final IPrinterBL printerBL = Services.get(IPrinterBL.class);
 		final I_AD_Printer_Config printerConfig = printerBL.createPrinterConfigIfNoneExists(printerHW);
-		
+
 		final List<I_AD_Printer> printers = Services.get(IPrintingDAO.class).retrievePrinters(ctx, printerHW.getAD_Org_ID());
 
 		if (printers.isEmpty())
