@@ -4,6 +4,7 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKING_SLOT;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -15,6 +16,8 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -23,6 +26,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.report.HUReportExecutor;
+import de.metas.handlingunits.report.HUReportService;
+import de.metas.handlingunits.report.HUToReport;
+import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.IProcessDefaultParameter;
@@ -116,10 +123,57 @@ public class WEBUI_Picking_PickQtyToNewHU
 		final I_M_HU hu = createAndAddHU(pickingSlotRow);
 		addPickedQuantity(hu, pickingSlotRow);
 
+		final HUToReportWrapper huToReport = HUToReportWrapper.of(hu);
+		printPickingLabel(huToReport);
+
 		invalidateView();
 		invalidateParentView();
 
 		return MSG_OK;
+	}
+
+	private void printPickingLabel(final HUToReportWrapper hu)
+	{
+		if (hu == null)
+		{
+			return;
+		}
+
+		final HUReportService huReportService = HUReportService.get();
+		if (!huReportService.isPickingLabelAutoPrintEnabled())
+		{
+			return;
+		}
+
+		if (!hu.isTopLevel())
+		{
+			return;
+		}
+
+		final int adProcessId = huReportService.retrievePickingLabelProcessID();
+		if (adProcessId <= 0)
+		{
+			return;
+		}
+
+		final List<HUToReport> husToProcess = huReportService
+				.getHUsToProcess(hu, adProcessId)
+				.stream()
+				.filter(HUToReport::isTopLevel) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
+				.collect(ImmutableList.toImmutableList());
+
+		if (husToProcess.isEmpty())
+		{
+			return;
+		}
+
+		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount();
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
+		HUReportExecutor.newInstance(ctx)
+				.numberOfCopies(copies)
+				.executeHUReportAfterCommit(adProcessId, husToProcess);
+
 	}
 
 	private void addPickedQuantity(
