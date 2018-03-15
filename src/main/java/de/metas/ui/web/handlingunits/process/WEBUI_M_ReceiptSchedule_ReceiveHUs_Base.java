@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -15,13 +14,10 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.quantity.Quantity;
-import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
 
 /*
  * #%L
@@ -51,7 +47,7 @@ import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-/* package */ abstract class WEBUI_M_ReceiptSchedule_ReceiveHUs_Base extends JavaProcess implements IProcessPrecondition
+/* package */ abstract class WEBUI_M_ReceiptSchedule_ReceiveHUs_Base extends ReceiptScheduleBasedProcess
 {
 	protected abstract I_M_HU_LUTU_Configuration createM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration template);
 
@@ -147,7 +143,7 @@ import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
 		//
 		// Generate the HUs
 		final List<I_M_HU> hus = huGenerator.generate();
-		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus), HUsToReceiveViewFactory.WINDOW_ID_STRING);
+		openHUsToReceive(hus);
 
 		return MSG_OK;
 	}

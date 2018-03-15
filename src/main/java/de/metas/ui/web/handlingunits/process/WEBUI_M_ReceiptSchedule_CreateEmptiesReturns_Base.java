@@ -12,9 +12,7 @@ import org.compiere.model.I_M_InOut;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -45,7 +43,7 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
  * #L%
  */
 
-/* package */ abstract class WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base extends JavaProcess implements IProcessPrecondition
+/* package */ abstract class WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base extends ReceiptScheduleBasedProcess
 {
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
