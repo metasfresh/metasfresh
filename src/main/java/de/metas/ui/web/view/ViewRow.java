@@ -14,7 +14,6 @@ import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import lombok.NonNull;
 import lombok.ToString;
@@ -165,32 +164,6 @@ public final class ViewRow implements IViewRow
 		return includedRows;
 	}
 
-	public static final DocumentId convertToRowId(@NonNull final Object jsonRowIdObj)
-	{
-		if (jsonRowIdObj instanceof DocumentId)
-		{
-			return (DocumentId)jsonRowIdObj;
-		}
-		else if (jsonRowIdObj instanceof Integer)
-		{
-			return DocumentId.of((Integer)jsonRowIdObj);
-		}
-		else if (jsonRowIdObj instanceof String)
-		{
-			return DocumentId.of(jsonRowIdObj.toString());
-		}
-		else if (jsonRowIdObj instanceof JSONLookupValue)
-		{
-			// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
-			final JSONLookupValue jsonLookupValue = (JSONLookupValue)jsonRowIdObj;
-			return DocumentId.of(jsonLookupValue.getKey());
-		}
-		else
-		{
-			throw new IllegalArgumentException("Cannot convert id '" + jsonRowIdObj + "' (" + jsonRowIdObj.getClass() + ") to integer");
-		}
-	}
-
 	//
 	//
 	//
@@ -224,16 +197,10 @@ public final class ViewRow implements IViewRow
 			return DocumentPath.rootDocumentPath(windowId, documentId);
 		}
 
-		private Builder setRowId(final DocumentId rowId)
+		public Builder setRowId(final DocumentId rowId)
 		{
 			this.rowId = rowId;
 			_rowIdEffective = null;
-			return this;
-		}
-
-		public Builder setRowIdFromObject(final Object jsonRowIdObj)
-		{
-			setRowId(convertToRowId(jsonRowIdObj));
 			return this;
 		}
 
@@ -256,7 +223,7 @@ public final class ViewRow implements IViewRow
 					// NOTE: we have to do this because usually, the root row can have the same ID as one of the included rows,
 					// because the root/aggregated rows are build on demand and they don't really exist in database.
 					// Also see https://github.com/metasfresh/metasfresh-webui-frontend/issues/835#issuecomment-307783959
-					_rowIdEffective = DocumentId.ofString(DocumentId.DOCUMENT_ID_PREFIX + rowId.toJson());
+					_rowIdEffective = rowId.toIncludedRowId();
 				}
 			}
 			

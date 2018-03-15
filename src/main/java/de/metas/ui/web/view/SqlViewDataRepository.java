@@ -3,11 +3,11 @@ package de.metas.ui.web.view;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -36,12 +36,14 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.view.descriptor.SqlViewSelectData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -76,43 +78,35 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	private final String tableName;
 	private final String tableAlias;
+	private final SqlViewKeyColumnNamesMap keyColumnNamesMap;
 	private final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 	private final SqlViewSelectData sqlViewSelect;
 	private final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory;
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	private final List<DocumentQueryOrderBy> defaultOrderBys;
 
-	private final String keyFieldName;
+	private final boolean hasIncludedRows;
 	private final ImmutableMap<String, SqlViewRowFieldLoader> rowFieldLoaders;
 	private final ViewRowCustomizer rowCustomizer;
 
 	private final SqlDocumentFilterConverter filterConverters;
 
+
 	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings)
 	{
 		tableName = sqlBindings.getTableName();
 		tableAlias = sqlBindings.getTableAlias();
+		keyColumnNamesMap = sqlBindings.getSqlViewKeyColumnNamesMap();
 		widgetTypesByFieldName = sqlBindings.getWidgetTypesByFieldName();
 		sqlViewSelect = sqlBindings.getSqlViewSelect();
 		viewFilterDescriptors = sqlBindings.getViewFilterDescriptors();
 		viewRowIdsOrderedSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings);
 		defaultOrderBys = sqlBindings.getDefaultOrderBys();
 
-		String keyFieldName = null;
-		final ImmutableMap.Builder<String, SqlViewRowFieldLoader> rowFieldLoaders = ImmutableMap.builder();
-		for (final SqlViewRowFieldBinding field : sqlBindings.getFields())
-		{
-			final String fieldName = field.getFieldName();
-			rowFieldLoaders.put(fieldName, field.getFieldLoader());
-
-			if (field.isKeyColumn())
-			{
-				keyFieldName = fieldName;
-			}
-		}
-
-		this.keyFieldName = keyFieldName;
-		this.rowFieldLoaders = rowFieldLoaders.build();
+		this.hasIncludedRows = sqlBindings.hasGroupingFields();
+		this.rowFieldLoaders = sqlBindings.getFields()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(SqlViewRowFieldBinding::getFieldName, SqlViewRowFieldBinding::getFieldLoader));
 		this.rowCustomizer = sqlBindings.getRowCustomizer();
 
 		this.filterConverters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlBindings);
@@ -131,7 +125,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	{
 		return tableName;
 	}
-	
+
 	private String getTableAlias()
 	{
 		return tableAlias;
@@ -170,7 +164,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 		return sqlWhereClause.toString();
 	}
-	
+
 	@Override
 	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{
@@ -188,13 +182,13 @@ class SqlViewDataRepository implements IViewDataRepository
 	{
 		return viewRowIdsOrderedSelectionFactory.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, orderBys);
 	}
-	
+
 	@Override
 	public void deleteSelection(final ViewId viewId)
 	{
 		viewRowIdsOrderedSelectionFactory.deleteSelection(viewId);
 	}
-	
+
 	@Override
 	public void scheduleDeleteSelections(final Set<String> viewIds)
 	{
@@ -276,7 +270,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 		//
 		// Load lines
-		if (!rootRowIds.isEmpty())
+		if (hasIncludedRows && !rootRowIds.isEmpty())
 		{
 			retrieveRowLines(viewEvalCtx, viewId, DocumentIdsSelection.of(rootRowIds))
 					.forEach(line -> {
@@ -300,17 +294,17 @@ class SqlViewDataRepository implements IViewDataRepository
 	private ViewRow.Builder loadViewRow(final ResultSet rs, final WindowId windowId, final String adLanguage) throws SQLException
 	{
 		final boolean isRecordMissing = DisplayType.toBoolean(rs.getString(SqlViewSelectData.COLUMNNAME_IsRecordMissing));
-		if(isRecordMissing)
+		if (isRecordMissing)
 		{
 			return null;
 		}
-		
+
 		final ViewRow.Builder viewRowBuilder = ViewRow.builder(windowId);
-		
-		final int parentIdInt = rs.getInt(SqlViewSelectData.COLUMNNAME_Paging_Parent_ID);
-		if (!rs.wasNull())
+
+		final DocumentId parentRowId = keyColumnNamesMap.retrieveRowId(rs, SqlViewSelectData.COLUMNNAME_Paging_Parent_Prefix, false);
+		if (parentRowId != null)
 		{
-			viewRowBuilder.setParentRowId(DocumentId.of(parentIdInt));
+			viewRowBuilder.setParentRowId(parentRowId);
 			viewRowBuilder.setType(DefaultRowType.Line);
 		}
 		else
@@ -318,32 +312,122 @@ class SqlViewDataRepository implements IViewDataRepository
 			viewRowBuilder.setType(DefaultRowType.Row);
 		}
 
+		final DocumentId rowId = retrieveRowId(rs, adLanguage);
+		if (rowId == null)
+		{
+			logger.warn("No ID found for current row. Skipping the row.");
+			return null;
+		}
+		viewRowBuilder.setRowId(rowId);
+
 		for (final Map.Entry<String, SqlViewRowFieldLoader> fieldNameAndLoader : rowFieldLoaders.entrySet())
 		{
 			final String fieldName = fieldNameAndLoader.getKey();
 			final SqlViewRowFieldLoader fieldLoader = fieldNameAndLoader.getValue();
 			final Object value = fieldLoader.retrieveValueAsJson(rs, adLanguage);
-
-			if (Objects.equals(fieldName, keyFieldName))
-			{
-				if(JSONNullValue.isNull(value))
-				{
-					logger.warn("No ID found for current row. Skipping the row.");
-					return null;
-				}
-
-				viewRowBuilder.setRowIdFromObject(value);
-			}
-
 			viewRowBuilder.putFieldValue(fieldName, value);
 		}
-		
-		if(rowCustomizer != null)
+
+		if (rowCustomizer != null)
 		{
 			rowCustomizer.customizeViewRow(viewRowBuilder);
 		}
 
 		return viewRowBuilder;
+	}
+
+	private DocumentId retrieveRowId(final ResultSet rs, final String adLanguage) throws SQLException
+	{
+		if (keyColumnNamesMap.isSingleKey())
+		{
+			return retrieveRowId_SingleKey(rs, adLanguage);
+		}
+		else
+		{
+			return retrieveRowId_MultiKey(rs, adLanguage);
+		}
+	}
+
+	private DocumentId retrieveRowId_SingleKey(final ResultSet rs, final String adLanguage) throws SQLException
+	{
+		final String keyColumnName = keyColumnNamesMap.getSingleKeyColumnName();
+		final SqlViewRowFieldLoader fieldLoader = rowFieldLoaders.get(keyColumnName);
+		final Object jsonRowIdObj = fieldLoader.retrieveValueAsJson(rs, adLanguage);
+		if (JSONNullValue.isNull(jsonRowIdObj))
+		{
+			return null;
+		}
+		else if (jsonRowIdObj instanceof DocumentId)
+		{
+			return (DocumentId)jsonRowIdObj;
+		}
+		else if (jsonRowIdObj instanceof Integer)
+		{
+			return DocumentId.of((Integer)jsonRowIdObj);
+		}
+		else if (jsonRowIdObj instanceof String)
+		{
+			return DocumentId.of(jsonRowIdObj.toString());
+		}
+		else if (jsonRowIdObj instanceof JSONLookupValue)
+		{
+			// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
+			final JSONLookupValue jsonLookupValue = (JSONLookupValue)jsonRowIdObj;
+			return DocumentId.of(jsonLookupValue.getKey());
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot convert id '" + jsonRowIdObj + "' (" + jsonRowIdObj.getClass() + ") to integer");
+		}
+	}
+
+	private DocumentId retrieveRowId_MultiKey(final ResultSet rs, final String adLanguage) throws SQLException
+	{
+		final List<Object> rowIdParts = new ArrayList<>(keyColumnNamesMap.getKeyPartsCount());
+		boolean onlyNullValues = true;
+
+		for (final String keyColumnName : keyColumnNamesMap.getKeyColumnNames())
+		{
+			final SqlViewRowFieldLoader fieldLoader = rowFieldLoaders.get(keyColumnName);
+			// Check.assumeNotNull(fieldLoader, "fieldLoader shall exist for {}", keyColumnName);
+
+			final Object rowIdPartObj = fieldLoader.retrieveValueAsJson(rs, adLanguage);
+			if (JSONNullValue.isNull(rowIdPartObj))
+			{
+				rowIdParts.add(null);
+			}
+			{
+				rowIdParts.add(convertToRowIdPart(rowIdPartObj));
+				onlyNullValues = false;
+			}
+		}
+
+		if (onlyNullValues)
+		{
+			return null;
+		}
+
+		return DocumentId.ofComposedKeyParts(rowIdParts);
+	}
+
+	private static String convertToRowIdPart(@NonNull final Object rowIdPartObj)
+	{
+		if (rowIdPartObj instanceof Integer)
+		{
+			return rowIdPartObj.toString();
+		}
+		else if (rowIdPartObj instanceof String)
+		{
+			return rowIdPartObj.toString();
+		}
+		else if (rowIdPartObj instanceof JSONLookupValue)
+		{
+			return ((JSONLookupValue)rowIdPartObj).getKey();
+		}
+		else
+		{
+			throw new AdempiereException("Cannot convert " + rowIdPartObj + " (" + rowIdPartObj.getClass() + ") to rowId part");
+		}
 	}
 
 	@Override
@@ -357,7 +441,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	{
 		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
 		logger.debug("Using: {}", orderedSelection);
-		
+
 		final ViewId viewId = orderedSelection.getViewId();
 		final SqlAndParams sqlAndParams = sqlViewSelect.selectByPage()
 				.viewEvalCtx(viewEvalCtx)
@@ -395,12 +479,6 @@ class SqlViewDataRepository implements IViewDataRepository
 		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
 		logger.debug("Using: {}", orderedSelection);
 
-		SqlViewRowFieldLoader rowIdFieldLoader = rowFieldLoaders.get(keyFieldName);
-		if (rowIdFieldLoader == null)
-		{
-			throw new AdempiereException("No rowId loader found in " + this);
-		}
-
 		final ViewId viewId = orderedSelection.getViewId();
 		final SqlAndParams sqlAndParams = sqlViewSelect.selectRowIdsByPage()
 				.viewEvalCtx(viewEvalCtx)
@@ -408,7 +486,7 @@ class SqlViewDataRepository implements IViewDataRepository
 				.firstRowZeroBased(firstRow)
 				.pageLength(pageLength)
 				.build();
-		
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -424,13 +502,11 @@ class SqlViewDataRepository implements IViewDataRepository
 
 			while (rs.next())
 			{
-				final Object rowIdObj = rowIdFieldLoader.retrieveValueAsJson(rs, adLanguage);
-				if(JSONNullValue.isNull(rowIdObj))
+				final DocumentId rowId = retrieveRowId(rs, adLanguage);
+				if (rowId == null)
 				{
 					continue;
 				}
-
-				final DocumentId rowId = ViewRow.convertToRowId(rowIdObj);
 				rowIds.add(rowId);
 			}
 			return rowIds.build();
@@ -456,7 +532,7 @@ class SqlViewDataRepository implements IViewDataRepository
 				.viewId(viewId)
 				.rowIds(rowIds)
 				.build();
-		
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

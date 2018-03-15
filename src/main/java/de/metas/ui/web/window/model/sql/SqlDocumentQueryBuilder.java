@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model.sql;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -21,6 +22,7 @@ import org.compiere.util.Evaluatees;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
@@ -32,10 +34,12 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
 /*
  * #%L
@@ -156,7 +160,7 @@ public class SqlDocumentQueryBuilder
 		return ctx;
 	}
 
-	public String getAD_Language()
+	String getAD_Language()
 	{
 		// TODO: introduce AD_Language as parameter
 		return Env.getAD_Language(getCtx());
@@ -164,6 +168,7 @@ public class SqlDocumentQueryBuilder
 
 	private String getPermissionsKey()
 	{
+		// TODO: introduce permissionsKey as parameter
 		return UserRolePermissionsKey.toPermissionsKeyString(getCtx());
 	}
 
@@ -202,7 +207,7 @@ public class SqlDocumentQueryBuilder
 
 		//
 		//
-		final String parentKeyColumnName = extractKeyColumnName(parentEntityDescriptor);
+		final String parentKeyColumnName = extractSingleKeyColumnName(parentEntityDescriptor);
 		if (Objects.equals(parentKeyColumnName, parentLinkColumnName))
 		{
 			final Evaluatee evalCtx = getEvaluationContext();
@@ -226,14 +231,9 @@ public class SqlDocumentQueryBuilder
 	}
 
 	/** @return SQL key column name; never returns null */
-	private static final String extractKeyColumnName(final DocumentEntityDescriptor entityDescriptor)
+	private static final String extractSingleKeyColumnName(final DocumentEntityDescriptor entityDescriptor)
 	{
-		final DocumentFieldDescriptor idField = entityDescriptor.getIdField();
-		if (idField == null)
-		{
-			throw new AdempiereException("Entity does not have an ID field: " + entityDescriptor);
-		}
-
+		final DocumentFieldDescriptor idField = entityDescriptor.getSingleIdField();
 		final SqlDocumentFieldDataBindingDescriptor idFieldBinding = SqlDocumentFieldDataBindingDescriptor.castOrNull(idField.getDataBinding());
 		if (idFieldBinding == null)
 		{
@@ -343,7 +343,7 @@ public class SqlDocumentQueryBuilder
 		return entityBinding.getSqlSelectAllFrom();
 	}
 
-	public String getSqlWhere(final List<Object> sqlParams)
+	private String getSqlWhere(final List<Object> sqlParams)
 	{
 		final IPair<IStringExpression, List<Object>> sqlWhereAndParams = getSqlWhereAndParams();
 		final Evaluatee evalCtx = getEvaluationContext();
@@ -390,14 +390,27 @@ public class SqlDocumentQueryBuilder
 		final DocumentId recordId = getRecordId();
 		if (recordId != null)
 		{
-			final String sqlKeyColumnName = entityBinding.getKeyColumnName();
-			if (sqlKeyColumnName == null)
+			final List<SqlDocumentFieldDataBindingDescriptor> keyFields = entityBinding.getKeyFields();
+			if (keyFields.isEmpty())
 			{
 				throw new AdempiereException("Failed building where clause because there is no Key Column defined in " + entityBinding);
 			}
-
-			sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
-			sqlWhereClauseBuilder.append(" /* key */ ").append(sqlKeyColumnName).append("=").append(sqlParams.placeholder(recordId.toInt()));
+			// Single primary key
+			else if (keyFields.size() == 1)
+			{
+				final String keyColumnName = keyFields.get(0).getColumnName();
+				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
+				sqlWhereClauseBuilder.append(" /* key */ ").append(keyColumnName).append("=").append(sqlParams.placeholder(recordId.toInt()));
+			}
+			// Composed primary key
+			else
+			{
+				final Map<String, Object> keyColumnName2value = extractComposedKey(recordId, keyFields);
+				keyColumnName2value.forEach((keyColumnName, value) -> {
+					sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
+					sqlWhereClauseBuilder.append(" /* key */ ").append(keyColumnName).append("=").append(sqlParams.placeholder(value));
+				});
+			}
 		}
 
 		//
@@ -561,5 +574,40 @@ public class SqlDocumentQueryBuilder
 	private int getPageLength()
 	{
 		return pageLength;
+	}
+	
+	/** @return map of (keyColumnName, value) pairs */
+	public static Map<String, Object> extractComposedKey(final DocumentId recordId, final List<? extends SqlEntityFieldBinding> keyFields)
+	{
+		final int count = keyFields.size();
+		if (count <= 1)
+		{
+			throw new AdempiereException("Invalid composed key: " + keyFields);
+		}
+
+		final List<Object> composedKeyParts = recordId.toComposedKeyParts();
+		if (composedKeyParts.size() != count)
+		{
+			throw new AdempiereException("Invalid composed key '" + recordId + "'. Expected " + count + " parts but it has " + composedKeyParts.size());
+		}
+
+		final ImmutableMap.Builder<String, Object> composedKey = ImmutableMap.builder();
+		for (int i = 0; i < count; i++)
+		{
+			final SqlEntityFieldBinding keyField = keyFields.get(i);
+			final String keyColumnName = keyField.getColumnName();
+
+			final Object valueObj = composedKeyParts.get(i);
+			final Object valueConv = DocumentFieldDescriptor.convertToValueClass(
+					keyColumnName,
+					valueObj,
+					keyField.getWidgetType(),
+					keyField.getSqlValueClass(),
+					(LookupValueByIdSupplier)null);
+
+			composedKey.put(keyColumnName, valueConv);
+		}
+
+		return composedKey.build();
 	}
 }

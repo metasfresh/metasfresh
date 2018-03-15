@@ -82,14 +82,14 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 	{
 		try
 		{
-			final String idFieldName = entityDescriptor.getIdFieldNameOrNull();
-			if (idFieldName == null)
+			final DocumentFieldDescriptor.Builder idField = entityDescriptor.getSingleIdFieldBuilderOrNull();
+			if (idField == null || idField.isVirtualField())
 			{
 				return ImmutableList.of();
 			}
 
 			final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-			final ITableRefInfo tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(idFieldName);
+			final ITableRefInfo tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(idField.getFieldName());
 			final ILookupDisplayInfo displayInfo = lookupDAO.retrieveLookupDisplayInfo(tableRefInfo);
 
 			final ImmutableList<FieldValueExtractor> displayColumnNames = displayInfo.getLookupDisplayColumns()

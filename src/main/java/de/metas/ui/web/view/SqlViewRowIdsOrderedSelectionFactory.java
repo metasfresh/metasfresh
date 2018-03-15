@@ -3,11 +3,9 @@ package de.metas.ui.web.view;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
@@ -22,10 +20,10 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder.SqlCreateSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -183,9 +181,8 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		// TODO: add all rowIds in one query!!! Not so urgent because usually there are added just a couple of rowIds, not much
 		for (final DocumentId rowId : rowIds.toSet())
 		{
-			final List<Object> sqlParams = new ArrayList<>();
-			final String sqlAdd = newSqlViewSelectionQueryBuilder().buildSqlAddRowIdsFromSelection(sqlParams, selectionId, rowId);
-			final int added = DB.executeUpdateEx(sqlAdd, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+			final SqlAndParams sqlAdd = newSqlViewSelectionQueryBuilder().buildSqlAddRowIdsFromSelection(selectionId, rowId);
+			final int added = DB.executeUpdateEx(sqlAdd.getSql(), sqlAdd.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 			if (added <= 0)
 			{
 				continue;
@@ -221,8 +218,8 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		//
 		// Delete
 		{
-			final String sqlDelete = newSqlViewSelectionQueryBuilder().buildSqlDeleteRowIdsFromSelection(selection.getSelectionId(), rowIds);
-			final int deleted = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+			final SqlAndParams sqlDelete = newSqlViewSelectionQueryBuilder().buildSqlDeleteRowIdsFromSelection(selection.getSelectionId(), rowIds);
+			final int deleted = DB.executeUpdateEx(sqlDelete.getSql(), sqlDelete.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 			if (deleted <= 0)
 			{
 				// nothing changed
@@ -242,9 +239,8 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 
 	private final int retrieveSize(final String selectionId)
 	{
-		final List<Object> sqlParams = new ArrayList<>();
-		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlRetrieveSize(sqlParams, selectionId);
-		final int size = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlCount, sqlParams);
+		final SqlAndParams sqlCount = newSqlViewSelectionQueryBuilder().buildSqlRetrieveSize(selectionId);
+		final int size = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlCount.getSql(), sqlCount.getSqlParams());
 		return size <= 0 ? 0 : size;
 	}
 
@@ -256,15 +252,9 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			return false;
 		}
 
-		final List<Object> sqlParams = new ArrayList<>();
-		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(sqlParams, selection.getSelectionId(), rowIds);
-		final int count = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlCount, sqlParams.toArray());
+		final SqlAndParams sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(selection.getSelectionId(), rowIds);
+		final int count = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlCount.getSql(), sqlCount.getSqlParamsArray());
 		return count > 0;
-	}
-
-	public <T> IQueryFilter<T> createQueryFilter(final String selectionId)
-	{
-		return newSqlViewSelectionQueryBuilder().buildInSelectionQueryFilter(selectionId);
 	}
 
 	@Override
@@ -294,9 +284,12 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		SqlViewSelectionToDeleteHelper.scheduleDeleteSelections(viewIds);
 	}
 
-	public static Set<Integer> retrieveRecordIdsForLineIds(final ViewId viewId, final Set<Integer> lineIds)
+	public static Set<DocumentId> retrieveRowIdsForLineIds(
+			@NonNull SqlViewKeyColumnNamesMap keyColumnNamesMap,
+			final ViewId viewId,
+			final Set<Integer> lineIds)
 	{
-		final SqlAndParams sqlAndParams = SqlViewSelectionQueryBuilder.buildSqlSelectRecordIdsForLineIds(viewId.getViewId(), lineIds);
+		final SqlAndParams sqlAndParams = SqlViewSelectionQueryBuilder.buildSqlSelectRowIdsForLineIds(keyColumnNamesMap, viewId.getViewId(), lineIds);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -305,13 +298,13 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			DB.setParameters(pstmt, sqlAndParams.getSqlParams());
 			rs = pstmt.executeQuery();
 
-			final ImmutableSet.Builder<Integer> recordIds = ImmutableSet.builder();
+			final ImmutableSet.Builder<DocumentId> rowIds = ImmutableSet.builder();
 			while (rs.next())
 			{
-				final int recordId = rs.getInt(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID);
-				recordIds.add(recordId);
+				final DocumentId rowId = keyColumnNamesMap.retrieveRowId(rs, "", false);
+				rowIds.add(rowId);
 			}
-			return recordIds.build();
+			return rowIds.build();
 		}
 		catch (final SQLException ex)
 		{

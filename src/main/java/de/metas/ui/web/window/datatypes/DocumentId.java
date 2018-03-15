@@ -1,10 +1,12 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -12,8 +14,11 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import lombok.NonNull;
 
 /*
@@ -43,15 +48,15 @@ import lombok.NonNull;
 // JSON
 public abstract class DocumentId implements Serializable
 {
-	public static final transient String DOCUMENT_ID_PREFIX = "D";
-
 	private static final transient int NEW_ID = -1;
-
-	/**
-	 * If {@link DocumentId#of(String)} is called with this string, then {@link DocumentId#isNew()} will return {@code true}.
-	 */
+	/** If {@link DocumentId#of(String)} is called with this string, then {@link DocumentId#isNew()} will return {@code true}. */
 	public static final transient String NEW_ID_STRING = "NEW";
 	public static final transient DocumentId NEW = new IntDocumentId(NEW_ID);
+
+	private static final transient String DOCUMENT_ID_PREFIX = "D";
+
+	private static final String COMPOSED_KEY_SEPARATOR = "$";
+	private static final Splitter COMPOSED_KEY_SPLITTER = Splitter.on(COMPOSED_KEY_SEPARATOR);
 
 	/**
 	 * Attempts to parse the given {@code idStr} into an integer and return an {@link IntDocumentId}. If the parsing fails, it returns a {@link StringDocumentId} instead.
@@ -107,6 +112,33 @@ public abstract class DocumentId implements Serializable
 		return new StringDocumentId(idStr);
 	}
 
+	public static DocumentId ofObject(@NonNull final Object idObj)
+	{
+		if (JSONNullValue.isNull(idObj))
+		{
+			throw new NullPointerException("Null id");
+		}
+		else if (idObj instanceof Integer)
+		{
+			final int idInt = (int)idObj;
+			return of(idInt);
+		}
+		else if (idObj instanceof String)
+		{
+			final String idStr = (String)idObj;
+			return of(idStr);
+		}
+		else if (idObj instanceof LookupValue)
+		{
+			final LookupValue lookupValue = (LookupValue)idObj;
+			return ofObject(lookupValue.getId());
+		}
+		else
+		{
+			throw new AdempiereException("Cannot convert '" + idObj + "' (" + idObj.getClass() + ") to " + DocumentId.class);
+		}
+	}
+
 	public static final DocumentId fromNullable(final String idStr)
 	{
 		if (Check.isEmpty(idStr, true))
@@ -119,7 +151,7 @@ public abstract class DocumentId implements Serializable
 	public static final Supplier<DocumentId> supplier(final IntSupplier intSupplier)
 	{
 		Check.assumeNotNull(intSupplier, "Parameter intSupplier is not null");
-		return () -> DocumentId.of(intSupplier.getAsInt());
+		return () -> of(intSupplier.getAsInt());
 	}
 
 	public static final Supplier<DocumentId> supplier(final String prefix, final int firstId)
@@ -127,12 +159,46 @@ public abstract class DocumentId implements Serializable
 		Check.assumeNotNull(prefix, "Parameter prefix is not null");
 
 		final AtomicInteger nextId = new AtomicInteger(firstId);
-		return () -> DocumentId.ofString(prefix + nextId.getAndIncrement());
+		return () -> ofString(prefix + nextId.getAndIncrement());
+	}
+
+	public static DocumentId ofComposedKeyParts(final List<Object> composedKeyParts)
+	{
+		Check.assumeNotEmpty(composedKeyParts, "composedKeyParts is not empty");
+
+		if (composedKeyParts.size() == 1)
+		{
+			final Object idObj = composedKeyParts.get(0);
+			return ofObject(idObj);
+		}
+		else
+		{
+			final String idStr = composedKeyParts.stream()
+					.map(idPart -> convertToDocumentIdPart(idPart))
+					.map(String::valueOf)
+					.collect(Collectors.joining(COMPOSED_KEY_SEPARATOR));
+			return ofString(idStr);
+		}
+	}
+
+	private static final Object convertToDocumentIdPart(final Object idPartObj)
+	{
+		if (idPartObj == null)
+		{
+			return null;
+		}
+		else if (idPartObj instanceof LookupValue)
+		{
+			return ((LookupValue)idPartObj).getId();
+		}
+		else
+		{
+			return idPartObj;
+		}
 	}
 
 	private DocumentId()
 	{
-		super();
 	}
 
 	@Override
@@ -153,6 +219,13 @@ public abstract class DocumentId implements Serializable
 	public abstract boolean isInt();
 
 	public abstract int toInt();
+
+	public abstract List<Object> toComposedKeyParts();
+
+	public DocumentId toIncludedRowId()
+	{
+		return ofString(DocumentId.DOCUMENT_ID_PREFIX + toJson());
+	}
 
 	public int removeDocumentPrefixAndConvertToInt()
 	{
@@ -179,7 +252,7 @@ public abstract class DocumentId implements Serializable
 
 	public <X extends Throwable> int toIntOrThrow(@NonNull final Supplier<? extends X> exceptionSupplier) throws X
 	{
-		if(isInt())
+		if (isInt())
 		{
 			return toInt();
 		}
@@ -188,7 +261,6 @@ public abstract class DocumentId implements Serializable
 			throw exceptionSupplier.get();
 		}
 	}
-
 
 	private static final class IntDocumentId extends DocumentId
 	{
@@ -250,6 +322,12 @@ public abstract class DocumentId implements Serializable
 		{
 			return idInt == NEW_ID;
 		}
+
+		@Override
+		public List<Object> toComposedKeyParts()
+		{
+			return ImmutableList.of(idInt);
+		}
 	}
 
 	private static final class StringDocumentId extends DocumentId
@@ -307,6 +385,14 @@ public abstract class DocumentId implements Serializable
 		public boolean isNew()
 		{
 			return false;
+		}
+
+		@Override
+		public List<Object> toComposedKeyParts()
+		{
+			final ImmutableList.Builder<Object> composedKeyParts = ImmutableList.builder();
+			COMPOSED_KEY_SPLITTER.split(idStr).forEach(composedKeyParts::add);
+			return composedKeyParts.build();
 		}
 	}
 }

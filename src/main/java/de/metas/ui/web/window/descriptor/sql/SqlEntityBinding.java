@@ -38,10 +38,8 @@ public interface SqlEntityBinding
 
 	String getTableAlias();
 
-	String getKeyColumnName();
-
 	IStringExpression getSqlWhereClause();
-
+	
 	/** @return field binding or throws exception in case it was not found */
 	SqlEntityFieldBinding getFieldByFieldName(String fieldName);
 

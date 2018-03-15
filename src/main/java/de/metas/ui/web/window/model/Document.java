@@ -134,8 +134,8 @@ public final class Document
 
 	//
 	// Fields
-	private final Map<String, IDocumentField> fieldsByName;
-	private final IDocumentFieldView idField;
+	private final ImmutableMap<String, IDocumentField> fieldsByName;
+	private final ImmutableList<IDocumentFieldView> idFields;
 	private final IDocumentField parentLinkField;
 
 	//
@@ -197,19 +197,12 @@ public final class Document
 		// Create document fields
 		{
 			final ImmutableMap.Builder<String, IDocumentField> fieldsBuilder = ImmutableMap.builder();
-			IDocumentFieldView idField = null;
 			IDocumentField parentLinkField = null;
 			for (final DocumentFieldDescriptor fieldDescriptor : entityDescriptor.getFields())
 			{
 				final String fieldName = fieldDescriptor.getFieldName();
 				final IDocumentField field = builder.buildField(fieldDescriptor, this);
 				fieldsBuilder.put(fieldName, field);
-
-				if (fieldDescriptor.isKey())
-				{
-					Check.assumeNull(idField, "Only one ID field shall exist but we found: {}, {}", idField, field); // shall no happen at this level
-					idField = field;
-				}
 
 				if (fieldDescriptor.isParentLink())
 				{
@@ -218,8 +211,12 @@ public final class Document
 				}
 			}
 			fieldsByName = fieldsBuilder.build();
-			this.idField = idField;
 			this.parentLinkField = parentLinkField;
+
+			idFields = entityDescriptor.getIdFields()
+					.stream()
+					.map(idField -> fieldsByName.get(idField.getFieldName()))
+					.collect(ImmutableList.toImmutableList());
 		}
 
 		//
@@ -319,7 +316,6 @@ public final class Document
 		// Copy document fields
 		{
 			final ImmutableMap.Builder<String, IDocumentField> fieldsBuilder = ImmutableMap.builder();
-			IDocumentFieldView idField = null;
 			IDocumentField parentLinkField = null;
 			for (final IDocumentField fieldOrig : from.fieldsByName.values())
 			{
@@ -327,18 +323,17 @@ public final class Document
 				final String fieldName = fieldCopy.getFieldName();
 				fieldsBuilder.put(fieldName, fieldCopy);
 
-				if (fieldOrig == from.idField)
-				{
-					idField = fieldCopy;
-				}
 				if (fieldOrig == from.parentLinkField)
 				{
 					parentLinkField = fieldCopy;
 				}
 			}
 			fieldsByName = fieldsBuilder.build();
-			this.idField = idField;
 			this.parentLinkField = parentLinkField;
+			this.idFields = from.idFields
+					.stream()
+					.map(idFieldFrom -> fieldsByName.get(idFieldFrom.getFieldName()))
+					.collect(ImmutableList.toImmutableList());
 		}
 
 		//
@@ -976,29 +971,13 @@ public final class Document
 
 	public int getDocumentIdAsInt()
 	{
-		// TODO handle NO ID field or composed PK
-		if (idField == null)
-		{
-			// Get it from document path.
-			// This will cover the case of missing ID which was somehow generated internally
-			if (getParentDocument() == null)
-			{
-				return getDocumentPath().getDocumentId().toInt();
-			}
-			else
-			{
-				return getDocumentPath().getSingleRowId().toInt();
-			}
-		}
-		final int idInt = idField.getValueAsInt(-1);
-		return idInt;
-
+		return getDocumentId().toInt();
 	}
 
 	public DocumentId getDocumentId()
 	{
 		// TODO handle NO ID field or composed PK
-		if (idField == null)
+		if (idFields.size() != 1)
 		{
 			// Get it from document path.
 			// This will cover the case of missing ID which was somehow generated internally
@@ -1011,8 +990,8 @@ public final class Document
 				return getDocumentPath().getSingleRowId();
 			}
 		}
-		final int idInt = idField.getValueAsInt(-1);
-		return DocumentId.of(idInt);
+		final Object idObj = idFields.get(0).getValue();
+		return DocumentId.ofObject(idObj);
 	}
 
 	public Object getDocumentIdAsJson()
@@ -1507,7 +1486,7 @@ public final class Document
 	{
 		return getField(fieldName).getLookupValuesForQuery(query);
 	}
-	
+
 	public Document getIncludedDocument(final DetailId detailId, final DocumentId rowId)
 	{
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
@@ -1963,29 +1942,29 @@ public final class Document
 	{
 		getIncludedDocumentsCollection(document.getDetailId()).onChildSaved(document);
 	}
-	
+
 	public Set<DocumentStandardAction> getStandardActions()
 	{
 		final EnumSet<DocumentStandardAction> standardActions = EnumSet.allOf(DocumentStandardAction.class);
 
 		// Remove Clone action if not supported
-		if(!getEntityDescriptor().isCloneEnabled())
+		if (!getEntityDescriptor().isCloneEnabled())
 		{
 			standardActions.remove(DocumentStandardAction.Clone);
 		}
-		
+
 		// Remove Print action if document is not printable (https://github.com/metasfresh/metasfresh-webui-api/issues/570)
-		if(!getEntityDescriptor().isPrintable())
+		if (!getEntityDescriptor().isPrintable())
 		{
 			standardActions.remove(DocumentStandardAction.Print);
 		}
 
 		// Remove letter action if functionality is not enabled (https://github.com/metasfresh/metasfresh-webui-api/issues/178)
-		if(!Letters.isEnabled())
+		if (!Letters.isEnabled())
 		{
 			standardActions.remove(DocumentStandardAction.Letter);
 		}
-		
+
 		return standardActions;
 	}
 

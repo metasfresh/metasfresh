@@ -17,8 +17,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -68,8 +66,9 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final String _tableAlias;
 
 	private final ImmutableMap<String, SqlViewRowFieldBinding> _fieldsByFieldName;
-	private final SqlViewRowFieldBinding _keyField;
 	private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
+
+	private final SqlViewKeyColumnNamesMap keyColumnNamesMap;
 
 	private final SqlViewSelectData sqlViewSelect;
 	private final IStringExpression sqlWhereClause;
@@ -100,7 +99,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		_tableAlias = builder.getTableAlias();
 
 		_fieldsByFieldName = ImmutableMap.copyOf(builder.getFieldsByFieldName());
-		_keyField = builder.getKeyField();
+		keyColumnNamesMap = builder.getSqlViewKeyColumnNamesMap();
 		widgetTypesByFieldName = _fieldsByFieldName.values()
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(SqlViewRowFieldBinding::getFieldName, SqlViewRowFieldBinding::getWidgetType));
@@ -112,7 +111,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		sqlViewSelect = SqlViewSelectData.builder()
 				.sqlTableName(_tableName)
 				.sqlTableAlias(_tableAlias)
-				.keyField(_keyField)
+				.keyColumnNamesMap(keyColumnNamesMap)
 				.displayFieldNames(displayFieldNames)
 				.allFields(allFields)
 				.groupingBinding(groupingBinding)
@@ -171,24 +170,9 @@ public class SqlViewBinding implements SqlEntityBinding
 		return _tableAlias;
 	}
 
-	private SqlViewRowFieldBinding getKeyField()
+	public SqlViewKeyColumnNamesMap getSqlViewKeyColumnNamesMap()
 	{
-		return Preconditions.checkNotNull(_keyField, "View %s does not have a key column defined", this);
-	}
-
-	@Override
-	public String getKeyColumnName()
-	{
-		return getKeyField().getColumnName();
-	}
-
-	public boolean isKeyFieldName(final String fieldName)
-	{
-		if (_keyField == null)
-		{
-			return false;
-		}
-		return Objects.equal(fieldName, _keyField.getFieldName());
+		return keyColumnNamesMap;
 	}
 
 	public Collection<SqlViewRowFieldBinding> getFields()
@@ -372,7 +356,6 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		private Collection<String> displayFieldNames;
 		private final Map<String, SqlViewRowFieldBinding> _fieldsByFieldName = new LinkedHashMap<>();
-		private SqlViewRowFieldBinding _keyField;
 		private ViewRowCustomizer rowCustomizer;
 
 		private ArrayList<DocumentQueryOrderBy> defaultOrderBys;
@@ -447,13 +430,18 @@ public class SqlViewBinding implements SqlEntityBinding
 			return sqlWhereClause;
 		}
 
-		private SqlViewRowFieldBinding getKeyField()
+		private SqlViewKeyColumnNamesMap getSqlViewKeyColumnNamesMap()
 		{
-			if (_keyField == null)
-			{
-				throw new IllegalStateException("No key field was configured for " + this);
-			}
-			return _keyField;
+			return SqlViewKeyColumnNamesMap.ofKeyFields(getKeyFields());
+		}
+
+		private ImmutableList<SqlViewRowFieldBinding> getKeyFields()
+		{
+			return getFieldsByFieldName()
+					.values()
+					.stream()
+					.filter(SqlViewRowFieldBinding::isKeyColumn)
+					.collect(ImmutableList.toImmutableList());
 		}
 
 		public Builder displayFieldNames(final Collection<String> displayFieldNames)
@@ -482,15 +470,9 @@ public class SqlViewBinding implements SqlEntityBinding
 			return _fieldsByFieldName;
 		}
 
-		public final Builder field(final SqlViewRowFieldBinding field)
+		public final Builder field(@NonNull final SqlViewRowFieldBinding field)
 		{
-			Check.assumeNotNull(field, "Parameter field is not null");
-
 			_fieldsByFieldName.put(field.getFieldName(), field);
-			if (field.isKeyColumn())
-			{
-				_keyField = field;
-			}
 			return this;
 		}
 

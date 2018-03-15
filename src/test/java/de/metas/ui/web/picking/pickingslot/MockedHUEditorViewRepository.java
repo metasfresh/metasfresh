@@ -19,6 +19,7 @@ import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
+import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
@@ -129,7 +130,7 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public Set<Integer> convertToRecordIds(final DocumentIdsSelection rowIds)
+	public SqlViewRowIdsConverter getRowIdsConverter()
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}

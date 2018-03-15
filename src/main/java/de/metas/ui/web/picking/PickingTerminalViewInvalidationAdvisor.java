@@ -11,10 +11,12 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewInvalidationAdvisor;
 import de.metas.ui.web.view.SqlViewRowIdsOrderedSelectionFactory;
+import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 
@@ -61,10 +63,8 @@ class PickingTerminalViewInvalidationAdvisor implements IViewInvalidationAdvisor
 			return ImmutableSet.of();
 		}
 
-		return SqlViewRowIdsOrderedSelectionFactory.retrieveRecordIdsForLineIds(view.getViewId(), shipmentScheduleIds)
-				.stream()
-				.map(DocumentId::of)
-				.collect(ImmutableSet.toImmutableSet());
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = SqlViewKeyColumnNamesMap.ofIntKeyField(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID);
+		return SqlViewRowIdsOrderedSelectionFactory.retrieveRowIdsForLineIds(keyColumnNamesMap, view.getViewId(), shipmentScheduleIds);
 	}
 
 	private Set<Integer> extractShipmentScheduleIds(final Set<TableRecordReference> recordRefs)
