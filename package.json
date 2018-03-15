@@ -108,6 +108,7 @@
     "moment": "~2.21.0",
     "numeral": "^2.0.6",
     "prop-types": "^15.5.6",
+    "quagga": "^0.12.1",
     "query-string": "^5.0.1",
     "react": "^16.2.0",
     "react-addons-css-transition-group": "~15.6.2",

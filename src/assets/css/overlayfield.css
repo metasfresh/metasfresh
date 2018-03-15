@@ -9,6 +9,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow-y: scroll;
+}
+
+@media (min-width: $breakpoint-md){
+    overflow-y: auto;
 }
 
 .overlay-field .form-group {
@@ -28,3 +33,46 @@
     font-size: 30px;
     text-align: center;
 }
+
+.barcode-scanner-widget {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border: solid 1px #C9D5DC;
+}
+
+.scanner-wrapper .drawingBuffer {
+    position: absolute;
+    top: 0;
+    left:0;
+}
+
+.scanner-window {
+    width: 320px;
+}
+
+@media (min-width: $breakpoint-md){
+    .scanner-window {
+        width: 640px;
+        float: none;
+    }
+}
+
+.scanner-window video {
+    max-width: 100%;
+    width: 100%;
+}
+
+.scanning-result {
+    margin-bottom: 20px;
+}
+
+.scanning-result .label {
+    font-size: 18px;
+}
+
+.scanner-controls {
+    margin: 20px 0;
+}
+
+
