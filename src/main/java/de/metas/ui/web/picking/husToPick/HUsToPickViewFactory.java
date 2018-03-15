@@ -19,7 +19,9 @@ import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -93,15 +95,15 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 				.setHasTreeSupport(true)
 				//
 				.addElementsFromViewRowClassAndFieldNames(HUEditorRow.class,
-						HUEditorRow.FIELDNAME_HUCode,
-						HUEditorRow.FIELDNAME_Product,
-						HUEditorRow.FIELDNAME_HU_UnitType,
-						HUEditorRow.FIELDNAME_PackingInfo,
-						HUEditorRow.FIELDNAME_QtyCU,
-						HUEditorRow.FIELDNAME_UOM,
-						HUEditorRow.FIELDNAME_HUStatus,
-						HUEditorRow.FIELDNAME_BestBeforeDate,
-						HUEditorRow.FIELDNAME_Locator)
+						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
+						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HU_UnitType).restrictToMediaType(MediaType.SCREEN).build(),
+						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_PackingInfo).restrictToMediaType(MediaType.SCREEN).build(),
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_QtyCU),
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
+						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build(),
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_BestBeforeDate),
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Locator))
 				//
 				.build();
 	}
