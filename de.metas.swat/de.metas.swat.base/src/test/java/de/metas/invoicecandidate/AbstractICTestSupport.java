@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -529,15 +528,8 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	protected final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLine(final I_C_Invoice_Candidate ic, final I_M_InOutLine inOutLine)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_C_InvoiceCandidate_InOutLine iciol = db.getFirstOnly(I_C_InvoiceCandidate_InOutLine.class, new IQueryFilter<I_C_InvoiceCandidate_InOutLine>()
-		{
-			@Override
-			public boolean accept(final I_C_InvoiceCandidate_InOutLine pojo)
-			{
-				return pojo.getC_Invoice_Candidate_ID() == ic.getC_Invoice_Candidate_ID()
-						&& pojo.getM_InOutLine_ID() == inOutLine.getM_InOutLine_ID();
-			}
-		});
+		I_C_InvoiceCandidate_InOutLine iciol = db.getFirstOnly(I_C_InvoiceCandidate_InOutLine.class, pojo -> pojo.getC_Invoice_Candidate_ID() == ic.getC_Invoice_Candidate_ID()
+				&& pojo.getM_InOutLine_ID() == inOutLine.getM_InOutLine_ID());
 
 		if (iciol == null)
 		{

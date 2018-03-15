@@ -50,23 +50,6 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 */
 	BigDecimal retrieveOpenItems(BPartnerStats stats);
 
-	/**
-	 * Retrieve the SOCreditUsed value for the given stats using the old legacy sql
-	 * Note: This will have to be re-implemented in order to not search in the db each time a new document is created.
-	 *
-	 * @param stats
-	 * @return
-	 */
-	void updateSOCreditUsed(BPartnerStats stats);
-
-	/**
-	 * Retrieve the ActualLifeTimeValue for the given stats using the old legacy sql
-	 * Note: This will have to be re-implemented in order to not search in the db each time a new document is created.
-	 *
-	 * @param stats
-	 * @return
-	 */
-	void updateActualLifeTimeValue(BPartnerStats stats);
 
 	/**
 	 * Set the given soCreditStatus value to the I_C_BPartner_Stats entry linked with the stats object
@@ -75,29 +58,7 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 */
 	void setSOCreditStatus(BPartnerStats stats, String soCreditStatus);
 
-	/**
-	 * Retrieve the bpartner for which the bpStats object was made
-	 *
-	 * @param bpStats
-	 * @return
-	 */
-	I_C_BPartner retrieveC_BPartner(BPartnerStats bpStats);
-
-	/**
-	 * Update the SOCreditStatus based on the legacy sql
-	 *
-	 * @param bpStats
-	 */
-	void updateSOCreditStatus(BPartnerStats bpStats);
-
-	/**
-	 * Update the TotalOpenBalance based on the legacy sql
-	 *
-	 * @param bpStats
-	 */
-	void updateOpenItems(BPartnerStats bpStats);
-
 	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 
-	void updateCreditLimitIndicator(BPartnerStats bstats);
+	void updateBPartnerStatistics(BPartnerStats bpStats);
 }

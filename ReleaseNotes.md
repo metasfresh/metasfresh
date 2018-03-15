@@ -14,6 +14,9 @@ Here come the actual release notes:
 **release for week 2018-12**
 
 ## Features
+* metasfresh-webui-frontend
+  * [#1609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1609) Camera barcode reader for Tablet/ mobile device
+    * New Barcode Reader that can be used via webcam on mobile devices.
 
 ## Fixes
 * metasfresh-webui-frontend
