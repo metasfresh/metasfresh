@@ -103,7 +103,7 @@ public class SqlViewSelectData
 				.append("\n WHERE ")
 				// NOTE: already filtered by UUID
 				.append("\n")
-				.append(keyColumnNamesMap.getKeyColumnNames()
+				.append(keyColumnNamesMap.getWebuiSelectionColumnNames()
 						.stream()
 						.map(keyColumnName -> COLUMNNAME_Paging_Prefix + keyColumnName + "=?")
 						.collect(Collectors.joining("\nAND ")))
