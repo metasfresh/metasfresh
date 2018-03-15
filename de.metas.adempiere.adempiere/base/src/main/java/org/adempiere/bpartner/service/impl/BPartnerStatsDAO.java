@@ -69,6 +69,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				.actualLifeTimeValue(statsRecord.getActualLifeTimeValue())
 				.openItems(statsRecord.getOpenItems())
 				.recordId(statsRecord.getC_BPartner_Stats_ID())
+				.bpartnerId(partner.getC_BPartner_ID())
 				.soCreditStatus(statsRecord.getSOCreditStatus())
 				.soCreditUsed(statsRecord.getSO_CreditUsed())
 				.build();
@@ -195,14 +196,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 	}
 
-	@Override
-	public I_C_BPartner retrieveC_BPartner(@NonNull final BPartnerStats bpStats)
-	{
-		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
-
-		return stats.getC_BPartner();
-	}
-
 	private I_C_BPartner_Stats loadDataRecord(@NonNull final BPartnerStats bpStats)
 	{
 		return load(bpStats.getRecordId(), I_C_BPartner_Stats.class);
@@ -287,7 +280,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	{
 
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-		final I_C_BPartner partner = retrieveC_BPartner(bpStats);
+		final I_C_BPartner partner = load(bpStats.getBpartnerId(), I_C_BPartner.class);
 
 		// load the statistics
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);

@@ -58,14 +58,6 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 */
 	void setSOCreditStatus(BPartnerStats stats, String soCreditStatus);
 
-	/**
-	 * Retrieve the bpartner for which the bpStats object was made
-	 *
-	 * @param bpStats
-	 * @return
-	 */
-	I_C_BPartner retrieveC_BPartner(BPartnerStats bpStats);
-
 	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 
 	void updateBPartnerStatistics(BPartnerStats bpStats);

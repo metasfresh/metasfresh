@@ -59,8 +59,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		}
 
 		// get credit limit from BPartner
-		final I_C_BPartner partner = bpStatsDAO.retrieveC_BPartner(bpStats);
-
+		final I_C_BPartner partner = load(bpStats.getBpartnerId(), I_C_BPartner.class);
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), date);
 
@@ -108,7 +107,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 	public BigDecimal getCreditWatchRatio(final BPartnerStats stats)
 	{
 		// bp group will be taken from the stats' bpartner
-		final I_C_BPartner partner = Services.get(IBPartnerStatsDAO.class).retrieveC_BPartner(stats);
+		final I_C_BPartner partner = load(stats.getBpartnerId(), I_C_BPartner.class);
 
 		final I_C_BP_Group bpGroup = partner.getC_BP_Group();
 		final BigDecimal creditWatchPercent = bpGroup.getCreditWatchPercent();
