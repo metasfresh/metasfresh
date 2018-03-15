@@ -31,6 +31,7 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -599,9 +600,9 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		public <T extends IViewRow> Builder addElementsFromViewRowClassAndFieldNames(final Class<T> viewRowClass, final String... fieldNames)
+		public <T extends IViewRow> Builder addElementsFromViewRowClassAndFieldNames(final Class<T> viewRowClass, final ClassViewColumnOverrides... columns)
 		{
-			final List<DocumentLayoutElementDescriptor.Builder> elements = ViewColumnHelper.createLayoutElementsForClassAndFieldNames(viewRowClass, fieldNames);
+			final List<DocumentLayoutElementDescriptor.Builder> elements = ViewColumnHelper.createLayoutElementsForClassAndFieldNames(viewRowClass, columns);
 			Check.assumeNotEmpty(elements, "elements is not empty"); // shall never happen
 
 			addElements(elements);

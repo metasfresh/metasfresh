@@ -108,17 +108,52 @@ public final class ViewColumnHelper
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Value
+	@Builder
+	public static class ClassViewColumnOverrides
+	{
+		public static final ClassViewColumnOverrides ofFieldName(final String fieldName)
+		{
+			return builder(fieldName).build();
+		}
+
+		public static final ClassViewColumnOverridesBuilder builder(final String fieldName)
+		{
+			return new ClassViewColumnOverridesBuilder().fieldName(fieldName);
+		}
+
+		@NonNull
+		private final String fieldName;
+		@Singular
+		private final ImmutableSet<MediaType> restrictToMediaTypes;
+	}
+
 	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(
 			@NonNull final Class<?> dataType,
-			@NonNull final String... fieldNames)
+			@NonNull final ClassViewColumnOverrides... columns)
 	{
-		Check.assumeNotEmpty(fieldNames, "fieldNames is not empty");
+		Check.assumeNotEmpty(columns, "columnOverrides is not empty");
 
 		final ClassViewDescriptor descriptor = getDescriptor(dataType);
-		return Stream.of(fieldNames)
-				.map(descriptor::getColumnByName)
-				.map(column -> createLayoutElement(column))
+		return Stream.of(columns)
+				.map(columnOverride -> {
+					final ClassViewColumnDescriptor columnDescriptor = descriptor.getColumnByName(columnOverride.getFieldName());
+					return createClassViewColumnDescriptorEffective(columnDescriptor, columnOverride);
+				})
+				.map(ViewColumnHelper::createLayoutElement)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static ClassViewColumnDescriptor createClassViewColumnDescriptorEffective(@NonNull final ClassViewColumnDescriptor column, @NonNull final ClassViewColumnOverrides overrides)
+	{
+		final ClassViewColumnDescriptor.ClassViewColumnDescriptorBuilder columnBuilder = column.toBuilder();
+
+		if (overrides.getRestrictToMediaTypes() != null)
+		{
+			columnBuilder.restrictToMediaTypes(overrides.getRestrictToMediaTypes());
+		}
+
+		return columnBuilder.build();
 	}
 
 	private static ClassViewDescriptor createClassViewDescriptor(final Class<?> dataType)
@@ -253,7 +288,7 @@ public final class ViewColumnHelper
 	}
 
 	@Value
-	@Builder
+	@Builder(toBuilder = true)
 	private static final class ClassViewColumnDescriptor
 	{
 		@NonNull
