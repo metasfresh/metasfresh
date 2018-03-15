@@ -9,6 +9,7 @@ import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
@@ -50,8 +51,14 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults extends WEBUI_M_Re
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
+		final String defaultPackingInfo = buildDefaultPackingInfo(context);
+		if (Check.isEmpty(defaultPackingInfo, true))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no default LU/TU configuration");
+		}
+
 		return super.checkPreconditionsApplicable(context)
-				.deriveWithCaptionOverride(buildDefaultPackingInfo(context));
+				.deriveWithCaptionOverride(defaultPackingInfo);
 	}
 
 	private String buildDefaultPackingInfo(final IProcessPreconditionsContext context)
