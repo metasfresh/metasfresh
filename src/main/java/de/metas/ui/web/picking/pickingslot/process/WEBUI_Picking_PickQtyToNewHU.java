@@ -172,7 +172,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 			return;
 		}
 
-		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount();
+		final int copies = huReportService.getPickingLabelAutoPrintCopyCount();
 
 		final Properties ctx = getCtx();
 		HUReportExecutor.newInstance(ctx)
