@@ -62,6 +62,12 @@
 			<artifactId>activemq-broker</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+
+
 		<!-- metasfresh -->
 		<dependency>
 			<groupId>de.metas.vertical.pharma</groupId>
