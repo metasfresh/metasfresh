@@ -46,6 +46,7 @@ Here come the actual release notes:
   * [#3620](https://github.com/metasfresh/metasfresh/issues/3620) Spring model interceptors: support those who implement IModelInterceptor
   * [#3621](https://github.com/metasfresh/metasfresh/issues/3621) Allow semikolon delimiter for Import Format
   * [#3624](https://github.com/metasfresh/metasfresh/issues/3624) Pharma: When Operation Code is 2, deactivate the product
+  * [#3647](https://github.com/metasfresh/metasfresh/issues/3674) Support Country in local address sequence
   * [#3655](https://github.com/metasfresh/metasfresh/issues/3655) POJOWrapper support for model classes with zero ID
   * [#3667](https://github.com/metasfresh/metasfresh/issues/3667) prospect is converted to customer when completing a quotation
 
