@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
@@ -139,7 +140,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 
 			final String printPackageTrxName = InterfaceWrapperHelper.getTrxName(printPackage);
 			Check.assume(
-					Check.equals(printPackageTrxName, trxName),
+					Objects.equals(printPackageTrxName, trxName),
 					"printPackage shall have the same trxName {} as the local instance {}",
 					printPackageTrxName, trxName);
 		}
