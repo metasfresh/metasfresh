@@ -11,7 +11,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -19,6 +22,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.PO;
@@ -29,6 +33,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -346,45 +351,34 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			{
 				return id;
 			}
+			else
+			{
+				id = retrieveDocumentId();
+				idAquired = true;
+				return id;
+			}
+		}
 
-			final DocumentFieldDescriptor idField = entityDescriptor.getIdField();
-			if (idField == null)
+		private final DocumentId retrieveDocumentId()
+		{
+			final List<DocumentFieldDescriptor> idFields = entityDescriptor.getIdFields();
+			if (idFields.isEmpty())
 			{
 				// FIXME: workaround to bypass the missing ID field for views
 				final int idInt = _nextMissingId.decrementAndGet();
-				id = DocumentId.of(idInt);
-				idAquired = true;
-				return id;
+				return DocumentId.of(idInt);
 			}
-
-			final Object idObj = getValue(idField);
-			if (JSONNullValue.isNull(idObj))
+			else if (idFields.size() == 1)
 			{
-				throw new NullPointerException("Null id");
-			}
-			else if (idObj instanceof Number)
-			{
-				final int idInt = ((Number)idObj).intValue();
-				id = DocumentId.of(idInt);
-				idAquired = true;
-				return id;
-			}
-			else if (idObj instanceof IntegerLookupValue)
-			{
-				final int idInt = ((IntegerLookupValue)idObj).getIdAsInt();
-				id = DocumentId.of(idInt);
-				idAquired = true;
-				return id;
-			}
-			else if (idObj instanceof String)
-			{
-				id = DocumentId.of(idObj.toString());
-				idAquired = true;
-				return id;
+				final Object idObj = getValue(idFields.get(0));
+				return DocumentId.ofObject(idObj);
 			}
 			else
 			{
-				throw new IllegalStateException("Cannot convert id value '" + idObj + "' (" + idObj.getClass() + ") to DocumentId");
+				final List<Object> idParts = idFields.stream()
+						.map(this::getValue)
+						.collect(Collectors.toList());
+				return DocumentId.ofComposedKeyParts(idParts);
 			}
 		}
 
@@ -444,9 +438,13 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		refresh(document, document.getDocumentId());
 	}
 
-	private void refresh(final Document document, final DocumentId documentId)
+	private void refresh(@NonNull final Document document, @NonNull final DocumentId documentId)
 	{
 		logger.debug("Refreshing: {}, using ID={}", document, documentId);
+		if (documentId.isNew())
+		{
+			throw new AdempiereException("Invalid documentId to refresh: " + documentId);
+		}
 
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 		final DocumentQuery query = DocumentQuery.ofRecordId(entityDescriptor, documentId)
@@ -560,7 +558,8 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		// Reload the document
 		if (needsRefresh)
 		{
-			final DocumentId idNew = DocumentId.of(InterfaceWrapperHelper.getId(po));
+			final SqlDocumentEntityDataBindingDescriptor dataBinding = document.getEntityDescriptor().getDataBinding(SqlDocumentEntityDataBindingDescriptor.class);
+			final DocumentId idNew = extractDocumentId(po, dataBinding);
 			refresh(document, idNew);
 		}
 
@@ -569,6 +568,28 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		if (!document.isRootDocument())
 		{
 			document.getParentDocument().onChildSaved(document);
+		}
+	}
+
+	private DocumentId extractDocumentId(final PO po, SqlDocumentEntityDataBindingDescriptor dataBinding)
+	{
+		if (dataBinding.isSingleKey())
+		{
+			return DocumentId.of(InterfaceWrapperHelper.getId(po));
+		}
+		else
+		{
+			final List<SqlDocumentFieldDataBindingDescriptor> keyFields = dataBinding.getKeyFields();
+			if (keyFields.isEmpty())
+			{
+				throw new AdempiereException("No primary key defined for " + dataBinding.getTableName());
+			}
+
+			final List<Object> keyParts = keyFields.stream()
+					.map(keyField -> po.get_Value(keyField.getColumnName()))
+					.collect(ImmutableList.toImmutableList());
+
+			return DocumentId.ofComposedKeyParts(keyParts);
 		}
 	}
 
@@ -584,21 +605,21 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		{
 			po = TableModelLoader.instance.newPO(document.getCtx(), sqlTableName, ITrx.TRXNAME_ThreadInherited);
 		}
-		else
+		else if (dataBinding.isSingleKey())
 		{
 			final boolean checkCache = false;
 			po = TableModelLoader.instance.getPO(document.getCtx(), sqlTableName, document.getDocumentIdAsInt(), checkCache, ITrx.TRXNAME_ThreadInherited);
-
-			if (po == null)
-			{
-				throw new DBException("No PO found for " + document);
-			}
+		}
+		else
+		{
+			po = toQueryBuilder(dataBinding, document.getDocumentId())
+					.create()
+					.firstOnly(PO.class);
 		}
 
-		// TODO: handle the case of composed primary key!
-		if (po.getPOInfo().getKeyColumnName() == null)
+		if (po == null)
 		{
-			throw new UnsupportedOperationException("Composed primary key is not supported for " + sqlTableName);
+			throw new DBException("No PO found for " + document);
 		}
 
 		//
@@ -607,6 +628,35 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.setValue(po, true); // allow changing any columns
 
 		return po;
+	}
+
+	private static final IQueryBuilder<Object> toQueryBuilder(final SqlDocumentEntityDataBindingDescriptor dataBinding, final DocumentId documentId)
+	{
+		final String tableName = dataBinding.getTableName();
+
+		final List<SqlDocumentFieldDataBindingDescriptor> keyFields = dataBinding.getKeyFields();
+		final int keyFieldsCount = keyFields.size();
+		if (keyFieldsCount == 0)
+		{
+			throw new AdempiereException("No primary key defined for " + tableName);
+		}
+		final List<Object> keyParts = documentId.toComposedKeyParts();
+		if (keyFieldsCount != keyParts.size())
+		{
+			throw new AdempiereException("Invalid documentId '" + documentId + "'. It shall have " + keyFieldsCount + " parts but it has " + keyParts.size());
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<Object> queryBuilder = queryBL.createQueryBuilder(tableName, PlainContextAware.newWithThreadInheritedTrx());
+		for (int i = 0; i < keyFieldsCount; i++)
+		{
+			final SqlDocumentFieldDataBindingDescriptor keyField = keyFields.get(i);
+			final String keyColumnName = keyField.getColumnName();
+			final Object keyValue = convertValueToPO(keyParts.get(i), keyColumnName, keyField.getWidgetType(), keyField.getSqlValueClass());
+			queryBuilder.addEqualsFilter(keyColumnName, keyValue);
+		}
+
+		return queryBuilder;
 	}
 
 	/**
@@ -812,7 +862,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
 				return lookupValue == null ? null : lookupValue.getIdAsString();
 			}
-			else if(Password.class.isAssignableFrom(valueClass))
+			else if (Password.class.isAssignableFrom(valueClass))
 			{
 				final Password password = (Password)value;
 				return password.getAsString();
@@ -914,8 +964,8 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final int linkId = document.getFieldView(lookup.getLinkColumnName()).getValueAsInt(-1);
 		final Set<Object> listValuesInDatabase = lookup.retrieveExistingValues(linkId).getKeys();
 
-        final LookupValuesList lookupValuesList = documentField.getValueAs(LookupValuesList.class);
-        final Set<Object> listValuesToSave = lookupValuesList != null ? new HashSet<>(lookupValuesList.getKeys()) : new HashSet<>();
+		final LookupValuesList lookupValuesList = documentField.getValueAs(LookupValuesList.class);
+		final Set<Object> listValuesToSave = lookupValuesList != null ? new HashSet<>(lookupValuesList.getKeys()) : new HashSet<>();
 
 		//
 		// Delete removed labels

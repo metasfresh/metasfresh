@@ -10,6 +10,7 @@ import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
+import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
@@ -65,7 +66,7 @@ public interface HUEditorViewRepository
 
 	boolean containsAnyOfRowIds(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 
-	Set<Integer> convertToRecordIds(DocumentIdsSelection rowIds);
-
 	String buildSqlWhereClause(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
+
+	SqlViewRowIdsConverter getRowIdsConverter();
 }

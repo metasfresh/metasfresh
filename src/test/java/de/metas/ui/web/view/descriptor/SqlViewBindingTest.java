@@ -68,6 +68,7 @@ public class SqlViewBindingTest
 				.build();
 
 		final Builder builder = SqlViewBinding.builder()
+				.tableName("dummyTable")
 				.field(field)
 				.displayFieldNames("displayFieldName");
 

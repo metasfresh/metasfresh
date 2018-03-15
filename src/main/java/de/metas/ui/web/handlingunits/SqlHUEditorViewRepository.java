@@ -57,6 +57,7 @@ import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelectionFactory;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
 import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
 import de.metas.ui.web.view.descriptor.SqlViewSelectData;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
@@ -136,7 +137,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		}
 	}
 
-	private SqlViewRowIdsConverter getRowIdsConverter()
+	@Override
+	public SqlViewRowIdsConverter getRowIdsConverter()
 	{
 		return sqlViewBinding.getRowIdsConverter();
 	}
@@ -590,17 +592,15 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public Set<Integer> convertToRecordIds(final DocumentIdsSelection rowIds)
-	{
-		return getRowIdsConverter().convertToRecordIds(rowIds);
-	}
-
-	@Override
 	public String buildSqlWhereClause(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
-		final String sqlKeyColumnNameFK = I_M_HU.Table_Name + "." + I_M_HU.COLUMNNAME_M_HU_ID;
-		final String selectionId = selection.getSelectionId();
-		return SqlViewSelectionQueryBuilder.buildSqlWhereClause(sqlKeyColumnNameFK, selectionId, rowIds, getRowIdsConverter());
+		return SqlViewSelectionQueryBuilder.prepareSqlWhereClause()
+				.sqlTableAlias(I_M_HU.Table_Name)
+				.keyColumnNamesMap(SqlViewKeyColumnNamesMap.ofIntKeyField(I_M_HU.COLUMNNAME_M_HU_ID))
+				.selectionId(selection.getSelectionId())
+				.rowIds(rowIds)
+				.rowIdsConverter(getRowIdsConverter())
+				.build();
 	}
 
 }
