@@ -1,5 +1,7 @@
 package de.metas.printing.model.validator;
 
+import java.util.Objects;
+
 /*
  * #%L
  * de.metas.printing.base
@@ -10,12 +12,12 @@ package de.metas.printing.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,14 +40,14 @@ import de.metas.printing.client.IPrintingClientDelegate;
 import de.metas.printing.model.I_AD_Printer_Config;
 
 /**
- * 
+ *
  */
 @Validator(I_AD_Printer_Config.class)
 public class AD_Printer_Config
 {
 	/**
 	 * If our own hostkey's printer config uses a shared config () i.e. another/external printing client, then we stop our embedded printing client. Otherwise we start it.
-	 * 
+	 *
 	 * @param printerConfig
 	 */
 	@ModelChange(
@@ -57,7 +59,7 @@ public class AD_Printer_Config
 
 		final String hostKey = Services.get(IPrintPackageBL.class).getHostKeyOrNull(ctx);
 
-		if (Check.isEmpty(hostKey, true) || !Check.equals(hostKey, printerConfig.getHostKey()))
+		if (Check.isEmpty(hostKey, true) || !Objects.equals(hostKey, printerConfig.getConfigHostKey()))
 		{
 			return; // 'printerConfig' does not belong the host which we run on
 		}

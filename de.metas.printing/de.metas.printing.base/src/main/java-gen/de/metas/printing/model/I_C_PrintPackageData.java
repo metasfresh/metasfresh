@@ -69,6 +69,29 @@ public interface I_C_PrintPackageData
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Print package data.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_PrintPackageData_ID (int C_PrintPackageData_ID);
+
+	/**
+	 * Get Print package data.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_PrintPackageData_ID();
+
+    /** Column definition for C_PrintPackageData_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_PrintPackageData, Object> COLUMN_C_PrintPackageData_ID = new org.adempiere.model.ModelColumn<I_C_PrintPackageData, Object>(I_C_PrintPackageData.class, "C_PrintPackageData_ID", null);
+    /** Column name C_PrintPackageData_ID */
+    public static final String COLUMNNAME_C_PrintPackageData_ID = "C_PrintPackageData_ID";
+
+	/**
 	 * Set Druckpaket.
 	 *
 	 * <br>Type: TableDir
@@ -94,29 +117,6 @@ public interface I_C_PrintPackageData
     public static final org.adempiere.model.ModelColumn<I_C_PrintPackageData, de.metas.printing.model.I_C_Print_Package> COLUMN_C_Print_Package_ID = new org.adempiere.model.ModelColumn<I_C_PrintPackageData, de.metas.printing.model.I_C_Print_Package>(I_C_PrintPackageData.class, "C_Print_Package_ID", de.metas.printing.model.I_C_Print_Package.class);
     /** Column name C_Print_Package_ID */
     public static final String COLUMNNAME_C_Print_Package_ID = "C_Print_Package_ID";
-
-	/**
-	 * Set Print package data.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_PrintPackageData_ID (int C_PrintPackageData_ID);
-
-	/**
-	 * Get Print package data.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_PrintPackageData_ID();
-
-    /** Column definition for C_PrintPackageData_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PrintPackageData, Object> COLUMN_C_PrintPackageData_ID = new org.adempiere.model.ModelColumn<I_C_PrintPackageData, Object>(I_C_PrintPackageData.class, "C_PrintPackageData_ID", null);
-    /** Column name C_PrintPackageData_ID */
-    public static final String COLUMNNAME_C_PrintPackageData_ID = "C_PrintPackageData_ID";
 
 	/**
 	 * Get Erstellt.

@@ -96,56 +96,6 @@ public interface I_AD_Printer_Matching
     public static final String COLUMNNAME_AD_Printer_Config_ID = "AD_Printer_Config_ID";
 
 	/**
-	 * Set Logischer Drucker.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Printer_ID (int AD_Printer_ID);
-
-	/**
-	 * Get Logischer Drucker.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Printer_ID();
-
-	public I_AD_Printer getAD_Printer();
-
-	public void setAD_Printer(I_AD_Printer AD_Printer);
-
-    /** Column definition for AD_Printer_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Printer_Matching, I_AD_Printer> COLUMN_AD_Printer_ID = new org.adempiere.model.ModelColumn<I_AD_Printer_Matching, I_AD_Printer>(I_AD_Printer_Matching.class, "AD_Printer_ID", I_AD_Printer.class);
-    /** Column name AD_Printer_ID */
-    public static final String COLUMNNAME_AD_Printer_ID = "AD_Printer_ID";
-
-	/**
-	 * Set Printer matching.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Printer_Matching_ID (int AD_Printer_Matching_ID);
-
-	/**
-	 * Get Printer matching.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Printer_Matching_ID();
-
-    /** Column definition for AD_Printer_Matching_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Printer_Matching, Object> COLUMN_AD_Printer_Matching_ID = new org.adempiere.model.ModelColumn<I_AD_Printer_Matching, Object>(I_AD_Printer_Matching.class, "AD_Printer_Matching_ID", null);
-    /** Column name AD_Printer_Matching_ID */
-    public static final String COLUMNNAME_AD_Printer_Matching_ID = "AD_Printer_Matching_ID";
-
-	/**
 	 * Set Hardware-Drucker.
 	 *
 	 * <br>Type: TableDir
@@ -171,6 +121,52 @@ public interface I_AD_Printer_Matching
     public static final org.adempiere.model.ModelColumn<I_AD_Printer_Matching, de.metas.printing.model.I_AD_PrinterHW> COLUMN_AD_PrinterHW_ID = new org.adempiere.model.ModelColumn<I_AD_Printer_Matching, de.metas.printing.model.I_AD_PrinterHW>(I_AD_Printer_Matching.class, "AD_PrinterHW_ID", de.metas.printing.model.I_AD_PrinterHW.class);
     /** Column name AD_PrinterHW_ID */
     public static final String COLUMNNAME_AD_PrinterHW_ID = "AD_PrinterHW_ID";
+
+	/**
+	 * Set Logischer Drucker.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Printer_ID (int AD_Printer_ID);
+
+	/**
+	 * Get Logischer Drucker.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Printer_ID();
+
+    /** Column definition for AD_Printer_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Printer_Matching, Object> COLUMN_AD_Printer_ID = new org.adempiere.model.ModelColumn<I_AD_Printer_Matching, Object>(I_AD_Printer_Matching.class, "AD_Printer_ID", null);
+    /** Column name AD_Printer_ID */
+    public static final String COLUMNNAME_AD_Printer_ID = "AD_Printer_ID";
+
+	/**
+	 * Set Printer matching.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Printer_Matching_ID (int AD_Printer_Matching_ID);
+
+	/**
+	 * Get Printer matching.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Printer_Matching_ID();
+
+    /** Column definition for AD_Printer_Matching_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Printer_Matching, Object> COLUMN_AD_Printer_Matching_ID = new org.adempiere.model.ModelColumn<I_AD_Printer_Matching, Object>(I_AD_Printer_Matching.class, "AD_Printer_Matching_ID", null);
+    /** Column name AD_Printer_Matching_ID */
+    public static final String COLUMNNAME_AD_Printer_Matching_ID = "AD_Printer_Matching_ID";
 
 	/**
 	 * Set AD_Tray_Matching_IncludedTab.

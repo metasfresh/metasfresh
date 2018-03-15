@@ -73,7 +73,7 @@ public class PrinterHWRepo
 				.addEqualsFilter(I_AD_PrinterHW_MediaSize.COLUMN_Name, mediaSize.getName())
 				.addEqualsFilter(I_AD_PrinterHW_MediaSize.COLUMN_AD_PrinterHW_ID, printerRecord.getAD_PrinterHW_ID())
 				.create()
-				.first();
+				.firstOnly(I_AD_PrinterHW_MediaSize.class);
 		if (mediaSizeRecord == null)
 		{
 			mediaSizeRecord = newInstance(I_AD_PrinterHW_MediaSize.class);
@@ -94,7 +94,7 @@ public class PrinterHWRepo
 				.addEqualsFilter(I_AD_PrinterHW_MediaTray.COLUMN_TrayNumber, trayNumber)
 				.addEqualsFilter(I_AD_PrinterHW_MediaTray.COLUMN_AD_PrinterHW_ID, printerRecord.getAD_PrinterHW_ID())
 				.create()
-				.first();
+				.firstOnly(I_AD_PrinterHW_MediaTray.class);
 		if (mediaSizeRecord == null)
 		{
 			mediaSizeRecord = newInstance(I_AD_PrinterHW_MediaTray.class);
@@ -114,7 +114,7 @@ public class PrinterHWRepo
 				.addEqualsFilter(I_AD_PrinterHW.COLUMNNAME_HostKey, hostKey)
 				.addEqualsFilter(I_AD_PrinterHW.COLUMN_Name, hwPrinter.getName())
 				.create()
-				.first();
+				.firstOnly(I_AD_PrinterHW.class);
 		if (printerRecord == null)
 		{
 			printerRecord = newInstance(I_AD_PrinterHW.class);

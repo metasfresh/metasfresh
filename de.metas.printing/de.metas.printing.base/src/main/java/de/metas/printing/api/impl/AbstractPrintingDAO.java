@@ -1,5 +1,7 @@
 package de.metas.printing.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.printing.base
@@ -131,7 +133,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		final IQuery<I_C_Printing_Queue> query = createQuery(ctx, queueQuery, trxName);
 		return query.count();
 	}
-	
+
 	@Override
 	public List<I_C_Print_Job_Detail> retrievePrintJobDetails(final I_C_Print_Job_Line jobLine)
 	{
@@ -198,7 +200,8 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		final List<I_AD_Printer> printers = new ArrayList<>();
 		for (final I_AD_Printer_Matching matching : matchings)
 		{
-			printers.add(matching.getAD_Printer());
+			final I_AD_Printer printer = load(matching.getAD_Printer_ID(), I_AD_Printer.class);
+			printers.add(printer);
 		}
 
 		return printers;
@@ -213,7 +216,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 
 		if (!Check.isEmpty(hostKey, true))
 		{
-			queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMN_HostKey, hostKey);
+			queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostKey);
 		}
 		else
 		{
@@ -318,7 +321,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.create()
 				.firstOnly(I_AD_Print_Clients.class);
 	}
-	
+
 	@Override
 	public List<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Printing_Queue printingQueue)
 	{
@@ -326,7 +329,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(printingQueue);
 
 		final StringBuilder whereClause = new StringBuilder();
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 
 		whereClause.append(I_C_Print_Job_Line.COLUMNNAME_C_Printing_Queue_ID).append("=?");
 		params.add(printingQueue.getC_Printing_Queue_ID());
@@ -335,7 +338,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.addEqualsFilter(I_C_Print_Job_Line.COLUMNNAME_C_Printing_Queue_ID, printingQueue.getC_Printing_Queue_ID())
 				.addOnlyActiveRecordsFilter()
 				.orderBy()
-				.addColumn(I_C_Print_Job_Line.COLUMNNAME_SeqNo, true)
+				.addColumnAscending(I_C_Print_Job_Line.COLUMNNAME_SeqNo)
 				.endOrderBy()
 				.create()
 				.list(I_C_Print_Job_Line.class);
@@ -385,8 +388,8 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Printing_Queue.COLUMN_AD_Archive_ID, archive.getAD_Archive_ID())
 				.orderBy()
-				.addColumn(I_C_Printing_Queue.COLUMNNAME_Created, false)
-				.addColumn(I_C_Printing_Queue.COLUMNNAME_C_Printing_Queue_ID, false) // also order by ID in case created is not unique
+				.addColumnDescending(I_C_Printing_Queue.COLUMNNAME_Created)
+				.addColumnDescending(I_C_Printing_Queue.COLUMNNAME_C_Printing_Queue_ID) // also order by ID in case created is not unique
 				.endOrderBy()
 				.create()
 				.first();
@@ -416,28 +419,28 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.create()
 				.first(); // note: right now IDK why it's first an not firstOnly
 	}
-	
+
 	@Override
 	public I_AD_PrinterHW retrieveVirtualPrinter(final Properties ctx, String hostkey, final String trxName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		
-		
+
+
 		final IQuery<I_AD_Printer_Config> queryConfig = queryBL.createQueryBuilder(I_AD_Printer_Config.class)
-				.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_HostKey, hostkey)
+				.addEqualsFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostkey)
 				.create();
-		
+
 		final IQuery<I_AD_Printer_Matching> queryMatchings = queryBL.createQueryBuilder(I_AD_Printer_Matching.class)
 				.addInSubQueryFilter(I_AD_Printer_Matching.COLUMNNAME_AD_Printer_Config_ID, I_AD_Printer_Config.COLUMNNAME_AD_Printer_Config_ID, queryConfig)
 				.create();
-		
+
 		return queryBL.createQueryBuilder(I_AD_PrinterHW.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_PrinterHW.COLUMNNAME_OutputType, X_AD_PrinterHW.OUTPUTTYPE_PDF)
 				.addInArrayFilter(I_AD_PrinterHW.COLUMN_HostKey, hostkey, null)
 				.addInSubQueryFilter(I_AD_Printer_Matching.COLUMNNAME_AD_PrinterHW_ID, I_AD_PrinterHW.COLUMNNAME_AD_PrinterHW_ID, queryMatchings)
 				.orderBy()
-				.addColumn(I_AD_PrinterHW.COLUMNNAME_HostKey, false).endOrderBy()
+				.addColumnDescending(I_AD_PrinterHW.COLUMNNAME_HostKey).endOrderBy()
 				.create()
 				.first(I_AD_PrinterHW.class);
 	}

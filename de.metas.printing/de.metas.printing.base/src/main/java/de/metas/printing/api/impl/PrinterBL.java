@@ -1,5 +1,7 @@
 package de.metas.printing.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.printing.base
@@ -10,12 +12,12 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -62,13 +64,13 @@ public class PrinterBL implements IPrinterBL
 		{
 			return existientPrinterConfig;
 		}
-		
+
 		final I_AD_Printer_Config newPrinterConfig = InterfaceWrapperHelper.newInstance(I_AD_Printer_Config.class, printerHW);
 		newPrinterConfig.setAD_Org_ID(printerHW.getAD_Org_ID());
-		newPrinterConfig.setHostKey(printerHW.getHostKey());
+		newPrinterConfig.setConfigHostKey(printerHW.getHostKey());
 		newPrinterConfig.setIsSharedPrinterConfig(false); // not shared by default
 		InterfaceWrapperHelper.save(newPrinterConfig);
-		
+
 		return newPrinterConfig;
 	}
 
@@ -93,7 +95,7 @@ public class PrinterBL implements IPrinterBL
 		final I_AD_Printer_Matching matching = InterfaceWrapperHelper.create(ctx, I_AD_Printer_Matching.class, trxName);
 		matching.setAD_Printer_Config(config);
 		matching.setAD_Org_ID(printerHW.getAD_Org_ID());
-		matching.setAD_Printer(printer);
+		matching.setAD_Printer_ID(printer.getAD_Printer_ID());
 		matching.setAD_PrinterHW(printerHW);
 		matching.setHostKey(printerHW.getHostKey());
 		InterfaceWrapperHelper.save(matching);
@@ -184,7 +186,8 @@ public class PrinterBL implements IPrinterBL
 		{
 			// the old HW printer didn't have a tray, but the new one does
 			// create a new matching for every logical tray
-			for (final I_AD_Printer_Tray logicalTray : dao.retrieveTrays(printerMatching.getAD_Printer()))
+			final I_AD_Printer printer = load(printerMatching.getAD_Printer_ID(), I_AD_Printer.class);
+			for (final I_AD_Printer_Tray logicalTray : dao.retrieveTrays(printer))
 			{
 				final I_AD_PrinterTray_Matching trayMatching = InterfaceWrapperHelper.newInstance(I_AD_PrinterTray_Matching.class, printerMatching);
 				trayMatching.setAD_Printer_Matching(printerMatching);
@@ -195,7 +198,9 @@ public class PrinterBL implements IPrinterBL
 		}
 		else
 		{
-			Check.assumeNotNull(defaultHWTray, "{} has at least one tray", printerMatching.getAD_Printer());
+			final I_AD_Printer printer = load(printerMatching.getAD_Printer_ID(), I_AD_Printer.class);
+			Check.assumeNotNull(defaultHWTray, "{} has at least one tray", printer);
+
 			Check.assume(!existingPrinterTrayMatchings.isEmpty(), "{} has at least one tray matching", printerMatching);
 
 			for (final I_AD_PrinterTray_Matching trayMatching : existingPrinterTrayMatchings)

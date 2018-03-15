@@ -14,7 +14,7 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1430518365L;
+	private static final long serialVersionUID = 914569646L;
 
     /** Standard Constructor */
     public X_AD_Printer_Config (Properties ctx, int AD_Printer_Config_ID, String trxName)
@@ -23,7 +23,7 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
       /** if (AD_Printer_Config_ID == 0)
         {
 			setAD_Printer_Config_ID (0);
-			setHostKey (null); // @#AD_Session.HostKey@
+			setConfigHostKey (null); // @#AD_Session.HostKey@
 			setIsSharedPrinterConfig (false); // N
         } */
     }
@@ -99,23 +99,20 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
 		return ii.intValue();
 	}
 
-	/** Set Host key.
-		@param HostKey 
-		Unique identifier of a host
-	  */
+	/** Set Host Key.
+		@param ConfigHostKey Host Key	  */
 	@Override
-	public void setHostKey (java.lang.String HostKey)
+	public void setConfigHostKey (java.lang.String ConfigHostKey)
 	{
-		set_ValueNoCheck (COLUMNNAME_HostKey, HostKey);
+		set_Value (COLUMNNAME_ConfigHostKey, ConfigHostKey);
 	}
 
-	/** Get Host key.
-		@return Unique identifier of a host
-	  */
+	/** Get Host Key.
+		@return Host Key	  */
 	@Override
-	public java.lang.String getHostKey () 
+	public java.lang.String getConfigHostKey () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_HostKey);
+		return (java.lang.String)get_Value(COLUMNNAME_ConfigHostKey);
 	}
 
 	/** Set Geteilt.
