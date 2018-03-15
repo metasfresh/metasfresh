@@ -136,23 +136,27 @@ public class WEBUI_Picking_PickQtyToNewHU
 	{
 		if (hu == null)
 		{
+			addLog("Param 'hu'==null; nothing to do");
 			return;
 		}
 
 		final HUReportService huReportService = HUReportService.get();
 		if (!huReportService.isPickingLabelAutoPrintEnabled())
 		{
+			addLog("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
 			return;
 		}
 
 		if (!hu.isTopLevel())
 		{
+			addLog("We only print top level HUs; nothing to do; hu={}", hu);
 			return;
 		}
 
 		final int adProcessId = huReportService.retrievePickingLabelProcessID();
 		if (adProcessId <= 0)
 		{
+			addLog("No process configured via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_PICKING_LABEL_PROCESS_ID);
 			return;
 		}
 
@@ -164,6 +168,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 		if (husToProcess.isEmpty())
 		{
+			addLog("hu's type does not match process {}; nothing to do; hu={}", adProcessId, hu);
 			return;
 		}
 
