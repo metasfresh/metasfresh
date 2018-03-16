@@ -14,7 +14,7 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1928742498L;
+	private static final long serialVersionUID = -220311784L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Transition (Properties ctx, int C_Flatrate_Transition_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 			setDocStatus (null); // DR
 			setEndsWithCalendarYear (false); // N
 			setIsAutoCompleteNewTerm (false); // N
+			setIsAutoExtension (false); // N
 			setIsAutoRenew (false); // N
 			setIsNotifyUserInCharge (false); // N
 			setName (null);
@@ -252,6 +253,8 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	public static final String DOCACTION_Unlock = "XL";
 	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
 		@param DocAction 
 		Der zukünftige Status des Belegs
@@ -361,6 +364,29 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	public boolean isAutoCompleteNewTerm () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAutoCompleteNewTerm);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Auto Extension.
+		@param IsAutoExtension Auto Extension	  */
+	@Override
+	public void setIsAutoExtension (boolean IsAutoExtension)
+	{
+		set_Value (COLUMNNAME_IsAutoExtension, Boolean.valueOf(IsAutoExtension));
+	}
+
+	/** Get Auto Extension.
+		@return Auto Extension	  */
+	@Override
+	public boolean isAutoExtension () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAutoExtension);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
