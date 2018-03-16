@@ -48,15 +48,17 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import lombok.NonNull;
 
 public class PrintPackageBL implements IPrintPackageBL
 {
 	private final Logger logger = LogManager.getLogger(getClass());
 
 	@Override
-	public boolean createPrintPackage(final I_C_Print_Package printPackage,
-			final I_C_Print_Job_Instructions jobInstructions,
-			final IPrintPackageCtx printPackageCtx)
+	public boolean addPrintingDataToPrintPackage(
+			@NonNull final I_C_Print_Package printPackage,
+			@NonNull final I_C_Print_Job_Instructions jobInstructions,
+			@NonNull final IPrintPackageCtx printPackageCtx)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(printPackage);
 
@@ -160,14 +162,14 @@ public class PrintPackageBL implements IPrintPackageBL
 		return new PrintJobLinesAggregator(printPackageCtx, jobInstructions);
 	}
 
-	
+
 	@Override
 	public IPrintPackageCtx createEmptyInitialCtx()
 	{
 		final PrintPackageCtx printCtx = new PrintPackageCtx();
 		return printCtx;
 	}
-	
+
 	@Override
 	public IPrintPackageCtx createInitialCtx(final Properties ctx)
 	{

@@ -43,7 +43,7 @@ public interface IPrintPackageBL extends ISingletonService
 	 * @param printPackageCtx
 	 * @return true if print package was created /updated
 	 */
-	boolean createPrintPackage(I_C_Print_Package printPackage, 
+	boolean addPrintingDataToPrintPackage(I_C_Print_Package printPackage, 
 			I_C_Print_Job_Instructions jobInstructions, 
 			IPrintPackageCtx printPackageCtx);
 

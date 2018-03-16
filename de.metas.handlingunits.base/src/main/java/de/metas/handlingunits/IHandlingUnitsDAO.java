@@ -85,9 +85,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	void delete(I_M_HU hu);
 
-	I_M_HU_PI retrieveNoPI(Properties ctx);
+	I_M_HU_PI retrievePackingItemTemplatePI(Properties ctx);
 
-	I_M_HU_PI_Item retrieveNoPIItem(Properties ctx);
+	I_M_HU_PI_Item retrievePackingItemTemplatePIItem(Properties ctx);
 
 	/**
 	 * Gets Virtual PI
@@ -99,9 +99,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU_PI_Item retrieveVirtualPIItem(Properties ctx);
 
-	int getNo_HU_PI_ID();
+	int getPackingItemTemplate_HU_PI_ID();
 
-	int getNo_HU_PI_Item_ID();
+	int getPackingItemTemplate_HU_PI_Item_ID();
 
 	int getVirtual_HU_PI_ID();
 
