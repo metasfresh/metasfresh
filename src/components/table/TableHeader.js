@@ -1,6 +1,8 @@
 import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 
+import { shouldRenderColumn } from './Table';
+
 class TableHeader extends PureComponent {
   constructor(props) {
     super(props);
@@ -87,17 +89,21 @@ class TableHeader extends PureComponent {
 
     return (
       cols &&
-      cols.map((item, index) => (
-        <th key={index} className={getSizeClass(item)}>
-          {sort
-            ? this.renderSorting(
-                item.fields[0].field,
-                item.caption,
-                item.sortable
-              )
-            : item.caption}
-        </th>
-      ))
+      cols.map((item, index) => {
+        if (shouldRenderColumn(item)) {
+          return (
+            <th key={index} className={getSizeClass(item)}>
+              {sort
+                ? this.renderSorting(
+                    item.fields[0].field,
+                    item.caption,
+                    item.sortable
+                  )
+                : item.caption}
+            </th>
+          );
+        }
+      })
     );
   };
 
