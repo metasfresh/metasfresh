@@ -1,10 +1,10 @@
-package de.metas.vertical.pharma.msv3.server;
+package de.metas.vertical.pharma.msv3.protocol.order;
 
-import lombok.experimental.UtilityClass;
+import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.commons
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -12,22 +12,38 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@UtilityClass
-public final class MSV3ServerConstants
+/**
+ * Exclusive identification for people! Support (optional display on GUI no proof) - no technical semantics Apo-Wawi awards this; should be sufficiently selective.
+ */
+@Value
+public class SupportIDType
 {
-	public static final String BACKEND_SYNC_REST_ENDPOINT = "/api";
+	public static SupportIDType of(final int valueAsInt)
+	{
+		return new SupportIDType(valueAsInt);
+	}
 
-	public static final String SOAP_NAMESPACE = "urn:msv3:v2";
+	private final int valueAsInt;
+
+	private SupportIDType(final int valueAsInt)
+	{
+		if (valueAsInt < 1 || valueAsInt > 999999)
+		{
+			throw new IllegalArgumentException("value shall be between 1 and 999999");
+		}
+
+		this.valueAsInt = valueAsInt;
+	}
 }

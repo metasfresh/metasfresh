@@ -1,7 +1,6 @@
-package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
+package de.metas.vertical.pharma.msv3.server;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitRueckmeldungTyp;
-import lombok.Getter;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -25,20 +24,11 @@ import lombok.Getter;
  * #L%
  */
 
-public enum StockAvailabilityResponseItemPartType
+@Service
+public class MSV3ServerAuthorizationService
 {
-	NORMAL(VerfuegbarkeitRueckmeldungTyp.NORMAL), //
-	IN_PARTNER_STORAGE(VerfuegbarkeitRueckmeldungTyp.VERBUND), //
-	SUBSEQUENT_DELIVERY(VerfuegbarkeitRueckmeldungTyp.NACHLIEFERUNG), //
-	DISPO(VerfuegbarkeitRueckmeldungTyp.DISPO), //
-	NOT_DELIVERABLE(VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR) //
-	;
-
-	@Getter
-	private final VerfuegbarkeitRueckmeldungTyp soapCode;
-
-	private StockAvailabilityResponseItemPartType(VerfuegbarkeitRueckmeldungTyp soapCode)
+	public void assertValidClientSoftwareId(final String clientSoftwareId)
 	{
-		this.soapCode = soapCode;
+		// TODO implement
 	}
 }
