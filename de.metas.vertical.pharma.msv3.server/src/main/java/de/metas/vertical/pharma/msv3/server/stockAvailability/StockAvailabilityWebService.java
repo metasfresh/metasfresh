@@ -47,7 +47,7 @@ public class StockAvailabilityWebService
 	private StockAvailabilityJAXBConverters jaxbConverters;
 
 	@PayloadRoot(localPart = "verfuegbarkeitAnfragen", namespace = "urn:msv3:v2")
-	public @ResponsePayload JAXBElement<VerfuegbarkeitAnfragenResponse> verfuegbarkeitAnfragen(@RequestPayload final JAXBElement<VerfuegbarkeitAnfragen> jaxbRequest)
+	public @ResponsePayload JAXBElement<VerfuegbarkeitAnfragenResponse> checkStockAvailability(@RequestPayload final JAXBElement<VerfuegbarkeitAnfragen> jaxbRequest)
 	{
 		final VerfuegbarkeitAnfragen soapRequest = jaxbRequest.getValue();
 		assertValidClientSoftwareId(soapRequest.getClientSoftwareKennung());
