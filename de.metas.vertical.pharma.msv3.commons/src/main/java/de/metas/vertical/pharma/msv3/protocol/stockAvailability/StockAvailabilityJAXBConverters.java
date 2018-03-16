@@ -1,38 +1,24 @@
-package de.metas.vertical.pharma.msv3.server;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
 import javax.xml.bind.JAXBElement;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ws.server.endpoint.annotation.Endpoint;
-import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
-import org.springframework.ws.server.endpoint.annotation.RequestPayload;
-import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
-
 import com.google.common.collect.ImmutableList;
 
-import de.metas.vertical.pharma.msv3.server.stockAvailability.RequirementType;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityQuery;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityQueryItem;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityResponse;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityResponseItem;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityService;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityShare;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilitySubstitution;
-import de.metas.vertical.pharma.msv3.server.types.PZN;
-import de.metas.vertical.pharma.msv3.server.types.Quantity;
-import de.metas.vertical.pharma.msv3.server.util.JAXBDateUtils;
+import de.metas.vertical.pharma.msv3.protocol.types.PZN;
+import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
+import de.metas.vertical.pharma.msv3.protocol.util.JAXBDateUtils;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnfragen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnfragenResponse;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnteil;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitSubstitution;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelneAntwort;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsantwortArtikel;
+import lombok.NonNull;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.commons
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -51,33 +37,16 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Verfuegbarkeitsantwor
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-@Endpoint
-public class Msv3VerfuegbarkeitAnfragenService
+public class StockAvailabilityJAXBConverters
 {
-	@Autowired
-	private StockAvailabilityService stockAvailabilityService;
-	@Autowired
-	private ObjectFactory jaxbObjectFactory;
+	private final ObjectFactory jaxbObjectFactory;
 
-	@PayloadRoot(localPart = "verfuegbarkeitAnfragen", namespace = "urn:msv3:v2")
-	public @ResponsePayload JAXBElement<VerfuegbarkeitAnfragenResponse> verfuegbarkeitAnfragen(@RequestPayload final JAXBElement<VerfuegbarkeitAnfragen> jaxbRequest)
+	public StockAvailabilityJAXBConverters(@NonNull final ObjectFactory jaxbObjectFactory)
 	{
-		final VerfuegbarkeitAnfragen soapRequest = jaxbRequest.getValue();
-		assertValidClientSoftwareId(soapRequest.getClientSoftwareKennung());
-
-		final StockAvailabilityQuery stockAvailabilityQuery = createStockAvailabilityQuery(soapRequest.getVerfuegbarkeitsanfrage());
-		final StockAvailabilityResponse stockAvailabilityResponse = stockAvailabilityService.checkAvailability(stockAvailabilityQuery);
-
-		return createSOAPStockAvailabilityResponse(stockAvailabilityResponse);
+		this.jaxbObjectFactory = jaxbObjectFactory;
 	}
 
-	private void assertValidClientSoftwareId(final String clientSoftwareId)
-	{
-		// TODO
-	}
-
-	private StockAvailabilityQuery createStockAvailabilityQuery(final VerfuegbarkeitsanfrageEinzelne soapAvailabilityRequest)
+	public StockAvailabilityQuery fromJAXB(final VerfuegbarkeitsanfrageEinzelne soapAvailabilityRequest)
 	{
 		return StockAvailabilityQuery.builder()
 				.id(soapAvailabilityRequest.getId())
@@ -96,7 +65,7 @@ public class Msv3VerfuegbarkeitAnfragenService
 				.build();
 	}
 
-	private JAXBElement<VerfuegbarkeitAnfragenResponse> createSOAPStockAvailabilityResponse(final StockAvailabilityResponse stockAvailabilityResponse)
+	public JAXBElement<VerfuegbarkeitAnfragenResponse> toJAXB(final StockAvailabilityResponse stockAvailabilityResponse)
 	{
 		final VerfuegbarkeitsanfrageEinzelneAntwort soapResponseContent = jaxbObjectFactory.createVerfuegbarkeitsanfrageEinzelneAntwort();
 		soapResponseContent.setId(stockAvailabilityResponse.getId());
@@ -117,7 +86,7 @@ public class Msv3VerfuegbarkeitAnfragenService
 		soapItem.setAnfragePzn(item.getPzn().getValueAsLong());
 		soapItem.setAnfrageMenge(item.getQty().getValueAsInt());
 		soapItem.setSubstitution(createSOAPAvailabilitySubstitution(item.getSubstitution()));
-		soapItem.getAnteile().addAll(item.getShares().stream()
+		soapItem.getAnteile().addAll(item.getParts().stream()
 				.map(this::creatSOAPStockAvailabilityShare)
 				.collect(ImmutableList.toImmutableList()));
 		return soapItem;
@@ -137,7 +106,7 @@ public class Msv3VerfuegbarkeitAnfragenService
 		return soapSubstitution;
 	}
 
-	private VerfuegbarkeitAnteil creatSOAPStockAvailabilityShare(final StockAvailabilityShare share)
+	private VerfuegbarkeitAnteil creatSOAPStockAvailabilityShare(final StockAvailabilityResponseItemPart share)
 	{
 		final VerfuegbarkeitAnteil soapShare = jaxbObjectFactory.createVerfuegbarkeitAnteil();
 		soapShare.setMenge(share.getQty().getValueAsInt());

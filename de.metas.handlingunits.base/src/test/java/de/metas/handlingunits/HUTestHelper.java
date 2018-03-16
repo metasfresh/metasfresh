@@ -660,13 +660,13 @@ public class HUTestHelper
 	{
 		final I_M_HU_PI huDefNone = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
 		huDefNone.setName("NoPI");
-		huDefNone.setM_HU_PI_ID(HandlingUnitsDAO.NO_HU_PI_ID);
+		huDefNone.setM_HU_PI_ID(HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_ID);
 		InterfaceWrapperHelper.save(huDefNone);
 
 		final String huUnitType = null; // any
-		createVersion(huDefNone, true, huUnitType, HandlingUnitsDAO.NO_HU_PI_Version_ID);
+		createVersion(huDefNone, true, huUnitType, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Version_ID);
 
-		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.NO_HU_PI_Item_ID);
+		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Item_ID);
 		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductDAO.NO_HU_PI_Item_Product_ID);
 
 		return huDefNone;
@@ -1772,7 +1772,7 @@ public class HUTestHelper
 
 	public boolean isNoPI(final I_M_HU_PI pi)
 	{
-		return pi.getM_HU_PI_ID() == Services.get(IHandlingUnitsDAO.class).getNo_HU_PI_ID();
+		return pi.getM_HU_PI_ID() == Services.get(IHandlingUnitsDAO.class).getPackingItemTemplate_HU_PI_ID();
 	}
 
 	public boolean isVirtualPI(final I_M_HU_PI pi)

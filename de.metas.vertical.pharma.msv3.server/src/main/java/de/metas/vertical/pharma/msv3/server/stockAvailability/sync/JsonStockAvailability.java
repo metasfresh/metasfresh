@@ -1,9 +1,9 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.server.stockAvailability.sync;
 
-import de.metas.vertical.pharma.msv3.server.types.PZN;
-import de.metas.vertical.pharma.msv3.server.types.Quantity;
-import lombok.Builder;
-import lombok.NonNull;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Value;
 
 /*
@@ -28,22 +28,30 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class StockAvailabilityQueryItem
+public class JsonStockAvailability
 {
-	PZN pzn;
-	Quantity qtyRequired;
-	RequirementType requirementType;
+	@JsonProperty("pzn")
+	private long pzn;
+	@JsonProperty("qty")
+	private int qty;
 
-	@Builder
-	private StockAvailabilityQueryItem(
-			@NonNull final PZN pzn,
-			@NonNull final Quantity qtyRequired,
-			@NonNull final RequirementType requirementType)
+	public JsonStockAvailability(
+			@JsonProperty("pzn") final long pzn,
+			@JsonProperty("qty") final int qty)
 	{
+		if (pzn <= 0)
+		{
+			throw new IllegalArgumentException("pzn shall be > 0");
+		}
+		if (qty < 0)
+		{
+			throw new IllegalArgumentException("qty shall be >= 0");
+		}
+
 		this.pzn = pzn;
-		this.qtyRequired = qtyRequired;
-		this.requirementType = requirementType;
+		this.qty = qty;
 	}
 
 }

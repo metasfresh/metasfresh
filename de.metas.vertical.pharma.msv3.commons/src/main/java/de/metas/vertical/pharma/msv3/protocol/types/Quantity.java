@@ -1,7 +1,6 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.types;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitRueckmeldungTyp;
-import lombok.Getter;
+import lombok.Value;
 
 /*
  * #%L
@@ -25,20 +24,39 @@ import lombok.Getter;
  * #L%
  */
 
-public enum StockAvailabilityShareType
+@Value
+public class Quantity
 {
-	NORMAL(VerfuegbarkeitRueckmeldungTyp.NORMAL), //
-	COMPOSITE(VerfuegbarkeitRueckmeldungTyp.VERBUND), //
-	REPLANISHMENT(VerfuegbarkeitRueckmeldungTyp.NACHLIEFERUNG), //
-	DISPO(VerfuegbarkeitRueckmeldungTyp.DISPO), //
-	NOT_DELIVERABLE(VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR) //
-	;
-
-	@Getter
-	private final VerfuegbarkeitRueckmeldungTyp soapCode;
-
-	private StockAvailabilityShareType(VerfuegbarkeitRueckmeldungTyp soapCode)
+	public static Quantity of(final int value)
 	{
-		this.soapCode = soapCode;
+		if (value == 0)
+		{
+			return ZERO;
+		}
+		return new Quantity(value);
+	}
+
+	public static final Quantity ZERO = new Quantity(0);
+
+	private final int valueAsInt;
+
+	private Quantity(final int value)
+	{
+		if (value < 0)
+		{
+			throw new IllegalArgumentException("Invalid quantity: " + value);
+		}
+
+		this.valueAsInt = value;
+	}
+
+	public Quantity min(final Quantity otherQty)
+	{
+		return valueAsInt <= otherQty.valueAsInt ? this : otherQty;
+	}
+
+	public Quantity min(final int otherQty)
+	{
+		return valueAsInt <= otherQty ? this : Quantity.of(otherQty);
 	}
 }

@@ -1,8 +1,8 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
 import java.time.LocalDateTime;
 
-import de.metas.vertical.pharma.msv3.server.types.Quantity;
+import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,36 +31,36 @@ import lombok.Value;
 
 @Value
 @Builder
-public class StockAvailabilityShare
+public class StockAvailabilityResponseItemPart
 {
 	/** the sum of ALL quantity fields = request quantity */
 	@NonNull
 	Quantity qty;
 
 	@NonNull
-	StockAvailabilityShareType type;
+	StockAvailabilityResponseItemPartType type;
 
 	/**
 	 * Expected! e.g. 1.1.2011 15:00 Uhr.
-	 * For {@link #type} = {@link StockAvailabilityShareType#NORMAL} or {@link StockAvailabilityShareType#COMPOSITE} and specific feedback, either delivery time or tour must be filled!
+	 * For {@link #type} = {@link StockAvailabilityResponseItemPartType#NORMAL} or {@link StockAvailabilityResponseItemPartType#COMPOSITE} and specific feedback, either delivery time or tour must be filled!
 	 */
 	LocalDateTime deliveryDate;
 
 	/**
 	 * Description of the tour e.g. "9 o'clock tour" or "Mittagstour".
-	 * For {@link #type} = {@link StockAvailabilityShareType#NORMAL} or {@link StockAvailabilityShareType#COMPOSITE} and specific feedback, either delivery time or tour must be filled!
+	 * For {@link #type} = {@link StockAvailabilityResponseItemPartType#NORMAL} or {@link StockAvailabilityResponseItemPartType#COMPOSITE} and specific feedback, either delivery time or tour must be filled!
 	 */
 	String tour;
 
 	/**
 	 * A defined defect reason.
-	 * With {@link #type} = {@link StockAvailabilityShareType#NORMAL} or {@link StockAvailabilityShareType#COMPOSITE} the value is always {@link StockAvailabilitySubstitutionReason#NO_INFO},
+	 * With {@link #type} = {@link StockAvailabilityResponseItemPartType#NORMAL} or {@link StockAvailabilityResponseItemPartType#COMPOSITE} the value is always {@link StockAvailabilitySubstitutionReason#NO_INFO},
 	 * otherwise with all other types one of the OTHERS! Values ​​required.
 	 */
 	StockAvailabilitySubstitutionReason reason;
 
 	/**
-	 * Only with type {@link StockAvailabilityShareType#NORMAL} and {@link StockAvailabilityShareType#COMPOSITE} is true allowed;
+	 * Only with type {@link StockAvailabilityResponseItemPartType#NORMAL} and {@link StockAvailabilityResponseItemPartType#COMPOSITE} is true allowed;
 	 * true if due to BTM or chilled goods / transport exclusion can not be delivered on the next tour
 	 */
 	boolean tourDeviation;

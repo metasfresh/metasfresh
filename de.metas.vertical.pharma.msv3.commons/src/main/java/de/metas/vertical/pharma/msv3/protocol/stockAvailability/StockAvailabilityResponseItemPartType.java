@@ -1,6 +1,6 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Substitutionsgrund;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitRueckmeldungTyp;
 import lombok.Getter;
 
 /*
@@ -13,29 +13,31 @@ import lombok.Getter;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public enum StockAvailabilitySubstitutionType
+public enum StockAvailabilityResponseItemPartType
 {
-	SUCCESSOR_PRODUCT(Substitutionsgrund.NACHFOLGEPRODUKT), //
-	RE_AND_PARALLEL_IMPORT(Substitutionsgrund.RE_UND_PARALLEL_IMPORT), //
-	PROPOSAL(Substitutionsgrund.VORSCHLAG) //
+	NORMAL(VerfuegbarkeitRueckmeldungTyp.NORMAL), //
+	COMPOSITE(VerfuegbarkeitRueckmeldungTyp.VERBUND), //
+	REPLENISHMENT(VerfuegbarkeitRueckmeldungTyp.NACHLIEFERUNG), //
+	DISPO(VerfuegbarkeitRueckmeldungTyp.DISPO), //
+	NOT_DELIVERABLE(VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR) //
 	;
 
 	@Getter
-	private final Substitutionsgrund soapCode;
+	private final VerfuegbarkeitRueckmeldungTyp soapCode;
 
-	private StockAvailabilitySubstitutionType(final Substitutionsgrund soapCode)
+	private StockAvailabilityResponseItemPartType(VerfuegbarkeitRueckmeldungTyp soapCode)
 	{
 		this.soapCode = soapCode;
 	}

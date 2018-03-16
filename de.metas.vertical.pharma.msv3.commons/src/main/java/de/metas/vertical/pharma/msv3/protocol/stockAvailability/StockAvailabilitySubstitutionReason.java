@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitDefektgrund;
 import lombok.Getter;
@@ -35,7 +35,7 @@ public enum StockAvailabilitySubstitutionReason
 	UNKNOWN_ITEM_NO(VerfuegbarkeitDefektgrund.ARTIKEL_NR_UNBEKANNT), //
 	OUT_OF_TRADE(VerfuegbarkeitDefektgrund.AUSSER_HANDEL), //
 	NO_REFERENCE(VerfuegbarkeitDefektgrund.KEIN_BEZUG), //
-	PART_FAILURE(VerfuegbarkeitDefektgrund.TEILDEFEKT), //
+	PART_DEFECT(VerfuegbarkeitDefektgrund.TEILDEFEKT), //
 	TRANSPORT_EXCLUSION(VerfuegbarkeitDefektgrund.TRANSPORTAUSSCHLUSS), //
 	;
 

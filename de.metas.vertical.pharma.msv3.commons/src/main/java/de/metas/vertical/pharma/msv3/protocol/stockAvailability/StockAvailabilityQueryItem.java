@@ -1,7 +1,10 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitTyp;
-import lombok.Getter;
+import de.metas.vertical.pharma.msv3.protocol.types.PZN;
+import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -25,18 +28,22 @@ import lombok.Getter;
  * #L%
  */
 
-public enum AvailabilityType
+@Value
+public class StockAvailabilityQueryItem
 {
-	SPECIFIC(VerfuegbarkeitTyp.SPEZIFISCH), //
-	NON_SPECIFIC(VerfuegbarkeitTyp.UNSPEZIFISCH) //
-	;
+	PZN pzn;
+	Quantity qtyRequired;
+	RequirementType requirementType;
 
-	@Getter
-	private VerfuegbarkeitTyp soapCode;
-
-	private AvailabilityType(final VerfuegbarkeitTyp soapCode)
+	@Builder
+	private StockAvailabilityQueryItem(
+			@NonNull final PZN pzn,
+			@NonNull final Quantity qtyRequired,
+			@NonNull final RequirementType requirementType)
 	{
-		this.soapCode = soapCode;
+		this.pzn = pzn;
+		this.qtyRequired = qtyRequired;
+		this.requirementType = requirementType;
 	}
 
 }

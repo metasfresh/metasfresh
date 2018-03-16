@@ -1,9 +1,9 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.vertical.pharma.msv3.server.types.PZN;
-import de.metas.vertical.pharma.msv3.server.types.Quantity;
+import de.metas.vertical.pharma.msv3.protocol.types.PZN;
+import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -38,23 +38,28 @@ public class StockAvailabilityResponseItem
 	Quantity qty;
 
 	/**
-	 * If specified, ALL shares of the substitution article will be accepted (except for reason of substitution "suggestion").
+	 * If specified, ALL parts of the substitution article will be accepted (except for reason of substitution "suggestion").
 	 * The solution excludes for complexity reasons that substitution for normal delivery may yield one share with and one share without substitution!
 	 */
 	StockAvailabilitySubstitution substitution;
 	/** a maximum of 5 parts of the feedback whereby each type of type may only be used once. */
-	ImmutableList<StockAvailabilityShare> shares;
+	ImmutableList<StockAvailabilityResponseItemPart> parts;
 
 	@Builder
 	private StockAvailabilityResponseItem(
 			@NonNull final PZN pzn,
 			@NonNull final Quantity qty,
 			final StockAvailabilitySubstitution substitution,
-			@NonNull @Singular final ImmutableList<StockAvailabilityShare> shares)
+			@NonNull @Singular final ImmutableList<StockAvailabilityResponseItemPart> parts)
 	{
 		this.pzn = pzn;
 		this.qty = qty;
 		this.substitution = substitution;
-		this.shares = shares;
+		this.parts = parts;
+
+		// TODO: validate parts:
+		// * max 5 are allowed (per protocol)
+		// * Only one StockAvailabilityResponseItemPartType shall exist!
+		// * sum of part's qtys shall be this.qty
 	}
 }

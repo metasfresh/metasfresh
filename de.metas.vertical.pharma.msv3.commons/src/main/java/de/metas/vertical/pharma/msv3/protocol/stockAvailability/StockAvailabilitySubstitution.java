@@ -1,4 +1,9 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
+
+import de.metas.vertical.pharma.msv3.protocol.types.PZN;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -22,10 +27,11 @@ package de.metas.vertical.pharma.msv3.server.stockAvailability;
  * #L%
  */
 
-public class ProductStorage
+@Value
+@Builder
+public class StockAvailabilitySubstitution
 {
-	int id;
-	/** Pharma-Zentral-Nummer */
-	String pzn;
-	int qty;
+	@NonNull PZN pzn;
+	@NonNull StockAvailabilitySubstitutionReason reason;
+	@NonNull StockAvailabilitySubstitutionType type;
 }

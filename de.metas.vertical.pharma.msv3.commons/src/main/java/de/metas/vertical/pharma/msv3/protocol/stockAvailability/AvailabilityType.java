@@ -1,11 +1,7 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
-import com.google.common.collect.ImmutableList;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitTyp;
+import lombok.Getter;
 
 /*
  * #%L
@@ -29,24 +25,18 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class StockAvailabilityQuery
+public enum AvailabilityType
 {
-	String id;
-	ImmutableList<StockAvailabilityQueryItem> items;
+	SPECIFIC(VerfuegbarkeitTyp.SPEZIFISCH), //
+	NON_SPECIFIC(VerfuegbarkeitTyp.UNSPEZIFISCH) //
+	;
 
-	@Builder
-	private StockAvailabilityQuery(
-			@NonNull final String id,
-			@NonNull @Singular final ImmutableList<StockAvailabilityQueryItem> items)
+	@Getter
+	private VerfuegbarkeitTyp soapCode;
+
+	private AvailabilityType(final VerfuegbarkeitTyp soapCode)
 	{
-		if (items.isEmpty())
-		{
-			throw new IllegalArgumentException("Query shall have at least one item");
-		}
-
-		this.id = id;
-		this.items = items;
+		this.soapCode = soapCode;
 	}
 
 }

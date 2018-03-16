@@ -1,10 +1,12 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.server.stockAvailability.sync;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -29,26 +31,22 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class StockAvailabilityResponse
+public class JsonStockAvailabilityUpdateRequest
 {
-	String id;
-	AvailabilityType availabilityType;
-	ImmutableList<StockAvailabilityResponseItem> items;
+	@JsonProperty("items")
+	private final List<JsonStockAvailability> items;
 
-	@Builder
-	private StockAvailabilityResponse(
-			@NonNull final String id,
-			@NonNull final AvailabilityType availabilityType,
-			@NonNull @Singular final ImmutableList<StockAvailabilityResponseItem> items)
+	public JsonStockAvailabilityUpdateRequest(
+			@JsonProperty("items") final List<JsonStockAvailability> items)
 	{
-		if (items.isEmpty())
+		if (items == null || items.isEmpty())
 		{
-			throw new IllegalArgumentException("Response shall have at least one item");
+			throw new IllegalArgumentException("At least one item is expected");
 		}
 
-		this.id = id;
-		this.availabilityType = availabilityType;
-		this.items = items;
+		this.items = ImmutableList.copyOf(items);
 	}
+
 }
