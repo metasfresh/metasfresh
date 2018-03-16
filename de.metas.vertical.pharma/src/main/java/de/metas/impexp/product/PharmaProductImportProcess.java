@@ -3,7 +3,6 @@ package de.metas.impexp.product;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -299,7 +298,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	{
 		if (!Check.isEmpty(importRecord.getA00PGMENG(), true))
 		{
-			product.setPackageSize(new BigDecimal(importRecord.getA00PGMENG()));
+			product.setPackageSize(importRecord.getA00PGMENG());
 		}
 		if (importRecord.getPackage_UOM_ID() > 0)
 		{

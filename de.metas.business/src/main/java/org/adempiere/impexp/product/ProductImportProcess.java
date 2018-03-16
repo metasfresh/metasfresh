@@ -94,6 +94,8 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		MProductImportTableSqlUpdater.builder()
 				.whereClause(whereClause)
 				.ctx(getCtx())
+				.tableName(getImportTableName())
+				.valueName(I_I_Product.COLUMNNAME_Value)
 				.updateIProduct();
 	}
 
