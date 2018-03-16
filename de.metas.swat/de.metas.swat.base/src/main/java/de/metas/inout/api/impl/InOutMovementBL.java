@@ -1,5 +1,8 @@
 package de.metas.inout.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -24,12 +27,14 @@ package de.metas.inout.api.impl;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,8 +48,6 @@ import org.compiere.util.Env;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -66,18 +69,20 @@ public class InOutMovementBL implements IInOutMovementBL
 	}
 
 	@Override
-	public List<I_M_Movement> generateMovementFromReceipt(final I_M_InOut receipt)
+	public List<I_M_Movement> generateMovementFromReceiptLines(final List<I_M_InOutLine> receiptLines)
 	{
+		if (Check.isEmpty(receiptLines))
+		{
+			// nothing to do
+			return Collections.emptyList();
+		}
+
+		final I_M_InOut receipt = create(getCtx(receiptLines.get(0)), receiptLines.get(0).getM_InOut_ID(), I_M_InOut.class, ITrx.TRXNAME_ThreadInherited);
+
 		// services
-		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-		final IInOutBL inoutBL = Services.get(IInOutBL.class);
+
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		//
-		// Validate the given receipt
-		Check.assumeNotNull(receipt, "inOut not null");
-		Check.assume(!receipt.isSOTrx(), "InOut shall be a receipt: {}", receipt);
-		Check.assume(!inoutBL.isReversal(receipt), "InOut shall not be a reversal", receipt);
 		trxManager.assertTrxNameNotNull(InterfaceWrapperHelper.getTrxName(receipt));
 
 		final int receiptWarehouseId = receipt.getM_Warehouse_ID();
@@ -98,8 +103,8 @@ public class InOutMovementBL implements IInOutMovementBL
 		// Iterate all receipt lines and group them by target warehouse
 		final Map<Integer, I_M_Warehouse> warehouses = new HashMap<>(); // mainly for caching
 		final Map<Integer, List<I_M_InOutLine>> warehouseId2inoutLines = new HashMap<>();
-		final List<I_M_InOutLine> linesAll = inoutDAO.retrieveLines(receipt, I_M_InOutLine.class);
-		for (final I_M_InOutLine inOutLine : linesAll)
+
+		for (final I_M_InOutLine inOutLine : receiptLines)
 		{
 			// #3409 make sure the line is not for ddOrder
 			boolean isForDDOrder = false;
