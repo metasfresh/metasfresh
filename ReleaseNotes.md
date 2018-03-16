@@ -47,18 +47,18 @@ Here come the actual release notes:
   * [#3637](https://github.com/metasfresh/metasfresh/issues/3637) Standalone Product Translation Window
     * New Standalone Product Translation window in WebUI.
   * [#3652](https://github.com/metasfresh/metasfresh/issues/3652) WebUI: New Inventory Window
-    * New Window in WebUI that allows the maintenance of Inventory recrdings and adjustments.
+    * New Window in WebUI that allows the maintenance of Inventory recordings and adjustments.
   * [#3591](https://github.com/metasfresh/metasfresh/issues/3591) Add translations for headers in shipment statistics
     * New WebUI window for shipment statistics.
   * [#3618](https://github.com/metasfresh/metasfresh/issues/3618) Add "technical note" field to AD_Column
-    * Internal Housekeeping Improvement, adding a new Field to Application Dictionary in Column, that allows to record additional internal infomration.
+    * Internal Housekeeping Improvement, adding a new Field to Application Dictionary in Column, that allows to record additional internal information.
   * [#3620](https://github.com/metasfresh/metasfresh/issues/3620) Spring model interceptors: support those who implement IModelInterceptor
-    * Internal Housekeeping improvement, now discovering interceptors which implement the IMOdelInterceptor interface.
-  * [#3621](https://github.com/metasfresh/metasfresh/issues/3621) Allow semikolon delimiter for Import Format
-    * Enhancement of possible Import Delimiters in Import Format, now also allowing semikolon as delimiter.
+    * Internal Housekeeping improvement, now discovering interceptors which implement the IModelInterceptor interface.
+  * [#3621](https://github.com/metasfresh/metasfresh/issues/3621) Allow semicolon delimiter for Import Format
+    * Enhancement of possible Import Delimiters in Import Format, now also allowing semicolon as delimiter.
   * [#3624](https://github.com/metasfresh/metasfresh/issues/3624) Pharma: When Operation Code is 2, deactivate the product
     * Improvement of the Import of Pharma Products, now dectivating Products with status code 2 (discontinued Products).
-  * [#3647](https://github.com/metasfresh/metasfresh/issues/3674) Support Country in local address sequence
+  * [#3674](https://github.com/metasfresh/metasfresh/issues/3674) Support Country in local address sequence
     * Now supporting the county variable in the local Address sequence.
   * [#3655](https://github.com/metasfresh/metasfresh/issues/3655) POJOWrapper support for model classes with zero ID
     * Internal Development improvement.
@@ -90,7 +90,7 @@ Here come the actual release notes:
   * [#850](https://github.com/metasfresh/metasfresh-webui-api/issues/850) Sorting by Virtual Column Follow-up
     * Fixes the sorting of virtual columns which are not numbers in grid view.
   * [#890](https://github.com/metasfresh/metasfresh-webui-api/issues/890) Exception when adding request from partner window for sales rep
-    * 
+    * Fixes a Bug in the Request creation action when started from partner window.
 
 * metasfresh-webui-frontend
   * [#1544](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1544) List Widget does not scroll down with arrow-down
