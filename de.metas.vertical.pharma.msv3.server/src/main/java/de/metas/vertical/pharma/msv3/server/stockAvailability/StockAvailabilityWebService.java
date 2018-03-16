@@ -11,6 +11,8 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
+import de.metas.vertical.pharma.msv3.server.MSV3ServerAuthorizationService;
+import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnfragen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnfragenResponse;
 
@@ -42,24 +44,21 @@ public class StockAvailabilityWebService
 	public static final String WSDL_BEAN_NAME = "Msv3VerfuegbarkeitAnfragenService";
 
 	@Autowired
+	private MSV3ServerAuthorizationService authService;
+	@Autowired
 	private StockAvailabilityService stockAvailabilityService;
 	@Autowired
 	private StockAvailabilityJAXBConverters jaxbConverters;
 
-	@PayloadRoot(localPart = "verfuegbarkeitAnfragen", namespace = "urn:msv3:v2")
-	public @ResponsePayload JAXBElement<VerfuegbarkeitAnfragenResponse> checkStockAvailability(@RequestPayload final JAXBElement<VerfuegbarkeitAnfragen> jaxbRequest)
+	@PayloadRoot(localPart = "verfuegbarkeitAnfragen", namespace = MSV3ServerConstants.SOAP_NAMESPACE)
+	public @ResponsePayload JAXBElement<VerfuegbarkeitAnfragenResponse> getStockAvailability(@RequestPayload final JAXBElement<VerfuegbarkeitAnfragen> jaxbRequest)
 	{
 		final VerfuegbarkeitAnfragen soapRequest = jaxbRequest.getValue();
-		assertValidClientSoftwareId(soapRequest.getClientSoftwareKennung());
+		authService.assertValidClientSoftwareId(soapRequest.getClientSoftwareKennung());
 
 		final StockAvailabilityQuery stockAvailabilityQuery = jaxbConverters.fromJAXB(soapRequest.getVerfuegbarkeitsanfrage());
 		final StockAvailabilityResponse stockAvailabilityResponse = stockAvailabilityService.checkAvailability(stockAvailabilityQuery);
 
 		return jaxbConverters.toJAXB(stockAvailabilityResponse);
-	}
-
-	private void assertValidClientSoftwareId(final String clientSoftwareId)
-	{
-		// TODO
 	}
 }
