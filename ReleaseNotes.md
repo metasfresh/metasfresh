@@ -19,6 +19,10 @@ Here come the actual release notes:
     * New Barcode Reader that can be used via webcam on mobile devices.
 
 ## Fixes
+* metasfresh-webui-api
+  * [#735](https://github.com/metasfresh/metasfresh-webui-api/issues/735) Hide Receive HUs (default) when there are no HUs
+    * Hides the default action for Receive HU in cases where there are only CU's in receipt candidates.
+    
 * metasfresh-webui-frontend
   * [#1642](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1642) Lookup Widget drop-down list scroll behavior
     * Improves the behavior of drop-down list scroll behavior.
