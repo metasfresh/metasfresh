@@ -506,7 +506,7 @@ public class C_Flatrate_Term
 		setMasterEndDate(term);
 
 		final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(term);
-		if (term.getMasterEndDate() != null)
+		if (ancestor != null && term.getMasterEndDate() != null)
 		{
 			ancestor.setMasterEndDate(term.getMasterEndDate());
 			InterfaceWrapperHelper.save(ancestor);
