@@ -29,8 +29,14 @@ public class Quantity
 {
 	public static Quantity of(final int value)
 	{
+		if (value == 0)
+		{
+			return ZERO;
+		}
 		return new Quantity(value);
 	}
+
+	public static final Quantity ZERO = new Quantity(0);
 
 	private final int valueAsInt;
 
@@ -44,4 +50,13 @@ public class Quantity
 		this.valueAsInt = value;
 	}
 
+	public Quantity min(final Quantity otherQty)
+	{
+		return valueAsInt <= otherQty.valueAsInt ? this : otherQty;
+	}
+
+	public Quantity min(final int otherQty)
+	{
+		return valueAsInt <= otherQty ? this : Quantity.of(otherQty);
+	}
 }
