@@ -374,6 +374,29 @@ public interface I_C_Flatrate_Transition
     public static final String COLUMNNAME_IsAutoCompleteNewTerm = "IsAutoCompleteNewTerm";
 
 	/**
+	 * Set Auto Extension.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAutoExtension (boolean IsAutoExtension);
+
+	/**
+	 * Get Auto Extension.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAutoExtension();
+
+    /** Column definition for IsAutoExtension */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Transition, Object> COLUMN_IsAutoExtension = new org.adempiere.model.ModelColumn<I_C_Flatrate_Transition, Object>(I_C_Flatrate_Transition.class, "IsAutoExtension", null);
+    /** Column name IsAutoExtension */
+    public static final String COLUMNNAME_IsAutoExtension = "IsAutoExtension";
+
+	/**
 	 * Set Vertrag autom. verlängern.
 	 * Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
 	 *
