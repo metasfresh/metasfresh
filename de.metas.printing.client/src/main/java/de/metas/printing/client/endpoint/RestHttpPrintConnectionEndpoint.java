@@ -69,10 +69,15 @@ import de.metas.printing.esb.api.PrinterHWList;
  */
 public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 {
+	private static final String DATA_ENCODING_BINARY = "binary";
+
+	private static final String DATA_ENCODING_BASE64 = "base64";
+
 	private final transient Logger log = Logger.getLogger(getClass().getName());
 
 	public static final String CTX_ROOT = "de.metas.printing.client.endpoint.RestHttpPrintConnectionEndpoint";
 	public static final String CTX_ServerUrl = CTX_ROOT + ".ServerUrl";
+	public static final String CTX_DataEncoding = CTX_ROOT + ".dataEncoding";
 
 	public static final String CTX_SocketTimeoutMillis = CTX_ROOT + ".SocketTimeoutMillis";
 	public static final int DEFAULT_SocketTimeoutMillis = 10 * 300000; // 5 min
@@ -83,6 +88,8 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 	private final IBeanEnconder beanEncoder;
 
 	private final HttpClient httpclient;
+
+	private final String dataEncoding;
 
 	public RestHttpPrintConnectionEndpoint()
 	{
@@ -95,6 +102,8 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 			throw new PrintConnectionEndpointException("Config " + CTX_ServerUrl + " not found");
 		}
 
+		dataEncoding = getDataEncoding();
+
 		beanEncoder = _ctx.getInstance(Context.CTX_BeanEncoder, IBeanEnconder.class);
 
 		//
@@ -104,6 +113,26 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 
 		httpclient = new HttpClient();
 		httpclient.getParams().setSoTimeout(socketTimeout);
+	}
+
+	private String getDataEncoding()
+	{
+		final String configValue = _ctx.getProperty(CTX_DataEncoding);
+		if (configValue == null)
+		{
+			return DATA_ENCODING_BASE64;
+		}
+		else if (DATA_ENCODING_BASE64.equalsIgnoreCase(configValue.trim()))
+		{
+			return DATA_ENCODING_BASE64;
+		}
+		else if (DATA_ENCODING_BINARY.equalsIgnoreCase(configValue.trim()))
+		{
+			return DATA_ENCODING_BINARY;
+		}
+
+		log.warning("Unknown/unexpected value " + CTX_DataEncoding + "=" + configValue + "; falling back to " + DATA_ENCODING_BASE64);
+		return DATA_ENCODING_BASE64;
 	}
 
 	private final Context getContext()
@@ -243,23 +272,30 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 				throw new PrintConnectionEndpointException("Error " + result + " while posting on " + url + ": " + errorMsg);
 			}
 
-			// This is a Base64-encoded byte stream
-			// The byte stream itself is the document received from the ESB
-			// task 05011: work with a stream instead of byte[] to avoid problems with large amounts of data
-			final InputStream dataBase64Stream = httpPost.getResponseBodyAsStream();
-
 			final File file = mkFile(printPackage);
 
 			final FileOutputStream fileOutputStream = new FileOutputStream(file);
+			final InputStream dataBase64Stream = httpPost.getResponseBodyAsStream();
+
 			ByteStreams.copy(dataBase64Stream, fileOutputStream);
 			dataBase64Stream.close();
 			fileOutputStream.close();
 
 			final FileInputStream fileInputStream = new FileInputStream(file);
-			return BaseEncoding
-					.base64()
-					.withSeparator("\r\n", 76)
-					.decodingStream(new InputStreamReader(fileInputStream));
+			if (DATA_ENCODING_BASE64.equals(dataEncoding))
+			{
+				// This is a Base64-encoded byte stream
+				// The byte stream itself is the document received from the ESB
+				// task 05011: work with a stream instead of byte[] to avoid problems with large amounts of data
+				return BaseEncoding
+						.base64()
+						.withSeparator("\r\n", 76)
+						.decodingStream(new InputStreamReader(fileInputStream));
+			}
+			else
+			{
+				return fileInputStream;
+			}
 		}
 		catch (final Exception e)
 		{
@@ -318,14 +354,20 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 	}
 
 	/**
-	 * Create a file that corresponds to the given <code>printPackageInfo</code>.
-	 *
-	 * @param printPackageInfo
-	 * @return
+	 * Create a file that corresponds to the given <code>printPackageInfo</code> and assumes data encoding.
 	 */
 	private File mkFile(final PrintPackage printPackageInfo)
 	{
-		final File file = new File("PrintJobInstructionsID_" + printPackageInfo.getPrintJobInstructionsID() + ".data");
+		final String fileEnding;
+		if (DATA_ENCODING_BASE64.equals(dataEncoding))
+		{
+			fileEnding = "base64encoded_pdf";
+		}
+		else
+		{
+			fileEnding = "pdf";
+		}
+		final File file = new File("PrintJobInstructionsID_" + printPackageInfo.getPrintJobInstructionsID() + "." + fileEnding);
 		return file;
 	}
 
@@ -483,8 +525,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		catch (final Exception e)
 		{
 			throw e instanceof LoginFailedPrintConnectionEndpointException ? (LoginFailedPrintConnectionEndpointException)e
-					: new LoginFailedPrintConnectionEndpointException("Cannot POST to " + url,
-							e);
+					: new LoginFailedPrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
 		finally
 		{

@@ -161,6 +161,10 @@ public class PrintingRestController
 				printPackageInfo.setTray(printerHwMediaTray.getName());
 				printPackageInfo.setTrayNumber(printerHwMediaTray.getTrayNumber());
 			}
+			else
+			{
+				printPackageInfo.setTrayNumber(-1);
+			}
 			printPackageInfos.add(printPackageInfo);
 		}
 		response.setPrintPackageInfos(printPackageInfos);
