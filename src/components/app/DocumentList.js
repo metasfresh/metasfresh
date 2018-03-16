@@ -8,6 +8,14 @@ import { Map, List } from 'immutable';
 import currentDevice from 'current-device';
 
 import {
+  getViewLayout,
+  browseViewRequest,
+  createViewRequest,
+  deleteStaticFilter,
+  filterViewRequest,
+  getViewRowsByIds,
+} from '../../api';
+import {
   closeListIncludedView,
   setListId,
   setListIncludedView,
@@ -15,12 +23,6 @@ import {
   setSorting,
 } from '../../actions/ListActions';
 import {
-  browseViewRequest,
-  createViewRequest,
-  deleteStaticFilter,
-  filterViewRequest,
-  getViewLayout,
-  getViewRowsByIds,
   mergeColumnInfosIntoViewRows,
   mergeRows,
 } from '../../actions/ViewActions';

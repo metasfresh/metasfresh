@@ -1,22 +1,4 @@
 import axios from 'axios';
-import queryString from 'query-string';
-
-// utility functions
-
-export const getQueryString = query =>
-  queryString.stringify(
-    Object.keys(query).reduce((parameters, key) => {
-      const value = query[key];
-
-      if (Array.isArray(value) && value.length > 0) {
-        parameters[key] = value.join(',');
-      } else {
-        parameters[key] = value;
-      }
-
-      return parameters;
-    }, {})
-  );
 
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 

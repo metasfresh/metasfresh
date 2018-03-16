@@ -85,10 +85,19 @@ class LoginForm extends Component {
       },
       () => {
         if (roleSelect) {
-          return loginCompletionRequest(role).then(() => {
-            dispatch(loginSuccess(auth));
-            this.handleSuccess();
-          });
+          return loginCompletionRequest(role)
+            .then(() => {
+              dispatch(loginSuccess(auth));
+              this.handleSuccess();
+            })
+            .catch(err => {
+              this.setState({
+                err: err.response
+                  ? err.response.data.message
+                  : counterpart.translate('login.error.fallback'),
+                pending: false,
+              });
+            });
         }
 
         loginRequest(this.login.value, this.passwd.value)

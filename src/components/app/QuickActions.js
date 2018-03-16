@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { quickActionsRequest } from '../../actions/ViewActions';
+import { quickActionsRequest } from '../../api';
 import { openModal } from '../../actions/WindowActions';
 import keymap from '../../shortcuts/keymap';
 import QuickActionsContextShortcuts from '../shortcuts/QuickActionsContextShortcuts';
