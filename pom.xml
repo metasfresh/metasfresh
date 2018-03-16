@@ -281,7 +281,6 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<!-- version>1.4.1</version -->
 					<version>3.0.0-M1</version>
 					<dependencies>
 						<!-- needed for banDuplicateClasses -->
@@ -365,7 +364,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 	<profiles>
 		<profile>
 			<!-- 
-				The enforcer plgugin can be a tremendous nuisance.
+				The enforcer plugin can be a tremendous nuisance.
 				It fails because we use version ranges in our parent pom declarations with this outout:
 
 [WARNING] Could not find org.jmockit:jmockit:jar:1.30:test at null
@@ -373,7 +372,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached in the local repository, resolution will not be reattempted...
   de.metas:de.metas.parent:pom:(1.0.0,3)
 
-				However, when runnung on jenkins, we resolve the parent version anyways (using the maven-versions-plugin) 
+				However, when running on jenkins, we resolve the parent version anyways (using the maven-versions-plugin) 
 				and *then* we can benefit a lot from making sure that the plugin versions are not a moving target
 			 -->
 			<id>enforcer-profile</id>
@@ -493,6 +492,15 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 											<artifactId>elasticsearch</artifactId>
 											<ignoreClasses>
 												<ignoreClass>org.joda.*</ignoreClass>
+											</ignoreClasses>
+										</dependency>
+
+										<!-- the embedded tomcat of spring-boot 1.5.3.RELEASE come with baked-in javax.persistance api classes.. -->
+										<dependency>
+											<groupId>org.apache.tomcat.embed</groupId>
+											<artifactId>tomcat-embed-core</artifactId>
+											<ignoreClasses>
+												<ignoreClass>javax.persistence.*</ignoreClass>
 											</ignoreClasses>
 										</dependency>
 
