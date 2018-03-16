@@ -7,9 +7,19 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.ws.config.annotation.EnableWs;
+import org.springframework.ws.soap.SoapMessageFactory;
+import org.springframework.ws.soap.SoapVersion;
+import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
 import org.springframework.ws.transport.http.MessageDispatcherServlet;
 import org.springframework.ws.wsdl.wsdl11.SimpleWsdl11Definition;
 import org.springframework.ws.wsdl.wsdl11.Wsdl11Definition;
+import org.springframework.xml.xsd.SimpleXsdSchema;
+import org.springframework.xml.xsd.XsdSchema;
+
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityJAXBConverters;
+import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityWebService;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -37,8 +47,8 @@ import org.springframework.ws.wsdl.wsdl11.Wsdl11Definition;
 @EnableWs
 public class Application
 {
-	// @Autowired
-	// private ApplicationContext applicationContext;
+	// private static final Logger logger = LoggerFactory.getLogger(Application.class);
+	private static final String SCHEMA_RESOURCE_PREFIX = "/de/metas/vertical/pharma/vendor/gateway/msv3/schema";
 
 	public static void main(final String[] args)
 	{
@@ -46,6 +56,20 @@ public class Application
 				.headless(true)
 				.web(true)
 				.run(args);
+	}
+
+	@Bean
+	public ObjectFactory jaxbObjectFactory()
+	{
+		return new ObjectFactory();
+	}
+
+	@Bean(MessageDispatcherServlet.DEFAULT_MESSAGE_FACTORY_BEAN_NAME)
+	public SoapMessageFactory soapMessageFactory()
+	{
+		final SaajSoapMessageFactory soapMessageFactory = new SaajSoapMessageFactory();
+		soapMessageFactory.setSoapVersion(SoapVersion.SOAP_12);
+		return soapMessageFactory;
 	}
 
 	@Bean
@@ -58,11 +82,42 @@ public class Application
 	}
 
 	// http://localhost:8080/ws/Msv3VerfuegbarkeitAnfragenService.wsdl
-	@Bean(name = "Msv3VerfuegbarkeitAnfragenService")
-	public Wsdl11Definition defaultWsdl11Definition()
+	@Bean(name = StockAvailabilityWebService.WSDL_BEAN_NAME)
+	public Wsdl11Definition msv3VerfuegbarkeitAnfragenService()
 	{
-		final SimpleWsdl11Definition wsdl11Definition = new SimpleWsdl11Definition();
-		wsdl11Definition.setWsdl(new ClassPathResource("/de/metas/vertical/pharma/vendor/gateway/msv3/schema/Msv3VerfuegbarkeitAnfragenService.wsdl"));
-		return wsdl11Definition;
+		return createWsdl(StockAvailabilityWebService.WSDL_BEAN_NAME);
+	}
+
+	@Bean("Msv3Service_schema1")
+	public XsdSchema msv3serviceSchemaXsd()
+	{
+		return createXsdSchema("Msv3Service_schema1.xsd");
+	}
+
+	@Bean("Msv3FachlicheFunktionen")
+	public XsdSchema msv3FachlicheFunktionen()
+	{
+		return createXsdSchema("Msv3FachlicheFunktionen.xsd");
+	}
+
+	@Bean
+	public StockAvailabilityJAXBConverters stockAvailabilityJAXBConverters(final ObjectFactory jaxbObjectFactory)
+	{
+		return new StockAvailabilityJAXBConverters(jaxbObjectFactory);
+	}
+
+	private static Wsdl11Definition createWsdl(@NonNull final String beanName)
+	{
+		return new SimpleWsdl11Definition(createSchemaResource(beanName + ".wsdl"));
+	}
+
+	private static XsdSchema createXsdSchema(@NonNull final String resourceName)
+	{
+		return new SimpleXsdSchema(createSchemaResource(resourceName));
+	}
+
+	private static ClassPathResource createSchemaResource(@NonNull final String resourceName)
+	{
+		return new ClassPathResource(SCHEMA_RESOURCE_PREFIX + "/" + resourceName);
 	}
 }

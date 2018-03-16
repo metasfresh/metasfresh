@@ -76,7 +76,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
 		contractChangeBL.cancelContract(contract, contractChangeParameters);
-		assertFlatrateTerm(contract, cancelDate);
+		assertFlatrateTerm(contract, cancelDate, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		assertSubscriptionProgress(contract, 1);
 	}
 
@@ -100,10 +100,10 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 
 		contractChangeBL.cancelContract(contract, contractChangeParameters);
 
-		assertFlatrateTerm(contract, cancelDate);
+		assertFlatrateTerm(contract, cancelDate, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		assertSubscriptionProgress(contract, 1);
 		assertThat(contract.getMasterEndDate()).isEqualTo(cancelDate);
-		assertFlatrateTerm(extendedContract, cancelDate);
+		assertFlatrateTerm(extendedContract, cancelDate, X_C_Flatrate_Term.CONTRACTSTATUS_Voided);
 		assertSubscriptionProgress(extendedContract, 0);
 	}
 
@@ -138,17 +138,17 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		InterfaceWrapperHelper.refresh(contract);
 		InterfaceWrapperHelper.refresh(extendedContract);
 
-		assertFlatrateTerm(contract, cancellingDate);
+		assertFlatrateTerm(contract, cancellingDate, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		assertSubscriptionProgress(contract, 12);
 		assertThat(contract.getMasterEndDate()).isEqualTo(cancellingDate);
-		assertFlatrateTerm(extendedContract, cancellingDate);
+		assertFlatrateTerm(extendedContract, cancellingDate, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		assertSubscriptionProgress(extendedContract, 3);
 		assertThat(contract.getMasterEndDate()).isEqualTo(extendedContract.getMasterEndDate());
 	}
 
-	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm, final Timestamp cancelinglDate)
+	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm, final Timestamp cancelinglDate, final String expectedContractStatus)
 	{
-		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+		assertThat(flatrateTerm.getContractStatus()).isEqualTo(expectedContractStatus);
 		assertThat(flatrateTerm.isAutoRenew()).isFalse();
 		assertThat(flatrateTerm.getMasterStartDate()).isNotNull();
 		assertThat(flatrateTerm.getMasterEndDate()).isEqualTo(cancelinglDate);

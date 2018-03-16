@@ -57,7 +57,7 @@ public class AbstractLUTUKey extends AbstractLUTUCUKey
 		final int huPIId = huPI.getM_HU_PI_ID();
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		isNoPI = huPIId == handlingUnitsDAO.getNo_HU_PI_ID();
+		isNoPI = huPIId == handlingUnitsDAO.getPackingItemTemplate_HU_PI_ID();
 		isVirtualPI = huPIId == handlingUnitsDAO.getVirtual_HU_PI_ID();
 
 		value = new KeyNamePair(huPIId, huPI.getName());

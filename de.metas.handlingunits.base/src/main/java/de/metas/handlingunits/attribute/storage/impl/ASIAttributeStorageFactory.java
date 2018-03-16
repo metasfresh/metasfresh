@@ -36,7 +36,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
  * @author tsa
  *
  */
-public class ASIAttributeStorageFactory extends AbstractModelAttributeStorageFactory<I_M_AttributeSetInstance, ASIAttributeStorage>
+public class ASIAttributeStorageFactory extends AbstractModelAttributeStorageFactory<I_M_AttributeSetInstance, ASIWithPackingItemTemplesAttributeStorage>
 {
 
 	@Override
@@ -63,8 +63,8 @@ public class ASIAttributeStorageFactory extends AbstractModelAttributeStorageFac
 	}
 
 	@Override
-	protected ASIAttributeStorage createAttributeStorage(final I_M_AttributeSetInstance model)
+	protected ASIWithPackingItemTemplesAttributeStorage createAttributeStorage(final I_M_AttributeSetInstance model)
 	{
-		return new ASIAttributeStorage(this, model);
+		return new ASIWithPackingItemTemplesAttributeStorage(this, model);
 	}
 }

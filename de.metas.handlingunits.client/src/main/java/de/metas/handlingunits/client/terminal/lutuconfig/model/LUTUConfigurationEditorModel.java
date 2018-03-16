@@ -711,7 +711,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 	private LUKey createNoPILUKey()
 	{
-		final I_M_HU_PI_Item noPIItem = handlingUnitsDAO.retrieveNoPIItem(getCtx());
+		final I_M_HU_PI_Item noPIItem = handlingUnitsDAO.retrievePackingItemTemplatePIItem(getCtx());
 		final I_M_HU_PI noPI = noPIItem.getM_HU_PI_Version().getM_HU_PI();
 
 		final LUKey luKey = new LUKey(getTerminalContext(), noPI, noPIItem);

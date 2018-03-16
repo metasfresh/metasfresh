@@ -342,7 +342,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 	 * @throws UnsupportedOperationException
 	 */
 	@Override
-	public IAttributeStorageFactory getHUAttributeStorageFactory()
+	public IAttributeStorageFactory getAttributeStorageFactory()
 	{
 		throw new UnsupportedOperationException();
 	}
