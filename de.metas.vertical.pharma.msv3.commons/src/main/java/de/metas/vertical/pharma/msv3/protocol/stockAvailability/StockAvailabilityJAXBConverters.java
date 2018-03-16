@@ -2,8 +2,6 @@ package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
 import javax.xml.bind.JAXBElement;
 
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
@@ -39,7 +37,6 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Component
 public class StockAvailabilityJAXBConverters
 {
 	private final ObjectFactory jaxbObjectFactory;
