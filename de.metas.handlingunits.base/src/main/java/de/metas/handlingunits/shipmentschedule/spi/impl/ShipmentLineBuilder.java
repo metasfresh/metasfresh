@@ -60,6 +60,7 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
+import de.metas.handlingunits.attribute.storage.ASIAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
@@ -260,7 +261,8 @@ import lombok.NonNull;
 		final I_C_UOM qtyToAddUOM = candidate.getQtyPickedUOM(); // OK: shall be the stocking UOM, i.e. the UOM of QtyPicked
 
 		// Convert qtyToAdd (from candidate) to shipment line's UOM
-		final BigDecimal qtyToAddConverted = uomConversionBL.convertQty(product,
+		final BigDecimal qtyToAddConverted = uomConversionBL.convertQty(
+				product.getM_Product_ID(),
 				qtyToAdd, // Qty
 				qtyToAddUOM, // From UOM
 				uom // To UOM
@@ -448,7 +450,9 @@ import lombok.NonNull;
 		}
 	}
 
-	private final void transferAttributesToShipmentLine(final I_M_InOutLine shipmentLine, final I_M_HU hu)
+	private final void transferAttributesToShipmentLine(
+			@NonNull final I_M_InOutLine shipmentLine,
+			@NonNull final I_M_HU hu)
 	{
 		// Transfer attributes from HU to receipt line's ASI
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(huContext);
@@ -457,7 +461,11 @@ import lombok.NonNull;
 			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
 			final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
 			final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(hu);
-			final IAttributeStorage receiptLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(shipmentLine);
+			// attributeStorageFactory.getAttributeStorage() would have given us an instance that would have 
+			// included also the packagingItemTemplate's attributes.
+			// However, we only want the attributes that are declared in our iolcand-handler's attribute config.
+			final IAttributeStorage shipmentLineAttributeStorageTo = //
+					ASIAttributeStorage.createNew(attributeStorageFactory, shipmentLine.getM_AttributeSetInstance());
 
 			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
@@ -467,7 +475,7 @@ import lombok.NonNull;
 					.setQty(shipmentLine.getMovementQty())
 					.setUOM(product.getC_UOM())
 					.setAttributeStorageFrom(huAttributeStorageFrom)
-					.setAttributeStorageTo(receiptLineAttributeStorageTo)
+					.setAttributeStorageTo(shipmentLineAttributeStorageTo)
 					.setHUStorageFrom(huStorageFrom);
 
 			final IHUAttributeTransferRequest request = requestBuilder.create();

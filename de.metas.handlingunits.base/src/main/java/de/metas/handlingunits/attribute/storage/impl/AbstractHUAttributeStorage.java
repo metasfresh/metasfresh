@@ -377,7 +377,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 	@Override
 	public final BigDecimal getStorageQtyOrZERO()
 	{
-		final IHUStorageFactory huStorageFactory = getHUAttributeStorageFactory().getHUStorageFactory();
+		final IHUStorageFactory huStorageFactory = getAttributeStorageFactory().getHUStorageFactory();
 		final IHUStorage storage = huStorageFactory.getStorage(getM_HU());
 		final BigDecimal fullStorageQty = storage.getQtyForProductStorages();
 		return fullStorageQty;
