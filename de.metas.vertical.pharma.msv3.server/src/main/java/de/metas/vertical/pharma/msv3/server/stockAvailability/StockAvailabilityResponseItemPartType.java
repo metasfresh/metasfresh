@@ -25,11 +25,11 @@ import lombok.Getter;
  * #L%
  */
 
-public enum StockAvailabilityShareType
+public enum StockAvailabilityResponseItemPartType
 {
 	NORMAL(VerfuegbarkeitRueckmeldungTyp.NORMAL), //
 	COMPOSITE(VerfuegbarkeitRueckmeldungTyp.VERBUND), //
-	REPLANISHMENT(VerfuegbarkeitRueckmeldungTyp.NACHLIEFERUNG), //
+	REPLENISHMENT(VerfuegbarkeitRueckmeldungTyp.NACHLIEFERUNG), //
 	DISPO(VerfuegbarkeitRueckmeldungTyp.DISPO), //
 	NOT_DELIVERABLE(VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR) //
 	;
@@ -37,7 +37,7 @@ public enum StockAvailabilityShareType
 	@Getter
 	private final VerfuegbarkeitRueckmeldungTyp soapCode;
 
-	private StockAvailabilityShareType(VerfuegbarkeitRueckmeldungTyp soapCode)
+	private StockAvailabilityResponseItemPartType(VerfuegbarkeitRueckmeldungTyp soapCode)
 	{
 		this.soapCode = soapCode;
 	}

@@ -46,7 +46,6 @@ import lombok.NonNull;
 public class Application
 {
 	// private static final Logger logger = LoggerFactory.getLogger(Application.class);
-
 	private static final String SCHEMA_RESOURCE_PREFIX = "/de/metas/vertical/pharma/vendor/gateway/msv3/schema";
 
 	public static void main(final String[] args)
@@ -81,10 +80,10 @@ public class Application
 	}
 
 	// http://localhost:8080/ws/Msv3VerfuegbarkeitAnfragenService.wsdl
-	@Bean(name = "Msv3VerfuegbarkeitAnfragenService")
+	@Bean(name = StockAvailabilityWebService.WSDL_BEAN_NAME)
 	public Wsdl11Definition msv3VerfuegbarkeitAnfragenService()
 	{
-		return createWsdl("Msv3VerfuegbarkeitAnfragenService.wsdl");
+		return createWsdl(StockAvailabilityWebService.WSDL_BEAN_NAME);
 	}
 
 	@Bean("Msv3Service_schema1")
@@ -99,9 +98,9 @@ public class Application
 		return createXsdSchema("Msv3FachlicheFunktionen.xsd");
 	}
 
-	private static Wsdl11Definition createWsdl(@NonNull final String resourceName)
+	private static Wsdl11Definition createWsdl(@NonNull final String beanName)
 	{
-		return new SimpleWsdl11Definition(createSchemaResource(resourceName));
+		return new SimpleWsdl11Definition(createSchemaResource(beanName + ".wsdl"));
 	}
 
 	private static XsdSchema createXsdSchema(@NonNull final String resourceName)

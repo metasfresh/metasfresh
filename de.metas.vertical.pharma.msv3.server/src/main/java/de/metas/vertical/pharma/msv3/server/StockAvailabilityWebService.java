@@ -15,8 +15,8 @@ import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityQ
 import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityQueryItem;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityResponse;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityResponseItem;
+import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityResponseItemPart;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityService;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityShare;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilitySubstitution;
 import de.metas.vertical.pharma.msv3.server.types.PZN;
 import de.metas.vertical.pharma.msv3.server.types.Quantity;
@@ -53,8 +53,10 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Verfuegbarkeitsantwor
  */
 
 @Endpoint
-public class Msv3VerfuegbarkeitAnfragenService
+public class StockAvailabilityWebService
 {
+	public static final String WSDL_BEAN_NAME = "Msv3VerfuegbarkeitAnfragenService";
+	
 	@Autowired
 	private StockAvailabilityService stockAvailabilityService;
 	@Autowired
@@ -117,7 +119,7 @@ public class Msv3VerfuegbarkeitAnfragenService
 		soapItem.setAnfragePzn(item.getPzn().getValueAsLong());
 		soapItem.setAnfrageMenge(item.getQty().getValueAsInt());
 		soapItem.setSubstitution(createSOAPAvailabilitySubstitution(item.getSubstitution()));
-		soapItem.getAnteile().addAll(item.getShares().stream()
+		soapItem.getAnteile().addAll(item.getParts().stream()
 				.map(this::creatSOAPStockAvailabilityShare)
 				.collect(ImmutableList.toImmutableList()));
 		return soapItem;
@@ -137,7 +139,7 @@ public class Msv3VerfuegbarkeitAnfragenService
 		return soapSubstitution;
 	}
 
-	private VerfuegbarkeitAnteil creatSOAPStockAvailabilityShare(final StockAvailabilityShare share)
+	private VerfuegbarkeitAnteil creatSOAPStockAvailabilityShare(final StockAvailabilityResponseItemPart share)
 	{
 		final VerfuegbarkeitAnteil soapShare = jaxbObjectFactory.createVerfuegbarkeitAnteil();
 		soapShare.setMenge(share.getQty().getValueAsInt());
