@@ -1,12 +1,11 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.server.jpa;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
-import de.metas.vertical.pharma.msv3.server.jpa.AbstractEntity;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 
 /*
  * #%L
@@ -18,29 +17,30 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Entity
-@Table(name = "stock_availability")
-@ToString
-public class StockAvailability extends AbstractEntity
+@Converter(autoApply = true)
+public class LocalDateTimeAttributeConverter implements AttributeConverter<LocalDateTime, Date>
 {
-	/** Pharma-Zentral-Nummer */
-	@Getter
-	@Setter
-	private long pzn;
+	@Override
+	public Date convertToDatabaseColumn(final LocalDateTime localDateTime)
+	{
+		return localDateTime == null ? null : Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+	}
 
-	@Getter
-	@Setter
-	private int qty;
+	@Override
+	public LocalDateTime convertToEntityAttribute(final Date date)
+	{
+		return date == null ? null : date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+	}
 }
