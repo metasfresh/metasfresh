@@ -36,6 +36,7 @@ import de.metas.printing.model.I_C_PrintPackageData;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
+import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
 
 /*
@@ -214,7 +215,23 @@ public class PrintingRestController
 				.create()
 				.firstOnly(I_C_Print_Job_Instructions.class);
 
-		printJobInstructions.setStatus(input.getStatus().toString());
+		switch (input.getStatus())
+		{
+			case Gedruckt:
+				printJobInstructions.setStatus(X_C_Print_Job_Instructions.STATUS_Done);
+				break;
+			case Druckfehler:
+				printJobInstructions.setStatus(X_C_Print_Job_Instructions.STATUS_Error);
+				break;
+			case Im_Druck:
+				printJobInstructions.setStatus(X_C_Print_Job_Instructions.STATUS_Send);
+				break;
+			case Wartet_auf_druck:
+				printJobInstructions.setStatus(X_C_Print_Job_Instructions.STATUS_Pending);
+				break;
+			default:
+				throw new IllegalArgumentException("Invalid response status: " + input.getStatus());
+		}
 		printJobInstructions.setErrorMsg(input.getErrorMsg());
 		save(printJobInstructions);
 	}
