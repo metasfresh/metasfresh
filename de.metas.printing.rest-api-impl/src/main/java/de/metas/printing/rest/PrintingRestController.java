@@ -154,9 +154,12 @@ public class PrintingRestController
 			final I_AD_PrinterHW printerHwRecord = printPackageInfoRecord.getAD_PrinterHW();
 			printPackageInfo.setPrintService(printerHwRecord.getName());
 
-			final I_AD_PrinterHW_MediaTray printerHwMediaTray = printPackageInfoRecord.getAD_PrinterHW_MediaTray();
-			printPackageInfo.setTray(printerHwMediaTray.getName());
-			printPackageInfo.setTrayNumber(printerHwMediaTray.getTrayNumber());
+			if (printPackageInfoRecord.getAD_PrinterHW_MediaTray_ID() > 0)
+			{
+				final I_AD_PrinterHW_MediaTray printerHwMediaTray = printPackageInfoRecord.getAD_PrinterHW_MediaTray();
+				printPackageInfo.setTray(printerHwMediaTray.getName());
+				printPackageInfo.setTrayNumber(printerHwMediaTray.getTrayNumber());
+			}
 			printPackageInfos.add(printPackageInfo);
 		}
 		response.setPrintPackageInfos(printPackageInfos);
