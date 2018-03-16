@@ -1026,7 +1026,7 @@ public class FlatrateBL implements IFlatrateBL
 				final ContractExtendingRequest nextContext = ContractExtendingRequest.builder()
 						.AD_PInstance_ID(context.getAD_PInstance_ID())
 						.contract(nextTerm)
-						.forceExtend(true)
+						.forceExtend(false)
 						.forceComplete(true)
 						.nextTermStartDate(null)
 						.build();
