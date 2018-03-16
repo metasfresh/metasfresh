@@ -1,5 +1,7 @@
 package org.adempiere.uom.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -66,7 +68,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	@Override
 	public BigDecimal convertQty(
-			final I_M_Product product,
+			final int productId,
 			final BigDecimal qty,
 			@NonNull final I_C_UOM uomFrom,
 			@NonNull final I_C_UOM uomTo)
@@ -80,16 +82,11 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			return roundToUOMPrecisionIfPossible(qty, uomTo);
 		}
-
-		final BigDecimal qtyConverted = convertQty0(product, qty, uomFrom, uomTo);
-
-		if (qtyConverted == null)
+		else
 		{
-
+			final BigDecimal qtyConverted = convertQty0(productId, qty, uomFrom, uomTo);
 			return roundToUOMPrecisionIfPossible(qtyConverted, uomTo);
 		}
-
-		return roundToUOMPrecisionIfPossible(qtyConverted, uomTo);
 	}
 
 	@Override
@@ -195,12 +192,13 @@ public class UOMConversionBL implements IUOMConversionBL
 		}
 	}
 
-	protected BigDecimal convertQty0(I_M_Product product, BigDecimal qty, I_C_UOM uomFrom, I_C_UOM uomTo)
+	private BigDecimal convertQty0(final int productId, final BigDecimal qty, final I_C_UOM uomFrom, final I_C_UOM uomTo)
 	{
 		// FIXME: this is actually a workaround. We shall refactor the MUOMConversion completely
 		// see http://dewiki908/mediawiki/index.php/05529_Fix_UOM_Conversion_%28109933191619%29
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
+		final Properties ctx = Env.getCtx();
+		final I_M_Product product = productId > 0 ? loadOutOfTrx(productId, I_M_Product.class) : null;
 
 		BigDecimal result;
 
@@ -211,7 +209,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		//
 		// Case: uomFrom is the stocking UOM
-		if (product.getC_UOM_ID() == uomFrom.getC_UOM_ID())
+		else if (product.getC_UOM_ID() == uomFrom.getC_UOM_ID())
 		{
 			// convertProductFrom: converts Qty from stocking UOM to given UOM
 			result = convertFromProductUOM(ctx, product, uomTo, qty);
@@ -236,8 +234,13 @@ public class UOMConversionBL implements IUOMConversionBL
 		//
 		// If result is null throw an exception
 		// NOTE: we check the result first and then we gather more debug info
-		Check.errorIf(result == null, "Failed to convert Qty={} of product={} from UOM={} to UOM={}",
-				qty, product.getValue(), uomFrom.getName(), uomTo.getName());
+		if (result == null)
+		{
+			throw new AdempiereException("Failed to convert Qty=" + qty
+					+ " of product=" + (product != null ? product.getValue() : null)
+					+ " from UOM=" + uomFrom.getName()
+					+ " to UOM={}" + uomTo.getName());
+		}
 
 		return result;
 
@@ -375,7 +378,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return qtyToConvert;
 		}
 
-		BigDecimal rate = getRateForConversionFromProductUOM(ctx, product, uomDest);
+		final BigDecimal rate = getRateForConversionFromProductUOM(ctx, product, uomDest);
 		if (rate != null)
 		{
 			if (BigDecimal.ONE.compareTo(rate) == 0)
@@ -389,7 +392,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		// metas: tsa: begin: 01428
 		// Fallback: check general conversion rates
 		final I_C_UOM productUOM = product.getC_UOM();
-		BigDecimal qtyConv = convert(ctx, productUOM, uomDest, qtyToConvert);
+		final BigDecimal qtyConv = convert(ctx, productUOM, uomDest, qtyToConvert);
 		if (qtyConv != null)
 		{
 			return qtyConv;
@@ -632,7 +635,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return qtyToConvert;
 		}
 
-		BigDecimal rate = getRateForConversionToProductUOM(ctx, product, uomSource);
+		final BigDecimal rate = getRateForConversionToProductUOM(ctx, product, uomSource);
 		if (rate != null)
 		{
 			if (BigDecimal.ONE.compareTo(rate) == 0)
@@ -654,7 +657,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		// Fallback: check general conversion rates
 
 		final I_C_UOM productUOM = product.getC_UOM();
-		BigDecimal conversion = convert(ctx, uomSource, productUOM, qtyToConvert);
+		final BigDecimal conversion = convert(ctx, uomSource, productUOM, qtyToConvert);
 		if (conversion != null)
 		{
 			return conversion;
@@ -680,7 +683,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return qty;
 		}
 
-		BigDecimal rate = getRate(ctx, uomFrom, uomTo);
+		final BigDecimal rate = getRate(ctx, uomFrom, uomTo);
 		if (rate != null)
 		{
 			BigDecimal qtyConv = rate.multiply(qty);

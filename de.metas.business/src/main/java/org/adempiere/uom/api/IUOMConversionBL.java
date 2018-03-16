@@ -32,6 +32,7 @@ import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
 
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 public interface IUOMConversionBL extends ISingletonService
 {
@@ -46,13 +47,26 @@ public interface IUOMConversionBL extends ISingletonService
 	/**
 	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code>
 	 *
-	 * @param product
-	 * @param qty
-	 * @param uomFrom
-	 * @param uomTo
+	 * @return converted quantity; never return NULL.
+	 * @deprecated please use {@link #convertQty(int, BigDecimal, I_C_UOM, I_C_UOM)}
+	 */
+	@Deprecated
+	default BigDecimal convertQty(
+			final I_M_Product product,
+			final BigDecimal qty,
+			@NonNull final I_C_UOM uomFrom,
+			@NonNull final I_C_UOM uomTo)
+	{
+		final int productId = product != null ? product.getM_Product_ID() : -1;
+		return convertQty(productId, qty, uomFrom, uomTo);
+	}
+
+	/**
+	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code>
+	 *
 	 * @return converted quantity; never return NULL.
 	 */
-	BigDecimal convertQty(I_M_Product product, BigDecimal qty, I_C_UOM uomFrom, I_C_UOM uomTo);
+	BigDecimal convertQty(int productId, BigDecimal qty, I_C_UOM uomFrom, I_C_UOM uomTo);
 
 	/**
 	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code>
