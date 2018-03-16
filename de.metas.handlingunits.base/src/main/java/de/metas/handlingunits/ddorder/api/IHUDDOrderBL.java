@@ -23,12 +23,15 @@ package de.metas.handlingunits.ddorder.api;
  */
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_InOutLine;
 
 public interface IHUDDOrderBL extends ISingletonService
 {
@@ -48,4 +51,12 @@ public interface IHUDDOrderBL extends ISingletonService
 	 * @param hus HUs to unassign
 	 */
 	void unassignHUs(I_DD_OrderLine ddOrderLine, Collection<I_M_HU> hus);
+
+	/**
+	 * Create a ddOrder with the handling units assigned to the given receipt line to a warehouse flagged as IsBlockWarehouse
+	 * 
+	 * @param ctx
+	 * @param receiptLines
+	 */
+	void createDDOrderToBlockWarehouse(Properties ctx, List<I_M_InOutLine> receiptLines);
 }
