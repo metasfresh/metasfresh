@@ -57,9 +57,13 @@ Here come the actual release notes:
   * [#3621](https://github.com/metasfresh/metasfresh/issues/3621) Allow semikolon delimiter for Import Format
     * Enhancement of possible Import Delimiters in Import Format, now also allowing semikolon as delimiter.
   * [#3624](https://github.com/metasfresh/metasfresh/issues/3624) Pharma: When Operation Code is 2, deactivate the product
+    * Improvement of the Import of Pharma Products, now dectivating Products with status code 2 (discontinued Products).
   * [#3647](https://github.com/metasfresh/metasfresh/issues/3674) Support Country in local address sequence
+    * Now supporting the county variable in the local Address sequence.
   * [#3655](https://github.com/metasfresh/metasfresh/issues/3655) POJOWrapper support for model classes with zero ID
-  * [#3667](https://github.com/metasfresh/metasfresh/issues/3667) prospect is converted to customer when completing a quotation
+    * Internal Development improvement.
+  * [#3667](https://github.com/metasfresh/metasfresh/issues/3667) Prospect is converted to customer when completing a quotation
+    * Improvement of the prospect-customer transition, now setting to customer as soon first Partner Sales Order is completed.
 
 * metasfresh-webui-api
   * [#773](https://github.com/metasfresh/metasfresh-webui-api/issues/773) Add name and menu entry for WebUI window Package
@@ -73,15 +77,20 @@ Here come the actual release notes:
 
 * metasfresh-dist
   * [#35](https://github.com/metasfresh/metasfresh-dist/issues/35) Remove swing-client exe via launch4j
+    * Internal Development improvement.
 
 ## Fixes
 * metasfresh
   * [#3612](https://github.com/metasfresh/metasfresh/issues/3612) Sorting defect: Change of Flatrate Term in Sales Orderline after grouping
-  * [#3639](https://github.com/metasfresh/metasfresh/issues/3639) material dispo - problem with multiple cost collectors
+    * Fixes the Sorting in recreated Compensation group lines in sales order.
+  * [#3639](https://github.com/metasfresh/metasfresh/issues/3639) Material dispo - problem with multiple cost collectors
+    * Fixes an Issue in Material Disposition when receiving multiple Handling Units in manufacturing Order resulting in multiple cost collectors.
 
 * metasfresh-api
   * [#850](https://github.com/metasfresh/metasfresh-webui-api/issues/850) Sorting by Virtual Column Follow-up
+    * Fixes the sorting of virtual columns which are not numbers in grid view.
   * [#890](https://github.com/metasfresh/metasfresh-webui-api/issues/890) Exception when adding request from partner window for sales rep
+    * 
 
 * metasfresh-webui-frontend
   * [#1544](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1544) List Widget does not scroll down with arrow-down
