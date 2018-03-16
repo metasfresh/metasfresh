@@ -101,7 +101,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 		final IHandlingUnitsDAO dao = Services.get(IHandlingUnitsDAO.class);
-		if (piId == dao.getNo_HU_PI_ID())
+		if (piId == dao.getPackingItemTemplate_HU_PI_ID())
 		{
 			return false;
 		}
@@ -338,7 +338,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		final int piItemId = piItem.getM_HU_PI_Item_ID();
-		if (piItemId == Services.get(IHandlingUnitsDAO.class).getNo_HU_PI_Item_ID())
+		if (piItemId == Services.get(IHandlingUnitsDAO.class).getPackingItemTemplate_HU_PI_Item_ID())
 		{
 			return true;
 		}

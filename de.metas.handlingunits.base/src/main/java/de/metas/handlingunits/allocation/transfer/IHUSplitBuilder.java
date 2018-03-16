@@ -125,7 +125,7 @@ public interface IHUSplitBuilder
 	/**
 	 *
 	 *
-	 * @param splitOnNoPI not 100% sure but i think this needs to be <code>true</code> if we split individual CUs. See {@link IHandlingUnitsDAO#getNo_HU_PI_ID()}.
+	 * @param splitOnNoPI not 100% sure but i think this needs to be <code>true</code> if we split individual CUs. See {@link IHandlingUnitsDAO#getPackingItemTemplate_HU_PI_ID()}.
 	 * @return
 	 */
 	IHUSplitBuilder setSplitOnNoPI(boolean splitOnNoPI);

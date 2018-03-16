@@ -327,7 +327,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 */
 	void setSaveOnChange(final boolean saveOnChange);
 
-	IAttributeStorageFactory getHUAttributeStorageFactory();
+	IAttributeStorageFactory getAttributeStorageFactory();
 
 	/**
 	 * In case this attribute storage is attached to an {@link IHUStorageDAO} which supports product Qtys, it will return the UOM Type of that Qty Storage.

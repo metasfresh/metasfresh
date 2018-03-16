@@ -244,7 +244,7 @@ import de.metas.logging.LogManager;
 		}
 		Check.assumeNotNull(maxOccurrencePIId, "maxOccurrencePI not null");
 
-		final I_M_HU_PI noPI = handlingUnitsDAO.retrieveNoPI(InterfaceWrapperHelper.getCtx(luHU));
+		final I_M_HU_PI noPI = handlingUnitsDAO.retrievePackingItemTemplatePI(InterfaceWrapperHelper.getCtx(luHU));
 		final I_M_HU_PI virtualPI = handlingUnitsDAO.retrieveVirtualPI(InterfaceWrapperHelper.getCtx(luHU));
 
 		final IKeyLayout tuKeyLayout = model.getTUKeyLayout();
@@ -275,7 +275,7 @@ import de.metas.logging.LogManager;
 		final IKeyLayout luKeyLayout = model.getLUKeyLayout();
 		final List<ILUTUCUKey> lutuKeys = luKeyLayout.getKeys(ILUTUCUKey.class);
 
-		final int noHUPIId = handlingUnitsDAO.getNo_HU_PI_ID();
+		final int noHUPIId = handlingUnitsDAO.getPackingItemTemplate_HU_PI_ID();
 		final boolean isTopLevelHU = handlingUnitsBL.isTopLevel(tuHU);
 
 		final I_M_HU luHU = handlingUnitsDAO.retrieveParent(tuHU);
