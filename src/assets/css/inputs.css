@@ -137,17 +137,19 @@ button, .btn {
 }
 
 @media only screen and (min-width: $breakpoint-md){
-    .btn-xs {
-        padding: .25rem .6rem;
-        line-height: 1.5;
-    }
-    .btn-sm {
-        padding: .3125rem .6rem;
-        line-height: 1.5;
-    }
-    .btn-md {
-        padding: .5rem 1.2rem;
-        line-height: 1.5;
+    .desktop {
+        .btn-xs {
+            padding: .25rem .6rem;
+            line-height: 1.5;
+        }
+        .btn-sm {
+            padding: .3125rem .6rem;
+            line-height: 1.5;
+        }
+        .btn-md {
+            padding: .5rem 1.2rem;
+            line-height: 1.5;
+        }
     }
 }
 
