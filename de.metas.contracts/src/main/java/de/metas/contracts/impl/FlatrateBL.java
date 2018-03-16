@@ -1019,8 +1019,8 @@ public class FlatrateBL implements IFlatrateBL
 			InterfaceWrapperHelper.save(currentTerm);
 
 			final I_C_Flatrate_Term nextTerm = currentTerm.getC_FlatrateTerm_Next();
-			final I_C_Flatrate_Conditions nextconditions = nextTerm.getC_Flatrate_Conditions();
-			final I_C_Flatrate_Transition nextTransition = nextconditions.getC_Flatrate_Transition();
+			final I_C_Flatrate_Conditions nextConditions = nextTerm.getC_Flatrate_Conditions();
+			final I_C_Flatrate_Transition nextTransition = nextConditions.getC_Flatrate_Transition();
 			if (nextTransition.isAutoExtension() && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0)
 			{
 				final ContractExtendingRequest nextContext = ContractExtendingRequest.builder()
