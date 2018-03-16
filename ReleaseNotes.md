@@ -22,7 +22,7 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#735](https://github.com/metasfresh/metasfresh-webui-api/issues/735) Hide Receive HUs (default) when there are no HUs
     * Hides the default action for Receive HU in cases where there are only CU's in receipt candidates.
-    
+
 * metasfresh-webui-frontend
   * [#1642](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1642) Lookup Widget drop-down list scroll behavior
     * Improves the behavior of drop-down list scroll behavior.
@@ -35,11 +35,15 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#2647](https://github.com/metasfresh/metasfresh/issues/2647) Inventory Functionality w/ Handling Unit Assignments
+    * Improved Inventory Functionality for WebUI, now allowing to record Handling Unit quantities too.
   * [#3029](https://github.com/metasfresh/metasfresh/issues/3029) WebUI: New Window for Import Formats
     * New Indow in WebUI for Import Formats, now allowing to maintain data formats to import migration data.
   * [#3580](https://github.com/metasfresh/metasfresh/issues/3580) TU label in picking process in webui
+    * New Action in Picking, allowing to print a Transport Unit Label.
   * [#3622](https://github.com/metasfresh/metasfresh/issues/3622) Make AD_EventLog available for admin
+    * Improved Event Log Handling, now making the logs available for the admin role.
   * [#3634](https://github.com/metasfresh/metasfresh/issues/3634) Pick in manufacturing Order: Picking Slot Filter on selected BPartner from Shipment Schedule
+    * New functionality in Manufacturing Workflow, allowing to directly pick produced products via manufacturing receipt workflow.
   * [#3637](https://github.com/metasfresh/metasfresh/issues/3637) Standalone Product Translation Window
     * New Standalone Product Translation window in WebUI.
   * [#3652](https://github.com/metasfresh/metasfresh/issues/3652) WebUI: New Inventory Window
@@ -47,8 +51,11 @@ Here come the actual release notes:
   * [#3591](https://github.com/metasfresh/metasfresh/issues/3591) Add translations for headers in shipment statistics
     * New WebUI window for shipment statistics.
   * [#3618](https://github.com/metasfresh/metasfresh/issues/3618) Add "technical note" field to AD_Column
+    * Internal Housekeeping Improvement, adding a new Field to Application Dictionary in Column, that allows to record additional internal infomration.
   * [#3620](https://github.com/metasfresh/metasfresh/issues/3620) Spring model interceptors: support those who implement IModelInterceptor
+    * Internal Housekeeping improvement, now discovering interceptors which implement the IMOdelInterceptor interface.
   * [#3621](https://github.com/metasfresh/metasfresh/issues/3621) Allow semikolon delimiter for Import Format
+    * Enhancement of possible Import Delimiters in Import Format, now also allowing semikolon as delimiter.
   * [#3624](https://github.com/metasfresh/metasfresh/issues/3624) Pharma: When Operation Code is 2, deactivate the product
   * [#3647](https://github.com/metasfresh/metasfresh/issues/3674) Support Country in local address sequence
   * [#3655](https://github.com/metasfresh/metasfresh/issues/3655) POJOWrapper support for model classes with zero ID
