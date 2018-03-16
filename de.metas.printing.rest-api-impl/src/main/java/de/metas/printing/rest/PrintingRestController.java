@@ -143,8 +143,8 @@ public class PrintingRestController
 
 		final List<PrintPackageInfo> printPackageInfos = new ArrayList<>();
 
-		final List<I_C_Print_PackageInfo> printPackageInfoRecordss = Services.get(IPrintingDAO.class).retrievePrintPackageInfos(responsePrintPackage);
-		for (final I_C_Print_PackageInfo printPackageInfoRecord : printPackageInfoRecordss)
+		final List<I_C_Print_PackageInfo> printPackageInfoRecords = Services.get(IPrintingDAO.class).retrievePrintPackageInfos(responsePrintPackage);
+		for (final I_C_Print_PackageInfo printPackageInfoRecord : printPackageInfoRecords)
 		{
 			final PrintPackageInfo printPackageInfo = new PrintPackageInfo();
 			printPackageInfo.setCalX(printPackageInfoRecord.getCalX());
