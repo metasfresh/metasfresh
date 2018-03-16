@@ -32,7 +32,6 @@ import java.util.Properties;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -48,26 +47,24 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import lombok.NonNull;
 
 /**
- * Wraps an {@link I_M_AttributeSetInstance}, uses definitions from NoPI's {@link I_M_HU_PI_Attribute}s.
- *
- * @author tsa
- *
+ * Wraps an {@link I_M_AttributeSetInstance}, adds definitions from the packing item template's {@link I_M_HU_PI_Attribute}s.
  */
-/* package */class ASIAttributeStorage extends AbstractAttributeStorage
+/* package */ class ASIWithPackingItemTemplesAttributeStorage extends AbstractAttributeStorage
 {
 	private final String id;
 	private final I_M_AttributeSetInstance asi;
 
-	public ASIAttributeStorage(final IAttributeStorageFactory storageFactory, final I_M_AttributeSetInstance asi)
+	public ASIWithPackingItemTemplesAttributeStorage(
+			@NonNull final IAttributeStorageFactory storageFactory,
+			@NonNull final I_M_AttributeSetInstance asi)
 	{
 		super(storageFactory);
 
-		Check.assumeNotNull(asi, "asi not null");
 		this.asi = asi;
-
-		id = I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID + "=" + asi.getM_AttributeSetInstance_ID();
+		this.id = I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID + "=" + asi.getM_AttributeSetInstance_ID();
 	}
 
 	@Override
@@ -111,13 +108,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 		//
 		// Retrieve Template PI Attributes and build an M_Attribute_ID->M_HU_PI_Attribute map
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asi);
-		final I_M_HU_PI noPI = handlingUnitsDAO.retrieveNoPI(ctx);
+		final I_M_HU_PI packingItemTemplatePI = handlingUnitsDAO.retrievePackingItemTemplatePI(ctx);
 
 		//
 		// Retrieve Attribute Instances for given ASI
 		// Build M_Attribute_ID to M_AttributeInstance map
 		final List<I_M_AttributeInstance> attributeInstances = attributesDAO.retrieveAttributeInstances(asi);
-		final Map<Integer, I_M_AttributeInstance> attributeId2attributeInstance = new HashMap<Integer, I_M_AttributeInstance>(attributeInstances.size());
+		final Map<Integer, I_M_AttributeInstance> attributeId2attributeInstance = new HashMap<>(attributeInstances.size());
 		for (final I_M_AttributeInstance instance : attributeInstances)
 		{
 			attributeId2attributeInstance.put(instance.getM_Attribute_ID(), instance);
@@ -127,8 +124,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 		// Retrieve Template PI Attributes
 		// find it's matching M_AttributeInstance and create an AttributeValue for it
 		// If no M_AttributeInstance was found, create a plain one.
-		final List<I_M_HU_PI_Attribute> piAttributes = huPIAttributesDAO.retrievePIAttributes(noPI);
-		final List<IAttributeValue> result = new ArrayList<IAttributeValue>(piAttributes.size());
+		final List<I_M_HU_PI_Attribute> piAttributes = huPIAttributesDAO.retrievePIAttributes(packingItemTemplatePI);
+		final List<IAttributeValue> result = new ArrayList<>(piAttributes.size());
 		for (final I_M_HU_PI_Attribute piAttribute : piAttributes)
 		{
 			final int attributeId = piAttribute.getM_Attribute_ID();
@@ -165,7 +162,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 			final I_M_HU_PI_Attribute piAttribute,
 			final boolean isGeneratedAttribute)
 	{
-		final AIAttributeValue aiAttributeValue = new AIAttributeValue(this, attributeInstance, piAttribute, isGeneratedAttribute);
+		final AIWithHUPIAttributeValue aiAttributeValue = new AIWithHUPIAttributeValue(this, attributeInstance, piAttribute, isGeneratedAttribute);
 		return aiAttributeValue;
 	}
 
@@ -208,7 +205,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 	{
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
 	public void setSaveOnChange(boolean saveOnChange)
 	{

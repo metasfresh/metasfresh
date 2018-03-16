@@ -10,12 +10,12 @@ package de.metas.handlingunits.inout.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,15 +54,16 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import lombok.NonNull;
 
 public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 {
 	@Override
-	public final void assignHU(final org.compiere.model.I_M_InOutLine shipmentLine, final HUTopLevel huToAssign, final boolean isTransferPackingMaterials)
+	public final void assignHU(
+			@NonNull final org.compiere.model.I_M_InOutLine shipmentLine,
+			@NonNull final HUTopLevel huToAssign,
+			final boolean isTransferPackingMaterials)
 	{
-		Check.assumeNotNull(shipmentLine, "shipmentLine not null");
-		Check.assumeNotNull(huToAssign, "huToAssign not null");
-
 		// services
 		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 
