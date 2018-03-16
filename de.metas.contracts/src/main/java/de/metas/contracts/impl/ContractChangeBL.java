@@ -221,7 +221,10 @@ public class ContractChangeBL implements IContractChangeBL
 	private void setContractStatus(@NonNull final I_C_Flatrate_Term currentTerm,
 			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
-		if (contractChangeParameters.isVoidSingleContract())
+		final Timestamp changedate = contractChangeParameters.getChangeDate();
+		final Timestamp startDate = currentTerm.getStartDate();
+
+		if (contractChangeParameters.isVoidSingleContract() || changedate.before(startDate))
 		{
 			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Voided);
 		}

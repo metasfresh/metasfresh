@@ -526,7 +526,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	{
 		final ArrayKey groupKey = new ArrayKey(hwPrinterId, hwTrayId, calX, calY);
 
-		if (!Check.equals(groupKey, preceedingGroupKey) || printPackageInfos.isEmpty())
+		if (!Objects.equals(groupKey, preceedingGroupKey) || printPackageInfos.isEmpty())
 		{
 			// create a new map and add it to the end of the list.
 			printPackageInfos.add(new LinkedHashMap<ArrayKey, I_C_Print_PackageInfo>());

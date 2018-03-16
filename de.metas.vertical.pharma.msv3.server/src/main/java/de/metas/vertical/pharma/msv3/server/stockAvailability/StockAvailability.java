@@ -3,7 +3,7 @@ package de.metas.vertical.pharma.msv3.server.stockAvailability;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import de.metas.vertical.pharma.msv3.server.model.AbstractEntity;
+import de.metas.vertical.pharma.msv3.server.jpa.AbstractEntity;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
