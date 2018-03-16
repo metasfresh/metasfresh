@@ -504,6 +504,13 @@ public class C_Flatrate_Term
 	public void updateMasterEndDate(final I_C_Flatrate_Term term)
 	{
 		setMasterEndDate(term);
+
+		final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(term);
+		if (term.getMasterEndDate() != null)
+		{
+			ancestor.setMasterEndDate(term.getMasterEndDate());
+			InterfaceWrapperHelper.save(ancestor);
+		}
 	}
 
 	private void setMasterEndDate(final I_C_Flatrate_Term term)
@@ -518,10 +525,10 @@ public class C_Flatrate_Term
 
 		term.setMasterEndDate(masterEndDate);
 	}
-	
+
 	private Timestamp computeMasterEndDateIfC_FlatrateTerm_Next_IDChanged(@NonNull final I_C_Flatrate_Term term, Timestamp masterEndDate)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID) && !term.isAutoRenew())
+		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID) )
 		{
 			if (term.getC_FlatrateTerm_Next_ID() > 0)
 			{
@@ -532,7 +539,7 @@ public class C_Flatrate_Term
 				masterEndDate = term.getEndDate();
 			}
 		}
-		
+
 		return masterEndDate;
 	}
 }
