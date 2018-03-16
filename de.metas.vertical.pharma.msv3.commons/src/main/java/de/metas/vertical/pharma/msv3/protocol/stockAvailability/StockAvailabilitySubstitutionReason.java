@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitDefektgrund;
 import lombok.Getter;

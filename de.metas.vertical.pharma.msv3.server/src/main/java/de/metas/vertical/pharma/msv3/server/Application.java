@@ -16,6 +16,7 @@ import org.springframework.ws.wsdl.wsdl11.Wsdl11Definition;
 import org.springframework.xml.xsd.SimpleXsdSchema;
 import org.springframework.xml.xsd.XsdSchema;
 
+import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityWebService;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
 import lombok.NonNull;
 
@@ -41,7 +42,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "de.metas.vertical.pharma.msv3")
 @EnableWs
 public class Application
 {

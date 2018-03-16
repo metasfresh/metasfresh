@@ -1,8 +1,5 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.types;
 
-import de.metas.vertical.pharma.msv3.server.types.PZN;
-import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -28,10 +25,23 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class StockAvailabilitySubstitution
+public class Quantity
 {
-	@NonNull PZN pzn;
-	@NonNull StockAvailabilitySubstitutionReason reason;
-	@NonNull StockAvailabilitySubstitutionType type;
+	public static Quantity of(final int value)
+	{
+		return new Quantity(value);
+	}
+
+	private final int valueAsInt;
+
+	private Quantity(final int value)
+	{
+		if (value < 0)
+		{
+			throw new IllegalArgumentException("Invalid quantity: " + value);
+		}
+
+		this.valueAsInt = value;
+	}
+
 }

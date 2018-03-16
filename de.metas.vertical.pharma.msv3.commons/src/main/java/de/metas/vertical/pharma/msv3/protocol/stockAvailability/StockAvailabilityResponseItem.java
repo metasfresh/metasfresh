@@ -1,9 +1,9 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.vertical.pharma.msv3.server.types.PZN;
-import de.metas.vertical.pharma.msv3.server.types.Quantity;
+import de.metas.vertical.pharma.msv3.protocol.types.PZN;
+import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

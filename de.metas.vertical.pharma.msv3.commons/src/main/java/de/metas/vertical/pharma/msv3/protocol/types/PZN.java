@@ -1,7 +1,6 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.types;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitTyp;
-import lombok.Getter;
+import lombok.Value;
 
 /*
  * #%L
@@ -25,18 +24,28 @@ import lombok.Getter;
  * #L%
  */
 
-public enum AvailabilityType
+/**
+ * PZN (Pharma-Zentral-Nummer) is a code for medicine identification in Germany and maybe other countries.
+ * 
+ * @see https://www.activebarcode.com/codes/pzn.html
+ */
+@Value
+public class PZN
 {
-	SPECIFIC(VerfuegbarkeitTyp.SPEZIFISCH), //
-	NON_SPECIFIC(VerfuegbarkeitTyp.UNSPEZIFISCH) //
-	;
-
-	@Getter
-	private VerfuegbarkeitTyp soapCode;
-
-	private AvailabilityType(final VerfuegbarkeitTyp soapCode)
+	public static PZN of(final long value)
 	{
-		this.soapCode = soapCode;
+		return new PZN(value);
 	}
 
+	private final long valueAsLong;
+
+	private PZN(final long value)
+	{
+		if (value <= 0)
+		{
+			throw new IllegalArgumentException("Invalid PZN value: " + value);
+		}
+
+		this.valueAsLong = value;
+	}
 }

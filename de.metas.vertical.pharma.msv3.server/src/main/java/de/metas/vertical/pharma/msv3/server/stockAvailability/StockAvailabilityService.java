@@ -6,7 +6,16 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.vertical.pharma.msv3.server.types.PZN;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.AvailabilityType;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItem;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPart;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPartType;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitution;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitutionReason;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitutionType;
+import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 
 /*
  * #%L

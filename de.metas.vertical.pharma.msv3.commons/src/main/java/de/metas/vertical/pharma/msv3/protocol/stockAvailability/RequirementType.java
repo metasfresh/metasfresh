@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
 import java.util.NoSuchElementException;
 import java.util.function.Function;

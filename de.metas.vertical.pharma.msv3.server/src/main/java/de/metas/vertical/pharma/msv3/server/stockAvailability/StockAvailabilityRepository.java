@@ -1,10 +1,6 @@
 package de.metas.vertical.pharma.msv3.server.stockAvailability;
 
-import de.metas.vertical.pharma.msv3.server.types.PZN;
-import de.metas.vertical.pharma.msv3.server.types.Quantity;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import org.springframework.stereotype.Repository;
 
 /*
  * #%L
@@ -16,34 +12,20 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Value
-public class StockAvailabilityQueryItem
+@Repository
+public interface StockAvailabilityRepository
 {
-	PZN pzn;
-	Quantity qtyRequired;
-	RequirementType requirementType;
-
-	@Builder
-	private StockAvailabilityQueryItem(
-			@NonNull final PZN pzn,
-			@NonNull final Quantity qtyRequired,
-			@NonNull final RequirementType requirementType)
-	{
-		this.pzn = pzn;
-		this.qtyRequired = qtyRequired;
-		this.requirementType = requirementType;
-	}
-
+	StockAvailability getByPzn(final String pzn);
 }

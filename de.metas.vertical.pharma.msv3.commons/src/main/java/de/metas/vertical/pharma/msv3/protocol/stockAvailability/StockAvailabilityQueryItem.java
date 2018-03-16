@@ -1,10 +1,9 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
-import com.google.common.collect.ImmutableList;
-
+import de.metas.vertical.pharma.msv3.protocol.types.PZN;
+import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -30,23 +29,21 @@ import lombok.Value;
  */
 
 @Value
-public class StockAvailabilityQuery
+public class StockAvailabilityQueryItem
 {
-	String id;
-	ImmutableList<StockAvailabilityQueryItem> items;
+	PZN pzn;
+	Quantity qtyRequired;
+	RequirementType requirementType;
 
 	@Builder
-	private StockAvailabilityQuery(
-			@NonNull final String id,
-			@NonNull @Singular final ImmutableList<StockAvailabilityQueryItem> items)
+	private StockAvailabilityQueryItem(
+			@NonNull final PZN pzn,
+			@NonNull final Quantity qtyRequired,
+			@NonNull final RequirementType requirementType)
 	{
-		if (items.isEmpty())
-		{
-			throw new IllegalArgumentException("Query shall have at least one item");
-		}
-
-		this.id = id;
-		this.items = items;
+		this.pzn = pzn;
+		this.qtyRequired = qtyRequired;
+		this.requirementType = requirementType;
 	}
 
 }

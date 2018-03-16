@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.msv3.server.util;
+package de.metas.vertical.pharma.msv3.protocol.util;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;

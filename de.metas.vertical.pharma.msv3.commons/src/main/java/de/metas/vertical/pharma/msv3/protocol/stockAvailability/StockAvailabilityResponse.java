@@ -1,7 +1,11 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitRueckmeldungTyp;
-import lombok.Getter;
+import com.google.common.collect.ImmutableList;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -13,32 +17,38 @@ import lombok.Getter;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public enum StockAvailabilityResponseItemPartType
+@Value
+public class StockAvailabilityResponse
 {
-	NORMAL(VerfuegbarkeitRueckmeldungTyp.NORMAL), //
-	COMPOSITE(VerfuegbarkeitRueckmeldungTyp.VERBUND), //
-	REPLENISHMENT(VerfuegbarkeitRueckmeldungTyp.NACHLIEFERUNG), //
-	DISPO(VerfuegbarkeitRueckmeldungTyp.DISPO), //
-	NOT_DELIVERABLE(VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR) //
-	;
+	String id;
+	AvailabilityType availabilityType;
+	ImmutableList<StockAvailabilityResponseItem> items;
 
-	@Getter
-	private final VerfuegbarkeitRueckmeldungTyp soapCode;
-
-	private StockAvailabilityResponseItemPartType(VerfuegbarkeitRueckmeldungTyp soapCode)
+	@Builder
+	private StockAvailabilityResponse(
+			@NonNull final String id,
+			@NonNull final AvailabilityType availabilityType,
+			@NonNull @Singular final ImmutableList<StockAvailabilityResponseItem> items)
 	{
-		this.soapCode = soapCode;
+		if (items.isEmpty())
+		{
+			throw new IllegalArgumentException("Response shall have at least one item");
+		}
+
+		this.id = id;
+		this.availabilityType = availabilityType;
+		this.items = items;
 	}
 }

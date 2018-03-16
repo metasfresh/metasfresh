@@ -1,8 +1,8 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
 import java.time.LocalDateTime;
 
-import de.metas.vertical.pharma.msv3.server.types.Quantity;
+import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
