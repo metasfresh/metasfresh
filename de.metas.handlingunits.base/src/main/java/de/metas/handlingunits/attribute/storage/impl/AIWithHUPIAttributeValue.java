@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,13 +25,13 @@ package de.metas.handlingunits.attribute.storage.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.util.TimeUtil;
 
 import de.metas.handlingunits.attribute.impl.AbstractHUAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import lombok.NonNull;
 
 /**
  * Wraps an {@link I_M_AttributeInstance} and uses definition from {@link I_M_HU_PI_Attribute}
@@ -39,13 +39,15 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
  * @author tsa
  *
  */
-/* package */class AIAttributeValue extends AbstractHUAttributeValue
+/* package */class AIWithHUPIAttributeValue extends AbstractHUAttributeValue
 {
 	private final I_M_AttributeInstance attributeInstance;
 	private final boolean isGeneratedAttribute;
 
-	public AIAttributeValue(final IAttributeStorage attributeStorage, final I_M_AttributeInstance attributeInstance,
-			final I_M_HU_PI_Attribute piAttribute,
+	public AIWithHUPIAttributeValue(
+			final IAttributeStorage attributeStorage,
+			@NonNull final I_M_AttributeInstance attributeInstance,
+			@NonNull final I_M_HU_PI_Attribute piAttribute,
 			final boolean isGeneratedAttribute)
 	{
 		super(//
@@ -54,7 +56,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 				, Boolean.TRUE // ASI attributes are ALWAYS created from template attributes
 		);
 
-		Check.assumeNotNull(attributeInstance, "attributeInstance not null");
 		this.attributeInstance = attributeInstance;
 		this.isGeneratedAttribute = isGeneratedAttribute;
 	}
@@ -63,7 +64,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 	protected void setInternalValueString(final String value)
 	{
 		attributeInstance.setValue(value);
-
 	}
 
 	@Override

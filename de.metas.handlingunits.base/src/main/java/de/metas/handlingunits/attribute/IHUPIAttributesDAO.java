@@ -60,7 +60,7 @@ public interface IHUPIAttributesDAO extends ISingletonService
 	 * Mainly, returned list consists of
 	 * <ul>
 	 * <li>direct attributes - PI Attributes which are directly defined on given <code>version</code>
-	 * <li>attributes from template (i.e. NoPI) - PI attributes which are assigned to NoPI (see {@link IHandlingUnitsDAO#retrieveNoPI(java.util.Properties)})
+	 * <li>attributes from template (i.e. NoPI) - PI attributes which are assigned to NoPI (see {@link IHandlingUnitsDAO#retrievePackingItemTemplatePI(java.util.Properties)})
 	 * </ul>
 	 *
 	 * <br>
