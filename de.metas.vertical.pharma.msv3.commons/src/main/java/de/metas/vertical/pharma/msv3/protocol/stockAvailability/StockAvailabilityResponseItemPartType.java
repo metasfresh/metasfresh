@@ -28,8 +28,8 @@ import lombok.Getter;
 public enum StockAvailabilityResponseItemPartType
 {
 	NORMAL(VerfuegbarkeitRueckmeldungTyp.NORMAL), //
-	COMPOSITE(VerfuegbarkeitRueckmeldungTyp.VERBUND), //
-	REPLENISHMENT(VerfuegbarkeitRueckmeldungTyp.NACHLIEFERUNG), //
+	IN_PARTNER_STORAGE(VerfuegbarkeitRueckmeldungTyp.VERBUND), //
+	SUBSEQUENT_DELIVERY(VerfuegbarkeitRueckmeldungTyp.NACHLIEFERUNG), //
 	DISPO(VerfuegbarkeitRueckmeldungTyp.DISPO), //
 	NOT_DELIVERABLE(VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR) //
 	;
