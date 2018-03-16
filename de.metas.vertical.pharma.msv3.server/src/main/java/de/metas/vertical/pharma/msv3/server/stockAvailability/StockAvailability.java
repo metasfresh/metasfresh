@@ -1,5 +1,13 @@
 package de.metas.vertical.pharma.msv3.server.stockAvailability;
 
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import de.metas.vertical.pharma.msv3.server.model.AbstractEntity;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 /*
  * #%L
  * metasfresh-pharma.msv3.server
@@ -22,10 +30,17 @@ package de.metas.vertical.pharma.msv3.server.stockAvailability;
  * #L%
  */
 
-public class StockAvailability
+@Entity
+@Table(name = "stock_availability")
+@ToString
+public class StockAvailability extends AbstractEntity
 {
-	int id;
 	/** Pharma-Zentral-Nummer */
-	String pzn;
-	int qty;
+	@Getter
+	@Setter
+	private long pzn;
+
+	@Getter
+	@Setter
+	private int qty;
 }
