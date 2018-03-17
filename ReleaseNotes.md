@@ -28,6 +28,8 @@ Here come the actual release notes:
     * Improves the behavior of drop-down list scroll behavior.
   * [#1669](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1669) Empty option missing in dropdown
     * Fixes the empty selected elements in list widgets after selecting entry.
+  * [#1673](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1673) Improve User Interface for tablet media size
+    * Layout adjustments for the usage of webui frontend on tablet media sizes.
 
 # metasfresh 5.48 (2018-11)
 **release for week 2018-11**
@@ -97,7 +99,7 @@ Here come the actual release notes:
     * Improved scrolling behavior of list widgets.
   * [#1557](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1557) Double click on attributes in orderline
     * Improves the behavopr of the attributes dropdown widget when double clicking cell in subtab grid view. Now the elements are not all selected.
-  * [#1615](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1615) picking terminal window: switching rows is very very slow
+  * [#1615](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1615) Picking terminal window: switching rows is very very slow
     * Performance Improvement of Picking Terminal Window.
   * [#1637](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1637) Collapsible lines in Create Purchase Order modal
     * Fixes the behavior of collapsible lines in modal overlay of create purchase orders.
