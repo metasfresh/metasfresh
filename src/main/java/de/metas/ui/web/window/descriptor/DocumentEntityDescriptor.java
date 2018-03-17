@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -27,6 +26,7 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -103,17 +103,17 @@ public class DocumentEntityDescriptor
 	private final ILogicExpression readonlyLogic;
 	private final ILogicExpression displayLogic;
 
-	private final Map<String, DocumentFieldDescriptor> fields;
-	private final DocumentFieldDescriptor idField;
+	private final ImmutableMap<String, DocumentFieldDescriptor> fields;
+	private final ImmutableList<DocumentFieldDescriptor> idFields;
 
-	private final Map<DetailId, DocumentEntityDescriptor> includedEntitiesByDetailId;
+	private final ImmutableMap<DetailId, DocumentEntityDescriptor> includedEntitiesByDetailId;
 	private final IIncludedDocumentsCollectionFactory includedDocumentsCollectionFactory;
 
 	private final DocumentEntityDataBindingDescriptor dataBinding;
 
 	private final DocumentFieldDependencyMap dependencies;
 
-	private final Map<Characteristic, Set<String>> _fieldNamesByCharacteristic = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<Characteristic, Set<String>> _fieldNamesByCharacteristic = new ConcurrentHashMap<>();
 
 	//
 	// Callouts
@@ -144,7 +144,7 @@ public class DocumentEntityDescriptor
 		displayLogic = builder.getDisplayLogic();
 
 		fields = ImmutableMap.copyOf(builder.getFields());
-		idField = builder.getIdField();
+		idFields = builder.getIdFields();
 		includedEntitiesByDetailId = builder.buildIncludedEntitiesByDetailId();
 		includedDocumentsCollectionFactory = builder.getIncludedDocumentsCollectionFactory();
 		dataBinding = builder.getOrBuildDataBinding();
@@ -258,14 +258,29 @@ public class DocumentEntityDescriptor
 		return displayLogic;
 	}
 
-	public DocumentFieldDescriptor getIdField()
+	public boolean hasIdFields()
 	{
-		return idField;
+		return !idFields.isEmpty();
 	}
 
-	public String getIdFieldName()
+	public List<DocumentFieldDescriptor> getIdFields()
 	{
-		return idField == null ? null : idField.getFieldName();
+		return idFields;
+	}
+
+	public DocumentFieldDescriptor getSingleIdFieldOrNull()
+	{
+		return idFields.size() == 1 ? idFields.get(0) : null;
+	}
+
+	public DocumentFieldDescriptor getSingleIdField()
+	{
+		final DocumentFieldDescriptor idField = getSingleIdField();
+		if (idField == null)
+		{
+			throw new AdempiereException("Entity " + this + " does not have a single ID");
+		}
+		return idField;
 	}
 
 	public Collection<DocumentFieldDescriptor> getFields()
@@ -458,7 +473,6 @@ public class DocumentEntityDescriptor
 
 		private final Map<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
 		private Map<String, DocumentFieldDescriptor> _fields = null; // will be built
-		private Optional<DocumentFieldDescriptor> _idField = null; // will be built
 		private final Map<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptorBuilder _dataBinding = DocumentEntityDataBindingDescriptorBuilder.NULL;
 		private boolean _highVolume;
@@ -617,48 +631,39 @@ public class DocumentEntityDescriptor
 					.forEach(fieldUpdater);
 		}
 
-		private DocumentFieldDescriptor getIdField()
+		private ImmutableList<DocumentFieldDescriptor> getIdFields()
 		{
-			if (_idField == null)
-			{
-				DocumentFieldDescriptor idField = null;
-				for (final DocumentFieldDescriptor field : getFields().values())
-				{
-					if (field.isKey())
-					{
-						if (idField != null)
-						{
-							throw new IllegalArgumentException("More than one ID fields are not allowed: " + idField + ", " + field);
-						}
-						idField = field;
-					}
-				}
-
-				_idField = Optional.ofNullable(idField);
-			}
-
-			return _idField.orElse(null);
-		}
-
-		public String getIdFieldNameOrNull()
-		{
-			final List<DocumentFieldDescriptor.Builder> idFields = _fieldBuilders
+			return getFields()
 					.values()
 					.stream()
-					.filter(fieldBuilder -> fieldBuilder.isKey())
-					.collect(Collectors.toList());
-			if (idFields.isEmpty())
-			{
-				return null;
-			}
-			else if (idFields.size() == 1)
-			{
-				return idFields.get(0).getFieldName();
-			}
-			else
-			{
-				throw new IllegalArgumentException("More than one ID fields are not allowed: " + idFields);
-			}
+					.filter(field -> field.isKey())
+					.collect(ImmutableList.toImmutableList());
+		}
+
+		public DocumentFieldDescriptor.Builder getSingleIdFieldBuilderOrNull()
+		{
+			final List<DocumentFieldDescriptor.Builder> idFieldBuilders = getIdFieldBuilders();
+			return idFieldBuilders.size() == 1 ? idFieldBuilders.get(0) : null;
+		}
+
+		public String getSingleIdFieldNameOrNull()
+		{
+			final List<DocumentFieldDescriptor.Builder> idFieldBuilders = getIdFieldBuilders();
+			return idFieldBuilders.size() == 1 ? idFieldBuilders.get(0).getFieldName() : null;
+		}
+
+		private List<DocumentFieldDescriptor.Builder> getIdFieldBuilders()
+		{
+			return _fieldBuilders
+					.values()
+					.stream()
+					.filter(DocumentFieldDescriptor.Builder::isKey)
+					.collect(ImmutableList.toImmutableList());
+		}
+
+		public boolean hasIdField()
+		{
+			return !getIdFieldBuilders().isEmpty();
 		}
 
 		private Map<String, DocumentFieldDescriptor> getFields()
@@ -682,7 +687,7 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public Map<DetailId, DocumentEntityDescriptor> buildIncludedEntitiesByDetailId()
+		private ImmutableMap<DetailId, DocumentEntityDescriptor> buildIncludedEntitiesByDetailId()
 		{
 			return ImmutableMap.copyOf(_includedEntitiesByDetailId);
 		}

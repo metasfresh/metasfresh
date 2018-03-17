@@ -243,7 +243,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 				.map(HUEditorRow::getId)
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 
-		final Set<Integer> huIds = huEditorRepo.convertToRecordIds(rowIdsEffective);
+		final Set<Integer> huIds = huEditorRepo.getRowIdsConverter().convertToRecordIds(rowIdsEffective);
 		// NOTE: accept it even if is empty. In case it's empty, we will return something like M_HU_ID in (-1)
 		// same this is happening for the others HUEditorViewBuffer implementation
 		// see https://github.com/metasfresh/metasfresh-webui-api/issues/764

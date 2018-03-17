@@ -19,9 +19,10 @@ import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
 
@@ -79,31 +80,20 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	}
 
 	@Override
-	protected ViewLayout createHUViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	protected void customizeViewLayout(final ViewLayout.Builder viewLayoutBuilder, final JSONViewDataType viewDataType)
 	{
-		return ViewLayout.builder()
-				.setWindowId(windowId)
-				.setCaption("HU Editor")
-				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.setIdFieldName(HUEditorRow.FIELDNAME_M_HU_ID)
-				.setFilters(getViewFilterDescriptors().getAll())
-				//
-				.setHasAttributesSupport(true)
-				.setHasTreeSupport(true)
-				//
+		viewLayoutBuilder
+				.clearElements()
 				.addElementsFromViewRowClassAndFieldNames(HUEditorRow.class,
-						HUEditorRow.FIELDNAME_HUCode,
-						HUEditorRow.FIELDNAME_Product,
-						HUEditorRow.FIELDNAME_HU_UnitType,
-						HUEditorRow.FIELDNAME_PackingInfo,
-						HUEditorRow.FIELDNAME_QtyCU,
-						HUEditorRow.FIELDNAME_UOM,
-						HUEditorRow.FIELDNAME_HUStatus,
-						HUEditorRow.FIELDNAME_BestBeforeDate,
-						HUEditorRow.FIELDNAME_Locator)
-				//
-				.build();
+						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
+						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HU_UnitType).restrictToMediaType(MediaType.SCREEN).build(),
+						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_PackingInfo).restrictToMediaType(MediaType.SCREEN).build(),
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_QtyCU),
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
+						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build(),
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_BestBeforeDate),
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Locator));
 	}
 
 	@Override
@@ -115,7 +105,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	}
 
 	@Override
-	protected void customizeHUEditorView(HUEditorViewBuilder huViewBuilder)
+	protected void customizeHUEditorView(final HUEditorViewBuilder huViewBuilder)
 	{
 		huViewBuilder
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_PickHU.class))

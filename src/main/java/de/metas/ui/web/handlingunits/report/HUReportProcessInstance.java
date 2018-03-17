@@ -8,17 +8,18 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportExecutorResult;
+import de.metas.handlingunits.report.HUReportService;
+import de.metas.handlingunits.report.HUToReport;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstanceParameter;
@@ -171,13 +172,14 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		return lastExecutionResult = result;
 	}
 
-	private List<I_M_HU> extractHUsToReport(final HUEditorView view)
+	private List<HUToReport> extractHUsToReport(final HUEditorView view)
 	{
-		final Set<Integer> huIds = view.streamByIds(viewRowIdsSelection.getRowIds())
-				.map(row -> row.getM_HU_ID())
+		final Set<HUToReport> husToCheck = view.streamByIds(viewRowIdsSelection.getRowIds())
+				.map(HUEditorRow::getAsHUToReportOrNull)
+				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 
-		return Services.get(IHandlingUnitsDAO.class).retrieveByIds(huIds);
+		return HUReportService.get().getHUsToProcess(husToCheck);
 	}
 
 	@Override

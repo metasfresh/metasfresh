@@ -23,7 +23,6 @@ import org.compiere.model.POInfo;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -32,6 +31,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentsRepository;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -80,7 +80,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private final DocumentsRepository documentsRepository;
 	private final String sqlTableName;
 	private final String sqlTableAlias;
-	private final String sqlKeyColumnName;
 	private final String sqlLinkColumnName;
 	private final String sqlParentLinkColumnName;
 
@@ -88,7 +87,8 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	private final ICachedStringExpression sqlWhereClause;
 	private final List<DocumentQueryOrderBy> defaultOrderBys;
 
-	private final Map<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName;
+	private final ImmutableMap<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName;
+	private final ImmutableList<SqlDocumentFieldDataBindingDescriptor> keyFields;
 
 	private final Optional<String> sqlSelectVersionById;
 
@@ -104,12 +104,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		sqlTableAlias = builder.getTableAlias();
 		Check.assumeNotEmpty(sqlTableAlias, "sqlTableAlias is not empty");
 
-		sqlKeyColumnName = builder.getKeyColumnName();
-
 		sqlLinkColumnName = builder.getSqlLinkColumnName();
 		sqlParentLinkColumnName = builder.getSqlParentLinkColumnName();
 
 		_fieldsByFieldName = ImmutableMap.copyOf(builder.getFieldsByFieldName());
+		keyFields = ImmutableList.copyOf(builder.getKeyFields());
 
 		sqlSelectAllFrom = builder.getSqlSelectAll()
 				.caching();
@@ -154,11 +153,21 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	{
 		return sqlTableAlias;
 	}
-
-	@Override
-	public String getKeyColumnName()
+	
+	public boolean isSingleKey()
 	{
-		return sqlKeyColumnName;
+		return keyFields.size() == 1;
+	}
+
+	public List<SqlDocumentFieldDataBindingDescriptor> getKeyFields()
+	{
+		return keyFields;
+	}
+	
+	private String getSingleKeyColumnName()
+	{
+		Check.assume(keyFields.size() == 1, "Single key field: {}", this);
+		return keyFields.get(0).getColumnName();
 	}
 
 	/**
@@ -190,7 +199,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	public String getSqlWhereClauseById(final int recordId)
 	{
-		return sqlTableName + "." + sqlKeyColumnName + " = " + recordId;
+		return sqlTableName + "." + getSingleKeyColumnName() + " = " + recordId;
 	}
 
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
@@ -241,9 +250,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		private IStringExpression _sqlSelectAll; // will be built
 
 		private final LinkedHashMap<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName = new LinkedHashMap<>();
-		private SqlDocumentFieldDataBindingDescriptor _keyField;
-
-		// private SqlViewBinding.Builder viewBinding = SqlViewBinding.builder();
 
 		private Builder()
 		{
@@ -466,20 +472,12 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return this;
 		}
 
-		public Builder addField(final DocumentFieldDataBindingDescriptor field)
+		public Builder addField(@NonNull final DocumentFieldDataBindingDescriptor field)
 		{
 			assertNotBuilt();
-			Preconditions.checkNotNull(field, "field");
 
 			final SqlDocumentFieldDataBindingDescriptor sqlField = SqlDocumentFieldDataBindingDescriptor.castOrNull(field);
 			_fieldsByFieldName.put(sqlField.getFieldName(), sqlField);
-
-			if (sqlField.isKeyColumn())
-			{
-				setKeyField(sqlField);
-			}
-
-			// viewBinding.addField(sqlField);
 
 			return this;
 		}
@@ -489,22 +487,24 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return _fieldsByFieldName;
 		}
 
-		private Builder setKeyField(final SqlDocumentFieldDataBindingDescriptor keyField)
+		public SqlDocumentFieldDataBindingDescriptor getField(final String fieldName)
 		{
-			Check.assumeNull(_keyField, "More than one key field is not allowed: {}, {}", _keyField, keyField);
-			this._keyField = keyField;
-			return this;
+			final SqlDocumentFieldDataBindingDescriptor field = getFieldsByFieldName().get(fieldName);
+			if (field == null)
+			{
+				throw new AdempiereException("Field " + fieldName + " not found in " + this);
+			}
+			return field;
 		}
 
-		private String getKeyColumnName()
+		private List<SqlDocumentFieldDataBindingDescriptor> getKeyFields()
 		{
-			return _keyField == null ? null : _keyField.getColumnName();
+			return getFieldsByFieldName()
+					.values()
+					.stream()
+					.filter(SqlDocumentFieldDataBindingDescriptor::isKeyColumn)
+					.collect(ImmutableList.toImmutableList());
 		}
-
-		// private SqlViewBinding buildViewBinding()
-		// {
-		// return viewBinding.build();
-		// }
 
 		private Optional<String> getSqlSelectVersionById()
 		{
@@ -513,12 +513,13 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 				return Optional.empty();
 			}
 
-			final String keyColumnName = getKeyColumnName();
-			if (keyColumnName == null)
+			final List<SqlDocumentFieldDataBindingDescriptor> keyColumns = getKeyFields();
+			if (keyColumns.size() != 1)
 			{
 				return Optional.empty();
 			}
 
+			final String keyColumnName = keyColumns.get(0).getColumnName();
 			final String sql = "SELECT " + FIELDNAME_Version + " FROM " + getTableName() + " WHERE " + keyColumnName + "=?";
 			return Optional.of(sql);
 		}

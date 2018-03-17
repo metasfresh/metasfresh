@@ -1,20 +1,19 @@
-package de.metas.ui.web.handlingunits;
+package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.Collection;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.ui.web.view.ViewFactory;
-import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
+import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,13 +31,10 @@ import de.metas.ui.web.view.json.JSONViewDataType;
  * #L%
  */
 
-@ViewFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
-public class DefaultHUEditorViewFactory extends HUEditorViewFactoryTemplate
+public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements IProcessPrecondition
 {
-	@Autowired
-	protected DefaultHUEditorViewFactory(final Optional<List<HUEditorViewCustomizer>> viewCustomizers)
+	protected final void openHUsToReceive(final Collection<I_M_HU> hus)
 	{
-		super(viewCustomizers.orElse(ImmutableList.of()));
+		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus), HUsToReceiveViewFactory.WINDOW_ID_STRING);
 	}
-
 }

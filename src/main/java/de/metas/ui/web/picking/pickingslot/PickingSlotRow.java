@@ -24,6 +24,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
@@ -98,10 +99,12 @@ public final class PickingSlotRow implements IViewRow
 	})
 	private final JSONLookupValue huProduct;
 
-	@ViewColumn(captionKey = "M_HU_PI_Item_Product_ID", widgetType = DocumentFieldWidgetType.Text, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
-	})
+	@ViewColumn(captionKey = "M_HU_PI_Item_Product_ID", widgetType = DocumentFieldWidgetType.Text, //
+			restrictToMediaTypes = { MediaType.SCREEN }, //
+			layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
+			})
 	private final String huPackingInfo;
 
 	@ViewColumn(captionKey = "QtyCU", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
@@ -404,17 +407,16 @@ public final class PickingSlotRow implements IViewRow
 	{
 		return isPickedHURow() && getType().isTU();
 	}
-	
+
 	public boolean isCU()
 	{
 		return isPickedHURow() && getType().isCU();
 	}
-	
+
 	public boolean isCUOrStorage()
 	{
 		return isPickedHURow() && getType().isCUOrStorage();
 	}
-
 
 	/**
 	 * 

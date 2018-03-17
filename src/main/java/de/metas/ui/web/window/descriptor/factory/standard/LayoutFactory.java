@@ -33,6 +33,7 @@ import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -398,7 +399,8 @@ public class LayoutFactory
 				.setInternalName(uiElement.toString())
 				.setLayoutType(layoutType)
 				.setWidgetSize(WidgetSize.fromNullableADRefListValue(uiElement.getWidgetSize()))
-				.setAdvancedField(uiElement.isAdvancedField());
+				.setAdvancedField(uiElement.isAdvancedField())
+				.restrictToMediaTypes(MediaType.fromNullableCommaSeparatedString(uiElement.getMediaTypes()));
 
 		for (final DocumentFieldDescriptor.Builder field : extractDocumentFields(uiElement))
 		{
@@ -552,7 +554,7 @@ public class LayoutFactory
 				.setDescription(entityDescriptor.getDescription())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.setIdFieldName(entityDescriptor.getIdFieldNameOrNull())
+				.setIdFieldName(entityDescriptor.getSingleIdFieldNameOrNull())
 				.setDefaultOrderBys(entityDescriptor.getDefaultOrderBys());
 
 		//

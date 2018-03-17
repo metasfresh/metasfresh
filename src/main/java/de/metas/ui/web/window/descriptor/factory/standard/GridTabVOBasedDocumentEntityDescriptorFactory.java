@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -215,13 +216,23 @@ import lombok.NonNull;
 				.setIsSOTrx(isSOTrx) // legacy
 				//
 				.setPrintAD_Process_ID(gridTabVO.getPrint_Process_ID());
+		
+		final Predicate<GridFieldVO> isKeyColumn;
+		if(gridTabVO.getFields().stream().anyMatch(GridFieldVO::isKey))
+		{
+			isKeyColumn = GridFieldVO::isKey;
+		}
+		else
+		{
+			isKeyColumn = GridFieldVO::isParentLink;
+		}
 
 		//
 		// Fields descriptor
 		gridTabVO
 				.getFields()
 				.stream()
-				.forEach(gridFieldVO -> createAndAddDocumentField(entityDescriptorBuilder, gridFieldVO));
+				.forEach(gridFieldVO -> createAndAddDocumentField(entityDescriptorBuilder, gridFieldVO, isKeyColumn.test(gridFieldVO)));
 
 		//
 		// Labels field descriptors
@@ -243,7 +254,7 @@ import lombok.NonNull;
 		return documentEntity().getFieldBuilder(fieldName);
 	}
 
-	private final void createAndAddDocumentField(final DocumentEntityDescriptor.Builder entityDescriptor, final GridFieldVO gridFieldVO)
+	private final void createAndAddDocumentField(final DocumentEntityDescriptor.Builder entityDescriptor, final GridFieldVO gridFieldVO, final boolean keyColumn)
 	{
 		// From entry data-binding:
 		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptor.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
@@ -251,7 +262,6 @@ import lombok.NonNull;
 		// From GridFieldVO:
 		final String fieldName = gridFieldVO.getColumnName();
 		final String sqlColumnName = fieldName;
-		final boolean keyColumn = gridFieldVO.isKey();
 
 		//
 		final boolean isParentLinkColumn = sqlColumnName.equals(entityBindings.getSqlParentLinkColumnName());
@@ -269,7 +279,7 @@ import lombok.NonNull;
 		if (isParentLinkColumn)
 		{
 			widgetType = DocumentFieldWidgetType.Integer;
-			valueClass = Integer.class;
+			valueClass = widgetType.getValueClass();
 			alwaysUpdateable = false;
 
 			lookupDescriptorProvider = LookupDescriptorProvider.NULL;
@@ -308,7 +318,11 @@ import lombok.NonNull;
 					gridFieldVO.isMandatory(),
 					gridFieldVO.isUseDocSequence());
 
-			if (gridFieldVO.isReadOnly())
+			if(keyColumn)
+			{
+				readonlyLogic = ConstantLogicExpression.TRUE;
+			}
+			else if (gridFieldVO.isReadOnly())
 			{
 				readonlyLogic = ConstantLogicExpression.TRUE;
 			}
@@ -573,7 +587,7 @@ import lombok.NonNull;
 		final String labelsTableName = labelsTab.getAD_Table().getTableName();
 
 		final String linkColumnName;
-		if(labelsTab.getParent_Column_ID() > 0)
+		if (labelsTab.getParent_Column_ID() > 0)
 		{
 			linkColumnName = labelsTab.getParent_Column().getColumnName();
 		}

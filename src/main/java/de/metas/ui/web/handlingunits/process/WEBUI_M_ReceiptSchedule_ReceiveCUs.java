@@ -8,7 +8,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.context.annotation.Profile;
 
 import com.google.common.collect.ImmutableList;
@@ -27,9 +26,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.quantity.Quantity;
@@ -67,7 +64,7 @@ import de.metas.quantity.Quantity;
  *
  */
 @Profile(Profiles.PROFILE_Webui)
-public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends JavaProcess implements IProcessPrecondition
+public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProcess
 {
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
@@ -155,7 +152,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends JavaProcess implements I
 				.filter(hu -> hu != null)
 				.collect(GuavaCollectors.toImmutableList());
 
-		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus));
+		openHUsToReceive(hus);
 
 		return MSG_OK;
 	}

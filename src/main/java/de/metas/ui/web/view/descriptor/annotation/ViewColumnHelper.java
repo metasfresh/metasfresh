@@ -19,12 +19,14 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -106,17 +108,52 @@ public final class ViewColumnHelper
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Value
+	@Builder
+	public static class ClassViewColumnOverrides
+	{
+		public static final ClassViewColumnOverrides ofFieldName(final String fieldName)
+		{
+			return builder(fieldName).build();
+		}
+
+		public static final ClassViewColumnOverridesBuilder builder(final String fieldName)
+		{
+			return new ClassViewColumnOverridesBuilder().fieldName(fieldName);
+		}
+
+		@NonNull
+		private final String fieldName;
+		@Singular
+		private final ImmutableSet<MediaType> restrictToMediaTypes;
+	}
+
 	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(
 			@NonNull final Class<?> dataType,
-			@NonNull final String... fieldNames)
+			@NonNull final ClassViewColumnOverrides... columns)
 	{
-		Check.assumeNotEmpty(fieldNames, "fieldNames is not empty");
+		Check.assumeNotEmpty(columns, "columnOverrides is not empty");
 
 		final ClassViewDescriptor descriptor = getDescriptor(dataType);
-		return Stream.of(fieldNames)
-				.map(descriptor::getColumnByName)
-				.map(column -> createLayoutElement(column))
+		return Stream.of(columns)
+				.map(columnOverride -> {
+					final ClassViewColumnDescriptor columnDescriptor = descriptor.getColumnByName(columnOverride.getFieldName());
+					return createClassViewColumnDescriptorEffective(columnDescriptor, columnOverride);
+				})
+				.map(ViewColumnHelper::createLayoutElement)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static ClassViewColumnDescriptor createClassViewColumnDescriptorEffective(@NonNull final ClassViewColumnDescriptor column, @NonNull final ClassViewColumnOverrides overrides)
+	{
+		final ClassViewColumnDescriptor.ClassViewColumnDescriptorBuilder columnBuilder = column.toBuilder();
+
+		if (overrides.getRestrictToMediaTypes() != null)
+		{
+			columnBuilder.restrictToMediaTypes(overrides.getRestrictToMediaTypes());
+		}
+
+		return columnBuilder.build();
 	}
 
 	private static ClassViewDescriptor createClassViewDescriptor(final Class<?> dataType)
@@ -161,6 +198,7 @@ public final class ViewColumnHelper
 				.allowSorting(viewColumnAnn.sorting())
 				.fieldReference(FieldReference.of(field))
 				.layoutsByViewType(layoutsByViewType)
+				.restrictToMediaTypes(ImmutableSet.copyOf(viewColumnAnn.restrictToMediaTypes()))
 				.build();
 	}
 
@@ -172,6 +210,7 @@ public final class ViewColumnHelper
 				.setWidgetType(column.getWidgetType())
 				.setViewEditorRenderMode(column.getEditorRenderMode())
 				.setViewAllowSorting(column.isAllowSorting())
+				.restrictToMediaTypes(column.getRestrictToMediaTypes())
 				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName()));
 	}
 
@@ -249,11 +288,13 @@ public final class ViewColumnHelper
 	}
 
 	@Value
-	@Builder
+	@Builder(toBuilder = true)
 	private static final class ClassViewColumnDescriptor
 	{
 		@NonNull
 		private final String fieldName;
+		@NonNull
+		private final FieldReference fieldReference;
 
 		@NonNull
 		private final ITranslatableString caption;
@@ -263,9 +304,9 @@ public final class ViewColumnHelper
 		private final ViewEditorRenderMode editorRenderMode;
 		private final boolean allowSorting;
 		@NonNull
-		private final FieldReference fieldReference;
-		@NonNull
 		private final ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType;
+		@NonNull
+		private final ImmutableSet<MediaType> restrictToMediaTypes;
 
 		public boolean isDisplayed(final JSONViewDataType viewType)
 		{

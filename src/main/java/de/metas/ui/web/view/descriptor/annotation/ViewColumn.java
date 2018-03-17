@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 
@@ -58,6 +59,8 @@ public @interface ViewColumn
 	ViewColumnLayout[] layouts() default {};
 
 	ViewEditorRenderMode editor() default ViewEditorRenderMode.NEVER;
+
+	MediaType[] restrictToMediaTypes() default {};
 
 	@Target({ ElementType.FIELD })
 	@Retention(RetentionPolicy.RUNTIME)

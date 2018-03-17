@@ -312,7 +312,8 @@ public class SqlViewFactory implements IViewFactory
 
 		if (!request.getFilterOnlyIds().isEmpty())
 		{
-			viewBuilder.addStickyFilter(DocumentFilter.inArrayFilter(sqlViewBinding.getKeyColumnName(), sqlViewBinding.getKeyColumnName(), request.getFilterOnlyIds()));
+			final String keyColumnName = sqlViewBinding.getSqlViewKeyColumnNamesMap().getSingleKeyColumnName();
+			viewBuilder.addStickyFilter(DocumentFilter.inArrayFilter(keyColumnName, keyColumnName, request.getFilterOnlyIds()));
 		}
 
 		return viewBuilder.build();

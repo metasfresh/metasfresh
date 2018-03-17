@@ -380,12 +380,12 @@ import lombok.NonNull;
 		{
 			return Env.getContextAsDate(getCtx(), variableName);
 		}
-		else if (Integer.class.equals(variableName)
-				|| int.class.equals(variableName))
+		else if (Integer.class.equals(targetType)
+				|| int.class.equals(targetType))
 		{
 			return Env.getContextAsInt(getCtx(), variableName);
 		}
-		else if (Boolean.class.equals(variableName))
+		else if (Boolean.class.equals(targetType))
 		{
 			final String valueStr = Env.getContext(getCtx(), variableName);
 			return DisplayType.toBoolean(valueStr, null);

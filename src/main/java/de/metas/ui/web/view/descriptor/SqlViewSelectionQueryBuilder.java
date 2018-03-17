@@ -10,8 +10,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
@@ -100,19 +98,14 @@ public final class SqlViewSelectionQueryBuilder
 		return _viewBinding.getTableAlias();
 	}
 
-	public String getKeyColumnName()
-	{
-		return _viewBinding.getKeyColumnName();
-	}
-
 	public IStringExpression getSqlWhereClause()
 	{
 		return _viewBinding.getSqlWhereClause();
 	}
 
-	private boolean isKeyFieldName(final String fieldName)
+	private SqlViewKeyColumnNamesMap getSqlViewKeyColumnNamesMap()
 	{
-		return _viewBinding.isKeyFieldName(fieldName);
+		return _viewBinding.getSqlViewKeyColumnNamesMap();
 	}
 
 	private boolean isVirtualColumn(final String fieldName)
@@ -152,6 +145,11 @@ public final class SqlViewSelectionQueryBuilder
 	private Set<String> getGroupByFieldNames()
 	{
 		return _viewBinding.getGroupByFieldNames();
+	}
+
+	private String getGroupByFieldNamesCommaSeparated()
+	{
+		return getGroupByFieldNames().stream().collect(Collectors.joining(", "));
 	}
 
 	private boolean isGroupBy(final String fieldName)
@@ -216,16 +214,15 @@ public final class SqlViewSelectionQueryBuilder
 	{
 		final String sqlTableName = getTableName();
 		final String sqlTableAlias = getTableAlias();
-		final String keyColumnName = getKeyColumnName();
-
-		final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer();
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = getSqlViewKeyColumnNamesMap();
 
 		//
 		// INSERT INTO T_WEBUI_ViewSelection[Line] (...)
+		final CompositeStringExpression.Builder sqlBuilder = IStringExpression.composer();
 		sqlBuilder.append("INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
 				+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
 				+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line // SeqNo
-				+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
+				+ ", " + keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated() // keys: IntKey1... StringKey1...
 				+ ")");
 
 		//
@@ -235,20 +232,20 @@ public final class SqlViewSelectionQueryBuilder
 			IStringExpression sqlOrderBy = SqlDocumentOrderByBuilder.newInstance(this::getFieldOrderBy).buildSqlOrderBy(orderBys);
 			if (sqlOrderBy == null || sqlOrderBy.isNullExpression())
 			{
-				sqlOrderBy = ConstantStringExpression.of(keyColumnName);
+				sqlOrderBy = ConstantStringExpression.of(keyColumnNamesMap.getKeyColumnNamesCommaSeparated());
 			}
 
 			final IStringExpression sqlSeqNo = IStringExpression.composer()
 					.append("row_number() OVER (ORDER BY ").append(sqlOrderBy).append(")")
 					.build();
-			final IStringExpression sqlRecordId = ConstantStringExpression.of(keyColumnName);
+			// final IStringExpression sqlRecordId = ConstantStringExpression.of(keyColumnName);
 
 			sqlBuilder.append(
 					IStringExpression.composer()
 							.append("\n SELECT ")
 							.append("\n  ?") // UUID
 							.append("\n, ").append(sqlSeqNo) // Line/SeqNo
-							.append("\n, ").append(sqlRecordId) // Record_ID
+							.append("\n, ").append(keyColumnNamesMap.getKeyColumnNamesCommaSeparated()) // keys
 							//
 							.append("\n FROM ").append(sqlTableName).append(" ").append(sqlTableAlias)
 							.append("\n WHERE 1=1 ")
@@ -284,7 +281,7 @@ public final class SqlViewSelectionQueryBuilder
 
 		//
 		//
-		return new SqlAndParams(sql, sqlParams);
+		return SqlAndParams.of(sql, sqlParams);
 	}
 
 	private SqlAndParams buildSqlCreateSelectionLines_WithGrouping(
@@ -295,7 +292,8 @@ public final class SqlViewSelectionQueryBuilder
 	{
 		final String sqlTableName = getTableName();
 		final String sqlTableAlias = getTableAlias();
-		final String keyColumnName = getKeyColumnName();
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = getSqlViewKeyColumnNamesMap();
+		final String keyColumnName = keyColumnNamesMap.getSingleKeyColumnName();
 
 		final Set<String> groupByFieldNames = getGroupByFieldNames();
 		Check.assumeNotEmpty(groupByFieldNames, "groupByFieldNames is not empty"); // shall not happen
@@ -306,7 +304,7 @@ public final class SqlViewSelectionQueryBuilder
 		// INSERT INTO T_WEBUI_ViewSelectionLine (...)
 		sqlBuilder.append("INSERT INTO " + I_T_WEBUI_ViewSelectionLine.Table_Name + " ("
 				+ " " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID
-				+ ", " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID
+				+ ", " + keyColumnNamesMap.getSingleWebuiSelectionColumnName()
 				+ ", " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID
 				+ ")");
 
@@ -367,19 +365,20 @@ public final class SqlViewSelectionQueryBuilder
 		// Evaluate the final SQL query
 		final String sql = sqlBuilder.build().evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
 
-		return new SqlAndParams(sql, sqlParams);
+		return SqlAndParams.of(sql, sqlParams);
 	}
 
 	public SqlAndParams buildSqlCreateSelectionFromSelectionLines(final ViewEvaluationCtx viewEvalCtx, final ViewId newViewId, final List<DocumentQueryOrderBy> orderBys)
 	{
 		final String lineTableName = getTableName();
 		final String lineTableAlias = getTableAlias();
-		final String lineKeyColumnName = getKeyColumnName();
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = getSqlViewKeyColumnNamesMap();
+		final String lineKeyColumnName = keyColumnNamesMap.getSingleKeyColumnName();
 
 		final SqlOrderByBindings sqlOrderByBindings = fieldName -> {
-			if (isKeyFieldName(fieldName))
+			if (keyColumnNamesMap.isKeyPartFieldName(fieldName))
 			{
-				return ConstantStringExpression.of("sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID);
+				return ConstantStringExpression.of("sl." + keyColumnNamesMap.getWebuiSelectionColumnNameForKeyColumnName(fieldName));
 			}
 			else if (isGroupBy(fieldName))
 			{
@@ -398,14 +397,14 @@ public final class SqlViewSelectionQueryBuilder
 
 		final List<DocumentQueryOrderBy> orderBysEffective = orderBys.stream()
 				.flatMap(this::flatMapEffectiveFieldNames)
-				.filter(orderBy -> isKeyFieldName(orderBy.getFieldName()) || isGroupBy(orderBy.getFieldName()) || isAggregated(orderBy.getFieldName()))
+				.filter(orderBy -> keyColumnNamesMap.isKeyPartFieldName(orderBy.getFieldName()) || isGroupBy(orderBy.getFieldName()) || isAggregated(orderBy.getFieldName()))
 				.collect(ImmutableList.toImmutableList());
 
 		final IStringExpression sqlOrderByExpr = SqlDocumentOrderByBuilder.newInstance(sqlOrderByBindings).buildSqlOrderBy(orderBysEffective);
 		final String sqlOrderBy;
 		if (sqlOrderByExpr == null || sqlOrderByExpr.isNullExpression())
 		{
-			sqlOrderBy = "sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID;
+			sqlOrderBy = keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated("sl");
 		}
 		else
 		{
@@ -414,30 +413,30 @@ public final class SqlViewSelectionQueryBuilder
 
 		final String sqlFrom = "SELECT "
 				+ "\n sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID
-				+ "\n, sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID
+				+ "\n, " + keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated("sl")
 				+ "\n FROM " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl "
 				+ "\n INNER JOIN " + lineTableName + " " + lineTableAlias + " ON (" + lineTableAlias + "." + lineKeyColumnName + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")" // join lines
 				+ "\n WHERE " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + "=?"
 				+ "\n GROUP BY "
 				+ "\n sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID
-				+ "\n, sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID
-				+ "\n, " + getGroupByFieldNames().stream().collect(Collectors.joining(", "))
+				+ "\n, " + keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated("sl")
+				+ "\n, " + getGroupByFieldNamesCommaSeparated()
 				+ "\n ORDER BY " + sqlOrderBy;
 
 		final String sqlCreateSelectionFromLines = "INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + "("
 				+ "\n " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
-				+ "\n, " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
+				+ "\n, " + keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated()
 				+ "\n, " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line // SeqNo
 				+ "\n)"
 				+ "\n SELECT "
 				+ "\n   sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID
-				+ "\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID
+				+ "\n , " + keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated("sl")
 				+ "\n , row_number() OVER ()" // SeqNo
 				+ "\n FROM (" + sqlFrom + ") sl";
 
 		final List<Object> sqlCreateSelectionFromLinesParams = Arrays.asList(newViewId.getViewId());
 
-		return new SqlAndParams(sqlCreateSelectionFromLines, sqlCreateSelectionFromLinesParams);
+		return SqlAndParams.of(sqlCreateSelectionFromLines, sqlCreateSelectionFromLinesParams);
 	}
 
 	private final IStringExpression buildSqlWhereClause(final SqlParamsCollector sqlParams, @Nullable final List<DocumentFilter> filters, final SqlOptions sqlOpts)
@@ -474,7 +473,7 @@ public final class SqlViewSelectionQueryBuilder
 	 * @return
 	 *
 	 *         <pre>
-	 * INSERT INTO T_WEBUI_ViewSelection (UUID, Line, Record_ID)
+	 * INSERT INTO T_WEBUI_ViewSelection (UUID, Line, keys)
 	 * SELECT ... FROM T_WEBUI_ViewSelection sel INNER JOIN ourTable WHERE sel.UUID=[fromUUID]
 	 *         </pre>
 	 */
@@ -484,8 +483,7 @@ public final class SqlViewSelectionQueryBuilder
 			final List<DocumentQueryOrderBy> orderBys)
 	{
 		final String sqlTableAlias = getTableAlias();
-		final String keyColumnName = getKeyColumnName();
-		final String keyColumnNameFQ = sqlTableAlias + "." + keyColumnName;
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = getSqlViewKeyColumnNamesMap();
 
 		final List<DocumentQueryOrderBy> orderBysEffective = orderBys.stream()
 				.flatMap(this::flatMapEffectiveFieldNames)
@@ -506,9 +504,19 @@ public final class SqlViewSelectionQueryBuilder
 
 			if (isOrderBySomeVirtualColumns)
 			{
+				final StringBuilder sqlKeyColumnNames = new StringBuilder();
+				for (final String keyColumnName : keyColumnNamesMap.getKeyColumnNames())
+				{
+					if (sqlKeyColumnNames.length() > 0)
+					{
+						sqlKeyColumnNames.append("\n, ");
+					}
+					sqlKeyColumnNames.append(getColumnSql(keyColumnName)).append(" AS ").append(keyColumnName);
+				}
+
 				final StringBuilder sqlSourceTableBuilder = new StringBuilder();
-				sqlSourceTableBuilder.append("SELECT ")
-						.append("\n").append(getColumnSql(keyColumnName)).append(" AS ").append(getKeyColumnName());
+				sqlSourceTableBuilder.append("SELECT ").append(sqlKeyColumnNames);
+
 				orderBysEffective.forEach(orderBy -> {
 					final String fieldName = orderBy.getFieldName();
 					if (isVirtualColumn(fieldName))
@@ -533,39 +541,40 @@ public final class SqlViewSelectionQueryBuilder
 		}
 
 		//
-		// INSERT INTO T_WEBUI_ViewSelection (UUID, Line, Record_ID)
+		// INSERT INTO T_WEBUI_ViewSelection (UUID, Line, Keys)
 		final StringBuilder sqlBuilder = new StringBuilder()
 				.append("INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
 						+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
 						+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line
-						+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
+						+ ", " + keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated()
 						+ ")");
 
 		//
 		// SELECT ... FROM T_WEBUI_ViewSelection sel INNER JOIN ourTable WHERE sel.UUID=[fromUUID]
 		{
+			final String sqlJoinCondition = keyColumnNamesMap.getSqlJoinCondition(sqlTableAlias, "sel");
+
 			sqlBuilder
 					.append("\n SELECT ")
 					.append("\n  ?") // newUUID
 					.append("\n, ").append("row_number() OVER (ORDER BY ").append(sqlOrderBys).append(")") // Line
-					.append("\n, ").append(keyColumnNameFQ) // Record_ID
+					.append("\n, ").append(keyColumnNamesMap.getKeyColumnNamesCommaSeparated()) // keys
 					.append("\n FROM ").append(I_T_WEBUI_ViewSelection.Table_Name).append(" sel")
-					.append("\n LEFT OUTER JOIN ").append(sqlSourceTable).append(" ").append(sqlTableAlias).append(" ON (").append(keyColumnNameFQ).append("=").append("sel.")
-					.append(I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID).append(")")
+					.append("\n LEFT OUTER JOIN ").append(sqlSourceTable).append(" ").append(sqlTableAlias).append(" ON (").append(sqlJoinCondition).append(")")
 					.append("\n WHERE sel.").append(I_T_WEBUI_ViewSelection.COLUMNNAME_UUID).append("=?") // fromUUID
 			;
 		}
 
 		//
 		final String sql = sqlBuilder.toString();
-		return new SqlAndParams(sql, ImmutableList.of(newViewId.getViewId(), fromSelectionId));
+		return SqlAndParams.of(sql, newViewId.getViewId(), fromSelectionId);
 	}
 
 	/**
 	 * @return
 	 *
 	 *         <pre>
-	 * 	INSERT INTO T_WEBUI_ViewSelectionLine (UUID, Line, Record_ID, Line_ID) ...
+	 * 	INSERT INTO T_WEBUI_ViewSelectionLine (UUID, Line, keys, Line_ID) ...
 	 *	SELECT ... FROM T_WEBUI_ViewSelectionLine sl INNER JOIN ourTable on (Line_ID)  WHERE sel.UUID=[fromUUID]
 	 *         </pre>
 	 */
@@ -573,13 +582,14 @@ public final class SqlViewSelectionQueryBuilder
 			final ViewId newViewId,
 			final String fromSelectionId)
 	{
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = getSqlViewKeyColumnNamesMap();
+
 		//
-		// INSERT INTO T_WEBUI_ViewSelectionLine (UUID, Line, Record_ID, Line_ID)
+		// INSERT INTO T_WEBUI_ViewSelectionLine (UUID, keys, Line_ID)
 		final StringBuilder sqlBuilder = new StringBuilder()
 				.append("INSERT INTO " + I_T_WEBUI_ViewSelectionLine.Table_Name + " ("
 						+ " " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID
-						// + ", " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line // SeqNo
-						+ ", " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID
+						+ ", " + keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated()
 						+ ", " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID
 						+ ")");
 
@@ -589,7 +599,7 @@ public final class SqlViewSelectionQueryBuilder
 			sqlBuilder
 					.append("\n SELECT ")
 					.append("\n  ?") // newUUID
-					.append("\n, sl.").append(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID) // Record_ID
+					.append("\n, ").append(keyColumnNamesMap.getWebuiSelectionColumnNameForKeyColumnName("sl")) // keys
 					.append("\n, sl.").append(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID) // Line_ID
 					.append("\n FROM ").append(I_T_WEBUI_ViewSelectionLine.Table_Name).append(" sl ")
 					.append("\n WHERE sl.").append(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID).append("=?") // fromUUID
@@ -598,20 +608,21 @@ public final class SqlViewSelectionQueryBuilder
 
 		//
 		final String sql = sqlBuilder.toString();
-		return new SqlAndParams(sql, ImmutableList.of(newViewId.getViewId(), fromSelectionId));
+		return SqlAndParams.of(sql, newViewId.getViewId(), fromSelectionId);
 	}
 
 	public String buildSqlWhereClause(final String selectionId, final DocumentIdsSelection rowIds)
 	{
 		final String sqlTableName = getTableName();
-		final String sqlKeyColumnName = getKeyColumnName();
-		final String sqlKeyColumnNameFK = sqlTableName + "." + sqlKeyColumnName;
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = getSqlViewKeyColumnNamesMap();
 		final SqlViewRowIdsConverter rowIdsConverter = getRowIdsConverter();
-		return buildSqlWhereClause(sqlKeyColumnNameFK, selectionId, rowIds, rowIdsConverter);
+		return buildSqlWhereClause(sqlTableName, keyColumnNamesMap, selectionId, rowIds, rowIdsConverter);
 	}
 
-	public static String buildSqlWhereClause(
-			@NonNull final String sqlKeyColumnNameFK,
+	@Builder(builderMethodName = "prepareSqlWhereClause", builderClassName = "SqlWhereClauseBuilder")
+	private static String buildSqlWhereClause(
+			@NonNull final String sqlTableAlias,
+			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
 			@NonNull final String selectionId,
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final SqlViewRowIdsConverter rowIdsConverter)
@@ -627,28 +638,37 @@ public final class SqlViewSelectionQueryBuilder
 		sqlWhereClause.append("exists (select 1 from " + I_T_WEBUI_ViewSelection.Table_Name + " sel "
 				+ " where "
 				+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(selectionId)
-				+ " and sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + "=" + sqlKeyColumnNameFK
+				+ " and " + keyColumnNamesMap.getSqlJoinCondition(sqlTableAlias, "sel")
 				+ ")");
 
 		if (!rowIds.isAll())
 		{
-			final Set<Integer> recordIds = rowIdsConverter.convertToRecordIds(rowIds);
-			sqlWhereClause.append(" AND ").append(sqlKeyColumnNameFK).append(" IN ").append(DB.buildSqlList(recordIds));
+			sqlWhereClause.append(" AND (")
+					.append(keyColumnNamesMap.prepareSqlFilterByRowIds()
+							.sqlColumnPrefix(sqlTableAlias + ".")
+							.useKeyColumnName(true)
+							.rowIds(rowIds)
+							.rowIdsConverter(rowIdsConverter)
+							.embedSqlParams(true)
+							.build()
+							.getSql())
+					.append(")");
 		}
 
 		return sqlWhereClause.toString();
 	}
 
-	public String buildSqlDeleteRowIdsFromSelection(@NonNull final String selectionId, @NonNull final DocumentIdsSelection rowIds)
+	public SqlAndParams buildSqlDeleteRowIdsFromSelection(@NonNull final String selectionId, @NonNull final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isEmpty())
 		{
 			return null;
 		}
 
+		final List<Object> sqlParams = new ArrayList<>();
 		final StringBuilder sql = new StringBuilder();
-		sql.append("DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
-				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(selectionId));
+		sql.append("DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name + " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?");
+		sqlParams.add(selectionId);
 
 		if (rowIds.isAll())
 		{
@@ -656,57 +676,58 @@ public final class SqlViewSelectionQueryBuilder
 		}
 		else
 		{
-			final Set<Integer> recordIds = rowIds.toIntSet();
-			Check.assumeNotEmpty(recordIds, "recordIds is not empty"); // shall not happen
-			sql.append(" AND " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " IN " + DB.buildSqlList(recordIds));
+			final SqlAndParams sqlFilterByRowIds = getSqlViewKeyColumnNamesMap()
+					.prepareSqlFilterByRowIds()
+					.rowIds(rowIds)
+					.build();
+
+			sql.append("\n AND (").append(sqlFilterByRowIds.getSql()).append(")");
+			sqlParams.addAll(sqlFilterByRowIds.getSqlParams());
 		}
 
-		return sql.toString();
+		return SqlAndParams.of(sql.toString(), sqlParams);
 	}
 
-	public String buildSqlAddRowIdsFromSelection(final List<Object> sqlParams, final String selectionId, final DocumentId rowId)
+	public SqlAndParams buildSqlAddRowIdsFromSelection(final String selectionId, final DocumentId rowId)
 	{
-		final int rowIdInt = rowId.toInt();
-		final String sql = "INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
-				+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
-				+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line
-				+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID
-				+ ")"
-				+ " SELECT "
-				+ " ? as UUID " // UUID
-				+ ", (select coalesce(max(Line), 0) + 1 from T_WEBUI_ViewSelection z where z.UUID=?) as Line" // Line
-				+ ", ? as Record_ID"  // Record_ID
-				+ " WHERE "
-				+ " NOT EXISTS(select 1 from " + I_T_WEBUI_ViewSelection.Table_Name + " z where z.UUID=? and z.Record_ID=?)";
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = getSqlViewKeyColumnNamesMap();
+
 		// TODO: we should also validate if the rowId is allowed to be part of this selection (e.g. enforce entity binding's SQL where clause)
 
-		sqlParams.add(selectionId); // UUID
-		sqlParams.add(selectionId); // for Line
-		sqlParams.add(rowIdInt); // Record_ID
-		sqlParams.add(selectionId); // for NOT EXISTS
-		sqlParams.add(rowIdInt); // for NOT EXISTS
-
-		return sql;
+		return SqlAndParams.of("INSERT INTO " + I_T_WEBUI_ViewSelection.Table_Name + " ("
+				+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
+				+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_Line
+				+ ", " + keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated()
+				+ ")"
+				+ " SELECT ")
+				.append(" ? as UUID ", selectionId) // UUID
+				.append(", (select coalesce(max(Line), 0) + 1 from T_WEBUI_ViewSelection z where z.UUID=?) as Line", selectionId) // Line
+				.append(", ").append(keyColumnNamesMap.getSqlValuesCommaSeparated(rowId)) // keys
+				.append(" WHERE ")
+				.append(" NOT EXISTS(select 1 from " + I_T_WEBUI_ViewSelection.Table_Name + " z where z.UUID=?", selectionId)
+				.append(" and ").append(keyColumnNamesMap.prepareSqlFilterByRowIds()
+						.sqlColumnPrefix("z.")
+						.rowIds(DocumentIdsSelection.fromNullable(rowId))
+						.build())
+				.append(")");
 	}
 
-	public String buildSqlRetrieveSize(final List<Object> sqlParams, final String selectionId)
+	public SqlAndParams buildSqlRetrieveSize(final String selectionId)
 	{
 		Check.assumeNotEmpty(selectionId, "selectionId is not empty");
-		sqlParams.add(selectionId);
-		return "SELECT COUNT(1) FROM " + I_T_WEBUI_ViewSelection.Table_Name + " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?";
+
+		return SqlAndParams.of("SELECT COUNT(1) FROM " + I_T_WEBUI_ViewSelection.Table_Name + " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?", selectionId);
 	}
 
-	public String buildSqlCount(final List<Object> sqlParams, final String selectionId, final DocumentIdsSelection rowIds)
+	public SqlAndParams buildSqlCount(final String selectionId, final DocumentIdsSelection rowIds)
 	{
 		Check.assumeNotEmpty(selectionId, "selectionId is not empty");
 
-		sqlParams.add(selectionId);
-		final StringBuilder sql = new StringBuilder();
-		sql.append("SELECT COUNT(1) FROM " + I_T_WEBUI_ViewSelection.Table_Name + " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?");
+		final SqlAndParams sql = SqlAndParams.of("SELECT COUNT(1) FROM " + I_T_WEBUI_ViewSelection.Table_Name + " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?", selectionId);
 
 		if (rowIds.isAll())
 		{
-			// nothing
+			return sql;
 		}
 		else if (rowIds.isEmpty())
 		{
@@ -714,26 +735,13 @@ public final class SqlViewSelectionQueryBuilder
 		}
 		else
 		{
-			final Set<Integer> recordIds = rowIds.toIntSet();
-			sql.append(" AND ").append(DB.buildSqlList(I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID, recordIds, sqlParams));
+			return sql.append(" AND (")
+					.append(getSqlViewKeyColumnNamesMap()
+							.prepareSqlFilterByRowIds()
+							.rowIds(rowIds)
+							.build())
+					.append(")");
 		}
-
-		return sql.toString();
-	}
-
-	public <T> IQueryFilter<T> buildInSelectionQueryFilter(final String selectionId)
-	{
-		final String tableName = getTableName();
-		final String keyColumnName = getKeyColumnName();
-
-		final String sql = "exists (select 1 from " + I_T_WEBUI_ViewSelection.Table_Name
-				+ " where "
-				+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?"
-				+ " and " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + "=" + tableName + "." + keyColumnName
-				+ ")";
-		final List<Object> sqlParams = ImmutableList.of(selectionId);
-
-		return TypedSqlQueryFilter.of(sql, sqlParams);
 	}
 
 	public String buildSqlDeleteSelection(@NonNull final String selectionId)
@@ -748,14 +756,18 @@ public final class SqlViewSelectionQueryBuilder
 				+ " WHERE " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + "=" + DB.TO_STRING(selectionId);
 	}
 
-	public static SqlAndParams buildSqlSelectRecordIdsForLineIds(@NonNull final String selectionId, final Collection<Integer> lineIds)
+	public static SqlAndParams buildSqlSelectRowIdsForLineIds(
+			@NonNull SqlViewKeyColumnNamesMap keyColumnNamesMap,
+			@NonNull final String selectionId,
+			final Collection<Integer> lineIds)
 	{
 		Check.assumeNotEmpty(lineIds, "lineIds is not empty");
 
 		final List<Object> sqlParams = new ArrayList<>();
 		sqlParams.add(selectionId);
 
-		final String sql = "SELECT " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID
+		final String sql = "SELECT "
+				+ keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated()
 				+ " FROM " + I_T_WEBUI_ViewSelectionLine.Table_Name
 				+ " WHERE " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + "=?"
 				+ " AND " + DB.buildSqlList(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID, lineIds, sqlParams);

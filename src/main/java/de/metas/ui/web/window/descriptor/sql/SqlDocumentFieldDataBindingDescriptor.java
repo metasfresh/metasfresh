@@ -105,9 +105,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		mandatory = builder.mandatory;
 		keyColumn = builder.keyColumn;
 
-		widgetType = builder.widgetType;
-		valueClass = builder.valueClass;
-		Check.assumeNotNull(valueClass, "Parameter valueClass is not null");
+		widgetType = builder.getWidgetType();
+		valueClass = builder.getValueClass();
 
 		documentFieldValueLoader = builder.getDocumentFieldValueLoader();
 		Check.assumeNotNull(documentFieldValueLoader, "Parameter documentFieldValueLoader is not null");
@@ -270,13 +269,13 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		private String _sqlTableAlias;
 		private String _sqlColumnName;
 		private String _sqlColumnSql;
-		private Class<?> sqlValueClass;
+		private Class<?> _sqlValueClass;
 
 		private Boolean _virtualColumn;
 		private Boolean mandatory;
 
-		private Class<?> valueClass;
-		private DocumentFieldWidgetType widgetType;
+		private Class<?> _valueClass;
+		private DocumentFieldWidgetType _widgetType;
 		private LookupDescriptor _lookupDescriptor;
 		private boolean keyColumn = false;
 		private boolean encrypted = false;
@@ -298,8 +297,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		public SqlDocumentFieldDataBindingDescriptor build()
 		{
-			Check.assumeNotNull(valueClass, "Parameter valueClass is not null");
-
 			//
 			// Display column
 			final SqlLookupDescriptor sqlLookupDescriptor = _lookupDescriptor == null ? null : _lookupDescriptor.castOrNull(SqlLookupDescriptor.class);
@@ -372,13 +369,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			if (_documentFieldValueLoader == null)
 			{
 				_documentFieldValueLoader = createDocumentFieldValueLoader(
-						getColumnName() //
-						, isUsingDisplayColumn() ? getDisplayColumnName() : null // displayColumnName
-						, valueClass //
-						, widgetType //
-						, encrypted //
-						, getNumericKey() //
-				);
+						getColumnName(),
+						isUsingDisplayColumn() ? getDisplayColumnName() : null, // displayColumnName
+						getValueClass(),
+						getWidgetType(),
+						encrypted,
+						getNumericKey());
 			}
 			return _documentFieldValueLoader;
 		}
@@ -525,26 +521,45 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		public Builder setValueClass(final Class<?> valueClass)
 		{
-			this.valueClass = valueClass;
+			this._valueClass = valueClass;
 			return this;
+		}
+
+		private Class<?> getValueClass()
+		{
+			if (_valueClass != null)
+			{
+				return _valueClass;
+			}
+
+			return getWidgetType().getValueClass();
 		}
 
 		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
 		{
-			this.widgetType = widgetType;
+			this._widgetType = widgetType;
 			return this;
+		}
+
+		private DocumentFieldWidgetType getWidgetType()
+		{
+			Check.assumeNotNull(_widgetType, "Parameter widgetType is not null");
+			return _widgetType;
 		}
 
 		public Builder setSqlValueClass(final Class<?> sqlValueClass)
 		{
-			this.sqlValueClass = sqlValueClass;
+			this._sqlValueClass = sqlValueClass;
 			return this;
 		}
 
 		private Class<?> getSqlValueClass()
 		{
-			Check.assumeNotNull(sqlValueClass, "Parameter sqlValueClass is not null");
-			return sqlValueClass;
+			if(_sqlValueClass != null)
+			{
+				return _sqlValueClass;
+			}
+			return getValueClass();
 		}
 
 		public Builder setLookupDescriptor(final LookupDescriptor lookupDescriptor)

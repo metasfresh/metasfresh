@@ -3,16 +3,12 @@ package de.metas.ui.web.view.descriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.util.Check;
-import org.compiere.util.CtxName;
-import org.compiere.util.CtxNames;
-import org.compiere.util.DB;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -55,42 +51,45 @@ import lombok.NonNull;
  */
 public class SqlViewSelectData
 {
-	private static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
-	public static final String COLUMNNAME_Paging_SeqNo_OneBased = "_sel_SeqNo";
-	private static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
-	public static final String COLUMNNAME_Paging_Parent_ID = "_sel_Parent_ID";
-	public static final String COLUMNNAME_IsRecordMissing = "_sel_IsRecordMissing";
+	private static final String COLUMNNAME_Paging_Prefix = "_sel_";
+	private static final String COLUMNNAME_Paging_UUID = COLUMNNAME_Paging_Prefix + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID;
+	public static final String COLUMNNAME_Paging_SeqNo_OneBased = COLUMNNAME_Paging_Prefix + I_T_WEBUI_ViewSelection.COLUMNNAME_Line;
 
-	private static final CtxName PLACEHOLDER_Paging_Record_IDs = CtxNames.parse("_sel_Record_IDs");
+	public static final String COLUMNNAME_Paging_Parent_Prefix = COLUMNNAME_Paging_Prefix + "parent_";
 
-	private final IStringExpression sqlSelectByPage;
-	private final IStringExpression sqlSelectRowIdsByPage;
-	private final IStringExpression sqlSelectById;
-	private final IStringExpression sqlSelectLinesByRowIds;
+	public static final String COLUMNNAME_IsRecordMissing = COLUMNNAME_Paging_Prefix + "IsRecordMissing";
+
+	private final SqlViewKeyColumnNamesMap keyColumnNamesMap;
+	private final IStringExpression _sqlSelectByPage;
+	private final IStringExpression _sqlSelectRowIdsByPage;
+	private final IStringExpression _sqlSelectById;
+	private final IStringExpression _sqlSelectLines;
 
 	@Builder
 	private SqlViewSelectData(
 			final String sqlTableName,
 			final String sqlTableAlias,
-			final SqlViewRowFieldBinding keyField,
+			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
 			final Collection<String> displayFieldNames,
 			final Collection<SqlViewRowFieldBinding> allFields,
 			final SqlViewGroupingBinding groupingBinding)
 	{
-		final String sqlKeyColumnName = keyField.getColumnName();
-		final IStringExpression sqlSelect = buildSqlSelect(sqlTableName, sqlTableAlias, sqlKeyColumnName, displayFieldNames, allFields, groupingBinding);
+		this.keyColumnNamesMap = keyColumnNamesMap;
+		final IStringExpression sqlSelect = buildSqlSelect(sqlTableName, sqlTableAlias, keyColumnNamesMap, displayFieldNames, allFields, groupingBinding);
 
-		sqlSelectByPage = sqlSelect.toComposer()
+		_sqlSelectByPage = sqlSelect.toComposer()
 				.append("\n WHERE ")
 				// NOTE: already filtered by UUID
 				.append("\n " + COLUMNNAME_Paging_SeqNo_OneBased + " BETWEEN ? AND ?")
 				.append("\n ORDER BY " + COLUMNNAME_Paging_SeqNo_OneBased)
 				.build();
 
-		sqlSelectRowIdsByPage = buildSqlSelect(sqlTableName, sqlTableAlias,
-				sqlKeyColumnName,
+		_sqlSelectRowIdsByPage = buildSqlSelect(
+				sqlTableName,
+				sqlTableAlias,
+				keyColumnNamesMap,
 				ImmutableList.of(), // displayFieldNames
-				ImmutableList.of(keyField), // allFields
+				extractKeyFields(allFields, keyColumnNamesMap), // allFields
 				groupingBinding)
 						//
 						.toComposer()
@@ -100,19 +99,53 @@ public class SqlViewSelectData
 						.append("\n ORDER BY " + COLUMNNAME_Paging_SeqNo_OneBased)
 						.build();
 
-		sqlSelectById = sqlSelect.toComposer()
+		_sqlSelectById = sqlSelect.toComposer()
 				.append("\n WHERE ")
 				// NOTE: already filtered by UUID
-				.append("\n " + COLUMNNAME_Paging_Record_ID + "=?")
+				.append("\n")
+				.append(keyColumnNamesMap.getWebuiSelectionColumnNames()
+						.stream()
+						.map(keyColumnName -> COLUMNNAME_Paging_Prefix + keyColumnName + "=?")
+						.collect(Collectors.joining("\nAND ")))
 				.build();
 
-		sqlSelectLinesByRowIds = buildSqlSelectLines(sqlTableName, sqlTableAlias, keyField.getColumnName(), displayFieldNames, allFields)
-				.toComposer()
-				.append("\n WHERE ")
-				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
-				.append("\n " + SqlViewSelectData.COLUMNNAME_Paging_Record_ID + " IN ").append(PLACEHOLDER_Paging_Record_IDs)
-				.build();
+		if (groupingBinding != null)
+		{
+			this._sqlSelectLines = buildSqlSelectLines(sqlTableName, sqlTableAlias, keyColumnNamesMap, displayFieldNames, allFields);
+		}
+		else
+		{
+			this._sqlSelectLines = null;
+		}
+	}
 
+	private IStringExpression getSqlSelectByPage()
+	{
+		return _sqlSelectByPage;
+	}
+
+	private IStringExpression getSqlSelectRowIdsByPage()
+	{
+		return _sqlSelectRowIdsByPage;
+	}
+
+	private IStringExpression getSqlSelectById()
+	{
+		return _sqlSelectById;
+	}
+
+	private IStringExpression getSqlSelectLines()
+	{
+		Check.assumeNotNull(_sqlSelectLines, "sqlSelectLines is not null (grouping not supported)");
+		return _sqlSelectLines;
+	}
+
+	private static List<SqlViewRowFieldBinding> extractKeyFields(final Collection<SqlViewRowFieldBinding> allFields, final SqlViewKeyColumnNamesMap keyColumnNamesMap)
+	{
+		final List<String> keyColumnNames = keyColumnNamesMap.getKeyColumnNames();
+		return allFields.stream()
+				.filter(field -> keyColumnNames.contains(field.getColumnName()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -121,25 +154,25 @@ public class SqlViewSelectData
 	private static IStringExpression buildSqlSelect(
 			final String sqlTableName,
 			final String sqlTableAlias,
-			final String sqlKeyColumnName,
+			final SqlViewKeyColumnNamesMap keyColumnNamesMap,
 			final Collection<String> displayFieldNames,
 			final Collection<SqlViewRowFieldBinding> allFields,
 			final SqlViewGroupingBinding groupingBinding)
 	{
 		if (groupingBinding == null)
 		{
-			return buildSqlSelect_WithoutGrouping(sqlTableName, sqlTableAlias, sqlKeyColumnName, displayFieldNames, allFields);
+			return buildSqlSelect_WithoutGrouping(sqlTableName, sqlTableAlias, keyColumnNamesMap, displayFieldNames, allFields);
 		}
 		else
 		{
-			return buildSqlSelect_WithGrouping(sqlTableName, sqlTableAlias, sqlKeyColumnName, displayFieldNames, allFields, groupingBinding);
+			return buildSqlSelect_WithGrouping(sqlTableName, sqlTableAlias, keyColumnNamesMap, displayFieldNames, allFields, groupingBinding);
 		}
 	}
 
 	private static IStringExpression buildSqlSelect_WithoutGrouping(
 			final String sqlTableName,
 			final String sqlTableAlias,
-			final String sqlKeyColumnName,
+			final SqlViewKeyColumnNamesMap keyColumnNamesMap,
 			final Collection<String> displayFieldNames,
 			final Collection<SqlViewRowFieldBinding> allFields)
 	{
@@ -170,7 +203,7 @@ public class SqlViewSelectData
 			sql.append("\n, ").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
 		}
 
-		sql.append("\n, null AS " + COLUMNNAME_Paging_Parent_ID);
+		sql.append("\n, ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated(keyColumnName -> "null AS " + COLUMNNAME_Paging_Parent_Prefix + keyColumnName));
 		sql.append("\n ," + COLUMNNAME_Paging_SeqNo_OneBased);
 
 		sql.append("\n FROM (")
@@ -178,10 +211,10 @@ public class SqlViewSelectData
 				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo_OneBased)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
-				.append("\n , (case when " + sqlTableName + "." + sqlKeyColumnName + " is null then 'Y' else 'N' end) AS " + COLUMNNAME_IsRecordMissing)
+				.append("\n , ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated(columnName -> "sel." + columnName + " AS " + COLUMNNAME_Paging_Prefix + columnName))
+				.append("\n , " + keyColumnNamesMap.getSqlIsNullExpression(sqlTableName) + " AS " + COLUMNNAME_IsRecordMissing)
 				.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
-				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + ")")
+				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + keyColumnNamesMap.getSqlJoinCondition(sqlTableName, "sel") + ")")
 				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
 				.append("\n   WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
 				.append("\n ) " + sqlTableAlias); // FROM
@@ -192,11 +225,13 @@ public class SqlViewSelectData
 	private static IStringExpression buildSqlSelect_WithGrouping(
 			final String sqlTableName,
 			final String sqlTableAlias,
-			final String sqlKeyColumnName,
+			final SqlViewKeyColumnNamesMap keyColumnNamesMap,
 			final Collection<String> displayFieldNames,
 			final Collection<SqlViewRowFieldBinding> allFields,
 			final SqlViewGroupingBinding groupingBinding)
 	{
+		final String sqlKeyColumnName = keyColumnNamesMap.getSingleKeyColumnName();
+
 		final List<String> sqlSelectValuesList = new ArrayList<>();
 		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
 		final List<String> sqlGroupBys = new ArrayList<>();
@@ -205,9 +240,9 @@ public class SqlViewSelectData
 			final boolean usingDisplayColumn = field.isUsingDisplayColumn() && displayFieldNames.contains(fieldName);
 
 			//
-			if (field.isKeyColumn())
+			if (keyColumnNamesMap.isKeyPartFieldName(field.getColumnName()))
 			{
-				sqlSelectValuesList.add("sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + field.getColumnName());
+				sqlSelectValuesList.add("sel." + keyColumnNamesMap.getWebuiSelectionColumnNameForKeyColumnName(field.getColumnName()) + " AS " + field.getColumnName());
 			}
 			else if (groupingBinding.isGroupBy(fieldName))
 			{
@@ -252,7 +287,7 @@ public class SqlViewSelectData
 			sql.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
 		}
 
-		sql.append("\n, null AS " + COLUMNNAME_Paging_Parent_ID);
+		sql.append("\n, ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated(columnName -> "null AS " + COLUMNNAME_Paging_Parent_Prefix + columnName));
 
 		sql.append("\n FROM (")
 				.append("\n   SELECT ")
@@ -261,11 +296,19 @@ public class SqlViewSelectData
 				//
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo_OneBased)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
-				.append("\n , (case when " + sqlTableName + "." + sqlKeyColumnName + " is null then 'Y' else 'N' end) AS " + COLUMNNAME_IsRecordMissing)
+				.append("\n , ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated(columnName -> "sel." + columnName + " AS " + COLUMNNAME_Paging_Prefix + columnName))
+				.append("\n , " + keyColumnNamesMap.getSqlIsNullExpression(sqlTableName) + " AS " + COLUMNNAME_IsRecordMissing)
 				//
 				.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
-				.append("\n   INNER JOIN " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl on (sl.UUID=sel.UUID and sl.Record_ID=sel.Record_ID)")
+				.append("\n   INNER JOIN " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl on ("
+						+ " sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + "=sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
+						+ " and " + keyColumnNamesMap.prepareSqlJoinCondition()
+								.tableAlias1("sl")
+								.useKeyColumnNames1(false)
+								.tableAlias2("sel")
+								.useKeyColumnNames2(false)
+								.build()
+						+ ")")
 				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")")
 				//
 				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
@@ -275,7 +318,7 @@ public class SqlViewSelectData
 				.append("\n   sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line)
 				.append("\n , " + sqlTableName + "." + sqlKeyColumnName)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID)
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID)
+				.append("\n , ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated("sel"))
 				.append("\n , " + Joiner.on("\n , ").join(sqlGroupBys))
 				.append("\n ) " + sqlTableAlias); // FROM
 
@@ -285,7 +328,7 @@ public class SqlViewSelectData
 	private static IStringExpression buildSqlSelectLines(
 			final String sqlTableName,
 			final String sqlTableAlias,
-			final String sqlKeyColumnName,
+			final SqlViewKeyColumnNamesMap keyColumnNamesMap,
 			final Collection<String> displayFieldNames,
 			final Collection<SqlViewRowFieldBinding> allFields)
 	{
@@ -316,16 +359,16 @@ public class SqlViewSelectData
 			sql.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
 		}
 
-		sql.append("\n, " + SqlViewSelectData.COLUMNNAME_Paging_Record_ID + " AS " + SqlViewSelectData.COLUMNNAME_Paging_Parent_ID);
+		sql.append("\n, ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated(selColumnName -> COLUMNNAME_Paging_Prefix + selColumnName + " AS " + COLUMNNAME_Paging_Parent_Prefix + selColumnName));
 
 		sql.append("\n FROM (")
 				.append("\n   SELECT ")
 				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
 				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + " AS " + SqlViewSelectData.COLUMNNAME_Paging_UUID)
-				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID + " AS " + SqlViewSelectData.COLUMNNAME_Paging_Record_ID)
-				.append("\n , (case when " + sqlTableName + "." + sqlKeyColumnName + " is null then 'Y' else 'N' end) AS " + COLUMNNAME_IsRecordMissing)
+				.append("\n , ").append(keyColumnNamesMap.getKeyColumnNamePairsCommaSeparated((keyColumnName, webuiSelectionColumnName) -> sqlTableName + "." + keyColumnName + " AS " + COLUMNNAME_Paging_Prefix + webuiSelectionColumnName))
+				.append("\n , ").append(keyColumnNamesMap.getSqlIsNullExpression(sqlTableName)).append(" AS ").append(COLUMNNAME_IsRecordMissing)
 				.append("\n   FROM " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl")
-				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")")
+				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + keyColumnNamesMap.getSingleKeyColumnName() + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")")
 				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
 				.append("\n   WHERE sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + "=?")
 				.append("\n ) " + sqlTableAlias); // FROM
@@ -347,6 +390,7 @@ public class SqlViewSelectData
 		final int firstSeqNo = firstRowZeroBased + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
 		final int lastSeqNo = firstRowZeroBased + pageLength;
 
+		final IStringExpression sqlSelectByPage = getSqlSelectByPage();
 		final String sql = sqlSelectByPage.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
 		return SqlAndParams.of(sql, viewSelectionId, firstSeqNo, lastSeqNo);
 	}
@@ -365,6 +409,7 @@ public class SqlViewSelectData
 		final int firstSeqNo = firstRowZeroBased + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
 		final int lastSeqNo = firstRowZeroBased + pageLength;
 
+		final IStringExpression sqlSelectRowIdsByPage = getSqlSelectRowIdsByPage();
 		final String sql = sqlSelectRowIdsByPage.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
 		return SqlAndParams.of(sql, viewSelectionId, firstSeqNo, lastSeqNo);
 	}
@@ -376,6 +421,7 @@ public class SqlViewSelectData
 			@NonNull final DocumentId rowId)
 	{
 		final String viewSelectionId = viewId.getViewId();
+		final IStringExpression sqlSelectById = getSqlSelectById();
 		final String sql = sqlSelectById.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
 		return SqlAndParams.of(sql, viewSelectionId, rowId.toInt());
 	}
@@ -386,14 +432,23 @@ public class SqlViewSelectData
 			@NonNull final ViewId viewId,
 			@NonNull final DocumentIdsSelection rowIds)
 	{
-		final String viewSelectionId = viewId.getViewId();
+		final List<Object> sqlParams = new ArrayList<>();
+		sqlParams.add(viewId.getViewId());
 
-		// TODO: apply the ORDER BY from orderedSelection
-		final String sqlRecordIds = DB.buildSqlList(rowIds.toIntSet());
-		final Evaluatee viewEvalCtxEffective = Evaluatees.ofSingleton(PLACEHOLDER_Paging_Record_IDs.getName(), sqlRecordIds)
-				.andComposeWith(viewEvalCtx.toEvaluatee());
+		final SqlAndParams sqlFilterByRowIds = keyColumnNamesMap.prepareSqlFilterByRowIds()
+				.sqlColumnPrefix(COLUMNNAME_Paging_Prefix)
+				.rowIds(rowIds)
+				.build();
+		final String sql = new StringBuilder()
+				.append(getSqlSelectLines().evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail))
+				// NOTE: already filtered by UUID
+				.append("\n WHERE ")
+				.append("\n").append(sqlFilterByRowIds.getSql())
+				// TODO: apply the ORDER BY from orderedSelection
+				.toString();
+		sqlParams.addAll(sqlFilterByRowIds.getSqlParams());
 
-		final String sql = sqlSelectLinesByRowIds.evaluate(viewEvalCtxEffective, OnVariableNotFound.Fail);
-		return SqlAndParams.of(sql, viewSelectionId);
+		return SqlAndParams.of(sql, sqlParams);
 	}
+
 }

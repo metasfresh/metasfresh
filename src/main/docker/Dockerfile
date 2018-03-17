@@ -10,7 +10,7 @@ RUN apt update \
     && apt -y full-upgrade \
     && apt -y install netcat \
     && apt -y install openjdk-8-jdk-headless \
-    && apt install dos2unix \
+    && apt -y install dos2unix \
     && apt -y autoremove \
     && apt -y autoclean
 
