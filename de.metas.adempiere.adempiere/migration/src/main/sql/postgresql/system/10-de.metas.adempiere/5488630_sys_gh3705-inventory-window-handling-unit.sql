@@ -98,3 +98,18 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-17 10:36:55'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-17 10:37:01','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=563119 AND AD_Language='en_US'
 ;
 
+-- 2018-03-17T10:43:45.277
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Inventurzeilen vorbereiten',Updated=TO_TIMESTAMP('2018-03-17 10:43:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540935
+;
+
+-- 2018-03-17T10:44:03.989
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-17 10:44:03','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Prepare Inventorylines' WHERE AD_Process_ID=540935 AND AD_Language='en_US'
+;
+
+-- 2018-03-17T10:44:18.044
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET IsActive='N',Updated=TO_TIMESTAMP('2018-03-17 10:44:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=105 AND AD_Table_ID=321
+;
+
