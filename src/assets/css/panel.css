@@ -7,11 +7,22 @@
     /*outline:none;*/
 }
 
-.panel-modal {
-    max-width: 90%;
-    height: 90vh;
-    overflow: hidden;
+.tablet, .mobile {
+    .panel-modal {
+        max-width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
 }
+
+/*@media only screen and (min-width: $breakpoint-md){*/
+.desktop {
+    .panel-modal {
+        max-width: 90%;
+        height: 90vh;
+    }
+}
+/*}*/
 
 .panel-modal-primary {
     background-color: #F8FAFB;
@@ -33,8 +44,26 @@
     margin-top: 2.25rem;
 }
 
+.tablet, .mobile
 .panel-spaced {
-    padding: 1rem 1.25rem 1.25rem 1.25rem;
+    padding: .25rem .75rem .5rem .75rem;
+}
+
+/*@media only screen and (min-width: $breakpoint-md){*/
+.desktop {
+    .panel-spaced {
+        padding: 1rem 1.25rem 1.25rem 1.25rem;
+    }
+}
+
+@media only screen and (max-width: $breakpoint) {
+    .panel-distance {
+        margin-top: .5rem;
+        margin-bottom: .5rem;
+    }
+    .panel-spaced {
+        padding: .5rem;
+    }
 }
 
 .panel-spaced-sm {
@@ -63,21 +92,10 @@
     background-color: #FFF;
 }
 
-@media (max-width: $breakpoint) {
-    .panel-distance {
-        margin-top: .5rem;
-        margin-bottom: .5rem;
-    }
-    .panel-spaced {
-        padding: .5rem;
-    }
-}
-
 .panel-modal-header {
     position: relative;
     z-index: 500;
     width: 100%;
-    height: 75px;
     color: $brand-color-primary;
     border-bottom: 1px solid $brand-border-color;
     display: flex;
@@ -88,6 +106,13 @@
     transition: all 0.2s ease;
 }
 
+/*@media only screen and (min-width: $breakpoint-md){*/
+.desktop {
+    .panel-modal-header {
+        height: 75px;
+    }
+}
+
 .panel-modal-description {
     display: block;
     font-size: 1rem;
@@ -95,7 +120,7 @@
 
 .panel-modal-content {
     position: relative;
-    max-height: calc(100% - 77px);
+    max-height: calc(100% - 30px);
     min-height: calc(100% - 100px);
     width: 100%;
     overflow-y: auto;
@@ -104,6 +129,21 @@
 
     display: flex;
     flex-direction: column;
+}
+
+.panel-modal-content .document-lists-wrapper {
+    padding: 0.25rem;
+}
+
+/*@media only screen and (min-width: $breakpoint-md){*/
+.desktop {
+    .panel-modal-content {
+        max-height: calc(100% - 77px);
+    }
+
+    .panel-modal-content .document-lists-wrapper {
+        padding: 0;
+    }
 }
 
 .panel-modal-header-title {

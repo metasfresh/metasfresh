@@ -6,6 +6,7 @@ import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import currentDevice from 'current-device';
 
 import { deleteRequest } from '../../actions/GenericActions';
 import {
@@ -25,6 +26,26 @@ import TableFilter from './TableFilter';
 import TableHeader from './TableHeader';
 import TableItem from './TableItem';
 import TablePagination from './TablePagination';
+
+export function shouldRenderColumn(column) {
+  if (
+    !column.restrictToMediaTypes ||
+    column.restrictToMediaTypes.length === 0
+  ) {
+    return true;
+  }
+
+  const deviceType = currentDevice.type;
+  let mediaType = 'tablet';
+
+  if (deviceType === 'mobile') {
+    mediaType = 'phone';
+  } else if (deviceType === 'desktop') {
+    mediaType = 'screen';
+  }
+
+  return column.restrictToMediaTypes.indexOf(mediaType) !== -1;
+}
 
 class Table extends Component {
   static propTypes = {
@@ -1079,6 +1100,11 @@ class Table extends Component {
       rows,
     } = this.state;
 
+    let showPagination = page && pageLength;
+    if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
+      showPagination = false;
+    }
+
     return (
       <div className="table-flex-wrapper">
         <div
@@ -1193,27 +1219,26 @@ class Table extends Component {
             this.props.children
           }
         </div>
-        {page &&
-          pageLength && (
-            <div>
-              <TablePagination
-                {...{
-                  handleChangePage,
-                  size,
-                  selected,
-                  page,
-                  orderBy,
-                  queryLimitHit,
-                  disablePaginationShortcuts,
-                }}
-                pageLength={pageLength}
-                rowLength={rows ? rows.length : 0}
-                handleSelectAll={this.selectAll}
-                handleSelectRange={this.selectRangeProduct}
-                deselect={this.deselectAllProducts}
-              />
-            </div>
-          )}
+        {showPagination && (
+          <div>
+            <TablePagination
+              {...{
+                handleChangePage,
+                size,
+                selected,
+                page,
+                orderBy,
+                queryLimitHit,
+                disablePaginationShortcuts,
+              }}
+              pageLength={pageLength}
+              rowLength={rows ? rows.length : 0}
+              handleSelectAll={this.selectAll}
+              handleSelectRange={this.selectRangeProduct}
+              deselect={this.deselectAllProducts}
+            />
+          </div>
+        )}
         {promptOpen && (
           <Prompt
             title="Delete"

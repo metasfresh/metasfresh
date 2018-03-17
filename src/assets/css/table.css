@@ -57,8 +57,18 @@
 
 .table td,
 .table th {
-    padding: .50rem .75rem;
-    height: 42px;
+    padding: .5rem .5rem;
+    height: 28px;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .desktop {
+        .table td,
+        .table th {
+            padding: .50rem .75rem;
+            height: 42px;
+        }
+    }
 }
 
 .table td {
@@ -216,6 +226,10 @@
 
 /* Pagination */
 
+.page-item {
+    display: inline-block;
+}
+
 .page-item.active .page-link,
 .page-item.active .page-link:focus,
 .page-item.active .page-link:hover {
@@ -224,9 +238,16 @@
 }
 
 .page-link {
-    min-width: 38px;
+    display: inline-block;
     text-align: center;
 }
+
+@media only screen and (min-width: $breakpoint-md){
+    .page-link {
+        min-width: 38px;
+    }
+}
+
 .page-link-compressed{
     border:0;
     background-color: transparent;
@@ -292,13 +313,21 @@ th {
 }
 
 .pagination-row {
-    margin: 1rem;
+    margin: .3125rem;
     font-size: .7rem;
     display: flex;
     flex-wrap: nowrap;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .desktop {
+        .pagination-row {
+            margin: 1rem;
+        }
+    }
 }
 
 .order-list-panel-body .pagination-wrapper {
@@ -322,20 +351,33 @@ th {
 }
 
 .table.table-bordered-vertically td.indented {
+    line-height: 28px;
     min-width:0;
     border-right:0;
     padding-top:0;
     padding-bottom:0;
-    line-height: 42px;
     vertical-align: middle;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .desktop {
+        .table.table-bordered-vertically td.indented {
+            line-height: 42px;
+        }
+    }
 }
 
 /* INDENT SIGN ================ */
 
-$indent-height: 42px;
-$indent-height-mid: 18px;
-$indent-signs-offset: 6px;
-$indent-collapsible-offset: 24px;
+$indent-height: 28px;
+$indent-height-mid: 12px;
+$indent-signs-offset: 4px;
+$indent-collapsible-offset: 4px;
+
+$indent-height-lg: 42px;
+$indent-height-mid-lg: 18px;
+$indent-signs-offset-lg: 6px;
+$indent-collapsible-offset-lg: 24px;
 
 .indent {
     position: relative;
@@ -352,12 +394,15 @@ $indent-collapsible-offset: 24px;
     vertical-align: middle;
 }
 
+.indent-icon {
+    display: none;
+}
+
 .indent-item-mid{
     padding-left:$indent-signs-offset;
 }
 
 .indent-collapsible-item-mid {
-    margin-right:10px;
     padding-left: calc($indent-signs-offset + $indent-collapsible-offset);
 }
 
@@ -386,7 +431,7 @@ $indent-collapsible-offset: 24px;
     bottom:-1px;
     margin-left: $indent-signs-offset;
     width: 1px;
-    height: 6px;
+    height: 4px;
     border-left: 1px solid #afbfca;
 }
 
@@ -394,8 +439,57 @@ $indent-collapsible-offset: 24px;
     margin-left: calc($indent-signs-offset + $indent-collapsible-offset);
 }
 
-.indent-collapse-icon {
-    margin-right: 10px;
+@media only screen and (min-width: $breakpoint-md){
+    .desktop {
+        .indent {
+            height: $indent-height-lg;
+        }
+
+        .indent-item-mid,
+        .indent-icon,
+        .indent-bot,
+        .indent-mid {
+            height: $indent-height-lg;
+        }
+
+        .indent-icon {
+            display: inline;
+        }
+
+        .indent-item-mid{
+            padding-left:$indent-signs-offset-lg;
+        }
+
+        .indent-collapsible-item-mid {
+            margin-right:10px;
+            padding-left: calc($indent-signs-offset-lg + $indent-collapsible-offset-lg);
+        }
+
+        .indent-item-mid .indent-sign {
+            height: $indent-height-lg;
+        }
+
+        .indent-item-mid .indent-sign.indent-sign-bot {
+            height: $indent-height-mid-lg;
+        }
+
+        .indent-mid {
+            top: $indent-height-mid-lg;
+        }
+
+        .indent-bot {
+            margin-left: $indent-signs-offset-lg;
+            height: 6px;
+        }
+
+        .indent-collapsible-bot {
+            margin-left: calc($indent-signs-offset-lg + $indent-collapsible-offset-lg);
+        }
+
+        .indent-collapse-icon {
+            margin-right: 10px;
+        }
+    }
 }
 
 /* END OF INDENT SIGN ============ */

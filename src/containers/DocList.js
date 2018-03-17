@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import classnames from 'classnames';
 
 import { updateUri } from '../actions/AppActions';
 import { getWindowBreadcrumb } from '../actions/MenuActions';
@@ -129,7 +130,11 @@ class DocList extends Component {
         showIndicator={!modal.visible && !rawModal.visible}
         masterDocumentList={this.masterDocumentList}
       >
-        <div className="document-lists-wrapper">
+        <div
+          className={classnames('document-lists-wrapper', {
+            'modal-overlay': rawModal.visible,
+          })}
+        >
           <DocumentList
             ref={element => {
               this.masterDocumentList = element

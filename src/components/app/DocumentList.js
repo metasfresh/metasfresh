@@ -5,7 +5,16 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { Map, List } from 'immutable';
+import currentDevice from 'current-device';
 
+import {
+  getViewLayout,
+  browseViewRequest,
+  createViewRequest,
+  deleteStaticFilter,
+  filterViewRequest,
+  getViewRowsByIds,
+} from '../../api';
 import {
   closeListIncludedView,
   setListId,
@@ -14,12 +23,6 @@ import {
   setSorting,
 } from '../../actions/ListActions';
 import {
-  browseViewRequest,
-  createViewRequest,
-  deleteStaticFilter,
-  filterViewRequest,
-  getViewLayout,
-  getViewRowsByIds,
   mergeColumnInfosIntoViewRows,
   mergeRows,
 } from '../../actions/ViewActions';
@@ -45,6 +48,7 @@ import SelectionAttributes from './SelectionAttributes';
 
 const NO_SELECTION = [];
 const NO_VIEW = {};
+const PANEL_WIDTHS = ['1', '.2', '4'];
 
 class DocumentList extends Component {
   static propTypes = {
@@ -71,13 +75,17 @@ class DocumentList extends Component {
 
     const { defaultViewId, defaultPage, defaultSort } = props;
 
-    this.pageLength = 20;
+    this.pageLength =
+      currentDevice.type === 'mobile' || currentDevice.type === 'tablet'
+        ? 9999
+        : 20;
     this.supportAttribute = false;
 
     this.state = {
       data: null, // view result (result, firstRow, pageLength etc)
       layout: null,
       pageColumnInfosByFieldName: null,
+      toggleWidth: 0,
 
       viewId: defaultViewId,
       page: defaultPage || 1,
@@ -597,6 +605,17 @@ class DocumentList extends Component {
 
   // END OF MANAGING SORT, PAGINATION, FILTERS -------------------------------
 
+  adjustWidth = () => {
+    const widthIdx =
+      this.state.toggleWidth + 1 === PANEL_WIDTHS.length
+        ? 0
+        : this.state.toggleWidth + 1;
+
+    this.setState({
+      toggleWidth: widthIdx,
+    });
+  };
+
   redirectToDocument = id => {
     const { dispatch, isModal, windowType, isSideListShow } = this.props;
     const { page, viewId, sort } = this.state;
@@ -700,9 +719,14 @@ class DocumentList extends Component {
       hasShowIncluded,
       refreshSelection,
       supportAttribute,
+      toggleWidth,
     } = this.state;
-
     const { selected, childSelected, parentSelected } = this.getSelected();
+
+    const styleObject = {};
+    if (toggleWidth !== 0) {
+      styleObject.flex = PANEL_WIDTHS[toggleWidth];
+    }
 
     const hasIncluded =
       layout &&
@@ -736,7 +760,25 @@ class DocumentList extends Component {
             'document-list-included': isShowIncluded || isIncluded,
             'document-list-has-included': hasShowIncluded || hasIncluded,
           })}
+          style={styleObject}
         >
+          {isModal &&
+            hasIncluded &&
+            hasShowIncluded && (
+              <div className="column-size-button col-xxs-3 col-md-0 ignore-react-onclickoutside">
+                <button
+                  className={classnames(
+                    'btn btn-meta-outline-secondary btn-sm ignore-react-onclickoutside',
+                    {
+                      normal: toggleWidth === 0,
+                      narrow: toggleWidth === 1,
+                      wide: toggleWidth === 2,
+                    }
+                  )}
+                  onClick={this.adjustWidth}
+                />
+              </div>
+            )}
           {!readonly && (
             <div className="panel panel-primary panel-spaced panel-inline document-list-header">
               <div className={hasIncluded ? 'disabled' : ''}>

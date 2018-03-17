@@ -8,6 +8,7 @@ import {
   VIEW_EDITOR_RENDER_MODES_ON_DEMAND,
 } from '../../constants/Constants';
 import TableCell from './TableCell';
+import { shouldRenderColumn } from './Table';
 
 class TableItem extends PureComponent {
   constructor(props) {
@@ -176,81 +177,88 @@ class TableItem extends PureComponent {
       return (
         cols &&
         cols.map(item => {
-          const { supportZoomInto } = item.fields[0];
-          const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
-          const property = item.fields[0].field;
-          let isEditable =
-            ((cells &&
-              cells[property] &&
-              cells[property].viewEditorRenderMode) ||
-              item.viewEditorRenderMode) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
+          if (shouldRenderColumn(item)) {
+            const { supportZoomInto } = item.fields[0];
+            const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
+            const property = item.fields[0].field;
+            let isEditable =
+              ((cells &&
+                cells[property] &&
+                cells[property].viewEditorRenderMode) ||
+                item.viewEditorRenderMode) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
 
-          let widgetData = item.fields.map(prop => {
-            if (cells) {
-              let cellWidget = cells[prop.field] || -1;
+            let widgetData = item.fields.map(prop => {
+              if (cells) {
+                let cellWidget = cells[prop.field] || -1;
 
-              if (
-                isEditable ||
-                (supportFieldEdit && typeof cellWidget === 'object')
-              ) {
-                cellWidget = {
-                  ...cellWidget,
-                  widgetType: item.widgetType,
-                  displayed: true,
-                  mandatory: true,
-                  readonly: false,
-                };
+                if (
+                  isEditable ||
+                  (supportFieldEdit && typeof cellWidget === 'object')
+                ) {
+                  cellWidget = {
+                    ...cellWidget,
+                    widgetType: item.widgetType,
+                    displayed: true,
+                    mandatory: true,
+                    readonly: false,
+                  };
+                }
+
+                return cellWidget;
               }
 
-              return cellWidget;
-            }
+              return -1;
+            });
 
-            return -1;
-          });
-
-          return (
-            <TableCell
-              {...{
-                getSizeClass,
-                entity,
-                type,
-                docId,
-                rowId,
-                tabId,
-                item,
-                readonly,
-                widgetData,
-                tabIndex,
-                listenOnKeys,
-                caption,
-                mainTable,
-                viewId,
-              }}
-              key={`${rowId}-${property}`}
-              isRowSelected={this.props.isSelected}
-              isEdited={isEditable || edited === property}
-              onDoubleClick={e =>
-                this.handleEditProperty(e, property, true, widgetData[0])
-              }
-              onClickOutside={e => {
-                this.handleEditProperty(e);
-                changeListenOnTrue();
-              }}
-              disableOnClickOutside={edited !== property}
-              onCellChange={onItemChange}
-              updatedRow={updatedRow || newRow}
-              updateRow={this.updateRow}
-              onKeyDown={e =>
-                this.handleKeyDown(e, property, true, widgetData[0])
-              }
-              listenOnKeysTrue={this.listenOnKeysTrue}
-              listenOnKeysFalse={this.listenOnKeysFalse}
-              closeTableField={e => this.closeTableField(e)}
-              handleRightClick={e =>
-                handleRightClick(e, property, supportZoomInto, supportFieldEdit)
-              }
-            />
-          );
+            return (
+              <TableCell
+                {...{
+                  getSizeClass,
+                  entity,
+                  type,
+                  docId,
+                  rowId,
+                  tabId,
+                  item,
+                  readonly,
+                  widgetData,
+                  tabIndex,
+                  listenOnKeys,
+                  caption,
+                  mainTable,
+                  viewId,
+                }}
+                key={`${rowId}-${property}`}
+                isRowSelected={this.props.isSelected}
+                isEdited={isEditable || edited === property}
+                onDoubleClick={e =>
+                  this.handleEditProperty(e, property, true, widgetData[0])
+                }
+                onClickOutside={e => {
+                  this.handleEditProperty(e);
+                  changeListenOnTrue();
+                }}
+                disableOnClickOutside={edited !== property}
+                onCellChange={onItemChange}
+                updatedRow={updatedRow || newRow}
+                updateRow={this.updateRow}
+                onKeyDown={e =>
+                  this.handleKeyDown(e, property, true, widgetData[0])
+                }
+                listenOnKeysTrue={this.listenOnKeysTrue}
+                listenOnKeysFalse={this.listenOnKeysFalse}
+                closeTableField={e => this.closeTableField(e)}
+                handleRightClick={e =>
+                  handleRightClick(
+                    e,
+                    property,
+                    supportZoomInto,
+                    supportFieldEdit
+                  )
+                }
+              />
+            );
+          }
         })
       );
     }
