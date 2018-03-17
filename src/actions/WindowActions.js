@@ -2,7 +2,7 @@ import axios from 'axios';
 import counterpart from 'counterpart';
 import { push, replace } from 'react-router-redux';
 import SockJs from 'sockjs-client';
-
+import currentDevice from 'current-device';
 import Stomp from 'stompjs/lib/stomp.min.js';
 import Moment from 'moment';
 
@@ -74,6 +74,13 @@ export function openRawModal(windowType, viewId) {
 }
 
 export function closeRawModal() {
+  const isMobile =
+    currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
+
+  if (isMobile) {
+    toggleFullScreen();
+  }
+
   return {
     type: CLOSE_RAW_MODAL,
   };
@@ -302,6 +309,13 @@ export function openModal(
   childViewId,
   childViewSelectedIds
 ) {
+  const isMobile =
+    currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
+
+  if (isMobile) {
+    toggleFullScreen();
+  }
+
   return {
     type: OPEN_MODAL,
     windowType: windowType,
@@ -1156,6 +1170,32 @@ export function startProcess(processType, pinstanceId) {
 }
 
 // UTILITIES
+function toggleFullScreen() {
+  const doc = window.document;
+  const docEl = doc.documentElement;
+
+  const requestFullScreen =
+    docEl.requestFullscreen ||
+    docEl.mozRequestFullScreen ||
+    docEl.webkitRequestFullScreen ||
+    docEl.msRequestFullscreen;
+  const cancelFullScreen =
+    doc.exitFullscreen ||
+    doc.mozCancelFullScreen ||
+    doc.webkitExitFullscreen ||
+    doc.msExitFullscreen;
+
+  if (
+    !doc.fullscreenElement &&
+    !doc.mozFullScreenElement &&
+    !doc.webkitFullscreenElement &&
+    !doc.msFullscreenElement
+  ) {
+    requestFullScreen.call(docEl);
+  } else {
+    cancelFullScreen.call(doc);
+  }
+}
 
 function getScope(isModal) {
   return isModal ? 'modal' : 'master';

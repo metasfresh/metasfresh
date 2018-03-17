@@ -2,10 +2,17 @@ import React, { Component } from 'react';
 
 import MasterWidget from '../widget/MasterWidget';
 import RawWidget from '../widget/RawWidget';
+import BarcodeScanner, { BarcodeScannerResult } from './BarcodeScanner';
 
 class OverlayField extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      scanning: false,
+      result: null,
+      barcodeSelected: null,
+    };
   }
 
   handleKeyDown = e => {
@@ -18,14 +25,55 @@ class OverlayField extends Component {
       case 'Escape':
         closeOverlay();
         break;
+      default:
+        this.setState({
+          barcodeSelected: null,
+        });
+        break;
     }
+  };
+
+  _scanBarcode = val => {
+    this.setState({
+      scanning: typeof val !== 'undefined' ? val : !this.state.scanning,
+      result: null,
+      barcodeSelected: null,
+    });
+  };
+
+  _onBarcodeDetected = result => {
+    this.setState({
+      result,
+    });
+  };
+
+  selectBarcode = result => {
+    this.setState({
+      barcodeSelected: result.codeResult.code,
+      scanning: false,
+    });
   };
 
   renderElements = (layout, data, type) => {
     const { disabled } = this.props;
+    const { barcodeSelected } = this.state;
     const elements = layout.elements;
+
     return elements.map((elem, id) => {
       const widgetData = elem.fields.map(item => data[item.field] || -1);
+      let captionElement = null;
+
+      if (elem.caption === 'Barcode') {
+        captionElement = (
+          <button
+            className="btn btn-sm btn-meta-success"
+            onClick={() => this._scanBarcode(true)}
+          >
+            Scan using camera
+          </button>
+        );
+      }
+
       return (
         <MasterWidget
           entity="process"
@@ -36,10 +84,36 @@ class OverlayField extends Component {
           isModal={true}
           disabled={disabled}
           autoFocus={id === 0}
+          captionElement={captionElement}
+          data={barcodeSelected || undefined}
           {...elem}
         />
       );
     });
+  };
+
+  renderScanner = () => {
+    const { result } = this.state;
+
+    return (
+      <div className="row barcode-scanner-widget">
+        <div className="col-sm-12">
+          <BarcodeScanner
+            result={result}
+            onDetected={this._onBarcodeDetected}
+            onClose={() => this._scanBarcode(false)}
+            onReset={() => this._scanBarcode(true)}
+          />
+          <div className="row scanning-result">
+            <span className="label col-xs-3 col-sm-2">Barcode</span>
+            <BarcodeScannerResult
+              result={result}
+              onSelect={result => this.selectBarcode(result)}
+            />
+          </div>
+        </div>
+      </div>
+    );
   };
 
   renderParameters = layout => {
@@ -52,11 +126,30 @@ class OverlayField extends Component {
       handleChange,
       captionValue,
     } = this.props;
+    const { barcodeSelected } = this.state;
     const parameters = layout.parameters;
     return parameters.map((item, index) => {
+      let captionElement = null;
+
+      if (item.parameterName === 'Barcode') {
+        captionElement = (
+          <button
+            className="btn btn-sm btn-meta-success"
+            onClick={() => this._scanBarcode(true)}
+          >
+            Scan using camera
+          </button>
+        );
+      }
+
+      if (barcodeSelected) {
+        item.value = barcodeSelected;
+      }
+
       return (
         <RawWidget
           defaultValue={captionValue}
+          captionElement={captionElement}
           entity="documentView"
           subentity="filter"
           subentityId={layout.filterId}
@@ -87,6 +180,20 @@ class OverlayField extends Component {
 
   render() {
     const { data, layout, type, filter } = this.props;
+    const { scanning } = this.state;
+    let renderedContent = null;
+
+    if (scanning) {
+      renderedContent = this.renderScanner();
+    } else {
+      // TODO: Why sometimes it's wrapped in MasterWidget, and other
+      // times it's not ? Needs refactoring.
+      if (filter) {
+        renderedContent = this.renderParameters(layout);
+      } else if (!filter && layout && layout.elements) {
+        renderedContent = this.renderElements(layout, data, type);
+      }
+    }
 
     return (
       <div
@@ -94,11 +201,7 @@ class OverlayField extends Component {
         onKeyDown={e => this.handleKeyDown(e)}
         tabIndex={-1}
       >
-        {filter
-          ? this.renderParameters(layout)
-          : layout &&
-            layout.elements &&
-            this.renderElements(layout, data, type)}
+        {renderedContent}
       </div>
     );
   }

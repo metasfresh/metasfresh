@@ -22,6 +22,7 @@ class RawLookup extends Component {
       list: [],
       isInputEmpty: true,
       selected: null,
+      direction: null,
       loading: false,
       oldValue: '',
       shouldBeFocused: true,
@@ -132,27 +133,26 @@ class RawLookup extends Component {
   navigate = reverse => {
     const { selected, list } = this.state;
 
+    let selectedNew = selected;
+
     if (list.length === 0) {
       // Case of selecting row for creting new instance
-      this.setState({
-        selected: 'new',
-      });
+      selectedNew = 'new';
     } else {
       // Case of selecting regular list items
       if (typeof selected === 'number') {
         const selectTarget = selected + (reverse ? -1 : 1);
 
         if (typeof list[selectTarget] !== 'undefined') {
-          this.setState({
-            selected: selectTarget,
-          });
+          selectedNew = selectTarget;
         }
-      } else if (typeof list[0] !== 'undefined') {
-        this.setState({
-          selected: 0,
-        });
       }
     }
+
+    this.setState({
+      selected: selectedNew,
+      direction: reverse ? 'up' : 'down',
+    });
   };
 
   handleSelect = select => {
@@ -419,8 +419,17 @@ class RawLookup extends Component {
       isOpen,
     } = this.props;
 
-    const { isInputEmpty, list, query, loading, selected } = this.state;
+    const {
+      isInputEmpty,
+      list,
+      query,
+      loading,
+      selected,
+      direction,
+    } = this.state;
+
     const SEARCH_ICON_WIDTH = 38;
+
     return (
       <div
         className={
@@ -467,6 +476,7 @@ class RawLookup extends Component {
                 ref={c => (this.lookupList = c)}
                 loading={loading}
                 selected={selected}
+                direction={direction}
                 list={list}
                 query={query}
                 isInputEmpty={isInputEmpty}

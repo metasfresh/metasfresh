@@ -441,6 +441,11 @@ body {
     flex-grow: 1;
 }
 
+.tablet .document-list-wrapper.modal-overlay,
+.mobile .document-list-wrapper.modal-overlay {
+    visibility: hidden;
+}
+
 .document-lists-wrapper > * {
     overflow:hidden;
 }
@@ -452,27 +457,67 @@ body {
     min-height: 100%;
 }
 
+.column-size-button {
+    display: block;
+    width: 24px;
+    height: 24px;
+    position: absolute;
+    padding: 0;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.tablet, .mobile {
+    .column-size-button button {
+        background-color: white;
+    }
+
+    .column-size-button .normal::after, .column-size-button .wide::after {
+        content: '‹';
+    }
+    .column-size-button .narrow::after {
+        content: '›';
+    }
+}
+
+.desktop {
+    .column-size-button  {
+        display: none;
+    }
+}
+
+
 .document-list-included {
-    flex: .5;
+    flex: 1;
     margin-left: 3px;
 }
 
 .document-list-has-included {
     padding-right: 3px;
     border-right: 2px solid $brand-border-color;
+    position: relative;
 }
 
 .document-list-header {
     display: flex;
     justify-content: space-between;
     flex-shrink: 0;
-    min-height: 68px;
+    min-height: auto;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .desktop {
+        .document-list-header {
+            min-height: 68px;
+        }
+    }
 }
 
 .document-list-header > * {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: baseline;
     justify-content: center;
 }
 
@@ -830,6 +875,18 @@ td.pulse-off input {
     display: inline-block;
 }
 
+.filter-wrapper span {
+    display: none;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .desktop {
+        .filter-wrapper span {
+            display: inline;
+        }
+    }
+}
+
 .filter-menu {
     border: 1px solid $brand-light-color;
     background: white;
@@ -949,7 +1006,16 @@ td.pulse-off input {
 }
 
 .spacer-right {
-    margin-right: .2rem;
+    display: none;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .desktop {
+        .spacer-right {
+            display: block;
+            margin-right: .2rem;
+        }
+    }
 }
 
 .quick-actions-wrapper {
@@ -961,8 +1027,9 @@ td.pulse-off input {
     position: absolute;
     z-index:1;
     width: 100%;
-    left: 0;
+    right: 0;
     top: 100%;
+    min-width: 100px;
 
     margin-top: .2rem;
     padding: .3rem;
@@ -970,6 +1037,15 @@ td.pulse-off input {
     background-color: #fff;
     border:1px solid $brand-border-color;
     border-radius: 4px;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .desktop {
+        .quick-actions-dropdown {
+            right: auto;
+            left: 0;
+        }
+    }
 }
 
 .quick-actions-dropdown small {
