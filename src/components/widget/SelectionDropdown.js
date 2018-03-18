@@ -35,12 +35,20 @@ export default class SelectionDropdown extends Component {
     onChange: PropTypes.func.isRequired,
   };
 
+  optionToRef = new Map();
+
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
   }
 
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  componentWillReceiveProps(propsNext) {
+    if (propsNext.options !== this.props.options) {
+      this.optionToRef.clear();
+    }
   }
 
   size(options) {
@@ -59,12 +67,26 @@ export default class SelectionDropdown extends Component {
     return options.get(index);
   }
 
+  scrollIntoView = (element, up) => {
+    const {
+      top: topMax,
+      bottom: bottomMax,
+    } = this.wrapper.getBoundingClientRect();
+
+    const { top, bottom } = element.getBoundingClientRect();
+
+    if (top < topMax || bottom > bottomMax) {
+      element.scrollIntoView(up);
+    }
+  };
+
   navigate = direction => {
     const { selected, options, onChange } = this.props;
 
+    const up = direction === UP;
     let index = options.indexOf(selected);
 
-    if (direction === UP) {
+    if (up) {
       index--;
     } else {
       index++;
@@ -78,7 +100,17 @@ export default class SelectionDropdown extends Component {
       index = size - 1;
     }
 
-    onChange(this.get(options, index));
+    const selectedNew = this.get(options, index);
+
+    if (selectedNew === selected) {
+      return;
+    }
+
+    const ref = this.optionToRef.get(selectedNew);
+
+    this.scrollIntoView(ref, up);
+
+    onChange(selectedNew);
   };
 
   handleKeyDown = event => {
@@ -108,7 +140,7 @@ export default class SelectionDropdown extends Component {
     );
   };
 
-  renderOption = (option, index) => {
+  renderOption = option => {
     const { selected } = this.props;
     const { key, caption } = option;
 
@@ -120,7 +152,7 @@ export default class SelectionDropdown extends Component {
 
     return (
       <div
-        ref={ref => (this.options[index] = ref)}
+        ref={ref => this.optionToRef.set(option, ref)}
         key={`${key}${caption}`}
         className={classNames.join(' ')}
       >
@@ -146,12 +178,14 @@ export default class SelectionDropdown extends Component {
   render() {
     const { options, width, loading } = this.props;
 
-    this.options = new Array(this.size(options));
-
     const empty = !!(options.size && options.length);
 
     return (
-      <div className="input-dropdown-list" style={{ width }}>
+      <div
+        ref={ref => (this.wrapper = ref)}
+        className="input-dropdown-list"
+        style={{ width }}
+      >
         {loading && (empty ? this.empty : this.loading)}
         {options.map(this.renderOption)}
       </div>
