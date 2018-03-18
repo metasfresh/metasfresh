@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
+const UP = Symbol('up');
+const DOWN = Symbol('down');
+
 export default class SelectionDropdown extends Component {
   static propTypes = {
     options: PropTypes.oneOfType([
@@ -9,6 +12,8 @@ export default class SelectionDropdown extends Component {
       PropTypes.shape({
         map: PropTypes.func.isRequired,
         includes: PropTypes.func.isRequired,
+        indexOf: PropTypes.func.isRequired,
+        get: PropTypes.func.isRequired,
         size: PropTypes.number.isRequired,
       }),
     ]).isRequired,
@@ -27,6 +32,72 @@ export default class SelectionDropdown extends Component {
     },
     width: PropTypes.number.isRequired,
     loading: PropTypes.bool,
+    onChange: PropTypes.func.isRequired,
+  };
+
+  componentDidMount() {
+    window.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  size(options) {
+    if (Array.isArray(options)) {
+      return options.length;
+    }
+
+    return options.size;
+  }
+
+  get(options, index) {
+    if (Array.isArray(options)) {
+      return options[index];
+    }
+
+    return options.get(index);
+  }
+
+  navigate = direction => {
+    const { selected, options, onChange } = this.props;
+
+    let index = options.indexOf(selected);
+
+    if (direction === UP) {
+      index--;
+    } else {
+      index++;
+    }
+
+    const size = this.size(options);
+
+    if (index < 0) {
+      index = 0;
+    } else if (index >= size) {
+      index = size - 1;
+    }
+
+    onChange(this.get(options, index));
+  };
+
+  handleKeyDown = event => {
+    const { navigate } = this;
+
+    switch (event.key) {
+      case 'ArrowUp':
+        navigate(UP);
+        break;
+
+      case 'ArrowDown':
+        navigate(DOWN);
+        break;
+
+      default:
+        return;
+    }
+
+    event.preventDefault();
   };
 
   renderHeader = children => {
@@ -37,11 +108,22 @@ export default class SelectionDropdown extends Component {
     );
   };
 
-  renderOption = option => {
+  renderOption = (option, index) => {
+    const { selected } = this.props;
     const { key, caption } = option;
 
+    const classNames = ['input-dropdown-list-option'];
+
+    if (option === selected) {
+      classNames.push('input-dropdown-list-option-key-on');
+    }
+
     return (
-      <div key={`${key}${caption}`} className="input-dropdown-list-option">
+      <div
+        ref={ref => (this.options[index] = ref)}
+        key={`${key}${caption}`}
+        className={classNames.join(' ')}
+      >
         {caption}
       </div>
     );
@@ -63,6 +145,8 @@ export default class SelectionDropdown extends Component {
 
   render() {
     const { options, width, loading } = this.props;
+
+    this.options = new Array(this.size(options));
 
     const empty = !!(options.size && options.length);
 
