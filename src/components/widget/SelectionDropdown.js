@@ -30,6 +30,7 @@ export default class SelectionDropdown extends Component {
     width: PropTypes.number.isRequired,
     loading: PropTypes.bool,
     onChange: PropTypes.func.isRequired,
+    onSelect: PropTypes.func.isRequired,
   };
 
   /* Those are instance variables since no rendering needs to be done depending on
@@ -169,6 +170,10 @@ export default class SelectionDropdown extends Component {
     this.props.onChange(option);
   };
 
+  handleMouseDown = option => {
+    this.props.onSelect(option);
+  };
+
   renderHeader = children => {
     return (
       <div className="input-dropdown-list-option input-dropdown-list-header">
@@ -193,6 +198,7 @@ export default class SelectionDropdown extends Component {
         key={`${key}${caption}`}
         className={classNames.join(' ')}
         onMouseEnter={() => this.handleMouseEnter(option)}
+        onMouseDown={() => this.handleMouseDown(option)}
       >
         {caption}
       </div>
