@@ -35,14 +35,27 @@ export default class SelectionDropdown extends Component {
     onChange: PropTypes.func.isRequired,
   };
 
+  /* Those are instance variables since no rendering needs to be done depending on
+   * those properties. Additionally, setState can't be used with the callback in
+   * an event listener since it needs to return synchronously */
+  ignoreMouse = false;
+  ignoreNextMouseEnter = false;
+  ignoreOption = null;
+
+  state = {
+    hovered: null,
+  };
+
   optionToRef = new Map();
 
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keyup', this.handleKeyUp);
   }
 
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
+    window.removeEventListener('keyup', this.handleKeyUp);
   }
 
   componentWillReceiveProps(propsNext) {
@@ -81,6 +94,9 @@ export default class SelectionDropdown extends Component {
   };
 
   navigate = direction => {
+    this.ignoreMouse = true;
+    this.ignoreNextMouseEnter = true;
+
     const { selected, options, onChange } = this.props;
 
     const up = direction === UP;
@@ -132,6 +148,31 @@ export default class SelectionDropdown extends Component {
     event.preventDefault();
   };
 
+  handleKeyUp = () => {
+    this.ignoreMouse = false;
+  };
+
+  handleMouseEnter = option => {
+    if (this.ignoreMouse) {
+      return;
+    }
+
+    if (this.ignoreNextMouseEnter) {
+      this.ignoreNextMouseEnter = false;
+      this.ignoreOption = option;
+
+      return;
+    }
+
+    if (option === this.ignoreOption) {
+      return;
+    }
+
+    this.ignoreOption = null;
+
+    this.props.onChange(option);
+  };
+
   renderHeader = children => {
     return (
       <div className="input-dropdown-list-option input-dropdown-list-header">
@@ -146,7 +187,7 @@ export default class SelectionDropdown extends Component {
 
     const classNames = ['input-dropdown-list-option'];
 
-    if (option === selected) {
+    if ([this.state.hovered, selected].includes(option)) {
       classNames.push('input-dropdown-list-option-key-on');
     }
 
@@ -155,6 +196,7 @@ export default class SelectionDropdown extends Component {
         ref={ref => this.optionToRef.set(option, ref)}
         key={`${key}${caption}`}
         className={classNames.join(' ')}
+        onMouseEnter={() => this.handleMouseEnter(option)}
       >
         {caption}
       </div>

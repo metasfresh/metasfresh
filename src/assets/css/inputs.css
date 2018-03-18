@@ -817,7 +817,6 @@ input:checked + .input-slider:before {
     font-size: .8rem;
     font-weight:bold;
 }
-.input-dropdown-list-option:hover,
 .input-dropdown-list-option-key-on {
     background-color: $brand-color-primary;
     color: #fff;
