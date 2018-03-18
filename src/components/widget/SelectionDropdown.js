@@ -41,10 +41,6 @@ export default class SelectionDropdown extends Component {
   ignoreNextMouseEnter = false;
   ignoreOption = null;
 
-  state = {
-    hovered: null,
-  };
-
   optionToRef = new Map();
 
   componentDidMount() {
@@ -198,7 +194,7 @@ export default class SelectionDropdown extends Component {
 
     const classNames = ['input-dropdown-list-option'];
 
-    if ([this.state.hovered, selected].includes(option)) {
+    if (option === selected) {
       classNames.push('input-dropdown-list-option-key-on');
     }
 
