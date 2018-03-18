@@ -2,9 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
-const UP = Symbol('up');
-const DOWN = Symbol('down');
-
 export default class SelectionDropdown extends Component {
   static propTypes = {
     options: PropTypes.oneOfType([
@@ -93,13 +90,12 @@ export default class SelectionDropdown extends Component {
     }
   };
 
-  navigate = direction => {
+  navigate = up => {
     this.ignoreMouse = true;
     this.ignoreNextMouseEnter = true;
 
     const { selected, options, onChange } = this.props;
 
-    const up = direction === UP;
     let index = options.indexOf(selected);
 
     if (up) {
@@ -134,11 +130,11 @@ export default class SelectionDropdown extends Component {
 
     switch (event.key) {
       case 'ArrowUp':
-        navigate(UP);
+        navigate(true);
         break;
 
       case 'ArrowDown':
-        navigate(DOWN);
+        navigate(false);
         break;
 
       default:
