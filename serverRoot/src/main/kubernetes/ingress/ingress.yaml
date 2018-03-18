@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /tobi-demo/webui-frontend
+        backend:
+          serviceName: "metasfresh-all-in-one-tobi-demo"
+          servicePort: 80    
+        path: /tobi-demo/webui-api
+        backend:
+          serviceName: "metasfresh-all-in-one-tobi-demo"
+          servicePort: 8080
+    http:
+      paths:
+      - path: /metasfresh-admin
+        backend:
+          serviceName: "metasfresh-admin"
+          servicePort: 9090

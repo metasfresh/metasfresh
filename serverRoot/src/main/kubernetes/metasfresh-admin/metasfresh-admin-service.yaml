@@ -17,7 +17,6 @@ metadata:
   selfLink: /api/v1/namespaces/default/services/metasfresh-admin
   uid: 1c17fccd-23d6-11e8-a34a-080027b5b1ea
 spec:
-  clusterIP: 10.106.137.88
   ports:
   - port: 9090
     protocol: TCP
