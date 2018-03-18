@@ -129,7 +129,7 @@ export default class SelectionDropdown extends Component {
 
   handleKeyDown = event => {
     const { navigate } = this;
-    const { onCancel } = this.props;
+    const { selected, onCancel, onSelect } = this.props;
 
     switch (event.key) {
       case 'ArrowUp':
@@ -142,6 +142,10 @@ export default class SelectionDropdown extends Component {
 
       case 'Escape':
         onCancel();
+        break;
+
+      case 'Enter':
+        onSelect(selected);
         break;
 
       default:
