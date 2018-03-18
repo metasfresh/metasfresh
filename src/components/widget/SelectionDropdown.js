@@ -31,6 +31,7 @@ export default class SelectionDropdown extends Component {
     loading: PropTypes.bool,
     onChange: PropTypes.func.isRequired,
     onSelect: PropTypes.func.isRequired,
+    onCancel: PropTypes.func,
   };
 
   /* Those are instance variables since no rendering needs to be done depending on
@@ -128,6 +129,7 @@ export default class SelectionDropdown extends Component {
 
   handleKeyDown = event => {
     const { navigate } = this;
+    const { onCancel } = this.props;
 
     switch (event.key) {
       case 'ArrowUp':
@@ -136,6 +138,10 @@ export default class SelectionDropdown extends Component {
 
       case 'ArrowDown':
         navigate(false);
+        break;
+
+      case 'Escape':
+        onCancel();
         break;
 
       default:
