@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 export default class SelectionDropdown extends Component {
   static propTypes = {
@@ -8,6 +9,7 @@ export default class SelectionDropdown extends Component {
       PropTypes.shape({
         map: PropTypes.func.isRequired,
         includes: PropTypes.func.isRequired,
+        size: PropTypes.number.isRequired,
       }),
     ]).isRequired,
     selected: (props, propName) => {
@@ -24,6 +26,15 @@ export default class SelectionDropdown extends Component {
       }
     },
     width: PropTypes.number.isRequired,
+    loading: PropTypes.bool,
+  };
+
+  renderHeader = children => {
+    return (
+      <div className="input-dropdown-list-option input-dropdown-list-header">
+        {children}
+      </div>
+    );
   };
 
   renderOption = option => {
@@ -36,11 +47,28 @@ export default class SelectionDropdown extends Component {
     );
   };
 
+  empty = this.renderHeader('There is no choice available');
+
+  loading = this.renderHeader(
+    <ReactCSSTransitionGroup
+      transitionName="rotate"
+      transitionEnterTimeout={1000}
+      transitionLeaveTimeout={1000}
+    >
+      <div className="rotate icon-rotate">
+        <i className="meta-icon-settings" />
+      </div>
+    </ReactCSSTransitionGroup>
+  );
+
   render() {
-    const { options, width } = this.props;
+    const { options, width, loading } = this.props;
+
+    const empty = !!(options.size && options.length);
 
     return (
       <div className="input-dropdown-list" style={{ width }}>
+        {loading && (empty ? this.empty : this.loading)}
         {options.map(this.renderOption)}
       </div>
     );
