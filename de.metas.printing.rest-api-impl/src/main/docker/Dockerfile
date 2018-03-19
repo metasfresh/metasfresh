@@ -24,13 +24,13 @@ COPY ./start_print_docker.sh /opt/metasfresh/metasfresh-print/
 # I don't understand why I have to do this. I would assume that when I commit this sh file on windows with lf eols and
 # then check it out on a linux machine, it has lf eols. But aparently it doesn't.
 # At any rate, thx to https://stackoverflow.com/a/41424794/1012103
-RUN dos2unix /opt/metasfresh/metasfresh-report/start_print_docker.sh
+RUN dos2unix /opt/metasfresh/metasfresh-print/start_print_docker.sh
 
 # make our start command executable
-RUN chmod 700 /opt/metasfresh/metasfresh-report/start_print_docker.sh
+RUN chmod 700 /opt/metasfresh/metasfresh-print/start_print_docker.sh
 
-COPY ./metasfresh-print-service-standalone.jar /opt/metasfresh/metasfresh-report/metasfresh-print.jar
-RUN sh -c 'touch /opt/metasfresh/metasfresh-report/metasfresh-print.jar'
+COPY ./metasfresh-print-service-standalone.jar /opt/metasfresh/metasfresh-print/metasfresh-print.jar
+RUN sh -c 'touch /opt/metasfresh/metasfresh-print/metasfresh-print.jar'
 
 
 ENTRYPOINT ["/opt/metasfresh/metasfresh-print/start_print_docker.sh"]
