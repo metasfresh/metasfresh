@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 
 import { PATCH_RESET } from '../../constants/ActionTypes';
 import { closeListIncludedView } from '../../actions/ListActions';
-import { deleteView } from '../../actions/ViewActions';
+import { deleteView } from '../../api';
 import { addNotification } from '../../actions/AppActions';
 import { closeModal, closeRawModal } from '../../actions/WindowActions';
 import keymap from '../../shortcuts/keymap';
