@@ -1,9 +1,6 @@
 package de.metas.vertical.pharma.msv3.server.stockAvailability;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-
-import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,18 +51,6 @@ public class StockAvailabilityService
 {
 	@Autowired
 	private StockAvailabilityRepository stockAvailabilityRepo;
-
-	@PostConstruct
-	private void createDummyData()
-	{
-		for (long pzn : Arrays.asList(1112223, 1112224, 1112225, 1112226))
-		{
-			final StockAvailability sa = new StockAvailability();
-			sa.setPzn(pzn);
-			sa.setQty(30);
-			stockAvailabilityRepo.save(sa);
-		}
-	}
 
 	public StockAvailabilityResponse checkAvailability(final StockAvailabilityQuery query)
 	{
