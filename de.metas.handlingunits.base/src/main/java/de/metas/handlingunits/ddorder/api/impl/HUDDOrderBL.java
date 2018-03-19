@@ -7,10 +7,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.TrxRunnable;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_OrderLine;
 
@@ -61,8 +63,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	public void createBlockDDOrderForReceiptLines(final Properties ctx, final List<I_M_InOutLine> receiptLines)
 	{
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-	
-		
+
 		final List<I_M_HU> husToDDOrder = new ArrayList<>();
 
 		for (final I_M_InOutLine receiptLine : receiptLines)
@@ -71,8 +72,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 
 			husToDDOrder.addAll(topLevelHUsForReceiptLine);
 		}
-		
-		
+
 		createBlockDDOrderForHUs(ctx, husToDDOrder);
 
 	}
@@ -82,7 +82,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		
+
 		final I_M_Warehouse blockWarehouse = warehouseDAO.retrieveBlockWarehouseOrNull();
 
 		if (blockWarehouse == null)
@@ -90,12 +90,20 @@ public class HUDDOrderBL implements IHUDDOrderBL
 			throw new AdempiereException(msgBL.getMsg(ctx, ERR_M_Warehouse_NoBlockWarehouse));
 		}
 
-		HUs2DDOrderProducer.newProducer()
-				.setContext(ctx)
-				.setM_Warehouse_To(create(blockWarehouse, de.metas.handlingunits.model.I_M_Warehouse.class))
-				.setHUs(hus.iterator())
-				.process();
-	}
+		// run this out of trx
 
+		Services.get(ITrxManager.class).runOutOfTransaction(new TrxRunnable()
+		{
+			@Override
+			public void run(final String localTrxName) throws Exception
+			{
+				HUs2DDOrderProducer.newProducer()
+						.setContext(ctx)
+						.setM_Warehouse_To(create(blockWarehouse, de.metas.handlingunits.model.I_M_Warehouse.class))
+						.setHUs(hus.iterator())
+						.process();
+			}
+		});
+	}
 
 }

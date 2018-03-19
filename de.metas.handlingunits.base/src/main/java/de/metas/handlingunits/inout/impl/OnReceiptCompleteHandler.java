@@ -2,6 +2,7 @@ package de.metas.handlingunits.inout.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -9,6 +10,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.adempiere.service.IWarehouseDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
@@ -62,9 +64,9 @@ public class OnReceiptCompleteHandler
 		this.receipt = receipt;
 	}
 
-	private List<I_M_InOutLine> linesToBlock;
-	private List<I_M_InOutLine> linesToDD_Order;
-	private List<de.metas.inout.model.I_M_InOutLine> linesToMove;
+	private List<I_M_InOutLine> linesToBlock = new ArrayList<>();
+	private List<I_M_InOutLine> linesToDD_Order = new ArrayList<>();
+	private List<de.metas.inout.model.I_M_InOutLine> linesToMove = new ArrayList<>();
 
 	final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	final IInOutDDOrderBL ddOrderBL = Services.get(IInOutDDOrderBL.class);
@@ -142,7 +144,15 @@ public class OnReceiptCompleteHandler
 	{
 		final int productId = inOutLine.getM_Product_ID();
 
-		final String lotNumberAttributeValue = lotNoBL.getLotNumberAttributeValue(inOutLine.getM_AttributeSetInstance());
+		final I_M_AttributeSetInstance receiptLineASI = inOutLine.getM_AttributeSetInstance();
+
+		if (receiptLineASI == null)
+		{
+			// if it has no attributes set it means it has no lot number set either.
+			return false;
+		}
+
+		final String lotNumberAttributeValue = lotNoBL.getLotNumberAttributeValue(receiptLineASI);
 
 		if (Check.isEmpty(lotNumberAttributeValue))
 		{
