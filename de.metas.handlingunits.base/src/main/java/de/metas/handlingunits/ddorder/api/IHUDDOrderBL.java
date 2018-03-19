@@ -57,6 +57,15 @@ public interface IHUDDOrderBL extends ISingletonService
 	 * 
 	 * @param ctx
 	 * @param receiptLines
+	 * 
+	 **/
+	void createBlockDDOrderForReceiptLines(Properties ctx, List<I_M_InOutLine> receiptLines);
+
+	/**
+	 * Create a ddOrder with the handling units given as parameter to a warehouse flagged as IsBlockWarehouse
+	 * 
+	 * @param ctx
+	 * @param hus
 	 */
-	void createDDOrderToBlockWarehouse(Properties ctx, List<I_M_InOutLine> receiptLines);
+	void createBlockDDOrderForHUs(Properties ctx, List<I_M_HU> hus);
 }

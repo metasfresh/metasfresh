@@ -88,7 +88,7 @@ public class OnReceiptCompleteHandler
 
 		if (!Check.isEmpty(linesToBlock))
 		{
-			huDDOrderBL.createDDOrderToBlockWarehouse(getContext(), linesToBlock);
+			huDDOrderBL.createBlockDDOrderForReceiptLines(getContext(), linesToBlock);
 		}
 
 		if (!Check.isEmpty(linesToDD_Order))
