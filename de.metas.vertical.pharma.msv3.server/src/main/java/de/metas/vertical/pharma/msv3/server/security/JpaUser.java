@@ -1,6 +1,14 @@
 package de.metas.vertical.pharma.msv3.server.security;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
+
+import de.metas.vertical.pharma.msv3.server.jpa.AbstractEntity;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 /*
  * #%L
@@ -24,7 +32,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * #L%
  */
 
-public interface MSV3UserRepository extends JpaRepository<MSV3User, Long>
+@Entity
+@Table(name = "user", uniqueConstraints = @UniqueConstraint(name = "user_uq", columnNames = { "username" }))
+@Getter
+@Setter
+@ToString
+public class JpaUser extends AbstractEntity
 {
-	MSV3User findByUsername(final String username);
+	@NotNull
+	private String username;
+
+	@NotNull
+	private String password;
+
+	@NotNull
+	private Integer bpartnerId;
 }

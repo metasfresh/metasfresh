@@ -41,15 +41,14 @@ import de.metas.vertical.pharma.msv3.server.WebServiceConfig;
 public class SecurityConfig extends WebSecurityConfigurerAdapter
 {
 	private static final String REALM = "MSV3_SERVER";
-	public static final String ROLE = "USER";
+	public static final String DEFAULT_AUTHORITY = "ROLE_USER";
 
 	@Autowired
-	private MSV3UserRepository usersRepo;
-
-	@Autowired
-	public void configureGlobalSecurity(final AuthenticationManagerBuilder auth) throws Exception
+	public void configureGlobalSecurity(
+			final AuthenticationManagerBuilder auth,
+			final MSV3ServerAuthenticationService msv3authService) throws Exception
 	{
-		auth.userDetailsService(new MSV3UserDetailsService(usersRepo));
+		auth.userDetailsService(msv3authService);
 	}
 
 	@Override
@@ -57,7 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 	{
 		http.csrf().disable()
 				.authorizeRequests()
-				.antMatchers(WebServiceConfig.WEBSERVICE_PATH + "/**").hasRole(ROLE)
+				.antMatchers(WebServiceConfig.WEBSERVICE_PATH + "/**").hasAuthority(DEFAULT_AUTHORITY)
 				.and().httpBasic().realmName(REALM).authenticationEntryPoint(getBasicAuthEntryPoint())
 				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	}
