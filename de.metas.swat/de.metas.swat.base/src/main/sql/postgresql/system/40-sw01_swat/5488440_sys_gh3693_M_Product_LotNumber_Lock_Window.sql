@@ -243,3 +243,11 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=8, Updated=now(), UpdatedBy=10
 UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000037 AND AD_Tree_ID=10
 ;
 
+
+
+-- 2018-03-19T14:10:40.232
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET WEBUI_NameBrowse='Product LotNo Lock',Updated=TO_TIMESTAMP('2018-03-19 14:10:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541062
+;
+
+
