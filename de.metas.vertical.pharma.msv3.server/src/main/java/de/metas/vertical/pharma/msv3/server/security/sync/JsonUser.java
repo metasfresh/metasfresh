@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 
@@ -40,15 +41,18 @@ public class JsonUser
 	private String username;
 	@JsonProperty("password")
 	private String password;
+	@JsonProperty("bpartnerId")
+	private int bpartnerId;
 
 	@JsonCreator
 	@Builder
 	private JsonUser(
-			@JsonProperty("username") final String username,
-			@JsonProperty("password") final String password)
+			@JsonProperty("username") @NonNull final String username,
+			@JsonProperty("password") @NonNull final String password,
+			@JsonProperty("bpartnerId") @NonNull final Integer bpartnerId)
 	{
 		this.username = username;
 		this.password = password;
+		this.bpartnerId = bpartnerId;
 	}
-
 }

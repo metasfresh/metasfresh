@@ -2,6 +2,7 @@ package de.metas.vertical.pharma.msv3.protocol.order;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,12 +36,14 @@ public class OrderCreateRequest
 {
 	Id orderId;
 	SupportIDType supportId;
+	BPartnerId bpartnerId;
 	ImmutableList<OrderCreateRequestPackage> orderPackages;
 
 	@Builder
 	private OrderCreateRequest(
 			@NonNull final Id orderId,
 			@NonNull final SupportIDType supportId,
+			@NonNull final BPartnerId bpartnerId,
 			@NonNull @Singular final ImmutableList<OrderCreateRequestPackage> orderPackages)
 	{
 		if (orderPackages.isEmpty())
@@ -50,6 +53,7 @@ public class OrderCreateRequest
 
 		this.orderId = orderId;
 		this.supportId = supportId;
+		this.bpartnerId = bpartnerId;
 		this.orderPackages = orderPackages;
 	}
 }

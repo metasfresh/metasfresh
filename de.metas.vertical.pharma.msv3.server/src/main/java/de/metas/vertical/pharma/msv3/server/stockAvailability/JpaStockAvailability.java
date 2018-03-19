@@ -1,7 +1,13 @@
 package de.metas.vertical.pharma.msv3.server.stockAvailability;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+
+import de.metas.vertical.pharma.msv3.server.jpa.AbstractEntity;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 /*
  * #%L
@@ -25,8 +31,17 @@ import org.springframework.stereotype.Repository;
  * #L%
  */
 
-@Repository
-public interface StockAvailabilityRepository extends JpaRepository<StockAvailability, Long>
+@Entity
+@Table(name = "stock_availability", uniqueConstraints = @UniqueConstraint(name = "stock_availability_uq", columnNames = { "pzn" }))
+@ToString
+public class JpaStockAvailability extends AbstractEntity
 {
-	StockAvailability findByPzn(final long pzn);
+	/** Pharma-Zentral-Nummer */
+	@Getter
+	@Setter
+	private long pzn;
+
+	@Getter
+	@Setter
+	private int qty;
 }

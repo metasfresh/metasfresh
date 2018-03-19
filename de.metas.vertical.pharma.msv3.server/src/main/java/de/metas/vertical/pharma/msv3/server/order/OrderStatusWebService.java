@@ -9,9 +9,10 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import de.metas.vertical.pharma.msv3.protocol.order.OrderJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderStatusResponse;
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
-import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthorizationService;
+import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellstatusAbfragen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellstatusAbfragenResponse;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
@@ -44,12 +45,12 @@ public class OrderStatusWebService
 {
 	public static final String WSDL_BEAN_NAME = "Msv3BestellstatusAbfragenService";
 
-	private final MSV3ServerAuthorizationService authService;
+	private final MSV3ServerAuthenticationService authService;
 	private final OrderJAXBConverters jaxbConverters;
 	private final OrderService orderService;
 
 	public OrderStatusWebService(
-			@NonNull final MSV3ServerAuthorizationService authService,
+			@NonNull final MSV3ServerAuthenticationService authService,
 			@NonNull final ObjectFactory jaxbObjectFactory,
 			@NonNull final OrderService orderService)
 	{
@@ -65,7 +66,8 @@ public class OrderStatusWebService
 		authService.assertValidClientSoftwareId(soapRequest.getClientSoftwareKennung());
 
 		final Id orderId = Id.of(soapRequest.getBestellId());
-		final OrderStatusResponse response = orderService.getOrderStatus(orderId);
+		final BPartnerId bpartnerId = authService.getCurrentUser().getBpartnerId();
+		final OrderStatusResponse response = orderService.getOrderStatus(orderId, bpartnerId);
 
 		return jaxbConverters.toJAXB(response);
 	}

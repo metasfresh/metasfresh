@@ -56,7 +56,7 @@ public class CreateDummyData
 	private void createUsers()
 	{
 		usersService.update(JsonUsersUpdateRequest.builder()
-				.user(JsonUser.builder().username("user").password("pass").build())
+				.user(JsonUser.builder().username("user").password("pass").bpartnerId(1234567).build())
 				.build());
 	}
 

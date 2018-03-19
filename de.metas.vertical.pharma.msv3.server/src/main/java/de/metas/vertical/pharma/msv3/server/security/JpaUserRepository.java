@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.msv3.server.security;
 
-import org.springframework.stereotype.Service;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /*
  * #%L
@@ -24,11 +24,7 @@ import org.springframework.stereotype.Service;
  * #L%
  */
 
-@Service
-public class MSV3ServerAuthorizationService
+public interface JpaUserRepository extends JpaRepository<JpaUser, Long>
 {
-	public void assertValidClientSoftwareId(final String clientSoftwareId)
-	{
-		// TODO implement
-	}
+	JpaUser findByUsername(final String username);
 }
