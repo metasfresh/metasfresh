@@ -1,6 +1,12 @@
-package de.metas.vertical.pharma.msv3.server;
+package de.metas.vertical.pharma.msv3.server.security;
 
-import lombok.experimental.UtilityClass;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import de.metas.vertical.pharma.msv3.server.jpa.AbstractEntity;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 /*
  * #%L
@@ -24,10 +30,16 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
-public final class MSV3ServerConstants
+@Entity
+@Table(name = "user")
+@ToString
+public class MSV3User extends AbstractEntity
 {
-	public static final String BACKEND_SYNC_REST_ENDPOINT = "/sync/api";
+	@Getter
+	@Setter
+	private String username;
 
-	public static final String SOAP_NAMESPACE = "urn:msv3:v2";
+	@Getter
+	@Setter
+	private String password;
 }

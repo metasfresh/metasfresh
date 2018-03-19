@@ -4,9 +4,12 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
+import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -38,8 +41,10 @@ public class JsonStockAvailabilityUpdateRequest
 	@JsonProperty("items")
 	private final List<JsonStockAvailability> items;
 
-	public JsonStockAvailabilityUpdateRequest(
-			@JsonProperty("items") final List<JsonStockAvailability> items)
+	@JsonCreator
+	@Builder
+	private JsonStockAvailabilityUpdateRequest(
+			@JsonProperty("items") @Singular final List<JsonStockAvailability> items)
 	{
 		if (items == null || items.isEmpty())
 		{

@@ -49,6 +49,8 @@ import lombok.NonNull;
 @EnableWs
 public class Application
 {
+	public static final String WEBSERVICE_PATH = "/ws";
+
 	// private static final Logger logger = LoggerFactory.getLogger(Application.class);
 	private static final String SCHEMA_RESOURCE_PREFIX = "/de/metas/vertical/pharma/vendor/gateway/msv3/schema";
 
@@ -80,7 +82,7 @@ public class Application
 		final MessageDispatcherServlet servlet = new MessageDispatcherServlet();
 		servlet.setApplicationContext(applicationContext);
 		servlet.setTransformWsdlLocations(true);
-		return new ServletRegistrationBean(servlet, "/ws/*");
+		return new ServletRegistrationBean(servlet, WEBSERVICE_PATH + "/*");
 	}
 
 	// e.g. http://localhost:8080/ws/Msv3VerfuegbarkeitAnfragenService.wsdl

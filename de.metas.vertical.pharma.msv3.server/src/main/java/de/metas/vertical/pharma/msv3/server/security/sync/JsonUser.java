@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability.sync;
+package de.metas.vertical.pharma.msv3.server.security.sync;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -32,30 +33,22 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JsonStockAvailability
+@ToString(exclude = "password")
+public class JsonUser
 {
-	@JsonProperty("pzn")
-	private long pzn;
-	@JsonProperty("qty")
-	private int qty;
+	@JsonProperty("username")
+	private String username;
+	@JsonProperty("password")
+	private String password;
 
 	@JsonCreator
 	@Builder
-	private JsonStockAvailability(
-			@JsonProperty("pzn") final long pzn,
-			@JsonProperty("qty") final int qty)
+	private JsonUser(
+			@JsonProperty("username") final String username,
+			@JsonProperty("password") final String password)
 	{
-		if (pzn <= 0)
-		{
-			throw new IllegalArgumentException("pzn shall be > 0");
-		}
-		if (qty < 0)
-		{
-			throw new IllegalArgumentException("qty shall be >= 0");
-		}
-
-		this.pzn = pzn;
-		this.qty = qty;
+		this.username = username;
+		this.password = password;
 	}
 
 }
