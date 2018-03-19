@@ -29,7 +29,7 @@ function addBarcodeScanner(WrappedComponent) {
 
     selectBarcode = result => {
       this.setState({
-        barcodeSelected: result.codeResult.code,
+        barcodeSelected: result ? result.codeResult.code : null,
         scanning: false,
       });
     };
