@@ -34,9 +34,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.model.I_M_Attribute;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -150,18 +147,6 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	public void flushAndClearCache()
 	{
 		// nothing because there is no internal cache
-	}
-
-	@Override
-	public List<I_M_HU> retrieveHUsForAttributeStringValue(final int productId, final int attributeId, final String value)
-	{
-		return Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
-				.addOnlyWithProductId(productId)
-				.list()
-				.stream()
-				.filter(hu -> isHUForAttribute(hu, attributeId, value))
-				.collect(ImmutableList.toImmutableList());
-
 	}
 
 	private boolean isHUForAttribute(final I_M_HU hu, final int attributeId, final String value)

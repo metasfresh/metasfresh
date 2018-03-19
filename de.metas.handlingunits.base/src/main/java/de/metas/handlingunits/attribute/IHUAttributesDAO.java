@@ -94,6 +94,4 @@ public interface IHUAttributesDAO extends ISingletonService
 	 * If there is no internal cache, this method will do nothing.
 	 */
 	void flushAndClearCache();
-
-	List<I_M_HU> retrieveHUsForAttributeStringValue(int productId, int attributeId, String value);
 }
