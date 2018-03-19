@@ -1,4 +1,4 @@
-package org.compiere.report;
+package org.compiere.report.viewer;
 
 /*
  * #%L
@@ -37,7 +37,7 @@ import net.sf.jasperreports.swing.JRViewer;
 /**
  * Jasper Viewer Frame
  */
-class JasperReportViewerFrame extends javax.swing.JFrame
+public class JasperReportViewerFrame extends javax.swing.JFrame
 {
 
 	private static final long serialVersionUID = 1192807883081180999L;
@@ -59,7 +59,7 @@ class JasperReportViewerFrame extends javax.swing.JFrame
 	 *            address.
 	 * @throws JRException
 	 */
-	protected JasperReportViewerFrame(final JasperPrint jasperPrint, final String frameTitle, final ProcessInfo pi) throws JRException
+	public JasperReportViewerFrame(final JasperPrint jasperPrint, final String frameTitle, final ProcessInfo pi) throws JRException
 	{
 		this.m_title = frameTitle;
 		this.processInfo = pi;
