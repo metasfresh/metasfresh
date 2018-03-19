@@ -10,12 +10,12 @@ package org.compiere.report;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,6 +32,7 @@ import org.compiere.apps.AEnv;
 import de.metas.process.ProcessInfo;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.swing.JRViewer;
 
 /**
  * Jasper Viewer Frame
@@ -60,13 +61,12 @@ class JasperReportViewerFrame extends javax.swing.JFrame
 	 */
 	protected JasperReportViewerFrame(final JasperPrint jasperPrint, final String frameTitle, final ProcessInfo pi) throws JRException
 	{
-		super();
-
 		this.m_title = frameTitle;
 		this.processInfo = pi;
 
 		initComponents();
-		JasperReportViewerPanel viewer = new JasperReportViewerPanel(this, jasperPrint);
+		//JasperReportViewerPanel viewer = new JasperReportViewerPanel(this, jasperPrint);
+		final JRViewer viewer = new JRViewer(jasperPrint);
 		this.pnlMain.add(viewer, BorderLayout.CENTER);
 
 		// Add this frame to metasfresh window manager.
@@ -107,7 +107,7 @@ class JasperReportViewerFrame extends javax.swing.JFrame
 		getContentPane().add(pnlMain, java.awt.BorderLayout.CENTER);
 
 		pack();
-		java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+		final java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 		setSize(new java.awt.Dimension(750, 550));
 		setLocation((screenSize.width - 750) / 2, (screenSize.height - 550) / 2);
 	}
