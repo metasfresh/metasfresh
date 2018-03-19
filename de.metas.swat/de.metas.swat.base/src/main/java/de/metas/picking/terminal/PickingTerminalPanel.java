@@ -59,8 +59,6 @@ public abstract class PickingTerminalPanel implements ITerminalBasePanel
 
 	public PickingTerminalPanel()
 	{
-		super();
-
 		terminalContextAndRefs = TerminalContextFactory.get().createContextAndRefs();
 		getTerminalContext().addToDisposableComponents(this);
 	}
@@ -135,8 +133,7 @@ public abstract class PickingTerminalPanel implements ITerminalBasePanel
 	{
 		pickingOKPanel.setIsPos(true);
 		pickingOKPanel.setSelection(pickingOKPanel.getSelectedScheduleIds(pickingOKPanel.getMiniTable()));
-		// related to https://github.com/metasfresh/metasfresh/issues/456
-		// pickingOKPanel.createPackingDetails(getCtx(), pickingOKPanel.getSelectedRows());
+		pickingOKPanel.createPackingDetails(getCtx(), pickingOKPanel.getSelectedRows());
 	}
 
 	@Override
