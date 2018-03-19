@@ -130,7 +130,7 @@ public class M_InOut
 
 		// In case there are lines with issues, trigger the request creation for them.
 		// Note: The request creation will be done async
-		Services.get(IRequestCreator.class).createRequests(ctx, linesWithQualityIssues, trxName);
+		Services.get(IRequestCreator.class).createRequestsForInOutLines(ctx, linesWithQualityIssues, trxName);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })

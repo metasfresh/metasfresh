@@ -28,7 +28,7 @@ import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout;
  * #L%
  */
 
-public class AsyncRequestCreator implements IRequestCreator
+public class AsyncRequestCreator_M_InOutLines implements IRequestCreator
 {
 
 	@Override

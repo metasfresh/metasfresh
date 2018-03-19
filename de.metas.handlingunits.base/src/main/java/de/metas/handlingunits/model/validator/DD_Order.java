@@ -7,6 +7,7 @@ import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_DD_Order;
 
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
+import de.metas.request.service.IRequestCreator;
 
 /*
  * #%L
@@ -43,4 +44,12 @@ public class DD_Order
 		Services.get(IHUDDOrderDAO.class).clearHUsScheduledToMoveList(ddOrder);
 	}
 
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void onComplete_BlockWarehouseLines(final I_DD_Order ddOrder)
+	{
+		Services.get(IRequestCreator.class).createRequestsForInOutLines(ctx, linesWithQualityIssues, trxName);
+		
+	}
+	
+	
 }
