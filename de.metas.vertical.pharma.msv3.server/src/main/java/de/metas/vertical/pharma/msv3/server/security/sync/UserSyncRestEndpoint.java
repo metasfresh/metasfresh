@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
-import de.metas.vertical.pharma.msv3.server.security.MSV3User;
-import de.metas.vertical.pharma.msv3.server.security.MSV3UserRepository;
+import de.metas.vertical.pharma.msv3.server.security.JpaUser;
+import de.metas.vertical.pharma.msv3.server.security.JpaUserRepository;
 
 /*
  * #%L
@@ -39,7 +39,7 @@ public class UserSyncRestEndpoint
 	public static final String ENDPOINT = MSV3ServerConstants.BACKEND_SYNC_REST_ENDPOINT + "/users";
 
 	@Autowired
-	private MSV3UserRepository usersRepo;
+	private JpaUserRepository usersRepo;
 
 	@PostMapping
 	public void update(@RequestBody final JsonUsersUpdateRequest request)
@@ -51,14 +51,15 @@ public class UserSyncRestEndpoint
 	{
 		final String username = jsonUser.getUsername();
 
-		MSV3User user = usersRepo.findByUsername(username);
+		JpaUser user = usersRepo.findByUsername(username);
 		if (user == null)
 		{
-			user = new MSV3User();
+			user = new JpaUser();
 			user.setUsername(username);
 		}
 
 		user.setPassword(jsonUser.getPassword());
+		user.setBpartnerId(jsonUser.getBpartnerId());
 
 		usersRepo.save(user);
 	}

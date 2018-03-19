@@ -55,16 +55,16 @@ public class OrderCandidateRestModuleInit extends AbstractModuleInterceptor
 	{
 		final I_AD_InputDataSource inputDataSource = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(
 				Env.getCtx(),
-				OrderCandidatesRestController.DATA_SOURCE_INTERNAL_NAME,
+				OrderCandidatesRestControllerImpl.DATA_SOURCE_INTERNAL_NAME,
 				false, // throwEx
 				ITrx.TRXNAME_None);
 		if (inputDataSource == null)
 		{
 			final I_AD_InputDataSource newInputDataSource = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_InputDataSource.class, ITrx.TRXNAME_None);
 			newInputDataSource.setEntityType(OrderCandidate_Constants.ENTITY_TYPE);
-			newInputDataSource.setInternalName(OrderCandidatesRestController.DATA_SOURCE_INTERNAL_NAME);
+			newInputDataSource.setInternalName(OrderCandidatesRestControllerImpl.DATA_SOURCE_INTERNAL_NAME);
 			newInputDataSource.setIsDestination(false);
-			newInputDataSource.setName(OrderCandidatesRestController.DATA_SOURCE_INTERNAL_NAME);
+			newInputDataSource.setName(OrderCandidatesRestControllerImpl.DATA_SOURCE_INTERNAL_NAME);
 			InterfaceWrapperHelper.save(newInputDataSource);
 		}
 	}

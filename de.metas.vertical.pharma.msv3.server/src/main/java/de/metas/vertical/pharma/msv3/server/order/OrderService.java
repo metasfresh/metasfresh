@@ -1,18 +1,29 @@
 package de.metas.vertical.pharma.msv3.server.order;
 
-import java.util.concurrent.ConcurrentHashMap;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderStatus;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderStatusResponse;
+import de.metas.vertical.pharma.msv3.protocol.order.SupportIDType;
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
+import de.metas.vertical.pharma.msv3.protocol.types.PZN;
+import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
+import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrder;
+import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrderPackage;
+import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrderPackageItem;
+import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrderRepository;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -39,24 +50,83 @@ import de.metas.vertical.pharma.msv3.protocol.types.Id;
 @Service
 public class OrderService
 {
-	private final ConcurrentHashMap<Id, OrderCreateResponse> mockedOrdersById = new ConcurrentHashMap<>();
+	@Autowired
+	private JpaOrderRepository jpaOrdersRepo;
 
+	@Transactional
 	public OrderCreateResponse createOrder(final OrderCreateRequest request)
 	{
-		// TODO
-		// throw new UnsupportedOperationException();
-		return getMockResponse(request);
+		final JpaOrder jpaOrder = new JpaOrder();
+		jpaOrder.setBpartnerId(request.getBpartnerId().getValueAsInt());
+		jpaOrder.setDocumentNo(request.getOrderId().getValueAsString());
+		jpaOrder.setSupportId(request.getSupportId().getValueAsInt());
+		jpaOrder.setOrderStatus(OrderStatus.UNKNOWN_ID);
+		jpaOrder.setNightOperation(false);
+		jpaOrder.addOrderPackages(request.getOrderPackages().stream()
+				.map(this::createJpaOrderPackage)
+				.collect(ImmutableList.toImmutableList()));
+		jpaOrdersRepo.save(jpaOrder);
+
+		return createOrderCreateResponse(jpaOrder);
 	}
 
-	private OrderCreateResponse getMockResponse(final OrderCreateRequest request)
+	private JpaOrderPackage createJpaOrderPackage(final OrderCreateRequestPackage orderPackage)
 	{
-		return mockedOrdersById.compute(request.getOrderId(), (orderId, existingOrder) -> {
-			if (existingOrder != null)
-			{
-				throw new RuntimeException("An order with ID " + orderId + " already exists");
-			}
-			return createMockResponse(request);
-		});
+		final JpaOrderPackage jpaOrderPackage = new JpaOrderPackage();
+		jpaOrderPackage.setDocumentNo(orderPackage.getId().getValueAsString());
+		jpaOrderPackage.setOrderType(orderPackage.getOrderType());
+		jpaOrderPackage.setOrderIdentification(orderPackage.getOrderIdentification());
+		jpaOrderPackage.setSupportId(orderPackage.getSupportId().getValueAsInt());
+		jpaOrderPackage.setPackingMaterialId(orderPackage.getPackingMaterialId());
+		jpaOrderPackage.addItems(orderPackage.getItems().stream()
+				.map(this::createJpaOrderPackageItem)
+				.collect(ImmutableList.toImmutableList()));
+		return jpaOrderPackage;
+	}
+
+	private JpaOrderPackageItem createJpaOrderPackageItem(final OrderCreateRequestPackageItem orderPackageItem)
+	{
+		JpaOrderPackageItem jpaOrderPackageItem = new JpaOrderPackageItem();
+		jpaOrderPackageItem.setPzn(orderPackageItem.getPzn().getValueAsLong());
+		jpaOrderPackageItem.setQty(orderPackageItem.getQty().getValueAsInt());
+		jpaOrderPackageItem.setDeliverySpecifications(orderPackageItem.getDeliverySpecifications());
+		return jpaOrderPackageItem;
+	}
+
+	private OrderCreateResponse createOrderCreateResponse(final JpaOrder jpaOrder)
+	{
+		return OrderCreateResponse.builder()
+				.bpartnerId(BPartnerId.of(jpaOrder.getBpartnerId()))
+				.orderId(Id.of(jpaOrder.getDocumentNo()))
+				.supportId(SupportIDType.of(jpaOrder.getSupportId()))
+				.nightOperation(jpaOrder.getNightOperation())
+				.orderPackages(jpaOrder.getOrderPackages().stream()
+						.map(this::createOrderResponsePackage)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private OrderResponsePackage createOrderResponsePackage(final JpaOrderPackage jpaOrderPackage)
+	{
+		return OrderResponsePackage.builder()
+				.id(Id.of(jpaOrderPackage.getDocumentNo()))
+				.orderType(jpaOrderPackage.getOrderType())
+				.orderIdentification(jpaOrderPackage.getOrderIdentification())
+				.supportId(SupportIDType.of(jpaOrderPackage.getSupportId()))
+				.packingMaterialId(jpaOrderPackage.getPackingMaterialId())
+				.items(jpaOrderPackage.getItems().stream()
+						.map(this::createOrderResponsePackageItem)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private OrderResponsePackageItem createOrderResponsePackageItem(final JpaOrderPackageItem jpaOrderPackageItem)
+	{
+		return OrderResponsePackageItem.builder()
+				.pzn(PZN.of(jpaOrderPackageItem.getPzn()))
+				.qty(Quantity.of(jpaOrderPackageItem.getQty()))
+				.deliverySpecifications(jpaOrderPackageItem.getDeliverySpecifications())
+				.build();
 	}
 
 	private static OrderCreateResponse createMockResponse(final OrderCreateRequest request)
@@ -84,19 +154,26 @@ public class OrderService
 				.build();
 	}
 
-	public OrderStatusResponse getOrderStatus(final Id orderId)
+	public OrderStatusResponse getOrderStatus(@NonNull final Id orderId, @NonNull final BPartnerId bpartnerId)
 	{
-		final OrderCreateResponse order = mockedOrdersById.get(orderId);
-		if (order == null)
+		final JpaOrder jpaOrder = jpaOrdersRepo.findByDocumentNoAndBpartnerId(orderId.getValueAsString(), bpartnerId.getValueAsInt());
+		if (jpaOrder == null)
 		{
-			throw new RuntimeException("No order found for ID " + orderId);
+			throw new RuntimeException("No order found for id='" + orderId + "' and bpartnerId='" + bpartnerId + "'");
 		}
 
+		return createOrderStatusResponse(jpaOrder);
+	}
+
+	private OrderStatusResponse createOrderStatusResponse(final JpaOrder jpaOrder)
+	{
 		return OrderStatusResponse.builder()
-				.orderId(order.getOrderId())
-				.supportId(order.getSupportId())
-				.orderStatus(OrderStatus.RESPONSE_AVAILABLE)
-				.orderPackages(order.getOrderPackages())
+				.orderId(Id.of(jpaOrder.getDocumentNo()))
+				.supportId(SupportIDType.of(jpaOrder.getSupportId()))
+				.orderStatus(jpaOrder.getOrderStatus())
+				.orderPackages(jpaOrder.getOrderPackages().stream()
+						.map(this::createOrderResponsePackage)
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 }

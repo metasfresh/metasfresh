@@ -39,12 +39,10 @@ import de.metas.ordercandidate.model.I_C_OLCand;
  */
 
 @RestController
-@RequestMapping(value = OrderCandidatesRestController.ENDPOINT)
-public class OrderCandidatesRestController
+@RequestMapping(value = OrderCandidatesRestEndpoint.ENDPOINT)
+public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 {
-	public static final String ENDPOINT = "/api/sales/order/candidates";
-
-	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestController.class.getName();
+	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
 	@Autowired
 	private OLCandRepository olCandRepo;

@@ -4,6 +4,7 @@ import javax.xml.bind.JAXBElement;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
@@ -50,11 +51,12 @@ public class OrderJAXBConverters
 		this.jaxbObjectFactory = jaxbObjectFactory;
 	}
 
-	public OrderCreateRequest fromJAXB(final Bestellung soapOrder)
+	public OrderCreateRequest fromJAXB(final Bestellung soapOrder, final BPartnerId bpartnerId)
 	{
 		return OrderCreateRequest.builder()
 				.orderId(Id.of(soapOrder.getId()))
 				.supportId(SupportIDType.of(soapOrder.getBestellSupportId()))
+				.bpartnerId(bpartnerId)
 				.orderPackages(soapOrder.getAuftraege().stream()
 						.map(this::createOrderPackage)
 						.collect(ImmutableList.toImmutableList()))
