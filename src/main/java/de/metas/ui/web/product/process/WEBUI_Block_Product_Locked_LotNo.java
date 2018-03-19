@@ -106,7 +106,7 @@ public class WEBUI_Block_Product_Locked_LotNo extends ViewBasedProcessTemplate i
 
 		return attributesOrdered.stream()
 				.filter(huAttribute -> huAttribute.getM_Attribute_ID() == attributeId)
-				.filter(huAttribute -> huAttribute.getValue().equals(value))
+				.filter(huAttribute -> value.equals(huAttribute.getValue()))
 				.findAny()
 				.isPresent();
 	}
