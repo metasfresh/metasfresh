@@ -15,7 +15,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1213257420L;
+	private static final long serialVersionUID = 1205954194L;
 
     /** Standard Constructor */
     public X_C_PaySelection (Properties ctx, int C_PaySelection_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 			setDocAction (null); // CO
 			setDocStatus (null); // DR
 			setIsApproved (false);
+			setIsExportBatchBookings (true); // Y
 			setName (null); // @#Date@
 			setPayDate (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setProcessed (false);
@@ -268,6 +269,29 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	public boolean isApproved () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Sammelbuchungen exportieren.
+		@param IsExportBatchBookings Sammelbuchungen exportieren	  */
+	@Override
+	public void setIsExportBatchBookings (boolean IsExportBatchBookings)
+	{
+		set_Value (COLUMNNAME_IsExportBatchBookings, Boolean.valueOf(IsExportBatchBookings));
+	}
+
+	/** Get Sammelbuchungen exportieren.
+		@return Sammelbuchungen exportieren	  */
+	@Override
+	public boolean isExportBatchBookings () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsExportBatchBookings);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
