@@ -337,11 +337,11 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>org.codehaus.mojo</groupId>
-										<artifactId>jasperreports-maven-plugin</artifactId>
-										<versionRange>[1.0-beta-2,)</versionRange>
+										<groupId>com.alexnederlof</groupId>
+										<artifactId>jasperreports-plugin</artifactId>
+										<versionRange>[2.0,)</versionRange>
 										<goals>
-											<goal>compile-reports</goal>
+											<goal>jasper</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
