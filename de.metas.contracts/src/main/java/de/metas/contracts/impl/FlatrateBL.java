@@ -1021,7 +1021,7 @@ public class FlatrateBL implements IFlatrateBL
 			final I_C_Flatrate_Term nextTerm = currentTerm.getC_FlatrateTerm_Next();
 			final I_C_Flatrate_Conditions nextConditions = nextTerm.getC_Flatrate_Conditions();
 			final I_C_Flatrate_Transition nextTransition = nextConditions.getC_Flatrate_Transition();
-			if (nextTransition.isAutoExtension() && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0)
+			if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0)
 			{
 				final ContractExtendingRequest nextContext = ContractExtendingRequest.builder()
 						.AD_PInstance_ID(context.getAD_PInstance_ID())
@@ -1226,7 +1226,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final I_C_Flatrate_Transition transition = getTransitionForTerm(term);
 
-		term.setIsAutoRenew(transition.isAutoRenew());
+		term.setIsAutoRenew(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne.equals(transition.getExtensionType()));
 		updateEndDate(transition, term);
 		updateNoticeDate(transition, term);
 	}

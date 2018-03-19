@@ -14,7 +14,7 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -220311784L;
+	private static final long serialVersionUID = 1706335288L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Transition (Properties ctx, int C_Flatrate_Transition_ID, String trxName)
@@ -345,6 +345,32 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** 
+	 * ExtensionType AD_Reference_ID=540843
+	 * Reference name: ExtensionType
+	 */
+	public static final int EXTENSIONTYPE_AD_Reference_ID=540843;
+	/** ExtendAll = EA */
+	public static final String EXTENSIONTYPE_ExtendAll = "EA";
+	/** ExtendOne = EO */
+	public static final String EXTENSIONTYPE_ExtendOne = "EO";
+	/** Set Extension Type.
+		@param ExtensionType Extension Type	  */
+	@Override
+	public void setExtensionType (java.lang.String ExtensionType)
+	{
+
+		set_Value (COLUMNNAME_ExtensionType, ExtensionType);
+	}
+
+	/** Get Extension Type.
+		@return Extension Type	  */
+	@Override
+	public java.lang.String getExtensionType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExtensionType);
 	}
 
 	/** Set Neue Vertragslaufzeit autom. Fertigstellen.
