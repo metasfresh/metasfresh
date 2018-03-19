@@ -149,15 +149,5 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		// nothing because there is no internal cache
 	}
 
-	private boolean isHUForAttribute(final I_M_HU hu, final int attributeId, final String value)
-	{
-		final List<I_M_HU_Attribute> attributesOrdered = retrieveAttributesOrdered(hu);
-
-		return attributesOrdered.stream()
-				.filter(huAttribute -> huAttribute.getM_Attribute_ID() == attributeId)
-				.filter(huAttribute -> huAttribute.getValue().equals(value))
-				.findAny()
-				.isPresent();
-	}
 
 }
