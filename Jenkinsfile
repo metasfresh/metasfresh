@@ -121,6 +121,12 @@ node('agent && linux')
 						.withArtifactName('metasfresh-report')
 						.withWorkDir('de.metas.report/report-service/target/docker');
 					dockerBuildAndPush(reportDockerConf)
+
+					final DockerConf printDockerConf = materialDispoDockerConf
+						.withArtifactName('metasfresh-print')
+						.withWorkDir('de.metas.printing.rest-api-impl/target/docker');
+					dockerBuildAndPush(printDockerConf)
+
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage
 

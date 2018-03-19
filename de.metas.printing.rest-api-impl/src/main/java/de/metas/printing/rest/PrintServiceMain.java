@@ -1,4 +1,4 @@
-package de.metas.report;
+package de.metas.printing.rest;
 
 import java.util.Collections;
 
@@ -11,7 +11,6 @@ import org.compiere.util.Ini;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
@@ -20,9 +19,9 @@ import de.metas.Profiles;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.serverRoot.base
+ * de.metas.printing.rest-api-impl
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,31 +30,27 @@ import de.metas.Profiles;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-@SpringBootApplication(scanBasePackages =
-	{ "de.metas.report", "de.metas.adempiere.report.jasper" })
-@ServletComponentScan(value =
-	{ "de.metas.adempiere.report.jasper.servlet" })
-@Profile(Profiles.PROFILE_JasperService)
-public class ReportServiceMain
+@SpringBootApplication
+@Profile(Profiles.PROFILE_PrintingService)
+public class PrintServiceMain
 {
-	@Autowired
-	private ApplicationContext applicationContext;
-
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
 	 * The only known use of that is that metasfresh can open the initial license & connection dialog to store the initial properties file.
 	 */
 	public static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
+
+	@Autowired
+	private ApplicationContext applicationContext;
 
 	public static void main(final String[] args)
 	{
@@ -63,10 +58,10 @@ public class ReportServiceMain
 
 		final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 
-		new SpringApplicationBuilder(ReportServiceMain.class)
+		new SpringApplicationBuilder(PrintServiceMain.class)
 				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
-				.profiles(Profiles.PROFILE_JasperService)
+				.profiles(Profiles.PROFILE_PrintingService)
 				.run(args);
 	}
 

@@ -95,7 +95,7 @@ public class ServerBoot implements InitializingBean
 				.web(true)
 				// consider removing the jasper profile
 				// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
-				.profiles(Profiles.PROFILE_App, Profiles.PROFILE_JasperServer)
+				.profiles(Profiles.PROFILE_App, Profiles.PROFILE_JasperService)
 				.run(args);
 	}
 
