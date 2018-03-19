@@ -2,21 +2,11 @@ import React, { Component } from 'react';
 
 import MasterWidget from '../widget/MasterWidget';
 import RawWidget from '../widget/RawWidget';
-import BarcodeScanner, { BarcodeScannerResult } from './BarcodeScanner';
+import BarcodeScanner from '../widget/BarcodeScanner/BarcodeScannerWidget';
 
 class OverlayField extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      scanning: false,
-      result: null,
-      barcodeSelected: null,
-    };
-  }
-
   handleKeyDown = e => {
-    const { handleSubmit, closeOverlay } = this.props;
+    const { handleSubmit, closeOverlay, onSelectBarcode } = this.props;
     switch (e.key) {
       case 'Enter':
         document.activeElement.blur();
@@ -26,37 +16,27 @@ class OverlayField extends Component {
         closeOverlay();
         break;
       default:
-        this.setState({
-          barcodeSelected: null,
-        });
+        onSelectBarcode(null);
         break;
     }
   };
 
-  _scanBarcode = val => {
-    this.setState({
-      scanning: typeof val !== 'undefined' ? val : !this.state.scanning,
-      result: null,
-      barcodeSelected: null,
-    });
-  };
+  renderBarcodeScanButton = () => {
+    const { onScanBarcode } = this.props;
 
-  _onBarcodeDetected = result => {
-    this.setState({
-      result,
-    });
-  };
-
-  selectBarcode = result => {
-    this.setState({
-      barcodeSelected: result.codeResult.code,
-      scanning: false,
-    });
+    return (
+      <button
+        className="btn btn-sm btn-meta-success"
+        onClick={() => onScanBarcode(true)}
+      >
+        Scan using camera
+      </button>
+    );
   };
 
   renderElements = (layout, data, type) => {
-    const { disabled } = this.props;
-    const { barcodeSelected } = this.state;
+    const { disabled, barcodeSelected } = this.props;
+    // const { barcodeSelected } = this.state;
     const elements = layout.elements;
 
     return elements.map((elem, id) => {
@@ -64,14 +44,7 @@ class OverlayField extends Component {
       let captionElement = null;
 
       if (elem.caption === 'Barcode') {
-        captionElement = (
-          <button
-            className="btn btn-sm btn-meta-success"
-            onClick={() => this._scanBarcode(true)}
-          >
-            Scan using camera
-          </button>
-        );
+        captionElement = this.renderBarcodeScanButton();
       }
 
       return (
@@ -92,30 +65,6 @@ class OverlayField extends Component {
     });
   };
 
-  renderScanner = () => {
-    const { result } = this.state;
-
-    return (
-      <div className="row barcode-scanner-widget">
-        <div className="col-sm-12">
-          <BarcodeScanner
-            result={result}
-            onDetected={this._onBarcodeDetected}
-            onClose={() => this._scanBarcode(false)}
-            onReset={() => this._scanBarcode(true)}
-          />
-          <div className="row scanning-result">
-            <span className="label col-xs-3 col-sm-2">Barcode</span>
-            <BarcodeScannerResult
-              result={result}
-              onSelect={result => this.selectBarcode(result)}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   renderParameters = layout => {
     const {
       windowType,
@@ -125,21 +74,14 @@ class OverlayField extends Component {
       handlePatch,
       handleChange,
       captionValue,
+      barcodeSelected,
     } = this.props;
-    const { barcodeSelected } = this.state;
     const parameters = layout.parameters;
     return parameters.map((item, index) => {
       let captionElement = null;
 
       if (item.parameterName === 'Barcode') {
-        captionElement = (
-          <button
-            className="btn btn-sm btn-meta-success"
-            onClick={() => this._scanBarcode(true)}
-          >
-            Scan using camera
-          </button>
-        );
+        captionElement = this.renderBarcodeScanButton();
       }
 
       if (barcodeSelected) {
@@ -179,12 +121,11 @@ class OverlayField extends Component {
   };
 
   render() {
-    const { data, layout, type, filter } = this.props;
-    const { scanning } = this.state;
+    const { data, layout, type, filter, scanning, scannerElement } = this.props;
     let renderedContent = null;
 
     if (scanning) {
-      renderedContent = this.renderScanner();
+      renderedContent = scannerElement;
     } else {
       // TODO: Why sometimes it's wrapped in MasterWidget, and other
       // times it's not ? Needs refactoring.
@@ -207,4 +148,4 @@ class OverlayField extends Component {
   }
 }
 
-export default OverlayField;
+export default BarcodeScanner(OverlayField);
