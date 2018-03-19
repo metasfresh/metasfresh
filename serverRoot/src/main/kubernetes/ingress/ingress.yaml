@@ -1,24 +1,35 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: test-ingress
+  name: metasfresh-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  tls:
+  - secretName: tls-certificate
   rules:
-  - http:
+# virtual host-based
+  - host: admin.tobi.metasfresh.com
+    http:
       paths:
-      - path: /tobi-demo/webui-frontend
+      - backend:
+          serviceName: "metasfresh-admin"
+          servicePort: 9090
+#path-based
+#  - http:
+#    - paths:
+#      - path: /metasfresh-admin
+#        backend:
+#          serviceName: "metasfresh-admin"
+#          servicePort: 9090
+    host: demo.tobi.metasfresh.com
+    http:
+      paths:
+      - path: /ui
         backend:
           serviceName: "metasfresh-all-in-one-tobi-demo"
-          servicePort: 80    
-        path: /tobi-demo/webui-api
+          servicePort: 80
+        path: /api/ui
         backend:
           serviceName: "metasfresh-all-in-one-tobi-demo"
           servicePort: 8080
-    http:
-      paths:
-      - path: /metasfresh-admin
-        backend:
-          serviceName: "metasfresh-admin"
-          servicePort: 9090

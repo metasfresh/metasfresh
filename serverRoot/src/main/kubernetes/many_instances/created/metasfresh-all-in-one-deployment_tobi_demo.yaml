@@ -72,7 +72,7 @@ spec:
 # this one we have on docker.metasfresh.com, so let's try getting from there
         resources: 
           requests:
-            memory: 600M
+            memory: 1200M
             cpu: 500m
         volumeMounts:
 #        - mountPath: /opt/metasfresh/log
