@@ -140,57 +140,84 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 		return null;
 	}
 
+	/**
+	 * @return {@code PROPAGATIONTYPE_NoPropagation}.
+	 */
 	@Override
 	public String getPropagationType()
 	{
 		return X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation;
 	}
 
+	/**
+	 * @return {@link NullAggregationStrategy#instance}.
+	 */
 	@Override
 	public IAttributeAggregationStrategy retrieveAggregationStrategy()
 	{
 		return NullAggregationStrategy.instance;
 	}
 
+	/**
+	 * @return {@link NullSplitterStrategy#instance}.
+	 */
 	@Override
 	public IAttributeSplitterStrategy retrieveSplitterStrategy()
 	{
 		return NullSplitterStrategy.instance;
 	}
 
+	/**
+	 * @return {@link CopyHUAttributeTransferStrategy#instance}.
+	 */
 	@Override
 	public IHUAttributeTransferStrategy retrieveTransferStrategy()
 	{
 		return CopyHUAttributeTransferStrategy.instance;
 	}
 
+	/**
+	 * @return {@code true}.
+	 */
 	@Override
 	public boolean isReadonlyUI()
 	{
-		throw new UnsupportedOperationException();
+		return true;
 	}
 
+	/**
+	 * @return {@code true}.
+	 */
 	@Override
 	public boolean isDisplayedUI()
 	{
-		throw new UnsupportedOperationException();
+		return true;
 	}
 
+	/**
+	 * @return our attribute instance's {@code M_Attribute_ID}.
+	 */
 	@Override
 	public int getDisplaySeqNo()
 	{
-		throw new UnsupportedOperationException();
+		return attributeInstance.getM_Attribute_ID();
 	}
 
+	/**
+	 * @return {@code true}
+	 */
 	@Override
 	public boolean isUseInASI()
 	{
 		return true;
 	}
 
+	/**
+	 * @return {@code false}, since no HU-PI attribute is involved.
+	 */
 	@Override
 	public boolean isDefinedByTemplate()
 	{
-		throw new UnsupportedOperationException();
+		return false;
 	}
 }

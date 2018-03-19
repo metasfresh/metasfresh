@@ -17,6 +17,8 @@ import org.springframework.xml.xsd.SimpleXsdSchema;
 import org.springframework.xml.xsd.XsdSchema;
 
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityJAXBConverters;
+import de.metas.vertical.pharma.msv3.server.order.OrderStatusWebService;
+import de.metas.vertical.pharma.msv3.server.order.OrderWebService;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityWebService;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
 import lombok.NonNull;
@@ -81,11 +83,25 @@ public class Application
 		return new ServletRegistrationBean(servlet, "/ws/*");
 	}
 
-	// http://localhost:8080/ws/Msv3VerfuegbarkeitAnfragenService.wsdl
+	// e.g. http://localhost:8080/ws/Msv3VerfuegbarkeitAnfragenService.wsdl
 	@Bean(name = StockAvailabilityWebService.WSDL_BEAN_NAME)
-	public Wsdl11Definition msv3VerfuegbarkeitAnfragenService()
+	public Wsdl11Definition stockAvailabilityWebService()
 	{
 		return createWsdl(StockAvailabilityWebService.WSDL_BEAN_NAME);
+	}
+
+	// e.g. http://localhost:8080/ws/Msv3BestellenService.wsdl
+	@Bean(name = OrderWebService.WSDL_BEAN_NAME)
+	public Wsdl11Definition orderWebService()
+	{
+		return createWsdl(OrderWebService.WSDL_BEAN_NAME);
+	}
+
+	// e.g. http://localhost:8080/ws/Msv3BestellstatusAbfragenService.wsdl
+	@Bean(name = OrderStatusWebService.WSDL_BEAN_NAME)
+	public Wsdl11Definition orderStatusWebService()
+	{
+		return createWsdl(OrderStatusWebService.WSDL_BEAN_NAME);
 	}
 
 	@Bean("Msv3Service_schema1")

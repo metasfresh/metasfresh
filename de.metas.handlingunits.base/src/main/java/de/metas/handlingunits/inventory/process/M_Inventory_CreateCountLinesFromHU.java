@@ -137,6 +137,7 @@ public class M_Inventory_CreateCountLinesFromHU extends JavaProcess implements I
 		inventoryLine.setQtyTU(BigDecimal.ZERO); // TODO
 
 		inventoryLine.setC_UOM(huProductStorage.getC_UOM());
+		inventoryLine.setQtyBook(huProductStorage.getQty());
 		inventoryLine.setQtyCount(huProductStorage.getQty());
 
 		InterfaceWrapperHelper.save(inventoryLine);

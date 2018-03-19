@@ -1,10 +1,14 @@
-package de.metas.vertical.pharma.msv3.server;
+package de.metas.vertical.pharma.msv3.protocol.order;
 
-import lombok.experimental.UtilityClass;
+import de.metas.vertical.pharma.msv3.protocol.types.PZN;
+import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.commons
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -24,10 +28,16 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
-public final class MSV3ServerConstants
+@Value
+@Builder
+public class OrderResponsePackageItem
 {
-	public static final String BACKEND_SYNC_REST_ENDPOINT = "/api";
+	@NonNull
+	PZN pzn;
 
-	public static final String SOAP_NAMESPACE = "urn:msv3:v2";
+	@NonNull
+	Quantity qty;
+
+	@NonNull
+	DeliverySpecifications deliverySpecifications;
 }

@@ -1,10 +1,11 @@
 package de.metas.vertical.pharma.msv3.protocol.types;
 
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.commons
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -25,44 +26,23 @@ import lombok.Value;
  */
 
 @Value
-public class Quantity
+public class Id
 {
-	public static Quantity of(final int value)
+	public static Id of(final String valueAsString)
 	{
-		if (value == 0)
-		{
-			return ZERO;
-		}
-		return new Quantity(value);
+		return new Id(valueAsString);
 	}
 
-	public static final Quantity ZERO = new Quantity(0);
+	private final String valueAsString;
 
-	private static final int MAX_VALUE = 99999;
-
-	private final int valueAsInt;
-
-	private Quantity(final int value)
+	private Id(@NonNull final String valueAsString)
 	{
-		if (value < 0)
+		if (valueAsString.isEmpty())
 		{
-			throw new IllegalArgumentException("Quantity shall be greater than " + value);
-		}
-		if (value > MAX_VALUE)
-		{
-			throw new IllegalArgumentException("The MSV3 standard allows a maximum quantity of " + value);
+			throw new IllegalArgumentException("value shall not be empty");
 		}
 
-		valueAsInt = value;
+		this.valueAsString = valueAsString;
 	}
 
-	public Quantity min(final Quantity otherQty)
-	{
-		return valueAsInt <= otherQty.valueAsInt ? this : otherQty;
-	}
-
-	public Quantity min(final int otherQty)
-	{
-		return valueAsInt <= otherQty ? this : Quantity.of(otherQty);
-	}
 }
