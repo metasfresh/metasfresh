@@ -16,7 +16,7 @@ RUN apt update \
     && apt -y autoremove \
     && apt -y autoclean
 
-COPY ./configs/logback.xml /opt/metasfresh/metasfresh-print/
+COPY ./configs/logback-spring.xml /opt/metasfresh/metasfresh-print/
 COPY ./configs/metasfresh.properties /opt/metasfresh/metasfresh-print/
 
 COPY ./start_print_docker.sh /opt/metasfresh/metasfresh-print/
