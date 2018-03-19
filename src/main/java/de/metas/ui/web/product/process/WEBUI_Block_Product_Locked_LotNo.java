@@ -9,9 +9,13 @@ import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.model.I_M_Product_LotNumber_Lock;
@@ -79,10 +83,32 @@ public class WEBUI_Block_Product_Locked_LotNo extends ViewBasedProcessTemplate i
 		final int lotNoAttributeID = lotNumberAttr.getM_Attribute_ID();
 		final String lotNoValue = lotNoLock.getLot();
 
-		final List<I_M_HU> husForAttributeStringValue = Services.get(IHUAttributesDAO.class).retrieveHUsForAttributeStringValue(productId, lotNoAttributeID, lotNoValue);
+		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(productId, lotNoAttributeID, lotNoValue);
 
 		Services.get(IHUDDOrderBL.class).createBlockDDOrderForHUs(getCtx(), husForAttributeStringValue);
 
+	}
+
+	public List<I_M_HU> retrieveHUsForAttributeStringValue(final int productId, final int attributeId, final String value)
+	{
+		return Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
+				.addOnlyWithProductId(productId)
+				.list()
+				.stream()
+				.filter(hu -> isHUForAttribute(hu, attributeId, value))
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	private boolean isHUForAttribute(final I_M_HU hu, final int attributeId, final String value)
+	{
+		final List<I_M_HU_Attribute> attributesOrdered = Services.get(IHUAttributesDAO.class).retrieveAttributesOrdered(hu);
+
+		return attributesOrdered.stream()
+				.filter(huAttribute -> huAttribute.getM_Attribute_ID() == attributeId)
+				.filter(huAttribute -> huAttribute.getValue().equals(value))
+				.findAny()
+				.isPresent();
 	}
 
 }
