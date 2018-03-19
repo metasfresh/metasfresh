@@ -135,7 +135,8 @@ public abstract class PickingTerminalPanel implements ITerminalBasePanel
 	{
 		pickingOKPanel.setIsPos(true);
 		pickingOKPanel.setSelection(pickingOKPanel.getSelectedScheduleIds(pickingOKPanel.getMiniTable()));
-		pickingOKPanel.createPackingDetails(getCtx(), pickingOKPanel.getSelectedRows());
+		// related to https://github.com/metasfresh/metasfresh/issues/456
+		// pickingOKPanel.createPackingDetails(getCtx(), pickingOKPanel.getSelectedRows());
 	}
 
 	@Override
