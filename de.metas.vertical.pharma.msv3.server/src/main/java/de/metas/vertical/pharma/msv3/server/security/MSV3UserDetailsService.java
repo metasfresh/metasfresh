@@ -54,7 +54,7 @@ class MSV3UserDetailsService implements UserDetailsService
 	{
 		return User.withUsername(msv3User.getUsername())
 				.password(msv3User.getPassword())
-				.roles(SecurityConfiguration.ROLE)
+				.roles(SecurityConfig.ROLE)
 				.build();
 	}
 }

@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.msv3.server;
+package de.metas.vertical.pharma.msv3.server.security;
 
 import org.springframework.stereotype.Service;
 
