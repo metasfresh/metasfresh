@@ -43,6 +43,7 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -100,12 +101,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
 import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
 import de.metas.interfaces.I_C_OrderLine;
@@ -115,6 +110,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
@@ -127,6 +123,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
+import lombok.NonNull;
 
 /**
  * @author tsa
@@ -611,6 +608,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		// Util.errorUnless(ic.isManual(), "Setting NetAmtToInvoice is only allowed for manual candidates, but {} is not manual", ic);
 		Services.get(IInvoiceCandidateHandlerBL.class).setNetAmtToInvoice(ic);
+
+		Services.get(IInvoiceCandidateHandlerBL.class).setLineNetAmt(ic);
 	}
 
 	@Override
@@ -697,7 +696,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final BigDecimal factor)
 	{
 		BigDecimal qtyInvoicable;
-		
+
 		final BigDecimal qtyOverride = getQtyToInvoice_OverrideOrNull(ic);
 		if (qtyOverride == null || qtyOverride.multiply(factor).compareTo(maxQtyToInvoicable.multiply(factor)) > 0)
 		{
@@ -709,10 +708,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// subtract the qty that has already been invoiced.
 			qtyInvoicable = qtyOverride.subtract(ic.getQtyToInvoice_OverrideFulfilled()).multiply(factor);
 		}
-		
-		if(ic.isInDispute()
+
+		if (ic.isInDispute()
 				&& ic.getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_M_InventoryLine.class) // TODO HARDCODED, see ...
-				)
+		)
 		{
 			qtyInvoicable = qtyInvoicable.subtract(ic.getQtyWithIssues_Effective());
 		}
@@ -1281,7 +1280,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final boolean creditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
 		final boolean creditedInvoiceReinvoicable = invoiceExt.isCreditedInvoiceReinvoicable(); // task 08927: this is only relevant if isCreditMemo, see below
 		final boolean creditedInvoiceIsReversed;
-		
+
 		final Iterator<I_C_Invoice> creditMemosForInvoice = invoiceDAO.retrieveCreditMemosForInvoice(invoiceExt);
 		if (creditMemo && creditMemosForInvoice.hasNext())
 		{
@@ -1321,7 +1320,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					Services.get(ITrxManager.class)
 							.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-							.onAfterCommit(() -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override));
+							.newEventListener(TrxEventTiming.AFTER_COMMIT)
+							.registerWeakly(false) // register "hard", because that's how it was before
+							.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+							.registerHandlingMethod(transaction -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override));
 				}
 
 				if (creditMemo && creditedInvoiceReinvoicable && !creditedInvoiceIsReversed)
@@ -1373,7 +1375,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID
-	 * 
+	 *
 	 * @param invoiceCandidateId
 	 * @param qtyToInvoiceOverride
 	 * @param priceEnteredOverride
@@ -1426,10 +1428,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// here we will get ZERO candidates
 			{
 				final List<I_C_Invoice_Candidate> invoiceCands = invoiceCandDAO.retrieveIcForIl(il);
-				invoiceCandDAO.invalidateCands(invoiceCands, trxName);
+				invoiceCandDAO.invalidateCands(invoiceCands);
 			}
 
-			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new HashSet<I_C_Invoice_Candidate>();
+			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new HashSet<>();
 
 			if (il.getC_OrderLine_ID() > 0)
 			{
@@ -1745,7 +1747,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	// package-visible for testing
 	/* package */BigDecimal getQtyDelivered_Effective(final I_C_Invoice_Candidate ic)
 	{
-		
+
 		final BigDecimal factor;
 		if (ic.getQtyOrdered().signum() < 0)
 		{
@@ -1755,7 +1757,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			factor = BigDecimal.ONE;
 		}
-		
+
 		return ic.getQtyDelivered().subtract((ic.getQtyWithIssues_Effective()).multiply(factor));
 	}
 
@@ -1925,7 +1927,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// return SystemTime.asDayTimestamp();
 	}
 
-	BigDecimal computeQtyToInvoice(final Properties ctx, final I_C_Invoice_Candidate ic, final BigDecimal factor, boolean useEffectiveQtyDeliviered)
+	BigDecimal computeQtyToInvoice(
+			final Properties ctx,
+			final I_C_Invoice_Candidate ic,
+			final BigDecimal factor,
+			final boolean useEffectiveQtyDeliviered)
 	{
 		final BigDecimal newQtyToInvoice;
 
@@ -1959,10 +1965,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 			else if (X_C_Invoice_Candidate.INVOICERULE_Sofort.equals(invoiceRule))                                // Immediate
 			{
-				// 07847
-				// Use the maximum between qtyOrdered and qtyDelivered
-				final BigDecimal maxInvoicableQty = calculateMaxInvoicableQtyFromOrderedAndDelivered(ic.getQtyOrdered(), qtyDeliveredToUse);
-				newQtyToInvoice = getQtyToInvoice(ic, maxInvoicableQty, factor);
+				newQtyToInvoice = computeQtyToInvoiceWhenRuleImmediate(ic, factor);
 			}
 			else if (X_C_Invoice_Candidate.INVOICERULE_NachLieferungAuftrag.equals(invoiceRule))
 			{
@@ -1987,6 +1990,31 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 		}
 		return newQtyToInvoice;
+	}
+
+	@Override
+	public BigDecimal computeOpenQty(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final BigDecimal factor;
+		if (ic.getQtyOrdered().signum() < 0)
+		{
+			factor = BigDecimal.ONE.negate();
+		}
+		else
+		{
+			factor = BigDecimal.ONE;
+		}
+		return computeQtyToInvoiceWhenRuleImmediate(ic, factor);
+	}
+
+	private BigDecimal computeQtyToInvoiceWhenRuleImmediate(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final BigDecimal factor)
+	{
+		// 07847
+		// Use the maximum between qtyOrdered and qtyDelivered
+		final BigDecimal maxInvoicableQty = calculateMaxInvoicableQtyFromOrderedAndDelivered(ic.getQtyOrdered(), getQtyDelivered_Effective(ic));
+		return getQtyToInvoice(ic, maxInvoicableQty, factor);
 	}
 
 	@Override
@@ -2053,64 +2081,36 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void closeInvoiceCandidates(final Iterator<I_C_Invoice_Candidate> candidatesToClose)
+	public void closeInvoiceCandidates(
+			@NonNull final Iterator<I_C_Invoice_Candidate> candidatesToClose)
 	{
 		while (candidatesToClose.hasNext())
 		{
-
-			final I_C_Invoice_Candidate candidate = candidatesToClose.next();
-
-			// close the candidate
-			closeInvoiceCandidate(candidate);
+			closeInvoiceCandidate(candidatesToClose.next());
 		}
 	}
 
 	@Override
 	public void closeInvoiceCandidate(final I_C_Invoice_Candidate candidate)
 	{
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-
-		// Sales invoice candidates
-		if (candidate.isSOTrx())
-		{
-
-			// close all the linked shipment schedules (the ones the candidate was based on)
-			final Set<I_M_ShipmentSchedule> shipmentSchedules = Services.get(IShipmentSchedulePA.class).retrieveForInvoiceCandidate(candidate);
-
-			for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
-			{
-				Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(shipmentSchedule);
-			}
-		}
-
-		// Purchase invoice candidates
-		else
-		{
-			// close all the linked receipt schedules (the ones the candidate was based on)
-
-			final Set<I_M_ReceiptSchedule> receiptSchedules = Services.get(IReceiptScheduleDAO.class).retrieveForInvoiceCandidate(candidate);
-			for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
-			{
-				// do not try to close already closed receipt schedules
-				if (receiptScheduleBL.isClosed(receiptSchedule))
-				{
-					continue;
-				}
-
-				receiptScheduleBL.close(receiptSchedule);
-			}
-		}
+		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
+		invoiceCandidateListeners.onBeforeClosed(candidate);
 		candidate.setProcessed_Override("Y");
 
-		Services.get(IInvoiceCandDAO.class).invalidateCand(candidate);
+		if (!InterfaceWrapperHelper.hasChanges(candidate))
+		{
+			return; // https://github.com/metasfresh/metasfresh/issues/3216
+		}
 
+		Services.get(IInvoiceCandDAO.class).invalidateCand(candidate);
 		InterfaceWrapperHelper.save(candidate);
 	}
 
 	@Override
 	public boolean isCloseIfIsToClear()
 	{
-		final boolean isCloseIfIsToClear = Services.get(ISysConfigBL.class).getBooleanValue(SYS_Config_C_Invoice_Candidate_Close_IsToClear, false);
+		final boolean isCloseIfIsToClear = Services.get(ISysConfigBL.class)
+				.getBooleanValue(SYS_Config_C_Invoice_Candidate_Close_IsToClear, false);
 
 		return isCloseIfIsToClear;
 	}
@@ -2118,7 +2118,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public boolean isCloseIfPartiallyInvoiced()
 	{
-		final boolean isCloseIfPartiallyInvoiced = Services.get(ISysConfigBL.class).getBooleanValue(SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced, false);
+		final boolean isCloseIfPartiallyInvoiced = Services.get(ISysConfigBL.class)
+				.getBooleanValue(SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced, false);
 
 		return isCloseIfPartiallyInvoiced;
 	}

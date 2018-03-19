@@ -240,9 +240,7 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 		//
 		// Get receipt schedules from rows
 		final List<I_M_ReceiptSchedule> receiptSchedules = getReceiptSchedules(rows);
-
-		final boolean storeReceipts = false;
-		Services.get(IHUReceiptScheduleBL.class).processReceiptSchedules(ctx, receiptSchedules, selectedHUs, storeReceipts);
+		Services.get(IHUReceiptScheduleBL.class).processReceiptSchedules(ctx, receiptSchedules, selectedHUs);
 	}
 
 	/**

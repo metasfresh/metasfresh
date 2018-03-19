@@ -8,6 +8,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -67,6 +70,8 @@ import lombok.NonNull;
 @Service
 public class DDOrderProducer
 {
+	public static final ModelDynAttributeAccessor<I_DD_Order, Integer> ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID = //
+			new ModelDynAttributeAccessor<>(I_DD_Order.class.getName(), "DDOrderRequestedEvent_GroupId", Integer.class);
 
 	public I_DD_Order createDDOrder(
 			@NonNull final DDOrder pojo,
@@ -93,47 +98,49 @@ public class DDOrderProducer
 	private I_DD_Order createDDOrder(
 			@NonNull final DDOrder pojo,
 			@NonNull final Date dateOrdered,
-			final IMRPCreateSupplyRequest request)
+			@Nullable final IMRPCreateSupplyRequest request)
 	{
 		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper.create(Env.getCtx(), pojo.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_ThreadInherited);
 
 		final int orgBPartnerId = DDOrderUtil.retrieveOrgBPartnerId(Env.getCtx(), pojo.getOrgId());
 		final int orgBPartnerLocationId = DDOrderUtil.retrieveOrgBPartnerLocationId(Env.getCtx(), pojo.getOrgId());
 
-		final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
-		ddOrder.setAD_Org_ID(pojo.getOrgId());
-		ddOrder.setMRP_Generated(true);
-		ddOrder.setMRP_AllowCleanup(true);
-		ddOrder.setAD_Org_ID(pojo.getOrgId());
-		ddOrder.setPP_Plant_ID(pojo.getPlantId());
-		ddOrder.setC_BPartner_ID(orgBPartnerId);
-		ddOrder.setC_BPartner_Location_ID(orgBPartnerLocationId);
-		ddOrder.setAD_User_ID(productPlanning.getPlanner_ID()); // FIXME: improve performances/cache and retrive Primary BP's User
-		ddOrder.setSalesRep_ID(productPlanning.getPlanner_ID());
+		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
+		ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(ddOrderRecord, pojo.getMaterialDispoGroupId());
 
-		ddOrder.setC_DocType_ID(getC_DocType_ID(pojo.getOrgId()));
+		ddOrderRecord.setAD_Org_ID(pojo.getOrgId());
+		ddOrderRecord.setMRP_Generated(true);
+		ddOrderRecord.setMRP_AllowCleanup(true);
+		ddOrderRecord.setAD_Org_ID(pojo.getOrgId());
+		ddOrderRecord.setPP_Plant_ID(pojo.getPlantId());
+		ddOrderRecord.setC_BPartner_ID(orgBPartnerId);
+		ddOrderRecord.setC_BPartner_Location_ID(orgBPartnerLocationId);
+		ddOrderRecord.setAD_User_ID(productPlanning.getPlanner_ID()); // FIXME: improve performances/cache and retrive Primary BP's User
+		ddOrderRecord.setSalesRep_ID(productPlanning.getPlanner_ID());
+
+		ddOrderRecord.setC_DocType_ID(getC_DocType_ID(pojo.getOrgId()));
 
 		final int inTransitWarehouseId = DDOrderUtil.retrieveInTransitWarehouseId(Env.getCtx(), pojo.getOrgId());
-		ddOrder.setM_Warehouse_ID(inTransitWarehouseId);
+		ddOrderRecord.setM_Warehouse_ID(inTransitWarehouseId);
 
-		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
-		ddOrder.setDocAction(X_DD_Order.DOCACTION_Complete);
-		ddOrder.setDateOrdered(new Timestamp(dateOrdered.getTime()));
-		ddOrder.setDatePromised(new Timestamp(pojo.getDatePromised().getTime()));
-		ddOrder.setM_Shipper_ID(pojo.getShipperId());
-		ddOrder.setIsInDispute(false);
-		ddOrder.setIsInTransit(false);
+		ddOrderRecord.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
+		ddOrderRecord.setDocAction(X_DD_Order.DOCACTION_Complete);
+		ddOrderRecord.setDateOrdered(new Timestamp(dateOrdered.getTime()));
+		ddOrderRecord.setDatePromised(new Timestamp(pojo.getDatePromised().getTime()));
+		ddOrderRecord.setM_Shipper_ID(pojo.getShipperId());
+		ddOrderRecord.setIsInDispute(false);
+		ddOrderRecord.setIsInTransit(false);
 
-		ddOrder.setPP_Product_Planning_ID(productPlanning.getPP_Product_Planning_ID());
+		ddOrderRecord.setPP_Product_Planning_ID(productPlanning.getPP_Product_Planning_ID());
 
-		InterfaceWrapperHelper.save(ddOrder);
+		InterfaceWrapperHelper.save(ddOrderRecord);
 
 		for (final DDOrderLine linePojo : pojo.getLines())
 		{
 			// Create DD Order Line
-			final I_DD_OrderLine ddOrderline = InterfaceWrapperHelper.newInstance(I_DD_OrderLine.class, ddOrder);
+			final I_DD_OrderLine ddOrderline = InterfaceWrapperHelper.newInstance(I_DD_OrderLine.class, ddOrderRecord);
 			ddOrderline.setAD_Org_ID(pojo.getOrgId());
-			ddOrderline.setDD_Order(ddOrder);
+			ddOrderline.setDD_Order(ddOrderRecord);
 			ddOrderline.setC_OrderLineSO_ID(linePojo.getSalesOrderLineId());
 			ddOrderline.setC_BPartner_ID(linePojo.getBPartnerId());
 
@@ -178,8 +185,8 @@ public class DDOrderProducer
 
 			//
 			// Dates
-			ddOrderline.setDateOrdered(ddOrder.getDateOrdered());
-			ddOrderline.setDatePromised(ddOrder.getDatePromised());
+			ddOrderline.setDateOrdered(ddOrderRecord.getDateOrdered());
+			ddOrderline.setDatePromised(ddOrderRecord.getDatePromised());
 
 			//
 			// Other flags
@@ -224,7 +231,7 @@ public class DDOrderProducer
 			}
 		}
 
-		return ddOrder;
+		return ddOrderRecord;
 	}
 
 	private void createDD_OrderLine_Alternative(

@@ -36,7 +36,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
-import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderCostDAO;
 import org.eevolution.api.IPPOrderWorkflowDAO;
@@ -48,6 +47,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 
 public class PPOrderCostBL implements IPPOrderCostBL
 {

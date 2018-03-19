@@ -1,25 +1,25 @@
 package de.metas.handlingunits.model.validator;
 
 /*
- * #%L		
- * de.metas.handlingunits.base		
- * %%		
- * Copyright (C) 2015 metas GmbH		
- * %%		
- * This program is free software: you can redistribute it and/or modify		
- * it under the terms of the GNU General Public License as		
- * published by the Free Software Foundation, either version 2 of the		
- * License, or (at your option) any later version.		
- * 		
- * This program is distributed in the hope that it will be useful,		
- * but WITHOUT ANY WARRANTY; without even the implied warranty of		
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the		
- * GNU General Public License for more details.		
- * 		
- * You should have received a copy of the GNU General Public		
- * License along with this program.  If not, see		
- * <http://www.gnu.org/licenses/gpl-2.0.html>.		
- * #L%		
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
  */
 
 import java.math.BigDecimal;
@@ -156,20 +156,19 @@ public class DD_OrderLine
 		// QtyCU must remain the same
 		if (packingAware.getM_HU_PI_Item_Product_ID() <= 0)
 		{
-			packingAware.setQtyPacks(BigDecimal.ZERO);
-
+			packingAware.setQtyTU(BigDecimal.ZERO);
 			return;
 		}
 
 		// if there is no QtyTU set yet, it will be initially set to 1
-		if (packingAware.getQtyPacks().signum() <= 0)
+		if (packingAware.getQtyTU().signum() <= 0)
 		{
-			packingAware.setQtyPacks(BigDecimal.ONE);
+			packingAware.setQtyTU(BigDecimal.ONE);
 		}
 
 		// if the M_HU_PI_Item_Product was changed and the QtyTU was already set, change the CU accordingly
-		final Integer qtyPacks = packingAware.getQtyPacks().intValue();
-		Services.get(IHUPackingAwareBL.class).setQty(packingAware, qtyPacks);
+		final Integer qtyPacks = packingAware.getQtyTU().intValue();
+		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks);
 	}
 
 	@ModelChange(timings = {
@@ -224,7 +223,7 @@ public class DD_OrderLine
 	private void updateQtyPacks(final I_DD_OrderLine ddOrderLine)
 	{
 		final IHUPackingAware packingAware = new DDOrderLineHUPackingAware(ddOrderLine);
-		Services.get(IHUPackingAwareBL.class).setQtyPacks(packingAware);
+		Services.get(IHUPackingAwareBL.class).setQtyTU(packingAware);
 	}
 
 	private void updateQtyCU(final I_DD_OrderLine ddOrderLine)
@@ -232,7 +231,7 @@ public class DD_OrderLine
 		final IHUPackingAware packingAware = new DDOrderLineHUPackingAware(ddOrderLine);
 
 		// if the QtyTU was set to 0 or deleted, do nothing
-		if (packingAware.getQtyPacks().signum() <= 0)
+		if (packingAware.getQtyTU().signum() <= 0)
 		{
 			return;
 		}
@@ -244,7 +243,7 @@ public class DD_OrderLine
 		}
 
 		// update the QtyCU only if the QtyTU requires it. If the QtyCU is already fine and fits the QtyTU and M_HU_PI_Item_Product, leave it like it is.
-		final Integer qtyPacks = packingAware.getQtyPacks().intValue();
+		final Integer qtyPacks = packingAware.getQtyTU().intValue();
 		final BigDecimal qtyCU = packingAware.getQty();
 		Services.get(IHUPackingAwareBL.class).updateQtyIfNeeded(packingAware, qtyPacks, qtyCU);
 

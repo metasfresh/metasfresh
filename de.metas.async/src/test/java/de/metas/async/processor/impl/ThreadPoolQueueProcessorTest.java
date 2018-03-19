@@ -12,18 +12,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -31,8 +30,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -63,7 +62,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 				5, // poolSize
 				10, // maxPoolSize
 				1000 // keepAliveTimeMillis
-				);
+		);
 		helper.assignPackageProcessor(processorDef, StaticMockedWorkpackageProcessor.class);
 
 		processorsExecutor = new QueueProcessorsExecutor();
@@ -175,7 +174,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 
 	/**
 	 * Aim of this test is to make sure that everything works ok even if we issue {@link ITrx#commit(boolean)} multiple times.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -207,14 +206,13 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 
 		//
 		// Make sure second commit will fail and execute it
-		trx.getTrxListenerManager().registerListener(new TrxListenerAdapter()
-		{
-			@Override
-			public void afterCommit(final ITrx trx)
-			{
-				throw new AdempiereException("Test fail on after commit: " + trx);
-			}
-		});
+		trx.getTrxListenerManager()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> {
+					throw new AdempiereException("Test fail on after commit: " + innerTrx);
+				});
+
 		trx.commit(true);
 
 		// Get result
@@ -259,7 +257,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 			final List<I_C_Queue_WorkPackage> processedWorkpackages = workpackageProcessor.getProcessedWorkpackages();
 			helper.waitUntilSize(processedWorkpackages, 1, 1 * 60 * 1000);
 		}
-		
+
 		//
 		// Validate the result
 		{

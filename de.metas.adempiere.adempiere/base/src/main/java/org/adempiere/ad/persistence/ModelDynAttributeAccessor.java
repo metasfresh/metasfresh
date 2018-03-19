@@ -13,12 +13,12 @@ import java.util.Optional;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,6 +28,8 @@ import java.util.Optional;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
+
+import lombok.NonNull;
 
 /**
  * Convenient model's dynamic attribute accessor. This instance provides type-safe access to a model's dynamic attributes.
@@ -44,23 +46,16 @@ public final class ModelDynAttributeAccessor<ModelType, AttributeType>
 	private final String attributeName;
 	private final Class<AttributeType> attributeType;
 
-	public ModelDynAttributeAccessor(final Class<AttributeType> attributeTypeClass)
+	public ModelDynAttributeAccessor(@NonNull final Class<AttributeType> attributeTypeClass)
 	{
-		super();
-
-		Check.assumeNotNull(attributeTypeClass, "attributeTypeClass not null");
-
 		this.attributeName = attributeTypeClass.getName();
 		this.attributeType = attributeTypeClass;
 	}
 
-	public ModelDynAttributeAccessor(final String attributeName, final Class<AttributeType> attributeTypeClass)
+	public ModelDynAttributeAccessor(
+			@NonNull final String attributeName,
+			@NonNull final Class<AttributeType> attributeTypeClass)
 	{
-		super();
-
-		Check.assumeNotEmpty(attributeName, "attributeName not empty");
-		Check.assumeNotNull(attributeTypeClass, "attributeTypeClass not null");
-
 		this.attributeName = attributeName;
 		this.attributeType = attributeTypeClass;
 	}
@@ -103,19 +98,19 @@ public final class ModelDynAttributeAccessor<ModelType, AttributeType>
 		}
 		return attributeValue;
 	}
-	
+
 	public Optional<AttributeType> getValueIfExists(final ModelType model)
 	{
 		final AttributeType attributeValue = getValue(model);
 		return Optional.ofNullable(attributeValue);
 	}
 
-	
+
 	public void setValue(final ModelType model, final AttributeType attributeValue)
 	{
 		InterfaceWrapperHelper.setDynAttribute(model, attributeName, attributeValue);
 	}
-	
+
 	public boolean isSet(final ModelType model)
 	{
 		final Object attributeValue = InterfaceWrapperHelper.getDynAttribute(model, attributeName);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-11-01T18:14:47 -->
+<!-- 2018-03-13T17:07:05 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_title" pageWidth="501" pageHeight="842" columnWidth="501" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems/report" uuid="39e92b5e-fc7e-4200-84d5-4f7d227bd7cf">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -100,7 +100,7 @@
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="true">
 				<reportElement key="textField-6" x="406" y="35" width="91" height="12" uuid="f1e57f5a-af47-4462-8369-f2a0e372bc9a">
-					<printWhenExpression><![CDATA[new Boolean($P{DaysDue}.intValue() != -999999)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($P{DaysDue} != null)]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -232,7 +232,7 @@
 			</textField>
 			<textField>
 				<reportElement x="406" y="35" width="91" height="12" uuid="02cf88e1-c522-4b4c-a52f-9a40ccca8593">
-					<printWhenExpression><![CDATA[new Boolean($P{DaysDue} != null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($P{DaysDue} == null)]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font size="8"/>

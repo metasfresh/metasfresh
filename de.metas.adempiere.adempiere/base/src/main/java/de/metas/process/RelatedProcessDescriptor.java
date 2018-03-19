@@ -1,11 +1,16 @@
 package de.metas.process;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -53,9 +58,10 @@ public final class RelatedProcessDescriptor
 	private final boolean webuiQuickAction;
 	private final boolean webuiDefaultQuickAction;
 
+	private final ImmutableList<IProcessPrecondition> processPreconditionsCheckers;
+
 	private RelatedProcessDescriptor(final Builder builder)
 	{
-		super();
 		processId = builder.processId;
 		Preconditions.checkArgument(processId > 0, "adProcessId not set");
 
@@ -64,6 +70,8 @@ public final class RelatedProcessDescriptor
 
 		webuiQuickAction = builder.webuiQuickAction;
 		webuiDefaultQuickAction = builder.webuiDefaultQuickAction;
+
+		processPreconditionsCheckers = builder.getProcessPreconditionsCheckers();
 	}
 
 	public boolean isExecutionGranted(final IUserRolePermissions permissions)
@@ -78,6 +86,7 @@ public final class RelatedProcessDescriptor
 		private int windowId;
 		private boolean webuiQuickAction;
 		private boolean webuiDefaultQuickAction;
+		private List<IProcessPrecondition> processPreconditionsCheckers;
 
 		private Builder()
 		{
@@ -134,6 +143,31 @@ public final class RelatedProcessDescriptor
 		public Builder webuiDefaultQuickAction()
 		{
 			webuiDefaultQuickAction(true);
+			return this;
+		}
+
+		private ImmutableList<IProcessPrecondition> getProcessPreconditionsCheckers()
+		{
+			return processPreconditionsCheckers != null ? ImmutableList.copyOf(processPreconditionsCheckers) : ImmutableList.of();
+		}
+
+		public Builder processPreconditionsCheckers(final List<IProcessPrecondition> processPreconditionsCheckers)
+		{
+			if (this.processPreconditionsCheckers == null)
+			{
+				this.processPreconditionsCheckers = new ArrayList<>();
+			}
+			this.processPreconditionsCheckers.addAll(processPreconditionsCheckers);
+			return this;
+		}
+
+		public Builder processPreconditionsChecker(@NonNull final IProcessPrecondition processPreconditionsChecker)
+		{
+			if (this.processPreconditionsCheckers == null)
+			{
+				this.processPreconditionsCheckers = new ArrayList<>();
+			}
+			this.processPreconditionsCheckers.add(processPreconditionsChecker);
 			return this;
 		}
 	}

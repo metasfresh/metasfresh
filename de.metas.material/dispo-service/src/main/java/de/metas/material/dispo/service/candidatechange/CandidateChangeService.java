@@ -64,6 +64,7 @@ public class CandidateChangeService
 					.setParameter("candidate", candidate);
 		}
 
+		candidate.validate();
 		return candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
 
@@ -76,7 +77,7 @@ public class CandidateChangeService
 		{
 			for (final CandidateType type : handler.getHandeledTypes())
 			{
-				builder.put(type, handler); // builder already prohibits duplicate keys :-)
+				builder.put(type, handler); // builder already prohibits duplicate keys
 			}
 		}
 		return builder.build();

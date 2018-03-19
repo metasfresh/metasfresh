@@ -33,7 +33,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.StorageAttributesKeys;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Org;
@@ -44,7 +44,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import lombok.NonNull;
@@ -55,7 +55,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 
 	@Override
 	public I_PP_Product_Planning find(
-			final Properties ctx,
 			final int orgId,
 			final int warehouseId,
 			final int resourceId,
@@ -63,7 +62,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final int attributeSetInstanceId)
 	{
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = createQueryBuilder(
-				ctx,
 				orgId,
 				warehouseId,
 				resourceId,
@@ -77,7 +75,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	@Override
-	public I_S_Resource findPlant(final Properties ctx,
+	public I_S_Resource findPlant(
 			final int orgId,
 			final I_M_Warehouse warehouse,
 			final int productId,
@@ -98,7 +96,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		// Try searching for a product planning file and get the warehouse from there
 		{
 			final int warehouseId = warehouse == null ? -1 : warehouse.getM_Warehouse_ID();
-			final List<Integer> plantIds = createQueryBuilder(ctx, orgId, warehouseId, ANY_S_Resource_ID, productId, attributeSetInstanceId)
+			final List<Integer> plantIds = createQueryBuilder(orgId, warehouseId, ANY_S_Resource_ID, productId, attributeSetInstanceId)
 					.create()
 					.stream(I_PP_Product_Planning.class)
 					.map(I_PP_Product_Planning::getS_Resource_ID) // get plant
@@ -126,7 +124,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	private IQueryBuilder<I_PP_Product_Planning> createQueryBuilder(
-			final Properties ctx,
 			final int orgId,
 			final int warehouseId,
 			final int resourceId,
@@ -140,7 +137,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.addOnlyActiveRecordsFilter();
 
 		// Filter by context #AD_Client_ID
-		queryBuilder.addOnlyContextClient(ctx);
+		queryBuilder.addOnlyContextClient();
 
 		// Filter by AD_Org_ID: given AD_Org_ID or 0/null
 		queryBuilder.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orgId, 0, null);
@@ -174,7 +171,8 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final StorageAttributesKey attributesKey = StorageAttributesKeys.createAttributesKeyFromASI(attributeSetInstanceId);
+		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(attributeSetInstanceId)
+				.orElse(AttributesKey.ALL);
 
 		final ICompositeQueryFilter<I_PP_Product_Planning> matchingAsiFilter = queryBL
 				.createCompositeQueryFilter(I_PP_Product_Planning.class)

@@ -4,9 +4,10 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.ToString;
 
 /*
  * #%L
@@ -36,6 +37,7 @@ import com.google.common.collect.ImmutableList;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@ToString
 public final class InvoiceCandidateGenerateRequest
 {
 	public static InvoiceCandidateGenerateRequest of(final IInvoiceCandidateHandler handler, final Object model)
@@ -81,11 +83,5 @@ public final class InvoiceCandidateGenerateRequest
 	public <T> T getModel(final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.create(model, modelClass);
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 }

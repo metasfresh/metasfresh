@@ -211,6 +211,10 @@ public class MLookupFactory
 			final ITableRefInfo accountTableRefInfo = Services.get(ILookupDAO.class).retrieveAccountTableRefInfo();
 			info = getLookupInfo(WindowNo, accountTableRefInfo);
 		}
+		else if (AD_Reference_ID == DisplayType.Location)
+		{
+			info = getLookup_TableDir(WindowNo, DisplayType.getKeyColumnName(DisplayType.Location));
+		}
 		// TableDir, Search, ID, ...
 		else
 		{
@@ -657,6 +661,7 @@ public class MLookupFactory
 		lookupInfo.setOrderBySqlPart(sqlOrderBy);
 		lookupInfo.setSecurityDisabled(false);
 		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
+		lookupInfo.setTranslated(isTranslated);
 
 		return lookupInfo;
 	}

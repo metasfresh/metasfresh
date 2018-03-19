@@ -28,19 +28,20 @@ import de.metas.handlingunits.model.X_M_HU;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class CustomerReturnLUTUConfigurationHandler extends AbstractDocumentLUTUConfigurationHandler<I_M_InOutLine>
+public class CustomerReturnLUTUConfigurationHandler
+		extends AbstractDocumentLUTUConfigurationHandler<I_M_InOutLine>
 {
 
 	public static final transient CustomerReturnLUTUConfigurationHandler instance = new CustomerReturnLUTUConfigurationHandler();
@@ -90,7 +91,7 @@ public class CustomerReturnLUTUConfigurationHandler extends AbstractDocumentLUTU
 
 		//
 		// Update LU/TU configuration
-		updateLUTUConfiguration(lutuConfiguration, documentLine);
+		updateLUTUConfigurationFromPPOrder(lutuConfiguration, documentLine);
 
 		// NOTE: don't save it
 
@@ -98,7 +99,7 @@ public class CustomerReturnLUTUConfigurationHandler extends AbstractDocumentLUTU
 	}
 
 	@Override
-	public void updateLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfiguration, final I_M_InOutLine documentLine)
+	public void updateLUTUConfigurationFromPPOrder(final I_M_HU_LUTU_Configuration lutuConfiguration, final I_M_InOutLine documentLine)
 	{
 		// TODO
 		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");

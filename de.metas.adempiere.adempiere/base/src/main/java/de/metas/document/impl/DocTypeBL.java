@@ -13,20 +13,20 @@ package de.metas.document.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.document.IDocTypeBL;
+import lombok.NonNull;
 
 public class DocTypeBL implements IDocTypeBL
 {
@@ -51,6 +51,14 @@ public class DocTypeBL implements IDocTypeBL
 		return (X_C_DocType.DOCSUBTYPE_Proposal.equals(dt.getDocSubType())
 				|| X_C_DocType.DOCSUBTYPE_Quotation.equals(dt.getDocSubType()))
 				&& X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType());
+	}
+
+	@Override
+	public boolean isSOTrx(@NonNull final String docBaseType)
+	{
+		return X_C_DocType.DOCBASETYPE_SalesOrder.equals(docBaseType)
+				|| X_C_DocType.DOCBASETYPE_MaterialDelivery.equals(docBaseType)
+				|| docBaseType.startsWith("AR"); // Account Receivables (Invoice, Payment Receipt)
 	}
 
 }

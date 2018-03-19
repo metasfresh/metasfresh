@@ -10,12 +10,12 @@ package org.adempiere.pricing.spi.impl.rules;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,8 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.CalculateDiscountRequest;
+import org.adempiere.pricing.api.DiscountResult;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
@@ -46,12 +48,12 @@ import de.metas.logging.LogManager;
 
 /**
  * Discount Calculations
- * 
+ *
  * @author Jorg Janke
  * @author tobi42 metas us1064 <li>calculateDiscount only calculates (retrieves) the discount, but does not alter priceStd. <li>Therefore, <code>m_PriceStd</code> is not changed from its
  *         respective productPrice.
  * @author Teo Sarca - refactory
- * 
+ *
  * @version $Id: MProductPricing.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
 public class Discount implements IPricingRule
@@ -131,7 +133,9 @@ public class Discount implements IPricingRule
 		// 08660
 		// In case we are dealing with an asi aware object, make sure the value(s) from that asi
 		// are also taken into account when the discount is calculated
-		final BigDecimal m_discount;
+
+		final CalculateDiscountRequest request;
+
 
 		final IAttributeSetInstanceAware asiAware = Services
 				.get(IAttributeSetInstanceAwareFactoryService.class)
@@ -139,14 +143,15 @@ public class Discount implements IPricingRule
 
 		if (asiAware == null)
 		{
-			m_discount = Services.get(IMDiscountSchemaBL.class).
-					calculateDiscount(
-							discountSchema,
-							pricingCtx.getQty(),
-							result.getPriceStd(),
-							productID,
-							result.getM_Product_Category_ID(),
-							flatDiscount);
+			request = CalculateDiscountRequest.builder()
+					.schema(discountSchema)
+					.qty(pricingCtx.getQty())
+					.Price(result.getPriceStd())
+					.M_Product_ID(productID)
+					.M_Product_Category_ID(result.getM_Product_Category_ID())
+					.instances(null)
+					.bPartnerFlatDiscount(flatDiscount)
+					.build();
 		}
 
 		else
@@ -155,20 +160,23 @@ public class Discount implements IPricingRule
 
 			final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
 
-			m_discount = Services.get(IMDiscountSchemaBL.class).
-					calculateDiscount(
-							discountSchema,
-							pricingCtx.getQty(),
-							result.getPriceStd(),
-							productID,
-							result.getM_Product_Category_ID(),
-							instances,
-							flatDiscount);
+			request = CalculateDiscountRequest.builder()
+					.schema(discountSchema)
+					.qty(pricingCtx.getQty())
+					.Price(result.getPriceStd())
+					.M_Product_ID(productID)
+					.M_Product_Category_ID(result.getM_Product_Category_ID())
+					.instances(instances)
+					.bPartnerFlatDiscount(flatDiscount)
+					.build();
 		}
+
+		final DiscountResult disccountResult = Services.get(IMDiscountSchemaBL.class).calculateDiscount(request);
 
 		result.setUsesDiscountSchema(isUseDiscountSchema);
 		result.setM_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
-		result.setDiscount(m_discount);
+		result.setDiscount(disccountResult.getDiscount());
+		result.setC_PaymentTerm_ID(disccountResult.getC_PaymentTerm_ID());
 		// metas us1064 end
 	}
 }

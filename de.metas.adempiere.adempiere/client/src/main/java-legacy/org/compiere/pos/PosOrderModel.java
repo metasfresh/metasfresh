@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -30,6 +31,7 @@ import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.document.engine.IDocument;
+import de.metas.order.IOrderBL;
 
 /**
  * Wrapper for standard order
@@ -60,9 +62,9 @@ public class PosOrderModel extends MOrder {
 		order.setIsSOTrx(true);
 		order.setC_POS_ID(pos.getC_POS_ID());
 		if (pos.getC_DocType_ID() != 0)
-			order.setC_DocTypeTarget_ID(pos.getC_DocType_ID());
+			Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, pos.getC_DocType_ID());
 		else
-			order.setC_DocTypeTarget_ID(MOrder.DocSubType_POS);
+			Services.get(IOrderBL.class).setDocTypeTargetId(order, MOrder.DocSubType_POS);
 		if (partner == null || partner.get_ID() == 0)
 			partner = pos.getBPartner();
 		if (partner == null || partner.get_ID() == 0) {
@@ -390,7 +392,7 @@ public class PosOrderModel extends MOrder {
 			MPaymentProcessor[] m_mPaymentProcessors = MPaymentProcessor.find (getCtx (), null, null, 
 					getAD_Client_ID (), getAD_Org_ID(), getC_Currency_ID (), amt, get_TrxName());
 			//
-			HashMap<String,ValueNamePair> map = new HashMap<String,ValueNamePair>(); //	to eliminate duplicates
+			HashMap<String,ValueNamePair> map = new HashMap<>(); //	to eliminate duplicates
 			for (int i = 0; i < m_mPaymentProcessors.length; i++)
 			{
 				if (m_mPaymentProcessors[i].isAcceptAMEX ())

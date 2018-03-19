@@ -419,6 +419,28 @@ import lombok.NonNull;
 	}
 
 	@Override
+	public ICompositeQueryFilter<T> addFiltersUnboxed(final ICompositeQueryFilter<T> compositeFilter)
+	{
+		final List<IQueryFilter<T>> filtersToAdd = compositeFilter.getFilters();
+		if(filtersToAdd.isEmpty())
+		{
+			return this;
+		}
+		else if(filtersToAdd.size() == 1)
+		{
+			return addFilters(filtersToAdd);
+		}
+		else if(isJoinAnd() == compositeFilter.isJoinAnd())
+		{
+			return addFilters(filtersToAdd);
+		}
+		else
+		{
+			return addFilter(compositeFilter);
+		}
+	}
+
+	@Override
 	public ICompositeQueryFilter<T> removeFilter(final IQueryFilter<T> filter)
 	{
 		Check.assumeNotNull(filter, "filter not null");

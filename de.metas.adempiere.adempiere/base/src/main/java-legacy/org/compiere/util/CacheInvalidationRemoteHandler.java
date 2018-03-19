@@ -53,8 +53,8 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 	private static final Logger logger = LogManager.getLogger(CacheInvalidationRemoteHandler.class);
 
 	private static final Topic TOPIC_CacheInvalidation = Topic.builder()
-			.setName("de.metas.cache.CacheInvalidationRemoteHandler")
-			.setType(Type.REMOTE)
+			.name("de.metas.cache.CacheInvalidationRemoteHandler")
+			.type(Type.REMOTE)
 			.build();
 
 	private static final String EVENT_PROPERTY = CacheInvalidateRequest.class.getSimpleName();

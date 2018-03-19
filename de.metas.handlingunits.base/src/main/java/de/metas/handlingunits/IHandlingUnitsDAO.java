@@ -85,9 +85,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	void delete(I_M_HU hu);
 
-	I_M_HU_PI retrieveNoPI(Properties ctx);
+	I_M_HU_PI retrievePackingItemTemplatePI(Properties ctx);
 
-	I_M_HU_PI_Item retrieveNoPIItem(Properties ctx);
+	I_M_HU_PI_Item retrievePackingItemTemplatePIItem(Properties ctx);
 
 	/**
 	 * Gets Virtual PI
@@ -99,9 +99,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU_PI_Item retrieveVirtualPIItem(Properties ctx);
 
-	int getNo_HU_PI_ID();
+	int getPackingItemTemplate_HU_PI_ID();
 
-	int getNo_HU_PI_Item_ID();
+	int getPackingItemTemplate_HU_PI_Item_ID();
 
 	int getVirtual_HU_PI_ID();
 
@@ -369,4 +369,14 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_M_Warehouse> retrieveWarehousesForHUs(List<I_M_HU> hus);
+	
+	/**
+	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs
+	 * 
+	 * @param hus
+	 * @return
+	 */
+	List<I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(List<I_M_HU> hus);
+
+	List<I_M_HU> retrieveByIds(Collection<Integer> huIds);
 }

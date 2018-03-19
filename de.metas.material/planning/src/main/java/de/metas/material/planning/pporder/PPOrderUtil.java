@@ -59,7 +59,6 @@ public class PPOrderUtil
 	 *
 	 * @param orderBOMLine
 	 * @param qtyFinishedGood
-	 * @param qtyFinishedGoodUOM
 	 * @return standard quantity required to be issued (standard UOM)
 	 */
 	public BigDecimal calculateQtyRequired(
@@ -67,18 +66,7 @@ public class PPOrderUtil
 			@NonNull final PPOrder ppOrderPojo,
 			@NonNull final BigDecimal qtyFinishedGood)
 	{
-		final Integer uomId = ppOrderPojo.getUomId();
-
-		return calculateQtyRequired(ppOrderLinePojo, ppOrderPojo, qtyFinishedGood, uomId);
-	}
-
-	private BigDecimal calculateQtyRequired(
-			@NonNull final PPOrderLine ppOrderLinePojo,
-			@NonNull final PPOrder ppOrderPojo,
-			@NonNull final BigDecimal qtyFinishedGood,
-			@NonNull final Integer uomId)
-	{
-		final BigDecimal multiplier = getQtyMultiplier(ppOrderLinePojo, ppOrderPojo.getProductDescriptor().getProductId(), uomId);
+		final BigDecimal multiplier = getQtyMultiplier(ppOrderLinePojo, ppOrderPojo.getProductDescriptor().getProductId());
 
 		final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderLinePojo);
 
@@ -117,15 +105,13 @@ public class PPOrderUtil
 	/* package */BigDecimal getQtyMultiplier(@NonNull final PPOrderLine orderBOMLine, @NonNull final PPOrder ppOrder)
 	{
 		final Integer endProductId = ppOrder.getProductDescriptor().getProductId();
-		final Integer endProductUomId = ppOrder.getUomId();
 
-		return getQtyMultiplier(orderBOMLine, endProductId, endProductUomId);
+		return getQtyMultiplier(orderBOMLine, endProductId);
 	}
 
 	private BigDecimal getQtyMultiplier(
 			@NonNull final PPOrderLine orderBOMLine,
-			@NonNull final Integer endProductId,
-			@NonNull final Integer endProductUomId)
+			@NonNull final Integer endProductId)
 	{
 
 		final I_PP_Product_BOMLine productBomLine = getProductBomLine(orderBOMLine);
@@ -137,7 +123,7 @@ public class PPOrderUtil
 		// We also need to multiply by BOM UOM to BOM Line UOM multiplier
 		// see http://dewiki908/mediawiki/index.php/06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
 		final I_M_Product endProduct = load(endProductId, I_M_Product.class);
-		final I_C_UOM endUOM = load(endProductUomId, I_C_UOM.class);
+		final I_C_UOM endUOM = endProduct.getC_UOM();
 
 		final I_C_UOM bomLineUOM = productBomLine.getC_UOM();
 		Check.assumeNotNull(bomLineUOM, "bomLineUOM not null");

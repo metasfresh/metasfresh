@@ -12,12 +12,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,9 +37,9 @@ import org.junit.Test;
 
 /**
  * {@link CtxName} tests.
- * 
+ *
  * Please note that we have a lot of related tests in {@link EnvTests}
- * 
+ *
  * @author tsa
  */
 public class CtxNamesTests
@@ -81,42 +81,42 @@ public class CtxNamesTests
 	public void test_CtxName_parse()
 	{
 		{
-			CtxName expected = new CtxName("Name", NO_MODIFIERS, null);
-			CtxName actual = CtxNames.parse("Name");
+			final CtxName expected = new CtxName("Name", NO_MODIFIERS, null);
+			final CtxName actual = CtxNames.parse("Name");
 			assertEquals(expected, actual);
 		}
 		{
-			CtxName expected = new CtxName("Name", NO_MODIFIERS, "defaultValue");
-			CtxName actual = CtxNames.parse("Name/defaultValue");
+			final CtxName expected = new CtxName("Name", NO_MODIFIERS, "defaultValue");
+			final CtxName actual = CtxNames.parse("Name/defaultValue");
 			assertEquals(expected, actual);
 		}
 		{
 			// default value should be returned as-is (e.g. "@Name/'Tobi'@" should default to "'Tobi'", not "Tobi")
-			CtxName expected = new CtxName("Name", NO_MODIFIERS, "'defaultValue'");
-			CtxName actual = CtxNames.parse("Name/'defaultValue'");
+			final CtxName expected = new CtxName("Name", NO_MODIFIERS, "'defaultValue'");
+			final CtxName actual = CtxNames.parse("Name/'defaultValue'");
 			assertEquals(expected, actual);
 		}
 		{
-			CtxName expected = new CtxName("Name", Arrays.asList(CtxNames.MODIFIER_Old), null);
-			CtxName actual = CtxNames.parse("Name/" + CtxNames.MODIFIER_Old);
-			assertEquals(expected, actual);
-		}
-		{
-			// also make sure we did not changed the modifier name
-			CtxName expected = new CtxName("Name", Arrays.asList("old"), null);
-			CtxName actual = CtxNames.parse("Name/old");
+			final CtxName expected = new CtxName("Name", Arrays.asList(CtxNames.MODIFIER_Old), null);
+			final CtxName actual = CtxNames.parse("Name/" + CtxNames.MODIFIER_Old);
 			assertEquals(expected, actual);
 		}
 		{
 			// also make sure we did not changed the modifier name
-			CtxName expected = new CtxName("Name", Arrays.asList("old"), "def");
-			CtxName actual = CtxNames.parse("Name/old/def");
+			final CtxName expected = new CtxName("Name", Arrays.asList("old"), null);
+			final CtxName actual = CtxNames.parse("Name/old");
 			assertEquals(expected, actual);
 		}
 		{
 			// also make sure we did not changed the modifier name
-			CtxName expected = new CtxName("Name", Arrays.asList("old", "upper", "lower"), "def2");
-			CtxName actual = CtxNames.parse("Name/old/upper/lower/def2");
+			final CtxName expected = new CtxName("Name", Arrays.asList("old"), "def");
+			final CtxName actual = CtxNames.parse("Name/old/def");
+			assertEquals(expected, actual);
+		}
+		{
+			// also make sure we did not changed the modifier name
+			final CtxName expected = new CtxName("Name", Arrays.asList("old", "upper", "lower"), "def2");
+			final CtxName actual = CtxNames.parse("Name/old/upper/lower/def2");
 			assertEquals(expected, actual);
 		}
 	}
@@ -124,14 +124,14 @@ public class CtxNamesTests
 	@Test
 	public void test_CtxName_getValueAsString_misc()
 	{
-		MockedEvaluatee ev = new MockedEvaluatee();
+		final MockedEvaluatee ev = new MockedEvaluatee();
 		ev.put("name1", "value1");
 		ev.put("name2", "value2");
 		assertEquals("value1", CtxNames.parse("name1").getValueAsString(ev));
 		assertEquals("value1", CtxNames.parse("name1/old/default").getValueAsString(ev));
 		assertEquals("value1", CtxNames.parse("name1/upper/old/default").getValueAsString(ev));
 
-		MockedEvaluatee2 ev2 = new MockedEvaluatee2();
+		final MockedEvaluatee2 ev2 = new MockedEvaluatee2();
 		ev2.put("name1", "value1", "valueOld1");
 		ev2.put("name2", "value2", "valueOld2");
 		assertEquals("value1", CtxNames.parse("name1").getValueAsString(ev2));
@@ -164,6 +164,68 @@ public class CtxNamesTests
 		final CtxName name = CtxNames.parse("Test/123");
 
 		assertEquals("It shall return default value", "123", name.getValueAsString(evalCtx));
+	}
+
+	@Test
+	public void test_parse_withNullDefaultValue()
+	{
+		assert_parse__NullDefaultValueOk(null);
+		assert_parse__NullDefaultValueOk("NULL");
+		assert_parse__NullDefaultValueOk("Null");
+		assert_parse__NullDefaultValueOk("null");
+	}
+
+	private static void assert_parse__NullDefaultValueOk(final String nullDefaultValue)
+	{
+		final Evaluatee evaluatee = variableName -> null;
+
+		final CtxName parse = CtxNames.parse("Test" + CtxNames.SEPARATOR + nullDefaultValue);
+
+		assertThat(parse.getValueAsDate(evaluatee)).isNull();
+		assertThat(parse.getValueAsBigDecimal(evaluatee)).isNull();
+		assertThat(parse.getValueAsBoolean(evaluatee)).isNull();
+		assertThat(parse.getValueAsInteger(evaluatee)).isNull();
+
+		final String valueAsString = parse.getValueAsString(evaluatee);
+		if (nullDefaultValue == null)
+		{
+			assertThat(valueAsString).isEqualTo("null");
+		}
+		else
+		{
+			assertThat(valueAsString).isEqualTo(nullDefaultValue);
+		}
+	}
+
+	@Test
+	public void test_ofNameAndDefaultValue_withNullDefaultValue()
+	{
+		assert_ofNameAndDefaultValue_NullDefaultValueOk(null);
+		assert_ofNameAndDefaultValue_NullDefaultValueOk("NULL");
+		assert_ofNameAndDefaultValue_NullDefaultValueOk("Null");
+		assert_ofNameAndDefaultValue_NullDefaultValueOk("null");
+	}
+
+	private static void assert_ofNameAndDefaultValue_NullDefaultValueOk(final String nullDefaultValue)
+	{
+		final Evaluatee evaluatee = variableName -> null;
+
+		final CtxName ofNameAndDefaultValue = CtxNames.ofNameAndDefaultValue("Test", nullDefaultValue);
+		if (nullDefaultValue == null)
+		{
+			assertThat(ofNameAndDefaultValue.getDefaultValue()).isEqualTo(CtxNames.VALUE_NULL);
+			assertThat(ofNameAndDefaultValue.getValueAsString(evaluatee)).isNull();
+		}
+		else
+		{
+			assertThat(ofNameAndDefaultValue.getDefaultValue()).isEqualTo(nullDefaultValue);
+			assertThat(ofNameAndDefaultValue.getValueAsString(evaluatee)).isEqualTo(nullDefaultValue);
+		}
+
+		assertThat(ofNameAndDefaultValue.getValueAsInteger(evaluatee)).isNull();
+		assertThat(ofNameAndDefaultValue.getValueAsBigDecimal(evaluatee)).isNull();
+		assertThat(ofNameAndDefaultValue.getValueAsBoolean(evaluatee)).isNull();
+		assertThat(ofNameAndDefaultValue.getValueAsDate(evaluatee)).isNull();
 	}
 
 	@Test

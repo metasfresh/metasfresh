@@ -1,5 +1,7 @@
 package de.metas.handlingunits.process.api;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -24,18 +26,9 @@ package de.metas.handlingunits.process.api;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.handlingunits.model.I_M_HU_Process;
-
 public interface IMHUProcessDAO extends ISingletonService
 {
-	/**
-	 * Retrieve the M_HU_Process entry that contains the AD_Process.
-	 * 
-	 * NOTE: there is only one active M_HU_Process entry for one AD_Process_ID
-	 *
-	 * @param adProcessId
-	 * @return {@link I_M_HU_Process} or <code>null</code>
-	 */
-	I_M_HU_Process retrieveHUProcess(int adProcessId);
+	Collection<HUProcessDescriptor> getAllHUProcessDescriptors();
 
+	HUProcessDescriptor getByProcessIdOrNull(int processId);
 }

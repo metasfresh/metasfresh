@@ -6,6 +6,7 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
@@ -14,12 +15,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
@@ -54,18 +57,25 @@ import mockit.Verifications;
 
 public class TransactionCreatedHandlerTests
 {
+	private static final BigDecimal SIXTY_THREE = new BigDecimal("63");
+
+	private static final BigDecimal SIXTY_FOUR = new BigDecimal("65");
+
 	private static final int TRANSACTION_ID = 60;
 
 	private static final int SHIPMENT_SCHEDULE_ID = 40;
 
 	@Tested
-	private TransactionCreatedHandler transactionEventHandler;
+	private TransactionEventHandler transactionEventHandler;
 
 	@Injectable
 	private CandidateChangeService candidateChangeService;
 
 	@Injectable
 	private CandidateRepositoryRetrieval candidateRepository;
+
+	@Injectable
+	private PostMaterialEventService postMaterialEventService;
 
 	@Before
 	public void init()
@@ -78,7 +88,9 @@ public class TransactionCreatedHandlerTests
 	{
 		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate()).build();
 
-		final Candidate candidate = TransactionCreatedHandler.createCommonCandidateBuilder(event).build();
+		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(
+				event,
+				event.getQuantity()).build();
 
 		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_DECREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");
@@ -89,7 +101,10 @@ public class TransactionCreatedHandlerTests
 	{
 		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
 
-		final Candidate candidate = TransactionCreatedHandler.createCommonCandidateBuilder(event).build();
+		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(
+				event,
+				event.getQuantity())
+				.build();
 
 		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_INCREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");
@@ -103,26 +118,27 @@ public class TransactionCreatedHandlerTests
 		// @formatter:off
 		new Expectations()
 		{{
-				candidateRepository.retrieveLatestMatchOrNull((CandidatesQuery)any); times = 1; result = null;
+			candidateRepository.retrieveLatestMatchOrNull((CandidatesQuery)any); times = 1; result = null;
 		}}; // @formatter:on
 
-		final Candidate candidate = transactionEventHandler.createCandidateForTransactionEvent(unrelatedEvent);
+		final List<Candidate> candidates = transactionEventHandler.createCandidatesForTransactionEvent(unrelatedEvent);
+		assertThat(candidates).hasSize(1);
+		final Candidate candidate = candidates.get(0);
+
 		makeCommonAssertions(candidate);
 
 		// @formatter:off verify that candidateRepository was called to decide if the event is related to anything we know
-				new Verifications()
-				{{
-						CandidatesQuery query;
-						candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
-						assertThat(query).isNotNull();
-						assertThat(query.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
-				}}; // @formatter:on
+		new Verifications()
+		{{
+			CandidatesQuery query;
+			candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
+			assertThat(query).isNotNull();
+			assertThat(query.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
+		}}; // @formatter:on
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
-		assertThat(candidate.getDemandDetail()).isNull();
-		assertThat(candidate.getDistributionDetail()).isNull();
-		assertThat(candidate.getProductionDetail()).isNull();
-		assertThat(candidate.getTransactionDetails()).hasSize(1);
+		assertThat(candidate.getAdditionalDemandDetail()).isNull();
+		assertThat(candidate.getBusinessCaseDetail()).isNull();
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("10");
 	}
 
@@ -146,27 +162,29 @@ public class TransactionCreatedHandlerTests
 		// @formatter:off
 		new Expectations()
 		{{
-				candidateRepository.retrieveLatestMatchOrNull((CandidatesQuery)any); times = 1; result = exisitingCandidate;
+			candidateRepository.retrieveLatestMatchOrNull((CandidatesQuery)any); times = 1; result = exisitingCandidate;
 		}}; // @formatter:on
 
-		final Candidate candidate = transactionEventHandler.createCandidateForTransactionEvent(unrelatedEvent);
+		final List<Candidate> candidates = transactionEventHandler.createCandidatesForTransactionEvent(unrelatedEvent);
+		assertThat(candidates).hasSize(1);
+		final Candidate candidate = candidates.get(0);
+
 		makeCommonAssertions(candidate);
 
 		// @formatter:off verify that candidateRepository was called to decide if the event is related to anything we know
-				new Verifications()
-				{{
-						CandidatesQuery query;
-						candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
-						assertThat(query).isNotNull();
-						assertThat(query.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
-				}}; // @formatter:on
+		new Verifications()
+		{{
+			CandidatesQuery query;
+			candidateRepository.retrieveLatestMatchOrNull(query = withCapture());
+			assertThat(query).isNotNull();
+			assertThat(query.getTransactionDetail().getTransactionId()).isEqualTo(TRANSACTION_ID);
+		}}; // @formatter:on
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
 		assertThat(candidate.getId()).isEqualTo(11);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("11");
-		assertThat(candidate.getDemandDetail()).isNull();
-		assertThat(candidate.getDistributionDetail()).isNull();
-		assertThat(candidate.getProductionDetail()).isNull();
+		assertThat(candidate.getAdditionalDemandDetail()).isNull();
+		assertThat(candidate.getBusinessCaseDetail()).isNull();
 		assertThat(candidate.getTransactionDetails()).hasSize(2);
 
 		assertThat(candidate.getTransactionDetails()).anySatisfy(transactionDetail -> {
@@ -184,7 +202,7 @@ public class TransactionCreatedHandlerTests
 	public void createCandidate_unrelated_transaction_with_shipmentSchedule()
 	{
 		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate())
-				.shipmentScheduleId(SHIPMENT_SCHEDULE_ID).build();
+				.shipmentScheduleIds2Qty(SHIPMENT_SCHEDULE_ID, BigDecimal.TEN.negate()).build();
 
 		// @formatter:off
 		new Expectations()
@@ -192,7 +210,10 @@ public class TransactionCreatedHandlerTests
 				candidateRepository.retrieveLatestMatchOrNull((CandidatesQuery)any); times = 1; result = null;
 		}}; // @formatter:on
 
-		final Candidate candidate = transactionEventHandler.createCandidateForTransactionEvent(relatedEvent);
+		final List<Candidate> candidates = transactionEventHandler.createCandidatesForTransactionEvent(relatedEvent);
+		assertThat(candidates).hasSize(1);
+		final Candidate candidate = candidates.get(0);
+
 		makeCommonAssertions(candidate);
 
 		// @formatter:off verify that candidateRepository was called to decide if the event is related to anything we know
@@ -204,10 +225,9 @@ public class TransactionCreatedHandlerTests
 		}}; // @formatter:on
 
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_DECREASE);
-		assertThat(candidate.getDistributionDetail()).isNull();
-		assertThat(candidate.getProductionDetail()).isNull();
-		assertThat(candidate.getDemandDetail()).as("created candidate shall have a demand detail").isNotNull();
-		assertThat(candidate.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
+		final DemandDetail demandDetail = DemandDetail.castOrNull(candidate.getBusinessCaseDetail());
+		assertThat(demandDetail).as("created candidate shall have a demand detail").isNotNull();
+		assertThat(demandDetail.getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("-10");
 	}
@@ -221,11 +241,19 @@ public class TransactionCreatedHandlerTests
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
-						.quantity(new BigDecimal("63"))
+						.quantity(SIXTY_THREE)
 						.date(SystemTime.asTimestamp())
 						.build())
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(SHIPMENT_SCHEDULE_ID, -1))
+
+				.businessCase(CandidateBusinessCase.SHIPMENT)
+				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
+						SHIPMENT_SCHEDULE_ID,
+						-1,
+						-1,
+						SIXTY_FOUR))
 				.build();
+
+		exisitingCandidate.validate();
 
 		// @formatter:off
 		new Expectations()
@@ -234,11 +262,13 @@ public class TransactionCreatedHandlerTests
 		}}; // @formatter:on
 
 		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate())
-				.shipmentScheduleId(SHIPMENT_SCHEDULE_ID)
+				.shipmentScheduleIds2Qty(SHIPMENT_SCHEDULE_ID, BigDecimal.TEN.negate())
 				.transactionId(TRANSACTION_ID)
 				.build();
 
-		final Candidate candidate = transactionEventHandler.createCandidateForTransactionEvent(relatedEvent);
+		final List<Candidate> candidates = transactionEventHandler.createCandidatesForTransactionEvent(relatedEvent);
+		assertThat(candidates).hasSize(1);
+		final Candidate candidate = candidates.get(0);
 
 		// @formatter:off verify that candidateRepository was called to decide if the event is related to anything we know
 		new Verifications()
@@ -251,14 +281,13 @@ public class TransactionCreatedHandlerTests
 		assertThat(candidate.getId()).isEqualTo(11);
 		assertThat(candidate.getType()).isEqualTo(CandidateType.DEMAND);
 		assertThat(candidate.getQuantity())
-				.as("The demand candidate's (planned) quantity may not be changed from the transaction event")
-				.isEqualByComparingTo("63");
+				.as("The demand candidate's quantity needs to be updated because there is now a transaction with a real qty that is bigger")
+				.isEqualByComparingTo(SIXTY_FOUR);
 		makeCommonAssertions(candidate);
 
-		assertThat(candidate.getDistributionDetail()).isNull();
-		assertThat(candidate.getProductionDetail()).isNull();
-		assertThat(candidate.getDemandDetail()).as("created candidate shall have a demand detail").isNotNull();
-		assertThat(candidate.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
+		assertThat(candidate.getBusinessCaseDetail()).isNotNull();
+		assertThat(candidate.getBusinessCaseDetail()).isInstanceOf(DemandDetail.class);
+		assertThat(DemandDetail.cast(candidate.getBusinessCaseDetail()).getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
 		assertThat(candidate.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("-10");
@@ -269,8 +298,8 @@ public class TransactionCreatedHandlerTests
 		assertThat(query).isNotNull();
 		assertThat(query.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
 		assertThat(query.getMaterialDescriptorQuery())
-			.as("If we have a demand detail, then only query via that demand detail")
-			.isNull();
+				.as("If we have a demand detail, then only query via that demand detail")
+				.isNull();
 		assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
 	}
 

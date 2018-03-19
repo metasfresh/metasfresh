@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,18 +41,19 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Standard {@link IHUTransactionAttributeBuilder} implementation.
- * 
+ *
  * <br/>
  * <br/>
  * <b>WARNING: To be used internally by {@link HUContextProcessorExecutor} only. DO NOT use it directly.</b>
- * 
+ *
  * @author tsa
  *
  */
@@ -114,10 +115,10 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 	}
 
 	@Override
-	public void transferAttributes(final IHUAttributeTransferRequest request)
+	public void transferAttributes(@NonNull final IHUAttributeTransferRequest request)
 	{
 		logger.trace("Transfering attributes for {}", request);
-		
+
 		final IAttributeStorage attributesFrom = request.getAttributesFrom();
 		final IAttributeStorage attributesTo = request.getAttributesTo();
 
@@ -166,7 +167,7 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 		final IAllocationResult result = AllocationUtils.createQtyAllocationResult(
 				BigDecimal.ZERO, // qtyToAllocate
 				BigDecimal.ZERO, // qtyAllocated
-				Collections.<IHUTransaction> emptyList(), // trxs
+				Collections.<IHUTransactionCandidate> emptyList(), // trxs
 				attributeTrxs // attribute transactions
 				);
 

@@ -94,6 +94,12 @@ public class PMMPricingAware_QtyReportEvent implements IPMMPricingAware
 	{
 		return qtyReportEvent.getM_Product();
 	}
+	
+	@Override
+	public int getProductId()
+	{
+		return qtyReportEvent.getM_Product_ID();
+	}
 
 	@Override
 	public I_C_UOM getC_UOM()

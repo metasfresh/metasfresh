@@ -164,6 +164,9 @@ public class SubscriptionPricingRule implements IPricingRule
 		result.setPriceStd(subscriptionPricingResult.getPriceStd());
 		result.setTaxIncluded(subscriptionPricingResult.isTaxIncluded());
 		result.setC_TaxCategory_ID(subscriptionPricingResult.getC_TaxCategory_ID());
+		
+		result.setPriceEditable(subscriptionPricingResult.isPriceEditable());
+		result.setDiscountEditable(subscriptionPricingResult.isDiscountEditable());
 	}
 
 	private static void copyDiscountIntoResultIfAllowedByPricingContext(

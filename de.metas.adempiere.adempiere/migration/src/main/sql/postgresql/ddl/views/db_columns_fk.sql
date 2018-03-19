@@ -20,13 +20,13 @@ SELECT
 		END) AS IsMissing
 	--
 	, 'ALTER TABLE ' || v.tablename || ' DROP CONSTRAINT IF EXISTS '
-		|| SUBSTR (REPLACE(SUBSTR (v.columnname, 1, LENGTH (v.columnname) - 3), '_', '') || '_' || REPLACE (v.tablename, '_', ''), 1, 30)
+		|| SUBSTR (REPLACE(SUBSTR (v.columnname, 1, LENGTH (v.columnname) - 3), '_', '') || '_' || REPLACE (v.tablename, '_', ''), 1, 70)
 		|| ';' as sqltext_drop 
 	--
 	, 'ALTER TABLE ' || v.tablename
 		-- || ' ADD (CONSTRAINT '  /* for oracle */
 		|| ' ADD CONSTRAINT '  /* for postgresql */
-		|| SUBSTR (REPLACE(SUBSTR (v.columnname, 1, LENGTH (v.columnname) - 3), '_', '') || '_' || REPLACE (v.tablename, '_', ''), 1, 30)
+		|| SUBSTR (REPLACE(SUBSTR (v.columnname, 1, LENGTH (v.columnname) - 3), '_', '') || '_' || REPLACE (v.tablename, '_', ''), 1, 70)
 		|| ' FOREIGN KEY ('
 		|| v.columnname
 		|| ') REFERENCES '
@@ -34,10 +34,10 @@ SELECT
 		|| ' DEFERRABLE INITIALLY DEFERRED;' AS sqltext  /* for postgresql */
 	--
 	, 'ALTER TABLE ' || v.tablename || ' DROP CONSTRAINT IF EXISTS '
-		|| SUBSTR (REPLACE(SUBSTR (v.columnname, 1, LENGTH (v.columnname) - 3), '_', '') || '_' || REPLACE (v.tablename, '_', ''), 1, 30)
+		|| SUBSTR (REPLACE(SUBSTR (v.columnname, 1, LENGTH (v.columnname) - 3), '_', '') || '_' || REPLACE (v.tablename, '_', ''), 1, 70)
 		|| ';' 
 		|| 'ALTER TABLE '|| v.tablename|| ' ADD CONSTRAINT '  /* for postgresql */
-		|| SUBSTR (REPLACE(SUBSTR (v.columnname, 1, LENGTH (v.columnname) - 3), '_', '') || '_' || REPLACE (v.tablename, '_', ''), 1, 30)
+		|| SUBSTR (REPLACE(SUBSTR (v.columnname, 1, LENGTH (v.columnname) - 3), '_', '') || '_' || REPLACE (v.tablename, '_', ''), 1, 70)
 		|| ' FOREIGN KEY ('
 		|| v.columnname
 		|| ') REFERENCES '
@@ -49,7 +49,7 @@ FROM
 -- Table Direct or Search Table Direct
 		SELECT t.tablename, c.columnname
 			, r.NAME as AD_Reference_Name, c.ad_reference_id, c.ad_reference_value_id
-			, CAST (SUBSTR (columnname, 1, LENGTH (columnname) - 3) AS VARCHAR(40)) AS table_ref
+			, CAST (SUBSTR (columnname, 1, LENGTH (columnname) - 3) AS VARCHAR(80)) AS table_ref
 			, t.EntityType as TableName_EntityType
 			, c.EntityType as ColumnName_EntityType
 			, c.DDL_NoForeignKey

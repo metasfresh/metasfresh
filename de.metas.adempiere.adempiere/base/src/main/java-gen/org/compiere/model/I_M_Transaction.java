@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -32,7 +16,7 @@ public interface I_M_Transaction
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
@@ -90,8 +74,10 @@ public interface I_M_Transaction
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
@@ -100,12 +86,16 @@ public interface I_M_Transaction
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getC_BPartner_ID();
 
+	@Deprecated
 	public org.compiere.model.I_C_BPartner getC_BPartner();
 
+	@Deprecated
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
@@ -198,8 +188,8 @@ public interface I_M_Transaction
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: true
@@ -208,8 +198,8 @@ public interface I_M_Transaction
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: true
@@ -343,89 +333,8 @@ public interface I_M_Transaction
     public static final String COLUMNNAME_M_MovementLine_ID = "M_MovementLine_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Transaction, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_Transaction, org.compiere.model.I_M_Product>(I_M_Transaction.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Produktions-Position.
-	 * Document Line representing a production
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_ProductionLine_ID (int M_ProductionLine_ID);
-
-	/**
-	 * Get Produktions-Position.
-	 * Document Line representing a production
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_ProductionLine_ID();
-
-	public org.compiere.model.I_M_ProductionLine getM_ProductionLine();
-
-	public void setM_ProductionLine(org.compiere.model.I_M_ProductionLine M_ProductionLine);
-
-    /** Column definition for M_ProductionLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Transaction, org.compiere.model.I_M_ProductionLine> COLUMN_M_ProductionLine_ID = new org.adempiere.model.ModelColumn<I_M_Transaction, org.compiere.model.I_M_ProductionLine>(I_M_Transaction.class, "M_ProductionLine_ID", org.compiere.model.I_M_ProductionLine.class);
-    /** Column name M_ProductionLine_ID */
-    public static final String COLUMNNAME_M_ProductionLine_ID = "M_ProductionLine_ID";
-
-	/**
-	 * Set Bestands-Transaktion.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Transaction_ID (int M_Transaction_ID);
-
-	/**
-	 * Get Bestands-Transaktion.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Transaction_ID();
-
-    /** Column definition for M_Transaction_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Transaction, Object> COLUMN_M_Transaction_ID = new org.adempiere.model.ModelColumn<I_M_Transaction, Object>(I_M_Transaction.class, "M_Transaction_ID", null);
-    /** Column name M_Transaction_ID */
-    public static final String COLUMNNAME_M_Transaction_ID = "M_Transaction_ID";
-
-	/**
-	 * Set Bewegungs-Datum.
-	 * Date a product was moved in or out of inventory
+	 * Set Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -434,8 +343,8 @@ public interface I_M_Transaction
 	public void setMovementDate (java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungs-Datum.
-	 * Date a product was moved in or out of inventory
+	 * Get Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -497,6 +406,58 @@ public interface I_M_Transaction
     public static final org.adempiere.model.ModelColumn<I_M_Transaction, Object> COLUMN_MovementType = new org.adempiere.model.ModelColumn<I_M_Transaction, Object>(I_M_Transaction.class, "MovementType", null);
     /** Column name MovementType */
     public static final String COLUMNNAME_MovementType = "MovementType";
+
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+	public org.compiere.model.I_M_Product getM_Product();
+
+	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Transaction, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_Transaction, org.compiere.model.I_M_Product>(I_M_Transaction.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Bestands-Transaktion.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Transaction_ID (int M_Transaction_ID);
+
+	/**
+	 * Get Bestands-Transaktion.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Transaction_ID();
+
+    /** Column definition for M_Transaction_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Transaction, Object> COLUMN_M_Transaction_ID = new org.adempiere.model.ModelColumn<I_M_Transaction, Object>(I_M_Transaction.class, "M_Transaction_ID", null);
+    /** Column name M_Transaction_ID */
+    public static final String COLUMNNAME_M_Transaction_ID = "M_Transaction_ID";
 
 	/**
 	 * Set Manufacturing Cost Collector.

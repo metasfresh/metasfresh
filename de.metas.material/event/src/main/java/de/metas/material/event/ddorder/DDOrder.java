@@ -58,17 +58,19 @@ final public class DDOrder
 
 	int shipperId;
 
-	/**
-	 * If {@code true}, then this event advises the recipient to directly request an actual DD_Order to be created.
-	 */
-	boolean advisedToCreateDDrder;
-
 	@Singular
 	List<DDOrderLine> lines;
 
 	int ddOrderId;
 
 	String docStatus;
+
+	/**
+	 * Not persisted in the {@code DD_Order} data record, but
+	 * when material-dispo posts {@link DDOrderRequestedEvent}, it contains a group-ID,
+	 * and the respective {@link DDOrderCreatedEvent} contains the same group-ID.
+	 */
+	int materialDispoGroupId;
 
 	@JsonCreator
 	public DDOrder(
@@ -77,21 +79,22 @@ final public class DDOrder
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("datePromised") @NonNull final Date datePromised,
 			@JsonProperty("shipperId") final int shipperId,
-			@JsonProperty("createDDrder") final boolean advisedToCreateDDrder,
 			@JsonProperty("lines") final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,
-			@JsonProperty("docStatus") final String docStatus)
+			@JsonProperty("docStatus") final String docStatus,
+			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
 	{
 		this.orgId = checkIdGreaterThanZero("orgId", orgId);
-		this.plantId = checkIdGreaterThanZero("plantId", plantId);
-		this.productPlanningId = checkIdGreaterThanZero("productPlanningId", productPlanningId);
+
+		// these two might be zero, if the DDOrder was created manually
+		this.plantId = plantId;
+		this.productPlanningId = productPlanningId;
 
 		this.datePromised = datePromised;
 		this.shipperId = shipperId;
-		this.advisedToCreateDDrder = advisedToCreateDDrder;
 		this.lines = lines;
 		this.ddOrderId = ddOrderId;
 		this.docStatus = docStatus;
+		this.materialDispoGroupId = materialDispoGroupId;
 	}
-
 }

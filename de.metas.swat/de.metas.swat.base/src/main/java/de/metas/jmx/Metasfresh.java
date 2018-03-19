@@ -3,10 +3,10 @@ package de.metas.jmx;
 import java.util.Arrays;
 import java.util.Properties;
 
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
-import org.compiere.dbPort.Convert;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -74,6 +74,6 @@ public class Metasfresh
 	@ManagedOperation
 	public void rotateMigrationScriptFile()
 	{
-		Convert.closeMigrationScriptFiles();
+		MigrationScriptFileLoggerHolder.closeMigrationScriptFiles();
 	}
 }

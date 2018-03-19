@@ -1,28 +1,5 @@
 package de.metas.fresh.gui.search;
 
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -62,8 +39,8 @@ public class MRPInfoWindowAttribGroups
 
 	private final transient Logger log = LogManager.getLogger(getClass());
 
-	private Properties _ctx;
-	private int _windowNo;
+	private final Properties _ctx;
+	private final int _windowNo;
 
 	private MiniTable dimensionsTbl = null;
 
@@ -109,7 +86,7 @@ public class MRPInfoWindowAttribGroups
 		final IADInfoWindowDAO adInfoWindowDAO = Services.get(IADInfoWindowDAO.class);
 		final I_AD_InfoWindow infoWindow = adInfoWindowDAO.retrieveInfoWindowByTableName(ctx, I_X_MRP_ProductInfo_V.Table_Name);
 
-		final List<ColumnInfo> s_layoutAttribValues = new ArrayList<ColumnInfo>();
+		final List<ColumnInfo> s_layoutAttribValues = new ArrayList<>();
 
 		s_layoutAttribValues.add(new ColumnInfo(msgBL.translate(ctx, " "), "M_Product_ID", IDColumn.class).setColumnName("M_Product_ID"));
 		s_layoutAttribValues.add(new ColumnInfo(msgBL.translate(ctx, "ValueAggregateName"), "GroupName", String.class).setColumnName("GroupName"));
@@ -167,28 +144,23 @@ public class MRPInfoWindowAttribGroups
 
 		dimensionsTbl.autoSize();
 
-		dimensionsTbl.addPropertyChangeListener(IMiniTable.PROPERTY_SelectionChanged, new PropertyChangeListener()
-		{
-			@Override
-			public void propertyChange(PropertyChangeEvent evt)
+		dimensionsTbl.addPropertyChangeListener(IMiniTable.PROPERTY_SelectionChanged, (PropertyChangeListener)evt -> {
+			if (dimensionsTbl.isLoading() || dimensionsTbl.getSelectedRow() < 0 || dimensionsTbl.getRowCount() == 0)
 			{
-				if (dimensionsTbl.isLoading() || dimensionsTbl.getSelectedRow() < 0 || dimensionsTbl.getRowCount() == 0)
-				{
-					return;
-				}
-				final IDColumn productId = (IDColumn)dimensionsTbl.getValueAt(dimensionsTbl.getSelectedRow(), "M_Product_ID");
-				final String groupName = (String)dimensionsTbl.getValueAt(dimensionsTbl.getSelectedRow(), "GroupName");
-
-				if (productId == null)
-				{
-					return;
-				}
-
-				final List<String> attributeValues = Services.get(IDimensionspecDAO.class)
-						.retrieveAttributeValueForGroup("MRP_Product_Info_ASI_Values", groupName, new PlainContextAware(getCtx()));
-				final String[] array = attributeValues.toArray(new String[0]);
-				panelWarehouse.refresh(productId.getRecord_ID(), array);
+				return;
 			}
+			final IDColumn productId = (IDColumn)dimensionsTbl.getValueAt(dimensionsTbl.getSelectedRow(), "M_Product_ID");
+			final String groupName = (String)dimensionsTbl.getValueAt(dimensionsTbl.getSelectedRow(), "GroupName");
+
+			if (productId == null)
+			{
+				return;
+			}
+
+			final List<String> attributeValues = Services.get(IDimensionspecDAO.class)
+					.retrieveAttributeValueForGroup("MRP_Product_Info_ASI_Values", groupName, PlainContextAware.newOutOfTrx(getCtx()));
+			final String[] array = attributeValues.toArray(new String[0]);
+			panelWarehouse.refresh(productId.getRecord_ID(), array);
 		});
 	}
 

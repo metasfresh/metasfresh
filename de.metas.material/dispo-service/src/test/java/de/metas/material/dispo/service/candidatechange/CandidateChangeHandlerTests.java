@@ -9,6 +9,7 @@ import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,19 +37,20 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
-import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 import mockit.Mocked;
@@ -77,6 +79,8 @@ import mockit.Mocked;
 
 public class CandidateChangeHandlerTests
 {
+	private static final BigDecimal THREE = new BigDecimal("3");
+
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
@@ -90,12 +94,12 @@ public class CandidateChangeHandlerTests
 
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
-	private StockRepository stockRepository;
+	private AvailableToPromiseRepository stockRepository;
 
 	private CandidateChangeService candidateChangeHandler;
 
 	@Mocked
-	private MaterialEventService materialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 	private StockCandidateService stockCandidateService;
 
@@ -109,12 +113,14 @@ public class CandidateChangeHandlerTests
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		stockRepository = new StockRepository();
-		stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands);
+		stockRepository = new AvailableToPromiseRepository();
+		stockCandidateService = new StockCandidateService(
+				candidateRepositoryRetrieval,
+				candidateRepositoryCommands);
 
 		candidateChangeHandler = new CandidateChangeService(
 				ImmutableList.of(
-						new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, materialEventService, stockRepository, stockCandidateService),
+						new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, postMaterialEventService, stockRepository, stockCandidateService),
 						new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService)));
 	}
 
@@ -223,12 +229,15 @@ public class CandidateChangeHandlerTests
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.date(t2)
-				.quantity(BigDecimal.ZERO) // doesn't matter
+				.quantity(THREE)
 				.build();
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
-				materialDescriptor,
-				earlierCandidate.getGroupId(),
-				new BigDecimal("3"));
+		final Candidate candidateWithDelta = Candidate.builder()
+				.type(CandidateType.STOCK)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescriptor(materialDescriptor)
+				.groupId(earlierCandidate.getGroupId()).build();
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(candidateWithDelta);
 
 		// assert that every stock record got some groupId
 		assertThat(DispoTestUtils.retrieveAllRecords()).allSatisfy(r -> assertThatModel(r).hasValueGreaterThanZero(I_MD_Candidate.COLUMN_MD_Candidate_GroupId));
@@ -334,8 +343,8 @@ public class CandidateChangeHandlerTests
 
 			// shall be balanced between the demand and the supply
 			assertThatModel(secondStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, firstStockRecord.getDateProjected());
-			assertThat(secondStockRecord.getQty()).isEqualByComparingTo("23");
 			assertThat(firstStockRecord.getQty()).isEqualByComparingTo("-23");
+			assertThat(secondStockRecord.getQty()).isEqualByComparingTo("0");
 		}
 	}
 
@@ -385,7 +394,7 @@ public class CandidateChangeHandlerTests
 				.date(NOW)
 				.build();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
+		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
 				stockRepository,
 				materialDescr,
 				"0");
@@ -395,7 +404,13 @@ public class CandidateChangeHandlerTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(materialDescr)
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleIdForDemandDetail, 0))
+
+				.businessCase(CandidateBusinessCase.SHIPMENT)
+				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
+						shipmentScheduleIdForDemandDetail,
+						0,
+						0,
+						TEN))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
@@ -416,7 +431,13 @@ public class CandidateChangeHandlerTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(supplyMaterialDescriptor)
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleIdForDemandDetail, 0))
+
+				.businessCase(CandidateBusinessCase.SHIPMENT)
+				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
+						shipmentScheduleIdForDemandDetail,
+						0,
+						0,
+						TEN))
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
@@ -454,17 +475,23 @@ public class CandidateChangeHandlerTests
 
 			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 			final I_MD_Candidate firstStockRecord = allStockCandidates.get(0);
+			assertThatModel(supplyRecord.getMD_Candidate_Parent())
+					.as("the supply-record is the first stock-record's child")
+					.hasSameIdAs(firstStockRecord);
 
 			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
 			final I_MD_Candidate secondStockRecord = allStockCandidates.get(1);
+			assertThatModel(secondStockRecord.getMD_Candidate_Parent())
+					.as("the second stock-record is the demand-record's child")
+					.hasSameIdAs(demandRecord);
 
 			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, firstStockRecord.getSeqNo() + 1);  // as before
 			assertThatModel(secondStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, demandRecord.getSeqNo() + 1);
 
-			// shall both be balanced between the demand and the supply, so that in sume we have zero
+			// shall both be balanced between the demand and the supply, so that in sum we have zero
 			assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, secondStockRecord.getDateProjected());
 			assertThat(firstStockRecord.getQty()).isEqualByComparingTo("23");
-			assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-23");
+			assertThat(secondStockRecord.getQty()).isEqualByComparingTo("0");
 		}
 	}
 
@@ -485,9 +512,14 @@ public class CandidateChangeHandlerTests
 		final I_MD_Candidate firstStockRecord = allStockCandidates.get(1);
 		final I_MD_Candidate secondStockRecord = allStockCandidates.get(2);
 
-		assertThat(initialStockRecord.getQty()).isEqualByComparingTo("10"); // shall be unchanged
+		// shall be unchanged
+		assertThat(initialStockRecord.getQty()).isEqualByComparingTo("10");
+
+		// 10 + 23 from the createAndAddSupplyWithQtyandDemandDetail above
 		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("33");
-		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-23");
+
+		// 33 - 23 from the createAndAddDemandWithQtyandDemandDetail
+		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("10");
 	}
 
 	@Test
@@ -509,10 +541,9 @@ public class CandidateChangeHandlerTests
 		final List<I_MD_Candidate> allDemandRecords = DispoTestUtils.filter(CandidateType.DEMAND);
 		assertThat(allDemandRecords).hasSize(2);
 
-		// in sum, we now have -46 for this time, product, warehouse and storageAttributesKey
 		assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, secondStockRecord.getDateProjected());
 		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("-23");
-		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-23");
+		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-46"); // = - 23 - 23
 	}
 
 	@Test
@@ -546,6 +577,6 @@ public class CandidateChangeHandlerTests
 
 		// -> overall stock at NOW is (20 - 24) = -4 = (8 -12)
 		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("8");
-		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-12");
+		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-4");
 	}
 }

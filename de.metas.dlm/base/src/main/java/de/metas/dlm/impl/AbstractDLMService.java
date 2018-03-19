@@ -137,6 +137,10 @@ public abstract class AbstractDLMService implements IDLMService
 		}
 
 		final I_AD_Element element = adTableDAO.retrieveElement(columnName);
+		
+		final String elementColumnName = element.getColumnName ();
+		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
+		
 		column.setAD_Element(element);
 		column.setAD_Table(table);
 		column.setColumnName(element.getColumnName());

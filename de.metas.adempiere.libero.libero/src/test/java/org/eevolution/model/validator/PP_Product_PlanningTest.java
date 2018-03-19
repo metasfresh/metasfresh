@@ -16,7 +16,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 
 /*
  * #%L
@@ -77,7 +77,7 @@ public class PP_Product_PlanningTest
 
 		PP_Product_Planning.INSTANCE.updateStorageAttributesKey(productPlanning);
 
-		final StorageAttributesKey storageAttributesKeyExpected = StorageAttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
+		final AttributesKey storageAttributesKeyExpected = AttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
 		assertThat(productPlanning.getStorageAttributesKey()).isEqualTo(storageAttributesKeyExpected.getAsString());
 	}
 }

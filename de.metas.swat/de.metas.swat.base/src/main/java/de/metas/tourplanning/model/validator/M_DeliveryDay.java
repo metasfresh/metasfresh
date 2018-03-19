@@ -61,7 +61,7 @@ public class M_DeliveryDay
 	public void checkIsToBeFetched(final I_M_DeliveryDay deliveryDay)
 	{
 		final I_C_BPartner partner = deliveryDay.getC_BPartner();
-		if (!partner.isVendor() && deliveryDay.isToBeFetched())
+		if (partner != null && !partner.isVendor() && deliveryDay.isToBeFetched())
 		{
 			throw new BPartnerNotVendorException(partner);
 		}

@@ -20,18 +20,17 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.document.IDocTypeBL;
+import de.metas.document.IDocTypeDAO;
 
 /**
  *	Document Type Model
- *	
+ *
  *  @author Jorg Janke
  *  @author Karsten Thiemann FR [ 1782412 ]
  *  @author Teo Sarca, www.arhipac.ro
@@ -43,7 +42,7 @@ import de.metas.document.IDocTypeBL;
 public class MDocType extends X_C_DocType
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -1406832071359080959L;
 
@@ -57,7 +56,7 @@ public class MDocType extends X_C_DocType
 		MDocType[] doc = MDocType.getOfDocBaseType(Env.getCtx(), DocBaseType);
 		return doc.length > 0 ? doc[0].get_ID() : 0;
 	}
-	
+
 	/**
 	 * 	Get Client Document Type with DocBaseType
 	 *	@param ctx context
@@ -74,7 +73,7 @@ public class MDocType extends X_C_DocType
 									.list();
 		return list.toArray(new MDocType[list.size()]);
 	}	//	getOfDocBaseType
-	
+
 	/**
 	 * 	Get Client Document Types
 	 *	@param ctx context
@@ -89,7 +88,7 @@ public class MDocType extends X_C_DocType
 									.list();
 		return list.toArray(new MDocType[list.size()]);
 	}	//	getOfClient
-	
+
 	/**
 	 * 	Get Document Type (cached)
 	 *	@param ctx context
@@ -102,12 +101,11 @@ public class MDocType extends X_C_DocType
 		{
 			return null;
 		}
-		
-		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
-		final I_C_DocType docType = InterfaceWrapperHelper.create(ctx, C_DocType_ID, I_C_DocType.class, ITrx.TRXNAME_None);
+
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(C_DocType_ID);
 		return LegacyAdapters.convertToPO(docType);
 	} 	//	get
-	
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -117,7 +115,7 @@ public class MDocType extends X_C_DocType
 	public MDocType(Properties ctx, int C_DocType_ID, String trxName)
 	{
 		super(ctx, C_DocType_ID, trxName);
-		if (C_DocType_ID < 0)
+		if (is_new())
 		{
 		//	setName (null);
 		//	setPrintName (null);
@@ -178,18 +176,16 @@ public class MDocType extends X_C_DocType
 		setGL_Category_ID(GL_Category_ID);
 	}	//	setGL_Category_ID
 
-	
+
 	/**
 	 * 	Set SOTrx based on document base type
 	 */
-	public void setIsSOTrx ()
+	public void setIsSOTrx()
 	{
-		boolean isSOTrx = DOCBASETYPE_SalesOrder.equals(getDocBaseType()) 
-			|| DOCBASETYPE_MaterialDelivery.equals(getDocBaseType())
-			|| getDocBaseType().startsWith("AR");
-		super.setIsSOTrx (isSOTrx);
-	}	//	setIsSOTrx
-	
+		final boolean isSOTrx = Services.get(IDocTypeBL.class).isSOTrx(getDocBaseType());
+		setIsSOTrx(isSOTrx);
+	}	// setIsSOTrx
+
 	/**
 	 * 	String Representation
 	 *	@return info
@@ -240,7 +236,7 @@ public class MDocType extends X_C_DocType
 		return Services.get(IDocTypeBL.class).isOffer(this);
 	}	// isOffer
 
-	
+
 	/**
 	 * 	Get Print Name
 	 * 	@param AD_Language language
@@ -252,7 +248,7 @@ public class MDocType extends X_C_DocType
 			return super.getPrintName();
 		return get_Translation (COLUMNNAME_PrintName, AD_Language);
 	}	//	getPrintName
-	
+
 	/**
 	 * 	After Save
 	 *	@param newRecord new
@@ -267,26 +263,26 @@ public class MDocType extends X_C_DocType
 			//	Add doctype/docaction access to all roles of client
 			String sqlDocAction = "INSERT INTO AD_Document_Action_Access "
 				+ "(AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,"
-				+ "C_DocType_ID , AD_Ref_List_ID, AD_Role_ID) " 
+				+ "C_DocType_ID , AD_Ref_List_ID, AD_Role_ID) "
 				+ "(SELECT "
-				+ getAD_Client_ID() + ",0,'Y', now()," 
-				+ getUpdatedBy() + ", now()," + getUpdatedBy() 
-				+ ", doctype.C_DocType_ID, action.AD_Ref_List_ID, rol.AD_Role_ID " 
-				+ "FROM AD_Client client " 
+				+ getAD_Client_ID() + ",0,'Y', now(),"
+				+ getUpdatedBy() + ", now()," + getUpdatedBy()
+				+ ", doctype.C_DocType_ID, action.AD_Ref_List_ID, rol.AD_Role_ID "
+				+ "FROM AD_Client client "
 				+ "INNER JOIN C_DocType doctype ON (doctype.AD_Client_ID=client.AD_Client_ID) "
 				+ "INNER JOIN AD_Ref_List action ON (action.AD_Reference_ID=135) "
 				+ "INNER JOIN AD_Role rol ON (rol.AD_Client_ID=client.AD_Client_ID) "
-				+ "WHERE client.AD_Client_ID=" + getAD_Client_ID() 
+				+ "WHERE client.AD_Client_ID=" + getAD_Client_ID()
 				+ " AND doctype.C_DocType_ID=" + get_ID()
 				+ " AND rol.IsManual='N'"
 				+ ")";
-			
+
 			int docact = DB.executeUpdate(sqlDocAction, get_TrxName());
 			log.debug("AD_Document_Action_Access=" + docact);
 		}
 		return success;
 	}	//	afterSave
-	
+
 	/**
 	 * 	Executed after Delete operation.
 	 * 	@param success true if record deleted
@@ -302,5 +298,5 @@ public class MDocType extends X_C_DocType
 		}
 		return success;
 	} 	//	afterDelete
-	
+
 }	//	MDocType

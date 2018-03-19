@@ -14,7 +14,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1394134818L;
+	private static final long serialVersionUID = 1664430908L;
 
     /** Standard Constructor */
     public X_AD_UI_Element (Properties ctx, int AD_UI_Element_ID, String trxName)
@@ -26,6 +26,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 			setAD_UI_Element_ID (0);
 			setAD_UI_ElementType (null); // F
 			setIsAdvancedField (false); // N
+			setIsAllowFiltering (false); // N
 			setIsDisplayed (true); // Y
 			setIsDisplayed_SideList (false); // N
 			setIsDisplayedGrid (false); // N
@@ -265,6 +266,29 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 		return false;
 	}
 
+	/** Set Allow filtering.
+		@param IsAllowFiltering Allow filtering	  */
+	@Override
+	public void setIsAllowFiltering (boolean IsAllowFiltering)
+	{
+		set_Value (COLUMNNAME_IsAllowFiltering, Boolean.valueOf(IsAllowFiltering));
+	}
+
+	/** Get Allow filtering.
+		@return Allow filtering	  */
+	@Override
+	public boolean isAllowFiltering () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAllowFiltering);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Displayed.
 		@param IsDisplayed 
 		Determines, if this field is displayed
@@ -409,6 +433,22 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Media Types.
+		@param MediaTypes Media Types	  */
+	@Override
+	public void setMediaTypes (java.lang.String MediaTypes)
+	{
+		set_Value (COLUMNNAME_MediaTypes, MediaTypes);
+	}
+
+	/** Get Media Types.
+		@return Media Types	  */
+	@Override
+	public java.lang.String getMediaTypes () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MediaTypes);
 	}
 
 	/** Set Name.

@@ -35,10 +35,11 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
+
+import de.metas.material.planning.pporder.LiberoException;
 
 @Validator(I_PP_Product_BOMLine.class)
 public class PP_Product_BOMLine

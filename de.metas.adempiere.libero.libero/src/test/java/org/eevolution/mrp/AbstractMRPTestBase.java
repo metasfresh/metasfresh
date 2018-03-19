@@ -37,7 +37,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.document.engine.IDocumentBL;
-import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.MaterialPlanningConfiguration;
 
 @RunWith(SpringRunner.class)
@@ -104,17 +103,4 @@ public abstract class AbstractMRPTestBase
 	 * Method called before running a test, after basic init.
 	 */
 	protected abstract void afterInit();
-
-	/**
-	 * Execute MRP on all planning segments
-	 */
-	protected void runMRP()
-	{
-		helper.runMRP();
-	}
-
-	protected void runMRP(final IMaterialPlanningContext mrpContext)
-	{
-		helper.runMRP(mrpContext);
-	}
 }

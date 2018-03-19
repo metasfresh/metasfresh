@@ -37,21 +37,20 @@ import org.compiere.util.Ini;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.flatrate.impexp.FlatrateTermImportProcess;
 import de.metas.contracts.flatrate.inout.spi.impl.FlatrateMaterialBalanceConfigMatcher;
-import de.metas.contracts.flatrate.ordercandidate.spi.FlatrateGroupingProvider;
-import de.metas.contracts.flatrate.ordercandidate.spi.FlatrateOLCandListener;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleFromSubscriptionOrderLineVetoer;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionProcessor;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.invoicecandidate.ExcludeSubscriptionInOutLines;
 import de.metas.contracts.invoicecandidate.ExcludeSubscriptionOrderLines;
 import de.metas.contracts.model.I_I_Flatrate_Term;
+import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.ordercandidate.api.IOLCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 
 public class MainValidator extends AbstractModuleInterceptor
 {
@@ -100,12 +99,9 @@ public class MainValidator extends AbstractModuleInterceptor
 	public void registerFactories()
 	{
 		Services.get(IShipmentScheduleHandlerBL.class).registerVetoer(new ShipmentScheduleFromSubscriptionOrderLineVetoer(), I_C_OrderLine.Table_Name);
-		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(Env.getCtx(), new SubscriptionShipmentScheduleHandler());
+		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(SubscriptionShipmentScheduleHandler.class);
 
 		Services.get(IShipmentScheduleBL.class).registerCandidateProcessor(new ShipmentScheduleSubscriptionProcessor());
-
-		Services.get(IOLCandBL.class).registerCustomerGroupingValuesProvider(new FlatrateGroupingProvider());
-		Services.get(IOLCandBL.class).registerOLCandListener(new FlatrateOLCandListener());
 
 		// material balance matcher
 		Services.get(IMaterialBalanceConfigBL.class).addMaterialBalanceConfigMather(new FlatrateMaterialBalanceConfigMatcher());
@@ -114,6 +110,9 @@ public class MainValidator extends AbstractModuleInterceptor
 
 		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
 		ExcludeSubscriptionInOutLines.registerFilterForInvoiceCandidateCreation();
+
+		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
+		invoiceCandidateListeners.addListener(FlatrateTermInvoiceCandidateListener.instance);
 	}
 
 	@Override

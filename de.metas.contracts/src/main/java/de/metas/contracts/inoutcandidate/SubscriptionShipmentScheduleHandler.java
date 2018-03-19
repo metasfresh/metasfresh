@@ -4,7 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,14 +43,14 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.storage.impl.ImmutableStorageSegment;
 import lombok.NonNull;
 
-public class SubscriptionShipmentScheduleHandler implements IShipmentScheduleHandler
+public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 {
 	@VisibleForTesting
 	static final String SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS = "C_SubscriptionProgress.Create_ShipmentSchedulesInAdvanceDays";
@@ -99,7 +98,7 @@ public class SubscriptionShipmentScheduleHandler implements IShipmentScheduleHan
 
 		newSched.setDeliveryRule(term.getDeliveryRule());
 		newSched.setDeliveryViaRule(term.getDeliveryViaRule());
-		
+
 		newSched.setQtyOrdered(subscriptionLine.getQty());
 		newSched.setQtyOrdered_Calculated(subscriptionLine.getQty());
 		newSched.setQtyReserved(subscriptionLine.getQty());
@@ -132,7 +131,7 @@ public class SubscriptionShipmentScheduleHandler implements IShipmentScheduleHan
 	private void updateNewSchedWithValuesFromReferencedLine(@NonNull final I_M_ShipmentSchedule newSched)
 	{
 		final ShipmentScheduleReferencedLine subscriptionFromgressInfos = Adempiere
-				.getBean(ShipmentScheduleOrderDocForSubscriptionLine.class)
+				.getBean(ShipmentScheduleSubscriptionReferenceProvider.class)
 				.provideFor(newSched);
 
 		newSched.setM_Warehouse_ID(subscriptionFromgressInfos.getWarehouseId());
@@ -209,13 +208,6 @@ public class SubscriptionShipmentScheduleHandler implements IShipmentScheduleHan
 
 		final I_C_SubscriptionProgress subscriptionLine = ref.getModel(contextAware, I_C_SubscriptionProgress.class);
 
-		return new IDeliverRequest()
-		{
-			@Override
-			public BigDecimal getQtyOrdered()
-			{
-				return subscriptionLine.getQty();
-			}
-		};
+		return () -> subscriptionLine.getQty();
 	}
 }

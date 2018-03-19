@@ -162,7 +162,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 				{
 					trxOld.close();
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					throw new TrxException("Failed closing the old transaction: " + trxOld, e);
 				}
@@ -499,7 +499,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(r);
 		call(trxName, callable);
 	}
-	
+
 	@Override
 	public void run(final String trxName, final Runnable runnable)
 	{
@@ -771,7 +771,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			callableResult = TrxCallableWrappers.wrapAsTrxCallableWithTrxNameIfNeeded(callable).call(trxName);
 
 			// Commit the transaction if we were asked to do it
-			OnRunnableSuccess onRunnableSuccess = cfg.getOnRunnableSuccess();
+			final OnRunnableSuccess onRunnableSuccess = cfg.getOnRunnableSuccess();
 			if (onRunnableSuccess == OnRunnableSuccess.COMMIT)
 			{
 				// if (trxPropagation != TrxPropagation.REQUIRES_NEW)
@@ -893,7 +893,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 					{
 						trx.releaseSavepoint(savepoint);
 					}
-					catch (Exception e)
+					catch (final Exception e)
 					{
 						final String errmsg = "There was an exception while rolling back to savepoint. Going forward."
 								+ "\n Trx: " + trx
@@ -959,7 +959,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			{
 				runnable.doFinally();
 			}
-			catch (Throwable doFinallyException)
+			catch (final Throwable doFinallyException)
 			{
 				// Propagate the doFinallyException only if we are not currently throwing another exception.
 				// If we are currently throwing another exception, we suppress this one.

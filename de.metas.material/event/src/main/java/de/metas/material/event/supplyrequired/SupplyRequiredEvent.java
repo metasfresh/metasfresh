@@ -42,6 +42,6 @@ public class SupplyRequiredEvent implements MaterialEvent
 	@Override
 	public EventDescriptor getEventDescriptor()
 	{
-		return supplyRequiredDescriptor.getEventDescr();
+		return supplyRequiredDescriptor.getEventDescriptor();
 	}
 }

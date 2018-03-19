@@ -30,15 +30,17 @@ import org.adempiere.util.ISingletonService;
 
 public interface IMsgBL extends ISingletonService
 {
+	String getMsg(String adLanguage, String message);
+	
 	/**
 	 * Get translated text message for AD_Message
 	 * 
-	 * @param language AD_Language
+	 * @param adLanguage AD_Language
 	 * @param adMessage AD_Message
 	 * @param params parameters
 	 * @return translated text
 	 */
-	String getMsg(String language, String message, Object[] params);
+	String getMsg(String adLanguage, String message, Object[] params);
 
 	/**
 	 * Get translated text message for AD_Message
@@ -71,6 +73,8 @@ public interface IMsgBL extends ISingletonService
 
 	String parseTranslation(Properties ctx, String message);
 
+	String parseTranslation(String adLanguage, String message);
+
 	/**
 	 * "Translate" text.
 	 * 
@@ -84,6 +88,8 @@ public interface IMsgBL extends ISingletonService
 	 * @return translated text or original text if not found
 	 */
 	String translate(Properties ctx, String text);
+
+	String translate(String adLanguage, String text);
 
 	String translate(Properties ctx, String text, boolean isSOTrx);
 

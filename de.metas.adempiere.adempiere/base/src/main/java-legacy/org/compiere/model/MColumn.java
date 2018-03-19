@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,7 +36,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.dbPort.Convert;
 import org.compiere.util.CCache;
 import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
@@ -302,7 +302,11 @@ public class MColumn extends X_AD_Column
 				&& getAD_Element_ID() != 0)
 		{
 			M_Element element = new M_Element(getCtx(), getAD_Element_ID(), get_TrxName());
-			setColumnName(element.getColumnName());
+			
+			final String elementColumnName = element.getColumnName ();
+			Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
+			
+			setColumnName(elementColumnName);
 			setName(element.getName());
 			setDescription(element.getDescription());
 			setHelp(element.getHelp());
@@ -331,8 +335,7 @@ public class MColumn extends X_AD_Column
 						.append(DB.TO_STRING(getName()))
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE AD_Column_ID=").append(get_ID())
-						.append(" AND IsCentrallyMaintained='Y'");
+						.append(" WHERE AD_Column_ID=").append(get_ID());
 				int no = DB.executeUpdate(sql.toString(), get_TrxName());
 				log.debug("afterSave - Fields updated #" + no);
 			}
@@ -809,7 +812,7 @@ public class MColumn extends X_AD_Column
 	{
 		if (addingSingleColumn && isAddColumnDDL(sqlStatement))
 		{
-			final String sql = Convert.DDL_PREFIX + "SELECT public.db_alter_table(" + DB.TO_STRING(tableName) + "," + DB.TO_STRING(sqlStatement) + ")";
+			final String sql = MigrationScriptFileLoggerHolder.DDL_PREFIX + "SELECT public.db_alter_table(" + DB.TO_STRING(tableName) + "," + DB.TO_STRING(sqlStatement) + ")";
 			final Object[] sqlParams = null; // IMPORTANT: don't use any parameters because we want to log this command to migration script file
 			DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
 		}

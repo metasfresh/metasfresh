@@ -1,5 +1,10 @@
 package de.metas.handlingunits.attributes.sscc18.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -10,12 +15,12 @@ package de.metas.handlingunits.attributes.sscc18.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -224,6 +229,22 @@ public class SSCC18CodeBLTests
 		sscc18CodeBL.validate(sscc18ToValidate);
 
 		HUAssert.assertMock("mock");
+	}
+
+	@Test
+	public void testSSCC18_ComputeCheckDigit()
+	{
+		final Map<String, Integer> SSCC18_Codes = new HashMap<>();
+		SSCC18_Codes.put("03764013001000008", 5);
+		SSCC18_Codes.put("03764013001000010", 8);
+		SSCC18_Codes.put("03764013001000012", 2);
+		SSCC18_Codes.put("03764013001000014", 6);
+		SSCC18_Codes.put("03764013001000018", 4);
+
+		SSCC18_Codes.forEach((stringSSCC18ToVerify, expectedCheckDigit) -> {
+			final int checkDigit = sscc18CodeBL.computeCheckDigit(stringSSCC18ToVerify);
+			assertThat(expectedCheckDigit).isEqualTo(checkDigit);
+		});
 	}
 
 }

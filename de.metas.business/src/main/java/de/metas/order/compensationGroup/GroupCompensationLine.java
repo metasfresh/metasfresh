@@ -67,6 +67,9 @@ public final class GroupCompensationLine
 	@Getter
 	private BigDecimal lineNetAmt;
 
+	@Getter
+	private int groupTemplateLineId;
+
 	@Builder
 	public GroupCompensationLine(
 			final int repoId,
@@ -79,12 +82,14 @@ public final class GroupCompensationLine
 			final BigDecimal baseAmt,
 			final BigDecimal qty,
 			final BigDecimal price,
-			final BigDecimal lineNetAmt)
+			final BigDecimal lineNetAmt,
+			final int groupTemplateLineId)
 	{
 		Check.assume(productId > 0, "productId > 0");
 		Check.assume(uomId > 0, "uomId > 0");
 
 		this.repoId = repoId > 0 ? repoId : -1;
+		this.groupTemplateLineId = groupTemplateLineId > 0 ? groupTemplateLineId : -1;
 
 		this.seqNo = seqNo;
 
@@ -145,4 +150,15 @@ public final class GroupCompensationLine
 			lineNetAmt = lineNetAmt.setScale(precision, RoundingMode.HALF_UP);
 		}
 	}
+
+	public boolean isGeneratedLine()
+	{
+		return OrderGroupCompensationUtils.isGeneratedCompensationLine(getGroupTemplateLineId());
+	}
+
+	public boolean isManualLine()
+	{
+		return !isGeneratedLine();
+	}
+
 }

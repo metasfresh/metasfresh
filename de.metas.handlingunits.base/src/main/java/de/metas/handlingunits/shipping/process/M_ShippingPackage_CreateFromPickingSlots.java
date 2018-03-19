@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -193,8 +192,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 			return;
 		}
 
-		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(pickingSlot); // make sure that no one thinks picking slot will be used in createM_Package for anything else but context.
-		final I_M_Package mpackage = huPackageBL.createM_Package(ctxAware, hu, shipper);
+		final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipper);
 
 		final I_M_ShippingPackage shippingPackage = shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage);
 		if (shippingPackage == null)

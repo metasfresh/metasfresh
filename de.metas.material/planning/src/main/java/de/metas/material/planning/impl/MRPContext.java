@@ -34,7 +34,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
@@ -278,18 +277,6 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public boolean isRequireDRP()
-	{
-		return requireDRP;
-	}
-
-	@Override
-	public void setRequireDRP(final boolean requiredDRP)
-	{
-		requireDRP = requiredDRP;
-	}
-
-	@Override
 	public I_M_Product getM_Product()
 	{
 		return product;
@@ -300,14 +287,6 @@ public final class MRPContext implements IMutableMRPContext
 	{
 		final I_M_Product product = getM_Product();
 		return product == null ? -1 : product.getM_Product_ID();
-	}
-
-	@Override
-	public I_C_UOM getC_UOM()
-	{
-		// NOTE: MRP's UOM is Product's stocking UOM
-		Check.assumeNotNull(product, MrpException.class, "product not null");
-		return product.getC_UOM();
 	}
 
 	@Override

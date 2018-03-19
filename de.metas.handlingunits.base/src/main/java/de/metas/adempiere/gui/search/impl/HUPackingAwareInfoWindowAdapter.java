@@ -1,5 +1,7 @@
 package de.metas.adempiere.gui.search.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -41,7 +43,7 @@ import org.compiere.util.KeyNamePair;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.product.IProductPA;
+import de.metas.product.IProductBL;
 
 /**
  * Wraps given Info Window grid record and makes it behave like an {@link IHUPackingAware}.
@@ -180,14 +182,14 @@ import de.metas.product.IProductPA;
 	}
 
 	@Override
-	public BigDecimal getQtyPacks()
+	public BigDecimal getQtyTU()
 	{
 		final BigDecimal qty = infoWindow.getValue(rowIndexModel, IHUPackingAware.COLUMNNAME_QtyPacks);
 		return qty;
 	}
 
 	@Override
-	public void setQtyPacks(final BigDecimal qtyPacks)
+	public void setQtyTU(final BigDecimal qtyPacks)
 	{
 		infoWindow.setValueByColumnName(IHUPackingAware.COLUMNNAME_QtyPacks, rowIndexModel, qtyPacks);
 	}
@@ -198,11 +200,10 @@ import de.metas.product.IProductPA;
 		return getC_UOM(getM_Product_ID());
 	}
 
-	// NOTE: commented @Cached out because is no longer applied anyways (not a service)
-	// @Cached
 	/* package */I_C_UOM getC_UOM(final int productId)
 	{
-		return Services.get(IProductPA.class).retrieveProductUOM(Env.getCtx(), productId);
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		return Services.get(IProductBL.class).getStockingUOM(product);
 	}
 
 	@Override

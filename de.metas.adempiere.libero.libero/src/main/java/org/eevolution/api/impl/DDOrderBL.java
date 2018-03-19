@@ -26,7 +26,6 @@ package org.eevolution.api.impl;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,7 +41,6 @@ import org.compiere.model.I_S_Resource;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IDDOrderMovementBuilder;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -55,6 +53,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.material.planning.pporder.LiberoException;
 
 public class DDOrderBL implements IDDOrderBL
 {
@@ -206,7 +205,6 @@ public class DDOrderBL implements IDDOrderBL
 
 		//
 		// Search for Warehouse's Plant
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ddOrderLine);
 		final int adOrgId = ddOrderLine.getAD_Org_ID();
 		final I_M_Locator locatorFrom = ddOrderLine.getM_Locator();
 		Check.assumeNotNull(locatorFrom, "locatorFrom not null");
@@ -215,7 +213,6 @@ public class DDOrderBL implements IDDOrderBL
 		try
 		{
 			final I_S_Resource plantFrom = Services.get(IProductPlanningDAO.class).findPlant(
-					ctx, 
 					adOrgId, 
 					warehouseFrom, 
 					ddOrderLine.getM_Product_ID(), 
@@ -246,16 +243,7 @@ public class DDOrderBL implements IDDOrderBL
 		final I_M_Locator locatorTo = movementLine.getM_LocatorTo();
 		final int warehouseToId = locatorTo.getM_Warehouse_ID();
 
-		if (warehouseToId == warehouseInTransitId)
-		{
-			// Movement-Shipment
-			return false;
-		}
-		else
-		{
-			// Movement-Receipt
-			return true;
-		}
+		return warehouseToId != warehouseInTransitId;
 	}
 
 	/**

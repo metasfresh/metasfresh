@@ -23,8 +23,10 @@ package de.metas.event;
  */
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -34,6 +36,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.util.Util;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -70,8 +73,19 @@ public final class Event
 	private static final String PROPERTY_Record = "record";
 	public static final String PROPERTY_SuggestedWindowId = "suggestedWindowId";
 
-	@JsonProperty("id")
-	private final String id;
+	// put this first, because this is imho the most interesting part of the event's json representation, at least when shown in the event log
+	@JsonProperty("properties")
+	@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final ImmutableMap<String, Object> properties;
+
+	@JsonProperty("uuid")
+	@NonNull
+	private final UUID uuid;
+
+	@JsonProperty("when")
+	@NonNull
+	private final Instant when;
 
 	@JsonProperty("summary")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -93,26 +107,15 @@ public final class Event
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final ImmutableSet<Integer> recipientUserIds;
 
-	@JsonProperty("properties")
-	@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final ImmutableMap<String, Object> properties;
-
-	//
 	@JsonIgnore
 	@Getter(AccessLevel.NONE)
 	private final transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();
 
 	private Event(final Builder builder)
 	{
-		if (builder.id != null)
-		{
-			id = builder.id;
-		}
-		else
-		{
-			id = UUID.randomUUID().toString();
-		}
+		uuid = Util.coalesceSuppliers(() -> builder.uuid, () -> UUID.randomUUID());
+		when = Util.coalesceSuppliers(() -> builder.when, () -> Instant.now());
+
 		summary = builder.summary;
 		detailPlain = builder.getDetailPlain();
 		detailADMessage = builder.getDetailADMessage();
@@ -122,8 +125,9 @@ public final class Event
 	}
 
 	@JsonCreator
-	private Event(
-			@JsonProperty("id") @NonNull final String id,
+	public Event(
+			@JsonProperty("uuid") final UUID uuid,
+			@JsonProperty("when") final Instant when,
 			@JsonProperty("summary") final String summary,
 			@JsonProperty("detailPlain") final String detailPlain,
 			@JsonProperty("detailADMessage") final String detailADMessage,
@@ -131,7 +135,9 @@ public final class Event
 			@JsonProperty("recipientUserIds") final Set<Integer> recipientUserIds,
 			@JsonProperty("properties") final Map<String, Object> properties)
 	{
-		this.id = id;
+		this.uuid = uuid;
+		this.when = when;
+
 		this.summary = summary;
 		this.detailPlain = detailPlain;
 		this.detailADMessage = detailADMessage;
@@ -164,21 +170,20 @@ public final class Event
 		{
 			return true;
 		}
-
 		return recipientUserIds.contains(userId);
 	}
 
 	/**
-	 * @return true if this event is for all users
+	 * @return true if this event is for all users.<br>
+	 *         If no recipients were specified, consider that this event is for anybody
 	 */
 	public boolean isAllRecipients()
 	{
-		// If no recipients were specified, consider that this event is for anybody
 		return recipientUserIds.isEmpty();
 	}
 
 	/**
-	 * 
+	 *
 	 * @param name
 	 * @return tje propertiy with the given name or {@code null}
 	 */
@@ -225,14 +230,28 @@ public final class Event
 		return receivedByEventBusIds.contains(eventBusId);
 	}
 
-	//
-	//
+	public Builder toBuilder()
+	{
+		final Builder builder = new Builder();
+		builder.detailADMessage = detailADMessage;
+		builder.detailPlain = detailPlain;
+		builder.properties.putAll(properties);
+		builder.recipientUserIds.addAll(recipientUserIds);
+		builder.senderId = senderId;
+		builder.summary = summary;
+		builder.uuid = uuid;
+		builder.when = when;
+
+		return builder;
+	}
+
 	// --------------------------------------------------------------------------------------------------------------------------------
 	//
 	//
 	public static final class Builder
 	{
-		private String id;
+		private UUID uuid;
+		private Instant when;
 		private String summary;
 		private String detailPlain;
 		private String detailADMessage;
@@ -242,7 +261,6 @@ public final class Event
 
 		private Builder()
 		{
-			super();
 		}
 
 		public Event build()
@@ -250,10 +268,15 @@ public final class Event
 			return new Event(this);
 		}
 
-		public Builder setId(final String id)
+		public Builder setUUID(@NonNull final UUID uuid)
 		{
-			Check.assumeNotEmpty(id, "id not empty");
-			this.id = id;
+			this.uuid = uuid;
+			return this;
+		}
+
+		public Builder setWhen(@NonNull final Instant when)
+		{
+			this.when = when;
 			return this;
 		}
 
@@ -394,6 +417,12 @@ public final class Event
 			return this;
 		}
 
+		public Builder putProperty(final String name, final List<?> value)
+		{
+			properties.put(name, value);
+			return this;
+		}
+
 		/**
 		 * @see #putProperty(String, ITableRecordReference)
 		 * @see Event#PROPERTY_Record
@@ -451,6 +480,10 @@ public final class Event
 			else if (value instanceof BigDecimal)
 			{
 				return putProperty(name, (BigDecimal)value);
+			}
+			else if (value instanceof List)
+			{
+				return putProperty(name, (List<?>)value);
 			}
 			else
 			{

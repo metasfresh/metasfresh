@@ -36,12 +36,10 @@ import de.metas.material.planning.IMaterialPlanningContext;
  * <code>/de.metas.adempiere.libero.libero/src/main/java/org/eevolution/mrp/spi/impl/PPOrderMRPSupplyProducer.java</code>
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 public class PPOrderDemandMatcher implements IMaterialDemandMatcher
 {
-
 	/**
 	 *
 	 */
@@ -51,15 +49,19 @@ public class PPOrderDemandMatcher implements IMaterialDemandMatcher
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 		if (productPlanning == null)
 		{
-			Loggables.get().addLog("Given MRP context has no PP_Product_Planning; mrpContext={}", mrpContext);
+			Loggables.get().addLog(
+					"Given MRP context has no PP_Product_Planning; PPOrderDemandMatcher returns false; mrpContext={}",
+					mrpContext);
 			return false;
 		}
-		
+
 		final I_M_Product product = mrpContext.getM_Product();
 		final boolean isManufactured = X_PP_Product_Planning.ISMANUFACTURED_Yes.equals(productPlanning.getIsManufactured());
 		if (!isManufactured)
 		{
-			Loggables.get().addLog("Product {}_{} is configured to not be manufactured; product={}", product.getValue(), product.getName(), product);
+			Loggables.get().addLog(
+					"Product {}_{} is not set to be manufactured; PPOrderDemandMatcher returns false; productPlanning={}; product={}",
+					product.getValue(), product.getName(), productPlanning, product);
 			return false;
 		}
 

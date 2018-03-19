@@ -10,12 +10,12 @@ package de.metas.dimension;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,14 +53,14 @@ public interface IDimensionspecDAO extends ISingletonService
 	 *
 	 * @return the assigned specs, ordered by <code>SeqNo</code>, or an empty list if column has <code>IsDimension=N</code> or if there are no active specs assigned.
 	 */
-	List<I_DIM_Dimension_Spec> retrieveForColumn(I_AD_Column column);
+	List<DimensionSpec> retrieveForColumn(I_AD_Column column);
 
 	/**
 	 *
-	 * @param internalName not empty or <code>null</code>
-	 * @return
+	 * @param internalName {@link I_DIM_Dimension_Spec#COLUMN_InternalName} of the record to retrieve.
+	 * @return {@code null} if there is not matching record.
 	 */
-	I_DIM_Dimension_Spec retrieveForInternalName(String internalName, IContextAware ctxAware);
+	DimensionSpec retrieveForInternalNameOrNull(String internalName);
 
 	/**
 	 * Retrieves a list with all attribute values' <code>ValueName</code>s that are defined by the {@link I_DIM_Dimension_Spec} with the given internal name and groupName (a.k.a. ValueAggregateName).

@@ -1123,28 +1123,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		return detail;
 	}
 
-	// private void createInvoicableLineForRegularOrder(
-	// final Timestamp date,
-	// final I_C_UOM uom,
-	// final IHandlingUnitsInfo currentRawHUInfo,
-	// final BigDecimal qty,
-	// final QualityInvoiceLineGroup invoiceLineGroup,
-	// final String labelPrefix)
-	// {
-	//
-	// final ILagerKonfQualityBasedConfig config = getQualityBasedConfig();
-	//
-	// // Detail
-	// // TODO: AD_Message
-	// {
-	// final QualityInvoiceLine detail = createDetailForSingleRegularOrder(uom, currentRawHUInfo, qty, labelToUse);
-	//
-	// // invoiceLineGroup.setInvoiceableLineOverride(detail);
-	// invoiceLineGroup.setInvoiceableLineOverride(detail);
-	// }
-	//
-	// }
-
 	private IEditablePricingContext createPricingContext(final IQualityInvoiceLine line)
 	{
 		final IPricingContext pricingContextInitial = getPricingContext();

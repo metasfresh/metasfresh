@@ -73,8 +73,6 @@ import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPListener;
-import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPValidator;
 import de.metas.handlingunits.picking.interceptor.M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.pricing.spi.impl.HUPricing;
 import de.metas.handlingunits.pricing.spi.impl.OrderLinePricingHUDocumentHandler;
@@ -101,8 +99,6 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
-import de.metas.ordercandidate.api.IOLCandBL;
-import de.metas.ordercandidate.api.IOLCandValdiatorBL;
 import de.metas.pricing.ProductPrices;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.storage.IStorageEngineService;
@@ -133,7 +129,6 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_OrderLine(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_Order(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_OrderLine(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_InOut(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item_Product(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order_Line_Alloc(), client);
@@ -173,6 +168,8 @@ public final class Main extends AbstractModuleInterceptor
 
 		engine.addModelValidator(de.metas.handlingunits.sourcehu.interceptor.M_HU.INSTANCE, client);
 
+		engine.addModelValidator(de.metas.handlingunits.material.interceptor.M_Transaction.INSTANCE, client);
+
 		//
 		// 08255: M_ShipmentSchedule update qtys
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inoutcandidate.callout.M_ShipmentSchedule.instance);
@@ -181,8 +178,8 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
 
-		// #2143: update HUs after inventory reversal
-		engine.addModelValidator(new M_Inventory(), client);
+		// Inventory
+		engine.addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(), client);
 
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inout.callout.M_InOutLine.instance);
 		// replace the default implementation with our own HU-aware one
@@ -382,12 +379,6 @@ public final class Main extends AbstractModuleInterceptor
 			Services.get(IC_Order_CreatePOFromSOsDAO.class).addAdditionalOrderLinesFilter(excludePackageOrderLinesFilter);
 			Services.get(IC_Order_CreatePOFromSOsBL.class).registerListener(new de.metas.handlingunits.order.process.spi.impl.HUC_Order_CreatePOFromSOsListener());
 		}
-
-		// task 08147: validate if the C_OLCand's PIIP is OK
-		Services.get(IOLCandValdiatorBL.class).registerValidator(new OLCandPIIPValidator());
-
-		// task 08839:
-		Services.get(IOLCandBL.class).registerOLCandListener(new OLCandPIIPListener());
 
 		//
 		// Invoice candidates facets collector

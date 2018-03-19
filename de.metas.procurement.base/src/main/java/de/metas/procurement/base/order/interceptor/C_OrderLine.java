@@ -6,6 +6,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -130,9 +131,12 @@ public class C_OrderLine
 		// Schedule event after commit
 		logger.debug("Scheduling event: {}", event);
 		final ITrxListenerManager trxListenerManager = Services.get(ITrxManager.class).getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited);
-		trxListenerManager.onAfterNextCommit(() -> {
-			Services.get(IPMMBalanceChangeEventProcessor.class).addEvent(event);
-			logger.debug("Event sent: {}", event);
-		});
+		trxListenerManager
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerWeakly(false) // register "hard", because that's how it was before
+				.registerHandlingMethod(innerTrx -> {
+					Services.get(IPMMBalanceChangeEventProcessor.class).addEvent(event);
+					logger.debug("Event sent: {}", event);
+				});
 	}
 }

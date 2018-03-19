@@ -1,13 +1,13 @@
 package de.metas.handlingunits.allocation.transfer;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -16,6 +16,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
@@ -106,7 +107,7 @@ public class HUTransformService
 	{
 		return builderForHUcontext().huContext(huContext).build();
 	}
-	
+
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
@@ -136,7 +137,7 @@ public class HUTransformService
 	{
 		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 
-		final Properties effectiveCtx = Util.coalesce(ctx, Env.getCtx());
+		final Properties effectiveCtx = ctx != null ? ctx : Env.getCtx();
 		final String effectiveTrxName = Util.coalesce(trxName, ITrx.TRXNAME_ThreadInherited);
 		final IMutableHUContext mutableHUContext = Services.get(IHUContextFactory.class).createMutableHUContext(effectiveCtx, effectiveTrxName);
 		if (emptyHUListener != null)
@@ -287,14 +288,26 @@ public class HUTransformService
 	 * @param sourceCuHU the source CU to be split or joined
 	 * @param qtyCU the CU-quantity to join or split
 	 * @param targetTuHU the target TU
+	 * 
+	 * @return the CUs that were created
 	 */
-	public void cuToExistingTU(
+	public List<I_M_HU> cuToExistingTU(
+			@NonNull final I_M_HU sourceCuHU,
+			@NonNull final BigDecimal qtyCU,
+			@NonNull final I_M_HU targetTuHU)
+	{
+		// NOTE: because this method does several non-atomic operations it is important to glue them together in a transaction
+		return trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> cuToExistingTU_InTrx(sourceCuHU, qtyCU, targetTuHU));
+	}
+
+	private List<I_M_HU> cuToExistingTU_InTrx(
 			@NonNull final I_M_HU sourceCuHU,
 			@NonNull final BigDecimal qtyCU,
 			@NonNull final I_M_HU targetTuHU)
 	{
 		final IAllocationDestination destination;
-		if (handlingUnitsBL.isAggregateHU(targetTuHU))
+		final boolean isTargetAggregatedTU = handlingUnitsBL.isAggregateHU(targetTuHU);
+		if (isTargetAggregatedTU)
 		{
 			// we will load directly to the given tuHU which is actually a VHU
 			destination = HUListAllocationSourceDestination.of(targetTuHU);
@@ -333,9 +346,9 @@ public class HUTransformService
 					.performSplit();
 		}
 
-		if (handlingUnitsBL.isAggregateHU(targetTuHU))
+		if (isTargetAggregatedTU)
 		{
-			return; // we are done; no attaching
+			return ImmutableList.of(); // we are done; no attaching
 		}
 
 		// we attach the
@@ -351,33 +364,34 @@ public class HUTransformService
 		}
 
 		// get *the* MI HU_Item of 'tuHU'. There must be exactly one, otherwise, tuHU wouldn't exist here in the first place.
-		final List<I_M_HU_Item> tuMaterialItem = handlingUnitsDAO.retrieveItems(targetTuHU)
+		final I_M_HU_Item tuMaterialItem = handlingUnitsDAO.retrieveItems(targetTuHU)
 				.stream()
 				.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(piItem.getItemType()))
-				.collect(Collectors.toList());
-		Check.errorUnless(tuMaterialItem.size() == 1, "Param 'tuHU' does not have one 'MI' item; tuHU={}", targetTuHU);
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Param 'tuHU' does not have one 'MI' item; tuHU=" + targetTuHU)));
 
 		// finally do the attaching
 
 		// iterate the child CUs and set their parent item
-		childCUs.forEach(newChildCU -> {
-			setParent(newChildCU,
-					tuMaterialItem.get(0),
+		childCUs.forEach(childCU -> {
+			setParent(childCU,
+					tuMaterialItem,
 
 					// before the newChildCU's parent item is set,
 					localHuContext -> {
-						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
+						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(childCU);
 						final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
-						updateAllocation(oldParentLU, oldParentTU, sourceCuHU, qtyCU, true, localHuContext);
+						updateAllocation(oldParentLU, oldParentTU, childCU, qtyCU, true, localHuContext);
 					},
 
 					// after the newChildCU's parent item is set,
 					localHuContext -> {
-						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
+						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(childCU);
 						final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
-						updateAllocation(newParentLU, newParentTU, newChildCU, qtyCU, false, localHuContext);
+						updateAllocation(newParentLU, newParentTU, childCU, qtyCU, false, localHuContext);
 					});
 		});
+
+		return childCUs;
 	}
 
 	/**
@@ -883,7 +897,9 @@ public class HUTransformService
 				final I_M_HU_Item tuHUsParentItem = handlingUnitsDAO.retrieveParentItem(sourceTuHU); // can't be null because if is was isAggregateHU() would return false.
 				final BigDecimal representedTUsCount = tuHUsParentItem.getQty();
 				Preconditions.checkState(representedTUsCount.signum() > 0, "Param 'tuHU' is an aggregate HU whose M_HU_Item_Parent has a qty of %s; tuHU=%s; tuHU's M_HU_Item_Parent=%s", representedTUsCount, sourceTuHU, tuHUsParentItem);
-				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount);
+				
+				final int uomPrecision = firstProductStorage.getC_UOM().getStdPrecision();
+				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount, uomPrecision, RoundingMode.HALF_UP);
 			}
 			else
 			{

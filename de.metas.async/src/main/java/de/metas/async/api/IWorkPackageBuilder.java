@@ -13,11 +13,11 @@ package de.metas.async.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -56,6 +56,7 @@ public interface IWorkPackageBuilder
 
 	/**
 	 * Only return the (parent) block builder. Don't do anything else (no sideeffects)
+	 * 
 	 * @return parent builder
 	 */
 	IWorkPackageBlockBuilder end();
@@ -82,6 +83,14 @@ public interface IWorkPackageBuilder
 	IWorkPackageBuilder setC_Async_Batch(I_C_Async_Batch asyncBatch);
 
 	/**
+	 * Sets workpackage's user in charge.
+	 * This will be the user which will be notified in case the workpackage processing fails.
+	 * 
+	 * @param userInChargeId
+	 */
+	IWorkPackageBuilder setUserInChargeId(final int userInChargeId);
+
+	/**
 	 * Adds given model to workpackage elements.
 	 * If a locker is already set (see {@link #setElementsLocker(ILockCommand)}) this model will be also added to locker.
 	 *
@@ -106,7 +115,7 @@ public interface IWorkPackageBuilder
 	 * @param trxName
 	 */
 	IWorkPackageBuilder bindToTrxName(String trxName);
-	
+
 	/**
 	 * Ask the builder to "bind" the new workpackage to current thread inerited transaction.
 	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is commited.
@@ -123,7 +132,7 @@ public interface IWorkPackageBuilder
 
 	/**
 	 * @return
-	 *         Lock aquired when enqueued elements were locked (on {@link #build()}).
+	 * 		Lock aquired when enqueued elements were locked (on {@link #build()}).
 	 *         Could be null if no lock was aquired.
 	 */
 	Future<ILock> getElementsLock();

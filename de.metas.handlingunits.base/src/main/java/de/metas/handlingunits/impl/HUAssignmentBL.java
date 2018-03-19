@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,9 +52,6 @@ public class HUAssignmentBL implements IHUAssignmentBL
 
 	public HUAssignmentBL()
 	{
-		super();
-
-		//
 		// Register Standard listener, which will be applied first, in ALL cases
 		registerHUAssignmentListener(StandardHUAssignmentListener.instance);
 	}
@@ -265,9 +262,9 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	 * @param trxName transaction name
 	 */
 	private void setAssignedHandlingUnits(
-			@NonNull final Object model, 
-			@NonNull final Collection<I_M_HU> handlingUnits, 
-			final boolean deleteOld, 
+			@NonNull final Object model,
+			@NonNull final Collection<I_M_HU> handlingUnits,
+			final boolean deleteOld,
 			final String trxName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);

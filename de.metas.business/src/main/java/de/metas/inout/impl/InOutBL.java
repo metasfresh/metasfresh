@@ -30,10 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
@@ -50,26 +52,24 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_InOut;
+import org.compiere.util.CacheMgt;
 
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
-import de.metas.product.IProductPA;
 
 public class InOutBL implements IInOutBL
 {
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
+	
+	private static final String VIEW_M_Shipment_Statistics_V = "M_Shipment_Statistics_V";
 
 	@Override
 	public IPricingContext createPricingCtx(final org.compiere.model.I_M_InOutLine inOutLine)
 	{
 		Check.assumeNotNull(inOutLine, "Param 'inOutLine' is not null");
 
-		final IProductPA productPA = Services.get(IProductPA.class);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inOutLine);
-		final String trxName = InterfaceWrapperHelper.getTrxName(inOutLine);
-
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_M_InOut inOut = inOutLine.getM_InOut();
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
@@ -108,7 +108,7 @@ public class InOutBL implements IInOutBL
 
 		Check.assume(pricingSystemId > 0, "No pricing system found for M_InOut_ID={}", inOut.getM_InOut_ID());
 
-		final I_M_PriceList priceList = productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, inOut.getC_BPartner_Location_ID(), isSOTrx, trxName);
+		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, inOut.getC_BPartner_Location(), isSOTrx);
 
 		Check.errorIf(priceList == null,
 				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.IsSOTrx={}",
@@ -318,7 +318,7 @@ public class InOutBL implements IInOutBL
 		// Services
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
-		final HashMap<Integer, Integer> inoutLineId2orderId = new HashMap<Integer, Integer>();
+		final HashMap<Integer, Integer> inoutLineId2orderId = new HashMap<>();
 
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOut);
 		for (int i = 0; i < lines.size(); i++)
@@ -435,6 +435,28 @@ public class InOutBL implements IInOutBL
 		{
 			matchInv.setProcessed(false); // delete it even if it's processed, because all M_MatchInv are processed on save new.
 			InterfaceWrapperHelper.delete(matchInv);
+		}
+	}
+	
+	@Override
+	public void invalidateStatistics(final I_M_InOut inout)
+	{
+		if (inout.isSOTrx())
+		{
+			Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
+			.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inout.getM_InOut_ID())
+			.create()
+			.listIds()
+			.forEach(inoutLineId -> CacheMgt.get().reset(InOutBL.VIEW_M_Shipment_Statistics_V, inoutLineId));
+		}
+	}
+	
+	@Override
+	public void invalidateStatistics(final I_M_InOutLine inoutLine)
+	{
+		if (inoutLine.getM_InOut().isSOTrx())
+		{
+			CacheMgt.get().reset(VIEW_M_Shipment_Statistics_V, inoutLine.getM_InOutLine_ID());
 		}
 	}
 }

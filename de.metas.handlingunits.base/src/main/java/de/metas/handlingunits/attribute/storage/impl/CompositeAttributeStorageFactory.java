@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,15 +34,16 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import lombok.NonNull;
 
 public class CompositeAttributeStorageFactory implements IAttributeStorageFactory
 {
 	private IHUAttributesDAO huAttributesDAO;
 	private IHUStorageFactory huStorageFactory;
 
-	private final List<IAttributeStorageFactory> factories = new ArrayList<IAttributeStorageFactory>();
+	private final List<IAttributeStorageFactory> factories = new ArrayList<>();
 
-	private final List<IAttributeStorageListener> attributeStorageListeners = new ArrayList<IAttributeStorageListener>();
+	private final List<IAttributeStorageListener> attributeStorageListeners = new ArrayList<>();
 
 	@Override
 	public void addAttributeStorageListener(final IAttributeStorageListener listener)
@@ -138,14 +139,16 @@ public class CompositeAttributeStorageFactory implements IAttributeStorageFactor
 	}
 
 	@Override
-	public IAttributeStorage getAttributeStorage(final Object model)
+	public IAttributeStorage getAttributeStorage(@NonNull final Object model)
 	{
 		final IAttributeStorage storage = getAttributeStorageIfHandled(model);
 		if (storage == null)
 		{
-			throw new AdempiereException("No factory can handle " + model + ": " + this);
+			throw new AdempiereException("None of the registered factories can handle the given model")
+					.appendParametersToMessage()
+					.setParameter("model", model)
+					.setParameter("this instance", this);
 		}
-
 		return storage;
 	}
 
@@ -163,33 +166,6 @@ public class CompositeAttributeStorageFactory implements IAttributeStorageFactor
 
 		return null;
 	}
-
-	// @Override
-	// public void setParentAttributeStorageFactory(final IAttributeStorageFactory parentAttributeStorageFactory)
-	// {
-	// this.parentAttributeStorageFactory = parentAttributeStorageFactory;
-	// }
-	//
-	// @Override
-	// public IAttributeStorageFactory getParentAttributeStorageFactory()
-	// {
-	// return parentAttributeStorageFactory;
-	// }
-	//
-	// @Override
-	// public IAttributeStorageFactory getRootAttributeStorageFactory()
-	// {
-	// if (parentAttributeStorageFactory == null)
-	// {
-	// // this is the root
-	// return this;
-	// }
-	// else
-	// {
-	// // ask parent for root
-	// return parentAttributeStorageFactory.getRootAttributeStorageFactory();
-	// }
-	// }
 
 	@Override
 	public final IHUAttributesDAO getHUAttributesDAO()

@@ -37,7 +37,9 @@ import lombok.experimental.FieldDefaults;
  * #L%
  */
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(
+		exclude = "quantity", // ignore quantity to avoid trouble comparing e.g. 10 with 10.0 with 1E+1
+		callSuper = true)
 @ToString(callSuper = true)
 public class MaterialDescriptor extends ProductDescriptor
 {
@@ -71,7 +73,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				date,
 				productDescriptor == null ? 0 : productDescriptor.getProductId(),
 				productDescriptor == null ? -1 : productDescriptor.getAttributeSetInstanceId(),
-				productDescriptor == null ? STORAGE_ATTRIBUTES_KEY_ALL : productDescriptor.getStorageAttributesKey());
+				productDescriptor == null ? AttributesKey.ALL : productDescriptor.getStorageAttributesKey());
 	}
 
 	@JsonCreator
@@ -82,9 +84,9 @@ public class MaterialDescriptor extends ProductDescriptor
 			@JsonProperty("date") final Date date,
 			@JsonProperty("productId") final int productId,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId,
-			@JsonProperty("storageAttributesKey") final StorageAttributesKey storageAttributesKey)
+			@JsonProperty("storageAttributesKey") final AttributesKey attributesKey)
 	{
-		super(productId, storageAttributesKey, attributeSetInstanceId);
+		super(productId, attributesKey, attributeSetInstanceId);
 
 		this.warehouseId = warehouseId;
 		this.bPartnerId = bPartnerId;

@@ -3,19 +3,21 @@ package org.eevolution.event;
 import static de.metas.document.engine.IDocument.ACTION_Complete;
 import static de.metas.document.engine.IDocument.STATUS_Completed;
 
+import java.util.Collection;
 import java.util.Date;
 
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.Mutable;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
+import de.metas.Profiles;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import lombok.NonNull;
@@ -43,11 +45,9 @@ import lombok.NonNull;
  */
 
 @Service
-public class PPOrderRequestedEventHandler
+@Profile(Profiles.PROFILE_App) // only one handler should bother itself with these events
+public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrderRequestedEvent>
 {
-	public static final ModelDynAttributeAccessor<I_PP_Order, Integer> ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID = //
-			new ModelDynAttributeAccessor<>(I_PP_Order.class.getName(), "PPOrderRequestedEvent_GroupId", Integer.class);
-
 	private final PPOrderProducer ppOrderProducer;
 
 	public PPOrderRequestedEventHandler(@NonNull final PPOrderProducer ppOrderProducer)
@@ -55,14 +55,22 @@ public class PPOrderRequestedEventHandler
 		this.ppOrderProducer = ppOrderProducer;
 	}
 
-	public I_PP_Order createProductionOrderInTrx(@NonNull final PPOrderRequestedEvent ppOrderEquestedEvent)
+	@Override
+	public Collection<Class<? extends PPOrderRequestedEvent>> getHandeledEventType()
 	{
-		final Mutable<I_PP_Order> result = new Mutable<>();
+		return ImmutableList.of(PPOrderRequestedEvent.class);
+	}
 
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		trxManager.run(trxName -> result.setValue(createProductionOrder(ppOrderEquestedEvent)));
+	@Override
+	public void validateEvent(@NonNull final PPOrderRequestedEvent event)
+	{
+		event.validate();
+	}
 
-		return result.getValue();
+	@Override
+	public void handleEvent(@NonNull final PPOrderRequestedEvent event)
+	{
+		createProductionOrder(event);
 	}
 
 	/**
@@ -77,10 +85,9 @@ public class PPOrderRequestedEventHandler
 	I_PP_Order createProductionOrder(@NonNull final PPOrderRequestedEvent ppOrderRequestedEvent)
 	{
 		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
-		final Date dateOrdered = Date.from(ppOrderRequestedEvent.getEventDescriptor().getWhen());
+		final Date dateOrdered = ppOrderRequestedEvent.getDateOrdered();
 
 		final I_PP_Order ppOrderRecord = ppOrderProducer.createPPOrder(ppOrder, dateOrdered);
-		ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.setValue(ppOrderRecord, ppOrderRequestedEvent.getGroupId());
 
 		if (ppOrderRecord.getPP_Product_Planning().isDocComplete())
 		{

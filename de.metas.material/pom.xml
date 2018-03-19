@@ -6,7 +6,7 @@
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
 		<version>[1,10.0.0]</version>
-		<relativePath>../de.metas.parent/pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
@@ -16,8 +16,8 @@
 
 	<modules>
 		<module>dispo-commons</module>
-		<module>dispo-client</module>
 		<module>dispo-service</module>
+		<module>cockpit</module>
 		<module>event</module>
 		<module>planning</module>
 	</modules>

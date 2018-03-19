@@ -1,13 +1,15 @@
 package de.metas.material.planning.event;
 
-import java.util.Collections;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import java.math.BigDecimal;
+
+import org.compiere.model.I_M_Product;
 
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.planning.IMRPNoteBuilder;
-import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
-import de.metas.material.planning.impl.SimpleMRPNoteBuilder;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -43,34 +45,17 @@ public class SupplyRequiredHandlerUtils
 	{
 		final int descriptorBPartnerId = supplyRequiredDescriptor.getMaterialDescriptor().getBPartnerId();
 
+		final int productId = supplyRequiredDescriptor.getMaterialDescriptor().getProductId();
+		final I_M_Product product = load(productId, I_M_Product.class);
+
+		final BigDecimal qtyToSupply = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+
 		return MaterialRequest.builder()
-				.qtyToSupply(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
+				.qtyToSupply(Quantity.of(qtyToSupply, product.getC_UOM()))
 				.mrpContext(mrpContext)
 				.mrpDemandBPartnerId(descriptorBPartnerId > 0 ? descriptorBPartnerId : -1)
 				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
 				.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
 				.build();
 	}
-
-	public IMRPNotesCollector mkMRPNotesCollector()
-	{
-		return new IMRPNotesCollector()
-		{
-			@Override
-			public IMRPNoteBuilder newMRPNoteBuilder(final IMaterialPlanningContext mrpContext, final String mrpErrorCode)
-			{
-				final SimpleMRPNoteBuilder simpleMRPNoteBuilder = new SimpleMRPNoteBuilder(this, mrps -> Collections.emptySet());
-				return simpleMRPNoteBuilder;
-			}
-
-			@Override
-			public void collectNote(final IMRPNoteBuilder noteBuilder)
-			{
-				// as long as newMRPNoteBuilder() creates a SimpleMRPNoteBuilder with *this* as its node collector,
-				// the following invocation would cause a StackOverFlowError. Plus, idk if and what to actually collect in this use case.
-				// noteBuilder.collect();
-			}
-		};
-	}
-
 }

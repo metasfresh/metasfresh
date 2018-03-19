@@ -40,7 +40,6 @@ import lombok.NonNull;
 @Component
 public class StartupListener implements ApplicationListener<ContextRefreshedEvent>
 {
-
 	@Override
 	public void onApplicationEvent(final ContextRefreshedEvent event)
 	{
@@ -84,6 +83,5 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 				return null;
 			}
 		}
-
 	}
 }

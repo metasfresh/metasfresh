@@ -1,6 +1,7 @@
 package de.metas.inout.impl;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 
 /*
  * #%L
@@ -25,6 +26,7 @@ import java.math.BigDecimal;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -32,6 +34,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -90,6 +93,28 @@ public class InOutDAO implements IInOutDAO
 		{
 			inoutLine.setM_InOut(inOut);
 		}
+		return inoutLines;
+	}
+
+	@Override
+	public List<I_M_InOutLine> retrieveLinesForInOuts(final Collection<? extends I_M_InOut> inouts)
+	{
+		Check.assumeNotEmpty(inouts, "inouts is not empty");
+
+		final Map<Integer, I_M_InOut> inoutsById = inouts.stream().collect(GuavaCollectors.toImmutableMapByKey(I_M_InOut::getM_InOut_ID));
+
+		final List<I_M_InOutLine> inoutLines = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inoutsById.keySet())
+				.orderBy(I_M_InOutLine.COLUMNNAME_M_InOut_ID)
+				.orderBy(I_M_InOutLine.COLUMNNAME_Line)
+				.orderBy(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID)
+				.create()
+				.listImmutable(I_M_InOutLine.class);
+
+		// Optimization: set M_InOut link
+		inoutLines.forEach(inoutLine -> inoutLine.setM_InOut(inoutsById.get(inoutLine.getM_InOut_ID())));
+
 		return inoutLines;
 	}
 

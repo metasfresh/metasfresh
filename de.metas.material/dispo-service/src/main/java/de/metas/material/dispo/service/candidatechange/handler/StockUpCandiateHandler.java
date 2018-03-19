@@ -12,9 +12,9 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.StockMultiQuery;
-import de.metas.material.dispo.commons.repository.StockRepository;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 
@@ -52,17 +52,17 @@ public class StockUpCandiateHandler implements CandidateHandler
 	@NonNull
 	private final CandidateRepositoryRetrieval candidateRepository;
 
-	private final MaterialEventService materialEventService;
+	private final PostMaterialEventService materialEventService;
 
 	private final CandidateRepositoryWriteService candidateRepositoryCommands;
 
-	private final StockRepository stockRepository;
+	private final AvailableToPromiseRepository stockRepository;
 
 	public StockUpCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull final MaterialEventService materialEventService,
-			@NonNull final StockRepository stockRepository)
+			@NonNull final PostMaterialEventService materialEventService,
+			@NonNull final AvailableToPromiseRepository stockRepository)
 	{
 		this.stockRepository = stockRepository;
 		this.candidateRepositoryCommands = candidateRepositoryCommands;
@@ -91,7 +91,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 			return candidateWithQtyDeltaAndId; // this candidate didn't change anything
 		}
 
-		final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(candidate.getMaterialDescriptor());
+		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(candidate.getMaterialDescriptor());
 		final BigDecimal projectedQty = stockRepository.retrieveAvailableStockQtySum(query);
 
 		final BigDecimal requiredAdditionalQty = candidateWithQtyDeltaAndId
@@ -102,7 +102,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 		{
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 					.createSupplyRequiredEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty);
-			materialEventService.fireEvent(supplyRequiredEvent);
+			materialEventService.postEventNow(supplyRequiredEvent);
 		}
 
 		return candidateWithQtyDeltaAndId;

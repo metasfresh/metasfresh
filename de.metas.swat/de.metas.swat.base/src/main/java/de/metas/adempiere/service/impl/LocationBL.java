@@ -10,18 +10,17 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,29 +46,19 @@ import de.metas.adempiere.model.I_C_Postal;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.util.CacheCtx;
-import de.metas.dpd.model.I_DPD_Route;
 import de.metas.logging.LogManager;
 
 public class LocationBL implements ILocationBL
 {
 	private final Logger log = LogManager.getLogger(getClass());
 
-	private static final String SQL_WhereClause_C_Postal_Postal =
-			"LPAD(" + I_C_Postal.COLUMNNAME_Postal + ", 20, '0')=LPAD(?, 20, '0')";
+	private static final String SQL_WhereClause_C_Postal_Postal = "LPAD(" + I_C_Postal.COLUMNNAME_Postal + ", 20, '0')=LPAD(?, 20, '0')";
 	private static final String SQL_WhereClause_C_Postal_ByPostal = I_C_Postal.COLUMNNAME_C_Country_ID + "=?"
 			+ " AND " + SQL_WhereClause_C_Postal_Postal;
-	private static final String SQL_WhereClause_C_Postal_ByPostalOrCity =
-			"(" + I_C_Postal.COLUMNNAME_C_Country_ID + "=? OR ? <= 0)"
-					+ " AND ( (" + SQL_WhereClause_C_Postal_Postal + ") OR " + " UPPER(" + I_C_Postal.COLUMNNAME_City + ") like UPPER(?))";
-	private static final String SQL_WhereClause_C_Postal_ByPostalAndCity =
-			"(" + I_C_Postal.COLUMNNAME_C_Country_ID + "=? OR ? <= 0)"
-					+ " AND ( (" + SQL_WhereClause_C_Postal_Postal + ") AND " + " UPPER(" + I_C_Postal.COLUMNNAME_City + ") like UPPER(?))";
-
-	private static final String SQL_WhereClause_DPD_Route_ByCountryAndPostal =
-			I_DPD_Route.COLUMNNAME_CountryCode + "=?"
-					+ " AND " + I_DPD_Route.COLUMNNAME_BeginPostCode + " IS NOT NULL"
-					+ " AND LPAD(?, 20, '0') BETWEEN LPAD(" + I_DPD_Route.COLUMNNAME_BeginPostCode + ", 20, '0')"
-					+ " AND LPAD(COALESCE(" + I_DPD_Route.COLUMNNAME_EndPostCode + ", " + I_DPD_Route.COLUMNNAME_BeginPostCode + "), 20, '0')";
+	private static final String SQL_WhereClause_C_Postal_ByPostalOrCity = "(" + I_C_Postal.COLUMNNAME_C_Country_ID + "=? OR ? <= 0)"
+			+ " AND ( (" + SQL_WhereClause_C_Postal_Postal + ") OR " + " UPPER(" + I_C_Postal.COLUMNNAME_City + ") like UPPER(?))";
+	private static final String SQL_WhereClause_C_Postal_ByPostalAndCity = "(" + I_C_Postal.COLUMNNAME_C_Country_ID + "=? OR ? <= 0)"
+			+ " AND ( (" + SQL_WhereClause_C_Postal_Postal + ") AND " + " UPPER(" + I_C_Postal.COLUMNNAME_City + ") like UPPER(?))";
 
 	@Override
 	public void validatePostal(I_C_Location location) throws AdempiereException
@@ -88,7 +77,7 @@ public class LocationBL implements ILocationBL
 			return;
 		}
 
-		String postal = address.getPostcode().trim();
+		final String postal = address.getPostcode().trim();
 		log.debug("Checking: " + postal);
 
 		if (checkOnCPostal(ctx, address.getCountryCode(), postal))
@@ -97,10 +86,11 @@ public class LocationBL implements ILocationBL
 			return; // OK
 		}
 
-		if (!checkOnDPDRoute(address.getCountryCode(), postal))
-		{
-			throw new AdempiereException("@NotFound@ @Postal@" + ": '" + postal + "'");
-		}
+		// NOTE: commented it out for now because the DPD code was moved to dpd-legacy package
+		// if (!checkOnDPDRoute(address.getCountryCode(), postal))
+		// {
+		// throw new AdempiereException("@NotFound@ @Postal@" + ": '" + postal + "'");
+		// }
 
 		addToCPostal(ctx, address);
 	}
@@ -108,20 +98,20 @@ public class LocationBL implements ILocationBL
 	@Override
 	public List<com.akunagroup.uk.postcode.AddressInterface> lookupPostcode(Properties ctx, String countryCode, String city, String postal)
 	{
-		List<com.akunagroup.uk.postcode.AddressInterface> list = new ArrayList<com.akunagroup.uk.postcode.AddressInterface>();
-		for (I_C_Postal cpostal : retrievePostals(ctx, countryCode, city, postal, null))
+		final List<com.akunagroup.uk.postcode.AddressInterface> list = new ArrayList<>();
+		for (final I_C_Postal cpostal : retrievePostals(ctx, countryCode, city, postal, null))
 		{
 			list.add(new CPostalAddressAdapter(cpostal));
 		}
 		return list;
 	}
-	
+
 	@Override
 	public I_C_Postal fetchPostalIfUnique(
-			final Properties ctx, 
-			final String countryCode, 
-			String city, 
-			final String postal, 
+			final Properties ctx,
+			final String countryCode,
+			String city,
+			final String postal,
 			final String trxName)
 	{
 		final I_C_Country country = getCountryByCode(ctx, countryCode);
@@ -134,15 +124,15 @@ public class LocationBL implements ILocationBL
 			city = null;
 
 		// if the user search for multiple cities, there is no point to try an exact match
-		if ( city != null && city.endsWith("%") && Check.isEmpty(postal, true))
+		if (city != null && city.endsWith("%") && Check.isEmpty(postal, true))
 		{
 			return null;
 		}
 
 		// we are interested only by a perfect match:
-		if ( country != null && (city != null ||  postal != null))
+		if (country != null && (city != null || postal != null))
 		{
-			final List<Object> params = new ArrayList<Object>();
+			final List<Object> params = new ArrayList<>();
 			params.add(country.getC_Country_ID());
 			params.add(country.getC_Country_ID());
 			params.add(postal); // don't care about postal now
@@ -170,7 +160,7 @@ public class LocationBL implements ILocationBL
 			city = city.trim();
 		if (city != null && city.isEmpty())
 			city = null;
-		
+
 		if (city != null && !city.endsWith("%"))
 		{
 			city += "%";
@@ -185,7 +175,7 @@ public class LocationBL implements ILocationBL
 		// First, try a perfect match:
 		if (postal != null && city != null)
 		{
-			final List<Object> params = new ArrayList<Object>();
+			final List<Object> params = new ArrayList<>();
 			params.add(country == null ? -1 : country.getC_Country_ID());
 			params.add(country == null ? -1 : country.getC_Country_ID());
 			params.add(postal);
@@ -207,7 +197,7 @@ public class LocationBL implements ILocationBL
 		//
 		// Fetch all records with given postal OR city
 		{
-			final List<Object> params = new ArrayList<Object>();
+			final List<Object> params = new ArrayList<>();
 			params.add(country == null ? -1 : country.getC_Country_ID());
 			params.add(country == null ? -1 : country.getC_Country_ID());
 			params.add(postal);
@@ -229,30 +219,14 @@ public class LocationBL implements ILocationBL
 	{
 		log.debug("Checking: postal=" + postal + ", countryCode=" + countryCode);
 
-		I_C_Country country = getCountryByCode(ctx, countryCode);
+		final I_C_Country country = getCountryByCode(ctx, countryCode);
 		if (country == null)
 			throw new AdempiereException("@NotFound@ @C_Country_ID@ (@CountryCode@:" + countryCode + ")");
 
-		boolean found = new Query(ctx, I_C_Postal.Table_Name, SQL_WhereClause_C_Postal_ByPostal, null)
+		final boolean found = new Query(ctx, I_C_Postal.Table_Name, SQL_WhereClause_C_Postal_ByPostal, null)
 				.setParameters(country.getC_Country_ID(), postal)
 				.setOnlyActiveRecords(true)
 				.setApplyAccessFilterRW(false) // rw=false
-				.match();
-		log.debug("Found: " + found);
-		return found;
-	}
-
-	@Override
-	public boolean checkOnDPDRoute(String countryCode, String postal)
-	{
-		if (postal == null)
-			return false;
-
-		postal = postal.trim();
-		log.debug("Checking: postal=" + postal + ", countryCode=" + countryCode);
-
-		boolean found = new Query(Env.getCtx(), I_DPD_Route.Table_Name, SQL_WhereClause_DPD_Route_ByCountryAndPostal, null)
-				.setParameters(countryCode, postal)
 				.match();
 		log.debug("Found: " + found);
 		return found;
@@ -276,7 +250,7 @@ public class LocationBL implements ILocationBL
 
 		if (countryId <= 0)
 		{
-			I_C_Country country = getCountryByCode(ctx, address.getCountryCode());
+			final I_C_Country country = getCountryByCode(ctx, address.getCountryCode());
 			if (country == null)
 			{
 				throw new AdempiereException("@NotFound@ @C_Country_ID@ (@CountryCode@:" + address.getCountryCode());
@@ -314,14 +288,7 @@ public class LocationBL implements ILocationBL
 		if (countryCode == null)
 			return null;
 
-		for (I_C_Country country : Services.get(ICountryDAO.class).getCountries(ctx))
-		{
-			if (countryCode.equals(country.getCountryCode()))
-			{
-				return country;
-			}
-		}
-		return null;
+		return Services.get(ICountryDAO.class).retrieveCountryByCountryCode(countryCode);
 	}
 
 	public static class LocationAddressAdapter implements com.akunagroup.uk.postcode.AddressInterface
@@ -614,7 +581,7 @@ public class LocationBL implements ILocationBL
 	{
 		final String trxName = null;
 
-		I_C_Country country = getCountryByCode(ctx, countryCode);
+		final I_C_Country country = getCountryByCode(ctx, countryCode);
 		if (country == null)
 		{
 			throw new AdempiereException("@NotFound@ @C_Country_ID@ (@CountryCode@:" + countryCode + ")");
@@ -663,7 +630,7 @@ public class LocationBL implements ILocationBL
 		final I_C_BPartner bPartner = null;
 		return mkAddress(location, bPartner, bPartnerBlock, userBlock);
 	}
-	
+
 	@Override
 	public String mkAddress(final I_C_Location location, final I_C_BPartner bPartner, String bPartnerBlock, String userBlock)
 	{
@@ -676,7 +643,12 @@ public class LocationBL implements ILocationBL
 		return addr;
 	}
 
-	public String mkAddress(I_C_Location location, boolean isLocalAddress, final I_C_BPartner bPartner, String bPartnerBlock, String userBlock)
+	public String mkAddress(
+			I_C_Location location,
+			boolean isLocalAddress,
+			final I_C_BPartner bPartner,
+			String bPartnerBlock,
+			String userBlock)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final String adLanguage;
@@ -691,7 +663,7 @@ public class LocationBL implements ILocationBL
 			adLanguage = bPartner.getAD_Language();
 			orgId = bPartner.getAD_Org_ID();
 		}
-		
+
 		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, orgId, I_AD_Org.class, ITrx.TRXNAME_None);
 		final de.metas.adempiere.model.I_C_Location loc = InterfaceWrapperHelper.create(location, de.metas.adempiere.model.I_C_Location.class);
 		return new AddressBuilder(org)
@@ -703,12 +675,11 @@ public class LocationBL implements ILocationBL
 	public I_C_Location duplicate(final org.compiere.model.I_C_Location location)
 	{
 		Check.assumeNotNull(location, "location not null");
-		
+
 		final I_C_Location locationNew = InterfaceWrapperHelper.newInstance(I_C_Location.class, location);
 		InterfaceWrapperHelper.copyValues(location, locationNew);
 		InterfaceWrapperHelper.save(locationNew);
 		return locationNew;
 	}
-	
-	
+
 }

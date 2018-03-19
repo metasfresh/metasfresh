@@ -14,7 +14,7 @@ public class X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v extends org.compiere.model.
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1063686884L;
+	private static final long serialVersionUID = -963144348L;
 
     /** Standard Constructor */
     public X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v (Properties ctx, int EDI_M_HU_PI_Item_Product_Lookup_UPC_v_ID, String trxName)
@@ -40,8 +40,8 @@ public class X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v extends org.compiere.model.
       return poi;
     }
 
-	/** Set Packvorschrift-Produkt Zuordnung.
-		@param M_HU_PI_Item_Product_ID Packvorschrift-Produkt Zuordnung	  */
+	/** Set Packvorschrift.
+		@param M_HU_PI_Item_Product_ID Packvorschrift	  */
 	@Override
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
 	{
@@ -51,8 +51,8 @@ public class X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v extends org.compiere.model.
 			set_ValueNoCheck (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
 	}
 
-	/** Get Packvorschrift-Produkt Zuordnung.
-		@return Packvorschrift-Produkt Zuordnung	  */
+	/** Get Packvorschrift.
+		@return Packvorschrift	  */
 	@Override
 	public int getM_HU_PI_Item_Product_ID () 
 	{

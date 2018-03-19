@@ -154,7 +154,7 @@ public class PMMPricingBL implements IPMMPricingBL
 			throw new AdempiereException("@Missing@ @" + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "@");
 		}
 
-		final I_M_Product product = pricingAware.getM_Product();
+		final int productId = pricingAware.getProductId();
 		final I_C_UOM uom = pricingAware.getC_UOM();
 
 		final I_C_Flatrate_DataEntry dataEntryForProduct = pricingAware.getC_Flatrate_DataEntry();
@@ -178,7 +178,7 @@ public class PMMPricingBL implements IPMMPricingBL
 		// Convert the price
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final BigDecimal price = uomConversionBL.convertPrice(
-				product,
+				productId,
 				flatrateAmtPerUOM,
 				flatrateTerm.getC_UOM(),  								// this is the flatrateAmt's UOM
 				uom,  													// this is the qtyReportEvent's UOM

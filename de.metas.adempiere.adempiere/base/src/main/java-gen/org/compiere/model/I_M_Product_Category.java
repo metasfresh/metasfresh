@@ -127,6 +127,33 @@ public interface I_M_Product_Category
     public static final String COLUMNNAME_AD_PrintColor_ID = "AD_PrintColor_ID";
 
 	/**
+	 * Set Compensation Group Schema.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_CompensationGroup_Schema_ID (int C_CompensationGroup_Schema_ID);
+
+	/**
+	 * Get Compensation Group Schema.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_CompensationGroup_Schema_ID();
+
+	public de.metas.order.model.I_C_CompensationGroup_Schema getC_CompensationGroup_Schema();
+
+	public void setC_CompensationGroup_Schema(de.metas.order.model.I_C_CompensationGroup_Schema C_CompensationGroup_Schema);
+
+    /** Column definition for C_CompensationGroup_Schema_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Product_Category, de.metas.order.model.I_C_CompensationGroup_Schema> COLUMN_C_CompensationGroup_Schema_ID = new org.adempiere.model.ModelColumn<I_M_Product_Category, de.metas.order.model.I_C_CompensationGroup_Schema>(I_M_Product_Category.class, "C_CompensationGroup_Schema_ID", de.metas.order.model.I_C_CompensationGroup_Schema.class);
+    /** Column name C_CompensationGroup_Schema_ID */
+    public static final String COLUMNNAME_C_CompensationGroup_Schema_ID = "C_CompensationGroup_Schema_ID";
+
+	/**
 	 * Set Belegart.
 	 * Belegart oder Verarbeitungsvorgaben
 	 *
@@ -207,6 +234,31 @@ public interface I_M_Product_Category
     public static final org.adempiere.model.ModelColumn<I_M_Product_Category, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_Product_Category, Object>(I_M_Product_Category.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Min. Garantie-Tage.
+	 * Mindestanzahl Garantie-Tage
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGuaranteeDaysMin (int GuaranteeDaysMin);
+
+	/**
+	 * Get Min. Garantie-Tage.
+	 * Mindestanzahl Garantie-Tage
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getGuaranteeDaysMin();
+
+    /** Column definition for GuaranteeDaysMin */
+    public static final org.adempiere.model.ModelColumn<I_M_Product_Category, Object> COLUMN_GuaranteeDaysMin = new org.adempiere.model.ModelColumn<I_M_Product_Category, Object>(I_M_Product_Category.class, "GuaranteeDaysMin", null);
+    /** Column name GuaranteeDaysMin */
+    public static final String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
 
 	/**
 	 * Set Aktiv.
@@ -361,8 +413,8 @@ public interface I_M_Product_Category
     public static final String COLUMNNAME_M_AttributeSet_ID = "M_AttributeSet_ID";
 
 	/**
-	 * Set Produkt-Kategorie.
-	 * Category of a Product
+	 * Set Produkt Kategorie.
+	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -371,8 +423,8 @@ public interface I_M_Product_Category
 	public void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
-	 * Get Produkt-Kategorie.
-	 * Category of a Product
+	 * Get Produkt Kategorie.
+	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

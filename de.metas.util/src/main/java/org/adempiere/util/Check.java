@@ -49,7 +49,6 @@ public final class Check
 
 	private Check()
 	{
-		super();
 	}
 
 	/**
@@ -288,15 +287,13 @@ public final class Check
 	/**
 	 * Assumes that given <code>str</code> string is not empty. When checking, whitespaces will be discarded, so a string which contains only whitespaces will be considered as empty.
 	 *
-	 * @param object
-	 * @param assumptionMessage message
 	 * @param params message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 * @see #isEmpty(String, boolean)
 	 */
-	public static void assumeNotEmpty(final String str, final String assumptionMessage, final Object... params)
+	public static String assumeNotEmpty(final String str, final String assumptionMessage, final Object... params)
 	{
-		assumeNotEmpty(str, defaultExClazz, assumptionMessage, params);
+		return assumeNotEmpty(str, defaultExClazz, assumptionMessage, params);
 	}
 
 	/**
@@ -307,12 +304,13 @@ public final class Check
 	 * @param assumptionMessage
 	 * @param params
 	 */
-	public static void assumeNotEmpty(final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	public static String assumeNotEmpty(final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean trimWhitespaces = true;
 		final boolean cond = !isEmpty(str, trimWhitespaces);
 
 		assume(cond, exceptionClass, assumptionMessage, params);
+		return str;
 	}
 
 	/**
@@ -430,36 +428,38 @@ public final class Check
 		}
 	}
 
+	public static void errorIf(
+			final boolean cond,
+			final String errMsg,
+			final Object... params)
+	{
+		errorIf(cond, defaultExClazz, errMsg, params);
+	}
+
 	/**
 	 * This method similar to {@link #assume(boolean, String, Object...)}, the error is thrown <b>if the condition is true</b> and the message should be formulated in terms of an error message instead
 	 * of an assumption.
 	 * <p>
 	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
 	 *
-	 * @param cond
-	 * @param errMsg
-	 * @param params
 	 */
-	public static void errorIf(final boolean cond, final String errMsg, final Object... params)
-	{
-		errorIf(cond, defaultExClazz, errMsg, params);
-	}
-
-	/**
-	 * Like {@link #errorIf(boolean, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param cond
-	 * @param exceptionClass
-	 * @param errMsg
-	 * @param params
-	 */
-	public static void errorIf(final boolean cond, final Class<? extends RuntimeException> exceptionClass, final String errMsg, final Object... params)
+	public static void errorIf(
+			final boolean cond,
+			final Class<? extends RuntimeException> exceptionClass,
+			final String errMsg,
+			final Object... params)
 	{
 		if (cond)
 		{
 			final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
 			throwOrLogEx(exceptionClass, "Error: " + errMsgFormated);
 		}
+	}
+	
+	public static void fail(final String errMsg, final Object... params)
+	{
+		final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
+		throwOrLogEx(defaultExClazz, "Error: " + errMsgFormated);
 	}
 
 	/**
@@ -560,6 +560,7 @@ public final class Check
 	 * If both a and b are Object[], they are compared item-by-item.
 	 *
 	 * NOTE: this is a copy paste from org.zkoss.lang.Objects.equals(Object, Object)
+	 *
 	 * @deprecated: as of java-8, there is {@link Objects#equals(Object, Object)}. Please use that instead.
 	 */
 	@Deprecated

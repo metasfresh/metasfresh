@@ -12,8 +12,8 @@ import java.math.BigDecimal;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 
 /*
  * #%L
@@ -75,8 +75,8 @@ public class MaterialDescriptorQueryTest
 
 		assertThat(result.getProductId()).isLessThanOrEqualTo(0);
 		assertThat(result.getStorageAttributesKey())
-				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
-		assertThat(result.getBPartnerId()).isSameAs(StockQuery.BPARTNER_ID_ANY);
+				.isSameAs(AttributesKey.ALL);
+		assertThat(result.getBPartnerId()).isSameAs(AvailableToPromiseQuery.BPARTNER_ID_ANY);
 	}
 
 }

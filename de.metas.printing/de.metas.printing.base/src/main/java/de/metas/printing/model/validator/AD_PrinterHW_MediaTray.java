@@ -1,5 +1,7 @@
 package de.metas.printing.model.validator;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.printing.base
@@ -10,12 +12,12 @@ package de.metas.printing.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,17 +56,17 @@ public class AD_PrinterHW_MediaTray
 			return;
 		}
 
-		for (I_AD_Printer_Matching printerMatching : printerMatchings)
+		for (final I_AD_Printer_Matching printerMatching : printerMatchings)
 		{
-			final I_AD_Printer printer = printerMatching.getAD_Printer();
+			final I_AD_Printer printer = load(printerMatching.getAD_Printer_ID(), I_AD_Printer.class);
 			final List<I_AD_Printer_Tray> trays = Services.get(IPrintingDAO.class).retrieveTrays(printer);
 
-			for (I_AD_Printer_Tray tray : trays)
+			for (final I_AD_Printer_Tray tray : trays)
 			{
 				//
 				// Create tray matching
 				// Note that we must make sure the trx of 'printerTrayHW' is used, because that trx has not yet been committed and there might be FK constraint violations when we save the new data outside of
-				// it. 
+				// it.
 				final String trxName = InterfaceWrapperHelper.getTrxName(printerTrayHW);
 				Services.get(IPrinterBL.class).createTrayMatchingIfNoneExists(printerMatching, tray, printerTrayHW, trxName);
 			}

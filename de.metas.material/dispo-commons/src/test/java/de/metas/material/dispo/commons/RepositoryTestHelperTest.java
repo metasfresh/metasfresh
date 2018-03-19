@@ -11,10 +11,10 @@ import org.junit.Test;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
-import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.AttributesKey;
 
 /*
  * #%L
@@ -56,7 +56,7 @@ public class RepositoryTestHelperTest
 				.mkQueryForStockUntilDate(EventTestHelper.NOW);
 
 		assertThat(stockCandidatequery.getMaterialDescriptorQuery().getStorageAttributesKey())
-				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
+				.isSameAs(AttributesKey.ALL);
 	}
 
 	@Test

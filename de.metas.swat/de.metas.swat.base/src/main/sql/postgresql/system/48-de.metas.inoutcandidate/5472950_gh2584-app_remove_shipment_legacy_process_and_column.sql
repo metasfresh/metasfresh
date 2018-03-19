@@ -21,4 +21,4 @@ DELETE FROM ad_ui_element WHERE AD_Field_ID IN (SELECt AD_Field_ID FROM AD_Field
 DELETE FROM AD_Field WHERE AD_Column_ID IN (select AD_Column_ID FROM AD_Column WHERE AD_Element_ID=501930);
 DELETE FROM AD_Column WHERE AD_Element_ID=501930;
 DELETE FROM AD_Element WHERE AD_Element_ID=501930;
-SELECT public.db_alter_table('M_ShipmentSchedule','ALTER Table M_ShipmentSchedule DROP COLUMN QtyDeliverable;');
+SELECT public.db_alter_table('M_ShipmentSchedule','ALTER Table M_ShipmentSchedule DROP COLUMN IF EXISTS QtyDeliverable;');

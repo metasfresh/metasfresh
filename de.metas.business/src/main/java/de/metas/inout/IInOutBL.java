@@ -118,7 +118,7 @@ public interface IInOutBL extends ISingletonService
 	 *
 	 * @param movementType
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>true if Customer Shipment or Returns
 	 *         <li>false if Vendor Receipts or Returns
 	 *         </ul>
@@ -160,5 +160,19 @@ public interface IInOutBL extends ISingletonService
 	 * @return the given <code>iol</code>'s <code>MovementQty</code> or its negation, based on the inOut's <code>MovementType</code>.
 	 */
 	BigDecimal getEffectiveStorageChange(I_M_InOutLine iol);
+
+	/**
+	 * Refresh all the lines for the given shipment in the Shipment Statistics view window
+	 * 
+	 * @param inout
+	 */
+	void invalidateStatistics(I_M_InOut inout);
+
+	/**
+	 * Refresh the line for the given shipment line in the Shipment Statistics view window
+	 * 
+	 * @param inoutLine
+	 */
+	void invalidateStatistics(I_M_InOutLine inoutLine);
 
 }

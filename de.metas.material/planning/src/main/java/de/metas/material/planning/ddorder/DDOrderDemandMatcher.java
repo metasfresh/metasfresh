@@ -42,27 +42,24 @@ public class DDOrderDemandMatcher implements IMaterialDemandMatcher
 	@Override
 	public boolean matches(final IMaterialPlanningContext mrpContext)
 	{
-		if (!mrpContext.isRequireDRP())
-		{
-			Loggables.get().addLog("DRP not enabled in given mrpContext={}", mrpContext);
-			return false;
-		}
-
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 		if (productPlanning == null)
 		{
-			Loggables.get().addLog("Given MRP context has no PP_Product_Planning; mrpContext={}", mrpContext);
+			Loggables.get().addLog(
+					"Given MRP context has no PP_Product_Planning; DDOrderDemandMatcher returns false; mrpContext={}",
+					mrpContext);
 			return false;
 		}
 
 		// Check if there is a distribution network
 		if (productPlanning.getDD_NetworkDistribution_ID() <= 0)
 		{
-			Loggables.get().addLog("No distribution network configured in product data planning og given mrp context; productPlanning={}; mrpContext={}", productPlanning, mrpContext);
+			Loggables.get().addLog(
+					"No distribution network configured in product data planning og given mrp context; DDOrderDemandMatcher returns false; productPlanning={}; mrpContext={}",
+					productPlanning, mrpContext);
 			return false;
 		}
 
-		// If nothing else is preventing us, consider that we can do DRP
 		return true;
 	}
 

@@ -1,8 +1,15 @@
 package de.metas.material.dispo.commons.candidate;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+import java.math.BigDecimal;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.util.Check;
+
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -28,10 +35,73 @@ import lombok.Value;
  */
 @Value
 public class ProductionDetail
+		implements BusinessCaseDetail
 {
-	int plantId;
+	public enum Flag
+	{
+		TRUE,
 
-	int uomId;
+		FALSE,
+
+		/**
+		 * Don't update existing records, but initialize new ones to {@code false}.
+		 * <p>
+		 * Only used when storing an instance with the {@link CandidateRepositoryWriteService}.<br>
+		 * If you load an instance from DB, it shall never have flags with this value.
+		 */
+		FALSE_DONT_UPDATE;
+
+		public static Flag of(final boolean value)
+		{
+			return value ? TRUE : FALSE;
+		}
+
+		public boolean toBoolean()
+		{
+			return this.equals(TRUE);
+		}
+
+		public boolean updateExistingRecord()
+		{
+			return !this.equals(FALSE_DONT_UPDATE);
+		}
+	}
+
+	public static ProductionDetail castOrNull(@Nullable final BusinessCaseDetail businessCaseDetail)
+	{
+		final boolean canBeCast = businessCaseDetail != null && businessCaseDetail instanceof ProductionDetail;
+		if (canBeCast)
+		{
+			return cast(businessCaseDetail);
+		}
+		return null;
+	}
+
+	public static ProductionDetail cast(@NonNull final BusinessCaseDetail businessCaseDetail)
+	{
+		return (ProductionDetail)businessCaseDetail;
+	}
+
+	public static ProductionDetail forProductionDetailRecord(
+			@NonNull final I_MD_Candidate_Prod_Detail productionDetailRecord)
+	{
+		final ProductionDetail productionDetail = ProductionDetail.builder()
+				.advised(Flag.of(productionDetailRecord.isAdvised()))
+				.pickDirectlyIfFeasible(Flag.of(productionDetailRecord.isPickDirectlyIfFeasible()))
+				.description(productionDetailRecord.getDescription())
+				.plantId(productionDetailRecord.getPP_Plant_ID())
+				.productBomLineId(productionDetailRecord.getPP_Product_BOMLine_ID())
+				.productPlanningId(productionDetailRecord.getPP_Product_Planning_ID())
+				.ppOrderId(productionDetailRecord.getPP_Order_ID())
+				.ppOrderLineId(productionDetailRecord.getPP_Order_BOMLine_ID())
+				.ppOrderDocStatus(productionDetailRecord.getPP_Order_DocStatus())
+				.plannedQty(productionDetailRecord.getPlannedQty())
+				.build();
+
+		return productionDetail;
+	}
+
+	int plantId;
 
 	int productPlanningId;
 
@@ -45,26 +115,36 @@ public class ProductionDetail
 
 	int ppOrderLineId;
 
-	@Builder
+	Flag advised;
+
+	Flag pickDirectlyIfFeasible;
+
+	BigDecimal plannedQty;
+
+	@Builder(toBuilder = true)
 	private ProductionDetail(
-			int plantId,
-			int uomId,
-			int productPlanningId,
-			int productBomLineId,
-			String description,
-			int ppOrderId,
-			String ppOrderDocStatus,
-			int ppOrderLineId)
+			final int plantId,
+			final int productPlanningId,
+			final int productBomLineId,
+			final String description,
+			final int ppOrderId,
+			final String ppOrderDocStatus,
+			final int ppOrderLineId,
+			@NonNull final Flag advised,
+			@NonNull final Flag pickDirectlyIfFeasible,
+			@NonNull final BigDecimal plannedQty)
 	{
-		final boolean detailForPpOrderHead = productBomLineId <= 0;
-		if (detailForPpOrderHead)
+		this.advised = advised;
+		this.pickDirectlyIfFeasible = pickDirectlyIfFeasible;
+
+		final boolean detailIsAboutPPOrderHeader = productBomLineId <= 0;
+		if (Flag.TRUE.equals(advised) && detailIsAboutPPOrderHeader)
 		{
-			// these two need to be available when using this productionDetail to ppOrder pojo
-			checkIdGreaterThanZero("plantId", plantId);
-			checkIdGreaterThanZero("uomId", uomId);
+			// plantId needs to be available when using this productionDetail to request a ppOrder being created
+			Check.errorIf(plantId <= 0, "Parameter plantId needs to be >= 0 for and advised PPOrder 'Header' productionDetail");
 		}
+
 		this.plantId = plantId;
-		this.uomId = uomId;
 
 		this.productPlanningId = productPlanningId;
 		this.productBomLineId = productBomLineId;
@@ -72,5 +152,12 @@ public class ProductionDetail
 		this.ppOrderId = ppOrderId;
 		this.ppOrderDocStatus = ppOrderDocStatus;
 		this.ppOrderLineId = ppOrderLineId;
+		this.plannedQty = plannedQty;
+	}
+
+	@Override
+	public CandidateBusinessCase getCandidateBusinessCase()
+	{
+		return CandidateBusinessCase.PRODUCTION;
 	}
 }

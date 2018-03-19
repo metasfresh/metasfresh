@@ -21,12 +21,12 @@ import de.metas.inout.IInOutDAO;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,13 +44,14 @@ import de.metas.inout.IInOutDAO;
  * <li>expect: one shipment with 1 line for LU1 and LU2
  * <li>expect: attribute is not present in shipment line's ASI
  * </ul>
- * 
+ *
  * Same as for {@link HUShipmentProcess_AttributesAggregation_WithSameTemplateAttribute_Test}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @task FRESH-578 #275
  */
-public class HUShipmentProcess_AttributesAggregation_NoTemplateAttribute_Test extends HUShipmentProcess_AttributesAggregation_Base
+public class HUShipmentProcess_AttributesAggregation_NoTemplateAttribute_Test
+		extends HUShipmentProcess_AttributesAggregation_Base
 {
 	@Override
 	protected void initialize()

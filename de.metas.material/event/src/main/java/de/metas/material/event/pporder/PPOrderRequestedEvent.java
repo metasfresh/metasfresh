@@ -1,5 +1,8 @@
 package de.metas.material.event.pporder;
 
+import java.util.Date;
+
+import org.adempiere.util.Check;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.MaterialEvent;
@@ -42,13 +45,20 @@ import lombok.Value;
 @Builder
 public class PPOrderRequestedEvent implements MaterialEvent
 {
-	public static final String TYPE = "ProductionRequestedEvent";
+	public static final String TYPE = "PPOrderRequestedEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;
 
 	@NonNull
+	Date dateOrdered;
+
+	@NonNull
 	PPOrder ppOrder;
 
-	int groupId;
+	public void validate()
+	{
+		// we need the PPOrder's MaterialDispoGroupId to map the order that was created to its respective candidates
+		Check.errorIf(ppOrder.getMaterialDispoGroupId() <= 0, "The ppOrder of a PPOrderRequestedEvent needs to have a group id");
+	}
 }

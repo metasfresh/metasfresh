@@ -1,3 +1,3 @@
-This file diables automatic fingerprinting and archiving, because in particular the archiving takes up too much space on the jenkins master.
+This file disables automatic fingerprinting and archiving, because in particular the archiving takes up too much space on the jenkins server.
 
 Also see section "Maven Build Phases Reporters (since v2.0)" on https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Maven+Plugin

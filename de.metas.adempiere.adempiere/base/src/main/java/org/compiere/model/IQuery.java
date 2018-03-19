@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -483,6 +484,28 @@ public interface IQuery<T>
 	 * @param distinct
 	 */
 	void addUnion(IQuery<T> query, boolean distinct);
+	
+	default IQuery<T> addUnions(final Collection<IQuery<T>> queries, final boolean distinct)
+	{
+		queries.forEach(query -> addUnion(query, distinct));
+		return this;
+	}
+
+	/** @return UNION DISTINCT {@link IQuery} reducer */
+	static <T> BinaryOperator<IQuery<T>> unionDistict()
+	{
+		return (previousDBQuery, dbQuery) -> {
+			if (previousDBQuery == null)
+			{
+				return dbQuery;
+			}
+			else
+			{
+				previousDBQuery.addUnion(dbQuery, true);
+				return previousDBQuery;
+			}
+		};
+	}
 
 	/**
 	 * Creates a NEW selection from this query result.

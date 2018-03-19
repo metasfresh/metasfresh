@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.WeakList;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
@@ -63,10 +65,12 @@ import de.metas.logging.LogManager;
 	@Override
 	public void dispose()
 	{
-		disposeComponents();
+		SwingUtilities.invokeLater(() -> {
+			disposeComponents();
 
-		// to this last, because some components wand to fire one last event while they are disposed.
-		disposePropertyChangeSupports();
+			// to this last, because some components wand to fire one last event while they are disposed.
+			disposePropertyChangeSupports();
+		});
 	}
 
 	public WeakPropertyChangeSupport createPropertyChangeSupport(final Object sourceBean)

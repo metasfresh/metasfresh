@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.spi;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,7 +32,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * Invoice Candidates module listener.
- * 
+ *
  * @author tsa
  *
  */
@@ -40,9 +40,9 @@ public interface IInvoiceCandidateListener
 {
 	/**
 	 * Method called when invoice line was created from {@link IInvoiceLineRW} and {@link I_C_Invoice_Candidate}s.
-	 * 
+	 *
 	 * The method will be called after invoice line is created but before it will be saved. The listener has the opportunity to change things there.
-	 * 
+	 *
 	 * @param invoiceLine
 	 * @param fromInvoiceLine
 	 * @param fromCandidates
@@ -51,10 +51,16 @@ public interface IInvoiceCandidateListener
 
 	/**
 	 * Method called before an invoice is completed. It is needed for particular details to be set, no matter from what project they come from
-	 * 
+	 *
 	 * @param invoice
 	 * @param fromCandidates
 	 */
 	void onBeforeInvoiceComplete(I_C_Invoice invoice, List<I_C_Invoice_Candidate> fromCandidates);
 
+	/**
+	 * Method called before an invoice candidate is closed
+	 *
+	 * @param invoice candidate
+	 */
+	void onBeforeClosed(I_C_Invoice_Candidate candidate);
 }

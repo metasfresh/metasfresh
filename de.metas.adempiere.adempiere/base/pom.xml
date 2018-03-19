@@ -6,7 +6,7 @@
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
 		<version>[1,10.0.0]</version>
-		<relativePath>../../de.metas.parent/pom.xml</relativePath>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.adempiere.adempiere</groupId>
@@ -14,7 +14,9 @@
 	<version>10.0.0</version>
 	<packaging>jar</packaging>
 
-<properties><metasfresh.version>[1,10.0.0]</metasfresh.version></properties>
+	<properties>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+	</properties>
 
 	<dependencies>
 
@@ -267,8 +269,8 @@
 			<version>4.0</version>
 		</dependency>
 
+		<!-- needed for org.adempiere.plaf.UIDefaultsSerializer -->
 		<dependency>
-			<!-- Initially was needed for org.adempiere.plaf.UIDefaultsSerializer but in future we would use it for many other things -->
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>
@@ -290,6 +292,12 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>

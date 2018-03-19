@@ -326,6 +326,29 @@ public interface I_AD_UI_Element
     public static final String COLUMNNAME_IsAdvancedField = "IsAdvancedField";
 
 	/**
+	 * Set Allow filtering.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAllowFiltering (boolean IsAllowFiltering);
+
+	/**
+	 * Get Allow filtering.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAllowFiltering();
+
+    /** Column definition for IsAllowFiltering */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsAllowFiltering = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsAllowFiltering", null);
+    /** Column name IsAllowFiltering */
+    public static final String COLUMNNAME_IsAllowFiltering = "IsAllowFiltering";
+
+	/**
 	 * Set Displayed.
 	 * Determines, if this field is displayed
 	 *
@@ -453,6 +476,29 @@ public interface I_AD_UI_Element
     public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab> COLUMN_Labels_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab>(I_AD_UI_Element.class, "Labels_Tab_ID", org.compiere.model.I_AD_Tab.class);
     /** Column name Labels_Tab_ID */
     public static final String COLUMNNAME_Labels_Tab_ID = "Labels_Tab_ID";
+
+	/**
+	 * Set Media Types.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMediaTypes (java.lang.String MediaTypes);
+
+	/**
+	 * Get Media Types.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMediaTypes();
+
+    /** Column definition for MediaTypes */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_MediaTypes = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "MediaTypes", null);
+    /** Column name MediaTypes */
+    public static final String COLUMNNAME_MediaTypes = "MediaTypes";
 
 	/**
 	 * Set Name.

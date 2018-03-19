@@ -235,6 +235,7 @@ public class MProduct extends X_M_Product
 		setDescriptionURL(impP.getDescriptionURL());
 		setIsSold(impP.isSold());
 		setIsStocked(impP.isStocked());
+		setM_ProductPlanningSchema_Selector(impP.getM_ProductPlanningSchema_Selector()); // #3406
 	}	// MProduct
 
 	/** Additional Downloads */
@@ -445,42 +446,6 @@ public class MProduct extends X_M_Product
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
-		// Check Storage
-		if (!newRecord && 	//
-				((is_ValueChanged("IsActive") && !isActive())		// now not active
-						|| (is_ValueChanged("IsStocked") && !Services.get(IProductBL.class).isStocked(this))	// now not stocked
-				|| (is_ValueChanged("ProductType") 					// from Item
-				&& PRODUCTTYPE_Item.equals(get_ValueOld("ProductType")))))
-		{
-			MStorage[] storages = MStorage.getOfProduct(getCtx(), get_ID(), get_TrxName());
-			BigDecimal OnHand = Env.ZERO;
-			BigDecimal Ordered = Env.ZERO;
-			BigDecimal Reserved = Env.ZERO;
-			for (int i = 0; i < storages.length; i++)
-			{
-				OnHand = OnHand.add(storages[i].getQtyOnHand());
-				Ordered = Ordered.add(storages[i].getQtyOrdered());
-				Reserved = Reserved.add(storages[i].getQtyReserved());
-			}
-			String errMsg = "";
-			if (OnHand.signum() != 0)
-			{
-				errMsg = "@QtyOnHand@ = " + OnHand;
-			}
-			if (Ordered.signum() != 0)
-			{
-				errMsg += " - @QtyOrdered@ = " + Ordered;
-			}
-			if (Reserved.signum() != 0)
-			{
-				errMsg += " - @QtyReserved@" + Reserved;
-			}
-			if (errMsg.length() > 0)
-			{
-				throw new AdempiereException(errMsg);
-			}
-		}	// storage
-
 		// it checks if UOM has been changed , if so disallow the change if the condition is true.
 		if ((!newRecord) && is_ValueChanged("C_UOM_ID") && hasInventoryOrCost())
 		{
@@ -568,17 +533,10 @@ public class MProduct extends X_M_Product
 		// New - Acct, Tree, Old Costing
 		if (newRecord)
 		{
-			insert_Accounting("M_Product_Acct", "M_Product_Category_Acct",
+			insert_Accounting(I_M_Product_Acct.Table_Name,
+					I_M_Product_Category_Acct.Table_Name,
 					"p.M_Product_Category_ID=" + getM_Product_Category_ID());
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
-			//
-			final I_C_AcctSchema[] mass = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
-			for (int i = 0; i < mass.length; i++)
-			{
-				// Old
-				MProductCosting pcOld = new MProductCosting(this, mass[i].getC_AcctSchema_ID());
-				pcOld.save();
-			}
 		}
 
 		// New Costing
@@ -628,12 +586,6 @@ public class MProduct extends X_M_Product
 				throw new AdempiereException(errMsg);
 			}
 
-		}
-		// delete costing
-		MProductCosting[] costings = MProductCosting.getOfProduct(getCtx(), get_ID(), get_TrxName());
-		for (int i = 0; i < costings.length; i++)
-		{
-			costings[i].delete(true, get_TrxName());
 		}
 
 		MCost.delete(this);

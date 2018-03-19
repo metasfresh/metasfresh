@@ -26,7 +26,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 
@@ -53,16 +53,16 @@ public interface IMutableAllocationResult extends IAllocationResult
 	 * @param trxCandidates
 	 * @return
 	 */
-	void addTransaction(IHUTransaction trx);
+	void addTransaction(IHUTransactionCandidate trx);
 
-	void addTransactions(List<IHUTransaction> trxs);
+	void addTransactions(List<IHUTransactionCandidate> trxs);
 
 	void addAttributeTransaction(IHUTransactionAttribute attributeTrx);
 
 	void addAttributeTransactions(List<IHUTransactionAttribute> attributeTrxs);
 
 	/**
-	 * Invoke {@link IHUTrxBL#aggregateTransactions(List)} on the {@link IHUTransaction}s that were added so far.
+	 * Invoke {@link IHUTrxBL#aggregateTransactions(List)} on the {@link IHUTransactionCandidate}s that were added so far.
 	 */
 	void aggregateTransactions();
 }

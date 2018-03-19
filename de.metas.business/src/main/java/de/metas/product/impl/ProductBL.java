@@ -1,5 +1,7 @@
 package de.metas.product.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,12 +12,12 @@ package de.metas.product.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,6 +52,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import lombok.NonNull;
 
 public final class ProductBL implements IProductBL
 {
@@ -76,14 +79,21 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public I_C_UOM getStockingUOM(final I_M_Product product)
+	public I_C_UOM getStockingUOM(@NonNull final I_M_Product product)
 	{
-		Check.assumeNotNull(product, "product not null");
 		return product.getC_UOM();
+	}
+	
+	@Override
+	public I_C_UOM getStockingUOM(final int productId)
+	{
+		Check.assume(productId > 0, "productId > 0");
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		return getStockingUOM(product);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param product
 	 * @return UOM used for Product's Weight; never return null
 	 */
@@ -133,8 +143,8 @@ public final class ProductBL implements IProductBL
 			return true;
 		}
 
-// @formatter:off		
-// task 07246: IsDiverse does not automatically mean that the product is an item!		
+// @formatter:off
+// task 07246: IsDiverse does not automatically mean that the product is an item!
 //		final de.metas.adempiere.model.I_M_Product productToUse = InterfaceWrapperHelper.create(product, de.metas.adempiere.model.I_M_Product.class);
 //		if (productToUse.isDiverse())
 //		{
@@ -163,6 +173,21 @@ public final class ProductBL implements IProductBL
 
 		return isItem(product);
 	}
+	
+	@Override
+	public boolean isStocked(final int productId)
+	{
+		if(productId <= 0)
+		{
+			return false; 
+		}
+		
+		// NOTE: we rely on table cache config
+		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		
+		return isStocked(product);
+	}
+
 
 	@Override
 	public int getM_AttributeSet_ID(final I_M_Product product)

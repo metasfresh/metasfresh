@@ -30,6 +30,8 @@ import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -54,6 +56,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.tax.api.ITaxDAO;
 
 @Interceptor(I_C_Invoice_Candidate.class)
@@ -73,9 +76,9 @@ public class C_Invoice_Candidate
 		// NOTE: in unit test mode and while running tools like model generators,
 		// the groupsRepo is not Autowired because there is no spring context,
 		// so we have to instantiate it directly
-		if (groupsRepo == null)
+		if (groupsRepo == null && Adempiere.isUnitTestMode())
 		{
-			groupsRepo = new InvoiceCandidateGroupRepository();
+			groupsRepo = new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory());
 		}
 
 		groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
@@ -217,8 +220,9 @@ public class C_Invoice_Candidate
 	}
 
 	/**
-	 * For the given <code>ic</code>, this method invalidates the invoice candidate and all other candidates that reference the same record via <code>(AD_Table_ID, Record_ID)</code>, <b>unless</b>
-	 * {@link IInvoiceCandBL#isUpdateProcessInProgress()} returns <code>true</code>. In that case, the method does nothing.
+	 * For the given <code>ic</code>, this method invalidates the invoice candidate<br>
+	 * and all other candidates that reference the same record via <code>(AD_Table_ID, Record_ID)</code>, <b>unless</b>
+	 * {@link InterfaceWrapperHelper#hasChanges(Object)} returns <code>false</code>. In that case, the method does nothing.
 	 * <p>
 	 * Note: we invalidate more than just the given candidate, because at least for the case of "split"-candidates we need to do so, in order to update the new and the old candidate. See
 	 * {@link InvoiceCandBL#splitCandidate(I_C_Invoice_Candidate, String)}.
@@ -375,7 +379,9 @@ public class C_Invoice_Candidate
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final boolean isBackgroundProcessInProcess = invoiceCandBL.isUpdateProcessInProgress();
-		if (ic.isProcessed() || X_C_Invoice_Candidate.PROCESSED_OVERRIDE_Yes.equals(ic.getProcessed_Override()) || isBackgroundProcessInProcess)
+		if (ic.isProcessed()
+				|| X_C_Invoice_Candidate.PROCESSED_OVERRIDE_Yes.equals(ic.getProcessed_Override())
+				|| isBackgroundProcessInProcess)
 		{
 			return; // nothing to do
 		}
@@ -412,6 +418,19 @@ public class C_Invoice_Candidate
 	public void handleCompensantionGroupRelatedChanges(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		groupChangesHandler.onInvoiceCandidateChanged(invoiceCandidate);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt })
+	public void triggerUpdateBPStats(final I_C_Invoice_Candidate ic)
+	{
+		if (ic.getLineNetAmt().signum() > 0)
+		{
+			Services.get(IBPartnerStatisticsUpdater.class)
+			.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+					.bpartnerId(ic.getBill_BPartner_ID())
+					.build());
+
+		}
 	}
 
 }

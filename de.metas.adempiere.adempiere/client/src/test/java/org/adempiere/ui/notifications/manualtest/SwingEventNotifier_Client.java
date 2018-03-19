@@ -5,7 +5,6 @@ import javax.swing.UIManager;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.SwingEventNotifierUI;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.ui.notifications.SwingEventNotifierService;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -25,7 +24,6 @@ public class SwingEventNotifier_Client
 	public static void main(String[] args) throws Exception
 	{
 		Adempiere.enableUnitTestMode();
-		Services.get(ISysConfigBL.class).setValue(EventBusConstants.SYSCONFIG_Enabled, true, 0); // we need to manually enable it
 
 		LogManager.initialize(true);
 		UIManager.getDefaults().putDefaults(SwingEventNotifierUI.getUIDefaults());

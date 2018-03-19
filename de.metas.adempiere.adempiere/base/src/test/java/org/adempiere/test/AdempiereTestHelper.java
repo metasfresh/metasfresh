@@ -1,5 +1,8 @@
 package org.adempiere.test;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,15 +16,14 @@ package org.adempiere.test;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -42,6 +44,8 @@ import org.adempiere.util.reflect.TestingClassInstanceProvider;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -49,6 +53,7 @@ import org.compiere.util.Util;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
@@ -116,7 +121,6 @@ public class AdempiereTestHelper
 		POJOWrapper.setAllowRefreshingChangedModels(false);
 		POJOWrapper.setDefaultStrictValues(POJOWrapper.DEFAULT_StrictValues);
 
-		//
 		// Setup services
 		{
 			// Make sure we don't have custom registered services
@@ -132,22 +136,21 @@ public class AdempiereTestHelper
 			Services.registerService(IClientUI.class, new TestClientUI());
 		}
 
-		//
 		// Base Language
 		Language.setBaseLanguage(() -> AD_LANGUAGE);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, AD_LANGUAGE);
 
-		//
 		// Reset System Time
 		SystemTime.setTimeSource(null);
 
-		//
 		// Caching
 		AbstractModelListCacheLocal.DEBUG = true;
+		CacheMgt.get().reset();
 
-		//
 		// Logging
 		LogManager.setLevel(Level.WARN);
+
+		createSystemRecords();
 	}
 
 	private static Properties setupContext()
@@ -177,5 +180,20 @@ public class AdempiereTestHelper
 		InterfaceWrapperHelper.save(adClient);
 
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, adClient.getAD_Client_ID());
+	}
+
+	private static void createSystemRecords()
+	{
+		final I_AD_Org allOrgs = newInstance(I_AD_Org.class);
+		allOrgs.setAD_Org_ID(0);
+		save(allOrgs);
+
+		final I_AD_User systemUser = newInstance(I_AD_User.class);
+		systemUser.setAD_User_ID(0);
+		save(systemUser);
+
+		final I_M_AttributeSetInstance noAsi = newInstance(I_M_AttributeSetInstance.class);
+		noAsi.setM_AttributeSetInstance_ID(0);
+		save(noAsi);
 	}
 }

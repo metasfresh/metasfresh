@@ -32,6 +32,9 @@ import de.metas.picking.model.I_M_Picking_Config;
 @Repository
 public class PickingConfigRepository
 {
+
+	public static final String MSG_WEBUI_Picking_OverdeliveryNotAllowed = "M_Picking_Config_OverdeliveryNotAllowed";
+
 	private final CCache<Integer, PickingConfig> pickingConfigCache = CCache.newCache(I_M_Picking_Config.Table_Name, 1, CCache.EXPIREMINUTES_Never);
 
 	public PickingConfig getPickingConfig()
@@ -49,6 +52,7 @@ public class PickingConfigRepository
 
 		return PickingConfig.builder()
 				.webuiPickingTerminalViewProfileId(pickingConfigPO.getWEBUI_PickingTerminal_ViewProfile())
+				.allowOverDelivery(pickingConfigPO.isAllowOverdelivery())
 				.build();
 	}
 }

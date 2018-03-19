@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.tourplanning.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_Tour_Instance
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_M_Tour_Instance extends org.compiere.model.PO implements I_M_Tour
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1802905835L;
+	private static final long serialVersionUID = -1581472456L;
 
     /** Standard Constructor */
     public X_M_Tour_Instance (Properties ctx, int M_Tour_Instance_ID, String trxName)
@@ -43,20 +26,13 @@ public class X_M_Tour_Instance extends org.compiere.model.PO implements I_M_Tour
 			setDeliveryDate (new Timestamp( System.currentTimeMillis() ));
 			setM_Tour_ID (0);
 			setM_Tour_Instance_ID (0);
-			setProcessed (false);
-// N
-			setQtyDelivered_LU (Env.ZERO);
-// 0
-			setQtyDelivered_TU (Env.ZERO);
-// 0
-			setQtyOrdered_LU (Env.ZERO);
-// 0
-			setQtyOrdered_TU (Env.ZERO);
-// 0
-			setQtyToDeliver_LU (Env.ZERO);
-// 0
-			setQtyToDeliver_TU (Env.ZERO);
-// 0
+			setProcessed (false); // N
+			setQtyDelivered_LU (BigDecimal.ZERO); // 0
+			setQtyDelivered_TU (BigDecimal.ZERO); // 0
+			setQtyOrdered_LU (BigDecimal.ZERO); // 0
+			setQtyOrdered_TU (BigDecimal.ZERO); // 0
+			setQtyToDeliver_LU (BigDecimal.ZERO); // 0
+			setQtyToDeliver_TU (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -75,14 +51,6 @@ public class X_M_Tour_Instance extends org.compiere.model.PO implements I_M_Tour
       return poi;
     }
 
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_M_Tour_Instance[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
 	/** Set Lieferdatum.
 		@param DeliveryDate Lieferdatum	  */
 	@Override
@@ -99,20 +67,8 @@ public class X_M_Tour_Instance extends org.compiere.model.PO implements I_M_Tour
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DeliveryDate);
 	}
 
-	@Override
-	public de.metas.shipping.model.I_M_ShipperTransportation getM_ShipperTransportation() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_ShipperTransportation_ID, de.metas.shipping.model.I_M_ShipperTransportation.class);
-	}
-
-	@Override
-	public void setM_ShipperTransportation(de.metas.shipping.model.I_M_ShipperTransportation M_ShipperTransportation)
-	{
-		set_ValueFromPO(COLUMNNAME_M_ShipperTransportation_ID, de.metas.shipping.model.I_M_ShipperTransportation.class, M_ShipperTransportation);
-	}
-
-	/** Set Shipper Transportation.
-		@param M_ShipperTransportation_ID Shipper Transportation	  */
+	/** Set Transport Auftrag.
+		@param M_ShipperTransportation_ID Transport Auftrag	  */
 	@Override
 	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID)
 	{
@@ -122,8 +78,8 @@ public class X_M_Tour_Instance extends org.compiere.model.PO implements I_M_Tour
 			set_Value (COLUMNNAME_M_ShipperTransportation_ID, Integer.valueOf(M_ShipperTransportation_ID));
 	}
 
-	/** Get Shipper Transportation.
-		@return Shipper Transportation	  */
+	/** Get Transport Auftrag.
+		@return Transport Auftrag	  */
 	@Override
 	public int getM_ShipperTransportation_ID () 
 	{
@@ -233,7 +189,7 @@ public class X_M_Tour_Instance extends org.compiere.model.PO implements I_M_Tour
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered_LU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -255,7 +211,7 @@ public class X_M_Tour_Instance extends org.compiere.model.PO implements I_M_Tour
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered_TU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -277,7 +233,7 @@ public class X_M_Tour_Instance extends org.compiere.model.PO implements I_M_Tour
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_LU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -299,7 +255,7 @@ public class X_M_Tour_Instance extends org.compiere.model.PO implements I_M_Tour
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_TU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -318,7 +274,7 @@ public class X_M_Tour_Instance extends org.compiere.model.PO implements I_M_Tour
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToDeliver_LU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -337,7 +293,7 @@ public class X_M_Tour_Instance extends org.compiere.model.PO implements I_M_Tour
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToDeliver_TU);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

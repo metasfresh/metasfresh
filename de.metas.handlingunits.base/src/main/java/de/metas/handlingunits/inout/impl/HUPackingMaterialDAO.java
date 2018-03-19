@@ -13,12 +13,12 @@ package de.metas.handlingunits.inout.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -63,7 +63,7 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				+ I_M_HU_PI_Item.Table_Name + " WHERE " + I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID
 				+ " = ? AND " + I_M_HU_PI_Item.COLUMNNAME_ItemType + " = ? AND " + I_M_HU_PI_Item.COLUMNNAME_IsActive + " = ? )";
 
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 		params.add(pip.getM_HU_PI_Item().getM_HU_PI_Version_ID());
 		params.add(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
 		params.add(true);
@@ -87,5 +87,4 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				.setOnlyActiveRecords(true)
 				.firstOnly(I_M_HU_PackingMaterial.class);
 	}
-
 }

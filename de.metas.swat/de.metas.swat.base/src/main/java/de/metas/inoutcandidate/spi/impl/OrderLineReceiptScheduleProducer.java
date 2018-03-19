@@ -45,9 +45,12 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.model.X_PP_Product_Planning;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -55,12 +58,16 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.material.planning.IProductPlanningDAO;
 
 /**
  *
  */
 public class OrderLineReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 {
+
+	private final static String DEFAULT_OnMaterialReceiptWithDestWarehouse = X_PP_Product_Planning.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement;
+
 	@Override
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
 	{
@@ -69,7 +76,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		final I_M_ReceiptSchedule receiptSchedule = createOrReceiptScheduleFromOrderLine(orderLine, createReceiptScheduleIfNotExists);
 		return Collections.singletonList(receiptSchedule);
 	}
-	
+
 	@Override
 	public void updateReceiptSchedules(final Object model)
 	{
@@ -89,11 +96,11 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		final boolean isNewReceiptSchedule = (receiptSchedule == null);
 		if (isNewReceiptSchedule)
 		{
-			if(!createReceiptScheduleIfNotExists)
+			if (!createReceiptScheduleIfNotExists)
 			{
 				return null;
 			}
-			
+
 			receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class, line);
 		}
 
@@ -206,10 +213,41 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		final String headerAggregationKey = receiptScheduleBL.getHeaderAggregationKeyBuilder().buildKey(receiptSchedule);
 		receiptSchedule.setHeaderAggregationKey(headerAggregationKey);
 
+		// #3549
+		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(getOnMaterialReceiptWithDestWarehouse(line));
+
 		//
 		// Save & return
 		InterfaceWrapperHelper.save(receiptSchedule);
 		return receiptSchedule;
+	}
+
+	private String getOnMaterialReceiptWithDestWarehouse(final I_C_OrderLine orderLine)
+	{
+
+		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+
+		final int productId = orderLine.getM_Product_ID();
+		final int orgId = orderLine.getAD_Org_ID();
+		final int asiId = orderLine.getM_AttributeSetInstance_ID();
+
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(
+				 orgId //
+				, 0  // M_Warehouse_ID
+				, 0  // S_Resource_ID
+				, productId //
+				, asiId);
+
+		if (productPlanning == null)
+		{
+			// fallback to old behaviour -> a movement is created instead of dd_Order
+			return DEFAULT_OnMaterialReceiptWithDestWarehouse;
+		}
+		
+		final String onMaterialReceiptWithDestWarehouse = productPlanning.getOnMaterialReceiptWithDestWarehouse();
+
+		return Check.isEmpty(onMaterialReceiptWithDestWarehouse) ? DEFAULT_OnMaterialReceiptWithDestWarehouse : onMaterialReceiptWithDestWarehouse;
+
 	}
 
 	/**
@@ -377,11 +415,13 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		//
 		// Fallback: get standard Material Receipt document type
-		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
-		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
-		return Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(ctx, X_C_DocType.DOCBASETYPE_MaterialReceipt,
-				orderLine.getAD_Client_ID(), orderLine.getAD_Org_ID(),
-				trxName);
+		return Services.get(IDocTypeDAO.class)
+				.getDocTypeIdOrNull(DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+						.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+						.adClientId(orderLine.getAD_Client_ID())
+						.adOrgId(orderLine.getAD_Org_ID())
+						.build());
 	}
 
 	/** Wraps {@link I_C_OrderLine} as {@link IReceiptScheduleWarehouseDestProvider.IContext} */

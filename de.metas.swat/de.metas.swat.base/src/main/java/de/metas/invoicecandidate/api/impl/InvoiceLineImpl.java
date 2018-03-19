@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,16 +45,16 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 
 /**
  * Default (bean) implementation for {@link IInvoiceLineRW}.
- * 
+ *
  * NOTE to developer: if you want to add a new field:
  * <ul>
  * <li>add private field, getter and setter methods
  * <li>change {@link #equals(Object)} to consider the new field
  * <li>change {@link #hashCode()} to consider the new field
  * </ul>
- * 
+ *
  * @author tsa
- * 
+ *
  */
 /* package */ class InvoiceLineImpl implements IInvoiceLineRW
 {
@@ -67,13 +67,14 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 	private BigDecimal discount;
 	private BigDecimal netLineAmt;
 	private String description;
-	private Collection<Integer> iciolIds = new TreeSet<Integer>();
+	private Collection<Integer> iciolIds = new TreeSet<>();
 	private int activityID;
 	private I_C_Tax tax;
 	private boolean printed = true;
 	private int lineNo = 0;
 	private Set<IInvoiceLineAttribute> invoiceLineAttributes = Collections.emptySet();
-	private List<IInvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<IInvoiceCandidateInOutLineToUpdate>();
+	private List<IInvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
+	private int C_PaymentTerm_ID;
 
 	@Override
 	public String toString()
@@ -198,7 +199,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 		{
 			return; // nothing to add
 		}
-		
+
 		final BigDecimal qtyToInvoiceOld = getQtyToInvoice();
 		final BigDecimal qtyToInvoiceNew;
 		if (qtyToInvoiceOld == null)
@@ -209,7 +210,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 		{
 			qtyToInvoiceNew = qtyToInvoiceOld.add(qtyToInvoiceToAdd);
 		}
-		
+
 		setQtyToInvoice(qtyToInvoiceNew);
 	}
 
@@ -268,7 +269,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 	{
 		return iciolIds;
 	}
-	
+
 	@Override
 	public void negateAmounts()
 	{
@@ -329,7 +330,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 	{
 		this.invoiceLineAttributes = ImmutableSet.copyOf(invoiceLineAttributes);
 	}
-	
+
 	@Override
 	public Set<IInvoiceLineAttribute> getInvoiceLineAttributes()
 	{
@@ -340,5 +341,17 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 	public List<IInvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
 	{
 		return iciolsToUpdate;
+	}
+
+	@Override
+	public int getC_PaymentTerm_ID()
+	{
+		return C_PaymentTerm_ID;
+	}
+
+	@Override
+	public void setC_PaymentTerm_ID(int paymentTermId)
+	{
+		C_PaymentTerm_ID = paymentTermId;
 	}
 }

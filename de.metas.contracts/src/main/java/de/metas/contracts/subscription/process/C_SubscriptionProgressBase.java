@@ -24,12 +24,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,7 +49,10 @@ public abstract class C_SubscriptionProgressBase extends JavaProcess
 		}
 
 		final I_C_Flatrate_Term term = getTermFromPreconditionsContext(context);
-
+		if (term == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Only if a term is actually selected");
+		}
 		if (!Objects.equals(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, term.getType_Conditions()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Only for Type_Conditions=Subscr; not for " + term.getType_Conditions());

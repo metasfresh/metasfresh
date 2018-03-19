@@ -1,5 +1,7 @@
 package org.adempiere.ad.dao.impl;
 
+import java.io.Closeable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,21 +15,23 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.adempiere.ad.dao.model.I_T_Query_Selection;
 import org.adempiere.ad.persistence.TableModelClassLoader;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -49,7 +53,7 @@ import de.metas.logging.LogManager;
  *
  * @param <ET> model interface
  */
-/* package */final class GuaranteedPOBufferedIterator<T, ET extends T> implements Iterator<ET>
+/* package */final class GuaranteedPOBufferedIterator<T, ET extends T> implements Iterator<ET>, Closeable
 {
 	private static final transient Logger logger = LogManager.getLogger(GuaranteedPOBufferedIterator.class);
 
@@ -63,6 +67,7 @@ import de.metas.logging.LogManager;
 	/** Selection ID */
 	// NOTE: we are keeping here as class field only because we want to have it in toString().
 	private final String querySelectionUUID;
+	private final String trxName;
 	/** How many rows are in our selection */
 	private final int rowsCount;
 	/**
@@ -88,7 +93,9 @@ import de.metas.logging.LogManager;
 	/** Peeking iterator which wraps {@link #bufferedIterator} */
 	private final PeekingIterator<ET> peekingBufferedIterator;
 
-	/* package */GuaranteedPOBufferedIterator(final TypedSqlQuery<T> query, final Class<ET> clazz)
+	private final AtomicBoolean closed = new AtomicBoolean(false);
+
+	/* package */ GuaranteedPOBufferedIterator(final TypedSqlQuery<T> query, final Class<ET> clazz)
 	{
 		super();
 
@@ -99,7 +106,7 @@ import de.metas.logging.LogManager;
 		this.clazz = clazz;
 		this.querySelectionUUID = UUID.randomUUID().toString();
 
-		final String trxName = query.getTrxName();
+		this.trxName = query.getTrxName();
 
 		final String tableName = query.getTableName();
 		this.keyColumnName = query.getKeyColumnName();
@@ -122,7 +129,13 @@ import de.metas.logging.LogManager;
 			sqlRowNumber.append(")");
 
 			final StringBuilder sqlInsertIntoSelect = new StringBuilder();
-			sqlInsertIntoSelect.append("INSERT INTO T_Query_Selection (uuid, line, record_id)")
+			sqlInsertIntoSelect.append("INSERT INTO ")
+					.append(I_T_Query_Selection.Table_Name)
+					.append(" (")
+					.append(I_T_Query_Selection.COLUMNNAME_UUID)
+					.append(", ").append(I_T_Query_Selection.COLUMNNAME_Line)
+					.append(", ").append(I_T_Query_Selection.COLUMNNAME_Record_ID)
+					.append(")")
 					.append(" SELECT ")
 					.append(DB.TO_STRING(querySelectionUUID))
 					.append(", ").append(sqlRowNumber)
@@ -163,11 +176,16 @@ import de.metas.logging.LogManager;
 		// * methods like hasNext() are comparing the rowsFetched counter with rowsCount to detect if we reached the end of the selection (optimization).
 		// * POBufferedIterator is using LIMIT/OFFSET clause for fetching the next page and eliminating rows from here would fuck the paging if one record was deleted in meantime.
 		// So we decided to load everything here, and let the hasNext() method to deal with the case when the record is really missing.
-		final String selectionSqlFrom = "(SELECT UUID as ZZ_UUID, Record_ID as ZZ_Record_ID, Line as ZZ_Line FROM T_Query_Selection) s "
+		final String selectionSqlFrom = "(SELECT "
+				+ I_T_Query_Selection.COLUMNNAME_UUID + " as ZZ_UUID"
+				+ ", " + I_T_Query_Selection.COLUMNNAME_Record_ID + " as ZZ_Record_ID"
+				+ ", " + I_T_Query_Selection.COLUMNNAME_Line + " as ZZ_Line"
+				+ " FROM " + I_T_Query_Selection.Table_Name
+				+ ") s "
 				+ "\n LEFT OUTER JOIN " + tableName + " ON (" + keyColumnNameFQ + "=s.ZZ_Record_ID)";
 		final String selectionWhereClause = "s.ZZ_UUID=?";
 		final String selectionOrderBy = "s.ZZ_Line";
-		final TypedSqlQuery<ET> querySelection = new TypedSqlQuery<ET>(query.getCtx(), clazzToUse, tableName, selectionWhereClause, trxName)
+		final TypedSqlQuery<ET> querySelection = new TypedSqlQuery<>(query.getCtx(), clazzToUse, tableName, selectionWhereClause, trxName)
 				.setParameters(querySelectionUUID)
 				.setSqlFrom(selectionSqlFrom)
 				.setOrderBy(selectionOrderBy);
@@ -177,6 +195,12 @@ import de.metas.logging.LogManager;
 		// provide column ZZ_Line so the iterator can page without using OFFSET
 		this.bufferedIterator = new POBufferedIterator<>(querySelection, clazzToUse, "ZZ_Line");
 		this.peekingBufferedIterator = Iterators.peekingIterator(this.bufferedIterator);
+	}
+
+	@Override
+	protected void finalize() throws Throwable
+	{
+		QuerySelectionToDeleteHelper.scheduleDeleteSelection(querySelectionUUID, trxName);
 	}
 
 	/**
@@ -205,48 +229,100 @@ import de.metas.logging.LogManager;
 		return true;
 	}
 
+	private boolean isClosed()
+	{
+		return closed.get();
+	}
+
+	@Override
+	public void close()
+	{
+		if (closed.getAndSet(true))
+		{
+			// already closed
+			return;
+		}
+
+		QuerySelectionToDeleteHelper.scheduleDeleteSelectionNoFail(querySelectionUUID, trxName);
+	}
+
 	@Override
 	public boolean hasNext()
 	{
+		if (isClosed())
+		{
+			return false;
+		}
+
 		// NOTE: we do this checking only to have last page optimizations
 		// e.g. consider having 100 records, page size=10, so last page will be fully loaded.
 		// If we are not doing this checking, the buffered iterator will try to load the next page (which is empty),
 		// in order to find out that there is nothing to be loaded.
 		if (rowsFetched >= rowsCount)
 		{
+			close();
 			return false;
 		}
 
-		while (peekingBufferedIterator.hasNext())
+		try
 		{
-			// Check the rowsFetched again, because in this while we are also navigating forward and we skip invalid values
-			if (rowsFetched >= rowsCount)
+			while (peekingBufferedIterator.hasNext())
 			{
-				return false;
+				// Check the rowsFetched again, because in this while we are also navigating forward and we skip invalid values
+				if (rowsFetched >= rowsCount)
+				{
+					close();
+					return false;
+				}
+
+				final ET value = peekingBufferedIterator.peek();
+				if (isValidModel(value))
+				{
+					return true;
+				}
+				// not a valid model:
+				else
+				{
+					peekingBufferedIterator.next(); // skip this element because it's not valid
+					rowsFetched++; // increase the rowsFetched because we use it to compare with "rowsCount" in order to figure out when we reached the end of the selection.
+				}
 			}
 
-			final ET value = peekingBufferedIterator.peek();
-			if (isValidModel(value))
-			{
-				return true;
-			}
-			// not a valid model:
-			else
-			{
-				peekingBufferedIterator.next(); // skip this element because it's not valid
-				rowsFetched++; // increase the rowsFetched because we use it to compare with "rowsCount" in order to figure out when we reached the end of the selection.
-			}
+			close();
+			return false;
 		}
-
-		return false;
+		catch (final RuntimeException ex)
+		{
+			throw ex;
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
 	}
 
 	@Override
 	public ET next()
 	{
-		final ET value = peekingBufferedIterator.next();
-		rowsFetched++;
-		return value;
+		if (isClosed())
+		{
+			throw new AdempiereException("Iterator was already closed: " + this);
+		}
+
+		try
+		{
+			final ET value = peekingBufferedIterator.next();
+			rowsFetched++;
+			return value;
+		}
+		catch (final RuntimeException ex)
+		{
+			throw ex;
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
 	}
 
 	@Override
@@ -264,11 +340,6 @@ import de.metas.logging.LogManager;
 	public void setBufferSize(final int bufferSize)
 	{
 		bufferedIterator.setBufferSize(bufferSize);
-	}
-
-	public int getBufferSize()
-	{
-		return bufferedIterator.getBufferSize();
 	}
 
 	@Override

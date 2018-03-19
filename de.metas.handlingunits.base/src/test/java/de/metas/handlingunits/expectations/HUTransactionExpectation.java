@@ -32,7 +32,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Assert;
 
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 
@@ -69,13 +69,13 @@ public class HUTransactionExpectation<ParentExpectationType> extends AbstractHUE
 				+ "]";
 	}
 
-	public HUTransactionExpectation<ParentExpectationType> assertExpected(final IHUTransaction transaction)
+	public HUTransactionExpectation<ParentExpectationType> assertExpected(final IHUTransactionCandidate transaction)
 	{
 		final String message = "";
 		return assertExpected(message, transaction);
 	}
 
-	public HUTransactionExpectation<ParentExpectationType> assertExpected(final String message, final IHUTransaction transaction)
+	public HUTransactionExpectation<ParentExpectationType> assertExpected(final String message, final IHUTransactionCandidate transaction)
 	{
 		final String prefix = (message == null ? "" : message)
 				+ "\nHU Transaction: " + transaction

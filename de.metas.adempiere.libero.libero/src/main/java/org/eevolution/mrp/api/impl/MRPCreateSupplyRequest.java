@@ -1,28 +1,5 @@
 package org.eevolution.mrp.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -32,24 +9,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
-import org.eevolution.mrp.api.IMRPExecutor;
 
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 
 public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupplyRequest
 {
 	private final IMaterialPlanningContext mrpContext;
-	private final IMRPExecutor mrpExecutor;
-	private final BigDecimal qtyToSupply;
+	private final Quantity qtyToSupply;
 	private final Date demandDate;
 	/**
 	 * Single MRP Record that needs to be allocated.
-	 * 
+	 *
 	 * NOTE: in case there are more MRP demand records that needs to be allocated, this field will be null
 	 */
 	private final I_PP_MRP mrpDemandRecord;
@@ -57,26 +33,16 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 	private final int mrpDemandBPartnerId;
 	private final int mrpDemandOrderLineSOId;
 
-	public MRPCreateSupplyRequest(final IMaterialPlanningContext mrpContext,
-			final IMRPExecutor mrpExecutor,
-			final BigDecimal qtyToSupply,
-			final Date demandDate,
-			final List<IMRPRecordAndQty> mrpDemandsToAllocate)
+	public MRPCreateSupplyRequest(
+			@NonNull final IMaterialPlanningContext mrpContext,
+			@NonNull final Quantity qtyToSupply,
+			@NonNull final Date demandDate,
+			@NonNull final List<IMRPRecordAndQty> mrpDemandsToAllocate)
 	{
-		super();
-		Check.assumeNotNull(mrpContext, "mrpContext not null");
 		this.mrpContext = mrpContext;
-
-		Check.assumeNotNull(mrpExecutor, "mrpExecutor not null");
-		this.mrpExecutor = mrpExecutor;
-
-		Check.assumeNotNull(qtyToSupply, "qtyToSupply not null");
 		this.qtyToSupply = qtyToSupply;
-
-		Check.assumeNotNull(demandDate, "demandDate not null");
 		this.demandDate = demandDate;
 
-		Check.assumeNotNull(mrpDemandsToAllocate, "mrpDemandsToAllocate not null");
 		final Map<Integer, I_PP_MRP> id2mrpRecord = new HashMap<>();
 		final Set<Integer> bpartnerIds = new HashSet<>();
 		final Set<Integer> orderLineSOIds = new HashSet<>();
@@ -147,13 +113,7 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 	}
 
 	@Override
-	public IMRPExecutor getMRPExecutor()
-	{
-		return mrpExecutor;
-	}
-
-	@Override
-	public BigDecimal getQtyToSupply()
+	public Quantity getQtyToSupply()
 	{
 		return qtyToSupply;
 	}

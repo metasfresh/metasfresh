@@ -41,7 +41,7 @@ public class BankingBL implements IBankingBL
 
 		final long actualTime = System.currentTimeMillis();
 
-		final List<I_C_Invoice> result = new ArrayList<I_C_Invoice>();
+		final List<I_C_Invoice> result = new ArrayList<>();
 
 		for (final MRecurrentPaymentLine line : dueLines)
 		{
@@ -135,9 +135,7 @@ public class BankingBL implements IBankingBL
 		final String paymentRuleToUse = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
 		invoice.setPaymentRule(paymentRuleToUse);
 
-		// metas: using DocBaseType rather than sysconfig
-		invoice.setC_DocTypeTarget_ID(Constants.DOCBASETYPE_AVIinvoice);
-		// metas: end
+		Services.get(IInvoiceBL.class).setDocTypeTargetId(invoice, Constants.DOCBASETYPE_AVIinvoice);
 		invoice.saveEx();
 
 		final MInvoiceLine invoiceLine = new MInvoiceLine(invoice);

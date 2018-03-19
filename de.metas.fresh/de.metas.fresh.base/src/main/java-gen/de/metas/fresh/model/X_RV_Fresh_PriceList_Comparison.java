@@ -4,7 +4,6 @@ package de.metas.fresh.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for RV_Fresh_PriceList_Comparison
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_RV_Fresh_PriceList_Comparison extends org.compiere.model.PO imple
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2043015214L;
+	private static final long serialVersionUID = -768860845L;
 
     /** Standard Constructor */
     public X_RV_Fresh_PriceList_Comparison (Properties ctx, int RV_Fresh_PriceList_Comparison_ID, String trxName)

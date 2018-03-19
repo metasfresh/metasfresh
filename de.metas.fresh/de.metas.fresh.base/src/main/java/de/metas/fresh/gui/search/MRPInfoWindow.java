@@ -10,12 +10,12 @@ package de.metas.fresh.gui.search;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,7 +30,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Properties;
@@ -58,7 +57,6 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.eevolution.form.VMRPDetailed;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.i18n.IMsgBL;
@@ -71,11 +69,8 @@ public class MRPInfoWindow extends InfoSimple
 {
 	private static final long serialVersionUID = 6846972730305506649L;
 
-	//
 	// Services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-
-	private static final String SYSCONFIG_DAYS_RANGE = "de.metas.fresh.MRPProductInfo.dayRange";
 
 	// FRESH-531
 	// Possibility to switch the conference displaying on and off
@@ -83,7 +78,6 @@ public class MRPInfoWindow extends InfoSimple
 
 	private static final String MSG_ResetSortFilters = "de.metas.fresh.MRPProductInfo.ResetSortFilters";
 
-	private CButton mrpButton = null;
 	private CButton movementButton = null;
 	private CButton freshQtyOnHandButton = null;
 	private CCheckBox isConferenceSortPreferencesCheckBox = null;
@@ -93,7 +87,7 @@ public class MRPInfoWindow extends InfoSimple
 
 	/**
 	 * task 09961
-	 * 
+	 *
 	 * variable that keeps the selected product ID for further selections
 	 */
 	private Integer selectedProductID = 0;
@@ -112,11 +106,6 @@ public class MRPInfoWindow extends InfoSimple
 
 		//
 		// extend the confirm panel (in the lower part or the window)
-		mrpButton = ConfirmPanel.createNewButton("MRP");
-		confirmPanel.addButton(mrpButton);
-		mrpButton.setEnabled(true);
-		mrpButton.addActionListener(this);
-
 		movementButton = ConfirmPanel.createZoomButton(msgBL.getMsg(ctx, VTrxMaterial.MOVEMENT_TITLE));
 		confirmPanel.addButton(movementButton);
 		movementButton.setEnabled(true);
@@ -142,26 +131,21 @@ public class MRPInfoWindow extends InfoSimple
 			if (isDisplayConference)
 			{
 				isConferenceSortPreferencesCheckBox = new CCheckBox(msgBL.translate(ctx, I_AD_User_SortPref_Hdr.COLUMNNAME_IsConference));
-				isConferenceSortPreferencesCheckBox.addActionListener(new ActionListener()
-				{
-					@Override
-					public void actionPerformed(final ActionEvent e)
-					{
-						//
-						// Set conference mode on/off
-						final Boolean isConferenceSortPreferences = isConferenceSortPreferencesCheckBox.isSelected();
-						setConferenceSortPreferences(isConferenceSortPreferences);
+				isConferenceSortPreferencesCheckBox.addActionListener(e -> {
+					//
+					// Set conference mode on/off
+					final Boolean isConferenceSortPreferences = isConferenceSortPreferencesCheckBox.isSelected();
+					setConferenceSortPreferences(isConferenceSortPreferences);
 
-						//
-						// Set initial sorting preferences to conference/user
-						initSortingPreferences(ctx);
+					//
+					// Set initial sorting preferences to conference/user
+					initSortingPreferences(ctx);
 
-						//
-						// Clear and refresh sort options
-						p_table.setReloadOriginalSorting(true); // shall clear user sorting
-						p_table.clearSortCriteria(); // reset possible user sorting and sort by our preferences
-						repaint();
-					}
+					//
+					// Clear and refresh sort options
+					p_table.setReloadOriginalSorting(true); // shall clear user sorting
+					p_table.clearSortCriteria(); // reset possible user sorting and sort by our preferences
+					repaint();
 				});
 				parameterPanel.add(isConferenceSortPreferencesCheckBox);
 			}
@@ -170,19 +154,14 @@ public class MRPInfoWindow extends InfoSimple
 		// Sort Filters Button
 		{
 			resetSortFiltersButton = new CButton(msgBL.translate(ctx, MSG_ResetSortFilters));
-			resetSortFiltersButton.addActionListener(new ActionListener()
-			{
-				@Override
-				public void actionPerformed(final ActionEvent e)
+			resetSortFiltersButton.addActionListener(e -> {
+				if (!e.getSource().equals(resetSortFiltersButton))
 				{
-					if (!e.getSource().equals(resetSortFiltersButton))
-					{
-						return;
-					}
-					p_table.setReloadOriginalSorting(true); // clear user sorting
-					p_table.clearSortCriteria();
-					repaint();
+					return;
 				}
+				p_table.setReloadOriginalSorting(true); // clear user sorting
+				p_table.clearSortCriteria();
+				repaint();
 			});
 			parameterPanel.add(resetSortFiltersButton);
 		}
@@ -204,25 +183,8 @@ public class MRPInfoWindow extends InfoSimple
 		final int row = p_table.getSelectedRow();
 
 		//
-		// Info MRP
-		if (e.getSource().equals(mrpButton) && row != -1)
-		{
-			if (productId <= 0)
-			{
-				return;
-			}
-			final FormFrame ff = new FormFrame();
-			final int rangeDays = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DAYS_RANGE, -1, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
-
-			@SuppressWarnings("unused")
-			final VMRPDetailed vmrpPanel = new VMRPDetailed(windowNo, ff, productId, rangeDays);
-
-			AEnv.showCenterWindow(getWindow(), ff);
-			ff.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
-		}
-		//
 		// Warenbewegung Ubersicht
-		else if (e.getSource().equals(movementButton) && row != -1)
+		if (e.getSource().equals(movementButton) && row != -1)
 		{
 			if (productId <= 0)
 			{
@@ -288,7 +250,7 @@ public class MRPInfoWindow extends InfoSimple
 
 		try
 		{
-			Integer selectedRowKey = getSelectedRowKey();
+			final Integer selectedRowKey = getSelectedRowKey();
 
 			// task 09961
 			// update the selected product ID and keep it in memory so it can be reselected after refresh
@@ -358,7 +320,7 @@ public class MRPInfoWindow extends InfoSimple
 
 	/**
 	 * From {@link http://stackoverflow.com/questions/853020/jtable-scrolling-to-a-specified-row-index}
-	 * 
+	 *
 	 * @param table
 	 * @param rowIndex
 	 * @param vColIndex
@@ -369,14 +331,14 @@ public class MRPInfoWindow extends InfoSimple
 		{
 			return;
 		}
-		JViewport viewport = (JViewport)table.getParent();
+		final JViewport viewport = (JViewport)table.getParent();
 
 		// This rectangle is relative to the table where the
 		// northwest corner of cell (0,0) is always (0,0).
-		Rectangle rect = table.getCellRect(rowIndex, vColIndex, true);
+		final Rectangle rect = table.getCellRect(rowIndex, vColIndex, true);
 
 		// The location of the viewport relative to the table
-		Point pt = viewport.getViewPosition();
+		final Point pt = viewport.getViewPosition();
 
 		// Translate the cell location so that it is relative
 		// to the view, assuming the northwest corner of the

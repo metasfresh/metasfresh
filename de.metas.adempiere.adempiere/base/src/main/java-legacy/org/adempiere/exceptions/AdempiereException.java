@@ -28,7 +28,9 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.logging.LoggingHelper;
+import org.compiere.model.Null;
 import org.compiere.util.Env;
+import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
@@ -162,10 +164,26 @@ public class AdempiereException extends RuntimeException
 		}
 	}
 
+	/**
+	 * If enabled, the language used to translate the error message is captured when the exception is constructed.
+	 *
+	 * If is NOT enabled, the language used to translate the error message is acquired when the message is translated.
+	 */
+	public static final void enableCaptureLanguageOnConstructionTime()
+	{
+		AdempiereException.captureLanguageOnConstructionTime = true;
+	}
+
+	private static boolean captureLanguageOnConstructionTime = false;
+
 	private boolean parseTranslation = true;
+	/** Build message but not translated */
 	private String _messageBuilt = null;
+	private final String adLanguage;
+	private ValueNamePair _translatedLocalizedMessage = null;
 
 	private Integer adIssueId = null;
+	private boolean userNotified = false;
 
 	private Map<String, Object> parameters = null;
 	private boolean appendParametersToMessage = false;
@@ -184,12 +202,14 @@ public class AdempiereException extends RuntimeException
 	public AdempiereException(final String message)
 	{
 		super(message);
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 	}
 
-	public AdempiereException(final String language, final String adMessage, final Object[] params)
+	public AdempiereException(final String adLanguage, final String adMessage, final Object[] params)
 	{
-		super(Services.get(IMsgBL.class).getMsg(language, adMessage, params));
-		setParameter("AD_Language", language);
+		super(Services.get(IMsgBL.class).getMsg(adLanguage, adMessage, params));
+		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
+		setParameter("AD_Language", adLanguage);
 		setParameter("AD_Message", adMessage);
 	}
 
@@ -209,6 +229,7 @@ public class AdempiereException extends RuntimeException
 	public AdempiereException(final Throwable cause)
 	{
 		super(cause);
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 	}
 
 	/**
@@ -218,31 +239,53 @@ public class AdempiereException extends RuntimeException
 	public AdempiereException(final String message, final Throwable cause)
 	{
 		super(message, cause);
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+	}
+
+	private final String getOriginalLocalizedMessage()
+	{
+		return super.getLocalizedMessage();
 	}
 
 	@Override
 	public final String getLocalizedMessage()
 	{
-		String msg = super.getLocalizedMessage();
-
-		if (parseTranslation)
+		if (!parseTranslation)
 		{
-			if (Language.isBaseLanguageSet())
-			{
-				try
-				{
-					msg = Services.get(IMsgBL.class).parseTranslation(getCtx(), msg);
-				}
-				catch (Throwable e)
-				{
-					// don't fail while building the actual exception
-					addSuppressed(e);
-					// e.printStackTrace();
-				}
-			}
+			return getOriginalLocalizedMessage();
 		}
 
-		return msg;
+		if (!Language.isBaseLanguageSet())
+		{
+			return getOriginalLocalizedMessage();
+		}
+
+		try
+		{
+			final String adLanguage = getADLanguage();
+			return translateOriginalLocalizedMessage(adLanguage);
+		}
+		catch (final Throwable ex)
+		{
+			// don't fail while building the actual exception
+			ex.printStackTrace();
+			return getOriginalLocalizedMessage();
+		}
+	}
+
+	// NOTE: i think we don't have to synchronize this method because usually is called by same thread
+	// NOTE: it's OK to cache by last used language because in 99% of the cases only one language is used.
+	private String translateOriginalLocalizedMessage(final String adLanguage)
+	{
+		ValueNamePair translatedLocalizedMessage = this._translatedLocalizedMessage;
+		if (translatedLocalizedMessage == null || !translatedLocalizedMessage.getValue().equals(adLanguage))
+		{
+			final String msg = getOriginalLocalizedMessage();
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			final String msgTrl = msgBL.parseTranslation(adLanguage, msg);
+			this._translatedLocalizedMessage = translatedLocalizedMessage = ValueNamePair.of(adLanguage, msgTrl);
+		}
+		return translatedLocalizedMessage.getName();
 	}
 
 	@Override
@@ -296,11 +339,12 @@ public class AdempiereException extends RuntimeException
 	protected final void resetMessageBuilt()
 	{
 		this._messageBuilt = null;
+		this._translatedLocalizedMessage = null;
 	}
 
-	protected Properties getCtx()
+	protected final String getADLanguage()
 	{
-		return Env.getCtx();
+		return adLanguage != null ? adLanguage : Env.getAD_Language();
 	}
 
 	/**
@@ -438,32 +482,32 @@ public class AdempiereException extends RuntimeException
 		return adIssueId != null;
 	}
 
+	public final boolean isUserNotified()
+	{
+		return userNotified;
+	}
+
+	public final AdempiereException markUserNotified()
+	{
+		userNotified = true;
+		return this;
+	}
+
 	/**
 	 * Sets parameter.
-	 * 
+	 *
 	 * @param name parameter name
-	 * @param value parameter value or <code>null</code> if you want the parameter to be removed.
+	 * @param value parameter value; {@code null} is added as {@link Null}
 	 */
 	@OverridingMethodsMustInvokeSuper
 	public AdempiereException setParameter(@NonNull final String name, @Nullable final Object value)
 	{
-		// avoid setting null values because it will fail on getParameters() which is returning an ImmutableMap
-		if (value == null)
-		{
-			// remove the parameter if any
-			if (parameters != null)
-			{
-				parameters.remove(name);
-			}
-			return this;
-		}
-
 		if (parameters == null)
 		{
 			parameters = new LinkedHashMap<>();
 		}
 
-		parameters.put(name, value);
+		parameters.put(name, Null.box(value));
 		resetMessageBuilt();
 
 		return this;
@@ -501,12 +545,12 @@ public class AdempiereException extends RuntimeException
 	 * Utility method that can be used by both external callers and subclasses'
 	 * {@link AdempiereException#buildMessage()} or
 	 * {@link #getMessage()} methods to create a string from this instance's parameters.
-	 * 
+	 *
 	 * Note: as of now, this method is final by intention; if you need the returned string to be customized, I suggest to not override this method somewhere,
 	 * but instead add another method that can take a format string as parameter.
-	 * 
+	 *
 	 * @return an empty sting if this instance has no parameters or otherwise something like
-	 * 
+	 *
 	 *         <pre>
 	 * Additional parameters:
 	 * name1: value1
@@ -533,7 +577,7 @@ public class AdempiereException extends RuntimeException
 
 	/**
 	 * Utility method to convert parameters to string and append them to given <code>message</code>
-	 * 
+	 *
 	 * @see #buildParametersString()
 	 */
 	protected final void appendParameters(final StringBuilder message)

@@ -326,7 +326,7 @@ public class HUPickingSlotBL
 		if (pickingSlotHU == null)
 		{
 			pickingSlotHU = InterfaceWrapperHelper.newInstance(I_M_PickingSlot_HU.class, huContext);
-			pickingSlotHU.setM_PickingSlot(pickingSlot);
+			pickingSlotHU.setM_PickingSlot_ID(pickingSlot.getM_PickingSlot_ID());
 			pickingSlotHU.setM_HU(hu);
 		}
 
@@ -596,11 +596,11 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsQuery request)
+	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsQuery query)
 	{
 		final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction = vhus -> RetrieveAvailableHUsToPickFilters.retrieveFullTreeAndExcludePickingHUs(vhus);
 
-		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(request, vhuToEndResultFunction);
+		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(query, vhuToEndResultFunction);
 	}
 
 	@Override

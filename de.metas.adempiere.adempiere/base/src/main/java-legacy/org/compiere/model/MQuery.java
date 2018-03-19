@@ -21,12 +21,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -408,6 +411,7 @@ public final class MQuery implements Serializable
 	private List<Restriction> m_list = new ArrayList<>();
 	/** Record Count */
 	private int m_recordCount = 999999;
+	private Duration m_recordCountDuration = null;
 	/** New Record Query */
 	private boolean m_newRecord = false;
 	/** New Record String */
@@ -428,16 +432,29 @@ public final class MQuery implements Serializable
 	{
 		return m_recordCount;
 	}	// getRecordCount
+	
+	@Nullable
+	public Duration getRecordCountDuration()
+	{
+		return m_recordCountDuration;
+	}
 
 	/**
 	 * Set Record Count
 	 *
 	 * @param count count
 	 */
-	public void setRecordCount(int count)
+	public void setRecordCount(final int count)
+	{
+		Duration duration = null; // N/A
+		setRecordCount(count, duration);
+	}
+	
+	public void setRecordCount(final int count, @Nullable final Duration countDuration)
 	{
 		m_recordCount = count;
-	}	// setRecordCount
+		m_recordCountDuration = countDuration;
+	}
 
 	// Sys confing for getting the right trunc value for Timestamp entries
 

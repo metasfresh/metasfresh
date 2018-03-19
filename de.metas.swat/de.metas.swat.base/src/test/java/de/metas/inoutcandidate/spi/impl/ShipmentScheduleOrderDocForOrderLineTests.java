@@ -79,7 +79,7 @@ public class ShipmentScheduleOrderDocForOrderLineTests
 		sched.setAD_Table_ID(ref.getAD_Table_ID());
 		sched.setRecord_ID(ref.getRecord_ID());
 
-		final ShipmentScheduleReferencedLine result = new ShipmentScheduleOrderDocForOrderLine().provideFor(sched);
+		final ShipmentScheduleReferencedLine result = new ShipmentScheduleOrderReferenceProvider().provideFor(sched);
 		assertThat(result.getDeliveryDate()).isEqualTo(deliveryDate);
 		assertThat(result.getPreparationDate()).isNull();
 	}

@@ -103,10 +103,8 @@ public interface I_MD_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setC_Order_ID (int C_Order_ID);
 
 	/**
@@ -115,16 +113,12 @@ public interface I_MD_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public int getC_Order_ID();
 
-	@Deprecated
 	public org.compiere.model.I_C_Order getC_Order();
 
-	@Deprecated
 	public void setC_Order(org.compiere.model.I_C_Order C_Order);
 
     /** Column definition for C_Order_ID */
@@ -214,7 +208,7 @@ public interface I_MD_Candidate
 	 * Set Merkmale.
 	 * Merkmals Ausprägungen zum Produkt
 	 *
-	 * <br>Type: Search
+	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -224,7 +218,7 @@ public interface I_MD_Candidate
 	 * Get Merkmale.
 	 * Merkmals Ausprägungen zum Produkt
 	 *
-	 * <br>Type: Search
+	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -238,6 +232,29 @@ public interface I_MD_Candidate
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_AttributeSetInstance>(I_MD_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
     /** Column name M_AttributeSetInstance_ID */
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Geschäftsvorfall.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMD_Candidate_BusinessCase (java.lang.String MD_Candidate_BusinessCase);
+
+	/**
+	 * Get Geschäftsvorfall.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMD_Candidate_BusinessCase();
+
+    /** Column definition for MD_Candidate_BusinessCase */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_BusinessCase = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_BusinessCase", null);
+    /** Column name MD_Candidate_BusinessCase */
+    public static final String COLUMNNAME_MD_Candidate_BusinessCase = "MD_Candidate_BusinessCase";
 
 	/**
 	 * Set Gruppen-ID.
@@ -336,29 +353,6 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_MD_Candidate_Status = "MD_Candidate_Status";
 
 	/**
-	 * Set Untertyp.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMD_Candidate_SubType (java.lang.String MD_Candidate_SubType);
-
-	/**
-	 * Get Untertyp.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMD_Candidate_SubType();
-
-    /** Column definition for MD_Candidate_SubType */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_SubType = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_SubType", null);
-    /** Column name MD_Candidate_SubType */
-    public static final String COLUMNNAME_MD_Candidate_SubType = "MD_Candidate_SubType";
-
-	/**
 	 * Set Typ.
 	 *
 	 * <br>Type: List
@@ -387,10 +381,8 @@ public interface I_MD_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setM_Forecast_ID (int M_Forecast_ID);
 
 	/**
@@ -399,16 +391,12 @@ public interface I_MD_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public int getM_Forecast_ID();
 
-	@Deprecated
 	public org.compiere.model.I_M_Forecast getM_Forecast();
 
-	@Deprecated
 	public void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast);
 
     /** Column definition for M_Forecast_ID */
@@ -450,10 +438,8 @@ public interface I_MD_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false (lazy loading)
 	 */
-	@Deprecated
 	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
 
 	/**
@@ -461,10 +447,8 @@ public interface I_MD_Candidate
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false (lazy loading)
 	 */
-	@Deprecated
 	public int getM_ShipmentSchedule_ID();
 
     /** Column definition for M_ShipmentSchedule_ID */
@@ -525,6 +509,60 @@ public interface I_MD_Candidate
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty", null);
     /** Column name Qty */
     public static final String COLUMNNAME_Qty = "Qty";
+
+	/**
+	 * Set Zusagbar (ATP).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setQty_AvailableToPromise (java.math.BigDecimal Qty_AvailableToPromise);
+
+	/**
+	 * Get Zusagbar (ATP).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.math.BigDecimal getQty_AvailableToPromise();
+
+    /** Column definition for Qty_AvailableToPromise */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_AvailableToPromise = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_AvailableToPromise", null);
+    /** Column name Qty_AvailableToPromise */
+    public static final String COLUMNNAME_Qty_AvailableToPromise = "Qty_AvailableToPromise";
+
+	/**
+	 * Set Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setQty_Display (java.math.BigDecimal Qty_Display);
+
+	/**
+	 * Get Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.math.BigDecimal getQty_Display();
+
+    /** Column definition for Qty_Display */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Display = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_Display", null);
+    /** Column name Qty_Display */
+    public static final String COLUMNNAME_Qty_Display = "Qty_Display";
 
 	/**
 	 * Set Reihenfolge.

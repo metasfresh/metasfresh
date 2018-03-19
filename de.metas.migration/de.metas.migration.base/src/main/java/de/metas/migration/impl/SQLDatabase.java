@@ -174,7 +174,7 @@ public class SQLDatabase implements IDatabase
 		}
 		catch (final SQLException e)
 		{
-			throw new RuntimeException("Cannot JDBC connection. Please check your config for : " + this, e);
+			throw new RuntimeException("Failed to get a JDBC connection. Please check your config for : " + this, e);
 		}
 
 		return conn;

@@ -1,20 +1,21 @@
 package de.metas.material.event.transactions;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.Singular;
 
 /*
  * #%L
- * metasfresh-manufacturing-event-api
+ * metasfresh-material-event
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -34,39 +35,48 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class TransactionCreatedEvent implements MaterialEvent
+public class TransactionCreatedEvent extends AbstractTransactionEvent
 {
 	public static final String TYPE = "TransactionCreatedEvent";
-
-	@NonNull
-	EventDescriptor eventDescriptor;
-
-	@NonNull
-	MaterialDescriptor materialDescriptor;
-
-	// ids used to match the transaction to the respective shipment, ddOrder or ppOrder event (demand if qty is negative), supply if qty is positive
-	// if *none of those are set* then the transaction will be recorded as "unplanned"
-	int shipmentScheduleId;
-
-	int transactionId;
 
 	@JsonCreator
 	@Builder
 	public TransactionCreatedEvent(
-			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
-			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("transactionId") final int transactionId)
+			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
+			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
+			@JsonProperty("shipmentScheduleIds2Qtys") @Singular final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
+			@JsonProperty("ppOrderId") final int ppOrderId,
+			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
+			@JsonProperty("ddOrderId") final int ddOrderId,
+			@JsonProperty("ddOrderLineId") final int ddOrderLineId,
+			@JsonProperty("transactionId") final int transactionId,
+			@JsonProperty("directMovementWarehouse") final boolean directMovementWarehouse,
+			@JsonProperty("huOnHandQtyChangeDescriptor") @Singular final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors)
 	{
-		this.transactionId = checkIdGreaterThanZero("transactionId",transactionId);
+		super(eventDescriptor,
+				materialDescriptor,
+				shipmentScheduleIds2Qtys,
+				ppOrderId,
+				ppOrderLineId,
+				ddOrderId,
+				ddOrderLineId,
+				transactionId,
+				directMovementWarehouse,
+				huOnHandQtyChangeDescriptors);
+	}
 
-		this.eventDescriptor = eventDescriptor;
+	/**
+	 * @return our material descriptor's quantity, i.e. the {@code MovementQty} if the underlying {@code M_Transaction}.
+	 */
+	@Override
+	public BigDecimal getQuantity()
+	{
+		return getMaterialDescriptor().getQuantity();
+	}
 
-		materialDescriptor.asssertMaterialDescriptorComplete();
-		this.materialDescriptor = materialDescriptor;
-
-		this.shipmentScheduleId = shipmentScheduleId;
+	@Override
+	public BigDecimal getQuantityDelta()
+	{
+		return getQuantity();
 	}
 }

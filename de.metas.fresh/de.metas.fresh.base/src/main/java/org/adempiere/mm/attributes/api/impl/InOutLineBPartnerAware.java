@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,11 +27,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IBPartnerAware;
 import org.adempiere.mm.attributes.api.IBPartnerAwareFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.fresh.model.I_C_BPartner;
+import lombok.NonNull;
 
 public class InOutLineBPartnerAware implements IBPartnerAware
 {
@@ -45,13 +45,11 @@ public class InOutLineBPartnerAware implements IBPartnerAware
 			return partnerAware;
 		}
 	};
-	
+
 	private final I_M_InOutLine inoutLine;
 
-	private InOutLineBPartnerAware(final I_M_InOutLine inoutLine)
+	private InOutLineBPartnerAware(@NonNull final I_M_InOutLine inoutLine)
 	{
-		super();
-		Check.assumeNotNull(inoutLine, "inoutLine not null");
 		this.inoutLine = inoutLine;
 	}
 

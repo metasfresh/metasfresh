@@ -36,7 +36,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
@@ -61,6 +60,7 @@ import de.metas.handlingunits.client.terminal.select.model.IHUEditorCallback;
 import de.metas.handlingunits.client.terminal.select.model.WarehouseKey;
 import de.metas.handlingunits.document.impl.NullHUDocumentLineFinder;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 
 public class DDOrderHUSelectModel extends AbstractHUSelectModel
 {

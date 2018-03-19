@@ -36,32 +36,21 @@ import lombok.Value;
 
 public interface IDocTypeDAO extends ISingletonService
 {
-	String DOCSUBTYPE_Any = "DOCSUBTYPE_Any";
-
-	String DOCSUBTYPE_NONE = null;
-
+	I_C_DocType getById(int docTypeId);
+	
 	/**
-	 *
-	 * @param ctx
-	 * @param docBaseType
-	 * @param adClientId
-	 * @param adOrgId
-	 * @param trxName
 	 * @return C_DocType_ID or -1 if not found
 	 */
-	int getDocTypeIdOrNull(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
+	int getDocTypeIdOrNull(final DocTypeQuery query);
 
 	/**
-	 *
-	 * @param ctx
-	 * @param docBaseType
-	 * @param adClientId
-	 * @param adOrgId
-	 * @param trxName
 	 * @return C_DocType_ID
 	 * @throws DocTypeNotFoundException if no document type was found
 	 */
+	@Deprecated
 	int getDocTypeId(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
+
+	int getDocTypeId(DocTypeQuery query) throws DocTypeNotFoundException;
 
 	/**
 	 *
@@ -74,25 +63,21 @@ public interface IDocTypeDAO extends ISingletonService
 	 * @return C_DocType_ID
 	 * @throws DocTypeNotFoundException if no document type was found
 	 */
+	@Deprecated
 	int getDocTypeId(Properties ctx, String docBaseType, String docSubType, int adClientId, int adOrgId, String trxName);
 
-	I_C_DocType getDocTypeOrNull(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
-
+	@Deprecated
 	I_C_DocType getDocType(String docBaseType, String docSubType, int adClientId, int adOrgId);
 
-	I_C_DocType getDocTypeOrNull(Properties ctx, String docBaseType, String docSubType, int adClientId, int adOrgId, String trxName);
+	I_C_DocType getDocTypeOrNull(DocTypeQuery query);
 
 	/**
 	 * Retrieve all the doc types of a certain base type as a list
 	 *
-	 * @param ctx
-	 * @param docBaseType
-	 * @param adClientId only DocTypes with the given <code>AD_Client_ID</code> will be returned
-	 * @param adOrgId only DocTypes with the given <code>AD_Org_ID</code> or <code>AD_Org_ID==0</code> will be returned
-	 * @param trxName
+	 * @param query
 	 * @return a list of docTypes never <code>null</code>. Those with <code>IsDefault</code> and with <code>AD_Org_ID > 0</code> will be first in the list.
 	 */
-	List<I_C_DocType> retrieveDocTypesByBaseType(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
+	List<I_C_DocType> retrieveDocTypesByBaseType(DocTypeQuery query);
 
 	/**
 	 * Retrieve the Counter_DocBaseType that fits the given DocBaseType.
@@ -102,20 +87,6 @@ public interface IDocTypeDAO extends ISingletonService
 	 * @return
 	 */
 	String retrieveDocBaseTypeCounter(Properties ctx, String docBaseType);
-
-	/**
-	 * Retrieve the doctype based on the given basetype, subtype and IsSOTrx
-	 * 
-	 * @param ctx
-	 * @param docBaseType
-	 * @param docSubType
-	 * @param isSOTrx
-	 * @param adClientId
-	 * @param adOrgId
-	 * @param trxName
-	 * @return
-	 */
-	I_C_DocType getDocTypeOrNullForSOTrx(Properties ctx, String docBaseType, String docSubType, boolean isSOTrx, int adClientId, int adOrgId, String trxName);
 
 	I_C_DocType createDocType(DocTypeCreateRequest request);
 
@@ -138,10 +109,10 @@ public interface IDocTypeDAO extends ISingletonService
 		final int docTypeShipmentId;
 		final int docTypeInvoiceId;
 		final int glCategoryId;
-		
+
 		final int docNoSequenceId;
 		final int newDocNoSequenceStartNo;
-		
+
 		final int documentCopies;
 	}
 }

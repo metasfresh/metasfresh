@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.SQLException;
 
 import org.adempiere.ad.trx.api.ITrxListenerManager;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -23,12 +24,12 @@ import org.junit.Test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,7 +38,7 @@ import org.junit.Test;
 
 public class TrxListenerManagerTest
 {
-	
+
 	@Before
 	public void init()
 	{
@@ -48,14 +49,20 @@ public class TrxListenerManagerTest
 	public void testOnAfterCommit() throws SQLException
 	{
 		Services.get(ISysConfigBL.class).setValue(TrxConstraintsBL.SYSCONFIG_TRX_CONSTRAINTS_DISABLED, true, 0);
-				
+
 		final TrxManager trxManager = new TrxManager();
 		final Trx trx = new Trx(trxManager, "trxName", true);
 		final ITrxListenerManager trxListenerManager = trx.getTrxListenerManager();
 		assertThat(trxListenerManager).isInstanceOf(TrxListenerManager.class); // make sure that we test the right class
 
 		final TrxRrunnable runnable = new TrxRrunnable();
-		trxListenerManager.onAfterCommit(runnable);
+
+		trxListenerManager
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerWeakly(false) // register "hard", because that's how it was before
+				.invokeMethodJustOnce(false)
+				.registerHandlingMethod(innerTrx -> runnable.run());
+
 		trx.commit(false);
 		assertThat(runnable.timesInvoked).isEqualTo(1);
 		trx.commit(false);
@@ -66,20 +73,26 @@ public class TrxListenerManagerTest
 	public void testOnAfterNextCommit() throws SQLException
 	{
 		Services.get(ISysConfigBL.class).setValue(TrxConstraintsBL.SYSCONFIG_TRX_CONSTRAINTS_DISABLED, true, 0);
-				
+
 		final TrxManager trxManager = new TrxManager();
 		final Trx trx = new Trx(trxManager, "trxName", true);
 		final ITrxListenerManager trxListenerManager = trx.getTrxListenerManager();
 		assertThat(trxListenerManager).isInstanceOf(TrxListenerManager.class); // make sure that we test the right class
 
 		final TrxRrunnable runnable = new TrxRrunnable();
-		trxListenerManager.onAfterNextCommit(runnable);
+
+		trxListenerManager
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerWeakly(false) // register "hard", because that's how it was before
+				.invokeMethodJustOnce(true)
+				.registerHandlingMethod(innerTrx -> runnable.run());
+
 		trx.commit(false);
 		assertThat(runnable.timesInvoked).isEqualTo(1);
 		trx.commit(false);
 		assertThat(runnable.timesInvoked).isEqualTo(1); // no additional invocation of the listener
 	}
-	
+
 	final static class TrxRrunnable implements Runnable
 	{
 		private int timesInvoked = 0;

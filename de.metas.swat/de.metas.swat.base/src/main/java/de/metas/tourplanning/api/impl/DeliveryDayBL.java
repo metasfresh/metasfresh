@@ -10,12 +10,12 @@ package de.metas.tourplanning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,6 +50,7 @@ import de.metas.tourplanning.model.validator.DeliveryDayAllocableInterceptor;
 import de.metas.tourplanning.spi.CompositeDeliveryDayHandler;
 import de.metas.tourplanning.spi.IDeliveryDayCreateHandler;
 import de.metas.tourplanning.spi.IDeliveryDayHandler;
+import lombok.NonNull;
 
 public class DeliveryDayBL implements IDeliveryDayBL
 {
@@ -62,9 +63,8 @@ public class DeliveryDayBL implements IDeliveryDayBL
 	}
 
 	@Override
-	public void registerDeliveryDayHandler(final IDeliveryDayHandler handler)
+	public void registerDeliveryDayHandler(@NonNull final IDeliveryDayHandler handler)
 	{
-		Check.assumeNotNull(handler, "handler not null");
 		deliveryDayHandlers.addDeliveryDayHandler(handler);
 
 		if (handler instanceof IDeliveryDayCreateHandler)
@@ -219,7 +219,7 @@ public class DeliveryDayBL implements IDeliveryDayBL
 
 	/**
 	 * Sets DeliveryDateTimeMax = DeliveryDate + BufferHours.
-	 * 
+	 *
 	 * @param deliveryDay
 	 */
 	@Override

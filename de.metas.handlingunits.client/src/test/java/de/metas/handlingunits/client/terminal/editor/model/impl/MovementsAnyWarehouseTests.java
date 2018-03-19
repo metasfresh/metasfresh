@@ -8,12 +8,14 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 
 /*
@@ -40,6 +42,9 @@ import de.metas.handlingunits.model.I_M_HU;
 
 public class MovementsAnyWarehouseTests
 {
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	
+	
 	@Rule
 	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
 
@@ -68,19 +73,19 @@ public class MovementsAnyWarehouseTests
 		List<I_M_HU> hus = new ArrayList<>();
 		hus.add(hu1);
 
-		final List<I_M_Warehouse> warehousesUnlessOfHUs1 = MovementsAnyWarehouseModel.retrieveWarehousesWhichContainNoneOf(hus);
+		final List<I_M_Warehouse> warehousesUnlessOfHUs1 = handlingUnitsDAO.retrieveWarehousesWhichContainNoneOf(hus);
 
 		assertThat(warehousesUnlessOfHUs1).containsOnly(warehouse2, warehouse3);
 
 		hus.add(hu2);
 
-		final List<I_M_Warehouse> warehousesUnlessOfHUs2 = MovementsAnyWarehouseModel.retrieveWarehousesWhichContainNoneOf(hus);
+		final List<I_M_Warehouse> warehousesUnlessOfHUs2 = handlingUnitsDAO.retrieveWarehousesWhichContainNoneOf(hus);
 
 		assertThat(warehousesUnlessOfHUs2).containsOnly(warehouse3);
 
 		hus.add(hu3);
 
-		final List<I_M_Warehouse> warehousesUnlessOfHUs3 = MovementsAnyWarehouseModel.retrieveWarehousesWhichContainNoneOf(hus);
+		final List<I_M_Warehouse> warehousesUnlessOfHUs3 = handlingUnitsDAO.retrieveWarehousesWhichContainNoneOf(hus);
 
 		assertThat(warehousesUnlessOfHUs3).isEmpty();
 

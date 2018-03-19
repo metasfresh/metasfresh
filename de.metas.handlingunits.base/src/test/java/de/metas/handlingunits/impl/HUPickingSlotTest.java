@@ -100,7 +100,7 @@ public class HUPickingSlotTest
 		// Setup a PickingSlot-HU assignment
 		final I_M_PickingSlot_HU pickingSlotHu1 = InterfaceWrapperHelper.create(ctx, I_M_PickingSlot_HU.class, trxName);
 		pickingSlotHu1.setM_HU(hu1);
-		pickingSlotHu1.setM_PickingSlot(pickingSlot);
+		pickingSlotHu1.setM_PickingSlot_ID(pickingSlot.getM_PickingSlot_ID());
 		InterfaceWrapperHelper.save(pickingSlotHu1);
 
 		//
@@ -110,7 +110,7 @@ public class HUPickingSlotTest
 
 		final I_M_PickingSlot_HU pickingSlotHu2 = InterfaceWrapperHelper.create(ctx, I_M_PickingSlot_HU.class, trxName);
 		pickingSlotHu2.setM_HU(hu2);
-		pickingSlotHu2.setM_PickingSlot(pickingSlot);
+		pickingSlotHu2.setM_PickingSlot_ID(pickingSlot.getM_PickingSlot_ID());
 		InterfaceWrapperHelper.save(pickingSlotHu2);
 
 		//

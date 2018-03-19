@@ -220,12 +220,8 @@ public interface I_M_Package_HU
 	 */
 	public int getM_PickingSlot_ID();
 
-	public de.metas.picking.model.I_M_PickingSlot getM_PickingSlot();
-
-	public void setM_PickingSlot(de.metas.picking.model.I_M_PickingSlot M_PickingSlot);
-
     /** Column definition for M_PickingSlot_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Package_HU, de.metas.picking.model.I_M_PickingSlot> COLUMN_M_PickingSlot_ID = new org.adempiere.model.ModelColumn<I_M_Package_HU, de.metas.picking.model.I_M_PickingSlot>(I_M_Package_HU.class, "M_PickingSlot_ID", de.metas.picking.model.I_M_PickingSlot.class);
+    public static final org.adempiere.model.ModelColumn<I_M_Package_HU, Object> COLUMN_M_PickingSlot_ID = new org.adempiere.model.ModelColumn<I_M_Package_HU, Object>(I_M_Package_HU.class, "M_PickingSlot_ID", null);
     /** Column name M_PickingSlot_ID */
     public static final String COLUMNNAME_M_PickingSlot_ID = "M_PickingSlot_ID";
 

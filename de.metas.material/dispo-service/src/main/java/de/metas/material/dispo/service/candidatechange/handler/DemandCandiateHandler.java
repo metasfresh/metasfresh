@@ -11,14 +11,14 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.StockMultiQuery;
-import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 
@@ -49,9 +49,9 @@ public class DemandCandiateHandler implements CandidateHandler
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
 
-	private final StockRepository stockRepository;
+	private final AvailableToPromiseRepository availableToPromiseRepository;
 
-	private final MaterialEventService materialEventService;
+	private final PostMaterialEventService materialEventService;
 
 	private final StockCandidateService stockCandidateService;
 
@@ -60,14 +60,14 @@ public class DemandCandiateHandler implements CandidateHandler
 	public DemandCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull final MaterialEventService materialEventService,
-			@NonNull final StockRepository stockRepository,
+			@NonNull final PostMaterialEventService materialEventService,
+			@NonNull final AvailableToPromiseRepository availableToPromiseRepository,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepository;
 		this.candidateRepositoryWriteService = candidateRepositoryCommands;
 		this.materialEventService = materialEventService;
-		this.stockRepository = stockRepository;
+		this.availableToPromiseRepository = availableToPromiseRepository;
 		this.stockCandidateService = stockCandidateService;
 	}
 
@@ -85,22 +85,22 @@ public class DemandCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(demandCandidate);
 
-		final Candidate demandCandidateWithId = candidateRepositoryWriteService
+		final Candidate demandCandidateDeltaWithId = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
 
-		if (demandCandidateWithId.getQuantity().signum() == 0)
+		if (demandCandidateDeltaWithId.getQuantity().signum() == 0)
 		{
 			// this candidate didn't change anything
-			return demandCandidateWithId;
+			return demandCandidateDeltaWithId;
 		}
 
 		// this is the seqno which the new stock candidate shall get according to the demand candidate
-		final int expectedStockSeqNo = demandCandidateWithId.getSeqNo() + 1;
+		final int expectedStockSeqNo = demandCandidateDeltaWithId.getSeqNo() + 1;
 
 		final Candidate childStockWithDemand;
 		final Candidate childStockWithDemandDelta;
 
-		final Optional<Candidate> possibleChildStockCandidate = candidateRepository.retrieveSingleChild(demandCandidateWithId.getId());
+		final Optional<Candidate> possibleChildStockCandidate = candidateRepository.retrieveSingleChild(demandCandidateDeltaWithId.getId());
 		if (possibleChildStockCandidate.isPresent())
 		{
 			childStockWithDemand = possibleChildStockCandidate.get().withQuantity(demandCandidate.getQuantity().negate());
@@ -109,11 +109,12 @@ public class DemandCandiateHandler implements CandidateHandler
 		else
 		{
 			// check if there is a supply record with the same demand detail and material descriptor
-			final Candidate existingSupplyParentStockWithoutParentId = retrieveSupplyParentStockWithoutParentIdOrNull(demandCandidateWithId);
+			final Candidate existingSupplyParentStockWithoutParentId = retrieveSupplyParentStockWithoutParentIdOrNull(demandCandidateDeltaWithId);
 			if (existingSupplyParentStockWithoutParentId != null)
 			{
+				//
 				final Candidate existingSupplyParentStockWithUpdatedQty = existingSupplyParentStockWithoutParentId
-						.withQuantity(existingSupplyParentStockWithoutParentId.getQuantity().subtract(demandCandidateWithId.getQuantity()))
+						.withQuantity(existingSupplyParentStockWithoutParentId.getQuantity().subtract(demandCandidateDeltaWithId.getQuantity()))
 						.withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID);
 
 				childStockWithDemandDelta = stockCandidateService.updateQty(existingSupplyParentStockWithUpdatedQty);
@@ -121,21 +122,18 @@ public class DemandCandiateHandler implements CandidateHandler
 			}
 			else
 			{
-				final Candidate newDemandCandidateChild = stockCandidateService.createStockCandidate(demandCandidateWithId.withNegatedQuantity());
+				final Candidate newDemandCandidateChild = stockCandidateService.createStockCandidate(demandCandidateDeltaWithId.withNegatedQuantity());
 				childStockWithDemandDelta = candidateRepositoryWriteService
 						.addOrUpdatePreserveExistingSeqNo(newDemandCandidateChild);
 				childStockWithDemand = childStockWithDemandDelta.withQuantity(newDemandCandidateChild.getQuantity());
 			}
 		}
 
-		candidateRepositoryWriteService.updateCandidate(childStockWithDemand
-				.withParentId(demandCandidateWithId.getId()));
+		candidateRepositoryWriteService
+				.updateCandidateById(childStockWithDemand.withParentId(demandCandidateDeltaWithId.getId()));
 
-		final BigDecimal delta = childStockWithDemandDelta.getQuantity();
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
-				childStockWithDemandDelta.getMaterialDescriptor(),
-				childStockWithDemandDelta.getGroupId(),
-				delta);
+		stockCandidateService
+				.applyDeltaToMatchingLaterStockCandidates(childStockWithDemandDelta);
 
 		final Candidate demandCandidateToReturn;
 
@@ -149,12 +147,12 @@ public class DemandCandiateHandler implements CandidateHandler
 		}
 		else
 		{
-			demandCandidateToReturn = demandCandidateWithId;
+			demandCandidateToReturn = demandCandidateDeltaWithId;
 		}
 
-		if (demandCandidateWithId.getType() == CandidateType.DEMAND)
+		if (demandCandidateDeltaWithId.getType() == CandidateType.DEMAND)
 		{
-			fireSupplyRequiredEventIfQtyBelowZero(demandCandidateWithId);
+			fireSupplyRequiredEventIfQtyBelowZero(demandCandidateDeltaWithId);
 		}
 		return demandCandidateToReturn;
 	}
@@ -198,11 +196,12 @@ public class DemandCandiateHandler implements CandidateHandler
 		return existingSupplyParentStockWithoutOwnParentId;
 	}
 
-
 	private void fireSupplyRequiredEventIfQtyBelowZero(@NonNull final Candidate demandCandidateWithId)
 	{
-		final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
-		final BigDecimal availableQuantityAfterDemandWasApplied = stockRepository.retrieveAvailableStockQtySum(query);
+		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
+
+		final BigDecimal availableQuantityAfterDemandWasApplied = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
 		if (availableQuantityAfterDemandWasApplied.signum() < 0)
 		{
@@ -210,7 +209,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty);
-			materialEventService.fireEvent(supplyRequiredEvent);
+			materialEventService.postEventAfterNextCommit(supplyRequiredEvent);
 		}
 	}
 }

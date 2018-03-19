@@ -1,37 +1,21 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_CostQueue
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_M_CostQueue extends org.compiere.model.PO implements I_M_CostQueue, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 2061515595L;
 
     /** Standard Constructor */
     public X_M_CostQueue (Properties ctx, int M_CostQueue_ID, String trxName)
@@ -40,8 +24,8 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
       /** if (M_CostQueue_ID == 0)
         {
 			setC_AcctSchema_ID (0);
-			setCurrentCostPrice (Env.ZERO);
-			setCurrentQty (Env.ZERO);
+			setCurrentCostPrice (BigDecimal.ZERO);
+			setCurrentQty (BigDecimal.ZERO);
 			setM_AttributeSetInstance_ID (0);
 			setM_CostElement_ID (0);
 			setM_CostQueue_ID (0);
@@ -56,37 +40,32 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_M_CostQueue[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
+	}
 
-	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException
-    {
-		return (I_C_AcctSchema)MTable.get(getCtx(), I_C_AcctSchema.Table_Name)
-			.getPO(getC_AcctSchema_ID(), get_TrxName());	}
+	@Override
+	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
+	{
+		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
+	}
 
-	/** Set Accounting Schema.
+	/** Set Buchführungs-Schema.
 		@param C_AcctSchema_ID 
 		Rules for accounting
 	  */
+	@Override
 	public void setC_AcctSchema_ID (int C_AcctSchema_ID)
 	{
 		if (C_AcctSchema_ID < 1) 
@@ -95,9 +74,10 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, Integer.valueOf(C_AcctSchema_ID));
 	}
 
-	/** Get Accounting Schema.
+	/** Get Buchführungs-Schema.
 		@return Rules for accounting
 	  */
+	@Override
 	public int getC_AcctSchema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
@@ -106,55 +86,67 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Current Cost Price.
+	/** Set Kostenpreis aktuell.
 		@param CurrentCostPrice 
-		The currently used cost price
+		Der gegenwärtig verwendete Kostenpreis
 	  */
-	public void setCurrentCostPrice (BigDecimal CurrentCostPrice)
+	@Override
+	public void setCurrentCostPrice (java.math.BigDecimal CurrentCostPrice)
 	{
 		set_Value (COLUMNNAME_CurrentCostPrice, CurrentCostPrice);
 	}
 
-	/** Get Current Cost Price.
-		@return The currently used cost price
+	/** Get Kostenpreis aktuell.
+		@return Der gegenwärtig verwendete Kostenpreis
 	  */
-	public BigDecimal getCurrentCostPrice () 
+	@Override
+	public java.math.BigDecimal getCurrentCostPrice () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentCostPrice);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Current Quantity.
+	/** Set Menge aktuell.
 		@param CurrentQty 
-		Current Quantity
+		Menge aktuell
 	  */
-	public void setCurrentQty (BigDecimal CurrentQty)
+	@Override
+	public void setCurrentQty (java.math.BigDecimal CurrentQty)
 	{
 		set_Value (COLUMNNAME_CurrentQty, CurrentQty);
 	}
 
-	/** Get Current Quantity.
-		@return Current Quantity
+	/** Get Menge aktuell.
+		@return Menge aktuell
 	  */
-	public BigDecimal getCurrentQty () 
+	@Override
+	public java.math.BigDecimal getCurrentQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	public I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
-    {
-		return (I_M_AttributeSetInstance)MTable.get(getCtx(), I_M_AttributeSetInstance.Table_Name)
-			.getPO(getM_AttributeSetInstance_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
 
-	/** Set Attribute Set Instance.
+	@Override
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
+	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
@@ -163,9 +155,10 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Attribute Set Instance.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
+	@Override
 	public int getM_AttributeSetInstance_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
@@ -174,15 +167,23 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_CostElement getM_CostElement() throws RuntimeException
-    {
-		return (I_M_CostElement)MTable.get(getCtx(), I_M_CostElement.Table_Name)
-			.getPO(getM_CostElement_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_CostElement getM_CostElement() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class);
+	}
 
-	/** Set Cost Element.
+	@Override
+	public void setM_CostElement(org.compiere.model.I_M_CostElement M_CostElement)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
+	}
+
+	/** Set Kostenart.
 		@param M_CostElement_ID 
 		Product Cost Element
 	  */
+	@Override
 	public void setM_CostElement_ID (int M_CostElement_ID)
 	{
 		if (M_CostElement_ID < 1) 
@@ -191,9 +192,10 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_M_CostElement_ID, Integer.valueOf(M_CostElement_ID));
 	}
 
-	/** Get Cost Element.
+	/** Get Kostenart.
 		@return Product Cost Element
 	  */
+	@Override
 	public int getM_CostElement_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_CostElement_ID);
@@ -202,10 +204,11 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Cost Queue.
+	/** Set Kosten-Reihe.
 		@param M_CostQueue_ID 
 		FiFo/LiFo Cost Queue
 	  */
+	@Override
 	public void setM_CostQueue_ID (int M_CostQueue_ID)
 	{
 		if (M_CostQueue_ID < 1) 
@@ -214,9 +217,10 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_M_CostQueue_ID, Integer.valueOf(M_CostQueue_ID));
 	}
 
-	/** Get Cost Queue.
+	/** Get Kosten-Reihe.
 		@return FiFo/LiFo Cost Queue
 	  */
+	@Override
 	public int getM_CostQueue_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_CostQueue_ID);
@@ -225,15 +229,23 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_CostType getM_CostType() throws RuntimeException
-    {
-		return (I_M_CostType)MTable.get(getCtx(), I_M_CostType.Table_Name)
-			.getPO(getM_CostType_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_CostType getM_CostType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostType_ID, org.compiere.model.I_M_CostType.class);
+	}
 
-	/** Set Cost Type.
+	@Override
+	public void setM_CostType(org.compiere.model.I_M_CostType M_CostType)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostType_ID, org.compiere.model.I_M_CostType.class, M_CostType);
+	}
+
+	/** Set Kostenkategorie.
 		@param M_CostType_ID 
 		Type of Cost (e.g. Current, Plan, Future)
 	  */
+	@Override
 	public void setM_CostType_ID (int M_CostType_ID)
 	{
 		if (M_CostType_ID < 1) 
@@ -242,9 +254,10 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_M_CostType_ID, Integer.valueOf(M_CostType_ID));
 	}
 
-	/** Get Cost Type.
+	/** Get Kostenkategorie.
 		@return Type of Cost (e.g. Current, Plan, Future)
 	  */
+	@Override
 	public int getM_CostType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_CostType_ID);
@@ -253,15 +266,23 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
 
-	/** Set Product.
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
 		@param M_Product_ID 
-		Product, Service, Item
+		Produkt, Leistung, Artikel
 	  */
+	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -270,9 +291,10 @@ public class X_M_CostQueue extends PO implements I_M_CostQueue, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
-	/** Get Product.
-		@return Product, Service, Item
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
 	  */
+	@Override
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);

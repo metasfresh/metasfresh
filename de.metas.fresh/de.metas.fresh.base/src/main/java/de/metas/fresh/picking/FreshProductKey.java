@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.fresh.picking;
 
@@ -13,12 +13,12 @@ package de.metas.fresh.picking;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,16 +44,17 @@ import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.terminal.ProductKey;
+import de.metas.quantity.Quantity;
 
 /**
  * @author cg
- * 
+ *
  */
 public class FreshProductKey extends ProductKey
 {
 	/**
 	 * retrieve infos regarding packing material and capacity
-	 * 
+	 *
 	 * @return
 	 */
 	private String retrievePackingMaterialInfos()
@@ -175,7 +176,9 @@ public class FreshProductKey extends ProductKey
 		{
 			return BigDecimal.ZERO;
 		}
-		return unallocPackingItem.getQtySum();
+		final Quantity qtyUnallocated = unallocPackingItem.getQtySum();
+
+		return qtyUnallocated.getQty();
 	}
 
 	public I_C_UOM getQtyUnallocatedUOM()
@@ -187,9 +190,9 @@ public class FreshProductKey extends ProductKey
 
 	/**
 	 * Gets Qty Unallocated and adjust the scale if necessary
-	 * 
+	 *
 	 * NOTE: talked with Cristina why we need this and she told me that in some cases underlying Qty Unallocated is retrieved with a lot of 0 decimals and looks like shit in Qty Field
-	 * 
+	 *
 	 * @param maxScale
 	 * @return qty unallocated
 	 */
@@ -206,10 +209,10 @@ public class FreshProductKey extends ProductKey
 
 	/**
 	 * Gets Qty Allocated and adjust the scale if necessary
-	 * 
+	 *
 	 * @param maxScale
 	 * @return
-	 * 
+	 *
 	 * @see #getQty()
 	 */
 	public BigDecimal getQtyAllocated(final int maxScale)
@@ -225,7 +228,7 @@ public class FreshProductKey extends ProductKey
 
 	/**
 	 * Search for available HUs to be picked.
-	 * 
+	 *
 	 * @param considerAttributes true if we shall consider the HU attributes while searching for matching HUs
 	 * @return matching HUs
 	 */

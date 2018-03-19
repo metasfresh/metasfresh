@@ -1,18 +1,19 @@
 package de.metas.ordercandidate.process;
 
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.TrxRunnable2;
+import org.compiere.Adempiere;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.ordercandidate.api.IOLCandBL;
+import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
+import de.metas.ordercandidate.api.OLCandProcessorRepository;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
+import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
-import de.metas.process.JavaProcess;
 
 /**
  * Processes {@link I_C_OLCand}s into {@link I_C_Order}s. Currently, this process is mostly run from <code>AD_Scheduler</code>.
@@ -24,6 +25,11 @@ import de.metas.process.JavaProcess;
  */
 public class ProcessOLCands extends JavaProcess
 {
+	//
+	// Services
+	private final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
+	private final OLCandProcessorRepository olCandProcessorRepo = Adempiere.getBean(OLCandProcessorRepository.class);
+
 	public static final String PARAM_C_OLCandProcessor_ID = I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID;
 	@Param(mandatory = true, parameterName = PARAM_C_OLCandProcessor_ID)
 	private int olCandProcessorId;
@@ -33,7 +39,7 @@ public class ProcessOLCands extends JavaProcess
 	{
 		// Display process logs only if the process failed.
 		// NOTE: we do that because this process is called from window Gear and user shall only see the status line, and no popup shall be displayed.
-		
+
 		// gh #755 new note: this process is run manually from gear only rarely. So an (admin-) user who runs this should see what went on.
 		// particularly if there were problems (and this process would still return "OK" in that case).
 		setShowProcessLogs(ShowProcessLogs.Always);
@@ -42,48 +48,20 @@ public class ProcessOLCands extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		//
-		// Services
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
-
 		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
+		final OLCandProcessorDescriptor olCandProcessor = olCandProcessorRepo.getById(olCandProcessorId);
 
-		final Throwable[] error = new Throwable[1];
-
-		trxManager.run(get_TrxName(), new TrxRunnable2()
+		try
 		{
-			@Override
-			public void run(final String trxName)
-			{
-				final I_C_OLCandProcessor olCandProcessor = InterfaceWrapperHelper.create(getCtx(), olCandProcessorId, I_C_OLCandProcessor.class, trxName);
-				olCandBL.process(getCtx(), olCandProcessor, ProcessOLCands.this, trxName);
-				error[0] = null;
-			}
-
-			@Override
-			public boolean doCatch(final Throwable e) throws Exception
-			{
-				error[0] = e;
-
-				// returning 'true' to roll back the transaction
-				return true;
-			}
-
-			@Override
-			public void doFinally()
-			{
-				// nothing to do
-			}
-		});
-		if (error[0] != null)
-		{
-			addLog("@Error@: " + error[0].getMessage());
-			addLog("@Rollback@");
-
-			// returning success, because "error" would roll back the complete process-trx, including our log messages
-			return error[0].getMessage();
+			olCandBL.process(olCandProcessor);
+			return MSG_OK;
 		}
-		return "@Success@";
+		catch (final Exception ex)
+		{
+			addLog("@Error@: " + ex.getLocalizedMessage());
+			addLog("@Rollback@");
+			throw AdempiereException.wrapIfNeeded(ex);
+
+		}
 	}
 }

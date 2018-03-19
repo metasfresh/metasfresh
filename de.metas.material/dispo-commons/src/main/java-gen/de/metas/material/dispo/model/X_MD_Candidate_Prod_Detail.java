@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.material.dispo.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -117710910L;
+	private static final long serialVersionUID = 278160628L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Prod_Detail (Properties ctx, int MD_Candidate_Prod_Detail_ID, String trxName)
@@ -22,6 +23,8 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
       super (ctx, MD_Candidate_Prod_Detail_ID, trxName);
       /** if (MD_Candidate_Prod_Detail_ID == 0)
         {
+			setIsAdvised (false); // N
+			setIsPickDirectlyIfFeasible (false); // N
 			setMD_Candidate_Prod_Detail_ID (0);
         } */
     }
@@ -41,41 +44,23 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
       return poi;
     }
 
+	/** Set Istmenge.
+		@param ActualQty Istmenge	  */
 	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	public void setActualQty (java.math.BigDecimal ActualQty)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+		set_Value (COLUMNNAME_ActualQty, ActualQty);
 	}
 
+	/** Get Istmenge.
+		@return Istmenge	  */
 	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	public java.math.BigDecimal getActualQty () 
 	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
-
-	/** Set Maßeinheit.
-		@param C_UOM_ID 
-		Maßeinheit
-	  */
-	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
-	{
-		if (C_UOM_ID < 1) 
-			set_Value (COLUMNNAME_C_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
-	}
-
-	/** Get Maßeinheit.
-		@return Maßeinheit
-	  */
-	@Override
-	public int getC_UOM_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Beschreibung.
@@ -92,6 +77,58 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Vom System vorgeschlagen.
+		@param IsAdvised 
+		Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
+	  */
+	@Override
+	public void setIsAdvised (boolean IsAdvised)
+	{
+		set_Value (COLUMNNAME_IsAdvised, Boolean.valueOf(IsAdvised));
+	}
+
+	/** Get Vom System vorgeschlagen.
+		@return Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
+	  */
+	@Override
+	public boolean isAdvised () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAdvised);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Sofort Kommissionieren wenn möglich.
+		@param IsPickDirectlyIfFeasible 
+		Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
+	  */
+	@Override
+	public void setIsPickDirectlyIfFeasible (boolean IsPickDirectlyIfFeasible)
+	{
+		set_Value (COLUMNNAME_IsPickDirectlyIfFeasible, Boolean.valueOf(IsPickDirectlyIfFeasible));
+	}
+
+	/** Get Sofort Kommissionieren wenn möglich.
+		@return Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
+	  */
+	@Override
+	public boolean isPickDirectlyIfFeasible () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPickDirectlyIfFeasible);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
@@ -148,6 +185,25 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Geplante Menge.
+		@param PlannedQty Geplante Menge	  */
+	@Override
+	public void setPlannedQty (java.math.BigDecimal PlannedQty)
+	{
+		set_Value (COLUMNNAME_PlannedQty, PlannedQty);
+	}
+
+	/** Get Geplante Menge.
+		@return Geplante Menge	  */
+	@Override
+	public java.math.BigDecimal getPlannedQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	@Override

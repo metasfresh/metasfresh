@@ -33,9 +33,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -426,13 +427,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public I_C_Queue_WorkPackage enqueueWorkPackage(final I_C_Queue_Block block,
-			final IWorkpackagePrioStrategy priority)
+	public I_C_Queue_WorkPackage enqueueWorkPackage(
+			@NonNull final I_C_Queue_Block block,
+			@NonNull final IWorkpackagePrioStrategy priority)
 	{
 		// TODO: please really consider to move this method somewhere inside de.metas.async.api.impl.WorkPackageBuilder.build()
-
-		Check.assume(block != null, "block not null");
-		Check.assume(priority != null, "Param 'priority' not null. Use {} to indicate 'no specific priority'", NullWorkpackagePrio.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(block);
 		final String trxName = InterfaceWrapperHelper.getTrxName(block);
@@ -622,12 +621,14 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public Future<IWorkpackageProcessorExecutionResult> markReadyForProcessingAfterTrxCommit(final I_C_Queue_WorkPackage workPackage, final String trxName)
+	public Future<IWorkpackageProcessorExecutionResult> markReadyForProcessingAfterTrxCommit(
+			final I_C_Queue_WorkPackage workPackage,
+			final String trxName)
 	{
 		final SyncQueueProcessorListener callback = new SyncQueueProcessorListener();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		
+
 		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
 		if (trxManager.isNull(trx))
 		{
@@ -636,55 +637,78 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			return callback.getFutureResult();
 		}
 
-		trxManager.getTrxListenerManager(trxName).registerListener(new TrxListenerAdapter()
-		{
-			private final ReentrantLock sync = new ReentrantLock();
-			private boolean hit = false;
+		final WorkpackageTrxListener workpackageTrxListener = new WorkpackageTrxListener(workPackage, callback);
 
-			@Override
-			public void afterCommit(final ITrx trx)
-			{
-				sync.lock();
-				try
-				{
-					if (hit)
-					{
-						// transaction was previously commited or rollbacked
-						// now, there is nothing we can do
-						return;
-					}
-					markReadyForProcessing(workPackage, callback);
-					hit = true;
-				}
-				finally
-				{
-					sync.unlock();
-				}
-			}
-
-			@Override
-			public void afterRollback(final ITrx trx)
-			{
-				sync.lock();
-				try
-				{
-					if (hit)
-					{
-						return;
-					}
-
-					final AdempiereException error = new AdempiereException("Transaction '" + trxName + "' was rollback");
-					callback.cancelWithError(error);
-					hit = true;
-				}
-				finally
-				{
-					sync.unlock();
-				}
-			}
-		});
+		final ITrxListenerManager trxListenerManager = trxManager.getTrxListenerManager(trxName);
+		trxListenerManager
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> workpackageTrxListener.afterCommit(innerTrx));
+		trxListenerManager
+				.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> workpackageTrxListener.afterRollback(innerTrx));
 
 		return callback.getFutureResult();
+	}
+
+	private class WorkpackageTrxListener
+	{
+		private final ReentrantLock sync = new ReentrantLock();
+
+		// since this var is read and written within locks, it should probably be multi-thread-safe => make it vialtile
+		private volatile boolean hit = false;
+
+		private final I_C_Queue_WorkPackage workPackage;
+		private final SyncQueueProcessorListener callback;
+
+		private WorkpackageTrxListener(
+				final I_C_Queue_WorkPackage workPackage,
+				final SyncQueueProcessorListener callback)
+		{
+			this.workPackage = workPackage;
+			this.callback = callback;
+		}
+
+		public void afterCommit(final ITrx trx)
+		{
+			sync.lock();
+			try
+			{
+				if (hit)
+				{
+					// transaction was previously commited or rollbacked
+					// now, there is nothing we can do
+					return;
+				}
+				markReadyForProcessing(workPackage, callback);
+				hit = true;
+			}
+			finally
+			{
+				sync.unlock();
+			}
+		}
+
+		public void afterRollback(final ITrx trx)
+		{
+			sync.lock();
+			try
+			{
+				if (hit)
+				{
+					return;
+				}
+
+				final AdempiereException error = new AdempiereException("Transaction '" + trx != null ? trx.getTrxName() : "<null>" + "' was rollback");
+				callback.cancelWithError(error);
+				hit = true;
+			}
+			finally
+			{
+				sync.unlock();
+			}
+		}
 	}
 
 	@Override

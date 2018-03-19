@@ -59,19 +59,19 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 	private static final WorkpackagesOnCommitSchedulerTemplate<IContextAware> //
 	SCHEDULER = WorkpackagesOnCommitSchedulerTemplate.newContextAwareSchedulerNoCollect(UpdateInvalidShipmentSchedulesWorkpackageProcessor.class);
 
-
 	// services
 	private final transient IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 
 	@Override
-	public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
-		final int adClientId = workpackage.getAD_Client_ID();
+
 		final int adUserId = workpackage.getCreatedBy();
 		final int adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(ctx);
-		final boolean updateOnlyLocked = false; // if true, it won't create missing candidates
-		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adClientId, adUserId, adPInstanceId, updateOnlyLocked, localTrxName);
+
+		final boolean updateOnlyLocked = true; // don't create missing schedules; for that we have CreateMissingShipmentSchedulesWorkpackageProcessor
+		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adUserId, adPInstanceId, updateOnlyLocked, localTrxName);
 
 		Loggables.get().addLog("Updated " + updatedCount + " shipment schedule entries");
 

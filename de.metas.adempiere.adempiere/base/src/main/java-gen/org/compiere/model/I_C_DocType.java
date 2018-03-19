@@ -42,12 +42,8 @@ public interface I_C_DocType
 	 */
 	public int getAD_BoilerPlate_ID();
 
-	public de.metas.letters.model.I_AD_BoilerPlate getAD_BoilerPlate();
-
-	public void setAD_BoilerPlate(de.metas.letters.model.I_AD_BoilerPlate AD_BoilerPlate);
-
     /** Column definition for AD_BoilerPlate_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_DocType, de.metas.letters.model.I_AD_BoilerPlate> COLUMN_AD_BoilerPlate_ID = new org.adempiere.model.ModelColumn<I_C_DocType, de.metas.letters.model.I_AD_BoilerPlate>(I_C_DocType.class, "AD_BoilerPlate_ID", de.metas.letters.model.I_AD_BoilerPlate.class);
+    public static final org.adempiere.model.ModelColumn<I_C_DocType, Object> COLUMN_AD_BoilerPlate_ID = new org.adempiere.model.ModelColumn<I_C_DocType, Object>(I_C_DocType.class, "AD_BoilerPlate_ID", null);
     /** Column name AD_BoilerPlate_ID */
     public static final String COLUMNNAME_AD_BoilerPlate_ID = "AD_BoilerPlate_ID";
 
@@ -327,7 +323,7 @@ public interface I_C_DocType
 	/**
 	 * Set Beschreibung.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -336,7 +332,7 @@ public interface I_C_DocType
 	/**
 	 * Get Beschreibung.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -604,6 +600,29 @@ public interface I_C_DocType
     public static final org.adempiere.model.ModelColumn<I_C_DocType, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_DocType, Object>(I_C_DocType.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Copy description to document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsCopyDescriptionToDocument (boolean IsCopyDescriptionToDocument);
+
+	/**
+	 * Get Copy description to document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCopyDescriptionToDocument();
+
+    /** Column definition for IsCopyDescriptionToDocument */
+    public static final org.adempiere.model.ModelColumn<I_C_DocType, Object> COLUMN_IsCopyDescriptionToDocument = new org.adempiere.model.ModelColumn<I_C_DocType, Object>(I_C_DocType.class, "IsCopyDescriptionToDocument", null);
+    /** Column name IsCopyDescriptionToDocument */
+    public static final String COLUMNNAME_IsCopyDescriptionToDocument = "IsCopyDescriptionToDocument";
 
 	/**
 	 * Set Create Counter Document.

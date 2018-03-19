@@ -8,10 +8,10 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 
 /*
@@ -54,18 +54,40 @@ public class EventTestHelper
 
 	public static final int WAREHOUSE_ID = 51;
 
+	public static final int SHIPMENT_SCHEDULE_ID = 21;
+
 	public static final int PRODUCT_ID = 24;
 
-	public static final int BPARTNER_ID= 25;
+	public static final int BPARTNER_ID = 25;
 
 	public static final int ATTRIBUTE_SET_INSTANCE_ID = 28;
 
-	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY = StorageAttributesKey.ofAttributeValueIds(1);
+	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1);
+
+	public static SupplyRequiredDescriptor createSupplyRequiredDescriptor()
+	{
+		return createSupplyRequiredDescriptorWithProductId(PRODUCT_ID);
+	}
+
+	public static SupplyRequiredDescriptor createSupplyRequiredDescriptorWithProductId(final int productId)
+	{
+		return SupplyRequiredDescriptor.builder()
+				.shipmentScheduleId(SHIPMENT_SCHEDULE_ID)
+				.demandCandidateId(41)
+				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.materialDescriptor(createMaterialDescriptorWithProductId(productId))
+				.build();
+	}
 
 	public static MaterialDescriptor createMaterialDescriptor()
 	{
+		return createMaterialDescriptorWithProductId(PRODUCT_ID);
+	}
+
+	public static MaterialDescriptor createMaterialDescriptorWithProductId(final int productId)
+	{
 		return MaterialDescriptor.builder()
-				.productDescriptor(createProductDescriptor())
+				.productDescriptor(createProductDescriptorWithProductId(productId))
 				.warehouseId(WAREHOUSE_ID)
 				.bPartnerId(BPARTNER_ID)
 				.quantity(BigDecimal.TEN)
@@ -75,24 +97,22 @@ public class EventTestHelper
 
 	public static ProductDescriptor createProductDescriptor()
 	{
-		return ProductDescriptor.forProductAndAttributes(PRODUCT_ID, STORAGE_ATTRIBUTES_KEY, ATTRIBUTE_SET_INSTANCE_ID);
+		return createProductDescriptorWithProductId(PRODUCT_ID);
+	}
+
+	public static ProductDescriptor createProductDescriptorWithProductId(final int productId)
+	{
+		return ProductDescriptor.forProductAndAttributes(
+				productId,
+				STORAGE_ATTRIBUTES_KEY,
+				ATTRIBUTE_SET_INSTANCE_ID);
 	}
 
 	public static ProductDescriptor createProductDescriptorWithOffSet(final int offset)
 	{
 		return ProductDescriptor.forProductAndAttributes(
 				PRODUCT_ID + offset,
-				StorageAttributesKey.ofAttributeValueIds(STORAGE_ATTRIBUTES_KEY.getAttributeValueIds().get(0) + 1 + offset),
+				AttributesKey.ofAttributeValueIds(STORAGE_ATTRIBUTES_KEY.getAttributeValueIds().get(0) + 1 + offset),
 				ATTRIBUTE_SET_INSTANCE_ID + offset);
-	}
-
-	public static SupplyRequiredDescriptor createSupplyRequiredDescriptor()
-	{
-		return SupplyRequiredDescriptor.builder()
-				.shipmentScheduleId(21)
-				.demandCandidateId(41)
-				.eventDescr(new EventDescriptor(CLIENT_ID, ORG_ID))
-				.materialDescriptor(createMaterialDescriptor())
-				.build();
 	}
 }

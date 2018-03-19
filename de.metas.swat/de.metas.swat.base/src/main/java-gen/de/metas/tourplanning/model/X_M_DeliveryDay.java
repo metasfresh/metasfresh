@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.tourplanning.model;
 
@@ -30,7 +14,7 @@ public class X_M_DeliveryDay extends org.compiere.model.PO implements I_M_Delive
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1906147438L;
+	private static final long serialVersionUID = -1490329952L;
 
     /** Standard Constructor */
     public X_M_DeliveryDay (Properties ctx, int M_DeliveryDay_ID, String trxName)
@@ -38,17 +22,13 @@ public class X_M_DeliveryDay extends org.compiere.model.PO implements I_M_Delive
       super (ctx, M_DeliveryDay_ID, trxName);
       /** if (M_DeliveryDay_ID == 0)
         {
-			setC_BPartner_ID (0);
-			setC_BPartner_Location_ID (0);
 			setDeliveryDate (new Timestamp( System.currentTimeMillis() ));
 			setDeliveryDateTimeMax (new Timestamp( System.currentTimeMillis() ));
-			setIsManual (true);
-// Y
+			setIsManual (true); // Y
 			setM_DeliveryDay_ID (0);
 			setM_Tour_ID (0);
 			setM_TourVersion_ID (0);
-			setProcessed (false);
-// N
+			setProcessed (false); // N
         } */
     }
 
@@ -65,14 +45,6 @@ public class X_M_DeliveryDay extends org.compiere.model.PO implements I_M_Delive
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_M_DeliveryDay[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** Set Puffer (Std).

@@ -15,11 +15,11 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
-import de.metas.material.dispo.commons.repository.StockMultiQuery;
-import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 import mockit.Expectations;
@@ -118,16 +118,16 @@ public class RepositoryTestHelper
 				.build();
 	}
 
-	public static void setupMockedRetrieveAvailableStock(
-			@NonNull final StockRepository stockRepository,
+	public static void setupMockedRetrieveAvailableToPromise(
+			@NonNull final AvailableToPromiseRepository availableToPromiseRepository,
 			@NonNull final MaterialDescriptor materialDescriptor,
 			@NonNull final String quantity)
 	{
 		// @formatter:off
 		new Expectations(CandidateRepositoryRetrieval.class)
 		{{
-			final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
-			stockRepository.retrieveAvailableStockQtySum(query);
+			final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
+			availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 			minTimes = 0;
 			result = new BigDecimal(quantity);
 		}}; // @formatter:on

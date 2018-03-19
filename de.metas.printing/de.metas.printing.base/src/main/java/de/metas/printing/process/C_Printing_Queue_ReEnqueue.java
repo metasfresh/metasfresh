@@ -171,7 +171,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 		if (log.isInfoEnabled())
 		{
 			log.info("SQL Query: {}", query);
-			log.info("SQL Query count: " + query.count());
+			log.info("SQL Query count: {}", query.count());
 		}
 
 		final Iterator<I_C_Printing_Queue> it = query.iterate(I_C_Printing_Queue.class);

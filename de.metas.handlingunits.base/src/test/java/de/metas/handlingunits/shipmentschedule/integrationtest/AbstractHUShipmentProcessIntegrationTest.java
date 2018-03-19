@@ -13,29 +13,30 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 import static de.metas.business.BusinessTestHelper.createBPartner;
 import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -48,7 +49,6 @@ import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
@@ -65,13 +65,18 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
-import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
+import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.logging.LogManager;
+import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import lombok.NonNull;
 
 /**
  * HU Shipment Process:
@@ -129,7 +134,8 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	@Override
 	protected HUTestHelper createHUTestHelper()
 	{
-		return new HUTestHelper() {
+		return new HUTestHelper()
+		{
 			@Override
 			protected String createAndStartTransaction()
 			{
@@ -144,11 +150,12 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	{
 		LogManager.setLevel(Level.WARN); // reset the log level. other tests might have set it to trace, which might bring a giant performance penalty.
 
-		//
+		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
+
 		// Prepare context
 		final String trxName = helper.trxName; // use the helper's thread-inherited trxName
 
-		if(Services.get(ITrxManager.class).isNull(trxName))
+		if (Services.get(ITrxManager.class).isNull(trxName))
 		{
 			huContext = helper.createMutableHUContextOutOfTransaction();
 		}
@@ -183,14 +190,14 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		{
 			// PM
 			// don't create the PM item, because if we do, the HUPackingPaterialsCollector will try to do its thing.
-			// this won't work, unless we also give each HU a locator and set up a distribution network 
+			// this won't work, unless we also give each HU a locator and set up a distribution network
 			// helper.createHU_PI_Item_PackingMaterial(piTU, pmIFCO);
-			
+
 			// MI
 			piTU_Item = helper.createHU_PI_Item_Material(piTU);
 			helper.assignProduct(piTU_Item, pTomato, BigDecimal.TEN, productUOM);
 			helper.assignProduct(piTU_Item, pSalad, BigDecimal.TEN, productUOM);
-			
+
 		}
 
 		piLU = helper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
@@ -207,12 +214,27 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		// Masterdata: Shipper Transportation
 		{
-			shipper = InterfaceWrapperHelper.newInstance(I_M_Shipper.class, helper.getContextProvider());
-			InterfaceWrapperHelper.save(shipper);
-			shipperTransportation = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class, helper.getContextProvider());
+			shipper = newInstance(I_M_Shipper.class, helper.getContextProvider());
+			save(shipper);
+			shipperTransportation = newInstance(I_M_ShipperTransportation.class, helper.getContextProvider());
 			shipperTransportation.setM_Shipper(shipper);
-			InterfaceWrapperHelper.save(shipperTransportation);
+			save(shipperTransportation);
 		}
+
+		// allow subclasses to set up the attribute config for their test case
+		final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+		assertThat(shipmentScheduleHandlerBL).as("this rest requires a particular instance").isInstanceOf(ShipmentScheduleHandlerBL.class);
+
+		final I_M_IolCandHandler handlerRecord = ((ShipmentScheduleHandlerBL)shipmentScheduleHandlerBL)
+				.retrieveHandlerRecordOrNull(OrderLineShipmentScheduleHandler.class.getName());
+		assertThat(handlerRecord).isNotNull(); // should have been registered by super.initialize();
+
+		initializeAttributeConfig(handlerRecord);
+	}
+
+	protected void initializeAttributeConfig(@NonNull final I_M_IolCandHandler handlerRecord)
+	{
+		// nothing
 	}
 
 	@Test
@@ -304,7 +326,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 					huShipperTransportationBL.isEligibleForAddingToShipperTransportation(afterAggregation_HU));
 			huShipperTransportationBL
 					.addHUsToShipperTransportation(
-							helper.getContextProvider(),
 							shipperTransportation.getM_ShipperTransportation_ID(),
 							Collections.singletonList(afterAggregation_HU));
 
@@ -349,27 +370,20 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		//
 		// Test Generate Shipment from HUs
-		final I_C_Queue_WorkPackage workpackage = GenerateInOutFromHU.enqueueWorkpackage(helper.getCtx(), afterAggregation_HUs);
-
-		// Make sure we are working with valid candidates
-		final GenerateInOutFromHU processor = new GenerateInOutFromHU();
-		final Iterator<IShipmentScheduleWithHU> candidates = processor.retrieveCandidates(huContext, workpackage, ITrx.TRXNAME_None);
+		final HUShippingFacade huShippingFacade = HUShippingFacade.builder()
+				.hus(afterAggregation_HUs)
+				.build();
 
 		//
 		// Important!
 		//
 		// When matching expectations, sort the candidates so that they have the same indexes as the aggregated HUs
 		//
-		final List<IShipmentScheduleWithHU> candidatesSorted = new ArrayList<IShipmentScheduleWithHU>();
-		while (candidates.hasNext())
-		{
-			final IShipmentScheduleWithHU candidate = candidates.next();
-			candidatesSorted.add(candidate);
-		}
-		Collections.sort(candidatesSorted, new Comparator<IShipmentScheduleWithHU>()
+		final List<ShipmentScheduleWithHU> candidatesSorted = new ArrayList<>(huShippingFacade.getCandidates());
+		Collections.sort(candidatesSorted, new Comparator<ShipmentScheduleWithHU>()
 		{
 			@Override
-			public int compare(final IShipmentScheduleWithHU schedWithHU1, final IShipmentScheduleWithHU schedWithHU2)
+			public int compare(final ShipmentScheduleWithHU schedWithHU1, final ShipmentScheduleWithHU schedWithHU2)
 			{
 				final int index1 = getIndex(schedWithHU1);
 				final int index2 = getIndex(schedWithHU2);
@@ -379,7 +393,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 				return index1 - index2;
 			}
 
-			private int getIndex(final IShipmentScheduleWithHU schedWithHU)
+			private int getIndex(final ShipmentScheduleWithHU schedWithHU)
 			{
 				int index = afterAggregation_HUs.indexOf(schedWithHU.getM_LU_HU());
 				if (index < 0)
@@ -399,14 +413,12 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		final InOutGeneratedNotificationChecker notificationsChecker = InOutGeneratedNotificationChecker.createAnSubscribe();
 
-		// Process the workpackage
-		// => shipment shall be generated
-		processor.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance); // fail on error
-		processor.processWorkPackage(workpackage, ITrx.TRXNAME_None);
+		// Generate shipments
+		huShippingFacade.generateShippingDocuments();
 
 		//
-		// Retrieve generated shipment
-		generatedShipments = processor.getInOutGenerateResult().getInOuts();
+		// Retrieve generated shipments
+		generatedShipments = huShippingFacade.getGeneratedShipments();
 
 		// Assert all generated shipments were also notified on generated inouts event bus
 		notificationsChecker.assertAllNotified(generatedShipments);
@@ -440,7 +452,11 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	 *
 	 * @return shipment schedule
 	 */
-	protected final I_M_ShipmentSchedule createShipmentSchedule(final boolean newC_Order, final I_M_Product product, final I_C_UOM productUOM, final BigDecimal qtyOrdered)
+	protected final I_M_ShipmentSchedule createShipmentSchedule(
+			final boolean newC_Order,
+			final I_M_Product product,
+			final I_C_UOM productUOM,
+			final BigDecimal qtyOrdered)
 	{
 		final I_C_Order order;
 		if (!newC_Order)
@@ -450,24 +466,24 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		}
 		else
 		{
-			order = InterfaceWrapperHelper.newInstance(I_C_Order.class, helper.getContextProvider());
+			order = newInstance(I_C_Order.class, helper.getContextProvider());
 			order.setC_BPartner(bpartner);
 			order.setC_BPartner_Location(bpartnerLocation);
 			order.setM_Warehouse(warehouse);
-			InterfaceWrapperHelper.save(order);
+			save(order);
 
 			lastOrder = order;
 		}
 
 		// FIXME: introduce M_ShipmentSchedule.C_UOM_ID
 		// See http://dewiki908/mediawiki/index.php/05565_Introduce_M_ShipmentSchedule.C_UOM_ID_%28107483088069%29
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class, helper.getContextProvider());
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class, helper.getContextProvider());
 		orderLine.setM_Product(product);
 		orderLine.setC_UOM(productUOM);
 		orderLine.setQtyOrdered(qtyOrdered);
-		InterfaceWrapperHelper.save(orderLine);
+		save(orderLine);
 
-		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class, helper.getContextProvider());
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class, helper.getContextProvider());
 		// BPartner
 		shipmentSchedule.setC_BPartner(bpartner);
 		shipmentSchedule.setC_BPartner_Location(bpartnerLocation);
@@ -477,10 +493,13 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		shipmentSchedule.setQtyOrdered_Calculated(qtyOrdered);
 		// Warehouse
 		shipmentSchedule.setM_Warehouse(warehouse);
+
 		// Order line link
 		shipmentSchedule.setC_OrderLine(orderLine);
+		shipmentSchedule.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_OrderLine.Table_Name));
+		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
 
-		InterfaceWrapperHelper.save(shipmentSchedule);
+		save(shipmentSchedule);
 		return shipmentSchedule;
 	}
 }

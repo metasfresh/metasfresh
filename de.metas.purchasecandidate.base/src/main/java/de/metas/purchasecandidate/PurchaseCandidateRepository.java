@@ -1,7 +1,9 @@
 package de.metas.purchasecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -9,8 +11,10 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_OrderLine;
@@ -25,6 +29,8 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,6 +58,13 @@ import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 public class PurchaseCandidateRepository
 {
 	private final LockOwner lockOwner = LockOwner.newOwner(PurchaseCandidateRepository.class.getSimpleName());
+
+	private final PurchaseItemRepository purchaseItemRepository;
+
+	public PurchaseCandidateRepository(@NonNull final PurchaseItemRepository purchaseItemRepository)
+	{
+		this.purchaseItemRepository = purchaseItemRepository;
+	}
 
 	public Stream<PurchaseCandidate> streamAllBySalesOrderLineIds(final Collection<Integer> salesOrderLineIds)
 	{
@@ -83,26 +96,27 @@ public class PurchaseCandidateRepository
 				.map(this::toPurchaseCandidate);
 	}
 
-	public List<Integer> getAllPurchaseCandidateIdsBySalesOrderId(final int salesOrderId)
+	public List<Integer> retrievePurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(final int salesOrderId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, salesOrderId)
 				.andCollectChildren(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID)
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false)
+				.addCompareFilter(I_C_PurchaseCandidate.COLUMN_QtyToPurchase, Operator.GREATER, BigDecimal.ZERO)
 				.create()
 				.listIds();
 	}
 
 	public void saveAll(final Collection<PurchaseCandidate> purchaseCandidates)
 	{
-		boolean doLock = true;
+		final boolean doLock = true;
 		saveAll(purchaseCandidates, doLock);
 	}
 
 	public void saveAllNoLock(final Collection<PurchaseCandidate> purchaseCandidates)
 	{
-		boolean doLock = false;
+		final boolean doLock = false;
 		saveAll(purchaseCandidates, doLock);
 	}
 
@@ -117,7 +131,7 @@ public class PurchaseCandidateRepository
 		}
 
 		final Set<Integer> existingPurchaseCandidateIds = purchaseCandidatesToSave.stream()
-				.map(PurchaseCandidate::getRepoId)
+				.map(PurchaseCandidate::getPurchaseCandidateId)
 				.filter(id -> id > 0)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -138,11 +152,15 @@ public class PurchaseCandidateRepository
 		final ILockAutoCloseable lock = doLock && !existingPurchaseCandidateIds.isEmpty() ? lockByIds(existingPurchaseCandidateIds) : null;
 		try
 		{
-			purchaseCandidatesToSave.forEach(purchaseCandidate -> {
-				final int repoId = purchaseCandidate.getRepoId();
+			for (final PurchaseCandidate purchaseCandidate : purchaseCandidatesToSave)
+			{
+				final int repoId = purchaseCandidate.getPurchaseCandidateId();
 				final I_C_PurchaseCandidate existingRecord = repoId > 0 ? existingRecordsById.get(repoId) : null;
-				save(purchaseCandidate, existingRecord);
-			});
+				createOrUpdateRecord(purchaseCandidate, existingRecord);
+
+				purchaseItemRepository.storeRecords(purchaseCandidate.getPurchaseOrderItems());
+				purchaseItemRepository.storeRecords(purchaseCandidate.getPurchaseErrorItems());
+			} ;
 		}
 		finally
 		{
@@ -166,7 +184,7 @@ public class PurchaseCandidateRepository
 	/**
 	 * Note to dev: keep in sync with {@link #toPurchaseCandidate(I_C_PurchaseCandidate)}
 	 */
-	private final void save(final PurchaseCandidate purchaseCandidate, final I_C_PurchaseCandidate existingRecord)
+	private final void createOrUpdateRecord(final PurchaseCandidate purchaseCandidate, final I_C_PurchaseCandidate existingRecord)
 	{
 		if (existingRecord != null)
 		{
@@ -184,14 +202,15 @@ public class PurchaseCandidateRepository
 
 		record.setC_OrderSO_ID(purchaseCandidate.getSalesOrderId());
 		record.setC_OrderLineSO_ID(purchaseCandidate.getSalesOrderLineId());
-		record.setC_OrderLinePO_ID(purchaseCandidate.getPurchaseOrderLineId());
+
 		record.setAD_Org_ID(purchaseCandidate.getOrgId());
-		record.setM_Warehouse_ID(purchaseCandidate.getWarehouseId());
+		record.setM_WarehousePO_ID(purchaseCandidate.getWarehouseId());
 		record.setM_Product_ID(purchaseCandidate.getProductId());
 		record.setC_UOM_ID(purchaseCandidate.getUomId());
 		record.setVendor_ID(purchaseCandidate.getVendorBPartnerId());
-		record.setQtyRequiered(purchaseCandidate.getQtyRequired());
-		record.setDatePromised(TimeUtil.asTimestamp(purchaseCandidate.getDatePromised()));
+		record.setC_BPartner_Product_ID(purchaseCandidate.getVendorProductInfo().getBPartnerProductId());
+		record.setQtyToPurchase(purchaseCandidate.getQtyToPurchase());
+		record.setDateRequired(TimeUtil.asTimestamp(purchaseCandidate.getDateRequired()));
 
 		record.setProcessed(purchaseCandidate.isProcessed());
 
@@ -199,27 +218,43 @@ public class PurchaseCandidateRepository
 		purchaseCandidate.markSaved(record.getC_PurchaseCandidate_ID());
 	}
 
+	public PurchaseCandidate retrieveById(final int purchaseCandidateId)
+	{
+		Check.assume(purchaseCandidateId > 0, "The given parameter purchaseCandidateId > 0");
+
+		final I_C_PurchaseCandidate record = load(purchaseCandidateId, I_C_PurchaseCandidate.class);
+		Check.errorIf(record == null, "Unable to load I_C_PurchaseCandidate record for C_PurchaseCandidate_ID={}",
+				purchaseCandidateId);
+
+		return toPurchaseCandidate(record);
+	}
+
 	/**
-	 * Note to dev: keep in sync with {@link #save(PurchaseCandidate, I_C_PurchaseCandidate)}
+	 * Note to dev: keep in sync with {@link #createOrUpdateRecord(PurchaseCandidate, I_C_PurchaseCandidate)}
 	 */
-	private PurchaseCandidate toPurchaseCandidate(final I_C_PurchaseCandidate purchaseCandidatePO)
+	private PurchaseCandidate toPurchaseCandidate(@NonNull final I_C_PurchaseCandidate purchaseCandidatePO)
 	{
 		final boolean locked = Services.get(ILockManager.class).isLocked(purchaseCandidatePO);
 
-		return PurchaseCandidate.builder()
-				.repoId(purchaseCandidatePO.getC_PurchaseCandidate_ID())
+		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
+				.locked(locked)
+				.purchaseCandidateId(purchaseCandidatePO.getC_PurchaseCandidate_ID())
 				.salesOrderId(purchaseCandidatePO.getC_OrderSO_ID())
 				.salesOrderLineId(purchaseCandidatePO.getC_OrderLineSO_ID())
 				.orgId(purchaseCandidatePO.getAD_Org_ID())
-				.warehouseId(purchaseCandidatePO.getM_Warehouse_ID())
+				.warehouseId(purchaseCandidatePO.getM_WarehousePO_ID())
 				.productId(purchaseCandidatePO.getM_Product_ID())
 				.uomId(purchaseCandidatePO.getC_UOM_ID())
 				.vendorBPartnerId(purchaseCandidatePO.getVendor_ID())
-				.qtyRequired(purchaseCandidatePO.getQtyRequiered())
-				.datePromised(purchaseCandidatePO.getDatePromised())
+				.vendorProductInfo(VendorProductInfo.fromDataRecord(purchaseCandidatePO.getC_BPartner_Product()))
+				.qtyToPurchase(purchaseCandidatePO.getQtyToPurchase())
+				.dateRequired(purchaseCandidatePO.getDateRequired())
 				.processed(purchaseCandidatePO.isProcessed())
-				.locked(locked)
 				.build();
+
+		purchaseItemRepository.retrieveForPurchaseCandidate(purchaseCandidate);
+
+		return purchaseCandidate;
 	}
 
 	public void deleteByIds(Collection<Integer> purchaseCandidateIds)

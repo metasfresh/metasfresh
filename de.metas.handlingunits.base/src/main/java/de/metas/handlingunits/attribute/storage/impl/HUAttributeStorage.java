@@ -38,6 +38,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import lombok.NonNull;
 
 /* package */class HUAttributeStorage extends AbstractHUAttributeStorage
 {
@@ -49,11 +50,12 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 	 */
 	private Map<String, IAttributeStorage> childrenAttributeStoragesMap = null;
 
-	/* package */ HUAttributeStorage(final IAttributeStorageFactory storageFactory, final I_M_HU hu)
+	/* package */ HUAttributeStorage(
+			@NonNull final IAttributeStorageFactory storageFactory,
+			@NonNull final I_M_HU hu)
 	{
 		super(storageFactory);
 
-		Check.assumeNotNull(hu, "hu not null");
 		_hu = hu;
 
 		id = "M_HU_ID=" + hu.getM_HU_ID();
@@ -113,7 +115,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 		// Ensure that the parentItem is actually attached to an HU
 		Check.assumeNotNull(parentHU, "An M_HU_Item (parentHUItem) {} is linked to a handling unit for child HU={}", parentItem, hu);
 
-		final IAttributeStorageFactory storageFactory = getHUAttributeStorageFactory();
+		final IAttributeStorageFactory storageFactory = getAttributeStorageFactory();
 		final IAttributeStorage parentAttributeSetStorage = storageFactory.getAttributeStorage(parentHU);
 
 		return parentAttributeSetStorage;
@@ -142,7 +144,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 
 	private final Map<String, IAttributeStorage> retrieveChildrenAttributeStorages()
 	{
-		final IAttributeStorageFactory storageFactory = getHUAttributeStorageFactory();
+		final IAttributeStorageFactory storageFactory = getAttributeStorageFactory();
 		final IHandlingUnitsDAO handlingUnitsDAO = getHandlingUnitsDAO();
 
 		final Map<String, IAttributeStorage> childrenAttributeSetStorages = new LinkedHashMap<String, IAttributeStorage>();

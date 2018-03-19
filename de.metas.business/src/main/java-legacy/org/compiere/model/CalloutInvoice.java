@@ -27,17 +27,17 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.tax.api.ITaxBL;
 
@@ -54,64 +54,6 @@ public class CalloutInvoice extends CalloutEngine
 	private static final String CTX_UOMConversion = "UOMConversion";
 
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
-
-	/**
-	 * Invoice Header - DocType.
-	 * - PaymentRule
-	 * - temporary Document
-	 * Context:
-	 * - DocSubType
-	 * - HasCharges
-	 * - (re-sets Business Partner info of required)
-	 *
-	 * @param calloutField
-	 * @return error message or {@link #NO_ERROR}
-	 */
-	public String docType(final ICalloutField calloutField)
-	{
-		final I_C_Invoice invoice = calloutField.getModel(I_C_Invoice.class);
-		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
-				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(invoice.getC_DocTypeTarget())
-				.setOldDocumentNo(invoice.getDocumentNo())
-				.setDocumentModel(invoice)
-				.buildOrNull();
-		if (documentNoInfo == null)
-		{
-			return NO_ERROR;
-		}
-
-		// Charges - Set Context
-		calloutField.putWindowContext(I_C_DocType.COLUMNNAME_HasCharges, documentNoInfo.isHasChanges());
-
-		// DocumentNo
-		if (documentNoInfo.isDocNoControlled())
-		{
-			invoice.setDocumentNo(documentNoInfo.getDocumentNo());
-		}
-
-		// DocBaseType - Set Context
-		final String docBaseType = documentNoInfo.getDocBaseType();
-		calloutField.putWindowContext(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
-
-		// AP Check & AR Credit Memo
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		if (docBaseType == null)
-		{
-			// nothing
-		}
-		else if (invoiceBL.isVendorInvoice(docBaseType))
-		{
-			invoice.setPaymentRule(X_C_Invoice.PAYMENTRULE_Check); // Check
-		}
-		else if (invoiceBL.isCreditMemo(docBaseType))
-		{
-			invoice.setPaymentRule(X_C_Invoice.PAYMENTRULE_OnCredit); // OnCredit
-		}
-
-		//
-		return NO_ERROR;
-	}	// docType
 
 	/**
 	 * Invoice Header- BPartner.
@@ -140,12 +82,10 @@ public class CalloutInvoice extends CalloutEngine
 			return NO_ERROR;
 		}
 
-		String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
+		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
-				+ " p.SO_Description,p.IsDiscountPrinted,"
-				+ " p.SO_CreditLimit, p.SO_CreditLimit-stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
-				+ " AS CreditAvailable,"
+				+ " p.SO_Description,p.IsDiscountPrinted, "
+				+ " stats."	+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
 				+ " l.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID "
 				+ "FROM C_BPartner p"
@@ -161,7 +101,7 @@ public class CalloutInvoice extends CalloutEngine
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
 				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'";		// #1
 
-		boolean isSOTrx = invoice.isSOTrx();
+		final boolean isSOTrx = invoice.isSOTrx();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -191,9 +131,9 @@ public class CalloutInvoice extends CalloutEngine
 
 				// PaymentRule
 				String paymentRule = rs.getString(isSOTrx ? "PaymentRule" : "PaymentRulePO");
-				
+
 				if (!Check.isEmpty(paymentRule)) {
-					
+
 					final I_C_DocType invoiceDocType = invoice.getC_DocType() == null ? invoice.getC_DocTypeTarget()
 							: invoice.getC_DocType();
 
@@ -249,17 +189,19 @@ public class CalloutInvoice extends CalloutEngine
 				// CreditAvailable
 				if (isSOTrx)
 				{
-					double CreditLimit = rs.getDouble("SO_CreditLimit");
-					if (CreditLimit != 0)
-					{
-						double CreditAvailable = rs.getDouble("CreditAvailable");
-						if (!rs.wasNull() && CreditAvailable < 0)
+						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+						final BigDecimal CreditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bPartnerID, invoice.getDateInvoiced());
+						if (CreditLimit.signum() > 0)
 						{
-							calloutField.fireDataStatusEEvent("CreditLimitOver",
-									DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable),
-									false);
+							final double creditUsed = rs.getDouble("SO_CreditUsed");
+							final BigDecimal CreditAvailable = CreditLimit.subtract(BigDecimal.valueOf(creditUsed));
+							if (!rs.wasNull() && CreditAvailable.signum() < 0)
+							{
+								calloutField.fireDataStatusEEvent("CreditLimitOver",
+										DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable),
+										false);
+							}
 						}
-					}
 				}
 
 				// PO Reference
@@ -285,7 +227,7 @@ public class CalloutInvoice extends CalloutEngine
 
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.error("bPartner", e);
 			return e.getLocalizedMessage();
@@ -323,7 +265,7 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		// TODO: Fix in next step (refactoring: Move the apply method from MPaymentTerm to a BL)
-		MPaymentTerm pt = InterfaceWrapperHelper.getPO(paymentTerm);
+		final MPaymentTerm pt = InterfaceWrapperHelper.getPO(paymentTerm);
 
 		final boolean valid = pt.apply(invoice.getC_Invoice_ID());
 		invoice.setIsPayScheduleValid(valid);
@@ -376,21 +318,21 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		/***** Price Calculation see also qty ****/
-		boolean isSOTrx = invoice.isSOTrx();
+		final boolean isSOTrx = invoice.isSOTrx();
 
 		final int bpartnerID = invoice.getC_BPartner_ID();
 
 		final BigDecimal qty = invoiceLine.getQtyInvoiced();
 
 		// TODO: Refactoring here in step 2: Use IPricingBL instead
-		MProductPricing pp = new MProductPricing(productID, bpartnerID, qty, isSOTrx);
+		final MProductPricing pp = new MProductPricing(productID, bpartnerID, qty, isSOTrx);
 		pp.setConvertPriceToContextUOM(false);
 
 		//
 		final int priceList_ID = invoice.getM_PriceList_ID();
 		pp.setM_PriceList_ID(priceList_ID);
 
-		int priceListVersionID = calloutField.getTabInfoContextAsInt("M_PriceList_Version_ID");
+		final int priceListVersionID = calloutField.getTabInfoContextAsInt("M_PriceList_Version_ID");
 		pp.setM_PriceList_Version_ID(priceListVersionID);
 
 		final Timestamp dateInvoiced = invoice.getDateInvoiced();
@@ -468,7 +410,7 @@ public class CalloutInvoice extends CalloutEngine
 
 		calloutField.putContext(CTX_DiscountSchema, false);
 
-		String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
+		final String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -486,7 +428,7 @@ public class CalloutInvoice extends CalloutEngine
 
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.error(sql + e);
 			return e.getLocalizedMessage();
@@ -539,7 +481,7 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		// Check Partner Location
-		int shipBPartnerLocationID = invoice.getC_BPartner_Location_ID();
+		final int shipBPartnerLocationID = invoice.getC_BPartner_Location_ID();
 		if (shipBPartnerLocationID <= 0)
 		{
 			return amt(calloutField);	//
@@ -547,7 +489,7 @@ public class CalloutInvoice extends CalloutEngine
 
 		log.debug("Ship BP_Location=" + shipBPartnerLocationID);
 
-		int billBPartnerLocationID = shipBPartnerLocationID;
+		final int billBPartnerLocationID = shipBPartnerLocationID;
 		log.debug("Bill BP_Location=" + billBPartnerLocationID);
 
 		// Dates
@@ -632,8 +574,8 @@ public class CalloutInvoice extends CalloutEngine
 		BigDecimal priceEntered = invoiceLine.getPriceEntered();
 		BigDecimal priceActual = invoiceLine.getPriceActual();
 		// final BigDecimal Discount = invoiceLine.getDiscount();
-		BigDecimal priceLimit = invoiceLine.getPriceLimit();
-		BigDecimal priceList = invoiceLine.getPriceList();
+		final BigDecimal priceLimit = invoiceLine.getPriceLimit();
+		final BigDecimal priceList = invoiceLine.getPriceList();
 
 		log.debug("PriceList=" + priceList + ", Limit=" + priceLimit + ", Precision=" + stdPrecision);
 		log.debug("PriceEntered=" + priceEntered + ", Actual=" + priceActual); // + ", Discount=" + Discount);
@@ -671,7 +613,7 @@ public class CalloutInvoice extends CalloutEngine
 				}
 
 				// TODO: PricingBL
-				MProductPricing pp = new MProductPricing(productID, bPartnerID, qtyInvoiced, isSOTrx);
+				final MProductPricing pp = new MProductPricing(productID, bPartnerID, qtyInvoiced, isSOTrx);
 				pp.setM_PriceList_ID(priceListID);
 				pp.setReferencedObject(invoiceLine); // task 08908: we need to give the pricing context our referenced object, so it can extract the ASI
 				final Timestamp date = invoiceLine.getC_Invoice().getDateInvoiced(); // task 08908: we do not have a PLV-ID in C_Invoice or C_InvoiceLine, so we need to get the invoice's date to
@@ -761,7 +703,9 @@ public class CalloutInvoice extends CalloutEngine
 		boolean enforce = enforcePriceLimit && isSOTrx;
 
 		if (enforce && Env.getUserRolePermissions().hasPermission(IUserRolePermissions.PERMISSION_OverwritePriceLimit))
+		{
 			enforce = false;
+		}
 		// Check Price Limit?
 		if (enforce && priceLimit.doubleValue() != 0.0
 				&& priceActual.compareTo(priceLimit) < 0
@@ -869,7 +813,7 @@ public class CalloutInvoice extends CalloutEngine
 		final de.metas.adempiere.model.I_C_InvoiceLine il = InterfaceWrapperHelper.create(invoiceLine, de.metas.adempiere.model.I_C_InvoiceLine.class);
 		final boolean isManualPrice = il.isManualPrice();
 
-		int productID = invoiceLine.getM_Product_ID();
+		final int productID = invoiceLine.getM_Product_ID();
 
 		// log.warn("qty - init - M_Product_ID=" + M_Product_ID);
 		BigDecimal qtyInvoiced, qtyEntered, priceActual, priceEntered;
@@ -888,7 +832,7 @@ public class CalloutInvoice extends CalloutEngine
 			final int uomToID = invoiceLine.getC_UOM_ID();
 
 			qtyEntered = invoiceLine.getQtyEntered();
-			BigDecimal qtyEnteredScaled = qtyEntered.setScale(MUOM.getPrecision(ctx, uomToID), BigDecimal.ROUND_HALF_UP);
+			final BigDecimal qtyEnteredScaled = qtyEntered.setScale(MUOM.getPrecision(ctx, uomToID), BigDecimal.ROUND_HALF_UP);
 
 			if (qtyEntered.compareTo(qtyEnteredScaled) != 0)
 			{
@@ -905,7 +849,7 @@ public class CalloutInvoice extends CalloutEngine
 				qtyInvoiced = qtyEntered;
 			}
 
-			boolean conversion = qtyEntered.compareTo(qtyInvoiced) != 0;
+			final boolean conversion = qtyEntered.compareTo(qtyInvoiced) != 0;
 
 			// do not change anything if manual price
 			if (!isManualPrice)
@@ -939,7 +883,7 @@ public class CalloutInvoice extends CalloutEngine
 
 			qtyEntered = invoiceLine.getQtyEntered();
 
-			BigDecimal qtyEnteredScaled = qtyEntered.setScale(MUOM.getPrecision(ctx, uomToID), BigDecimal.ROUND_HALF_UP);
+			final BigDecimal qtyEnteredScaled = qtyEntered.setScale(MUOM.getPrecision(ctx, uomToID), BigDecimal.ROUND_HALF_UP);
 			if (qtyEntered.compareTo(qtyEnteredScaled) != 0)
 			{
 				log.debug("Corrected QtyEntered Scale UOM=" + uomToID
@@ -956,7 +900,7 @@ public class CalloutInvoice extends CalloutEngine
 				qtyInvoiced = qtyEntered;
 			}
 
-			boolean conversion = qtyEntered.compareTo(qtyInvoiced) != 0;
+			final boolean conversion = qtyEntered.compareTo(qtyInvoiced) != 0;
 			log.debug("qty - UOM=" + uomToID
 					+ ", QtyEntered=" + qtyEntered
 					+ " -> " + conversion
@@ -972,7 +916,7 @@ public class CalloutInvoice extends CalloutEngine
 
 			qtyInvoiced = invoiceLine.getQtyInvoiced();
 
-			int precision = MProduct.get(ctx, productID).getUOMPrecision();
+			final int precision = MProduct.get(ctx, productID).getUOMPrecision();
 
 			final BigDecimal qtyInvoicedScaled = qtyInvoiced.setScale(precision, BigDecimal.ROUND_HALF_UP);
 			if (qtyInvoiced.compareTo(qtyInvoicedScaled) != 0)
@@ -991,7 +935,7 @@ public class CalloutInvoice extends CalloutEngine
 				qtyEntered = qtyInvoiced;
 			}
 
-			boolean conversion = qtyInvoiced.compareTo(qtyEntered) != 0;
+			final boolean conversion = qtyInvoiced.compareTo(qtyEntered) != 0;
 
 			log.debug("qty - UOM=" + uomToID
 					+ ", QtyInvoiced=" + qtyInvoiced

@@ -33,6 +33,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.slf4j.Logger;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -52,9 +53,15 @@ import de.metas.event.Type;
 import de.metas.event.jms.ActiveMQJMSEndpoint;
 import de.metas.event.jms.IJMSEndpoint;
 import de.metas.event.jmx.JMXEventBusManager;
+import de.metas.event.log.EventBus2EventLogHandler;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class EventBusFactory implements IEventBusFactory
 {
+
+	private static final Logger logger = LogManager.getLogger(EventBusFactory.class);
+
 	/**
 	 * Map of "topic name" to list of {@link IEventListener}s.
 	 */
@@ -63,7 +70,6 @@ public class EventBusFactory implements IEventBusFactory
 	private final LoadingCache<Topic, EventBus> topic2eventBus = CacheBuilder.newBuilder()
 			.removalListener(new RemovalListener<Topic, EventBus>()
 			{
-
 				@Override
 				public void onRemoval(final RemovalNotification<Topic, EventBus> notification)
 				{
@@ -73,7 +79,6 @@ public class EventBusFactory implements IEventBusFactory
 			})
 			.build(new CacheLoader<Topic, EventBus>()
 			{
-
 				@Override
 				public EventBus load(final Topic topic) throws Exception
 				{
@@ -113,7 +118,15 @@ public class EventBusFactory implements IEventBusFactory
 	{
 		try
 		{
-			return topic2eventBus.get(topic);
+			EventBus eventBus = topic2eventBus.get(topic);
+
+			final boolean typeMismatchBetweenTopicAndBus = topic.getType().equals(Type.REMOTE) && !eventBus.getType().equals(Type.REMOTE);
+			if (typeMismatchBetweenTopicAndBus)
+			{
+				topic2eventBus.invalidate(topic);
+				eventBus = topic2eventBus.get(topic); // 2nd try
+			}
+			return eventBus;
 		}
 		catch (final ExecutionException e)
 		{
@@ -150,19 +163,24 @@ public class EventBusFactory implements IEventBusFactory
 		// Create the event bus
 		final EventBus eventBus = new EventBus(topic.getName(), eventBusExecutor);
 
-		//
+		// whether the event is really stored is determined for each individual event
+		eventBus.subscribe(EventBus2EventLogHandler.INSTANCE);
+
 		// Bind the EventBus to JMS (only if the system is enabled).
 		// If is not enabled we will use only local event buses,
 		// because if we would return null or fail here a lot of BLs could fail.
-		if (Type.REMOTE.equals(topic.getType()) && EventBusConstants.isEnabled())
+		if (Type.REMOTE.equals(topic.getType()))
 		{
-			if (jmsEndpoint.bindIfNeeded(eventBus))
+			if (!EventBusConstants.isEnabled())
+			{
+				logger.warn("Remote events are disabled via EventBusConstants. Creating local-only eventBus for topic={}", topic);
+			}
+			else if (jmsEndpoint.bindIfNeeded(eventBus))
 			{
 				eventBus.setTypeRemote();
 			}
 		}
 
-		//
 		// Add our global listeners
 		final Set<IEventListener> globalListeners = globalEventListeners.get(topic);
 		for (final IEventListener globalListener : globalListeners)
@@ -179,11 +197,10 @@ public class EventBusFactory implements IEventBusFactory
 	}
 
 	@Override
-	public void registerGlobalEventListener(final Topic topic, final IEventListener listener)
+	public void registerGlobalEventListener(
+			@NonNull final Topic topic,
+			@NonNull final IEventListener listener)
 	{
-		Check.assumeNotNull(topic, "topic not null");
-		Check.assumeNotNull(listener, "listener not null");
-
 		//
 		// Add the listener to our global listeners multimap.
 		if (!globalEventListeners.put(topic, listener))

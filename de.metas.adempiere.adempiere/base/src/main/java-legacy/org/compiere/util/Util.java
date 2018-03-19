@@ -41,6 +41,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import javax.annotation.concurrent.Immutable;
 import javax.mail.internet.MimeUtility;
@@ -59,7 +61,10 @@ import org.slf4j.Logger;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.google.common.base.Predicates;
+
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * General Utilities
@@ -171,7 +176,7 @@ public class Util
 		}
 		return out.toString();
 	}
-	
+
 	/**
 	 * Clean - Remove all white spaces
 	 *
@@ -238,7 +243,7 @@ public class Util
 
 	/**
 	 * Add 0 digits at the end of a String until it gets to the size given as paraameter.
-	 * 
+	 *
 	 * @param value
 	 * @param size
 	 * @param description
@@ -838,11 +843,11 @@ public class Util
 
 	/**
 	 * Loads the class with <code>classname</code> and makes sure that it's implementing given <code>interfaceClazz</code>.
-	 * 
+	 *
 	 * @param interfaceClazz
 	 * @param classname
 	 * @return loaded class
-	 * 
+	 *
 	 * @see #setClassInstanceProvider(IClassInstanceProvider)
 	 */
 	public static final <T> Class<? extends T> loadClass(final Class<T> interfaceClazz, final String classname)
@@ -867,7 +872,7 @@ public class Util
 	/**
 	 * Creates a new instance of given <code>instanceClazz</code>.
 	 * Also it makes sure that it's implementing given <code>interfaceClass</code>.
-	 * 
+	 *
 	 * @param interfaceClazz
 	 * @param instanceClazz
 	 * @return instance
@@ -1446,15 +1451,45 @@ public class Util
 	 * @return first not null value from list
 	 */
 	@SafeVarargs
-	public static final <T> T coalesce(T... values)
+	public static final <T> T coalesce(final T... values)
 	{
 		if (values == null || values.length == 0)
 		{
 			return null;
 		}
-		for (T value : values)
+		for (final T value : values)
 		{
 			if (value != null)
+			{
+				return value;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Similar to {@link #coalesce(Object...)}, but invokes the given suppliers' get methods one by one.
+	 *
+	 * @param values
+	 * @return
+	 */
+	@SafeVarargs
+	public static final <T> T coalesceSuppliers(final Supplier<T>... values)
+	{
+		return firstValidValue(Predicates.notNull(), values);
+	}
+
+	@SafeVarargs
+	public static final <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, final Supplier<T>... values)
+	{
+		if (values == null || values.length == 0)
+		{
+			return null;
+		}
+		for (final Supplier<T> supplier : values)
+		{
+			final T value = supplier.get();
+			if (isValidPredicate.test(value))
 			{
 				return value;
 			}
@@ -1544,5 +1579,10 @@ public class Util
 			}
 		}
 		return found ? buf.toString() : null;
+	}
+
+	public static int getMinimumOfThree(final int no1, final int no2, final int no3)
+	{
+		return no1 < no2 ? (no1 < no3 ? no1 : no3) : (no2 < no3 ? no2 : no3);
 	}
 }   // Util

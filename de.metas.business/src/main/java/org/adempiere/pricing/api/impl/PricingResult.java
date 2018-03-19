@@ -13,11 +13,11 @@ package org.adempiere.pricing.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -66,6 +66,10 @@ class PricingResult implements IPricingResult
 	private boolean isUseDiscountSchema = false;
 	private boolean disallowDiscount = false;
 	private Timestamp priceDateTS = null;
+	private int C_PaymentTerm_ID = -1;
+
+	private boolean isPriceEditable = true;
+	private boolean isDiscountEditable = true;
 
 	private boolean calculated = false;
 
@@ -86,7 +90,7 @@ class PricingResult implements IPricingResult
 	}
 
 	@Override
-	public void setM_PriceList_ID(int M_PriceList_ID)
+	public void setM_PriceList_ID(final int M_PriceList_ID)
 	{
 		this.M_PriceList_ID = M_PriceList_ID;
 	}
@@ -347,7 +351,7 @@ class PricingResult implements IPricingResult
 	@Override
 	public void setPriceDate(final Timestamp priceDate)
 	{
-		this.priceDateTS = priceDate;
+		priceDateTS = priceDate;
 	}
 
 	@Override
@@ -412,21 +416,57 @@ class PricingResult implements IPricingResult
 	{
 		return pricingAttributes;
 	}
-	
+
 	@Override
 	public void addPricingAttributes(final Collection<IPricingAttribute> pricingAttributesToAdd)
 	{
-		if(pricingAttributesToAdd == null || pricingAttributesToAdd.isEmpty())
+		if (pricingAttributesToAdd == null || pricingAttributesToAdd.isEmpty())
 		{
 			return;
 		}
-		
-		this.pricingAttributes.addAll(pricingAttributesToAdd);
+
+		pricingAttributes.addAll(pricingAttributesToAdd);
 	}
 
 	@Override
 	public String toString()
 	{
 		return ObjectUtils.toString(this);
+	}
+
+	@Override
+	public int getC_PaymentTerm_ID()
+	{
+		return C_PaymentTerm_ID;
+	}
+
+	@Override
+	public void setC_PaymentTerm_ID(final int C_PaymentTerm_ID)
+	{
+		this.C_PaymentTerm_ID = C_PaymentTerm_ID;
+	}
+
+	@Override
+	public void setPriceEditable(final boolean isPriceEditable)
+	{
+		this.isPriceEditable = isPriceEditable;
+	}
+
+	@Override
+	public boolean isPriceEditable()
+	{
+		return isPriceEditable;
+	}
+
+	@Override
+	public void setDiscountEditable(final boolean isDiscountEditable)
+	{
+		this.isDiscountEditable = isDiscountEditable;
+	}
+
+	@Override
+	public boolean isDiscountEditable()
+	{
+		return isDiscountEditable;
 	}
 }

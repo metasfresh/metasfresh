@@ -10,12 +10,12 @@ package de.metas.handlingunits.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -23,10 +23,10 @@ package de.metas.handlingunits.spi.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -34,12 +34,12 @@ import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.comparator.NullComparator;
-import org.apache.commons.collections4.list.UnmodifiableList;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
@@ -58,7 +58,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 {
 	/**
 	 * Creates a packing material line for given locator, empties product and empties count.
-	 * 
+	 *
 	 * @param locator on which locator the empties are
 	 * @param emptiesProduct empties product (e.g. IFCO)
 	 * @param emptiesCount how many empties we have (e.g. 5 IFCOs)
@@ -100,7 +100,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 	private BigDecimal qty = BigDecimal.ZERO;
 	private final I_M_Locator locator;
 	private final I_M_Material_Tracking materialTracking;
-	private final List<IHUPackingMaterialCollectorSource> sources = new ArrayList<IHUPackingMaterialCollectorSource>();
+	private final LinkedHashSet<IHUPackingMaterialCollectorSource> sources = new LinkedHashSet<>();
 
 	/**
 	 *
@@ -252,6 +252,8 @@ public final class HUPackingMaterialDocumentLineCandidate
 		}
 
 		qty = qty.add(candidateToAdd.qty);
+		// add sources; might be different
+		addSources(candidateToAdd.getSources());
 	}
 
 	public void addSourceIfNotNull(final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
@@ -262,8 +264,16 @@ public final class HUPackingMaterialDocumentLineCandidate
 		}
 	}
 
-	public List<IHUPackingMaterialCollectorSource> getSources()
+	private void addSources(final Set<IHUPackingMaterialCollectorSource> huPackingMaterialCollectorSources)
 	{
-		return new UnmodifiableList<IHUPackingMaterialCollectorSource>(sources);
+		if (!huPackingMaterialCollectorSources.isEmpty())
+		{
+			sources.addAll(huPackingMaterialCollectorSources);
+		}
+	}
+
+	public Set<IHUPackingMaterialCollectorSource> getSources()
+	{
+		return ImmutableSet.copyOf(sources);
 	}
 }

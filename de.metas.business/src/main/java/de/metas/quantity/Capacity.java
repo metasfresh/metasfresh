@@ -10,12 +10,12 @@ package de.metas.quantity;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,7 +36,7 @@ import lombok.NonNull;
 
 /**
  * Uom-based capacity definition for all sorts of containers.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 @EqualsAndHashCode
@@ -159,14 +159,14 @@ public class Capacity implements CapacityInterface
 	}
 
 	@Override
-	public CapacityInterface subtractQuantity(Quantity quantity)
+	public CapacityInterface subtractQuantity(@NonNull final Quantity quantity)
 	{
 		// If it's infinite capacity, there is nothing to adjust
 		if (infiniteCapacity)
 		{
 			return this;
 		}
-		
+
 		// Qty used is ZERO so there is nothing to adjust
 		if (quantity.isZero())
 		{
@@ -186,7 +186,7 @@ public class Capacity implements CapacityInterface
 					!allowNegativeCapacity
 							// note: if *both* capacityAvailable and qtyUsed/qtyOsedConf we negative, it would not influence the sign of the resulting capacity
 							&& qtyUsedConv.signum() > 0;
-			if (!mustCreateZeroCapacity)
+			if (mustCreateZeroCapacity)
 			{
 				return createZeroCapacity(product,
 						uom,
@@ -211,7 +211,7 @@ public class Capacity implements CapacityInterface
 	 * @param capacityDef
 	 * @return how many capacities are required or NULL if capacity is not available
 	 */
-	public Integer calculateQtyPacks(@NonNull final BigDecimal qty, @NonNull final I_C_UOM targetUom)
+	public Integer calculateQtyTU(@NonNull final BigDecimal qty, @NonNull final I_C_UOM targetUom)
 	{
 		// Infinite capacity => one pack would be sufficient
 		if (infiniteCapacity)
@@ -232,7 +232,7 @@ public class Capacity implements CapacityInterface
 		}
 
 		// Convert Qty to Capacity's UOM
-		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(product, qty, this.uom, targetUom);
+		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(product, qty, uom, targetUom);
 
 		final BigDecimal qtyPacks = qtyConv.divide(capacity, 0, RoundingMode.UP);
 		return qtyPacks.intValueExact();

@@ -1,6 +1,7 @@
 package de.metas.material.event.pporder;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -9,6 +10,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_S_Resource;
+import org.compiere.util.Util;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,7 +20,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.experimental.Wither;
 
 /*
  * #%L
@@ -42,7 +43,6 @@ import lombok.experimental.Wither;
  * #L%
  */
 @Value
-@Wither
 public class PPOrder
 {
 	int orgId;
@@ -58,10 +58,14 @@ public class PPOrder
 
 	int productPlanningId;
 
-	@NonNull
-	ProductDescriptor productDescriptor;
+	/**
+	 * Not persisted in the {@code PP_Order} data record.
+	 * When the material-dispo posts a {@link PPOrderRequestedEvent}, it contains a group-ID,
+	 * and the respective {@link PPOrderCreatedEvent} contains the same group-ID.
+	 */
+	int materialDispoGroupId;
 
-	int uomId;
+	ProductDescriptor productDescriptor;
 
 	/**
 	 * In a build-to-order scenario, this is the ID of the order line which this all is about.
@@ -78,31 +82,24 @@ public class PPOrder
 	/**
 	 * This is usually the respective supply candidates' date value.
 	 */
-	@NonNull
 	Date datePromised;
 
 	/**
 	 * This is usually the respective demand candiates' date value.
 	 */
-	@NonNull
 	Date dateStartSchedule;
 
-	@NonNull
-	BigDecimal quantity;
+	BigDecimal qtyRequired;
 
-	/**
-	 * If {@code true}, then this event advises the recipient to directly request an actual PP_Order to be created.
-	 */
-	boolean advisedToCreatePPOrder;
+	BigDecimal qtyDelivered;
 
 	/**
 	 * Attention, might be {@code null}.
 	 */
-	@Singular
 	List<PPOrderLine> lines;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	public PPOrder(
 			@JsonProperty("orgId") final int orgId,
 			@JsonProperty("plantId") final int plantId,
@@ -110,15 +107,15 @@ public class PPOrder
 			@JsonProperty("bPartnerId") final int bPartnerId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-			@JsonProperty("uomId") final int uomId,
 			@JsonProperty("orderLineId") final int orderLineId,
 			@JsonProperty("ppOrderId") final int ppOrderId,
 			@JsonProperty("docStatus") @Nullable final String docStatus,
 			@JsonProperty("datePromised") @NonNull final Date datePromised,
 			@JsonProperty("dateStartSchedule") @NonNull final Date dateStartSchedule,
-			@JsonProperty("quantity") @NonNull final BigDecimal quantity,
-			@JsonProperty("advisedToCreatePPOrder") final boolean advisedToCreatePPOrder,
-			@JsonProperty("lines") @Singular final List<PPOrderLine> lines)
+			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
+			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
+			@JsonProperty("lines") @Singular final List<PPOrderLine> lines,
+			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
 	{
 		this.orgId = checkIdGreaterThanZero("orgId", orgId);
 		this.plantId = checkIdGreaterThanZero("plantId", plantId);
@@ -128,14 +125,17 @@ public class PPOrder
 		this.productPlanningId = productPlanningId; // ok to be not set
 		this.productDescriptor = productDescriptor;
 
-		this.uomId = checkIdGreaterThanZero("uomId", uomId);
 		this.orderLineId = orderLineId;
 		this.ppOrderId = ppOrderId;
 		this.docStatus = docStatus;
 		this.datePromised = datePromised;
 		this.dateStartSchedule = dateStartSchedule;
-		this.quantity = quantity;
-		this.advisedToCreatePPOrder = advisedToCreatePPOrder;
+
+		this.qtyRequired = qtyRequired;
+		this.qtyDelivered =Util.coalesce(qtyDelivered, ZERO);
+
 		this.lines = lines;
+
+		this.materialDispoGroupId = materialDispoGroupId;
 	}
 }

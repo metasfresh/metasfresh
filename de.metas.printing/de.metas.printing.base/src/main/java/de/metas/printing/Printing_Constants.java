@@ -10,12 +10,12 @@ package de.metas.printing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,9 +38,9 @@ public final class Printing_Constants
 	private Printing_Constants()
 	{
 	}
-	
+
 	public static final String ENTITY_TYPE = "de.metas.printing";
-	
+
 	/**
 	 * @see http://dewiki908/mediawiki/index.php/03758_Drucker_Kalibrierung_%282013010410000055%29# Detailbeschreibung_fachlich
 	 */
@@ -66,17 +66,17 @@ public final class Printing_Constants
 	 * Internal name for pdf printing async batch
 	 */
 	public static final String C_Async_Batch_InternalName_PDFPrinting = "PDFPrinting";
-	
+
 	public static final Topic TOPIC_Printing = Topic.builder()
-			.setName("de.metas.printing.async.ProcessedEvents")
-			.setType(Type.REMOTE)
+			.name("de.metas.printing.async.ProcessedEvents")
+			.type(Type.REMOTE)
 			.build();
-	
+
 	public static final IEventBus getPrintingEventBus()
 	{
 		return Services.get(IEventBusFactory.class).getEventBus(TOPIC_Printing);
 	}
-	
+
 	/**
 	 * @return true if printing module is enabled; false if printing module is fully disabled
 	 */

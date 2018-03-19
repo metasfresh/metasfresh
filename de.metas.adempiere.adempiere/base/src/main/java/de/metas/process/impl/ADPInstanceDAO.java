@@ -1,5 +1,10 @@
 package de.metas.process.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.setValue;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -39,7 +44,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -130,11 +134,11 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		// Big Decimal
 		// NOTE: keep this one last because getP_Number() is always returning not null
 		if (Parameter == null && Parameter_To == null
-				&& (!InterfaceWrapperHelper.isNull(adPInstancePara, I_AD_PInstance_Para.COLUMNNAME_P_Number)
-						|| !InterfaceWrapperHelper.isNull(adPInstancePara, I_AD_PInstance_Para.COLUMNNAME_P_Number_To)))
+				&& (!isNull(adPInstancePara, I_AD_PInstance_Para.COLUMNNAME_P_Number)
+						|| !isNull(adPInstancePara, I_AD_PInstance_Para.COLUMNNAME_P_Number_To)))
 		{
 			Parameter = adPInstancePara.getP_Number();
-			if (InterfaceWrapperHelper.isNull(adPInstancePara, I_AD_PInstance_Para.COLUMNNAME_P_Number_To))
+			if (isNull(adPInstancePara, I_AD_PInstance_Para.COLUMNNAME_P_Number_To))
 			{
 				Parameter_To = null;
 			}
@@ -221,7 +225,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		// and renamed to ParameterName + "1" and ParameterName + "2" since Jasper doesn't support range
 		// parameters.
 
-		final I_AD_PInstance_Para instPara = InterfaceWrapperHelper.create(ctx, I_AD_PInstance_Para.class, ITrx.TRXNAME_None);
+		final I_AD_PInstance_Para instPara = create(ctx, I_AD_PInstance_Para.class, ITrx.TRXNAME_None);
 		instPara.setAD_PInstance_ID(adPInstanceId);
 		instPara.setSeqNo(seqNo);
 
@@ -273,12 +277,16 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 				instPara.setP_String_To(valueStrTo);
 			}
 		}
+		else if (value == null)
+		{
+			// nothing to set
+		}
 		else
 		{
 			logger.warn("Skip setting parameter value for {} because value type is unknown: {}", instPara, piPara);
 		}
 
-		InterfaceWrapperHelper.save(instPara);
+		save(instPara);
 		return instPara;
 	}
 
@@ -361,7 +369,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			adPInstanceParam.setInfo(piParam.getInfo());
 			adPInstanceParam.setInfo_To(piParam.getInfo_To());
 
-			InterfaceWrapperHelper.save(adPInstanceParam);
+			save(adPInstanceParam);
 		}
 	}
 
@@ -567,13 +575,13 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			throw new AdempiereException("Cannot save process execution result because there is no AD_PInstance_ID: " + result);
 		}
 
-		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
+		final I_AD_PInstance adPInstance = create(ctx, adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
 		Check.assumeNotNull(adPInstance, "adPInstance is not null for AD_PInstance_ID={} of {}", adPInstanceId, result);
 
 		adPInstance.setIsProcessing(false); // unlock
 		adPInstance.setResult(result.isError() ? RESULT_ERROR : RESULT_OK);
 		adPInstance.setErrorMsg(result.getSummary());
-		InterfaceWrapperHelper.save(adPInstance);
+		save(adPInstance);
 
 		saveProcessInfoLogs(adPInstanceId, result.getCurrentLogs());
 	}
@@ -590,7 +598,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		{
 			saveParameterToDB(pi.getAD_PInstance_ID(), parameters);
 		}
-		
+
 		saveSelectedIncludedRecords(pi.getAD_PInstance_ID(), pi.getSelectedIncludedRecords());
 	}
 
@@ -602,13 +610,13 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		final I_AD_PInstance adPInstance;
 		if (pi.getAD_PInstance_ID() <= 0)
 		{
-			adPInstance = InterfaceWrapperHelper.create(pi.getCtx(), I_AD_PInstance.class, ITrx.TRXNAME_None);
-			InterfaceWrapperHelper.setValue(adPInstance, I_AD_PInstance.COLUMNNAME_AD_Client_ID, pi.getAD_Client_ID());
+			adPInstance = create(pi.getCtx(), I_AD_PInstance.class, ITrx.TRXNAME_None);
+			setValue(adPInstance, I_AD_PInstance.COLUMNNAME_AD_Client_ID, pi.getAD_Client_ID());
 			adPInstance.setIsProcessing(false);
 		}
 		else
 		{
-			adPInstance = InterfaceWrapperHelper.create(pi.getCtx(), pi.getAD_PInstance_ID(), I_AD_PInstance.class, ITrx.TRXNAME_None);
+			adPInstance = create(pi.getCtx(), pi.getAD_PInstance_ID(), I_AD_PInstance.class, ITrx.TRXNAME_None);
 			Check.assumeNotNull(adPInstance, "Parameter adPInstance is not null for {}", pi);
 		}
 
@@ -621,12 +629,13 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		adPInstance.setRecord_ID(Util.firstGreaterThanZero(pi.getRecord_ID(), 0)); // TODO: workaround while Record_ID is mandatory and value <= is interpreted as null
 		adPInstance.setWhereClause(pi.getWhereClause());
 		adPInstance.setAD_Process_ID(pi.getAD_Process_ID());
+		adPInstance.setAD_Window_ID(pi.getAD_Window_ID());
 
 		final Language reportingLanguage = pi.getReportLanguage();
 		final String adLanguage = reportingLanguage == null ? null : reportingLanguage.getAD_Language();
 		adPInstance.setAD_Language(adLanguage);
 
-		InterfaceWrapperHelper.save(adPInstance);
+		save(adPInstance);
 
 		//
 		// Update ProcessInfo's AD_PInstance_ID
@@ -645,7 +654,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	@Override
 	public I_AD_PInstance createAD_PInstance(final Properties ctx, final int AD_Process_ID, final int AD_Table_ID, final int recordId)
 	{
-		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, I_AD_PInstance.class, ITrx.TRXNAME_None);
+		final I_AD_PInstance adPInstance = create(ctx, I_AD_PInstance.class, ITrx.TRXNAME_None);
 		adPInstance.setAD_Process_ID(AD_Process_ID);
 		if (AD_Table_ID > 0)
 		{
@@ -660,7 +669,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		adPInstance.setAD_User_ID(Env.getAD_User_ID(ctx));
 		adPInstance.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 		adPInstance.setIsProcessing(false);
-		InterfaceWrapperHelper.save(adPInstance);
+		save(adPInstance);
 
 		return adPInstance;
 	}
@@ -669,7 +678,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	public I_AD_PInstance retrieveAD_PInstance(final Properties ctx, final int adPInstanceId)
 	{
 		Check.assume(adPInstanceId > 0, "adPInstanceId > 0");
-		final I_AD_PInstance adPInstance = InterfaceWrapperHelper.create(ctx, adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
+		final I_AD_PInstance adPInstance = create(ctx, adPInstanceId, I_AD_PInstance.class, ITrx.TRXNAME_None);
 		if (adPInstance == null || adPInstance.getAD_PInstance_ID() != adPInstanceId)
 		{
 			throw new AdempiereException("@NotFound@ @AD_PInstance_ID@ (ID=" + adPInstanceId + ")");

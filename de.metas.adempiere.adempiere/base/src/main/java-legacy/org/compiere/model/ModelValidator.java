@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.ITrxListener;
 
 import com.google.common.collect.ImmutableMap;
 

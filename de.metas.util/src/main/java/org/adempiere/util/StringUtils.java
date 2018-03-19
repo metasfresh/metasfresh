@@ -13,11 +13,11 @@ package org.adempiere.util;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -25,10 +25,16 @@ package org.adempiere.util;
 import java.math.BigDecimal;
 import java.text.Format;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
+
+import lombok.NonNull;
 
 public final class StringUtils
 {
@@ -76,7 +82,7 @@ public final class StringUtils
 		{
 			return Integer.valueOf(str);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			return 0;
 		}
@@ -100,7 +106,7 @@ public final class StringUtils
 		{
 			return new BigDecimal(str);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			return BigDecimal.ZERO;
 		}
@@ -114,36 +120,36 @@ public final class StringUtils
 	 * <li>{@code "Y"} or {@code "y"} => {@code true}
 	 * <li>otherwise, the return value of {@link Boolean#parseBoolean(String)} is returned.
 	 * </ul>
-	 * 
+	 *
 	 * @param strBoolean the parameter to convert. May be empty or {@code null}.
 	 * @return
 	 */
 	public static Boolean toBooleanOrNull(final String strBoolean)
 	{
-		if(Check.isEmpty(strBoolean, true))
+		if (Check.isEmpty(strBoolean, true))
 		{
 			return null;
 		}
 
-		if("Y".equalsIgnoreCase(strBoolean))
+		if ("Y".equalsIgnoreCase(strBoolean))
 		{
 			return true;
 		}
-		if("N".equalsIgnoreCase(strBoolean))
+		if ("N".equalsIgnoreCase(strBoolean))
 		{
 			return false;
 		}
 
 		return Boolean.parseBoolean(strBoolean);
 	}
-	
-	
+
 	/**
 	 * Convert given object to ADempiere's boolean value.
-	 * 
+	 *
 	 * @param value
 	 * @param defaultValue
-	 * @return <ul>
+	 * @return
+	 *         <ul>
 	 *         <li>true if value is boolean true, "true" or "Y"
 	 *         <li>false if value is boolean false, "false" or "N"
 	 *         <li><code>defaultValue</code> if value is null or other
@@ -181,9 +187,10 @@ public final class StringUtils
 
 	/**
 	 * Converts the give object to boolean value, same as {@link #toBoolean(Object, boolean)} but assumes default value is <code>false</code>.
-	 * 
+	 *
 	 * @param value may be {@code null}. in that case, {@code false} is returned.
-	 * @return <ul>
+	 * @return
+	 *         <ul>
 	 *         <li>true if value is boolean true, "true" or "Y"
 	 *         <li>false if value is boolean false, "false" or "N"
 	 *         <li>false if value is null or other
@@ -197,9 +204,10 @@ public final class StringUtils
 
 	/**
 	 * Converts given boolean value to ADempiere's string representation of it
-	 * 
+	 *
 	 * @param value
-	 * @return <ul>
+	 * @return
+	 *         <ul>
 	 *         <li><code>null</code> if value is null
 	 *         <li>"Y" if value is true
 	 *         <li>"N" if value is false
@@ -213,17 +221,17 @@ public final class StringUtils
 		}
 		return value ? "Y" : "N";
 	}
-	
+
 	/**
 	 * Formats the given message, using either {@link java.text.Format} or {@link org.slf4j.helpers.MessageFormatter}.<br>
 	 * If the given <code>message</code> contains <code>{0}</code> as a substring and the given <code>params</code> has at least one item, then {@link java.text.Format} is used, otherwise the SLF4J
 	 * formatter.
 	 *
-	 * @param message
-	 * @param params
-	 * @return
+	 * @param params may be {@code null}
 	 */
-	public static String formatMessage(final String message, Object... params)
+	public static String formatMessage(
+			@NonNull final String message,
+			@Nullable final Object... params)
 	{
 		if (message.contains("{0}") && params != null && params.length > 0)
 		{
@@ -246,7 +254,10 @@ public final class StringUtils
 		{
 			return message; // i think null would also be handled by MessageFormatter, but better be save than sorry
 		}
-		final FormattingTuple arrayFormat = MessageFormatter.arrayFormat(message, params);
+
+		final Object[] effectiveParams = invokeSuppliers(params);
+		final FormattingTuple arrayFormat = MessageFormatter.arrayFormat(message, effectiveParams);
+
 		return arrayFormat.getMessage();
 	}
 
@@ -275,9 +286,10 @@ public final class StringUtils
 				// however if it turns out that we need to use the regexp solution, make sure to have the patters as a pre-compiled constant
 				final String msgToUse = message.replace("'", "''");
 
-				messageFormated = MessageFormat.format(msgToUse, params);
+				final Object[] effectiveParams = invokeSuppliers(params);
+				messageFormated = MessageFormat.format(msgToUse, effectiveParams);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				// In case message formating failed, we have a fallback format to use
 				messageFormated = new StringBuilder()
@@ -291,6 +303,32 @@ public final class StringUtils
 			messageFormated = message;
 		}
 		return messageFormated;
+	}
+
+	@SafeVarargs
+	private static Object[] invokeSuppliers(final Object... params)
+	{
+		if (params == null)
+		{
+			return null;
+		}
+
+		final ArrayList<Object> result = new ArrayList<>(params.length);
+		for (final Object param : params)
+		{
+			if (param instanceof Supplier)
+			{
+				@SuppressWarnings("rawtypes")
+				final Supplier paramSupplier = (Supplier)param;
+
+				result.add(paramSupplier.get());
+			}
+			else
+			{
+				result.add(param);
+			}
+		}
+		return result.toArray();
 	}
 
 	/**

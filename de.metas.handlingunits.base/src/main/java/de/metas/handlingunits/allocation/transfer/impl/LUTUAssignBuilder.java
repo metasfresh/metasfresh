@@ -60,9 +60,9 @@ import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequest
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.exceptions.NoCompatibleHUItemParentFoundException;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.hutransaction.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -248,7 +248,7 @@ public class LUTUAssignBuilder
 
 		//
 		// Create HU Transaction From: Old HUStatus, Old Locator, minus storage Qty
-		final IHUTransaction huTransactionFrom = new HUTransaction(referencedModel,
+		final IHUTransactionCandidate huTransactionFrom = new HUTransactionCandidate(referencedModel,
 				null, // huItem from
 				null, // vhuItem from
 				mockProduct,
@@ -260,7 +260,7 @@ public class LUTUAssignBuilder
 
 		//
 		// Create HU Transaction To: New HUStatus, New Locator, plus storage Qty
-		final IHUTransaction huTransactionTo = new HUTransaction(referencedModel,
+		final IHUTransactionCandidate huTransactionTo = new HUTransactionCandidate(referencedModel,
 				luItem, // huItem
 				null, // vhuItem
 				mockProduct,

@@ -4,7 +4,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_ProductPrice
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -463752021L;
+	private static final long serialVersionUID = -761442248L;
 
     /** Standard Constructor */
     public X_M_ProductPrice (Properties ctx, int M_ProductPrice_ID, String trxName)
@@ -26,24 +25,20 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
         {
 			setC_TaxCategory_ID (0);
 			setC_UOM_ID (0);
-			setIsAttributeDependant (false);
-// N
-			setIsDefault (false);
-// N
-			setIsSeasonFixedPrice (false);
-// N
+			setIsAttributeDependant (false); // N
+			setIsDefault (false); // N
+			setIsDiscountEditable (true); // Y
+			setIsPriceEditable (true); // Y
+			setIsSeasonFixedPrice (false); // N
 			setM_PriceList_Version_ID (0);
 			setM_Product_ID (0);
 			setM_ProductPrice_ID (0);
-			setMatchSeqNo (0);
-// @SQL=SELECT COALESCE(MAX(MatchSeqNo),0)+10 AS DefaultValue FROM M_ProductPrice WHERE M_PriceList_Version_ID=@M_PriceList_Version_ID@ AND M_Product_ID=@M_Product_ID@
-			setPriceLimit (Env.ZERO);
-			setPriceList (Env.ZERO);
-			setPriceStd (Env.ZERO);
-			setSeqNo (0);
-// @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM M_ProductPrice WHERE M_PriceList_Version_ID=@M_PriceList_Version_ID@
-			setUseScalePrice (false);
-// N
+			setMatchSeqNo (0); // @SQL=SELECT COALESCE(MAX(MatchSeqNo),0)+10 AS DefaultValue FROM M_ProductPrice WHERE M_PriceList_Version_ID=@M_PriceList_Version_ID@ AND M_Product_ID=@M_Product_ID@
+			setPriceLimit (BigDecimal.ZERO);
+			setPriceList (BigDecimal.ZERO);
+			setPriceStd (BigDecimal.ZERO);
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM M_ProductPrice WHERE M_PriceList_Version_ID=@M_PriceList_Version_ID@
+			setUseScalePrice (false); // N
         } */
     }
 
@@ -136,16 +131,16 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 		return ii.intValue();
 	}
 
-	/** Set isAttributeDependant.
-		@param IsAttributeDependant isAttributeDependant	  */
+	/** Set Attributabhängig.
+		@param IsAttributeDependant Attributabhängig	  */
 	@Override
 	public void setIsAttributeDependant (boolean IsAttributeDependant)
 	{
 		set_Value (COLUMNNAME_IsAttributeDependant, Boolean.valueOf(IsAttributeDependant));
 	}
 
-	/** Get isAttributeDependant.
-		@return isAttributeDependant	  */
+	/** Get Attributabhängig.
+		@return Attributabhängig	  */
 	@Override
 	public boolean isAttributeDependant () 
 	{
@@ -176,6 +171,58 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	public boolean isDefault () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDefault);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Discount Editable.
+		@param IsDiscountEditable 
+		Allow user to change the discount
+	  */
+	@Override
+	public void setIsDiscountEditable (boolean IsDiscountEditable)
+	{
+		set_Value (COLUMNNAME_IsDiscountEditable, Boolean.valueOf(IsDiscountEditable));
+	}
+
+	/** Get Discount Editable.
+		@return Allow user to change the discount
+	  */
+	@Override
+	public boolean isDiscountEditable () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDiscountEditable);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Price Editable.
+		@param IsPriceEditable 
+		Allow user to change the price
+	  */
+	@Override
+	public void setIsPriceEditable (boolean IsPriceEditable)
+	{
+		set_Value (COLUMNNAME_IsPriceEditable, Boolean.valueOf(IsPriceEditable));
+	}
+
+	/** Get Price Editable.
+		@return Allow user to change the price
+	  */
+	@Override
+	public boolean isPriceEditable () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPriceEditable);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -220,9 +267,9 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Instanz des Merkmals-Satzes zum Produkt
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -233,8 +280,8 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Instanz des Merkmals-Satzes zum Produkt
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -449,7 +496,7 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceLimit);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -471,7 +518,7 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceList);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -493,7 +540,7 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStd);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

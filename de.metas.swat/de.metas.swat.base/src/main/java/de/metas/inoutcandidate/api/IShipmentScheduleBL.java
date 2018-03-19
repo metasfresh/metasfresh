@@ -29,17 +29,36 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
-import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
 import de.metas.storage.IStorageQuery;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
 	public static final String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
+
+	/**
+	 * Please use this method before calling {@link CreateMissingShipmentSchedulesWorkpackageProcessor#schedule(Properties, String)}, to avoid unneeded work packages.
+	 *
+	 * @return {@code true} if the caller can (and should) skip scheduling a workpackage processor.
+	 */
+	boolean allMissingSchedsWillBeCreatedLater();
+
+	/**
+	 * Use this closable in a try-with-resource block if you create a number of shipment-schedule related records and want to avoid some model
+	 * interceptors etc to schedule one {@link CreateMissingShipmentSchedulesWorkpackageProcessor} for each of them.<br>
+	 * The closable will schedule one work package at the end.
+	 * <p>
+	 * Note:
+	 * <li>This behavior is "thread-local"
+	 * <li>calling this method multiple times within the same stack is no problem.
+	 */
+	IAutoCloseable postponeMissingSchedsCreationUntilClose();
 
 	/**
 	 * Updates the given {@link I_M_ShipmentSchedule}s by setting these columns:
@@ -58,12 +77,12 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 *
 	 *
 	 * @param olsAndScheds
-
+	 *
 	 * @param trxName
 	 */
 	void updateSchedules(
 			Properties ctx,
-			List<OlAndSched> olsAndScheds, 
+			List<OlAndSched> olsAndScheds,
 			String trxName);
 
 	void registerCandidateProcessor(IShipmentSchedulesAfterFirstPassUpdater processor);
@@ -96,7 +115,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Update the given {@code sched}'s delivery and preparation date from its underlying document (orderline etc).
-	 * 
+	 *
 	 * @param sched
 	 */
 	void updatePreparationAndDeliveryDate(I_M_ShipmentSchedule sched);
@@ -144,16 +163,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	BigDecimal updateQtyOrdered(I_M_ShipmentSchedule shipmentSchedule);
 
 	/**
-	 * Registers <code>ShipmentScheduleQtyUpdateListener</code> for given table name.
-	 *
-	 * This listener will be called when an update on delivery quantity is needed in shipmentSchedule
-	 *
-	 * @param tableName
-	 * @param listener
-	 */
-	void addShipmentScheduleQtyUpdateListener(final IShipmentScheduleQtyUpdateListener listener);
-
-	/**
 	 * Close the given Shipment Schedule.
 	 *
 	 * Closing a shipment schedule means overriding its QtyOrdered to the qty which was already delivered.
@@ -164,7 +173,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Creates a storage query for the given {@code shipmentSchedule}.
-	 * 
+	 *
 	 * @param sched
 	 * @param considerAttributes {@code true} if the query shall be strict with respect to the given {@code shipmentSchedule}'s ASI.
 	 * @return query
@@ -173,7 +182,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Reopen the closed shipment schedule given as parameter
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 */
 	void openShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);

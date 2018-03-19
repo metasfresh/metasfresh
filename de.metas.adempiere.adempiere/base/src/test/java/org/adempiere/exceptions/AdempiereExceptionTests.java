@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
+import org.compiere.model.Null;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -116,7 +117,7 @@ public class AdempiereExceptionTests
 	{
 		final AdempiereException ex = new AdempiereException()
 				.setParameter("param", null);
-		Assert.assertEquals(ImmutableMap.of(), ex.getParameters());
+		Assert.assertEquals(ImmutableMap.of("param", Null.NULL), ex.getParameters());
 	}
 
 	@Test
@@ -127,7 +128,12 @@ public class AdempiereExceptionTests
 				.setParameter("param2", "value2")
 				.setParameter("param3", null)
 				.setParameter("param4", "value4");
-		Assert.assertEquals(ImmutableMap.of("param2", "value2", "param4", "value4"), ex.getParameters());
+
+		Assert.assertEquals(ImmutableMap.of(
+				"param1", Null.NULL,
+				"param2", "value2",
+				"param3", Null.NULL,
+				"param4", "value4"), ex.getParameters());
 	}
 
 	@Test
@@ -136,11 +142,15 @@ public class AdempiereExceptionTests
 		final AdempiereException ex = new AdempiereException()
 				.setParameter("param1", "value1")
 				.setParameter("param2", "value2");
-		Assert.assertEquals(ImmutableMap.of("param1", "value1", "param2", "value2"), ex.getParameters());
+		Assert.assertEquals(ImmutableMap.of(
+				"param1", "value1",
+				"param2", "value2"), ex.getParameters());
 
 		// Remove "param1" and test
 		ex.setParameter("param1", null);
-		Assert.assertEquals(ImmutableMap.of("param2", "value2"), ex.getParameters());
+		Assert.assertEquals(ImmutableMap.of(
+				"param1", Null.NULL,
+				"param2", "value2"), ex.getParameters());
 	}
 
 	@Test
@@ -165,5 +175,5 @@ public class AdempiereExceptionTests
 				.setParameter("someParam", "test");
 		assertThat(adempiereException.hasParameter("someParam")).isTrue();
 	}
-	
+
 }

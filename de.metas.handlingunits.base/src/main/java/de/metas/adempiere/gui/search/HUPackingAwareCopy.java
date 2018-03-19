@@ -60,7 +60,7 @@ public class HUPackingAwareCopy
 		to.setC_UOM(from.getC_UOM());
 		to.setQty(from.getQty());
 		to.setM_HU_PI_Item_Product(from.getM_HU_PI_Item_Product());
-		to.setQtyPacks(from.getQtyPacks());
+		to.setQtyTU(from.getQtyTU());
 
 		copyBPartner(to);
 	}

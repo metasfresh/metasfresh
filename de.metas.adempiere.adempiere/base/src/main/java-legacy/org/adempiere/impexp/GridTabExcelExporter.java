@@ -114,7 +114,7 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 	}
 
 	@Override
-	public boolean isFunctionRow()
+	public boolean isFunctionRow(final int row)
 	{
 		return false;
 	}
@@ -123,12 +123,6 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 	public boolean isPageBreak(final int row, final int col)
 	{
 		return false;
-	}
-
-	@Override
-	protected void setCurrentRow(final int row)
-	{
-		; // nothing
 	}
 	
 	private HashMap<String, MLookup> m_buttonLookups = new HashMap<>();

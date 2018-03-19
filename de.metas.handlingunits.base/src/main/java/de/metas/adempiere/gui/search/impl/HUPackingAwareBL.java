@@ -54,31 +54,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	}
 
 	@Override
-	public boolean isValid(final IHUPackingAware record)
-	{
-		if (record == null)
-		{
-			return false;
-		}
-
-		return record.getM_Product_ID() > 0
-				&& record.getM_HU_PI_Item_Product_ID() > 0
-				&& isValidQty(record)
-				&& record.getQtyPacks() != null && record.getQtyPacks().signum() != 0;
-	}
-
-	@Override
-	public boolean isValidQty(final IHUPackingAware record)
-	{
-		if (record == null)
-		{
-			return false;
-		}
-		return record.getQty() != null && record.getQty().signum() != 0;
-	}
-
-	@Override
-	public void setQty(final IHUPackingAware record, final int qtyPacks)
+	public void setQtyCUFromQtyTU(final IHUPackingAware record, final int qtyPacks)
 	{
 		final BigDecimal qty = calculateQty(record, qtyPacks);
 		if (qty == null)
@@ -91,9 +67,9 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	}
 
 	@Override
-	public void updateQtyIfNeeded(final IHUPackingAware record, final int qtyPacks, final BigDecimal qtyCU)
+	public void updateQtyIfNeeded(final IHUPackingAware record, final int qtyTU, final BigDecimal qtyCU)
 	{
-		final BigDecimal maxQty = calculateQty(record, qtyPacks);
+		final BigDecimal maxQty = calculateQty(record, qtyTU);
 
 		if (maxQty == null)
 		{
@@ -108,7 +84,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return;
 		}
 
-		final BigDecimal minQty = calculateQty(record, qtyPacks - 1);
+		final BigDecimal minQty = calculateQty(record, qtyTU - 1);
 
 		if (qtyCU.compareTo(minQty) <= 0)
 		{
@@ -146,22 +122,22 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	}
 
 	@Override
-	public void setQtyPacks(final IHUPackingAware record)
+	public void setQtyTU(final IHUPackingAware record)
 	{
 		// Only set Qty Packs for entries that are not in dispute.
 		if (record.isInDispute())
 		{
-			record.setQtyPacks(BigDecimal.ZERO);
+			record.setQtyTU(BigDecimal.ZERO);
 		}
 		else
 		{
-			final BigDecimal qtyPacks = calculateQtyPacks(record);
-			record.setQtyPacks(qtyPacks);
+			final BigDecimal qtyPacks = calculateQtyTU(record);
+			record.setQtyTU(qtyPacks);
 		}
 	}
 
 	@Override
-	public BigDecimal calculateQtyPacks(final IHUPackingAware record)
+	public BigDecimal calculateQtyTU(final IHUPackingAware record)
 	{
 		final BigDecimal qty = record.getQty();
 		if (qty == null || qty.signum() <= 0)
@@ -194,13 +170,13 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 		final Capacity capacityDef = capacityBL.getCapacity(huPiItemProduct, product, uom);
 
-		final Integer qtyPacks = capacityDef.calculateQtyPacks(qty, uom);
-		if (qtyPacks == null)
+		final Integer qtyTU = capacityDef.calculateQtyTU(qty, uom);
+		if (qtyTU == null)
 		{
 			return null;
 		}
 
-		return BigDecimal.valueOf(qtyPacks);
+		return BigDecimal.valueOf(qtyTU);
 	}
 
 	@Override
@@ -213,13 +189,13 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		if (piItemProduct == null || piPIItemProductBL.isVirtualHUPIItemProduct(piItemProduct) || piItemProduct.isInfiniteCapacity())
 		{
 			huPackingAware.setQty(quickInputQty);
-			huPackingAware.setQtyPacks(BigDecimal.ONE);
+			huPackingAware.setQtyTU(BigDecimal.ONE);
 		}
 		else
 		{
 			final BigDecimal qtyTU = quickInputQty;
-			huPackingAware.setQtyPacks(qtyTU);
-			setQty(huPackingAware, qtyTU.intValue());
+			huPackingAware.setQtyTU(qtyTU);
+			setQtyCUFromQtyTU(huPackingAware, qtyTU.intValue());
 		}
 	}
 

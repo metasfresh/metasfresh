@@ -1,21 +1,23 @@
 package de.metas.material.event.shipmentschedule;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+import java.math.BigDecimal;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import org.adempiere.util.Check;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
-import lombok.Builder.Default;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
 
 /*
  * #%L
- * metasfresh-manufacturing-event-api
+ * metasfresh-material-event
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -35,35 +37,50 @@ import lombok.Value;
  * #L%
  */
 
-
-@Value // this includes @AllArgsconstructor that is used by jackson when it deserializes a string
-@Builder // used by devs to make sure they know with parameter-value goes into which property
-public class ShipmentScheduleCreatedEvent implements MaterialEvent
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+@Getter
+public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 {
 	public static final String TYPE = "ShipmentScheduleCreatedEvent";
 
-	@NonNull
-	EventDescriptor eventDescriptor;
+	private final DocumentLineDescriptor documentLineDescriptor;
 
-	@NonNull
-	MaterialDescriptor materialDescriptor;
-
-	int shipmentScheduleId;
-
-	@Default
-	int orderLineId = -1;
-
-	@JsonCreator
+	@Builder
 	public ShipmentScheduleCreatedEvent(
-			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
-			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
-			@JsonProperty("orderLineId") int orderLineId)
+			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
+			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
+			@JsonProperty("reservedQuantity") @NonNull final BigDecimal reservedQuantity,
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
+			@JsonProperty("documentLineDescriptor") final DocumentLineDescriptor documentLineDescriptor)
 	{
-		this.shipmentScheduleId = checkIdGreaterThanZero("shipmentScheduleId", shipmentScheduleId);
+		super(
+				eventDescriptor,
+				materialDescriptor,
+				reservedQuantity,
+				shipmentScheduleId);
 
-		this.eventDescriptor = eventDescriptor;
-		this.materialDescriptor = materialDescriptor;
-		this.orderLineId = orderLineId;
+		this.documentLineDescriptor = documentLineDescriptor;
+	}
+
+	@Override
+	public BigDecimal getOrderedQuantityDelta()
+	{
+		return getMaterialDescriptor().getQuantity();
+	}
+
+	@Override
+	public BigDecimal getReservedQuantityDelta()
+	{
+		return getReservedQuantity();
+	}
+
+	@Override
+	public void validate()
+	{
+		super.validate();
+
+		Check.errorIf(documentLineDescriptor == null, "documentLineDescriptor may not be null");
+		documentLineDescriptor.validate();
 	}
 }

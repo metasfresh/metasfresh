@@ -72,8 +72,7 @@ LEFT JOIN C_Order o ON (o.C_Order_ID=ol.C_Order_ID)
 LEFT JOIN C_DocType dt ON (dt.C_DocType_ID=o.C_DocType_ID)
 LEFT JOIN M_Shipper sh ON (sh.M_Shipper_ID=ol.M_Shipper_ID)
 WHERE
-	true
+	s.Processed='N'
 	AND s.QtyToDeliver > 0
-	AND NOT EXISTS (SELECT 1 FROM M_ShipmentSchedule_ShipmentRun sr WHERE sr.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID)
 	AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)
 ;

@@ -70,7 +70,7 @@ public class Services
 
 	/**
 	 * Can be used to provide service implementations from the outside. Concrete goal: allow us to provide spring managed service implementations via {@link Services#get(Class)}.
-	 * 
+	 *
 	 * @see Services#setExternalServiceImplProvider(IServiceImplProvider)
 	 * @task https://github.com/metasfresh/metasfresh/issues/427
 	 */
@@ -78,7 +78,7 @@ public class Services
 	public interface IServiceImplProvider
 	{
 		/**
-		 * 
+		 *
 		 * @param serviceClazz
 		 * @return a service implementation class, or {@code null} if none can't be provided.
 		 */
@@ -89,11 +89,11 @@ public class Services
 
 	/**
 	 * This method can optionally be called so that invocations of the {@link #get(Class)} method are able to receive service implementations that are not coming right out of this class.
-	 * 
+	 *
 	 * If a service implementation was not yet cached within {@link Services} and is required, then the external service implementation provider (if one was set via this method) will be invoked first and if it returns a non null result, that result will be cached.
-	 * 
+	 *
 	 * @param externalServiceImplProvider
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/427
 	 */
 	public static void setExternalServiceImplProvider(final IServiceImplProvider externalServiceImplProvider)
@@ -153,9 +153,7 @@ public class Services
 		return interceptor;
 	}
 
-	// using the unit test policy by default. that way not all unit tests have to remember this step
-	// note that the Adempiere.java sets this to DefaultServiceNamePolicy
-	private static IServiceNameAutoDetectPolicy serviceNameAutoDetectPolicy = new UnitTestServiceNamePolicy();
+	private static IServiceNameAutoDetectPolicy serviceNameAutoDetectPolicy = new DefaultServiceNamePolicy();
 
 	public static void setAutodetectServices(boolean enable)
 	{
@@ -180,7 +178,7 @@ public class Services
 	 *         </ul>
 	 * @throws ServicesException if a service implementation was not found or could not be instantiated
 	 */
-	public static <T extends IService> T get( @NonNull final Class<T> serviceInterfaceClass)
+	public static <T extends IService> T get(@NonNull final Class<T> serviceInterfaceClass)
 	{
 		Check.assume(serviceInterfaceClass.isInterface(), "Param 'clazz' shall be an interface: {}", serviceInterfaceClass);
 
@@ -237,7 +235,7 @@ public class Services
 		try
 		{
 			T serviceImpl = null;
-			
+
 			// gh #427 first check if an external service implementation provider was given to us, and if so, see what it has to offer.
 			if (externalServiceImplProvider != null)
 			{

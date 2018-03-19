@@ -10,14 +10,14 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,7 +36,7 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 
 /**
  * The implementation iterates HUs (and their children) and collect the packing material products from those HUs.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  * @param <T> type of the optional "source" (inoutLine, oderLine or other) the respective HU belongs to.
@@ -63,7 +63,7 @@ public interface IHUPackingMaterialsCollector<T>
 	 *
 	 * @param hus
 	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
-	 * 
+	 *
 	 * @see #addHURecursively(I_M_HU)
 	 */
 	void addHURecursively(Collection<I_M_HU> hus,
@@ -119,8 +119,7 @@ public interface IHUPackingMaterialsCollector<T>
 	 * @param luHU
 	 * @param source optional, may be <code>null</code>. Allows the implementation to later on update the given source, as needed.
 	 */
-	void addLU(I_M_HU luHU,
-			T source);
+	void addLU(I_M_HU luHU, T source);
 
 	/**
 	 * Collect (extract) loading unit packing materials

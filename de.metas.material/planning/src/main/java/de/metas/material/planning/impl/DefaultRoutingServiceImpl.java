@@ -49,6 +49,7 @@ import org.eevolution.model.I_PP_Order_Node;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.uom.UOMUtil;
 
 /**
@@ -159,7 +160,10 @@ public class DefaultRoutingServiceImpl implements RoutingService
 	}
 
 	@Override
-	public BigDecimal calculateDuration(final I_AD_Workflow wf, final I_S_Resource plant, final BigDecimal qty)
+	public BigDecimal calculateDurationDays(
+			final I_AD_Workflow wf,
+			final I_S_Resource plant,
+			final BigDecimal qty)
 	{
 		if (plant == null)
 		{

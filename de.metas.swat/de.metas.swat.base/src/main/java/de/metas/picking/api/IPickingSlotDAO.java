@@ -42,13 +42,19 @@ public interface IPickingSlotDAO extends ISingletonService
 		 * {@code -1} means "no restriction".
 		 */
 		@Default
-		int bpartnerId = -1;
+		int availableForBPartnerId = -1;
 
 		/**
 		 * {@code -1} means "no restriction".
 		 */
 		@Default
-		int bpartnerLocationId = -1;
+		int availableForBPartnerLocationId = -1;
+		
+		@Default
+		int assignedToBPartnerId = -1;
+
+		@Default
+		int assignedToBPartnerLocationId = -1;
 
 		/**
 		 * {@code -1} means "no restriction".

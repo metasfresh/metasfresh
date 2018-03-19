@@ -13,11 +13,11 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,9 +32,8 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingResult;
@@ -47,7 +46,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -408,7 +406,7 @@ public class InvoiceCandidateWriter
 		// ic.setC_Charge_ID(chargeId);
 
 		ic.setQtyOrdered(qtyOrdered);
-		ic.setQtyToInvoice(Env.ZERO); // to be computed
+		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 		ic.setC_UOM(uom);
 
 		ic.setDateOrdered(materialTrackingPPOrderBL.getDateOfProduction(order.getPP_Order()));
@@ -492,28 +490,25 @@ public class InvoiceCandidateWriter
 		// TODO: check if we actually have to run this code afterCommit, since we now have _maxInvoiceCandidateToDeleteID to make sure we only delete "old" ICs.
 		trxManager
 				.getTrxListenerManagerOrAutoCommit(getContext().getTrxName())
-				.registerListener(
-						new TrxListenerAdapter()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> {
+
+					trxManager.run(new TrxRunnableAdapter()
+					{
+						@Override
+						public void run(final String localTrxName) throws Exception
 						{
-							@Override
-							public void afterCommit(ITrx trx)
-							{
-								trxManager.run(new TrxRunnableAdapter()
-								{
-									@Override
-									public void run(final String localTrxName) throws Exception
-									{
-										deleteExistingInvoiceCandidates0(modelTableId,
-												modelRecordId,
-												type,
-												priceListVersionID,
-												invoiceDocTypeId,
-												_maxInvoiceCandidateToDeleteID,
-												localTrxName);
-									}
-								});
-							}
-						});
+							deleteExistingInvoiceCandidates0(modelTableId,
+									modelRecordId,
+									type,
+									priceListVersionID,
+									invoiceDocTypeId,
+									_maxInvoiceCandidateToDeleteID,
+									localTrxName);
+						}
+					});
+				});
 	}
 
 	private void deleteExistingInvoiceCandidates0(final int modelTableId,
@@ -611,20 +606,18 @@ public class InvoiceCandidateWriter
 		final boolean isSOTrx = false;
 
 		final int taxID = taxBL.getTax(
-				ctx
-				, ic
-				, taxCategoryId
-				, ic.getM_Product_ID()
-				, -1 // C_Charge_ID
+				ctx,
+				ic,
+				taxCategoryId,
+				ic.getM_Product_ID(),
+				-1 // C_Charge_ID
 				, date // bill date
 				, date // ship date
-				, ic.getAD_Org_ID()
-				, warehouse
-				, ic.getBill_Location_ID()
-				, -1 // shipPartnerLocation
-				, isSOTrx
-				, trxName
-				);
+				, ic.getAD_Org_ID(),
+				warehouse,
+				ic.getBill_Location_ID(),
+				-1 // shipPartnerLocation
+				, isSOTrx, trxName);
 		ic.setC_Tax_ID(taxID);
 	}
 }

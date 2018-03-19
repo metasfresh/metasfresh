@@ -10,12 +10,12 @@ package org.eevolution.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,9 +39,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MDocType;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderWorkflowDAO;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
@@ -50,6 +48,8 @@ import org.eevolution.model.X_PP_Order;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 
@@ -81,22 +81,10 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 	}
 
-	
-	/**
-	 * Set Qty Entered/Ordered. Use this Method if the Line UOM is the Product UOM
-	 * 
-	 * @param Qty QtyOrdered/Entered
-	 */
-	@Override
-	public void setQty(final I_PP_Order order, final BigDecimal Qty)
-	{
-		setQtyEntered(order, Qty);
-		setQtyOrdered(order, order.getQtyEntered());
-	}	// setQty
 
 	/**
 	 * Set Qty Entered - enforce entered UOM
-	 * 
+	 *
 	 * @param QtyEntered
 	 */
 	@Override
@@ -118,7 +106,7 @@ public class PPOrderBL implements IPPOrderBL
 
 	/**
 	 * Set Qty Ordered - enforce Product UOM
-	 * 
+	 *
 	 * @param QtyOrdered
 	 */
 	@Override
@@ -217,9 +205,9 @@ public class PPOrderBL implements IPPOrderBL
 
 	/**
 	 * Reserve/Unreserve stock.
-	 * 
+	 *
 	 * NOTE: this method is not changing the given <code>ppOrder</code>.
-	 * 
+	 *
 	 * @param ppOrder
 	 * @param qtyReservedRequested how much we want to have reserved at the end.
 	 * @return how much was actual reserved at the end; you can use this value to set {@link I_PP_Order#setQtyReserved(BigDecimal)}.
@@ -403,15 +391,15 @@ public class PPOrderBL implements IPPOrderBL
 		InterfaceWrapperHelper.setDynAttribute(ppOrder, key, ppOrderWorkflow);
 		return ppOrderWorkflow;
 	}
-	
+
 	@Override
 	public void setDocType(final I_PP_Order ppOrder, final String docBaseType, final String docSubType)
 	{
 		Check.assumeNotNull(ppOrder, "ppOrder not null");
 		Check.assumeNotEmpty(docBaseType, "docBaseType not empty");
-		
+
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrder);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ppOrder);
 		final int adClientId = ppOrder.getAD_Client_ID();
@@ -426,26 +414,26 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final BigDecimal qtyOrderedOld = ppOrder.getQtyOrdered();
 		final BigDecimal qtyDelivered = ppOrder.getQtyDelivered();
-		
+
 		ppOrder.setQtyBeforeClose(qtyOrderedOld);
 		setQtyOrdered(ppOrder, qtyDelivered);
 		InterfaceWrapperHelper.save(ppOrder);
-		
+
 		//
 		// Clear Ordered Quantities
 		// NOTE: at this point we assume QtyOrdered==QtyDelivered => QtyReserved (new)=0
 		orderStock(ppOrder);
 	}
-	
+
 	@Override
 	public void uncloseQtyOrdered(final I_PP_Order ppOrder)
 	{
 		final BigDecimal qtyOrderedBeforeClose = ppOrder.getQtyBeforeClose();
-		
+
 		ppOrder.setQtyOrdered(qtyOrderedBeforeClose);
 		ppOrder.setQtyBeforeClose(BigDecimal.ZERO);
 		InterfaceWrapperHelper.save(ppOrder);
-		
+
 		//
 		// Update Ordered Quantities
 		orderStock(ppOrder);

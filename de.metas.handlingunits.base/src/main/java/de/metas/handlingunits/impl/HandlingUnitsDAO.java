@@ -12,12 +12,12 @@ import java.math.BigDecimal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,6 +53,7 @@ import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -63,6 +64,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -91,9 +93,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	// NOTE: it's public only for testing purposes
-	public static final int NO_HU_PI_ID = 100;
-	public static final int NO_HU_PI_Version_ID = 100;
-	public static final int NO_HU_PI_Item_ID = 540004;
+	public static final int PACKING_ITEM_TEMPLATE_HU_PI_ID = 100;
+	public static final int PACKING_ITEM_TEMPLATE_HU_PI_Version_ID = 100;
+	public static final int PACKING_ITEM_TEMPLATE_HU_PI_Item_ID = 540004;
+
 	public static final int VIRTUAL_HU_PI_ID = 101;
 	public static final int VIRTUAL_HU_PI_Version_ID = 101;
 	public static final int VIRTUAL_HU_PI_Item_ID = 101;
@@ -111,12 +114,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_PI retrieveNoPI(final Properties ctx)
+	public I_M_HU_PI retrievePackingItemTemplatePI(final Properties ctx)
 	{
-		final I_M_HU_PI noPI = retrievePI(ctx, NO_HU_PI_ID);
+		final I_M_HU_PI noPI = retrievePI(ctx, PACKING_ITEM_TEMPLATE_HU_PI_ID);
 		if (noPI == null)
 		{
-			throw new AdempiereException("@NotFound@ @M_HU_PI_ID@ NoPI (ID=" + NO_HU_PI_ID + ")");
+			throw new AdempiereException("@NotFound@ @M_HU_PI_ID@ NoPI (ID=" + PACKING_ITEM_TEMPLATE_HU_PI_ID + ")");
 		}
 
 		return noPI;
@@ -124,12 +127,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	@Cached
-	public I_M_HU_PI_Item retrieveNoPIItem(@CacheCtx final Properties ctx)
+	public I_M_HU_PI_Item retrievePackingItemTemplatePIItem(@CacheCtx final Properties ctx)
 	{
-		final I_M_HU_PI_Item noPIItem = InterfaceWrapperHelper.create(ctx, NO_HU_PI_Item_ID, I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
+		final I_M_HU_PI_Item noPIItem = InterfaceWrapperHelper.create(ctx, PACKING_ITEM_TEMPLATE_HU_PI_Item_ID, I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
 		if (noPIItem == null)
 		{
-			throw new AdempiereException("@NotFound@ @M_HU_PI_Item_ID@ NoPI (ID=" + NO_HU_PI_Item_ID + ")");
+			throw new AdempiereException("@NotFound@ @M_HU_PI_Item_ID@ NoPI (ID=" + PACKING_ITEM_TEMPLATE_HU_PI_Item_ID + ")");
 		}
 
 		return noPIItem;
@@ -173,15 +176,15 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public int getNo_HU_PI_ID()
+	public int getPackingItemTemplate_HU_PI_ID()
 	{
-		return NO_HU_PI_ID;
+		return PACKING_ITEM_TEMPLATE_HU_PI_ID;
 	}
 
 	@Override
-	public int getNo_HU_PI_Item_ID()
+	public int getPackingItemTemplate_HU_PI_Item_ID()
 	{
-		return NO_HU_PI_Item_ID;
+		return PACKING_ITEM_TEMPLATE_HU_PI_Item_ID;
 	}
 
 	@Override
@@ -189,7 +192,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		return VIRTUAL_HU_PI_ID;
 	}
-	
+
 	@Override
 	public int getVirtual_HU_PI_Version_ID()
 	{
@@ -372,10 +375,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final I_C_BPartner partner)
+	public List<I_M_HU_PI_Item> retrievePIItems(
+			@NonNull final I_M_HU_PI_Version version,
+			@Nullable final I_C_BPartner partner)
 	{
-		Check.assumeNotNull(version, "version not null");
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
 		final String trxName = InterfaceWrapperHelper.getTrxName(version);
 		final int huPIVersionId = version.getM_HU_PI_Version_ID();
@@ -650,7 +653,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		//
 		// Fetch only those PI Items which have our given huPI included
 		// 08254: if No-PI, don't add included HU filter
-		if (huPIId != getNo_HU_PI_ID())
+		if (huPIId != getPackingItemTemplate_HU_PI_ID())
 		{
 			piItemsQueryBuilder.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, huPIId);
 		}
@@ -948,5 +951,50 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.distinct()
 				.map(id -> InterfaceWrapperHelper.load(id, I_M_Warehouse.class))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public List<org.compiere.model.I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(final List<I_M_HU> hus)
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		if (hus.isEmpty())
+		{
+			// should never happen
+			return Collections.emptyList();
+		}
+
+		// used for deciding the org and context
+		final I_M_HU firstHU = hus.get(0);
+
+		final int orgId = firstHU.getAD_Org_ID();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(firstHU);
+
+		final Set<Integer> huWarehouseIds = handlingUnitsDAO.retrieveWarehousesForHUs(hus)
+				.stream()
+				.map(org.compiere.model.I_M_Warehouse::getM_Warehouse_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId)
+				.stream()
+				.filter(warehouse -> !huWarehouseIds.contains(warehouse.getM_Warehouse_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		return warehouses;
+	}
+
+	@Override
+	public List<I_M_HU> retrieveByIds(@NonNull final Collection<Integer> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU.class)
+				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
+				.create()
+				.listImmutable(I_M_HU.class);
 	}
 }

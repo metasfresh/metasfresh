@@ -179,10 +179,8 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 *
 	 * @param item
 	 */
-	public final void add(final ItemType item)
+	public final void add(@NonNull final ItemType item)
 	{
-		Check.assumeNotNull(item, "item not null");
-
 		setNotConfigurable(); // not configurable anymore
 
 		//

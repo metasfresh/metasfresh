@@ -142,6 +142,6 @@ public class C_OrderLine
 	private void updateQtyPacks(final de.metas.handlingunits.model.I_C_OrderLine orderLine)
 	{
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
-		Services.get(IHUPackingAwareBL.class).setQtyPacks(packingAware);
+		Services.get(IHUPackingAwareBL.class).setQtyTU(packingAware);
 	}
 }

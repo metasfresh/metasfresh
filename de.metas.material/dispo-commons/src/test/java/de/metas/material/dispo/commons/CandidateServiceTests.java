@@ -2,6 +2,7 @@ package de.metas.material.dispo.commons;
 
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -16,13 +17,15 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -50,12 +53,15 @@ public class CandidateServiceTests
 {
 	private RequestMaterialOrderService requestMaterialOrderService;
 
+	@Mocked
+	private PostMaterialEventService postMaterialEventService;
+
 	@Before
 	public void init()
 	{
 		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(),
-				MaterialEventService.createLocalServiceThatIsReadyToUse());
+				postMaterialEventService);
 	}
 
 	@Test
@@ -67,10 +73,12 @@ public class CandidateServiceTests
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.materialDescriptor(createMaterialDescriptor())
-				.productionDetail(ProductionDetail.builder()
+				.businessCaseDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
-						.uomId(230)
+						.advised(Flag.FALSE)
+						.pickDirectlyIfFeasible(Flag.FALSE)
+						.plannedQty(TEN)
 						.build())
 				.build();
 
@@ -79,10 +87,13 @@ public class CandidateServiceTests
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
-				.withProductionDetail(ProductionDetail.builder()
+				.withBusinessCaseDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
 						.productBomLineId(500)
+						.advised(Flag.TRUE)
+						.pickDirectlyIfFeasible(Flag.FALSE)
+						.plannedQty(TEN)
 						.build());
 
 		final Candidate candidate3 = candidate
@@ -90,20 +101,26 @@ public class CandidateServiceTests
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
-				.withProductionDetail(ProductionDetail.builder()
+				.withBusinessCaseDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
 						.productBomLineId(600)
+						.advised(Flag.FALSE)
+						.pickDirectlyIfFeasible(Flag.TRUE)
+						.plannedQty(TEN)
 						.build());
 
-		final PPOrderRequestedEvent productionRequestedEvent = requestMaterialOrderService.createPPOrderRequestedEvent(ImmutableList.of(candidate, candidate2, candidate3));
-		assertThat(productionRequestedEvent).isNotNull();
-		assertThat(productionRequestedEvent.getEventDescriptor()).isNotNull();
+		final PPOrderRequestedEvent ppOrderRequestedEvent = requestMaterialOrderService
+				.createPPOrderRequestedEvent(
+						ImmutableList.of(candidate, candidate2, candidate3));
 
-		assertThat(productionRequestedEvent.getEventDescriptor().getClientId()).isEqualTo(20);
-		assertThat(productionRequestedEvent.getEventDescriptor().getOrgId()).isEqualTo(30);
+		assertThat(ppOrderRequestedEvent).isNotNull();
+		assertThat(ppOrderRequestedEvent.getEventDescriptor()).isNotNull();
 
-		final PPOrder ppOrder = productionRequestedEvent.getPpOrder();
+		assertThat(ppOrderRequestedEvent.getEventDescriptor().getClientId()).isEqualTo(20);
+		assertThat(ppOrderRequestedEvent.getEventDescriptor().getOrgId()).isEqualTo(30);
+
+		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
 		assertThat(ppOrder).isNotNull();
 		assertThat(ppOrder.getOrgId()).isEqualTo(30);
 		assertThat(ppOrder.getProductDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
@@ -120,10 +137,11 @@ public class CandidateServiceTests
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.materialDescriptor(createMaterialDescriptor())
-				.distributionDetail(DistributionDetail.builder()
+				.businessCaseDetail(DistributionDetail.builder()
 						.productPlanningId(220)
 						.plantId(230)
 						.shipperId(240)
+						.plannedQty(TEN)
 						.build())
 				.build();
 
@@ -132,11 +150,12 @@ public class CandidateServiceTests
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
-				.withDistributionDetail(DistributionDetail.builder()
+				.withBusinessCaseDetail(DistributionDetail.builder()
 						.productPlanningId(220)
 						.plantId(230)
 						.shipperId(240)
 						.networkDistributionLineId(500)
+						.plannedQty(TEN)
 						.build());
 
 		final Candidate candidate3 = candidate
@@ -144,11 +163,12 @@ public class CandidateServiceTests
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
-				.withDistributionDetail(DistributionDetail.builder()
+				.withBusinessCaseDetail(DistributionDetail.builder()
 						.productPlanningId(220)
 						.plantId(230)
 						.shipperId(240)
 						.networkDistributionLineId(501)
+						.plannedQty(TEN)
 						.build());
 
 		final DDOrderRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));

@@ -41,9 +41,9 @@ import de.metas.document.engine.IDocumentBL;
 
 /**
  * Factory class used to create(and complete) sales or purchase orders.
- * 
+ *
  * This is a general purpose class to be used by other more specific factories.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -64,7 +64,7 @@ public class OrderFactory
 	private final I_C_Order order;
 	private boolean built = false;
 
-	private List<OrderLineBuilder> orderLineBuilders = new ArrayList<>();
+	private final List<OrderLineBuilder> orderLineBuilders = new ArrayList<>();
 
 	private OrderFactory()
 	{
@@ -75,7 +75,7 @@ public class OrderFactory
 		order.setDocAction(IDocument.ACTION_Complete);
 	}
 
-	public I_C_Order createAndComplete()
+	public org.compiere.model.I_C_Order createAndComplete()
 	{
 		createDraft();
 
@@ -192,7 +192,10 @@ public class OrderFactory
 	public OrderFactory docType(final int docTypeTargetId)
 	{
 		assertNotBuilt();
-		order.setC_DocTypeTarget_ID(docTypeTargetId);
+
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
+		orderBL.setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
+
 		return this;
 	}
 

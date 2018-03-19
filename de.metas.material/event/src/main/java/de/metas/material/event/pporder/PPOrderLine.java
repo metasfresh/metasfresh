@@ -1,17 +1,17 @@
 package de.metas.material.event.pporder;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
-
 import java.math.BigDecimal;
+import java.util.Date;
+
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
-import lombok.experimental.Wither;
+import lombok.Value;
 
 /*
  * #%L
@@ -46,9 +46,7 @@ import lombok.experimental.Wither;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Data
-@Builder
-@Wither
+@Value
 public class PPOrderLine
 {
 	String description;
@@ -67,28 +65,38 @@ public class PPOrderLine
 	 */
 	boolean receipt;
 
-	@NonNull
+	Date issueOrReceiveDate;
+
 	ProductDescriptor productDescriptor;
 
-	@NonNull
 	BigDecimal qtyRequired;
 
+	BigDecimal qtyDelivered;
+
 	@JsonCreator
+	@Builder(toBuilder = true)
 	public PPOrderLine(
 			@JsonProperty("description") final String description,
 			@JsonProperty("productBomLineId") final int productBomLineId,
 			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
-			@JsonProperty("receipt") final boolean receipt,
+			@JsonProperty("receipt") @NonNull final Boolean receipt,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired)
+			@JsonProperty("issueOrReceiveDate") @NonNull final Date issueOrReceiveDate,
+			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
+			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered)
 	{
 		this.description = description;
 
-		this.productBomLineId = checkIdGreaterThanZero("productBomLineId", productBomLineId);
+		// don't assert that the ID is greater that zero, because this might not be the case with "handmade" PPOrders
+		this.productBomLineId = productBomLineId;
+
 		this.ppOrderLineId = ppOrderLineId;
 		this.receipt = receipt;
 		this.productDescriptor = productDescriptor;
 
 		this.qtyRequired = qtyRequired;
+		this.qtyDelivered = qtyDelivered;
+
+		this.issueOrReceiveDate = issueOrReceiveDate;
 	}
 }

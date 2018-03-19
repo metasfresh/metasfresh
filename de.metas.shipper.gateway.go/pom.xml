@@ -1,0 +1,91 @@
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>[1,10.0.0]</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
+	<groupId>de.metas.shipper.gateway</groupId>
+	<artifactId>de.metas.shipper.gateway.go</artifactId>
+	<packaging>jar</packaging>
+
+	<properties>
+		<migration-sql-basedir></migration-sql-basedir>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ws</groupId>
+			<artifactId>spring-ws-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.api</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.async</groupId>
+			<artifactId>de.metas.async</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<generatePackage>de.metas.shipper.gateway.go.schema</generatePackage>
+					<wsdl>true</wsdl>
+					<xmlschema>false</xmlschema>
+					<schemaIncludes>*.wsdl</schemaIncludes>
+					<schemaDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/go/schema/</schemaDirectory>
+					<schemaFiles>GOWebService.wsdl</schemaFiles>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

@@ -45,13 +45,13 @@ import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.ordercandidate.api.IOLCandValdiatorBL;
+import de.metas.ordercandidate.api.IOLCandValidatorBL;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 
 /**
- * Uses {@link IOLCandValdiatorBL} to check the prices and other aspects of all {@link I_C_OLCand} for a certain {@link I_EXP_ReplicationTrx#COLUMNNAME_EXP_ReplicationTrx_ID EXP_ReplicationTrx_ID}. <br>
+ * Uses {@link IOLCandValidatorBL} to check the prices and other aspects of all {@link I_C_OLCand} for a certain {@link I_EXP_ReplicationTrx#COLUMNNAME_EXP_ReplicationTrx_ID EXP_ReplicationTrx_ID}. <br>
  * Then, if all prices are OK, uses {@link NoOpIssueSolver} to flag the {@link I_C_OLCand}s of that trx-ID as solved.
  * Finally, the process performs an update to set <code>C_OLCand.IsImportedWithIssues='N'</code> to all olcands.
  */
@@ -136,7 +136,7 @@ public class OLCandIssueSolverProcess extends JavaProcess
 				.create()
 				.iterate(I_C_OLCand.class);
 
-		final IOLCandValdiatorBL olCandValdiatorBL = Services.get(IOLCandValdiatorBL.class);
+		final IOLCandValidatorBL olCandValdiatorBL = Services.get(IOLCandValidatorBL.class);
 		int candidatesWithErorr = 0;
 
 		olCandValdiatorBL.setValidationProcessInProgress(true); // avoid the InterfaceWrapperHelper.save to trigger another validation from a MV.
@@ -158,7 +158,7 @@ public class OLCandIssueSolverProcess extends JavaProcess
 
 			if (candidatesWithErorr != 0)
 			{
-				addLog(msgBL.getMsg(getCtx(), IOLCandValdiatorBL.MSG_ERRORS_FOUND, new Object[] { candidatesWithErorr }));
+				addLog(msgBL.getMsg(getCtx(), IOLCandValidatorBL.MSG_ERRORS_FOUND, new Object[] { candidatesWithErorr }));
 			}
 
 			return (candidatesWithErorr == 0); // return true if there were no errors

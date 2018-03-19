@@ -12,7 +12,7 @@ public interface I_C_OrderLine
     public static final String Table_Name = "C_OrderLine";
 
     /** AD_Table_ID=260 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
@@ -243,6 +243,33 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
+	 * Set Compensation Group Schema Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_CompensationGroup_SchemaLine_ID (int C_CompensationGroup_SchemaLine_ID);
+
+	/**
+	 * Get Compensation Group Schema Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_CompensationGroup_SchemaLine_ID();
+
+	public de.metas.order.model.I_C_CompensationGroup_SchemaLine getC_CompensationGroup_SchemaLine();
+
+	public void setC_CompensationGroup_SchemaLine(de.metas.order.model.I_C_CompensationGroup_SchemaLine C_CompensationGroup_SchemaLine);
+
+    /** Column definition for C_CompensationGroup_SchemaLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, de.metas.order.model.I_C_CompensationGroup_SchemaLine> COLUMN_C_CompensationGroup_SchemaLine_ID = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "C_CompensationGroup_SchemaLine_ID", de.metas.order.model.I_C_CompensationGroup_SchemaLine.class);
+    /** Column name C_CompensationGroup_SchemaLine_ID */
+    public static final String COLUMNNAME_C_CompensationGroup_SchemaLine_ID = "C_CompensationGroup_SchemaLine_ID";
+
+	/**
 	 * Set Währung.
 	 * The Currency for this record
 	 *
@@ -351,6 +378,35 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_C_OrderLine_ID = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "C_OrderLine_ID", null);
     /** Column name C_OrderLine_ID */
     public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+
+	/**
+	 * Set Zahlungsbedingung abw..
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_PaymentTerm_Override_ID (int C_PaymentTerm_Override_ID);
+
+	/**
+	 * Get Zahlungsbedingung abw..
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_PaymentTerm_Override_ID();
+
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm_Override();
+
+	public void setC_PaymentTerm_Override(org.compiere.model.I_C_PaymentTerm C_PaymentTerm_Override);
+
+    /** Column definition for C_PaymentTerm_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_Override_ID = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "C_PaymentTerm_Override_ID", org.compiere.model.I_C_PaymentTerm.class);
+    /** Column name C_PaymentTerm_Override_ID */
+    public static final String COLUMNNAME_C_PaymentTerm_Override_ID = "C_PaymentTerm_Override_ID";
 
 	/**
 	 * Set Projekt.
@@ -705,6 +761,31 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_Discount = "Discount";
 
 	/**
+	 * Set Preislimit erzwingen.
+	 * Do not allow prices below the limit price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setEnforcePriceLimit (boolean EnforcePriceLimit);
+
+	/**
+	 * Get Preislimit erzwingen.
+	 * Do not allow prices below the limit price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isEnforcePriceLimit();
+
+    /** Column definition for EnforcePriceLimit */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_EnforcePriceLimit = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "EnforcePriceLimit", null);
+    /** Column name EnforcePriceLimit */
+    public static final String COLUMNNAME_EnforcePriceLimit = "EnforcePriceLimit";
+
+	/**
 	 * Set Frachtbetrag.
 	 * Freight Amount
 	 *
@@ -899,6 +980,31 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_IsDescription = "IsDescription";
 
 	/**
+	 * Set Discount Editable.
+	 * Allow user to change the discount
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsDiscountEditable (boolean IsDiscountEditable);
+
+	/**
+	 * Get Discount Editable.
+	 * Allow user to change the discount
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isDiscountEditable();
+
+    /** Column definition for IsDiscountEditable */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsDiscountEditable = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "IsDiscountEditable", null);
+    /** Column name IsDiscountEditable */
+    public static final String COLUMNNAME_IsDiscountEditable = "IsDiscountEditable";
+
+	/**
 	 * Set Group Compensation Line.
 	 *
 	 * <br>Type: YesNo
@@ -966,6 +1072,31 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsManualPrice = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "IsManualPrice", null);
     /** Column name IsManualPrice */
     public static final String COLUMNNAME_IsManualPrice = "IsManualPrice";
+
+	/**
+	 * Set Price Editable.
+	 * Allow user to change the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPriceEditable (boolean IsPriceEditable);
+
+	/**
+	 * Get Price Editable.
+	 * Allow user to change the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPriceEditable();
+
+    /** Column definition for IsPriceEditable */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsPriceEditable = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "IsPriceEditable", null);
+    /** Column name IsPriceEditable */
+    public static final String COLUMNNAME_IsPriceEditable = "IsPriceEditable";
 
 	/**
 	 * Set Abo.
@@ -1586,8 +1717,8 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_QtyLostSales = "QtyLostSales";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Ordered Quantity
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1596,8 +1727,8 @@ public interface I_C_OrderLine
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Ordered Quantity
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1634,8 +1765,8 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_QtyOrderedOverUnder = "QtyOrderedOverUnder";
 
 	/**
-	 * Set Reservierte Menge.
-	 * Reserved Quantity
+	 * Set Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1644,8 +1775,8 @@ public interface I_C_OrderLine
 	public void setQtyReserved (java.math.BigDecimal QtyReserved);
 
 	/**
-	 * Get Reservierte Menge.
-	 * Reserved Quantity
+	 * Get Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1874,4 +2005,7 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<>(I_C_OrderLine.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
     /** Column name User2_ID */
     public static final String COLUMNNAME_User2_ID = "User2_ID";
+
+    // FIXME: we shall also generate this column
+	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 }

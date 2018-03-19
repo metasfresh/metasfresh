@@ -137,10 +137,14 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 				{
 					return;
 				}
-				String action = String.valueOf(evt.getNewValue());
+				final String action = String.valueOf(evt.getNewValue());
 				if (IConfirmPanel.ACTION_OK.equals(action))
 				{
-					getTerminalBasePanel().updateInfo();
+					final ITerminalBasePanel terminalBasePanel = getTerminalBasePanel();
+					if (terminalBasePanel != null)
+					{
+						terminalBasePanel.updateInfo();
+					}
 				}
 				else if (IConfirmPanel.ACTION_Cancel.equals(action))
 				{
@@ -250,7 +254,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 			}
 
-			int bp_id = MBPartner.get(Env.getCtx(), value).getC_BPartner_ID();
+			final int bp_id = MBPartner.get(Env.getCtx(), value).getC_BPartner_ID();
 
 			final I_M_PackagingTree tree = PackingTreeBL.getPackingTree(bp_id, warehouseDestId, qtyToDeliver);
 
@@ -259,7 +263,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			{
 				boolean packed = false;
 				boolean unpacked = false;
-				for (I_M_PackagingTreeItem item : PackingTreeBL.getItems(tree.getM_PackagingTree_ID(), X_M_PackagingTreeItem.TYPE_Box))
+				for (final I_M_PackagingTreeItem item : PackingTreeBL.getItems(tree.getM_PackagingTree_ID(), X_M_PackagingTreeItem.TYPE_Box))
 				{
 					if (item.getStatus().equals(X_M_PackagingTreeItem.STATUS_Packed)
 							|| item.getStatus().equals(X_M_PackagingTreeItem.STATUS_Ready)
@@ -301,15 +305,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			// NOTE: in some environments we had complains that the lines are not refreshed.
 			// Even though i could not reproduce in my environment,
 			// i've decided to postone the refreshing right after other evens are processed.
-			SwingUtilities.invokeLater(new Runnable()
-			{
-
-				@Override
-				public void run()
-				{
-					onPackageTerminalClosed();
-				}
-			});
+			SwingUtilities.invokeLater(() -> onPackageTerminalClosed());
 		}
 	};
 
@@ -408,7 +404,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 		final IStoragePA storagePA = Services.get(IStoragePA.class);
 
-		final Collection<AvailableBins> containers = new ArrayList<AvailableBins>();
+		final Collection<AvailableBins> containers = new ArrayList<>();
 
 		final int warehouseId = model.getM_Warehouse_ID();
 		final List<I_M_PackagingContainer> pcs = packagingDAO.retrieveContainers(warehouseId, ITrx.TRXNAME_None);
@@ -434,7 +430,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		BigDecimal unpackedQty = BigDecimal.ZERO;
 		for (final IPackingItem item : unallocatedLines)
 		{
-			unpackedQty = unpackedQty.add(item.getQtySum());
+			final BigDecimal qtySum = Utils.convertToItemUOM(item, item.getQtySum());
+			unpackedQty = unpackedQty.add(qtySum);
 		}
 
 		final int bpId;
@@ -495,7 +492,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 	/**
 	 * Used to be able to dispose components that are created while the "packing" terminal window is open.
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1911
 	 */
 	private ITerminalContextReferences packageTerminalRefs;
@@ -512,7 +509,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			getTerminalContext().deleteReferences(packageTerminalRefs); // gh #1911
 		}
 		packageTerminal = null;
-		
+
 		packageTerminalRefs = getTerminalContext().newReferences(); // gh #1911
 
 		//
@@ -623,8 +620,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 				.append(")<br>") //
 				.append(result.getLogInfo(true));
 
-		SwingPickingTerminalPanel pickPanel = ((SwingPickingTerminalPanel)pickingPanel.getTerminalBasePanel());
-		ITerminalTextPane text = pickPanel.resultTextPane;
+		final SwingPickingTerminalPanel pickPanel = ((SwingPickingTerminalPanel)pickingPanel.getTerminalBasePanel());
+		final ITerminalTextPane text = pickPanel.resultTextPane;
 		text.setText(iText.toString());
 		pickPanel.next();
 		pickPanel.getComponent().toFront();
@@ -732,7 +729,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		setValueAt(miniTable, COLUMNNAME_MatchingType, rowIdx, matchingType);
 	}
 
-	private final Map<String, Integer> columnName2index = new HashMap<String, Integer>();
+	private final Map<String, Integer> columnName2index = new HashMap<>();
 
 	private int addColumn(final IMiniTable miniTable, final String columnName)
 	{
@@ -883,16 +880,16 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	{
 		final StringBuilder data = new StringBuilder();
 		data.append("<html><font align='left'>");
-		final List<IDColumn> ids = new ArrayList<IDColumn>();
+		final List<IDColumn> ids = new ArrayList<>();
 		final int[] rows = getSelectedRows();
-		for (int row : rows)
+		for (final int row : rows)
 		{
 			final IDColumn id = (IDColumn)getMiniTable().getValueAt(row, 0);
 			ids.add(id);
 		}
 
 		final PackingMd model = getModel();
-		final Collection<TableRow> selectedRows = new ArrayList<TableRow>();
+		final Collection<TableRow> selectedRows = new ArrayList<>();
 		for (final IDColumn id : ids)
 		{
 			final int uniqueId = id.getRecord_ID();
@@ -900,7 +897,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			selectedRows.addAll(tableRowsForUniqueId);
 		}
 
-		final HashMap<String, BigDecimal> products = new HashMap<String, BigDecimal>();
+		final HashMap<String, BigDecimal> products = new HashMap<>();
 		for (final TableRow currentRow : selectedRows)
 		{
 			if (model.isGroupByProduct())
@@ -932,7 +929,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 
 		if (model.isGroupByProduct())
 		{
-			for (Map.Entry<String, BigDecimal> entry : products.entrySet())
+			for (final Map.Entry<String, BigDecimal> entry : products.entrySet())
 			{
 				final String name = entry.getKey();
 				BigDecimal totalQty = entry.getValue();

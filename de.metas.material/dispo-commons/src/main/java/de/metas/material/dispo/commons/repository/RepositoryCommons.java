@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -15,17 +16,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
-import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
-import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -68,15 +67,22 @@ public class RepositoryCommons
 		final IQueryBuilder<I_MD_Candidate> builder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter();
 
+		if(CandidatesQuery.FALSE.equals(query))
+		{
+			builder.filter(ConstantQueryFilter.of(false));
+			return builder;
+		}
+		else if (query.getId() > 0)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
+			return builder;
+		}
+
 		if (query.getType() != null)
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, query.getType().toString());
 		}
 
-		if (query.getId() > 0)
-		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
-		}
 
 		if (query.getParentId() >= 0)
 		{
@@ -160,22 +166,22 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, materialDescriptorQuery.getBPartnerId());
 			atLeastOneFilterAdded = true;
 		}
-		else if (materialDescriptorQuery.getBPartnerId() == StockQuery.BPARTNER_ID_NONE)
+		else if (materialDescriptorQuery.getBPartnerId() == AvailableToPromiseQuery.BPARTNER_ID_NONE)
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, null);
 			atLeastOneFilterAdded = true;
 		}
 
-		if (!Objects.equals(materialDescriptorQuery.getStorageAttributesKey(), ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
+		if (!Objects.equals(materialDescriptorQuery.getStorageAttributesKey(), AttributesKey.ALL))
 		{
-			final StorageAttributesKey storageAttributesKey = materialDescriptorQuery.getStorageAttributesKey();
+			final AttributesKey attributesKey = materialDescriptorQuery.getStorageAttributesKey();
 			if (matchExactStorageAttributesKey)
 			{
-				builder.addEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey.getAsString());
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, attributesKey.getAsString());
 			}
 			else
 			{
-				builder.addStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey.getSqlLikeString(), false); // iggnoreCase=false
+				builder.addStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, attributesKey.getSqlLikeString(), false); // iggnoreCase=false
 			}
 			atLeastOneFilterAdded = true;
 		}
@@ -271,39 +277,10 @@ public class RepositoryCommons
 			final CandidatesQuery candidate,
 			final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		final ProductionDetail productionDetail = candidate.getProductionDetail();
-		if (productionDetail == null)
+		final ProductionDetailsQuery productionDetailsQuery = candidate.getProductionDetailsQuery();
+		if (productionDetailsQuery != null)
 		{
-			return;
-		}
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQueryBuilder<I_MD_Candidate_Prod_Detail> productDetailSubQueryBuilder = queryBL
-				.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
-				.addOnlyActiveRecordsFilter();
-
-		if (productionDetail == CandidatesQuery.NO_PRODUCTION_DETAIL)
-		{
-			builder.addNotInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, productDetailSubQueryBuilder.create());
-		}
-		else
-		{
-			boolean doFilter = false;
-			if (productionDetail.getProductPlanningId() > 0)
-			{
-				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Product_Planning_ID, productionDetail.getProductPlanningId());
-				doFilter = true;
-			}
-			if (productionDetail.getProductBomLineId() > 0)
-			{
-				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Product_BOMLine_ID, productionDetail.getProductBomLineId());
-				doFilter = true;
-			}
-			if (doFilter)
-			{
-				builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, productDetailSubQueryBuilder.create());
-			}
+			productionDetailsQuery.augmentQueryBuilder(builder);
 		}
 	}
 
@@ -311,39 +288,10 @@ public class RepositoryCommons
 			@NonNull final CandidatesQuery query,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		final DistributionDetail distributionDetail = query.getDistributionDetail();
-		if (distributionDetail == null)
+		final DistributionDetailsQuery distributionDetail = query.getDistributionDetailsQuery();
+		if (distributionDetail != null)
 		{
-			return;
-		}
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQueryBuilder<I_MD_Candidate_Dist_Detail> distDetailSubQueryBuilder = queryBL
-				.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
-				.addOnlyActiveRecordsFilter();
-
-		if (distributionDetail == CandidatesQuery.NO_DISTRIBUTION_DETAIL)
-		{
-			builder.addNotInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, distDetailSubQueryBuilder.create());
-		}
-		else
-		{
-			boolean doFilter = false;
-			if (distributionDetail.getProductPlanningId() > 0)
-			{
-				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_PP_Product_Planning_ID, distributionDetail.getProductPlanningId());
-				doFilter = true;
-			}
-			if (distributionDetail.getNetworkDistributionLineId() > 0)
-			{
-				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_DD_NetworkDistributionLine_ID, distributionDetail.getNetworkDistributionLineId());
-				doFilter = true;
-			}
-			if (doFilter)
-			{
-				builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, distDetailSubQueryBuilder.create());
-			}
+			distributionDetail.augmentQueryBuilder(builder);
 		}
 	}
 

@@ -28,17 +28,21 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
@@ -63,10 +67,11 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
+import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
-import de.metas.product.IProductPA;
+import lombok.NonNull;
 
 public class AggregationEngine implements IAggregationEngine
 {
@@ -112,7 +117,7 @@ public class AggregationEngine implements IAggregationEngine
 	}
 
 	@Override
-	public final IAggregationEngine addInvoiceCandidate(final I_C_Invoice_Candidate ic)
+	public final IAggregationEngine addInvoiceCandidate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		Check.assume(!ic.isToClear(), "{} has IsToClear='N'", ic);
 		Check.assume(!ic.isProcessed(), "{} not processed", ic);
@@ -331,12 +336,11 @@ public class AggregationEngine implements IAggregationEngine
 		}
 		else
 		{
-			final IProductPA productPA = Services.get(IProductPA.class);
-			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-
-			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, ic.getM_PricingSystem_ID(), ic.getBill_Location_ID(), ic.isSOTrx(), ITrx.TRXNAME_None);
+			final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(ic.getM_PricingSystem_ID(), ic.getBill_Location(), ic.isSOTrx());
 			if (pl == null)
 			{
+				final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 				throw new AdempiereException(Env.getAD_Language(ctx), ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
 						new Object[] {
 								InterfaceWrapperHelper.create(ctx, ic.getM_PricingSystem_ID(), I_M_PricingSystem.class, ITrx.TRXNAME_None).getName(),
@@ -430,6 +434,8 @@ public class AggregationEngine implements IAggregationEngine
 		// Set Invoice's DocBaseType
 		setDocBaseType(invoiceHeader);
 
+
+
 		return invoiceHeader;
 	}
 
@@ -489,5 +495,63 @@ public class AggregationEngine implements IAggregationEngine
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
+		invoiceHeader.setC_PaymentTerm_ID(getC_PaymentTerm_ID(invoiceHeader));
+	}
+
+	private int getC_PaymentTerm_ID(final InvoiceHeaderImpl invoiceHeader)
+	{
+		final int C_PaymentTerm_ID = extractC_PaymentTerm_IDFromLines(invoiceHeader);
+
+		if (C_PaymentTerm_ID > 0)
+		{
+			return C_PaymentTerm_ID;
+		}
+		// task 07242: setting the payment term from the given bill partner. Note that C_BP_Group has no payment term columns, so we don't need a BL to fall back to C_BP_Group
+		final I_C_BPartner billPartner = InterfaceWrapperHelper.create(Env.getCtx(), invoiceHeader.getBill_BPartner_ID(), I_C_BPartner.class, ITrx.TRXNAME_None);
+		if (invoiceHeader.isSOTrx())
+		{
+			return billPartner.getC_PaymentTerm_ID();
+		}
+		else
+		{
+			return billPartner.getPO_PaymentTerm_ID();
+		}
+	}
+
+
+	/**
+	 * extract C_PaymentTerm_ID from invoice candidate
+	 * @return
+	 */
+	private int extractC_PaymentTerm_IDFromLines(@NonNull final InvoiceHeaderImpl invoiceHeader)
+	{
+		final List<IInvoiceCandAggregate> lines = invoiceHeader.getLines();
+		if (lines == null || lines.isEmpty())
+		{
+			return -1;
+		}
+
+		final Map<Integer, IInvoiceLineRW> uniquePaymentTermLines = mapUniqueIInvoiceLineRWPerPaymentTerm(lines);
+		// extract payment term  if all lines have same C_PaymentTerm_ID
+		if (uniquePaymentTermLines.size() == 1)
+		{
+			final Set<Integer> ids = uniquePaymentTermLines.keySet();
+			final int id = ids.iterator().next();
+			if (id > 0)
+			{
+				return id;
+			}
+		}
+
+		return -1;
+	}
+
+	private Map<Integer, IInvoiceLineRW> mapUniqueIInvoiceLineRWPerPaymentTerm(@NonNull final List<IInvoiceCandAggregate> lines)
+	{
+		final List<IInvoiceLineRW> invoiceLinesRW = new ArrayList<>();
+		lines.forEach(lineAgg -> invoiceLinesRW.addAll(lineAgg.getAllLines()));
+
+		return invoiceLinesRW.stream()
+				.collect(GuavaCollectors.toImmutableMapByKey(line -> line.getC_PaymentTerm_ID()));
 	}
 }

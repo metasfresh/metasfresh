@@ -19,6 +19,7 @@ import org.junit.Test;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
+import de.metas.material.event.commons.OrderLineDescriptor;
 
 public class ShipmentScheduleBLTest
 {
@@ -52,6 +53,7 @@ public class ShipmentScheduleBLTest
 				.groupId(10)
 				.shipperId(20)
 				.warehouseId(30) // different from the sched's effective WH
+				.documentLineDescriptor(OrderLineDescriptor.builder().build()) // documentLineDescriptor is not relevant for this test
 				.build();
 
 		final DeliveryGroupCandidate result = new ShipmentScheduleBL().createGroup(scheduleSourceDoc, sched);

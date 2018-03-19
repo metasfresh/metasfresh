@@ -489,29 +489,6 @@ public interface I_DD_Order
     public static final String COLUMNNAME_CreateFrom = "CreateFrom";
 
 	/**
-	 * Set Packstück erstellen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCreatePackage (java.lang.String CreatePackage);
-
-	/**
-	 * Get Packstück erstellen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCreatePackage();
-
-    /** Column definition for CreatePackage */
-    public static final org.adempiere.model.ModelColumn<I_DD_Order, Object> COLUMN_CreatePackage = new org.adempiere.model.ModelColumn<I_DD_Order, Object>(I_DD_Order.class, "CreatePackage", null);
-    /** Column name CreatePackage */
-    public static final String COLUMNNAME_CreatePackage = "CreatePackage";
-
-	/**
 	 * Set Auftragsdatum.
 	 * Date of Order
 	 *
@@ -733,7 +710,7 @@ public interface I_DD_Order
     public static final String COLUMNNAME_DocAction = "DocAction";
 
 	/**
-	 * Set Belegstatus.
+	 * Set Status.
 	 * The current status of the document
 	 *
 	 * <br>Type: List
@@ -743,7 +720,7 @@ public interface I_DD_Order
 	public void setDocStatus (java.lang.String DocStatus);
 
 	/**
-	 * Get Belegstatus.
+	 * Get Status.
 	 * The current status of the document
 	 *
 	 * <br>Type: List
@@ -758,7 +735,7 @@ public interface I_DD_Order
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -768,7 +745,7 @@ public interface I_DD_Order
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -1212,33 +1189,8 @@ public interface I_DD_Order
     public static final String COLUMNNAME_MRP_ToDelete = "MRP_ToDelete";
 
 	/**
-	 * Set No Packages.
-	 * Number of packages shipped
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setNoPackages (int NoPackages);
-
-	/**
-	 * Get No Packages.
-	 * Number of packages shipped
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getNoPackages();
-
-    /** Column definition for NoPackages */
-    public static final org.adempiere.model.ModelColumn<I_DD_Order, Object> COLUMN_NoPackages = new org.adempiere.model.ModelColumn<I_DD_Order, Object>(I_DD_Order.class, "NoPackages", null);
-    /** Column name NoPackages */
-    public static final String COLUMNNAME_NoPackages = "NoPackages";
-
-	/**
-	 * Set Kommissionier-Datum.
-	 * Date/Time when picked for Shipment
+	 * Set Kommissionierdatum.
+	 * Datum/Zeit der Kommissionierung für die Lieferung
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1247,8 +1199,8 @@ public interface I_DD_Order
 	public void setPickDate (java.sql.Timestamp PickDate);
 
 	/**
-	 * Get Kommissionier-Datum.
-	 * Date/Time when picked for Shipment
+	 * Get Kommissionierdatum.
+	 * Datum/Zeit der Kommissionierung für die Lieferung
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1468,8 +1420,7 @@ public interface I_DD_Order
     public static final String COLUMNNAME_Ref_Order_ID = "Ref_Order_ID";
 
 	/**
-	 * Set Vertriebsbeauftragter.
-	 * Sales Representative or Company Agent
+	 * Set Aussendienst.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1478,8 +1429,7 @@ public interface I_DD_Order
 	public void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Vertriebsbeauftragter.
-	 * Sales Representative or Company Agent
+	 * Get Aussendienst.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1520,56 +1470,6 @@ public interface I_DD_Order
     public static final org.adempiere.model.ModelColumn<I_DD_Order, Object> COLUMN_SendEMail = new org.adempiere.model.ModelColumn<I_DD_Order, Object>(I_DD_Order.class, "SendEMail", null);
     /** Column name SendEMail */
     public static final String COLUMNNAME_SendEMail = "SendEMail";
-
-	/**
-	 * Set Lieferdatum.
-	 * Shipment Date/Time
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setShipDate (java.sql.Timestamp ShipDate);
-
-	/**
-	 * Get Lieferdatum.
-	 * Shipment Date/Time
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getShipDate();
-
-    /** Column definition for ShipDate */
-    public static final org.adempiere.model.ModelColumn<I_DD_Order, Object> COLUMN_ShipDate = new org.adempiere.model.ModelColumn<I_DD_Order, Object>(I_DD_Order.class, "ShipDate", null);
-    /** Column name ShipDate */
-    public static final String COLUMNNAME_ShipDate = "ShipDate";
-
-	/**
-	 * Set Tracking No.
-	 * Number to track the shipment
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setTrackingNo (java.lang.String TrackingNo);
-
-	/**
-	 * Get Tracking No.
-	 * Number to track the shipment
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getTrackingNo();
-
-    /** Column definition for TrackingNo */
-    public static final org.adempiere.model.ModelColumn<I_DD_Order, Object> COLUMN_TrackingNo = new org.adempiere.model.ModelColumn<I_DD_Order, Object>(I_DD_Order.class, "TrackingNo", null);
-    /** Column name TrackingNo */
-    public static final String COLUMNNAME_TrackingNo = "TrackingNo";
 
 	/**
 	 * Get Aktualisiert.

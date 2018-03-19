@@ -28,17 +28,12 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
-import org.compiere.Adempiere;
-import org.compiere.Adempiere.RunMode;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
+import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.eevolution.event.MaterialDispoEventListenerFacade;
 import org.eevolution.mrp.jmx.JMXMRPStatus;
-
-import de.metas.material.event.MaterialEventService;
 
 /**
  * Libero Validator
@@ -72,7 +67,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 
 		// PP_Order related
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(), client);
-		engine.addModelValidator(new org.eevolution.model.validator.PP_OrderFireMaterialEvent(), client); // gh #523
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(), client); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM(), client);
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(), client);
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_Node_Product(), client);
@@ -88,12 +83,6 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		//
 		// Forecast
 		engine.addModelValidator(new org.eevolution.model.validator.M_Forecast(), client);
-
-		//
-		// Register MRP model validators
-		// NOTE: keep this as the last model validators to register
-		// NOTE2: from task 09944 we decided to register the MRP main interceptor from AD_ModelValidator, to be able to disable it.
-		// engine.addModelValidator(org.eevolution.model.validator.MRPInterceptor.instance, client);
 	}
 
 	@Override
@@ -108,6 +97,8 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	{
 		cachingService.addTableCacheConfigIfAbsent(I_S_Resource.class);
 		cachingService.addTableCacheConfigIfAbsent(I_S_ResourceType.class);
+		
+		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_PP_Order.Table_Name);
 	}
 
 	private void setupJMX()
@@ -122,29 +113,5 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		Env.setContext(Env.getCtx(), CTX_IsLiberoEnabled, true);
-	}
-
-	@Override
-	protected void onAfterInit()
-	{
-		if(Adempiere.isUnitTestMode())
-		{
-			// for the time being, this stuff does not belong with unit tests!
-			// feel free to revise
-			return;
-		}
-
-		// add ourselves to the eventbus so that we can fire events on PP_Order docActions
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.subscribeToEventBus();
-
-		if (Ini.getRunMode() != RunMode.BACKEND)
-		{
-			return; // event based material planning can only run in the backend as of now
-		}
-
-		// register ourselves as listeners so we can respond to requests from the disposition framework
-		final MaterialDispoEventListenerFacade materialDocumentListener = Adempiere.getBean(MaterialDispoEventListenerFacade.class);
-		materialEventService.registerListener(materialDocumentListener);
 	}
 }	// LiberoValidator

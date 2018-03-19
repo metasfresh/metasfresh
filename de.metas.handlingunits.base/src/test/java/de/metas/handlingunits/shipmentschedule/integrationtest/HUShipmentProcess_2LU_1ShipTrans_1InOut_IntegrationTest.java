@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -39,7 +40,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.junit.Assert;
 import org.slf4j.Logger;
 
-import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
 import de.metas.handlingunits.model.I_M_HU;
@@ -76,18 +76,12 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 	{
 		//
 		// Get Picked TUs
-		final I_M_HU tuHU1 = afterPick_HUExpectations.huExpectation(0)
-				.getCapturedHU();
-		final I_M_HU tuHU2 = afterPick_HUExpectations.huExpectation(1)
-				.getCapturedHU();
-		final I_M_HU tuHU3 = afterPick_HUExpectations.huExpectation(2)
-				.getCapturedHU();
-		final I_M_HU tuHU4 = afterPick_HUExpectations.huExpectation(3)
-				.getCapturedHU();
-		final I_M_HU tuHU5 = afterPick_HUExpectations.huExpectation(4)
-				.getCapturedHU();
-		final I_M_HU tuHU6 = afterPick_HUExpectations.huExpectation(5)
-				.getCapturedHU();
+		final I_M_HU tuHU1 = afterPick_HUExpectations.huExpectation(0).getCapturedHU();
+		final I_M_HU tuHU2 = afterPick_HUExpectations.huExpectation(1).getCapturedHU();
+		final I_M_HU tuHU3 = afterPick_HUExpectations.huExpectation(2).getCapturedHU();
+		final I_M_HU tuHU4 = afterPick_HUExpectations.huExpectation(3).getCapturedHU();
+		final I_M_HU tuHU5 = afterPick_HUExpectations.huExpectation(4).getCapturedHU();
+		final I_M_HU tuHU6 = afterPick_HUExpectations.huExpectation(5).getCapturedHU();
 
 		//
 		// Get shipment schedules
@@ -128,7 +122,7 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		allSplitHUs.addAll(splitSS1LUs);
 		allSplitHUs.addAll(splitSS2LUs);
 
-		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("allSplitHUs", allSplitHUs)));
+		//System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("allSplitHUs", allSplitHUs)));
 
 		//
 		// Validate split LU/TU/VHUs
@@ -155,9 +149,9 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 								.product(pTomato).qty("30").uom(productUOM)
 							.endExpectation() // itemStorageExcpectation
 						.endExpectation() // newHUItemExpectation;
-					
+
 						// note: no packing material item because we didn't create a PM PI item
-						
+
 					.endExpectation() // included aggregate VHU
 				.endExpectation() // HUAggreagate item
 			.endExpectation() // first LU
@@ -167,7 +161,7 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 				.capture(afterAggregation_LU2)
 				.huPI(piLU)
 				.huStatus(X_M_HU.HUSTATUS_Picked)
-				
+
 				// now we still have have tuHU3, tuHU4, tuHU5 and tuHU6 that were not destroyed but simply joined to the 2nd LU
 				.newHUItemExpectation(piLU_Item)
 					.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
@@ -249,7 +243,7 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 							.capture(vhu2)
 							.huPI(null)
 							.huStatus(X_M_HU.HUSTATUS_Picked)
-							
+
 							.newHUItemExpectation()
 								.itemType(X_M_HU_Item.ITEMTYPE_Material)
 								.noIncludedHUs()
@@ -262,7 +256,7 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 
 						.endExpectation() // the aggregate VHU
 					.endExpectation() // HUAggregate item
-					
+
 			.endExpectation() // 2nd LU
 		.assertExpected("split HUs", allSplitHUs);
 		//@formatter:on
@@ -280,9 +274,9 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		POJOWrapper.setInstanceName(vhu5.getValue(), "vhu5");
 		POJOWrapper.setInstanceName(tu6.getValue(), "tu6");
 		POJOWrapper.setInstanceName(vhu6.getValue(), "vhu6");
-		
-		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("allSplitHUs", allSplitHUs)));
-		
+
+		// System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("allSplitHUs", allSplitHUs)));
+
 		//
 		// Validate Shipment Schedule assignments for splitHU's VHUs
 		//@formatter:off
@@ -307,7 +301,7 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 				.shipmentSchedule(shipmentSchedule2)
 				.lu(afterAggregation_LU2).tu(tu6).vhu(vhu6).qtyPicked("10")
 				.endExpectation()
-			
+
 			// this is the expectation which covers the aggregate VHU of the 2nd LU.
 			.newShipmentScheduleQtyPickedExpectation() // 1 - Salad
 				.shipmentSchedule(shipmentSchedule2)
@@ -334,18 +328,21 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 	{
 		//
 		// Get generated shipment
-		Assert.assertEquals("Invalid generated shipments count", 1, generatedShipments.size());
+		assertThat(generatedShipments).as("Invalid generated shipments count").hasSize(1);
 		final I_M_InOut shipment = generatedShipments.get(0);
 
 		//
 		// Retrieve generated shipment lines
 		final List<I_M_InOutLine> shipmentLines = Services.get(IInOutDAO.class).retrieveLines(shipment);
-		Assert.assertEquals("Invalid generated shipment lines count", 3, shipmentLines.size());
+		assertThat(shipmentLines).as("Invalid generated shipment lines count").hasSize(3);
+
 		final I_M_InOutLine shipmentLine1 = shipmentLines.get(0);
-		final I_M_InOutLine shipmentLine2 = shipmentLines.get(1);
-		final I_M_InOutLine shipmentLine3 = shipmentLines.get(2);
 		logger.info("shipmentLine1: {}", shipmentLine1);
+
+		final I_M_InOutLine shipmentLine2 = shipmentLines.get(1);
 		logger.info("shipmentLine2: {}", shipmentLine2);
+
+		final I_M_InOutLine shipmentLine3 = shipmentLines.get(2);
 		logger.info("shipmentLine3: {}", shipmentLine3);
 
 		//

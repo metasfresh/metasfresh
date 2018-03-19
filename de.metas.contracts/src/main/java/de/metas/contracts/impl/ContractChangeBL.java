@@ -1,5 +1,7 @@
 package de.metas.contracts.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.contracts
@@ -29,14 +31,19 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.invoice.service.IInvoiceCreditContext;
+import org.adempiere.invoice.service.impl.InvoiceCreditContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
+import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import de.metas.contracts.IContractChangeBL;
@@ -51,6 +58,8 @@ import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -98,7 +107,7 @@ public class ContractChangeBL implements IContractChangeBL
 				ancestor.setC_FlatrateTerm_Next(null);
 				ancestor.setAD_PInstance_EndOfTerm(null);
 				setAncestorMasterEndDateWhenUnlinkContract(ancestor);
-				InterfaceWrapperHelper.save(ancestor);
+				save(ancestor);
 			}
 		}
 	}
@@ -148,15 +157,17 @@ public class ContractChangeBL implements IContractChangeBL
 		}
 
 		createCompesationOrderAndDeleteDeliveriesIfNeeded(currentTerm, contractChangeParameters);
-		setTerminatioReasonAndMemo(currentTerm, contractChangeParameters);
+		setTerminatioReasonMemoAndDate(currentTerm, contractChangeParameters);
 		setMasterDates(currentTerm, contractChangeParameters);
 		currentTerm.setIsCloseInvoiceCandidate(contractChangeParameters.isCloseInvoiceCandidate());
 		currentTerm.setIsAutoRenew(false);
 		setContractStatus(currentTerm, contractChangeParameters);
 		setClosedDocStatusIfNeeded(currentTerm, contractChangeParameters);
-		InterfaceWrapperHelper.save(currentTerm);
+		save(currentTerm);
 
 		cancelNextContractIfNeeded(currentTerm, contractChangeParameters);
+		creditInvoicesIfNeeded(currentTerm, contractChangeParameters);
+
 		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(currentTerm);
 	}
 
@@ -210,7 +221,10 @@ public class ContractChangeBL implements IContractChangeBL
 	private void setContractStatus(@NonNull final I_C_Flatrate_Term currentTerm,
 			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
-		if (contractChangeParameters.isVoidSingleContract())
+		final Timestamp changedate = contractChangeParameters.getChangeDate();
+		final Timestamp startDate = currentTerm.getStartDate();
+
+		if (contractChangeParameters.isVoidSingleContract() || changedate.before(startDate))
 		{
 			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Voided);
 		}
@@ -236,6 +250,43 @@ public class ContractChangeBL implements IContractChangeBL
 		{
 			cancelContractIfNotCanceledAlready(currentTerm.getC_FlatrateTerm_Next(), contractChangeParameters);
 		}
+	}
+
+	private void creditInvoicesIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
+			@NonNull final ContractChangeParameters contractChangeParameters)
+	{
+		final boolean isCreditOpenInvoices = contractChangeParameters.isCreditOpenInvoices();
+		if (isCreditOpenInvoices)
+		{
+			final List<I_C_Invoice> invoices = Services.get(IFlatrateDAO.class).retrieveInvoicesForFlatrateTerm(currentTerm);
+			invoices.stream()
+					.filter(invoice -> !invoice.isPaid())
+					.forEach(openInvoice -> creditInvoice(InterfaceWrapperHelper.create(openInvoice, de.metas.adempiere.model.I_C_Invoice.class),
+							contractChangeParameters.getTerminationReason()));
+		}
+	}
+
+	private void creditInvoice(@NonNull final de.metas.adempiere.model.I_C_Invoice openInvoice, final String reason)
+	{
+		final String docbasetype = openInvoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARCreditMemo : X_C_DocType.DOCBASETYPE_APCreditMemo;
+		final int targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(docbasetype)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+				.adClientId(openInvoice.getAD_Client_ID())
+				.adOrgId(openInvoice.getAD_Org_ID())
+				.build());
+
+		final IInvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
+				.C_DocType_ID(targetDocTypeID)
+				.completeAndAllocate(true)
+				.referenceOriginalOrder(true)
+				.referenceInvoice(true)
+				.creditedInvoiceReinvoicable(false)
+				.build();
+
+		final I_C_Invoice creditMemoInvoice = Services.get(IInvoiceBL.class).creditInvoice(openInvoice, creditCtx);
+		creditMemoInvoice.setDescription(reason);
+		save(creditMemoInvoice);
 	}
 
 	private void createCompesationOrderIfNeeded(@NonNull final ContextForCompesationOrder compensationOrderContext)
@@ -271,7 +322,7 @@ public class ContractChangeBL implements IContractChangeBL
 		termChangeOrder.setDateOrdered(SystemTime.asDayTimestamp());
 		termChangeOrder.setDatePromised(changeDate);
 		termChangeOrder.setDocAction(IDocument.ACTION_Complete);
-		InterfaceWrapperHelper.save(termChangeOrder);
+		save(termChangeOrder);
 
 		return termChangeOrder;
 	}
@@ -302,8 +353,10 @@ public class ContractChangeBL implements IContractChangeBL
 		return new Timestamp(changeDate.getTime());
 	}
 
-	private void setTerminatioReasonAndMemo(@NonNull final I_C_Flatrate_Term currentTerm, final @NonNull ContractChangeParameters contractChangeParameters)
+	private void setTerminatioReasonMemoAndDate(@NonNull final I_C_Flatrate_Term currentTerm, final @NonNull ContractChangeParameters contractChangeParameters)
 	{
+		currentTerm.setTerminationDate(SystemTime.asDayTimestamp());
+
 		final String terminationMemo = contractChangeParameters.getTerminationMemo();
 		final String terminationReason = contractChangeParameters.getTerminationReason();
 		if (!Check.isEmpty(terminationReason, true))
@@ -354,8 +407,17 @@ public class ContractChangeBL implements IContractChangeBL
 		if (X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(evtType)
 				&& (X_C_SubscriptionProgress.STATUS_Planned.equals(status) || X_C_SubscriptionProgress.STATUS_Open.equals(status)))
 		{
-			surplusQty = surplusQty.add(currentSP.getQty());
-			InterfaceWrapperHelper.delete(currentSP);
+			if (currentSP.getM_ShipmentSchedule_ID() > 0)
+			{
+				currentSP.setStatus(X_C_SubscriptionProgress.STATUS_Done);
+				currentSP.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Quit);
+				save(currentSP);
+			}
+			else
+			{
+				surplusQty = surplusQty.add(currentSP.getQty());
+				InterfaceWrapperHelper.delete(currentSP);
+			}
 		}
 		else if (X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause.equals(evtType) || X_C_SubscriptionProgress.EVENTTYPE_EndOfPause.equals(evtType))
 		{
@@ -371,7 +433,7 @@ public class ContractChangeBL implements IContractChangeBL
 		if (today.after(progress.getEventDate()))
 		{
 			progress.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Quit);
-			InterfaceWrapperHelper.save(progress);
+			save(progress);
 		}
 	}
 
@@ -390,7 +452,7 @@ public class ContractChangeBL implements IContractChangeBL
 		chargeOlPO.setPriceActual(additionalCharge.add(chargeOlPO.getPriceActual()));
 		chargeOlPO.setPriceEntered(additionalCharge.add(chargeOlPO.getPriceEntered()));
 
-		InterfaceWrapperHelper.save(chargeOl);
+		save(chargeOl);
 
 		logger.debug("created new order line " + chargeOlPO);
 		return chargeOl;
@@ -443,6 +505,6 @@ public class ContractChangeBL implements IContractChangeBL
 		Check.assumeNotNull(currentTerm, "Param 'currentTerm' not null");
 		currentTerm.setIsAutoRenew(false);
 		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract);
-		InterfaceWrapperHelper.save(currentTerm);
+		save(currentTerm);
 	}
 }

@@ -9,7 +9,9 @@
 
 **/activemq-data/
 **/data/
-**/log/
+
+# we have a java packages with de.metas.event.log.. so this doesn't work
+# **/log/
 
 de.metas.endcustomer.mf15/metasfresh.properties
 /de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/log/
@@ -29,3 +31,5 @@ de.metas.endcustomer.mf15/metasfresh.properties
 
 # Ignore JRebel files because those contains file paths from local system
 **/rebel.xml
+
+de.metas.shipper.gateway.go/src/main/resources/application.properties

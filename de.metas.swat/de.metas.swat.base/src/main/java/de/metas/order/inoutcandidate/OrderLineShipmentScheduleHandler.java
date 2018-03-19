@@ -47,7 +47,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
@@ -57,12 +57,11 @@ import lombok.NonNull;
 /**
  * Default implementation for sales order lines.
  *
- * @author ts
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class OrderLineShipmentScheduleHandler implements IShipmentScheduleHandler
+public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
-
 	private static final Logger logger = LogManager.getLogger(OrderLineShipmentScheduleHandler.class);
 
 	@Override
@@ -89,8 +88,8 @@ public class OrderLineShipmentScheduleHandler implements IShipmentScheduleHandle
 
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(newSched, orderLine);
 
-		Check.assume(newSched.getAD_Client_ID() == orderLine.getAD_Client_ID(),
-				"The new M_ShipmentSchedule haas the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
+		Check.errorUnless(newSched.getAD_Client_ID() == orderLine.getAD_Client_ID(),
+				"The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
 
 		// 04290
 		newSched.setM_Warehouse(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine));
@@ -254,13 +253,6 @@ public class OrderLineShipmentScheduleHandler implements IShipmentScheduleHandle
 	@Override
 	public IDeliverRequest createDeliverRequest(final I_M_ShipmentSchedule sched)
 	{
-		return new IDeliverRequest()
-		{
-			@Override
-			public BigDecimal getQtyOrdered()
-			{
-				return sched.getC_OrderLine().getQtyOrdered();
-			}
-		};
+		return () -> sched.getC_OrderLine().getQtyOrdered();
 	}
 }

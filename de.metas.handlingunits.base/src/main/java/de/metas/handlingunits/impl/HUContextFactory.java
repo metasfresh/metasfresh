@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -57,7 +56,7 @@ public class HUContextFactory implements IHUContextFactory
 	@Override
 	public IMutableHUContext createMutableHUContextForProcessing(final Properties ctx)
 	{
-		final IContextAware contextProvider = new PlainContextAware(ctx, ITrx.TRXNAME_None);
+		final IContextAware contextProvider = PlainContextAware.newOutOfTrxAllowThreadInherited(ctx);
 		return createMutableHUContextForProcessing(contextProvider);
 	}
 
@@ -80,7 +79,10 @@ public class HUContextFactory implements IHUContextFactory
 
 		final SaveOnCommitHUAttributesDAO huAttributesDAO = new SaveOnCommitHUAttributesDAO();
 		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
-		final IAttributeStorageFactory attributesStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(huAttributesDAO);
+
+		final IAttributeStorageFactory attributesStorageFactory = attributeStorageFactoryService
+				.prepareHUAttributeStorageFactory(huAttributesDAO);
+
 		huContext.setHUAttributeStorageFactory(attributesStorageFactory);
 	}
 

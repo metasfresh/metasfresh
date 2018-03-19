@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1958824287L;
+	private static final long serialVersionUID = -44428473L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -27,12 +27,12 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 			setC_OrderSO_ID (0);
 			setC_PurchaseCandidate_ID (0);
 			setC_UOM_ID (0);
-			setDatePromised (new Timestamp( System.currentTimeMillis() ));
+			setDateRequired (new Timestamp( System.currentTimeMillis() ));
 			setM_Product_ID (0);
-			setM_Warehouse_ID (0);
+			setM_WarehousePO_ID (0);
 			setProcessed (false); // N
 			setProcessing (false); // N
-			setQtyRequiered (BigDecimal.ZERO);
+			setQtyToPurchase (BigDecimal.ZERO);
 			setVendor_ID (0);
         } */
     }
@@ -53,34 +53,34 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
     }
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLinePO() throws RuntimeException
+	public org.compiere.model.I_C_BPartner_Product getC_BPartner_Product() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderLinePO_ID, org.compiere.model.I_C_OrderLine.class);
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Product_ID, org.compiere.model.I_C_BPartner_Product.class);
 	}
 
 	@Override
-	public void setC_OrderLinePO(org.compiere.model.I_C_OrderLine C_OrderLinePO)
+	public void setC_BPartner_Product(org.compiere.model.I_C_BPartner_Product C_BPartner_Product)
 	{
-		set_ValueFromPO(COLUMNNAME_C_OrderLinePO_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLinePO);
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Product_ID, org.compiere.model.I_C_BPartner_Product.class, C_BPartner_Product);
 	}
 
-	/** Set Bestellposition.
-		@param C_OrderLinePO_ID Bestellposition	  */
+	/** Set Geschäftspartner-Produkt.
+		@param C_BPartner_Product_ID Geschäftspartner-Produkt	  */
 	@Override
-	public void setC_OrderLinePO_ID (int C_OrderLinePO_ID)
+	public void setC_BPartner_Product_ID (int C_BPartner_Product_ID)
 	{
-		if (C_OrderLinePO_ID < 1) 
-			set_Value (COLUMNNAME_C_OrderLinePO_ID, null);
+		if (C_BPartner_Product_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_OrderLinePO_ID, Integer.valueOf(C_OrderLinePO_ID));
+			set_Value (COLUMNNAME_C_BPartner_Product_ID, Integer.valueOf(C_BPartner_Product_ID));
 	}
 
-	/** Get Bestellposition.
-		@return Bestellposition	  */
+	/** Get Geschäftspartner-Produkt.
+		@return Geschäftspartner-Produkt	  */
 	@Override
-	public int getC_OrderLinePO_ID () 
+	public int getC_BPartner_Product_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLinePO_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Product_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -219,23 +219,20 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set Zugesagter Termin.
-		@param DatePromised 
-		Zugesagter Termin für diesen Auftrag
-	  */
+	/** Set Zieldatum.
+		@param DateRequired Zieldatum	  */
 	@Override
-	public void setDatePromised (java.sql.Timestamp DatePromised)
+	public void setDateRequired (java.sql.Timestamp DateRequired)
 	{
-		set_Value (COLUMNNAME_DatePromised, DatePromised);
+		set_Value (COLUMNNAME_DateRequired, DateRequired);
 	}
 
-	/** Get Zugesagter Termin.
-		@return Zugesagter Termin für diesen Auftrag
-	  */
+	/** Get Zieldatum.
+		@return Zieldatum	  */
 	@Override
-	public java.sql.Timestamp getDatePromised () 
+	public java.sql.Timestamp getDateRequired () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePromised);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateRequired);
 	}
 
 	@Override
@@ -276,37 +273,37 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
+	public org.compiere.model.I_M_Warehouse getM_WarehousePO() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
+		return get_ValueAsPO(COLUMNNAME_M_WarehousePO_ID, org.compiere.model.I_M_Warehouse.class);
 	}
 
 	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
+	public void setM_WarehousePO(org.compiere.model.I_M_Warehouse M_WarehousePO)
 	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
+		set_ValueFromPO(COLUMNNAME_M_WarehousePO_ID, org.compiere.model.I_M_Warehouse.class, M_WarehousePO);
 	}
 
-	/** Set Lager.
-		@param M_Warehouse_ID 
-		Lager oder Ort für Dienstleistung
+	/** Set Liefer-Lager.
+		@param M_WarehousePO_ID 
+		Lager, an das der Lieferant eine Bestellung liefern soll.
 	  */
 	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	public void setM_WarehousePO_ID (int M_WarehousePO_ID)
 	{
-		if (M_Warehouse_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
+		if (M_WarehousePO_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_WarehousePO_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+			set_ValueNoCheck (COLUMNNAME_M_WarehousePO_ID, Integer.valueOf(M_WarehousePO_ID));
 	}
 
-	/** Get Lager.
-		@return Lager oder Ort für Dienstleistung
+	/** Get Liefer-Lager.
+		@return Lager, an das der Lieferant eine Bestellung liefern soll.
 	  */
 	@Override
-	public int getM_Warehouse_ID () 
+	public int getM_WarehousePO_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_WarehousePO_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -361,20 +358,39 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set Menge angefragt.
-		@param QtyRequiered Menge angefragt	  */
+	/** Set Bestellte Menge.
+		@param PurchasedQty Bestellte Menge	  */
 	@Override
-	public void setQtyRequiered (java.math.BigDecimal QtyRequiered)
+	public void setPurchasedQty (java.math.BigDecimal PurchasedQty)
 	{
-		set_Value (COLUMNNAME_QtyRequiered, QtyRequiered);
+		set_Value (COLUMNNAME_PurchasedQty, PurchasedQty);
 	}
 
-	/** Get Menge angefragt.
-		@return Menge angefragt	  */
+	/** Get Bestellte Menge.
+		@return Bestellte Menge	  */
 	@Override
-	public java.math.BigDecimal getQtyRequiered () 
+	public java.math.BigDecimal getPurchasedQty () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyRequiered);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PurchasedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Bestellmenge.
+		@param QtyToPurchase Bestellmenge	  */
+	@Override
+	public void setQtyToPurchase (java.math.BigDecimal QtyToPurchase)
+	{
+		set_Value (COLUMNNAME_QtyToPurchase, QtyToPurchase);
+	}
+
+	/** Get Bestellmenge.
+		@return Bestellmenge	  */
+	@Override
+	public java.math.BigDecimal getQtyToPurchase () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToPurchase);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

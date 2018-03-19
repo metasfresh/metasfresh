@@ -124,6 +124,29 @@ public interface I_M_Picking_Config
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set IsAllowOverdelivery.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAllowOverdelivery (boolean IsAllowOverdelivery);
+
+	/**
+	 * Get IsAllowOverdelivery.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAllowOverdelivery();
+
+    /** Column definition for IsAllowOverdelivery */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Config, Object> COLUMN_IsAllowOverdelivery = new org.adempiere.model.ModelColumn<I_M_Picking_Config, Object>(I_M_Picking_Config.class, "IsAllowOverdelivery", null);
+    /** Column name IsAllowOverdelivery */
+    public static final String COLUMNNAME_IsAllowOverdelivery = "IsAllowOverdelivery";
+
+	/**
 	 * Set Picking configuration.
 	 *
 	 * <br>Type: ID

@@ -3,6 +3,7 @@ package org.adempiere.ad.trx.spi;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
 
@@ -21,11 +22,11 @@ import com.google.common.base.Supplier;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -85,40 +86,41 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 					itemWasCollected.set(true);
 
 					// Register a listener which will process the collector when the transaction is committed.
-					trx.getTrxListenerManager().registerListener(new TrxListenerAdapter()
-					{
-						@Override
-						public void afterCommit(final ITrx trx)
-						{
-							// Get the transaction level collector.
-							// The collector is removed to avoid double processing.
-							// If there is no collector, do nothing.
-							final CollectorType collector = trx.setProperty(trxProperyName, null);
-							if (collector == null)
-							{
-								return;
-							}
+					trx.getTrxListenerManager()
+							.newEventListener(TrxEventTiming.AFTER_COMMIT)
+							.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+							.registerHandlingMethod(innerTrx -> {
 
-							// Process the collector.
-							processCollector(collector);
-						}
+								// Get the transaction level collector.
+								// The collector is removed to avoid double processing.
+								// If there is no collector, do nothing.
+								final CollectorType innerCollector = innerTrx.setProperty(trxProperyName, null);
+								if (innerCollector == null)
+								{
+									return;
+								}
 
-						@Override
-						public void afterRollback(final ITrx trx)
-						{
-							// Get the transaction level collector.
-							// The collector is removed to avoid double processing.
-							// If there is no collector, do nothing.
-							final CollectorType collector = trx.setProperty(trxProperyName, null);
-							if (collector == null)
-							{
-								return;
-							}
+								// Process the collector.
+								processCollector(innerCollector);
+							});
 
-							// Process the collector.
-							discardCollector(collector);
-						}
-					});
+					trx.getTrxListenerManager()
+							.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+							.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+							.registerHandlingMethod(innerTrx -> {
+
+								// Get the transaction level collector.
+								// The collector is removed to avoid double processing.
+								// If there is no collector, do nothing.
+								final CollectorType innerCollector = innerTrx.setProperty(trxProperyName, null);
+								if (innerCollector == null)
+								{
+									return;
+								}
+
+								// Process the collector.
+								discardCollector(innerCollector);
+							});
 
 					// Return the newly created collector.
 					return collector;
@@ -177,6 +179,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 	 * Discard the collector.
 	 *
 	 * This method is called on transaction rollback.
+	 *
 	 * @param collector
 	 */
 	protected void discardCollector(final CollectorType collector)

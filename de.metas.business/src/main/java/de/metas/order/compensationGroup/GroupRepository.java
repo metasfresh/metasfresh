@@ -34,10 +34,7 @@ public interface GroupRepository
 
 	void saveGroup(Group group);
 
-	default GroupCreator prepareNewGroup()
-	{
-		return new GroupCreator(this);
-	}
+	GroupCreator prepareNewGroup();
 
 	Group retrieveOrCreateGroup(RetrieveOrCreateGroupRequest request);
 	
@@ -46,6 +43,6 @@ public interface GroupRepository
 	class RetrieveOrCreateGroupRequest
 	{
 		@NonNull Collection<Integer> orderLineIds;
-		@NonNull GroupIdTemplate newGroupIdTemplate;
+		@NonNull GroupTemplate newGroupTemplate;
 	}
 }

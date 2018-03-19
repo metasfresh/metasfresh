@@ -180,6 +180,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-cockpit</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.materialtracking</groupId>
 			<artifactId>de.metas.materialtracking</artifactId>
 			<version>${metasfresh.version}</version>
@@ -194,13 +200,6 @@
 		<dependency>
 			<groupId>de.metas.jax.rs</groupId>
 			<artifactId>de.metas.jax.rs</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-		
-		<!-- those two are required when we run with -Dorg.adempiere.server.embedded=true -->
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 
@@ -238,6 +237,18 @@
 		<dependency>
 			<groupId>de.metas.purchasecandidate</groupId>
 			<artifactId>de.metas.purchasecandidate.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.go</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.datev</groupId>
+			<artifactId>metasfresh-datev</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 		

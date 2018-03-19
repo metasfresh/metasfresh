@@ -10,12 +10,12 @@ package de.metas.handlingunits.inout.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,6 +44,8 @@ import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
@@ -50,6 +53,7 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
+import lombok.NonNull;
 
 /**
  * Builder class to generate packing material shipment lines for a given shipment.
@@ -201,22 +205,38 @@ public class HUShipmentPackingMaterialLinesBuilder
 		for (final HUPackingMaterialDocumentLineCandidate pmCandidate : packingMaterialsCollector.getAndClearCandidates())
 		{
 			final I_M_InOutLine packingMaterialLine = createPackingMaterialLine(pmCandidate);
-
 			// task 09502: set the reference from line to packing-line
-			final List<IHUPackingMaterialCollectorSource> sourceIols = pmCandidate.getSources();
-			for (final IHUPackingMaterialCollectorSource source : sourceIols)
-			{
-				if (source instanceof InOutLineHUPackingMaterialCollectorSource)
-				{
-					final InOutLineHUPackingMaterialCollectorSource inOutLineSource = (InOutLineHUPackingMaterialCollectorSource)source;
-					final I_M_InOutLine sourceIol = inOutLineSource.getM_InOutLine();
-					sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
-					InterfaceWrapperHelper.save(sourceIol);
-				}
-			}
+			final Set<IHUPackingMaterialCollectorSource> sourceIols = pmCandidate.getSources();
+			sourceIols.stream()
+					.filter(source -> source instanceof InOutLineHUPackingMaterialCollectorSource)
+					.map(source -> (InOutLineHUPackingMaterialCollectorSource)source)
+					.forEach(inOutLineSource -> linkInOutLineToPackingMaterialLine(inOutLineSource, packingMaterialLine));
 		}
 
 		configurable = false;
+	}
+
+	private void linkInOutLineToPackingMaterialLine(
+			@NonNull final InOutLineHUPackingMaterialCollectorSource source,
+			@NonNull final I_M_InOutLine packingMaterialLine)
+	{
+		final I_M_InOutLine sourceIol = source.getM_InOutLine();
+		if (sourceIol.getM_HU_PI_Item_Product_Override() == null)
+		{
+			return;
+		}
+		final I_M_HU_PI_Version huPiVersion = sourceIol
+				.getM_HU_PI_Item_Product_Override()
+				.getM_HU_PI_Item()
+				.getM_HU_PI_Version();
+
+		final I_M_HU_PackingMaterial packingMaterial = Services.get(IHandlingUnitsDAO.class)
+				.retrievePackingMaterial(huPiVersion, sourceIol.getM_InOut().getC_BPartner());
+		if (packingMaterial != null && packingMaterial.getM_Product_ID() == packingMaterialLine.getM_Product_ID())
+		{
+			sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
+			InterfaceWrapperHelper.save(sourceIol);
+		}
 	}
 
 	/**
@@ -233,36 +253,31 @@ public class HUShipmentPackingMaterialLinesBuilder
 	}
 
 	/**
-	 * Collect TU packing materials from shipment line
-	 *
-	 * @param packingMaterialsCollector
-	 * @param shipmentLine
+	 * Collect TU packing materials from the given {@code huPackingMaterialCollectorSource} into our internal {@link HUPackingMaterialsCollector}.
 	 */
-	private final void collectHUs(final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
+	private final void collectHUs(@NonNull final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
-		Check.assume(huPackingMaterialCollectorSource instanceof InOutLineHUPackingMaterialCollectorSource, huPackingMaterialCollectorSource + "must be a instance of " + InOutLineHUPackingMaterialCollectorSource.class);
-		
-		Check.assume(packingMaterialsCollector.getCountTUs() == 0, "At this point CountTUs shall be zero: {}", packingMaterialsCollector);
+		Check.assume(huPackingMaterialCollectorSource instanceof InOutLineHUPackingMaterialCollectorSource,
+				"The given huPackingMaterialCollectorSource needs to be instanceof {}; huPackingMaterialCollectorSource={}",
+				InOutLineHUPackingMaterialCollectorSource.class, huPackingMaterialCollectorSource);
+
+		Check.assume(packingMaterialsCollector.getCountTUs() == 0,
+				"At this point CountTUs shall be zero: packingMaterialsCollector={}", packingMaterialsCollector);
 
 		final boolean initializeOverrides = isUpdateOverrideValues();
 
-		//
 		// Collect packing materials from assigned TUs
 		// NOTE: we are doing this because we also want to explicitly count them
 		// If we would fetch all HUs it could be to count more TUs than there are actually assigned to this particular inout line
 		final HUPackingMaterialsCollector packingMaterialsCollectorFromHUs = packingMaterialsCollector.splitNew();
-		
-		final InOutLineHUPackingMaterialCollectorSource shipmentLineSource = (InOutLineHUPackingMaterialCollectorSource) huPackingMaterialCollectorSource;
+
+		final InOutLineHUPackingMaterialCollectorSource shipmentLineSource = (InOutLineHUPackingMaterialCollectorSource)huPackingMaterialCollectorSource;
 		final I_M_InOutLine shipmentLine = shipmentLineSource.getM_InOutLine();
-		
+
 		final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(shipmentLine);
 		packingMaterialsCollectorFromHUs.addTUHUsRecursively(tuAssignmentsQuery);
 		final int countTUs_Calculated = packingMaterialsCollectorFromHUs.getAndResetCountTUs();
 
-		
-
-		
-		
 		//
 		// Collect TU packing materials from overrides
 		int countTUs_Override = shipmentLine.getQtyTU_Override().intValueExact();

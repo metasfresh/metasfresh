@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -59,6 +58,8 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
@@ -87,6 +88,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
+import de.metas.handlingunits.report.HUToReport;
+import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
@@ -282,12 +285,12 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	@Override
-	public InOutGenerateResult processReceiptSchedules(final Properties ctx, final List<I_M_ReceiptSchedule> receiptSchedules, final Set<I_M_HU> selectedHUs, final boolean storeReceipts)
+	public InOutGenerateResult processReceiptSchedules(final Properties ctx, final List<I_M_ReceiptSchedule> receiptSchedules, final Set<I_M_HU> selectedHUs)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
 
-		final InOutGenerateResult inoutGenerateResult = trxManager.call(trxName, () -> processReceiptSchedules0(ctx, receiptSchedules, selectedHUs, storeReceipts));
+		final InOutGenerateResult inoutGenerateResult = trxManager.call(trxName, () -> processReceiptSchedules0(ctx, receiptSchedules, selectedHUs));
 		return inoutGenerateResult;
 	}
 
@@ -305,8 +308,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 */
 	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx,
 			final List<I_M_ReceiptSchedule> receiptSchedules,
-			final Set<I_M_HU> selectedHUs,
-			final boolean storeReceipts)
+			final Set<I_M_HU> selectedHUs)
 	{
 		// TODO: make sure receipt schedules and selected HUs have TrxNone or InheritedTrx
 		// assertNoTrxOrIneheritedtrx(receiptSchedules);
@@ -352,7 +354,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final InOutGenerateResult result;
 		{
 			// Create result collector
-			result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(storeReceipts); // referenceReceipts
+			result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true);
 
 			// Create Receipt producer
 			final boolean createReceiptWithDatePromised = false; // create the InOuts with MovementDate = the current login date
@@ -384,15 +386,19 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final List<I_M_InOut> inouts = createList(result.getInOuts(), I_M_InOut.class);
 		for (final I_M_InOut inout : inouts)
 		{
+			final int vendorBPartnerId = inout.getC_BPartner_ID();
+			
 			final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout);
 			for (final I_M_InOutLine inoutLine : inoutLines)
 			{
 				final List<I_M_HU_Assignment> huAssignments = huAssignmentDAO.retrieveHUAssignmentsForModel(inoutLine);
 				for (final I_M_HU_Assignment huAssignment : huAssignments)
 				{
-					if (seenHUIds.add(huAssignment.getM_HU_ID()))
+					final int huId = huAssignment.getM_HU_ID();
+					if (huId > 0 && seenHUIds.add(huId))
 					{
-						printReceiptLabel(huAssignment.getM_HU(), inout.getC_BPartner_ID());
+						final HUToReportWrapper hu = HUToReportWrapper.of(huAssignment.getM_HU());
+						printReceiptLabel(hu, vendorBPartnerId);
 					}
 				}
 			}
@@ -406,51 +412,50 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * @param vendorBPartnerId
 	 * @task https://github.com/metasfresh/metasfresh-webui/issues/209
 	 */
-	private void printReceiptLabel(final I_M_HU hu, final int vendorBPartnerId)
+	private void printReceiptLabel(final HUToReport hu, final int vendorBPartnerId)
 	{
 		if (hu == null)
 		{
-			logger.info("Param 'hu'==null; nothing to do");
+			logger.debug("Param 'hu'==null; nothing to do");
 			return;
 		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
 
 		final HUReportService huReportService = HUReportService.get();
-		if (!huReportService.isReceiptLabelAutoPrintEnabled(ctx, hu, vendorBPartnerId))
+		if (!huReportService.isReceiptLabelAutoPrintEnabled(vendorBPartnerId))
 		{
-			logger.info("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
+			logger.debug("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
 			return;
 		}
 
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		if (!handlingUnitsBL.isTopLevel(hu))
+		if (!hu.isTopLevel())
 		{
-			logger.info("We only print top level HUs; nothing to do; hu={}", hu);
+			logger.debug("We only print top level HUs; nothing to do; hu={}", hu);
 			return;
 		}
 
-		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId(ctx);
+		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId();
 		if (adProcessId <= 0)
 		{
-			logger.info("No process configured via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
+			logger.debug("No process configured via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
 			return;
 		}
 
-		final List<I_M_HU> husToProcess = huReportService
-				.getHUsToProcess(hu, adProcessId).stream()
-				.filter(huToProcess -> handlingUnitsBL.isTopLevel(huToProcess)) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
-				.collect(Collectors.toList());
+		final List<HUToReport> husToProcess = huReportService
+				.getHUsToProcess(hu, adProcessId)
+				.stream()
+				.filter(HUToReport::isTopLevel) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
+				.collect(ImmutableList.toImmutableList());
 		if (husToProcess.isEmpty())
 		{
-			logger.info("hu's type does not match process {}; nothing to do; hu={}", adProcessId, hu);
+			logger.debug("hu's type does not match process {}; nothing to do; hu={}", adProcessId, hu);
 			return;
 		}
 
-		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount(ctx);
+		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount();
 
-		HUReportExecutor.get(ctx)
-				.withNumberOfCopies(copies)
+		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
+		HUReportExecutor.newInstance(ctx)
+				.numberOfCopies(copies)
 				.executeHUReportAfterCommit(adProcessId, husToProcess);
 	}
 

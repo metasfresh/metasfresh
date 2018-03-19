@@ -1,10 +1,16 @@
 package de.metas.material.event;
 
+import org.compiere.Adempiere;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
+
+import de.metas.Profiles;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -29,25 +35,31 @@ import org.springframework.context.annotation.Profile;
  */
 
 @Configuration
-@ComponentScan(basePackageClasses = {
-		MaterialEventConfiguration.class,
-		// StartupListener.class // there are different startup listener classes. one for  metasfresh-backend, one for metasfresh-webui-api.
-})
+@ComponentScan(basePackageClasses = MaterialEventConfiguration.class)
 public class MaterialEventConfiguration
 {
+	public static final String BEAN_NAME = "metasfreshEventBusService";
 
-	@Bean(name = "materialEventService")
-	@Profile("test")
-	public MaterialEventService materialEventServiceLocal()
+	@Bean(name = BEAN_NAME)
+	@Profile(Profiles.PROFILE_Test)
+	public MetasfreshEventBusService createLocalMaterialEventService(
+			@NonNull final MaterialEventConverter materialEventConverter)
 	{
-		return MaterialEventService.createLocalServiceThatIsReadyToUse();
+		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService
+				.createLocalServiceThatIsReadyToUse(materialEventConverter);
+
+		return materialEventService;
 	}
 
-	@Bean()
-	@Lazy // needed to avoid problem on startup when SysConfigBL etc is not yet available
-	@Profile("!test")
-	public MaterialEventService materialEventService()
+	@Bean(name = BEAN_NAME)
+	@DependsOn(Adempiere.BEAN_NAME)
+	@Profile(Profiles.PROFILE_NotTest)
+	public MetasfreshEventBusService createDistributedMaterialEventService(
+			@NonNull final MaterialEventConverter materialEventConverter)
 	{
-		return MaterialEventService.createDistributedServiceThatNeedsToSubscribe();
+		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService
+				.createDistributedServiceThatNeedsToSubscribe(materialEventConverter);
+
+		return materialEventService;
 	}
 }

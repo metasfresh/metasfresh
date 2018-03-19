@@ -16,7 +16,10 @@ import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHUAssignmentDAO.HuAssignment;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -36,11 +39,11 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -55,40 +58,27 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
-		List<I_M_HU_Assignment> huAssignmentsForModel = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(issueCostCollector)
+		List<HuAssignment> huAssignmentsForModel = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(issueCostCollector)
 				.create()
-				.list();
+				.stream()
+				.map(HuAssignment::ofDataRecordAllowMissingHU)
+				.collect(ImmutableList.toImmutableList());
+
 		if (huAssignmentsForModel.isEmpty())
 		{
 			// fallback
-			huAssignmentsForModel = huAssignmentDAO.retrieveHUAssignmentsForModel(issueCostCollector);
+			huAssignmentsForModel = huAssignmentDAO.retrieveHUAssignmentPojosForModel(issueCostCollector);
 		}
 
-		for (final I_M_HU_Assignment huAssignment : huAssignmentsForModel)
+		for (final HuAssignment huAssignment : huAssignmentsForModel)
 		{
-			final I_M_HU hu;
-			if (huAssignment.getVHU_ID() > 0)
-			{
-				hu = huAssignment.getVHU();
-			}
-			else if (huAssignment.getM_TU_HU_ID() > 0)
-			{
-				hu = huAssignment.getM_TU_HU();
-			}
-			else if (huAssignment.getM_LU_HU_ID() > 0)
-			{
-				hu = huAssignment.getM_LU_HU();
-			}
-			else if (huAssignment.getM_HU_ID() > 0)
-			{
-				hu = huAssignment.getM_HU();
-			}
-			else
+			final I_M_HU hu = huAssignment.getLowestLevelHU();
+			if (hu == null)
 			{
 				continue;
 			}
 
-			final I_M_InOutLine inoutLine = Services.get(IHUInOutDAO.class).retrieveInOutLineOrNull(hu);
+			final I_M_InOutLine inoutLine = Services.get(IHUInOutDAO.class).retrieveCompletedReceiptLineOrNull(hu);
 			if (inoutLine == null || !inoutLine.getM_InOut().isProcessed())
 			{
 				// there is no iol
@@ -126,7 +116,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 			for (final I_M_HU_Assignment assignment : huAssignmentsForModel)
 			{
 				final I_M_HU hu = assignment.getM_HU();
-				final I_M_InOutLine inoutLine = huInOutDAO.retrieveInOutLineOrNull(hu);
+				final I_M_InOutLine inoutLine = huInOutDAO.retrieveCompletedReceiptLineOrNull(hu);
 				if (inoutLine == null || !inoutLine.getM_InOut().isProcessed())
 				{
 					// there is no iol

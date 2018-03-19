@@ -16,6 +16,7 @@ package org.adempiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_M_RMA;
@@ -36,6 +38,7 @@ import org.compiere.model.MQuery.Operator;
 import org.compiere.model.POInfo;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
@@ -46,6 +49,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Generic provider of zoom targets. Contains pieces of {@link org.compiere.apps.AZoomAcross}
@@ -60,17 +64,20 @@ import de.metas.logging.LogManager;
 
 	private static final Logger logger = LogManager.getLogger(GenericZoomProvider.class);
 
-	private final CCache<String, List<GenericZoomInfoDescriptor>> keyColumnName2descriptors = CCache.newLRUCache(I_AD_Window.Table_Name + "#GenericZoomInfoDescriptors", 100, 0);
+	private final CCache<String, List<GenericZoomInfoDescriptor>> keyColumnName2descriptors = //
+			CCache.newLRUCache(I_AD_Window.Table_Name + "#GenericZoomInfoDescriptors", 100, 0);
 
 	private GenericZoomProvider()
 	{
-		super();
 	}
 
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
+	public List<ZoomInfo> retrieveZoomInfos(
+			@NonNull final IZoomSource source,
+			final int targetAD_Window_ID,
+			final boolean checkRecordsCount)
 	{
-		final List<GenericZoomInfoDescriptor> zoomInfoDescriptors = getZoomInfoDescriptors(source.getKeyColumnName());
+		final List<GenericZoomInfoDescriptor> zoomInfoDescriptors = getZoomInfoDescriptors(source.getKeyColumnNameOrNull());
 		if (zoomInfoDescriptors.isEmpty())
 		{
 			return ImmutableList.of();
@@ -135,13 +142,11 @@ import de.metas.logging.LogManager;
 				+ "\n LEFT OUTER JOIN AD_Window w_po ON (t.PO_Window_ID=w_po.AD_Window_ID) AND w_po.IsActive='Y'" // gh #1489 : only consider active windows
 				+ "\n LEFT OUTER JOIN AD_Window_Trl w_po_trl ON (w_po_trl.AD_Window_ID=w_po.AD_Window_ID AND w_po_trl.AD_Language=w_so_trl.AD_Language)";
 
-		//
 		//@formatter:off
 		sql += "WHERE t.TableName NOT LIKE 'I%'" // No Import
 
 				+ " AND t.IsActive='Y'" // gh #1489 : only consider active tables
 
-				//
 				// Consider first window tab or any tab if our column has AllowZoomTo set
 				+ " AND EXISTS ("
 					+ "SELECT 1 FROM AD_Tab tt "
@@ -154,7 +159,7 @@ import de.metas.logging.LogManager;
 							+ " OR EXISTS (SELECT 1 FROM AD_Column c where c.AD_Table_ID=t.AD_Table_ID AND ColumnName=? AND "+I_AD_Column.COLUMNNAME_AllowZoomTo+"='Y')" // #1
 						+ ")"
 				+ ")"
-				//
+
 				// Consider tables which have an AD_Table_ID/Record_ID reference to our column
 				+ " AND ("
 					+ " t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName=? AND IsKey='N') " // #2
@@ -201,7 +206,7 @@ import de.metas.logging.LogManager;
 
 					final GenericZoomInfoDescriptor.Builder builder = GenericZoomInfoDescriptor.builder()
 							.setTargetTableName(targetTableName)
-							.setTargetHasIsSOTrxColumn(targetTableInfo.hasColumnName("IsSOTrx"))
+							.setTargetHasIsSOTrxColumn(targetTableInfo.hasColumnName(Env.CTXNAME_IsSOTrx))
 							.setTargetNames(soNameBaseLang, poNameBaseLang)
 							.setTargetWindowIds(SO_Window_ID, PO_Window_ID);
 
@@ -210,8 +215,8 @@ import de.metas.logging.LogManager;
 
 					// Dynamic references AD_Table_ID/Record_ID (task #03921)
 					if (!hasTargetColumnName
-							&& targetTableInfo.hasColumnName("AD_Table_ID")
-							&& targetTableInfo.hasColumnName("Record_ID"))
+							&& targetTableInfo.hasColumnName(ITableRecordReference.COLUMNNAME_AD_Table_ID)
+							&& targetTableInfo.hasColumnName(ITableRecordReference.COLUMNNAME_Record_ID))
 					{
 						builder.setDynamicTargetColumnName(true);
 					}
@@ -301,7 +306,7 @@ import de.metas.logging.LogManager;
 			query.addRestriction(targetColumnName, Operator.EQUAL, source.getRecord_ID());
 		}
 		query.setZoomTableName(targetTableName);
-		query.setZoomColumnName(source.getKeyColumnName());
+		query.setZoomColumnName(source.getKeyColumnNameOrNull());
 		query.setZoomValue(source.getRecord_ID());
 
 		return query;
@@ -337,10 +342,11 @@ import de.metas.logging.LogManager;
 		{
 			count = DB.getSQLValue(ITrx.TRXNAME_None, sqlCount);
 		}
-		query.setRecordCount(count);
 
-		final long elapsedTimeMillis = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
-		Loggables.get().addLog("GenericZoomInfoDescriptor {} took {}ms", zoomInfoDescriptor, elapsedTimeMillis);
+		final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
+		query.setRecordCount(count, countDuration);
+
+		Loggables.get().addLog("GenericZoomInfoDescriptor {} took {}", zoomInfoDescriptor, countDuration);
 	}
 
 	private static final class GenericZoomInfoDescriptor

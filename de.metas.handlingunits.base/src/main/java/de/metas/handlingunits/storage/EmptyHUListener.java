@@ -2,6 +2,8 @@ package de.metas.handlingunits.storage;
 
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -40,9 +42,8 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class EmptyHUListener
 {
-	private final String description;
-
 	private final transient Consumer<I_M_HU> consumer;
+	private final String description;
 
 	public static EmptyHUListener doBeforeDestroyed(
 			@NonNull final Consumer<I_M_HU> consumer,
@@ -51,9 +52,15 @@ public class EmptyHUListener
 		return new EmptyHUListener(consumer, description);
 	}
 
+	public static EmptyHUListener doBeforeDestroyed(@NonNull final Consumer<I_M_HU> consumer)
+	{
+		final String description = null;
+		return new EmptyHUListener(consumer, description);
+	}
+
 	private EmptyHUListener(
 			@NonNull final Consumer<I_M_HU> consumer,
-			@NonNull final String description)
+			@Nullable final String description)
 	{
 		this.consumer = consumer;
 		this.description = description;

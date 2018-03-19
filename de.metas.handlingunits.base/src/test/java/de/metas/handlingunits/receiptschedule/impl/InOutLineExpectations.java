@@ -1,5 +1,7 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -10,12 +12,12 @@ package de.metas.handlingunits.receiptschedule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,16 +31,12 @@ import java.util.List;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
-import org.junit.Assert;
 
 import de.metas.handlingunits.expectations.AbstractHUExpectation;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
 
-/**
- * @author al
- */
 public class InOutLineExpectations<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
 	private final List<InOutLineExpectation<InOutLineExpectations<ParentExpectationType>>> expectations = new ArrayList<>();
@@ -66,7 +64,7 @@ public class InOutLineExpectations<ParentExpectationType> extends AbstractHUExpe
 	{
 		final List<I_M_InOutLine> documentLines = Services.get(IInOutDAO.class).retrieveLines(document, I_M_InOutLine.class);
 
-		Assert.assertEquals("Invalid inout lines count", expectations.size(), documentLines.size());
+		assertThat(documentLines).as("Invalid inout lines count").hasSize(expectations.size());
 
 		for (int i = 0; i < expectations.size(); i++)
 		{

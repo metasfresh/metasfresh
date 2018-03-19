@@ -35,9 +35,15 @@ import de.metas.i18n.ImmutableTranslatableString;
 public class PlainMsgBL implements IMsgBL
 {
 	@Override
-	public String getMsg(final String language, final String message, final Object[] params)
+	public String getMsg(final String adLanguage, final String message)
 	{
-		return language + "_" + message + "_" + Arrays.toString(params);
+		return adLanguage + "_" + message;
+	}
+
+	@Override
+	public String getMsg(final String adLanguage, final String message, final Object[] params)
+	{
+		return adLanguage + "_" + message + "_" + Arrays.toString(params);
 	}
 
 	@Override
@@ -71,7 +77,19 @@ public class PlainMsgBL implements IMsgBL
 	}
 
 	@Override
+	public String parseTranslation(final String adLanguage, final String message)
+	{
+		return message;
+	}
+
+	@Override
 	public String translate(final Properties ctx, final String text)
+	{
+		return text;
+	}
+	
+	@Override
+	public String translate(final String adLanguage, final String text)
 	{
 		return text;
 	}
@@ -93,7 +111,7 @@ public class PlainMsgBL implements IMsgBL
 	{
 		return ImmutableTranslatableString.constant(adMessage);
 	}
-	
+
 	@Override
 	public void cacheReset()
 	{

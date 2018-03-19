@@ -42,6 +42,7 @@ import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.adempiere.model.I_C_Invoice;
@@ -151,15 +152,12 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void invalidateCand(I_C_Invoice_Candidate ic);
 
 	/**
-	 * Invalidates the given collection of invoice candidates. Note that for more than one candidate, this method is more efficient than repeated calls of
-	 * {@link #invalidateCand(I_C_Invoice_Candidate)}
-	 *
-	 * @param ics
-	 * @param trxName
+	 * Invalidates the given collection of invoice candidates.<br>
+	 * Note that for more than one candidate, this method is more efficient than repeated calls of {@link #invalidateCand(I_C_Invoice_Candidate)}
 	 */
-	void invalidateCands(Collection<I_C_Invoice_Candidate> ics, String trxName);
+	void invalidateCands(List<I_C_Invoice_Candidate> ics);
 
-	void invalidateAllCands(Properties ctx, String get_TrxName);
+	void invalidateAllCands(Properties ctx, String trxName);
 
 	/**
 	 * Invalidates all candidates that have the same <code>(AD_Table_ID, Record_ID)</code> reference.
@@ -295,6 +293,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInOutLineInclInactive(I_M_InOutLine inOutLine);
 
+	IQuery<I_C_Invoice_Candidate> retrieveInvoiceCandidatesQueryForInOuts(Collection<? extends I_M_InOut> inouts);
+
 	/**
 	 * Retrieves those invoice candidates that belong to the given <code>inOutLine</code>.
 	 *
@@ -420,7 +420,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Retrieve all the invoice candidates for the given inventoryLine
-	 * 
+	 *
 	 * @param inventoryLine
 	 * @return
 	 */

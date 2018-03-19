@@ -5,14 +5,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.util.Loggables;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -99,10 +100,11 @@ public class SupplyProposalEvaluator
 		final List<Candidate> directReversals = candidateRepository.retrieveOrderedByDateAndSeqNo(directReverseForDemandQuery);
 		if (!directReversals.isEmpty())
 		{
+			Loggables.get().addLog("Given proposal would have closed a loop; rececting it; proposal={}", proposal);
 			return false;
 		}
 
-	final	MaterialDescriptorQuery supplyMaterialDescriptorQuery  = MaterialDescriptorQuery.builder()
+		final MaterialDescriptorQuery supplyMaterialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(productDescriptor.getProductId())
 				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
 				.warehouseId(proposal.getSourceWarehouseId())
@@ -124,6 +126,7 @@ public class SupplyProposalEvaluator
 
 			if (indirectSupplyCandidate != null)
 			{
+				Loggables.get().addLog("Given proposal would have closed a loop; rececting it; proposal={}", proposal);
 				return false;
 			}
 		}

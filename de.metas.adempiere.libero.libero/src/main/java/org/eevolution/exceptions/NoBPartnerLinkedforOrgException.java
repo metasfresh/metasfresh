@@ -38,6 +38,8 @@ package org.eevolution.exceptions;
 
 import org.compiere.model.MOrg;
 
+import de.metas.material.planning.pporder.LiberoException;
+
 /**
  * Throw when do not exist Business Partner link for organization:
  * @author victor.perez@e-evolution.com, www.e-evolution.com

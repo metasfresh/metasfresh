@@ -13,11 +13,11 @@ package de.metas.printing.client.endpoint;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -63,16 +63,21 @@ import de.metas.printing.esb.api.PrinterHWList;
 
 /**
  * Endpoint that queries the printing system via http.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 {
+	private static final String DATA_ENCODING_BINARY = "binary";
+
+	private static final String DATA_ENCODING_BASE64 = "base64";
+
 	private final transient Logger log = Logger.getLogger(getClass().getName());
 
 	public static final String CTX_ROOT = "de.metas.printing.client.endpoint.RestHttpPrintConnectionEndpoint";
 	public static final String CTX_ServerUrl = CTX_ROOT + ".ServerUrl";
+	public static final String CTX_DataEncoding = CTX_ROOT + ".dataEncoding";
 
 	public static final String CTX_SocketTimeoutMillis = CTX_ROOT + ".SocketTimeoutMillis";
 	public static final int DEFAULT_SocketTimeoutMillis = 10 * 300000; // 5 min
@@ -84,9 +89,10 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 
 	private final HttpClient httpclient;
 
+	private final String dataEncoding;
+
 	public RestHttpPrintConnectionEndpoint()
 	{
-		super();
 		_ctx = Context.getContext();
 		_sessionId = _ctx.getProperty(Context.CTX_SessionId);
 
@@ -95,6 +101,8 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		{
 			throw new PrintConnectionEndpointException("Config " + CTX_ServerUrl + " not found");
 		}
+
+		dataEncoding = getDataEncoding();
 
 		beanEncoder = _ctx.getInstance(Context.CTX_BeanEncoder, IBeanEnconder.class);
 
@@ -105,6 +113,26 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 
 		httpclient = new HttpClient();
 		httpclient.getParams().setSoTimeout(socketTimeout);
+	}
+
+	private String getDataEncoding()
+	{
+		final String configValue = _ctx.getProperty(CTX_DataEncoding);
+		if (configValue == null)
+		{
+			return DATA_ENCODING_BASE64;
+		}
+		else if (DATA_ENCODING_BASE64.equalsIgnoreCase(configValue.trim()))
+		{
+			return DATA_ENCODING_BASE64;
+		}
+		else if (DATA_ENCODING_BINARY.equalsIgnoreCase(configValue.trim()))
+		{
+			return DATA_ENCODING_BINARY;
+		}
+
+		log.warning("Unknown/unexpected value " + CTX_DataEncoding + "=" + configValue + "; falling back to " + DATA_ENCODING_BASE64);
+		return DATA_ENCODING_BASE64;
 	}
 
 	private final Context getContext()
@@ -146,6 +174,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 
 		final URL url = getURL(PRTRestServiceConstants.PATH_AddPrinterHW);
 		final PostMethod httpPost = new PostMethod(url.toString());
+		addApiTokenIfAvailable(httpPost);
 
 		final RequestEntity entity = new ByteArrayRequestEntity(data, beanEncoder.getContentType());
 		httpPost.setRequestEntity(entity);
@@ -177,6 +206,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		final URL url = getURL(PRTRestServiceConstants.PATH_GetNextPrintPackage, params);
 
 		final PostMethod httpPost = new PostMethod(url.toString());
+		addApiTokenIfAvailable(httpPost);
 
 		int result = -1;
 		InputStream in = null;
@@ -229,6 +259,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		final URL url = getURL(PRTRestServiceConstants.PATH_GetPrintPackageData, params);
 
 		final PostMethod httpPost = new PostMethod(url.toString());
+		addApiTokenIfAvailable(httpPost);
 
 		int result = -1;
 		try
@@ -241,23 +272,30 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 				throw new PrintConnectionEndpointException("Error " + result + " while posting on " + url + ": " + errorMsg);
 			}
 
-			// This is a Base64-encoded byte stream
-			// The byte stream itself is the document received from the ESB
-			// task 05011: work with a stream instead of byte[] to avoid problems with large amounts of data
-			final InputStream dataBase64Stream = httpPost.getResponseBodyAsStream();
-
 			final File file = mkFile(printPackage);
 
 			final FileOutputStream fileOutputStream = new FileOutputStream(file);
+			final InputStream dataBase64Stream = httpPost.getResponseBodyAsStream();
+
 			ByteStreams.copy(dataBase64Stream, fileOutputStream);
 			dataBase64Stream.close();
 			fileOutputStream.close();
 
 			final FileInputStream fileInputStream = new FileInputStream(file);
-			return BaseEncoding
-					.base64()
-					.withSeparator("\r\n", 76)
-					.decodingStream(new InputStreamReader(fileInputStream));
+			if (DATA_ENCODING_BASE64.equals(dataEncoding))
+			{
+				// This is a Base64-encoded byte stream
+				// The byte stream itself is the document received from the ESB
+				// task 05011: work with a stream instead of byte[] to avoid problems with large amounts of data
+				return BaseEncoding
+						.base64()
+						.withSeparator("\r\n", 76)
+						.decodingStream(new InputStreamReader(fileInputStream));
+			}
+			else
+			{
+				return fileInputStream;
+			}
 		}
 		catch (final Exception e)
 		{
@@ -266,7 +304,9 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 	}
 
 	@Override
-	public void sendPrintPackageResponse(final PrintPackage printPackage, final PrintJobInstructionsConfirm response)
+	public void sendPrintPackageResponse(
+			final PrintPackage printPackage,
+			final PrintJobInstructionsConfirm response)
 	{
 		final byte[] data = beanEncoder.encode(response);
 
@@ -278,6 +318,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		final URL url = getURL(PRTRestServiceConstants.PATH_SendPrintPackageResponse, params);
 
 		final PostMethod httpPost = new PostMethod(url.toString());
+		addApiTokenIfAvailable(httpPost);
 
 		final RequestEntity entity = new ByteArrayRequestEntity(data, beanEncoder.getContentType());
 		httpPost.setRequestEntity(entity);
@@ -313,14 +354,20 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 	}
 
 	/**
-	 * Create a file that corresponds to the given <code>printPackageInfo</code>.
-	 *
-	 * @param printPackageInfo
-	 * @return
+	 * Create a file that corresponds to the given <code>printPackageInfo</code> and assumes data encoding.
 	 */
 	private File mkFile(final PrintPackage printPackageInfo)
 	{
-		final File file = new File("PrintJobInstructionsID_" + printPackageInfo.getPrintJobInstructionsID() + ".data");
+		final String fileEnding;
+		if (DATA_ENCODING_BASE64.equals(dataEncoding))
+		{
+			fileEnding = "base64encoded_pdf";
+		}
+		else
+		{
+			fileEnding = "pdf";
+		}
+		final File file = new File("PrintJobInstructionsID_" + printPackageInfo.getPrintJobInstructionsID() + "." + fileEnding);
 		return file;
 	}
 
@@ -334,7 +381,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 	// protected because we want to make them testable
 	protected Map<String, String> createInitialUrlParams()
 	{
-		final Map<String, String> params = new HashMap<String, String>();
+		final Map<String, String> params = new HashMap<>();
 		params.put(PRTRestServiceConstants.PARAM_SessionId, getSessionId());
 		return params;
 	}
@@ -455,6 +502,7 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		final URL url = getURL(PRTRestServiceConstants.PATH_Login, params);
 
 		final PostMethod httpPost = new PostMethod(url.toString());
+		addApiTokenIfAvailable(httpPost);
 
 		final RequestEntity entity = new ByteArrayRequestEntity(data, beanEncoder.getContentType());
 		httpPost.setRequestEntity(entity);
@@ -476,13 +524,23 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		}
 		catch (final Exception e)
 		{
-			throw e instanceof LoginFailedPrintConnectionEndpointException ? (LoginFailedPrintConnectionEndpointException)e : new LoginFailedPrintConnectionEndpointException("Cannot POST to " + url,
-					e);
+			throw e instanceof LoginFailedPrintConnectionEndpointException ? (LoginFailedPrintConnectionEndpointException)e
+					: new LoginFailedPrintConnectionEndpointException("Cannot POST to " + url, e);
 		}
 		finally
 		{
 			Util.close(in);
 			in = null;
+		}
+	}
+
+	private void addApiTokenIfAvailable(final PostMethod httpPost)
+	{
+		final String apiToken = getContext().getProperty(Context.CTX_Login_ApiToken);
+
+		if (apiToken != null && apiToken.trim().length() > 0)
+		{
+			httpPost.setRequestHeader("Authorization", apiToken.trim());
 		}
 	}
 }

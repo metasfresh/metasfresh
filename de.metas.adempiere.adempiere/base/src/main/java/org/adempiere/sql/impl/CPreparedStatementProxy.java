@@ -46,6 +46,7 @@ import java.util.Calendar;
 
 import javax.sql.RowSet;
 
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.util.Check;
@@ -62,9 +63,9 @@ import org.compiere.util.DB;
 		super(createVO(resultSetType, resultSetConcurrency, sql0, trxName));
 	}
 
-	private static final CStatementVO createVO(final int resultSetType, final int resultSetConcurrency, final String sql0, final String trxName)
+	private static final CStatementVO createVO(final int resultSetType, final int resultSetConcurrency, final String sql, final String trxName)
 	{
-		Check.assumeNotEmpty(sql0, "sql not empty");
+		Check.assumeNotEmpty(sql, "sql not empty");
 
 		final AdempiereDatabase database = DB.getDatabase();
 		if (database == null)
@@ -72,7 +73,7 @@ import org.compiere.util.DB;
 			throw new DBNoConnectionException();
 		}
 
-		final String sqlConverted = database.convertStatement(sql0);
+		final String sqlConverted = database.convertStatement(sql);
 		final CStatementVO vo = new CStatementVO(resultSetType, resultSetConcurrency, sqlConverted, trxName);
 
 		return vo;
@@ -125,6 +126,7 @@ import org.compiere.util.DB;
 	@Override
 	public final int executeUpdate() throws SQLException
 	{
+		MigrationScriptFileLoggerHolder.logMigrationScript(getSql());
 		return getStatementImpl().executeUpdate();
 	}
 
@@ -252,6 +254,7 @@ import org.compiere.util.DB;
 	@Override
 	public final boolean execute() throws SQLException
 	{
+		MigrationScriptFileLoggerHolder.logMigrationScript(getSql());
 		return getStatementImpl().execute();
 	}
 

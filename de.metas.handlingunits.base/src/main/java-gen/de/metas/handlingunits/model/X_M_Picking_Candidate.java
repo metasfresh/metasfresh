@@ -15,7 +15,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1486863828L;
+	private static final long serialVersionUID = 1486844787L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (Properties ctx, int M_Picking_Candidate_ID, String trxName)
@@ -26,8 +26,8 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 			setM_Picking_Candidate_ID (0);
 			setM_PickingSlot_ID (0);
 			setM_ShipmentSchedule_ID (0);
-			setStatus (null); // IP
 			setQtyPicked (BigDecimal.ZERO); // 0
+			setStatus (null); // IP
         } */
     }
 
@@ -139,18 +139,6 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.picking.model.I_M_PickingSlot getM_PickingSlot() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_PickingSlot_ID, de.metas.picking.model.I_M_PickingSlot.class);
-	}
-
-	@Override
-	public void setM_PickingSlot(de.metas.picking.model.I_M_PickingSlot M_PickingSlot)
-	{
-		set_ValueFromPO(COLUMNNAME_M_PickingSlot_ID, de.metas.picking.model.I_M_PickingSlot.class, M_PickingSlot);
-	}
-
 	/** Set Picking Slot.
 		@param M_PickingSlot_ID Picking Slot	  */
 	@Override
@@ -173,18 +161,6 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
-	}
-
-	@Override
-	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule)
-	{
-		set_ValueFromPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class, M_ShipmentSchedule);
-	}
-
 	/** Set Lieferdisposition.
 		@param M_ShipmentSchedule_ID Lieferdisposition	  */
 	@Override
@@ -205,6 +181,25 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Qty Picked.
+		@param QtyPicked Qty Picked	  */
+	@Override
+	public void setQtyPicked (java.math.BigDecimal QtyPicked)
+	{
+		set_Value (COLUMNNAME_QtyPicked, QtyPicked);
+	}
+
+	/** Get Qty Picked.
+		@return Qty Picked	  */
+	@Override
+	public java.math.BigDecimal getQtyPicked () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPicked);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** 
@@ -233,24 +228,5 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	public java.lang.String getStatus () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Status);
-	}
-	
-	/** Set Qty Picked.
-	@param QtyPicked Qty Picked	  */
-	@Override
-	public void setQtyPicked (java.math.BigDecimal QtyPicked)
-	{
-		set_Value (COLUMNNAME_QtyPicked, QtyPicked);
-	}
-	
-	/** Get Qty Picked.
-		@return Qty Picked	  */
-	@Override
-	public java.math.BigDecimal getQtyPicked () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPicked);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 }

@@ -23,6 +23,7 @@ package org.adempiere.util.lang;
  */
 
 import org.adempiere.model.IContextAware;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.collections.Converter;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -38,9 +39,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  */
 public interface ITableRecordReference
 {
-	final String COLUMNNAME_Record_ID="Record_ID";
+	final String COLUMNNAME_Record_ID = "Record_ID";
 
-	final String COLUMNNAME_AD_Table_ID="AD_Table_ID";
+	final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
 	 * Converts a given model to {@link ITableRecordReference}. {@link ITableRecordReference#getModel(IContextAware)} with return the model that was converted.
@@ -94,6 +95,11 @@ public interface ITableRecordReference
 	 */
 	Object getModel(IContextAware context);
 
+	default Object getModel()
+	{
+		return getModel(PlainContextAware.newWithThreadInheritedTrx());
+	}
+
 	/**
 	 * Gets referenced/underlying model using given context and wraps it to provided <code>modelClass</code> interface.
 	 *
@@ -103,6 +109,11 @@ public interface ITableRecordReference
 	 * @see #getModel(IContextAware)
 	 */
 	<T> T getModel(IContextAware context, Class<T> modelClass);
+
+	default <T> T getModel(final Class<T> modelClass)
+	{
+		return getModel(PlainContextAware.newWithThreadInheritedTrx(), modelClass);
+	}
 
 	/**
 	 * Use case: you updated records via directUpdate.

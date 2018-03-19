@@ -10,24 +10,30 @@ package de.metas.handlingunits.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.util.List;
 
-import org.adempiere.util.Check;
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Services;
 
 import de.metas.handlingunits.model.IHUDeliveryQuantities;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import lombok.NonNull;
 
 /**
  * Helper class for manipulating {@link IHUDeliveryQuantities}
@@ -39,7 +45,6 @@ public final class HUDeliveryQuantitiesHelper
 {
 	private HUDeliveryQuantitiesHelper()
 	{
-		super();
 	}
 
 	/**
@@ -48,11 +53,10 @@ public final class HUDeliveryQuantitiesHelper
 	 * @param target
 	 * @param qtysToAdd
 	 */
-	public static void addTo(final IHUDeliveryQuantities target, final IHUDeliveryQuantities qtysToAdd)
+	public static void addTo(
+			@NonNull final IHUDeliveryQuantities target,
+			@NonNull final IHUDeliveryQuantities qtysToAdd)
 	{
-		Check.assumeNotNull(target, "target not null");
-		Check.assumeNotNull(qtysToAdd, "qtysToAdd not null");
-
 		{
 			final BigDecimal qtyOrderedLU = target.getQtyOrdered_LU();
 			target.setQtyOrdered_LU(add(qtyOrderedLU, qtysToAdd.getQtyOrdered_LU()));
@@ -60,14 +64,6 @@ public final class HUDeliveryQuantitiesHelper
 		{
 			final BigDecimal qtyOrderedTU = target.getQtyOrdered_TU();
 			target.setQtyOrdered_TU(add(qtyOrderedTU, qtysToAdd.getQtyOrdered_TU()));
-		}
-		{
-			final BigDecimal qtyToDeliverLU = target.getQtyToDeliver_LU();
-			target.setQtyToDeliver_LU(add(qtyToDeliverLU, qtysToAdd.getQtyToDeliver_LU()));
-		}
-		{
-			final BigDecimal qtyToDeliverTU = target.getQtyToDeliver_TU();
-			target.setQtyToDeliver_TU(add(qtyToDeliverTU, qtysToAdd.getQtyToDeliver_TU()));
 		}
 		{
 			final BigDecimal qtyDeliveredLU = target.getQtyDelivered_LU();
@@ -85,11 +81,10 @@ public final class HUDeliveryQuantitiesHelper
 	 * @param target
 	 * @param qtysToAdd
 	 */
-	public static void removeFrom(final IHUDeliveryQuantities target, final IHUDeliveryQuantities qtysToRemove)
+	public static void removeFrom(
+			@NonNull final IHUDeliveryQuantities target,
+			@NonNull final IHUDeliveryQuantities qtysToRemove)
 	{
-		Check.assumeNotNull(target, "target not null");
-		Check.assumeNotNull(qtysToRemove, "qtysToRemove not null");
-
 		{
 			final BigDecimal qtyOrderedLU = target.getQtyOrdered_LU();
 			target.setQtyOrdered_LU(subtract(qtyOrderedLU, qtysToRemove.getQtyOrdered_LU()));
@@ -97,14 +92,6 @@ public final class HUDeliveryQuantitiesHelper
 		{
 			final BigDecimal qtyOrderedTU = target.getQtyOrdered_TU();
 			target.setQtyOrdered_TU(subtract(qtyOrderedTU, qtysToRemove.getQtyOrdered_TU()));
-		}
-		{
-			final BigDecimal qtyToDeliverLU = target.getQtyToDeliver_LU();
-			target.setQtyToDeliver_LU(subtract(qtyToDeliverLU, qtysToRemove.getQtyToDeliver_LU()));
-		}
-		{
-			final BigDecimal qtyToDeliverTU = target.getQtyToDeliver_TU();
-			target.setQtyToDeliver_TU(subtract(qtyToDeliverTU, qtysToRemove.getQtyToDeliver_TU()));
 		}
 		{
 			final BigDecimal qtyDeliveredLU = target.getQtyDelivered_LU();
@@ -123,10 +110,11 @@ public final class HUDeliveryQuantitiesHelper
 	 * @param qtysToRemove qtys to remove or null
 	 * @param qtysToAdd qtys to add or null
 	 */
-	public static void adjust(final IHUDeliveryQuantities target, final IHUDeliveryQuantities qtysToRemove, final IHUDeliveryQuantities qtysToAdd)
+	public static void adjust(
+			@NonNull final IHUDeliveryQuantities target,
+			@Nullable final IHUDeliveryQuantities qtysToRemove,
+			@Nullable final IHUDeliveryQuantities qtysToAdd)
 	{
-		Check.assumeNotNull(target, "target not null");
-
 		if (qtysToRemove != null)
 		{
 			removeFrom(target, qtysToRemove);
@@ -139,55 +127,37 @@ public final class HUDeliveryQuantitiesHelper
 	}
 
 	/**
-	 * Sets QtyToDeliver LU/TU as QtyOrdered - QtyDelivered.
-	 *
-	 * If the result is negative, QtyToDeliver will be set to ZERO.
-	 *
-	 * @param target
-	 */
-	public static void updateQtyToDeliver(final IHUDeliveryQuantities target)
-	{
-		Check.assumeNotNull(target, "target not null");
-
-		final BigDecimal qtyOrderedLU = target.getQtyOrdered_LU();
-		final BigDecimal qtyOrderedTU = target.getQtyOrdered_TU();
-		final BigDecimal qtyDeliveredLU = target.getQtyDelivered_LU();
-		final BigDecimal qtyDeliveredTU = target.getQtyDelivered_TU();
-
-		BigDecimal qtyToDeliverLU = qtyOrderedLU.subtract(qtyDeliveredLU);
-		if (qtyToDeliverLU.signum() < 0)
-		{
-			qtyToDeliverLU = BigDecimal.ZERO;
-		}
-
-		BigDecimal qtyToDeliverTU = qtyOrderedTU.subtract(qtyDeliveredTU);
-		if (qtyToDeliverTU.signum() < 0)
-		{
-			qtyToDeliverTU = BigDecimal.ZERO;
-		}
-
-		target.setQtyToDeliver_LU(qtyToDeliverLU);
-		target.setQtyToDeliver_TU(qtyToDeliverTU);
-	}
-
-	/**
 	 * Copy HU quantities from <code>from</code> to <code>to</code>.
 	 *
 	 * @param to
-	 * @param from
+	 * @param shipmentSchedule
 	 */
-	public static void copy(final IHUDeliveryQuantities to, final IHUDeliveryQuantities from)
+	public static void copy(
+			@NonNull final IHUDeliveryQuantities to,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		Check.assumeNotNull(to, "to not null");
-		Check.assumeNotNull(from, "from not null");
 
-		to.setQtyOrdered_LU(from.getQtyOrdered_LU());
-		to.setQtyToDeliver_LU(from.getQtyToDeliver_LU());
-		to.setQtyDelivered_LU(from.getQtyDelivered_LU());
+		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtyPickedList = //
+				Services.get(IQueryBL.class)
+						.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+						.addOnlyActiveRecordsFilter()
+						.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+						.create()
+						.list();
 
-		to.setQtyOrdered_TU(from.getQtyOrdered_TU());
-		to.setQtyToDeliver_TU(from.getQtyToDeliver_TU());
-		to.setQtyDelivered_TU(from.getQtyDelivered_TU());
+		BigDecimal qtyDeliveredLU = BigDecimal.ZERO;
+		BigDecimal qtyDeliveredTU = BigDecimal.ZERO;
+		for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentScheduleQtyPickedList)
+		{
+			qtyDeliveredLU = add(qtyDeliveredLU, shipmentScheduleQtyPicked.getQtyLU());
+			qtyDeliveredTU = add(qtyDeliveredTU, shipmentScheduleQtyPicked.getQtyTU());
+		}
+
+		to.setQtyOrdered_LU(shipmentSchedule.getQtyOrdered_LU());
+		to.setQtyDelivered_LU(qtyDeliveredLU);
+
+		to.setQtyOrdered_TU(shipmentSchedule.getQtyOrdered_TU());
+		to.setQtyDelivered_TU(qtyDeliveredTU);
 	}
 
 	/**

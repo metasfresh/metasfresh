@@ -10,12 +10,12 @@ package de.metas.async.processor.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,7 +30,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.exceptions.ConfigurationException;
@@ -42,6 +41,8 @@ import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IQueueProcessorStatistics;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public abstract class AbstractQueueProcessor implements IQueueProcessor
 {
@@ -118,14 +119,14 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 			{
 				success = pollAndSubmitNextWorkPackageTask();
 			}
-			catch (ConfigurationException e)
+			catch (final ConfigurationException e)
 			{
 				// We have a configuration issue (e.g. one processor class is missing)
 				error = e;
 				success = false;
 				skip = true;
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				error = e;
 				success = false;
@@ -162,7 +163,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 					{
 						Thread.sleep(1000);
 					}
-					catch (InterruptedException e)
+					catch (final InterruptedException e)
 					{
 						// thread was interrupted. Quit.
 						logger.debug("Thread interrupted while sleeping. Quit.", e);
@@ -197,7 +198,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 			{
 				logger.info("Submiting for processing next workpackage failed. Trying to unlock {}.", workPackage);
 				queue.unlockNoFail(workPackage);
-				
+
 				getEventDispatcher().unregisterListeners(workPackage.getC_Queue_WorkPackage_ID());
 			}
 		}
@@ -214,15 +215,15 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 	}
 
 	@Override
-	public void notifyWorkpackageProcessed(final I_C_Queue_WorkPackage workPackage, final IWorkpackageProcessor workPackageProcessor)
+	public void notifyWorkpackageProcessed(
+			@NonNull final I_C_Queue_WorkPackage workPackage,
+			@NonNull final IWorkpackageProcessor workPackageProcessor)
 	{
-		Check.assumeNotNull(workPackage, "workPackage not null");
-
-		//
 		// Statistics
 		synchronized (statistics)
 		{
-			final IMutableQueueProcessorStatistics workpackageProcessorStatistics = getActualWorkpackageProcessorFactory().getWorkpackageProcessorStatistics(workPackageProcessor);
+			final IMutableQueueProcessorStatistics workpackageProcessorStatistics = //
+					getActualWorkpackageProcessorFactory().getWorkpackageProcessorStatistics(workPackageProcessor);
 
 			statistics.incrementCountAll();
 			workpackageProcessorStatistics.incrementCountAll();
@@ -256,7 +257,6 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 			}
 		}
 
-		//
 		// Notify event listeners
 		getEventDispatcher().fireWorkpackageProcessed(workPackage, workPackageProcessor);
 	}

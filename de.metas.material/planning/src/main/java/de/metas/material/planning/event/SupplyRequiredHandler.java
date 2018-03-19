@@ -3,28 +3,31 @@ package de.metas.material.planning.event;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.PlainStringLoggable;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.event.DemandHandlerAuditEvent;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.Profiles;
 import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.IProductPlanningDAO;
@@ -54,22 +57,35 @@ import lombok.NonNull;
  */
 
 @Service
-public class SupplyRequiredHandler
+@Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvent
+public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequiredEvent>
 {
-	private final DDOrderAdvisedOrCreatedEventCreator dDOrderAdvisedOrCreatedEventCreator;
+	private final DDOrderAdvisedOrCreatedEventCreator ddOrderAdvisedOrCreatedEventCreator;
 
-	private final PPOrderAdvisedOrCreatedEventCreator pPOrderAdvisedOrCreatedEventCreator;
+	private final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator;
 
-	private final MaterialEventService materialEventService;
+	private final PostMaterialEventService postMaterialEventService;
 
 	public SupplyRequiredHandler(
 			@NonNull final DDOrderAdvisedOrCreatedEventCreator dDOrderAdvisedOrCreatedEventCreator,
-			@NonNull final PPOrderAdvisedOrCreatedEventCreator pPOrderAdvisedOrCreatedEventCreator,
-			@NonNull final MaterialEventService materialEventService)
+			@NonNull final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator,
+			@NonNull final PostMaterialEventService fireMaterialEventService)
 	{
-		this.dDOrderAdvisedOrCreatedEventCreator = dDOrderAdvisedOrCreatedEventCreator;
-		this.pPOrderAdvisedOrCreatedEventCreator = pPOrderAdvisedOrCreatedEventCreator;
-		this.materialEventService = materialEventService;
+		this.ddOrderAdvisedOrCreatedEventCreator = dDOrderAdvisedOrCreatedEventCreator;
+		this.ppOrderAdvisedEventCreator = ppOrderAdvisedEventCreator;
+		this.postMaterialEventService = fireMaterialEventService;
+	}
+
+	@Override
+	public Collection<Class<? extends SupplyRequiredEvent>> getHandeledEventType()
+	{
+		return ImmutableList.of(SupplyRequiredEvent.class);
+	}
+
+	@Override
+	public void handleEvent(@NonNull final SupplyRequiredEvent event)
+	{
+		handleSupplyRequiredEvent(event.getSupplyRequiredDescriptor());
 	}
 
 	/**
@@ -79,41 +95,18 @@ public class SupplyRequiredHandler
 	 */
 	public void handleSupplyRequiredEvent(@NonNull final SupplyRequiredDescriptor descriptor)
 	{
-		final PlainStringLoggable plainStringLoggable = new PlainStringLoggable();
-		try (final IAutoCloseable closable = Loggables.temporarySetLoggable(plainStringLoggable);)
-		{
-			handleSupplyRequiredEvent0(descriptor);
-		}
-
-		if (!plainStringLoggable.isEmpty())
-		{
-			final List<String> singleMessages = plainStringLoggable.getSingleMessages();
-
-			final DemandHandlerAuditEvent demandHandlerAuditEvent = DemandHandlerAuditEvent.builder()
-					.eventDescriptor(descriptor.getEventDescr().createNew())
-					.descr(descriptor.getMaterialDescriptor())
-					.orderLineId(descriptor.getOrderLineId())
-					.messages(singleMessages)
-					.build();
-
-			materialEventService.fireEvent(demandHandlerAuditEvent);
-		}
-	}
-
-	private void handleSupplyRequiredEvent0(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
-	{
-		final IMutableMRPContext mrpContext = mkMRPContext(supplyRequiredDescriptor);
+		final IMutableMRPContext mrpContext = mkMRPContext(descriptor);
 
 		final List<MaterialEvent> events = new ArrayList<>();
-		events.addAll(dDOrderAdvisedOrCreatedEventCreator.createDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext));
-		events.addAll(pPOrderAdvisedOrCreatedEventCreator.createProductionAdvisedEvents(supplyRequiredDescriptor, mrpContext));
+		events.addAll(ddOrderAdvisedOrCreatedEventCreator.createDDOrderAdvisedEvents(descriptor, mrpContext));
+		events.addAll(ppOrderAdvisedEventCreator.createPPOrderAdvisedEvents(descriptor, mrpContext));
 
-		events.forEach(e -> materialEventService.fireEvent(e));
+		events.forEach(e -> postMaterialEventService.postEventNow(e));
 	}
 
 	private IMutableMRPContext mkMRPContext(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
 	{
-		final EventDescriptor eventDescr = materialDemandEvent.getEventDescr();
+		final EventDescriptor eventDescr = materialDemandEvent.getEventDescriptor();
 
 		final MaterialDescriptor materialDescr = materialDemandEvent.getMaterialDescriptor();
 
@@ -121,13 +114,13 @@ public class SupplyRequiredHandler
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
-		final I_S_Resource plant = productPlanningDAO.findPlant(Env.getCtx(),
+		final I_S_Resource plant = productPlanningDAO.findPlant(
 				eventDescr.getOrgId(),
 				warehouse,
 				materialDescr.getProductId(),
 				materialDescr.getAttributeSetInstanceId());
 
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(Env.getCtx(),
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(
 				eventDescr.getOrgId(),
 				materialDescr.getWarehouseId(),
 				plant.getS_Resource_ID(),
@@ -144,7 +137,6 @@ public class SupplyRequiredHandler
 		mrpContext.setDate(materialDescr.getDate());
 		mrpContext.setCtx(Env.getCtx());
 		mrpContext.setTrxName(ITrx.TRXNAME_ThreadInherited);
-		mrpContext.setRequireDRP(true); // DRP means distribution resource planning? i.e. "consider making DD_Orders"?
 
 		mrpContext.setProductPlanning(productPlanning);
 		mrpContext.setPlant(plant);

@@ -4,7 +4,6 @@ package org.eevolution.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for DD_Order
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -932939651L;
+	private static final long serialVersionUID = -1609246920L;
 
     /** Standard Constructor */
     public X_DD_Order (Properties ctx, int DD_Order_ID, String trxName)
@@ -27,41 +26,26 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 			setC_BPartner_ID (0);
 			setC_BPartner_Location_ID (0);
 			setC_DocType_ID (0);
-			setDateOrdered (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
-			setDatePromised (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
+			setDateOrdered (new Timestamp( System.currentTimeMillis() )); // @#Date@
+			setDatePromised (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setDD_Order_ID (0);
-			setDeliveryRule (null);
-// A
-			setDeliveryViaRule (null);
-// P
-			setDocAction (null);
-// CO
-			setDocStatus (null);
-// DR
+			setDeliveryRule (null); // A
+			setDeliveryViaRule (null); // P
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
 			setDocumentNo (null);
-			setFreightCostRule (null);
-// I
-			setIsApproved (false);
-			setIsInDispute (false);
-// N
-			setIsInTransit (false);
-// N
-			setIsPrinted (false);
-// N
-			setIsSOTrx (false);
-// @IsSOTrx@
+			setFreightCostRule (null); // I
+			setIsApproved (false); // N
+			setIsInDispute (false); // N
+			setIsInTransit (false); // N
+			setIsPrinted (false); // N
+			setIsSOTrx (false); // @IsSOTrx@
 			setM_Warehouse_ID (0);
-			setMRP_AllowCleanup (false);
-// N
-			setMRP_Generated (false);
-// N
-			setMRP_ToDelete (false);
-// N
-			setPosted (false);
-			setPriorityRule (null);
-// 5
+			setMRP_AllowCleanup (false); // N
+			setMRP_Generated (false); // N
+			setMRP_ToDelete (false); // N
+			setPosted (false); // N
+			setPriorityRule (null); // 5
 			setProcessed (false);
 			setSendEMail (false);
         } */
@@ -543,22 +527,6 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 		return (java.lang.String)get_Value(COLUMNNAME_CreateFrom);
 	}
 
-	/** Set Packstück erstellen.
-		@param CreatePackage Packstück erstellen	  */
-	@Override
-	public void setCreatePackage (java.lang.String CreatePackage)
-	{
-		set_Value (COLUMNNAME_CreatePackage, CreatePackage);
-	}
-
-	/** Get Packstück erstellen.
-		@return Packstück erstellen	  */
-	@Override
-	public java.lang.String getCreatePackage () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreatePackage);
-	}
-
 	/** Set Auftragsdatum.
 		@param DateOrdered 
 		Date of Order
@@ -674,7 +642,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public static final String DELIVERYRULE_Force = "F";
 	/** Manual = M */
 	public static final String DELIVERYRULE_Manual = "M";
-	/** Mit nächster Abolieferung = S */
+	/** MitNaechsterAbolieferung = S */
 	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
@@ -776,6 +744,8 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public static final String DOCACTION_Unlock = "XL";
 	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
 		@param DocAction 
 		The targeted status of the document
@@ -825,7 +795,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Belegstatus.
+	/** Set Status.
 		@param DocStatus 
 		The current status of the document
 	  */
@@ -836,7 +806,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Belegstatus.
+	/** Get Status.
 		@return The current status of the document
 	  */
 	@Override
@@ -845,7 +815,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -855,7 +825,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -1294,31 +1264,9 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 		return false;
 	}
 
-	/** Set No Packages.
-		@param NoPackages 
-		Number of packages shipped
-	  */
-	@Override
-	public void setNoPackages (int NoPackages)
-	{
-		set_Value (COLUMNNAME_NoPackages, Integer.valueOf(NoPackages));
-	}
-
-	/** Get No Packages.
-		@return Number of packages shipped
-	  */
-	@Override
-	public int getNoPackages () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_NoPackages);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Kommissionier-Datum.
+	/** Set Kommissionierdatum.
 		@param PickDate 
-		Date/Time when picked for Shipment
+		Datum/Zeit der Kommissionierung für die Lieferung
 	  */
 	@Override
 	public void setPickDate (java.sql.Timestamp PickDate)
@@ -1326,8 +1274,8 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 		set_Value (COLUMNNAME_PickDate, PickDate);
 	}
 
-	/** Get Kommissionier-Datum.
-		@return Date/Time when picked for Shipment
+	/** Get Kommissionierdatum.
+		@return Datum/Zeit der Kommissionierung für die Lieferung
 	  */
 	@Override
 	public java.sql.Timestamp getPickDate () 
@@ -1581,10 +1529,8 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
 	}
 
-	/** Set Vertriebsbeauftragter.
-		@param SalesRep_ID 
-		Sales Representative or Company Agent
-	  */
+	/** Set Aussendienst.
+		@param SalesRep_ID Aussendienst	  */
 	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
@@ -1594,9 +1540,8 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Vertriebsbeauftragter.
-		@return Sales Representative or Company Agent
-	  */
+	/** Get Aussendienst.
+		@return Aussendienst	  */
 	@Override
 	public int getSalesRep_ID () 
 	{
@@ -1630,44 +1575,6 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 			return "Y".equals(oo);
 		}
 		return false;
-	}
-
-	/** Set Lieferdatum.
-		@param ShipDate 
-		Shipment Date/Time
-	  */
-	@Override
-	public void setShipDate (java.sql.Timestamp ShipDate)
-	{
-		set_Value (COLUMNNAME_ShipDate, ShipDate);
-	}
-
-	/** Get Lieferdatum.
-		@return Shipment Date/Time
-	  */
-	@Override
-	public java.sql.Timestamp getShipDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ShipDate);
-	}
-
-	/** Set Tracking No.
-		@param TrackingNo 
-		Number to track the shipment
-	  */
-	@Override
-	public void setTrackingNo (java.lang.String TrackingNo)
-	{
-		set_Value (COLUMNNAME_TrackingNo, TrackingNo);
-	}
-
-	/** Get Tracking No.
-		@return Number to track the shipment
-	  */
-	@Override
-	public java.lang.String getTrackingNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_TrackingNo);
 	}
 
 	@Override

@@ -1,80 +1,60 @@
 package de.metas.handlingunits.shipmentschedule.async;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IParams;
+import org.compiere.util.Env;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
-import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
-import de.metas.inout.event.InOutProcessedEventBus;
+import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 
 /**
  * Generates Shipment document from given loading units (LUs).
- * <p>
- * Note: this processor is used both
- * <ul>
- * <li>directly by the <code>de.metas.async</code> framework, when shipments are created from the aggregation POS terminal</li>
- * <li>indirectly from {@link GenerateInOutFromShipmentSchedules}, when shipments are created directly from a shipment schedule</li>
- * <ul>
+ * On demand it can also add the HUs to Shipper Transportation and it can also invoice the HUs.
  *
  * @author tsa
  *
  */
 public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 {
-	private ITrxItemExceptionHandler trxItemExceptionHandler = null;
+	//
+	// Parameters
+	private static final String PARAMETERNAME_AddToShipperTransportationId = "AddToShipperTransportationId";
+	private static final String PARAMETERNAME_IsCompleteShipments = ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments;
+	private static final String PARAMETERNAME_InvoiceMode = "InvoiceMode";
 
+	public static enum BillAssociatedInvoiceCandidates
+	{
+		/**
+		 * don't invoice any associated ICs (the default)
+		 */
+		NO,
+
+		/**
+		 * Invoice those related invoice candidates whose {@link de.metas.invoicecandidate.model.I_C_Invoice_Candidate#COLUMN_DateToInvoice_Effective}
+		 * value allows this.
+		 */
+		IF_INVOICE_SCHEDULE_PERMITS,
+	};
+
+	//
+	// State
 	private InOutGenerateResult inoutGenerateResult = null;
 
 	/**
@@ -84,47 +64,74 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	 * @param hus handling units to enqueue
 	 * @return created workpackage.
 	 */
-	public static final I_C_Queue_WorkPackage enqueueWorkpackage(final Properties ctx, final List<I_M_HU> hus)
+	public static final I_C_Queue_WorkPackage enqueueWorkpackage(final Collection<I_M_HU> hus)
 	{
-		if (hus == null || hus.isEmpty())
-		{
-			throw new AdempiereException("@NotFound@ @M_HU_ID@");
-		}
+		return prepareWorkpackage()
+				.hus(hus)
+				.completeShipments(false)
+				.invoiceMode(BillAssociatedInvoiceCandidates.NO)
+				.enqueue();
+	}
 
+	@Builder(builderMethodName = "prepareWorkpackage", buildMethodName = "enqueue")
+	private static final I_C_Queue_WorkPackage enqueueWorkpackage(
+			@NonNull @Singular("hu") final List<I_M_HU> hus,
+			final int addToShipperTransportationId,
+			final boolean completeShipments,
+			@Nullable final BillAssociatedInvoiceCandidates invoiceMode)
+	{
+		Check.assumeNotEmpty(hus, "hus is not empty");
+
+		final BillAssociatedInvoiceCandidates invoiceModeEffective = invoiceMode != null ? invoiceMode : BillAssociatedInvoiceCandidates.NO;
+
+		final Properties ctx = Env.getCtx();
 		return Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, GenerateInOutFromHU.class)
 				.newBlock()
 				.setContext(ctx)
 				.newWorkpackage()
+				.bindToThreadInheritedTrx()
+				.setUserInChargeId(Env.getAD_User_ID(ctx)) // invoker
+				.parameters()
+				.setParameter(PARAMETERNAME_AddToShipperTransportationId, addToShipperTransportationId > 0 ? addToShipperTransportationId : 0)
+				.setParameter(PARAMETERNAME_InvoiceMode, invoiceModeEffective.name())
+				.setParameter(PARAMETERNAME_IsCompleteShipments, completeShipments)
+				.end()
 				.addElements(hus)
 				.build();
 	}
 
-	public void setTrxItemExceptionHandler(final ITrxItemExceptionHandler trxItemExceptionHandler)
+	@Override
+	public boolean isAllowRetryOnError()
 	{
-		this.trxItemExceptionHandler = trxItemExceptionHandler;
+		return false;
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage_NOTUSED, final String localTrxName_NOTUSED)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
-		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, ITrx.TRXNAME_ThreadInherited);
-		final Iterator<IShipmentScheduleWithHU> candidates = retrieveCandidates(huContext, workpackage, ITrx.TRXNAME_ThreadInherited);
+		//
+		// Retrieve enqueued HUs
+		final List<I_M_HU> hus = retrieveItems(I_M_HU.class);
+		if (hus.isEmpty())
+		{
+			Loggables.get().addLog("No HUs found");
+			return Result.SUCCESS;
+		}
 
-		// 07113: At this point, we only need the shipment drafted
-		final String docActionNone = null;
-		final boolean createPackingLines = false; // the packing lines shall only be created when the shipments are completed
-		final boolean manualPackingMaterial = false; // use the HUs!
+		final IParams parameters = getParameters();
 
-		// Fail on any exception, because we cannot create just a part of those shipments.
-		// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
-		setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance);
-
-		inoutGenerateResult = generateInOuts(ctx, candidates, docActionNone, createPackingLines, manualPackingMaterial,
-				true, //isShipmentDateToday:  if this is ever used, it should be on true to keep legacy
-				ITrx.TRXNAME_ThreadInherited);
-		Loggables.get().addLog("Generated " + inoutGenerateResult.toString());
+		final int addToShipperTransportationId = parameters.getParameterAsInt(PARAMETERNAME_AddToShipperTransportationId);
+		final boolean completeShipments = parameters.getParameterAsBool(PARAMETERNAME_IsCompleteShipments);
+		final BillAssociatedInvoiceCandidates invoiceMode = parameters.getParameterAsEnum(PARAMETERNAME_InvoiceMode, BillAssociatedInvoiceCandidates.class, BillAssociatedInvoiceCandidates.NO);
+		HUShippingFacade.builder()
+				.loggable(Loggables.get())
+				.hus(hus)
+				.addToShipperTransportationId(addToShipperTransportationId)
+				.completeShipments(completeShipments)
+				.invoiceMode(invoiceMode)
+				.build()
+				.generateShippingDocuments();
 
 		return Result.SUCCESS;
 	}
@@ -149,132 +156,5 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	{
 		Check.assumeNotNull(inoutGenerateResult, "workpackage shall be processed first");
 		return inoutGenerateResult;
-	}
-
-	/**
-	 *
-	 * @param ctx
-	 * @param candidates
-	 * @param processShipmentsDocAction parameter is passed to the inOutProducer. See {@link IInOutProducerFromShipmentScheduleWithHU#setProcessShipmentsDocAction(String)}
-	 * @param createPackingLines parameter is passed to the inOutProducer. See {@link IInOutProducerFromShipmentScheduleWithHU#setCreatePackingLines(boolean)}
-	 * @param trxName
-	 * @return
-	 */
-	public InOutGenerateResult generateInOuts(final Properties ctx,
-			final Iterator<IShipmentScheduleWithHU> candidates,
-			final String processShipmentsDocAction,
-			final boolean createPackingLines,
-			final boolean manualPackingMaterial,
-			final boolean forceDateToday,
-			final String trxName)
-	{
-		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-		final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
-
-		//
-		// Create shipment producer
-		final IInOutProducerFromShipmentScheduleWithHU inoutProducer = huShipmentScheduleBL
-				.createInOutProducerFromShipmentSchedule()
-				.setProcessShipmentsDocAction(processShipmentsDocAction)
-				.setCreatePackingLines(createPackingLines)
-				.setManualPackingMaterial(manualPackingMaterial)
-				.computeShipmentDate(forceDateToday);
-
-		//
-		// Create shipment producer batch executor
-		final ITrxItemExecutorBuilder<IShipmentScheduleWithHU, InOutGenerateResult> executorBuilder = trxItemProcessorExecutorService
-				.<IShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
-				.setContext(ctx, trxName)
-				.setProcessor(inoutProducer);
-		if (trxItemExceptionHandler != null)
-		{
-			executorBuilder.setExceptionHandler(trxItemExceptionHandler);
-		}
-
-		//
-		// Process candidates
-		final InOutGenerateResult result = executorBuilder.process(candidates);
-
-		//
-		// Send notifications
-		InOutProcessedEventBus.newInstance()
-				.queueEventsUntilTrxCommit(trxName)
-				.notify(result.getInOuts());
-
-		return result;
-	}
-
-	private List<I_M_HU> retriveWorkpackageHUs(final I_C_Queue_WorkPackage workpackage, final String trxName)
-	{
-		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-
-		final List<I_M_HU> hus = queueDAO.retrieveItems(workpackage, I_M_HU.class, trxName);
-		return hus;
-	}
-
-	@VisibleForTesting
-	public Iterator<IShipmentScheduleWithHU> retrieveCandidates(final IHUContext huContext, final I_C_Queue_WorkPackage workpackage, final String trxName)
-	{
-		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-		final List<IShipmentScheduleWithHU> result = new ArrayList<>();
-
-		final List<I_M_HU> hus = retriveWorkpackageHUs(workpackage, trxName);
-		if (hus.isEmpty())
-		{
-			Loggables.get().addLog("No HUs found");
-			return result.iterator();
-		}
-
-		//
-		// Iterate HUs and collect candidates from them
-		for (final I_M_HU hu : hus)
-		{
-			// Make sure we are dealing with an top level HU
-			if (!handlingUnitsBL.isTopLevel(hu))
-			{
-				throw new HUException("HU " + hu + " shall be top level");
-			}
-
-			//
-			// Retrieve and create candidates from shipment schedule QtyPicked assignments
-			final List<IShipmentScheduleWithHU> candidatesForHU = new ArrayList<>();
-			final List<I_M_ShipmentSchedule_QtyPicked> ssQtyPickedList = huShipmentScheduleDAO.retriveQtyPickedNotDeliveredForTopLevelHU(hu);
-			for (final I_M_ShipmentSchedule_QtyPicked ssQtyPicked : ssQtyPickedList)
-			{
-				if (!ssQtyPicked.isActive())
-				{
-					continue;
-				}
-
-				// NOTE: we allow negative Qtys too because they shall be part of a bigger transfer and overall qty can be positive
-				// if (ssQtyPicked.getQtyPicked().signum() <= 0)
-				// {
-				// continue;
-				// }
-
-				final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(huContext, ssQtyPicked);
-				candidatesForHU.add(candidate);
-			}
-
-			//
-			// Add the candidates for current HU to the list of all collected candidates
-			result.addAll(candidatesForHU);
-
-			// Log if there were no candidates created for current HU.
-			if (candidatesForHU.isEmpty())
-			{
-				Loggables.get().addLog("No eligible " + I_M_ShipmentSchedule_QtyPicked.Table_Name + " records found for " + handlingUnitsBL.getDisplayName(hu));
-			}
-		}
-
-		//
-		// Sort result
-		Collections.sort(result, new ShipmentScheduleWithHUComparator());
-
-		// TODO: make sure all shipment schedules are valid
-
-		return result.iterator();
 	}
 }

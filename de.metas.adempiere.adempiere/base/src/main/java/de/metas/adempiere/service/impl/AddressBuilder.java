@@ -12,12 +12,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -106,7 +108,7 @@ public class AddressBuilder
 
 	/**
 	 * Build address string
-	 * 
+	 *
 	 * @param location
 	 * @param isLocalAddress
 	 *            true if this is a local address (i.e. location's country is same as our tenant)
@@ -124,7 +126,7 @@ public class AddressBuilder
 		final List<String> bracketsTxt = extractBracketsString(inStr);
 
 		// treat brackets cases first if exists
-		for (String s : bracketsTxt)
+		for (final String s : bracketsTxt)
 		{
 			Check.assume(s.startsWith("(") || s.startsWith("\\("), "Expected brackets or escaped brackets!");
 			Check.assume(s.endsWith(")") || s.endsWith("\\)"), "Expected brackets or escaped brackets!");
@@ -164,22 +166,29 @@ public class AddressBuilder
 		// variables in brackets already parsed
 		replaceAddrToken(location, isLocalAddress, inStr, outStr, bPartnerBlock, userBlock, false);
 
-		String retValue = Util.replace(outStr.toString().trim(), "\\n", "\n");
+		final String retValue = Util.replace(outStr.toString().trim(), "\\n", "\n");
 		return retValue;
 	}
 
 	/**
 	 * replace variables
-	 * 
+	 *
 	 * @param location
-	 * @param isLocalAddress
+	 * @param isLocalAddress {@code true} the given {@code inStr} is the *local* address sequence
 	 * @param inStr
 	 * @param outStr
 	 * @param bPartnerBlock
 	 * @param userBlock
 	 * @param withBrackets
 	 */
-	private void replaceAddrToken(final I_C_Location location, boolean isLocalAddress, String inStr, StringBuilder outStr, String bPartnerBlock, String userBlock, final boolean withBrackets)
+	private void replaceAddrToken(
+			final I_C_Location location,
+			boolean isLocalAddress,
+			String inStr,
+			StringBuilder outStr,
+			String bPartnerBlock,
+			String userBlock,
+			final boolean withBrackets)
 	{
 		final I_C_Country country = location.getC_Country();
 
@@ -198,7 +207,7 @@ public class AddressBuilder
 		{
 			if (!withBrackets)
 			{
-				String text = inStr.substring(0, i); // until first @
+				final String text = inStr.substring(0, i); // until first @
 				if (!Check.isEmpty(text, false))
 				{
 					// add text, even if is empty, if is not new line or no new line
@@ -223,7 +232,9 @@ public class AddressBuilder
 				j = i + 1;
 			}
 			else
+			{
 				token = inStr.substring(0, j);
+			}
 			// Tokens
 			if (token.equals("C"))
 			{
@@ -238,35 +249,35 @@ public class AddressBuilder
 			}
 			else if (token.equals("R"))
 			{
-				if (location.getC_Region() != null) // we have a region
+				if (location.getC_Region() != null)
+				{
 					outStr.append(location.getC_Region().getName());
+				}
 				else if (location.getRegionName() != null
 						&& location.getRegionName().length() > 0)
+				{
 					outStr.append(location.getRegionName()); // local region name
+				}
 			}
 			else if (token.equals("P"))
 			{
 				if (location.getPostal() != null)
+				{
 					outStr.append(location.getPostal());
+				}
 			}
 			else if (token.equals("A"))
 			{
-				String add = location.getPostal_Add();
+				final String add = location.getPostal_Add();
 				if (add != null && add.length() > 0)
+				{
 					outStr.append("-").append(add);
+				}
 			}
 			else if (token.equals("CO"))
 			{
-				final String countryName;
-				if (isLocalAddress)
-				{
-					countryName = null;
-				}
-				else
-				{
-					final I_C_Country countryTrl = InterfaceWrapperHelper.translate(country, I_C_Country.class);
-					countryName = countryTrl.getName();
-				}
+				final I_C_Country countryTrl = InterfaceWrapperHelper.translate(country, I_C_Country.class);
+				final String countryName = countryTrl.getName();
 
 				if (countryName != null && countryName.length() > 0)
 				{
@@ -275,7 +286,7 @@ public class AddressBuilder
 			}
 			else if (token.equals("A1"))
 			{
-				String address1 = location.getAddress1();
+				final String address1 = location.getAddress1();
 				if (address1 != null && address1.length() > 0)
 				{
 					outStr.append(address1);
@@ -287,7 +298,7 @@ public class AddressBuilder
 			}
 			else if (token.equals("A2"))
 			{
-				String address2 = location.getAddress2();
+				final String address2 = location.getAddress2();
 				if (address2 != null && address2.length() > 0)
 				{
 					outStr.append(address2);
@@ -299,7 +310,7 @@ public class AddressBuilder
 			}
 			else if (token.equals("A3"))
 			{
-				String address3 = location.getAddress3();
+				final String address3 = location.getAddress3();
 				if (address3 != null && address3.length() > 0)
 				{
 					outStr.append(address3);
@@ -311,7 +322,7 @@ public class AddressBuilder
 			}
 			else if (token.equals("A4"))
 			{
-				String address4 = location.getAddress4();
+				final String address4 = location.getAddress4();
 				if (address4 != null && address4.length() > 0)
 				{
 					outStr.append(address4);
@@ -425,8 +436,8 @@ public class AddressBuilder
 	}
 
 	public String buildBPartnerFullAddressString(
-			final org.compiere.model.I_C_BPartner bPartner,
-			final org.compiere.model.I_C_BPartner_Location location,
+			@Nullable final org.compiere.model.I_C_BPartner bPartner,
+			@Nullable final org.compiere.model.I_C_BPartner_Location location,
 			final I_AD_User user,
 			final String trxName)
 	{
@@ -451,7 +462,7 @@ public class AddressBuilder
 		final boolean isLocal = location.getC_Location() == null ? false : location.getC_Location().getC_Country_ID() == countryLocal.getC_Country_ID();
 
 		// User Anschriftenblock
-		String userBlock = buildUserBlock(InterfaceWrapperHelper.getCtx(bPartner), isLocal, user, bPartnerBlock, bPartner.isCompany(), trxName);
+		final String userBlock = buildUserBlock(InterfaceWrapperHelper.getCtx(bPartner), isLocal, user, bPartnerBlock, bPartner.isCompany(), trxName);
 
 		// Addressblock
 		final String fullAddressBlock = Services.get(ILocationBL.class)
@@ -466,7 +477,7 @@ public class AddressBuilder
 
 	/**
 	 * build BPartner block
-	 * 
+	 *
 	 * @param bPartner
 	 * @param user
 	 * @return
@@ -530,7 +541,7 @@ public class AddressBuilder
 			// remove the text before other variables
 			final String preText = inStr.substring(i + 1, inStr.length()); // from first @
 
-			int j = preText.indexOf('@'); // next @
+			final int j = preText.indexOf('@'); // next @
 			if (j < 0)
 			{
 				token = ""; // no second tag
@@ -551,7 +562,7 @@ public class AddressBuilder
 		{
 			if (!withBrackets)
 			{
-				String text = inStr.substring(0, i); // until first @
+				final String text = inStr.substring(0, i); // until first @
 				if (!Check.isEmpty(text, false))
 				{
 					// add text, even if is empty, if is not new line or no new line
@@ -576,12 +587,16 @@ public class AddressBuilder
 				j = i + 1;
 			}
 			else
+			{
 				token = inStr.substring(0, j);
+			}
 			// Tokens
 			if (token.equals("TI"))
 			{
 				if (!Check.isEmpty(userTitle, true))
+				{
 					outStr.append(userTitle);
+				}
 			}
 			else if (token.equals("GR"))
 			{
@@ -594,12 +609,16 @@ public class AddressBuilder
 			else if (token.equals("FN"))
 			{
 				if (!Check.isEmpty(userVorname, true))
+				{
 					outStr.append(userVorname);
+				}
 			}
 			else if (token.equals("LN"))
 			{
 				if (!Check.isEmpty(userName, true))
+				{
 					outStr.append(userName);
+				}
 			}
 			else if ("CR".equals(token))
 			{
@@ -628,7 +647,7 @@ public class AddressBuilder
 
 	/**
 	 * build User block
-	 * 
+	 *
 	 * @param ctx
 	 * @param isLocal true if local country
 	 * @param user
@@ -655,11 +674,11 @@ public class AddressBuilder
 			//
 			// construct string
 
-			ICountryCustomInfo userInfo = Services.get(ICountryDAO.class).retriveCountryCustomInfo(ctx, trxName);
+			final ICountryCustomInfo userInfo = Services.get(ICountryDAO.class).retriveCountryCustomInfo(ctx, trxName);
 			String ds = userInfo == null ? "" : userInfo.getCaptureSequence();
 			if (ds == null || ds.length() == 0)
 			{
-				I_C_Country country = Services.get(ICountryDAO.class).getDefault(ctx);
+				final I_C_Country country = Services.get(ICountryDAO.class).getDefault(ctx);
 
 				ds = getDisplaySequence(country, isLocal);
 			}
@@ -667,7 +686,7 @@ public class AddressBuilder
 			final List<String> bracketsTxt = extractBracketsString(ds);
 
 			// treat brackets cases first if exists
-			for (String s : bracketsTxt)
+			for (final String s : bracketsTxt)
 			{
 				Check.assume(s.startsWith("(") || s.startsWith("\\("), "Expected brackets or escaped brackets!");
 				Check.assume(s.endsWith(")") || s.endsWith("\\)"), "Expected brackets or escaped brackets!");
@@ -732,7 +751,7 @@ public class AddressBuilder
 	/**
 	 * Checks if the new token is Empty, if not it will be added. This method also makes sure, that between each newly
 	 * added String there's exactly one " ". If sb is empty no " " will be added.
-	 * 
+	 *
 	 * @param newToken
 	 * @param sb
 	 */
@@ -740,7 +759,7 @@ public class AddressBuilder
 	{
 		if (!Check.isEmpty(newToken))
 		{
-			String s = sb.toString();
+			final String s = sb.toString();
 
 			if (!s.endsWith("\n") && !s.endsWith(" ") && s.length() > 0)
 			{
@@ -755,7 +774,7 @@ public class AddressBuilder
 		final String regex = "\\\\?(\\()(.+?)(\\))";
 		final Pattern p = Pattern.compile(regex);
 		final Matcher m = p.matcher(block);
-		final List<String> bracketsTxt = new ArrayList<String>();
+		final List<String> bracketsTxt = new ArrayList<>();
 
 		while (m.find())
 		{

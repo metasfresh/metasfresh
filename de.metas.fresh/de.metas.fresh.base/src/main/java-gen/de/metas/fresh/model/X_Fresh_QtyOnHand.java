@@ -14,7 +14,7 @@ public class X_Fresh_QtyOnHand extends org.compiere.model.PO implements I_Fresh_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2071505023L;
+	private static final long serialVersionUID = -1179934163L;
 
     /** Standard Constructor */
     public X_Fresh_QtyOnHand (Properties ctx, int Fresh_QtyOnHand_ID, String trxName)
@@ -22,11 +22,9 @@ public class X_Fresh_QtyOnHand extends org.compiere.model.PO implements I_Fresh_
       super (ctx, Fresh_QtyOnHand_ID, trxName);
       /** if (Fresh_QtyOnHand_ID == 0)
         {
-			setDateDoc (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
+			setDateDoc (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setFresh_QtyOnHand_ID (0);
-			setProcessed (false);
-// N
+			setProcessed (false); // N
         } */
     }
 

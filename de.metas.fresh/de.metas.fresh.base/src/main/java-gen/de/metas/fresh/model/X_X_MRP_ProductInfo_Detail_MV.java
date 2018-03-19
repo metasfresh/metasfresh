@@ -4,7 +4,6 @@ package de.metas.fresh.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for X_MRP_ProductInfo_Detail_MV
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_X_MRP_ProductInfo_Detail_MV extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -227973933L;
+	private static final long serialVersionUID = -26945108L;
 
     /** Standard Constructor */
     public X_X_MRP_ProductInfo_Detail_MV (Properties ctx, int X_MRP_ProductInfo_Detail_MV_ID, String trxName)
@@ -26,8 +25,7 @@ public class X_X_MRP_ProductInfo_Detail_MV extends org.compiere.model.PO impleme
         {
 			setASIKey (null);
 			setDateGeneral (new Timestamp( System.currentTimeMillis() ));
-			setIsFallBack (true);
-// Y
+			setIsFallBack (true); // Y
 			setM_Product_ID (0);
 			setX_MRP_ProductInfo_Detail_MV_ID (0);
         } */
@@ -78,6 +76,25 @@ public class X_X_MRP_ProductInfo_Detail_MV extends org.compiere.model.PO impleme
 	public java.sql.Timestamp getDateGeneral () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateGeneral);
+	}
+
+	/** Set MRP Menge.
+		@param Fresh_QtyMRP MRP Menge	  */
+	@Override
+	public void setFresh_QtyMRP (java.math.BigDecimal Fresh_QtyMRP)
+	{
+		set_Value (COLUMNNAME_Fresh_QtyMRP, Fresh_QtyMRP);
+	}
+
+	/** Get MRP Menge.
+		@return MRP Menge	  */
+	@Override
+	public java.math.BigDecimal getFresh_QtyMRP () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Fresh_QtyMRP);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set IsFallBack.
@@ -177,6 +194,47 @@ public class X_X_MRP_ProductInfo_Detail_MV extends org.compiere.model.PO impleme
 		return ii.intValue();
 	}
 
+	/** Set Zusage Lieferant.
+		@param PMM_QtyPromised_OnDate 
+		Vom Lieferanten per Webapplikation zugesagte Menge
+	  */
+	@Override
+	public void setPMM_QtyPromised_OnDate (java.math.BigDecimal PMM_QtyPromised_OnDate)
+	{
+		set_Value (COLUMNNAME_PMM_QtyPromised_OnDate, PMM_QtyPromised_OnDate);
+	}
+
+	/** Get Zusage Lieferant.
+		@return Vom Lieferanten per Webapplikation zugesagte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getPMM_QtyPromised_OnDate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PMM_QtyPromised_OnDate);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Materialentnahme.
+		@param QtyMaterialentnahme Materialentnahme	  */
+	@Override
+	public void setQtyMaterialentnahme (java.math.BigDecimal QtyMaterialentnahme)
+	{
+		set_Value (COLUMNNAME_QtyMaterialentnahme, QtyMaterialentnahme);
+	}
+
+	/** Get Materialentnahme.
+		@return Materialentnahme	  */
+	@Override
+	public java.math.BigDecimal getQtyMaterialentnahme () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyMaterialentnahme);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Bestand.
 		@param QtyOnHand 
 		Bestand
@@ -194,6 +252,44 @@ public class X_X_MRP_ProductInfo_Detail_MV extends org.compiere.model.PO impleme
 	public java.math.BigDecimal getQtyOnHand () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHand);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Bestellte Menge Tag.
+		@param QtyOrdered_OnDate Bestellte Menge Tag	  */
+	@Override
+	public void setQtyOrdered_OnDate (java.math.BigDecimal QtyOrdered_OnDate)
+	{
+		set_Value (COLUMNNAME_QtyOrdered_OnDate, QtyOrdered_OnDate);
+	}
+
+	/** Get Bestellte Menge Tag.
+		@return Bestellte Menge Tag	  */
+	@Override
+	public java.math.BigDecimal getQtyOrdered_OnDate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_OnDate);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Reservierte Menge Tag.
+		@param QtyReserved_OnDate Reservierte Menge Tag	  */
+	@Override
+	public void setQtyReserved_OnDate (java.math.BigDecimal QtyReserved_OnDate)
+	{
+		set_Value (COLUMNNAME_QtyReserved_OnDate, QtyReserved_OnDate);
+	}
+
+	/** Get Reservierte Menge Tag.
+		@return Reservierte Menge Tag	  */
+	@Override
+	public java.math.BigDecimal getQtyReserved_OnDate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved_OnDate);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

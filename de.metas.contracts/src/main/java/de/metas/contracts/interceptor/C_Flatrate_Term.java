@@ -35,7 +35,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -67,6 +66,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.i18n.IMsgBL;
@@ -119,10 +119,13 @@ public class C_Flatrate_Term
 			Env.setContext(localCtx, Env.CTXNAME_AD_Client_ID, org.getAD_Client_ID());
 			Env.setContext(localCtx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
 
-			final org.compiere.model.I_C_DocType existingDocType = docTypeDAO.getDocTypeOrNull(localCtx,
-					I_C_DocType.DocBaseType_CustomerContract, docSubType,
-					org.getAD_Client_ID(), org.getAD_Org_ID(),
-					ITrx.TRXNAME_None);
+			final org.compiere.model.I_C_DocType existingDocType = docTypeDAO
+					.getDocTypeOrNull(DocTypeQuery.builder()
+							.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
+							.docSubType(docSubType)
+							.adClientId(org.getAD_Client_ID())
+							.adOrgId(org.getAD_Org_ID())
+							.build());
 			if (existingDocType != null)
 			{
 				continue;
@@ -501,6 +504,13 @@ public class C_Flatrate_Term
 	public void updateMasterEndDate(final I_C_Flatrate_Term term)
 	{
 		setMasterEndDate(term);
+
+		final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(term);
+		if (ancestor != null && term.getMasterEndDate() != null)
+		{
+			ancestor.setMasterEndDate(term.getMasterEndDate());
+			InterfaceWrapperHelper.save(ancestor);
+		}
 	}
 
 	private void setMasterEndDate(final I_C_Flatrate_Term term)
@@ -515,10 +525,10 @@ public class C_Flatrate_Term
 
 		term.setMasterEndDate(masterEndDate);
 	}
-	
+
 	private Timestamp computeMasterEndDateIfC_FlatrateTerm_Next_IDChanged(@NonNull final I_C_Flatrate_Term term, Timestamp masterEndDate)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID) && !term.isAutoRenew())
+		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID) )
 		{
 			if (term.getC_FlatrateTerm_Next_ID() > 0)
 			{
@@ -529,7 +539,7 @@ public class C_Flatrate_Term
 				masterEndDate = term.getEndDate();
 			}
 		}
-		
+
 		return masterEndDate;
 	}
 }

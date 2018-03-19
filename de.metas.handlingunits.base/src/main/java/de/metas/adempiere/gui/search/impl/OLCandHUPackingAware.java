@@ -57,8 +57,6 @@ public class OLCandHUPackingAware implements IHUPackingAware
 
 	public OLCandHUPackingAware(final de.metas.ordercandidate.model.I_C_OLCand olCand)
 	{
-		super();
-
 		Check.assumeNotNull(olCand, "olcand not null");
 		this.olCand = InterfaceWrapperHelper.create(olCand, I_C_OLCand.class);
 	}
@@ -157,15 +155,15 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public BigDecimal getQtyPacks()
+	public BigDecimal getQtyTU()
 	{
 		return olCand.getQtyItemCapacity();
 	}
 
 	@Override
-	public void setQtyPacks(final BigDecimal qtyPacks)
+	public void setQtyTU(final BigDecimal qtyPacks)
 	{
-		values.setQtyPacks(qtyPacks);
+		values.setQtyTU(qtyPacks);
 	}
 
 	@Override
