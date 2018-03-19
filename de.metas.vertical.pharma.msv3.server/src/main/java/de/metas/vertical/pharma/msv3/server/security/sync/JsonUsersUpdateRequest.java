@@ -1,11 +1,15 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability.sync;
+package de.metas.vertical.pharma.msv3.server.security.sync;
+
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -32,30 +36,16 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JsonStockAvailability
+public class JsonUsersUpdateRequest
 {
-	@JsonProperty("pzn")
-	private long pzn;
-	@JsonProperty("qty")
-	private int qty;
+	@JsonProperty("users")
+	private final List<JsonUser> users;
 
 	@JsonCreator
 	@Builder
-	private JsonStockAvailability(
-			@JsonProperty("pzn") final long pzn,
-			@JsonProperty("qty") final int qty)
+	private JsonUsersUpdateRequest(
+			@JsonProperty("users") @Singular final List<JsonUser> users)
 	{
-		if (pzn <= 0)
-		{
-			throw new IllegalArgumentException("pzn shall be > 0");
-		}
-		if (qty < 0)
-		{
-			throw new IllegalArgumentException("qty shall be >= 0");
-		}
-
-		this.pzn = pzn;
-		this.qty = qty;
+		this.users = ImmutableList.copyOf(users);
 	}
-
 }

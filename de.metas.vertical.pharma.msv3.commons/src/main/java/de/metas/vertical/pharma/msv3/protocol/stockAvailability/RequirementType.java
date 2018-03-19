@@ -56,7 +56,7 @@ public enum RequirementType
 		final RequirementType type = code2type.get(code);
 		if (type == null)
 		{
-			throw new NoSuchElementException("No " + RequirementType.class + " found for code: " + code);
+			throw new NoSuchElementException("No " + RequirementType.class + " found for code '" + code + "'. Available types are: " + code2type.keySet());
 		}
 		return type;
 	}

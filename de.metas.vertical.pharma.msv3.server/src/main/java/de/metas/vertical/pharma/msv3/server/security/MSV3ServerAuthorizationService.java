@@ -1,6 +1,6 @@
-package de.metas.vertical.pharma.msv3.server;
+package de.metas.vertical.pharma.msv3.server.security;
 
-import lombok.experimental.UtilityClass;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -24,10 +24,11 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
-public final class MSV3ServerConstants
+@Service
+public class MSV3ServerAuthorizationService
 {
-	public static final String BACKEND_SYNC_REST_ENDPOINT = "/sync/api";
-
-	public static final String SOAP_NAMESPACE = "urn:msv3:v2";
+	public void assertValidClientSoftwareId(final String clientSoftwareId)
+	{
+		// TODO implement
+	}
 }

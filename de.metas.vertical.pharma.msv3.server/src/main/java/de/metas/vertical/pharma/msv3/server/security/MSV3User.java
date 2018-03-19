@@ -1,6 +1,12 @@
-package de.metas.vertical.pharma.msv3.server;
+package de.metas.vertical.pharma.msv3.server.security;
 
-import org.springframework.stereotype.Service;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import de.metas.vertical.pharma.msv3.server.jpa.AbstractEntity;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 /*
  * #%L
@@ -24,11 +30,16 @@ import org.springframework.stereotype.Service;
  * #L%
  */
 
-@Service
-public class MSV3ServerAuthorizationService
+@Entity
+@Table(name = "user")
+@ToString
+public class MSV3User extends AbstractEntity
 {
-	public void assertValidClientSoftwareId(final String clientSoftwareId)
-	{
-		// TODO implement
-	}
+	@Getter
+	@Setter
+	private String username;
+
+	@Getter
+	@Setter
+	private String password;
 }
