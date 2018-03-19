@@ -10,15 +10,50 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.50 (2018-13)
+**release for week 2018-13**
+
+## Features
+
+## Fixes
+
+
 # metasfresh 5.49 (2018-12)
 **release for week 2018-12**
 
 ## Features
+* metasfresh
+  * [#3240](https://github.com/metasfresh/metasfresh/issues/3240) Drop AD_Field.IsCentrallyMaintained database column
+  * [#3584](https://github.com/metasfresh/metasfresh/issues/3584) Implement sales order candidates REST API
+  * [#3658](https://github.com/metasfresh/metasfresh/issues/3658) Introduce specific subtypes for Physical Inventory and for Internal Use Inventory
+  * [#3659](https://github.com/metasfresh/metasfresh/issues/3659) Refactor/adapt Inventory Disposal
+  * [#3669](https://github.com/metasfresh/metasfresh/issues/3669) Create all periods of a contract on creation
+  * [#3688](https://github.com/metasfresh/metasfresh/issues/3688) Port Printing REST endpoint from SMX to metasfresh
+  * [#3705](https://github.com/metasfresh/metasfresh/issues/3705) Inventory Window show Handling Unit Field in Inventorylines
+  * [#3706](https://github.com/metasfresh/metasfresh/issues/3706) Terminating a Contract that was extended ahead of schedule leaves stumb
+
+* metasfresh-api
+  * [#894](https://github.com/metasfresh/metasfresh-webui-api/issues/894) New Composed Primary Keys
+  * [#895](https://github.com/metasfresh/metasfresh-webui-api/issues/895) Automatic printing HU Labels in WebUI
+  * [#901](https://github.com/metasfresh/metasfresh-webui-api/issues/901) Provide media size info for columns
+
 * metasfresh-webui-frontend
   * [#1609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1609) Camera barcode reader for Tablet/ mobile device
     * New Barcode Reader that can be used via webcam on mobile devices.
+  * [#1677](https://github.com/metasfresh/metasfresh-webui-frontend/pull/1677) Update momentjs in packages.json
+  * [#1860](https://github.com/metasfresh/metasfresh/issues/1860) Make documentNo readonly in Payments (and other document types)
 
 ## Fixes
+* metasfresh
+  * [#3050](https://github.com/metasfresh/metasfresh/issues/3050) Null in SSCC label
+  * [#3497](https://github.com/metasfresh/metasfresh/issues/3497) Days Due in Open Items report empty when parameter not set
+  * [#3579](https://github.com/metasfresh/metasfresh/issues/3579) SSCC18 attribute check digit
+  * [#3666](https://github.com/metasfresh/metasfresh/issues/3666) Manufacturing Order wrong TU Quantity
+  * [#3690](https://github.com/metasfresh/metasfresh/issues/3690) Restore swing MRP ProductInfo
+  * [#3694](https://github.com/metasfresh/metasfresh/issues/3694) docs_flatrate_term_all_procurements_conditions_report fails if M_Product_ID is left empty
+  * [#3695](https://github.com/metasfresh/metasfresh/issues/3695) NPE when completing DD_Order
+  * [#3701](https://github.com/metasfresh/metasfresh/issues/3701) Jasper: ADR Auswertung report has duplicates
+
 * metasfresh-webui-api
   * [#735](https://github.com/metasfresh/metasfresh-webui-api/issues/735) Hide Receive HUs (default) when there are no HUs
     * Hides the default action for Receive HU in cases where there are only CU's in receipt candidates.
@@ -28,6 +63,8 @@ Here come the actual release notes:
     * Improves the behavior of drop-down list scroll behavior.
   * [#1669](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1669) Empty option missing in dropdown
     * Fixes the empty selected elements in list widgets after selecting entry.
+  * [#1673](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1673) Improve User Interface for tablet media size
+    * Layout adjustments for the usage of webui frontend on tablet media sizes.
 
 # metasfresh 5.48 (2018-11)
 **release for week 2018-11**
@@ -97,7 +134,7 @@ Here come the actual release notes:
     * Improved scrolling behavior of list widgets.
   * [#1557](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1557) Double click on attributes in orderline
     * Improves the behavopr of the attributes dropdown widget when double clicking cell in subtab grid view. Now the elements are not all selected.
-  * [#1615](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1615) picking terminal window: switching rows is very very slow
+  * [#1615](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1615) Picking terminal window: switching rows is very very slow
     * Performance Improvement of Picking Terminal Window.
   * [#1637](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1637) Collapsible lines in Create Purchase Order modal
     * Fixes the behavior of collapsible lines in modal overlay of create purchase orders.
