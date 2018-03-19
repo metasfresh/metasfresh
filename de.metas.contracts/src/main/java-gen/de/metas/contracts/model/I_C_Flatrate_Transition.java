@@ -324,6 +324,29 @@ public interface I_C_Flatrate_Transition
     public static final String COLUMNNAME_EndsWithCalendarYear = "EndsWithCalendarYear";
 
 	/**
+	 * Set Extension Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExtensionType (java.lang.String ExtensionType);
+
+	/**
+	 * Get Extension Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExtensionType();
+
+    /** Column definition for ExtensionType */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Transition, Object> COLUMN_ExtensionType = new org.adempiere.model.ModelColumn<I_C_Flatrate_Transition, Object>(I_C_Flatrate_Transition.class, "ExtensionType", null);
+    /** Column name ExtensionType */
+    public static final String COLUMNNAME_ExtensionType = "ExtensionType";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
