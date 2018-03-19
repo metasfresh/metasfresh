@@ -41,9 +41,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 
 		<jasperreports.version>6.5.1</jasperreports.version>
 
-		<!-- FRESH-397: jasper 6.2.1 uses poi and zxing with theses versions -->
-		<!-- actually, jasper-6.2.1 accidentally uses 2.1.7.js5-SNAPSHOT, but we don't-->
-		<!-- itext.version>2.1.7.js5</itext.version -->
+		<itext.version>2.1.7.js6</itext.version>
 	</properties>
 
 	<modules>
@@ -104,13 +102,13 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<artifactId>jasperreports</artifactId>
 				<version>${jasperreports.version}</version>
 			</dependency>
-<!--
+
 			<dependency>
 				<groupId>com.lowagie</groupId>
 				<artifactId>itext</artifactId>
 				<version>${itext.version}</version>
 			</dependency>
--->
+
             <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
 			<dependency>
 				<groupId>jp.osdn.ocra</groupId>
