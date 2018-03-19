@@ -78,11 +78,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -136,6 +136,8 @@ public class HUs2DDOrderProducer
 	private int docTypeDO_ID;
 	private I_AD_Org org;
 	private final Map<ArrayKey, DDOrderLineCandidate> ddOrderLineCandidates = new LinkedHashMap<>();
+
+	private String _ddOrderLineDescription;
 
 	private HUs2DDOrderProducer()
 	{
@@ -277,6 +279,18 @@ public class HUs2DDOrderProducer
 		return this;
 	}
 
+	public final HUs2DDOrderProducer setDDOrderLineDescription(final String description)
+	{
+		_ddOrderLineDescription = description;
+
+		return this;
+	}
+
+	private final String getDDOrderLineDescription()
+	{
+		return _ddOrderLineDescription;
+	}
+
 	private final I_M_Warehouse getM_Warehouse_To()
 	{
 		Check.assumeNotNull(_warehouseTo, "_warehouseTo not null");
@@ -416,8 +430,15 @@ public class HUs2DDOrderProducer
 
 		//
 		// Description
-		ddOrderline.setDescription(ddOrderLineCandidate.getDescription());
 
+		final String predefinedDescription = getDDOrderLineDescription();
+
+		final StringBuilder description = new StringBuilder()
+				.append(predefinedDescription)
+				.append(" ")
+				.append(ddOrderLineCandidate.getDescription());
+
+		ddOrderline.setDescription(description.toString());
 		//
 		// Other flags
 		ddOrderline.setIsInvoiced(false);

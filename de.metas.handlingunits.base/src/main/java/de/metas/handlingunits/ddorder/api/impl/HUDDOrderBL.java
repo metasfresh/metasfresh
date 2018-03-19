@@ -28,6 +28,8 @@ import de.metas.i18n.IMsgBL;
 public class HUDDOrderBL implements IHUDDOrderBL
 {
 	private static final String ERR_M_Warehouse_NoBlockWarehouse = "M_Warehouse_NoBlockWarehouse";
+	
+	private static final String MSG_BlockLotNo_DDOrderLine = "product with locked lot no.";
 
 	@Override
 	public DDOrderLinesAllocator createMovements()
@@ -101,6 +103,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 						.setContext(ctx)
 						.setM_Warehouse_To(create(blockWarehouse, de.metas.handlingunits.model.I_M_Warehouse.class))
 						.setHUs(hus.iterator())
+						.setDDOrderLineDescription(MSG_BlockLotNo_DDOrderLine)
 						.process();
 			}
 		});
