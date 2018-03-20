@@ -27,6 +27,7 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
@@ -1012,35 +1013,61 @@ public class FlatrateBL implements IFlatrateBL
 	public void extendContract(final @NonNull ContractExtendingRequest context)
 	{
 		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, localTrxName -> {
-			extendContract0(context, localTrxName);
 
-			final I_C_Flatrate_Term currentTerm = context.getContract();
-			currentTerm.setAD_PInstance_EndOfTerm_ID(context.getAD_PInstance_ID());
-			InterfaceWrapperHelper.save(currentTerm);
-
-			final I_C_Flatrate_Term nextTerm = currentTerm.getC_FlatrateTerm_Next();
-			final I_C_Flatrate_Conditions nextConditions = nextTerm.getC_Flatrate_Conditions();
-			Check.assumeNotNull(nextConditions, "C_Flatrate_Conditions shall not be null!");
-
-			final I_C_Flatrate_Transition nextTransition = nextConditions.getC_Flatrate_Transition();
-			Check.assumeNotNull(nextTransition, "C_Flatrate_Transition shall not be null!");
-
-			if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0)
+			ContractExtendingRequest contextUsed = context;
+			I_C_Flatrate_Transition nextTransition = null;
+			final List<I_C_Flatrate_Term> contracts = new ArrayList<>();
+			contracts.add(contextUsed.getContract());
+			do
 			{
-				final ContractExtendingRequest nextContext = ContractExtendingRequest.builder()
+				extendContract0(contextUsed, localTrxName);
+
+				final I_C_Flatrate_Term currentTerm = contextUsed.getContract();
+				currentTerm.setAD_PInstance_EndOfTerm_ID(contextUsed.getAD_PInstance_ID());
+				InterfaceWrapperHelper.save(currentTerm);
+
+				final I_C_Flatrate_Term nextTerm = currentTerm.getC_FlatrateTerm_Next();
+				final I_C_Flatrate_Conditions nextConditions = nextTerm.getC_Flatrate_Conditions();
+				Check.assumeNotNull(nextConditions, "C_Flatrate_Conditions shall not be null!");
+
+				nextTransition = nextConditions.getC_Flatrate_Transition();
+				Check.assumeNotNull(nextTransition, "C_Flatrate_Transition shall not be null!");
+
+				contextUsed = ContractExtendingRequest.builder()
 						.AD_PInstance_ID(context.getAD_PInstance_ID())
 						.contract(nextTerm)
 						.forceExtend(false)
 						.forceComplete(true)
 						.nextTermStartDate(null)
 						.build();
-				extendContract(nextContext);
+				contracts.add(nextTerm);
 			}
+			while (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0);
 
+			updateMasterEndDate(contracts);
 		});
 	}
 
+	private void updateMasterEndDate(final List<I_C_Flatrate_Term> contracts)
+	{
+		// update master end date
+		final Timestamp masterEndDate = contracts.stream()
+				.sorted(Comparator.comparing(I_C_Flatrate_Term::getC_Flatrate_Term_ID).reversed())
+				.findFirst()
+				.map(I_C_Flatrate_Term::getMasterEndDate)
+				.orElse(null);
 
+		if (masterEndDate != null)
+		{
+			contracts
+					.stream()
+					.filter(contract -> contract.getMasterEndDate() == null)
+					.forEach(contract -> {
+						contract.setMasterEndDate(masterEndDate);
+						InterfaceWrapperHelper.save(contract);
+					});
+		}
+	}
 
 	private void extendContract0(final @NonNull ContractExtendingRequest context, final String trxName)
 	{
