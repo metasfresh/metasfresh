@@ -73,7 +73,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>metasfresh-report-service</finalName>
+		<finalName>metasfresh-print-service</finalName>
 		<plugins>
 			<!-- https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info -->
 			<plugin>
