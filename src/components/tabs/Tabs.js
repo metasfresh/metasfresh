@@ -110,11 +110,7 @@ class Tabs extends Component {
         }
       >
         <ul className="nav nav-tabs mt-1">{this.renderPills(children)}</ul>
-        <div
-          className="tab-content"
-          tabIndex={tabIndex}
-          ref={c => (this.tabContent = c)}
-        >
+        <div className="tab-content" ref={c => (this.tabContent = c)}>
           {this.renderTabs(children)}
         </div>
       </div>

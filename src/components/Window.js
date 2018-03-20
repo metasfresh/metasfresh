@@ -142,7 +142,6 @@ class Window extends Component {
               if (isModal && shouldBeFocused && c) c.focus();
               this.focused = true;
             }}
-            tabIndex={shouldBeFocused ? 0 : undefined}
             className={
               'panel panel-spaced panel-distance ' +
               (type === 'primary'

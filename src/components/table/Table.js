@@ -1188,7 +1188,6 @@ class Table extends Component {
                 }
               )}
               onKeyDown={this.handleKeyDown}
-              tabIndex={tabIndex}
               ref={c => (this.table = c)}
               onCopy={this.handleCopy}
             >
@@ -1207,7 +1206,7 @@ class Table extends Component {
                 />
               </thead>
               {this.renderTableBody()}
-              <tfoot ref={c => (this.tfoot = c)} tabIndex={tabIndex} />
+              <tfoot ref={c => (this.tfoot = c)} />
             </table>
 
             {this.renderEmptyInfo(rowData, tabid)}
