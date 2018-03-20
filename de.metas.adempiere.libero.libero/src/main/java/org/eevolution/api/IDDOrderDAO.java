@@ -13,15 +13,14 @@ package org.eevolution.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -97,7 +96,5 @@ public interface IDDOrderDAO extends ISingletonService
 	IQueryBuilder<I_DD_OrderLine> retrieveBackwardDDOrderLinesQuery(I_M_Forecast forecast);
 
 	IQueryBuilder<I_DD_OrderLine> retrieveForwardDDOrderLinesQuery(I_PP_Order ppOrder);
-
-	List<I_DD_OrderLine> retrieveLinesToBlockWarehouse(I_DD_Order ddOrder);
 
 }

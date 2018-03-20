@@ -43,8 +43,6 @@ import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
 
@@ -217,18 +215,5 @@ public class DDOrderDAO implements IDDOrderDAO
 				.andCollect(I_PP_MRP.COLUMN_DD_OrderLine_ID);
 	}
 
-	@Override
-	public List<I_DD_OrderLine> retrieveLinesToBlockWarehouse(final I_DD_Order ddOrder)
-	{
-		return retrieveLines(ddOrder)
-				.stream()
-				.filter(ddOrderLine -> isBlockWarehouseLine(ddOrderLine))
-				.collect(ImmutableList.toImmutableList());
-	}
 
-	private boolean isBlockWarehouseLine(final I_DD_OrderLine ddOrderLine)
-	{
-		ddOrderLine.getM_LocatorTo().getM_Warehouse().isbl
-		
-	}
 }
