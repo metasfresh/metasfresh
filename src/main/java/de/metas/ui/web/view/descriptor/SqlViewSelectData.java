@@ -297,7 +297,7 @@ public class SqlViewSelectData
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo_OneBased)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
 				.append("\n , ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated(columnName -> "sel." + columnName + " AS " + COLUMNNAME_Paging_Prefix + columnName))
-				.append("\n , " + keyColumnNamesMap.getSqlIsNullExpression(sqlTableName) + " AS " + COLUMNNAME_IsRecordMissing)
+				.append("\n , (case when count(1) <= 0 then 'Y' else 'N' end) AS " + COLUMNNAME_IsRecordMissing)
 				//
 				.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
 				.append("\n   INNER JOIN " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl on ("
@@ -316,7 +316,6 @@ public class SqlViewSelectData
 				//
 				.append("\n   GROUP BY ")
 				.append("\n   sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line)
-				.append("\n , " + sqlTableName + "." + sqlKeyColumnName)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID)
 				.append("\n , ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated("sel"))
 				.append("\n , " + Joiner.on("\n , ").join(sqlGroupBys))
@@ -365,7 +364,7 @@ public class SqlViewSelectData
 				.append("\n   SELECT ")
 				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
 				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + " AS " + SqlViewSelectData.COLUMNNAME_Paging_UUID)
-				.append("\n , ").append(keyColumnNamesMap.getKeyColumnNamePairsCommaSeparated((keyColumnName, webuiSelectionColumnName) -> sqlTableName + "." + keyColumnName + " AS " + COLUMNNAME_Paging_Prefix + webuiSelectionColumnName))
+				.append("\n , ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated(webuiSelectionColumnName -> "sl." + webuiSelectionColumnName + " AS " + COLUMNNAME_Paging_Prefix + webuiSelectionColumnName))
 				.append("\n , ").append(keyColumnNamesMap.getSqlIsNullExpression(sqlTableName)).append(" AS ").append(COLUMNNAME_IsRecordMissing)
 				.append("\n   FROM " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl")
 				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + keyColumnNamesMap.getSingleKeyColumnName() + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")")
