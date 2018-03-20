@@ -52,12 +52,12 @@ public interface IHUDDOrderBL extends ISingletonService
 	void unassignHUs(I_DD_OrderLine ddOrderLine, Collection<I_M_HU> hus);
 
 	/**
-	 * Create a ddOrder with the handling units assigned to the given receipt line to a warehouse flagged as IsBlockWarehouse
+	 * Create a ddOrder with the handling units assigned to the given receipt line to a warehouse flagged as IsQuarantineWarehouse
 	 */
-	void createBlockDDOrderForReceiptLines(List<I_M_InOutLine> receiptLines);
+	void createQuarantineDDOrderForReceiptLines(List<I_M_InOutLine> receiptLines);
 
 	/**
-	 * Create a ddOrder with the handling units given as parameter to a warehouse flagged as IsBlockWarehouse
+	 * Create a ddOrder with the handling units given as parameter to a warehouse flagged as IsQuarantineWarehouse
 	 */
-	void createBlockDDOrderForHUs(List<I_M_HU> hus);
+	void createQuarantineDDOrderForHUs(List<I_M_HU> hus);
 }

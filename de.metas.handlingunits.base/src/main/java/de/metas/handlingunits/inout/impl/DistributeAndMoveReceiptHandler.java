@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import de.metas.adempiere.service.IWarehouseDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -56,34 +54,29 @@ public class DistributeAndMoveReceiptHandler
 
 	private I_M_InOut receipt;
 
-	private List<I_M_InOutLine> linesToBlock = new ArrayList<>();
+	private List<I_M_InOutLine> linesToQuarantine = new ArrayList<>();
 	private List<I_M_InOutLine> linesToDD_Order = new ArrayList<>();
 	private List<de.metas.inout.model.I_M_InOutLine> linesToMove = new ArrayList<>();
 
-	final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-	final IInOutDDOrderBL ddOrderBL = Services.get(IInOutDDOrderBL.class);
-	final IInOutBL inoutBL = Services.get(IInOutBL.class);
-	final ILotNumberBL lotNoBL = Services.get(ILotNumberBL.class);
-	final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
-	final IInOutDDOrderBL inoutDDOrderBL = Services.get(IInOutDDOrderBL.class);
-	final IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
-
-	final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
-	final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final ILotNumberBL lotNoBL = Services.get(ILotNumberBL.class);
+	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
+	private final IInOutDDOrderBL inoutDDOrderBL = Services.get(IInOutDDOrderBL.class);
+	private final IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
 
 	public void onReceiptComplete(@NonNull final I_M_InOut receipt)
 	{
-		this.receipt = receipt;
-
 		Check.assume(!receipt.isSOTrx(), "InOut shall be a receipt: {}", receipt);
 		Check.assume(!inoutBL.isReversal(receipt), "InOut shall not be a reversal", receipt);
 
-		splitLines();
+		this.receipt = receipt;
 
-		if (!Check.isEmpty(linesToBlock))
+		partitionLines();
+
+		if (!Check.isEmpty(linesToQuarantine))
 		{
-			huDDOrderBL.createBlockDDOrderForReceiptLines(linesToBlock);
+			huDDOrderBL.createQuarantineDDOrderForReceiptLines(linesToQuarantine);
 		}
 
 		if (!Check.isEmpty(linesToDD_Order))
@@ -99,7 +92,7 @@ public class DistributeAndMoveReceiptHandler
 		}
 	}
 
-	private void splitLines()
+	private void partitionLines()
 	{
 		final List<I_M_InOutLine> linesAll = inoutDAO.retrieveLines(receipt, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : linesAll)
@@ -113,7 +106,7 @@ public class DistributeAndMoveReceiptHandler
 
 			if (hasLockedLotNo(inOutLine))
 			{
-				linesToBlock.add(inOutLine);
+				linesToQuarantine.add(inOutLine);
 			}
 			else if (isCreateDDOrder(inOutLine))
 			{
@@ -128,7 +121,7 @@ public class DistributeAndMoveReceiptHandler
 
 	}
 
-	public boolean hasLockedLotNo(final I_M_InOutLine inOutLine)
+	private boolean hasLockedLotNo(final I_M_InOutLine inOutLine)
 	{
 		final int productId = inOutLine.getM_Product_ID();
 
@@ -144,7 +137,7 @@ public class DistributeAndMoveReceiptHandler
 
 		if (Check.isEmpty(lotNumberAttributeValue))
 		{
-			// if the attribute is not present or set it automatically means the lotno is not blocked, either
+			// if the attribute is not present or set it automatically means the lotno is not to quarantine, either
 			return false;
 		}
 

@@ -47,8 +47,8 @@ public interface I_M_Warehouse extends org.compiere.model.I_M_Warehouse
 	//@formatter:on
 
 	//@formatter:off
-	public static final String COLUMNNAME_IsBlockWarehouse = "IsBlockWarehouse";
-	public boolean isBlockWarehouse();
-	public void setIsBlockWarehouse(boolean IsBlockWarehouse);
+	public static final String COLUMNNAME_IsQuarantineWarehouse = "IsQuarantineWarehouse";
+	public boolean isQuarantineWarehouse();
+	public void setIsQuarantineWarehouse(boolean IsQuarantineWarehouse);
 	//@formatter:on
 }

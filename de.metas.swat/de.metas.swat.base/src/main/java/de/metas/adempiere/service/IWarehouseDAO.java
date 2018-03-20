@@ -47,9 +47,9 @@ public interface IWarehouseDAO extends ISingletonService
 
 	/**
 	 * 
-	 * Retrieve the warehouse marked as IsBlockWarehouse
+	 * Retrieve the warehouse marked as IsQuarantineWarehouse
 	 * 
-	 * @return block warehouse or null
+	 * @return Quarantine warehouse or null
 	 */
-	org.adempiere.warehouse.model.I_M_Warehouse retrieveBlockWarehouseOrNull();
+	org.adempiere.warehouse.model.I_M_Warehouse retrieveQuarantineWarehouseOrNull();
 }
