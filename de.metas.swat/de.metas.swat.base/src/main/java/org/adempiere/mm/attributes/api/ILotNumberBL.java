@@ -49,6 +49,6 @@ public interface ILotNumberBL extends ISingletonService
 	 * @param asi
 	 * @return the value of the LotNo attribute if found, null otherwise
 	 */
-	String getLotNumberAttributeValue(I_M_AttributeSetInstance asi);
+	String getLotNumberAttributeValueOrNull(I_M_AttributeSetInstance asi);
 
 }

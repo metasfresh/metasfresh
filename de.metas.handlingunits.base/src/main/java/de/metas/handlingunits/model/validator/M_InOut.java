@@ -49,7 +49,7 @@ import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
-import de.metas.handlingunits.inout.impl.OnReceiptCompleteHandler;
+import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptHandler;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -358,9 +358,7 @@ public class M_InOut
 			return;
 		}
 
-		final OnReceiptCompleteHandler handler = OnReceiptCompleteHandler.newInstance();
-		handler.setReceipt(receipt);
-		handler.onReceiptComplete();
+		DistributeAndMoveReceiptHandler.newInstance().onReceiptComplete(receipt);
 	}
 
 }

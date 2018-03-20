@@ -64,7 +64,7 @@ public class LotNumberBL implements ILotNumberBL
 	}
 	
 	@Override
-	public String getLotNumberAttributeValue(@NonNull final I_M_AttributeSetInstance asi)
+	public String getLotNumberAttributeValueOrNull(@NonNull final I_M_AttributeSetInstance asi)
 	{
 		final Properties ctx = getCtx(asi);
 
