@@ -45,6 +45,7 @@ import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import lombok.NonNull;
 
@@ -74,7 +75,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	@Test
 	public void cancelContract_test()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
+		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 		contractChangeBL.cancelContract(contract, contractChangeParameters);
 		assertFlatrateTerm(contract, cancelDate, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		assertSubscriptionProgress(contract, 1);
@@ -83,7 +84,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	@Test
 	public void cancel_a_Contract_which_was_extended_using_a_date_from_initial_contract()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
+		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
 				.AD_PInstance_ID(1)
@@ -110,7 +111,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	@Test
 	public void cancel_a_Contract_which_was_extended_using_a_date_from_extended_contract()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
+		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
 				.AD_PInstance_ID(1)
