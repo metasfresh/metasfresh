@@ -1044,26 +1044,29 @@ public class FlatrateBL implements IFlatrateBL
 			}
 			while (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0);
 
-			updateMasterEndDate(contracts);
+			if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()))
+			{
+				updateMasterEndDate(contracts);
+			}
 		});
 	}
 
 	private void updateMasterEndDate(final List<I_C_Flatrate_Term> contracts)
 	{
 		// update master end date
-		final Timestamp masterEndDate = contracts.stream()
+		final Timestamp endDate = contracts.stream()
 				.sorted(Comparator.comparing(I_C_Flatrate_Term::getC_Flatrate_Term_ID).reversed())
 				.findFirst()
-				.map(I_C_Flatrate_Term::getMasterEndDate)
+				.map(I_C_Flatrate_Term::getEndDate)
 				.orElse(null);
 
-		if (masterEndDate != null)
+		if (endDate != null)
 		{
 			contracts
 					.stream()
 					.filter(contract -> contract.getMasterEndDate() == null)
 					.forEach(contract -> {
-						contract.setMasterEndDate(masterEndDate);
+						contract.setMasterEndDate(endDate);
 						InterfaceWrapperHelper.save(contract);
 					});
 		}
