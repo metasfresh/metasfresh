@@ -1033,50 +1033,47 @@ public class FlatrateBL implements IFlatrateBL
 				nextTransition = nextConditions.getC_Flatrate_Transition();
 				Check.assumeNotNull(nextTransition, "C_Flatrate_Transition shall not be null!");
 
-				contextUsed = ContractExtendingRequest.builder()
-						.AD_PInstance_ID(context.getAD_PInstance_ID())
-						.contract(nextTerm)
-						.forceExtend(false)
-						.forceComplete(true)
-						.nextTermStartDate(null)
-						.build();
+				contextUsed = contextUsed.toBuilder()
+						  .AD_PInstance_ID(context.getAD_PInstance_ID())
+						  .contract(nextTerm).build();
+
 				contracts.add(nextTerm);
 			}
 			while (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0);
 
-			if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()))
-			{
-				updateMasterEndDate(contracts);
-			}
+			updateMasterEndDateIfNeeded(contracts, context.getContract());
 		});
 	}
 
-	private void updateMasterEndDate(final List<I_C_Flatrate_Term> contracts)
+	/**
+	 * Update <code>masterenddate</code> only for contract of which we know the entire period
+	 * @param contracts
+	 * @param initialContract
+	 */
+	private void updateMasterEndDateIfNeeded(final List<I_C_Flatrate_Term> contracts, final I_C_Flatrate_Term initialContract)
 	{
-		// update master end date
-		final Timestamp endDate = contracts.stream()
-				.sorted(Comparator.comparing(I_C_Flatrate_Term::getC_Flatrate_Term_ID).reversed())
-				.findFirst()
-				.map(I_C_Flatrate_Term::getEndDate)
-				.orElse(null);
-
-		if (endDate != null)
+		final I_C_Flatrate_Conditions initialConditions = initialContract.getC_Flatrate_Conditions();
+		final I_C_Flatrate_Transition initialTransition = initialConditions.getC_Flatrate_Transition();
+		if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(initialTransition.getExtensionType()))
 		{
-			contracts
-					.stream()
-					.filter(contract -> contract.getMasterEndDate() == null)
-					.forEach(contract -> {
-						contract.setMasterEndDate(endDate);
-						InterfaceWrapperHelper.save(contract);
-					});
+			final Timestamp endDate = contracts.stream()
+					.sorted(Comparator.comparing(I_C_Flatrate_Term::getEndDate).reversed())
+					.findFirst()
+					.map(I_C_Flatrate_Term::getEndDate)
+					.orElse(null);
+
+			contracts.forEach(contract -> {
+				contract.setMasterEndDate(endDate);
+				InterfaceWrapperHelper.save(contract);
+			});
 		}
 	}
 
-	private void extendContract0(final @NonNull ContractExtendingRequest context, final String trxName)
+	private void extendContract0(final @NonNull ContractExtendingRequest request, final String trxName)
 	{
-		final I_C_Flatrate_Term currentTerm = context.getContract();
-		final boolean forceExtend = context.isForceExtend();
-		final Boolean forceComplete = context.getForceComplete();
+		final I_C_Flatrate_Term currentTerm = request.getContract();
+		final boolean forceExtend = request.isForceExtend();
+		final Boolean forceComplete = request.getForceComplete();
 
 		final I_C_Flatrate_Conditions conditions = currentTerm.getC_Flatrate_Conditions();
 		final I_C_Flatrate_Transition currentTransition = conditions.getC_Flatrate_Transition();
@@ -1086,7 +1083,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		if (currentTerm.isAutoRenew() || forceExtend)
 		{
-			final I_C_Flatrate_Term nextTerm = createNewTerm(context, trxName);
+			final I_C_Flatrate_Term nextTerm = createNewTerm(request, trxName);
 
 			// the conditions were set via de.metas.flatrate.modelvalidator.C_Flatrate_Term.copyFromConditions(term)
 			Check.errorUnless(currentTerm.getType_Conditions().equals(nextTerm.getType_Conditions()),
