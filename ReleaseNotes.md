@@ -14,6 +14,9 @@ Here come the actual release notes:
 **release for week 2018-13**
 
 ## Features
+* metasfresh
+  * [#3703](https://github.com/metasfresh/metasfresh/issues/3703) Material Receipt Candidates Window, add media types for mobile/ tablet
+    * Mobile Usage Improvement. Adds Mediatypes to Material Receipt Candidates window (Tablet proptotype).
 
 ## Fixes
 
