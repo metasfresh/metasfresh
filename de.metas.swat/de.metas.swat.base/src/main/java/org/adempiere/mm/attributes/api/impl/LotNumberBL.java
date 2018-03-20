@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
@@ -78,7 +77,7 @@ public class LotNumberBL implements ILotNumberBL
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 		final int lotNumberAttrID = lotNumberAttr.getM_Attribute_ID();
-		final I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(asi, lotNumberAttrID, ITrx.TRXNAME_ThreadInherited);
+		final I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(asi, lotNumberAttrID);
 
 		if(lotNumberAI == null)
 		{

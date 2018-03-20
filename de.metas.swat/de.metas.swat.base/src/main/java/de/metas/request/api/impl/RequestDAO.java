@@ -11,6 +11,7 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_R_Request;
+import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.api.IQualityNoteDAO;
@@ -19,6 +20,7 @@ import de.metas.inout.model.I_M_QualityNote;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.model.I_R_Request;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,16 +51,10 @@ public class RequestDAO implements IRequestDAO
 	public static final String ATTR_NAME_QualityNotice = "QualityNotice";
 
 	@Override
-	public void createRequestFromInOutLine(final I_M_InOutLine line)
+	public void createRequestFromInOutLine(@NonNull final I_M_InOutLine line)
 	{
 		final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 		final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
-
-		if (line == null)
-		{
-			// Shall not happen. Do nothing
-			return;
-		}
 
 		if (Check.isEmpty(line.getQualityDiscountPercent()))
 		{
@@ -84,7 +80,6 @@ public class RequestDAO implements IRequestDAO
 		final I_M_AttributeSetInstance asiLine = line.getM_AttributeSetInstance();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
-		final String trxName = InterfaceWrapperHelper.getTrxName(line);
 
 		// find the quality note M_Attribute
 		final I_M_Attribute qualityNoteAttribute = Services.get(IQualityNoteDAO.class).getQualityNoteAttribute(ctx);
@@ -96,7 +91,7 @@ public class RequestDAO implements IRequestDAO
 		else
 		{
 			// find the M_AttributeInstance for QualityNote in the M_AttributeSetInstance of the line
-			final I_M_AttributeInstance qualityNoteAI = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asiLine, qualityNoteAttribute.getM_Attribute_ID(), trxName);
+			final I_M_AttributeInstance qualityNoteAI = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asiLine, qualityNoteAttribute.getM_Attribute_ID());
 
 			// the QualityNote value of the attributeInstance
 			final String qualityNoteValue;
@@ -120,7 +115,7 @@ public class RequestDAO implements IRequestDAO
 				// set the qualityNote to the request.
 				// Note: If the inout line on which the request is based has more than one qualityNotes, only the first one is set into the request
 				request.setM_QualityNote(qualityNote);
-				
+
 				// in case there is a qualitynote set, also set the Performance type based on it
 				request.setPerformanceType(qualityNote.getPerformanceType());
 
@@ -161,6 +156,13 @@ public class RequestDAO implements IRequestDAO
 
 		// save the request
 		InterfaceWrapperHelper.save(request);
+	}
+
+	@Override
+	public void createRequestFromDDOrderLine(I_DD_OrderLine line)
+	{
+		// TODO Auto-generated method stub
+
 	}
 
 }
