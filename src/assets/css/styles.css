@@ -1005,15 +1005,18 @@ td.pulse-off input {
     color: $brand-font-color-weak;
 }
 
-.spacer-right {
+.action-label {
     display: none;
+}
+
+.spacer-right {
+    margin-right: .2rem;
 }
 
 @media only screen and (min-width: $breakpoint-md){
     .desktop {
-        .spacer-right {
+        .action-label {
             display: block;
-            margin-right: .2rem;
         }
     }
 }
