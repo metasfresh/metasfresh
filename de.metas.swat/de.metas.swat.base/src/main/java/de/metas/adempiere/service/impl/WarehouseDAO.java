@@ -61,12 +61,12 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public I_M_Warehouse retrieveBlockWarehouseOrNull()
+	public I_M_Warehouse retrieveQuarantineWarehouseOrNull()
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsBlockWarehouse, true)
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse, true)
 				.orderBy(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID)
 				.create()
 				.first();

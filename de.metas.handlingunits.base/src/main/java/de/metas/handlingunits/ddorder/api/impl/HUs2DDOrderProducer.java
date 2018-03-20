@@ -45,6 +45,7 @@ import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -243,7 +244,13 @@ public class HUs2DDOrderProducer
 
 		//
 		// DD_Order document type
-		docTypeDO_ID = Services.get(IDocTypeDAO.class).getDocTypeId(ctx, X_C_DocType.DOCBASETYPE_DistributionOrder, Env.getAD_Client_ID(ctx), org.getAD_Org_ID(), ITrx.TRXNAME_None);
+		docTypeDO_ID = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(
+				DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+						.adClientId(Env.getAD_Client_ID(ctx))
+						.adOrgId(org.getAD_Org_ID())
+						.build());
+
 	}
 
 	private final void assertNotProcessed()

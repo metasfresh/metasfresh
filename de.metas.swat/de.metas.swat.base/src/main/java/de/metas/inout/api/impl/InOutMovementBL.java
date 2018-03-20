@@ -1,7 +1,6 @@
 package de.metas.inout.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -34,7 +33,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -77,7 +75,7 @@ public class InOutMovementBL implements IInOutMovementBL
 			return Collections.emptyList();
 		}
 
-		final I_M_InOut receipt = create(getCtx(receiptLines.get(0)), receiptLines.get(0).getM_InOut_ID(), I_M_InOut.class, ITrx.TRXNAME_ThreadInherited);
+		final I_M_InOut receipt = load(receiptLines.get(0).getM_InOut_ID(), I_M_InOut.class);
 
 		// services
 

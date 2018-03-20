@@ -1,18 +1,14 @@
 package de.metas.handlingunits.inout.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import de.metas.adempiere.service.IWarehouseDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -23,7 +19,6 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
-import de.metas.product.IProductLotNumberLockDAO;
 import de.metas.product.model.I_M_Product_LotNumber_Lock;
 import lombok.NonNull;
 
@@ -49,48 +44,39 @@ import lombok.NonNull;
  * #L%
  */
 
-public class OnReceiptCompleteHandler
+public class DistributeAndMoveReceiptHandler
 {
 
-	public static final OnReceiptCompleteHandler newInstance()
+	public static final DistributeAndMoveReceiptHandler newInstance()
 	{
-		return new OnReceiptCompleteHandler();
+		return new DistributeAndMoveReceiptHandler();
 	}
 
 	private I_M_InOut receipt;
 
-	public void setReceipt(@NonNull final I_M_InOut receipt)
-	{
-		this.receipt = receipt;
-	}
-
-	private List<I_M_InOutLine> linesToBlock = new ArrayList<>();
+	private List<I_M_InOutLine> linesToQuarantine = new ArrayList<>();
 	private List<I_M_InOutLine> linesToDD_Order = new ArrayList<>();
 	private List<de.metas.inout.model.I_M_InOutLine> linesToMove = new ArrayList<>();
 
-	final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-	final IInOutDDOrderBL ddOrderBL = Services.get(IInOutDDOrderBL.class);
-	final IInOutBL inoutBL = Services.get(IInOutBL.class);
-	final ILotNumberBL lotNoBL = Services.get(ILotNumberBL.class);
-	final IProductLotNumberLockDAO productLotNumberLockDAO = Services.get(IProductLotNumberLockDAO.class);
-	final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
-	final IInOutDDOrderBL inoutDDOrderBL = Services.get(IInOutDDOrderBL.class);
-	final IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
+	private final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final ILotNumberBL lotNoBL = Services.get(ILotNumberBL.class);
+	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
+	private final IInOutDDOrderBL inoutDDOrderBL = Services.get(IInOutDDOrderBL.class);
+	private final IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
 
-	final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
-	final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-	public void onReceiptComplete()
+	public void onReceiptComplete(@NonNull final I_M_InOut receipt)
 	{
 		Check.assume(!receipt.isSOTrx(), "InOut shall be a receipt: {}", receipt);
 		Check.assume(!inoutBL.isReversal(receipt), "InOut shall not be a reversal", receipt);
 
-		splitLines();
+		this.receipt = receipt;
 
-		if (!Check.isEmpty(linesToBlock))
+		partitionLines();
+
+		if (!Check.isEmpty(linesToQuarantine))
 		{
-			huDDOrderBL.createBlockDDOrderForReceiptLines(getContext(), linesToBlock);
+			huDDOrderBL.createQuarantineDDOrderForReceiptLines(linesToQuarantine);
 		}
 
 		if (!Check.isEmpty(linesToDD_Order))
@@ -106,7 +92,7 @@ public class OnReceiptCompleteHandler
 		}
 	}
 
-	private void splitLines()
+	private void partitionLines()
 	{
 		final List<I_M_InOutLine> linesAll = inoutDAO.retrieveLines(receipt, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : linesAll)
@@ -120,7 +106,7 @@ public class OnReceiptCompleteHandler
 
 			if (hasLockedLotNo(inOutLine))
 			{
-				linesToBlock.add(inOutLine);
+				linesToQuarantine.add(inOutLine);
 			}
 			else if (isCreateDDOrder(inOutLine))
 			{
@@ -135,12 +121,7 @@ public class OnReceiptCompleteHandler
 
 	}
 
-	private Properties getContext()
-	{
-		return getCtx(receipt);
-	}
-
-	public boolean hasLockedLotNo(final I_M_InOutLine inOutLine)
+	private boolean hasLockedLotNo(final I_M_InOutLine inOutLine)
 	{
 		final int productId = inOutLine.getM_Product_ID();
 
@@ -152,17 +133,30 @@ public class OnReceiptCompleteHandler
 			return false;
 		}
 
-		final String lotNumberAttributeValue = lotNoBL.getLotNumberAttributeValue(receiptLineASI);
+		final String lotNumberAttributeValue = lotNoBL.getLotNumberAttributeValueOrNull(receiptLineASI);
 
 		if (Check.isEmpty(lotNumberAttributeValue))
 		{
-			// if the attribute is not present or set it automatically means the lotno is not blocked, either
+			// if the attribute is not present or set it automatically means the lotno is not to quarantine, either
 			return false;
 		}
 
-		final I_M_Product_LotNumber_Lock lotNumberLock = productLotNumberLockDAO.retrieveLotNumberLock(productId, lotNumberAttributeValue);
+		final I_M_Product_LotNumber_Lock lotNumberLock = retrieveLotNumberLock(productId, lotNumberAttributeValue);
 
 		return lotNumberLock != null;
+	}
+
+	private I_M_Product_LotNumber_Lock retrieveLotNumberLock(final int productId, final String lotNo)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product_LotNumber_Lock.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_M_Product_LotNumber_Lock.COLUMN_M_Product_ID, productId)
+				.addEqualsFilter(I_M_Product_LotNumber_Lock.COLUMNNAME_Lot, lotNo)
+				.orderBy(I_M_Product_LotNumber_Lock.COLUMN_M_Product_ID)
+				.create()
+				.first();
+
 	}
 
 	private boolean isCreateDDOrder(final I_M_InOutLine inOutLine)
