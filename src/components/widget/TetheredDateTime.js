@@ -1,9 +1,24 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import DateTime from 'react-datetime';
 import CalendarContainer from 'react-datetime/src/CalendarContainer';
 import TetherComponent from 'react-tether';
 
 export default class TetheredDateTime extends DateTime {
+  static propTypes = {
+    initialViewMode: PropTypes.oneOf(['years', 'months', 'days', 'time']),
+  };
+
+  componentWillMount() {
+    const { initialViewMode } = this.props;
+
+    if (initialViewMode) {
+      this.setState({
+        currentView: initialViewMode,
+      });
+    }
+  }
+
   render() {
     const { open } = this.state;
     let className =
