@@ -1,14 +1,16 @@
 package de.metas.request.service.async.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 import org.eevolution.model.I_DD_OrderLine;
-
-import com.google.common.base.MoreObjects;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -38,11 +40,11 @@ import de.metas.request.api.IRequestDAO;
  * #L%
  */
 
-public class C_Request_CreateFromDDOrder extends WorkpackageProcessorAdapter
+public class C_Request_CreateFromDDOrder_Async extends WorkpackageProcessorAdapter
 {
 
 	@Override
-	public Result processWorkPackage(I_C_Queue_WorkPackage workPackage, String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{// Services
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
@@ -59,7 +61,7 @@ public class C_Request_CreateFromDDOrder extends WorkpackageProcessorAdapter
 		return Result.SUCCESS;
 	}
 
-	public static void createWorkpackage(Properties ctx, List<Integer> ddOrderLineIds, String trxName)
+	public static void createWorkpackage(List<Integer> ddOrderLineIds)
 	{
 		if (Check.isEmpty(ddOrderLineIds))
 		{
@@ -75,80 +77,39 @@ public class C_Request_CreateFromDDOrder extends WorkpackageProcessorAdapter
 				continue;
 			}
 
-			// Schedule the request creation based on the given DDOrderline ids
-			SCHEDULER.schedule(DDOrderLineToBlock.of(ctx, ddOrderLineId, trxName));
+			final I_DD_OrderLine ddOrderLine = load(ddOrderLineId, I_DD_OrderLine.class);
+
+			// Schedule the request creation based on the given DDOrderline id
+			SCHEDULER.schedule(ddOrderLine);
 		}
-		
+
 	}
-	
-	private static final WorkpackagesOnCommitSchedulerTemplate<DDOrderLineToBlock> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<DDOrderLineToBlock>(C_Request_CreateFromDDOrder.class)
+
+	private static final WorkpackagesOnCommitSchedulerTemplate<I_DD_OrderLine> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<I_DD_OrderLine>(C_Request_CreateFromDDOrder_Async.class)
 	{
 		@Override
-		protected boolean isEligibleForScheduling(final DDOrderLineToBlock model)
+		protected boolean isEligibleForScheduling(final I_DD_OrderLine model)
 		{
 			return model != null && model.getDD_OrderLine_ID() > 0;
 		};
 
 		@Override
-		protected Properties extractCtxFromItem(final DDOrderLineToBlock item)
+		protected Properties extractCtxFromItem(final I_DD_OrderLine item)
 		{
-			return item.getCtx();
+			return Env.getCtx();
 		}
 
 		@Override
-		protected String extractTrxNameFromItem(final DDOrderLineToBlock item)
+		protected String extractTrxNameFromItem(final I_DD_OrderLine item)
 		{
-			return item.getTrxName();
+			return ITrx.TRXNAME_ThreadInherited;
 		}
 
 		@Override
-		protected Object extractModelToEnqueueFromItem(final Collector collector, final DDOrderLineToBlock item)
+		protected Object extractModelToEnqueueFromItem(final Collector collector, final I_DD_OrderLine item)
 		{
 			return new TableRecordReference(I_DD_OrderLine.Table_Name, item.getDD_OrderLine_ID());
 		}
 	};
-	
-	private static final class DDOrderLineToBlock
-	{
-		public static DDOrderLineToBlock of(Properties ctx, int ddOrderLineId, String trxName)
-		{
-			return new DDOrderLineToBlock(ctx, ddOrderLineId, trxName);
-		}
-
-		private final Properties ctx;
-		private final String trxName;
-		private final int ddOrderLineId;
-
-		private DDOrderLineToBlock(Properties ctx, int ddOrderLineId, String trxName)
-		{
-			super();
-			this.ctx = ctx;
-			this.ddOrderLineId = ddOrderLineId;
-			this.trxName = trxName;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("DDOrderLineId", ddOrderLineId)
-					.toString();
-		}
-
-		public Properties getCtx()
-		{
-			return ctx;
-		}
-
-		public String getTrxName()
-		{
-			return trxName;
-		}
-
-		public int getDD_OrderLine_ID()
-		{
-			return ddOrderLineId;
-		}
-	}
 
 }
