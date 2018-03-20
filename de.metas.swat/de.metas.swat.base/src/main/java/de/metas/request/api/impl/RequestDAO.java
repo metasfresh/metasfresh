@@ -1,6 +1,7 @@
 package de.metas.request.api.impl;
 
-import java.util.Properties;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -11,6 +12,7 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_R_Request;
+import org.compiere.util.Env;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.i18n.IMsgBL;
@@ -53,9 +55,6 @@ public class RequestDAO implements IRequestDAO
 	@Override
 	public void createRequestFromInOutLine(@NonNull final I_M_InOutLine line)
 	{
-		final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
-		final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
-
 		if (Check.isEmpty(line.getQualityDiscountPercent()))
 		{
 			// Shall not happen. Do nothing
@@ -65,69 +64,84 @@ public class RequestDAO implements IRequestDAO
 		// Create a new request
 		final I_R_Request request = InterfaceWrapperHelper.newInstance(I_R_Request.class, line);
 
-		// ID of the inout header
-		final int inOutID = line.getM_InOut_ID();
+		setDefaultRequestData(request);
+		updateRequestFromInOutLine(request, line);
+		
+		save(request);
+	}
 
-		// Must have the same org as the inout line
-		final int orgID = line.getAD_Org_ID();
-		request.setAD_Org_ID(orgID);
+	private void setDefaultRequestData(final I_R_Request request)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-		// data from line
-		request.setM_InOut_ID(inOutID);
+		// summary from AD_Message
+		final String summary = msgBL.getMsg(Env.getCtx(), MSG_R_Request_From_InOut_Summary);
+		request.setSummary(summary);
+
+		// confidential type internal
+		request.setConfidentialType(X_R_Request.CONFIDENTIALTYPE_Internal);
+	}
+
+	private void updateRequestFromInOutLine(final I_R_Request request, final I_M_InOutLine line)
+	{
+		request.setAD_Org_ID(line.getAD_Org_ID());
 		request.setM_Product_ID(line.getM_Product_ID());
 
-		// M_AttributeSetInstance of the inout line
-		final I_M_AttributeSetInstance asiLine = line.getM_AttributeSetInstance();
+		final I_M_InOut inOut = line.getM_InOut();
+		updateRequestFromInout(request, inOut);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(line);
+		updateQualityNote(request, line.getM_AttributeSetInstance());
+
+	}
+
+	private void updateQualityNote(final I_R_Request request, final I_M_AttributeSetInstance asiLine)
+	{
+		final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
 
 		// find the quality note M_Attribute
-		final I_M_Attribute qualityNoteAttribute = Services.get(IQualityNoteDAO.class).getQualityNoteAttribute(ctx);
+		final I_M_Attribute qualityNoteAttribute = qualityNoteDAO.getQualityNoteAttribute(Env.getCtx());
 
 		if (qualityNoteAttribute == null)
 		{
 			// nothing to do. Quality Note attribute not defined
+
+			return;
 		}
-		else
+
+		final I_M_AttributeInstance qualityNoteAI = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asiLine, qualityNoteAttribute.getM_Attribute_ID());
+
+		if (qualityNoteAI == null)
 		{
-			// find the M_AttributeInstance for QualityNote in the M_AttributeSetInstance of the line
-			final I_M_AttributeInstance qualityNoteAI = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asiLine, qualityNoteAttribute.getM_Attribute_ID());
-
-			// the QualityNote value of the attributeInstance
-			final String qualityNoteValue;
-
-			if (qualityNoteAI == null)
-			{
-				qualityNoteValue = null;
-			}
-
-			else
-			{
-				qualityNoteValue = qualityNoteAI.getValue();
-			}
-
-			if (qualityNoteValue != null)
-			{
-				final I_M_QualityNote qualityNote = qualityNoteDAO.retrieveQualityNoteForValue(ctx, qualityNoteValue);
-
-				Check.assumeNotNull(qualityNote, "QualityNote not nul");
-
-				// set the qualityNote to the request.
-				// Note: If the inout line on which the request is based has more than one qualityNotes, only the first one is set into the request
-				request.setM_QualityNote(qualityNote);
-
-				// in case there is a qualitynote set, also set the Performance type based on it
-				request.setPerformanceType(qualityNote.getPerformanceType());
-
-			}
-
+			// nothing to do
+			return;
 		}
 
-		// data from inout
-		final I_M_InOut inOut = line.getM_InOut();
+		final String qualityNoteValueFromASI = qualityNoteAI.getValue();
 
-		request.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_M_InOut.class));
-		request.setRecord_ID(inOutID);
+		if (Check.isEmpty(qualityNoteValueFromASI))
+		{
+			// nothing to do
+			return;
+		}
+
+		final I_M_QualityNote qualityNote = qualityNoteDAO.retrieveQualityNoteForValue(Env.getCtx(), qualityNoteValueFromASI);
+
+		Check.assumeNotNull(qualityNote, "QualityNote not nul");
+
+		// set the qualityNote to the request.
+		// Note: If the inout line on which the request is based has more than one qualityNotes, only the first one is set into the request
+		request.setM_QualityNote(qualityNote);
+
+		// in case there is a qualitynote set, also set the Performance type based on it
+		request.setPerformanceType(qualityNote.getPerformanceType());
+	}
+
+	private void updateRequestFromInout(final I_R_Request request, final I_M_InOut inOut)
+	{
+		final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
+
+		request.setAD_Table_ID(getTableId(I_M_InOut.class));
+		request.setRecord_ID(inOut.getM_InOut_ID());
 
 		request.setC_BPartner_ID(inOut.getC_BPartner_ID());
 		request.setAD_User_ID(inOut.getAD_User_ID());
@@ -136,26 +150,14 @@ public class RequestDAO implements IRequestDAO
 		if (inOut.isSOTrx())
 		{
 			// customer complaint request type
-			request.setR_RequestType(requestTypeDAO.retrieveCustomerRequestType(ctx));
+			request.setR_RequestType(requestTypeDAO.retrieveCustomerRequestType());
 		}
 		else
 		{
 			// vendor complaint request type
-			request.setR_RequestType(requestTypeDAO.retrieveVendorRequestType(ctx));
+			request.setR_RequestType(requestTypeDAO.retrieveVendorRequestType());
 		}
 
-		// Default data
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-		// summary from AD_Message
-		final String summary = msgBL.getMsg(ctx, MSG_R_Request_From_InOut_Summary);
-		request.setSummary(summary);
-
-		// confidential type internal
-		request.setConfidentialType(X_R_Request.CONFIDENTIALTYPE_Internal);
-
-		// save the request
-		InterfaceWrapperHelper.save(request);
 	}
 
 	@Override
