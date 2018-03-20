@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -19,6 +18,7 @@ import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.attribute.Constants;
@@ -82,7 +82,8 @@ import lombok.NonNull;
 
 	private final Supplier<ViewRowAttributesLayout> layoutSupplier;
 
-	private final Set<String> readonlyAttributeNames;
+	private final ImmutableSet<String> readonlyAttributeNames;
+	private final ImmutableSet<String> hiddenAttributeNames;
 
 	/* package */ HUEditorRowAttributes(@NonNull final DocumentPath documentPath, @NonNull final IAttributeStorage attributesStorage, final boolean readonly)
 	{
@@ -98,6 +99,12 @@ import lombok.NonNull;
 		readonlyAttributeNames = attributesStorage.getAttributes()
 				.stream()
 				.filter(attribute -> readonlyEffective || attributesStorage.isReadonlyUI(calloutCtx, attribute))
+				.map(HUEditorRowAttributesHelper::extractAttributeName)
+				.collect(GuavaCollectors.toImmutableSet());
+
+		hiddenAttributeNames = attributesStorage.getAttributes()
+				.stream()
+				.filter(attribute -> !attributesStorage.isDisplayedUI(attribute))
 				.map(HUEditorRowAttributesHelper::extractAttributeName)
 				.collect(GuavaCollectors.toImmutableSet());
 
@@ -171,7 +178,7 @@ import lombok.NonNull;
 		final Object jsonValue = HUEditorRowAttributesHelper.extractJSONValue(attributesStorage, attributeValue);
 		final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
 		return JSONDocumentField.ofNameAndValue(fieldName, jsonValue)
-				.setDisplayed(true)
+				.setDisplayed(isDisplayed(fieldName))
 				.setMandatory(false)
 				.setReadonly(isReadonly(fieldName))
 				.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetType));
@@ -180,6 +187,11 @@ import lombok.NonNull;
 	private boolean isReadonly(final String attributeName)
 	{
 		return readonlyAttributeNames.contains(attributeName);
+	}
+
+	private boolean isDisplayed(final String attributeName)
+	{
+		return !hiddenAttributeNames.contains(attributeName);
 	}
 
 	@Override
