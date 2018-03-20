@@ -19,14 +19,14 @@ class Window extends Component {
     if (props.isModal) {
       this.tabIndex = {
         firstColumn: 0,
-        tabs: 0,
         secondColumn: 0,
+        tabs: 0,
       };
     } else {
       this.tabIndex = {
         firstColumn: 1,
-        tabs: 2,
-        secondColumn: 3,
+        secondColumn: 2,
+        tabs: 3,
       };
     }
   }
