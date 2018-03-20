@@ -40,7 +40,7 @@ import de.metas.Profiles;
  */
 
 @SpringBootApplication
-@Profile(Profiles.PROFILE_PrintingService)
+@Profile(Profiles.PROFILE_PrintService)
 public class PrintServiceMain
 {
 	/**
@@ -61,7 +61,7 @@ public class PrintServiceMain
 		new SpringApplicationBuilder(PrintServiceMain.class)
 				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
-				.profiles(Profiles.PROFILE_PrintingService)
+				.profiles(Profiles.PROFILE_PrintService)
 				.run(args);
 	}
 

@@ -51,7 +51,7 @@ public class Profiles
 
 	public static final String PROFILE_JasperService = "metasfresh-jasper-service";
 
-	public static final String PROFILE_PrintingService = "metasfresh-printing-service";
+	public static final String PROFILE_PrintService = "metasfresh-printing-service";
 
 	/** @return true if {@link #PROFILE_Development} is active (i.e. we are running from IDE) */
 	public boolean isDevelopmentProfileActive()
