@@ -36,7 +36,6 @@ class OverlayField extends Component {
 
   renderElements = (layout, data, type) => {
     const { disabled, barcodeSelected } = this.props;
-    // const { barcodeSelected } = this.state;
     const elements = layout.elements;
 
     return elements.map((elem, id) => {

@@ -747,7 +747,7 @@ input:checked + .input-slider:before {
         }
     }
 
-     .input-dropdown-container  {
+    .input-dropdown-container  {
         width: 100%;
     }
 }

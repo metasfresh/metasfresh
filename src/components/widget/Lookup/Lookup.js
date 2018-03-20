@@ -284,13 +284,7 @@ class Lookup extends Component {
 
     if (scanning) {
       return (
-        <div
-          className="overlay-field js-not-unselect"
-          onKeyDown={e => e}
-          tabIndex={-1}
-        >
-          {scannerElement}
-        </div>
+        <div className="overlay-field js-not-unselect">{scannerElement}</div>
       );
     }
 
@@ -441,8 +435,7 @@ class Lookup extends Component {
             }
           })}
 
-        {!readonly &&
-          this.renderInputControls(showBarcodeScannerBtn)}
+        {!readonly && this.renderInputControls(showBarcodeScannerBtn)}
       </div>
     );
   }

@@ -13,7 +13,7 @@ function addBarcodeScanner(WrappedComponent) {
       };
     }
 
-    _scanBarcode = val => {
+    scanBarcode = val => {
       this.setState({
         scanning: typeof val !== 'undefined' ? val : !this.state.scanning,
         result: null,
@@ -21,7 +21,7 @@ function addBarcodeScanner(WrappedComponent) {
       });
     };
 
-    _onBarcodeDetected = result => {
+    onBarcodeDetected = result => {
       this.setState({
         result,
       });
@@ -42,15 +42,15 @@ function addBarcodeScanner(WrappedComponent) {
           <div className="col-sm-12">
             <BarcodeScanner
               result={result}
-              onDetected={this._onBarcodeDetected}
-              onClose={() => this._scanBarcode(false)}
-              onReset={() => this._scanBarcode(true)}
+              onDetected={this.onBarcodeDetected}
+              onClose={() => this.scanBarcode(false)}
+              onReset={() => this.scanBarcode(true)}
             />
             <div className="row scanning-result">
               <span className="label col-xs-3 col-sm-2">Barcode</span>
               <BarcodeScannerResult
                 result={result}
-                onSelect={result => this.selectBarcode(result)}
+                onSelect={this.selectBarcode}
               />
             </div>
           </div>
@@ -66,7 +66,7 @@ function addBarcodeScanner(WrappedComponent) {
           {...this.props}
           {...this.state}
           scannerElement={scannerElement}
-          onScanBarcode={this._scanBarcode}
+          onScanBarcode={this.scanBarcode}
           onSelectBarcode={this.selectBarcode}
         />
       );
