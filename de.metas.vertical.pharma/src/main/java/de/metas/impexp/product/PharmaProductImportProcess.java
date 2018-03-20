@@ -3,7 +3,6 @@ package de.metas.impexp.product;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,6 +34,7 @@ import org.compiere.util.TimeUtil;
 import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery;
+import de.metas.tax.api.ITaxDAO.TaxCategoryQuery.VATType;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
@@ -298,7 +298,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	{
 		if (!Check.isEmpty(importRecord.getA00PGMENG(), true))
 		{
-			product.setPackageSize(new BigDecimal(importRecord.getA00PGMENG()));
+			product.setPackageSize(importRecord.getA00PGMENG());
 		}
 		if (importRecord.getPackage_UOM_ID() > 0)
 		{
@@ -357,20 +357,21 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private void importPrices(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		createKAEP(importRecord);
-		createAPU(importRecord);
-		createAEP(importRecord);
-		createAVP(importRecord);
-		createUVP(importRecord);
-		createZBV(importRecord);
+		if (importRecord.getA01GDAT() != null)
+		{
+			createKAEP(importRecord);
+			createAPU(importRecord);
+			createAEP(importRecord);
+			createAVP(importRecord);
+			createUVP(importRecord);
+			createZBV(importRecord);
+		}
 	}
 
 	private void createKAEP(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
-				.isDefaultTax(extractIsDefaultTaxCategory(importRecord))
-				.isReducedTax(extractIsReducedTaxCategory(importRecord))
-				.isWithoutTax(extractIsWithoutTaxCategory(importRecord))
+				.type(extractTaxCategoryVATTYpe(importRecord))
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
@@ -388,9 +389,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	private void createAPU(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
-				.isDefaultTax(extractIsDefaultTaxCategory(importRecord))
-				.isReducedTax(extractIsReducedTaxCategory(importRecord))
-				.isWithoutTax(extractIsWithoutTaxCategory(importRecord))
+				.type(extractTaxCategoryVATTYpe(importRecord))
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
@@ -408,9 +407,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	private void createAEP(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
-				.isDefaultTax(extractIsDefaultTaxCategory(importRecord))
-				.isReducedTax(extractIsReducedTaxCategory(importRecord))
-				.isWithoutTax(extractIsWithoutTaxCategory(importRecord))
+				.type(extractTaxCategoryVATTYpe(importRecord))
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
@@ -428,9 +425,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	private void createAVP(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
-				.isDefaultTax(extractIsDefaultTaxCategory(importRecord))
-				.isReducedTax(extractIsReducedTaxCategory(importRecord))
-				.isWithoutTax(extractIsWithoutTaxCategory(importRecord))
+				.type(extractTaxCategoryVATTYpe(importRecord))
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
@@ -448,9 +443,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	private void createUVP(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
-				.isDefaultTax(extractIsDefaultTaxCategory(importRecord))
-				.isReducedTax(extractIsReducedTaxCategory(importRecord))
-				.isWithoutTax(extractIsWithoutTaxCategory(importRecord))
+				.type(extractTaxCategoryVATTYpe(importRecord))
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
@@ -468,9 +461,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	private void createZBV(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
-				.isDefaultTax(extractIsDefaultTaxCategory(importRecord))
-				.isReducedTax(extractIsReducedTaxCategory(importRecord))
-				.isWithoutTax(extractIsWithoutTaxCategory(importRecord))
+				.type(extractTaxCategoryVATTYpe(importRecord))
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()
@@ -486,20 +477,22 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		command.createProductPrice_And_PriceListVersionIfNeeded();
 	}
 
-	private Boolean extractIsDefaultTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
+	private VATType extractTaxCategoryVATTYpe(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return X_I_Pharma_Product.A01MWST_0.equals(importRecord.getA01MWST());
+		if (X_I_Pharma_Product.A01MWST_1.equals(importRecord.getA01MWST()))
+		{
+			return VATType.ReducedVAT;
+		}
+		else if (X_I_Pharma_Product.A01MWST_2.equals(importRecord.getA01MWST()))
+		{
+			return VATType.TaxExempt;
+		}
+		else
+		{
+			return VATType.RegularVAT;
+		}
 	}
 
-	private Boolean extractIsReducedTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
-	{
-		return X_I_Pharma_Product.A01MWST_1.equals(importRecord.getA01MWST());
-	}
-
-	private Boolean extractIsWithoutTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
-	{
-		return X_I_Pharma_Product.A01MWST_2.equals(importRecord.getA01MWST());
-	}
 
 
 }

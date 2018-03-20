@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 733124775L;
+	private static final long serialVersionUID = 1358865702L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -152,6 +152,22 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getClassification () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Classification);
+	}
+
+	/** Set Auszeichnungsname.
+		@param CustomerLabelName Auszeichnungsname	  */
+	@Override
+	public void setCustomerLabelName (java.lang.String CustomerLabelName)
+	{
+		set_Value (COLUMNNAME_CustomerLabelName, CustomerLabelName);
+	}
+
+	/** Get Auszeichnungsname.
+		@return Auszeichnungsname	  */
+	@Override
+	public java.lang.String getCustomerLabelName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CustomerLabelName);
 	}
 
 	/** Set Beschreibung.
@@ -984,6 +1000,11 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return (java.lang.String)get_Value(COLUMNNAME_M_ProductPlanningSchema_Selector);
 	}
 
+	/** 
+	 * Manufacturer AD_Reference_ID=138
+	 * Reference name: C_BPartner (Trx)
+	 */
+	public static final int MANUFACTURER_AD_Reference_ID=138;
 	/** Set Hersteller.
 		@param Manufacturer 
 		Hersteller des Produktes
@@ -991,6 +1012,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public void setManufacturer (java.lang.String Manufacturer)
 	{
+
 		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
 	}
 
@@ -1090,7 +1112,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		Size of a package
 	  */
 	@Override
-	public void setPackageSize (java.math.BigDecimal PackageSize)
+	public void setPackageSize (java.lang.String PackageSize)
 	{
 		set_Value (COLUMNNAME_PackageSize, PackageSize);
 	}
@@ -1099,12 +1121,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		@return Size of a package
 	  */
 	@Override
-	public java.math.BigDecimal getPackageSize () 
+	public java.lang.String getPackageSize () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageSize);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		return (java.lang.String)get_Value(COLUMNNAME_PackageSize);
 	}
 
 	/** Set Verarbeiten.
