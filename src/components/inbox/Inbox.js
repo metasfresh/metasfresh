@@ -66,14 +66,6 @@ class Inbox extends Component {
     deleteUserNotification(item.id).then(() => {});
   };
 
-  componentDidUpdate() {
-    const { open } = this.props;
-    const inboxWrapper = document.getElementsByClassName('js-inbox-wrapper')[0];
-    if (inboxWrapper && open) {
-      inboxWrapper.focus();
-    }
-  }
-
   handleKeyDown = e => {
     const { close } = this.props;
     const inboxItem = document.getElementsByClassName('js-inbox-item')[0];
@@ -86,6 +78,11 @@ class Inbox extends Component {
           }
         }
         break;
+
+      case 'Tab':
+        close && close();
+        break;
+
       case 'Escape':
         e.preventDefault();
         close && close();
@@ -99,6 +96,7 @@ class Inbox extends Component {
       <div
         className="js-inbox-wrapper"
         onKeyDown={e => this.handleKeyDown(e)}
+        onFocus={this.props.onFocus}
         tabIndex={0}
       >
         {(all || open) && (
@@ -150,6 +148,11 @@ class Inbox extends Component {
 
 Inbox.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  onFocus: PropTypes.func,
+};
+
+Inbox.defaultProps = {
+  onFocus: () => {},
 };
 
 export default connect()(onClickOutside(Inbox));
