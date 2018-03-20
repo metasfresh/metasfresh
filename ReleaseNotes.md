@@ -65,6 +65,8 @@ Here come the actual release notes:
     * Fixes the empty selected elements in list widgets after selecting entry.
   * [#1673](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1673) Improve User Interface for tablet media size
     * Layout adjustments for the usage of webui frontend on tablet media sizes.
+  * [#1689](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1689) Scrollbar not shown in order window for subtab order lines
+    * Fixes the missing horizontal Scrollbar.
 
 # metasfresh 5.48 (2018-11)
 **release for week 2018-11**
