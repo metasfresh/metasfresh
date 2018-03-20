@@ -191,6 +191,8 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @return true if given attribute is readonly for user
 	 */
 	boolean isReadonlyUI(final IAttributeValueContext ctx, I_M_Attribute attribute);
+	
+	boolean isDisplayedUI(final I_M_Attribute attribute);
 
 	/**
 	 * Set attribute's value with NO propagation.

@@ -19,6 +19,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery;
+import de.metas.tax.api.ITaxDAO.TaxCategoryQuery.VATType;
 import de.metas.vertical.pharma.model.I_I_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
 import lombok.NonNull;
@@ -109,7 +110,7 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 	private void createAPU(@NonNull final I_I_Product importRecord)
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
-				.isDefaultTax(true)
+				.type(VATType.RegularVAT)
 				.build();
 
 
@@ -128,7 +129,7 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 	private void createAEP(@NonNull final I_I_Product importRecord)
 	{
 		final TaxCategoryQuery query = TaxCategoryQuery.builder()
-				.isDefaultTax(true)
+				.type(VATType.RegularVAT)
 				.build();
 
 		final ProductPriceCreateRequest request = ProductPriceCreateRequest.builder()

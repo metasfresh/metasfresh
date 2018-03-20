@@ -320,7 +320,6 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		final I_C_TaxCategory taxCategory_None = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class, context);
 		taxCategory_None.setC_TaxCategory_ID(100);
 		taxCategory_None.setName("None");
-		taxCategory_None.setIsDefault(false);
 		InterfaceWrapperHelper.save(taxCategory_None);
 
 		this.tax_NotFound = InterfaceWrapperHelper.create(ctx, I_C_Tax.class, ITrx.TRXNAME_None);
@@ -331,7 +330,6 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		final I_C_TaxCategory taxCategory_Default = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class, context);
 		taxCategory_Default.setC_TaxCategory_ID(1000000);
 		taxCategory_Default.setName("Default");
-		taxCategory_Default.setIsDefault(true);
 		InterfaceWrapperHelper.save(taxCategory_Default);
 
 		this.tax_Default = InterfaceWrapperHelper.create(ctx, I_C_Tax.class, ITrx.TRXNAME_None);

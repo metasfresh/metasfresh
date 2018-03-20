@@ -66,6 +66,10 @@ public class SubProducerAttributeBL implements ISubProducerAttributeBL
 		}
 
 		final IAttributeStorage attributeStorage = (IAttributeStorage)attributeSet;
+		if(!attributeStorage.hasAttribute(attr_MarkeADR))
+		{
+			return; // skip if the attribute storage does not have the ADR attribute
+		}
 		if (subProducerJustInitialized && attributeStorage.getValue(attr_MarkeADR) != null)
 		{
 			return; // task 08782: the sub-producer was set only now, so we keep the pre-existing ADR value.
