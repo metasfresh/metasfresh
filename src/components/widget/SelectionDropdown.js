@@ -228,7 +228,7 @@ export default class SelectionDropdown extends Component {
   render() {
     const { options, width, loading } = this.props;
 
-    const empty = !!(options.size && options.length);
+    const empty = this.size(options) === 0;
 
     return (
       <div
