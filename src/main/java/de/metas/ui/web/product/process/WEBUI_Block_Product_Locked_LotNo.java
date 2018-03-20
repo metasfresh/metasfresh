@@ -85,7 +85,7 @@ public class WEBUI_Block_Product_Locked_LotNo extends ViewBasedProcessTemplate i
 
 		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(productId, lotNoAttributeID, lotNoValue);
 
-		Services.get(IHUDDOrderBL.class).createBlockDDOrderForHUs(getCtx(), husForAttributeStringValue);
+		Services.get(IHUDDOrderBL.class).createBlockDDOrderForHUs(husForAttributeStringValue);
 
 	}
 
