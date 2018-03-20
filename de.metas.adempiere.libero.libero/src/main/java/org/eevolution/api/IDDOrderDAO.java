@@ -98,4 +98,6 @@ public interface IDDOrderDAO extends ISingletonService
 
 	IQueryBuilder<I_DD_OrderLine> retrieveForwardDDOrderLinesQuery(I_PP_Order ppOrder);
 
+	List<I_DD_OrderLine> retrieveLinesToBlockWarehouse(I_DD_Order ddOrder);
+
 }

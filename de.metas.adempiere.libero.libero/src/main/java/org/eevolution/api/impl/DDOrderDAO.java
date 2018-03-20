@@ -13,15 +13,14 @@ package org.eevolution.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -43,6 +42,8 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
@@ -216,4 +217,18 @@ public class DDOrderDAO implements IDDOrderDAO
 				.andCollect(I_PP_MRP.COLUMN_DD_OrderLine_ID);
 	}
 
+	@Override
+	public List<I_DD_OrderLine> retrieveLinesToBlockWarehouse(final I_DD_Order ddOrder)
+	{
+		return retrieveLines(ddOrder)
+				.stream()
+				.filter(ddOrderLine -> isBlockWarehouseLine(ddOrderLine))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private boolean isBlockWarehouseLine(final I_DD_OrderLine ddOrderLine)
+	{
+		ddOrderLine.getM_LocatorTo().getM_Warehouse().isbl
+		
+	}
 }

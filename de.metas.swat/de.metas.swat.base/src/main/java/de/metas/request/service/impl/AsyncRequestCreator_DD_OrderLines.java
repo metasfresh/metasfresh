@@ -1,5 +1,11 @@
 package de.metas.request.service.impl;
 
+import java.util.List;
+import java.util.Properties;
+
+import de.metas.request.service.IRequestCreator;
+import de.metas.request.service.async.spi.impl.C_Request_CreateFromDDOrder;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -22,7 +28,15 @@ package de.metas.request.service.impl;
  * #L%
  */
 
-public class AsyncRequestCreator_DD_OrderLines
+public class AsyncRequestCreator_DD_OrderLines implements IRequestCreator
 {
+
+	@Override
+	public void createRequests(Properties ctx, List<Integer> ddOrderLineIds, String trxName)
+	{
+		// Schedule the async request creation based on the given inoutline ids
+		C_Request_CreateFromDDOrder.createWorkpackage(ctx, ddOrderLineIds, trxName);
+		
+	}
 
 }

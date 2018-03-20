@@ -47,7 +47,8 @@ public class DD_Order
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onComplete_BlockWarehouseLines(final I_DD_Order ddOrder)
 	{
-		Services.get(IRequestCreator.class).createRequestsForInOutLines(ctx, linesWithQualityIssues, trxName);
+		final List
+		Services.get(IRequestCreator.class).createRequestsForInOutLines(ctx, ddOrderLinesToBlock, trxName);
 		
 	}
 	

@@ -1,6 +1,7 @@
 package de.metas.request.api;
 
 import org.adempiere.util.ISingletonService;
+import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.inout.model.I_M_InOutLine;
 
@@ -46,4 +47,6 @@ public interface IRequestDAO extends ISingletonService
 	 * @param line
 	 */
 	void createRequestFromInOutLine(I_M_InOutLine line);
+
+	void createRequestFromDDOrderLine(I_DD_OrderLine line);
 }
