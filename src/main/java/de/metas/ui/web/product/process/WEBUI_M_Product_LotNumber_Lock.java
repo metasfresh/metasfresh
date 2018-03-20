@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.util.Services;
@@ -12,7 +14,6 @@ import org.compiere.model.I_M_Attribute;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -44,7 +45,15 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * #L%
  */
 
-public class WEBUI_Block_Product_Locked_LotNo extends ViewBasedProcessTemplate implements IProcessPrecondition
+/**
+ * https://github.com/metasfresh/metasfresh/issues/3693
+ * This process will search for HUs containing products with LotNo attributes that fit the pairs in the selected I_M_Product_LotNumber_Lock entries.
+ * If such HUs are found, they will all be put in a DD_Order and sent to the Quarantine warehouse.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 
 	@Override
@@ -89,26 +98,29 @@ public class WEBUI_Block_Product_Locked_LotNo extends ViewBasedProcessTemplate i
 
 	}
 
-	public List<I_M_HU> retrieveHUsForAttributeStringValue(final int productId, final int attributeId, final String value)
+	private List<I_M_HU> retrieveHUsForAttributeStringValue(final int productId, final int attributeId, final String value)
 	{
 		return Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
 				.addOnlyWithProductId(productId)
 				.list()
 				.stream()
-				.filter(hu -> isHUForAttribute(hu, attributeId, value))
+				.filter(hu -> hasHUAttributeAndValue(hu, attributeId, value))
 				.collect(ImmutableList.toImmutableList());
 
 	}
 
-	private boolean isHUForAttribute(final I_M_HU hu, final int attributeId, final String value)
+	private boolean hasHUAttributeAndValue(final I_M_HU hu, final int attributeId, final String value)
 	{
-		final List<I_M_HU_Attribute> attributesOrdered = Services.get(IHUAttributesDAO.class).retrieveAttributesOrdered(hu);
-
-		return attributesOrdered.stream()
-				.filter(huAttribute -> huAttribute.getM_Attribute_ID() == attributeId)
-				.filter(huAttribute -> value.equals(huAttribute.getValue()))
-				.findAny()
-				.isPresent();
+		 final I_M_HU_Attribute lotNoHUAttribute = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
+				.filter(new EqualsQueryFilter<I_M_HU_Attribute>(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeId)
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_Value, value)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.create()
+				.firstOnly(I_M_HU_Attribute.class);
+		
+		return lotNoHUAttribute != null;
 	}
 
 }
