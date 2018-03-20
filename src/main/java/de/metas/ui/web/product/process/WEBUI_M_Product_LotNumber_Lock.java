@@ -62,7 +62,7 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 		getView().streamByIds(getSelectedRowIds())
 				.map(row -> row.getId().toInt())
 				.distinct()
-				.forEach(id -> blockHUsForLotNo(id));
+				.forEach(id -> quarantineHUsForLotNo(id));
 		return MSG_OK;
 	}
 
@@ -78,7 +78,7 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private void blockHUsForLotNo(final int lotNoLockId)
+	private void quarantineHUsForLotNo(final int lotNoLockId)
 	{
 		final I_M_Product_LotNumber_Lock lotNoLock = load(lotNoLockId, I_M_Product_LotNumber_Lock.class);
 		final I_M_Attribute lotNumberAttr = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttribute(getCtx());
@@ -94,7 +94,7 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 
 		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(productId, lotNoAttributeID, lotNoValue);
 
-		Services.get(IHUDDOrderBL.class).createBlockDDOrderForHUs(husForAttributeStringValue);
+		Services.get(IHUDDOrderBL.class).createQuarantineDDOrderForHUs(husForAttributeStringValue);
 
 	}
 
