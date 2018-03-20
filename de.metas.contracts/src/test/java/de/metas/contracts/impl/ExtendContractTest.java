@@ -113,6 +113,47 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		while (curentContract.getC_FlatrateTerm_Next() != null);
 	}
 
+	@Test
+	public void coliisionDetectWhenExtendContractWithExtendingAll_test()
+	{
+		final I_C_Flatrate_Term contract = prepareContractForExtrendingAllTest();
+
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(1)
+				.contract(contract)
+				.forceExtend(false)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+
+		Services.get(IFlatrateBL.class).extendContract(context);
+
+		I_C_Flatrate_Term curentContract = contract;
+		do
+		{
+			assertPartnerData(curentContract);
+			final I_C_Flatrate_Term nextflatrateTerm = curentContract.getC_FlatrateTerm_Next();
+			assertThat(nextflatrateTerm).isNotNull();
+			assertThat(curentContract.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Flatrate_Conditions_Next()).isEqualTo(nextflatrateTerm.getC_Flatrate_Conditions());
+
+			final Timestamp startDateNewContract = TimeUtil.addDays(curentContract.getEndDate(), 1);
+			assertThat(nextflatrateTerm.getStartDate()).isEqualTo(startDateNewContract);
+
+			assertThat(curentContract.getMasterStartDate()).isEqualTo(nextflatrateTerm.getMasterStartDate());
+			assertThat(nextflatrateTerm.getMasterStartDate()).isNotNull();
+			assertThat(curentContract.isAutoRenew()).isEqualTo(nextflatrateTerm.isAutoRenew());
+			assertThat(curentContract.getMasterEndDate()).isNotNull();
+			assertThat(nextflatrateTerm.getMasterEndDate()).isNotNull();
+			assertThat(curentContract.getMasterEndDate()).isEqualTo(nextflatrateTerm.getMasterEndDate());
+
+			curentContract = nextflatrateTerm;
+		}
+		while (curentContract.getC_FlatrateTerm_Next() != null);
+
+		//compare the last with the first
+		assertThat(curentContract.getMasterEndDate()).isEqualTo(contract.getMasterEndDate());
+	}
+
 	private I_C_Flatrate_Term prepareContractForTest(final String autoExtension)
 	{
 		prepareBPartner();
@@ -162,9 +203,12 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 			if (i < 4)
 			{
 				transition.setC_Flatrate_Conditions_Next(conditions.get(i + 1));
-				save(transition);
 			}
-
+			else
+			{
+				transition.setExtensionType(null);
+			}
+			save(transition);
 		}
 
 		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions.get(0), productAndPricingSystem.getProduct(), startDate);
