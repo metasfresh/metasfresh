@@ -23,6 +23,9 @@ Here come the actual release notes:
     * Translation added for the Distribution Editor Quickactions.
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1663](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1663) Pos1 does not jump to page 1 anymore
+    * Fixes the Home Button in grid View. Now possible to jump to first page in Pagination again.
 
 
 # metasfresh 5.49 (2018-12)
