@@ -35,6 +35,8 @@ public class BPartnerStats
 {
 	int recordId;
 
+	int bpartnerId;
+
 	BigDecimal openItems;
 
 	BigDecimal actualLifeTimeValue;
@@ -46,6 +48,7 @@ public class BPartnerStats
 	@Builder
 	public BPartnerStats(
 			final int recordId,
+			final int bpartnerId,
 			@NonNull final BigDecimal openItems,
 			@NonNull final BigDecimal actualLifeTimeValue,
 			@NonNull final BigDecimal soCreditUsed,
@@ -53,6 +56,8 @@ public class BPartnerStats
 	{
 		Check.assume(recordId > 0, "Given parameter recordId is > 0");
 		this.recordId = recordId;
+		Check.assume(bpartnerId > 0, "Given parameter bpartnerId is > 0");
+		this.bpartnerId = bpartnerId;
 
 		this.openItems = openItems;
 		this.actualLifeTimeValue = actualLifeTimeValue;

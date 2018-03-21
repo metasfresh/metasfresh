@@ -59,8 +59,6 @@ public abstract class PickingTerminalPanel implements ITerminalBasePanel
 
 	public PickingTerminalPanel()
 	{
-		super();
-
 		terminalContextAndRefs = TerminalContextFactory.get().createContextAndRefs();
 		getTerminalContext().addToDisposableComponents(this);
 	}

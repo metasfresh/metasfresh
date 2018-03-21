@@ -73,6 +73,8 @@ public interface IWarehouseDAO extends ISingletonService
 	 * @return
 	 */
 	I_M_Warehouse retrieveOrgWarehouse(Properties ctx, int adOrgId);
+	
+	int retrieveOrgWarehousePOId(int adOrgId);
 
 	/**
 	 * Retrieve all warehouses for given organization

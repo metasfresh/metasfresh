@@ -1,4 +1,4 @@
-package de.metas.handlingunits.attribute.storage.impl;
+package de.metas.handlingunits.attribute.storage;
 
 /*
  * #%L
@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,45 +25,44 @@ package de.metas.handlingunits.attribute.storage.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.Check;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.util.TimeUtil;
 
-import de.metas.handlingunits.attribute.impl.AbstractHUAttributeValue;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import de.metas.handlingunits.attribute.impl.AbstractAttributeValue;
+import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
+import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
+import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
+import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
+import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
+import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
+import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 
 /**
- * Wraps an {@link I_M_AttributeInstance} and uses definition from {@link I_M_HU_PI_Attribute}
+ * Wraps an {@link I_M_AttributeInstance}
  *
  * @author tsa
  *
  */
-/* package */class AIAttributeValue extends AbstractHUAttributeValue
+/* package */class AIAttributeValue extends AbstractAttributeValue
 {
 	private final I_M_AttributeInstance attributeInstance;
-	private final boolean isGeneratedAttribute;
 
-	public AIAttributeValue(final IAttributeStorage attributeStorage, final I_M_AttributeInstance attributeInstance,
-			final I_M_HU_PI_Attribute piAttribute,
-			final boolean isGeneratedAttribute)
+	public AIAttributeValue(
+			final IAttributeStorage attributeStorage,
+			final I_M_AttributeInstance attributeInstance)
 	{
-		super(//
-				attributeStorage //
-				, piAttribute //
-				, Boolean.TRUE // ASI attributes are ALWAYS created from template attributes
-		);
+		super(
+				attributeStorage,
+				attributeInstance.getM_Attribute());
 
-		Check.assumeNotNull(attributeInstance, "attributeInstance not null");
 		this.attributeInstance = attributeInstance;
-		this.isGeneratedAttribute = isGeneratedAttribute;
 	}
 
 	@Override
 	protected void setInternalValueString(final String value)
 	{
 		attributeInstance.setValue(value);
-
 	}
 
 	@Override
@@ -114,7 +113,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 	@Override
 	public boolean isNew()
 	{
-		return isGeneratedAttribute;
+		return InterfaceWrapperHelper.isNew(attributeInstance);
 	}
 
 	@Override
@@ -139,5 +138,86 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 	protected Date getInternalValueDateInitial()
 	{
 		return null;
+	}
+
+	/**
+	 * @return {@code PROPAGATIONTYPE_NoPropagation}.
+	 */
+	@Override
+	public String getPropagationType()
+	{
+		return X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation;
+	}
+
+	/**
+	 * @return {@link NullAggregationStrategy#instance}.
+	 */
+	@Override
+	public IAttributeAggregationStrategy retrieveAggregationStrategy()
+	{
+		return NullAggregationStrategy.instance;
+	}
+
+	/**
+	 * @return {@link NullSplitterStrategy#instance}.
+	 */
+	@Override
+	public IAttributeSplitterStrategy retrieveSplitterStrategy()
+	{
+		return NullSplitterStrategy.instance;
+	}
+
+	/**
+	 * @return {@link CopyHUAttributeTransferStrategy#instance}.
+	 */
+	@Override
+	public IHUAttributeTransferStrategy retrieveTransferStrategy()
+	{
+		return CopyHUAttributeTransferStrategy.instance;
+	}
+
+	/**
+	 * @return {@code true}.
+	 */
+	@Override
+	public boolean isReadonlyUI()
+	{
+		return true;
+	}
+
+	/**
+	 * @return {@code true}.
+	 */
+	@Override
+	public boolean isDisplayedUI()
+	{
+		return true;
+	}
+
+	/**
+	 * @return our attribute instance's {@code M_Attribute_ID}.
+	 */
+	@Override
+	public int getDisplaySeqNo()
+	{
+		return attributeInstance.getM_Attribute_ID();
+	}
+
+	/**
+	 * @return {@code true}
+	 */
+	@Override
+	public boolean isUseInASI()
+	{
+		return true;
+	}
+
+	/**
+	 * @return {@code false}, since no HU-PI attribute is involved.
+	 */
+	@Override
+	public boolean isDefinedByTemplate()
+	{
+		return false;
 	}
 }

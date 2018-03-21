@@ -12,7 +12,10 @@ db_password=${DB_PASSWORD:-metasfresh}
 app_host=${APP_HOST:-app}
 skip_run_db_update=${SKIP_DB_UPDATE:-false}
 debug_port=${DEBUG_PORT:-8791}
+debug_suspend=${DEBUG_SUSPEND:-n}
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
+java_max_heap=${JAVA_MAX_HEAP:-256M}
+server_port=${SERVER_PORT:-8183}
 
 echo_variable_values()
 {
@@ -26,7 +29,10 @@ echo_variable_values()
  echo "SKIP_DB_UPDATE=${skip_run_db_update}"
  echo "APP_HOST=${app_host}"
  echo "DEBUG_PORT=${debug_port}"
+ echo "DEBUG_SUSPEND=${debug_suspend}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
+ echo "JAVA_MAX_HEAP=${java_max_heap}"
+ echo "SERVER_PORT=${server_port}"
 }
 
 set_properties()
@@ -99,11 +105,13 @@ run_metasfresh()
  ext_lib_param="-Dloader.path=/opt/metasfresh/metasfresh-report/external-lib"
 
  cd /opt/metasfresh/metasfresh-report/ && java -Dsun.misc.URLClassPath.disableJarChecking=true \
- ${ext_lib_param} \
- -Xmx256M -XX:+HeapDumpOnOutOfMemoryError ${metasfresh_admin_params} \
- -DPropertyFile=/opt/metasfresh/metasfresh-report/metasfresh.properties \
- -Djava.security.egd=file:/dev/./urandom \
- -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${debug_port} \
+ ${ext_lib_param}\
+ -Xmx${java_max_heap}\
+ -XX:+HeapDumpOnOutOfMemoryError ${metasfresh_admin_params}\
+ -DPropertyFile=/opt/metasfresh/metasfresh-report/metasfresh.properties\
+ -Djava.security.egd=file:/dev/./urandom\
+ -Dserver.port=${server_port}
+ -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
  -jar metasfresh-report.jar
 }
 

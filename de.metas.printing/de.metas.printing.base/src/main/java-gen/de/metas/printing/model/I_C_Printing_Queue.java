@@ -285,12 +285,8 @@ public interface I_C_Printing_Queue
 	 */
 	public int getC_Async_Batch_ID();
 
-	public de.metas.async.model.I_C_Async_Batch getC_Async_Batch();
-
-	public void setC_Async_Batch(de.metas.async.model.I_C_Async_Batch C_Async_Batch);
-
     /** Column definition for C_Async_Batch_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, de.metas.async.model.I_C_Async_Batch> COLUMN_C_Async_Batch_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, de.metas.async.model.I_C_Async_Batch>(I_C_Printing_Queue.class, "C_Async_Batch_ID", de.metas.async.model.I_C_Async_Batch.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_C_Async_Batch_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "C_Async_Batch_ID", null);
     /** Column name C_Async_Batch_ID */
     public static final String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
@@ -382,29 +378,6 @@ public interface I_C_Printing_Queue
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Druck-Warteschlangendatensatz.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID);
-
-	/**
-	 * Get Druck-Warteschlangendatensatz.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Printing_Queue_ID();
-
-    /** Column definition for C_Printing_Queue_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_C_Printing_Queue_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "C_Printing_Queue_ID", null);
-    /** Column name C_Printing_Queue_ID */
-    public static final String COLUMNNAME_C_Printing_Queue_ID = "C_Printing_Queue_ID";
-
-	/**
 	 * Set Kopien.
 	 * Anzahl der zu erstellenden/zu druckenden Exemplare
 	 *
@@ -428,6 +401,29 @@ public interface I_C_Printing_Queue
     public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_Copies = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "Copies", null);
     /** Column name Copies */
     public static final String COLUMNNAME_Copies = "Copies";
+
+	/**
+	 * Set Druck-Warteschlangendatensatz.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID);
+
+	/**
+	 * Get Druck-Warteschlangendatensatz.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Printing_Queue_ID();
+
+    /** Column definition for C_Printing_Queue_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_C_Printing_Queue_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "C_Printing_Queue_ID", null);
+    /** Column name C_Printing_Queue_ID */
+    public static final String COLUMNNAME_C_Printing_Queue_ID = "C_Printing_Queue_ID";
 
 	/**
 	 * Get Erstellt.
@@ -531,6 +527,31 @@ public interface I_C_Printing_Queue
     public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_IsDifferentInvoicingPartner = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "IsDifferentInvoicingPartner", null);
     /** Column name IsDifferentInvoicingPartner */
     public static final String COLUMNNAME_IsDifferentInvoicingPartner = "IsDifferentInvoicingPartner";
+
+	/**
+	 * Set Foreign Customer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setIsForeignCustomer (boolean IsForeignCustomer);
+
+	/**
+	 * Get Foreign Customer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public boolean isForeignCustomer();
+
+    /** Column definition for IsForeignCustomer */
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_IsForeignCustomer = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "IsForeignCustomer", null);
+    /** Column name IsForeignCustomer */
+    public static final String COLUMNNAME_IsForeignCustomer = "IsForeignCustomer";
 
 	/**
 	 * Set Abw. Druck-Empfänger.

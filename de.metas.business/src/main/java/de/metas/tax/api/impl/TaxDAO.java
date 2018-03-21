@@ -133,22 +133,9 @@ public class TaxDAO implements ITaxDAO
 	public int findTaxCategoryId(@NonNull final TaxCategoryQuery query)
 	{
 		final IQueryBuilder<I_C_TaxCategory> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class);
-		if (query.getIsDefaultTax() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, query.getIsDefaultTax());
-		}
 
-		if (query.getIsReducedTax() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_TaxCategory.COLUMN_IsReduced, query.getIsReducedTax());
-		}
-
-		if (query.getIsWithoutTax() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_TaxCategory.COLUMN_IsWithout, query.getIsWithoutTax());
-		}
-
-		return queryBuilder.addOnlyActiveRecordsFilter()
+		return queryBuilder.addEqualsFilter(I_C_TaxCategory.COLUMN_VATType, query.getType().getValue())
+				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
 				.create()

@@ -119,6 +119,29 @@ public interface I_AD_Printer_Config
     public static final String COLUMNNAME_AD_Printer_Config_Shared_ID = "AD_Printer_Config_Shared_ID";
 
 	/**
+	 * Set Host Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setConfigHostKey (java.lang.String ConfigHostKey);
+
+	/**
+	 * Get Host Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getConfigHostKey();
+
+    /** Column definition for ConfigHostKey */
+    public static final org.adempiere.model.ModelColumn<I_AD_Printer_Config, Object> COLUMN_ConfigHostKey = new org.adempiere.model.ModelColumn<I_AD_Printer_Config, Object>(I_AD_Printer_Config.class, "ConfigHostKey", null);
+    /** Column name ConfigHostKey */
+    public static final String COLUMNNAME_ConfigHostKey = "ConfigHostKey";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -147,31 +170,6 @@ public interface I_AD_Printer_Config
     public static final org.adempiere.model.ModelColumn<I_AD_Printer_Config, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_Printer_Config, org.compiere.model.I_AD_User>(I_AD_Printer_Config.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Host key.
-	 * Unique identifier of a host
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setHostKey (java.lang.String HostKey);
-
-	/**
-	 * Get Host key.
-	 * Unique identifier of a host
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getHostKey();
-
-    /** Column definition for HostKey */
-    public static final org.adempiere.model.ModelColumn<I_AD_Printer_Config, Object> COLUMN_HostKey = new org.adempiere.model.ModelColumn<I_AD_Printer_Config, Object>(I_AD_Printer_Config.class, "HostKey", null);
-    /** Column name HostKey */
-    public static final String COLUMNNAME_HostKey = "HostKey";
 
 	/**
 	 * Set Aktiv.

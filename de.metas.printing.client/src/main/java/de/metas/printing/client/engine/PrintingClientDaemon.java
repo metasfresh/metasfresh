@@ -13,11 +13,11 @@ package de.metas.printing.client.engine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,8 +53,6 @@ public class PrintingClientDaemon implements Runnable
 
 	public PrintingClientDaemon()
 	{
-		super();
-
 		final Context ctx = Context.getContext();
 
 		pollInterval = ctx.getPropertyAsInt(CTX_PollIntervalMs, DEFAULT_PollIntervalMs);
@@ -70,14 +68,18 @@ public class PrintingClientDaemon implements Runnable
 	@Override
 	public void run()
 	{
-		loginIfNeeded();
+		if (attemptLoginIfNeeded())
+		{
+			return;
+		}
 
-		//
 		// Create and send what hardware printers do we have here
 		try
+
 		{
 			final PrinterHWList printerHWList = PrintingEngine.get().createPrinterHW();
 			connection.addPrinterHW(printerHWList);
+			log.info("Posted our locally available printers to the printing API: " + printerHWList);
 		}
 		catch (final Exception e)
 		{
@@ -88,27 +90,22 @@ public class PrintingClientDaemon implements Runnable
 			logException("addPrinterHW", e);
 		}
 
-		while (true && !stop.get())
+		while (!stop.get())
 		{
 			try
 			{
-				if (Thread.currentThread().isInterrupted())
+				if (attemptLoginIfNeeded())
 				{
-					log.info("Thread was interrupted. Stoping daemon.");
-					break;
+					return;
 				}
 
 				// Sleeping first, so i case of an exception, we will sleep before calling runOnce() again.
 				// if we called runOnce() and then slept, a recurring exception would cause the ESB to be flooded with HTTP requests.
-				log.finest("Sleeping " + pollInterval + "ms");
-				Thread.sleep(pollInterval);
-
+				if (sleepForPollInterval())
+				{
+					return;
+				}
 				runOnce();
-			}
-			catch (final InterruptedException e)
-			{
-				log.info("Interrupted signal received. Stopping daemon.");
-				return;
 			}
 			catch (final Exception e)
 			{
@@ -118,6 +115,55 @@ public class PrintingClientDaemon implements Runnable
 				// ui.showError("Error", e);
 				logException("poll for print package", e);
 			}
+		}
+	}
+
+	/**
+	 *
+	 * @return {@code true} if the daemon should stop
+	 */
+	private boolean attemptLoginIfNeeded()
+	{
+		while (!stop.get())
+		{
+			try
+			{
+				loginIfNeeded();
+				return false;
+			}
+			catch (final LoginFailedPrintConnectionEndpointException e)
+			{
+				log.info("Login did not succeed; will retry after " + pollInterval + "ms");
+			}
+			if (sleepForPollInterval())
+			{
+				return true;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * @return {@code true} if the daemon should stop.
+	 */
+	private boolean sleepForPollInterval()
+	{
+		if (Thread.currentThread().isInterrupted())
+		{
+			log.info("Thread was interrupted. Stoping daemon.");
+			return true;
+		}
+
+		try
+		{
+			log.finest("Sleeping " + pollInterval + "ms");
+			Thread.sleep(pollInterval);
+			return false;
+		}
+		catch (final InterruptedException e)
+		{
+			log.info("Interrupted signal received. Stopping daemon.");
+			return true;
 		}
 	}
 

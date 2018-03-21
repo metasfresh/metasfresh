@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -86,37 +87,24 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	@Override
 	protected Iterator<I_C_Print_Job_Line> retrievePrintJobLines0(final I_C_Print_Job job, final int fromSeqNo, final int toSeqNo)
 	{
-		final List<I_C_Print_Job_Line> result = lookupMap.getRecords(I_C_Print_Job_Line.class, new IQueryFilter<I_C_Print_Job_Line>()
-		{
-			@Override
-			public boolean accept(final I_C_Print_Job_Line pojo)
+		final List<I_C_Print_Job_Line> result = lookupMap.getRecords(I_C_Print_Job_Line.class, pojo -> {
+			if (pojo.getC_Print_Job_ID() != job.getC_Print_Job_ID())
 			{
-				if (pojo.getC_Print_Job_ID() != job.getC_Print_Job_ID())
-				{
-					return false;
-				}
-				if (fromSeqNo != SEQNO_First && pojo.getSeqNo() < fromSeqNo)
-				{
-					return false;
-				}
-				if (toSeqNo != SEQNO_Last && pojo.getSeqNo() > toSeqNo)
-				{
-					return false;
-				}
-
-				return true;
+				return false;
 			}
+			if (fromSeqNo != SEQNO_First && pojo.getSeqNo() < fromSeqNo)
+			{
+				return false;
+			}
+			if (toSeqNo != SEQNO_Last && pojo.getSeqNo() > toSeqNo)
+			{
+				return false;
+			}
+
+			return true;
 		});
 
-		Collections.sort(result, new Comparator<I_C_Print_Job_Line>()
-		{
-
-			@Override
-			public int compare(final I_C_Print_Job_Line o1, final I_C_Print_Job_Line o2)
-			{
-				return o1.getSeqNo() - o2.getSeqNo();
-			}
-		});
+		Collections.sort(result, (o1, o2) -> o1.getSeqNo() - o2.getSeqNo());
 
 		return result.iterator();
 	}
@@ -160,72 +148,38 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	@Override
 	public I_AD_PrinterTray_Matching retrievePrinterTrayMatchingOrNull(final I_AD_Printer_Matching matching, final int AD_Printer_Tray_ID)
 	{
-		return lookupMap.getFirstOnly(I_AD_PrinterTray_Matching.class, new IQueryFilter<I_AD_PrinterTray_Matching>()
-		{
-			@Override
-			public boolean accept(final I_AD_PrinterTray_Matching pojo)
-			{
-				return pojo.getAD_Printer_Matching_ID() == matching.getAD_Printer_Matching_ID()
-						&& pojo.getAD_Printer_Tray_ID() == AD_Printer_Tray_ID;
-			}
-		});
+		return lookupMap.getFirstOnly(I_AD_PrinterTray_Matching.class, pojo -> pojo.getAD_Printer_Matching_ID() == matching.getAD_Printer_Matching_ID()
+				&& pojo.getAD_Printer_Tray_ID() == AD_Printer_Tray_ID);
 	}
 
 	@Override
 	public List<I_AD_PrinterTray_Matching> retrievePrinterTrayMatchings(final I_AD_Printer_Matching matching)
 	{
-		return lookupMap.getRecords(I_AD_PrinterTray_Matching.class, new IQueryFilter<I_AD_PrinterTray_Matching>()
-		{
-			@Override
-			public boolean accept(final I_AD_PrinterTray_Matching pojo)
+		return lookupMap.getRecords(I_AD_PrinterTray_Matching.class, pojo -> {
+			if (!Check.equals(pojo.getAD_Printer_Matching_ID(), matching.getAD_Printer_Matching_ID()))
 			{
-				if (!Check.equals(pojo.getAD_Printer_Matching_ID(), matching.getAD_Printer_Matching_ID()))
-				{
-					return false;
-				}
-
-				return true;
+				return false;
 			}
+
+			return true;
 		});
 	}
 
 	@Override
 	public I_AD_Printer_Matching retrievePrinterMatchingOrNull(final String hostKey, final I_AD_Printer printer)
 	{
-		return lookupMap.getFirstOnly(I_AD_Printer_Matching.class, new IQueryFilter<I_AD_Printer_Matching>()
-		{
-			@Override
-			public boolean accept(final I_AD_Printer_Matching pojo)
-			{
-				return Check.equals(pojo.getHostKey(), hostKey)
-						&& pojo.getAD_Printer_ID() == printer.getAD_Printer_ID();
-			}
-		});
+		return lookupMap.getFirstOnly(I_AD_Printer_Matching.class, pojo -> Check.equals(pojo.getHostKey(), hostKey)
+				&& pojo.getAD_Printer_ID() == printer.getAD_Printer_ID());
 	}
 
 	public I_C_PrintPackageData getPrintPackageData(final I_C_Print_Package printPackage)
 	{
-		return lookupMap.getFirstOnly(I_C_PrintPackageData.class, new IQueryFilter<I_C_PrintPackageData>()
-		{
-
-			@Override
-			public boolean accept(final I_C_PrintPackageData pojo)
-			{
-				return pojo.getC_Print_Package_ID() == printPackage.getC_Print_Package_ID();
-			}
-		});
+		return lookupMap.getFirstOnly(I_C_PrintPackageData.class, pojo -> pojo.getC_Print_Package_ID() == printPackage.getC_Print_Package_ID());
 	}
 
 	public List<I_C_Print_PackageInfo> retrievePrintPackageInfo(final I_C_Print_Package printPackage)
 	{
-		return lookupMap.getRecords(I_C_Print_PackageInfo.class, new IQueryFilter<I_C_Print_PackageInfo>()
-		{
-			@Override
-			public boolean accept(final I_C_Print_PackageInfo pojo)
-			{
-				return pojo.getC_Print_Package_ID() == printPackage.getC_Print_Package_ID();
-			}
-		});
+		return lookupMap.getRecords(I_C_Print_PackageInfo.class, pojo -> pojo.getC_Print_Package_ID() == printPackage.getC_Print_Package_ID());
 	}
 
 	@Override
@@ -233,30 +187,25 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	{
 		final String hostKey = Services.get(IPrintPackageBL.class).getHostKeyOrNull(ctx);
 
-		final List<I_C_Print_Job_Instructions> result = lookupMap.getRecords(I_C_Print_Job_Instructions.class, new IQueryFilter<I_C_Print_Job_Instructions>()
-		{
-			@Override
-			public boolean accept(final I_C_Print_Job_Instructions pojo)
+		final List<I_C_Print_Job_Instructions> result = lookupMap.getRecords(I_C_Print_Job_Instructions.class, pojo -> {
+			if (!X_C_Print_Job_Instructions.STATUS_Pending.equals(pojo.getStatus()))
 			{
-				if (!X_C_Print_Job_Instructions.STATUS_Pending.equals(pojo.getStatus()))
-				{
-					return false;
-				}
-				if (pojo.getAD_User_ToPrint_ID() != Env.getAD_User_ID(ctx))
-				{
-					return false;
-				}
-				if (Services.get(ILockManager.class).isLocked(pojo))
-				{
-					return false;
-				}
-				if (!Check.isEmpty(hostKey, true))
-				{
-					return pojo.getHostKey() == null
-							|| hostKey.equals(pojo.getHostKey());
-				}
-				return true;
+				return false;
 			}
+			if (pojo.getAD_User_ToPrint_ID() != Env.getAD_User_ID(ctx))
+			{
+				return false;
+			}
+			if (Services.get(ILockManager.class).isLocked(pojo))
+			{
+				return false;
+			}
+			if (!Check.isEmpty(hostKey, true))
+			{
+				return pojo.getHostKey() == null
+						|| hostKey.equals(pojo.getHostKey());
+			}
+			return true;
 		});
 
 		if (result.isEmpty())
@@ -292,64 +241,58 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 			throw new UnsupportedOperationException("Query Model Filter not supported for " + queueQuery);
 		}
 
-		final IQueryFilter<I_C_Printing_Queue> filter = new IQueryFilter<I_C_Printing_Queue>()
-		{
-
-			@Override
-			public boolean accept(final I_C_Printing_Queue pojo)
+		final IQueryFilter<I_C_Printing_Queue> filter = pojo -> {
+			if (!pojo.isActive())
 			{
-				if (!pojo.isActive())
-				{
-					return false;
-				}
-
-				if (queueQuery.getIsPrinted() != null && queueQuery.getIsPrinted().booleanValue() != pojo.isProcessed())
-				{
-					return false;
-				}
-				if (queueQuery.getAD_Client_ID() >= 0 && queueQuery.getAD_Client_ID() != pojo.getAD_Client_ID())
-				{
-					return false;
-				}
-				if (queueQuery.getAD_Org_ID() >= 0 && queueQuery.getAD_Org_ID() != pojo.getAD_Org_ID())
-				{
-					return false;
-				}
-				if (queueQuery.getAD_User_ID() >= 0
-						&& !InterfaceWrapperHelper.isNull(pojo, I_C_Printing_Queue.COLUMNNAME_AD_User_ID)
-						&& queueQuery.getAD_User_ID() != pojo.getAD_User_ID())
-				{
-					return false;
-				}
-				if (queueQuery.getIgnoreC_Printing_Queue_ID() > 0
-						&& queueQuery.getIgnoreC_Printing_Queue_ID() == pojo.getC_Printing_Queue_ID())
-				{
-					return false;
-				}
-
-				final I_AD_Archive archive = pojo.getAD_Archive();
-				if (queueQuery.getModelTableId() > 0 && queueQuery.getModelTableId() != archive.getAD_Table_ID())
-				{
-					return false;
-				}
-				if (queueQuery.getModelFromRecordId() > 0 && queueQuery.getModelFromRecordId() > archive.getRecord_ID())
-				{
-					return false;
-				}
-				if (queueQuery.getModelToRecordId() > 0 && queueQuery.getModelToRecordId() < archive.getRecord_ID())
-				{
-					return false;
-				}
-
-				return true;
+				return false;
 			}
+
+			if (queueQuery.getIsPrinted() != null && queueQuery.getIsPrinted().booleanValue() != pojo.isProcessed())
+			{
+				return false;
+			}
+			if (queueQuery.getAD_Client_ID() >= 0 && queueQuery.getAD_Client_ID() != pojo.getAD_Client_ID())
+			{
+				return false;
+			}
+			if (queueQuery.getAD_Org_ID() >= 0 && queueQuery.getAD_Org_ID() != pojo.getAD_Org_ID())
+			{
+				return false;
+			}
+			if (queueQuery.getAD_User_ID() >= 0
+					&& !InterfaceWrapperHelper.isNull(pojo, I_C_Printing_Queue.COLUMNNAME_AD_User_ID)
+					&& queueQuery.getAD_User_ID() != pojo.getAD_User_ID())
+			{
+				return false;
+			}
+			if (queueQuery.getIgnoreC_Printing_Queue_ID() > 0
+					&& queueQuery.getIgnoreC_Printing_Queue_ID() == pojo.getC_Printing_Queue_ID())
+			{
+				return false;
+			}
+
+			final I_AD_Archive archive = pojo.getAD_Archive();
+			if (queueQuery.getModelTableId() > 0 && queueQuery.getModelTableId() != archive.getAD_Table_ID())
+			{
+				return false;
+			}
+			if (queueQuery.getModelFromRecordId() > 0 && queueQuery.getModelFromRecordId() > archive.getRecord_ID())
+			{
+				return false;
+			}
+			if (queueQuery.getModelToRecordId() > 0 && queueQuery.getModelToRecordId() < archive.getRecord_ID())
+			{
+				return false;
+			}
+
+			return true;
 		};
 
 		final IQueryOrderBy orderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_C_Printing_Queue.class)
 				.addColumn(I_C_Printing_Queue.COLUMNNAME_C_Printing_Queue_ID)
 				.createQueryOrderBy();
 
-		final POJOQuery<I_C_Printing_Queue> query = new POJOQuery<I_C_Printing_Queue>(ctx,
+		final POJOQuery<I_C_Printing_Queue> query = new POJOQuery<>(ctx,
 				I_C_Printing_Queue.class,
 				null,  // tableName=null => get it from the given model class
 				trxName)
@@ -362,53 +305,25 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	@Override
 	public I_AD_PrinterHW_Calibration retrieveCalibration(final I_AD_PrinterHW_MediaSize hwMediaSize, final I_AD_PrinterHW_MediaTray hwTray)
 	{
-		return lookupMap.getFirstOnly(I_AD_PrinterHW_Calibration.class, new IQueryFilter<I_AD_PrinterHW_Calibration>()
-		{
-			@Override
-			public boolean accept(final I_AD_PrinterHW_Calibration pojo)
-			{
-				return Check.equals(pojo.getAD_PrinterHW_MediaSize(), hwMediaSize) && Check.equals(pojo.getAD_PrinterHW_MediaTray(), hwTray);
-			}
-		});
+		return lookupMap.getFirstOnly(I_AD_PrinterHW_Calibration.class, pojo -> Check.equals(pojo.getAD_PrinterHW_MediaSize(), hwMediaSize) && Check.equals(pojo.getAD_PrinterHW_MediaTray(), hwTray));
 	}
 
 	@Override
 	public List<I_AD_PrinterHW_MediaSize> retrieveMediaSizes(final I_AD_PrinterHW printerHW)
 	{
-		return lookupMap.getRecords(I_AD_PrinterHW_MediaSize.class, new IQueryFilter<I_AD_PrinterHW_MediaSize>()
-		{
-			@Override
-			public boolean accept(final I_AD_PrinterHW_MediaSize pojo)
-			{
-				return pojo.getAD_PrinterHW_ID() == printerHW.getAD_PrinterHW_ID();
-			}
-		});
+		return lookupMap.getRecords(I_AD_PrinterHW_MediaSize.class, pojo -> pojo.getAD_PrinterHW_ID() == printerHW.getAD_PrinterHW_ID());
 	}
 
 	@Override
 	public List<I_AD_PrinterHW_Calibration> retrieveCalibrations(final Properties ctx, final int printerID, final String trxName)
 	{
-		return lookupMap.getRecords(I_AD_PrinterHW_Calibration.class, new IQueryFilter<I_AD_PrinterHW_Calibration>()
-		{
-			@Override
-			public boolean accept(final I_AD_PrinterHW_Calibration pojo)
-			{
-				return pojo.getAD_PrinterHW_ID() == printerID;
-			}
-		});
+		return lookupMap.getRecords(I_AD_PrinterHW_Calibration.class, pojo -> pojo.getAD_PrinterHW_ID() == printerID);
 	}
 
 	@Override
 	public List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(final I_AD_PrinterHW printerHW)
 	{
-		return lookupMap.getRecords(I_AD_PrinterHW_MediaTray.class, new IQueryFilter<I_AD_PrinterHW_MediaTray>()
-		{
-			@Override
-			public boolean accept(final I_AD_PrinterHW_MediaTray pojo)
-			{
-				return pojo.getAD_PrinterHW_ID() == printerHW.getAD_PrinterHW_ID();
-			}
-		});
+		return lookupMap.getRecords(I_AD_PrinterHW_MediaTray.class, pojo -> pojo.getAD_PrinterHW_ID() == printerHW.getAD_PrinterHW_ID());
 	}
 
 	@Override
@@ -420,53 +335,23 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 
 	public I_C_Print_Job_Instructions retrievePrintJobInstructionsForPrintJob(final I_C_Print_Job printJob)
 	{
-		return lookupMap.getFirstOnly(I_C_Print_Job_Instructions.class, new IQueryFilter<I_C_Print_Job_Instructions>()
-		{
-
-			@Override
-			public boolean accept(final I_C_Print_Job_Instructions pojo)
-			{
-				return pojo.getC_Print_Job_ID() == printJob.getC_Print_Job_ID();
-			}
-		});
+		return lookupMap.getFirstOnly(I_C_Print_Job_Instructions.class, pojo -> pojo.getC_Print_Job_ID() == printJob.getC_Print_Job_ID());
 	}
 
 	@Override
 	public List<I_AD_Printer> retrievePrinters(final Properties ctx, final int adOrgId)
 	{
-		final List<I_AD_Printer> result = lookupMap.getRecords(I_AD_Printer.class, new IQueryFilter<I_AD_Printer>()
-		{
-
-			@Override
-			public boolean accept(final I_AD_Printer pojo)
+		final List<I_AD_Printer> result = lookupMap.getRecords(I_AD_Printer.class, pojo -> {
+			if (!pojo.isActive())
 			{
-				if (!pojo.isActive())
-				{
-					return false;
-				}
-
-				return pojo.getAD_Org_ID() == 0 || pojo.getAD_Org_ID() == adOrgId;
+				return false;
 			}
+
+			return pojo.getAD_Org_ID() == 0 || pojo.getAD_Org_ID() == adOrgId;
 		});
 
-		final Comparator<I_AD_Printer> cmpOrg = new Comparator<I_AD_Printer>()
-		{
-
-			@Override
-			public int compare(final I_AD_Printer o1, final I_AD_Printer o2)
-			{
-				return o1.getAD_Org_ID() - o2.getAD_Org_ID();
-			}
-		};
-		final Comparator<I_AD_Printer> cmpPrinterName = new Comparator<I_AD_Printer>()
-		{
-
-			@Override
-			public int compare(final I_AD_Printer o1, final I_AD_Printer o2)
-			{
-				return o1.getPrinterName().compareTo(o2.getPrinterName());
-			}
-		};
+		final Comparator<I_AD_Printer> cmpOrg = (o1, o2) -> o1.getAD_Org_ID() - o2.getAD_Org_ID();
+		final Comparator<I_AD_Printer> cmpPrinterName = (o1, o2) -> o1.getPrinterName().compareTo(o2.getPrinterName());
 
 		Collections.sort(result, new ComparatorChain<I_AD_Printer>()
 				.addComparator(cmpOrg, true)
@@ -478,52 +363,41 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	@Override
 	public List<I_AD_Printer_Matching> retrievePrinterMatchings(final I_AD_PrinterHW printerHW)
 	{
-		return lookupMap.getRecords(I_AD_Printer_Matching.class, new IQueryFilter<I_AD_Printer_Matching>()
-		{
-
-			@Override
-			public boolean accept(final I_AD_Printer_Matching pojo)
+		return lookupMap.getRecords(I_AD_Printer_Matching.class, pojo -> {
+			if (!pojo.isActive())
 			{
-				if (!pojo.isActive())
-				{
-					return false;
-				}
-
-				if (pojo.getAD_PrinterHW_ID() != printerHW.getAD_PrinterHW_ID())
-				{
-					return false;
-				}
-
-				if (!Check.equals(pojo.getHostKey(), printerHW.getHostKey()))
-				{
-					return false;
-				}
-
-				return true;
+				return false;
 			}
+
+			if (pojo.getAD_PrinterHW_ID() != printerHW.getAD_PrinterHW_ID())
+			{
+				return false;
+			}
+
+			if (!Objects.equals(pojo.getHostKey(), printerHW.getHostKey()))
+			{
+				return false;
+			}
+
+			return true;
 		});
 	}
 
 	@Override
 	public List<I_AD_Printer_Tray> retrieveTrays(final I_AD_Printer printer)
 	{
-		return lookupMap.getRecords(I_AD_Printer_Tray.class, new IQueryFilter<I_AD_Printer_Tray>()
-		{
-			@Override
-			public boolean accept(final I_AD_Printer_Tray pojo)
+		return lookupMap.getRecords(I_AD_Printer_Tray.class, pojo -> {
+
+			if (!pojo.isActive())
 			{
-
-				if (!pojo.isActive())
-				{
-					return false;
-				}
-
-				if (pojo.getAD_Printer_ID() != printer.getAD_Printer_ID())
-				{
-					return false;
-				}
-				return true;
+				return false;
 			}
+
+			if (pojo.getAD_Printer_ID() != printer.getAD_Printer_ID())
+			{
+				return false;
+			}
+			return true;
 		});
 	}
 }

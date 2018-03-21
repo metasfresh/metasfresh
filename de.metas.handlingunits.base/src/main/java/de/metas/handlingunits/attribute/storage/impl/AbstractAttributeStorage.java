@@ -130,32 +130,27 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	/**
 	 * Sort {@link IAttributeValue}s by DisplaySeqNo
 	 */
-	private static final Comparator<IAttributeValue> attributeValueSortBySeqNo = new Comparator<IAttributeValue>()
-	{
-		@Override
-		public int compare(final IAttributeValue o1, final IAttributeValue o2)
+	private static final Comparator<IAttributeValue> attributeValueSortBySeqNo = (o1, o2) -> {
+		// Sort by DisplaySeqNo
+		final int displaySeqNoCmp = o1.getDisplaySeqNo() - o2.getDisplaySeqNo();
+		if (displaySeqNoCmp != 0)
 		{
-			// Sort by DisplaySeqNo
-			final int displaySeqNoCmp = o1.getDisplaySeqNo() - o2.getDisplaySeqNo();
-			if (displaySeqNoCmp != 0)
-			{
-				return displaySeqNoCmp;
-			}
-
-			// Fallback: sort by M_Attribute_ID (just to have a predictible order)
-			final int attributeIdCmp = o1.getM_Attribute().getM_Attribute_ID() - o2.getM_Attribute().getM_Attribute_ID();
-			return attributeIdCmp;
+			return displaySeqNoCmp;
 		}
+
+		// Fallback: sort by M_Attribute_ID (just to have a predictible order)
+		final int attributeIdCmp = o1.getM_Attribute().getM_Attribute_ID() - o2.getM_Attribute().getM_Attribute_ID();
+		return attributeIdCmp;
 	};
 
 	public AbstractAttributeStorage(@NonNull final IAttributeStorageFactory storageFactory)
 	{
 		this.storageFactory = storageFactory;
-		huAttributesDAO = storageFactory.getHUAttributesDAO();
-		huStorageDAO = storageFactory.getHUStorageDAO();
+		this.huAttributesDAO = storageFactory.getHUAttributesDAO();
+		this.huStorageDAO = storageFactory.getHUStorageDAO();
 
-		calloutAttributeStorageListener = new CalloutAttributeStorageListener();
-		listeners.addAttributeStorageListener(calloutAttributeStorageListener);
+		this.calloutAttributeStorageListener = new CalloutAttributeStorageListener();
+		this.listeners.addAttributeStorageListener(calloutAttributeStorageListener);
 	}
 
 	@Override
@@ -179,7 +174,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public final IAttributeStorageFactory getHUAttributeStorageFactory()
+	public final IAttributeStorageFactory getAttributeStorageFactory()
 	{
 		assertNotDisposed();
 
@@ -366,10 +361,10 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public final boolean hasAttribute(final I_M_Attribute attribute)
+	public final boolean hasAttribute(@NonNull final I_M_Attribute attribute)
 	{
 		assertNotDisposed();
-		Check.assumeNotNull(attribute, "attribute not null");
+
 
 		final int attributeId = attribute.getM_Attribute_ID();
 		return getIndexedAttributeValues().hasAttribute(attributeId);
@@ -1087,6 +1082,12 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		// We assume attribute is editable (readonlyUI=false)
 		return false;
 	}
+	
+	@Override
+	public boolean isDisplayedUI(final I_M_Attribute attribute)
+	{
+		return getAttributeValue(attribute).isDisplayedUI();
+	}
 
 	protected final Object getDefaultAttributeValue(final Map<I_M_Attribute, Object> defaultAttributesValue, final I_M_Attribute attribute)
 	{
@@ -1258,11 +1259,11 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		private IndexedAttributeValues(final List<IAttributeValue> attributeValues)
 		{
 			super();
-			final List<IAttributeValue> attributeValuesList = new ArrayList<IAttributeValue>(attributeValues);
+			final List<IAttributeValue> attributeValuesList = new ArrayList<>(attributeValues);
 			Collections.sort(attributeValuesList, AbstractAttributeStorage.attributeValueSortBySeqNo);
 
-			final Map<Integer, I_M_Attribute> attributeId2attribute = new HashMap<Integer, I_M_Attribute>(attributeValuesList.size());
-			final Map<Integer, IAttributeValue> attributeId2attributeValue = new HashMap<Integer, IAttributeValue>(attributeValuesList.size());
+			final Map<Integer, I_M_Attribute> attributeId2attribute = new HashMap<>(attributeValuesList.size());
+			final Map<Integer, IAttributeValue> attributeId2attributeValue = new HashMap<>(attributeValuesList.size());
 			for (final IAttributeValue attributeValue : attributeValuesList)
 			{
 				final I_M_Attribute attribute = attributeValue.getM_Attribute();
