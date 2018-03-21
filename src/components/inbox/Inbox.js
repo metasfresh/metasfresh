@@ -91,13 +91,14 @@ class Inbox extends Component {
   };
 
   render() {
-    const { open, inbox, all, close } = this.props;
+    const { open, inbox, all, close, modalVisible } = this.props;
+
     return (
       <div
         className="js-inbox-wrapper"
         onKeyDown={e => this.handleKeyDown(e)}
         onFocus={this.props.onFocus}
-        tabIndex={0}
+        tabIndex={modalVisible ? -1 : 0}
       >
         {(all || open) && (
           <div className={all ? 'inbox-all ' : 'inbox'}>
@@ -149,10 +150,13 @@ class Inbox extends Component {
 Inbox.propTypes = {
   dispatch: PropTypes.func.isRequired,
   onFocus: PropTypes.func,
+  modalVisible: PropTypes.bool.isRequired,
 };
 
 Inbox.defaultProps = {
   onFocus: () => {},
 };
 
-export default connect()(onClickOutside(Inbox));
+export default connect(state => ({
+  modalVisible: state.windowHandler.modal.visible,
+}))(onClickOutside(Inbox));
