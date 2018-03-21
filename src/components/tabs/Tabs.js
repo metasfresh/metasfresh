@@ -42,16 +42,17 @@ class Tabs extends Component {
   };
 
   renderPills = pills => {
-    const { tabIndex } = this.props;
+    const { tabIndex, modalVisible } = this.props;
     const maxWidth = 95 / pills.length + '%';
     const { selected } = this.state;
+
     return pills.map(item => {
       return (
         <li
           className="nav-item"
           key={'tab' + item.key}
           onClick={e => this.handleClick(e, item.key)}
-          tabIndex={tabIndex}
+          tabIndex={modalVisible ? -1 : tabIndex}
           onKeyDown={e => this.handlePillKeyDown(e, item.key)}
           style={{ maxWidth }}
           title={item.props.caption}
@@ -101,7 +102,7 @@ class Tabs extends Component {
   };
 
   render() {
-    const { children, tabIndex, fullScreen } = this.props;
+    const { children, fullScreen } = this.props;
 
     return (
       <div
@@ -120,6 +121,9 @@ class Tabs extends Component {
 
 Tabs.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
 };
 
-export default connect()(Tabs);
+export default connect(state => ({
+  modalVisible: state.windowHandler.modal.visible,
+}))(Tabs);

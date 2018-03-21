@@ -212,6 +212,7 @@ class RawWidget extends Component {
     const {
       handleChange,
       updated,
+      modalVisible,
       isModal,
       filterWidget,
       filterId,
@@ -259,7 +260,12 @@ class RawWidget extends Component {
       : fields[0].field;
 
     const readonly = widgetData[0].readonly;
-    const tabIndex = fullScreen || readonly ? -1 : this.props.tabIndex;
+
+    let tabIndex = this.props.tabIndex;
+
+    if (fullScreen || readonly || (modalVisible && !isModal)) {
+      tabIndex = -1;
+    }
 
     const widgetProperties = {
       ref: c => (this.rawWidget = c),
@@ -949,6 +955,7 @@ RawWidget.propTypes = {
   type: PropTypes.string,
   updated: PropTypes.bool,
   isModal: PropTypes.bool,
+  modalVisible: PropTypes.bool.isRequired,
   filterWidget: PropTypes.bool,
   filterId: PropTypes.string,
   id: PropTypes.number,
@@ -979,4 +986,6 @@ RawWidget.defaultProps = {
   tabIndex: 0,
 };
 
-export default connect()(RawWidget);
+export default connect(state => ({
+  modalVisible: state.windowHandler.modal.visible,
+}))(RawWidget);

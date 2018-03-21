@@ -34,11 +34,12 @@ class TableFilter extends Component {
       handleBatchEntryToggle,
       supportQuickInput,
       allowCreateNew,
+      modalVisible,
     } = this.props;
 
     const { isTooltipShow } = this.state;
 
-    const tabIndex = fullScreen ? -1 : this.props.tabIndex;
+    const tabIndex = fullScreen || modalVisible ? -1 : this.props.tabIndex;
 
     return (
       <div className="form-flex-align table-filter-line">
@@ -131,6 +132,10 @@ class TableFilter extends Component {
 
 TableFilter.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  tabIndex: PropTypes.number.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
 };
 
-export default connect()(TableFilter);
+export default connect(state => ({
+  modalVisible: state.windowHandler.modal.visible,
+}))(TableFilter);
