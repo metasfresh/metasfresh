@@ -53,7 +53,7 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 		return MSV3User.builder()
 				.username(jpaUser.getUsername())
 				.password(jpaUser.getPassword())
-				.bpartnerId(BPartnerId.of(jpaUser.getBpartnerId()))
+				.bpartnerId(BPartnerId.of(jpaUser.getBpartnerId(), jpaUser.getBpartnerLocationId()))
 				.build();
 	}
 

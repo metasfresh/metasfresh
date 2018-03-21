@@ -2,6 +2,9 @@ package de.metas.vertical.pharma.msv3.server;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.annotation.Bean;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /*
  * #%L
@@ -36,4 +39,11 @@ public class Application
 				.run(args);
 	}
 
+	@Bean
+	public ObjectMapper objectMapper()
+	{
+		final ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.findAndRegisterModules();
+		return objectMapper;
+	}
 }

@@ -39,7 +39,8 @@ import lombok.Value;
 public class JsonOLCand
 {
 	private int id;
-	
+	private String externalId;
+
 	private JsonBPartnerInfo bpartner;
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private JsonBPartnerInfo billBPartner;

@@ -1,5 +1,7 @@
 package de.metas.vertical.pharma.msv3.protocol.types;
 
+import java.math.BigDecimal;
+
 import lombok.Value;
 
 /*
@@ -64,5 +66,10 @@ public class Quantity
 	public Quantity min(final int otherQty)
 	{
 		return valueAsInt <= otherQty ? this : Quantity.of(otherQty);
+	}
+
+	public BigDecimal getValueAsBigDecimal()
+	{
+		return BigDecimal.valueOf(valueAsInt);
 	}
 }
