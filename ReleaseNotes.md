@@ -19,6 +19,8 @@ Here come the actual release notes:
     * Improvement of Busines Partner Credit Limit Fieldnames and Translations.
   * [#3703](https://github.com/metasfresh/metasfresh/issues/3703) Material Receipt Candidates Window, add media types for mobile/ tablet
     * Mobile Usage Improvement. Adds Mediatypes to Material Receipt Candidates window (Tablet proptotype).
+  * [#3743](https://github.com/metasfresh/metasfresh/issues/3743) Translation of Distribution Editor Quickaction
+    * Translation added for the Distribution Editor Quickactions.
 
 ## Fixes
 
