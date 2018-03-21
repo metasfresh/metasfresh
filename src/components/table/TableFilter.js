@@ -38,6 +38,8 @@ class TableFilter extends Component {
 
     const { isTooltipShow } = this.state;
 
+    const tabIndex = fullScreen ? -1 : this.props.tabIndex;
+
     return (
       <div className="form-flex-align table-filter-line">
         <div className="form-flex-align">
@@ -47,7 +49,7 @@ class TableFilter extends Component {
                 <button
                   className="btn btn-meta-outline-secondary btn-distance btn-sm"
                   onClick={openModal}
-                  tabIndex="-1"
+                  tabIndex={tabIndex}
                 >
                   {counterpart.translate('window.addNew.caption')}
                 </button>
@@ -62,7 +64,7 @@ class TableFilter extends Component {
                     this.toggleTooltip(keymap.TOGGLE_QUICK_INPUT)
                   }
                   onMouseLeave={this.toggleTooltip}
-                  tabIndex="-1"
+                  tabIndex={tabIndex}
                 >
                   {isBatchEntry
                     ? counterpart.translate('window.batchEntryClose.caption')
