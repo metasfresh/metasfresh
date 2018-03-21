@@ -1,6 +1,7 @@
 package de.metas.request.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -22,7 +23,9 @@ import de.metas.inout.model.I_M_QualityNote;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.model.I_R_Request;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -62,21 +65,34 @@ public class RequestDAO implements IRequestDAO
 		}
 
 		// Create a new request
-		final I_R_Request request = InterfaceWrapperHelper.newInstance(I_R_Request.class, line);
+		final I_R_Request request = InterfaceWrapperHelper.newInstance(I_R_Request.class);
 
-		setDefaultRequestData(request);
+		updateDefaultRequestData(request);
 		updateRequestFromInOutLine(request, line);
-		
+
 		save(request);
 	}
 
-	private void setDefaultRequestData(final I_R_Request request)
+	@Override
+	public void createRequestFromDDOrderLine(@NonNull final I_DD_OrderLine ddOrderLine)
+	{
+		// Create a new request
+		final I_R_Request request = InterfaceWrapperHelper.newInstance(I_R_Request.class);
+
+		updateDefaultRequestData(request);
+
+		updateRequestFromDDOrderLine(request, ddOrderLine);
+
+		save(request);
+	}
+
+	private void updateDefaultRequestData()
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		// summary from AD_Message
 		final String summary = msgBL.getMsg(Env.getCtx(), MSG_R_Request_From_InOut_Summary);
-		request.setSummary(summary);
+		requestCandidate.
 
 		// confidential type internal
 		request.setConfidentialType(X_R_Request.CONFIDENTIALTYPE_Internal);
@@ -160,11 +176,42 @@ public class RequestDAO implements IRequestDAO
 
 	}
 
-	@Override
-	public void createRequestFromDDOrderLine(I_DD_OrderLine line)
+	private void updateRequestFromDDOrderLine(final I_R_Request request, final I_DD_OrderLine ddOrderLine)
 	{
-		// TODO Auto-generated method stub
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		test(RequestFromDocumentLine.builder());
+		
+		RequestFromDocumentLine.builder()
+				.summary(msgBL.getMsg(Env.getCtx(), MSG_R_Request_From_InOut_Summary))
+				.confidentialType(X_R_Request.CONFIDENTIALTYPE_Internal)
+				.orgId(ddOrderLine.getAD_Org_ID())
+				.productId(ddOrderLine.getM_Product_ID());
 
 	}
 
+	
+
+	@Value
+	@Builder
+	private static class RequestFromDocumentLine
+	{
+
+		int orgId;
+		int productId;
+		@NonNull
+		String confidentialType;
+		@NonNull
+		String summary;
+
+	}
+
+	private void createRequest(final RequestFromDocumentLine requestCandidate)
+	{
+		final I_R_Request request = newInstance(I_R_Request.class);
+		request.setSummary(requestCandidate.getSummary());
+		request.setConfidentialType(requestCandidate.getConfidentialType());
+		request.setAD_Org_ID(requestCandidate.getOrgId());
+		request.setM_Product_ID(requestCandidate.getProductId());
+	}
 }
