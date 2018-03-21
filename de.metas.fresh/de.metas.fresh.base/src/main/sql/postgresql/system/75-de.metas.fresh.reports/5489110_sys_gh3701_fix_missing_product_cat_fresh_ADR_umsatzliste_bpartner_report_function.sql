@@ -1,4 +1,4 @@
-
+﻿
 DROP FUNCTION IF EXISTS report.fresh_ADR_umsatzliste_bpartner_report
 	(
 		IN Base_Period_Start date,
