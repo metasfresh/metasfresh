@@ -87,6 +87,8 @@ class DatetimeRange extends Component {
         autoApply={false}
         timePicker={timePicker}
         timePicker24Hour={true}
+        linkedCalendars={false}
+        autoUpdateInput={false}
       >
         <button
           className={classnames(
