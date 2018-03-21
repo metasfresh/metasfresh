@@ -93,9 +93,19 @@ class DatePicker extends Component {
     );
   };
 
+  focusInput = () => {
+    this.inputElement && this.inputElement.focus();
+  };
+
   renderInput = ({ className, ...props }) => (
     <div className={className}>
-      <input className="form-control" {...props} />
+      <input
+        {...props}
+        className="form-control"
+        ref={input => {
+          this.inputElement = input;
+        }}
+      />
     </div>
   );
 
@@ -110,6 +120,7 @@ class DatePicker extends Component {
           onBlur={this.handleBlur}
           onFocus={this.handleFocus}
           open={this.state.open}
+          onFocusInput={this.focusInput}
           {...this.props}
         />
         <i className="meta-icon-calendar" key={0} />

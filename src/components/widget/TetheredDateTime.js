@@ -6,6 +6,23 @@ import classnames from 'classnames';
 
 // TODO: This monkeypatching that's happening here has to go.
 class TetheredDateTime extends DateTime {
+  onInputKey = e => {
+    if (
+      (e.key === 'Tab' && this.props.closeOnTab) ||
+      e.key === 'Enter' ||
+      e.key === 'Escape'
+    ) {
+      this.closeCalendar();
+    }
+  };
+
+  updateSelectedDate = (e, close) => {
+    if (this.props.onFocusInput) {
+      this.props.onFocusInput();
+    }
+    return super.updateSelectedDate(e, close);
+  };
+
   render() {
     const { open } = this.props;
     let className = classnames('rdt', this.props.className, {
@@ -23,10 +40,9 @@ class TetheredDateTime extends DateTime {
         value: this.state.inputValue,
         ...this.props.inputProps,
       };
+      const input = this.props.renderInput(props, this.openCalendar);
 
-      children.push(
-        <div key="i">{this.props.renderInput(props, this.openCalendar)}</div>
-      );
+      children.push(<div key="i">{input}</div>);
     }
 
     return (
