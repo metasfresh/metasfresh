@@ -1,15 +1,18 @@
-package de.metas.vertical.pharma.msv3.protocol.order;
+package de.metas.ordercandidate.rest;
 
-import de.metas.vertical.pharma.msv3.protocol.types.Id;
-import de.metas.vertical.pharma.msv3.protocol.types.PZN;
-import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.Data;
+import lombok.Singular;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.commons
+ * de.metas.ordercandidate.rest-api
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -29,23 +32,12 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class OrderCreateRequestPackageItem
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Data
+@Builder
+public class JsonOLCandCreateBulkRequest
 {
-	Id id;
-	PZN pzn;
-	Quantity qty;
-	DeliverySpecifications deliverySpecifications;
-
-	@Builder
-	private OrderCreateRequestPackageItem(
-			@NonNull final PZN pzn,
-			@NonNull final Quantity qty,
-			@NonNull final DeliverySpecifications deliverySpecifications)
-	{
-		this.id = Id.random();
-		this.pzn = pzn;
-		this.qty = qty;
-		this.deliverySpecifications = deliverySpecifications;
-	}
+	@JsonProperty("requests")
+	@Singular
+	private List<JsonOLCandCreateRequest> requests;
 }

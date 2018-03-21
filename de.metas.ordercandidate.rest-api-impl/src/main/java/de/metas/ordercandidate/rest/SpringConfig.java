@@ -1,14 +1,14 @@
-package de.metas.vertical.pharma.msv3.server;
+package de.metas.ordercandidate.rest;
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * de.metas.ordercandidate.rest-api-impl
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -28,18 +28,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * #L%
  */
 
-@SpringBootApplication
-public class Application
+@Configuration
+public class SpringConfig
 {
-	public static void main(final String[] args)
-	{
-		new SpringApplicationBuilder(Application.class)
-				.headless(true)
-				.web(true)
-				.run(args);
-	}
-
 	@Bean
+	@ConditionalOnMissingBean(ObjectMapper.class)
 	public ObjectMapper objectMapper()
 	{
 		final ObjectMapper objectMapper = new ObjectMapper();

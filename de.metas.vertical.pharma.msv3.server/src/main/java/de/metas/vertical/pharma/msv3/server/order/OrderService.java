@@ -5,7 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
+import de.metas.ordercandidate.rest.JsonOLCand;
+import de.metas.ordercandidate.rest.JsonOLCandCreateBulkResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItem;
@@ -19,6 +22,7 @@ import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
+import de.metas.vertical.pharma.msv3.server.metasfreshGateway.MetasfreshServerGateway;
 import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrder;
 import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrderPackage;
 import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrderPackageItem;
@@ -53,11 +57,36 @@ public class OrderService
 	@Autowired
 	private JpaOrderRepository jpaOrdersRepo;
 
+	@Autowired
+	private MetasfreshServerGateway metasfreshServerGateway;
+
 	@Transactional
 	public OrderCreateResponse createOrder(final OrderCreateRequest request)
 	{
+		final JsonOLCandCreateBulkResponse metasfreshServerResponse = metasfreshServerGateway.postOrder(request);
+
+		final ImmutableMap<String, Integer> itemUuid2olCandId = metasfreshServerResponse.getResult()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(JsonOLCand::getExternalId, JsonOLCand::getId));
+
+		final JpaOrder jpaOrder = createJpaOrder(request);
+		jpaOrder.visitItems(jpaOrderPackageItem -> {
+			final Integer olCandId = itemUuid2olCandId.get(jpaOrderPackageItem.getUuid());
+			if (olCandId != null)
+			{
+				jpaOrderPackageItem.setOl_cand_id(olCandId);
+			}
+		});
+		jpaOrdersRepo.save(jpaOrder);
+
+		return createOrderCreateResponse(jpaOrder);
+	}
+
+	private JpaOrder createJpaOrder(final OrderCreateRequest request)
+	{
 		final JpaOrder jpaOrder = new JpaOrder();
-		jpaOrder.setBpartnerId(request.getBpartnerId().getValueAsInt());
+		jpaOrder.setBpartnerId(request.getBpartnerId().getBpartnerId());
+		jpaOrder.setBpartnerLocationId(request.getBpartnerId().getBpartnerLocationId());
 		jpaOrder.setDocumentNo(request.getOrderId().getValueAsString());
 		jpaOrder.setSupportId(request.getSupportId().getValueAsInt());
 		jpaOrder.setOrderStatus(OrderStatus.UNKNOWN_ID);
@@ -65,9 +94,7 @@ public class OrderService
 		jpaOrder.addOrderPackages(request.getOrderPackages().stream()
 				.map(this::createJpaOrderPackage)
 				.collect(ImmutableList.toImmutableList()));
-		jpaOrdersRepo.save(jpaOrder);
-
-		return createOrderCreateResponse(jpaOrder);
+		return jpaOrder;
 	}
 
 	private JpaOrderPackage createJpaOrderPackage(final OrderCreateRequestPackage orderPackage)
@@ -87,6 +114,7 @@ public class OrderService
 	private JpaOrderPackageItem createJpaOrderPackageItem(final OrderCreateRequestPackageItem orderPackageItem)
 	{
 		JpaOrderPackageItem jpaOrderPackageItem = new JpaOrderPackageItem();
+		jpaOrderPackageItem.setUuid(orderPackageItem.getId().getValueAsString());
 		jpaOrderPackageItem.setPzn(orderPackageItem.getPzn().getValueAsLong());
 		jpaOrderPackageItem.setQty(orderPackageItem.getQty().getValueAsInt());
 		jpaOrderPackageItem.setDeliverySpecifications(orderPackageItem.getDeliverySpecifications());
@@ -96,7 +124,7 @@ public class OrderService
 	private OrderCreateResponse createOrderCreateResponse(final JpaOrder jpaOrder)
 	{
 		return OrderCreateResponse.builder()
-				.bpartnerId(BPartnerId.of(jpaOrder.getBpartnerId()))
+				.bpartnerId(BPartnerId.of(jpaOrder.getBpartnerId(), jpaOrder.getBpartnerLocationId()))
 				.orderId(Id.of(jpaOrder.getDocumentNo()))
 				.supportId(SupportIDType.of(jpaOrder.getSupportId()))
 				.nightOperation(jpaOrder.getNightOperation())
@@ -156,7 +184,7 @@ public class OrderService
 
 	public OrderStatusResponse getOrderStatus(@NonNull final Id orderId, @NonNull final BPartnerId bpartnerId)
 	{
-		final JpaOrder jpaOrder = jpaOrdersRepo.findByDocumentNoAndBpartnerId(orderId.getValueAsString(), bpartnerId.getValueAsInt());
+		final JpaOrder jpaOrder = jpaOrdersRepo.findByDocumentNoAndBpartnerId(orderId.getValueAsString(), bpartnerId.getBpartnerId());
 		if (jpaOrder == null)
 		{
 			throw new RuntimeException("No order found for id='" + orderId + "' and bpartnerId='" + bpartnerId + "'");
