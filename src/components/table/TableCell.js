@@ -1,6 +1,7 @@
 import Moment from 'moment';
 import numeral from 'numeral';
 import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import MasterWidget from '../widget/MasterWidget';
@@ -157,6 +158,7 @@ class TableCell extends PureComponent {
       mainTable,
       onCellChange,
       viewId,
+      modalVisible,
     } = this.props;
     const docId = this.props.docId + '';
     const tdValue = !isEdited
@@ -173,7 +175,7 @@ class TableCell extends PureComponent {
 
     return (
       <td
-        tabIndex={tabIndex}
+        tabIndex={modalVisible ? -1 : tabIndex}
         ref={c => (this.cell = c)}
         onDoubleClick={readonly ? null : onDoubleClick}
         onKeyDown={onKeyDown}
@@ -234,5 +236,6 @@ class TableCell extends PureComponent {
   }
 }
 
-export default TableCell;
-export { TableCell };
+export default connect(state => ({
+  modalVisible: state.windowHandler.modal.visible,
+}))(TableCell);

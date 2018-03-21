@@ -51,6 +51,7 @@ class FiltersNotFrequent extends Component {
       applyFilters,
       clearFilters,
       active,
+      modalVisible,
     } = this.props;
 
     const { isOpenDropdown, openFilterId } = this.state;
@@ -70,6 +71,7 @@ class FiltersNotFrequent extends Component {
             (isOpenDropdown ? ' btn-select' : '') +
             (activeFilters.length > 0 ? ' btn-active' : '')
           }
+          tabIndex={modalVisible ? -1 : 0}
         >
           <i className="meta-icon-preview" />
           {activeFilter ? (
@@ -130,5 +132,6 @@ class FiltersNotFrequent extends Component {
 
 const mapStateToProps = state => ({
   allowOutsideClick: state.windowHandler.allowOutsideClick,
+  modalVisible: state.windowHandler.modal.visible,
 });
 export default connect(mapStateToProps)(onClickOutside(FiltersNotFrequent));
