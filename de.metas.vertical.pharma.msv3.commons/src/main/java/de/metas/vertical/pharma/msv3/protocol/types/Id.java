@@ -1,5 +1,7 @@
 package de.metas.vertical.pharma.msv3.protocol.types;
 
+import java.util.UUID;
+
 import lombok.NonNull;
 import lombok.Value;
 
@@ -33,6 +35,11 @@ public class Id
 		return new Id(valueAsString);
 	}
 
+	public static Id random()
+	{
+		return new Id(UUID.randomUUID().toString());
+	}
+
 	private final String valueAsString;
 
 	private Id(@NonNull final String valueAsString)
@@ -45,4 +52,13 @@ public class Id
 		this.valueAsString = valueAsString;
 	}
 
+	/**
+	 * @deprecated please use {@link #getValueAsString()}
+	 */
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return getValueAsString();
+	}
 }

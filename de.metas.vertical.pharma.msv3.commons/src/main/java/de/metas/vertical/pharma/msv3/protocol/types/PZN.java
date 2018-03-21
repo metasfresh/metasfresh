@@ -48,4 +48,9 @@ public class PZN
 
 		this.valueAsLong = value;
 	}
+
+	public String getValueAsString()
+	{
+		return String.valueOf(valueAsLong);
+	}
 }
