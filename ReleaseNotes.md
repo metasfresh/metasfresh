@@ -15,6 +15,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3585](https://github.com/metasfresh/metasfresh/issues/3585) WebUI window design: Business Partner Credit Limit
+    * Improvement of Busines Partner Credit Limit Fieldnames and Translations.
   * [#3703](https://github.com/metasfresh/metasfresh/issues/3703) Material Receipt Candidates Window, add media types for mobile/ tablet
     * Mobile Usage Improvement. Adds Mediatypes to Material Receipt Candidates window (Tablet proptotype).
 
