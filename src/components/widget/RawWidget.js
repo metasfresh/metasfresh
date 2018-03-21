@@ -975,4 +975,8 @@ RawWidget.propTypes = {
   isOpenDatePicker: PropTypes.bool,
 };
 
+RawWidget.defaultProps = {
+  tabIndex: 0,
+};
+
 export default connect()(RawWidget);
