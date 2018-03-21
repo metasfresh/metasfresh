@@ -43,16 +43,20 @@ public class JsonUser
 	private String password;
 	@JsonProperty("bpartnerId")
 	private int bpartnerId;
+	@JsonProperty("bpartnerLocationId")
+	private int bpartnerLocationId;
 
 	@JsonCreator
 	@Builder
 	private JsonUser(
 			@JsonProperty("username") @NonNull final String username,
 			@JsonProperty("password") @NonNull final String password,
-			@JsonProperty("bpartnerId") @NonNull final Integer bpartnerId)
+			@JsonProperty("bpartnerId") @NonNull final Integer bpartnerId,
+			@JsonProperty("bpartnerLocationId") @NonNull final Integer bpartnerLocationId)
 	{
 		this.username = username;
 		this.password = password;
 		this.bpartnerId = bpartnerId;
+		this.bpartnerLocationId = bpartnerLocationId;
 	}
 }

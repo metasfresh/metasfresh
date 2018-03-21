@@ -13,6 +13,7 @@ import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.MapReduceAggregator;
 import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
@@ -23,7 +24,6 @@ import org.compiere.util.Env;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
-
 
 /*
  * #%L
@@ -38,11 +38,11 @@ import de.metas.order.IOrderBL;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -63,7 +63,8 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private final I_C_Order dummyOrder;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
 
@@ -197,7 +198,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 			purchaseOrder.setPOReference(salesOrder.getPOReference());
 		}
 		purchaseOrder.setPriorityRule(salesOrder.getPriorityRule());
-		purchaseOrder.setM_Warehouse_ID(salesOrder.getM_Warehouse_ID());
+		purchaseOrder.setM_Warehouse_ID(findWareousePOId(salesOrder));
 
 		// 08812: Make sure the users are correctly set
 
@@ -208,15 +209,14 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		// SalesRep:
 		// * let it to be set from BPartner (this was done above, by orderBL.setBPartner method)
 		// * if not set use it from context
-		if(purchaseOrder.getSalesRep_ID() <= 0)
+		if (purchaseOrder.getSalesRep_ID() <= 0)
 		{
 			purchaseOrder.setSalesRep_ID(Env.getContextAsInt(ctx, Env.CTXNAME_SalesRep_ID));
 		}
-		if(purchaseOrder.getSalesRep_ID() <= 0)
+		if (purchaseOrder.getSalesRep_ID() <= 0)
 		{
 			purchaseOrder.setSalesRep_ID(Env.getAD_User_ID(ctx));
 		}
-
 
 		// Drop Ship
 		if (p_IsDropShip)
@@ -260,6 +260,17 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		InterfaceWrapperHelper.save(purchaseOrder);
 		return purchaseOrder;
 	}	// createPOForVendor
+
+	private int findWareousePOId(final I_C_Order salesOrder)
+	{
+		final int warehousePOId = warehouseDAO.retrieveOrgWarehousePOId(salesOrder.getAD_Org_ID());
+		if (warehousePOId > 0)
+		{
+			return warehousePOId;
+		}
+
+		return salesOrder.getM_Warehouse_ID();
+	}
 
 	@Override
 	public String toString()

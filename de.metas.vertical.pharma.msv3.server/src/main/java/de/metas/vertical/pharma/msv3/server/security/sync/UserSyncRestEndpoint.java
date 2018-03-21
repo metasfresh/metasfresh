@@ -60,6 +60,7 @@ public class UserSyncRestEndpoint
 
 		user.setPassword(jsonUser.getPassword());
 		user.setBpartnerId(jsonUser.getBpartnerId());
+		user.setBpartnerLocationId(jsonUser.getBpartnerLocationId());
 
 		usersRepo.save(user);
 	}
