@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.rest;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -12,7 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.ordercandidate.api.OLCand;
+import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.model.I_C_OLCand;
 
@@ -45,17 +49,18 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
 	@Autowired
+	private JsonConverters jsonConverters;
+	@Autowired
 	private OLCandRepository olCandRepo;
 
 	@PostMapping
+	@Override
 	public JsonOLCand createOrder(@RequestBody final JsonOLCandCreateRequest request)
 	{
 		assertCanCreateNewOLCand();
 
-		final OLCand olCand = olCandRepo.create(JsonConverters.toOLCandCreateRequest(request)
-				.adInputDataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
-				.build());
-		return JsonConverters.toJson(olCand);
+		final OLCand olCand = olCandRepo.create(toOLCandCreateRequest(request));
+		return jsonConverters.toJson(olCand);
 	}
 
 	private void assertCanCreateNewOLCand()
@@ -71,6 +76,28 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		{
 			throw new AdempiereException(errmsg);
 		}
+	}
 
+	private OLCandCreateRequest toOLCandCreateRequest(final JsonOLCandCreateRequest request)
+	{
+		return jsonConverters.toOLCandCreateRequest(request)
+				.adInputDataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
+				.build();
+	}
+
+	@PostMapping(PATH_BULK)
+	@Override
+	public JsonOLCandCreateBulkResponse createOrders(@RequestBody final JsonOLCandCreateBulkRequest bulkRequest)
+	{
+		assertCanCreateNewOLCand();
+
+		final List<OLCandCreateRequest> requests = bulkRequest
+				.getRequests()
+				.stream()
+				.map(request -> toOLCandCreateRequest(request))
+				.collect(ImmutableList.toImmutableList());
+
+		final List<OLCand> olCands = olCandRepo.create(requests);
+		return jsonConverters.toJsonOLCandCreateBulkResponse(olCands);
 	}
 }

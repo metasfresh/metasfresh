@@ -154,12 +154,12 @@ public abstract class AbstractFlatrateTermTest
 	}
 
 
-	public I_C_Flatrate_Term prepareContractForTest(final boolean isAutoRenew, final Timestamp startDate)
+	public I_C_Flatrate_Term prepareContractForTest(final String extensionType, final Timestamp startDate)
 	{
 		prepareBPartner();
 		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem(startDate);
 		createProductAcct(productAndPricingSystem);
-		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, isAutoRenew);
+		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, extensionType);
 		createContractChange(conditions);
 		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem.getProduct(), startDate);
 		return contract;
@@ -303,7 +303,7 @@ public abstract class AbstractFlatrateTermTest
 				.build();
 	}
 
-	protected I_C_Flatrate_Conditions createFlatrateConditions(@NonNull final ProductAndPricingSystem productAndPricingSystem, final boolean isAutoRenew)
+	protected I_C_Flatrate_Conditions createFlatrateConditions(@NonNull final ProductAndPricingSystem productAndPricingSystem, final String extensionType)
 	{
 		return FlatrateTermDataFactory.flatrateConditionsNew()
 				.name("Abo")
@@ -311,7 +311,7 @@ public abstract class AbstractFlatrateTermTest
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
-				.isAutoRenew(isAutoRenew)
+				.extensionType(extensionType)
 				.build();
 	}
 

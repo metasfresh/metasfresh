@@ -1,10 +1,14 @@
-package de.metas.vertical.pharma.msv3.protocol.types;
+package de.metas.ordercandidate.rest;
 
-import lombok.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * de.metas.ordercandidate.rest-api-impl
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -24,33 +28,15 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * PZN (Pharma-Zentral-Nummer) is a code for medicine identification in Germany and maybe other countries.
- * 
- * @see https://www.activebarcode.com/codes/pzn.html
- */
-@Value
-public class PZN
+@Configuration
+public class SpringConfig
 {
-	public static PZN of(final long value)
+	@Bean
+	@ConditionalOnMissingBean(ObjectMapper.class)
+	public ObjectMapper objectMapper()
 	{
-		return new PZN(value);
-	}
-
-	private final long valueAsLong;
-
-	private PZN(final long value)
-	{
-		if (value <= 0)
-		{
-			throw new IllegalArgumentException("Invalid PZN value: " + value);
-		}
-
-		this.valueAsLong = value;
-	}
-
-	public String getValueAsString()
-	{
-		return String.valueOf(valueAsLong);
+		final ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.findAndRegisterModules();
+		return objectMapper;
 	}
 }

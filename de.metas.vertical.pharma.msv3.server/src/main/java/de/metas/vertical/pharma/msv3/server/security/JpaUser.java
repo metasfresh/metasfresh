@@ -39,6 +39,7 @@ import lombok.ToString;
 @ToString
 public class JpaUser extends AbstractEntity
 {
+	// kundenkennung
 	@NotNull
 	private String username;
 
@@ -47,4 +48,7 @@ public class JpaUser extends AbstractEntity
 
 	@NotNull
 	private Integer bpartnerId;
+	
+	@NotNull
+	private Integer bpartnerLocationId;
 }

@@ -26,5 +26,10 @@ public interface OrderCandidatesRestEndpoint
 {
 	String ENDPOINT = "/api/sales/order/candidates";
 
+	String PATH_BULK = "/bulk";
+
 	JsonOLCand createOrder(JsonOLCandCreateRequest request);
+
+	JsonOLCandCreateBulkResponse createOrders(JsonOLCandCreateBulkRequest bulkRequest);
+
 }
