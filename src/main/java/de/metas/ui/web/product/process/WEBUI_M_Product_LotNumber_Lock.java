@@ -4,8 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.util.Services;
@@ -16,7 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.model.I_M_Product_LotNumber_Lock;
@@ -81,46 +79,31 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 	private void quarantineHUsForLotNo(final int lotNoLockId)
 	{
 		final I_M_Product_LotNumber_Lock lotNoLock = load(lotNoLockId, I_M_Product_LotNumber_Lock.class);
-		final I_M_Attribute lotNumberAttr = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttribute(getCtx());
+		final I_M_Attribute lotNoAttribute = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttribute(getCtx());
 
-		if (lotNumberAttr == null)
+		if (lotNoAttribute == null)
 		{
 			throw new AdempiereException("Not lotNo attribute found.");
 		}
 
 		final int productId = lotNoLock.getM_Product_ID();
-		final int lotNoAttributeID = lotNumberAttr.getM_Attribute_ID();
+
 		final String lotNoValue = lotNoLock.getLot();
 
-		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(productId, lotNoAttributeID, lotNoValue);
+		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(productId, lotNoAttribute, lotNoValue);
 
 		Services.get(IHUDDOrderBL.class).createQuarantineDDOrderForHUs(husForAttributeStringValue);
 
 	}
 
-	private List<I_M_HU> retrieveHUsForAttributeStringValue(final int productId, final int attributeId, final String value)
+	private List<I_M_HU> retrieveHUsForAttributeStringValue(final int productId, final I_M_Attribute attribute, final String value)
 	{
 		return Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
 				.addOnlyWithProductId(productId)
-				.list()
-				.stream()
-				.filter(hu -> hasHUAttributeAndValue(hu, attributeId, value))
-				.collect(ImmutableList.toImmutableList());
+				.addOnlyWithAttribute(attribute, value)
+				.addHUStatusesToInclude(ImmutableList.of(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active))
+				.list();
 
-	}
-
-	private boolean hasHUAttributeAndValue(final I_M_HU hu, final int attributeId, final String value)
-	{
-		 final I_M_HU_Attribute lotNoHUAttribute = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
-				.filter(new EqualsQueryFilter<I_M_HU_Attribute>(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeId)
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_Value, value)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.create()
-				.firstOnly(I_M_HU_Attribute.class);
-		
-		return lotNoHUAttribute != null;
 	}
 
 }
