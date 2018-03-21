@@ -14,7 +14,7 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -220311784L;
+	private static final long serialVersionUID = -455847784L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Transition (Properties ctx, int C_Flatrate_Transition_ID, String trxName)
@@ -28,8 +28,6 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 			setDocStatus (null); // DR
 			setEndsWithCalendarYear (false); // N
 			setIsAutoCompleteNewTerm (false); // N
-			setIsAutoExtension (false); // N
-			setIsAutoRenew (false); // N
 			setIsNotifyUserInCharge (false); // N
 			setName (null);
 			setProcessed (false); // N
@@ -347,6 +345,32 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 		return false;
 	}
 
+	/** 
+	 * ExtensionType AD_Reference_ID=540843
+	 * Reference name: ExtensionType
+	 */
+	public static final int EXTENSIONTYPE_AD_Reference_ID=540843;
+	/** ExtendAll = EA */
+	public static final String EXTENSIONTYPE_ExtendAll = "EA";
+	/** ExtendOne = EO */
+	public static final String EXTENSIONTYPE_ExtendOne = "EO";
+	/** Set Extension Type.
+		@param ExtensionType Extension Type	  */
+	@Override
+	public void setExtensionType (java.lang.String ExtensionType)
+	{
+
+		set_Value (COLUMNNAME_ExtensionType, ExtensionType);
+	}
+
+	/** Get Extension Type.
+		@return Extension Type	  */
+	@Override
+	public java.lang.String getExtensionType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExtensionType);
+	}
+
 	/** Set Neue Vertragslaufzeit autom. Fertigstellen.
 		@param IsAutoCompleteNewTerm 
 		Legt fest, ob das System die automatisch neu erzeugte Vertragsperiode sofort fertigstellen soll.
@@ -364,55 +388,6 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	public boolean isAutoCompleteNewTerm () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAutoCompleteNewTerm);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Auto Extension.
-		@param IsAutoExtension Auto Extension	  */
-	@Override
-	public void setIsAutoExtension (boolean IsAutoExtension)
-	{
-		set_Value (COLUMNNAME_IsAutoExtension, Boolean.valueOf(IsAutoExtension));
-	}
-
-	/** Get Auto Extension.
-		@return Auto Extension	  */
-	@Override
-	public boolean isAutoExtension () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsAutoExtension);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Vertrag autom. verlängern.
-		@param IsAutoRenew 
-		Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
-	  */
-	@Override
-	public void setIsAutoRenew (boolean IsAutoRenew)
-	{
-		set_Value (COLUMNNAME_IsAutoRenew, Boolean.valueOf(IsAutoRenew));
-	}
-
-	/** Get Vertrag autom. verlängern.
-		@return Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
-	  */
-	@Override
-	public boolean isAutoRenew () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsAutoRenew);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

@@ -1,8 +1,12 @@
 package de.metas.contracts.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.util.Services;
@@ -16,6 +20,9 @@ import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import lombok.NonNull;
 
 public class ExtendContractTest extends AbstractFlatrateTermTest
@@ -31,9 +38,9 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 
 
 	@Test
-	public void extendContractWithAutoRenewOnYes_test()
+	public void extendContractWithExtendingOnePeriod_test()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(true);
+		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
 				.AD_PInstance_ID(1)
@@ -50,9 +57,9 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	}
 
 	@Test
-	public void extendContractWithAutoRenewOnNo_test()
+	public void extendContractWithNoExtensionType_test()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForTest(false);
+		final I_C_Flatrate_Term contract = prepareContractForTest(null);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
 				.AD_PInstance_ID(1)
@@ -68,13 +75,101 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		assertPartnerData(contract);
 	}
 
-	private I_C_Flatrate_Term prepareContractForTest(final boolean isAutoRenew)
+	@Test
+	public void extendContractWithExtendingAll_test()
+	{
+		final I_C_Flatrate_Term contract = prepareContractForExtrendingAllTest();
+
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(1)
+				.contract(contract)
+				.forceExtend(false)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+
+		Services.get(IFlatrateBL.class).extendContract(context);
+
+		I_C_Flatrate_Term curentContract = contract;
+		do
+		{
+			assertPartnerData(curentContract);
+			final I_C_Flatrate_Term nextflatrateTerm = curentContract.getC_FlatrateTerm_Next();
+			assertThat(nextflatrateTerm).isNotNull();
+			assertThat(curentContract.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Flatrate_Conditions_Next()).isEqualTo(nextflatrateTerm.getC_Flatrate_Conditions());
+
+			final Timestamp startDateNewContract = TimeUtil.addDays(curentContract.getEndDate(), 1);
+			assertThat(nextflatrateTerm.getStartDate()).isEqualTo(startDateNewContract);
+
+			assertThat(curentContract.getMasterStartDate()).isEqualTo(nextflatrateTerm.getMasterStartDate());
+			assertThat(nextflatrateTerm.getMasterStartDate()).isNotNull();
+			assertThat(curentContract.getMasterEndDate()).isNotNull();
+			assertThat(nextflatrateTerm.getMasterEndDate()).isNotNull();
+			assertThat(curentContract.getMasterEndDate()).isEqualTo(nextflatrateTerm.getMasterEndDate());
+
+			curentContract = nextflatrateTerm;
+		}
+		while (curentContract.getC_FlatrateTerm_Next() != null);
+	}
+
+	private I_C_Flatrate_Term prepareContractForTest(final String autoExtension)
 	{
 		prepareBPartner();
 		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem(startDate);
 		createProductAcct(productAndPricingSystem);
-		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, isAutoRenew);
+		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, autoExtension);
 		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem.getProduct(), startDate);
+		return contract;
+	}
+
+	private I_C_Flatrate_Term prepareContractForExtrendingAllTest()
+	{
+		prepareBPartner();
+		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem(startDate);
+		createProductAcct(productAndPricingSystem);
+
+		final List<I_C_Flatrate_Conditions> conditions = new ArrayList<>();
+		final List<I_C_Flatrate_Transition> transitions = new ArrayList<>();
+		for (int i = 0; i < 5; i++)
+		{
+			final I_C_Flatrate_Conditions condition = newInstance(I_C_Flatrate_Conditions.class);
+			condition.setM_PricingSystem(productAndPricingSystem.getPricingSystem());
+			condition.setInvoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort);
+			condition.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription);
+			condition.setName("Abo " + i);
+			save(condition);
+			conditions.add(condition);
+
+			final I_C_Flatrate_Transition transition = FlatrateTermDataFactory.flatrateTransitionNew()
+					.calendar(getCalendar())
+					.deliveryInterval(1)
+					.deliveryIntervalUnit(X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_MonatE)
+					.termDuration(1)
+					.termDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_JahrE)
+					.isAutoCompleteNewTerm(true)
+					.extensionType(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll)
+					.build();
+			transitions.add(transition);
+		}
+
+		for (int i = 0; i < 5; i++)
+		{
+			final I_C_Flatrate_Conditions condition = conditions.get(i);
+			final I_C_Flatrate_Transition transition = transitions.get(i);
+			condition.setC_Flatrate_Transition(transition);
+			save(condition);
+			if (i < 4)
+			{
+				transition.setC_Flatrate_Conditions_Next(conditions.get(i + 1));
+			}
+			else
+			{
+				transition.setExtensionType(null);
+			}
+			save(transition);
+		}
+
+		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions.get(0), productAndPricingSystem.getProduct(), startDate);
 		return contract;
 	}
 
