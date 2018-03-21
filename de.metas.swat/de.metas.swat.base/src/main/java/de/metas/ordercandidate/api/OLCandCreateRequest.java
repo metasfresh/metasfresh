@@ -3,6 +3,8 @@ package de.metas.ordercandidate.api;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import lombok.Builder;
@@ -34,10 +36,14 @@ import lombok.Value;
 @Value
 public class OLCandCreateRequest
 {
+	private String externalId;
+	
 	private OLCandBPartnerInfo bpartner;
 	private OLCandBPartnerInfo billBPartner;
 	private OLCandBPartnerInfo dropShipBPartner;
 	private OLCandBPartnerInfo handOverBPartner;
+
+	private String poReference;
 
 	private LocalDate dateRequired;
 	private int flatrateConditionsId;
@@ -52,15 +58,17 @@ public class OLCandCreateRequest
 	private BigDecimal price;
 	private BigDecimal discount;
 	// private String currencyCode; // shall come from pricingSystem/priceList
-	
+
 	private String adInputDataSourceInternalName;
 
 	@Builder
 	private OLCandCreateRequest(
+			@Nullable final String externalId,
 			@NonNull final OLCandBPartnerInfo bpartner,
 			final OLCandBPartnerInfo billBPartner,
 			final OLCandBPartnerInfo dropShipBPartner,
 			final OLCandBPartnerInfo handOverBPartner,
+			final String poReference,
 			@NonNull final LocalDate dateRequired,
 			final int flatrateConditionsId,
 			final int productId,
@@ -76,16 +84,18 @@ public class OLCandCreateRequest
 	{
 		Check.assume(productId > 0, "productId is set");
 		Check.assume(uomId > 0, "uomId is set");
-		Check.assume(pricingSystemId > 0, "pricingSystemId is set");
+		// Check.assume(pricingSystemId > 0, "pricingSystemId is set");
 		Check.assume(qty.signum() > 0, "qty > 0");
 		Check.assume(price == null || price.signum() >= 0, "price >= 0");
 		Check.assume(discount == null || discount.signum() >= 0, "discount >= 0");
 		Check.assumeNotEmpty(adInputDataSourceInternalName, "adInputDataSourceInternalName is not empty");
 
+		this.externalId = externalId;
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;
 		this.dropShipBPartner = dropShipBPartner;
 		this.handOverBPartner = handOverBPartner;
+		this.poReference = poReference;
 		this.dateRequired = dateRequired;
 		this.flatrateConditionsId = flatrateConditionsId;
 		this.productId = productId;
@@ -96,7 +106,7 @@ public class OLCandCreateRequest
 		this.pricingSystemId = pricingSystemId;
 		this.price = price;
 		this.discount = discount;
-		
+
 		this.adInputDataSourceInternalName = adInputDataSourceInternalName;
 	}
 

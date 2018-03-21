@@ -1,5 +1,6 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
+import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
@@ -31,6 +32,7 @@ import lombok.Value;
 @Value
 public class OrderCreateRequestPackageItem
 {
+	Id id;
 	PZN pzn;
 	Quantity qty;
 	DeliverySpecifications deliverySpecifications;
@@ -41,6 +43,7 @@ public class OrderCreateRequestPackageItem
 			@NonNull final Quantity qty,
 			@NonNull final DeliverySpecifications deliverySpecifications)
 	{
+		this.id = Id.random();
 		this.pzn = pzn;
 		this.qty = qty;
 		this.deliverySpecifications = deliverySpecifications;

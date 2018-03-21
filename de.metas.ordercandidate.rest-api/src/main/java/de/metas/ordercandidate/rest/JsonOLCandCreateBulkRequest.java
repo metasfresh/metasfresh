@@ -1,10 +1,18 @@
-package de.metas.vertical.pharma.msv3.protocol.types;
+package de.metas.ordercandidate.rest;
 
-import lombok.Value;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Builder;
+import lombok.Data;
+import lombok.Singular;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * de.metas.ordercandidate.rest-api
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -24,33 +32,12 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * PZN (Pharma-Zentral-Nummer) is a code for medicine identification in Germany and maybe other countries.
- * 
- * @see https://www.activebarcode.com/codes/pzn.html
- */
-@Value
-public class PZN
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Data
+@Builder
+public class JsonOLCandCreateBulkRequest
 {
-	public static PZN of(final long value)
-	{
-		return new PZN(value);
-	}
-
-	private final long valueAsLong;
-
-	private PZN(final long value)
-	{
-		if (value <= 0)
-		{
-			throw new IllegalArgumentException("Invalid PZN value: " + value);
-		}
-
-		this.valueAsLong = value;
-	}
-
-	public String getValueAsString()
-	{
-		return String.valueOf(valueAsLong);
-	}
+	@JsonProperty("requests")
+	@Singular
+	private List<JsonOLCandCreateRequest> requests;
 }
