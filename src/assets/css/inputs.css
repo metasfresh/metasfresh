@@ -677,16 +677,16 @@ input:checked + .input-slider:before {
 .input-dropdown-container.select-dropdown {
     margin-top: .3125rem;
     margin-bottom: .125rem;
-    border-bottom: none;   
+    border-bottom: 1px solid transparent;
 }
 .input-dropdown-container.select-dropdown.input-mandatory {
     border: 2px solid $brand-mandatory-color;
 }
 .input-dropdown-container.select-dropdown.focused {
-    border-bottom: 1px solid #4b5b64;
+    border-bottom-color: #4b5b64;
 }
 .input-dropdown-container.select-dropdown.opened {
-    border-bottom: none;
+    border-bottom-color: transparent;
 }
 .input-dropdown-focused .input-toggled {
     border-bottom-left-radius: 0;
