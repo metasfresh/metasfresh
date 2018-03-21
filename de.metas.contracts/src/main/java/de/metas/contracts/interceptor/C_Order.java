@@ -44,6 +44,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
@@ -127,7 +128,8 @@ public class C_Order
 	{
 		final I_C_Flatrate_Conditions conditions = term.getC_Flatrate_Conditions();
 		final I_C_Flatrate_Transition transition = conditions.getC_Flatrate_Transition();
-		if (transition.isAutoExtension() && transition.getC_Flatrate_Conditions_Next_ID() > 0)
+		if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(transition.getExtensionType())
+				&& transition.getC_Flatrate_Conditions_Next_ID() > 0)
 		{
 			final ContractExtendingRequest nextContext = ContractExtendingRequest.builder()
 					.contract(term)

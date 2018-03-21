@@ -98,7 +98,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * forceComplete - will complete a new term (if one has been created), even if it has <code>IsAutoComplete='N'</code>
 	 * ol - if a new term is created, this order line (if !=null) will be referenced from the new term.
 	 */
-	@Builder
+	@Builder(toBuilder=true)
 	@Getter
 	public static class ContractExtendingRequest
 	{
