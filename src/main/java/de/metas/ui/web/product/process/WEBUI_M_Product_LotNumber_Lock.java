@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
+import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.IProcessPrecondition;
@@ -92,7 +93,12 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 
 		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(productId, lotNoAttribute, lotNoValue);
 
-		Services.get(IHUDDOrderBL.class).createQuarantineDDOrderForHUs(husForAttributeStringValue);
+		final List<HUToDistribute> husToDistribute = husForAttributeStringValue
+				.stream()
+				.map(hu -> HUToDistribute.of(hu, lotNoLock))
+				.collect(ImmutableList.toImmutableList());
+
+		Services.get(IHUDDOrderBL.class).createQuarantineDDOrderForHUs(husToDistribute);
 
 	}
 
