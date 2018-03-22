@@ -20,6 +20,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.product.model.I_M_Product_LotNumber_Lock;
 import lombok.NonNull;
 
@@ -78,6 +79,9 @@ public class DistributeAndMoveReceiptHandler
 		if (!Check.isEmpty(linesToQuarantine))
 		{
 			huDDOrderBL.createQuarantineDDOrderForReceiptLines(linesToQuarantine);
+			
+			setInvoiceCandsInDispute(linesToQuarantine);
+			
 		}
 
 		if (!Check.isEmpty(linesToDD_Order))
@@ -91,6 +95,18 @@ public class DistributeAndMoveReceiptHandler
 		{
 			inoutMovementBL.generateMovementFromReceiptLines(linesToMove);
 		}
+	}
+
+	private void setInvoiceCandsInDispute(final List<QuarantineInOutLine> lines)
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+		lines.stream()
+				.map(line -> line.getInOutLine())
+				.map(line -> invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(line))
+				.forEach(cand -> {
+					cand.stream().forEach(ic -> ic.setIsInDispute(true));
+				});
 	}
 
 	private void partitionLines()
@@ -177,5 +193,4 @@ public class DistributeAndMoveReceiptHandler
 		return false;
 	}
 
-	
 }
