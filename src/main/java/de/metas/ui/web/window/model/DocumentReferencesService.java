@@ -3,6 +3,8 @@ package de.metas.ui.web.window.model;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.ZoomInfoFactory;
@@ -26,6 +28,8 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -58,6 +62,7 @@ public class DocumentReferencesService
 	public List<DocumentReference> getDocumentReferences(final DocumentPath documentPath)
 	{
 		return documentCollection.forDocumentReadonly(documentPath, document -> {
+
 			if (document.isNew())
 			{
 				return ImmutableList.of();
@@ -141,13 +146,18 @@ public class DocumentReferencesService
 		private final Evaluatee evaluationContext;
 
 		private final int adWindowId;
-		private final String tableName;
 		private final int adTableId;
 		private final int recordId;
 		private final String keyColumnName;
 		private final Document document;
 
-		private DocumentAsZoomSource(final Document document)
+		@Getter
+		private final boolean genericZoomOrigin;
+
+		@Getter
+		private final String tableName;
+
+		private DocumentAsZoomSource(@NonNull final Document document)
 		{
 			ctx = document.getCtx();
 			this.document = document;
@@ -156,9 +166,12 @@ public class DocumentReferencesService
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 			adWindowId = entityDescriptor.getWindowId().toInt();
 			tableName = entityDescriptor.getTableName();
+
 			adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 			recordId = document.getDocumentId().toInt();
 			keyColumnName = extractSingleKeyColumNameOrNull(entityDescriptor);
+
+			genericZoomOrigin = extractGenericZoomOrigin(tableName, keyColumnName);
 		}
 
 		private static String extractSingleKeyColumNameOrNull(final DocumentEntityDescriptor entityDescriptor)
@@ -176,11 +189,20 @@ public class DocumentReferencesService
 			}
 
 			final String keyColumnName = idFieldBinding.getColumnName();
+			return keyColumnName;
+		}
 
-			final String tableName = entityDescriptor.getTableName();
-			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-			final I_AD_Column idColumn = adTableDAO.retrieveColumn(tableName, keyColumnName);
-			return idColumn.isGenericZoomOrigin() ? keyColumnName : null;
+		private boolean extractGenericZoomOrigin(
+				@NonNull final String tableName,
+				@Nullable final String keyColumnName)
+		{
+			if (keyColumnName != null)
+			{
+				final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+				final I_AD_Column idColumn = adTableDAO.retrieveColumn(tableName, keyColumnName);
+				return idColumn.isGenericZoomOrigin();
+			}
+			return false;
 		}
 
 		@Override
@@ -209,12 +231,6 @@ public class DocumentReferencesService
 		public int getAD_Window_ID()
 		{
 			return adWindowId;
-		}
-
-		@Override
-		public String getTableName()
-		{
-			return tableName;
 		}
 
 		@Override
