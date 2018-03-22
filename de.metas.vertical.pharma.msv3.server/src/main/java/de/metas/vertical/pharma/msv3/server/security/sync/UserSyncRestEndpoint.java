@@ -1,14 +1,22 @@
 package de.metas.vertical.pharma.msv3.server.security.sync;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
-import de.metas.vertical.pharma.msv3.server.security.JpaUser;
-import de.metas.vertical.pharma.msv3.server.security.JpaUserRepository;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedMultiEvent;
+import de.metas.vertical.pharma.msv3.server.peer.service.CustomerConfigEventsQueue;
+import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
+import de.metas.vertical.pharma.msv3.server.security.MSV3User;
 
 /*
  * #%L
@@ -39,29 +47,39 @@ public class UserSyncRestEndpoint
 	public static final String ENDPOINT = MSV3ServerConstants.BACKEND_SYNC_REST_ENDPOINT + "/users";
 
 	@Autowired
-	private JpaUserRepository usersRepo;
+	private MSV3ServerAuthenticationService authService;
+	@Autowired
+	private CustomerConfigEventsQueue queue;
 
 	@PostMapping
-	public void update(@RequestBody final JsonUsersUpdateRequest request)
+	public void processEvents(@RequestBody final MSV3UserChangedMultiEvent multiEvents)
 	{
-		request.getUsers().forEach(this::updateUser);
+		multiEvents.getEvents().forEach(authService::handleEvent);
 	}
 
-	private void updateUser(final JsonUser jsonUser)
+	// TODO: remove this endpoint, it's only for testing/debugging
+	@PostMapping("/toRabbitMQ")
+	public void forwardEventToRabbitMQ(@RequestBody final MSV3UserChangedEvent event)
 	{
-		final String username = jsonUser.getUsername();
+		queue.publish(event);
+	}
 
-		JpaUser user = usersRepo.findByUsername(username);
-		if (user == null)
-		{
-			user = new JpaUser();
-			user.setUsername(username);
-		}
+	@GetMapping
+	public List<MSV3UserChangedEvent> getAllUsers()
+	{
+		return authService.getAllUsers()
+				.stream()
+				.map(this::toMSV3UserChangedEvent)
+				.collect(ImmutableList.toImmutableList());
+	}
 
-		user.setPassword(jsonUser.getPassword());
-		user.setBpartnerId(jsonUser.getBpartnerId());
-		user.setBpartnerLocationId(jsonUser.getBpartnerLocationId());
-
-		usersRepo.save(user);
+	private MSV3UserChangedEvent toMSV3UserChangedEvent(final MSV3User user)
+	{
+		return MSV3UserChangedEvent.prepareCreatedEvent()
+				.username(user.getUsername())
+				.password("N/A")
+				.bpartnerId(user.getBpartnerId().getBpartnerId())
+				.bpartnerLocationId(user.getBpartnerId().getBpartnerLocationId())
+				.build();
 	}
 }
