@@ -1,15 +1,11 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability.sync;
-
-import java.util.List;
+package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -36,22 +32,30 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JsonStockAvailabilityUpdateRequest
+public class MSV3StockAvailability
 {
-	@JsonProperty("items")
-	private final List<JsonStockAvailability> items;
+	@JsonProperty("pzn")
+	private long pzn;
+	@JsonProperty("qty")
+	private int qty;
 
 	@JsonCreator
 	@Builder
-	private JsonStockAvailabilityUpdateRequest(
-			@JsonProperty("items") @Singular final List<JsonStockAvailability> items)
+	private MSV3StockAvailability(
+			@JsonProperty("pzn") final long pzn,
+			@JsonProperty("qty") final int qty)
 	{
-		if (items == null || items.isEmpty())
+		if (pzn <= 0)
 		{
-			throw new IllegalArgumentException("At least one item is expected");
+			throw new IllegalArgumentException("pzn shall be > 0");
+		}
+		if (qty < 0)
+		{
+			throw new IllegalArgumentException("qty shall be >= 0");
 		}
 
-		this.items = ImmutableList.copyOf(items);
+		this.pzn = pzn;
+		this.qty = qty;
 	}
 
 }

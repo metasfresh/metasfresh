@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.msv3.server.security.sync;
+package de.metas.ordercandidate.rest;
 
 import java.util.List;
 
@@ -8,13 +8,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-import lombok.Builder;
-import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * de.metas.ordercandidate.rest-api
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -22,12 +20,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,16 +34,19 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JsonUsersUpdateRequest
+public class JsonOLCandCreateBulkResponse
 {
-	@JsonProperty("users")
-	private final List<JsonUser> users;
+	public static JsonOLCandCreateBulkResponse of(final List<JsonOLCand> olCands)
+	{
+		return new JsonOLCandCreateBulkResponse(olCands);
+	}
+
+	@JsonProperty("result")
+	private final List<JsonOLCand> result;
 
 	@JsonCreator
-	@Builder
-	private JsonUsersUpdateRequest(
-			@JsonProperty("users") @Singular final List<JsonUser> users)
+	private JsonOLCandCreateBulkResponse(@JsonProperty("result") final List<JsonOLCand> olCands)
 	{
-		this.users = ImmutableList.copyOf(users);
+		this.result = ImmutableList.copyOf(olCands);
 	}
 }

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityService;
 
 /*
@@ -41,8 +42,8 @@ public class StockAvailabilityBackendSyncRestEndpoint
 	private StockAvailabilityService stockAvailabilityService;
 
 	@PostMapping
-	public void update(@RequestBody final JsonStockAvailabilityUpdateRequest request)
+	public void onEvent(@RequestBody final MSV3StockAvailabilityUpdatedEvent event)
 	{
-		stockAvailabilityService.updateStockAvailability(request);
+		stockAvailabilityService.handleEvent(event);
 	}
 }

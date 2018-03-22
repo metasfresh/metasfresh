@@ -153,6 +153,8 @@
 		<module>de.metas.vertical.pharma</module>
 		<module>de.metas.vertical.pharma.msv3.commons</module>
 		<module>de.metas.vertical.pharma.msv3.server</module>
+		<module>de.metas.vertical.pharma.msv3.server-peer</module>
+		<module>de.metas.vertical.pharma.msv3.server-peer-metasfresh</module>
 		<module>de.metas.vertical.pharma.vendor.gateway.msv3</module>		
 
 		<!-- commented out because we currently don't work with them <module>de.metas.reactor.ait</module> -->

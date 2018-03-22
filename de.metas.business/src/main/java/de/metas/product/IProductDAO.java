@@ -62,4 +62,5 @@ public interface IProductDAO extends ISingletonService
 
 	I_M_Product retrieveProductByValue(Properties ctx, String value);
 
+	int retrieveProductIdByValue(String value);
 }

@@ -14,6 +14,13 @@ Here come the actual release notes:
 **release for week 2018-13**
 
 ## Features
+* metasfresh
+  * [#3585](https://github.com/metasfresh/metasfresh/issues/3585) WebUI window design: Business Partner Credit Limit
+    * Improvement of Busines Partner Credit Limit Fieldnames and Translations.
+  * [#3703](https://github.com/metasfresh/metasfresh/issues/3703) Material Receipt Candidates Window, add media types for mobile/ tablet
+    * Mobile Usage Improvement. Adds Mediatypes to Material Receipt Candidates window (Tablet proptotype).
+  * [#3743](https://github.com/metasfresh/metasfresh/issues/3743) Translation of Distribution Editor Quickaction
+    * Translation added for the Distribution Editor Quickactions.
 
 ## Fixes
 
@@ -36,11 +43,13 @@ Here come the actual release notes:
   * [#894](https://github.com/metasfresh/metasfresh-webui-api/issues/894) New Composed Primary Keys
   * [#895](https://github.com/metasfresh/metasfresh-webui-api/issues/895) Automatic printing HU Labels in WebUI
   * [#901](https://github.com/metasfresh/metasfresh-webui-api/issues/901) Provide media size info for columns
+  * [#910](https://github.com/metasfresh/metasfresh-webui-api/issues/910) 2nd orderline for product missing in picking terminal
 
 * metasfresh-webui-frontend
   * [#1609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1609) Camera barcode reader for Tablet/ mobile device
     * New Barcode Reader that can be used via webcam on mobile devices.
   * [#1677](https://github.com/metasfresh/metasfresh-webui-frontend/pull/1677) Update momentjs in packages.json
+  * [#1699](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1699) tab does not trigger saving number field
   * [#1860](https://github.com/metasfresh/metasfresh/issues/1860) Make documentNo readonly in Payments (and other document types)
 
 ## Fixes
@@ -65,6 +74,8 @@ Here come the actual release notes:
     * Fixes the empty selected elements in list widgets after selecting entry.
   * [#1673](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1673) Improve User Interface for tablet media size
     * Layout adjustments for the usage of webui frontend on tablet media sizes.
+  * [#1689](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1689) Scrollbar not shown in order window for subtab order lines
+    * Fixes the missing horizontal Scrollbar.
 
 # metasfresh 5.48 (2018-11)
 **release for week 2018-11**

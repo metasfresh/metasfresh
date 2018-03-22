@@ -1,13 +1,16 @@
-package de.metas.vertical.pharma.msv3.server.security.sync;
+package de.metas.vertical.pharma.msv3.server.peer.protocol;
+
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.ToString;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -34,25 +37,15 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-@ToString(exclude = "password")
-public class JsonUser
+public class MSV3UserChangedMultiEvent
 {
-	@JsonProperty("username")
-	private String username;
-	@JsonProperty("password")
-	private String password;
-	@JsonProperty("bpartnerId")
-	private int bpartnerId;
+	@JsonProperty("events")
+	private final List<MSV3UserChangedEvent> events;
 
 	@JsonCreator
 	@Builder
-	private JsonUser(
-			@JsonProperty("username") @NonNull final String username,
-			@JsonProperty("password") @NonNull final String password,
-			@JsonProperty("bpartnerId") @NonNull final Integer bpartnerId)
+	private MSV3UserChangedMultiEvent(@JsonProperty("events") @Singular @NonNull final List<MSV3UserChangedEvent> events)
 	{
-		this.username = username;
-		this.password = password;
-		this.bpartnerId = bpartnerId;
+		this.events = ImmutableList.copyOf(events);
 	}
 }

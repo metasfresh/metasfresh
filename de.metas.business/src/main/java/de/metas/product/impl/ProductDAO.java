@@ -1,5 +1,7 @@
 package de.metas.product.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -37,6 +39,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.product.IProductDAO;
@@ -58,15 +61,27 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_Value)
-	public I_M_Product retrieveProductByValue(@CacheCtx final Properties ctx, @NonNull final String value)
+	public I_M_Product retrieveProductByValue(final Properties ctx, @NonNull final String value)
+	{
+		final int productId = retrieveProductIdByValue(ctx, value);
+		return productId > 0 ? loadOutOfTrx(productId, I_M_Product.class) : null;
+	}
+
+	@Override
+	public int retrieveProductIdByValue(@NonNull final String value)
+	{
+		return retrieveProductIdByValue(Env.getCtx(), value);
+	}
+
+	@Cached(cacheName = I_M_Product.Table_Name + "#ID#by#" + I_M_Product.COLUMNNAME_Value)
+	public int retrieveProductIdByValue(@CacheCtx final Properties ctx, @NonNull final String value)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.create()
-				.firstOnly(I_M_Product.class);
+				.firstIdOnly();
 	}
 
 	@Override

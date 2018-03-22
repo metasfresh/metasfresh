@@ -33,3 +33,4 @@ de.metas.endcustomer.mf15/metasfresh.properties
 **/rebel.xml
 
 de.metas.shipper.gateway.go/src/main/resources/application.properties
+de.metas.vertical.pharma.msv3.server/application.properties
