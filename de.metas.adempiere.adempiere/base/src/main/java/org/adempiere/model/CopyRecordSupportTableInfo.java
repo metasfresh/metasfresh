@@ -13,7 +13,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class TableInfoVO
+public class CopyRecordSupportTableInfo
 {
 	/** Translated name */
 	private final ITranslatableString name;
@@ -23,7 +23,7 @@ public class TableInfoVO
 	private final List<String> orderByColumnNames;
 
 	@Builder
-	private TableInfoVO(
+	private CopyRecordSupportTableInfo(
 			@NonNull final ITranslatableString name,
 			final String tableName,
 			final String linkColumnName,

@@ -78,7 +78,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	private String _keyColumn = null;
 	private PO _parentPO = null;
 
-	private List<TableInfoVO> _suggestedChildrenToCopy = ImmutableList.of();
+	private List<CopyRecordSupportTableInfo> _suggestedChildrenToCopy = ImmutableList.of();
 	private int _fromPOId = -1;
 	private boolean _base = false;
 	private int _adWindowId = -1;
@@ -145,7 +145,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 		//
 		// Copy children
-		for (final TableInfoVO childTableInfo : getSuggestedChildren(fromPO, getSuggestedChildrenToCopy()))
+		for (final CopyRecordSupportTableInfo childTableInfo : getSuggestedChildren(fromPO, getSuggestedChildrenToCopy()))
 		{
 			for (final Iterator<Object> it = retrieveChildPOsForParent(childTableInfo, fromPO); it.hasNext();)
 			{
@@ -232,7 +232,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		to.set_CustomColumn(columnName, oldValue + msg);
 	}
 
-	private Iterator<Object> retrieveChildPOsForParent(final TableInfoVO childInfo, final PO parentPO)
+	private Iterator<Object> retrieveChildPOsForParent(final CopyRecordSupportTableInfo childInfo, final PO parentPO)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<Object> queryBuilder = queryBL.createQueryBuilder(childInfo.getTableName(), getCtx(), ITrx.TRXNAME_None)
@@ -248,7 +248,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
-	public List<TableInfoVO> getSuggestedChildren(final PO po, final List<TableInfoVO> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
 	{
 		//
 		// Check if this record has a single primary key
@@ -270,7 +270,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		}
 		else
 		{
-			final List<TableInfoVO> listFromTables = new ArrayList<>();
+			final List<CopyRecordSupportTableInfo> listFromTables = new ArrayList<>();
 
 			// search tables where exist the key column
 			for (final I_AD_Table childTableSuggested : retrieveChildTablesForParentColumn(keyColumnName))
@@ -292,7 +292,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 				final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(childTableSuggested);
 
-				listFromTables.add(TableInfoVO.builder()
+				listFromTables.add(CopyRecordSupportTableInfo.builder()
 						.name(trlMap.getColumnTrl(I_AD_Table.COLUMNNAME_Name, childTableSuggested.getName()))
 						.tableName(childTableSuggested.getTableName())
 						.linkColumnName(keyColumnName)
@@ -359,12 +359,12 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	@Override
-	public void setSuggestedChildrenToCopy(final List<TableInfoVO> suggestedChildrenToCopy)
+	public void setSuggestedChildrenToCopy(final List<CopyRecordSupportTableInfo> suggestedChildrenToCopy)
 	{
 		this._suggestedChildrenToCopy = suggestedChildrenToCopy != null ? ImmutableList.copyOf(suggestedChildrenToCopy) : ImmutableList.of();
 	}
 
-	private List<TableInfoVO> getSuggestedChildrenToCopy()
+	private List<CopyRecordSupportTableInfo> getSuggestedChildrenToCopy()
 	{
 		return _suggestedChildrenToCopy;
 	}
