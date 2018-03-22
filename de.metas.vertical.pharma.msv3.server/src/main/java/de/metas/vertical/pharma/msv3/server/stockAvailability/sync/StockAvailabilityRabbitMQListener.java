@@ -1,12 +1,10 @@
 package de.metas.vertical.pharma.msv3.server.stockAvailability.sync;
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Component;
 
-import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
+import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityService;
 
@@ -32,17 +30,14 @@ import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityS
  * #L%
  */
 
-@RestController
-@RequestMapping(StockAvailabilityBackendSyncRestEndpoint.ENDPOINT)
-public class StockAvailabilityBackendSyncRestEndpoint
+@Component
+public class StockAvailabilityRabbitMQListener
 {
-	public static final String ENDPOINT = MSV3ServerConstants.BACKEND_SYNC_REST_ENDPOINT + "/availableStock";
-
 	@Autowired
 	private StockAvailabilityService stockAvailabilityService;
 
-	@PostMapping
-	public void onEvent(@RequestBody final MSV3StockAvailabilityUpdatedEvent event)
+	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent)
+	public void onEvent(final MSV3StockAvailabilityUpdatedEvent event)
 	{
 		stockAvailabilityService.handleEvent(event);
 	}
