@@ -1,12 +1,12 @@
 package de.metas.vertical.pharma.msv3.server.security;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
@@ -45,24 +45,31 @@ public class MSV3User implements UserDetails
 	private final String username;
 	private final String password;
 	private final BPartnerId bpartnerId;
+	private final List<GrantedAuthority> authorities;
 
-	private static final List<GrantedAuthority> DEFAULT_AUTHORITIES = ImmutableList.of(new SimpleGrantedAuthority(SecurityConfig.DEFAULT_AUTHORITY));
+	private static final List<GrantedAuthority> AUTHORITIES_CLIENT = ImmutableList.of(new SimpleGrantedAuthority(SecurityConfig.ROLE_CLIENT));
+	private static final List<GrantedAuthority> AUTHORITIES_SERVER_ADMIN = ImmutableList.of(new SimpleGrantedAuthority(SecurityConfig.ROLE_SERVER_ADMIN));
 
 	@Builder
 	private MSV3User(
 			@NonNull final String username,
 			@NonNull final String password,
-			@NonNull final BPartnerId bpartnerId)
+			final boolean serverAdmin,
+			final BPartnerId bpartnerId)
 	{
 		this.username = username;
 		this.password = password;
-		this.bpartnerId = bpartnerId;
-	}
+		this.authorities = serverAdmin ? AUTHORITIES_SERVER_ADMIN : AUTHORITIES_CLIENT;
 
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities()
-	{
-		return DEFAULT_AUTHORITIES;
+		if (serverAdmin)
+		{
+			this.bpartnerId = null;
+		}
+		else
+		{
+			Preconditions.checkNotNull(bpartnerId, "bpartnerId");
+			this.bpartnerId = bpartnerId;
+		}
 	}
 
 	@Override
