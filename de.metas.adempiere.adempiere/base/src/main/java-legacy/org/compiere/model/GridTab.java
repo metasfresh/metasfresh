@@ -59,7 +59,7 @@ import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.model.TableInfoVO;
+import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.adempiere.ui.sideactions.model.ISideActionsGroupModel;
@@ -4046,7 +4046,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	private DataNewCopyMode _dataNewCopyMode = null;
 	/** Tables suggested by user for copy with details */
-	private List<TableInfoVO> m_suggestedCopyWithDetailsList = null;
+	private List<CopyRecordSupportTableInfo> m_suggestedCopyWithDetailsList = null;
 
 	/**
 	 * Returns if we are in record copying mode.
@@ -4079,7 +4079,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		this._dataNewCopyMode = null;
 	}
 
-	public final void setSuggestedCopyWithDetailsList(final List<TableInfoVO> suggestedCopyWithDetailsList)
+	public final void setSuggestedCopyWithDetailsList(final List<CopyRecordSupportTableInfo> suggestedCopyWithDetailsList)
 	{
 		this.m_suggestedCopyWithDetailsList = ImmutableList.copyOf(suggestedCopyWithDetailsList);
 	}
@@ -4089,7 +4089,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		this.m_suggestedCopyWithDetailsList = null;
 	}
 
-	public final List<TableInfoVO> getSuggestedCopyWithDetailsList()
+	public final List<CopyRecordSupportTableInfo> getSuggestedCopyWithDetailsList()
 	{
 		return m_suggestedCopyWithDetailsList;
 	}
