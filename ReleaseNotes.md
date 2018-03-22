@@ -27,6 +27,9 @@ Here come the actual release notes:
     * Improvement of Lookup Widgets and List Components, combined functionality  for better maintainability.
 
 ## Fixes
+* metasfresh
+  * [#3755](https://github.com/metasfresh/metasfresh/issues/3755) Error in search of Businesspartner
+    * Fixes the SQL of a virtual column in C_BPartner Table.
 * metasfresh-webui-frontend
   * [#1605](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1605) Scrolling in dropdown fields
     * Fixes the behavior of dropdown fields when scrolling throught the list.
