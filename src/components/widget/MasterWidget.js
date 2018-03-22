@@ -86,11 +86,9 @@ class MasterWidget extends Component {
     } = this.props;
 
     let { entity } = this.props;
-
     let currRowId = rowId;
     let ret = null;
     let isEdit = false;
-
     let parseValue = this.parseDateBeforePatch(widgetType, value);
 
     if (rowId === 'NEW') {
@@ -238,17 +236,13 @@ MasterWidget.propTypes = {
   isOpenDatePicker: PropTypes.bool,
 };
 
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators(
-    {
-      openModal: windowActions.openModal,
-      patch: windowActions.patch,
-      updatePropertyValue: windowActions.updatePropertyValue,
-    },
-    dispatch
-  );
-}
-
-export default connect(null, mapDispatchToProps, null, { withRef: true })(
-  MasterWidget
-);
+export default connect(
+  null,
+  {
+    openModal: windowActions.openModal,
+    patch: windowActions.patch,
+    updatePropertyValue: windowActions.updatePropertyValue,
+  },
+  null,
+  { withRef: true }
+)(MasterWidget);
