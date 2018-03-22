@@ -18,14 +18,15 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
-import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -199,7 +200,9 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 				.setForceQtyAllocation(false);
 	}
 
-	protected final IHUProducerAllocationDestination createNewHUProducer(final PickingSlotRow pickingRow, final I_M_HU_PI targetHUPI)
+	protected final LUTUProducerDestination createNewHUProducer(
+			@NonNull final PickingSlotRow pickingRow,
+			@NonNull final I_M_HU_PI targetHUPI)
 	{
 		final int bpartnerId = pickingRow.getBPartnerId();
 		final I_C_BPartner bpartner = bpartnerId > 0 ? load(bpartnerId, I_C_BPartner.class) : null;
@@ -212,11 +215,25 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 			throw new AdempiereException("Picking slot's locator is not an after picking locator: " + locator.getValue());
 		}
 
-		return HUProducerDestination.of(targetHUPI)
-				.setC_BPartner(bpartner)
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setC_BPartner(bpartner)
 				.setC_BPartner_Location_ID(bpartnerLocationId)
 				.setM_Locator(locator)
 				.setHUStatus(X_M_HU.HUSTATUS_Picked);
+
+		final String targetHuType = Services.get(IHandlingUnitsBL.class).getHU_UnitType(targetHUPI);
+		if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(targetHuType))
+		{
+			lutuProducer.setLUPI(targetHUPI);
+		}
+		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(targetHuType))
+		{
+			pickingRow.getHuProductId();
+
+			lutuProducer.setNoLU();
+			lutuProducer.setTUPI(targetHUPI);
+		}
+		return lutuProducer;
 	}
 
 }
