@@ -809,6 +809,9 @@ input:checked + .input-slider:before {
     padding: .25rem .50rem;
     cursor: pointer;
     position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .input-dropdown-list-option:not(:first-of-type) {

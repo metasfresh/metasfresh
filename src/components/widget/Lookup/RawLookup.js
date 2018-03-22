@@ -6,12 +6,8 @@ import ReactDOM from 'react-dom';
 
 import { autocompleteRequest } from '../../../actions/GenericActions';
 import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesActions';
-import {
-  openModal,
-  allowOutsideClick,
-  disableOutsideClick,
-} from '../../../actions/WindowActions';
-import LookupList from './LookupList';
+import { openModal } from '../../../actions/WindowActions';
+import SelectionDropdown from '../SelectionDropdown';
 
 class RawLookup extends Component {
   constructor(props) {
@@ -26,7 +22,6 @@ class RawLookup extends Component {
       loading: false,
       oldValue: '',
       shouldBeFocused: true,
-      validLocal: true,
     };
   }
 
@@ -128,32 +123,6 @@ class RawLookup extends Component {
       isInputEmpty: true,
       selected: null,
       loading: false,
-      query: '',
-    });
-  };
-
-  navigate = reverse => {
-    const { selected, list } = this.state;
-
-    let selectedNew = selected;
-
-    if (list.length === 0) {
-      // Case of selecting row for creting new instance
-      selectedNew = 'new';
-    } else {
-      // Case of selecting regular list items
-      if (typeof selected === 'number') {
-        const selectTarget = selected + (reverse ? -1 : 1);
-
-        if (typeof list[selectTarget] !== 'undefined') {
-          selectedNew = selectTarget;
-        }
-      }
-    }
-
-    this.setState({
-      selected: selectedNew,
-      direction: reverse ? 'up' : 'down',
     });
   };
 
@@ -172,6 +141,12 @@ class RawLookup extends Component {
     this.setState({
       selected: null,
     });
+
+    if (select.key === 'NEW') {
+      this.handleAddNew();
+
+      return;
+    }
 
     if (filterWidget) {
       const promise = onChange(mainProp.parameterName, select);
@@ -238,14 +213,12 @@ class RawLookup extends Component {
     );
   };
 
-  handleBlur = callback => {
-    const { dispatch, onHandleBlur } = this.props;
+  handleBlur = () => {
+    const { onHandleBlur } = this.props;
 
     this.props.onDropdownListToggle(false);
-    callback && callback();
 
     onHandleBlur && onHandleBlur();
-    dispatch(allowOutsideClick());
   };
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
@@ -264,10 +237,9 @@ class RawLookup extends Component {
       mainProperty,
       handleInputEmptyStatus,
       enableAutofocus,
-      dispatch,
+      isModal,
+      newRecordCaption,
     } = this.props;
-
-    dispatch(disableOutsideClick());
 
     enableAutofocus();
 
@@ -308,13 +280,24 @@ class RawLookup extends Component {
       typeaheadRequest.then(response => {
         let values = response.data.values || [];
 
-        this.setState({
-          list: values,
-          loading: false,
-          selected: 0,
-          validLocal:
-            values.length === 0 && handleChangeOnFocus !== true ? false : true,
-        });
+        if (values.length === 0 && !isModal) {
+          const optionNew = { key: 'NEW', caption: newRecordCaption };
+          const list = [optionNew];
+
+          this.setState({
+            list,
+            forceEmpty: true,
+            loading: false,
+            selected: optionNew,
+          });
+        } else {
+          this.setState({
+            list: values,
+            forceEmpty: false,
+            loading: false,
+            selected: values[0],
+          });
+        }
       });
     } else {
       this.setState({
@@ -324,51 +307,6 @@ class RawLookup extends Component {
       });
 
       handleInputEmptyStatus(true);
-    }
-  };
-
-  handleKeyDown = e => {
-    const { listenOnKeys, listenOnKeysFalse } = this.props;
-    const { selected, list, query } = this.state;
-
-    //need for prevent fire event onKeyDown 'Enter' from TableItem
-    listenOnKeys && listenOnKeysFalse && listenOnKeysFalse();
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        this.navigate();
-        break;
-
-      case 'ArrowUp':
-        e.preventDefault();
-        this.navigate(true);
-        break;
-
-      case 'ArrowLeft':
-        e.preventDefault();
-        this.handleChange();
-        break;
-
-      case 'Enter':
-        e.preventDefault();
-
-        if (selected === 'new') {
-          this.handleAddNew(query);
-        } else if (selected !== null) {
-          this.handleSelect(list[selected]);
-        }
-
-        break;
-
-      case 'Escape':
-        e.preventDefault();
-        this.handleBlur();
-        break;
-
-      case 'Tab':
-        this.handleBlur();
-        break;
     }
   };
 
@@ -386,7 +324,6 @@ class RawLookup extends Component {
         this.setState({
           oldValue: inputValue,
           isInputEmpty: false,
-          validLocal: true,
           list: [init],
         });
       } else if (isInputEmpty) {
@@ -409,11 +346,13 @@ class RawLookup extends Component {
     }
   };
 
+  handleTemporarySelection = selected => {
+    this.setState({ selected });
+  };
+
   render() {
     const {
-      isModal,
       align,
-      newRecordCaption,
       placeholder,
       readonly,
       disabled,
@@ -421,39 +360,29 @@ class RawLookup extends Component {
       isOpen,
     } = this.props;
 
-    const {
-      isInputEmpty,
-      list,
-      query,
-      loading,
-      selected,
-      direction,
-    } = this.state;
-
-    const SEARCH_ICON_WIDTH = 38;
+    const { isInputEmpty, list, loading, selected, forceEmpty } = this.state;
 
     return (
-      <div
-        className={
-          'raw-lookup-wrapper raw-lookup-wrapper-bcg' +
-          (disabled ? ' raw-lookup-disabled' : '') +
-          (readonly ? ' input-disabled' : '')
-        }
-        onKeyDown={this.handleKeyDown}
-        ref={c => (this.rawLookup = c)}
+      <TetherComponent
+        attachment="top left"
+        targetAttachment="bottom left"
+        constraints={[
+          {
+            to: 'scrollParent',
+          },
+          {
+            to: 'window',
+            pin: ['bottom'],
+          },
+        ]}
       >
-        <TetherComponent
-          attachment="top left"
-          targetAttachment="bottom left"
-          constraints={[
-            {
-              to: 'scrollParent',
-            },
-            {
-              to: 'window',
-              pin: ['bottom'],
-            },
-          ]}
+        <div
+          className={
+            'raw-lookup-wrapper raw-lookup-wrapper-bcg' +
+            (disabled ? ' raw-lookup-disabled' : '') +
+            (readonly ? ' input-disabled' : '')
+          }
+          ref={ref => (this.wrapper = ref)}
         >
           <div className={'input-dropdown input-block'}>
             <div
@@ -468,33 +397,26 @@ class RawLookup extends Component {
                 tabIndex={tabIndex}
                 placeholder={placeholder}
                 onChange={this.handleChange}
+                onBlur={this.handleBlur}
               />
             </div>
           </div>
-
-          {isOpen &&
-            !isInputEmpty && (
-              <LookupList
-                ref={c => (this.lookupList = c)}
-                loading={loading}
-                selected={selected}
-                direction={direction}
-                list={list}
-                query={query}
-                isInputEmpty={isInputEmpty}
-                disableOnClickOutside={!isOpen}
-                creatingNewDisabled={isModal}
-                newRecordCaption={newRecordCaption}
-                handleSelect={this.handleSelect}
-                handleAddNew={this.handleAddNew}
-                onClickOutside={this.handleBlur}
-                style={{
-                  width: `${this.rawLookup.offsetWidth + SEARCH_ICON_WIDTH}px`,
-                }}
-              />
-            )}
-        </TetherComponent>
-      </div>
+        </div>
+        {isOpen &&
+          !isInputEmpty && (
+            <SelectionDropdown
+              loading={loading}
+              options={list}
+              empty="No results found"
+              forceEmpty={forceEmpty}
+              selected={selected}
+              width={this.wrapper && this.wrapper.offsetWidth}
+              onChange={this.handleTemporarySelection}
+              onSelect={this.handleSelect}
+              onCancel={this.handleBlur}
+            />
+          )}
+      </TetherComponent>
     );
   }
 }
