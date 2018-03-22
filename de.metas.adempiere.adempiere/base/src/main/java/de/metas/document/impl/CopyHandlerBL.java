@@ -10,12 +10,12 @@ package de.metas.document.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,9 +42,9 @@ public class CopyHandlerBL implements ICopyHandlerBL
 	/**
 	 * Using LinkedHashMap to make sure the keys are iterated in the order of registration.
 	 */
-	final Map<ICopyHandler<?>, IQueryFilter<?>> handler2Filter = new LinkedHashMap<ICopyHandler<?>, IQueryFilter<?>>();
+	final Map<ICopyHandler<?>, IQueryFilter<?>> handler2Filter = new LinkedHashMap<>();
 
-	final Map<ICopyHandler<?>, Class<?>> handler2Class = new LinkedHashMap<ICopyHandler<?>, Class<?>>();
+	final Map<ICopyHandler<?>, Class<?>> handler2Class = new LinkedHashMap<>();
 
 	@Override
 	public <T> void registerCopyHandler(final Class<T> clazz, final IQueryFilter<ImmutablePair<T, T>> filter, final ICopyHandler<? extends T> handler)
@@ -82,8 +82,8 @@ public class CopyHandlerBL implements ICopyHandlerBL
 
 			// note: we use the handler's SupportedItemsClass and InterfaceWrapperHelper so make sure that the handler will be called with the correct subtype of 'T'.
 			castedHandler.copyPreliminaryValues(
-					(T)InterfaceWrapperHelper.create(from, supportedItemsClass),
-					(T)InterfaceWrapperHelper.create(to, supportedItemsClass));
+					InterfaceWrapperHelper.create(from, supportedItemsClass),
+					InterfaceWrapperHelper.create(to, supportedItemsClass));
 		}
 	}
 
@@ -106,13 +106,13 @@ public class CopyHandlerBL implements ICopyHandlerBL
 
 			// note: we use the handler's SupportedItemsClass and InterfaceWrapperHelper so make sure that the handler will be called with the correct subtype of 'T'.
 			castedHandler.copyValues(
-					(T)InterfaceWrapperHelper.create(from, supportedItemsClass),
-					(T)InterfaceWrapperHelper.create(to, supportedItemsClass));
+					InterfaceWrapperHelper.create(from, supportedItemsClass),
+					InterfaceWrapperHelper.create(to, supportedItemsClass));
 		}
 	}
 
 	/**
-	 * 
+	 *
 	 * @param handler
 	 * @param from
 	 * @param to
@@ -121,7 +121,7 @@ public class CopyHandlerBL implements ICopyHandlerBL
 	 *         <li>the given <code>from</code> and <code>to</code> have a table name (see {@link InterfaceWrapperHelper#getModelTableNameOrNull(Object)}), which is equal to the table name of the class
 	 *         the given <code>handler</code> has registered with.
 	 *         <li>the class the given <code>handler</code> was registered with is a super class/interface or the same as the class of the given <code>from</code> and <code>to</code>
-	 * 
+	 *
 	 *         </ul>
 	 */
 	private <T> boolean isApplicable(final ICopyHandler<?> handler, final T from, final T to)
@@ -155,12 +155,7 @@ public class CopyHandlerBL implements ICopyHandlerBL
 		// if reached this point we made sure that the cast won't fail.
 		final IQueryFilter<IPair<T, T>> filter = (IQueryFilter<IPair<T, T>>)handler2Filter.get(handler);
 
-		if (!filter.accept(ImmutablePair.of(from, to)))
-		{
-			return false;
-		}
-
-		return true;
+		return filter.accept(ImmutablePair.of(from, to));
 	}
 
 	@SuppressWarnings("unchecked")
