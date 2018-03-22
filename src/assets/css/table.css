@@ -1,119 +1,183 @@
-
 .table {
     margin-bottom: 1px;
+
+     *::selection {
+        background-color: transparent;
+        color: $brand-font-color;
+    }
+
+    .input-body-container *::selection {
+        background-color: $brand-color-primary;
+        color: #fff;
+    }
+
+    &.table-included {
+        background-color: transparent;
+        height: 100%;
+        
+        td {
+            height: 22px;
+            width: 50%;
+        }
+    }
+
+    &.table-bordered-horizontally td {
+        border-bottom: 1px solid $brand-border-color;
+    }
+
+    &.table-bordered-vertically td:not(:last-child) {
+        border-right: 1px solid $brand-border-color;
+    }
+
+    &.table-bordered-vertically .item-caption td {
+        border-right: none;
+    }
+
+    &.table-bordered-vertically td.indented {
+        line-height: 28px;
+        min-width:0;
+        border-right:0;
+        padding-top:0;
+        padding-bottom:0;
+        vertical-align: middle;
+    }
+
+    tbody+tbody {
+        border-top: 0;
+    }
+
+    thead {
+        th {
+            border: 0;
+            background-color: $brand-color-secondary;
+            color: #fff;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            vertical-align: middle;
+        }
+
+        .sort-menu .th-caption {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+    }
+
+    .col-xs-12, .col-sm-12 {
+        position: static;
+    }
+
+    td, th {
+        padding: .5rem .5rem;
+        height: 28px;
+    }
+
+    th {
+        font-weight: 500;
+        position: relative;
+    }
+
+    td {
+        width: 75px;
+        position: relative;
+        cursor: pointer;
+        border-top: 0;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-top: 0;
+        padding-bottom: 0;
+        vertical-align: middle;
+
+        span {
+            pointer-events: none;
+        }
+    }
+
+    /* Table cols sizing */
+    .td-lg {
+        width: 225px;
+        max-width: 225px;
+        min-width: 225px;
+
+        .input-dropdown-list {
+            width: auto;
+        }
+    }
+
+    .td-md {
+        width: 144px;
+        max-width: 144px;
+    }
+
+    .td-sm {
+        min-width: 60px;
+        max-width: 100px;
+    }
 }
 
-.table *::selection{
-    background-color: transparent;
-    color: $brand-font-color;
-}
-
-.table .input-body-container *::selection {
-    background-color: $brand-color-primary;
-    color: #fff;
-}
-
-.table tbody+tbody {
-    border-top: 0;
-}
-
-.table thead th {
-    border: 0;
-    background-color: $brand-color-secondary;
-    color: #fff;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    vertical-align: middle;
-}
-
-.table thead .sort-menu .th-caption {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    display: inline-block;
-    width: 100%;
-}
-
-.table .col-xs-12,
-.table .col-sm-12 {
-    position: static;
-}
-
-.table.table-bordered-horizontally td {
-    border-bottom: 1px solid $brand-border-color;
-}
-
-.table.table-bordered-vertically td:not(:last-child) {
-    border-right: 1px solid $brand-border-color;
-}
-
-.table.table-bordered-vertically .item-caption td {
-    border-right: none;
-}
-
-.table-hide-property {
-    display: none;
-}
-
-.table td,
-.table th {
-    padding: .5rem .5rem;
-    height: 28px;
-}
-
-@media only screen and (min-width: $breakpoint-md){
+@media only screen and (min-width: $breakpoint-md) {
     .desktop {
         .table td,
         .table th {
             padding: .50rem .7rem;
             height: 42px;
         }
+
+        .table.table-bordered-vertically td.indented {
+            line-height: 42px;
+        }
     }
 }
 
-.table td {
-    cursor: pointer;
-    border-top: 0;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding-top: 0;
-    padding-bottom: 0;
-    vertical-align: middle;
+.table-hide-property {
+    display: none;
 }
 
-.table td span {
-    pointer-events: none;
+.table-fade-out {
+    opacity: .65;
 }
-
-
 
 /*
  * Feel really sorry about that, but it is hard to get over 
  * table styles in bootstrap and avoid !important.
+ *
+ * Cleaned this up a bit - Kuba
  */
-.table-striped tbody tr {
-    border-left: 3px solid transparent;
-}
-.table-striped tbody tr.tr-odd:nth-child(even) {
-    background-color: $brand-super-light-color;
-}
-.table-striped tbody tr.tr-odd:nth-child(odd) {
-    background-color: #fff;
-}
-.table-striped tbody tr.tr-even:nth-last-child(odd) {
-    background-color: $brand-super-light-color;
-}
-.table-striped tbody tr.tr-even:nth-last-child(even) {
-    background-color: #fff;
-}
-.table-striped tbody tr.tr-even.row-disabled,
-.table-striped tbody tr.tr-odd.row-disabled  {
-    background-color: #f3f3f3;
-    color: #a9a9a9;
-}
-.table-striped tbody tr.tr-even.row-boundary,
-.table-striped tbody tr.tr-odd.row-boundary  {
-    border-bottom: 2px solid #ddd;
+.table-striped {
+    tbody tr {
+        border-left: 3px solid transparent;
+
+        &.tr-odd:nth-child(even) {
+            background-color: $brand-super-light-color;
+        }
+
+        &.tr-odd:nth-child(odd) {
+            background-color: #fff;
+        }
+
+        &.tr-even:nth-last-child(odd) {
+            background-color: $brand-super-light-color;
+        }
+
+        &.tr-even:nth-last-child(even) {
+            background-color: #fff;
+        }
+
+        &.tr-even.row-disabled, &.tr-odd.row-disabled {
+            background-color: #f3f3f3;
+            color: #a9a9a9;
+        }
+
+        &.tr-even.row-boundary, &.tr-odd.row-boundary {
+            border-bottom: 2px solid #ddd;
+        }
+    }
+
+    .table-included tr {
+        background-color: transparent;
+    }
 }
 
 .row-not-saved {
@@ -228,13 +292,13 @@
 
 .page-item {
     display: inline-block;
-}
 
-.page-item.active .page-link,
-.page-item.active .page-link:focus,
-.page-item.active .page-link:hover {
-    background-color: $brand-color-primary;
-    border-color: $brand-color-primary;
+    &.active {
+        .page-link, .page-link:focus, .page-link:hover {
+            background-color: $brand-color-primary;
+            border-color: $brand-color-primary;       
+        }
+    } 
 }
 
 .page-link {
@@ -260,47 +324,11 @@
     color: $brand-font-color;
 }
 
-th {
-    font-weight: 500;
-    position: relative;
-}
-
 .empty-info-text {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 200px;
-}
-
-.empty-info-text div {
-    text-align: center;
-}
-
-
-.table td {
-    width: 75px;
-    position: relative;
-}
-
-/* Table cols sizing */
-
-.td-lg {
-    width: 225px;
-    max-width: 225px;
-}
-
-.td-md {
-    width: 144px;
-    max-width: 144px;
-}
-
-.td-sm {
-    min-width: 60px;
-    max-width: 100px;
-}
-
-.td-lg .input-dropdown-list {
-    width: auto;
 }
 
 .pagination {
@@ -326,12 +354,14 @@ th {
     }
 }
 
-.order-list-panel-body .pagination-wrapper {
-    padding: 0 10px;
-}
+.order-list-panel-body {
+    .pagination-wrapper {
+        padding: 0 10px;
+    }
 
-.order-list-panel-body .page-link {
-    padding: .4rem .65rem;
+    .page-link {
+        padding: .4rem .65rem;
+    }
 }
 
 .pagination-part {
@@ -344,23 +374,6 @@ th {
 
 .pagination-link {
     text-decoration: underline;
-}
-
-.table.table-bordered-vertically td.indented {
-    line-height: 28px;
-    min-width:0;
-    border-right:0;
-    padding-top:0;
-    padding-bottom:0;
-    vertical-align: middle;
-}
-
-@media only screen and (min-width: $breakpoint-md){
-    .desktop {
-        .table.table-bordered-vertically td.indented {
-            line-height: 42px;
-        }
-    }
 }
 
 /* INDENT SIGN ================ */
@@ -390,36 +403,32 @@ $indent-collapsible-offset-lg: 24px;
     vertical-align: middle;
 }
 
-.indent-icon {
-    display: none;
-}
-
-.indent-item-mid{
-    padding-left:$indent-signs-offset;
-}
-
-.indent-collapsible-item-mid {
-    padding-left: calc($indent-signs-offset + $indent-collapsible-offset);
-}
-
-.indent-item-mid .indent-sign {
-    top: 0;
-    left: 0;
-    width: 1px;
-    height: $indent-height;
-    border-left: 1px solid #afbfca;
-}
-
-.indent-item-mid .indent-sign.indent-sign-bot {
-    height: $indent-height-mid;
-}
-
 .indent-mid {
     position: absolute;
     top: $indent-height-mid;
     width: 5px;
     height: 1px;
     border-top: 1px solid #afbfca;
+}
+
+.indent-item-mid {
+    padding-left:$indent-signs-offset;
+    
+    .indent-sign {
+        top: 0;
+        left: 0;
+        width: 1px;
+        height: $indent-height;
+        border-left: 1px solid #afbfca;
+    
+        &.indent-sign-bot {
+            height: $indent-height-mid;
+        }
+    }
+}
+
+.indent-collapsible-item-mid {
+    padding-left: calc($indent-signs-offset + $indent-collapsible-offset);
 }
 
 .indent-bot {
@@ -452,25 +461,25 @@ $indent-collapsible-offset-lg: 24px;
             display: inline;
         }
 
+        .indent-mid {
+            top: $indent-height-mid-lg;
+        }
+
         .indent-item-mid{
             padding-left:$indent-signs-offset-lg;
+            
+            .indent-sign {
+                height: $indent-height-lg;
+                
+                &.indent-sign-bot {
+                    height: $indent-height-mid-lg;
+                }
+            }
         }
 
         .indent-collapsible-item-mid {
             margin-right:10px;
             padding-left: calc($indent-signs-offset-lg + $indent-collapsible-offset-lg);
-        }
-
-        .indent-item-mid .indent-sign {
-            height: $indent-height-lg;
-        }
-
-        .indent-item-mid .indent-sign.indent-sign-bot {
-            height: $indent-height-mid-lg;
-        }
-
-        .indent-mid {
-            top: $indent-height-mid-lg;
         }
 
         .indent-bot {
@@ -520,24 +529,6 @@ $indent-collapsible-offset-lg: 24px;
 
 .document-list-table {
     flex: 2.6;
-}
-
-.table-fade-out {
-    opacity: .65;
-}
-
-.table.table-striped  .table-included tr {
-    background-color: transparent;
-}
-
-.table .table-included {
-    background-color: transparent;
-    height: 100%;
-}
-
-.table.table-included td {
-    height: 22px;
-    width: 50%;
 }
 
 .table-chart-value {
