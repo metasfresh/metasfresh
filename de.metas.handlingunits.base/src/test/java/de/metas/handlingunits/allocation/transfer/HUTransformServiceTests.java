@@ -846,7 +846,7 @@ public class HUTransformServiceTests
 		lutuProducer.setLUPI(data.piLU);
 		lutuProducer.setLUItemPI(piLU_Item_20_IFCO);
 		lutuProducer.setTUPI(data.piTU_IFCO);
-		lutuProducer.addTUCapacity(data.helper.pTomato, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
+		lutuProducer.addCUPerTU(data.helper.pTomato, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
 
 		// load the tomatoes into HUs
 		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("109.4"), data.helper.uomKg);

@@ -78,6 +78,7 @@ Here come the actual release notes:
   * [#3694](https://github.com/metasfresh/metasfresh/issues/3694) docs_flatrate_term_all_procurements_conditions_report fails if M_Product_ID is left empty
   * [#3695](https://github.com/metasfresh/metasfresh/issues/3695) NPE when completing DD_Order
   * [#3701](https://github.com/metasfresh/metasfresh/issues/3701) Jasper: ADR Auswertung report has duplicates
+  * [#3745](https://github.com/metasfresh/metasfresh/issues/3745) Compensation Group: Sequence of Lines is lost on Clone
 
 * metasfresh-webui-api
   * [#735](https://github.com/metasfresh/metasfresh-webui-api/issues/735) Hide Receive HUs (default) when there are no HUs

@@ -94,7 +94,7 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 
 	public void handleEvent(@NonNull final MSV3UserChangedEvent event)
 	{
-		if (event.getChangeType() == ChangeType.CREATED || event.getChangeType() == ChangeType.UPDATED)
+		if (event.getChangeType() == ChangeType.CREATED_OR_UPDATED)
 		{
 			final String username = event.getUsername();
 

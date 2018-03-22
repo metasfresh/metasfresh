@@ -242,7 +242,7 @@ public class C_OrderLine
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
 			I_C_OrderLine.COLUMNNAME_LineNetAmt,
 			I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage
-	})
+	}, skipIfCopying = true)
 	public void handleCompensantionGroupChange(final I_C_OrderLine orderLine)
 	{
 		groupChangesHandler.onOrderLineChanged(orderLine);
