@@ -23,6 +23,8 @@ Here come the actual release notes:
     * Translation added for the Distribution Editor Quickactions.
 
 * metasfresh-webui-frontend
+  * [#1681](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1681) Data Entry via barcode scan in Action Parms
+    * New Funcitonality for Barcode Scanning in Action Parms.
   * [#1684](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1684) Combine dropdown list of <List> and <Lookup> component
     * Improvement of Lookup Widgets and List Components, combined functionality  for better maintainability.
 
