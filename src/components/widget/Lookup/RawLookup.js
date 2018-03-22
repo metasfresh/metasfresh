@@ -22,7 +22,6 @@ class RawLookup extends Component {
       loading: false,
       oldValue: '',
       shouldBeFocused: true,
-      validLocal: true,
     };
   }
 
@@ -275,8 +274,6 @@ class RawLookup extends Component {
           list: values,
           loading: false,
           selected: values[0],
-          validLocal:
-            values.length === 0 && handleChangeOnFocus !== true ? false : true,
         });
       });
     } else {
@@ -304,7 +301,6 @@ class RawLookup extends Component {
         this.setState({
           oldValue: inputValue,
           isInputEmpty: false,
-          validLocal: true,
           list: [init],
         });
       } else if (isInputEmpty) {
