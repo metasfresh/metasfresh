@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedMultiEvent;
-import de.metas.vertical.pharma.msv3.server.peer.service.CustomerConfigEventsQueue;
+import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
 import de.metas.vertical.pharma.msv3.server.security.MSV3User;
 
@@ -49,7 +49,7 @@ public class UserSyncRestEndpoint
 	@Autowired
 	private MSV3ServerAuthenticationService authService;
 	@Autowired
-	private CustomerConfigEventsQueue queue;
+	private MSV3ServerPeerService msv3ServerPeerService;
 
 	@PostMapping
 	public void processEvents(@RequestBody final MSV3UserChangedMultiEvent multiEvents)
@@ -61,7 +61,7 @@ public class UserSyncRestEndpoint
 	@PostMapping("/toRabbitMQ")
 	public void forwardEventToRabbitMQ(@RequestBody final MSV3UserChangedEvent event)
 	{
-		queue.publish(event);
+		msv3ServerPeerService.publishUserChangedEvent(event);
 	}
 
 	@GetMapping
@@ -75,7 +75,7 @@ public class UserSyncRestEndpoint
 
 	private MSV3UserChangedEvent toMSV3UserChangedEvent(final MSV3User user)
 	{
-		return MSV3UserChangedEvent.prepareCreatedEvent()
+		return MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent()
 				.username(user.getUsername())
 				.password("N/A")
 				.bpartnerId(user.getBpartnerId().getBpartnerId())

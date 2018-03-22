@@ -47,6 +47,7 @@ import lombok.NonNull;
  */
 
 @Service
+@Deprecated
 public class MetasfreshServerGateway implements InitializingBean
 {
 	private final RestTemplate restTemplate;

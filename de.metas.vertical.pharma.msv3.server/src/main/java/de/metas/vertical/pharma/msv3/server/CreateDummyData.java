@@ -6,8 +6,7 @@ import org.springframework.context.annotation.Profile;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
-import de.metas.vertical.pharma.msv3.server.peer.service.CustomerConfigEventsQueue;
-import de.metas.vertical.pharma.msv3.server.peer.service.StockAvailabilityEventsQueue;
+import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 
 /*
  * #%L
@@ -35,15 +34,12 @@ import de.metas.vertical.pharma.msv3.server.peer.service.StockAvailabilityEvents
 @Profile("dummy_data")
 public class CreateDummyData
 {
-	private final CustomerConfigEventsQueue customerConfigEventsQueue;
-	private final StockAvailabilityEventsQueue stockAvailabilityEventsQueue;
+	private final MSV3ServerPeerService msv3ServerPeerService;
 
 	public CreateDummyData(
-			final CustomerConfigEventsQueue customerConfigEventsQueue,
-			final StockAvailabilityEventsQueue stockAvailabilityEventsQueue)
+			final MSV3ServerPeerService msv3ServerPeerService)
 	{
-		this.customerConfigEventsQueue = customerConfigEventsQueue;
-		this.stockAvailabilityEventsQueue = stockAvailabilityEventsQueue;
+		this.msv3ServerPeerService = msv3ServerPeerService;
 
 		System.out.println("----------------------------------------------------------------------------------------------------");
 		System.out.println("Creating dummy data");
@@ -54,12 +50,12 @@ public class CreateDummyData
 
 	private void createUsers()
 	{
-		customerConfigEventsQueue.publish(MSV3UserChangedEvent.prepareCreatedEvent().username("user").password("pass").bpartnerId(2156425).bpartnerLocationId(2205175).build());
+		msv3ServerPeerService.publishUserChangedEvent(MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent().username("user").password("pass").bpartnerId(2156425).bpartnerLocationId(2205175).build());
 	}
 
 	private void createStockAvailability()
 	{
-		stockAvailabilityEventsQueue.publish(MSV3StockAvailabilityUpdatedEvent.builder()
+		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.builder()
 				.item(MSV3StockAvailability.builder().pzn(1112223).qty(30).build())
 				.item(MSV3StockAvailability.builder().pzn(1112224).qty(30).build())
 				.item(MSV3StockAvailability.builder().pzn(1112225).qty(30).build())

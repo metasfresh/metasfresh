@@ -37,14 +37,9 @@ import lombok.Value;
 @ToString(exclude = "password")
 public class MSV3UserChangedEvent
 {
-	public static MSV3UserChangedEventBuilder prepareCreatedEvent()
+	public static MSV3UserChangedEventBuilder prepareCreatedOrUpdatedEvent()
 	{
-		return _builder().changeType(ChangeType.CREATED);
-	}
-
-	public static MSV3UserChangedEventBuilder prepareUpdatedEvent()
-	{
-		return _builder().changeType(ChangeType.UPDATED);
+		return _builder().changeType(ChangeType.CREATED_OR_UPDATED);
 	}
 
 	public static MSV3UserChangedEvent deletedEvent(final String username)
@@ -54,7 +49,7 @@ public class MSV3UserChangedEvent
 
 	public static enum ChangeType
 	{
-		CREATED, UPDATED, DELETED
+		CREATED_OR_UPDATED, DELETED
 	};
 
 	@JsonProperty("changeType")
