@@ -35,7 +35,7 @@ import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
  * #L%
  */
 
-public class OrderCreateRequestTest
+public class OrderCreateResponseTest
 {
 	private ObjectMapper jsonObjectMapper;
 
@@ -49,30 +49,32 @@ public class OrderCreateRequestTest
 	@Test
 	public void testSerializeDeserialize() throws Exception
 	{
-		testSerializeDeserialize(OrderCreateRequest.builder()
+		testSerializeDeserialize(OrderCreateResponse.builder()
 				.orderId(Id.of("123"))
 				.supportId(SupportIDType.of(222))
 				.bpartnerId(BPartnerId.of(1, 2))
-				.orderPackage(OrderCreateRequestPackage.builder()
+				.nightOperation(false)
+				.orderPackage(OrderResponsePackage.builder()
 						.id(Id.of("123/1"))
 						.supportId(SupportIDType.of(2221))
 						.orderType(OrderType.NORMAL)
 						.orderIdentification("orderIdentification")
 						.packingMaterialId("packingMaterialId")
-						.item(OrderCreateRequestPackageItem.builder()
+						.item(OrderResponsePackageItem.builder()
 								.id(Id.random())
 								.pzn(PZN.of(1000123))
 								.qty(Quantity.of(66))
 								.deliverySpecifications(DeliverySpecifications.NORMAL)
+								.olCandId(1234567)
 								.build())
 						.build())
 				.build());
 	}
 
-	public void testSerializeDeserialize(final OrderCreateRequest request) throws IOException
+	public void testSerializeDeserialize(final OrderCreateResponse request) throws IOException
 	{
 		final String json = jsonObjectMapper.writeValueAsString(request);
-		final OrderCreateRequest request2 = jsonObjectMapper.readValue(json, OrderCreateRequest.class);
+		final OrderCreateResponse request2 = jsonObjectMapper.readValue(json, OrderCreateResponse.class);
 		Assert.assertEquals(request, request2);
 	}
 

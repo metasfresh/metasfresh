@@ -1,11 +1,17 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -30,28 +36,38 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class OrderCreateResponse
 {
+	@JsonProperty("bpartnerId")
 	BPartnerId bpartnerId;
+
+	@JsonProperty("orderId")
 	Id orderId;
+
+	@JsonProperty("supportId")
 	SupportIDType supportId;
+
+	@JsonProperty("nightOperation")
 	boolean nightOperation;
-	ImmutableList<OrderResponsePackage> orderPackages;
+
+	@JsonProperty("orderPackages")
+	List<OrderResponsePackage> orderPackages;
 
 	@Builder
 	private OrderCreateResponse(
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final Id orderId,
-			@NonNull final SupportIDType supportId,
-			@NonNull final Boolean nightOperation,
-			@NonNull final ImmutableList<OrderResponsePackage> orderPackages)
+			@JsonProperty("bpartnerId") @NonNull final BPartnerId bpartnerId,
+			@JsonProperty("orderId") @NonNull final Id orderId,
+			@JsonProperty("supportId") @NonNull final SupportIDType supportId,
+			@JsonProperty("nightOperation") @NonNull final Boolean nightOperation,
+			@JsonProperty("orderPackages") @NonNull @Singular final List<OrderResponsePackage> orderPackages)
 	{
 		this.bpartnerId = bpartnerId;
 		this.orderId = orderId;
 		this.supportId = supportId;
 		this.nightOperation = nightOperation;
-		this.orderPackages = orderPackages;
+		this.orderPackages = ImmutableList.copyOf(orderPackages);
 	}
 
 }
