@@ -11,11 +11,14 @@ import org.compiere.model.I_M_Attribute;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.model.I_M_Product_LotNumber_Lock;
@@ -54,6 +57,8 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  */
 public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
+	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -99,6 +104,18 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 				.collect(ImmutableList.toImmutableList());
 
 		Services.get(IHUDDOrderBL.class).createQuarantineDDOrderForHUs(husToDistribute);
+
+		setExistingInvoiceCandsInDispute(husForAttributeStringValue);
+
+	}
+
+	private void setExistingInvoiceCandsInDispute(final List<I_M_HU> hus)
+	{
+		hus.stream()
+				.map(hu -> huAssignmentDAO.retrieveModelsForHU(hu, I_M_InOutLine.class))
+				.forEach(lines -> {
+					invoiceCandBL.markInvoiceCandInDisputeForReceiptLines(lines);
+				});
 
 	}
 
