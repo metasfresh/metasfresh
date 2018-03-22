@@ -124,4 +124,9 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	{
 		return Services.get(IQueueDAO.class).retrieveQueueElements(getC_Queue_WorkPackage(), skipAlreadyScheduledItems);
 	}
+
+	public final <T> List<T> retrieveAllItems(final Class<T> modelType)
+	{
+		return Services.get(IQueueDAO.class).retrieveAllItems(getC_Queue_WorkPackage(), modelType);
+	}
 }
