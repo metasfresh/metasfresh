@@ -4,9 +4,9 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 
-import { TableCell } from '../table/TableCell';
 import FiltersDateStepper from './FiltersDateStepper';
 import FiltersItem from './FiltersItem';
+import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 
 const classes = 'btn btn-filter btn-meta-outline-secondary btn-sm';
 
@@ -60,8 +60,8 @@ class FiltersFrequent extends Component {
             item.parameters.length === 1 &&
             parameter.showIncrementDecrementButtons &&
             item.isActive &&
-            TableCell.DATE_FIELD_TYPES.includes(filterType) &&
-            !TableCell.TIME_FIELD_TYPES.includes(filterType);
+            DATE_FIELD_TYPES.includes(filterType) &&
+            !TIME_FIELD_TYPES.includes(filterType);
 
           return (
             <div className="filter-wrapper" key={index}>
