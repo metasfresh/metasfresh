@@ -444,11 +444,9 @@ public class HUs2DDOrderProducer
 
 		final I_M_Product_LotNumber_Lock lotNumberLock = ddOrderLineCandidate.getLotNumberLock();
 
-		if (lotNumberLock != null)
-		{
-			description.append(lotNumberLock.getDescription()).append(" ");
-		}
+		final String lotNoLockDescription = getDescriptionForLotNoLock(lotNumberLock);
 
+		description.append(lotNoLockDescription);
 		description.append(ddOrderLineCandidate.getDescription());
 
 		ddOrderline.setDescription(description.toString());
@@ -463,6 +461,23 @@ public class HUs2DDOrderProducer
 		//
 		// Create the HU assignment candidate
 		huDDOrderDAO.addToHUsScheduledToMove(ddOrderline, ddOrderLineCandidate.getM_HUs());
+	}
+
+	private String getDescriptionForLotNoLock(final I_M_Product_LotNumber_Lock lotNumberLock)
+	{
+		if (lotNumberLock == null)
+		{
+			return "";
+		}
+
+		final String lotNoLockDescription = lotNumberLock.getDescription();
+
+		if (Check.isEmpty(lotNoLockDescription))
+		{
+			return "";
+		}
+
+		return lotNoLockDescription + "; ";
 	}
 
 	/**
