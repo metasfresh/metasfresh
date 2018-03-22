@@ -1,5 +1,7 @@
 package org.adempiere.util.lang;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.util
@@ -13,20 +15,17 @@ package org.adempiere.util.lang;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 /**
- * Immutable {@link IPair} implementation.
- * 
- * @author tsa
+ * Immutable {@link IPair} implementation. Both the left and right value may be {@code null}.
  * 
  * @param <LT> left element type
  * @param <RT> right element type
@@ -40,7 +39,9 @@ public final class ImmutablePair<LT, RT> implements IPair<LT, RT>
 	 * @param right
 	 * @return
 	 */
-	public static final <L, R> IPair<L, R> of(L left, R right)
+	public static final <L, R> ImmutablePair<L, R> of(
+			@Nullable final L left,
+			@Nullable final R right)
 	{
 		return new ImmutablePair<L, R>(left, right);
 	}
@@ -48,9 +49,8 @@ public final class ImmutablePair<LT, RT> implements IPair<LT, RT>
 	private final LT left;
 	private final RT right;
 
-	public ImmutablePair(final LT left, final RT right)
+	private ImmutablePair(@Nullable final LT left, @Nullable final RT right)
 	{
-		super();
 		this.left = left;
 		this.right = right;
 	}

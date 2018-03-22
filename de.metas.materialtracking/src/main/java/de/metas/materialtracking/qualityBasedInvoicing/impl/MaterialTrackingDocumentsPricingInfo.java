@@ -240,7 +240,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 				}
 			}
 
-			return new ImmutablePair<>(plv, issuedInOutLinesForPPOrder);
+			return ImmutablePair.of(plv, issuedInOutLinesForPPOrder);
 		}
 
 		private I_M_PriceList_Version retrivePLV(final I_M_InOutLine inOutLine)
