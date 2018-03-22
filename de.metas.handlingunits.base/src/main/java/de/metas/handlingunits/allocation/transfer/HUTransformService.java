@@ -546,7 +546,7 @@ public class HUTransformService
 
 		// gh #1759: explicitly take the capacity from the tuPIItemProduct which the user selected
 		final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(tuPIItemProduct, tuPIItemProduct.getM_Product(), tuPIItemProduct.getC_UOM());
-		destination.addTUCapacity(capacity);
+		destination.addCUPerTU(capacity);
 
 		destination.setNoLU();
 
@@ -934,7 +934,7 @@ public class HUTransformService
 						.setParameter("tuPI", tuPI);
 			}
 
-			destination.addTUCapacity(cuProduct, sourceQtyCUperTU, cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
+			destination.addCUPerTU(cuProduct, sourceQtyCUperTU, cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
 
 			HUSplitBuilderCoreEngine.builder()
 					.huContextInitital(huContext)

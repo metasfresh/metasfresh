@@ -176,7 +176,7 @@ public class LUTUProducerDestinationTestSupport
 		// TU
 		lutuProducer.setLUItemPI(piLU_Item_IFCO);
 		lutuProducer.setTUPI(piTU_IFCO);
-		lutuProducer.addTUCapacity(helper.pTomato, BigDecimal.valueOf(qtyCUPerTU), helper.uomKg);
+		lutuProducer.addCUPerTU(helper.pTomato, BigDecimal.valueOf(qtyCUPerTU), helper.uomKg);
 
 		producerCustomizer.accept(lutuProducer);
 

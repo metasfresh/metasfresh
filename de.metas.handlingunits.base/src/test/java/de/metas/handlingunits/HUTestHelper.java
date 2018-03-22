@@ -1350,7 +1350,7 @@ public class HUTestHelper
 			final ILUTUProducerAllocationDestination allocationDestination,
 			final BigDecimal cuQty)
 	{
-		final Capacity tuCapacity = allocationDestination.getTUCapacity();
+		final Capacity tuCapacity = allocationDestination.getSingleCUPerTU();
 		final I_M_Product cuProduct = tuCapacity.getM_Product();
 		final I_C_UOM cuUOM = tuCapacity.getC_UOM();
 

@@ -148,7 +148,7 @@ public class HUInternalUseInventoryProducerTests
 		// Custom TU capacity (if specified)
 		if (qtyCUsPerTU > 0)
 		{
-			lutuProducer.addTUCapacity(cuProduct, BigDecimal.valueOf(qtyCUsPerTU), cuUOM);
+			lutuProducer.addCUPerTU(cuProduct, BigDecimal.valueOf(qtyCUsPerTU), cuUOM);
 		}
 
 		final TestHelperLoadRequest loadRequest = HUTestHelper.TestHelperLoadRequest.builder()
