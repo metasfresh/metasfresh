@@ -48,7 +48,6 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 
 	private HUAndItemsDAO()
 	{
-		super();
 	}
 
 	@Override
@@ -190,11 +189,9 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 		{
 			// if the given HU is *not* an aggregate HU, then its M_HU_PI_Version_ID must match the item's M_HU_PI_Version_ID
 			final boolean huAndItemHaveSamePI = hu.getM_HU_PI_Version_ID() == piItem.getM_HU_PI_Version_ID();
-			// final boolean piItemIsVirtual = handlingUnitsDAO.getVirtual_HU_PI_Item_ID() == piItem.getM_HU_PI_Item_ID(); TODO
-
-			Check.errorUnless(huAndItemHaveSamePI /*|| piItemIsVirtual*/,
-					"Incompatible HU's PI Version (hu={}) and Item PI Version (={})",
-					hu, piItem);
+			Check.errorUnless(huAndItemHaveSamePI,
+					"The given hu has M_HU_PI_Version_ID={} while the given piItem has M_HU_PI_Version_ID={}; hu={}; piItem={}",
+					hu.getM_HU_PI_Version_ID(), piItem.getM_HU_PI_Version_ID(), hu, piItem);
 		}
 
 		final I_M_HU_Item item = InterfaceWrapperHelper.newInstance(I_M_HU_Item.class, hu);

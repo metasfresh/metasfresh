@@ -257,13 +257,11 @@ import de.metas.quantity.CapacityInterface;
 	 */
 	private Capacity getCapacity(final IAllocationRequest request, final I_M_HU hu)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		final int productId = request.getProduct().getM_Product_ID();
 		final Capacity capacityToUse;
 		final Capacity capacityOverride = productId2capacity.get(productId);
 
-		if (capacityOverride == null /* && handlingUnitsBL.isAggregateHU(hu)*/) // TODO: re-add or remove
+		if (capacityOverride == null)
 		{
 			// So there was no override capacity provided for this product.
 			// The allocationStrategy we are creating just now might execute against the aggregate VHU which does not have any M_HU_PI_Item_Products and therefore does not know the TUs actual capacity.
