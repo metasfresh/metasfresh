@@ -3,6 +3,7 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -10,6 +11,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -73,6 +75,9 @@ import lombok.NonNull;
 @ViewFactory(windowId = SalesOrder2PurchaseViewFactory.WINDOW_ID_STRING)
 public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndexStorage
 {
+	public static final String SYSCONFIG_ASYNC_AVAILIABILITY_CHECK = //
+			"de.metas.ui.web.order.sales.purchasePlanning.view.SalesOrder2PurchaseViewFactory.AsyncAvailiabilityCheck";
+
 	public static final String WINDOW_ID_STRING = "SO2PO";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
@@ -188,11 +193,13 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 
 		final ViewId viewId = ViewId.random(WINDOW_ID);
 
+		final SalesOrderLines saleOrderLines = SalesOrderLines.builder()
+				.salesOrderLineIds(salesOrderLineIds)
+				.purchaseCandidateRepository(purchaseCandidatesRepo)
+				.build();
+
 		final PurchaseRowsLoader rowsLoader = PurchaseRowsLoader.builder()
-				.salesOrderLines(SalesOrderLines.builder()
-						.salesOrderLineIds(salesOrderLineIds)
-						.purchaseCandidateRepository(purchaseCandidatesRepo)
-						.build())
+				.salesOrderLines(saleOrderLines)
 				.viewSupplier(() -> this.getByIdOrNull(viewId)) // needed for async stuff
 				.purchaseRowFactory(purchaseRowFactory)
 				.build();
@@ -200,7 +207,14 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		final PurchaseRowsSupplier rowsSupplier = () -> {
 
 			final List<PurchaseRow> loadResult = rowsLoader.load();
-			rowsLoader.createAndAddAvailabilityResultRowsAsync();
+			if (makeAsynchronousAvailiabilityCheck())
+			{
+				rowsLoader.createAndAddAvailabilityResultRowsAsync();
+			}
+			else
+			{
+				rowsLoader.createAndAddAvailabilityResultRows();
+			}
 
 			return loadResult;
 		};
@@ -212,6 +226,19 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 				.build();
 
 		return view;
+	}
+
+	private boolean makeAsynchronousAvailiabilityCheck()
+	{
+		final Properties ctx = Env.getCtx();
+
+		final boolean result = Services.get(ISysConfigBL.class).getBooleanValue(
+				SYSCONFIG_ASYNC_AVAILIABILITY_CHECK,
+				false,
+				Env.getAD_Client_ID(ctx),
+				Env.getAD_Org_ID(ctx));
+
+		return result;
 	}
 
 	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
