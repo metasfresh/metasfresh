@@ -106,11 +106,6 @@
 			<artifactId>metasfresh-pharma.msv3.server-peer</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>de.metas.ordercandidate</groupId>
-			<artifactId>de.metas.ordercandidate.rest-api</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
 
 		<!-- Swagger -->
 		<dependency>

@@ -44,17 +44,19 @@ import com.google.common.collect.ImmutableList;
 @EnableRabbit // needed for @RabbitListener to be considered
 public class RabbitMQConfig
 {
+	public static final String QUEUENAME_MSV3ServerRequests = "msv3-server-requests";
 	public static final String QUEUENAME_UserChangedEvents = "msv3-server-UserChangedEvents";
 	public static final String QUEUENAME_StockAvailabilityUpdatedEvent = "msv3-server-StockAvailabilityUpdatedEvents";
-	public static final String QUEUENAME_MSV3ServerRequests = "msv3-server-requests";
+	public static final String QUEUENAME_CreateOrderRequestEvents = "msv3-server-CreateOrderRequestEvents";
 
 	@Bean
 	List<Declarable> queuesAndBindings()
 	{
 		return ImmutableList.<Declarable> builder()
+				.addAll(createQueueExchangeAndBinding(QUEUENAME_MSV3ServerRequests))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_UserChangedEvents))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_StockAvailabilityUpdatedEvent))
-				.addAll(createQueueExchangeAndBinding(QUEUENAME_MSV3ServerRequests))
+				.addAll(createQueueExchangeAndBinding(QUEUENAME_CreateOrderRequestEvents))
 				.build();
 	}
 

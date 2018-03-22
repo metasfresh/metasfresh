@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
+import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateResponse;
 import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ServerRequest;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
@@ -63,5 +65,11 @@ public class MSV3ServerPeerService
 	public void publishStockAvailabilityUpdatedEvent(@NonNull final MSV3StockAvailabilityUpdatedEvent event)
 	{
 		rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent, event);
+	}
+
+	public OrderCreateResponse createOrderRequest(final OrderCreateRequest request)
+	{
+		final Object responseObj = rabbitTemplate.convertSendAndReceive(RabbitMQConfig.QUEUENAME_CreateOrderRequestEvents, request);
+		return (OrderCreateResponse)responseObj;
 	}
 }

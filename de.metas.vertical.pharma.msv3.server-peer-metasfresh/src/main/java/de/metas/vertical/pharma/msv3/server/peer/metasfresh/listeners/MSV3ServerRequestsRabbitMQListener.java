@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3CustomerConfigService;
+import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3StockAvailabilityService;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ServerRequest;
 
 /*
@@ -35,6 +36,8 @@ public class MSV3ServerRequestsRabbitMQListener
 {
 	@Autowired
 	private MSV3CustomerConfigService customerConfigService;
+	@Autowired
+	private MSV3StockAvailabilityService stockAvailabilityService;
 
 	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_MSV3ServerRequests)
 	public void onRequest(final MSV3ServerRequest request)
@@ -45,7 +48,7 @@ public class MSV3ServerRequestsRabbitMQListener
 		}
 		if (request.isRequestAllStockAvailabilities())
 		{
-			// TODO
+			stockAvailabilityService.publishAll();
 		}
 	}
 }

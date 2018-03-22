@@ -7,8 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ordercandidate.rest.JsonOLCand;
-import de.metas.ordercandidate.rest.JsonOLCandCreateBulkResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItem;
@@ -22,11 +20,11 @@ import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
-import de.metas.vertical.pharma.msv3.server.metasfreshGateway.MetasfreshServerGateway;
 import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrder;
 import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrderPackage;
 import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrderPackageItem;
 import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrderRepository;
+import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 import lombok.NonNull;
 
 /*
@@ -58,28 +56,31 @@ public class OrderService
 	private JpaOrderRepository jpaOrdersRepo;
 
 	@Autowired
-	private MetasfreshServerGateway metasfreshServerGateway;
+	private MSV3ServerPeerService msv3ServerPeerService;
 
 	@Transactional
 	public OrderCreateResponse createOrder(final OrderCreateRequest request)
 	{
-		final JsonOLCandCreateBulkResponse metasfreshServerResponse = metasfreshServerGateway.postOrder(request);
+		final OrderCreateResponse response = msv3ServerPeerService.createOrderRequest(request);
 
-		final ImmutableMap<String, Integer> itemUuid2olCandId = metasfreshServerResponse.getResult()
+		final ImmutableMap<String, Integer> itemUuid2olCandId = response.getOrderPackages()
 				.stream()
-				.collect(ImmutableMap.toImmutableMap(JsonOLCand::getExternalId, JsonOLCand::getId));
+				.flatMap(orderResponsePackage -> orderResponsePackage.getItems().stream())
+				.collect(ImmutableMap.toImmutableMap(
+						item -> item.getId().getValueAsString(),
+						OrderResponsePackageItem::getOlCandId));
 
 		final JpaOrder jpaOrder = createJpaOrder(request);
 		jpaOrder.visitItems(jpaOrderPackageItem -> {
 			final Integer olCandId = itemUuid2olCandId.get(jpaOrderPackageItem.getUuid());
-			if (olCandId != null)
+			if (olCandId != null && olCandId > 0)
 			{
 				jpaOrderPackageItem.setOl_cand_id(olCandId);
 			}
 		});
 		jpaOrdersRepo.save(jpaOrder);
 
-		return createOrderCreateResponse(jpaOrder);
+		return response;
 	}
 
 	private JpaOrder createJpaOrder(final OrderCreateRequest request)
