@@ -1,7 +1,7 @@
 .table {
     margin-bottom: 1px;
 
-     *::selection {
+    *::selection {
         background-color: transparent;
         color: $brand-font-color;
     }
@@ -329,6 +329,10 @@
     justify-content: center;
     align-items: center;
     min-height: 200px;
+
+    div {
+        text-align: center;
+    }
 }
 
 .pagination {
