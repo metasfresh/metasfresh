@@ -7,8 +7,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.vertical.pharma.msv3.server.model.I_MSV3_Customer_Config;
-import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
-import de.metas.vertical.pharma.msv3.server.peer.service.CustomerConfigEventsQueue;
+import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3CustomerConfigService;
 
 /*
  * #%L
@@ -36,9 +35,9 @@ import de.metas.vertical.pharma.msv3.server.peer.service.CustomerConfigEventsQue
 @Component
 public class MSV3_Customer_Config
 {
-	private CustomerConfigEventsQueue getCustomerConfigEventsQueue()
+	private MSV3CustomerConfigService getMSV3CustomerConfigService()
 	{
-		return Adempiere.getBean(CustomerConfigEventsQueue.class);
+		return Adempiere.getBean(MSV3CustomerConfigService.class);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
@@ -46,39 +45,22 @@ public class MSV3_Customer_Config
 	{
 		if (configRecord.isActive())
 		{
-			final CustomerConfigEventsQueue queue = getCustomerConfigEventsQueue();
-			queue.publish(MSV3UserChangedEvent.prepareCreatedEvent()
-					.username(configRecord.getUserID())
-					.password(configRecord.getPassword())
-					.bpartnerId(configRecord.getC_BPartner_ID())
-					.bpartnerLocationId(configRecord.getC_BPartner_Location_ID())
-					.build());
+			final MSV3CustomerConfigService service = getMSV3CustomerConfigService();
+			service.publishConfigChanged(configRecord);
 		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
 	public void onUpdated(final I_MSV3_Customer_Config configRecord)
 	{
-		final CustomerConfigEventsQueue queue = getCustomerConfigEventsQueue();
-		if (configRecord.isActive())
-		{
-			queue.publish(MSV3UserChangedEvent.prepareUpdatedEvent()
-					.username(configRecord.getUserID())
-					.password(configRecord.getPassword())
-					.bpartnerId(configRecord.getC_BPartner_ID())
-					.bpartnerLocationId(configRecord.getC_BPartner_Location_ID())
-					.build());
-		}
-		else
-		{
-			queue.publish(MSV3UserChangedEvent.deletedEvent(configRecord.getUserID()));
-		}
+		final MSV3CustomerConfigService service = getMSV3CustomerConfigService();
+		service.publishConfigChanged(configRecord);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void onDeleted(final I_MSV3_Customer_Config configRecord)
 	{
-		final CustomerConfigEventsQueue queue = getCustomerConfigEventsQueue();
-		queue.publish(MSV3UserChangedEvent.deletedEvent(configRecord.getUserID()));
+		final MSV3CustomerConfigService service = getMSV3CustomerConfigService();
+		service.publishConfigDeleted(configRecord.getUserID());
 	}
 }

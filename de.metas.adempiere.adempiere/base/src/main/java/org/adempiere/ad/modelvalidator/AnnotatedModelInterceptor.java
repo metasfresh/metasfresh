@@ -293,6 +293,7 @@ import lombok.NonNull;
 		pointcut.setChangedColumns(annModelChange.ifColumnsChanged());
 		pointcut.setIgnoredColumns(annModelChange.ignoreColumnsChanged());
 		pointcut.setOnlyIfUIAction(annModelChange.ifUIAction());
+		pointcut.setSkipIfCopying(annModelChange.skipIfCopying());
 		initPointcutAndAddToMap(pointcut);
 	}
 
@@ -480,6 +481,17 @@ import lombok.NonNull;
 		{
 			final boolean isUIAction = InterfaceWrapperHelper.isUIAction(po);
 			if (!isUIAction)
+			{
+				return;
+			}
+		}
+
+		//
+		// Check if we shall skip when copying
+		if (pointcut.isSkipIfCopying())
+		{
+			final boolean isCopying = InterfaceWrapperHelper.isCopy(po);
+			if (isCopying)
 			{
 				return;
 			}
