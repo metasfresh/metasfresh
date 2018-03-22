@@ -1,14 +1,14 @@
 package de.metas.ordercandidate.rest;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 /*
  * #%L
@@ -33,31 +33,20 @@ import lombok.Data;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder
-public final class JsonOLCandCreateRequest
+@Value
+public class JsonOLCandCreateBulkResponse
 {
-	private JsonBPartnerInfo bpartner;
-	private JsonBPartnerInfo billBPartner;
-	private JsonBPartnerInfo dropShipBPartner;
-	private JsonBPartnerInfo handOverBPartner;
+	public static JsonOLCandCreateBulkResponse of(final List<JsonOLCand> olCands)
+	{
+		return new JsonOLCandCreateBulkResponse(olCands);
+	}
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate dateRequired;
-	private int flatrateConditionsId;
+	@JsonProperty("result")
+	private final List<JsonOLCand> result;
 
-	private String productCode;
-	private String productDescription;
-	private BigDecimal qty;
-	private int uomId;
-	private int huPIItemProductId;
-
-	private int pricingSystemId;
-	private BigDecimal price;
-	private BigDecimal discount;
-	// private String currencyCode; // shall come from pricingSystem/priceList
-
-	private String poReference;
-	
-	private String externalId;
+	@JsonCreator
+	private JsonOLCandCreateBulkResponse(@JsonProperty("result") final List<JsonOLCand> olCands)
+	{
+		this.result = ImmutableList.copyOf(olCands);
+	}
 }

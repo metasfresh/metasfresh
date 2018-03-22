@@ -2,6 +2,7 @@ package de.metas.vertical.pharma.msv3.server.order.jpa;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -50,6 +51,8 @@ public class JpaOrder extends AbstractEntity
 	@NotNull
 	private Integer bpartnerId;
 	@NotNull
+	private Integer bpartnerLocationId;
+	@NotNull
 	private String documentNo;
 	@NotNull
 	private Integer supportId;
@@ -64,5 +67,12 @@ public class JpaOrder extends AbstractEntity
 	{
 		orderPackages.forEach(orderPackage -> orderPackage.setOrder(this));
 		this.orderPackages.addAll(orderPackages);
+	}
+
+	public void visitItems(@NonNull final Consumer<JpaOrderPackageItem> consumer)
+	{
+		orderPackages.stream()
+				.flatMap(orderPackage -> orderPackage.getItems().stream())
+				.forEach(consumer);
 	}
 }

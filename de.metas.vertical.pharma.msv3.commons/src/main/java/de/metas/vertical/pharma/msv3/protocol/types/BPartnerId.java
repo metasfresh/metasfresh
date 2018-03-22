@@ -27,20 +27,26 @@ import lombok.Value;
 @Value
 public class BPartnerId
 {
-	public static BPartnerId of(final int valueAsInt)
+	public static BPartnerId of(final int bpartnerId, final int bpartnerLocationId)
 	{
-		return new BPartnerId(valueAsInt);
+		return new BPartnerId(bpartnerId, bpartnerLocationId);
 	}
 
-	private final int valueAsInt;
+	private final int bpartnerId;
+	private final int bpartnerLocationId;
 
-	private BPartnerId(final int valueAsInt)
+	private BPartnerId(final int bpartnerId, final int bpartnerLocationId)
 	{
-		if (valueAsInt < 1)
+		if (bpartnerId < 1)
 		{
-			throw new IllegalArgumentException("value shall be > 0");
+			throw new IllegalArgumentException("bpartnerId shall be > 0");
+		}
+		if (bpartnerLocationId < 1)
+		{
+			throw new IllegalArgumentException("bpartnerLocationId shall be > 0");
 		}
 
-		this.valueAsInt = valueAsInt;
+		this.bpartnerId = bpartnerId;
+		this.bpartnerLocationId = bpartnerLocationId;
 	}
 }
