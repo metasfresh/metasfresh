@@ -38,12 +38,15 @@ import java.util.StringTokenizer;
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.GridField;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -144,9 +147,9 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		// Copy children
 		for (final TableInfoVO childTableInfo : getSuggestedChildren(fromPO, getSuggestedChildrenToCopy()))
 		{
-			for (final Iterator<? extends PO> it = retrieveChildPOsForParent(childTableInfo.getTableName(), fromPO); it.hasNext();)
+			for (final Iterator<Object> it = retrieveChildPOsForParent(childTableInfo, fromPO); it.hasNext();)
 			{
-				final PO childPO = it.next();
+				final PO childPO = InterfaceWrapperHelper.getPO(it.next());
 
 				final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(childTableInfo.getTableName());
 				childCRS.setParentKeyColumn(childTableInfo.getLinkColumnName());
@@ -154,7 +157,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 				childCRS.setParentPO(toPO);
 
 				childCRS.copyRecord(childPO, trxName);
-				log.info("Copied {}", childPO);
+				log.debug("Copied {}", childPO);
 			}
 		}
 	}
@@ -168,7 +171,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	private final void fireOnRecordCopied(final PO to, final PO from)
 	{
 		onRecordCopied(to, from);
-		
+
 		for (final IOnRecordCopiedListener listener : onRecordCopiedListeners)
 		{
 			listener.onRecordCopied(to, from);
@@ -229,14 +232,18 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		to.set_CustomColumn(columnName, oldValue + msg);
 	}
 
-	private Iterator<? extends PO> retrieveChildPOsForParent(final String childTableName, final PO parentPO)
+	private Iterator<Object> retrieveChildPOsForParent(final TableInfoVO childInfo, final PO parentPO)
 	{
-		final int parentId = parentPO.get_ID();
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<Object> queryBuilder = queryBL.createQueryBuilder(childInfo.getTableName(), getCtx(), ITrx.TRXNAME_None)
+				.addEqualsFilter(childInfo.getLinkColumnName(), parentPO.get_ID());
 
-		final String whereClause = getParentKeyColumn() + "=?";
-		return new Query(getCtx(), childTableName, whereClause, ITrx.TRXNAME_None)
-				.setParameters(new Object[] { parentId })
-				.iterate(null, false); // guaranteed = false because we are just fetching without changing
+		childInfo.getOrderByColumnNames().forEach(queryBuilder::orderBy);
+
+		return queryBuilder
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+				.create()
+				.iterate(Object.class);
 	}
 
 	@Override
@@ -266,18 +273,32 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			final List<TableInfoVO> listFromTables = new ArrayList<>();
 
 			// search tables where exist the key column
-			final String adLanguage = Env.getAD_Language();
-			for (final I_AD_Table tableSuggested : retrieveChildTablesForParentColumn(keyColumnName))
+			for (final I_AD_Table childTableSuggested : retrieveChildTablesForParentColumn(keyColumnName))
 			{
-				final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(tableSuggested);
-				final TableInfoVO ti = TableInfoVO.builder()
-						.name(trlMap.getColumnTrl(I_AD_Table.COLUMNNAME_Name, tableSuggested.getName()).translate(adLanguage))
-						.tableName(tableSuggested.getTableName())
+				final ImmutableList.Builder<String> orderByColumnNames = ImmutableList.builder();
+				final POInfo childPOInfo = POInfo.getPOInfo(childTableSuggested.getTableName());
+				if (childPOInfo.hasColumnName("Line"))
+				{
+					orderByColumnNames.add("Line");
+				}
+				if (childPOInfo.hasColumnName("SeqNo"))
+				{
+					orderByColumnNames.add("SeqNo");
+				}
+				if (childPOInfo.getKeyColumnName() != null)
+				{
+					orderByColumnNames.add(childPOInfo.getKeyColumnName());
+				}
+
+				final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(childTableSuggested);
+
+				listFromTables.add(TableInfoVO.builder()
+						.name(trlMap.getColumnTrl(I_AD_Table.COLUMNNAME_Name, childTableSuggested.getName()))
+						.tableName(childTableSuggested.getTableName())
 						.linkColumnName(keyColumnName)
 						.parentTableName(tableName)
-						// .parentColumnName(keyColumnName)
-						.build();
-				listFromTables.add(ti);
+						.orderByColumnNames(orderByColumnNames.build())
+						.build());
 			}
 
 			return listFromTables;
@@ -673,7 +694,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	{
 		return _parentPO;
 	}
-	
+
 	protected final <T> T getParentModel(final Class<T> modelType)
 	{
 		final PO parentPO = getParentPO();
