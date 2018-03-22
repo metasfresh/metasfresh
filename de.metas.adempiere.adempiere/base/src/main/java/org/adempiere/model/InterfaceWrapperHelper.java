@@ -72,6 +72,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
+import lombok.experimental.UtilityClass;
 
 /**
  * This class is heavily used throughout metasfresh. To understand what it's all about see the javadoc of {@link #create(Object, Class)}.
@@ -80,6 +81,7 @@ import de.metas.logging.LogManager;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@UtilityClass
 public class InterfaceWrapperHelper
 {
 	private static final transient Logger logger = LogManager.getLogger(InterfaceWrapperHelper.class);
@@ -1638,5 +1640,9 @@ public class InterfaceWrapperHelper
 	{
 		return POWrapper.checkZeroIdValue(columnName, value);
 	}
-
+	
+	public static boolean isCopy(final Object model)
+	{
+		return helpers.isCopy(model);
+	}
 }
