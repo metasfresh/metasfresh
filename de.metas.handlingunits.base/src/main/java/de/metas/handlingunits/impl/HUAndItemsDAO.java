@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,7 +48,6 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 
 	private HUAndItemsDAO()
 	{
-		super();
 	}
 
 	@Override
@@ -108,7 +107,7 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 		}
 		return itemParent.getM_HU();
 	}
-	
+
 	@Override
 	public int retrieveParentId(final I_M_HU hu)
 	{
@@ -119,7 +118,6 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 		}
 		return itemParent.getM_HU_ID();
 	}
-	
 
 	@Override
 	public I_M_HU_Item retrieveParentItem(final I_M_HU hu)
@@ -171,28 +169,29 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 	}
 
 	@VisibleForTesting
-	public static I_M_HU_Item createHUItemNoSave(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	public static I_M_HU_Item createHUItemNoSave(
+			@NonNull final I_M_HU hu,
+			@NonNull final I_M_HU_PI_Item piItem)
 	{
-		Check.assumeNotNull(hu, "hu not null");
-		Check.assumeNotNull(piItem, "piItem not null");
-
 		final boolean huIsAggregateHU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
+
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		//
 		// make different sanity checks, based on the item type
 		if (huIsAggregateHU)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			Check.errorUnless(hu.getM_HU_PI_Version_ID() == handlingUnitsDAO.retrieveVirtualPIItem(ctx).getM_HU_PI_Version_ID(),
 					"The M_HU_PI_Version_ID of the compressed hu={} has to be the one of the virtual M_HU_PI_Version");
 		}
 		else
 		{
 			// if the given HU is *not* an aggregate HU, then its M_HU_PI_Version_ID must match the item's M_HU_PI_Version_ID
-			Check.errorUnless(hu.getM_HU_PI_Version_ID() == piItem.getM_HU_PI_Version_ID(),
-					"Incompatible HU's PI Version (hu={}) and Item PI Version (={})",
-					hu, piItem);
+			final boolean huAndItemHaveSamePI = hu.getM_HU_PI_Version_ID() == piItem.getM_HU_PI_Version_ID();
+			Check.errorUnless(huAndItemHaveSamePI,
+					"The given hu has M_HU_PI_Version_ID={} while the given piItem has M_HU_PI_Version_ID={}; hu={}; piItem={}",
+					hu.getM_HU_PI_Version_ID(), piItem.getM_HU_PI_Version_ID(), hu, piItem);
 		}
 
 		final I_M_HU_Item item = InterfaceWrapperHelper.newInstance(I_M_HU_Item.class, hu);
@@ -223,13 +222,23 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 	}
 
 	@Override
-	public I_M_HU_Item createAggregateHUItem(final I_M_HU hu)
+	public I_M_HU_Item createChildHUItem(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
+		return createHuItemWithoutPI(hu, X_M_HU_Item.ITEMTYPE_Material);
+	}
+
+	@Override
+	public I_M_HU_Item createAggregateHUItem(@NonNull final I_M_HU hu)
+	{
+		return createHuItemWithoutPI(hu, X_M_HU_Item.ITEMTYPE_HUAggregate);
+	}
+
+	private I_M_HU_Item createHuItemWithoutPI(@NonNull final I_M_HU hu, @NonNull final String itemType)
+	{
 		final I_M_HU_Item item = InterfaceWrapperHelper.newInstance(I_M_HU_Item.class, hu);
 		item.setAD_Org_ID(hu.getAD_Org_ID());
 		item.setM_HU(hu);
-		item.setItemType(X_M_HU_Item.ITEMTYPE_HUAggregate);
+		item.setItemType(itemType);
 
 		return finalizeAndStoreItem(hu, item);
 	}

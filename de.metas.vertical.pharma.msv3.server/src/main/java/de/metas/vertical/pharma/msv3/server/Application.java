@@ -1,10 +1,15 @@
 package de.metas.vertical.pharma.msv3.server;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 
 /*
  * #%L
@@ -29,8 +34,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 
 @SpringBootApplication
-public class Application
+public class Application implements InitializingBean
 {
+	@Value("${msv3server.startup.requestAllData:false}")
+	private boolean requestAllDataOnStartup;
+
+	@Autowired
+	private MSV3ServerPeerService msv3ServerPeerService;
+
 	public static void main(final String[] args)
 	{
 		new SpringApplicationBuilder(Application.class)
@@ -40,10 +51,19 @@ public class Application
 	}
 
 	@Bean
-	public ObjectMapper objectMapper()
+	public ObjectMapper jsonObjectMapper()
 	{
-		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.findAndRegisterModules();
-		return objectMapper;
+		final ObjectMapper jsonObjectMapper = new ObjectMapper();
+		jsonObjectMapper.findAndRegisterModules();
+		return jsonObjectMapper;
+	}
+
+	@Override
+	public void afterPropertiesSet()
+	{
+		if (requestAllDataOnStartup)
+		{
+			msv3ServerPeerService.requestAllUpdates();
+		}
 	}
 }

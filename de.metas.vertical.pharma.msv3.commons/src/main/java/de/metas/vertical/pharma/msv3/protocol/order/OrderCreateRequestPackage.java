@@ -1,10 +1,16 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -29,25 +35,37 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class OrderCreateRequestPackage
 {
+	@JsonProperty("id")
 	Id id;
+
+	@JsonProperty("orderType")
 	OrderType orderType;
+
+	@JsonProperty("orderIdentification")
 	/** One of 4 predefined or one free identifier. May deviate from the request identifier and be replaced by one of the 4 predefined identifiers (see specifications). */
 	String orderIdentification;
+
+	@JsonProperty("supportId")
 	SupportIDType supportId;
+
+	@JsonProperty("packingMaterialId")
 	String packingMaterialId;
-	ImmutableList<OrderCreateRequestPackageItem> items;
+
+	@JsonProperty("items")
+	List<OrderCreateRequestPackageItem> items;
 
 	@Builder
 	private OrderCreateRequestPackage(
-			@NonNull final Id id,
-			@NonNull final OrderType orderType,
-			@NonNull final String orderIdentification,
-			@NonNull final SupportIDType supportId,
-			@NonNull final String packingMaterialId,
-			@NonNull final ImmutableList<OrderCreateRequestPackageItem> items)
+			@JsonProperty("id") @NonNull final Id id,
+			@JsonProperty("orderType") @NonNull final OrderType orderType,
+			@JsonProperty("orderIdentification") @NonNull final String orderIdentification,
+			@JsonProperty("supportId") @NonNull final SupportIDType supportId,
+			@JsonProperty("packingMaterialId") @NonNull final String packingMaterialId,
+			@JsonProperty("items") @Singular @NonNull final List<OrderCreateRequestPackageItem> items)
 	{
 		if (items.isEmpty())
 		{
@@ -59,6 +77,6 @@ public class OrderCreateRequestPackage
 		this.orderIdentification = orderIdentification;
 		this.supportId = supportId;
 		this.packingMaterialId = packingMaterialId;
-		this.items = items;
+		this.items = ImmutableList.copyOf(items);
 	}
 }

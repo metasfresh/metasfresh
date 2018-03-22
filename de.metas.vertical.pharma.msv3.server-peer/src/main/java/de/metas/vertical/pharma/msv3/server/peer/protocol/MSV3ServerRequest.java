@@ -1,11 +1,10 @@
-package de.metas.vertical.pharma.msv3.server.peer.service;
+package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
-import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
-import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
-import lombok.NonNull;
+import lombok.Builder;
+import lombok.Data;
 
 /*
  * #%L
@@ -29,19 +28,21 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
-public class StockAvailabilityEventsQueue
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Data
+@Builder
+public class MSV3ServerRequest
 {
-	private final RabbitTemplate rabbitTemplate;
-
-	public StockAvailabilityEventsQueue(@NonNull final RabbitTemplate rabbitTemplate)
+	public static MSV3ServerRequest requestAll(final String nodeId)
 	{
-		this.rabbitTemplate = rabbitTemplate;
+		return MSV3ServerRequest.builder()
+				.nodeId(nodeId)
+				.requestAllUsers(true)
+				.requestAllStockAvailabilities(true)
+				.build();
 	}
 
-	public void publish(@NonNull final MSV3StockAvailabilityUpdatedEvent event)
-	{
-		rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent, event);
-	}
-
+	String nodeId;
+	boolean requestAllUsers;
+	boolean requestAllStockAvailabilities;
 }
