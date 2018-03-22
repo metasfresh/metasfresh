@@ -17,21 +17,24 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_OrderLine;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.service.IWarehouseDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
+import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.i18n.IMsgBL;
+import de.metas.product.model.I_M_Product_LotNumber_Lock;
+import lombok.NonNull;
+import lombok.Value;
 
 public class HUDDOrderBL implements IHUDDOrderBL
 {
 	private static final String ERR_M_Warehouse_NoQuarantineWarehouse = "M_Warehouse_NoQuarantineWarehouse";
-
-	// TODO: This message will be obsolete in https://github.com/metasfresh/metasfresh/issues/3721
-	private static final String MSG_QuarantineLotNo_DDOrderLine = "product with locked lot no.";
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -66,25 +69,33 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	}
 
 	@Override
-	public void createQuarantineDDOrderForReceiptLines(final List<I_M_InOutLine> receiptLines)
+	public void createQuarantineDDOrderForReceiptLines(final List<QuarantineInOutLine> receiptLines)
 	{
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
-		final List<I_M_HU> husToDDOrder = new ArrayList<>();
+		final List<HUToDistribute> husToQuarantine = new ArrayList<>();
 
-		for (final I_M_InOutLine receiptLine : receiptLines)
-		{
-			List<I_M_HU> topLevelHUsForReceiptLine = huAssignmentDAO.retrieveTopLevelHUsForModel(receiptLine);
+		receiptLines.stream()
+				.map(receiptLine -> createHUsToQuarantine(receiptLine))
+				.collect(ImmutableList.toImmutableList())
+				.stream()
+				.forEach(hus -> husToQuarantine.addAll(hus));
 
-			husToDDOrder.addAll(topLevelHUsForReceiptLine);
-		}
-
-		createQuarantineDDOrderForHUs(husToDDOrder);
+		createQuarantineDDOrderForHUs(husToQuarantine);
 
 	}
 
+	private List<HUToDistribute> createHUsToQuarantine(final QuarantineInOutLine receiptLine)
+	{
+		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+
+		return huAssignmentDAO.retrieveTopLevelHUsForModel(receiptLine.getInOutLine())
+				.stream()
+				.map(hu -> HUToDistribute.of(hu, receiptLine.getLockLotNo()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	@Override
-	public void createQuarantineDDOrderForHUs(final List<I_M_HU> hus)
+	public void createQuarantineDDOrderForHUs(final List<HUToDistribute> husToDistribute)
 	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -98,10 +109,10 @@ public class HUDDOrderBL implements IHUDDOrderBL
 
 		// Make sure this runs out of trx because there is a safety check in HUs2DDOrderProducer.process() about it being so.
 		// Please, check de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.process() for more details.
-		trxManager.runOutOfTransaction(createQuarantineDDOrder(hus, quarantineWarehouse));
+		trxManager.runOutOfTransaction(createQuarantineDDOrder(husToDistribute, quarantineWarehouse));
 	}
 
-	private TrxRunnable createQuarantineDDOrder(final List<I_M_HU> hus, final I_M_Warehouse quarantineWarehouse)
+	private TrxRunnable createQuarantineDDOrder(final List<HUToDistribute> hus, final I_M_Warehouse quarantineWarehouse)
 	{
 		final TrxRunnable trxRunnable = new TrxRunnableAdapter()
 		{
@@ -112,7 +123,6 @@ public class HUDDOrderBL implements IHUDDOrderBL
 						.setContext(Env.getCtx())
 						.setM_Warehouse_To(create(quarantineWarehouse, de.metas.handlingunits.model.I_M_Warehouse.class))
 						.setHUs(hus.iterator())
-						.setDDOrderLineDescription(MSG_QuarantineLotNo_DDOrderLine)
 						.process();
 			}
 		};
@@ -120,4 +130,13 @@ public class HUDDOrderBL implements IHUDDOrderBL
 		return trxRunnable;
 	}
 
+	@Value
+	public static final class QuarantineInOutLine
+	{
+		@NonNull
+		I_M_InOutLine inOutLine;
+
+		@NonNull
+		I_M_Product_LotNumber_Lock lockLotNo;
+	}
 }

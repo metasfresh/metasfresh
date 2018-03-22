@@ -29,8 +29,9 @@ import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator;
+import de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.QuarantineInOutLine;
+import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_InOutLine;
 
 public interface IHUDDOrderBL extends ISingletonService
 {
@@ -54,10 +55,10 @@ public interface IHUDDOrderBL extends ISingletonService
 	/**
 	 * Create a ddOrder with the handling units assigned to the given receipt line to a warehouse flagged as IsQuarantineWarehouse
 	 */
-	void createQuarantineDDOrderForReceiptLines(List<I_M_InOutLine> receiptLines);
+	void createQuarantineDDOrderForReceiptLines(List<QuarantineInOutLine> receiptLines);
 
 	/**
 	 * Create a ddOrder with the handling units given as parameter to a warehouse flagged as IsQuarantineWarehouse
 	 */
-	void createQuarantineDDOrderForHUs(List<I_M_HU> hus);
+	void createQuarantineDDOrderForHUs(List<HUToDistribute> hus);
 }

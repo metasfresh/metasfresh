@@ -61,7 +61,7 @@ public class C_Request_CreateFromDDOrder_Async extends WorkpackageProcessorAdapt
 		return Result.SUCCESS;
 	}
 
-	public static void createWorkpackage(List<Integer> ddOrderLineIds)
+	public static void createWorkpackage(final List<Integer> ddOrderLineIds)
 	{
 		if (Check.isEmpty(ddOrderLineIds))
 		{

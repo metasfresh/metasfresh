@@ -56,9 +56,9 @@ public class DD_Order
 	public void DD_Order_Quarantine_Request(final I_DD_Order ddOrder)
 	{
 		
-		final List<Integer> ddOrderLineToBlockIds = retrieveLineToQuarantineWarehouseIds(ddOrder);
+		final List<Integer> ddOrderLineToQuarantineIds = retrieveLineToQuarantineWarehouseIds(ddOrder);
 		
-		C_Request_CreateFromDDOrder_Async.createWorkpackage(ddOrderLineToBlockIds);
+		C_Request_CreateFromDDOrder_Async.createWorkpackage(ddOrderLineToQuarantineIds);
 
 	}
 

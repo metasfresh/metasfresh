@@ -10,6 +10,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
+import de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.QuarantineInOutLine;
 import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutBL;
@@ -54,7 +55,7 @@ public class DistributeAndMoveReceiptHandler
 
 	private I_M_InOut receipt;
 
-	private List<I_M_InOutLine> linesToQuarantine = new ArrayList<>();
+	private List<QuarantineInOutLine> linesToQuarantine = new ArrayList<>();
 	private List<I_M_InOutLine> linesToDD_Order = new ArrayList<>();
 	private List<de.metas.inout.model.I_M_InOutLine> linesToMove = new ArrayList<>();
 
@@ -104,9 +105,11 @@ public class DistributeAndMoveReceiptHandler
 				continue;
 			}
 
-			if (hasLockedLotNo(inOutLine))
+			final I_M_Product_LotNumber_Lock lockedLotNo = getLockedLotNoOrNull(inOutLine);
+			if (lockedLotNo != null)
 			{
-				linesToQuarantine.add(inOutLine);
+				final QuarantineInOutLine quarantineInOutLine = new QuarantineInOutLine(inOutLine, lockedLotNo);
+				linesToQuarantine.add(quarantineInOutLine);
 			}
 			else if (isCreateDDOrder(inOutLine))
 			{
@@ -121,7 +124,7 @@ public class DistributeAndMoveReceiptHandler
 
 	}
 
-	private boolean hasLockedLotNo(final I_M_InOutLine inOutLine)
+	private I_M_Product_LotNumber_Lock getLockedLotNoOrNull(final I_M_InOutLine inOutLine)
 	{
 		final int productId = inOutLine.getM_Product_ID();
 
@@ -130,7 +133,7 @@ public class DistributeAndMoveReceiptHandler
 		if (receiptLineASI == null)
 		{
 			// if it has no attributes set it means it has no lot number set either.
-			return false;
+			return null;
 		}
 
 		final String lotNumberAttributeValue = lotNoBL.getLotNumberAttributeValueOrNull(receiptLineASI);
@@ -138,12 +141,12 @@ public class DistributeAndMoveReceiptHandler
 		if (Check.isEmpty(lotNumberAttributeValue))
 		{
 			// if the attribute is not present or set it automatically means the lotno is not to quarantine, either
-			return false;
+			return null;
 		}
 
 		final I_M_Product_LotNumber_Lock lotNumberLock = retrieveLotNumberLock(productId, lotNumberAttributeValue);
 
-		return lotNumberLock != null;
+		return lotNumberLock;
 	}
 
 	private I_M_Product_LotNumber_Lock retrieveLotNumberLock(final int productId, final String lotNo)
@@ -174,4 +177,5 @@ public class DistributeAndMoveReceiptHandler
 		return false;
 	}
 
+	
 }
