@@ -43,11 +43,13 @@ Here come the actual release notes:
   * [#894](https://github.com/metasfresh/metasfresh-webui-api/issues/894) New Composed Primary Keys
   * [#895](https://github.com/metasfresh/metasfresh-webui-api/issues/895) Automatic printing HU Labels in WebUI
   * [#901](https://github.com/metasfresh/metasfresh-webui-api/issues/901) Provide media size info for columns
+  * [#910](https://github.com/metasfresh/metasfresh-webui-api/issues/910) 2nd orderline for product missing in picking terminal
 
 * metasfresh-webui-frontend
   * [#1609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1609) Camera barcode reader for Tablet/ mobile device
     * New Barcode Reader that can be used via webcam on mobile devices.
   * [#1677](https://github.com/metasfresh/metasfresh-webui-frontend/pull/1677) Update momentjs in packages.json
+  * [#1699](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1699) tab does not trigger saving number field
   * [#1860](https://github.com/metasfresh/metasfresh/issues/1860) Make documentNo readonly in Payments (and other document types)
 
 ## Fixes
