@@ -34,7 +34,6 @@ function addBarcodeScanner(WrappedComponent) {
               onDetected={this.onBarcodeDetected}
               onClose={() => this.scanBarcode(false)}
               onReset={() => this.scanBarcode(true)}
-              debug={true}
             />
           </div>
         </div>
