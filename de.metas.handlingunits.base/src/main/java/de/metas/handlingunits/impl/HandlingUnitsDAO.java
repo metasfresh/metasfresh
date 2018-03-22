@@ -306,9 +306,15 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_Item createAggregateHUItem(final I_M_HU hu)
+	public I_M_HU_Item createAggregateHUItem(@NonNull final I_M_HU hu)
 	{
 		return getHUAndItemsDAO().createAggregateHUItem(hu);
+	}
+
+	@Override
+	public I_M_HU_Item createChildHUItem(@NonNull final I_M_HU hu)
+	{
+		return getHUAndItemsDAO().createChildHUItem(hu);
 	}
 
 	@Override

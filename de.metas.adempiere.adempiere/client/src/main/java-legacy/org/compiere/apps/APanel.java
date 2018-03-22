@@ -71,7 +71,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.TableInfoVO;
+import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VPanelUI;
 import org.adempiere.process.event.IProcessEventListener;
@@ -2190,7 +2190,7 @@ public class APanel extends CPanel
 		// If we were asked to copy with details, ask the user which child tables he/she wants to be copied
 		if (DataNewCopyMode.isCopyWithDetails(copyMode))
 		{
-			final List<TableInfoVO> childTablesToBeCopied = getSuggestedChildTablesToCopyWithDetails();
+			final List<CopyRecordSupportTableInfo> childTablesToBeCopied = getSuggestedChildTablesToCopyWithDetails();
 			// If user canceled then ignore everything and get out
 			if (childTablesToBeCopied == null)
 			{
@@ -3429,20 +3429,20 @@ public class APanel extends CPanel
 	}
 
 	/**
-	 * @return list of {@link TableInfoVO} to be also copied or <code>null</code> if user canceled.
+	 * @return list of {@link CopyRecordSupportTableInfo} to be also copied or <code>null</code> if user canceled.
 	 */
-	private final List<TableInfoVO> getSuggestedChildTablesToCopyWithDetails()
+	private final List<CopyRecordSupportTableInfo> getSuggestedChildTablesToCopyWithDetails()
 	{
 		final Properties ctx = m_ctx;
 		final String tableName = m_curTab.getTableName();
 		final int recordId = m_curTab.getRecord_ID();
 		
 		final PO po = TableModelLoader.instance.getPO(ctx, tableName, recordId, ITrx.TRXNAME_None);
-		final List<TableInfoVO> tiList = CopyRecordFactory.getCopyRecordSupport(tableName).getSuggestedChildren(po);
+		final List<CopyRecordSupportTableInfo> tiList = CopyRecordFactory.getCopyRecordSupport(tableName).getSuggestedChildren(po);
 		
 		//
 		final JList<String> list = new JList<String>();
-		list.setListData(tiList.stream().map(TableInfoVO::getName).toArray(size -> new String[size]));
+		list.setListData(tiList.stream().map(CopyRecordSupportTableInfo::getName).toArray(size -> new String[size]));
 		list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		list.setSelectedIndices(IntStream.range(0, tiList.size()).toArray()); // select entire list
 		//
@@ -3457,7 +3457,7 @@ public class APanel extends CPanel
 		{
 			final int[] indices = list.getSelectedIndices();
 			Arrays.sort(indices);
-			final ImmutableList.Builder<TableInfoVO> suggestedList = ImmutableList.builder();
+			final ImmutableList.Builder<CopyRecordSupportTableInfo> suggestedList = ImmutableList.builder();
 			for (int i = 0; i < indices.length; i++)
 			{
 				suggestedList.add(tiList.get(indices[i]));

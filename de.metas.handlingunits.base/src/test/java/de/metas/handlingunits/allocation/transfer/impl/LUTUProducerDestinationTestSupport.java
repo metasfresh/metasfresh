@@ -28,12 +28,12 @@ import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,7 +43,7 @@ import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 /**
  * Contains masterdata and common stuff to be used by different tests.
  * This class is convenient whenever you want to test with (aggregate) HUs that were created by the {@link LUTUProducerDestination}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -91,10 +91,10 @@ public class LUTUProducerDestinationTestSupport
 
 	/**
 	 * This is an <b>alternative</b> to calling link AdempiereTestHelper#init()}! Don't call both, they will reset each other's stuff.
-	 *  
+	 *
 	 * Creates a new instance with fresh masterdata. Also causes the {@link HUTestHelper} to be initialized.
 	 * This constructor should be called from tests' {@link Before} methods.
-	 * 
+	 *
 	 * Creates PI as follows
 	 * <ul>
 	 * <li>LU (Palet)
@@ -137,7 +137,7 @@ public class LUTUProducerDestinationTestSupport
 		}
 
 		{
-			piTruckUnlimitedCapacity = helper.createHUDefinition(HUTestHelper.NAME_Truck_Product);
+			piTruckUnlimitedCapacity = helper.createHUDefinition(HUTestHelper.NAME_Truck_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 			piTruck_UnlimitedCapacity_Item = helper.createHU_PI_Item_Material(piTruckUnlimitedCapacity);
 			final I_M_HU_PI_Item_Product piItemProduct = helper.assignProduct(piTruck_UnlimitedCapacity_Item, helper.pTomato, new BigDecimal("6"), helper.uomEach);
@@ -176,7 +176,7 @@ public class LUTUProducerDestinationTestSupport
 		// TU
 		lutuProducer.setLUItemPI(piLU_Item_IFCO);
 		lutuProducer.setTUPI(piTU_IFCO);
-		lutuProducer.addTUCapacity(helper.pTomato, BigDecimal.valueOf(qtyCUPerTU), helper.uomKg);
+		lutuProducer.addCUPerTU(helper.pTomato, BigDecimal.valueOf(qtyCUPerTU), helper.uomKg);
 
 		producerCustomizer.accept(lutuProducer);
 

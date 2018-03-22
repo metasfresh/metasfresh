@@ -46,6 +46,7 @@ public class RabbitMQConfig
 {
 	public static final String QUEUENAME_UserChangedEvents = "msv3-server-UserChangedEvents";
 	public static final String QUEUENAME_StockAvailabilityUpdatedEvent = "msv3-server-StockAvailabilityUpdatedEvents";
+	public static final String QUEUENAME_MSV3ServerRequests = "msv3-server-requests";
 
 	@Bean
 	List<Declarable> queuesAndBindings()
@@ -53,6 +54,7 @@ public class RabbitMQConfig
 		return ImmutableList.<Declarable> builder()
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_UserChangedEvents))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_StockAvailabilityUpdatedEvent))
+				.addAll(createQueueExchangeAndBinding(QUEUENAME_MSV3ServerRequests))
 				.build();
 	}
 

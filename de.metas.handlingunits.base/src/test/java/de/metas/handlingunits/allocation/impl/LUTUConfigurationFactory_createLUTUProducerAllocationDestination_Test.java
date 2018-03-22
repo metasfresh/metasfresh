@@ -1,5 +1,6 @@
 package de.metas.handlingunits.allocation.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -16,12 +17,12 @@ import static org.junit.Assert.assertTrue;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -122,9 +123,9 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 	private IHUProducerAllocationDestination createLUTUProducerDestination(final I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
-				tuPIItemProduct, 
-				cuProduct, 
-				cuUOM, 
+				tuPIItemProduct,
+				cuProduct,
+				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 
@@ -171,8 +172,8 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 	{
 		lutuFactory.createLUTUConfiguration(
 				null, // tuPIItemProduct
-				cuProduct, 
-				cuUOM, 
+				cuProduct,
+				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 	}
@@ -219,9 +220,9 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		// verify storage of palet2
 		final I_M_HU huPalet2 = hus.get(1);
 		assertHUStorageLevel(huPalet2, piPalet, 5);
-		
+
 		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml(huPalet2)));
-		
+
 		// verify storage of palet2's aggregate HU
 		{
 			final List<I_M_HU> huPalet2_includedHUs = handlingUnitsDAO.retrieveIncludedHUs(huPalet2);
@@ -229,9 +230,9 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 
 			assertFalse(handlingUnitsBL.isAggregateHU(huPalet2_includedHUs.get(0)));
 			assertTrue(handlingUnitsBL.isAggregateHU(huPalet2_includedHUs.get(1)));
-			
+
 			final I_M_HU hu = huPalet2_includedHUs.get(0);
-		
+
 			assertHUStorageLevel(hu, piIFCO, 5);
 		}
 	}
@@ -280,15 +281,15 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		// 1 virtual HU x 25items
 		final List<I_M_HU> hus = createHUs(piVirtual_Item_Product, 25);
 
-		assertEquals("Invalid Palets count", 1, hus.size());
+		assertThat(hus).as("Invalid Palets count").hasSize(1);
 		final I_M_HU huPalet = hus.get(0);
 		assertHUStorageLevel(huPalet, piPalet, 25);
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		
+
 		final List<I_M_HU> huPalet_VHUs = handlingUnitsDAO.retrieveIncludedHUs(huPalet);
 
-		assertEquals("Invalid VHUs count for Palet", 2, huPalet_VHUs.size()); // expect two VHUs; the 2nd one is the aggregate HU "item stub"
+		assertThat(huPalet_VHUs).as("Invalid VHUs count for Palet").hasSize(2); // expect two VHUs; the 2nd one is the aggregate HU "item stub"
 
 		assertTrue(handlingUnitsBL.isAggregateHU(huPalet_VHUs.get(1)));
 		assertFalse(handlingUnitsBL.isAggregateHU(huPalet_VHUs.get(0)));
