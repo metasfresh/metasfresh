@@ -1,15 +1,11 @@
-package de.metas.vertical.pharma.msv3.server.security.sync;
-
-import java.util.List;
+package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -36,16 +32,30 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JsonUsersUpdateRequest
+public class MSV3StockAvailability
 {
-	@JsonProperty("users")
-	private final List<JsonUser> users;
+	@JsonProperty("pzn")
+	private long pzn;
+	@JsonProperty("qty")
+	private int qty;
 
 	@JsonCreator
 	@Builder
-	private JsonUsersUpdateRequest(
-			@JsonProperty("users") @Singular final List<JsonUser> users)
+	private MSV3StockAvailability(
+			@JsonProperty("pzn") final long pzn,
+			@JsonProperty("qty") final int qty)
 	{
-		this.users = ImmutableList.copyOf(users);
+		if (pzn <= 0)
+		{
+			throw new IllegalArgumentException("pzn shall be > 0");
+		}
+		if (qty < 0)
+		{
+			throw new IllegalArgumentException("qty shall be >= 0");
+		}
+
+		this.pzn = pzn;
+		this.qty = qty;
 	}
+
 }

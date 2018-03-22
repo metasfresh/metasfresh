@@ -20,8 +20,8 @@ import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilit
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitutionType;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.sync.JsonStockAvailability;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.sync.JsonStockAvailabilityUpdateRequest;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
 import lombok.NonNull;
 
 /*
@@ -108,12 +108,12 @@ public class StockAvailabilityService
 				.build();
 	}
 
-	public void updateStockAvailability(@NonNull final JsonStockAvailabilityUpdateRequest request)
+	public void handleEvent(@NonNull final MSV3StockAvailabilityUpdatedEvent event)
 	{
-		request.getItems().forEach(this::updateStockAvailability);
+		event.getItems().forEach(this::updateStockAvailability);
 	}
 
-	private void updateStockAvailability(@NonNull final JsonStockAvailability request)
+	private void updateStockAvailability(@NonNull final MSV3StockAvailability request)
 	{
 		JpaStockAvailability jpaStockAvailability = stockAvailabilityRepo.findByPzn(request.getPzn());
 		if (jpaStockAvailability == null)
