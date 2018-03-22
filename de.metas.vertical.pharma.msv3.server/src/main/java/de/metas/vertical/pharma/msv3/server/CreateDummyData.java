@@ -3,12 +3,11 @@ package de.metas.vertical.pharma.msv3.server;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import de.metas.vertical.pharma.msv3.server.security.sync.JsonUser;
-import de.metas.vertical.pharma.msv3.server.security.sync.JsonUsersUpdateRequest;
-import de.metas.vertical.pharma.msv3.server.security.sync.UserSyncRestEndpoint;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.sync.JsonStockAvailability;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.sync.JsonStockAvailabilityUpdateRequest;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.sync.StockAvailabilityBackendSyncRestEndpoint;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
+import de.metas.vertical.pharma.msv3.server.peer.service.CustomerConfigEventsQueue;
+import de.metas.vertical.pharma.msv3.server.peer.service.StockAvailabilityEventsQueue;
 
 /*
  * #%L
@@ -36,15 +35,15 @@ import de.metas.vertical.pharma.msv3.server.stockAvailability.sync.StockAvailabi
 @Profile("dummy_data")
 public class CreateDummyData
 {
-	private final UserSyncRestEndpoint usersService;
-	private final StockAvailabilityBackendSyncRestEndpoint stockAvailabilityService;
+	private final CustomerConfigEventsQueue customerConfigEventsQueue;
+	private final StockAvailabilityEventsQueue stockAvailabilityEventsQueue;
 
 	public CreateDummyData(
-			final UserSyncRestEndpoint usersService,
-			final StockAvailabilityBackendSyncRestEndpoint stockAvailabilityService)
+			final CustomerConfigEventsQueue customerConfigEventsQueue,
+			final StockAvailabilityEventsQueue stockAvailabilityEventsQueue)
 	{
-		this.usersService = usersService;
-		this.stockAvailabilityService = stockAvailabilityService;
+		this.customerConfigEventsQueue = customerConfigEventsQueue;
+		this.stockAvailabilityEventsQueue = stockAvailabilityEventsQueue;
 
 		System.out.println("----------------------------------------------------------------------------------------------------");
 		System.out.println("Creating dummy data");
@@ -55,18 +54,16 @@ public class CreateDummyData
 
 	private void createUsers()
 	{
-		usersService.update(JsonUsersUpdateRequest.builder()
-				.user(JsonUser.builder().username("user").password("pass").bpartnerId(2156425).bpartnerLocationId(2205175).build())
-				.build());
+		customerConfigEventsQueue.publish(MSV3UserChangedEvent.prepareCreatedEvent().username("user").password("pass").bpartnerId(2156425).bpartnerLocationId(2205175).build());
 	}
 
 	private void createStockAvailability()
 	{
-		stockAvailabilityService.update(JsonStockAvailabilityUpdateRequest.builder()
-				.item(JsonStockAvailability.builder().pzn(1112223).qty(30).build())
-				.item(JsonStockAvailability.builder().pzn(1112224).qty(30).build())
-				.item(JsonStockAvailability.builder().pzn(1112225).qty(30).build())
-				.item(JsonStockAvailability.builder().pzn(1112226).qty(30).build())
+		stockAvailabilityEventsQueue.publish(MSV3StockAvailabilityUpdatedEvent.builder()
+				.item(MSV3StockAvailability.builder().pzn(1112223).qty(30).build())
+				.item(MSV3StockAvailability.builder().pzn(1112224).qty(30).build())
+				.item(MSV3StockAvailability.builder().pzn(1112225).qty(30).build())
+				.item(MSV3StockAvailability.builder().pzn(1112226).qty(30).build())
 				.build());
 	}
 
