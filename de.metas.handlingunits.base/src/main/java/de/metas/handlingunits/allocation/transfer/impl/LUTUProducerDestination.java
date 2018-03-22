@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -37,6 +39,7 @@ import org.compiere.model.I_M_Product;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
@@ -54,6 +57,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
@@ -369,8 +373,14 @@ public class LUTUProducerDestination
 	}
 
 	@Override
-	public void setLUPI(final I_M_HU_PI luPI)
+	public void setLUPI(@Nullable final I_M_HU_PI luPI)
 	{
+		// verify the luPI's HU-type
+		if (luPI != null)
+		{
+			assertCorrectHuType(luPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		}
+
 		assertConfigurable();
 		this.luPI = luPI;
 	}
@@ -386,7 +396,7 @@ public class LUTUProducerDestination
 	{
 		assertConfigurable();
 
-		Check.errorUnless(luItemPI == null/* just a guard against NPE; right now, idk if null should be OK or not */
+		Check.errorUnless(luItemPI == null
 				|| X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(luItemPI.getItemType()), "Param 'luItemPI' has to have type=HU; luItemPI={}", luItemPI);
 
 		this.luItemPI = luItemPI;
@@ -414,10 +424,26 @@ public class LUTUProducerDestination
 	}
 
 	@Override
-	public void setTUPI(final I_M_HU_PI tuPI)
+	public void setTUPI(@NonNull final I_M_HU_PI tuPI)
 	{
+		// verify the tuPI's HU-type
+		final boolean tuPIisVirtual = tuPI.getM_HU_PI_ID() == Services.get(IHandlingUnitsDAO.class).getVirtual_HU_PI_ID();
+		final String expectedHuType = tuPIisVirtual ? X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI : X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
+		assertCorrectHuType(tuPI, expectedHuType);
+
 		assertConfigurable();
+
 		this.tuPI = tuPI;
+	}
+
+	private void assertCorrectHuType(final I_M_HU_PI pi, final String exptectedType)
+	{
+		final String type = Services.get(IHandlingUnitsBL.class).getHU_UnitType(pi);
+
+		Check.errorUnless(
+				exptectedType.equals(type),
+				"The M_HU_PI_Version of the given parameter pi needs to have type={}, but has type={}; pi={}",
+				exptectedType, type, pi);
 	}
 
 	@Override

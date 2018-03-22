@@ -61,6 +61,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import lombok.NonNull;
 
@@ -557,11 +558,10 @@ import lombok.NonNull;
 			// Therefore we add one "aggregate" item which can then later onwards represent the child-HUs and its content.
 			final boolean huIsNotYetAnAggregate = !handlingUnitsBL.isAggregateHU(hu);
 			final boolean huIsVirtual = handlingUnitsBL.isVirtual(hu);
-			final boolean huIsChild = hu.getM_HU_Item_Parent_ID() > 0;
-
+			final boolean huIsLU = X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(hu.getM_HU_PI_Version().getHU_UnitType());
 			if (!huHasMaterialItem && huIsNotYetAnAggregate)
 			{
-				if (huIsChild)
+				if (huIsLU)
 				{
 					final I_M_HU_Item aggregateItem = handlingUnitsDAO.createAggregateHUItem(hu);
 

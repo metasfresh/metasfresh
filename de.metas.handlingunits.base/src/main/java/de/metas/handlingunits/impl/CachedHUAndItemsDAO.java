@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -48,6 +50,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import lombok.NonNull;
 
 /**
  * This service wraps a {@link HUAndItemsDAO} and caches its results.
@@ -163,7 +166,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 		}
 	}
 
-	private final void debugValidateIncludedHUs(final I_M_HU_Item huItem)
+	private final void debugValidateIncludedHUs(@Nullable final I_M_HU_Item huItem)
 	{
 		if (!DEBUG)
 		{
@@ -263,7 +266,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	}
 
 	@Override
-	public I_M_HU_Item createAggregateHUItem(I_M_HU hu)
+	public I_M_HU_Item createAggregateHUItem(@NonNull final I_M_HU hu)
 	{
 		final I_M_HU_Item huItem = db.createAggregateHUItem(hu);
 		return finalizeAndAddToCache(hu, huItem);
@@ -271,7 +274,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 
 
 	@Override
-	public I_M_HU_Item createChildHUItem(I_M_HU hu)
+	public I_M_HU_Item createChildHUItem(@NonNull final I_M_HU hu)
 	{
 		final I_M_HU_Item huItem = db.createChildHUItem(hu);
 		return finalizeAndAddToCache(hu, huItem);
