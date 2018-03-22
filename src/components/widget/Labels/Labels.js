@@ -308,7 +308,7 @@ class Labels extends Component {
   }
 }
 
-export default connect(state => ({
-  docId: state.windowHandler.master.docId,
-  windowId: state.windowHandler.master.layout.windowId,
+export default connect(({ windowHandler }) => ({
+  docId: windowHandler.master.docId,
+  windowId: windowHandler.master.layout.windowId,
 }))(Labels);
