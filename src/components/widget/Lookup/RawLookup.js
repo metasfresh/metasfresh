@@ -140,6 +140,12 @@ class RawLookup extends Component {
       selected: null,
     });
 
+    if (select.key === 'NEW') {
+      this.handleAddNew();
+
+      return;
+    }
+
     if (filterWidget) {
       const promise = onChange(mainProp.parameterName, select);
 
@@ -229,6 +235,8 @@ class RawLookup extends Component {
       mainProperty,
       handleInputEmptyStatus,
       enableAutofocus,
+      isModal,
+      newRecordCaption,
     } = this.props;
 
     enableAutofocus();
@@ -270,11 +278,24 @@ class RawLookup extends Component {
       typeaheadRequest.then(response => {
         let values = response.data.values || [];
 
-        this.setState({
-          list: values,
-          loading: false,
-          selected: values[0],
-        });
+        if (values.length === 0 && !isModal) {
+          const optionNew = { key: 'NEW', caption: newRecordCaption };
+          const list = [optionNew];
+
+          this.setState({
+            list,
+            forceEmpty: true,
+            loading: false,
+            selected: optionNew,
+          });
+        } else {
+          this.setState({
+            list: values,
+            forceEmpty: false,
+            loading: false,
+            selected: values[0],
+          });
+        }
       });
     } else {
       this.setState({
@@ -337,7 +358,7 @@ class RawLookup extends Component {
       isOpen,
     } = this.props;
 
-    const { isInputEmpty, list, loading, selected } = this.state;
+    const { isInputEmpty, list, loading, selected, forceEmpty } = this.state;
 
     return (
       <TetherComponent
@@ -384,6 +405,7 @@ class RawLookup extends Component {
             <SelectionDropdown
               loading={loading}
               options={list}
+              forceEmpty={forceEmpty}
               selected={selected}
               width={this.wrapper && this.wrapper.offsetWidth}
               onChange={this.handleTemporarySelection}

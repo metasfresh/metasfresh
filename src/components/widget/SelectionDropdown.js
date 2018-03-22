@@ -27,6 +27,7 @@ export default class SelectionDropdown extends Component {
         );
       }
     },
+    forceEmpty: PropTypes.bool,
     width: PropTypes.number.isRequired,
     loading: PropTypes.bool,
     onChange: PropTypes.func.isRequired,
@@ -226,7 +227,7 @@ export default class SelectionDropdown extends Component {
   );
 
   render() {
-    const { options, width, loading } = this.props;
+    const { options, width, loading, forceEmpty } = this.props;
 
     const empty = this.size(options) === 0;
 
@@ -236,7 +237,7 @@ export default class SelectionDropdown extends Component {
         className="input-dropdown-list"
         style={{ width }}
       >
-        {loading && (empty ? this.empty : this.loading)}
+        {loading ? this.loading : (empty || forceEmpty) && this.empty}
         {options.map(this.renderOption)}
       </div>
     );
