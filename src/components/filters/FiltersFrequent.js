@@ -3,6 +3,7 @@ import counterpart from 'counterpart';
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
+import currentDevice from 'current-device';
 
 import { TableCell } from '../table/TableCell';
 import FiltersDateStepper from './FiltersDateStepper';
@@ -12,9 +13,12 @@ const classes = 'btn btn-filter btn-meta-outline-secondary btn-sm';
 
 class FiltersFrequent extends Component {
   state = { openFilterId: null };
+  deviceType = null;
 
   constructor(props) {
     super(props);
+
+    this.deviceType = currentDevice.type;
   }
 
   toggleFilter = index => {
@@ -91,9 +95,11 @@ class FiltersFrequent extends Component {
                     {item.captionValue}
                   </Fragment>
                 ) : (
-                  `${counterpart.translate('window.filters.caption2')}: ${
-                    item.caption
-                  }`
+                  `${
+                    this.deviceType === 'desktop'
+                      ? counterpart.translate('window.filters.caption2')
+                      : ''
+                  }: ${item.caption}`
                 )}
               </button>
 
