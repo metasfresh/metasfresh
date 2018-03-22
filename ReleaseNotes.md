@@ -22,6 +22,10 @@ Here come the actual release notes:
   * [#3743](https://github.com/metasfresh/metasfresh/issues/3743) Translation of Distribution Editor Quickaction
     * Translation added for the Distribution Editor Quickactions.
 
+* metasfresh-webui-frontend
+  * [#1684](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1684) Combine dropdown list of <List> and <Lookup> component
+    * Improvement of Lookup Widgets and List Components, combined functionality  for better maintainability.
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#1605](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1605) Scrolling in dropdown fields
