@@ -820,7 +820,6 @@ input:checked + .input-slider:before {
     font-weight:bold;
 }
 
-.input-dropdown-list-option:hover,
 .input-dropdown-list-option-key-on {
     background-color: $brand-color-primary;
     color: #fff;
@@ -855,21 +854,6 @@ input:checked + .input-slider:before {
     }
 }
 
-.input-dropdown-list-option p {
-    margin:0;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.input-dropdown-item-title {
-    margin-bottom: 6px;
-    font-weight: 500;
-}
-
-.input-dropdown-item-subtitle {
-    font-size: .75rem;
-}
 input[type=checkbox]:disabled, input[type=radio]:disabled {
     cursor: default;
 }
