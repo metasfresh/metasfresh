@@ -1,12 +1,18 @@
 package de.metas.vertical.pharma.msv3.server.security;
 
+import java.util.List;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent.ChangeType;
 import lombok.NonNull;
 
 /*
@@ -50,6 +56,11 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 			throw new UsernameNotFoundException("User '" + username + "' does not exist");
 		}
 
+		return toMSV3User(jpaUser);
+	}
+
+	private static MSV3User toMSV3User(final JpaUser jpaUser)
+	{
 		return MSV3User.builder()
 				.username(jpaUser.getUsername())
 				.password(jpaUser.getPassword())
@@ -71,5 +82,46 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 		}
 
 		return loadUserByUsername(authentication.getName());
+	}
+
+	public List<MSV3User> getAllUsers()
+	{
+		return usersRepo.findAll()
+				.stream()
+				.map(jpaUser -> toMSV3User(jpaUser))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void handleEvent(@NonNull final MSV3UserChangedEvent event)
+	{
+		if (event.getChangeType() == ChangeType.CREATED || event.getChangeType() == ChangeType.UPDATED)
+		{
+			final String username = event.getUsername();
+
+			JpaUser user = usersRepo.findByUsername(username);
+			if (user == null)
+			{
+				user = new JpaUser();
+				user.setUsername(username);
+			}
+
+			user.setPassword(event.getPassword());
+			user.setBpartnerId(event.getBpartnerId());
+			user.setBpartnerLocationId(event.getBpartnerLocationId());
+
+			usersRepo.save(user);
+		}
+		else if (event.getChangeType() == ChangeType.DELETED)
+		{
+			final JpaUser user = usersRepo.findByUsername(event.getUsername());
+			if (user != null)
+			{
+				usersRepo.delete(user);
+			}
+		}
+		else
+		{
+			throw new IllegalArgumentException("Unknown change type: " + event);
+		}
 	}
 }
