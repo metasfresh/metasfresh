@@ -6,6 +6,11 @@ import java.sql.Timestamp;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -34,6 +39,21 @@ import org.compiere.model.I_C_BPartner;
  */
 public interface IBPartnerStatsBL extends ISingletonService
 {
+	@Builder
+	@Value
+	public static class CalculateSOCreditStatusRequest
+	{
+		@NonNull
+		final BPartnerStats stat;
+		@NonNull
+		@Default
+		final BigDecimal additionalAmt = BigDecimal.ZERO;
+		@NonNull
+		final Timestamp date;
+		@Default
+		final boolean checkiAdditionalAmt = true;
+	}
+
 	/**
 	 * Calculate the future/simulated SOCreditStatus for the given {@link BPartnerStats} object at a certain date
 	 * No updating
@@ -43,7 +63,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 	 * @param date
 	 * @return
 	 */
-	String calculateSOCreditStatus(BPartnerStats stat, BigDecimal additionalAmt, Timestamp date);
+	String calculateSOCreditStatus(CalculateSOCreditStatusRequest request);
 
 
 	/**
