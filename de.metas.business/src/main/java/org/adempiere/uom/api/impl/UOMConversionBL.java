@@ -243,7 +243,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			throw new AdempiereException("Failed to convert Qty=" + qty
 					+ " of product=" + (product != null ? product.getValue() : null)
 					+ " from UOM=" + uomFrom.getName()
-					+ " to UOM={}" + uomTo.getName());
+					+ " to UOM=" + uomTo.getName());
 		}
 
 		return result;

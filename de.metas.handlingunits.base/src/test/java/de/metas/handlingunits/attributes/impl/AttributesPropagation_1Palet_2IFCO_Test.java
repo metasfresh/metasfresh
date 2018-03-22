@@ -14,12 +14,12 @@ import static org.junit.Assert.assertTrue;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -82,7 +82,7 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 		}
 
-		huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		{
 			helper.createHU_PI_Item_IncludedHU(huDefPalet, huDefIFCO, AttributesPropagation_1Palet_2IFCO_Test.COUNT_IFCOS_PER_PALET);
 			helper.createHU_PI_Item_PackingMaterial(huDefPalet, pmPallets);
@@ -125,17 +125,17 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 		final List<I_M_HU> huPalets = helper.createHUsFromSimplePI(incomingTrxDoc, huDefPalet);
 		assertThat(huPalets.size(), is(2));
 		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("huPalets",huPalets)));
-		
+
 		//
 		// Bind data to be able to access them in our tests
-		final I_M_HU huPalet = huPalets.get(0); 
+		final I_M_HU huPalet = huPalets.get(0);
 		huPalet_Attrs = attributeStorageFactory.getAttributeStorage(huPalet);
-		
+
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final List<I_M_HU> huIncluded = handlingUnitsDAO.retrieveIncludedHUs(huPalet);
-		
+
 		assertThat(huIncluded.size(), is(1));
-				
+
 		final I_M_HU huAggregate = huIncluded.get(0);
 		assertTrue(Services.get(IHandlingUnitsBL.class).isAggregateHU(huAggregate));
 		aggregateHU_Attrs = attributeStorageFactory.getAttributeStorage(huAggregate);
