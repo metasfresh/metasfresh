@@ -133,7 +133,7 @@ DELETE FROM AD_Column WHERE AD_Column_ID=546029
 update C_Flatrate_Transition set ExtensionType='EO' where IsAutoRenew='Y';
 update C_Flatrate_Transition set ExtensionType='EA' where IsAutoExtension='Y';
 
-
+commit;
 
 /* DDL */ SELECT public.db_alter_table('C_Flatrate_Transition','ALTER TABLE public.C_Flatrate_Transition DROP COLUMN IsAutoExtension')
 ;
