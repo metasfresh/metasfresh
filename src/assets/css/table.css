@@ -300,10 +300,6 @@ th {
 }
 
 .td-lg .input-dropdown-list {
-    width: 225px;
-}
-
-.td-lg .input-dropdown-list {
     width: auto;
 }
 
