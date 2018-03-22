@@ -76,7 +76,9 @@ class RawLookup extends Component {
     }
 
     defaultValue &&
-      prevProps.defaultValue !== defaultValue &&
+      (prevProps.defaultValue == null ||
+        (prevProps.defaultValue &&
+          prevProps.defaultValue.caption !== defaultValue.caption)) &&
       handleInputEmptyStatus(false);
 
     if (fireClickOutside && prevProps.fireClickOutside !== fireClickOutside) {
