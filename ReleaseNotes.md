@@ -27,6 +27,8 @@ Here come the actual release notes:
     * New Funcitonality for Barcode Scanning in Action Parms.
   * [#1684](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1684) Combine dropdown list of <List> and <Lookup> component
     * Improvement of Lookup Widgets and List Components, combined functionality  for better maintainability.
+  * [#1692](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1692) Detailed adjustments of User Interface for tablet media size
+    * UI Improvement for Mobile/ Tablet Usage of storage relevant workflows.
 
 ## Fixes
 * metasfresh
