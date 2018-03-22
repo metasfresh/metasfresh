@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -64,16 +64,13 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	private static final String DYNATTR_DisableChangeCheckingOnSave = LUTUConfigurationFactory.class.getName() + "#DisableChangeCheckingOnSave";
 
 	@Override
-	public ILUTUProducerAllocationDestination createLUTUProducerAllocationDestination(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public ILUTUProducerAllocationDestination createLUTUProducerAllocationDestination(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");
-
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		final LUTUProducerDestination luProducerDestination = new LUTUProducerDestination();
 		luProducerDestination.setM_HU_LUTU_Configuration(lutuConfiguration);
 
-		//
 		// LU Configuration
 		final I_M_HU_PI_Item luPIItem = lutuConfiguration.getM_LU_HU_PI_Item();
 		final int qtyLU = lutuConfiguration.getQtyLU().intValueExact();
@@ -133,7 +130,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
 		final boolean qtyCUInfinite = lutuConfiguration.isInfiniteQtyCU();
 		final BigDecimal qtyCUPerTU = qtyCUInfinite ? Quantity.QTY_INFINITE : lutuConfiguration.getQtyCU();
-		luProducerDestination.addTUCapacity(cuProduct, qtyCUPerTU, cuUOM);
+		luProducerDestination.addCUPerTU(cuProduct, qtyCUPerTU, cuUOM);
 
 		//
 		// Misc configuration
@@ -200,7 +197,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			lutuConfiguration.setQtyCU(tuCapacity.getCapacityQty());
 		}
 
-		
+
 		//
 		// LU Configuration
 		final I_M_HU_PI_Item luPIItem;
@@ -252,7 +249,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	{
 		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");
 
-		final List<Object> keyItems = new ArrayList<Object>();
+		final List<Object> keyItems = new ArrayList<>();
 
 		//
 		// LU: PI
@@ -549,8 +546,8 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 	@Override
 	public void adjustForTotalQtyTUsAndCUs(
-			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, 
-			@NonNull final BigDecimal qtyTUsTotal, 
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
+			@NonNull final BigDecimal qtyTUsTotal,
 			@NonNull final BigDecimal qtyCUsTotal)
 	{
 		//

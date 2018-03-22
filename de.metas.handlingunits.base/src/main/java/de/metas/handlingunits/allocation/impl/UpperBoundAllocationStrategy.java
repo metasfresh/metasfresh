@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,11 +39,12 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /**
  * This classe's {@link #getHUItemStorage(I_M_HU_Item, IAllocationRequest)} can return a storage with an
  * "artificial" uppper bound that is different from the capacity defined in {@link I_M_HU_PI_Item_Product}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -55,7 +56,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 	private final Capacity _capacityOverride;
 
 	/**
-	 * 
+	 *
 	 * @param capacityOverride optional capacity that can override the one from the packing instructions.
 	 */
 	public UpperBoundAllocationStrategy(final Capacity capacityOverride)
@@ -118,7 +119,9 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 	}
 
 	@Override
-	protected IAllocationResult allocateOnIncludedHUItem(final I_M_HU_Item item, final IAllocationRequest request)
+	protected IAllocationResult allocateOnIncludedHUItem(
+			@NonNull final I_M_HU_Item item,
+			@NonNull final IAllocationRequest request)
 	{
 		// Prevent allocating on a included HU item
 		final String itemType = handlingUnitsBL.getItemType(item);
