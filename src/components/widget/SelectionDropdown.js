@@ -27,6 +27,7 @@ export default class SelectionDropdown extends Component {
         );
       }
     },
+    empty: PropTypes.node,
     forceEmpty: PropTypes.bool,
     width: PropTypes.number.isRequired,
     loading: PropTypes.bool,
@@ -212,7 +213,7 @@ export default class SelectionDropdown extends Component {
     );
   };
 
-  empty = this.renderHeader('There is no choice available');
+  renderEmpty = () => this.renderHeader(this.props.empty);
 
   loading = this.renderHeader(
     <ReactCSSTransitionGroup
@@ -237,7 +238,7 @@ export default class SelectionDropdown extends Component {
         className="input-dropdown-list"
         style={{ width }}
       >
-        {loading ? this.loading : (empty || forceEmpty) && this.empty}
+        {loading ? this.loading : (empty || forceEmpty) && this.renderEmpty()}
         {options.map(this.renderOption)}
       </div>
     );

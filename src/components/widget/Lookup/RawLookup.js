@@ -405,6 +405,7 @@ class RawLookup extends Component {
             <SelectionDropdown
               loading={loading}
               options={list}
+              empty="No results found"
               forceEmpty={forceEmpty}
               selected={selected}
               width={this.wrapper && this.wrapper.offsetWidth}

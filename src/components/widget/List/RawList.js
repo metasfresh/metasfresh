@@ -301,6 +301,7 @@ class RawList extends PureComponent {
             <SelectionDropdown
               loading={loading}
               options={this.state.dropdownList}
+              empty="There is no choice available"
               selected={this.state.selected}
               width={this.dropdown.offsetWidth}
               onChange={this.handleTemporarySelection}
