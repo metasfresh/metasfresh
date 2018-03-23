@@ -2,8 +2,10 @@ package de.metas.vertical.pharma.msv3.server.peer.metasfresh.listeners;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import de.metas.Profiles;
 import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3CustomerConfigService;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3StockAvailabilityService;
@@ -32,6 +34,7 @@ import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ServerRequest;
  */
 
 @Component
+@Profile(Profiles.PROFILE_App)
 public class MSV3ServerRequestsRabbitMQListener
 {
 	@Autowired

@@ -4,15 +4,23 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
+import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -23,6 +31,7 @@ import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateResponse;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItem;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
@@ -53,12 +62,22 @@ import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
  */
 
 @Component
+@Profile(Profiles.PROFILE_App)
 public class OrderCreateRequestRabbitMQListener
 {
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE.MSV3-server";
 
+	private static final Logger logger = LogManager.getLogger(OrderCreateRequestRabbitMQListener.class);
+
 	@Autowired
 	private OLCandRepository olCandRepo;
+
+	@Value("${msv3server.adClientId:1000000}") // FIXME: hardcoded
+	private int adClientId;
+	@Value("${msv3server.adOrgId:1000000}") // FIXME: hardcoded
+	private int adOrgId;
+	@Value("${msv3server.adUserId:100}") // FIXME: hardcoded
+	private int adUserId;
 
 	@FunctionalInterface
 	private static interface OLCandSupplier
@@ -69,10 +88,27 @@ public class OrderCreateRequestRabbitMQListener
 	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_CreateOrderRequestEvents)
 	public OrderCreateResponse onRequest(final OrderCreateRequest request)
 	{
-		final List<OLCand> olCands = olCandRepo.create(toOLCandCreateRequestsList(request));
-		final Map<String, OLCand> olCandsByExternalId = Maps.uniqueIndex(olCands, OLCand::getExternalId);
+		try (final IAutoCloseable ctxRestorer = Env.switchContext(createContext()))
+		{
+			final List<OLCand> olCands = olCandRepo.create(toOLCandCreateRequestsList(request));
+			final Map<String, OLCand> olCandsByExternalId = Maps.uniqueIndex(olCands, OLCand::getExternalId);
 
-		return toOrderCreateResponse(request, externalId -> olCandsByExternalId.get(externalId.getValueAsString()));
+			return toOrderCreateResponse(request, externalId -> olCandsByExternalId.get(externalId.getValueAsString()));
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed processing request: {}", request, ex);
+			return OrderCreateResponse.error(ex.getLocalizedMessage());
+		}
+	}
+
+	private Properties createContext()
+	{
+		final Properties ctx = Env.newTemporaryCtx();
+		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, adClientId);
+		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, adOrgId);
+		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, adUserId);
+		return ctx;
 	}
 
 	private List<OLCandCreateRequest> toOLCandCreateRequestsList(final OrderCreateRequest request)
@@ -126,7 +162,7 @@ public class OrderCreateRequestRabbitMQListener
 
 	private OrderCreateResponse toOrderCreateResponse(final OrderCreateRequest request, final OLCandSupplier olCandSupplier)
 	{
-		return OrderCreateResponse.builder()
+		return OrderCreateResponse.ok(OrderResponse.builder()
 				.bpartnerId(request.getBpartnerId())
 				.orderId(request.getOrderId())
 				.supportId(request.getSupportId())
@@ -134,7 +170,7 @@ public class OrderCreateRequestRabbitMQListener
 				.orderPackages(request.getOrderPackages().stream()
 						.map(orderPackageRequest -> toOrderResponsePackage(orderPackageRequest, olCandSupplier))
 						.collect(ImmutableList.toImmutableList()))
-				.build();
+				.build());
 	}
 
 	private OrderResponsePackage toOrderResponsePackage(final OrderCreateRequestPackage orderPackageRequest, final OLCandSupplier olCandSupplier)
