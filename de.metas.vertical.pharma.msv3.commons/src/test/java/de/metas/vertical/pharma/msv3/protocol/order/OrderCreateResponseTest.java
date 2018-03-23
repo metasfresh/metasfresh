@@ -49,26 +49,27 @@ public class OrderCreateResponseTest
 	@Test
 	public void testSerializeDeserialize() throws Exception
 	{
-		testSerializeDeserialize(OrderCreateResponse.builder()
-				.orderId(Id.of("123"))
-				.supportId(SupportIDType.of(222))
-				.bpartnerId(BPartnerId.of(1, 2))
-				.nightOperation(false)
-				.orderPackage(OrderResponsePackage.builder()
-						.id(Id.of("123/1"))
-						.supportId(SupportIDType.of(2221))
-						.orderType(OrderType.NORMAL)
-						.orderIdentification("orderIdentification")
-						.packingMaterialId("packingMaterialId")
-						.item(OrderResponsePackageItem.builder()
-								.id(Id.random())
-								.pzn(PZN.of(1000123))
-								.qty(Quantity.of(66))
-								.deliverySpecifications(DeliverySpecifications.NORMAL)
-								.olCandId(1234567)
+		testSerializeDeserialize(OrderCreateResponse.ok(
+				OrderResponse.builder()
+						.orderId(Id.of("123"))
+						.supportId(SupportIDType.of(222))
+						.bpartnerId(BPartnerId.of(1, 2))
+						.nightOperation(false)
+						.orderPackage(OrderResponsePackage.builder()
+								.id(Id.of("123/1"))
+								.supportId(SupportIDType.of(2221))
+								.orderType(OrderType.NORMAL)
+								.orderIdentification("orderIdentification")
+								.packingMaterialId("packingMaterialId")
+								.item(OrderResponsePackageItem.builder()
+										.id(Id.random())
+										.pzn(PZN.of(1000123))
+										.qty(Quantity.of(66))
+										.deliverySpecifications(DeliverySpecifications.NORMAL)
+										.olCandId(1234567)
+										.build())
 								.build())
-						.build())
-				.build());
+						.build()));
 	}
 
 	public void testSerializeDeserialize(final OrderCreateResponse request) throws IOException

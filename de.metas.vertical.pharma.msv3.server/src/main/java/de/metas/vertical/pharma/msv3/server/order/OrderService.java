@@ -11,6 +11,7 @@ import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateResponse;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderStatus;
@@ -63,7 +64,7 @@ public class OrderService
 	{
 		final OrderCreateResponse response = msv3ServerPeerService.createOrderRequest(request);
 
-		final ImmutableMap<String, Integer> itemUuid2olCandId = response.getOrderPackages()
+		final ImmutableMap<String, Integer> itemUuid2olCandId = response.getOrder().getOrderPackages()
 				.stream()
 				.flatMap(orderResponsePackage -> orderResponsePackage.getItems().stream())
 				.collect(ImmutableMap.toImmutableMap(
@@ -124,7 +125,7 @@ public class OrderService
 
 	private OrderCreateResponse createOrderCreateResponse(final JpaOrder jpaOrder)
 	{
-		return OrderCreateResponse.builder()
+		return OrderCreateResponse.ok(OrderResponse.builder()
 				.bpartnerId(BPartnerId.of(jpaOrder.getBpartnerId(), jpaOrder.getBpartnerLocationId()))
 				.orderId(Id.of(jpaOrder.getDocumentNo()))
 				.supportId(SupportIDType.of(jpaOrder.getSupportId()))
@@ -132,7 +133,7 @@ public class OrderService
 				.orderPackages(jpaOrder.getOrderPackages().stream()
 						.map(this::createOrderResponsePackage)
 						.collect(ImmutableList.toImmutableList()))
-				.build();
+				.build());
 	}
 
 	private OrderResponsePackage createOrderResponsePackage(final JpaOrderPackage jpaOrderPackage)
@@ -160,7 +161,7 @@ public class OrderService
 
 	private static OrderCreateResponse createMockResponse(final OrderCreateRequest request)
 	{
-		return OrderCreateResponse.builder()
+		return OrderCreateResponse.ok(OrderResponse.builder()
 				.orderId(request.getOrderId())
 				.supportId(request.getSupportId())
 				.nightOperation(false)
@@ -180,7 +181,7 @@ public class OrderService
 										.collect(ImmutableList.toImmutableList()))
 								.build())
 						.collect(ImmutableList.toImmutableList()))
-				.build();
+				.build());
 	}
 
 	public OrderStatusResponse getOrderStatus(@NonNull final Id orderId, @NonNull final BPartnerId bpartnerId)
