@@ -33,4 +33,4 @@ COPY ./metasfresh-print-service-standalone.jar /opt/metasfresh/metasfresh-print/
 RUN sh -c 'touch /opt/metasfresh/metasfresh-print/metasfresh-print.jar'
 
 
-ENTRYPOINT ["/bin/bash -x", "/opt/metasfresh/metasfresh-print/start_print_docker.sh"]
+ENTRYPOINT ["/opt/metasfresh/metasfresh-print/start_print_docker.sh"]

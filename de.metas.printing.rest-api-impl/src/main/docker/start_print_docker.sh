@@ -1,7 +1,6 @@
 ﻿#!/bin/bash
 set -e
 
-
 # The variables have defaults that can be set from outside, e.g. via -e "DB_HOST=mydbms" or from the docker-compose.yml file.
 # Also see https://docs.docker.com/engine/reference/builder/#environment-replacement
 db_host=${DB_HOST:-db}
@@ -14,6 +13,7 @@ app_host=${APP_HOST:-app}
 skip_run_db_update=${SKIP_DB_UPDATE:-false}
 debug_port=${DEBUG_PORT:-8791}
 debug_suspend=${DEBUG_SUSPEND:-n}
+debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
 java_max_heap=${JAVA_MAX_HEAP:-256M}
 server_port=${SERVER_PORT:-8183}
@@ -32,6 +32,7 @@ echo_variable_values()
  echo "APP_HOST=${app_host}"
  echo "DEBUG_PORT=${debug_port}"
  echo "DEBUG_SUSPEND=${debug_suspend}"
+ echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "JAVA_MAX_HEAP=${java_max_heap}"
  echo "SERVER_PORT=${server_port}"
@@ -94,9 +95,16 @@ echo "Display the variable values we run with"
 echo "*************************************************************"
 echo_variable_values
 
+# start printing all bash commands from here onwards, if activated
+if [ "$debug_print_bash_cmds" != "n" ];
+then
+	echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}, so from here we will output all bash commands; set to n (just the lowercase letter) to skip this."
+	set -x
+fi
+
 set_properties /opt/metasfresh/metasfresh-print/metasfresh.properties
 
-if [ "$db_wait_for_dbms" != 'n' ];
+if [ "$db_wait_for_dbms" != "n" ];
 then
 	echo "DB_WAIT_FOR_DBMS=${db_wait_for_dbms}, so we wait for the DBMS to be reachable; set to n (just the lowercase letter) to skip this."
 	echo "**************************************"
