@@ -1082,6 +1082,12 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		// We assume attribute is editable (readonlyUI=false)
 		return false;
 	}
+	
+	@Override
+	public boolean isDisplayedUI(final I_M_Attribute attribute)
+	{
+		return getAttributeValue(attribute).isDisplayedUI();
+	}
 
 	protected final Object getDefaultAttributeValue(final Map<I_M_Attribute, Object> defaultAttributesValue, final I_M_Attribute attribute)
 	{

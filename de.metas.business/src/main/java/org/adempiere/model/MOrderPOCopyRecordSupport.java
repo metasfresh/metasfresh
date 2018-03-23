@@ -20,7 +20,7 @@ public class MOrderPOCopyRecordSupport extends GeneralCopyRecordSupport
 	);
 
 	@Override
-	public List<TableInfoVO> getSuggestedChildren(final PO po, final List<TableInfoVO> suggestedChildren)
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
 	{
 		return super.getSuggestedChildren(po, suggestedChildren)
 				.stream()

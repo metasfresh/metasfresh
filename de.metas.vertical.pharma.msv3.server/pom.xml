@@ -54,15 +54,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jms</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-broker</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
@@ -97,11 +88,22 @@
 			<artifactId>h2</artifactId>
 		</dependency>
 
+		<dependency>
+			<!-- required for REST client -->
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+		</dependency>
+
 
 		<!-- metasfresh -->
 		<dependency>
 			<groupId>de.metas.vertical.pharma</groupId>
 			<artifactId>metasfresh-pharma.msv3.commons</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.vertical.pharma</groupId>
+			<artifactId>metasfresh-pharma.msv3.server-peer</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

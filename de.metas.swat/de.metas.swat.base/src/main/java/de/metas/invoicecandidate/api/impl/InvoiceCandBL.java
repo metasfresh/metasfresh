@@ -3,6 +3,8 @@
  */
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -100,6 +102,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
 import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
@@ -2181,4 +2184,42 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 		}
 	}
+
+	@Override
+	public void markInvoiceCandInDisputeForReceiptLine(final I_M_InOutLine receiptLine)
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		final IInOutBL inoutBL = Services.get(IInOutBL.class);
+
+		if (receiptLine.getM_InOut().isSOTrx())
+		{
+			// not interesting. Do nothing
+			return;
+		}
+
+		if (inoutBL.isReversal(receiptLine))
+		{
+			// not interesting, Do nothing
+			return;
+		}
+
+		invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(receiptLine)
+				.stream()
+				.forEach(cand -> setCandInDispute(cand));
+	}
+
+	private void setCandInDispute(final I_C_Invoice_Candidate cand)
+	{
+		cand.setIsInDispute(true);
+		save(cand);
+	}
+
+	@Override
+	public void markInvoiceCandInDisputeForReceiptLines(final List<I_M_InOutLine> receiptLines)
+	{
+		receiptLines.stream()
+				.forEach(receiptLine -> markInvoiceCandInDisputeForReceiptLine(receiptLine));
+
+	}
+
 }

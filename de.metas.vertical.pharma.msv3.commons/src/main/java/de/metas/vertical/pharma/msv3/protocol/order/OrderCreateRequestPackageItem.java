@@ -1,5 +1,11 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
@@ -28,19 +34,31 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class OrderCreateRequestPackageItem
 {
+	@JsonProperty("id")
+	Id id;
+
+	@JsonProperty("pzn")
 	PZN pzn;
+
+	@JsonProperty("qty")
 	Quantity qty;
+
+	@JsonProperty("deliverySpecifications")
 	DeliverySpecifications deliverySpecifications;
 
 	@Builder
+	@JsonCreator
 	private OrderCreateRequestPackageItem(
-			@NonNull final PZN pzn,
-			@NonNull final Quantity qty,
-			@NonNull final DeliverySpecifications deliverySpecifications)
+			@JsonProperty("id") final Id id,
+			@JsonProperty("pzn") @NonNull final PZN pzn,
+			@JsonProperty("qty") @NonNull final Quantity qty,
+			@JsonProperty("deliverySpecifications") @NonNull final DeliverySpecifications deliverySpecifications)
 	{
+		this.id = id != null ? id : Id.random();
 		this.pzn = pzn;
 		this.qty = qty;
 		this.deliverySpecifications = deliverySpecifications;

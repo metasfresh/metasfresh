@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import lombok.Builder;
 import lombok.Data;
 
 /*
@@ -33,6 +34,7 @@ import lombok.Data;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Data
+@Builder
 public final class JsonOLCandCreateRequest
 {
 	private JsonBPartnerInfo bpartner;
@@ -44,7 +46,7 @@ public final class JsonOLCandCreateRequest
 	private LocalDate dateRequired;
 	private int flatrateConditionsId;
 
-	private int productId;
+	private String productCode;
 	private String productDescription;
 	private BigDecimal qty;
 	private int uomId;
@@ -55,4 +57,7 @@ public final class JsonOLCandCreateRequest
 	private BigDecimal discount;
 	// private String currencyCode; // shall come from pricingSystem/priceList
 
+	private String poReference;
+	
+	private String externalId;
 }

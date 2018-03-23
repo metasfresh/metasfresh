@@ -1,5 +1,10 @@
 package de.metas.vertical.pharma.msv3.protocol.types;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import lombok.Value;
 
 /*
@@ -29,9 +34,11 @@ import lombok.Value;
  * 
  * @see https://www.activebarcode.com/codes/pzn.html
  */
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class PZN
 {
+	@JsonCreator
 	public static PZN of(final long value)
 	{
 		return new PZN(value);
@@ -47,5 +54,16 @@ public class PZN
 		}
 
 		this.valueAsLong = value;
+	}
+
+	public String getValueAsString()
+	{
+		return String.valueOf(valueAsLong);
+	}
+
+	@JsonValue
+	public long toJson()
+	{
+		return valueAsLong;
 	}
 }

@@ -11,6 +11,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -45,6 +47,7 @@ import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -64,6 +67,10 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.product.model.I_M_Product_LotNumber_Lock;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -78,11 +85,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -121,7 +128,7 @@ public class HUs2DDOrderProducer
 	private Properties _ctx;
 	private I_M_Warehouse _warehouseTo;
 	private I_M_Locator _locatorTo;
-	private Iterator<I_M_HU> _hus;
+	private Iterator<HUToDistribute> _hus;
 	private final Timestamp date = SystemTime.asDayTimestamp();
 	//
 	// Parameters loaded before processing:
@@ -171,14 +178,16 @@ public class HUs2DDOrderProducer
 		//
 		// Iterate all HUs and create DD_OrderLine candidates
 		final ILoggable loggable = getLoggable();
-		final Iterator<I_M_HU> hus = getHUs();
+		final Iterator<HUToDistribute> hus = getHUs();
 		while (hus.hasNext())
 		{
-			final I_M_HU hu = hus.next();
+			final HUToDistribute huToDistribute = hus.next();
+
+			final I_M_HU hu = huToDistribute.getHu();
 
 			try
 			{
-				addHU(huContext, hu);
+				addHU(huContext, huToDistribute);
 
 				loggable.addLog("@M_HU_ID@ " + hu.getValue());
 			}
@@ -241,7 +250,13 @@ public class HUs2DDOrderProducer
 
 		//
 		// DD_Order document type
-		docTypeDO_ID = Services.get(IDocTypeDAO.class).getDocTypeId(ctx, X_C_DocType.DOCBASETYPE_DistributionOrder, Env.getAD_Client_ID(ctx), org.getAD_Org_ID(), ITrx.TRXNAME_None);
+		docTypeDO_ID = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(
+				DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+						.adClientId(Env.getAD_Client_ID(ctx))
+						.adOrgId(org.getAD_Org_ID())
+						.build());
+
 	}
 
 	private final void assertNotProcessed()
@@ -289,14 +304,14 @@ public class HUs2DDOrderProducer
 		return _locatorTo;
 	}
 
-	public HUs2DDOrderProducer setHUs(final Iterator<I_M_HU> hus)
+	public HUs2DDOrderProducer setHUs(final Iterator<HUToDistribute> hus)
 	{
 		assertNotProcessed();
 		_hus = hus;
 		return this;
 	}
 
-	private final Iterator<I_M_HU> getHUs()
+	private final Iterator<HUToDistribute> getHUs()
 	{
 		Check.assumeNotNull(_hus, "_hus not null");
 		return _hus;
@@ -307,8 +322,9 @@ public class HUs2DDOrderProducer
 		return Loggables.getLoggableOrLogger(logger, Level.INFO);
 	}
 
-	private void addHU(final IHUContext huContext, final I_M_HU hu)
+	private void addHU(final IHUContext huContext, final HUToDistribute huToDistribute)
 	{
+		final I_M_HU hu = huToDistribute.getHu();
 		//
 		// Validate the HU before creating the DD_Order
 		{
@@ -319,14 +335,21 @@ public class HUs2DDOrderProducer
 			Check.assume(huLocator.getM_Warehouse_ID() != warehouseTo.getM_Warehouse_ID(), "HU's is not stored in destination warehouse");
 		}
 
+		createDDOrderLineCandidates(huContext, huToDistribute);
+
+	}
+
+	private void createDDOrderLineCandidates(final IHUContext huContext, final HUToDistribute huToDistribute)
+	{
 		//
 		// Create DD Order line candidates
 		final List<IHUProductStorage> huProductStorages = huContext.getHUStorageFactory()
-				.getStorage(hu)
+				.getStorage(huToDistribute.getHu())
 				.getProductStorages();
+
 		for (final IHUProductStorage huProductStorage : huProductStorages)
 		{
-			final DDOrderLineCandidate ddOrderLineCandidateNew = new DDOrderLineCandidate(huContext, huProductStorage);
+			final DDOrderLineCandidate ddOrderLineCandidateNew = new DDOrderLineCandidate(huContext, huProductStorage, huToDistribute);
 			final ArrayKey aggregationKey = ddOrderLineCandidateNew.getAggregationKey();
 			final DDOrderLineCandidate ddOrderLineCandidateExisting = ddOrderLineCandidates.get(aggregationKey);
 			if (ddOrderLineCandidateExisting != null)
@@ -338,6 +361,7 @@ public class HUs2DDOrderProducer
 				ddOrderLineCandidates.put(aggregationKey, ddOrderLineCandidateNew);
 			}
 		}
+
 	}
 
 	private final I_DD_Order createDD_OrderHeader(final IHUContext huContext)
@@ -416,8 +440,16 @@ public class HUs2DDOrderProducer
 
 		//
 		// Description
-		ddOrderline.setDescription(ddOrderLineCandidate.getDescription());
+		final StringBuilder description = new StringBuilder();
 
+		final I_M_Product_LotNumber_Lock lotNumberLock = ddOrderLineCandidate.getLotNumberLock();
+
+		final String lotNoLockDescription = getDescriptionForLotNoLock(lotNumberLock);
+
+		description.append(lotNoLockDescription);
+		description.append(ddOrderLineCandidate.getDescription());
+
+		ddOrderline.setDescription(description.toString());
 		//
 		// Other flags
 		ddOrderline.setIsInvoiced(false);
@@ -429,6 +461,23 @@ public class HUs2DDOrderProducer
 		//
 		// Create the HU assignment candidate
 		huDDOrderDAO.addToHUsScheduledToMove(ddOrderline, ddOrderLineCandidate.getM_HUs());
+	}
+
+	private String getDescriptionForLotNoLock(final I_M_Product_LotNumber_Lock lotNumberLock)
+	{
+		if (lotNumberLock == null)
+		{
+			return "";
+		}
+
+		final String lotNoLockDescription = lotNumberLock.getDescription();
+
+		if (Check.isEmpty(lotNoLockDescription))
+		{
+			return "";
+		}
+
+		return lotNoLockDescription + "; ";
 	}
 
 	/**
@@ -479,7 +528,9 @@ public class HUs2DDOrderProducer
 		private I_M_HU_PI_Item_Product piItemProduct;
 		private Map<org.compiere.model.I_M_Attribute, Object> attributes = ImmutableMap.of();
 
-		public DDOrderLineCandidate(final IHUContext huContext, final IHUProductStorage huProductStorage)
+		private I_M_Product_LotNumber_Lock lotNoLock;
+
+		public DDOrderLineCandidate(final IHUContext huContext, final IHUProductStorage huProductStorage, final HUToDistribute huToDistribute)
 		{
 			super();
 
@@ -515,6 +566,10 @@ public class HUs2DDOrderProducer
 			{
 				aggregationKeyBuilder.append(attribute2value.getKey().getValue(), attribute2value.getValue());
 			}
+
+			this.lotNoLock = huToDistribute.getLockLotNo();
+
+			aggregationKeyBuilder.append(lotNoLock == null ? -1 : lotNoLock.getM_Product_LotNumber_Lock_ID());
 
 			this.aggregationKey = aggregationKeyBuilder.build();
 
@@ -607,9 +662,34 @@ public class HUs2DDOrderProducer
 			return description.toString();
 		}
 
+		public I_M_Product_LotNumber_Lock getLotNumberLock()
+		{
+			return lotNoLock;
+		}
+
 		public Map<org.compiere.model.I_M_Attribute, Object> getAttributes()
 		{
 			return attributes;
+		}
+	}
+
+	@Builder
+	@Value
+	public static final class HUToDistribute
+	{
+		@NonNull
+		I_M_HU hu;
+
+		@Nullable
+		I_M_Product_LotNumber_Lock lockLotNo;
+
+		public static final HUToDistribute of(final I_M_HU hu, final I_M_Product_LotNumber_Lock lockLotNo)
+		{
+			return builder()
+					.hu(hu)
+					.lockLotNo(lockLotNo)
+					.build();
+
 		}
 	}
 }

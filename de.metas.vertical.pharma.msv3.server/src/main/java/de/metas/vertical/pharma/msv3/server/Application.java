@@ -1,7 +1,16 @@
 package de.metas.vertical.pharma.msv3.server;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.annotation.Bean;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3PeerAuthToken;
+import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 
 /*
  * #%L
@@ -26,8 +35,14 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
  */
 
 @SpringBootApplication
-public class Application
+public class Application implements InitializingBean
 {
+	@Value("${msv3server.startup.requestAllData:false}")
+	private boolean requestAllDataOnStartup;
+
+	@Autowired
+	private MSV3ServerPeerService msv3ServerPeerService;
+
 	public static void main(final String[] args)
 	{
 		new SpringApplicationBuilder(Application.class)
@@ -36,4 +51,31 @@ public class Application
 				.run(args);
 	}
 
+	@Bean
+	public ObjectMapper jsonObjectMapper()
+	{
+		final ObjectMapper jsonObjectMapper = new ObjectMapper();
+		jsonObjectMapper.findAndRegisterModules();
+		return jsonObjectMapper;
+	}
+
+	@Bean
+	public MSV3PeerAuthToken authTokenString(@Value("${msv3server.peer.authToken:}") final String authTokenStringValue)
+	{
+		if (authTokenStringValue == null || authTokenStringValue.trim().isEmpty())
+		{
+			return null;
+		}
+
+		return MSV3PeerAuthToken.of(authTokenStringValue);
+	}
+
+	@Override
+	public void afterPropertiesSet()
+	{
+		if (requestAllDataOnStartup)
+		{
+			msv3ServerPeerService.requestAllUpdates();
+		}
+	}
 }

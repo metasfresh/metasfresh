@@ -26,6 +26,7 @@ import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.Builder;
@@ -55,6 +56,10 @@ import lombok.NonNull;
 
 public class PurchaseCandidateToOrderWorkflow
 {
+	private static final String MSG_NO_REMOTE_PURCHASE_ORDER_WAS_PLACED = "de.metas.purchasecandidate.Event_NoRemotePurchaseOrderWasPlaced";
+
+	private static final String MSG_ERROR_WHILE_PLACING_REMOTE_PURCHASE_ORDER = "de.metas.purchasecandidate.Event_ErrorWhilePlacingRemotePurchaseOrder";
+
 	private static final Logger logger = LogManager.getLogger(PurchaseCandidateToOrderWorkflow.class);
 
 	private final PurchaseCandidateRepository purchaseCandidateRepo;
@@ -133,16 +138,7 @@ public class PurchaseCandidateToOrderWorkflow
 		loggable.addLog("vendorId={} - placeRemotePurchaseOrder returned remotePurchaseItem={}",
 				vendorId, remotePurchaseItems);
 
-		if (remotePurchaseItems.isEmpty())
-		{
-			final I_C_BPartner vendor = load(vendorId, I_C_BPartner.class);
-
-			throw new AdempiereException(
-					"de.metas.purchasecandidate.Event_NoRemotePruchaseOrderWasPlaced",
-					new Object[] { vendor.getValue(), vendor.getName() })
-							.appendParametersToMessage()
-							.setParameter("purchaseCandidatesWithVendorId", purchaseCandidatesWithVendorId);
-		}
+		thowExceptionIfEmptyResult(remotePurchaseItems, purchaseCandidatesWithVendorId, vendorId);
 
 		final List<PurchaseOrderItem> purchaseOrderItems = remotePurchaseItems.stream()
 				.filter(item -> item instanceof PurchaseOrderItem)
@@ -152,12 +148,55 @@ public class PurchaseCandidateToOrderWorkflow
 		purchaseOrderFromItemsAggregator
 				.addAll(purchaseOrderItems.iterator())
 				.closeAllGroups();
-		loggable.addLog("vendorId={} - PurchaseOrderFromCandidatesAggregator created the purchase order(s)",
+		loggable.addLog("vendorId={} - PurchaseOrderFromCandidatesAggregator created metasfresh purchase order(s) for the remotly placed orders",
 				vendorId, purchaseCandidatesWithVendorId);
 
 		vendorGatewayInvoker.updateRemoteLineReferences(purchaseOrderItems);
 
 		purchaseCandidateRepo.saveAllNoLock(purchaseCandidatesWithVendorId); // no lock because they are already locked by us
+
+		throwExceptionIfErrorItemsExist(remotePurchaseItems, purchaseCandidatesWithVendorId, vendorId);
+	}
+
+	private void thowExceptionIfEmptyResult(
+			final List<PurchaseItem> remotePurchaseItems,
+			final Collection<PurchaseCandidate> purchaseCandidatesWithVendorId,
+			final int vendorId)
+	{
+		if (remotePurchaseItems.isEmpty())
+		{
+			final I_C_BPartner vendor = load(vendorId, I_C_BPartner.class);
+
+			throw new AdempiereException(
+					MSG_NO_REMOTE_PURCHASE_ORDER_WAS_PLACED,
+					new Object[] { vendor.getValue(), vendor.getName() })
+							.appendParametersToMessage()
+							.setParameter("purchaseCandidatesWithVendorId", purchaseCandidatesWithVendorId);
+		}
+	}
+
+	private void throwExceptionIfErrorItemsExist(
+			final List<PurchaseItem> remotePurchaseItems,
+			final Collection<PurchaseCandidate> purchaseCandidatesWithVendorId,
+			final int vendorId)
+	{
+		final List<PurchaseErrorItem> purchaseErrorItems = remotePurchaseItems.stream()
+				.filter(item -> item instanceof PurchaseErrorItem)
+				.map(item -> (PurchaseErrorItem)item)
+				.collect(ImmutableList.toImmutableList());
+
+		if (purchaseErrorItems.isEmpty())
+		{
+			return; // nothing to do
+		}
+
+		final I_C_BPartner vendor = load(vendorId, I_C_BPartner.class);
+		throw new AdempiereException(
+				MSG_ERROR_WHILE_PLACING_REMOTE_PURCHASE_ORDER,
+				new Object[] { vendor.getValue(), vendor.getName() })
+						.appendParametersToMessage()
+						.setParameter("purchaseCandidatesWithVendorId", purchaseCandidatesWithVendorId)
+						.setParameter("purchaseErrorItems", purchaseErrorItems);
 	}
 
 	private void logAndRethrow(

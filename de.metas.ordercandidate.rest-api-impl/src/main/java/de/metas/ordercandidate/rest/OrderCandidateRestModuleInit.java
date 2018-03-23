@@ -1,15 +1,12 @@
 package de.metas.ordercandidate.rest;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.springframework.stereotype.Component;
 
 import de.metas.impex.api.IInputDataSourceDAO;
-import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.impex.api.InputDataSourceCreateRequest;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 
 /*
@@ -53,20 +50,11 @@ public class OrderCandidateRestModuleInit extends AbstractModuleInterceptor
 
 	private void ensureDataSourceExists()
 	{
-		final I_AD_InputDataSource inputDataSource = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(
-				Env.getCtx(),
-				OrderCandidatesRestControllerImpl.DATA_SOURCE_INTERNAL_NAME,
-				false, // throwEx
-				ITrx.TRXNAME_None);
-		if (inputDataSource == null)
-		{
-			final I_AD_InputDataSource newInputDataSource = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_InputDataSource.class, ITrx.TRXNAME_None);
-			newInputDataSource.setEntityType(OrderCandidate_Constants.ENTITY_TYPE);
-			newInputDataSource.setInternalName(OrderCandidatesRestControllerImpl.DATA_SOURCE_INTERNAL_NAME);
-			newInputDataSource.setIsDestination(false);
-			newInputDataSource.setName(OrderCandidatesRestControllerImpl.DATA_SOURCE_INTERNAL_NAME);
-			InterfaceWrapperHelper.save(newInputDataSource);
-		}
+		Services.get(IInputDataSourceDAO.class).createIfMissing(InputDataSourceCreateRequest.builder()
+				.entityType(OrderCandidate_Constants.ENTITY_TYPE)
+				.internalName(OrderCandidatesRestControllerImpl.DATA_SOURCE_INTERNAL_NAME)
+				.destination(false)
+				.build());
 	}
 
 }

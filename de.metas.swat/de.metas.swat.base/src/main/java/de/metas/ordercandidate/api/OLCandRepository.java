@@ -1,12 +1,18 @@
 package de.metas.ordercandidate.api;
 
+import java.util.List;
+
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -45,6 +51,16 @@ public class OLCandRepository
 				.build();
 	}
 
+	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
+	{
+		Check.assumeNotEmpty(requests, "requests is not empty");
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		return trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> requests.stream()
+				.map(this::create)
+				.collect(ImmutableList.toImmutableList()));
+	}
+
 	public OLCand create(@NonNull final OLCandCreateRequest request)
 	{
 		final I_C_OLCand olCandPO = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
@@ -80,6 +96,11 @@ public class OLCandRepository
 			// olCandPO.setHandOver_User_ID(bpartner.getContactId());
 		}
 
+		if (!Check.isEmpty(request.getPoReference(), true))
+		{
+			olCandPO.setPOReference(request.getPoReference());
+		}
+
 		olCandPO.setDateCandidate(SystemTime.asDayTimestamp());
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()));
 		olCandPO.setC_Flatrate_Conditions_ID(request.getFlatrateConditionsId());
@@ -90,22 +111,21 @@ public class OLCandRepository
 		olCandPO.setC_UOM_ID(request.getUomId());
 		olCandPO.setM_HU_PI_Item_Product_ID(request.getHuPIItemProductId());
 
-		olCandPO.setM_PricingSystem_ID(request.getPricingSystemId());
+		if (request.getPricingSystemId() > 0)
+		{
+			olCandPO.setM_PricingSystem_ID(request.getPricingSystemId());
+		}
 		olCandPO.setPriceEntered(request.getPrice());
 		olCandPO.setDiscount(request.getDiscount());
 
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
-		olCandPO.setAD_InputDataSource_ID(getInputDataSourceId(request.getAdInputDataSourceInternalName()));
+		olCandPO.setAD_InputDataSource_ID(Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceId(request.getAdInputDataSourceInternalName()));
+		olCandPO.setExternalId(request.getExternalId());
 
 		InterfaceWrapperHelper.save(olCandPO);
 
-		return OLCand.of(olCandPO);
-	}
-
-	private int getInputDataSourceId(final String internalName)
-	{
-		return Services.get(IInputDataSourceDAO.class)
-				.retrieveInputDataSource(Env.getCtx(), internalName, /* throwEx */true, ITrx.TRXNAME_None)
-				.getAD_InputDataSource_ID();
+		return OLCand.builder()
+				.candidate(olCandPO)
+				.build();
 	}
 }

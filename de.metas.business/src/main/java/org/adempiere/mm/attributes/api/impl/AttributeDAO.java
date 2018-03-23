@@ -161,21 +161,12 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public I_M_AttributeInstance retrieveAttributeInstance(final I_M_AttributeSetInstance attributeSetInstance, final int attributeId)
 	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSetInstance);
-		return retrieveAttributeInstance(attributeSetInstance, attributeId, trxName);
-	}
-
-	@Override
-	public I_M_AttributeInstance retrieveAttributeInstance(final I_M_AttributeSetInstance attributeSetInstance, final int attributeId, final String trxName)
-	{
 		if (attributeSetInstance == null)
 		{
 			return null;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
-
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeInstance.class, ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeInstance.class)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstance.getM_AttributeSetInstance_ID())
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()

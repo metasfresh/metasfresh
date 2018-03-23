@@ -27,7 +27,9 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class MSV3ServerConstants
 {
-	public static final String BACKEND_SYNC_REST_ENDPOINT = "/sync/api";
+	public static final String REST_ENDPOINT_PATH = "/rest";
+	public static final String BACKEND_SYNC_REST_ENDPOINT = REST_ENDPOINT_PATH + "/sync/api";
 
+	public static final String WEBSERVICE_ENDPOINT_PATH = "/ws";
 	public static final String SOAP_NAMESPACE = "urn:msv3:v2";
 }

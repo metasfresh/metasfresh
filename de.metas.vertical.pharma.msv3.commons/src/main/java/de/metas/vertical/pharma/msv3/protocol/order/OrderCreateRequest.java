@@ -1,5 +1,10 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
@@ -31,20 +36,28 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class OrderCreateRequest
 {
+	@JsonProperty("orderId")
 	Id orderId;
+
+	@JsonProperty("supportId")
 	SupportIDType supportId;
+
+	@JsonProperty("bpartnerId")
 	BPartnerId bpartnerId;
-	ImmutableList<OrderCreateRequestPackage> orderPackages;
+
+	@JsonProperty("orderPackages")
+	List<OrderCreateRequestPackage> orderPackages;
 
 	@Builder
 	private OrderCreateRequest(
-			@NonNull final Id orderId,
-			@NonNull final SupportIDType supportId,
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull @Singular final ImmutableList<OrderCreateRequestPackage> orderPackages)
+			@JsonProperty("orderId") @NonNull final Id orderId,
+			@JsonProperty("supportId") @NonNull final SupportIDType supportId,
+			@JsonProperty("bpartnerId") @NonNull final BPartnerId bpartnerId,
+			@JsonProperty("orderPackages") @NonNull @Singular final List<OrderCreateRequestPackage> orderPackages)
 	{
 		if (orderPackages.isEmpty())
 		{
@@ -54,6 +67,6 @@ public class OrderCreateRequest
 		this.orderId = orderId;
 		this.supportId = supportId;
 		this.bpartnerId = bpartnerId;
-		this.orderPackages = orderPackages;
+		this.orderPackages = ImmutableList.copyOf(orderPackages);
 	}
 }

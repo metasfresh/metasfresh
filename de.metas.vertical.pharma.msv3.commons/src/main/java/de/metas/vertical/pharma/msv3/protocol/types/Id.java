@@ -1,5 +1,12 @@
 package de.metas.vertical.pharma.msv3.protocol.types;
 
+import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import lombok.NonNull;
 import lombok.Value;
 
@@ -25,12 +32,19 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class Id
 {
+	@JsonCreator
 	public static Id of(final String valueAsString)
 	{
 		return new Id(valueAsString);
+	}
+
+	public static Id random()
+	{
+		return new Id(UUID.randomUUID().toString());
 	}
 
 	private final String valueAsString;
@@ -45,4 +59,19 @@ public class Id
 		this.valueAsString = valueAsString;
 	}
 
+	/**
+	 * @deprecated please use {@link #getValueAsString()}
+	 */
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return getValueAsString();
+	}
+
+	@JsonValue
+	public String toJson()
+	{
+		return getValueAsString();
+	}
 }

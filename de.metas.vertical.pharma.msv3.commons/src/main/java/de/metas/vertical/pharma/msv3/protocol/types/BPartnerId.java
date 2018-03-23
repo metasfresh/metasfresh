@@ -1,5 +1,10 @@
 package de.metas.vertical.pharma.msv3.protocol.types;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Value;
 
 /*
@@ -24,23 +29,36 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class BPartnerId
 {
-	public static BPartnerId of(final int valueAsInt)
+	public static BPartnerId of(final int bpartnerId, final int bpartnerLocationId)
 	{
-		return new BPartnerId(valueAsInt);
+		return new BPartnerId(bpartnerId, bpartnerLocationId);
 	}
 
-	private final int valueAsInt;
+	@JsonProperty("bpartnerId")
+	private final int bpartnerId;
 
-	private BPartnerId(final int valueAsInt)
+	@JsonProperty("bpartnerLocationId")
+	private final int bpartnerLocationId;
+
+	@JsonCreator
+	private BPartnerId(
+			@JsonProperty("bpartnerId") final int bpartnerId,
+			@JsonProperty("bpartnerLocationId") final int bpartnerLocationId)
 	{
-		if (valueAsInt < 1)
+		if (bpartnerId < 1)
 		{
-			throw new IllegalArgumentException("value shall be > 0");
+			throw new IllegalArgumentException("bpartnerId shall be > 0");
+		}
+		if (bpartnerLocationId < 1)
+		{
+			throw new IllegalArgumentException("bpartnerLocationId shall be > 0");
 		}
 
-		this.valueAsInt = valueAsInt;
+		this.bpartnerId = bpartnerId;
+		this.bpartnerLocationId = bpartnerLocationId;
 	}
 }

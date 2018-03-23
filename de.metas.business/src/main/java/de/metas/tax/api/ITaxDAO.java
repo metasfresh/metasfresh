@@ -31,7 +31,9 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -69,8 +71,15 @@ public interface ITaxDAO extends ISingletonService
 	@Value
 	public static class TaxCategoryQuery
 	{
-		final private Boolean isDefaultTax;
-		final private Boolean isReducedTax;
-		final private Boolean isWithoutTax;
+		@AllArgsConstructor
+		@Getter
+		public enum VATType
+		{
+			RegularVAT("N"), ReducedVAT("R"), TaxExempt("E");
+			private final String value;
+		}
+
+		@NonNull
+		final VATType type;
 	}
 }

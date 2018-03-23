@@ -14,8 +14,36 @@ Here come the actual release notes:
 **release for week 2018-13**
 
 ## Features
+* metasfresh
+  * [#3585](https://github.com/metasfresh/metasfresh/issues/3585) WebUI window design: Business Partner Credit Limit
+    * Improvement of Busines Partner Credit Limit Fieldnames and Translations.
+  * [#3703](https://github.com/metasfresh/metasfresh/issues/3703) Material Receipt Candidates Window, add media types for mobile/ tablet
+    * Mobile Usage Improvement. Adds Mediatypes to Material Receipt Candidates window (Tablet proptotype).
+  * [#3743](https://github.com/metasfresh/metasfresh/issues/3743) Translation of Distribution Editor Quickaction
+    * Translation added for the Distribution Editor Quickactions.
+
+* metasfresh-webui-frontend
+  * [#1681](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1681) Data Entry via barcode scan in Action Parms
+    * New Funcitonality for Barcode Scanning in Action Parms.
+  * [#1684](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1684) Combine dropdown list of <List> and <Lookup> component
+    * Improvement of Lookup Widgets and List Components, combined functionality  for better maintainability.
+  * [#1692](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1692) Detailed adjustments of User Interface for tablet media size
+    * UI Improvement for Mobile/ Tablet Usage of storage relevant workflows.
 
 ## Fixes
+* metasfresh
+  * [#3755](https://github.com/metasfresh/metasfresh/issues/3755) Error in search of Businesspartner
+    * Fixes the SQL of a virtual column in C_BPartner Table.
+
+* metasfresh-webui-frontend
+  * [#1605](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1605) Scrolling in dropdown fields
+    * Fixes the behavior of dropdown fields when scrolling throught the list.
+  * [#1641](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1641) Combined Lookup Widget Layout Glitch
+    * Fixes a Layout Glitch in combined Lookup Fields.
+  * [#1660](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1660) Single Date Field not patched in some cases
+    * Fix for the patching of date fields when manipulating in mouse and keaboard kombination.
+  * [#1663](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1663) Pos1 does not jump to page 1 anymore
+    * Fixes the Home Button in grid View. Now possible to jump to first page in Pagination again.
 
 
 # metasfresh 5.49 (2018-12)
@@ -37,11 +65,13 @@ Here come the actual release notes:
   * [#894](https://github.com/metasfresh/metasfresh-webui-api/issues/894) New Composed Primary Keys
   * [#895](https://github.com/metasfresh/metasfresh-webui-api/issues/895) Automatic printing HU Labels in WebUI
   * [#901](https://github.com/metasfresh/metasfresh-webui-api/issues/901) Provide media size info for columns
+  * [#910](https://github.com/metasfresh/metasfresh-webui-api/issues/910) 2nd orderline for product missing in picking terminal
 
 * metasfresh-webui-frontend
   * [#1609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1609) Camera barcode reader for Tablet/ mobile device
     * New Barcode Reader that can be used via webcam on mobile devices.
   * [#1677](https://github.com/metasfresh/metasfresh-webui-frontend/pull/1677) Update momentjs in packages.json
+  * [#1699](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1699) tab does not trigger saving number field
   * [#1860](https://github.com/metasfresh/metasfresh/issues/1860) Make documentNo readonly in Payments (and other document types)
 
 ## Fixes
@@ -54,6 +84,7 @@ Here come the actual release notes:
   * [#3694](https://github.com/metasfresh/metasfresh/issues/3694) docs_flatrate_term_all_procurements_conditions_report fails if M_Product_ID is left empty
   * [#3695](https://github.com/metasfresh/metasfresh/issues/3695) NPE when completing DD_Order
   * [#3701](https://github.com/metasfresh/metasfresh/issues/3701) Jasper: ADR Auswertung report has duplicates
+  * [#3745](https://github.com/metasfresh/metasfresh/issues/3745) Compensation Group: Sequence of Lines is lost on Clone
 
 * metasfresh-webui-api
   * [#735](https://github.com/metasfresh/metasfresh-webui-api/issues/735) Hide Receive HUs (default) when there are no HUs
@@ -66,6 +97,8 @@ Here come the actual release notes:
     * Fixes the empty selected elements in list widgets after selecting entry.
   * [#1673](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1673) Improve User Interface for tablet media size
     * Layout adjustments for the usage of webui frontend on tablet media sizes.
+  * [#1689](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1689) Scrollbar not shown in order window for subtab order lines
+    * Fixes the missing horizontal Scrollbar.
 
 # metasfresh 5.48 (2018-11)
 **release for week 2018-11**
