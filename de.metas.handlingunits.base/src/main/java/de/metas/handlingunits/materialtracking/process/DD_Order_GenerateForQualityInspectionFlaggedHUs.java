@@ -12,6 +12,7 @@ import org.adempiere.util.api.IRangeAwareParams;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer;
+import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
@@ -32,11 +33,11 @@ import de.metas.process.RunOutOfTrx;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -99,7 +100,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 		return MSG_OK;
 	}
 
-	private final Iterator<I_M_HU> retriveHUs()
+	private final Iterator<HUToDistribute> retriveHUs()
 	{
 		return handlingUnitsDAO.createHUQueryBuilder()
 				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
@@ -110,6 +111,18 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 				.addFilter(huDDOrderDAO.getHUsNotAlreadyScheduledToMoveFilter())
 				//
 				.createQuery()
-				.iterate(I_M_HU.class);
+
+				.list(I_M_HU.class)
+				.stream()
+				.map(hu -> createHUToDistribute(hu))
+				.iterator();
+	}
+
+	private HUToDistribute createHUToDistribute(final I_M_HU hu)
+	{
+		return HUToDistribute
+				.builder()
+				.hu(hu)
+				.build();
 	}
 }

@@ -59,6 +59,7 @@ Here come the actual release notes:
   * [#3688](https://github.com/metasfresh/metasfresh/issues/3688) Port Printing REST endpoint from SMX to metasfresh
   * [#3705](https://github.com/metasfresh/metasfresh/issues/3705) Inventory Window show Handling Unit Field in Inventorylines
   * [#3706](https://github.com/metasfresh/metasfresh/issues/3706) Terminating a Contract that was extended ahead of schedule leaves stumb
+  * [#3718](https://github.com/metasfresh/metasfresh/issues/3718) Contracts: Transform IsAutoRenew and IsAutoExtension flags in a list
 
 * metasfresh-api
   * [#894](https://github.com/metasfresh/metasfresh-webui-api/issues/894) New Composed Primary Keys

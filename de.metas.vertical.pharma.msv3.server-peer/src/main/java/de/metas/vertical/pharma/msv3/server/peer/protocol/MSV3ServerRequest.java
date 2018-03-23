@@ -33,16 +33,14 @@ import lombok.Data;
 @Builder
 public class MSV3ServerRequest
 {
-	public static MSV3ServerRequest requestAll(final String nodeId)
+	public static MSV3ServerRequest requestAll()
 	{
 		return MSV3ServerRequest.builder()
-				.nodeId(nodeId)
 				.requestAllUsers(true)
 				.requestAllStockAvailabilities(true)
 				.build();
 	}
 
-	String nodeId;
 	boolean requestAllUsers;
 	boolean requestAllStockAvailabilities;
 }

@@ -205,18 +205,27 @@ public abstract class ShipmentScheduleHandler
 		}
 
 		final TableRecordReference referencesRecord = TableRecordReference.ofReferenced(shipmentSchedule);
-		final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class).createOrNull(referencesRecord.getModel());
+		final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class)
+				.createOrNull(referencesRecord.getModel());
 		if (asiAware == null)
 		{
 			return true;
 		}
 
-		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class).retrieveAttributeInstance(
-				asiAware.getM_AttributeSetInstance(),
-				attributeConfigToUse.getAttributeId());
+		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class)
+				.retrieveAttributeInstance(
+						asiAware.getM_AttributeSetInstance(),
+						attributeConfigToUse.getAttributeId());
 
 		final boolean referencedRecordAsiContainsAttribute = attributeInstance != null;
-		return referencedRecordAsiContainsAttribute;
+		if (!referencedRecordAsiContainsAttribute)
+		{
+			return false;
+		}
+
+		final boolean referencedRecordAsiHasValue = attributeInstance.getM_AttributeValue_ID() > 0
+						&& !attributeInstance.getM_AttributeValue().isNullFieldValue();
+		return referencedRecordAsiHasValue;
 	}
 
 	@VisibleForTesting

@@ -1,16 +1,10 @@
-package de.metas.request.service.impl;
-
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.request.service.IRequestCreator;
-import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout;
+package org.adempiere.ad.security;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,14 +22,8 @@ import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout;
  * #L%
  */
 
-public class AsyncRequestCreator implements IRequestCreator
+@FunctionalInterface
+public interface UserAuthTokenCallable<R>
 {
-
-	@Override
-	public void createRequests(final Properties ctx, final List<Integer> inOutLineIds, final String trxName)
-	{
-		// Schedule the async request creation based on the given inoutline ids
-		C_Request_CreateFromInout.createWorkpackage(ctx, inOutLineIds, trxName);
-	}
-
+	R call() throws Exception;
 }
