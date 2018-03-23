@@ -827,10 +827,32 @@ note: when adding new records, please roughly order them by alphabet.
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${docker.build.directory}/reports/</outputDirectory>
+							<outputDirectory>${docker.build.directory}/reports</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${project.build.directory}/dist/deploy/reports</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+
+					<!-- copy the metasfresh_server.jar that was prepared by the 
+					     maven-dependency-plugin with <id>copy-main-deployables</id>-->
+					<execution>
+						<id>copy-metasfresh-jar-for-docker-build</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${docker.build.directory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/dist/deploy</directory>
+									<includes>
+										<include>metasfresh_server.jar</include>
+									</includes>
 									<filtering>false</filtering>
 								</resource>
 							</resources>

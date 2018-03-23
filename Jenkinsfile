@@ -225,7 +225,7 @@ stage('Build&Push metasfresh-app-dev docker image')
 					'metasfresh-app-dev', // artifactName
 					MF_UPSTREAM_BRANCH, // branchName
 					MF_VERSION, // versionSuffix
-					'serverRoot/target/docker') // workDir
+					'dist/target/docker') // workDir
 	final String publishedDockerImageName =	dockerBuildAndPush(dockerConf)
 
 	// clean up the workspace after (successfull) builds
