@@ -120,6 +120,7 @@ public class OLCandRepository
 
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
 		olCandPO.setAD_InputDataSource_ID(getInputDataSourceId(request.getAdInputDataSourceInternalName()));
+		olCandPO.setExternalId(request.getExternalId());
 
 		InterfaceWrapperHelper.save(olCandPO);
 
