@@ -69,11 +69,13 @@ spec:
         name: app
         image: docker.metasfresh.com/metasfresh/metasfresh-app-dev:gh18_dist_LATEST
         imagePullPolicy: Always
+        ports:
+          - containerPort: 5432
 # this one we have on docker.metasfresh.com, so let's try getting from there
         resources: 
           requests:
             memory: 1200M
-            cpu: 500m
+#            cpu: 500m
         volumeMounts:
 #        - mountPath: /opt/metasfresh/log
 #          name: app-claim0
@@ -98,7 +100,6 @@ spec:
           value: metasfresh-admin
         - name: ADMIN_PORT
           value: '9090'          
-# this one we have on docker.metasfresh.com, so let's try getting from there
         name: webapi
         image: docker.metasfresh.com/metasfresh/metasfresh-webui-api-dev:gh18_dist_LATEST
         imagePullPolicy: Always
@@ -107,7 +108,7 @@ spec:
         resources: 
           requests:
             memory: 600M
-            cpu: 500m
+#            cpu: 500m
         volumeMounts:
         - mountPath: /etc/localtime
           name: host-localtime
@@ -140,10 +141,11 @@ spec:
           readOnly: true
 # webui
       - env:
+# host and port are those of *this* deployement as exposed (with nodeport) on minikube
         - name: WEBUI_API_HOST
-          value: localhost 
+          value: '192.168.99.100'
         - name: WEBUI_API_PORT
-          value: '8080'         
+          value: '30471'         
         name: webui
         image: docker.metasfresh.com/metasfresh/metasfresh-webui-dev:gh18_dist_LATEST
         imagePullPolicy: Always

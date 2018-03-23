@@ -1,0 +1,60 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    de.metas.deployment.type: metasfresh-print
+    de.metas.deployment.user: "tobi"
+    de.metas.deployment.stage: "demo"
+  name: "metasfresh-print-tobi-demo"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        de.metas.deployment.type: metasfresh-print
+        de.metas.deployment.user: "tobi"
+        de.metas.deployment.stage: "demo"
+    spec:
+      containers:
+      - env:
+        - name: DB_HOST
+          value: 'metasfresh-all-in-one-tobi-demo'
+        - name: DB_PORT
+          value: '5432'
+        - name: DEBUG_PRINT_BASH_CMDS
+          value: 'y'
+        - name: DB_WAIT_FOR_DBMS
+          value: 'y'
+        - name: METASFRESH_ADMIN_URL
+          value: 'http://metasfresh-admin:9090'
+        - name: SERVER_PORT
+          value: '8183'
+        name: print
+        image: docker.metasfresh.com/metasfresh/metasfresh-print:master_LATEST
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8183
+        resources: 
+          requests:
+            memory: 300M
+#            cpu: 500m
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: host-localtime
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone
+          readOnly: true
+      restartPolicy: Always
+      volumes:
+      - name: host-localtime
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone
+        hostPath:
+          path: /etc/timezone
+status: {}

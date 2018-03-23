@@ -106,7 +106,7 @@ spec:
         resources: 
           requests:
             memory: 600M
-            cpu: 500m
+#           cpu: 500m
         volumeMounts:
 #        - mountPath: /opt/metasfresh-webui-api/log
 #          name: webapi-claim0
