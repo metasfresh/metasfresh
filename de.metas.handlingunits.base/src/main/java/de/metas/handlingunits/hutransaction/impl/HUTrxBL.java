@@ -12,12 +12,12 @@ import java.util.ArrayList;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,6 +66,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import lombok.NonNull;
 
 public class HUTrxBL implements IHUTrxBL
 {
@@ -196,14 +197,12 @@ public class HUTrxBL implements IHUTrxBL
 	}
 
 	@Override
-	public void setParentHU(final IHUContext huContext, 
-			final I_M_HU_Item parentHUItem, 
-			final I_M_HU hu, 
+	public void setParentHU(final IHUContext huContext,
+			final I_M_HU_Item parentHUItem,
+			@NonNull final I_M_HU hu,
 			final boolean destroyOldParentIfEmptyStorage)
 	{
 		// TODO: handle in HUTrx / allocation
-
-		Check.assumeNotNull(hu, "HU not null");
 
 		//
 		// Important: force pre-set HU in current transaction; all future assignments and data retrieval shall be done in current Trx
@@ -231,9 +230,9 @@ public class HUTrxBL implements IHUTrxBL
 	 * @param hu
 	 * @param destroyOldParentIfEmptyStorage
 	 */
-	private final void setParentHU0(final IHUContext huContext, 
-			final I_M_HU_Item parentHUItem, 
-			final I_M_HU hu, 
+	private final void setParentHU0(final IHUContext huContext,
+			final I_M_HU_Item parentHUItem,
+			final I_M_HU hu,
 			final boolean destroyOldParentIfEmptyStorage)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -329,7 +328,7 @@ public class HUTrxBL implements IHUTrxBL
 			handlingUnitsBL.destroyIfEmptyStorage(huContext, parentHUOld);
 		}
 	}
-	
+
 	@Override
 	public void extractHUFromParentIfNeeded(final I_M_HU hu)
 	{

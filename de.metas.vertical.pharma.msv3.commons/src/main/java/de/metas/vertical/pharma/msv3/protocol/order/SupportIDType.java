@@ -1,5 +1,10 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import lombok.Value;
 
 /*
@@ -27,9 +32,11 @@ import lombok.Value;
 /**
  * Exclusive identification for people! Support (optional display on GUI no proof) - no technical semantics Apo-Wawi awards this; should be sufficiently selective.
  */
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class SupportIDType
 {
+	@JsonCreator
 	public static SupportIDType of(final int valueAsInt)
 	{
 		return new SupportIDType(valueAsInt);
@@ -45,5 +52,11 @@ public class SupportIDType
 		}
 
 		this.valueAsInt = valueAsInt;
+	}
+
+	@JsonValue
+	public int toJson()
+	{
+		return valueAsInt;
 	}
 }

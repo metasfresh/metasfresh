@@ -10,18 +10,17 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -36,10 +35,11 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import lombok.NonNull;
 
 /**
  * This implementation delegated to either {@link CachedHUAndItemsDAO} or directly to {@link HUAndItemsDAO}.
- *  
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -120,7 +120,7 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 	{
 		return getDelegate(hu).retrieveParent(hu);
 	}
-	
+
 	@Override
 	public int retrieveParentId(final I_M_HU hu)
 	{
@@ -163,11 +163,17 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 	{
 		return getDelegate(hu).createHUItem(hu, piItem);
 	}
-	
+
 	@Override
-	public I_M_HU_Item createAggregateHUItem(final I_M_HU hu)
+	public I_M_HU_Item createAggregateHUItem(@NonNull final I_M_HU hu)
 	{
 		return getDelegate(hu).createAggregateHUItem(hu);
+	}
+
+	@Override
+	public I_M_HU_Item createChildHUItem(@NonNull final I_M_HU hu)
+	{
+		return getDelegate(hu).createChildHUItem(hu);
 	}
 
 	@Override

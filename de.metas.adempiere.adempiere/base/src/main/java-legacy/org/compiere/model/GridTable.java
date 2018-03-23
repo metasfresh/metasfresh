@@ -4176,7 +4176,7 @@ public class GridTable extends AbstractTableModel
 	/**
 	 * @return true if we are currenty copying the current row (with or without details)
 	 */
-	private boolean isRecordCopyingMode()
+	public boolean isRecordCopyingMode()
 	{
 		return DataNewCopyMode.isCopy(_dataNewCopyMode);
 	}

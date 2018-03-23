@@ -27,5 +27,5 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MSV3ServerPeerMetasfreshConfiguration
 {
-
+	public static final String ENTITY_TYPE = "de.metas.vertical.pharma.msv3.server";
 }

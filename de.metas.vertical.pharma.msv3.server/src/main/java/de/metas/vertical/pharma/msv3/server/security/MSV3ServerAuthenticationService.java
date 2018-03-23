@@ -1,7 +1,11 @@
 package de.metas.vertical.pharma.msv3.server.security;
 
 import java.util.List;
+import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -40,16 +44,42 @@ import lombok.NonNull;
 @Component
 public class MSV3ServerAuthenticationService implements UserDetailsService
 {
+	private static final Logger logger = LoggerFactory.getLogger(MSV3ServerAuthenticationService.class);
+
 	private final JpaUserRepository usersRepo;
 
-	public MSV3ServerAuthenticationService(@NonNull final JpaUserRepository usersRepo)
+	private final MSV3User adminUser;
+
+	public MSV3ServerAuthenticationService(
+			@NonNull final JpaUserRepository usersRepo,
+			@Value("${msv3server.admin.username:}") final String serverAdminUsername,
+			@Value("${msv3server.admin.password:}") final String serverAdminPassword)
 	{
 		this.usersRepo = usersRepo;
+
+		if (serverAdminUsername != null && serverAdminPassword != null)
+		{
+			adminUser = MSV3User.builder()
+					.username(serverAdminUsername)
+					.password(serverAdminPassword)
+					.serverAdmin(true)
+					.build();
+		}
+		else
+		{
+			adminUser = null;
+		}
+		logger.info("Server admin user: {}", adminUser);
 	}
 
 	@Override
 	public MSV3User loadUserByUsername(final String username) throws UsernameNotFoundException
 	{
+		if (adminUser != null && Objects.equals(username, adminUser.getUsername()))
+		{
+			return adminUser;
+		}
+
 		final JpaUser jpaUser = usersRepo.findByUsername(username);
 		if (jpaUser == null || jpaUser.isDeleted())
 		{
@@ -94,7 +124,7 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 
 	public void handleEvent(@NonNull final MSV3UserChangedEvent event)
 	{
-		if (event.getChangeType() == ChangeType.CREATED || event.getChangeType() == ChangeType.UPDATED)
+		if (event.getChangeType() == ChangeType.CREATED_OR_UPDATED)
 		{
 			final String username = event.getUsername();
 

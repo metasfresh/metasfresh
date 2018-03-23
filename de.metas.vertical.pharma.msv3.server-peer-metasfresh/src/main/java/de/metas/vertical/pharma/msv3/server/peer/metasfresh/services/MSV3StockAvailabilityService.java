@@ -1,15 +1,16 @@
-package de.metas.vertical.pharma.msv3.server.peer.service;
+package de.metas.vertical.pharma.msv3.server.peer.metasfresh.services;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import java.util.stream.Stream;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
-import lombok.NonNull;
+import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server-peer
+ * metasfresh-pharma.msv3.server-peer-metasfresh
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -30,18 +31,20 @@ import lombok.NonNull;
  */
 
 @Service
-public class StockAvailabilityEventsQueue
+public class MSV3StockAvailabilityService
 {
-	private final RabbitTemplate rabbitTemplate;
+	@Autowired
+	private MSV3ServerPeerService msv3ServerPeerService;
 
-	public StockAvailabilityEventsQueue(@NonNull final RabbitTemplate rabbitTemplate)
+	public void publishAll()
 	{
-		this.rabbitTemplate = rabbitTemplate;
+		streamAllStockAvailabilityUpdatedEvents().forEach(msv3ServerPeerService::publishStockAvailabilityUpdatedEvent);
 	}
 
-	public void publish(@NonNull final MSV3StockAvailabilityUpdatedEvent event)
+	private Stream<MSV3StockAvailabilityUpdatedEvent> streamAllStockAvailabilityUpdatedEvents()
 	{
-		rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent, event);
+		// TODO: implement streamAllStockAvailabilityUpdatedEvents
+		return Stream.empty();
 	}
 
 }

@@ -34,14 +34,15 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 
-import de.metas.vertical.pharma.msv3.server.WebServiceConfig;
+import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter
 {
 	private static final String REALM = "MSV3_SERVER";
-	public static final String DEFAULT_AUTHORITY = "ROLE_USER";
+	public static final String ROLE_CLIENT = "ROLE_CLIENT";
+	public static final String ROLE_SERVER_ADMIN = "ROLE_SERVER_ADMIN";
 
 	@Autowired
 	public void configureGlobalSecurity(
@@ -56,9 +57,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 	{
 		http.csrf().disable()
 				.authorizeRequests()
-				.antMatchers(WebServiceConfig.WEBSERVICE_PATH + "/**").hasAuthority(DEFAULT_AUTHORITY)
+				.antMatchers(MSV3ServerConstants.WEBSERVICE_ENDPOINT_PATH + "/**").hasAuthority(ROLE_CLIENT)
+				.antMatchers(MSV3ServerConstants.REST_ENDPOINT_PATH + "/**").hasAuthority(ROLE_SERVER_ADMIN)
 				.and().httpBasic().realmName(REALM).authenticationEntryPoint(getBasicAuthEntryPoint())
 				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
 	}
 
 	@Bean

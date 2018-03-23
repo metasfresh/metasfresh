@@ -73,9 +73,10 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 				purchaseCandidateIds.stream()
 						.map(purchaseCandidateId -> load(purchaseCandidateId, I_C_PurchaseCandidate.class))
 						.collect(Multimaps.toMultimap(
-								I_C_PurchaseCandidate::getVendor_ID, // key fucntion
+								I_C_PurchaseCandidate::getVendor_ID, // key function
 								Functions.identity(), // value function
-								MultimapBuilder.treeKeys().arrayListValues()::build));
+								MultimapBuilder.treeKeys().arrayListValues()::build // multimap builder
+				));
 
 		if (vendorId2purchaseCandidate.isEmpty())
 		{

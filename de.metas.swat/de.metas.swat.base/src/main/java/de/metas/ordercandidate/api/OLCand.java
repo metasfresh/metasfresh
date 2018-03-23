@@ -42,9 +42,8 @@ public final class OLCand implements IProductPriceAware
 	public static OLCand of(final I_C_OLCand candidate)
 	{
 		final int pricingSystemId = -1;
-		final String externalId = null;
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		return new OLCand(candidate, pricingSystemId, externalId, olCandEffectiveValuesBL);
+		return new OLCand(candidate, pricingSystemId, olCandEffectiveValuesBL);
 	}
 
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL;
@@ -64,7 +63,6 @@ public final class OLCand implements IProductPriceAware
 	private OLCand(
 			@NonNull final I_C_OLCand candidate,
 			final int pricingSystemId,
-			final String externalId,
 			final IOLCandEffectiveValuesBL olCandEffectiveValuesBL)
 	{
 		this.candidate = candidate;
@@ -93,7 +91,7 @@ public final class OLCand implements IProductPriceAware
 
 		this.pricingSystemId = pricingSystemId;
 		
-		this.externalId = externalId;
+		this.externalId = candidate.getExternalId();
 	}
 
 	@Override
