@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -93,11 +94,14 @@ import lombok.Value;
  */
 public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-	private static final String SYSCONFIG_PRODUCT_LOOKUP_DESCRIPTOR_STORAGE_ATTRIBUTES_KEYS = //
-			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.QueryStockAttributesKeys";
+	private static final String SYSCONFIG_ATP_QUERY_ENABLED = //
+			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ATP.QueryEnabled";
 
-	private static final String SYSCONFIG_PRODUCT_LOOKUP_DESCRIPTOR_QUERY_AVAILABLE_STOCK = //
-			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.QueryAvailableStock";
+	private static final String SYSCONFIG_ATP_ATTRIBUTES_KEYS = //
+			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ATP.AttributesKeys";
+
+	private static final String SYSCONFIG_ATP_DISPLAY_ONLY_POSITIVE = //
+			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ATP.DisplayOnlyPositive";
 
 	private static final Optional<String> LookupTableName = Optional.of(I_M_Product.Table_Name);
 	private static final String CONTEXT_LookupTableName = LookupTableName.get();
@@ -515,7 +519,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final int orgId = Env.getAD_Org_ID(Env.getCtx());
 
 		final boolean stockQueryActivated = sysConfigBL.getBooleanValue(
-				SYSCONFIG_PRODUCT_LOOKUP_DESCRIPTOR_QUERY_AVAILABLE_STOCK,
+				SYSCONFIG_ATP_QUERY_ENABLED,
 				false, clientId, orgId);
 		return stockQueryActivated;
 	}
@@ -527,7 +531,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final int orgId = Env.getAD_Org_ID(Env.getCtx());
 
 		final String storageAttributesKeys = sysConfigBL.getValue(
-				SYSCONFIG_PRODUCT_LOOKUP_DESCRIPTOR_STORAGE_ATTRIBUTES_KEYS,
+				SYSCONFIG_ATP_ATTRIBUTES_KEYS,
 				AttributesKey.ALL.getAsString(),
 				clientId, orgId);
 
@@ -556,9 +560,16 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final LookupValuesList initialLookupValues,
 			@NonNull final List<Group> availableStockGroups)
 	{
+		final boolean addOnlyPositiveATP = addOnlyPositiveATP();
+
 		final List<LookupValue> explodedProductValues = new ArrayList<>();
 		for (final Group availableStockGroup : availableStockGroups)
 		{
+			if (addOnlyPositiveATP && availableStockGroup.getQty().signum() <= 0)
+			{
+				continue;
+			}
+
 			final int productId = availableStockGroup.getProductId();
 			final LookupValue productLookupValue = initialLookupValues.getById(productId);
 			final ITranslatableString displayName = createDisplayName(productLookupValue.getDisplayNameTrl(), availableStockGroup);
@@ -572,7 +583,23 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 					.build();
 			explodedProductValues.add(integerLookupValue);
 		}
+
+		if (explodedProductValues.isEmpty())
+		{
+			return initialLookupValues; // fallback
+		}
+
 		return LookupValuesList.fromCollection(explodedProductValues);
+	}
+
+	private boolean addOnlyPositiveATP()
+	{
+		final Properties ctx = Env.getCtx();
+
+		return Services.get(ISysConfigBL.class).getBooleanValue(
+				SYSCONFIG_ATP_DISPLAY_ONLY_POSITIVE,
+				true,
+				Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 	}
 
 	private ITranslatableString createDisplayName(

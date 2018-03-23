@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -11,15 +12,19 @@ import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,14 +48,15 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
  * #L%
  */
 
-public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU extends PickingSlotsClearingViewBasedProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
+public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU
+		extends PickingSlotsClearingViewBasedProcess
+		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	// services
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
 
-	//
 	// parameters
 	private static final String PARAM_M_HU_PI_ID = I_M_HU_PI.COLUMNNAME_M_HU_PI_ID;
 	@Param(parameterName = PARAM_M_HU_PI_ID, mandatory = true)
@@ -75,7 +81,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU extends Picki
 		}
 		if (!pickingSlotRow.isTopLevelHU())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select an top level HU");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select a top level HU");
 		}
 
 		//
@@ -105,9 +111,11 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU extends Picki
 		}
 
 		final I_M_HU fromHU = getSingleSelectedPickingSlotTopLevelHU();
-		final IAllocationSource source = HUListAllocationSourceDestination.of(fromHU)
+		final IAllocationSource source = HUListAllocationSourceDestination
+				.of(fromHU)
 				.setDestroyEmptyHUs(true);
-		final IHUProducerAllocationDestination destination = createHUProducer();
+
+		final IHUProducerAllocationDestination destination = createHUProducer(fromHU);
 		HULoader.of(source, destination)
 				.setAllowPartialUnloads(false)
 				.setAllowPartialLoads(false)
@@ -135,9 +143,17 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU extends Picki
 		getPackingHUsView().invalidateAll();
 	}
 
-	private IHUProducerAllocationDestination createHUProducer()
+	private IHUProducerAllocationDestination createHUProducer(@NonNull final I_M_HU fromHU)
 	{
 		final PickingSlotRow pickingRow = getRootRowForSelectedPickingSlotRows();
-		return createNewHUProducer(pickingRow, targetHUPI);
+
+		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+		final IHUStorage storage = storageFactory.getStorage(fromHU);
+		final I_M_Product singleProduct = storage.getSingleProductOrNull();
+
+		final LUTUProducerDestination lutuProducerDestination = createNewHUProducer(pickingRow, targetHUPI);
+		lutuProducerDestination.addCUPerTU(singleProduct, qtyCU, singleProduct.getC_UOM());
+
+		return lutuProducerDestination;
 	}
 }
