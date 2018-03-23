@@ -55,13 +55,18 @@ set_properties()
  
 wait_dbms()
 {
-echo "We will repeatedly invoke 'nc -z ${db_host} ${db_port}' until it returns successfully"
-echo "."
- until nc -z $db_host $db_port
- do
-   sleep 1
-   echo -n "."
- done
+	echo "**************************************"
+	echo "Wait for the database server to start " # host & port were logged by echo_variable_values
+	echo "**************************************"
+	
+	echo "We will repeatedly invoke 'nc -z ${db_host} ${db_port}' until it returns successfully"
+	echo "."
+	until nc -z $db_host $db_port
+	do
+		sleep 1
+		echo -n "."
+	done
+	echo "Database Server has started"
 }
 
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
@@ -107,11 +112,8 @@ set_properties /opt/metasfresh/metasfresh-print/metasfresh.properties
 if [ "$db_wait_for_dbms" != "n" ];
 then
 	echo "DB_WAIT_FOR_DBMS=${db_wait_for_dbms}, so we wait for the DBMS to be reachable; set to n (just the lowercase letter) to skip this."
-	echo "**************************************"
-	echo "Wait for the database server to start " # host & port were logged by echo_variable_values
-	echo "**************************************"
 	wait_dbms
-echo ">>>>>>>>>>>> Database Server has started"
+
 else
 	echo "DB_WAIT_FOR_DBMS=${db_wait_for_dbms}, so we do not wait for the DBMS to be reachable."
 fi
