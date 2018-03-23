@@ -42,7 +42,6 @@ import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 
-import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.relation.IRelationTypeDAO;
 
 public class CtrlRelationTarget
@@ -90,7 +89,7 @@ public class CtrlRelationTarget
 	private void okButtonPressed()
 	{
 		final Properties ctx = Env.getCtx();
-		final String entityType = OrderCandidate_Constants.ENTITY_TYPE;
+		final String entityType = null; //OrderCandidate_Constants.ENTITY_TYPE;
 
 		try
 		{
