@@ -2200,6 +2200,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (inoutBL.isReversal(receiptLine))
 		{
 			// not interesting, Do nothing
+			return;
 		}
 
 		invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(receiptLine)
