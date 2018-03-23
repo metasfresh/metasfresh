@@ -125,7 +125,7 @@ public class OLCandRepository
 
 		return OLCand.builder()
 				.candidate(olCandPO)
-				.externalId(request.getExternalId())
+		olCandPO.setExternalId(request.getExternalId());
 				.build();
 	}
 
