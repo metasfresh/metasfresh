@@ -1,10 +1,12 @@
-package de.metas.vertical.pharma.msv3.server.peer.metasfresh;
+package de.metas.impex.api;
 
-import org.springframework.context.annotation.Configuration;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server-peer-metasfresh
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -12,20 +14,37 @@ import org.springframework.context.annotation.Configuration;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Configuration
-public class MSV3ServerPeerMetasfreshConfiguration
+@Value
+public class InputDataSourceCreateRequest
 {
-	public static final String ENTITY_TYPE = "de.metas.vertical.pharma.msv3.server";
+	String internalName;
+	String name;
+	String entityType;
+	boolean destination;
+
+	@Builder
+	private InputDataSourceCreateRequest(
+			@NonNull final String internalName,
+			final String name,
+			@NonNull final String entityType,
+			@NonNull final Boolean destination)
+	{
+		this.internalName = internalName;
+		this.name = name != null ? name : internalName;
+		this.entityType = entityType;
+		this.destination = destination;
+	}
+
 }

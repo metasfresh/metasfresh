@@ -1,11 +1,11 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
-import com.google.common.collect.ImmutableList;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
-import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -30,28 +30,47 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class OrderCreateResponse
 {
-	BPartnerId bpartnerId;
-	Id orderId;
-	SupportIDType supportId;
-	boolean nightOperation;
-	ImmutableList<OrderResponsePackage> orderPackages;
-
-	@Builder
-	private OrderCreateResponse(
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final Id orderId,
-			@NonNull final SupportIDType supportId,
-			@NonNull final Boolean nightOperation,
-			@NonNull final ImmutableList<OrderResponsePackage> orderPackages)
+	public static OrderCreateResponse ok(final OrderResponse order)
 	{
-		this.bpartnerId = bpartnerId;
-		this.orderId = orderId;
-		this.supportId = supportId;
-		this.nightOperation = nightOperation;
-		this.orderPackages = orderPackages;
+		return _builder().error(false).order(order).build();
+	}
+
+	public static OrderCreateResponse error(final String errorMsg)
+	{
+		return _builder().error(true).errorMsg(errorMsg).build();
+	}
+
+	@JsonProperty("error")
+	boolean error;
+	@JsonProperty("errorMsg")
+	String errorMsg;
+
+	@JsonProperty("order")
+	OrderResponse order;
+
+	@Builder(builderMethodName = "_builder")
+	@JsonCreator
+	private OrderCreateResponse(
+			@JsonProperty("error") final boolean error,
+			@JsonProperty("errorMsg") final String errorMsg,
+			@JsonProperty("order") final OrderResponse order)
+	{
+		this.error = error;
+		this.errorMsg = errorMsg;
+		this.order = order;
+	}
+
+	public OrderResponse getOrder()
+	{
+		if (order == null)
+		{
+			throw new RuntimeException("No order response for " + this);
+		}
+		return order;
 	}
 
 }

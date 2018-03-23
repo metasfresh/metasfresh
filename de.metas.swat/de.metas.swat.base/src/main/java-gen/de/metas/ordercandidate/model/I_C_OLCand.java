@@ -1123,6 +1123,29 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
 
 	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalId (java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalId();
+
+    /** Column definition for ExternalId */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "ExternalId", null);
+    /** Column name ExternalId */
+    public static final String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
 	 * Set Übergabeadresse eff..
 	 *
 	 * <br>Type: Search

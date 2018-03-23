@@ -1,17 +1,18 @@
-package de.metas.ordercandidate.rest;
+package de.metas.vertical.pharma.msv3.server.peer.metasfresh.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.util.Services;
-import org.compiere.util.Ini;
 import org.springframework.stereotype.Component;
 
+import de.metas.Profiles;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.InputDataSourceCreateRequest;
-import de.metas.ordercandidate.OrderCandidate_Constants;
+import de.metas.vertical.pharma.msv3.server.peer.metasfresh.MSV3ServerPeerMetasfreshConfiguration;
+import de.metas.vertical.pharma.msv3.server.peer.metasfresh.listeners.OrderCreateRequestRabbitMQListener;
 
 /*
  * #%L
- * de.metas.ordercandidate.rest-api
+ * metasfresh-pharma.msv3.server-peer-metasfresh
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -32,17 +33,12 @@ import de.metas.ordercandidate.OrderCandidate_Constants;
  */
 
 @Component
-public class OrderCandidateRestModuleInit extends AbstractModuleInterceptor
+public class MSV3ServerPeerInit extends AbstractModuleInterceptor
 {
-	public OrderCandidateRestModuleInit()
-	{
-
-	}
-
 	@Override
 	protected void onAfterInit()
 	{
-		if (!Ini.isClient())
+		if (Profiles.isProfileActive(Profiles.PROFILE_App))
 		{
 			ensureDataSourceExists();
 		}
@@ -51,8 +47,8 @@ public class OrderCandidateRestModuleInit extends AbstractModuleInterceptor
 	private void ensureDataSourceExists()
 	{
 		Services.get(IInputDataSourceDAO.class).createIfMissing(InputDataSourceCreateRequest.builder()
-				.entityType(OrderCandidate_Constants.ENTITY_TYPE)
-				.internalName(OrderCandidatesRestControllerImpl.DATA_SOURCE_INTERNAL_NAME)
+				.entityType(MSV3ServerPeerMetasfreshConfiguration.ENTITY_TYPE)
+				.internalName(OrderCreateRequestRabbitMQListener.DATA_SOURCE_INTERNAL_NAME)
 				.destination(false)
 				.build());
 	}

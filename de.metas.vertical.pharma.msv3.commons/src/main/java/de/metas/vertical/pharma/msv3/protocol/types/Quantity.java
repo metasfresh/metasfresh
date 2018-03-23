@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -43,6 +44,11 @@ public class Quantity
 			return ZERO;
 		}
 		return new Quantity(value);
+	}
+
+	public static Quantity of(@NonNull final BigDecimal qty)
+	{
+		return of(qty.intValueExact());
 	}
 
 	public static final Quantity ZERO = new Quantity(0);

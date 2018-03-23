@@ -1,14 +1,17 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
-import de.metas.vertical.pharma.msv3.protocol.types.PZN;
-import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -21,12 +24,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,36 +38,35 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class OrderResponsePackageItem
+public class OrderResponse
 {
-	@JsonProperty("id")
-	Id id;
+	@JsonProperty("bpartnerId")
+	BPartnerId bpartnerId;
 
-	@JsonProperty("pzn")
-	PZN pzn;
+	@JsonProperty("orderId")
+	Id orderId;
 
-	@JsonProperty("qty")
-	Quantity qty;
+	@JsonProperty("supportId")
+	SupportIDType supportId;
 
-	@JsonProperty("deliverySpecifications")
-	DeliverySpecifications deliverySpecifications;
+	@JsonProperty("nightOperation")
+	boolean nightOperation;
 
-	@JsonProperty("olCandId")
-	int olCandId;
+	@JsonProperty("orderPackages")
+	List<OrderResponsePackage> orderPackages;
 
 	@Builder
-	private OrderResponsePackageItem(
-			@JsonProperty("id") @NonNull final Id id,
-			@JsonProperty("pzn") @NonNull final PZN pzn,
-			@JsonProperty("qty") @NonNull final Quantity qty,
-			@JsonProperty("deliverySpecifications") @NonNull final DeliverySpecifications deliverySpecifications,
-			@JsonProperty("olCandId") int olCandId)
+	private OrderResponse(
+			@JsonProperty("bpartnerId") @NonNull final BPartnerId bpartnerId,
+			@JsonProperty("orderId") @NonNull final Id orderId,
+			@JsonProperty("supportId") @NonNull final SupportIDType supportId,
+			@JsonProperty("nightOperation") @NonNull final Boolean nightOperation,
+			@JsonProperty("orderPackages") @NonNull @Singular final List<OrderResponsePackage> orderPackages)
 	{
-		this.id = id;
-		this.pzn = pzn;
-		this.qty = qty;
-		this.deliverySpecifications = deliverySpecifications;
-		this.olCandId = olCandId;
+		this.bpartnerId = bpartnerId;
+		this.orderId = orderId;
+		this.supportId = supportId;
+		this.nightOperation = nightOperation;
+		this.orderPackages = ImmutableList.copyOf(orderPackages);
 	}
-
 }

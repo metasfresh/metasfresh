@@ -1,10 +1,15 @@
-package de.metas.vertical.pharma.msv3.server.peer.metasfresh;
+package de.metas.vertical.pharma.msv3.server;
 
-import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server-peer-metasfresh
+ * metasfresh-pharma.msv3.server
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -24,8 +29,16 @@ import org.springframework.context.annotation.Configuration;
  * #L%
  */
 
-@Configuration
-public class MSV3ServerPeerMetasfreshConfiguration
+@RestController
+@RequestMapping(MSV3ServerConstants.REST_ENDPOINT_PATH)
+public class MSV3ServerRestEndpoint
 {
-	public static final String ENTITY_TYPE = "de.metas.vertical.pharma.msv3.server";
+	@Autowired
+	private MSV3ServerPeerService msv3ServerPeerService;
+
+	@GetMapping("/requestUpdateFromServerPeer")
+	public void requestUpdateFromServerPeer()
+	{
+		msv3ServerPeerService.requestAllUpdates();
+	}
 }

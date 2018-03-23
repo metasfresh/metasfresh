@@ -15,7 +15,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1732060382L;
+	private static final long serialVersionUID = 364648425L;
 
     /** Standard Constructor */
     public X_C_OLCand (Properties ctx, int C_OLCand_ID, String trxName)
@@ -1182,6 +1182,22 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public java.lang.String getErrorMsg () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
+	}
+
+	/** Set External ID.
+		@param ExternalId External ID	  */
+	@Override
+	public void setExternalId (java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	/** Get External ID.
+		@return External ID	  */
+	@Override
+	public java.lang.String getExternalId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
 	}
 
 	@Override

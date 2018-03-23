@@ -1,15 +1,16 @@
-package de.metas.vertical.pharma.msv3.server.metasfreshGateway;
+package de.metas.vertical.pharma.msv3.server.peer.metasfresh.services;
+
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Service;
 
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.server-peer-metasfresh
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -29,18 +30,21 @@ import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
  * #L%
  */
 
-@RestController
-@RequestMapping(MetasfreshServerGatewayRestController.ENDPOINT)
-public class MetasfreshServerGatewayRestController
+@Service
+public class MSV3StockAvailabilityService
 {
-	public static final String ENDPOINT = "/metasfresh";
-
 	@Autowired
 	private MSV3ServerPeerService msv3ServerPeerService;
 
-	@GetMapping
-	public void requestAllUpdates()
+	public void publishAll()
 	{
-		msv3ServerPeerService.requestAllUpdates();
+		streamAllStockAvailabilityUpdatedEvents().forEach(msv3ServerPeerService::publishStockAvailabilityUpdatedEvent);
 	}
+
+	private Stream<MSV3StockAvailabilityUpdatedEvent> streamAllStockAvailabilityUpdatedEvents()
+	{
+		// TODO: implement streamAllStockAvailabilityUpdatedEvents
+		return Stream.empty();
+	}
+
 }
