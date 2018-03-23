@@ -19,6 +19,8 @@ COPY configs/local_settings.properties /root/
 COPY ./start_app.sh /opt/metasfresh/
 RUN chmod 700 /opt/metasfresh/start_app.sh
 
+COPY ./reports/ /opt/metasfresh/reports
+
 COPY ./metasfresh-dist-serverRoot*.jar /opt/metasfresh/metasfresh-app.jar
 RUN sh -c 'touch /opt/metasfresh/metasfresh-app.jar'
 

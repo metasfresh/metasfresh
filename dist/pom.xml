@@ -520,28 +520,6 @@ note: when adding new records, please roughly order them by alphabet.
 			</plugin>
 
 			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-misc-files</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/dist/misc</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/misc</directory>
-									<filtering>true</filtering>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
@@ -821,6 +799,46 @@ note: when adding new records, please roughly order them by alphabet.
 				</executions>
 			</plugin>
 
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-misc-files</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/misc</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/misc</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					
+					<!-- copy the jasper files that were prepared by the maven-dependency-plugin -->
+					<execution>
+						<id>copy-jasper-folder-for-docker-build</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${docker.build.directory}/reports/</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/dist/deploy/reports</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
