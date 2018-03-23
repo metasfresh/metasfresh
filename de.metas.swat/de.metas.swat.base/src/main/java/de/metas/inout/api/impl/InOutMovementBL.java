@@ -1,5 +1,6 @@
 package de.metas.inout.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
@@ -69,6 +70,8 @@ public class InOutMovementBL implements IInOutMovementBL
 	@Override
 	public List<I_M_Movement> generateMovementFromReceiptLines(final List<I_M_InOutLine> receiptLines)
 	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 		if (Check.isEmpty(receiptLines))
 		{
 			// nothing to do
@@ -77,97 +80,27 @@ public class InOutMovementBL implements IInOutMovementBL
 
 		final I_M_InOut receipt = load(receiptLines.get(0).getM_InOut_ID(), I_M_InOut.class);
 
-		// services
-
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
 		trxManager.assertTrxNameNotNull(InterfaceWrapperHelper.getTrxName(receipt));
-
-		final int receiptWarehouseId = receipt.getM_Warehouse_ID();
-
-		//
-		// Default Destination Warehouse (from receipt header)
-		final I_M_Warehouse warehouseDestDefault;
-		if (receipt.getM_Warehouse_Dest_ID() > 0)
-		{
-			warehouseDestDefault = receipt.getM_Warehouse_Dest();
-		}
-		else
-		{
-			warehouseDestDefault = null;
-		}
 
 		//
 		// Iterate all receipt lines and group them by target warehouse
-		final Map<Integer, I_M_Warehouse> warehouses = new HashMap<>(); // mainly for caching
-		final Map<Integer, List<I_M_InOutLine>> warehouseId2inoutLines = new HashMap<>();
+		final Map<Integer, List<I_M_InOutLine>> warehouseId2inoutLines = partitionLinesByWarehouseTargetId(receiptLines);
 
-		for (final I_M_InOutLine inOutLine : receiptLines)
-		{
-			// #3409 make sure the line is not for ddOrder
-			boolean isForDDOrder = false;
-			final List<I_M_ReceiptSchedule> rsForInOutLine = Services.get(IReceiptScheduleDAO.class).retrieveRsForInOutLine(inOutLine);
-			for (final I_M_ReceiptSchedule rs : rsForInOutLine)
-			{
-				if (isCreateDistributionOrder(rs))
-				{
-					isForDDOrder = true;
-					break;
-				}
-			}
+		final List<I_M_Movement> movements = createMovementsForLinePartitions(warehouseId2inoutLines, receipt);
 
-			if (isForDDOrder)
-			{
-				continue;
-			}
+		return movements;
+	}
 
-			//
-			// Fetch the target warehouse
-			final I_M_Warehouse warehouseTarget;
-			if (inOutLine.getM_Warehouse_Dest_ID() > 0)
-			{
-				warehouseTarget = inOutLine.getM_Warehouse_Dest();
-			}
-			else
-			{
-				warehouseTarget = warehouseDestDefault;
-			}
-
-			// Skip if we don't have a target warehouse
-			if (warehouseTarget == null || warehouseTarget.getM_Warehouse_ID() <= 0)
-			{
-				continue;
-			}
-
-			//
-			// Check: if receipt's warehouse is same as destination warehouse, we already got materials in destination warehouse
-			// so it's pointless to do a movement
-			final int warehouseTargetId = warehouseTarget.getM_Warehouse_ID();
-			if (warehouseTargetId == receiptWarehouseId)
-			{
-				continue;
-			}
-
-			//
-			// Aggregate to warehouseTargetId -> inoutLines map
-			warehouses.put(warehouseTargetId, warehouseTarget);
-			List<I_M_InOutLine> linesForWarehouse = warehouseId2inoutLines.get(warehouseTargetId);
-			if (linesForWarehouse == null)
-			{
-				linesForWarehouse = new ArrayList<>();
-				warehouseId2inoutLines.put(warehouseTargetId, linesForWarehouse);
-			}
-
-			linesForWarehouse.add(inOutLine);
-		}
-
+	private List<I_M_Movement> createMovementsForLinePartitions(Map<Integer, List<I_M_InOutLine>> warehouseId2inoutLines, I_M_InOut receipt)
+	{
 		//
 		// Generate movements for each "warehouseDestId -> inout lines" pair
 		final List<I_M_Movement> movements = new ArrayList<>();
 		for (final Map.Entry<Integer, List<I_M_InOutLine>> movementCandidate : warehouseId2inoutLines.entrySet())
 		{
 			final int warehouseTargetId = movementCandidate.getKey();
-			final I_M_Warehouse warehouseTarget = warehouses.get(warehouseTargetId);
+
+			final I_M_Warehouse warehouseTarget = load(warehouseTargetId, I_M_Warehouse.class);
 			Check.assumeNotNull(warehouseTarget, "warehouseTarget not null"); // shall not happen
 
 			final List<I_M_InOutLine> linesForWarehouse = movementCandidate.getValue();
@@ -179,13 +112,115 @@ public class InOutMovementBL implements IInOutMovementBL
 				movements.add(movement);
 			}
 		}
-
+		
 		return movements;
 	}
 
-	private boolean isCreateDistributionOrder(final I_M_ReceiptSchedule rs)
+	private Map<Integer, List<I_M_InOutLine>> partitionLinesByWarehouseTargetId(final List<I_M_InOutLine> receiptLines)
 	{
-		return X_M_ReceiptSchedule.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder.equals(rs.getOnMaterialReceiptWithDestWarehouse());
+		final Map<Integer, List<I_M_InOutLine>> warehouseId2inoutLines = new HashMap<>();
+
+		for (final I_M_InOutLine receiptLine : receiptLines)
+		{
+			// #3409 make sure the line is to be moved
+			final boolean isForMovement = isCreateMovement(receiptLine);
+
+			if (!isForMovement)
+			{
+				// skip the line because it is not supposed to be moved after receipt.
+				continue;
+			}
+
+			final I_M_Warehouse warehouseTarget = findWarehouseTargetOrNull(receiptLine);
+
+			if (warehouseTarget == null)
+			{
+				continue;
+			}
+
+			final int warehouseTargetId = warehouseTarget.getM_Warehouse_ID();
+
+			//
+			// Aggregate to warehouseTargetId -> inoutLines map
+			// warehouses.put(warehouseTargetId, warehouseTarget);
+			List<I_M_InOutLine> linesForWarehouse = warehouseId2inoutLines.get(warehouseTargetId);
+			if (linesForWarehouse == null)
+			{
+				linesForWarehouse = new ArrayList<>();
+				warehouseId2inoutLines.put(warehouseTargetId, linesForWarehouse);
+			}
+
+			linesForWarehouse.add(receiptLine);
+		}
+
+		return warehouseId2inoutLines;
+	}
+
+	private I_M_Warehouse findWarehouseTargetOrNull(final I_M_InOutLine inOutLine)
+	{
+
+		final I_M_InOut receipt = create(inOutLine.getM_InOut(), I_M_InOut.class);
+
+		final int receiptWarehouseId = receipt.getM_Warehouse_ID();
+
+		//
+		// Fetch the target warehouse
+		final I_M_Warehouse warehouseTarget;
+		if (inOutLine.getM_Warehouse_Dest_ID() > 0)
+		{
+			warehouseTarget = inOutLine.getM_Warehouse_Dest();
+		}
+		else
+		{
+			warehouseTarget = receipt.getM_Warehouse_Dest();
+		}
+
+		// Skip if we don't have a target warehouse
+		if (warehouseTarget == null)
+		{
+			return null;
+		}
+
+		//
+		// Check: if receipt's warehouse is same as destination warehouse, we already got materials in destination warehouse
+		// so it's pointless to do a movement
+		final int warehouseTargetId = warehouseTarget.getM_Warehouse_ID();
+		if (warehouseTargetId == receiptWarehouseId)
+		{
+			return null;
+		}
+
+		return warehouseTarget;
+	}
+
+	private boolean isCreateMovement(final I_M_InOutLine inOutLine)
+	{
+		final List<I_M_ReceiptSchedule> rsForInOutLine = Services.get(IReceiptScheduleDAO.class).retrieveRsForInOutLine(inOutLine);
+		
+		if(Check.isEmpty(rsForInOutLine))
+		{
+			// if the inoutLine doesn't have any receipt schedules, just create a movement for it to keep the old functionality untouched.
+			return true;
+		}
+		
+		for (final I_M_ReceiptSchedule rs : rsForInOutLine)
+		{
+			if (isCreateMovement(rs))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isCreateMovement(final I_M_ReceiptSchedule rs)
+	{
+		if(rs.getOnMaterialReceiptWithDestWarehouse() == null)
+		{
+			// if nothing is set in this field, create movements. This way we keep the old functionality untouched.
+			return true;
+		}
+		return X_M_ReceiptSchedule.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement.equals(rs.getOnMaterialReceiptWithDestWarehouse());
 	}
 
 	private I_M_Movement generateMovement(final I_M_InOut inOut, final boolean moveToInOutWarehouse, final I_M_Warehouse warehouse, final List<I_M_InOutLine> lines)
