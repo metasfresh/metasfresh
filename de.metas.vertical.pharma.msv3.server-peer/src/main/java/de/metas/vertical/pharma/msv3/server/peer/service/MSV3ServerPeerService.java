@@ -48,11 +48,20 @@ public class MSV3ServerPeerService
 	private final MSV3PeerAuthToken msv3PeerAuthToken;
 
 	public MSV3ServerPeerService(
-			@NonNull final RabbitTemplate rabbitTemplate,
+			final Optional<RabbitTemplate> rabbitTemplate,
 			final Optional<MSV3PeerAuthToken> msv3PeerAuthToken)
 	{
-		this.rabbitTemplate = rabbitTemplate;
+		this.rabbitTemplate = rabbitTemplate.orElse(null); // tolerate the case when RabbitMQ is not enabled
 		this.msv3PeerAuthToken = msv3PeerAuthToken.orElse(null);
+	}
+
+	private void convertAndSend(final String routingKey, final Object message)
+	{
+		if (rabbitTemplate == null)
+		{
+			throw new IllegalStateException("RabbitMQ is not enabled");
+		}
+		rabbitTemplate.convertAndSend(routingKey, message, this::messagePostProcess);
 	}
 
 	private Message messagePostProcess(final Message message)
@@ -67,28 +76,28 @@ public class MSV3ServerPeerService
 
 	public void requestAllUpdates()
 	{
-		rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUENAME_MSV3ServerRequests, MSV3ServerRequest.requestAll(), this::messagePostProcess);
+		convertAndSend(RabbitMQConfig.QUEUENAME_MSV3ServerRequests, MSV3ServerRequest.requestAll());
 		logger.info("Requested all data from MSV3 server peer");
 	}
 
 	public void publishUserChangedEvent(@NonNull final MSV3UserChangedEvent event)
 	{
-		rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUENAME_UserChangedEvents, event, this::messagePostProcess);
+		convertAndSend(RabbitMQConfig.QUEUENAME_UserChangedEvents, event);
 	}
 
 	public void publishStockAvailabilityUpdatedEvent(@NonNull final MSV3StockAvailabilityUpdatedEvent event)
 	{
-		rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent, event, this::messagePostProcess);
+		convertAndSend(RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent, event);
 	}
 
 	public void publishOrderCreateRequest(final OrderCreateRequest request)
 	{
-		rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUENAME_CreateOrderRequestEvents, request, this::messagePostProcess);
+		convertAndSend(RabbitMQConfig.QUEUENAME_CreateOrderRequestEvents, request);
 	}
 
 	public void publishOrderCreateResponse(@NonNull final OrderCreateResponse response)
 	{
-		rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUENAME_CreateOrderResponseEvents, response, this::messagePostProcess);
+		convertAndSend(RabbitMQConfig.QUEUENAME_CreateOrderResponseEvents, response);
 	}
 
 }
