@@ -1,5 +1,10 @@
 package de.metas.vertical.pharma.msv3.protocol.types;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Value;
 
 /*
@@ -24,6 +29,7 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class BPartnerId
 {
@@ -32,10 +38,16 @@ public class BPartnerId
 		return new BPartnerId(bpartnerId, bpartnerLocationId);
 	}
 
+	@JsonProperty("bpartnerId")
 	private final int bpartnerId;
+
+	@JsonProperty("bpartnerLocationId")
 	private final int bpartnerLocationId;
 
-	private BPartnerId(final int bpartnerId, final int bpartnerLocationId)
+	@JsonCreator
+	private BPartnerId(
+			@JsonProperty("bpartnerId") final int bpartnerId,
+			@JsonProperty("bpartnerLocationId") final int bpartnerLocationId)
 	{
 		if (bpartnerId < 1)
 		{

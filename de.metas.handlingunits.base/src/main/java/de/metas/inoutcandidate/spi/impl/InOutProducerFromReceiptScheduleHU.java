@@ -289,7 +289,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		}
 
 		final int qualityAttrID = qualityNoteAttribute.getM_Attribute_ID();
-		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, qualityAttrID, trxName);
+		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, qualityAttrID);
 
 		if (ai == null)
 		{

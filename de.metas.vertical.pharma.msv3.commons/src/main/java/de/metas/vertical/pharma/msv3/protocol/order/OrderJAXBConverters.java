@@ -88,11 +88,12 @@ public class OrderJAXBConverters
 
 	public JAXBElement<BestellenResponse> toJAXB(final OrderCreateResponse response)
 	{
+		final OrderResponse order = response.getOrder();
 		final BestellungAntwort soapResponseContent = jaxbObjectFactory.createBestellungAntwort();
-		soapResponseContent.setId(response.getOrderId().getValueAsString());
-		soapResponseContent.setBestellSupportId(response.getSupportId().getValueAsInt());
-		soapResponseContent.setNachtBetrieb(response.isNightOperation());
-		soapResponseContent.getAuftraege().addAll(response.getOrderPackages().stream()
+		soapResponseContent.setId(order.getOrderId().getValueAsString());
+		soapResponseContent.setBestellSupportId(order.getSupportId().getValueAsInt());
+		soapResponseContent.setNachtBetrieb(order.isNightOperation());
+		soapResponseContent.getAuftraege().addAll(order.getOrderPackages().stream()
 				.map(this::toJAXB)
 				.collect(ImmutableList.toImmutableList()));
 

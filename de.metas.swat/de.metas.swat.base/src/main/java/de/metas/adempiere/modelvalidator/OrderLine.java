@@ -145,7 +145,7 @@ public class OrderLine implements ModelValidator
 			final boolean newOrDelete = type == TYPE_AFTER_NEW || type == TYPE_AFTER_DELETE;
 			final boolean linesAmtChanged = po.is_ValueChanged(I_C_OrderLine.COLUMNNAME_LineNetAmt);
 			final boolean notFixPrice = !X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(orderPO.getFreightCostRule());
-			final boolean isCopy = po.getDynAttribute(PO.DYNATTR_CopyRecordSupport_OldValue) == null ? false : true; // metas: cg: task US215
+			final boolean isCopy = InterfaceWrapperHelper.isCopy(po); // metas: cg: task US215
 			if (!isCopy && (linesAmtChanged || notFixPrice || newOrDelete))
 			{
 				if (MFreightCost.retriveFor(po.getCtx(), ol.getM_Product_ID(), po.get_TrxName()).isEmpty())

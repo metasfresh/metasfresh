@@ -1,5 +1,10 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
@@ -16,28 +21,50 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-@Builder
 public class OrderResponsePackageItem
 {
-	@NonNull
+	@JsonProperty("id")
+	Id id;
+
+	@JsonProperty("pzn")
 	PZN pzn;
 
-	@NonNull
+	@JsonProperty("qty")
 	Quantity qty;
 
-	@NonNull
+	@JsonProperty("deliverySpecifications")
 	DeliverySpecifications deliverySpecifications;
+
+	@JsonProperty("olCandId")
+	int olCandId;
+
+	@Builder
+	private OrderResponsePackageItem(
+			@JsonProperty("id") @NonNull final Id id,
+			@JsonProperty("pzn") @NonNull final PZN pzn,
+			@JsonProperty("qty") @NonNull final Quantity qty,
+			@JsonProperty("deliverySpecifications") @NonNull final DeliverySpecifications deliverySpecifications,
+			@JsonProperty("olCandId") int olCandId)
+	{
+		this.id = id;
+		this.pzn = pzn;
+		this.qty = qty;
+		this.deliverySpecifications = deliverySpecifications;
+		this.olCandId = olCandId;
+	}
+
 }

@@ -1,15 +1,12 @@
-package de.metas.vertical.pharma.msv3.server.peer.service;
+package de.metas.impex.api;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.stereotype.Service;
-
-import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
-import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server-peer-metasfresh
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -29,18 +26,25 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
-public class CustomerConfigEventsQueue
+@Value
+public class InputDataSourceCreateRequest
 {
-	private final RabbitTemplate rabbitTemplate;
+	String internalName;
+	String name;
+	String entityType;
+	boolean destination;
 
-	public CustomerConfigEventsQueue(@NonNull final RabbitTemplate rabbitTemplate)
+	@Builder
+	private InputDataSourceCreateRequest(
+			@NonNull final String internalName,
+			final String name,
+			@NonNull final String entityType,
+			@NonNull final Boolean destination)
 	{
-		this.rabbitTemplate = rabbitTemplate;
+		this.internalName = internalName;
+		this.name = name != null ? name : internalName;
+		this.entityType = entityType;
+		this.destination = destination;
 	}
 
-	public void publish(@NonNull final MSV3UserChangedEvent event)
-	{
-		rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUENAME_UserChangedEvents, event);
-	}
 }

@@ -2,6 +2,12 @@ package de.metas.vertical.pharma.msv3.protocol.types;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -26,9 +32,11 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class Quantity
 {
+	@JsonCreator
 	public static Quantity of(final int value)
 	{
 		if (value == 0)
@@ -36,6 +44,11 @@ public class Quantity
 			return ZERO;
 		}
 		return new Quantity(value);
+	}
+
+	public static Quantity of(@NonNull final BigDecimal qty)
+	{
+		return of(qty.intValueExact());
 	}
 
 	public static final Quantity ZERO = new Quantity(0);
@@ -71,5 +84,11 @@ public class Quantity
 	public BigDecimal getValueAsBigDecimal()
 	{
 		return BigDecimal.valueOf(valueAsInt);
+	}
+
+	@JsonValue
+	public int toJson()
+	{
+		return valueAsInt;
 	}
 }

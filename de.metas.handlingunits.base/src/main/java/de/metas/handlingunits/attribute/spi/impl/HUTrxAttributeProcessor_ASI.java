@@ -53,7 +53,7 @@ public class HUTrxAttributeProcessor_ASI implements IHUTrxAttributeProcessor
 		final String trxName = InterfaceWrapperHelper.getTrxName(huTrxAttribute);
 		final int attributeId = huTrxAttribute.getM_Attribute_ID();
 
-		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attributeId, trxName);
+		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attributeId);
 		if (ai == null)
 		{
 			// throw new AdempiereException("No attribute instance was found."
