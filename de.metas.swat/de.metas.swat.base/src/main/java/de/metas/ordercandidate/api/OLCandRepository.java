@@ -119,21 +119,13 @@ public class OLCandRepository
 		olCandPO.setDiscount(request.getDiscount());
 
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
-		olCandPO.setAD_InputDataSource_ID(getInputDataSourceId(request.getAdInputDataSourceInternalName()));
+		olCandPO.setAD_InputDataSource_ID(Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceId(request.getAdInputDataSourceInternalName()));
 		olCandPO.setExternalId(request.getExternalId());
 
 		InterfaceWrapperHelper.save(olCandPO);
 
 		return OLCand.builder()
 				.candidate(olCandPO)
-		olCandPO.setExternalId(request.getExternalId());
 				.build();
-	}
-
-	private int getInputDataSourceId(final String internalName)
-	{
-		return Services.get(IInputDataSourceDAO.class)
-				.retrieveInputDataSource(Env.getCtx(), internalName, /* throwEx */true, ITrx.TRXNAME_None)
-				.getAD_InputDataSource_ID();
 	}
 }
