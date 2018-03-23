@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import classnames from 'classnames';
 
 export default class SelectionDropdown extends Component {
   static propTypes = {
@@ -95,7 +96,8 @@ export default class SelectionDropdown extends Component {
     this.ignoreNextMouseEnter = true;
 
     const { selected, options, onChange } = this.props;
-
+    const size = this.size(options);
+    const selectedNew = this.get(options, index);
     let index = options.indexOf(selected);
 
     if (up) {
@@ -104,15 +106,11 @@ export default class SelectionDropdown extends Component {
       index++;
     }
 
-    const size = this.size(options);
-
     if (index < 0) {
       index = 0;
     } else if (index >= size) {
       index = size - 1;
     }
-
-    const selectedNew = this.get(options, index);
 
     if (selectedNew === selected) {
       return;
@@ -133,19 +131,15 @@ export default class SelectionDropdown extends Component {
       case 'ArrowUp':
         navigate(true);
         break;
-
       case 'ArrowDown':
         navigate(false);
         break;
-
       case 'Escape':
         onCancel();
         break;
-
       case 'Enter':
         onSelect(selected);
         break;
-
       default:
         return;
     }
@@ -174,7 +168,6 @@ export default class SelectionDropdown extends Component {
     }
 
     this.ignoreOption = null;
-
     this.props.onChange(option);
   };
 
@@ -194,17 +187,16 @@ export default class SelectionDropdown extends Component {
     const { selected } = this.props;
     const { key, caption } = option;
 
-    const classNames = ['input-dropdown-list-option'];
-
-    if (option === selected) {
-      classNames.push('input-dropdown-list-option-key-on');
-    }
-
     return (
       <div
         ref={ref => this.optionToRef.set(option, ref)}
         key={`${key}${caption}`}
-        className={classNames.join(' ')}
+        className={classnames(
+          'input-dropdown-list-option ignore-react-onclickoutside',
+          {
+            'input-dropdown-list-option-key-on': option === selected,
+          }
+        )}
         onMouseEnter={() => this.handleMouseEnter(option)}
         onMouseDown={() => this.handleMouseDown(option)}
       >
@@ -229,7 +221,6 @@ export default class SelectionDropdown extends Component {
 
   render() {
     const { options, width, loading, forceEmpty } = this.props;
-
     const empty = this.size(options) === 0;
 
     return (
