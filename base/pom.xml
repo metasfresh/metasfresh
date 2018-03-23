@@ -46,6 +46,11 @@
 			<artifactId>metasfresh-pharma</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.vertical.pharma</groupId>
+			<artifactId>metasfresh-pharma.msv3.server-peer-metasfresh</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 		
 		<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
 		<dependency>
