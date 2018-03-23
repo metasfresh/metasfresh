@@ -52,26 +52,41 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3240](https://github.com/metasfresh/metasfresh/issues/3240) Drop AD_Field.IsCentrallyMaintained database column
+    * Internal Housekeeping Issue, taking care of legacy column "isCentrallyMaintained".
   * [#3584](https://github.com/metasfresh/metasfresh/issues/3584) Implement sales order candidates REST API
+    * New REST-API for order candidates. This is part of the new Pharma Availability Chack and Ordering Service.
   * [#3658](https://github.com/metasfresh/metasfresh/issues/3658) Introduce specific subtypes for Physical Inventory and for Internal Use Inventory
+    * Additional Document Subtypes for Physical Inventory and Internal usage.
   * [#3659](https://github.com/metasfresh/metasfresh/issues/3659) Refactor/adapt Inventory Disposal
+    * Improvement of the Inventory disposal functionality. Adapting to new Inventory Control.
   * [#3669](https://github.com/metasfresh/metasfresh/issues/3669) Create all periods of a contract on creation
+    * Improving the contract creation, now creating all periods at the moment of contract generation.
   * [#3688](https://github.com/metasfresh/metasfresh/issues/3688) Port Printing REST endpoint from SMX to metasfresh
+    * Ports the REST Endpoint for Printing from ServiceMix to metasfresh.
   * [#3705](https://github.com/metasfresh/metasfresh/issues/3705) Inventory Window show Handling Unit Field in Inventorylines
+    * Adds the Handling Unit into Inventopylines allowing to use Inventory with our Handling Usage Management.
   * [#3706](https://github.com/metasfresh/metasfresh/issues/3706) Terminating a Contract that was extended ahead of schedule leaves stumb
+    * Improvement of the contract Termination action.
 
 * metasfresh-api
   * [#894](https://github.com/metasfresh/metasfresh-webui-api/issues/894) New Composed Primary Keys
+    * Allows now to use composed primary keys in WebUI.
   * [#895](https://github.com/metasfresh/metasfresh-webui-api/issues/895) Automatic printing HU Labels in WebUI
+    * New Feature to automatically print TU Labels for Picking in WebUI.
   * [#901](https://github.com/metasfresh/metasfresh-webui-api/issues/901) Provide media size info for columns
+    * Enhances the UI Element Configuration in Application Dictionary. It's now possible to define media size dependant behavior for the Web User Interface.
   * [#910](https://github.com/metasfresh/metasfresh-webui-api/issues/910) 2nd orderline for product missing in picking terminal
+    * Now shows the 2nd Orderline in Picking Terminal again.
 
 * metasfresh-webui-frontend
   * [#1609](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1609) Camera barcode reader for Tablet/ mobile device
     * New Barcode Reader that can be used via webcam on mobile devices.
   * [#1677](https://github.com/metasfresh/metasfresh-webui-frontend/pull/1677) Update momentjs in packages.json
-  * [#1699](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1699) tab does not trigger saving number field
+    * Updateing Moments.js to the newses Version.
+  * [#1699](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1699) Tab does not trigger saving number field
+    * Fixes the patching in number fields. Now also patching when leaving the Fields via Tab Key.
   * [#1860](https://github.com/metasfresh/metasfresh/issues/1860) Make documentNo readonly in Payments (and other document types)
+    * Improves the documetNo behavior, making all Fields with Document No readonly.
 
 ## Fixes
 * metasfresh
