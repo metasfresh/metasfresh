@@ -48,6 +48,7 @@ public class RabbitMQConfig
 	public static final String QUEUENAME_UserChangedEvents = "msv3-server-UserChangedEvents";
 	public static final String QUEUENAME_StockAvailabilityUpdatedEvent = "msv3-server-StockAvailabilityUpdatedEvents";
 	public static final String QUEUENAME_CreateOrderRequestEvents = "msv3-server-CreateOrderRequestEvents";
+	public static final String QUEUENAME_CreateOrderResponseEvents = "msv3-server-CreateOrderResponseEvents";
 
 	@Bean
 	List<Declarable> queuesAndBindings()
@@ -57,6 +58,7 @@ public class RabbitMQConfig
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_UserChangedEvents))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_StockAvailabilityUpdatedEvent))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_CreateOrderRequestEvents))
+				.addAll(createQueueExchangeAndBinding(QUEUENAME_CreateOrderResponseEvents))
 				.build();
 	}
 

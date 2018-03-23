@@ -81,12 +81,14 @@ public class MSV3ServerPeerService
 		rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent, event, this::messagePostProcess);
 	}
 
-	public OrderCreateResponse createOrderRequest(final OrderCreateRequest request)
+	public void publishOrderCreateRequest(final OrderCreateRequest request)
 	{
-		final Object responseObj = rabbitTemplate.convertSendAndReceive(
-				RabbitMQConfig.QUEUENAME_CreateOrderRequestEvents,
-				request,
-				this::messagePostProcess);
-		return (OrderCreateResponse)responseObj;
+		rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUENAME_CreateOrderRequestEvents, request, this::messagePostProcess);
 	}
+
+	public void publishOrderCreateResponse(@NonNull final OrderCreateResponse response)
+	{
+		rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUENAME_CreateOrderResponseEvents, response, this::messagePostProcess);
+	}
+
 }

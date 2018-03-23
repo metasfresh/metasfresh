@@ -38,6 +38,7 @@ import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3PeerAuthToken;
+import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 
 /*
  * #%L
@@ -73,6 +74,8 @@ public class OrderCreateRequestRabbitMQListener
 	private UserAuthTokenService authService;
 	@Autowired
 	private OLCandRepository olCandRepo;
+	@Autowired
+	private MSV3ServerPeerService serverPeerService;
 
 	@FunctionalInterface
 	private static interface OLCandSupplier
@@ -81,24 +84,32 @@ public class OrderCreateRequestRabbitMQListener
 	}
 
 	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_CreateOrderRequestEvents)
-	public OrderCreateResponse onRequest(@Payload final OrderCreateRequest request, @Header(MSV3PeerAuthToken.NAME) final MSV3PeerAuthToken authToken)
+	public void onRequest(@Payload final OrderCreateRequest request, @Header(MSV3PeerAuthToken.NAME) final MSV3PeerAuthToken authToken)
 	{
 		try
 		{
-			return authService.call(authToken::getValueAsString, () -> process(request));
+			final OrderCreateResponse response = authService.call(authToken::getValueAsString, () -> process(request));
+			serverPeerService.publishOrderCreateResponse(response);
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed processing request: {}", request, ex);
-			return OrderCreateResponse.error(ex.getLocalizedMessage());
+			logger.error("Failed processing request: {}", request, ex);
 		}
 	}
 
 	private OrderCreateResponse process(final OrderCreateRequest request)
 	{
-		final List<OLCand> olCands = olCandRepo.create(toOLCandCreateRequestsList(request));
-		final Map<String, OLCand> olCandsByExternalId = Maps.uniqueIndex(olCands, OLCand::getExternalId);
-		return toOrderCreateResponse(request, externalId -> olCandsByExternalId.get(externalId.getValueAsString()));
+		try
+		{
+			final List<OLCand> olCands = olCandRepo.create(toOLCandCreateRequestsList(request));
+			final Map<String, OLCand> olCandsByExternalId = Maps.uniqueIndex(olCands, OLCand::getExternalId);
+			return toOrderCreateResponse(request, externalId -> olCandsByExternalId.get(externalId.getValueAsString()));
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed processing request: {}. Sending response.", request, ex);
+			return OrderCreateResponse.error(request.getOrderId(), request.getBpartnerId(), ex.getLocalizedMessage());
+		}
 	}
 
 	private List<OLCandCreateRequest> toOLCandCreateRequestsList(final OrderCreateRequest request)
