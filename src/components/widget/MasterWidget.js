@@ -86,11 +86,9 @@ class MasterWidget extends Component {
     } = this.props;
 
     let { entity } = this.props;
-
     let currRowId = rowId;
     let ret = null;
     let isEdit = false;
-
     let parseValue = this.parseDateBeforePatch(widgetType, value);
 
     if (rowId === 'NEW') {
@@ -142,10 +140,8 @@ class MasterWidget extends Component {
       relativeDocId,
       widgetType,
     } = this.props;
-
-    let currRowId = rowId;
-
     const dateParse = ['Date', 'DateTime', 'Time'];
+    let currRowId = rowId;
 
     this.setState(
       {

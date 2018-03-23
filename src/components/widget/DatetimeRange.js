@@ -28,8 +28,8 @@ class DatetimeRange extends Component {
 
     this.setState(
       {
-        startDate: picker.startDate,
-        endDate: picker.endDate,
+        startDate: picker.startDate.utc(true),
+        endDate: picker.endDate.utc(true),
       },
       () => {
         onChange(picker.startDate, picker.endDate);
