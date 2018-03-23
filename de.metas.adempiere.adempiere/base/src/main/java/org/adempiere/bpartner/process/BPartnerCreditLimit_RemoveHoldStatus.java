@@ -1,13 +1,11 @@
 package org.adempiere.bpartner.process;
 
-import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner_Stats;
+import org.compiere.model.X_C_BPartner_Stats;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -23,14 +21,14 @@ public class BPartnerCreditLimit_RemoveHoldStatus extends JavaProcess implements
 	protected String doIt()
 	{
 		final I_C_BPartner_Stats bpStats = getRecord(I_C_BPartner_Stats.class);
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bpStats.getC_BPartner());
-		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
-				.stat(stats)
-				.checkiAdditionalAmt(false)
-				.date(SystemTime.asDayTimestamp())
-				.build();
-		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(request);
-		bpStats.setSOCreditStatus(calculatedCreditStatus);
+//		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bpStats.getC_BPartner());
+//		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
+//				.stat(stats)
+//				.checkiAdditionalAmt(false)
+//				.date(SystemTime.asDayTimestamp())
+//				.build();
+//		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(request);
+		bpStats.setSOCreditStatus(X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop);
 		InterfaceWrapperHelper.save(bpStats);
 		return "@Success@";
 	}
