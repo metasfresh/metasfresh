@@ -20,7 +20,7 @@ $BODY$
   COST 100
   ROWS 1000;
 
-  
+ comment on function public.getInitialC_Flatrate_term_ID(numeric) is 'This function returns the most diatant parent of the givent contract'; 
 
 CREATE OR REPLACE FUNCTION public.fetchflatratetermhierarchy_byC_Flatrate_Term_id(IN p_c_flatrate_term_id numeric)
   RETURNS TABLE(bill_bpartner_id numeric, initial_ft_id numeric, path numeric[]) AS
@@ -54,3 +54,5 @@ $BODY$
   LANGUAGE sql VOLATILE
   COST 100
   ROWS 1000;
+  
+comment on function public.fetchflatratetermhierarchy_byC_Flatrate_Term_id(numeric) is 'This function returns the hierachy chain of a contract';   
