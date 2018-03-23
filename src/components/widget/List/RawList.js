@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { is, List } from 'immutable';
+import onClickOutside from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
@@ -129,6 +130,22 @@ class RawList extends PureComponent {
     this.dropdown.focus();
     onOpenDropdown();
   };
+
+  handleClickOutside() {
+    const { isFocused, onCloseDropdown, onBlur, selected } = this.props;
+
+    if (isFocused) {
+      this.setState(
+        {
+          selected: selected || null,
+        },
+        () => {
+          onCloseDropdown();
+          onBlur();
+        }
+      );
+    }
+  }
 
   handleSelect = selected => {
     const { onSelect, onCloseDropdown } = this.props;
@@ -347,4 +364,4 @@ RawList.propTypes = {
   onCloseDropdown: PropTypes.func.isRequired,
 };
 
-export default RawList;
+export default onClickOutside(RawList);
