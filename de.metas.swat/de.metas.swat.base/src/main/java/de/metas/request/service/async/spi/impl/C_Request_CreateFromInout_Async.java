@@ -3,8 +3,10 @@ package de.metas.request.service.async.spi.impl;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 
@@ -37,16 +39,22 @@ import de.metas.request.api.IRequestDAO;
  * #L%
  */
 
-public class C_Request_CreateFromInout extends WorkpackageProcessorAdapter
+public class C_Request_CreateFromInout_Async extends WorkpackageProcessorAdapter
 {
 	/**
+	 * 
 	 * Schedule the request creation based on the given inoutline ids
 	 * 
-	 * @param ctx
-	 * @param inOutLineIds
-	 * @param trxName
+	 * These requests will contain information taken from the lines and from their inout headers:
+	 * <li>inout
+	 * <li>product
+	 * <li>partner
+	 * <li>dateDelivered
+	 * <li>qualityNotice
+	 * <li>org
+	 * <li>linked salesrep of the org, etc.
 	 */
-	public static void createWorkpackage(final Properties ctx, final List<Integer> inOutLineIds, final String trxName)
+	public static void createWorkpackage(final List<Integer> inOutLineIds)
 	{
 		if (inOutLineIds == null || inOutLineIds.isEmpty())
 		{
@@ -63,7 +71,7 @@ public class C_Request_CreateFromInout extends WorkpackageProcessorAdapter
 			}
 
 			// Schedule the request creation based on the given inoutline ids
-			SCHEDULER.schedule(InOutLineWithQualityIssues.of(ctx, inOutLineId, trxName));
+			SCHEDULER.schedule(InOutLineWithQualityIssues.of(inOutLineId));
 		}
 	}
 
@@ -76,21 +84,17 @@ public class C_Request_CreateFromInout extends WorkpackageProcessorAdapter
 	 */
 	private static final class InOutLineWithQualityIssues
 	{
-		public static InOutLineWithQualityIssues of(Properties ctx, int inOutLineId, String trxName)
+		public static InOutLineWithQualityIssues of(int inOutLineId)
 		{
-			return new InOutLineWithQualityIssues(ctx, inOutLineId, trxName);
+			return new InOutLineWithQualityIssues(inOutLineId);
 		}
 
-		private final Properties ctx;
-		private final String trxName;
 		private final int inOutLineId;
 
-		private InOutLineWithQualityIssues(Properties ctx, int inOutLineId, String trxName)
+		private InOutLineWithQualityIssues(int inOutLineId)
 		{
 			super();
-			this.ctx = ctx;
 			this.inOutLineId = inOutLineId;
-			this.trxName = trxName;
 		}
 
 		@Override
@@ -101,23 +105,13 @@ public class C_Request_CreateFromInout extends WorkpackageProcessorAdapter
 					.toString();
 		}
 
-		public Properties getCtx()
-		{
-			return ctx;
-		}
-
-		public String getTrxName()
-		{
-			return trxName;
-		}
-
 		public int getM_InOutLine_ID()
 		{
 			return inOutLineId;
 		}
 	}
 
-	private static final WorkpackagesOnCommitSchedulerTemplate<InOutLineWithQualityIssues> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<InOutLineWithQualityIssues>(C_Request_CreateFromInout.class)
+	private static final WorkpackagesOnCommitSchedulerTemplate<InOutLineWithQualityIssues> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<InOutLineWithQualityIssues>(C_Request_CreateFromInout_Async.class)
 	{
 		@Override
 		protected boolean isEligibleForScheduling(final InOutLineWithQualityIssues model)
@@ -128,13 +122,13 @@ public class C_Request_CreateFromInout extends WorkpackageProcessorAdapter
 		@Override
 		protected Properties extractCtxFromItem(final InOutLineWithQualityIssues item)
 		{
-			return item.getCtx();
+			return Env.getCtx();
 		}
 
 		@Override
 		protected String extractTrxNameFromItem(final InOutLineWithQualityIssues item)
 		{
-			return item.getTrxName();
+			return ITrx.TRXNAME_ThreadInherited;
 		}
 
 		@Override
@@ -145,7 +139,7 @@ public class C_Request_CreateFromInout extends WorkpackageProcessorAdapter
 	};
 
 	@Override
-	public Result processWorkPackage(I_C_Queue_WorkPackage workPackage, String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
 		// Services
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);

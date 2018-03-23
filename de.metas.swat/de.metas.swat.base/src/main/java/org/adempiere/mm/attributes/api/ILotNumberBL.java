@@ -3,6 +3,7 @@ package org.adempiere.mm.attributes.api;
 import java.util.Date;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_M_AttributeSetInstance;
 
 /*
  * #%L
@@ -43,5 +44,11 @@ public interface ILotNumberBL extends ISingletonService
 	 * @return
 	 */
 	String calculateLotNumber(Date date);
+
+	/**
+	 * @param asi
+	 * @return the value of the LotNo attribute if found, null otherwise
+	 */
+	String getLotNumberAttributeValueOrNull(I_M_AttributeSetInstance asi);
 
 }

@@ -1,10 +1,7 @@
 package de.metas.request.api.impl;
 
-import java.util.Properties;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.model.I_R_RequestType;
 
@@ -39,22 +36,22 @@ public class RequestTypeDAO implements IRequestTypeDAO
 	public static final String InternalName_VendorComplaint = "B_VendorComplaint";
 	
 	@Override
-	public I_R_RequestType retrieveVendorRequestType(final Properties ctx)
+	public I_R_RequestType retrieveVendorRequestType()
 	{
-		return retrieveRequestTypeByInternalName(ctx, InternalName_VendorComplaint);
+		return retrieveRequestTypeByInternalName(InternalName_VendorComplaint);
 	}
 	
 	@Override
-	public I_R_RequestType retrieveCustomerRequestType(final Properties ctx)
+	public I_R_RequestType retrieveCustomerRequestType()
 	{
-		return retrieveRequestTypeByInternalName(ctx, InternalName_CustomerComplaint);
+		return retrieveRequestTypeByInternalName(InternalName_CustomerComplaint);
 	}
 	
-	private I_R_RequestType retrieveRequestTypeByInternalName(final Properties ctx, final String internalName)
+	private I_R_RequestType retrieveRequestTypeByInternalName(final String internalName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		
-		final IQueryBuilder<I_R_RequestType> queryBuilder = queryBL.createQueryBuilder(I_R_RequestType.class, ctx, ITrx.TRXNAME_None);
+		final IQueryBuilder<I_R_RequestType> queryBuilder = queryBL.createQueryBuilder(I_R_RequestType.class);
 		
 		queryBuilder.addOnlyActiveRecordsFilter()
 		.addEqualsFilter(I_R_RequestType.COLUMNNAME_InternalName, internalName);
