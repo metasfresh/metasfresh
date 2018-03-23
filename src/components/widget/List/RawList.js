@@ -176,12 +176,17 @@ class RawList extends PureComponent {
     this.props.onCloseDropdown();
   };
 
-  handleKeyDown = event => {
-    const { onSelect, list, readonly } = this.props;
+  handleKeyDown = e => {
+    const { onSelect, list, readonly, isToggled, onOpenDropdown } = this.props;
 
-    if (event.key === 'Tab') {
+    if (e.key === 'Tab') {
       if (list.size === 0 && !readonly) {
         onSelect(null);
+      }
+    } else if (e.key === 'ArrowDown') {
+      if (!isToggled) {
+        e.preventDefault();
+        onOpenDropdown();
       }
     }
   };

@@ -97,7 +97,6 @@ export default class SelectionDropdown extends Component {
 
     const { selected, options, onChange } = this.props;
     const size = this.size(options);
-    const selectedNew = this.get(options, index);
     let index = options.indexOf(selected);
 
     if (up) {
@@ -111,6 +110,8 @@ export default class SelectionDropdown extends Component {
     } else if (index >= size) {
       index = size - 1;
     }
+
+    const selectedNew = this.get(options, index);
 
     if (selectedNew === selected) {
       return;
@@ -129,9 +130,11 @@ export default class SelectionDropdown extends Component {
 
     switch (event.key) {
       case 'ArrowUp':
+        event.preventDefault();
         navigate(true);
         break;
       case 'ArrowDown':
+        event.preventDefault();
         navigate(false);
         break;
       case 'Escape':
