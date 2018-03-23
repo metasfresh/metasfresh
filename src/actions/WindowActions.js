@@ -99,6 +99,7 @@ export function closeFilterBox() {
   };
 }
 
+// TODO: Name collides with the value in the state
 export function allowOutsideClick() {
   return {
     type: ALLOW_OUTSIDE_CLICK,

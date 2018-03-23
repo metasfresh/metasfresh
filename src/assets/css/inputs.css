@@ -662,35 +662,43 @@ input:checked + .input-slider:before {
     cursor: pointer;
     min-width: 200px;
     padding: .125rem .5rem;
+
+    &&:focus {
+        outline-width: 0;
+    }
+
+    &&.select-dropdown {
+        margin-top: .3125rem;
+        margin-bottom: .125rem;
+        border-bottom: 1px solid transparent;
+
+        &&.input-mandatory {
+            border: 2px solid $brand-mandatory-color;
+        }
+
+        &&.focused {
+            border-bottom-color: 1px solid #4b5b64;
+        }
+
+        &&.opened {
+            border-bottom-color: transparent;
+        }
+    }
+
+    .input-dropdown {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        position:relative;
+    }
 }
+
 .input-dropdown-container-static {
     position: static;
 }
-.input-dropdown-container .input-dropdown {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    position:relative;
-}
-.input-dropdown-container:focus {
-    outline-width: 0;
-}
-.input-dropdown-container.select-dropdown {
-    margin-top: .3125rem;
-    margin-bottom: .125rem;
-    border-bottom: none;   
-}
-.input-dropdown-container.select-dropdown.input-mandatory {
-    border: 2px solid $brand-mandatory-color;
-}
-.input-dropdown-container.select-dropdown.focused {
-    border-bottom: 1px solid #4b5b64;
-}
-.input-dropdown-container.select-dropdown.opened {
-    border-bottom: none;
-}
+
 .input-dropdown-focused .input-toggled {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -727,18 +735,24 @@ input:checked + .input-slider:before {
     align-items: center;
     padding: .3rem .50rem;
     flex: 1;
-}
-.row-lookup-wrapper.focused {
-    border-bottom: 1px solid #C9D5DC;
-}
 
-.raw-lookup-wrapper .input-dropdown-container  {
-    width: 100%;
-}
+    &&.focused {
+        border-bottom: 1px solid #C9D5DC;
+    }
 
-.raw-lookup-wrapper.input-icon {
-    flex: 0.05;
-    justify-content: flex-end;
+    &&.input-icon {
+        flex: 0.05;
+        justify-content: flex-end;
+
+        .btn-scanner {
+            margin-right: 3px;
+            top: -3px;
+        }
+    }
+
+    .input-dropdown-container  {
+        width: 100%;
+    }
 }
 
 .input-secondary .raw-lookup-wrapper {
@@ -761,37 +775,24 @@ input:checked + .input-slider:before {
     background-color: $brand-border-color;
 }
 
-.input-error .raw-lookup-wrapper-bcg:hover {
-    background-color: $brand-danger-color !important;
-}
-
-.input-error  .raw-lookup-wrapper-bcg:hover .input-dropdown-container .input-dropdown {
-    color: $brand-super-light-color;
-}
-
-.input-error .raw-lookup-wrapper-bcg:hover .input-dropdown,
-.input-error .raw-lookup-wrapper-bcg:hover .input-dropdown input,
-.input-error .raw-lookup-wrapper-bcg:hover .input-dropdown-container {
-    background-color: $brand-danger-color !important;
-    color: $brand-super-light-color;
-}
-
 .raw-lookup-wrapper .input-dropdown-container {
     min-width: 0;
 }
 
-.lookup-wrapper .input-dropdown-container {
-    position: static;
-}
+.lookup-wrapper {
+    .input-dropdown-container {
+        position: static;
 
-.lookup-wrapper .input-dropdown-container .input-dropdown{
-    position: static;
-    margin: 0;
-    border-bottom: none;
-}
+        .input-dropdown{
+            position: static;
+            margin: 0;
+            border-bottom: none;
+        }
+    }
 
-.lookup-wrapper .meta-icon-down-1 {
-    display: none;
+    .meta-icon-down-1 {
+        display: none;
+    }
 }
 
 .input-field {
@@ -800,51 +801,65 @@ input:checked + .input-slider:before {
     outline-width:0;
     cursor: inherit;
 }
+
 .input-dropdown-list-header {
     background-color: $brand-super-light-color;
     padding: .25rem .50rem;
     font-size: .8rem;
 }
+
 .input-dropdown-list-option {
     padding: .25rem .50rem;
     cursor: pointer;
     position: relative;
-}
-.input-dropdown-list-option:not(:first-of-type) {
-    border-top: 1px solid $brand-light-color;
-}
-.input-dropdown-list-option-alt {
-    font-size: .8rem;
-    font-weight:bold;
-}
-.input-dropdown-list-option:hover,
-.input-dropdown-list-option-key-on {
-    background-color: $brand-color-primary;
-    color: #fff;
-}
-.input-error .input-dropdown-list-option:hover,
-.input-error .input-dropdown-list-option:hover * {
-    color: $brand-font-color;
-    background-color: $brand-danger-color !important;
-}
-.input-error .input-dropdown-list-option.input-dropdown-list-option-key-on,
-.input-error .input-dropdown-list-option.input-dropdown-list-option-key-on * {
-    color: $brand-font-color;
-    background-color: $brand-danger-color !important;
-}
-.input-dropdown-list-option p {
-    margin:0;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-.input-dropdown-item-title {
-    margin-bottom: 6px;
-    font-weight: 500;
+
+.input-dropdown-list-option:not(:first-of-type) {
+    border-top: 1px solid $brand-light-color;
 }
-.input-dropdown-item-subtitle {
-    font-size: .75rem;
+
+.input-dropdown-list-option-alt {
+    font-size: .8rem;
+    font-weight:bold;
 }
+
+.input-dropdown-list-option-key-on {
+    background-color: $brand-color-primary;
+    color: #fff;
+}
+
+.input-error {
+    .raw-lookup-wrapper-bcg:hover {
+        background-color: $brand-danger-color !important;
+    }
+
+    .raw-lookup-wrapper-bcg:hover .input-dropdown-container .input-dropdown {
+        color: $brand-super-light-color;
+    }
+
+    .raw-lookup-wrapper-bcg:hover .input-dropdown,
+    .raw-lookup-wrapper-bcg:hover .input-dropdown input,
+    .raw-lookup-wrapper-bcg:hover .input-dropdown-container {
+        background-color: $brand-danger-color !important;
+        color: $brand-super-light-color;
+    }
+
+    .input-dropdown-list-option:hover,
+    .input-dropdown-list-option:hover * {
+        color: $brand-font-color;
+        background-color: $brand-danger-color !important;
+    }
+
+    .input-dropdown-list-option.input-dropdown-list-option-key-on,
+    .input-dropdown-list-option.input-dropdown-list-option-key-on * {
+        color: $brand-font-color;
+        background-color: $brand-danger-color !important;
+    }
+}
+
 input[type=checkbox]:disabled, input[type=radio]:disabled {
     cursor: default;
 }

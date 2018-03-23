@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { getItemsByProperty } from '../../../actions/WindowActions';
+import BarcodeScanner from '../BarcodeScanner/BarcodeScannerWidget';
 import List from '../List/List';
 import RawLookup from './RawLookup';
 
@@ -158,11 +159,10 @@ class Lookup extends Component {
   };
 
   handleClear = () => {
-    const { onChange, properties } = this.props;
+    const { onChange, properties, onSelectBarcode } = this.props;
 
-    if (onChange) {
-      onChange(properties, null, false);
-    }
+    onChange && onChange(properties, null, false);
+    onSelectBarcode && onSelectBarcode(null);
 
     this.setState({
       isInputEmpty: true,
@@ -199,6 +199,34 @@ class Lookup extends Component {
     });
   };
 
+  renderInputControls = showBarcodeScanner => {
+    const { onScanBarcode } = this.props;
+    const { isInputEmpty } = this.state;
+
+    return (
+      <div
+        className="input-icon input-icon-lg raw-lookup-wrapper"
+        onClick={isInputEmpty ? this.openDropdownList : null}
+      >
+        {showBarcodeScanner ? (
+          <button
+            className="btn btn-sm btn-meta-success btn-scanner"
+            onClick={() => onScanBarcode(true)}
+          >
+            Scan using camera
+          </button>
+        ) : null}
+        <i
+          className={classnames({
+            'meta-icon-close-alt': !isInputEmpty,
+            'meta-icon-preview': isInputEmpty,
+          })}
+          onClick={!isInputEmpty ? this.handleClear : null}
+        />
+      </div>
+    );
+  };
+
   render() {
     const {
       rank,
@@ -227,6 +255,9 @@ class Lookup extends Component {
       viewId,
       autoFocus,
       newRecordWindowId,
+      scanning,
+      barcodeSelected,
+      scannerElement,
     } = this.props;
 
     const {
@@ -249,6 +280,13 @@ class Lookup extends Component {
     const errorInputCondition =
       validStatus && (!validStatus.valid && !validStatus.initialValue);
     const classRank = rank || 'primary';
+    let showBarcodeScannerBtn = false;
+
+    if (scanning) {
+      return (
+        <div className="overlay-field js-not-unselect">{scannerElement}</div>
+      );
+    }
 
     return (
       <div
@@ -268,6 +306,9 @@ class Lookup extends Component {
       >
         {properties &&
           properties.map((item, index) => {
+            // TODO: This is really not how we should be doing this. Backend should send
+            // us info which fields are usable with barcode scanner
+            showBarcodeScannerBtn = item.field === 'M_LocatorTo_ID';
             const disabled = isInputEmpty && index !== 0;
             const itemByProperty = getItemsByProperty(
               defaultValue,
@@ -279,10 +320,16 @@ class Lookup extends Component {
               item.widgetType === 'Lookup' ||
               (itemByProperty && itemByProperty.widgetType === 'Lookup')
             ) {
+              let defaultValue = itemByProperty.value;
+
+              if (barcodeSelected) {
+                defaultValue = { caption: barcodeSelected };
+              }
+
               return (
                 <RawLookup
                   key={index}
-                  defaultValue={itemByProperty.value}
+                  defaultValue={defaultValue}
                   autoFocus={index === 0 && autoFocus}
                   initialFocus={index === 0 && initialFocus}
                   mainProperty={[item]}
@@ -388,22 +435,10 @@ class Lookup extends Component {
             }
           })}
 
-        {!readonly &&
-          (isInputEmpty ? (
-            <div
-              className="input-icon input-icon-lg raw-lookup-wrapper"
-              onClick={this.openDropdownList}
-            >
-              <i className="meta-icon-preview" />
-            </div>
-          ) : (
-            <div className="input-icon input-icon-lg raw-lookup-wrapper">
-              <i className="meta-icon-close-alt" onClick={this.handleClear} />
-            </div>
-          ))}
+        {!readonly && this.renderInputControls(showBarcodeScannerBtn)}
       </div>
     );
   }
 }
 
-export default connect()(onClickOutside(Lookup));
+export default connect()(BarcodeScanner(onClickOutside(Lookup)));

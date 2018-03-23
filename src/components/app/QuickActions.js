@@ -187,7 +187,7 @@ class QuickActions extends Component {
     if (actions.length) {
       return (
         <div className={'js-not-unselect ' + (disabled ? 'disabled ' : '')}>
-          <span className="spacer-right">
+          <span className="action-label spacer-right">
             {counterpart.translate('window.quickActions.caption')}:
           </span>
           <div className="quick-actions-wrapper">
