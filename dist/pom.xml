@@ -466,6 +466,7 @@ note: when adding new records, please roughly order them by alphabet.
 			<artifactId>metasfresh-pharma.msv3.server-peer-metasfresh</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
 		</dependency>
 
 		<dependency>
