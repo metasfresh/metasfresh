@@ -54,7 +54,7 @@ set_properties()
  
 wait_dbms()
 {
-echo "will invoke 'nc -z ${db_host} ${db_port}' until it returns nul null"
+echo "We will repeatedly invoke 'nc -z ${db_host} ${db_port}' until it returns successfully"
 echo "."
  until nc -z $db_host $db_port
  do
@@ -75,7 +75,9 @@ run_metasfresh()
 	metasfresh_admin_params=""
  fi
 
- cd /opt/metasfresh/metasfresh-print/ && java -Dsun.misc.URLClassPath.disableJarChecking=true \
+cd /opt/metasfresh/metasfresh-print
+java \
+ -Dsun.misc.URLClassPath.disableJarChecking=true\
  ${ext_lib_param}\
  -Xmx${java_max_heap}\
  -XX:+HeapDumpOnOutOfMemoryError ${metasfresh_admin_params}\
@@ -84,6 +86,7 @@ run_metasfresh()
  -Dserver.port=${server_port}
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
  -jar metasfresh-print.jar
+
 }
 
 echo "*************************************************************"
