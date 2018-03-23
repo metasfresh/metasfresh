@@ -9,6 +9,7 @@ db_port=${DB_PORT:-5432}
 db_name=${DB_NAME:-metasfresh}
 db_user=${DB_USER:-metasfresh}
 db_password=${DB_PASSWORD:-metasfresh}
+db_wait_for_dbms=${DB_WAIT_FOR_DBMS:-y}
 app_host=${APP_HOST:-app}
 skip_run_db_update=${SKIP_DB_UPDATE:-false}
 debug_port=${DEBUG_PORT:-8791}
@@ -26,6 +27,7 @@ echo_variable_values()
  echo "DB_NAME=${db_name}"
  echo "DB_USER=${db_user}"
  echo "DB_PASSWORD=*******"
+ echo "DB_WAIT_FOR_DBMS=${db_wait_for_dbms}"
  echo "SKIP_DB_UPDATE=${skip_run_db_update}"
  echo "APP_HOST=${app_host}"
  echo "DEBUG_PORT=${debug_port}"
@@ -52,9 +54,12 @@ set_properties()
  
 wait_dbms()
 {
+echo "will invoke 'nc -z ${db_host} ${db_port}' until it returns nul null"
+echo "."
  until nc -z $db_host $db_port
  do
    sleep 1
+   echo -n "."
  done
 }
 
@@ -85,16 +90,20 @@ echo "*************************************************************"
 echo "Display the variable values we run with"
 echo "*************************************************************"
 echo_variable_values
-echo ""
 
 set_properties /opt/metasfresh/metasfresh-print/metasfresh.properties
 
-
-echo "*************************************************************"
-echo "Wait for the database server to start on DB_HOST = '${db_host}'"
-echo "*************************************************************"
-wait_dbms
+if [ "$db_wait_for_dbms" != 'n' ];
+then
+	echo "DB_WAIT_FOR_DBMS=${db_wait_for_dbms}, so we wait for the DBMS to be reachable; set to n (just the lowercase letter) to skip this."
+	echo "**************************************"
+	echo "Wait for the database server to start " # host & port were logged by echo_variable_values
+	echo "**************************************"
+	wait_dbms
 echo ">>>>>>>>>>>> Database Server has started"
+else
+	echo "DB_WAIT_FOR_DBMS=${db_wait_for_dbms}, so we do not wait for the DBMS to be reachable."
+fi
 
 echo "*************************************************************"
 echo "Start metasfresh-print-endpoint";
