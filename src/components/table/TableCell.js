@@ -4,60 +4,23 @@ import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 
 import MasterWidget from '../widget/MasterWidget';
+import {
+  AMOUNT_FIELD_TYPES,
+  AMOUNT_FIELD_FORMATS_BY_PRECISION,
+  DATE_FIELD_TYPES,
+  DATE_FIELD_FORMATS,
+} from '../../constants/Constants';
 
 class TableCell extends PureComponent {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      backdropLock: false,
-    };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    const { widgetData, updateRow, readonly, rowId } = this.props;
-    // We should avoid highlighting when whole row is exchanged (sorting)
-    if (rowId !== nextProps.rowId) {
-      return;
-    }
-
-    if (
-      !readonly &&
-      JSON.stringify(widgetData[0].value) !==
-        JSON.stringify(nextProps.widgetData[0].value)
-    ) {
-      updateRow();
-    }
-  }
-
-  static AMOUNT_FIELD_TYPES = ['Amount', 'CostPrice'];
-  static AMOUNT_FIELD_FORMATS_BY_PRECISION = [
-    '0,0.[00000]',
-    '0,0.0[0000]',
-    '0,0.00[000]',
-    '0,0.000[00]',
-    '0,0.0000[0]',
-    '0,0.00000',
-  ];
-
   static getAmountFormatByPrecision = precision =>
     precision &&
     precision >= 0 &&
-    precision < TableCell.AMOUNT_FIELD_FORMATS_BY_PRECISION.length
-      ? TableCell.AMOUNT_FIELD_FORMATS_BY_PRECISION[precision]
+    precision < AMOUNT_FIELD_FORMATS_BY_PRECISION.length
+      ? AMOUNT_FIELD_FORMATS_BY_PRECISION[precision]
       : null;
 
-  static DATE_FIELD_TYPES = ['Date', 'DateTime', 'Time'];
-  static DATE_FIELD_FORMATS = {
-    Date: 'DD.MM.YYYY',
-    DateTime: 'DD.MM.YYYY HH:mm:ss',
-    Time: 'HH:mm:ss',
-  };
-  static TIME_FIELD_TYPES = ['Time'];
-
   static getDateFormat = fieldType =>
-    TableCell.DATE_FIELD_FORMATS[fieldType] ||
-    TableCell.DATE_FIELD_FORMATS.Date;
+    DATE_FIELD_FORMATS[fieldType] || DATE_FIELD_FORMATS.Date;
 
   static createDate = (fieldValue, fieldType) =>
     fieldValue
@@ -93,11 +56,10 @@ class TableCell extends PureComponent {
             .join(' - ');
         }
 
-        return TableCell.DATE_FIELD_TYPES.includes(fieldType)
+        return DATE_FIELD_TYPES.includes(fieldType)
           ? TableCell.createDate(fieldValue, fieldType)
           : fieldValue.caption;
       }
-
       case 'boolean': {
         return fieldValue ? (
           <i className="meta-icon-checkbox-1" />
@@ -105,21 +67,43 @@ class TableCell extends PureComponent {
           <i className="meta-icon-checkbox" />
         );
       }
-
       case 'string': {
-        if (TableCell.DATE_FIELD_TYPES.includes(fieldType)) {
+        if (DATE_FIELD_TYPES.includes(fieldType)) {
           return TableCell.createDate(fieldValue, fieldType);
-        } else if (TableCell.AMOUNT_FIELD_TYPES.includes(fieldType)) {
+        } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
           return TableCell.createAmount(fieldValue, precision);
         }
         return fieldValue;
       }
-
       default: {
         return fieldValue;
       }
     }
   };
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      backdropLock: false,
+    };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { widgetData, updateRow, readonly, rowId } = this.props;
+    // We should avoid highlighting when whole row is exchanged (sorting)
+    if (rowId !== nextProps.rowId) {
+      return;
+    }
+
+    if (
+      !readonly &&
+      JSON.stringify(widgetData[0].value) !==
+        JSON.stringify(nextProps.widgetData[0].value)
+    ) {
+      updateRow();
+    }
+  }
 
   handleBackdropLock = state => {
     this.setState(
@@ -167,7 +151,7 @@ class TableCell extends PureComponent {
         )
       : null;
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
-    const isDateField = TableCell.DATE_FIELD_FORMATS[item.widgetType]
+    const isDateField = DATE_FIELD_FORMATS[item.widgetType]
       ? TableCell.getDateFormat(item.widgetType)
       : false;
 
@@ -235,4 +219,3 @@ class TableCell extends PureComponent {
 }
 
 export default TableCell;
-export { TableCell };

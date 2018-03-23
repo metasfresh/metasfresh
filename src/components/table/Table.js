@@ -471,22 +471,25 @@ class Table extends Component {
   };
 
   handleKeyDown = e => {
+    const {
+      keyProperty,
+      mainTable,
+      readonly,
+      onDoubleClick,
+      closeOverlays,
+    } = this.props;
     const { selected, rows, listenOnKeys, collapsedArrayMap } = this.state;
     if (!listenOnKeys) {
       return;
     }
 
     const selectRange = e.shiftKey;
-    const { keyProperty, mainTable, readonly } = this.props;
-
-    const { onDoubleClick, closeOverlays } = this.props;
-
     const nodeList = Array.prototype.slice.call(
       document.activeElement.parentElement.children
     );
     const idActive = nodeList.indexOf(document.activeElement);
-
     let idFocused = null;
+
     if (idActive > -1) {
       idFocused = idActive;
     }
@@ -601,6 +604,7 @@ class Table extends Component {
   handleClick = (e, keyProperty, item) => {
     const { onSelectionChanged } = this.props;
     const id = item[keyProperty];
+
     if (e.button === 0) {
       const { selected } = this.state;
       const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
@@ -635,14 +639,14 @@ class Table extends Component {
 
       return newSelection.length > 0;
     }
-
     return true;
   };
 
   handleRightClick = (e, id, fieldName, supportZoomInto, supportFieldEdit) => {
+    e.preventDefault();
+
     const { selected } = this.state;
     const { clientX, clientY } = e;
-    e.preventDefault();
 
     if (selected.indexOf(id) > -1) {
       this.setContextMenu(
@@ -688,7 +692,6 @@ class Table extends Component {
     const { keyProperty } = this.props;
     const { rows } = this.state;
     let arrayIndex;
-
     let selectIdA;
     let selectIdB;
 
