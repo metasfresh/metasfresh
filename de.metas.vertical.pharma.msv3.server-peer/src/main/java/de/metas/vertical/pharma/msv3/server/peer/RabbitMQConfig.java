@@ -9,7 +9,9 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 /*
@@ -42,6 +44,7 @@ import com.google.common.collect.ImmutableList;
 
 @Configuration
 @EnableRabbit // needed for @RabbitListener to be considered
+@ConditionalOnBean(RabbitTemplate.class) // skip it if the RabbitAutoConfiguration was excluded
 public class RabbitMQConfig
 {
 	public static final String QUEUENAME_MSV3ServerRequests = "msv3-server-requests";

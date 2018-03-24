@@ -73,6 +73,7 @@ Here come the actual release notes:
     * Adds the Handling Unit into Inventopylines allowing to use Inventory with our Handling Usage Management.
   * [#3706](https://github.com/metasfresh/metasfresh/issues/3706) Terminating a Contract that was extended ahead of schedule leaves stumb
     * Improvement of the contract Termination action.
+  * [#3718](https://github.com/metasfresh/metasfresh/issues/3718) Contracts: Transform IsAutoRenew and IsAutoExtension flags in a list
 
 * metasfresh-api
   * [#894](https://github.com/metasfresh/metasfresh-webui-api/issues/894) New Composed Primary Keys
