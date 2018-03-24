@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/39f7f2f16c634233aae159c219169b7b)](https://www.codacy.com/app/metasfresh/metasfresh-webui?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=metasfresh/metasfresh-webui&amp;utm_campaign=Badge_Grade)
 [![Join the chat at https://gitter.im/metasfresh/metasfresh](https://badges.gitter.im/metasfresh/metasfresh.svg)](https://gitter.im/metasfresh/metasfresh?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Krihelimeter](http://krihelinator.xyz/badge/metasfresh/metasfresh-webui-api)](http://krihelinator.xyz)
 
