@@ -229,7 +229,7 @@ stage('Build&Push docker images')
 	dockerBuildAndPush(appDockerConf)
 
 	final DockerConf dbInitDockerConf = appDockerConf
-					.withArtifactName('metasfresh-db-init')
+					.withArtifactName('metasfresh-db-init-pg-10-3')
 					.withWorkDir('dist/target/docker/db-init')
 	dockerBuildAndPush(dbInitDockerConf)
 
