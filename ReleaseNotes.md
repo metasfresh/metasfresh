@@ -23,6 +23,8 @@ Here come the actual release notes:
     * Translation added for the Distribution Editor Quickactions.
 
 * metasfresh-webui-frontend
+  * [#1680](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1680) Camera Barcode workflow improvements
+    * Detailed improvements in dthe Barcode workflow for Tablet usage.
   * [#1681](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1681) Data Entry via barcode scan in Action Parms
     * New Funcitonality for Barcode Scanning in Action Parms.
   * [#1684](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1684) Combine dropdown list of <List> and <Lookup> component
@@ -54,7 +56,7 @@ Here come the actual release notes:
   * [#3240](https://github.com/metasfresh/metasfresh/issues/3240) Drop AD_Field.IsCentrallyMaintained database column
     * Internal Housekeeping Issue, taking care of legacy column "isCentrallyMaintained".
   * [#3584](https://github.com/metasfresh/metasfresh/issues/3584) Implement sales order candidates REST API
-    * New REST-API for order candidates. This is part of the new Pharma Availability Chack and Ordering Service.
+    * New REST-API for order candidates. This is part of the new Pharma Availability Check and Ordering Service.
   * [#3658](https://github.com/metasfresh/metasfresh/issues/3658) Introduce specific subtypes for Physical Inventory and for Internal Use Inventory
     * Additional Document Subtypes for Physical Inventory and Internal usage.
   * [#3659](https://github.com/metasfresh/metasfresh/issues/3659) Refactor/adapt Inventory Disposal
@@ -86,19 +88,28 @@ Here come the actual release notes:
   * [#1699](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1699) Tab does not trigger saving number field
     * Fixes the patching in number fields. Now also patching when leaving the Fields via Tab Key.
   * [#1860](https://github.com/metasfresh/metasfresh/issues/1860) Make documentNo readonly in Payments (and other document types)
-    * Improves the documetNo behavior, making all Fields with Document No readonly.
+    * Improves the documetNo behavior, making all Fields with Document No read-only.
 
 ## Fixes
 * metasfresh
   * [#3050](https://github.com/metasfresh/metasfresh/issues/3050) Null in SSCC label
+    * Fix for the LotNo on SSCC Labels. If not set, the Lot No now shows an empty string instead of null.
   * [#3497](https://github.com/metasfresh/metasfresh/issues/3497) Days Due in Open Items report empty when parameter not set
+    * Fixes the Parm description in Open Items report in WebUI, now showing "Unlimited" when the Dates Dues Parm is left empty.
   * [#3579](https://github.com/metasfresh/metasfresh/issues/3579) SSCC18 attribute check digit
+    * Fixes the check digit of generated SSCC Numbers.
   * [#3666](https://github.com/metasfresh/metasfresh/issues/3666) Manufacturing Order wrong TU Quantity
+    * Fixes the Qty of TU in Manufacturing Orders when automatically created after sales order complete (lot-for-lot).
   * [#3690](https://github.com/metasfresh/metasfresh/issues/3690) Restore swing MRP ProductInfo
+    * Fixes the old MRP Product Info Window in Java Swing UI.
   * [#3694](https://github.com/metasfresh/metasfresh/issues/3694) docs_flatrate_term_all_procurements_conditions_report fails if M_Product_ID is left empty
+    * Fixes the procurements conditions report. Now not failing anymore when the Product ID is left empty.
   * [#3695](https://github.com/metasfresh/metasfresh/issues/3695) NPE when completing DD_Order
+    * Fixes a Null Pointer Exception that occurred sometimes when completung a Distribution Order.
   * [#3701](https://github.com/metasfresh/metasfresh/issues/3701) Jasper: ADR Auswertung report has duplicates
+    * Removing Duplicate entries in the Swiss fresh produce ADR report.
   * [#3745](https://github.com/metasfresh/metasfresh/issues/3745) Compensation Group: Sequence of Lines is lost on Clone
+    * Fixes the sequence of lines in Compensation groups when cloning a sales order document.
 
 * metasfresh-webui-api
   * [#735](https://github.com/metasfresh/metasfresh-webui-api/issues/735) Hide Receive HUs (default) when there are no HUs
