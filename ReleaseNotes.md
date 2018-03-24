@@ -42,6 +42,8 @@ Here come the actual release notes:
     * Fixes the behavior of dropdown fields when scrolling throught the list.
   * [#1641](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1641) Combined Lookup Widget Layout Glitch
     * Fixes a Layout Glitch in combined Lookup Fields.
+  * [#1649](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1649) Date range widget needs to support 2018-05-01 to 2019-04-30
+    * Fixes the date timezone in date widgets.
   * [#1660](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1660) Single Date Field not patched in some cases
     * Fix for the patching of date fields when manipulating in mouse and keaboard kombination.
   * [#1663](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1663) Pos1 does not jump to page 1 anymore
