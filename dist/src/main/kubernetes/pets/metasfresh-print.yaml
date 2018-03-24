@@ -33,11 +33,14 @@ spec:
           value: 'http://metasfresh-admin:9090'
         - name: SERVER_PORT
           value: '8183'
+        - name: DEBUG_PORT
+          value: '8791'
         name: print
         image: docker.metasfresh.com/metasfresh/metasfresh-print:master_LATEST
         imagePullPolicy: Always
         ports:
           - containerPort: 8183
+          - containerPort: 8791
         resources: 
           requests:
             memory: 300M

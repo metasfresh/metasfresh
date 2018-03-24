@@ -219,14 +219,19 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 		} // withEnv
 	} // configFileProvider
 
-stage('Build&Push metasfresh-app-dev docker image')
+stage('Build&Push docker images')
 {
-	final DockerConf dockerConf = new DockerConf(
+	final DockerConf appDockerConf = new DockerConf(
 					'metasfresh-app-dev', // artifactName
 					MF_UPSTREAM_BRANCH, // branchName
 					MF_VERSION, // versionSuffix
-					'dist/target/docker') // workDir
-	final String publishedDockerImageName =	dockerBuildAndPush(dockerConf)
+					'dist/target/docker/app') // workDir
+	dockerBuildAndPush(appDockerConf)
+
+	final DockerConf dbInitDockerConf = appDockerConf
+					.withArtifactName('metasfresh-db-init')
+					.withWorkDir('dist/target/docker/db-init')
+	dockerBuildAndPush(dbInitDockerConf)
 
 	// clean up the workspace after (successfull) builds
 	cleanWs cleanWhenAborted: false, cleanWhenFailure: false

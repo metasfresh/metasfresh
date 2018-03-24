@@ -6,10 +6,10 @@ metadata:
     kompose.version: 1.9.0 (093c756)
   creationTimestamp: null
   labels:
-    de.metas.deployment.type: metasfresh-all-in-one
+    de.metas.deployment.type: metasfresh-core-stack
     de.metas.deployment.stage: "demo"
     de.metas.deployment.user: "tobi"
-  name: "metasfresh-all-in-one-tobi"
+  name: "metasfresh-core-stack-tobi-demp"
 spec:
   replicas: 1
   strategy:
@@ -18,7 +18,7 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        de.metas.deployment.type: metasfresh-all-in-one
+        de.metas.deployment.type: metasfresh-core-stack
         de.metas.deployment.stage: "demo"
         de.metas.deployment.user: "tobi"
     spec:
@@ -40,15 +40,11 @@ spec:
         imagePullPolicy: Always
         resources: {}
         volumeMounts:
-#        - mountPath: /var/lib/postgresql/data
-#          name: db-claim0
-#        - mountPath: /var/log/postgresql
-#          name: db-claim1
         - mountPath: /etc/localtime
-          name: host-localtime # was db-claim2
+          name: host-localtime
           readOnly: true
         - mountPath: /etc/timezone
-          name: host-timezone # was db-claim3
+          name: host-timezone
           readOnly: true
 #
 # metasfresh-app          
@@ -76,8 +72,6 @@ spec:
             memory: 1124M
             cpu: 500m
         volumeMounts:
-#        - mountPath: /opt/metasfresh/log
-#          name: app-claim0
         - mountPath: /etc/localtime
           name: host-localtime # was app-claim1
           readOnly: true

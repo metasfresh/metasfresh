@@ -4,11 +4,11 @@ metadata:
   annotations: {}
   creationTimestamp: null
   labels:
-    de.metas.deployment.type: metasfresh-all-in-one
-    de.metas.deployment.stage: "%STAGE%"
+    de.metas.deployment.type: metasfresh-core-stack
     de.metas.deployment.user: "%USER-ID%"
-    de.metas.deployment.%USER-ID%.%STAGE%: "metasfresh-all-in-one-%USER-ID%-%STAGE%"
-  name: "metasfresh-all-in-one-%USER-ID%-%STAGE%"
+    de.metas.deployment.stage: "%STAGE%"
+    de.metas.deployment.%USER-ID%.%STAGE%: "metasfresh-core-stack-%USER-ID%-%STAGE%"
+  name: "metasfresh-core-stack-%USER-ID%-%STAGE%"
 spec:
   replicas: 1
   strategy:
@@ -17,9 +17,9 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        de.metas.deployment.type: metasfresh-all-in-one
-        de.metas.deployment.stage: "%STAGE%"
+        de.metas.deployment.type: metasfresh-core-stack
         de.metas.deployment.user: "%USER-ID%"
+        de.metas.deployment.stage: "%STAGE%"
     spec:
       containers:
 #
@@ -37,6 +37,8 @@ spec:
         name: db
         image: metasfresh/metasfresh-db:latest
         imagePullPolicy: Always
+        ports:
+          - containerPort: 5432
         resources: {}
         volumeMounts:
 #        - mountPath: /var/lib/postgresql/data
@@ -44,10 +46,10 @@ spec:
 #        - mountPath: /var/log/postgresql
 #          name: db-claim1
         - mountPath: /etc/localtime
-          name: host-localtime # was db-claim2
+          name: host-localtime
           readOnly: true
         - mountPath: /etc/timezone
-          name: host-timezone # was db-claim3
+          name: host-timezone
           readOnly: true
 #
 # metasfresh-app
@@ -69,19 +71,19 @@ spec:
         name: app
         image: docker.metasfresh.com/metasfresh/metasfresh-app-dev:gh18_dist_LATEST
         imagePullPolicy: Always
-# this one we have on docker.metasfresh.com, so let's try getting from there
+        ports:
+          - containerPort: 61616 # activemq
+          - containerPort: 8282  # embedded tomcat
+          - containerPort: 8788  # remote debugging
         resources: 
           requests:
             memory: 1200M
-            cpu: 500m
         volumeMounts:
-#        - mountPath: /opt/metasfresh/log
-#          name: app-claim0
         - mountPath: /etc/localtime
-          name: host-localtime # was app-claim1
+          name: host-localtime
           readOnly: true
         - mountPath: /etc/timezone
-          name: host-timezone # was app-claim2
+          name: host-timezone
           readOnly: true
 #
 # metasfresh-webui-api
@@ -98,12 +100,12 @@ spec:
           value: metasfresh-admin
         - name: ADMIN_PORT
           value: '9090'          
-# this one we have on docker.metasfresh.com, so let's try getting from there
         name: webapi
         image: docker.metasfresh.com/metasfresh/metasfresh-webui-api-dev:gh18_dist_LATEST
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
+        - containerPort: 8789 # remote debugging
         resources: 
           requests:
             memory: 600M
@@ -166,4 +168,3 @@ spec:
       - name: host-timezone # was app-claim2
         hostPath:
           path: /etc/timezone
-
