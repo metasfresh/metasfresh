@@ -2,18 +2,33 @@ import React from 'react';
 import DateTime from 'react-datetime';
 import CalendarContainer from 'react-datetime/src/CalendarContainer';
 import TetherComponent from 'react-tether';
+import classnames from 'classnames';
 
-export default class TetheredDateTime extends DateTime {
+// TODO: This monkeypatching that's happening here has to go.
+class TetheredDateTime extends DateTime {
+  onInputKey = e => {
+    if (
+      (e.key === 'Tab' && this.props.closeOnTab) ||
+      e.key === 'Enter' ||
+      e.key === 'Escape'
+    ) {
+      this.closeCalendar();
+    }
+  };
+
+  updateSelectedDate = (e, close) => {
+    if (this.props.onFocusInput) {
+      this.props.onFocusInput();
+    }
+    return super.updateSelectedDate(e, close);
+  };
+
   render() {
-    const { open } = this.state;
-    let className =
-      'rdt' +
-      (this.props.className
-        ? Array.isArray(this.props.className)
-          ? ' ' + this.props.className.join(' ')
-          : ' ' + this.props.className
-        : '');
-    let children = [];
+    const { open } = this.props;
+    let className = classnames('rdt', this.props.className, {
+      rdtStatic: !this.props.input,
+    });
+    const children = [];
 
     if (this.props.input) {
       const props = {
@@ -25,16 +40,9 @@ export default class TetheredDateTime extends DateTime {
         value: this.state.inputValue,
         ...this.props.inputProps,
       };
+      const input = this.props.renderInput(props, this.openCalendar);
 
-      if (this.props.renderInput) {
-        children = [
-          <div key="i">{this.props.renderInput(props, this.openCalendar)}</div>,
-        ];
-      } else {
-        children = [<input key="i" {...props} />];
-      }
-    } else {
-      className += ' rdtStatic';
+      children.push(<div key="i">{input}</div>);
     }
 
     return (
@@ -54,11 +62,10 @@ export default class TetheredDateTime extends DateTime {
         >
           {children}
           {open && (
-            <div className="rdtPicker">
+            <div className="ignore-react-onclickoutside rdtPicker">
               <CalendarContainer
                 view={this.state.currentView}
                 viewProps={this.getComponentProps()}
-                onClickOutside={this.handleClickOutside}
               />
             </div>
           )}
@@ -67,3 +74,5 @@ export default class TetheredDateTime extends DateTime {
     );
   }
 }
+
+export default TetheredDateTime;

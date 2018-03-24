@@ -1,14 +1,9 @@
-import React, { PureComponent, Fragment } from 'react';
+import React, { PureComponent } from 'react';
 import { is, List } from 'immutable';
-import onClickOutside from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-
-import RawListDropdown from './RawListDropdown';
-
-const UP = Symbol('up');
-const DOWN = Symbol('down');
+import SelectionDropdown from '../SelectionDropdown';
 
 const setSelectedValue = function(dropdownList, selected) {
   const changedValues = {};
@@ -41,17 +36,11 @@ const setSelectedValue = function(dropdownList, selected) {
 };
 
 class RawList extends PureComponent {
-  /* This is an instance variable since no rendering needs to be done based on
-   * this property. Additionally, setState can't be used with the callback in
-   * an event listener since it needs to return synchronously */
-  ignoreMouse = false;
-
   constructor(props) {
     super(props);
 
     this.state = {
       selected: props.selected || null,
-      direction: null,
       dropdownList: props.list,
     };
   }
@@ -128,61 +117,6 @@ class RawList extends PureComponent {
         }
       );
     }
-
-    // Delaying with requestAnimationFrame is needed to get the latest ref
-    requestAnimationFrame(() => {
-      this.checkIfDropDownListOutOfFilter();
-      this.scrollIntoView();
-    });
-  }
-
-  scrollIntoView = () => {
-    const { list, selected } = this;
-    const { direction } = this.state;
-
-    if (!list || !selected || direction === null) {
-      return;
-    }
-
-    const { top: topMax, bottom: bottomMax } = list.getBoundingClientRect();
-    const { top, bottom } = selected.getBoundingClientRect();
-
-    if (top < topMax || bottom > bottomMax) {
-      selected.scrollIntoView(direction === UP ? true : false);
-    }
-  };
-
-  checkIfDropDownListOutOfFilter = () => {
-    if (!this.list) {
-      return;
-    }
-
-    const { top } = this.list.getBoundingClientRect();
-    const { filter, isToggled, onCloseDropdown } = this.props;
-    if (
-      isToggled &&
-      filter.visible &&
-      (top + 20 > filter.boundingRect.bottom ||
-        top - 20 < filter.boundingRect.top)
-    ) {
-      onCloseDropdown();
-    }
-  };
-
-  handleClickOutside() {
-    const { isFocused, onCloseDropdown, onBlur, selected } = this.props;
-
-    if (isFocused) {
-      this.setState(
-        {
-          selected: selected || null,
-        },
-        () => {
-          onCloseDropdown();
-          onBlur();
-        }
-      );
-    }
   }
 
   /*
@@ -213,79 +147,26 @@ class RawList extends PureComponent {
     });
   };
 
-  handleSwitch = selected => {
+  handleTemporarySelection = selected => {
     this.setState({
-      direction: null,
       selected,
     });
   };
 
-  handleKeyDown = e => {
-    const {
-      onSelect,
-      list,
-      readonly,
-      isToggled,
-      onOpenDropdown,
-      onCloseDropdown,
-    } = this.props;
+  handleCancel = () => {
+    this.props.disableAutofocus();
+    this.handleBlur();
+    this.props.onCloseDropdown();
+  };
 
-    const { selected } = this.state;
+  handleKeyDown = event => {
+    const { onSelect, list, readonly } = this.props;
 
-    this.ignoreMouse = true;
-
-    if (e.keyCode > 47 && e.keyCode < 123) {
-      this.navigateToAlphanumeric(e.key);
-    } else {
-      switch (e.key) {
-        case 'ArrowUp':
-          e.preventDefault();
-          this.navigate(true);
-          break;
-        case 'ArrowDown':
-          e.preventDefault();
-          if (!isToggled) {
-            onOpenDropdown();
-          } else {
-            this.navigate(false);
-          }
-          break;
-        case 'Enter':
-          e.preventDefault();
-
-          if (isToggled) {
-            e.stopPropagation();
-          }
-
-          if (selected) {
-            this.handleSelect(selected);
-          } else {
-            onSelect(null);
-          }
-          break;
-        case 'Escape':
-          e.preventDefault();
-
-          this.handleSwitch(null);
-          onCloseDropdown();
-          break;
-        case 'Tab':
-          list.size === 0 && !readonly && onSelect(null);
-          break;
+    if (event.key === 'Tab') {
+      if (list.size === 0 && !readonly) {
+        onSelect(null);
       }
     }
-  };
-
-  handleKeyUp = () => {
-    this.ignoreMouse = false;
-  };
-
-  handleMouseEnter = option => {
-    if (this.ignoreMouse) {
-      return;
-    }
-
-    this.handleSwitch(option);
   };
 
   handleTab = e => {
@@ -301,106 +182,15 @@ class RawList extends PureComponent {
     }
   };
 
-  handleBlur() {
+  handleBlur = () => {
     const { onBlur } = this.props;
 
     this.dropdown.blur();
     onBlur();
-  }
-
-  navigateToAlphanumeric = char => {
-    const { isToggled, onOpenDropdown } = this.props;
-    const { selected, dropdownList } = this.state;
-
-    if (!isToggled) {
-      this.dropdown.focus();
-      onOpenDropdown();
-    }
-
-    const items = dropdownList.filter(
-      item => item.caption.toUpperCase() === char.toUpperCase()
-    );
-
-    const selectedIndex = items.indexOf(selected);
-    const item =
-      selectedIndex > -1 ? items.get(selectedIndex + 1) : items.get(0);
-
-    if (!item) {
-      return;
-    }
-
-    this.handleSwitch(item);
-  };
-
-  navigate = up => {
-    const { isToggled, onOpenDropdown } = this.props;
-    const { selected, dropdownList } = this.state;
-
-    if (!isToggled) {
-      this.dropdown.focus();
-      onOpenDropdown();
-    }
-
-    const selectedIndex = dropdownList.findIndex(
-      item => item.caption === selected.caption
-    );
-
-    const next = up ? selectedIndex - 1 : selectedIndex + 1;
-
-    this.setState({
-      selected:
-        next >= 0 && next <= dropdownList.size - 1
-          ? dropdownList.get(next)
-          : selected,
-      direction: up ? UP : DOWN,
-    });
-  };
-
-  getRow = option => {
-    const { selected } = this.state;
-    let selectedRow = false;
-
-    if (
-      selected != null &&
-      (selected.key === option.key ||
-        (selected.key === null && selected.caption === option.caption))
-    ) {
-      selectedRow = true;
-    }
-
-    const props = {};
-
-    if (selectedRow) {
-      props.ref = ref => (this.selected = ref);
-    }
-
-    return (
-      <div
-        key={option.key}
-        className={classnames(
-          'input-dropdown-list-option ignore-react-onclickoutside',
-          {
-            'input-dropdown-list-option-key-on': selectedRow,
-          }
-        )}
-        onMouseEnter={() => this.handleMouseEnter(option)}
-        onClick={() => this.handleSelect(option)}
-        {...props}
-      >
-        <p className="input-dropdown-item-title">{option.caption}</p>
-      </div>
-    );
-  };
-
-  renderOptions = () => {
-    const { dropdownList } = this.state;
-
-    return <Fragment>{dropdownList.map(this.getRow)}</Fragment>;
   };
 
   render() {
     const {
-      list,
       rank,
       readonly,
       defaultValue,
@@ -422,7 +212,6 @@ class RawList extends PureComponent {
 
     let value = '';
     let placeholder = '';
-    const isListEmpty = list.size === 0;
 
     if (typeof defaultValue === 'string') {
       placeholder = defaultValue;
@@ -437,36 +226,37 @@ class RawList extends PureComponent {
     }
 
     return (
-      <div
-        ref={c => (this.dropdown = c)}
-        className={classnames('input-dropdown-container', {
-          'input-disabled': readonly,
-          'input-dropdown-container-static': rowId,
-          'input-table': rowId && !isModal,
-          'lookup-dropdown': lookupList,
-          'select-dropdown': !lookupList,
-          focused: isFocused,
-          opened: isToggled,
-          'input-mandatory': !lookupList && mandatory && !selected,
-        })}
-        tabIndex={tabIndex ? tabIndex : 0}
-        onFocus={readonly ? null : onFocus}
-        onClick={readonly ? null : this.handleClick}
-        onKeyDown={this.handleKeyDown}
-        onKeyUp={this.handleKeyUp}
+      <TetherComponent
+        attachment="top left"
+        targetAttachment="bottom left"
+        constraints={[
+          {
+            to: 'scrollParent',
+          },
+          {
+            to: 'window',
+            pin: ['bottom'],
+          },
+        ]}
       >
-        <TetherComponent
-          attachment="top left"
-          targetAttachment="bottom left"
-          constraints={[
-            {
-              to: 'scrollParent',
-            },
-            {
-              to: 'window',
-              pin: ['bottom'],
-            },
-          ]}
+        <div
+          ref={ref => (this.dropdown = ref)}
+          className={classnames('input-dropdown-container', {
+            'input-disabled': readonly,
+            'input-dropdown-container-static': rowId,
+            'input-table': rowId && !isModal,
+            'lookup-dropdown': lookupList,
+            'select-dropdown': !lookupList,
+            focused: isFocused,
+            opened: isToggled,
+            'input-mandatory': !lookupList && mandatory && !selected,
+          })}
+          tabIndex={tabIndex ? tabIndex : 0}
+          onFocus={readonly ? null : onFocus}
+          onBlur={this.props.onBlur}
+          onClick={readonly ? null : this.handleClick}
+          onKeyDown={this.handleKeyDown}
+          onKeyUp={this.handleKeyUp}
         >
           <div
             className={classnames('input-dropdown input-block input-readonly', {
@@ -501,24 +291,25 @@ class RawList extends PureComponent {
                 disabled={readonly || disabled}
               />
             </div>
-
             <div className="input-icon">
               <i className="meta-icon-down-1 input-icon-sm" />
             </div>
           </div>
-          {isFocused &&
-            isToggled && (
-              <RawListDropdown
-                childRef={ref => (this.list = ref)}
-                isListEmpty={isListEmpty}
-                offsetWidth={this.dropdown.offsetWidth}
-                loading={loading}
-              >
-                {this.renderOptions()}
-              </RawListDropdown>
-            )}
-        </TetherComponent>
-      </div>
+        </div>
+        {isFocused &&
+          isToggled && (
+            <SelectionDropdown
+              loading={loading}
+              options={this.state.dropdownList}
+              empty="There is no choice available"
+              selected={this.state.selected}
+              width={this.dropdown.offsetWidth}
+              onChange={this.handleTemporarySelection}
+              onSelect={this.handleSelect}
+              onCancel={this.handleCancel}
+            />
+          )}
+      </TetherComponent>
     );
   }
 }
@@ -556,4 +347,4 @@ RawList.propTypes = {
   onCloseDropdown: PropTypes.func.isRequired,
 };
 
-export default onClickOutside(RawList);
+export default RawList;

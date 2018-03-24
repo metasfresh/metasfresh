@@ -60,11 +60,11 @@ class ListWidget extends Component {
     if (prevProps.autoFocus !== autoFocus && !isFocused) {
       if (autoFocus) {
         this.handleFocus();
-        !doNotOpenOnFocus && list.size > 1 && this.activate();
+        !doNotOpenOnFocus && list && list.size > 1 && this.activate();
       } else {
         if (initialFocus && !defaultValue) {
           this.handleFocus();
-          !doNotOpenOnFocus && list.size > 1 && this.activate();
+          !doNotOpenOnFocus && list && list.size > 1 && this.activate();
         }
       }
     }

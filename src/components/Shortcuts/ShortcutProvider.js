@@ -14,6 +14,7 @@ const codeToKey = {
   33: 'PageUp',
   34: 'PageDown',
   35: 'End',
+  36: 'Home',
   37: 'ArrowLeft',
   38: 'ArrowUp',
   39: 'ArrowRight',

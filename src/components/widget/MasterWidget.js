@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import Moment from 'moment';
 
@@ -86,11 +85,9 @@ class MasterWidget extends Component {
     } = this.props;
 
     let { entity } = this.props;
-
     let currRowId = rowId;
     let ret = null;
     let isEdit = false;
-
     let parseValue = this.parseDateBeforePatch(widgetType, value);
 
     if (rowId === 'NEW') {
@@ -142,10 +139,8 @@ class MasterWidget extends Component {
       relativeDocId,
       widgetType,
     } = this.props;
-
-    let currRowId = rowId;
-
     const dateParse = ['Date', 'DateTime', 'Time'];
+    let currRowId = rowId;
 
     this.setState(
       {
@@ -238,17 +233,13 @@ MasterWidget.propTypes = {
   isOpenDatePicker: PropTypes.bool,
 };
 
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators(
-    {
-      openModal: windowActions.openModal,
-      patch: windowActions.patch,
-      updatePropertyValue: windowActions.updatePropertyValue,
-    },
-    dispatch
-  );
-}
-
-export default connect(null, mapDispatchToProps, null, { withRef: true })(
-  MasterWidget
-);
+export default connect(
+  null,
+  {
+    openModal: windowActions.openModal,
+    patch: windowActions.patch,
+    updatePropertyValue: windowActions.updatePropertyValue,
+  },
+  null,
+  { withRef: true }
+)(MasterWidget);
