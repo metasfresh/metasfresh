@@ -227,7 +227,9 @@ class PPOrderLinesLoader
 	private String computePackingInfo(@NonNull final I_PP_Order ppOrder)
 	{
 		final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-		final I_M_HU_LUTU_Configuration lutuConfig = huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrder).getCreateLUTUConfiguration();
+		final I_M_HU_LUTU_Configuration lutuConfig = huPPOrderBL
+				.createReceiptLUTUConfigurationManager(ppOrder)
+				.getCreateLUTUConfiguration();
 
 		return extractPackingInfoString(lutuConfig);
 	}
