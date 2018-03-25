@@ -14,7 +14,6 @@ RUN apt -y install netcat \
 RUN mkdir -p /opt/metasfresh
 
 COPY configs/* /opt/metasfresh/
-COPY configs/local_settings.properties /root/
 
 COPY ./start_app.sh /opt/metasfresh/
 RUN chmod 700 /opt/metasfresh/start_app.sh
