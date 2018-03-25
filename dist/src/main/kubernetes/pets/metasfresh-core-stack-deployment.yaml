@@ -9,7 +9,7 @@ metadata:
     de.metas.deployment.type: metasfresh-core-stack
     de.metas.deployment.stage: "demo"
     de.metas.deployment.user: "tobi"
-  name: "metasfresh-core-stack-tobi-demp"
+  name: "metasfresh-core-stack-pet"
 spec:
   replicas: 1
   strategy:
@@ -26,17 +26,8 @@ spec:
 #
 # metasfresh-db
       - env:
-        - name: DB_SYSPASS
-          value: System
-        - name: METASFRESH_DBNAME
-          value: metasfresh
-        - name: METASFRESH_PASSWORD
-          value: metasfresh
-        - name: METASFRESH_USERNAME
-          value: metasfresh
-# get it from dockerhub for now..we don't push metasfresh-db to docker.metasfresh.com yet          
         name: db
-        image: metasfresh/metasfresh-db:latest
+        image: docker.metasfresh.com/postgres:10.3
         imagePullPolicy: Always
         resources: {}
         volumeMounts:
@@ -46,7 +37,7 @@ spec:
         - mountPath: /etc/timezone
           name: host-timezone
           readOnly: true
-#
+          #
 # metasfresh-app          
       - env:
         - name: METASFRESH_HOME
@@ -154,6 +145,18 @@ spec:
           name: host-timezone # was webui-claim1
           readOnly: true
       restartPolicy: Always
+      initContainers:
+        - name: init-postgres
+          image: docker.metasfresh.com/metasfresh/metasfresh-db-init-pg-10-3:gh18_dist_LATEST
+          env:
+          - name: DB_SYSPASS
+            value: System
+          - name: METASFRESH_DBNAME
+            value: metasfresh
+          - name: METASFRESH_PASSWORD
+            value: metasfresh
+          - name: METASFRESH_USERNAME
+            value: metasfresh
       volumes:
       - name: host-localtime # was app-claim1
         hostPath:
@@ -161,4 +164,3 @@ spec:
       - name: host-timezone # was app-claim2
         hostPath:
           path: /etc/timezone
-status: {}
