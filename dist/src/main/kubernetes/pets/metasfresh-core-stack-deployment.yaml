@@ -37,6 +37,8 @@ spec:
         - mountPath: /etc/timezone
           name: host-timezone
           readOnly: true
+        - mountPath: /var/lib/postgresql/data
+          name: postgresql-data
           #
 # metasfresh-app          
       - env:
@@ -148,6 +150,7 @@ spec:
       initContainers:
         - name: init-postgres
           image: docker.metasfresh.com/metasfresh/metasfresh-db-init-pg-10-3:gh18_dist_LATEST
+          imagePullPolicy: Always
           env:
           - name: DB_SYSPASS
             value: System
@@ -157,6 +160,9 @@ spec:
             value: metasfresh
           - name: METASFRESH_USERNAME
             value: metasfresh
+          volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgresql-data
       volumes:
       - name: host-localtime # was app-claim1
         hostPath:
@@ -164,3 +170,6 @@ spec:
       - name: host-timezone # was app-claim2
         hostPath:
           path: /etc/timezone
+      - name: postgresql-data
+        hostPath:
+          path: /tmp/postgresql-data
