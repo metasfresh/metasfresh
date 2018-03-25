@@ -24,11 +24,11 @@ RUN apt install -t jessie-backports openjdk-8-jre-headless --assume-yes
 
 COPY provision_metasfresh_db.sh /docker-entrypoint-initdb.d/
 
-COPY docker-entrypoint_init_only-10.3.sh /
-RUN chmod 700 /docker-entrypoint_init_only-10.3.sh
+COPY docker-entrypoint_init_only-10.3.sh /usr/local/bin/
+RUN chmod 700 /usr/local/bin/docker-entrypoint_init_only-10.3.sh
 
-#ENTRYPOINT ["/docker-entrypoint.sh"]
-ENTRYPOINT ["/docker-entrypoint_init_only-10.3.sh"]
+RUN ln -s usr/local/bin/docker-entrypoint_init_only-10.3.sh / # backwards compat
+ENTRYPOINT ["docker-entrypoint_init_only-10.3"]
 
 CMD ["postgres"]
 #don't expose the port; we don't want external access
