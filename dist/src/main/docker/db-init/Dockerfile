@@ -28,7 +28,7 @@ COPY docker-entrypoint_init_only-10.3.sh /usr/local/bin/
 RUN chmod 700 /usr/local/bin/docker-entrypoint_init_only-10.3.sh
 
 RUN ln -s usr/local/bin/docker-entrypoint_init_only-10.3.sh / # backwards compat
-ENTRYPOINT ["docker-entrypoint_init_only-10.3"]
+ENTRYPOINT ["docker-entrypoint_init_only-10.3.sh"]
 
 CMD ["postgres"]
 #don't expose the port; we don't want external access
