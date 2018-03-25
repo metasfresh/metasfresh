@@ -860,7 +860,7 @@ note: when adding new records, please roughly order them by alphabet.
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${docker.build.directory}</outputDirectory>
+							<outputDirectory>${docker.build.directory}/app</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${project.build.directory}/dist/deploy</directory>
