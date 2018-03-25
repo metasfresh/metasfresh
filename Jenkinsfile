@@ -119,13 +119,13 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 		stage('Build and push docker image')
 		{
-			sh 'cp -r dist docker/prod'
+			sh 'cp -r dist docker/nginx'
 
 			final DockerConf materialDispoDockerConf = new DockerConf(
 				'metasfresh-webui-dev', // artifactName
 				MF_UPSTREAM_BRANCH, // branchName
 				MF_VERSION, // versionSuffix
-				'docker/prod' // workDir
+				'docker/nginx' // workDir
 			);
 			dockerBuildAndPush(materialDispoDockerConf)
 		}
