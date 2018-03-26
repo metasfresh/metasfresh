@@ -178,7 +178,7 @@ class Lookup extends Component {
       isFocused: {
         ...this.state.isFocused,
         [`${fieldName}`]: true,
-      }
+      },
     });
     this.props.onFocus();
   };
@@ -188,14 +188,14 @@ class Lookup extends Component {
       isFocused: {
         ...this.state.isFocused,
         [`${fieldName}`]: false,
-      }
+      },
     });
     this.props.onHandleBlur();
   };
 
   getFocused = fieldName => {
     return !!this.state.isFocused[fieldName];
-  }
+  };
 
   disableAutofocus = () => {
     this.setState({
@@ -278,7 +278,6 @@ class Lookup extends Component {
       localClearing,
       fireDropdownList,
       autofocusDisabled,
-      isFocused,
     } = this.state;
 
     this.linkedList = [];

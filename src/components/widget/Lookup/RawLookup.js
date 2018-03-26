@@ -218,22 +218,22 @@ class RawLookup extends Component {
   handleBlur = () => {
     const { onHandleBlur } = this.props;
 
-    this.setState({
-      isFocused: false,
-    },
-    () => {
-      this.props.onDropdownListToggle(false);
-      onHandleBlur && onHandleBlur();
-    });
-
-    
+    this.setState(
+      {
+        isFocused: false,
+      },
+      () => {
+        this.props.onDropdownListToggle(false);
+        onHandleBlur && onHandleBlur();
+      }
+    );
   };
 
   handleFocus = () => {
     this.setState({
       isFocused: true,
     });
-  }
+  };
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
     const {
@@ -374,7 +374,14 @@ class RawLookup extends Component {
       isOpen,
     } = this.props;
 
-    const { isInputEmpty, list, loading, selected, forceEmpty, isFocused } = this.state;
+    const {
+      isInputEmpty,
+      list,
+      loading,
+      selected,
+      forceEmpty,
+      isFocused,
+    } = this.state;
 
     return (
       <TetherComponent
@@ -391,13 +398,11 @@ class RawLookup extends Component {
         ]}
       >
         <div
-          className={classnames('raw-lookup-wrapper raw-lookup-wrapper-bcg',
-            {
-              'raw-lookup-disabled': disabled,
-              'input-disabled': readonly,
-              focused: isFocused,
-            }
-          )}
+          className={classnames('raw-lookup-wrapper raw-lookup-wrapper-bcg', {
+            'raw-lookup-disabled': disabled,
+            'input-disabled': readonly,
+            focused: isFocused,
+          })}
           ref={ref => (this.wrapper = ref)}
         >
           <div className={'input-dropdown input-block'}>
