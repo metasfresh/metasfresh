@@ -15,19 +15,7 @@ export default class SelectionDropdown extends Component {
         size: PropTypes.number.isRequired,
       }),
     ]).isRequired,
-    selected: (props, propName) => {
-      const selected = props[propName];
-
-      if ([null, undefined].includes(selected)) {
-        return;
-      }
-
-      if (!props.options.includes(selected)) {
-        return new Error(
-          `${propName} must be one of options. ${propName}: ${selected}`
-        );
-      }
-    },
+    selected: PropTypes.object,
     empty: PropTypes.node,
     forceEmpty: PropTypes.bool,
     width: PropTypes.number.isRequired,
@@ -83,7 +71,6 @@ export default class SelectionDropdown extends Component {
       top: topMax,
       bottom: bottomMax,
     } = this.wrapper.getBoundingClientRect();
-
     const { top, bottom } = element.getBoundingClientRect();
 
     if (top < topMax || bottom > bottomMax) {
