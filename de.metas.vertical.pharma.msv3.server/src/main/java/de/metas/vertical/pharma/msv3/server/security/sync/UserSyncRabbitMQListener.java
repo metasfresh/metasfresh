@@ -1,5 +1,7 @@
 package de.metas.vertical.pharma.msv3.server.security.sync;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,12 +35,21 @@ import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationSer
 @Component
 public class UserSyncRabbitMQListener
 {
+	private static final Logger logger = LoggerFactory.getLogger(UserSyncRabbitMQListener.class);
+
 	@Autowired
 	private MSV3ServerAuthenticationService authService;
 
 	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_UserChangedEvents)
 	public void onUserEvent(final MSV3UserChangedEvent event)
 	{
-		authService.handleEvent(event);
+		try
+		{
+			authService.handleEvent(event);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed handling event: {}", event, ex);
+		}
 	}
 }
