@@ -6,10 +6,14 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import SelectionDropdown from '../SelectionDropdown';
 
+/*
+ * We want the selected option to be displayed first,
+ * so in case it has an index other than 0 we will move it
+ * to the top of the list
+ */
 const setSelectedValue = function(dropdownList, selected) {
   const changedValues = {};
   let idx = 0;
-
   let selectedOption = selected;
 
   if (selected) {
@@ -171,9 +175,10 @@ class RawList extends PureComponent {
   };
 
   handleCancel = () => {
-    this.props.disableAutofocus();
+    const { disableAutofocus, onCloseDropdown } = this.props;
+    disableAutofocus && disableAutofocus();
     this.handleBlur();
-    this.props.onCloseDropdown();
+    onCloseDropdown && onCloseDropdown();
   };
 
   handleKeyDown = e => {
@@ -186,6 +191,7 @@ class RawList extends PureComponent {
     } else if (e.key === 'ArrowDown') {
       if (!isToggled) {
         e.preventDefault();
+        e.stopPropagation();
         onOpenDropdown();
       }
     }
