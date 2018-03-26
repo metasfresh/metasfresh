@@ -1,5 +1,7 @@
 package de.metas.vertical.pharma.msv3.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
@@ -34,6 +36,8 @@ import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 @Profile("dummy_data")
 public class CreateDummyData
 {
+	private static final Logger logger = LoggerFactory.getLogger(CreateDummyData.class);
+
 	private final MSV3ServerPeerService msv3ServerPeerService;
 
 	public CreateDummyData(
@@ -41,6 +45,18 @@ public class CreateDummyData
 	{
 		this.msv3ServerPeerService = msv3ServerPeerService;
 
+		try
+		{
+			createDummyData();
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed creating dummy data. Skipped", ex);
+		}
+	}
+
+	private void createDummyData()
+	{
 		System.out.println("----------------------------------------------------------------------------------------------------");
 		System.out.println("Creating dummy data");
 		System.out.println("----------------------------------------------------------------------------------------------------");
