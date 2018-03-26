@@ -308,7 +308,6 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	@Override
 	public final <T> List<T> retrieveAllItems(final I_C_Queue_WorkPackage workPackage, final Class<T> clazz)
 	{
-		final boolean skipMissingItems = true;
 		return retrieveItems(workPackage, clazz, false, false, ITrx.TRXNAME_ThreadInherited);
 	}
 
