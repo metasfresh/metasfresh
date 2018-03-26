@@ -875,13 +875,13 @@ td.pulse-off input {
     display: inline-block;
 }
 
-.filter-wrapper span {
+.filter-wrapper .filter-caption {
     display: none;
 }
 
 @media only screen and (min-width: $breakpoint-md){
     .desktop {
-        .filter-wrapper span {
+        .filter-wrapper .filter-caption {
             display: inline;
         }
     }
