@@ -24,6 +24,7 @@ Here come the actual release notes:
   * [#3693](https://github.com/metasfresh/metasfresh/issues/3693) Lot-No lock & control
   * [#3703](https://github.com/metasfresh/metasfresh/issues/3703) Material Receipt Candidates Window, add media types for mobile/ tablet
     * Mobile Usage Improvement. Adds Mediatypes to Material Receipt Candidates window (Tablet proptotype).
+  * [#3716](https://github.com/metasfresh/metasfresh/issues/3716) Implement MSV3 server
   * [#3721](https://github.com/metasfresh/metasfresh/issues/3721) Create Request on DD_Order to Quarantine warehouse
   * [#3724](https://github.com/metasfresh/metasfresh/issues/3724) Allow to run print endpoint as standalone service
   * [#3738](https://github.com/metasfresh/metasfresh/issues/3738) Introduce and use AD_OrgInfo.M_WarehousePO_ID
