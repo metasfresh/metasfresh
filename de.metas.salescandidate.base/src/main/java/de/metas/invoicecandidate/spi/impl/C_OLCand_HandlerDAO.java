@@ -37,7 +37,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.ordercandidate.model.I_C_OLCand;
 
-public class C_OLCand_HandlerDAO
+class C_OLCand_HandlerDAO
 {
 	public IQueryBuilder<I_C_OLCand> retrieveMissingCandidatesQuery(final Properties ctx, final String trxName)
 	{

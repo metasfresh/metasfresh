@@ -2,9 +2,12 @@ package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.MoreObjects;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -29,20 +32,40 @@ import lombok.Data;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder
-public class MSV3ServerRequest
+@Value
+public class MSV3PeerAuthToken
 {
-	public static MSV3ServerRequest requestAll()
+	public static final String NAME = "AuthToken";
+
+	@JsonCreator
+	public static MSV3PeerAuthToken of(final String value)
 	{
-		return ALL;
+		return new MSV3PeerAuthToken(value);
 	}
 
-	private static final MSV3ServerRequest ALL = MSV3ServerRequest.builder()
-			.requestAllUsers(true)
-			.requestAllStockAvailabilities(true)
-			.build();
+	private final String valueAsString;
 
-	boolean requestAllUsers;
-	boolean requestAllStockAvailabilities;
+	private MSV3PeerAuthToken(@NonNull final String valueAsString)
+	{
+		if (valueAsString.isEmpty())
+		{
+			throw new IllegalArgumentException("Empty string is not a valid " + MSV3PeerAuthToken.class);
+		}
+
+		this.valueAsString = valueAsString;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.addValue("********")
+				.toString();
+	}
+
+	@JsonValue
+	public String toJson()
+	{
+		return valueAsString;
+	}
 }

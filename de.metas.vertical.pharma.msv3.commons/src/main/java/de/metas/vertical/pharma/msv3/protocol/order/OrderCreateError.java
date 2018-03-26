@@ -1,14 +1,18 @@
-package de.metas.vertical.pharma.msv3.server.peer.protocol;
+package de.metas.vertical.pharma.msv3.protocol.order;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import lombok.Builder;
-import lombok.Data;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server-peer
+ * metasfresh-pharma.msv3.commons
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -16,12 +20,12 @@ import lombok.Data;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,20 +33,27 @@ import lombok.Data;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Data
-@Builder
-public class MSV3ServerRequest
+@Value
+public class OrderCreateError
 {
-	public static MSV3ServerRequest requestAll()
+	@JsonProperty("bpartnerId")
+	BPartnerId bpartnerId;
+
+	@JsonProperty("orderId")
+	Id orderId;
+
+	@JsonProperty("errorMsg")
+	String errorMsg;
+
+	@Builder
+	private OrderCreateError(
+			@JsonProperty("bpartnerId") @NonNull final BPartnerId bpartnerId,
+			@JsonProperty("orderId") @NonNull final Id orderId,
+			@JsonProperty("errorMsg") @NonNull final String errorMsg)
 	{
-		return ALL;
+		this.bpartnerId = bpartnerId;
+		this.orderId = orderId;
+		this.errorMsg = errorMsg;
 	}
 
-	private static final MSV3ServerRequest ALL = MSV3ServerRequest.builder()
-			.requestAllUsers(true)
-			.requestAllStockAvailabilities(true)
-			.build();
-
-	boolean requestAllUsers;
-	boolean requestAllStockAvailabilities;
 }
