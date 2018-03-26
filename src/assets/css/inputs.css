@@ -734,8 +734,6 @@ input:checked + .input-slider:before {
     flex: 1;
 
     &&.focused {
-        border-bottom: 1px solid $input-focused-border;
-        padding-bottom: .2rem;
     }
 
     &&.input-icon {
