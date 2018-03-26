@@ -97,7 +97,6 @@ public class PrinterBL implements IPrinterBL
 		matching.setAD_Org_ID(printerHW.getAD_Org_ID());
 		matching.setAD_Printer_ID(printer.getAD_Printer_ID());
 		matching.setAD_PrinterHW(printerHW);
-		matching.setHostKey(printerHW.getHostKey());
 		InterfaceWrapperHelper.save(matching);
 		return matching;
 	}

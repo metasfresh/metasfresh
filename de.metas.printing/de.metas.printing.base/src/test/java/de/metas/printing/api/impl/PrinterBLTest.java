@@ -70,7 +70,6 @@ public class PrinterBLTest extends AbstractPrintingTest
 		db.save(printer);
 
 		final I_AD_PrinterHW printerHW = db.newInstance(I_AD_PrinterHW.class);
-
 		db.save(printerHW);
 
 		final I_AD_Printer_Matching matching = Services.get(IPrinterBL.class).createPrinterMatchingIfNoneExists(config, printer, printerHW, ITrx.TRXNAME_None);
@@ -81,7 +80,6 @@ public class PrinterBLTest extends AbstractPrintingTest
 		Assert.assertNotNull("Match not created", matching);
 		Assert.assertTrue(printerID == printer.getAD_Printer_ID());
 		Assert.assertTrue(hwPrinterID == printerHW.getAD_PrinterHW_ID());
-		Assert.assertEquals(matching.getHostKey(), printerHW.getHostKey());
 	}
 
 	/**
@@ -109,7 +107,6 @@ public class PrinterBLTest extends AbstractPrintingTest
 		Assert.assertNotNull("Match not created", matching);
 		Assert.assertTrue(printerID == printer.getAD_Printer_ID());
 		Assert.assertTrue(hwPrinterID == firstPrinterHW.getAD_PrinterHW_ID());
-		Assert.assertEquals(matching.getHostKey(), firstPrinterHW.getHostKey());
 
 		final I_AD_PrinterHW secondPrinterHW = db.newInstance(I_AD_PrinterHW.class);
 		db.save(secondPrinterHW);
