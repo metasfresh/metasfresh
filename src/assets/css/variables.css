@@ -41,5 +41,6 @@ $brand-icon-off: #D8D8D8;
 
 $input-focused-border: #4b5b64;
 
+$breakpoint-lg: 1200px;
 $breakpoint-md: 991px;
 $breakpoint: 543px;

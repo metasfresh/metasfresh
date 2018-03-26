@@ -139,10 +139,8 @@ class MasterWidget extends Component {
       relativeDocId,
       widgetType,
     } = this.props;
-
-    let currRowId = rowId;
-
     const dateParse = ['Date', 'DateTime', 'Time'];
+    let currRowId = rowId;
 
     this.setState(
       {
