@@ -54,7 +54,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 		final String initialCreditStatus = bpStats.getSOCreditStatus();
 
-		if (request.isCheckiAdditionalAmt() && additionalAmt.signum() == 0)
+		if (!request.isForceCheckCreditStatus() && additionalAmt.signum() == 0)
 		{
 			return initialCreditStatus;
 		}
@@ -66,7 +66,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 		// Nothing to do
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
-				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
+				|| (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus) && !request.isForceCheckCreditStatus())
 				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
 		{
 			return initialCreditStatus;

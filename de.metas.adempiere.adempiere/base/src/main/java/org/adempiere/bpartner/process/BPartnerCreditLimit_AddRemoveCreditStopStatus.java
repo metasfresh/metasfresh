@@ -38,7 +38,7 @@ public class BPartnerCreditLimit_AddRemoveCreditStopStatus extends JavaProcess i
 			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bpStats.getC_BPartner());
 			final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
 					.stat(stats)
-					.checkiAdditionalAmt(false)
+					.forceCheckCreditStatus(true)
 					.date(SystemTime.asDayTimestamp())
 					.build();
 			creditStatus = bpartnerStatsBL.calculateSOCreditStatus(request);

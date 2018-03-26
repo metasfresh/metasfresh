@@ -51,7 +51,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 		@NonNull
 		final Timestamp date;
 		@Default
-		final boolean checkiAdditionalAmt = true;
+		final boolean forceCheckCreditStatus = false;
 	}
 
 	/**
