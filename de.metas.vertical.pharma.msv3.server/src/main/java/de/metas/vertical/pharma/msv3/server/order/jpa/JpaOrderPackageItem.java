@@ -35,7 +35,7 @@ import lombok.ToString;
  */
 
 @Entity
-@Table(name = "order_package_item")
+@Table(name = "msv3_order_package_item")
 @Getter
 @Setter
 @ToString

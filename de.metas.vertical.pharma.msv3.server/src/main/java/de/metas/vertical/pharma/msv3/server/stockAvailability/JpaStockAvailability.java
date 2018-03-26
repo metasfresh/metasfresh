@@ -32,7 +32,7 @@ import lombok.ToString;
  */
 
 @Entity
-@Table(name = "stock_availability", uniqueConstraints = @UniqueConstraint(name = "stock_availability_uq", columnNames = { "pzn" }))
+@Table(name = "msv3_stock_availability", uniqueConstraints = @UniqueConstraint(name = "stock_availability_uq", columnNames = { "pzn" }))
 @ToString
 public class JpaStockAvailability extends AbstractEntity
 {
