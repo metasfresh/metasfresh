@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import TetherComponent from 'react-tether';
 import { connect } from 'react-redux';
 
 import {
@@ -242,6 +243,7 @@ class Labels extends Component {
   };
 
   render() {
+    const { focused } = this.state;
     let suggestions;
 
     if (this.state.suggestions.length) {
@@ -283,25 +285,43 @@ class Labels extends Component {
             onKeyDown={this.handleKeyDown}
           />
         </span>
-        {this.state.focused && (
-          <div className="labels-dropdown">
-            {suggestions.map((suggestion, index) => {
-              const active =
-                index === this.state.cursorY ||
-                (index === suggestions.length - 1 &&
-                  index <= this.state.cursorY);
+        {focused && (
+          <TetherComponent
+            attachment="top left"
+            targetAttachment="bottom left"
+            constraints={[
+              {
+                to: 'scrollParent',
+              },
+              {
+                to: 'window',
+                pin: ['bottom'],
+              },
+            ]}
+          >
+            <span className="dropdown-holder" />
+            <div
+              style={{ width: `calc(${this.wrapper.offsetWidth}px - 10px)` }}
+              className="labels-dropdown"
+            >
+              {suggestions.map((suggestion, index) => {
+                const active =
+                  index === this.state.cursorY ||
+                  (index === suggestions.length - 1 &&
+                    index <= this.state.cursorY);
 
-              return (
-                <Suggestion
-                  className="labels-suggestion"
-                  key={suggestion.key}
-                  suggestion={suggestion}
-                  onAdd={this.handleSuggestionAdd}
-                  active={active}
-                />
-              );
-            })}
-          </div>
+                return (
+                  <Suggestion
+                    className="labels-suggestion ignore-react-onclickoutside"
+                    key={suggestion.key}
+                    suggestion={suggestion}
+                    onAdd={this.handleSuggestionAdd}
+                    active={active}
+                  />
+                );
+              })}
+            </div>
+          </TetherComponent>
         )}
       </div>
     );
