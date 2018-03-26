@@ -674,7 +674,7 @@ input:checked + .input-slider:before {
         }
 
         &&.focused {
-            border-bottom-color: #4b5b64;
+            border-bottom-color: $input-focused-border;
         }
 
         &&.opened {
@@ -734,7 +734,8 @@ input:checked + .input-slider:before {
     flex: 1;
 
     &&.focused {
-        border-bottom: 1px solid #C9D5DC;
+        border-bottom: 1px solid $input-focused-border;
+        padding-bottom: .2rem;
     }
 
     &&.input-icon {

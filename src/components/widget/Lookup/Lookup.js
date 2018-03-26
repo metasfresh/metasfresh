@@ -22,7 +22,7 @@ class Lookup extends Component {
       fireDropdownList: false,
       autofocusDisabled: false,
       isDropdownListOpen: false,
-      isFocused: false,
+      isFocused: {},
     };
   }
 
@@ -173,19 +173,29 @@ class Lookup extends Component {
     });
   };
 
-  handleFocus = () => {
+  handleFocus = fieldName => {
     this.setState({
-      isFocused: true,
+      isFocused: {
+        ...this.state.isFocused,
+        [`${fieldName}`]: true,
+      }
     });
     this.props.onFocus();
   };
 
-  handleBlur = () => {
+  handleBlur = fieldName => {
     this.setState({
-      isFocused: false,
+      isFocused: {
+        ...this.state.isFocused,
+        [`${fieldName}`]: false,
+      }
     });
     this.props.onHandleBlur();
   };
+
+  getFocused = fieldName => {
+    return !!this.state.isFocused[fieldName];
+  }
 
   disableAutofocus = () => {
     this.setState({
@@ -384,12 +394,12 @@ class Lookup extends Component {
 
               return (
                 <div
-                  key={index}
+                  key={item.field}
                   className={classnames(
-                    'raw-lookup-wrapper raw-lookup-wrapper-bcg ',
+                    'raw-lookup-wrapper raw-lookup-wrapper-bcg',
                     {
                       'raw-lookup-disabled': disabled || readonly,
-                      focused: isFocused,
+                      focused: this.getFocused(item.field),
                     }
                   )}
                 >
@@ -413,8 +423,8 @@ class Lookup extends Component {
                     setNextProperty={this.setNextProperty}
                     disableAutofocus={this.disableAutofocus}
                     enableAutofocus={this.enableAutofocus}
-                    onFocus={this.handleFocus}
-                    onHandleBlur={this.handleBlur}
+                    onFocus={() => this.handleFocus(item.field)}
+                    onHandleBlur={() => this.handleBlur(item.field)}
                     {...{
                       dataId,
                       entity,

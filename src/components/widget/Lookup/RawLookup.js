@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
+import classnames from 'classnames';
 
 import { autocompleteRequest } from '../../../actions/GenericActions';
 import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesActions';
@@ -22,6 +23,7 @@ class RawLookup extends Component {
       loading: false,
       oldValue: '',
       shouldBeFocused: true,
+      isFocused: false,
     };
   }
 
@@ -216,10 +218,22 @@ class RawLookup extends Component {
   handleBlur = () => {
     const { onHandleBlur } = this.props;
 
-    this.props.onDropdownListToggle(false);
+    this.setState({
+      isFocused: false,
+    },
+    () => {
+      this.props.onDropdownListToggle(false);
+      onHandleBlur && onHandleBlur();
+    });
 
-    onHandleBlur && onHandleBlur();
+    
   };
+
+  handleFocus = () => {
+    this.setState({
+      isFocused: true,
+    });
+  }
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
     const {
@@ -360,7 +374,7 @@ class RawLookup extends Component {
       isOpen,
     } = this.props;
 
-    const { isInputEmpty, list, loading, selected, forceEmpty } = this.state;
+    const { isInputEmpty, list, loading, selected, forceEmpty, isFocused } = this.state;
 
     return (
       <TetherComponent
@@ -377,11 +391,13 @@ class RawLookup extends Component {
         ]}
       >
         <div
-          className={
-            'raw-lookup-wrapper raw-lookup-wrapper-bcg' +
-            (disabled ? ' raw-lookup-disabled' : '') +
-            (readonly ? ' input-disabled' : '')
-          }
+          className={classnames('raw-lookup-wrapper raw-lookup-wrapper-bcg',
+            {
+              'raw-lookup-disabled': disabled,
+              'input-disabled': readonly,
+              focused: isFocused,
+            }
+          )}
           ref={ref => (this.wrapper = ref)}
         >
           <div className={'input-dropdown input-block'}>
@@ -398,6 +414,7 @@ class RawLookup extends Component {
                 placeholder={placeholder}
                 onChange={this.handleChange}
                 onBlur={this.handleBlur}
+                onFocus={this.handleFocus}
               />
             </div>
           </div>
