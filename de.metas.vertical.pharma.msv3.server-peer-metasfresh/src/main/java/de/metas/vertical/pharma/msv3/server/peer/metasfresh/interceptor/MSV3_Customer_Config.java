@@ -2,6 +2,7 @@ package de.metas.vertical.pharma.msv3.server.peer.metasfresh.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -55,6 +56,13 @@ public class MSV3_Customer_Config
 	{
 		final MSV3CustomerConfigService service = getMSV3CustomerConfigService();
 		service.publishConfigChanged(configRecord);
+
+		if (InterfaceWrapperHelper.isValueChanged(configRecord, I_MSV3_Customer_Config.COLUMNNAME_UserID))
+		{
+			final I_MSV3_Customer_Config configRecordOld = InterfaceWrapperHelper.createOld(configRecord, I_MSV3_Customer_Config.class);
+			service.publishConfigDeleted(configRecordOld.getUserID());
+		}
+
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
