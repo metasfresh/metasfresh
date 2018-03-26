@@ -1,16 +1,15 @@
-package de.metas.request.service.impl;
+package de.metas.vertical.pharma.msv3.server.process;
 
-import java.util.List;
-import java.util.Properties;
+import org.compiere.Adempiere;
 
-import de.metas.request.service.IRequestCreator;
-import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout;
+import de.metas.process.JavaProcess;
+import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3CustomerConfigService;
 
 /*
  * #%L
- * de.metas.swat.base
+ * metasfresh-pharma.msv3.server-peer-metasfresh
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,14 +27,15 @@ import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout;
  * #L%
  */
 
-public class AsyncRequestCreator implements IRequestCreator
+public class MSV3_Customer_Config_PublishAll extends JavaProcess
 {
 
 	@Override
-	public void createRequests(final Properties ctx, final List<Integer> inOutLineIds, final String trxName)
+	protected String doIt() throws Exception
 	{
-		// Schedule the async request creation based on the given inoutline ids
-		C_Request_CreateFromInout.createWorkpackage(ctx, inOutLineIds, trxName);
+		final MSV3CustomerConfigService customerConfigService = Adempiere.getBean(MSV3CustomerConfigService.class);
+		customerConfigService.publishAllConfig();
+		return MSG_OK;
 	}
 
 }

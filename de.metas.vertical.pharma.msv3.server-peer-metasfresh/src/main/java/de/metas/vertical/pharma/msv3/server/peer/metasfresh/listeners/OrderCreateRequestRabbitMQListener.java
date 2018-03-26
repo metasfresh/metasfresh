@@ -4,16 +4,15 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
+import org.adempiere.ad.security.UserAuthTokenService;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
@@ -38,6 +37,8 @@ import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3PeerAuthToken;
+import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 
 /*
  * #%L
@@ -70,14 +71,11 @@ public class OrderCreateRequestRabbitMQListener
 	private static final Logger logger = LogManager.getLogger(OrderCreateRequestRabbitMQListener.class);
 
 	@Autowired
+	private UserAuthTokenService authService;
+	@Autowired
 	private OLCandRepository olCandRepo;
-
-	@Value("${msv3server.adClientId:1000000}") // FIXME: hardcoded
-	private int adClientId;
-	@Value("${msv3server.adOrgId:1000000}") // FIXME: hardcoded
-	private int adOrgId;
-	@Value("${msv3server.adUserId:100}") // FIXME: hardcoded
-	private int adUserId;
+	@Autowired
+	private MSV3ServerPeerService serverPeerService;
 
 	@FunctionalInterface
 	private static interface OLCandSupplier
@@ -86,29 +84,32 @@ public class OrderCreateRequestRabbitMQListener
 	}
 
 	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_CreateOrderRequestEvents)
-	public OrderCreateResponse onRequest(final OrderCreateRequest request)
+	public void onRequest(@Payload final OrderCreateRequest request, @Header(MSV3PeerAuthToken.NAME) final MSV3PeerAuthToken authToken)
 	{
-		try (final IAutoCloseable ctxRestorer = Env.switchContext(createContext()))
+		try
+		{
+			final OrderCreateResponse response = authService.call(authToken::getValueAsString, () -> process(request));
+			serverPeerService.publishOrderCreateResponse(response);
+		}
+		catch (final Exception ex)
+		{
+			logger.error("Failed processing request: {}", request, ex);
+		}
+	}
+
+	private OrderCreateResponse process(final OrderCreateRequest request)
+	{
+		try
 		{
 			final List<OLCand> olCands = olCandRepo.create(toOLCandCreateRequestsList(request));
 			final Map<String, OLCand> olCandsByExternalId = Maps.uniqueIndex(olCands, OLCand::getExternalId);
-
 			return toOrderCreateResponse(request, externalId -> olCandsByExternalId.get(externalId.getValueAsString()));
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed processing request: {}", request, ex);
-			return OrderCreateResponse.error(ex.getLocalizedMessage());
+			logger.warn("Failed processing request: {}. Sending response.", request, ex);
+			return OrderCreateResponse.error(request.getOrderId(), request.getBpartnerId(), ex.getLocalizedMessage());
 		}
-	}
-
-	private Properties createContext()
-	{
-		final Properties ctx = Env.newTemporaryCtx();
-		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, adClientId);
-		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, adOrgId);
-		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, adUserId);
-		return ctx;
 	}
 
 	private List<OLCandCreateRequest> toOLCandCreateRequestsList(final OrderCreateRequest request)

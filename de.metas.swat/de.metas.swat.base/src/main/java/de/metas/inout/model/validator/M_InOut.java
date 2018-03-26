@@ -1,13 +1,11 @@
 package de.metas.inout.model.validator;
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.ModelValidator;
@@ -22,7 +20,7 @@ import de.metas.inout.api.IMaterialBalanceDetailDAO;
 import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inout.event.ReturnInOutProcessedEventBus;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.request.service.IRequestCreator;
+import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout_Async;
 
 @Interceptor(I_M_InOut.class)
 public class M_InOut
@@ -125,12 +123,9 @@ public class M_InOut
 			return;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inOut);
-		final String trxName = InterfaceWrapperHelper.getTrxName(inOut);
-
 		// In case there are lines with issues, trigger the request creation for them.
 		// Note: The request creation will be done async
-		Services.get(IRequestCreator.class).createRequests(ctx, linesWithQualityIssues, trxName);
+		C_Request_CreateFromInout_Async.createWorkpackage(linesWithQualityIssues);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })

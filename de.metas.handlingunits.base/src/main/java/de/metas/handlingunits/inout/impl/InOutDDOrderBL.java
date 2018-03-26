@@ -3,8 +3,6 @@ package de.metas.handlingunits.inout.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.util.List;
-
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -22,9 +20,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.material.planning.IProductPlanningDAO;
 
 /*
@@ -60,30 +55,15 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 	@Override
 	public I_DD_Order createDDOrderForInOutLine(final I_M_InOutLine inOutLine)
 	{
-		final List<I_M_ReceiptSchedule> rsForInOutLine = Services.get(IReceiptScheduleDAO.class).retrieveRsForInOutLine(inOutLine);
 
-		I_DD_Order ddOrderHeader = null;
+		final I_DD_Order ddOrderHeader = createDDOrderHeader(inOutLine);
 
-		for (final I_M_ReceiptSchedule rs : rsForInOutLine)
-		{
-			if (isCreateDDOrder(rs))
-			{
-				ddOrderHeader = createDDOrderHeader(inOutLine);
+		createDDOrderLine(ddOrderHeader, inOutLine);
 
-				createDDOrderLine(ddOrderHeader, inOutLine, rs);
-
-				documentBL.processEx(ddOrderHeader, X_DD_Order.DOCACTION_Complete, X_DD_Order.DOCSTATUS_Completed);
-
-				break;
-			}
-		}
+		documentBL.processEx(ddOrderHeader, X_DD_Order.DOCACTION_Complete, X_DD_Order.DOCSTATUS_Completed);
 
 		return ddOrderHeader;
-	}
 
-	private boolean isCreateDDOrder(final I_M_ReceiptSchedule rs)
-	{
-		return X_M_ReceiptSchedule.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder.equals(rs.getOnMaterialReceiptWithDestWarehouse());
 	}
 
 	private I_DD_Order createDDOrderHeader(final I_M_InOutLine inOutLine)
@@ -130,12 +110,12 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		return ddOrderHeader;
 	}
 
-	private I_DD_OrderLine createDDOrderLine(final I_DD_Order ddOrderHeader, final I_M_InOutLine inOutLine, final I_M_ReceiptSchedule rs)
+	private I_DD_OrderLine createDDOrderLine(final I_DD_Order ddOrderHeader, final I_M_InOutLine inOutLine)
 	{
 		final I_M_Locator locator = inOutLine.getM_Locator();
 
-		final I_M_Warehouse warehouseDest = rs.getM_Warehouse_Dest();
-		Check.errorIf(warehouseDest == null, "Warehouse Dest is null in thre Receipt Schedule {}. Please, set it.", rs);
+		final I_M_Warehouse warehouseDest = inOutLine.getM_Warehouse_Dest();
+		Check.errorIf(warehouseDest == null, "Warehouse Dest is null in the Receipt line {}. Please, set it.", inOutLine);
 
 		final I_M_Locator locatorTo = warehouseDAO.retrieveLocators(warehouseDest).get(0);
 

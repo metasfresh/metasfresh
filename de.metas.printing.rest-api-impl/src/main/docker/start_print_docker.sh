@@ -10,7 +10,6 @@ db_user=${DB_USER:-metasfresh}
 db_password=${DB_PASSWORD:-metasfresh}
 db_wait_for_dbms=${DB_WAIT_FOR_DBMS:-y}
 app_host=${APP_HOST:-app}
-skip_run_db_update=${SKIP_DB_UPDATE:-false}
 debug_port=${DEBUG_PORT:-8791}
 debug_suspend=${DEBUG_SUSPEND:-n}
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
@@ -20,6 +19,9 @@ server_port=${SERVER_PORT:-8183}
 
 echo_variable_values()
 {
+ echo "*************************************************************"
+ echo "Display the variable values we run with"
+ echo "*************************************************************"
  echo "Note: all these variables can be set using the -e parameter."
  echo ""
  echo "DB_HOST=${db_host}"
@@ -28,7 +30,6 @@ echo_variable_values()
  echo "DB_USER=${db_user}"
  echo "DB_PASSWORD=*******"
  echo "DB_WAIT_FOR_DBMS=${db_wait_for_dbms}"
- echo "SKIP_DB_UPDATE=${skip_run_db_update}"
  echo "APP_HOST=${app_host}"
  echo "DEBUG_PORT=${debug_port}"
  echo "DEBUG_SUSPEND=${debug_suspend}"
@@ -95,9 +96,6 @@ java \
 
 }
 
-echo "*************************************************************"
-echo "Display the variable values we run with"
-echo "*************************************************************"
 echo_variable_values
 
 # start printing all bash commands from here onwards, if activated

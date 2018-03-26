@@ -51,7 +51,7 @@ public class MSV3CustomerConfigService
 	{
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MSV3_Customer_Config.class)
-				.addOnlyActiveRecordsFilter()
+				// .addOnlyActiveRecordsFilter() // ALL, even if is not active. For those inactive we will generate delete events
 				.orderBy(I_MSV3_Customer_Config.COLUMN_MSV3_Customer_Config_ID)
 				.create()
 				.stream(I_MSV3_Customer_Config.class)

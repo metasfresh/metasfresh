@@ -41,6 +41,7 @@ import org.compiere.model.I_M_AttributeInstance;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 
@@ -460,4 +461,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * The result does not depend on the given ic's invoice rule.
 	 */
 	BigDecimal computeOpenQty(I_C_Invoice_Candidate ic);
+
+	void markInvoiceCandInDisputeForReceiptLine(I_M_InOutLine inOutLine);
+
+	void markInvoiceCandInDisputeForReceiptLines(List<I_M_InOutLine> lines);
 }

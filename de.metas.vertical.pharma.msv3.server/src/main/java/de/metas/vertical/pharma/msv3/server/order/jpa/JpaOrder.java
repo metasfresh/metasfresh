@@ -1,5 +1,6 @@
 package de.metas.vertical.pharma.msv3.server.order.jpa;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -63,6 +64,16 @@ public class JpaOrder extends AbstractEntity
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "order", cascade = CascadeType.ALL)
 	private final List<JpaOrderPackage> orderPackages = new ArrayList<>();
 
+	//
+	//
+	private boolean syncSent;
+	private Instant syncSentTS;
+	private boolean syncAck;
+	private Instant syncAckTS;
+	private boolean syncError;
+	private String syncErrorMsg;
+	private Instant syncErrorTS;
+
 	public void addOrderPackages(@NonNull final List<JpaOrderPackage> orderPackages)
 	{
 		orderPackages.forEach(orderPackage -> orderPackage.setOrder(this));
@@ -74,5 +85,24 @@ public class JpaOrder extends AbstractEntity
 		orderPackages.stream()
 				.flatMap(orderPackage -> orderPackage.getItems().stream())
 				.forEach(consumer);
+	}
+
+	public void markSyncSent()
+	{
+		syncSent = true;
+		syncSentTS = Instant.now();
+	}
+
+	public void markSyncAck()
+	{
+		syncAck = true;
+		syncAckTS = Instant.now();
+	}
+
+	public void markSyncError(final String errorMsg)
+	{
+		syncError = true;
+		syncErrorMsg = errorMsg;
+		syncErrorTS = Instant.now();
 	}
 }

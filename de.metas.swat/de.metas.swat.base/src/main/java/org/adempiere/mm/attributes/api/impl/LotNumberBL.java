@@ -1,9 +1,20 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import java.util.Date;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 
+import java.util.Date;
+import java.util.Properties;
+
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
+import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
+import org.adempiere.util.Services;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.TimeUtil;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,6 +60,31 @@ public class LotNumberBL implements ILotNumberBL
 		lotNumber.append(dayOfWeek);
 		
 		return  lotNumber.toString();
+	}
+	
+	@Override
+	public String getLotNumberAttributeValueOrNull(@NonNull final I_M_AttributeSetInstance asi)
+	{
+		final Properties ctx = getCtx(asi);
+
+		final I_M_Attribute lotNumberAttr = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttribute(ctx);
+
+		if (lotNumberAttr == null)
+		{
+			return null;
+		}
+		
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+		final int lotNumberAttrID = lotNumberAttr.getM_Attribute_ID();
+		final I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(asi, lotNumberAttrID);
+
+		if(lotNumberAI == null)
+		{
+			return null;
+		}
+		
+		return lotNumberAI.getValue();
 	}
 		
 }

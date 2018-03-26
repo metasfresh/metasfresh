@@ -135,6 +135,7 @@
 		<module>de.metas.procurement.base</module>
 
 		<module>de.metas.purchasecandidate.base</module>
+		<module>de.metas.salescandidate.base</module>
 
 		<module>de.metas.rfq</module>
 		<module>de.metas.storage</module>

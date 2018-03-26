@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3PeerAuthToken;
 import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 
 /*
@@ -56,6 +57,17 @@ public class Application implements InitializingBean
 		final ObjectMapper jsonObjectMapper = new ObjectMapper();
 		jsonObjectMapper.findAndRegisterModules();
 		return jsonObjectMapper;
+	}
+
+	@Bean
+	public MSV3PeerAuthToken authTokenString(@Value("${msv3server.peer.authToken:}") final String authTokenStringValue)
+	{
+		if (authTokenStringValue == null || authTokenStringValue.trim().isEmpty())
+		{
+			return null;
+		}
+
+		return MSV3PeerAuthToken.of(authTokenStringValue);
 	}
 
 	@Override

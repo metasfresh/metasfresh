@@ -78,8 +78,8 @@ SELECT
 			$7 -- AD_Org_ID
 			) um 
 	join m_product p on p.name = um.p_name AND p.isActive = 'Y' AND p.ad_org_id = $7
-	LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $6 AND pt.isActive = 'Y' AND pt.ad_org_id = $7
-	left join C_BPartner_Product bpp  ON p.M_Product_ID = bpp.M_Product_ID and bpp.c_bpartner_id = $4 AND bpp.isActive = 'Y' and bpp.ad_org_id = $7
+	LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $6 AND pt.isActive = 'Y'
+	left join C_BPartner_Product bpp  ON p.M_Product_ID = bpp.M_Product_ID and bpp.c_bpartner_id = $4 AND bpp.isActive = 'Y'
 	group by  COALESCE(pt.name, p.name), bpp.productcategory,um.ad_org_id 
 	
 $BODY$
