@@ -10,6 +10,9 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.51 (2018-14)
+**release for week 2018-14**
+
 # metasfresh 5.50 (2018-13)
 **release for week 2018-13**
 
@@ -17,10 +20,22 @@ Here come the actual release notes:
 * metasfresh
   * [#3585](https://github.com/metasfresh/metasfresh/issues/3585) WebUI window design: Business Partner Credit Limit
     * Improvement of Busines Partner Credit Limit Fieldnames and Translations.
+  * [#3687](https://github.com/metasfresh/metasfresh/issues/3687) Replace flags from tax category with a list
+  * [#3693](https://github.com/metasfresh/metasfresh/issues/3693) Lot-No lock & control
   * [#3703](https://github.com/metasfresh/metasfresh/issues/3703) Material Receipt Candidates Window, add media types for mobile/ tablet
     * Mobile Usage Improvement. Adds Mediatypes to Material Receipt Candidates window (Tablet proptotype).
+  * [#3721](https://github.com/metasfresh/metasfresh/issues/3721) Create Request on DD_Order to Quarantine warehouse
+  * [#3724](https://github.com/metasfresh/metasfresh/issues/3724) Allow to run print endpoint as standalone service
+  * [#3738](https://github.com/metasfresh/metasfresh/issues/3738) Introduce and use AD_OrgInfo.M_WarehousePO_ID
   * [#3743](https://github.com/metasfresh/metasfresh/issues/3743) Translation of Distribution Editor Quickaction
     * Translation added for the Distribution Editor Quickactions.
+  * [#3749](https://github.com/metasfresh/metasfresh/issues/3749) Add isPrintPrice flag in orderLine
+  * [#3758](https://github.com/metasfresh/metasfresh/issues/3758) Notify users if msv3-server was not reached
+
+* metasfresh-webui-api
+  * [#911](https://github.com/metasfresh/metasfresh-webui-api/issues/911) HU attributes shall consider M_HU_PI_Attribute.IsDisplayedUI flag
+  * [#913](https://github.com/metasfresh/metasfresh-webui-api/issues/913) Add switch for synchronous availiability check
+  * [#919](https://github.com/metasfresh/metasfresh-webui-api/issues/919) Allow to display only positive ATP values in product lookup
 
 * metasfresh-webui-frontend
   * [#1680](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1680) Camera Barcode workflow improvements
@@ -34,6 +49,12 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#3698](https://github.com/metasfresh/metasfresh/issues/3698) NPE when clicking on picking-slot in swing picking terminal first time
+  * [#3717](https://github.com/metasfresh/metasfresh/issues/3717) swing - Bereitstellung POS hangs
+  * [#3728](https://github.com/metasfresh/metasfresh/issues/3728) Cannot create material receipt if the ADR attribute is disabled in PI template
+  * [#3736](https://github.com/metasfresh/metasfresh/issues/3736) Jasper: Qty TU in purchase invoice is wrong again
+  * [#3739](https://github.com/metasfresh/metasfresh/issues/3739) Toplevel TUs are created as aggregate HUs
+  * [#3746](https://github.com/metasfresh/metasfresh/issues/3746) ZoomTo - exception in console if IsGenericZoomOrigin='N'
   * [#3755](https://github.com/metasfresh/metasfresh/issues/3755) Error in search of Businesspartner
     * Fixes the SQL of a virtual column in C_BPartner Table.
 
