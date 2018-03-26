@@ -39,5 +39,6 @@ $tooltip-border-color: #d5e5f0;
 
 $brand-icon-off: #D8D8D8;
 
+$breakpoint-lg: 1200px;
 $breakpoint-md: 991px;
 $breakpoint: 543px;

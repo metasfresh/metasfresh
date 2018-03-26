@@ -2,27 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Quagga from 'quagga';
 
-const BarcodeScannerResult = function({ result, onSelect }) {
-  if (!result) {
-    return null;
-  }
-  return (
-    <div className="col-xs-9">
-      <button
-        className="btn btn-filter btn-meta-outline-secondary btn-distance btn-s"
-        onClick={() => onSelect(result)}
-      >
-        {result.codeResult.code}
-      </button>
-    </div>
-  );
-};
-
-BarcodeScannerResult.propTypes = {
-  result: PropTypes.object,
-  onSelect: PropTypes.func.isRequired,
-};
-
 export default class BarcodeScanner extends Component {
   componentDidMount() {
     Quagga.init(
@@ -65,19 +44,17 @@ export default class BarcodeScanner extends Component {
     Quagga.offDetected(this._onDetected);
   }
 
-  _handleStop = () => {
+  _handleStop = skipCloseCallback => {
     Quagga.offDetected(this._onDetected);
+    Quagga.stop();
 
-    this.props.onClose();
-  };
-
-  _handleStart = () => {
-    this.props.onReset();
-    Quagga.onDetected(this._onDetected);
+    if (!skipCloseCallback) {
+      this.props.onClose();
+    }
   };
 
   _onDetected = result => {
-    Quagga.offDetected(this._onDetected);
+    this._handleStop(true);
     this.props.onDetected(result);
   };
 
@@ -120,36 +97,17 @@ export default class BarcodeScanner extends Component {
   }
 
   render() {
-    const { result } = this.props;
-
     return (
       <div className="row scanner-wrapper">
         <div id="interactive" className="col-sm-12 viewport scanner-window" />
-        <div className="col-sm-12 scanner-controls">
-          <button
-            disabled={!result}
-            className="btn btn-filter btn-meta-outline-secondary btn-distance btn-s"
-            onClick={this._handleStart}
-          >
-            Scan again
-          </button>
-          <button
-            className="btn btn-filter btn-meta-outline-secondary btn-distance btn-s"
-            onClick={this._handleStop}
-          >
-            Close
-          </button>
-        </div>
+        <i className="btn-close meta-icon-close-1" onClick={this._handleStop} />
       </div>
     );
   }
 }
 
 BarcodeScanner.propTypes = {
-  result: PropTypes.object,
   onDetected: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
   onReset: PropTypes.func.isRequired,
 };
-
-export { BarcodeScannerResult };
