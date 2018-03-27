@@ -3,6 +3,11 @@ package de.metas.material.event.commons;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IClientOrgAware;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
 import lombok.NonNull;
 import lombok.Value;
 
@@ -28,6 +33,7 @@ import lombok.Value;
  * #L%
  */
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class EventDescriptor
 {
 	/**
@@ -49,12 +55,15 @@ public class EventDescriptor
 		return new EventDescriptor(adClientId, adOrgId);
 	}
 
+	@JsonProperty("clientId")
 	int clientId;
+	@JsonProperty("orgId")
 	int orgId;
 
+	@JsonCreator
 	private EventDescriptor(
-			@NonNull final Integer clientId,
-			@NonNull final Integer orgId)
+			@JsonProperty("clientId") @NonNull final Integer clientId,
+			@JsonProperty("orgId") @NonNull final Integer orgId)
 	{
 		this.clientId = clientId;
 		this.orgId = orgId;
