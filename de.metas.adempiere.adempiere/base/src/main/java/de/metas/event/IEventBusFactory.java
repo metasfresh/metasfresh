@@ -38,12 +38,14 @@ import org.adempiere.util.ISingletonService;
 public interface IEventBusFactory extends ISingletonService
 {
 	/**
-	 * Get/create the event bus for the given <code>topic</code>.
-	 *
-	 * @param name
 	 * @return event bus; never returns <code>null</code>
 	 */
 	public IEventBus getEventBus(Topic topic);
+
+	/** 
+	 * @return event bus or null
+	 */
+	IEventBus getEventBusIfExists(Topic topic);
 
 	/**
 	 * Create an remotely bind all {@link IEventBus}es for which we have global listeners registered.
