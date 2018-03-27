@@ -1,6 +1,8 @@
 package de.metas.inoutcandidate.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
@@ -43,7 +45,6 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
@@ -182,7 +183,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 		if (!isCreateMovement)
 		{
 			receiptSchedule.setM_Warehouse_Dest_ID(0);
-			InterfaceWrapperHelper.save(receiptSchedule);
+			save(receiptSchedule);
 		}
 
 		// create HUs
@@ -214,7 +215,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 
 		addLog("M_ReceiptSchedule_ID={} - created a receipt; result={}", receiptSchedule.getM_ReceiptSchedule_ID(), result);
 
-		InterfaceWrapperHelper.refresh(receiptSchedule);
+		refresh(receiptSchedule);
 		final boolean rsCanBeClosedNow = isReceiptScheduleCanBeClosed(receiptSchedule);
 		if (rsCanBeClosedNow)
 		{
@@ -251,7 +252,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 			addLog("M_ReceiptSchedule_ID={} - creating HUs and allocating HUs on the fly", receiptSchedule.getM_ReceiptSchedule_ID());
 
 			final ReceiptScheduleHUGenerator huGenerator =//
-					ReceiptScheduleHUGenerator.newInstance(InterfaceWrapperHelper.getContextAware(receiptSchedule));
+					ReceiptScheduleHUGenerator.newInstance(getContextAware(receiptSchedule));
 
 			huGenerator.addM_ReceiptSchedule(receiptSchedule);
 
