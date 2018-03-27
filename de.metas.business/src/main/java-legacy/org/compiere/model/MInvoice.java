@@ -33,8 +33,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
@@ -1840,12 +1838,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 			return IDocument.STATUS_Invalid;
 		}
-
-		// FRESH-152 Update BP Statistics
-		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
-						.bpartnerId(getC_BPartner_ID())
-						.build());
 
 		// Update Project
 		if (isSOTrx() && getC_Project_ID() != 0)
