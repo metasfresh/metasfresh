@@ -1,4 +1,4 @@
-package org.adempiere.ad.security;
+package de.metas.util.web.security;
 
 /*
  * #%L
