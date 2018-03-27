@@ -43,8 +43,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
 @Configuration
-@EnableRabbit // needed for @RabbitListener to be considered
-@ConditionalOnBean(RabbitTemplate.class) // skip it if the RabbitAutoConfiguration was excluded
 public class RabbitMQConfig
 {
 	public static final String QUEUENAME_MSV3ServerRequests = "msv3-server-requests";
@@ -91,5 +89,12 @@ public class RabbitMQConfig
 		final DefaultMessageHandlerMethodFactory factory = new DefaultMessageHandlerMethodFactory();
 		factory.setMessageConverter(messageConverter());
 		return factory;
+	}
+
+	@Configuration
+	@EnableRabbit // needed for @RabbitListener to be considered
+	@ConditionalOnBean(RabbitTemplate.class) // skip it if the RabbitAutoConfiguration was excluded
+	public static class EnableRabbitListeners
+	{
 	}
 }

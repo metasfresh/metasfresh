@@ -1,5 +1,7 @@
 package de.metas.vertical.pharma.msv3.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +39,8 @@ import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 @SpringBootApplication
 public class Application implements InitializingBean
 {
+	private static final Logger logger = LoggerFactory.getLogger(Application.class);
+
 	@Value("${msv3server.startup.requestAllData:false}")
 	private boolean requestAllDataOnStartup;
 
@@ -75,7 +79,14 @@ public class Application implements InitializingBean
 	{
 		if (requestAllDataOnStartup)
 		{
-			msv3ServerPeerService.requestAllUpdates();
+			try
+			{
+				msv3ServerPeerService.requestAllUpdates();
+			}
+			catch (Exception ex)
+			{
+				logger.warn("Error while requesting ALL updates. Skipped.", ex);
+			}
 		}
 	}
 }

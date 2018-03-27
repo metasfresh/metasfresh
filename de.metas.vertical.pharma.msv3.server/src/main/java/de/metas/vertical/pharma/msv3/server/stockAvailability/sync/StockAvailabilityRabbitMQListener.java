@@ -1,5 +1,7 @@
 package de.metas.vertical.pharma.msv3.server.stockAvailability.sync;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,12 +35,21 @@ import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityS
 @Component
 public class StockAvailabilityRabbitMQListener
 {
+	private static final Logger logger = LoggerFactory.getLogger(StockAvailabilityRabbitMQListener.class);
+
 	@Autowired
 	private StockAvailabilityService stockAvailabilityService;
 
 	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent)
 	public void onEvent(final MSV3StockAvailabilityUpdatedEvent event)
 	{
-		stockAvailabilityService.handleEvent(event);
+		try
+		{
+			stockAvailabilityService.handleEvent(event);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed handling event: {}", event, ex);
+		}
 	}
 }

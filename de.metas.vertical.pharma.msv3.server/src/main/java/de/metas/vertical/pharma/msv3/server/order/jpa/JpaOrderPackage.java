@@ -41,7 +41,7 @@ import lombok.ToString;
  */
 
 @Entity
-@Table(name = "order_package")
+@Table(name = "msv3_order_package")
 @ToString
 public class JpaOrderPackage extends AbstractEntity
 {

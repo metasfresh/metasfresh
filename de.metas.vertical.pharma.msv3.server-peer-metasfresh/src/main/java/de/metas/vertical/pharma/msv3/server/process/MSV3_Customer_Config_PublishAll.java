@@ -1,17 +1,13 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.server.process;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import org.compiere.Adempiere;
 
-import de.metas.vertical.pharma.msv3.server.jpa.AbstractEntity;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import de.metas.process.JavaProcess;
+import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3CustomerConfigService;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.server-peer-metasfresh
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -31,17 +27,15 @@ import lombok.ToString;
  * #L%
  */
 
-@Entity
-@Table(name = "msv3_stock_availability", uniqueConstraints = @UniqueConstraint(name = "stock_availability_uq", columnNames = { "pzn" }))
-@ToString
-public class JpaStockAvailability extends AbstractEntity
+public class MSV3_Customer_Config_PublishAll extends JavaProcess
 {
-	/** Pharma-Zentral-Nummer */
-	@Getter
-	@Setter
-	private long pzn;
 
-	@Getter
-	@Setter
-	private int qty;
+	@Override
+	protected String doIt() throws Exception
+	{
+		final MSV3CustomerConfigService customerConfigService = Adempiere.getBean(MSV3CustomerConfigService.class);
+		customerConfigService.publishAllConfig();
+		return MSG_OK;
+	}
+
 }

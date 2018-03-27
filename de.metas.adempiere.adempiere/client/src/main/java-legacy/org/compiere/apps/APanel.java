@@ -70,8 +70,8 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.CopyRecordSupportTableInfo;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VPanelUI;
 import org.adempiere.process.event.IProcessEventListener;
@@ -1122,7 +1122,7 @@ public class APanel extends CPanel
 				int parentId = DB.getSQLValue(null, "SELECT " + gTab.getLinkColumnName() + " FROM " + gTab.getTableName() + " WHERE " + query.getWhereClause());
 				if (parentId > 0)
 				{
-					Map<Integer, Object[]> parentMap = new TreeMap<Integer, Object[]>();
+					Map<Integer, Object[]> parentMap = new TreeMap<>();
 					int index = tabIndex;
 					int oldpid = parentId;
 					GridTab currentTab = gTab;
@@ -2240,7 +2240,7 @@ public class APanel extends CPanel
 			return;
 
 		// show table with deletion rows -> by identifiers columns FR [ 2877111 ]
-		Vector<String> data = new Vector<String>();
+		Vector<String> data = new Vector<>();
 		final String keyColumnName = m_curTab.getKeyColumnName();
 		String sql = null;
 		if (!Check.isEmpty(keyColumnName, true))
@@ -3441,8 +3441,9 @@ public class APanel extends CPanel
 		final List<CopyRecordSupportTableInfo> tiList = CopyRecordFactory.getCopyRecordSupport(tableName).getSuggestedChildren(po);
 		
 		//
-		final JList<String> list = new JList<String>();
-		list.setListData(tiList.stream().map(CopyRecordSupportTableInfo::getName).toArray(size -> new String[size]));
+		final String adLanguage = Env.getAD_Language(ctx);
+		final JList<String> list = new JList<>();
+		list.setListData(tiList.stream().map(tableInfo -> tableInfo.getName(adLanguage)).toArray(size -> new String[size]));
 		list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		list.setSelectedIndices(IntStream.range(0, tiList.size()).toArray()); // select entire list
 		//

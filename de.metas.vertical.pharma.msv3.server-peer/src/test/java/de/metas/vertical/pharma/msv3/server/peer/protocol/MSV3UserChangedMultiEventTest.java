@@ -1,17 +1,11 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
-import de.metas.vertical.pharma.msv3.server.jpa.AbstractEntity;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import org.junit.Before;
+import org.junit.Test;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.server-peer
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -31,17 +25,28 @@ import lombok.ToString;
  * #L%
  */
 
-@Entity
-@Table(name = "msv3_stock_availability", uniqueConstraints = @UniqueConstraint(name = "stock_availability_uq", columnNames = { "pzn" }))
-@ToString
-public class JpaStockAvailability extends AbstractEntity
+public class MSV3UserChangedMultiEventTest
 {
-	/** Pharma-Zentral-Nummer */
-	@Getter
-	@Setter
-	private long pzn;
+	private JSONTestHelper jsonTestHelper;
 
-	@Getter
-	@Setter
-	private int qty;
+	@Before
+	public void init()
+	{
+		jsonTestHelper = new JSONTestHelper();
+	}
+
+	@Test
+	public void testSerializeDeserialize() throws Exception
+	{
+		jsonTestHelper.testSerializeDeserialize(MSV3UserChangedMultiEvent.builder()
+				.event(MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent()
+						.username("u1")
+						.password("p1")
+						.bpartnerId(1234567)
+						.bpartnerLocationId(7654321)
+						.build())
+				.event(MSV3UserChangedEvent.deletedEvent("u2"))
+				.build());
+	}
+
 }

@@ -4,8 +4,8 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
@@ -44,24 +44,24 @@ public class MSV3ServerPeerService
 {
 	private static final Logger logger = LoggerFactory.getLogger(MSV3ServerPeerService.class);
 
-	private final RabbitTemplate rabbitTemplate;
+	private final AmqpTemplate amqpTemplate;
 	private final MSV3PeerAuthToken msv3PeerAuthToken;
 
 	public MSV3ServerPeerService(
-			final Optional<RabbitTemplate> rabbitTemplate,
+			final Optional<AmqpTemplate> amqpTemplate,
 			final Optional<MSV3PeerAuthToken> msv3PeerAuthToken)
 	{
-		this.rabbitTemplate = rabbitTemplate.orElse(null); // tolerate the case when RabbitMQ is not enabled
+		this.amqpTemplate = amqpTemplate.orElse(null); // tolerate the case when AMQP is not enabled
 		this.msv3PeerAuthToken = msv3PeerAuthToken.orElse(null);
 	}
 
 	private void convertAndSend(final String routingKey, final Object message)
 	{
-		if (rabbitTemplate == null)
+		if (amqpTemplate == null)
 		{
-			throw new IllegalStateException("RabbitMQ is not enabled");
+			throw new IllegalStateException("AMQP is not enabled");
 		}
-		rabbitTemplate.convertAndSend(routingKey, message, this::messagePostProcess);
+		amqpTemplate.convertAndSend(routingKey, message, this::messagePostProcess);
 	}
 
 	private Message messagePostProcess(final Message message)
