@@ -38,7 +38,7 @@ public class InOutProducerTest extends ReceiptScheduleTestBase
 	@Override
 	protected void setup()
 	{
-		receiptGenerateResult = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
+		receiptGenerateResult = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 
 		final boolean complete = true;
 		inOutProducer = new InOutProducer(receiptGenerateResult, complete);
