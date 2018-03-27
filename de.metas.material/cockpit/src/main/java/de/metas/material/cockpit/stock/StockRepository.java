@@ -40,7 +40,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class StockDataUpdateRequestHandler
+public class StockRepository
 {
 	public void handleDataUpdateRequest(@NonNull final StockDataUpdateRequest dataUpdateRequest)
 	{
@@ -48,6 +48,8 @@ public class StockDataUpdateRequestHandler
 
 		updateDataRecordWithRequestQtys(dataRecord, dataUpdateRequest);
 		save(dataRecord);
+		
+		// TODO: fire stock changed event (on after commit!)
 	}
 
 	private I_MD_Stock retrieveOrCreateDataRecord(@NonNull final StockDataRecordIdentifier identifier)
