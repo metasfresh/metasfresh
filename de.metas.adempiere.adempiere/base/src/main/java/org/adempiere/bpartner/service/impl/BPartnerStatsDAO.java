@@ -150,6 +150,9 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0)*(-1), "
 				// open invoice candidates
 				+ "COALESCE((SELECT SUM(currencyBase(ic.LineNetAmt,ic.C_Currency_ID,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
+				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N'),0), "
+				// tax for open invoice candidates
+				+ "COALESCE((SELECT SUM(currencyBase(invoicecandidatetaxamt(ic.C_Invoice_Candidate_ID),ic.C_Currency_ID,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
 				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N'),0) "
 				+ "FROM C_BPartner bp "
 				+ "WHERE C_BPartner_ID=?";
@@ -165,7 +168,8 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				final BigDecimal openInvoiceAmt = rs.getBigDecimal(1);
 				final BigDecimal unallocatedPaymentAmt = rs.getBigDecimal(2);
 				final BigDecimal openInvoiceCandidateAmt = rs.getBigDecimal(3);
-				final BigDecimal SO_CreditUsed = openInvoiceAmt.add(unallocatedPaymentAmt).add(openInvoiceCandidateAmt);
+				final BigDecimal openInvoiceCandidateTaxAmt = rs.getBigDecimal(4);
+				final BigDecimal SO_CreditUsed = openInvoiceAmt.add(unallocatedPaymentAmt).add(openInvoiceCandidateAmt).add(openInvoiceCandidateTaxAmt);
 				return SO_CreditUsed;
 			}
 			else
