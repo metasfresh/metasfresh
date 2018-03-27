@@ -29,7 +29,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class StockDataRecordIdentifier
 {
 	public static StockDataRecordIdentifier createForMaterial(
@@ -43,10 +42,10 @@ public class StockDataRecordIdentifier
 	}
 
 	ProductDescriptor productDescriptor;
-
 	int warehouseId;
 
-	public StockDataRecordIdentifier(
+	@Builder
+	private StockDataRecordIdentifier(
 			@NonNull final ProductDescriptor productDescriptor,
 			int warehouseId)
 	{
