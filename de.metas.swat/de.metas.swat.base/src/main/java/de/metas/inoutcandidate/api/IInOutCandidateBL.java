@@ -40,7 +40,7 @@ public interface IInOutCandidateBL extends ISingletonService
 	 *            number of generated receipts.
 	 * @return generated result
 	 */
-	InOutGenerateResult createInOutGenerateResult(boolean storeReceipts);
+	InOutGenerateResult createEmptyInOutGenerateResult(boolean storeReceipts);
 	
 	IQtyAndQuality getQtyAndQuality(final org.compiere.model.I_M_InOutLine inoutLine);
 

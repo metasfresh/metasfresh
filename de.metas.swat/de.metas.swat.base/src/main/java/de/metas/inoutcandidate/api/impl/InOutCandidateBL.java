@@ -37,7 +37,7 @@ import de.metas.inoutcandidate.spi.impl.QualityNoticesCollection;
 public class InOutCandidateBL implements IInOutCandidateBL
 {
 	@Override
-	public InOutGenerateResult createInOutGenerateResult(final boolean storeReceipts)
+	public InOutGenerateResult createEmptyInOutGenerateResult(final boolean storeReceipts)
 	{
 		return new DefaultInOutGenerateResult(storeReceipts);
 	}

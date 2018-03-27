@@ -290,7 +290,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	public IInOutProducerFromShipmentScheduleWithHU createInOutProducerFromShipmentSchedule()
 	{
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class)
-				.createInOutGenerateResult(true); // storeReceipts = true
+				.createEmptyInOutGenerateResult(true); // storeReceipts = true
 
 		return new InOutProducerFromShipmentScheduleWithHU(result);
 	}
