@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import classnames from 'classnames';
 
 export default class SelectionDropdown extends Component {
   static propTypes = {
@@ -14,19 +15,7 @@ export default class SelectionDropdown extends Component {
         size: PropTypes.number.isRequired,
       }),
     ]).isRequired,
-    selected: (props, propName) => {
-      const selected = props[propName];
-
-      if ([null, undefined].includes(selected)) {
-        return;
-      }
-
-      if (!props.options.includes(selected)) {
-        return new Error(
-          `${propName} must be one of options. ${propName}: ${selected}`
-        );
-      }
-    },
+    selected: PropTypes.object,
     empty: PropTypes.node,
     forceEmpty: PropTypes.bool,
     width: PropTypes.number.isRequired,
@@ -82,7 +71,6 @@ export default class SelectionDropdown extends Component {
       top: topMax,
       bottom: bottomMax,
     } = this.wrapper.getBoundingClientRect();
-
     const { top, bottom } = element.getBoundingClientRect();
 
     if (top < topMax || bottom > bottomMax) {
@@ -95,7 +83,7 @@ export default class SelectionDropdown extends Component {
     this.ignoreNextMouseEnter = true;
 
     const { selected, options, onChange } = this.props;
-
+    const size = this.size(options);
     let index = options.indexOf(selected);
 
     if (up) {
@@ -103,8 +91,6 @@ export default class SelectionDropdown extends Component {
     } else {
       index++;
     }
-
-    const size = this.size(options);
 
     if (index < 0) {
       index = 0;
@@ -131,21 +117,19 @@ export default class SelectionDropdown extends Component {
 
     switch (event.key) {
       case 'ArrowUp':
+        event.preventDefault();
         navigate(true);
         break;
-
       case 'ArrowDown':
+        event.preventDefault();
         navigate(false);
         break;
-
       case 'Escape':
         onCancel();
         break;
-
       case 'Enter':
         onSelect(selected);
         break;
-
       default:
         return;
     }
@@ -174,7 +158,6 @@ export default class SelectionDropdown extends Component {
     }
 
     this.ignoreOption = null;
-
     this.props.onChange(option);
   };
 
@@ -194,17 +177,16 @@ export default class SelectionDropdown extends Component {
     const { selected } = this.props;
     const { key, caption } = option;
 
-    const classNames = ['input-dropdown-list-option'];
-
-    if (option === selected) {
-      classNames.push('input-dropdown-list-option-key-on');
-    }
-
     return (
       <div
         ref={ref => this.optionToRef.set(option, ref)}
         key={`${key}${caption}`}
-        className={classNames.join(' ')}
+        className={classnames(
+          'input-dropdown-list-option ignore-react-onclickoutside',
+          {
+            'input-dropdown-list-option-key-on': option === selected,
+          }
+        )}
         onMouseEnter={() => this.handleMouseEnter(option)}
         onMouseDown={() => this.handleMouseDown(option)}
       >
@@ -229,7 +211,6 @@ export default class SelectionDropdown extends Component {
 
   render() {
     const { options, width, loading, forceEmpty } = this.props;
-
     const empty = this.size(options) === 0;
 
     return (
