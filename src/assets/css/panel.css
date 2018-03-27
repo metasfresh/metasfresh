@@ -156,7 +156,8 @@
 }
 
 .panel-title {
-    margin-bottom: .625rem;
+    margin-bottom: .5rem;
+    margin-top: .3rem;
 }
 
 .panel-title-spaced {

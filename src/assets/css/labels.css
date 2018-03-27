@@ -2,6 +2,7 @@
     .labels {
         position: relative;
         cursor: text;
+        padding-top: 0.125rem;
 
         .labels-wrap {
             display: inline-block;
@@ -10,10 +11,10 @@
 
         &-label {
             display: inline-block;
-            padding: 0.25em 0.5em;
+            padding-bottom: 0.125rem;
             background: rgba(0, 0, 0, 0.05);
             margin-right: 0.25em;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.125rem;
 
             &-remove {
                 cursor: pointer;

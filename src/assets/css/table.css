@@ -1,3 +1,16 @@
+table {
+    td:focus {
+        outline-color: $brand-font-color;
+        outline-width:1px;
+        outline-offset:0px;
+        outline-style: inset;
+    }
+}
+
+th {
+    font-weight: 500;
+    position: relative;
+}
 
 .table {
     margin-bottom: 1px;
@@ -79,13 +92,72 @@
     padding-top: 0;
     padding-bottom: 0;
     vertical-align: middle;
+    width: 75px;
+    position: relative;
+
+    span {
+        pointer-events: none;
+    }
 }
 
-.table td span {
-    pointer-events: none;
+/* Table cols sizing */
+
+.td-lg {
+    width: 225px;
+    max-width: 225px;
 }
 
+.td-md {
+    width: 144px;
+    max-width: 144px;
+}
 
+.td-sm {
+    min-width: 60px;
+    max-width: 100px;
+}
+
+.td-lg .input-dropdown-list {
+    width: auto;
+}
+
+.document-list-table {
+    flex: 2.6;
+}
+
+.table-fade-out {
+    opacity: .65;
+}
+
+.table .table-included {
+    background-color: transparent;
+    height: 100%;
+}
+
+.table.table-included td {
+    height: 22px;
+    width: 50%;
+}
+
+.table-chart-value {
+    text-align: right;
+}
+
+.table-read-only *:focus {
+    outline-width:0px;
+}
+
+.table-filter-line {
+    height:3rem;
+}
+
+.cell-mandatory:focus {
+    outline: 1px solid $brand-mandatory-color;
+}
+
+.cell-disabled:focus {
+    outline: 1px dashed #cbcbcb;
+}
 
 /*
  * Feel really sorry about that, but it is hard to get over 
@@ -114,6 +186,10 @@
 .table-striped tbody tr.tr-even.row-boundary,
 .table-striped tbody tr.tr-odd.row-boundary  {
     border-bottom: 2px solid #ddd;
+}
+
+.table.table-striped .table-included tr {
+    background-color: transparent;
 }
 
 .row-not-saved {
@@ -186,42 +262,36 @@
     border: 0;
 }
 
-
 .product-order-summary {
     width: 100%;
-}
 
-.product-order-summary td {
-    padding-top: 0.125rem;
-    padding-bottom: 0.125rem;
-}
+    td {
+        padding-top: 0.125rem;
+        padding-bottom: 0.125rem;
+    }
 
-.product-order-summary td:nth-child(1) {
-    width: 15%;
-}
+    td:nth-child(1) {
+        width: 15%;
+    }
 
-.product-order-summary td:nth-child(2) {
-    width: 30%;
-}
+    td:nth-child(2) {
+        width: 30%;
+    }
 
-.product-order-summary td:nth-child(3) {
-    width: 30%;
-    text-align: right;
-}
+    td:nth-child(3) {
+        width: 30%;
+        text-align: right;
+    }
 
-.product-order-summary td:last-child {
-    text-align: right;
-}
+    td:last-child {
+        text-align: right;
+    }
 
-.product-order-summary tr:last-child {
-    font-weight: bold;
-    font-size: 1rem;
+    tr:last-child {
+        font-weight: bold;
+        font-size: 1rem;
+    }
 }
-
-.table-filter-line {
-    height:3rem;
-}
-
 
 
 /* Pagination */
@@ -260,11 +330,6 @@
     color: $brand-font-color;
 }
 
-th {
-    font-weight: 500;
-    position: relative;
-}
-
 .empty-info-text {
     display: flex;
     justify-content: center;
@@ -274,33 +339,6 @@ th {
 
 .empty-info-text div {
     text-align: center;
-}
-
-
-.table td {
-    width: 75px;
-    position: relative;
-}
-
-/* Table cols sizing */
-
-.td-lg {
-    width: 225px;
-    max-width: 225px;
-}
-
-.td-md {
-    width: 144px;
-    max-width: 144px;
-}
-
-.td-sm {
-    min-width: 60px;
-    max-width: 100px;
-}
-
-.td-lg .input-dropdown-list {
-    width: auto;
 }
 
 .pagination {
@@ -490,7 +528,6 @@ $indent-collapsible-offset-lg: 24px;
 
 /* END OF INDENT SIGN ============ */
 
-
 .indent-item {
     right:18px;
     top:16px;
@@ -516,30 +553,4 @@ $indent-collapsible-offset-lg: 24px;
     width:1px;
     height: 6px;
     border-left: 1px solid #afbfca;
-}
-
-.document-list-table {
-    flex: 2.6;
-}
-
-.table-fade-out {
-    opacity: .65;
-}
-
-.table.table-striped  .table-included tr {
-    background-color: transparent;
-}
-
-.table .table-included {
-    background-color: transparent;
-    height: 100%;
-}
-
-.table.table-included td {
-    height: 22px;
-    width: 50%;
-}
-
-.table-chart-value {
-    text-align: right;
 }
