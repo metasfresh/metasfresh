@@ -19,10 +19,10 @@ import org.springframework.stereotype.Service;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
-import de.metas.event.jms.JacksonJsonEventSerializer;
 import de.metas.event.log.impl.EventLogEntry;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
+import de.metas.event.remote.JacksonJsonEventSerializer;
 import lombok.NonNull;
 
 /*

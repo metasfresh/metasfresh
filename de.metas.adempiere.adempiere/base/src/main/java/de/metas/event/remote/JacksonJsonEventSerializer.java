@@ -1,4 +1,4 @@
-package de.metas.event.jms;
+package de.metas.event.remote;
 
 import java.io.IOException;
 

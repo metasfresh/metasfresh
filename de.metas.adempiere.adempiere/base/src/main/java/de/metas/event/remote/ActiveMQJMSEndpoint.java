@@ -1,4 +1,4 @@
-package de.metas.event.jms;
+package de.metas.event.remote;
 
 /*
  * #%L
@@ -65,7 +65,8 @@ import de.metas.event.IEventListener;
 import de.metas.jms.IJMSService;
 import lombok.NonNull;
 
-public class ActiveMQJMSEndpoint implements IJMSEndpoint
+// @Component
+public class ActiveMQJMSEndpoint implements IEventBusRemoteEndpoint
 {
 	// services
 	private static final transient Logger logger = EventBusConstants.getLogger(ActiveMQConnection.class);
@@ -126,7 +127,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 	};
 
 	// private final ConnectionFactory _jmsConnectionFactory;
-	private static final String JMS_PROPERTY_ClientID = de.metas.event.jms.ActiveMQJMSEndpoint.class.getName() + ".ClientID";
+	private static final String JMS_PROPERTY_ClientID = de.metas.event.remote.ActiveMQJMSEndpoint.class.getName() + ".ClientID";
 	private final String _jmsClientID;
 	private Connection _jmsConnection;
 	private Session _jmsSession;
@@ -152,7 +153,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 			.setDaemon(true)
 			.build());
 
-	private final IEventListener eventBus2JmsListener = new EventBus2JMSHandler(this);
+	private final IEventListener eventBus2JmsListener = EventBus2RemoteEndpointHandler.newInstance(this);
 
 	private ConnectionFactory _jmsConnectionFactory;
 

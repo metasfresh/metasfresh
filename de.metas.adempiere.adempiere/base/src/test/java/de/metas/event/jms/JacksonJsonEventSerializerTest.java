@@ -17,6 +17,7 @@ import org.junit.rules.TestName;
 
 import de.metas.event.Event;
 import de.metas.event.EventBusConstants;
+import de.metas.event.remote.JacksonJsonEventSerializer;
 
 /*
  * #%L

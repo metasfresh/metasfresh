@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import de.metas.event.Event;
-import de.metas.event.jms.ActiveMQJMSEndpoint;
-import de.metas.event.jms.IEventSerializer;
 import de.metas.event.log.EventLogUserService;
+import de.metas.event.remote.ActiveMQJMSEndpoint;
+import de.metas.event.remote.IEventSerializer;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventSerializerTests;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
