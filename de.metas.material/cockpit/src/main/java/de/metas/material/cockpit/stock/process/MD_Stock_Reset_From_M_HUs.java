@@ -138,8 +138,7 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 		final ProductDescriptor productDescriptor = ProductDescriptor
 				.forProductAndAttributes(
 						huBasedDataRecord.getM_Product_ID(),
-						AttributesKey.ofString(huBasedDataRecord.getAttributesKey()),
-						0);
+						AttributesKey.ofString(huBasedDataRecord.getAttributesKey()));
 
 		final StockDataRecordIdentifier recordIdentifier = StockDataRecordIdentifier.builder()
 				.productDescriptor(productDescriptor)
