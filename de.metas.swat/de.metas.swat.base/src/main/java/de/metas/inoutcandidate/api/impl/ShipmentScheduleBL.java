@@ -196,7 +196,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				// remember: 'removeLine' means that a *new* line might be
 				// created for the corresponding olAndSched
-				inOutLine.getGroup().removeLine(inOutLine);
+				inOutLine.removeFromGroup();
 				firstRun.removeLine(inOutLine);
 			}
 		}
