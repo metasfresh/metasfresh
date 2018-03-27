@@ -59,9 +59,4 @@ public class EventDescriptor
 		this.clientId = clientId;
 		this.orgId = orgId;
 	}
-
-	public EventDescriptor createNew()
-	{
-		return new EventDescriptor(clientId, orgId);
-	}
 }
