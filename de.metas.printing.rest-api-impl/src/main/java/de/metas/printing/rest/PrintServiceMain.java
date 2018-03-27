@@ -2,6 +2,7 @@ package de.metas.printing.rest;
 
 import java.util.Collections;
 
+import org.adempiere.ad.security.UserAuthTokenRepository;
 import org.adempiere.util.StringUtils;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
@@ -11,11 +12,14 @@ import org.compiere.util.Ini;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
+import de.metas.util.web.security.UserAuthTokenFilter;
+import de.metas.util.web.security.UserAuthTokenService;
 
 /*
  * #%L
@@ -30,16 +34,20 @@ import de.metas.Profiles;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackageClasses = {
+		PrintServiceMain.class,
+		UserAuthTokenRepository.class,
+		UserAuthTokenService.class })
+@ServletComponentScan(basePackageClasses = UserAuthTokenFilter.class)
 @Profile(Profiles.PROFILE_PrintService)
 public class PrintServiceMain
 {

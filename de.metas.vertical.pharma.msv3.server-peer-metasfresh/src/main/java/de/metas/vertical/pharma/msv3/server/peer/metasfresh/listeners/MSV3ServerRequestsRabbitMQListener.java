@@ -1,6 +1,5 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh.listeners;
 
-import org.adempiere.ad.security.UserAuthTokenService;
 import org.slf4j.Logger;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+import de.metas.util.web.security.UserAuthTokenService;
 import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3CustomerConfigService;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3StockAvailabilityService;

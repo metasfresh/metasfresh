@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -163,13 +162,6 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 
 			return true;
 		});
-	}
-
-	@Override
-	public I_AD_Printer_Matching retrievePrinterMatchingOrNull(final String hostKey, final I_AD_Printer printer)
-	{
-		return lookupMap.getFirstOnly(I_AD_Printer_Matching.class, pojo -> Check.equals(pojo.getHostKey(), hostKey)
-				&& pojo.getAD_Printer_ID() == printer.getAD_Printer_ID());
 	}
 
 	public I_C_PrintPackageData getPrintPackageData(final I_C_Print_Package printPackage)
@@ -360,28 +352,6 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 		return result;
 	}
 
-	@Override
-	public List<I_AD_Printer_Matching> retrievePrinterMatchings(final I_AD_PrinterHW printerHW)
-	{
-		return lookupMap.getRecords(I_AD_Printer_Matching.class, pojo -> {
-			if (!pojo.isActive())
-			{
-				return false;
-			}
-
-			if (pojo.getAD_PrinterHW_ID() != printerHW.getAD_PrinterHW_ID())
-			{
-				return false;
-			}
-
-			if (!Objects.equals(pojo.getHostKey(), printerHW.getHostKey()))
-			{
-				return false;
-			}
-
-			return true;
-		});
-	}
 
 	@Override
 	public List<I_AD_Printer_Tray> retrieveTrays(final I_AD_Printer printer)

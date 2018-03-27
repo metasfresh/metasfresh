@@ -1,7 +1,13 @@
-package org.adempiere.ad.security;
+package de.metas.util.web.security;
 
 import java.util.Properties;
 
+import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.security.UserAuthToken;
+import org.adempiere.ad.security.UserAuthTokenRepository;
+import org.adempiere.ad.security.UserNotAuthorizedException;
+import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
