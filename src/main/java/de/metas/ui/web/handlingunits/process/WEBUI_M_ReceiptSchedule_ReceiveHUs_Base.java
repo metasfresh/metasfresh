@@ -145,7 +145,7 @@ import de.metas.quantity.Quantity;
 
 		//
 		// Generate the HUs
-		final List<I_M_HU> hus = huGenerator.generate();
+		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
 		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus));
 
 		return MSG_OK;
