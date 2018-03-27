@@ -39,12 +39,9 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		-->
 		<assertj.version>3.8.0</assertj.version>
 
-		<!-- right now 6.2.2 is the latest, but there we suffer from http://community.jaspersoft.com/jasperreports-library/issues/7521 -->
-		<jasperreports.version>6.2.1</jasperreports.version>
+		<jasperreports.version>6.5.1</jasperreports.version>
 
-		<!-- FRESH-397: jasper 6.2.1 uses poi and zxing with theses versions -->
-		<!-- actually, jasper-6.2.1 accidentally uses 2.1.7.js5-SNAPSHOT, but we don't-->
-		<itext.version>2.1.7.js5</itext.version>
+		<itext.version>2.1.7.js6</itext.version>
 	</properties>
 
 	<modules>
@@ -68,7 +65,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 
 	</repositories>
  -->
- 
+
 	<pluginRepositories>
 		<!-- our main repo is also our plugin repo; also see https://maven.apache.org/pom.html#Plugin_Repositories -->
 		<!-- see https://github.com/metasfresh/metasfresh-parent/issues/3 -->
@@ -340,11 +337,11 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>org.codehaus.mojo</groupId>
-										<artifactId>jasperreports-maven-plugin</artifactId>
-										<versionRange>[1.0-beta-2,)</versionRange>
+										<groupId>com.alexnederlof</groupId>
+										<artifactId>jasperreports-plugin</artifactId>
+										<versionRange>[2.0,)</versionRange>
 										<goals>
-											<goal>compile-reports</goal>
+											<goal>jasper</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
@@ -712,8 +709,12 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 				</file>
 			</activation>
 
+
+
 			<build>
 				<plugins>
+					<!-- outputDirectory is the same as jasperreports-maven-plugin's outputDirectory -->
+					<!-- jrxmls are compiled into jasper files, they don't need to be copied, so we exclude *.jrxml -->
 					<plugin>
 						<artifactId>maven-resources-plugin</artifactId>
 						<version>2.6</version>
@@ -725,13 +726,12 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 									<goal>copy-resources</goal>
 								</goals>
 								<configuration>
-									<!-- same as jasperreports-maven-plugin's outputDirectory -->
 									<outputDirectory>${project.build.directory}/jasper</outputDirectory>
 									<resources>
 										<resource>
 											<directory>src/main/jasperreports</directory>
 											<excludes>
-												<exclude>**/*.jrxml</exclude> <!-- jrxmls are compiled into jasper files, they don't need to be copied -->
+												<exclude>**/*.jrxml</exclude>
 											</excludes>
 										</resource>
 									</resources>
@@ -741,38 +741,30 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 					</plugin>
 
 					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>jasperreports-maven-plugin</artifactId>
-						<version>1.0-beta-2</version>
+						<groupId>com.alexnederlof</groupId>
+						<artifactId>jasperreports-plugin</artifactId>
+						<version>2.0</version>
 						<configuration>
+				<!-- These are the default configurations: -->
+							<compiler>net.sf.jasperreports.engine.design.JRJdtCompiler</compiler>
+							<sourceDirectory>src/main/jasperreports</sourceDirectory>
 							<outputDirectory>${project.build.directory}/jasper</outputDirectory>
+							<outputFileExt>.jasper</outputFileExt>
+							<xmlValidation>true</xmlValidation>
+							<verbose>false</verbose>
+							<numberOfThreads>4</numberOfThreads>
+							<failOnMissingSourceDirectory>true</failOnMissingSourceDirectory>
+							<sourceScanner>org.codehaus.plexus.compiler.util.scan.StaleSourceScanner</sourceScanner>
 						</configuration>
-
+						<executions>
+							<execution>
+								<phase>process-sources</phase>
+								<goals>
+									<goal>jasper</goal>
+								</goals>
+							</execution>
+						</executions>
 						<dependencies>
-							<!-- for whatever reason, if we don't set this version explicitly,
-								the plugin will try to work with 2.1.7.js5-SNAPSHOT -->
-							<dependency>
-								<groupId>com.lowagie</groupId>
-								<artifactId>itext</artifactId>
-								<version>${itext.version}</version>
-							</dependency>
-
-							<!-- note that excluding jasperreports:jasperreports version 1.2 doesn't
-								work even if we don't need it, see http://stackoverflow.com/questions/34193602/how-to-exclude-jasperreports-artifact-from-jasperreports-maven-plugin/34198348 -->
-							<dependency>
-								<groupId>org.codehaus.mojo</groupId>
-								<artifactId>jasperreports-maven-plugin</artifactId>
-								<version>1.0-beta-2</version>
-							</dependency>
-							<dependency>
-								<groupId>net.sf.jasperreports</groupId>
-								<artifactId>jasperreports</artifactId>
-								<version>${jasperreports.version}</version>
-							</dependency>
-
-							<!-- required to compile reports with barcodes -->
-							<!-- FRESH-397: see if we can remove it, too.  -->
-							<!-- 1876 It's needed to be able to run jaspers with barcodes-->
 							<dependency>
 								<groupId>net.sf.barcode4j</groupId>
 								<artifactId>barcode4j-fop-ext-complete</artifactId>
@@ -785,15 +777,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 									</exclusion>
 								</exclusions>
 							</dependency>
-
 						</dependencies>
-						<executions>
-							<execution>
-								<goals>
-									<goal>compile-reports</goal>
-								</goals>
-							</execution>
-						</executions>
 					</plugin>
 
 					<plugin>
