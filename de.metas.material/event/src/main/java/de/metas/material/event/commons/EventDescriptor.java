@@ -3,9 +3,8 @@ package de.metas.material.event.commons;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IClientOrgAware;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -28,21 +27,9 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
-@AllArgsConstructor
+@Value
 public class EventDescriptor
 {
-	@NonNull
-	private final Integer clientId;
-
-	@NonNull
-	private final Integer orgId;
-
-	public EventDescriptor createNew()
-	{
-		return new EventDescriptor(clientId, orgId);
-	}
-
 	/**
 	 *
 	 * @param clientOrgAware model which can be made into a {@link IClientOrgAware} via {@link InterfaceWrapperHelper#asColumnReferenceAwareOrNull(Object, Class)}.
@@ -55,5 +42,26 @@ public class EventDescriptor
 		return new EventDescriptor(
 				clientOrgAwareToUse.getAD_Client_ID(),
 				clientOrgAwareToUse.getAD_Org_ID());
+	}
+
+	public static EventDescriptor ofClientAndOrg(final int adClientId, final int adOrgId)
+	{
+		return new EventDescriptor(adClientId, adOrgId);
+	}
+
+	int clientId;
+	int orgId;
+
+	private EventDescriptor(
+			@NonNull final Integer clientId,
+			@NonNull final Integer orgId)
+	{
+		this.clientId = clientId;
+		this.orgId = orgId;
+	}
+
+	public EventDescriptor createNew()
+	{
+		return new EventDescriptor(clientId, orgId);
 	}
 }

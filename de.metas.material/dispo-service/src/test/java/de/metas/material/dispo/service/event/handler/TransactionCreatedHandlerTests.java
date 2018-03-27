@@ -306,7 +306,7 @@ public class TransactionCreatedHandlerTests
 	private TransactionCreatedEventBuilder createTransactionEventBuilderWithQuantity(@NonNull final BigDecimal quantity)
 	{
 		return TransactionCreatedEvent.builder()
-				.eventDescriptor(new EventDescriptor(10, 20))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
 				.transactionId(TRANSACTION_ID)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.date(TimeUtil.parseTimestamp("2017-10-15"))
