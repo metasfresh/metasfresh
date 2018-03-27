@@ -1,14 +1,19 @@
 import React, { PureComponent } from 'react';
 import { is, List } from 'immutable';
+import onClickOutside from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import SelectionDropdown from '../SelectionDropdown';
 
+/*
+ * We want the selected option to be displayed first,
+ * so in case it has an index other than 0 we will move it
+ * to the top of the list
+ */
 const setSelectedValue = function(dropdownList, selected) {
   const changedValues = {};
   let idx = 0;
-
   let selectedOption = selected;
 
   if (selected) {
@@ -130,6 +135,22 @@ class RawList extends PureComponent {
     onOpenDropdown();
   };
 
+  handleClickOutside() {
+    const { isFocused, onCloseDropdown, onBlur, selected } = this.props;
+
+    if (isFocused) {
+      this.setState(
+        {
+          selected: selected || null,
+        },
+        () => {
+          onCloseDropdown();
+          onBlur();
+        }
+      );
+    }
+  }
+
   handleSelect = selected => {
     const { onSelect, onCloseDropdown } = this.props;
     const { dropdownList } = this.state;
@@ -154,17 +175,24 @@ class RawList extends PureComponent {
   };
 
   handleCancel = () => {
-    this.props.disableAutofocus();
+    const { disableAutofocus, onCloseDropdown } = this.props;
+    disableAutofocus && disableAutofocus();
     this.handleBlur();
-    this.props.onCloseDropdown();
+    onCloseDropdown && onCloseDropdown();
   };
 
-  handleKeyDown = event => {
-    const { onSelect, list, readonly } = this.props;
+  handleKeyDown = e => {
+    const { onSelect, list, readonly, isToggled, onOpenDropdown } = this.props;
 
-    if (event.key === 'Tab') {
+    if (e.key === 'Tab') {
       if (list.size === 0 && !readonly) {
         onSelect(null);
+      }
+    } else if (e.key === 'ArrowDown') {
+      if (!isToggled) {
+        e.preventDefault();
+        e.stopPropagation();
+        onOpenDropdown();
       }
     }
   };
@@ -347,4 +375,4 @@ RawList.propTypes = {
   onCloseDropdown: PropTypes.func.isRequired,
 };
 
-export default RawList;
+export default onClickOutside(RawList);
