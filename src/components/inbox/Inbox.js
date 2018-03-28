@@ -91,13 +91,13 @@ class Inbox extends Component {
   };
 
   render() {
-    const { open, inbox, all, close, modalVisible } = this.props;
+    const { open, inbox, all, close, modalVisible, onFocus } = this.props;
 
     return (
       <div
         className="js-inbox-wrapper"
         onKeyDown={e => this.handleKeyDown(e)}
-        onFocus={this.props.onFocus}
+        onFocus={onFocus}
         tabIndex={modalVisible ? -1 : 0}
       >
         {(all || open) && (
