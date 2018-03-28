@@ -23,7 +23,7 @@ import de.metas.process.ProcessPreconditionsResolution;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class BPartnerStats_AddRemoveCreditStopStatus extends JavaProcess implements IProcessPrecondition
+public class C_BPartner_Stats_AddRemoveCreditStopStatus extends JavaProcess implements IProcessPrecondition
 {
 	private  final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 	private  final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
