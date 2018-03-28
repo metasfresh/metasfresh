@@ -27,8 +27,8 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>de.metas.swat</groupId>
-			<artifactId>de.metas.swat.base</artifactId>
+			<groupId>de.metas.salescandidate</groupId>
+			<artifactId>de.metas.salescandidate.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

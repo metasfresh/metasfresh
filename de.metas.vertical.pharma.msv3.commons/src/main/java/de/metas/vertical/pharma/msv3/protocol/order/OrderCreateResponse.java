@@ -5,7 +5,11 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -32,22 +36,24 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
+@EqualsAndHashCode(doNotUseGetters = true)
+@ToString(doNotUseGetters = true)
 public class OrderCreateResponse
 {
 	public static OrderCreateResponse ok(final OrderResponse order)
 	{
-		return _builder().error(false).order(order).build();
+		return _builder().order(order).build();
 	}
 
-	public static OrderCreateResponse error(final String errorMsg)
+	public static OrderCreateResponse error(Id orderId, BPartnerId bpartnerId, String errorMsg)
 	{
-		return _builder().error(true).errorMsg(errorMsg).build();
+		return _builder()
+				.error(OrderCreateError.builder().orderId(orderId).bpartnerId(bpartnerId).errorMsg(errorMsg).build())
+				.build();
 	}
 
 	@JsonProperty("error")
-	boolean error;
-	@JsonProperty("errorMsg")
-	String errorMsg;
+	OrderCreateError error;
 
 	@JsonProperty("order")
 	OrderResponse order;
@@ -55,20 +61,41 @@ public class OrderCreateResponse
 	@Builder(builderMethodName = "_builder")
 	@JsonCreator
 	private OrderCreateResponse(
-			@JsonProperty("error") final boolean error,
-			@JsonProperty("errorMsg") final String errorMsg,
+			@JsonProperty("error") final OrderCreateError error,
 			@JsonProperty("order") final OrderResponse order)
 	{
+		if (error == null && order == null)
+		{
+			throw new IllegalArgumentException("order or error shall be set");
+		}
+		if (error != null && order != null)
+		{
+			throw new IllegalArgumentException("either order or error shall be set");
+		}
+
 		this.error = error;
-		this.errorMsg = errorMsg;
 		this.order = order;
+	}
+
+	public boolean isError()
+	{
+		return error != null;
+	}
+
+	public OrderCreateError getError()
+	{
+		if (error == null)
+		{
+			throw new RuntimeException("Not an error response: " + this);
+		}
+		return error;
 	}
 
 	public OrderResponse getOrder()
 	{
 		if (order == null)
 		{
-			throw new RuntimeException("No order response for " + this);
+			throw new RuntimeException("Not an order response: " + this);
 		}
 		return order;
 	}

@@ -38,6 +38,7 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -125,17 +126,29 @@ public class PrintingRestController
 		requestPrintPackage.setTransactionID(transactionId);
 		final I_C_Print_Package responsePrintPackage = new CreatePrintPackageRequestHandler().createResponse(requestPrintPackage);
 
-		final PrintPackage response = new PrintPackage();
-		response.setTransactionId(transactionId);
-
-		if (responsePrintPackage == null)
+		final PrintPackage response;
+		if (responsePrintPackage != null)
 		{
-			return response;
+			save(responsePrintPackage);
+			response = createResponseFromPrintPackage(responsePrintPackage);
+			response.setTransactionId(transactionId);
+
+		}
+		else // create and return an empty response
+		{
+			response = new PrintPackage();
+			response.setTransactionId(transactionId);
 		}
 
-		save(responsePrintPackage);
+		return response;
+	}
 
-		response.setCopies(requestPrintPackage.getCopies());
+	private PrintPackage createResponseFromPrintPackage(
+			@NonNull final I_C_Print_Package responsePrintPackage)
+	{
+		final PrintPackage response = new PrintPackage();
+
+		response.setCopies(responsePrintPackage.getCopies());
 		response.setFormat(responsePrintPackage.getBinaryFormat());
 		response.setPageCount(responsePrintPackage.getPageCount());
 		response.setPrintJobInstructionsID(Integer.toString(responsePrintPackage.getC_Print_Job_Instructions_ID()));
@@ -143,7 +156,9 @@ public class PrintingRestController
 
 		final List<PrintPackageInfo> printPackageInfos = new ArrayList<>();
 
-		final List<I_C_Print_PackageInfo> printPackageInfoRecords = Services.get(IPrintingDAO.class).retrievePrintPackageInfos(responsePrintPackage);
+		final List<I_C_Print_PackageInfo> printPackageInfoRecords = //
+				Services.get(IPrintingDAO.class).retrievePrintPackageInfos(responsePrintPackage);
+
 		for (final I_C_Print_PackageInfo printPackageInfoRecord : printPackageInfoRecords)
 		{
 			final PrintPackageInfo printPackageInfo = new PrintPackageInfo();
@@ -168,7 +183,6 @@ public class PrintingRestController
 			printPackageInfos.add(printPackageInfo);
 		}
 		response.setPrintPackageInfos(printPackageInfos);
-
 		return response;
 	}
 

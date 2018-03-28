@@ -502,14 +502,12 @@ public class Helper
 				.getLookupMap()
 				.getFirstOnly(I_AD_Printer_Matching.class,
 						pojo -> Objects.equals(pojo.getAD_Printer_Config_ID(), printerConfigToUse.getAD_Printer_Config_ID())
-								&& Objects.equals(pojo.getHostKey(), hostKey)
 								&& Objects.equals(load(pojo.getAD_Printer_ID(), I_AD_Printer.class).getPrinterName(), printerName)
 								&& Objects.equals(pojo.getAD_PrinterHW().getName(), hwPrinterName));
 		if (printerMatching == null)
 		{
 			printerMatching = printingDAO.newInstance(ctx, I_AD_Printer_Matching.class, ITrx.TRXNAME_None);
 			printerMatching.setAD_Printer_Config(printerConfigToUse);
-			printerMatching.setHostKey(hostKey);
 			printerMatching.setAD_Printer_ID(getCreatePrinter(printerName).getAD_Printer_ID());
 			printerMatching.setAD_PrinterHW(getCreatePrinterHW(hwPrinterName));
 			printingDAO.save(printerMatching);

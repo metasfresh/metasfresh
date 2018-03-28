@@ -9,7 +9,9 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 /*
@@ -41,13 +43,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
 @Configuration
-@EnableRabbit // needed for @RabbitListener to be considered
 public class RabbitMQConfig
 {
 	public static final String QUEUENAME_MSV3ServerRequests = "msv3-server-requests";
 	public static final String QUEUENAME_UserChangedEvents = "msv3-server-UserChangedEvents";
 	public static final String QUEUENAME_StockAvailabilityUpdatedEvent = "msv3-server-StockAvailabilityUpdatedEvents";
 	public static final String QUEUENAME_CreateOrderRequestEvents = "msv3-server-CreateOrderRequestEvents";
+	public static final String QUEUENAME_CreateOrderResponseEvents = "msv3-server-CreateOrderResponseEvents";
 
 	@Bean
 	List<Declarable> queuesAndBindings()
@@ -57,6 +59,7 @@ public class RabbitMQConfig
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_UserChangedEvents))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_StockAvailabilityUpdatedEvent))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_CreateOrderRequestEvents))
+				.addAll(createQueueExchangeAndBinding(QUEUENAME_CreateOrderResponseEvents))
 				.build();
 	}
 
@@ -86,5 +89,12 @@ public class RabbitMQConfig
 		final DefaultMessageHandlerMethodFactory factory = new DefaultMessageHandlerMethodFactory();
 		factory.setMessageConverter(messageConverter());
 		return factory;
+	}
+
+	@Configuration
+	@EnableRabbit // needed for @RabbitListener to be considered
+	@ConditionalOnBean(RabbitTemplate.class) // skip it if the RabbitAutoConfiguration was excluded
+	public static class EnableRabbitListeners
+	{
 	}
 }

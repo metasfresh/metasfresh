@@ -65,7 +65,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 				createReceiptSchedule(bpartner2, warehouse1, date, product1_wh1, 10)
 				).iterator();
 
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
+		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules, result, complete);
 
 		Assert.assertEquals("2 receipts shall be generated", 2, result.getInOutCount());
@@ -82,7 +82,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 				createReceiptSchedule(bpartner2, warehouse1, date, product2_wh1, 10)
 				);
 
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
+		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules.iterator(), result, complete);
 
 		Assert.assertEquals("Invalid amount of generated receipts", 4, result.getInOutCount());
@@ -106,7 +106,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 				createReceiptSchedule(bpartner1, warehouse1, SystemTime.asDayTimestamp(), product1_wh1, 10)
 				).iterator();
 
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
+		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules, result, complete);
 
 		Assert.assertEquals("Invalid amount of generated receipts", 1, result.getInOutCount());
@@ -123,7 +123,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 				createReceiptSchedule(bpartner1, warehouse2, date, product1_wh1, 10)
 				).iterator();
 
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
+		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedules, result, complete);
 
 		Assert.assertEquals("Invalid amount of generated receipts", 2, result.getInOutCount());
@@ -134,7 +134,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 	{
 		final List<I_M_ReceiptSchedule> schedulesList = Arrays.asList(createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10));
 
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
+		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedulesList.iterator(), result, complete);
 
 		final I_M_ReceiptSchedule schedule = schedulesList.get(0);
@@ -154,7 +154,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 				createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10),
 				createReceiptSchedule(bpartner1, warehouse2, date, product1_wh1, 10));
 
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
+		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedulesList.iterator(), result, complete);
 
 		final I_M_ReceiptSchedule schedule1 = schedulesList.get(0);
@@ -177,7 +177,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 		schedulesList.get(0).setC_OrderLine_ID(111);
 		schedulesList.get(0).setC_UOM_ID(1);
 		schedulesList.get(0).setAD_Org_ID(3);
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
+		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedulesList.iterator(), result, complete);
 		final IInOutDAO inOutDao = Services.get(IInOutDAO.class);
 
@@ -200,7 +200,7 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 				createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10),
 				createReceiptSchedule(bpartner2, warehouse1, date, product1_wh1, 10));
 
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
+		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		receiptScheduleBL.generateInOuts(ctx, schedulesList.iterator(), result, complete);
 		final IInOutDAO inOutDao = Services.get(IInOutDAO.class);
 
