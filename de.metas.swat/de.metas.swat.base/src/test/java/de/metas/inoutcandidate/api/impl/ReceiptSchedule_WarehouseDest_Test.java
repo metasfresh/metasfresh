@@ -123,7 +123,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 
 		//
 		// Generate Receipt
-		final InOutGenerateResult receiptGenerateResult = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
+		final InOutGenerateResult receiptGenerateResult = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		final IInOutProducer receiptProducer = receiptScheduleBL.createInOutProducer(receiptGenerateResult, false); // complete=false
 		receiptScheduleBL.generateInOuts(ctx, receiptProducer, schedules.iterator());
 
