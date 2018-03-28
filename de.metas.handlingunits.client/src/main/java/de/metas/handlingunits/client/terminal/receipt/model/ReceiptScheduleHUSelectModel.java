@@ -274,7 +274,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 
 		//
 		// Generate the HUs
-		final List<I_M_HU> hus = huGenerator.generate();
+		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
 
 		//
 		// Create & return the HUEditor
