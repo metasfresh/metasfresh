@@ -39,12 +39,14 @@ import lombok.Value;
  */
 public interface IBPartnerStatsBL extends ISingletonService
 {
+	/**
+	 */
 	@Builder
 	@Value
 	public static class CalculateSOCreditStatusRequest
 	{
 		@NonNull
-		final BPartnerStats stat;
+		BPartnerStats stat;
 		@NonNull
 		@Default
 		final BigDecimal additionalAmt = BigDecimal.ZERO;
@@ -56,7 +58,10 @@ public interface IBPartnerStatsBL extends ISingletonService
 
 	/**
 	 * Calculate the future/simulated SOCreditStatus for the given {@link BPartnerStats} object at a certain date
-	 * No updating
+	 * <br>
+	 * The computation can be forced with the flag <code>forceCheckCreditStatus</code><br>
+	 * If the status is <code>CreditStop</code>, the status can be recomputed only if flag <code>forceCheckCreditStatus</code> is on Y
+	 * <br><b>No updating</b>
 	 *
 	 * @param stat
 	 * @param additionalAmt
