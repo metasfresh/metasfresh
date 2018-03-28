@@ -196,7 +196,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				// remember: 'removeLine' means that a *new* line might be
 				// created for the corresponding olAndSched
-				inOutLine.getGroup().getLines().remove(inOutLine);
+				inOutLine.removeFromGroup();
 				firstRun.removeLine(inOutLine);
 			}
 		}
@@ -651,12 +651,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		// Case: no Quantity on Hand storages
 		if (storages == null || storages.isEmpty())
 		{
-			final DeliveryLineCandidate inoutLine = new DeliveryLineCandidate(candidate, sched, completeStatus);
+			final DeliveryLineCandidate inoutLine = candidate.addLine(sched, completeStatus);
 			if (force)
 			{
 				inoutLine.setQtyToDeliver(qty);
 			}
-			candidate.getLines().add(inoutLine);
+			
 			candidates.addLine(inoutLine);
 			return;
 		}
@@ -704,7 +704,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			for (final DeliveryLineCandidate inoutLineExisting : inoutLines)
 			{
 				// skip if it's for a different order line
-				if (inoutLineExisting.getShipmentSchedule().getM_ShipmentSchedule_ID() != sched.getM_ShipmentSchedule_ID())
+				if (inoutLineExisting.getShipmentScheduleId() != sched.getM_ShipmentSchedule_ID())
 				{
 					continue;
 				}

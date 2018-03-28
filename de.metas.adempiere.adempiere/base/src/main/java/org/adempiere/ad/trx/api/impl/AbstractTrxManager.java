@@ -32,6 +32,8 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
@@ -69,6 +71,7 @@ import org.slf4j.Logger;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Abstract {@link ITrxManager} implementation without any dependencies on a native stuff.
@@ -696,11 +699,11 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 	}
 
-	private final <T> T call0(final TrxCallable<T> callable, final ITrxRunConfig cfg, final String trxName)
+	private final <T> T call0(
+			@NonNull final TrxCallable<T> callable,
+			@NonNull final ITrxRunConfig cfg,
+			@Nullable final String trxName)
 	{
-		Check.assumeNotNull(callable, IllegalTrxRunStateException.class, "Param 'callable' is not null");
-		Check.assumeNotNull(cfg, IllegalTrxRunStateException.class, "Param 'cfg' is not null");
-
 		// Validate trxName
 		if (isNull(trxName))
 		{

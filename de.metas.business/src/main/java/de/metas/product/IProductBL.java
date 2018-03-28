@@ -1,5 +1,7 @@
 package de.metas.product;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -53,6 +55,12 @@ public interface IProductBL extends ISingletonService
 	 * @return true if item
 	 */
 	boolean isItem(I_M_Product product);
+	
+	default boolean isItem(final int productId)
+	{
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		return isItem(product);
+	}
 
 	/**
 	 * @param product

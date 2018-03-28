@@ -1,17 +1,10 @@
-/**
- * 
- */
-/**
- * @author ts
- *
- */
-package de.metas.inoutcandidate.process;
+package de.metas.util.web.security;
 
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,11 +13,17 @@ package de.metas.inoutcandidate.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+@FunctionalInterface
+public interface UserAuthTokenCallable<R>
+{
+	R call() throws Exception;
+}
