@@ -1,0 +1,236 @@
+/*
+*  CUSTOM BUTTONS
+*/
+
+button, .btn {
+    position: relative;
+}
+
+.btn:active {
+    box-shadow: inset 0 0 4px rgba(0,0,0,.1);
+}
+
+.btn-flag {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    padding: .35rem .2rem;
+    vertical-align: middle;
+    color: #fff;
+    background-color: $brand-color-secondary;
+    border-radius: 3px 0 0 3px;
+    text-align: center;
+}
+
+.btn-inline {
+    display: inline-block;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 3px;
+    border: 1px solid $brand-light-color;
+    font-size: 16px;
+    line-height: 32px;
+    text-align: center;
+    text-decoration: none !important;
+    color: $brand-font-color;
+}
+
+.btn-icon-sm {
+    font-size: 12px;
+    margin-right:5px;
+}
+.btn-icon-md {
+    font-size: 14px;
+    margin-right:5px;
+}
+
+.btn-square {
+    height: 54px;
+    width: 55px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.btn-xs {
+    padding: .25rem .6rem;
+    font-size: .65rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+}
+.btn-sm {
+    padding: .25rem .6rem;
+    font-size: .75rem;
+    line-height: 1.25;
+    border-radius: .2rem;
+}
+.btn-md {
+    padding: .25rem 1rem;
+    font-size: .875rem;
+    line-height: 1.25;
+    border-radius: .2rem;
+}
+
+@media only screen and (min-width: $breakpoint-md){
+    .desktop {
+        .btn-xs {
+            padding: .25rem .6rem;
+            line-height: 1.5;
+        }
+        .btn-sm {
+            padding: .3125rem .6rem;
+            line-height: 1.5;
+        }
+        .btn-md {
+            padding: .5rem 1.2rem;
+            line-height: 1.5;
+        }
+    }
+}
+
+.btn-disabled {
+    pointer-events: none;
+}
+
+.btn-xs.dropdown-toggle {
+    padding: .25rem;
+}
+
+
+.btn-meta-default {
+    color: $brand-color-primary;
+    background-color: $brand-bright-color;
+    border-color: $brand-bright-color;
+}
+
+.btn-meta-default:hover {
+    background-color: color(#F8FAFB lightness(90%));
+    border-color: color(#F8FAFB lightness(90%));
+}
+
+.btn-meta-default-dark {
+    color: $brand-color-primary;
+    background-color: #F8FAFB;
+}
+
+.btn-meta-default-dark:hover {
+    background-color: color(#F8FAFB lightness(90%));
+}
+
+.btn-meta-default-bright {
+    color: $brand-color-primary;
+    background-color: #fff;
+}
+
+.btn-meta-default-bright:hover {
+    background-color: color(#F8FAFB lightness(90%));
+}
+
+.btn-meta-success{
+    color: #fff;
+    background-color: #89d729;
+    border-color: #89d729;
+}
+.btn-meta-success:hover{
+    background-color: color(#89d729 lightness(45%));
+    border-color: color(#89d729 lightness(45%));
+}
+
+.btn-meta-inv-success{
+    color: #89d729;
+    background-color: #fff;
+    border-color: #fff;
+}
+.btn-meta-inv-success:hover{
+    background-color: #fff;
+    border-color: #fff;
+}
+
+.btn-meta-primary {
+    color: #fff;
+    background-color: #9aafbd;
+    border-color: #9aafbd;
+}
+.btn-meta-primary:hover{
+    background-color: color(#9aafbd lightness(45%));
+    border-color: color(#9aafbd lightness(45%));
+}
+
+.btn-meta-secondary {
+    color: #fff;
+    background-color: $brand-light-color;
+    border-color: $brand-light-color;
+}
+.btn-meta-secondary:hover{
+    background-color: color(#C9D5DC lightness(45%));
+    border-color: color(#C9D5DC lightness(45%));
+}
+.btn-meta-outline-secondary {
+    border: solid 1px $brand-light-color;
+    color: $brand-font-color-secondary;
+    background-color: transparent;
+}
+.btn-meta-outline-secondary:hover {
+    background-color: color(#000 lightness(95%));
+}
+
+.btn-distance {
+    margin-right: .5rem;
+}
+.btn-distance-3 {
+    margin-right: 1.5rem;
+}
+
+.btn-distance-rev {
+    margin-left: .5rem;
+}
+
+.btn-flagged {
+    padding-left: 1rem;
+}
+
+.btn-meta-disabled,
+.btn-meta-disabled:hover,
+.btn-meta-disabled:focus,
+.btn-meta-disabled:active {
+    background-color: $brand-dark-color;
+    color: $brand-font-color;
+    outline: none;
+    box-shadow:none;
+    border:0;
+}
+
+.btn-select {
+    background: $brand-color-primary;
+    color: white;
+}
+
+.btn-filter:hover {
+    background: $brand-color-primary;
+    color: white;
+}
+
+.btn-active {
+    background: $brand-primary-color;
+    color: white;
+}
+
+.btn-active:hover {
+    background: $brand-primary-color;
+    color: white;
+}
+
+.btn i {
+    vertical-align: middle;
+}
+
+.btn:not(.btn-empty) i {
+    padding-right: 4px;
+}
