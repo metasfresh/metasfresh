@@ -1,0 +1,10 @@
+-- 2018-03-28T16:20:24.068
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=540420,Updated=TO_TIMESTAMP('2018-03-28 16:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=312
+;
+
+-- 2018-03-28T16:23:01.033
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsDeleteable='N',Updated=TO_TIMESTAMP('2018-03-28 16:23:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=312
+;
+
