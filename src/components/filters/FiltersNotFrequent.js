@@ -130,8 +130,13 @@ class FiltersNotFrequent extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  allowOutsideClick: state.windowHandler.allowOutsideClick,
-  modalVisible: state.windowHandler.modal.visible,
-});
+const mapStateToProps = state => {
+  const { allowOutsideClick, modal } = state.windowHandler;
+
+  return {
+    allowOutsideClick,
+    modalVisible: modal.visible,
+  };
+};
+
 export default connect(mapStateToProps)(onClickOutside(FiltersNotFrequent));
