@@ -150,10 +150,10 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0)*(-1), "
 				// open invoice candidates
 				+ "COALESCE((SELECT SUM(currencyBase(ic.LineNetAmt,ic.C_Currency_ID,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
-				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N'),0), "
+				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N' AND ic.IsSOTrx='Y'),0), "
 				// tax for open invoice candidates
 				+ "COALESCE((SELECT SUM(currencyBase(invoicecandidatetaxamt(ic.C_Invoice_Candidate_ID),ic.C_Currency_ID,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
-				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N'),0) "
+				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N' AND ic.IsSOTrx='Y'),0) "
 				+ "FROM C_BPartner bp "
 				+ "WHERE C_BPartner_ID=?";
 		PreparedStatement pstmt = null;
