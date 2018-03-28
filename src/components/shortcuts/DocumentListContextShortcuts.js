@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
 import { Shortcut } from '../shortcuts';
+import { arePropTypesIdentical } from '../../utils';
 
 export default class DocumentListContextShortcuts extends Component {
   handlers = {
@@ -47,6 +48,9 @@ export default class DocumentListContextShortcuts extends Component {
       }
     },
   };
+
+  shouldComponentUpdate = nextProps =>
+    !arePropTypesIdentical(nextProps, this.props);
 
   render() {
     return [
