@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { dropdownRequest } from '../../actions/GenericActions';
-import DocumentStatusContextShortcuts from '../shortcuts/DocumentStatusContextShortcuts';
+import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
 
 class ActionButton extends Component {
   constructor(props) {

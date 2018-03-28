@@ -14,7 +14,7 @@ import {
 } from '../actions/AppActions';
 import { noConnection } from '../actions/WindowActions';
 import '../assets/css/styles.css';
-import { generateHotkeys, ShortcutProvider } from '../components/shortcuts';
+import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
 import { LOCAL_LANG } from '../constants/Constants';

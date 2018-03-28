@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { Shortcut } from '../shortcuts';
+import { Shortcut } from '../keyshortcuts';
 import { arePropTypesIdentical } from '../../utils';
 
 export default class GlobalContextShortcuts extends Component {

@@ -9,7 +9,7 @@ import { deleteView } from '../../api';
 import { addNotification } from '../../actions/AppActions';
 import { closeModal, closeRawModal } from '../../actions/WindowActions';
 import keymap from '../../shortcuts/keymap';
-import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
+import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 

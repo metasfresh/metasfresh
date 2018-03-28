@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { Shortcut } from '../shortcuts';
+import { Shortcut } from '../keyshortcuts';
 
 export default class PaginationContextShortcuts extends Component {
   handlers = {

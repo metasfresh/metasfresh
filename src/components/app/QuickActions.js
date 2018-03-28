@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { quickActionsRequest } from '../../api';
 import { openModal } from '../../actions/WindowActions';
 import keymap from '../../shortcuts/keymap';
-import QuickActionsContextShortcuts from '../shortcuts/QuickActionsContextShortcuts';
+import QuickActionsContextShortcuts from '../keyshortcuts/QuickActionsContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import QuickActionsDropdown from './QuickActionsDropdown';
 

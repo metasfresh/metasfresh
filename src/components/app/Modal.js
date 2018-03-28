@@ -16,7 +16,7 @@ import { getSelection } from '../../reducers/windowHandler';
 import keymap from '../../shortcuts/keymap';
 import Process from '../Process';
 import Window from '../Window';
-import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
+import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import OverlayField from './OverlayField';
