@@ -545,6 +545,8 @@ public class HUs2DDOrderProducer
 		private Map<org.compiere.model.I_M_Attribute, Object> attributes = ImmutableMap.of();
 
 		private I_M_Product_LotNumber_Lock lotNoLock;
+		
+		private I_M_HU hu;
 
 		public DDOrderLineCandidate(final IHUContext huContext, final IHUProductStorage huProductStorage, final HUToDistribute huToDistribute)
 		{
@@ -554,7 +556,10 @@ public class HUs2DDOrderProducer
 
 			//
 			// Locator from
-			final I_M_HU hu = huProductStorage.getM_HU();
+	
+			
+			aggregationKeyBuilder.append(hu.getM_HU_ID());
+			
 			this.locatorFrom = hu.getM_Locator();
 			aggregationKeyBuilder.appendId(locatorFrom.getM_Locator_ID());
 
@@ -695,15 +700,19 @@ public class HUs2DDOrderProducer
 	{
 		@NonNull
 		I_M_HU hu;
+		
+		@NonNull
+		I_C_BPartner partner;
 
 		@Nullable
 		I_M_Product_LotNumber_Lock lockLotNo;
-
-		public static final HUToDistribute of(final I_M_HU hu, final I_M_Product_LotNumber_Lock lockLotNo)
+		
+		public static final HUToDistribute of(final I_M_HU hu, final I_C_BPartner partner, final I_M_Product_LotNumber_Lock lockLotNo)
 		{
 			return builder()
 					.hu(hu)
 					.lockLotNo(lockLotNo)
+					.partner(partner)
 					.build();
 
 		}
