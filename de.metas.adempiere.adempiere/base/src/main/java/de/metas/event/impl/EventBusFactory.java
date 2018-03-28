@@ -161,7 +161,7 @@ public class EventBusFactory implements IEventBusFactory
 
 	/**
 	 * Creates the event bus.
-	 * If the remove event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE},
+	 * If the remote event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE},
 	 * then the event bus is also bound to a remote endpoint.
 	 * Otherwise the event bus will only be local.
 	 *

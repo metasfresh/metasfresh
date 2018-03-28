@@ -126,7 +126,6 @@ public class ActiveMQJMSEndpoint implements IEventBusRemoteEndpoint
 		}
 	};
 
-	// private final ConnectionFactory _jmsConnectionFactory;
 	private static final String JMS_PROPERTY_ClientID = de.metas.event.remote.ActiveMQJMSEndpoint.class.getName() + ".ClientID";
 	private final String _jmsClientID;
 	private Connection _jmsConnection;
