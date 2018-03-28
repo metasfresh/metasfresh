@@ -42,41 +42,23 @@ Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", id: "metasfresh-admin", guest: 9090 , host: 9090 , host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", id: "metasfresh-webui-frontend", guest: 3000 , host: 3000 , host_ip: "127.0.0.1"
 
+  # you can run the search component within the virtual machine like this:
+  # git clone https://github.com/metasfresh/metasfresh-docker.git
+  # cd metasfresh-docker
+  # docker-compose up search
+  config.vm.network "forwarded_port", id: "metasfresh-search", guest: 9300 , host: 9300 , host_ip: "127.0.0.1"
+
   config.vm.network "forwarded_port", id: "docker remote API", guest: 4243 , host: 4243 , host_ip: "127.0.0.1"
-
-  # Create a private network, which allows host-only access to the machine
-  # using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
-
-  # Create a public network, which generally matched to bridged network.
-  # Bridged networks make the machine appear as another physical device on
-  # your network.
-  # config.vm.network "public_network"
-
-  # Share an additional folder to the guest VM. The first argument is
-  # the path on the host to the actual folder. The second argument is
-  # the path on the guest to mount the folder. And the optional third
-  # argument is a set of non-required options.
-  # config.vm.synced_folder "../data", "/vagrant_data"
-
-  # Provider-specific configuration so you can fine-tune various
-  # backing providers for Vagrant. These expose provider-specific options.
-  # Example for VirtualBox:
-  #
 
   config.vm.provider "virtualbox" do | vb |
 
     # trying to set this name sometimes lead to an error like the following
-	# VBoxManage.exe: error: Could not rename the directory 'C:\Users\ts\VirtualBox VMs\vagrant_default_1494409793539_10420' to 'C:\Users\ts\VirtualBox VMs\metasfresh-dev'
+	  # VBoxManage.exe: error: Could not rename the directory 'C:\Users\ts\VirtualBox VMs\vagrant_default_1494409793539_10420' to 'C:\Users\ts\VirtualBox VMs\metasfresh-dev'
     # for me the solution was to destroy and delete the virtual machine, delete all .vagrant etc files and reboot.
 	  vb.name = "metasfresh-dev-vagrant"
 
     # Display the VirtualBox GUI (i.e. the VM's "screen") when booting the machine
     # vb.gui = true
-
-	#try to capture the screen output
-	#vb.customize ['modifyvm', :id, '--videocap', 'on' ]
-    #vb.customize ['modifyvm', :id, '--videocapfile', 'recorded_screen_content.webm']
 
     # Customize the amount of memory on the VM:
     vb.memory = "4096"
@@ -90,30 +72,19 @@ Vagrant.configure("2") do |config|
     unless File.exist?(additional_disk_filename)
       vb.customize ['createhd', '--filename', additional_disk_filename, '--size', 50 * 1024]
     end
-	# thx to https://gist.github.com/leifg/4713995#gistcomment-1984791 about --port. After looking at the running machine in the virtualbox gui (without this additional disk!) i saw that the next free port number is 2
+	   # thx to https://gist.github.com/leifg/4713995#gistcomment-1984791 about --port. After looking at the running machine in the virtualbox gui (without this additional disk!) i saw that the next free port number is 2
     vb.customize ['storageattach', :id, '--storagectl', controller_name, '--port', 2, '--device', 0, '--type', 'hdd', '--medium', additional_disk_filename]
   end
-  #
-  # View the documentation for the provider you are using for more
-  # information on available options.
 
-  # Define a Vagrant Push strategy for pushing to Atlas. Other push strategies
-  # such as FTP and Heroku are also available. See the documentation at
-  # https://docs.vagrantup.com/v2/push/atlas.html for more information.
-  # config.push.define "atlas" do |push|
-  #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
-  # end
-
-  # Enable provisioning with a shell script. Additional provisioners such as
-  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
-  # documentation for more information about their specific syntax and use.
-  # config.vm.provision "shell", inline: <<-SHELL
-  #   apt-get update
-  #   apt-get install -y apache2
-  # SHELL
-  #
-
+  # prepare the additional disk for docke and install docker and docker-compose 
+  # run only once, because it e.g. adds a line to /etc/fstab
   config.vm.provision :shell, path: "provision/docker/provision_docker.sh"
+
+  # install an elk stack. To start the elk stack later, do
+  # cd ~ubuntu/docker-elk
+  # sudo docker-compose up -d
   config.vm.provision :shell, path: "provision/elk/provision_docker_elk.sh"
+
+  # install and start metasfresh-admin and metasfresh-db
   config.vm.provision :shell, path: "provision/provision_docker_metasfresh-services.sh", run: "always"
 end
