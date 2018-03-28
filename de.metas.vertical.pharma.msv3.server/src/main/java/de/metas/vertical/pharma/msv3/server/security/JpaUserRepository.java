@@ -27,4 +27,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface JpaUserRepository extends JpaRepository<JpaUser, Long>
 {
 	JpaUser findByUsername(final String username);
+
+	void deleteByUsername(final String username);
+
+	long deleteInBatchBySyncTokenNot(String syncToken);
 }

@@ -1,11 +1,13 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.server.peer.metasfresh.services;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.server-peer-metasfresh
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -25,10 +27,14 @@ import org.springframework.stereotype.Repository;
  * #L%
  */
 
-@Repository
-public interface JpaStockAvailabilityRepository extends JpaRepository<JpaStockAvailability, Long>
+@Service
+public class MSV3ServerConfigService
 {
-	JpaStockAvailability findByPzn(long pzn);
+	@Autowired
+	private MSV3ServerConfigRepository serverConfigRepository;
 
-	long deleteInBatchBySyncTokenNot(String syncToken);
+	public MSV3ServerConfig getServerConfig()
+	{
+		return serverConfigRepository.getServerConfig();
+	}
 }

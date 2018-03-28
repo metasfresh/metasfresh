@@ -1,7 +1,10 @@
 package de.metas.vertical.pharma.msv3.server.stockAvailability;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +52,8 @@ import lombok.NonNull;
 @Service
 public class StockAvailabilityService
 {
+	private static final Logger logger = LoggerFactory.getLogger(StockAvailabilityService.class);
+
 	@Autowired
 	private JpaStockAvailabilityRepository stockAvailabilityRepo;
 
@@ -108,12 +113,33 @@ public class StockAvailabilityService
 				.build();
 	}
 
+	// @Transactional
 	public void handleEvent(@NonNull final MSV3StockAvailabilityUpdatedEvent event)
 	{
-		event.getItems().forEach(this::updateStockAvailability);
+		final String syncToken = event.getId();
+
+		//
+		// Update
+		{
+			final AtomicInteger countUpdated = new AtomicInteger();
+			event.getItems().forEach(eventItem -> {
+				updateStockAvailability(eventItem, syncToken);
+				countUpdated.incrementAndGet();
+			});
+			logger.debug("Updated {} stock availability records", countUpdated);
+		}
+
+		//
+		// Delete
+		if (event.isDeleteAllOtherItems())
+		{
+			final long countDeleted = stockAvailabilityRepo.deleteInBatchBySyncTokenNot(syncToken);
+			logger.debug("Deleted {} stock availability records", countDeleted);
+		}
+
 	}
 
-	private void updateStockAvailability(@NonNull final MSV3StockAvailability request)
+	private void updateStockAvailability(@NonNull final MSV3StockAvailability request, final String syncToken)
 	{
 		JpaStockAvailability jpaStockAvailability = stockAvailabilityRepo.findByPzn(request.getPzn());
 		if (jpaStockAvailability == null)
@@ -123,6 +149,7 @@ public class StockAvailabilityService
 		}
 
 		jpaStockAvailability.setQty(request.getQty());
+		jpaStockAvailability.setSyncToken(syncToken);
 		stockAvailabilityRepo.save(jpaStockAvailability);
 	}
 }
