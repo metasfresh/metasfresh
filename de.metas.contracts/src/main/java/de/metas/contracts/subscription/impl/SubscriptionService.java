@@ -99,9 +99,9 @@ public class SubscriptionService
 
 			if (!IsPermanentRecipient)
 			{
-				Preconditions.checkArgument(!dateTo.before(dateFrom), "The given dateTo may not be before the given dateFrom; dateFrom=%s; dateTo=%s", dateFrom, dateTo);
 				Preconditions.checkNotNull(dateFrom, "The dateForm shall not be null");
 				Preconditions.checkNotNull(dateTo, "The dateTo shall not be null");
+				Preconditions.checkArgument(!dateTo.before(dateFrom), "The given dateTo may not be before the given dateFrom; dateFrom=%s; dateTo=%s", dateFrom, dateTo);
 			}
 			this.dateFrom = dateFrom;
 			this.dateTo = dateTo;
