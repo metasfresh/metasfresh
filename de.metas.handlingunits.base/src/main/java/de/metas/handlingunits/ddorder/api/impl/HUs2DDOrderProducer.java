@@ -46,7 +46,6 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -115,7 +114,6 @@ public class HUs2DDOrderProducer
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-	private final transient IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
@@ -130,10 +128,8 @@ public class HUs2DDOrderProducer
 	private I_M_Locator _locatorTo;
 	private Iterator<HUToDistribute> _hus;
 	private final Timestamp date = SystemTime.asDayTimestamp();
-	//
-	// Parameters loaded before processing:
-	private I_C_BPartner orgBPartner;
-	private I_C_BPartner_Location orgBPLocation;
+	private I_C_BPartner _partner;
+	private I_C_BPartner_Location _bpLocation;
 
 	//
 	// Status
@@ -234,12 +230,6 @@ public class HUs2DDOrderProducer
 		final Properties ctx = InterfaceWrapperHelper.getCtx(org);
 
 		//
-		// Organization BPartner & Location
-		orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
-		Check.assumeNotNull(orgBPartner, "Org BPartner shall exist for {}", org);
-		orgBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(ctx, org.getAD_Org_ID(), ITrx.TRXNAME_None);
-
-		//
 		// Plant
 		plant = warehouseTo.getPP_Plant();
 
@@ -290,6 +280,32 @@ public class HUs2DDOrderProducer
 		_warehouseTo = warehouseTo;
 		_locatorTo = warehouseBL.getDefaultLocator(_warehouseTo);
 		return this;
+	}
+
+	public HUs2DDOrderProducer setC_BPartner(final I_C_BPartner partner)
+	{
+		Check.assumeNotNull(partner, "Partner not null");
+		_partner = partner;
+		return this;
+	}
+
+	public HUs2DDOrderProducer setC_BPartnerLocation(final I_C_BPartner_Location bpLocation)
+	{
+		Check.assumeNotNull(bpLocation, "Partner Location not null");
+		_bpLocation = bpLocation;
+		return this;
+	}
+
+	private final I_C_BPartner getPartner()
+	{
+		Check.assumeNotNull(_partner, "Partner rnot null");
+		return _partner;
+	}
+
+	private final I_C_BPartner_Location getBPLocation()
+	{
+		Check.assumeNotNull(_bpLocation, "Partner Location not null");
+		return _bpLocation;
 	}
 
 	private final I_M_Warehouse getM_Warehouse_To()
@@ -373,8 +389,8 @@ public class HUs2DDOrderProducer
 		ddOrder.setMRP_Generated(true);
 		ddOrder.setMRP_AllowCleanup(true);
 		ddOrder.setPP_Plant(plant);
-		ddOrder.setC_BPartner(orgBPartner);
-		ddOrder.setC_BPartner_Location(orgBPLocation);
+		ddOrder.setC_BPartner(getPartner());
+		ddOrder.setC_BPartner_Location(getBPLocation());
 		// order.setSalesRep_ID(productPlanningData.getPlanner_ID());
 
 		ddOrder.setC_DocType_ID(docTypeDO_ID);
