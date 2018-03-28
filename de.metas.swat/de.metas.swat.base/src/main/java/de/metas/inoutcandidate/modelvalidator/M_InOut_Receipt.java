@@ -33,9 +33,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -107,34 +105,6 @@ public class M_InOut_Receipt
 				.forEach(rsa -> InterfaceWrapperHelper.delete(rsa));
 	}
 
-	/**
-	 * Generate movements from receipt (if needed).
-	 *
-	 * This is the counter-part of {@link #reverseMovements(I_M_InOut)}.
-	 *
-	 * @param inout
-	 */
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void generateMovement(final I_M_InOut inout)
-	{
-		// We are generating movements only for receipts
-		if (inout.isSOTrx())
-		{
-			return;
-		}
-
-		// Don't generate movements for a reversal document
-		if (Services.get(IInOutBL.class).isReversal(inout))
-		{
-			return;
-		}
-
-		{
-			// Actually generate the movements
-			final IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
-			inoutMovementBL.generateMovementFromReceipt(inout);
-		}
-	}
-
+	
 	
 }

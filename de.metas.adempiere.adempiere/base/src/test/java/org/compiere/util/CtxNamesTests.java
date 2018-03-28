@@ -180,8 +180,21 @@ public class CtxNamesTests
 		final Evaluatee evaluatee = variableName -> null;
 
 		final CtxName parse = CtxNames.parse("Test" + CtxNames.SEPARATOR + nullDefaultValue);
-		assertThat(parse.getDefaultValue()).isEqualTo(CtxNames.VALUE_NULL);
+
 		assertThat(parse.getValueAsDate(evaluatee)).isNull();
+		assertThat(parse.getValueAsBigDecimal(evaluatee)).isNull();
+		assertThat(parse.getValueAsBoolean(evaluatee)).isNull();
+		assertThat(parse.getValueAsInteger(evaluatee)).isNull();
+
+		final String valueAsString = parse.getValueAsString(evaluatee);
+		if (nullDefaultValue == null)
+		{
+			assertThat(valueAsString).isEqualTo("null");
+		}
+		else
+		{
+			assertThat(valueAsString).isEqualTo(nullDefaultValue);
+		}
 	}
 
 	@Test
@@ -198,7 +211,20 @@ public class CtxNamesTests
 		final Evaluatee evaluatee = variableName -> null;
 
 		final CtxName ofNameAndDefaultValue = CtxNames.ofNameAndDefaultValue("Test", nullDefaultValue);
-		assertThat(ofNameAndDefaultValue.getDefaultValue()).isEqualTo(CtxNames.VALUE_NULL);
+		if (nullDefaultValue == null)
+		{
+			assertThat(ofNameAndDefaultValue.getDefaultValue()).isEqualTo(CtxNames.VALUE_NULL);
+			assertThat(ofNameAndDefaultValue.getValueAsString(evaluatee)).isNull();
+		}
+		else
+		{
+			assertThat(ofNameAndDefaultValue.getDefaultValue()).isEqualTo(nullDefaultValue);
+			assertThat(ofNameAndDefaultValue.getValueAsString(evaluatee)).isEqualTo(nullDefaultValue);
+		}
+
+		assertThat(ofNameAndDefaultValue.getValueAsInteger(evaluatee)).isNull();
+		assertThat(ofNameAndDefaultValue.getValueAsBigDecimal(evaluatee)).isNull();
+		assertThat(ofNameAndDefaultValue.getValueAsBoolean(evaluatee)).isNull();
 		assertThat(ofNameAndDefaultValue.getValueAsDate(evaluatee)).isNull();
 	}
 

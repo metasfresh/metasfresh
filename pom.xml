@@ -68,7 +68,6 @@
 		<module>de.metas.migration</module>
 		<module>de.metas.scripts.rollout</module>
 
-		<module>de.metas.util</module>
 		<module>de.metas.monitoring</module>
 
 		<module>de.metas.adempiere.adempiere</module>
@@ -135,6 +134,7 @@
 		<module>de.metas.procurement.base</module>
 
 		<module>de.metas.purchasecandidate.base</module>
+		<module>de.metas.salescandidate.base</module>
 
 		<module>de.metas.rfq</module>
 		<module>de.metas.storage</module>
@@ -146,6 +146,9 @@
 		<!-- commented out because we don't include it in any distribution <module>../de.metas.shipper.gateway.dpd-legacy</module> -->
 		<module>de.metas.ui.web.base</module>
 
+		<module>de.metas.util</module>
+		<module>de.metas.util.web</module>
+
 		<module>de.metas.vendor.gateway.api</module>
 
 		<module>de.metas.datev</module>
@@ -153,6 +156,8 @@
 		<module>de.metas.vertical.pharma</module>
 		<module>de.metas.vertical.pharma.msv3.commons</module>
 		<module>de.metas.vertical.pharma.msv3.server</module>
+		<module>de.metas.vertical.pharma.msv3.server-peer</module>
+		<module>de.metas.vertical.pharma.msv3.server-peer-metasfresh</module>
 		<module>de.metas.vertical.pharma.vendor.gateway.msv3</module>		
 
 		<!-- commented out because we currently don't work with them <module>de.metas.reactor.ait</module> -->

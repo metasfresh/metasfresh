@@ -1,5 +1,7 @@
 package de.metas.printing.model.validator;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.printing.base
@@ -212,33 +214,28 @@ public class C_Print_Job_Instructions
 
 					// schedule our check to be run after 'printTimeOutSeconds' seconds
 					taskExecutorService.schedule(
-							new Callable<Void>()
-							{
-								@Override
-								public Void call() throws Exception
+							() -> {
+								final INotificationBL notificationBL = Services.get(INotificationBL.class);
+								final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+								final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+								final IPair<I_C_Print_Job_Instructions, I_AD_User> reloadRecords = reloadRecords(ctx, printJobInstructionsID, userToPrintID);
+								final I_C_Print_Job_Instructions printJobInstructionsReloaded = reloadRecords.getLeft();
+								final I_AD_User userToPrintReloaded = reloadRecords.getRight();
+
+								if (status.equals(printJobInstructionsReloaded.getStatus()))
 								{
-									final INotificationBL notificationBL = Services.get(INotificationBL.class);
-									final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-									final IMsgBL msgBL = Services.get(IMsgBL.class);
+									// the status is still unchanged after the specified timeout => notify the user
+									final String statusName = adReferenceDAO.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status);
+									final String timeoutMsg = msgBL.getMsg(ctx, MSG_CLIENT_PRINT_TIMEOUT_DETAILS, new Object[] { printTimeOutSeconds, statusName });
 
-									final IPair<I_C_Print_Job_Instructions, I_AD_User> reloadRecords = reloadRecords(ctx, printJobInstructionsID, userToPrintID);
-									final I_C_Print_Job_Instructions printJobInstructionsReloaded = reloadRecords.getLeft();
-									final I_AD_User userToPrintReloaded = reloadRecords.getRight();
-
-									if (status.equals(printJobInstructionsReloaded.getStatus()))
-									{
-										// the status is still unchanged after the specified timeout => notify the user
-										final String statusName = adReferenceDAO.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status);
-										final String timeoutMsg = msgBL.getMsg(ctx, MSG_CLIENT_PRINT_TIMEOUT_DETAILS, new Object[] { printTimeOutSeconds, statusName });
-
-										notificationBL.notifyUser(
-												userToPrintReloaded,
-												MSG_CLIENT_PRINT_TIMEOUT,
-												timeoutMsg,
-												TableRecordReference.of(printJobInstructionsReloaded));
-									}
-									return null;
+									notificationBL.notifyUser(
+											userToPrintReloaded,
+											MSG_CLIENT_PRINT_TIMEOUT,
+											timeoutMsg,
+											TableRecordReference.of(printJobInstructionsReloaded));
 								}
+								return null;
 							},
 							printTimeOutSeconds,
 							TimeUnit.SECONDS,
@@ -274,10 +271,10 @@ public class C_Print_Job_Instructions
 
 	private void logDocOutbound(final I_C_Print_Job_Line line, final I_AD_User userToPrint)
 	{
-		final Set<String> printerNames = new HashSet<String>();
+		final Set<String> printerNames = new HashSet<>();
 		for (final I_C_Print_Job_Detail detail : Services.get(IPrintingDAO.class).retrievePrintJobDetails(line))
 		{
-			final I_AD_PrinterRouting routing = detail.getAD_PrinterRouting();
+			final I_AD_PrinterRouting routing = load(detail.getAD_PrinterRouting_ID(), I_AD_PrinterRouting.class);
 			final String printerName = routing.getAD_Printer().getPrinterName();
 
 			if (!printerNames.add(printerName))

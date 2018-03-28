@@ -305,6 +305,12 @@ public final class NullAttributeStorage implements IAttributeStorage
 	{
 		throw new AttributeNotFoundException(attribute, this);
 	}
+	
+	@Override
+	public boolean isDisplayedUI(final I_M_Attribute attribute)
+	{
+		throw new AttributeNotFoundException(attribute, this);
+	}
 
 	@Override
 	public void pushUp()
@@ -342,7 +348,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 	 * @throws UnsupportedOperationException
 	 */
 	@Override
-	public IAttributeStorageFactory getHUAttributeStorageFactory()
+	public IAttributeStorageFactory getAttributeStorageFactory()
 	{
 		throw new UnsupportedOperationException();
 	}

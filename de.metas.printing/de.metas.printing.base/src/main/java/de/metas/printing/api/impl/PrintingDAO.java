@@ -13,15 +13,14 @@ package de.metas.printing.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -70,7 +69,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(job);
 
 		final StringBuilder whereClause = new StringBuilder();
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 
 		whereClause.append(I_C_Print_Job_Line.COLUMNNAME_C_Print_Job_ID).append("=?");
 		params.add(job.getC_Print_Job_ID());
@@ -128,40 +127,6 @@ public class PrintingDAO extends AbstractPrintingDAO
 	}
 
 	@Override
-	public I_AD_Printer_Matching retrievePrinterMatchingOrNull(final String hostKey, final I_AD_Printer printer)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printer);
-		final String trxName = InterfaceWrapperHelper.getTrxName(printer);
-
-		final String whereClause = I_AD_Printer_Matching.COLUMNNAME_HostKey + " = ?"
-				+ " AND " + I_AD_Printer_Matching.COLUMNNAME_AD_Printer_ID + " = ?";
-
-		return new Query(ctx, I_AD_Printer_Matching.Table_Name, whereClause, trxName)
-				.setOnlyActiveRecords(true)
-				.setParameters(hostKey, printer.getAD_Printer_ID())
-				.firstOnly(I_AD_Printer_Matching.class);
-	}
-
-	@Override
-	public List<I_AD_Printer_Matching> retrievePrinterMatchings(final I_AD_PrinterHW printerHW)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printerHW);
-		final String trxName = InterfaceWrapperHelper.getTrxName(printerHW);
-		final String hostKey = printerHW.getHostKey();
-
-		final String whereClause =
-				I_AD_Printer_Matching.COLUMNNAME_AD_PrinterHW_ID + "=? AND "
-						+ I_AD_Printer_Matching.COLUMNNAME_HostKey + " = ?";
-
-		return new Query(ctx, I_AD_Printer_Matching.Table_Name, whereClause, trxName)
-				.setParameters(printerHW.getAD_PrinterHW_ID(), hostKey)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_AD_Printer_Matching.COLUMNNAME_AD_Printer_Matching_ID)
-				.list(I_AD_Printer_Matching.class);
-	}
-
-	@Override
 	public I_AD_PrinterTray_Matching retrievePrinterTrayMatchingOrNull(final I_AD_Printer_Matching matching, final int AD_Printer_Tray_ID)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(matching);
@@ -193,7 +158,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 	public I_C_Print_Job_Instructions retrieveAndLockNextPrintJobInstructions(final Properties ctx, final String trxName)
 	{
 		final StringBuilder whereClause = new StringBuilder();
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 
 		// Only Pending (i.e. not printed jobs)
 		whereClause.append(I_C_Print_Job_Instructions.COLUMNNAME_Status).append("=?");
@@ -214,7 +179,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 			params.add(hostKey);
 		}
 
-		final IQuery<I_C_Print_Job_Instructions> query = new TypedSqlQuery<I_C_Print_Job_Instructions>(ctx, I_C_Print_Job_Instructions.class, whereClause.toString(), trxName)
+		final IQuery<I_C_Print_Job_Instructions> query = new TypedSqlQuery<>(ctx, I_C_Print_Job_Instructions.class, whereClause.toString(), trxName)
 				.setOnlyActiveRecords(true)
 				.setParameters(params)
 				.setOrderBy(I_C_Print_Job_Instructions.COLUMNNAME_C_Print_Job_Instructions_ID)
@@ -230,7 +195,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 			final String trxName)
 	{
 		final StringBuilder whereClause = new StringBuilder("1=1");
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 
 		boolean guaranteedIteratorRequired = false;
 
@@ -278,7 +243,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 
 		final String archiveTableAlias = "ar";
 		final StringBuilder archiveWhereClause = new StringBuilder();
-		final List<Object> archiveParams = new ArrayList<Object>();
+		final List<Object> archiveParams = new ArrayList<>();
 		final int modelTableId = queueQuery.getModelTableId();
 		if (modelTableId > 0)
 		{
@@ -347,7 +312,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 		}
 		//
 		// Create the Query
-		final TypedSqlQuery<I_C_Printing_Queue> query = new TypedSqlQuery<I_C_Printing_Queue>(ctx, I_C_Printing_Queue.class, whereClause.toString(), trxName)
+		final TypedSqlQuery<I_C_Printing_Queue> query = new TypedSqlQuery<>(ctx, I_C_Printing_Queue.class, whereClause.toString(), trxName)
 				.setParameters(params);
 
 		if (queueQuery.getOnlyAD_PInstance_ID() > 0)
@@ -405,10 +370,10 @@ public class PrintingDAO extends AbstractPrintingDAO
 
 		return new Query(ctx, I_AD_PrinterHW_Calibration.Table_Name, I_AD_PrinterHW_Calibration.COLUMNNAME_AD_PrinterHW_MediaSize_ID + "=? AND "
 				+ I_AD_PrinterHW_Calibration.COLUMNNAME_AD_PrinterHW_MediaTray_ID + "=?", trxName)
-				.setParameters(hwMediaSize.getAD_PrinterHW_MediaSize_ID(), hwTray.getAD_PrinterHW_MediaTray_ID())
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.firstOnly(I_AD_PrinterHW_Calibration.class);
+						.setParameters(hwMediaSize.getAD_PrinterHW_MediaSize_ID(), hwTray.getAD_PrinterHW_MediaTray_ID())
+						.setOnlyActiveRecords(true)
+						.setClient_ID()
+						.firstOnly(I_AD_PrinterHW_Calibration.class);
 	}
 
 	@Override

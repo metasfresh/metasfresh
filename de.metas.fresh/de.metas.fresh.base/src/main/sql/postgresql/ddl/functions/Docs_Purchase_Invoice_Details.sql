@@ -52,7 +52,7 @@ SELECT
 		END,
 		''
 	) AS Attributes,
-	SUM(huqty.QtyenteredTU)			AS HUQty,
+	SUM(il.QtyenteredTU) 			AS HUQty,
 	piip.name				AS HUName,
 	SUM(il.QtyInvoicedInPriceUOM) AS qtyinvoicedinpriceuom,
 	SUM(CASE
@@ -171,7 +171,7 @@ FROM
 	) io2 ON il.C_InvoiceLine_ID = io2.C_InvoiceLine_ID
 	-- Get Packing instruction
 	LEFT OUTER JOIN (
-		SELECT DISTINCT String_Agg( Name, E'\n' ORDER BY Name ) AS Name, C_InvoiceLine_ID
+		SELECT 	String_Agg( Name, E'\n' ORDER BY Name ) AS Name, C_InvoiceLine_ID
 		FROM	(
 				SELECT DISTINCT
 					COALESCE ( pifb.name, pi.name ) AS name,
@@ -192,42 +192,9 @@ FROM
 				WHERE
 					piv.M_HU_PI_Version_ID != 101  
 					AND iliol.C_Invoice_ID = $1
-					
 			) pi
 		GROUP BY C_InvoiceLine_ID
 	) piip ON il.C_InvoiceLine_ID = piip.C_InvoiceLine_ID
-
-
-	-- Get Packing qty
-	LEFT OUTER JOIN (
-		SELECT C_InvoiceLine_ID, sum(qtyEnteredTU) as qtyEnteredTU
-			from (
-
-		SELECT DISTINCT
-				
-					C_InvoiceLine_ID, iol.M_InOutLine_ID, iol.qtyEnteredTU as qtyEnteredTU 
-				FROM
-					Report.fresh_IL_TO_IOL_V iliol
-					INNER JOIN M_InOutLine iol ON iliol.M_InOutLine_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
-					LEFT OUTER JOIN M_HU_PI_Item_Product pi ON iol.M_HU_PI_Item_Product_ID = pi.M_HU_PI_Item_Product_ID AND pi.isActive = 'Y'
-					LEFT OUTER JOIN M_HU_PI_Item piit ON piit.M_HU_PI_Item_ID = pi.M_HU_PI_Item_ID AND piit.isActive = 'Y'
-					
-					LEFT OUTER JOIN M_HU_Assignment asgn ON asgn.AD_Table_ID = ((SELECT get_Table_ID( 'M_InOutLine' ) )) AND asgn.isActive = 'Y'
-						AND asgn.Record_ID = iol.M_InOutLine_ID
-					LEFT OUTER JOIN M_HU tu ON asgn.M_TU_HU_ID = tu.M_HU_ID
-					LEFT OUTER JOIN M_HU_PI_Item_Product pifb ON tu.M_HU_PI_Item_Product_ID = pifb.M_HU_PI_Item_Product_ID AND pifb.isActive = 'Y'
-					LEFT OUTER JOIN M_HU_PI_Item pit ON pifb.M_HU_PI_Item_ID = pit.M_HU_PI_Item_ID AND pit.isActive = 'Y'
-					--
-					LEFT OUTER JOIN M_HU_PI_Version piv ON piv.M_HU_PI_Version_ID = COALESCE(pit.M_HU_PI_Version_ID, piit.M_HU_PI_Version_ID) AND piv.isActive = 'Y'
-				WHERE
-					piv.M_HU_PI_Version_ID != 101  
-					AND iliol.C_Invoice_ID = $1
-				
-
-				) a
-
-		group by C_InvoiceLine_ID
-) huqty ON il.C_InvoiceLine_ID = huqty.C_InvoiceLine_ID
 
 	-- Get Attributes
 	-- we join the first M_MatchInv record to get it's M_InOutLine's ASI

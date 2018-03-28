@@ -1,12 +1,20 @@
 package de.metas.ordercandidate.rest;
 
+import java.util.List;
+
+import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
-import lombok.experimental.UtilityClass;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -30,24 +38,30 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
-class JsonConverters
+@Service
+public class JsonConverters
 {
-	public static final OLCandCreateRequestBuilder toOLCandCreateRequest(final JsonOLCandCreateRequest request)
+	public final OLCandCreateRequestBuilder toOLCandCreateRequest(final JsonOLCandCreateRequest request)
 	{
+		final int productId = Services.get(IProductDAO.class).retrieveProductIdByValue(request.getProductCode());
+		final int uomId = request.getUomId() > 0 ? request.getUomId() : Services.get(IProductBL.class).getStockingUOM(productId).getC_UOM_ID();
+
 		return OLCandCreateRequest.builder()
+				.externalId(request.getExternalId())
+				//
 				.bpartner(toOLCandBPartnerInfo(request.getBpartner()))
 				.billBPartner(toOLCandBPartnerInfo(request.getBillBPartner()))
 				.dropShipBPartner(toOLCandBPartnerInfo(request.getDropShipBPartner()))
 				.handOverBPartner(toOLCandBPartnerInfo(request.getHandOverBPartner()))
+				.poReference(request.getPoReference())
 				//
 				.dateRequired(request.getDateRequired())
 				.flatrateConditionsId(request.getFlatrateConditionsId())
 				//
-				.productId(request.getProductId())
+				.productId(productId)
 				.productDescription(request.getProductDescription())
 				.qty(request.getQty())
-				.uomId(request.getUomId())
+				.uomId(uomId)
 				.huPIItemProductId(request.getHuPIItemProductId())
 				//
 				.pricingSystemId(request.getPricingSystemId())
@@ -82,10 +96,11 @@ class JsonConverters
 				.build();
 	}
 
-	public static JsonOLCand toJson(final OLCand olCand)
+	public JsonOLCand toJson(final OLCand olCand)
 	{
 		return JsonOLCand.builder()
 				.id(olCand.getId())
+				.externalId(olCand.getExternalId())
 				//
 				.bpartner(toJson(olCand.getBPartnerInfo()))
 				.billBPartner(toJson(olCand.getBillBPartnerInfo()))
@@ -106,5 +121,12 @@ class JsonConverters
 				.discount(olCand.getDiscount())
 				//
 				.build();
+	}
+
+	public JsonOLCandCreateBulkResponse toJsonOLCandCreateBulkResponse(@NonNull final List<OLCand> olCands)
+	{
+		return JsonOLCandCreateBulkResponse.of(olCands.stream()
+				.map(olCand -> toJson(olCand))
+				.collect(ImmutableList.toImmutableList()));
 	}
 }

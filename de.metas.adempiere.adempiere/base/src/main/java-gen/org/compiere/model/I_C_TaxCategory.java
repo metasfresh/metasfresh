@@ -197,81 +197,6 @@ public interface I_C_TaxCategory
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Standard.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsDefault (boolean IsDefault);
-
-	/**
-	 * Get Standard.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isDefault();
-
-    /** Column definition for IsDefault */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_IsDefault = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "IsDefault", null);
-    /** Column name IsDefault */
-    public static final String COLUMNNAME_IsDefault = "IsDefault";
-
-	/**
-	 * Set Ermäßigt.
-	 * There is a discount tax
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsReduced (boolean IsReduced);
-
-	/**
-	 * Get Ermäßigt.
-	 * There is a discount tax
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isReduced();
-
-    /** Column definition for IsReduced */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_IsReduced = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "IsReduced", null);
-    /** Column name IsReduced */
-    public static final String COLUMNNAME_IsReduced = "IsReduced";
-
-	/**
-	 * Set Ohne.
-	 * Means no tax
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsWithout (boolean IsWithout);
-
-	/**
-	 * Get Ohne.
-	 * Means no tax
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isWithout();
-
-    /** Column definition for IsWithout */
-    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_IsWithout = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "IsWithout", null);
-    /** Column name IsWithout */
-    public static final String COLUMNNAME_IsWithout = "IsWithout";
-
-	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *
@@ -325,4 +250,27 @@ public interface I_C_TaxCategory
     public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_TaxCategory, org.compiere.model.I_AD_User>(I_C_TaxCategory.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set MwSt-Typ.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setVATType (java.lang.String VATType);
+
+	/**
+	 * Get MwSt-Typ.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getVATType();
+
+    /** Column definition for VATType */
+    public static final org.adempiere.model.ModelColumn<I_C_TaxCategory, Object> COLUMN_VATType = new org.adempiere.model.ModelColumn<I_C_TaxCategory, Object>(I_C_TaxCategory.class, "VATType", null);
+    /** Column name VATType */
+    public static final String COLUMNNAME_VATType = "VATType";
 }

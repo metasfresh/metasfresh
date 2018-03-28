@@ -190,10 +190,12 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 
 	private static MaterialDescriptor createMaterialDescriptorForPpOrder(final PPOrder ppOrder)
 	{
+		final BigDecimal qtyOpen = ppOrder.getQtyRequired().subtract(ppOrder.getQtyDelivered());
+
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(ppOrder.getDatePromised())
 				.productDescriptor(ppOrder.getProductDescriptor())
-				.quantity(ppOrder.getQuantity())
+				.quantity(qtyOpen)
 				.warehouseId(ppOrder.getWarehouseId())
 				.bPartnerId(ppOrder.getBPartnerId())
 				.build();
@@ -204,12 +206,23 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 			@NonNull final PPOrder ppOrder,
 			@NonNull final PPOrderLine ppOrderLine)
 	{
-		final BigDecimal quantity = ppOrderLine.getQtyRequired().abs(); // supply-ppOrderLines have negative qtyRequired
+		final BigDecimal qtyRequired;
+		final BigDecimal qtyDelivered;
+		if (ppOrderLine.isReceipt())
+		{
+			qtyRequired = ppOrderLine.getQtyRequired().negate(); // supply-ppOrderLines have negative qtyRequired
+			qtyDelivered = ppOrder.getQtyDelivered().negate();
+		}
+		else
+		{
+			qtyRequired = ppOrderLine.getQtyRequired();
+			qtyDelivered = ppOrder.getQtyDelivered();
+		}
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(ppOrderLine.getIssueOrReceiveDate())
 				.productDescriptor(ppOrderLine.getProductDescriptor())
-				.quantity(quantity)
+				.quantity(qtyRequired.subtract(qtyDelivered))
 				.warehouseId(ppOrder.getWarehouseId())
 				.bPartnerId(ppOrder.getBPartnerId())
 				.build();
@@ -249,7 +262,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		final ProductionDetail newProductionDetailForPPOrder = initialBuilder
 				.advised(extractIsAdviseEvent(ppOrderEvent))
 				.pickDirectlyIfFeasible(extractIsDirectlyPickSupply(ppOrderEvent))
-				.plannedQty(ppOrder.getQuantity())
+				.plannedQty(ppOrder.getQtyRequired())
 				.plantId(ppOrder.getPlantId())
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.ppOrderId(ppOrder.getPpOrderId())

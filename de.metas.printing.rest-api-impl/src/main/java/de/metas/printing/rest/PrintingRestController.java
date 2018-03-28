@@ -36,7 +36,9 @@ import de.metas.printing.model.I_C_PrintPackageData;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
+import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -124,17 +126,29 @@ public class PrintingRestController
 		requestPrintPackage.setTransactionID(transactionId);
 		final I_C_Print_Package responsePrintPackage = new CreatePrintPackageRequestHandler().createResponse(requestPrintPackage);
 
-		final PrintPackage response = new PrintPackage();
-		response.setTransactionId(transactionId);
-
-		if (responsePrintPackage == null)
+		final PrintPackage response;
+		if (responsePrintPackage != null)
 		{
-			return response;
+			save(responsePrintPackage);
+			response = createResponseFromPrintPackage(responsePrintPackage);
+			response.setTransactionId(transactionId);
+
+		}
+		else // create and return an empty response
+		{
+			response = new PrintPackage();
+			response.setTransactionId(transactionId);
 		}
 
-		save(responsePrintPackage);
+		return response;
+	}
 
-		response.setCopies(requestPrintPackage.getCopies());
+	private PrintPackage createResponseFromPrintPackage(
+			@NonNull final I_C_Print_Package responsePrintPackage)
+	{
+		final PrintPackage response = new PrintPackage();
+
+		response.setCopies(responsePrintPackage.getCopies());
 		response.setFormat(responsePrintPackage.getBinaryFormat());
 		response.setPageCount(responsePrintPackage.getPageCount());
 		response.setPrintJobInstructionsID(Integer.toString(responsePrintPackage.getC_Print_Job_Instructions_ID()));
@@ -142,8 +156,10 @@ public class PrintingRestController
 
 		final List<PrintPackageInfo> printPackageInfos = new ArrayList<>();
 
-		final List<I_C_Print_PackageInfo> printPackageInfoRecordss = Services.get(IPrintingDAO.class).retrievePrintPackageInfos(responsePrintPackage);
-		for (final I_C_Print_PackageInfo printPackageInfoRecord : printPackageInfoRecordss)
+		final List<I_C_Print_PackageInfo> printPackageInfoRecords = //
+				Services.get(IPrintingDAO.class).retrievePrintPackageInfos(responsePrintPackage);
+
+		for (final I_C_Print_PackageInfo printPackageInfoRecord : printPackageInfoRecords)
 		{
 			final PrintPackageInfo printPackageInfo = new PrintPackageInfo();
 			printPackageInfo.setCalX(printPackageInfoRecord.getCalX());
@@ -154,13 +170,19 @@ public class PrintingRestController
 			final I_AD_PrinterHW printerHwRecord = printPackageInfoRecord.getAD_PrinterHW();
 			printPackageInfo.setPrintService(printerHwRecord.getName());
 
-			final I_AD_PrinterHW_MediaTray printerHwMediaTray = printPackageInfoRecord.getAD_PrinterHW_MediaTray();
-			printPackageInfo.setTray(printerHwMediaTray.getName());
-			printPackageInfo.setTrayNumber(printerHwMediaTray.getTrayNumber());
+			if (printPackageInfoRecord.getAD_PrinterHW_MediaTray_ID() > 0)
+			{
+				final I_AD_PrinterHW_MediaTray printerHwMediaTray = printPackageInfoRecord.getAD_PrinterHW_MediaTray();
+				printPackageInfo.setTray(printerHwMediaTray.getName());
+				printPackageInfo.setTrayNumber(printerHwMediaTray.getTrayNumber());
+			}
+			else
+			{
+				printPackageInfo.setTrayNumber(-1);
+			}
 			printPackageInfos.add(printPackageInfo);
 		}
 		response.setPrintPackageInfos(printPackageInfos);
-
 		return response;
 	}
 
@@ -211,7 +233,23 @@ public class PrintingRestController
 				.create()
 				.firstOnly(I_C_Print_Job_Instructions.class);
 
-		printJobInstructions.setStatus(input.getStatus().toString());
+		switch (input.getStatus())
+		{
+			case Gedruckt:
+				printJobInstructions.setStatus(X_C_Print_Job_Instructions.STATUS_Done);
+				break;
+			case Druckfehler:
+				printJobInstructions.setStatus(X_C_Print_Job_Instructions.STATUS_Error);
+				break;
+			case Im_Druck:
+				printJobInstructions.setStatus(X_C_Print_Job_Instructions.STATUS_Send);
+				break;
+			case Wartet_auf_druck:
+				printJobInstructions.setStatus(X_C_Print_Job_Instructions.STATUS_Pending);
+				break;
+			default:
+				throw new IllegalArgumentException("Invalid response status: " + input.getStatus());
+		}
 		printJobInstructions.setErrorMsg(input.getErrorMsg());
 		save(printJobInstructions);
 	}

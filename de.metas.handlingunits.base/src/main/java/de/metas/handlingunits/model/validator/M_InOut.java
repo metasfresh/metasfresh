@@ -48,8 +48,8 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
-import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
+import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptHandler;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -343,42 +343,22 @@ public class M_InOut
 
 	}
 
-	/**
-	 * Generate DD_Orders from receipt (if needed).
-	 * 
-	 * @param inout
-	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void generateDDOrders(final I_M_InOut inout)
+	public void onReceiptComplete(final de.metas.inout.model.I_M_InOut receipt)
 	{
-		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-		final IInOutDDOrderBL inOutDDOrderBL = Services.get(IInOutDDOrderBL.class);
 
-		// We are generating movements only for receipts
-		if (inout.isSOTrx())
+		if (receipt.isSOTrx())
 		{
+			// nothing in case of shipments
+			return;
+		}
+		if (Services.get(IInOutBL.class).isReversal(receipt))
+		{
+			// nothing in case of reversal
 			return;
 		}
 
-		// Don't generate movements for a reversal document
-		if (Services.get(IInOutBL.class).isReversal(inout))
-		{
-			return;
-		}
-
-		final List<I_M_InOutLine> linesAll = inoutDAO.retrieveLines(inout, I_M_InOutLine.class);
-
-		for (final I_M_InOutLine inOutLine : linesAll)
-		{
-			if (inOutLine.isPackagingMaterial())
-			{
-				// nothing to do
-				continue;
-			}
-
-			inOutDDOrderBL.createDDOrderForInOutLine(inOutLine);
-
-		}
+		DistributeAndMoveReceiptHandler.newInstance().onReceiptComplete(receipt);
 	}
 
 }

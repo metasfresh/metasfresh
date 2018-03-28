@@ -53,7 +53,7 @@ public @interface DocValidate
 	 *
 	 * At least one event shall be specified.
 	 */
-	int[] timings() default {};
+	int[] timings();
 
 	/**
 	 * <code>true</code> if this method shall be executed after transaction commit.

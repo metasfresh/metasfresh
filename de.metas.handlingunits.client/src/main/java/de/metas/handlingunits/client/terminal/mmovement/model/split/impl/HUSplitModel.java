@@ -316,7 +316,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 		//
 		// Add the virtual PI
 		{
-			final I_M_HU_PI_Item noPIItem = handlingUnitsDAO.retrieveNoPIItem(ctx);
+			final I_M_HU_PI_Item noPIItem = handlingUnitsDAO.retrievePackingItemTemplatePIItem(ctx);
 			final I_M_HU_PI virtualPI = noPIItem.getM_HU_PI_Version().getM_HU_PI();
 
 			final LUSplitKey key = new LUSplitKey(getTerminalContext(), noPIItem, virtualPI, huUnitType);

@@ -115,7 +115,7 @@ import lombok.NonNull;
 		// Ensure that the parentItem is actually attached to an HU
 		Check.assumeNotNull(parentHU, "An M_HU_Item (parentHUItem) {} is linked to a handling unit for child HU={}", parentItem, hu);
 
-		final IAttributeStorageFactory storageFactory = getHUAttributeStorageFactory();
+		final IAttributeStorageFactory storageFactory = getAttributeStorageFactory();
 		final IAttributeStorage parentAttributeSetStorage = storageFactory.getAttributeStorage(parentHU);
 
 		return parentAttributeSetStorage;
@@ -144,7 +144,7 @@ import lombok.NonNull;
 
 	private final Map<String, IAttributeStorage> retrieveChildrenAttributeStorages()
 	{
-		final IAttributeStorageFactory storageFactory = getHUAttributeStorageFactory();
+		final IAttributeStorageFactory storageFactory = getAttributeStorageFactory();
 		final IHandlingUnitsDAO handlingUnitsDAO = getHandlingUnitsDAO();
 
 		final Map<String, IAttributeStorage> childrenAttributeSetStorages = new LinkedHashMap<String, IAttributeStorage>();
