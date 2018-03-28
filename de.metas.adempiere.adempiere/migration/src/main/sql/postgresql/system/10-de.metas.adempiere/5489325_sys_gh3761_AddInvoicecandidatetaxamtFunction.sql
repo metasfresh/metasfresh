@@ -20,5 +20,6 @@ BEGIN
 	RETURN	v_TaxAmount;
 END;
 $BODY$
-  LANGUAGE plpgsql VOLATILE
+  LANGUAGE plpgsql STABLE
   COST 100;
+ COMMENT ON FUNCTION public.invoicecandidatetaxamt(numeric) IS 'This function computes the tax amount when isTaxIncluded=N and isWholeTax=N. In these cases return 0 ';
