@@ -61,13 +61,4 @@ public class C_BPartner_CreditLimit
 			}
 		}
 	}
-
-//	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-//	public void prohibitDeletingApprovedCreditLimit(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
-//	{
-//		if (bpCreditLimit.isApproved())
-//		{
-//			throw new AdempiereException("org.adempiere.bpartner.model.interceptor.C_BPartner_CreditLimit.prohibitDeletingApprovedCreditLimit");
-//		}
-//	}
 }
