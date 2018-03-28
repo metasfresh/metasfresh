@@ -16,7 +16,7 @@ select AncestorId
 from ancestor
 where distance = (select max(distance) from ancestor);
 $BODY$
-  LANGUAGE sql VOLATILE
+  LANGUAGE sql STABLE
   COST 100
   ROWS 1000;
 
@@ -51,7 +51,7 @@ and (select count(*) from node_graph as n3 where data.initial_ft_ID = any(n3.pat
         and not exists (select 1 from node_graph as n4 where n3.path <@ n4.path) ) = 1
 order by initial_ft_id;
 $BODY$
-  LANGUAGE sql VOLATILE
+  LANGUAGE sql STABLE
   COST 100
   ROWS 1000;
   

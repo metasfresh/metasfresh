@@ -16,6 +16,6 @@ select AncestorId
 from ancestor
 where distance = (select max(distance) from ancestor);
 $BODY$
-  LANGUAGE sql VOLATILE
+  LANGUAGE sql STABLE
   COST 100
   ROWS 1000;
