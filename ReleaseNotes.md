@@ -13,6 +13,16 @@ Here come the actual release notes:
 # metasfresh 5.51 (2018-14)
 **release for week 2018-14**
 
+## Features
+* metasfreh-webui-frontend
+    * [#1586](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1586) Screen aliginment Improvements
+      * Improves the Look & Feel, mostly vertical alignments - of all Fields and Field Content. Also Size of Lookup widget dropdowns.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1700](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1700) attribute filter fields are shrinked
+    * Fixes the Filter for Attributes e.g. in Window Businesspartner. Now it's able to use the filter again.
+
 # metasfresh 5.50 (2018-13)
 **release for week 2018-13**
 
@@ -48,6 +58,7 @@ Here come the actual release notes:
   * [#1692](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1692) Detailed adjustments of User Interface for tablet media size
     * UI Improvement for Mobile/ Tablet Usage of storage relevant workflows.
   * [#1706](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1706) Dropdown bug in modal windows
+    * Fixes the refactored Lookup & List widgets behavior.
 
 ## Fixes
 * metasfresh
