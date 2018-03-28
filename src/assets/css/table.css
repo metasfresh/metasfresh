@@ -90,6 +90,13 @@
         padding-bottom: 0;
         vertical-align: middle;
 
+        &:focus {
+            outline-color: $brand-font-color;
+            outline-width:1px;
+            outline-offset:0px;
+            outline-style: inset;
+        }
+
         span {
             pointer-events: none;
         }
@@ -139,6 +146,55 @@
     opacity: .65;
 }
 
+/* Table cols sizing */
+
+.td-lg {
+    width: 225px;
+    max-width: 225px;
+
+    .input-dropdown-list {
+        width: auto;
+    }
+}
+
+.td-md {
+    width: 144px;
+    max-width: 144px;
+}
+
+.td-sm {
+    min-width: 60px;
+    max-width: 100px;
+}
+
+.document-list-table {
+    flex: 2.6;
+}
+
+.table-fade-out {
+    opacity: .65;
+}
+
+.table-chart-value {
+    text-align: right;
+}
+
+.table-read-only *:focus {
+    outline-width:0px;
+}
+
+.table-filter-line {
+    height:3rem;
+}
+
+.cell-mandatory:focus {
+    outline: 1px solid $brand-mandatory-color;
+}
+
+.cell-disabled:focus {
+    outline: 1px dashed #cbcbcb;
+}
+
 /*
  * Feel really sorry about that, but it is hard to get over 
  * table styles in bootstrap and avoid !important.
@@ -186,10 +242,10 @@
 
 .row-selected {
     background-color: $brand-selected-color !important;
-}
 
-.row-selected.row-not-saved {
-    border-left: 3px solid #e78484;
+    &.row-not-saved {
+        border-left: 3px solid #e78484;
+    }
 }
 
 .table-sub-summary-row {
@@ -201,10 +257,10 @@
     background-color: $brand-color-secondary;
     color: #fff;
     text-transform: uppercase;
-}
 
-.table-total-summary-row td {
-    border: 0;
+    td {
+        border: 0;
+    }
 }
 
 .table-footer-header {
@@ -250,42 +306,36 @@
     border: 0;
 }
 
-
 .product-order-summary {
     width: 100%;
-}
 
-.product-order-summary td {
-    padding-top: 0.125rem;
-    padding-bottom: 0.125rem;
-}
+    td {
+        padding-top: 0.125rem;
+        padding-bottom: 0.125rem;
+    }
 
-.product-order-summary td:nth-child(1) {
-    width: 15%;
-}
+    td:nth-child(1) {
+        width: 15%;
+    }
 
-.product-order-summary td:nth-child(2) {
-    width: 30%;
-}
+    td:nth-child(2) {
+        width: 30%;
+    }
 
-.product-order-summary td:nth-child(3) {
-    width: 30%;
-    text-align: right;
-}
+    td:nth-child(3) {
+        width: 30%;
+        text-align: right;
+    }
 
-.product-order-summary td:last-child {
-    text-align: right;
-}
+    td:last-child {
+        text-align: right;
+    }
 
-.product-order-summary tr:last-child {
-    font-weight: bold;
-    font-size: 1rem;
+    tr:last-child {
+        font-weight: bold;
+        font-size: 1rem;
+    }
 }
-
-.table-filter-line {
-    height:3rem;
-}
-
 
 
 /* Pagination */
@@ -297,6 +347,12 @@
         .page-link, .page-link:focus, .page-link:hover {
             background-color: $brand-color-primary;
             border-color: $brand-color-primary;       
+        }
+
+        .page-link-compressed {
+            background-color: transparent;
+            font-weight: bold;
+            color: $brand-font-color;
         }
     } 
 }
@@ -316,12 +372,6 @@
     border:0;
     background-color: transparent;
     padding: .1rem .3rem;
-}
-
-.page-item.active .page-link-compressed {
-    background-color: transparent;
-    font-weight: bold;
-    color: $brand-font-color;
 }
 
 .empty-info-text {
@@ -450,10 +500,7 @@ $indent-collapsible-offset-lg: 24px;
 
 @media only screen and (min-width: $breakpoint-md){
     .desktop {
-        .indent {
-            height: $indent-height-lg;
-        }
-
+        .indent,
         .indent-item-mid,
         .indent-icon,
         .indent-bot,
@@ -503,7 +550,6 @@ $indent-collapsible-offset-lg: 24px;
 
 /* END OF INDENT SIGN ============ */
 
-
 .indent-item {
     right:18px;
     top:16px;
@@ -529,12 +575,4 @@ $indent-collapsible-offset-lg: 24px;
     width:1px;
     height: 6px;
     border-left: 1px solid #afbfca;
-}
-
-.document-list-table {
-    flex: 2.6;
-}
-
-.table-chart-value {
-    text-align: right;
 }

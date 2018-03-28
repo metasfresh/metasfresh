@@ -1,50 +1,53 @@
-.labels {
-    position: relative;
-    cursor: text;
+.tablet, .mobile, .desktop {
+    .labels {
+        position: relative;
+        cursor: text;
+        padding-top: 0.125rem;
 
-    &-wrap {
-        display: inline-block;
-        margin-bottom: -0.125rem;
-    }
-
-    &-label {
-        display: inline-block;
-        padding: 0.25em 0.5em;
-        background: rgba(0, 0, 0, 0.05);
-        margin-right: 0.25em;
-        margin-bottom: 0.25rem;
-
-        &-remove {
-            cursor: pointer;
+        .labels-wrap {
+            display: inline-block;
+            margin-bottom: -0.125rem;
         }
-    }
 
-    &-input {
-        display: inline-block;
-        min-width: 1px;
-    }
+        &-label {
+            display: inline-block;
+            padding-bottom: 0.125rem;
+            background: rgba(0, 0, 0, 0.05);
+            margin-right: 0.25em;
+            margin-bottom: 0.125rem;
 
-    &-dropdown {
-        position: absolute;
-        background: white;
-        top: 100%;
-        right: 0;
-        left: 0;
-        z-index: 1;
-        border: solid 1px $brand-light-color;
-        border-top: none;
-        border-bottom-left-radius: 3px;
-        border-bottom-right-radius: 3px;
-    }
+            &-remove {
+                cursor: pointer;
+            }
+        }
 
-    &-suggestion {
-        padding: 0.25rem 0.5rem;
-        border-top: solid 1px $brand-light-color;
-        cursor: pointer;
+        &-input {
+            display: inline-block;
+            min-width: 1px;
+        }
 
-        &.active, &:hover {
-            background-color: $brand-color-secondary;
-            color: white;
+        &-dropdown {
+            position: absolute;
+            background: white;
+            top: 100%;
+            right: 0;
+            left: 0;
+            z-index: 1;
+            border: solid 1px $brand-light-color;
+            border-top: none;
+            border-bottom-left-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        &-suggestion {
+            padding: 0.25rem 0.5rem;
+            border-top: solid 1px $brand-light-color;
+            cursor: pointer;
+
+            &.active, &:hover {
+                background-color: $brand-color-secondary;
+                color: white;
+            }
         }
     }
 }

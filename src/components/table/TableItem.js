@@ -242,9 +242,7 @@ class TableItem extends PureComponent {
                 onCellChange={onItemChange}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
-                onKeyDown={e =>
-                  this.handleKeyDown(e, property, true, widgetData[0])
-                }
+                onKeyDown={e => this.handleKeyDown(e, property, widgetData[0])}
                 listenOnKeysTrue={this.listenOnKeysTrue}
                 listenOnKeysFalse={this.listenOnKeysFalse}
                 closeTableField={e => this.closeTableField(e)}
