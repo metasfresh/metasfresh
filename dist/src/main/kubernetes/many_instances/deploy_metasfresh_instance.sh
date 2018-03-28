@@ -21,10 +21,12 @@ target_dir="./created/${user_id}_${stage}"
 mkdir -p $target_dir
 
 deployment_file="${target_dir}/metasfresh-core-stack-deployment_${user_id}_${stage}.yaml"
-service_file="${target_dir}/metasfresh-core-stack-service_${user_id}_${stage}.yaml"
+service_file="${target_dir}/metasfresh-core-stack-svc_${user_id}_${stage}.yaml"
+ingress_file="${target_dir}/metasfresh-core-stack-ing_${user_id}_${stage}.yaml"
 
 create_target_file "./template/metasfresh-core-stack-deployment_template.yaml" ${deployment_file} $user_id $stage
-create_target_file "./template/metasfresh-core-stack-service_template.yaml" ${service_file} $user_id $stage
+create_target_file "./template/metasfresh-core-stack-svc_template.yaml" ${service_file} $user_id $stage
+create_target_file "./template/metasfresh-core-stack-ing_template.yaml" ${ingress_file} $user_id $stage
  
 #kubectl create --save-config --filename $target_dir
 kubectl apply --filename $target_dir

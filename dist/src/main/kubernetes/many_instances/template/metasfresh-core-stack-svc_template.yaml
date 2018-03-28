@@ -8,8 +8,6 @@ metadata:
   name: "metasfresh-core-stack-%USER-ID%-%STAGE%"
   namespace: default
 spec:
-  selector:
-    de.metas.deployment.name: "metasfresh-core-stack-%USER-ID%-%STAGE%"
   ports:
   - name: webapi-http
     port: 8080
@@ -43,9 +41,13 @@ spec:
     port: 5432
     protocol: TCP
     targetPort: 5432
+  selector:
+    de.metas.deployment.stage: %STAGE%
+    de.metas.deployment.type: metasfresh-core-stack
+    de.metas.deployment.user: %USER-ID%
   sessionAffinity: None
-# loadbalancer doesn't work with minikube
-  #  type: LoadBalancer
-  type: NodePort
+# ClusterIP is the default; using it because we don'T want to make the service available to the outside (we have the ingress for that)
+# see https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
+  type: ClusterIP
 status:
   loadBalancer: {}

@@ -7,8 +7,11 @@ metadata:
     de.metas.deployment.type: metasfresh-core-stack
     de.metas.deployment.user: "%USER-ID%"
     de.metas.deployment.stage: "%STAGE%"
-    de.metas.deployment.%USER-ID%.%STAGE%: "metasfresh-core-stack-%USER-ID%-%STAGE%"
+    de.metas.deployment.name: "metasfresh-core-stack-%USER-ID%-%STAGE%"
   name: "metasfresh-core-stack-%USER-ID%-%STAGE%"
+  namespace: "default"
+# can be created with kubectl create namespace %STAGE%"
+#  namespace: "%STAGE%"
 spec:
   replicas: 1
   strategy:
@@ -25,32 +28,21 @@ spec:
 #
 # metasfresh-db
       - env:
-        - name: DB_SYSPASS
-          value: System
-        - name: METASFRESH_DBNAME
-          value: metasfresh
-        - name: METASFRESH_PASSWORD
-          value: metasfresh
-        - name: METASFRESH_USERNAME
-          value: metasfresh
-# get it from dockerhub for now..we don't push metasfresh-db to docker.metasfresh.com yet          
         name: db
-        image: metasfresh/metasfresh-db:latest
+        image: docker.metasfresh.com/postgres:10.3
         imagePullPolicy: Always
         ports:
           - containerPort: 5432
         resources: {}
         volumeMounts:
-#        - mountPath: /var/lib/postgresql/data
-#          name: db-claim0
-#        - mountPath: /var/log/postgresql
-#          name: db-claim1
         - mountPath: /etc/localtime
           name: host-localtime
           readOnly: true
         - mountPath: /etc/timezone
           name: host-timezone
           readOnly: true
+        - mountPath: /var/lib/postgresql/data
+          name: postgresql-data
 #
 # metasfresh-app
       - env:
@@ -109,7 +101,6 @@ spec:
         resources: 
           requests:
             memory: 600M
-            cpu: 500m
         volumeMounts:
         - mountPath: /etc/localtime
           name: host-localtime
@@ -143,9 +134,9 @@ spec:
 # webui
       - env:
         - name: WEBUI_API_HOST
-          value: localhost 
+          value: "%USER-ID%-%STAGE%.metasfresh.com"
         - name: WEBUI_API_PORT
-          value: '8080'         
+          value: '443'         
         name: webui
         image: docker.metasfresh.com/metasfresh/metasfresh-webui-dev:gh18_dist_LATEST
         imagePullPolicy: Always
@@ -161,6 +152,22 @@ spec:
           name: host-timezone # was webui-claim1
           readOnly: true
       restartPolicy: Always
+      initContainers:
+        - name: init-postgres
+          image: docker.metasfresh.com/metasfresh/metasfresh-db-init-pg-10-3:gh18_dist_LATEST
+          imagePullPolicy: Always
+          env:
+          - name: DB_SYSPASS
+            value: System
+          - name: METASFRESH_DBNAME
+            value: metasfresh
+          - name: METASFRESH_PASSWORD
+            value: metasfresh
+          - name: METASFRESH_USERNAME
+            value: metasfresh
+          volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgresql-data
       volumes:
       - name: host-localtime # was app-claim1
         hostPath:
@@ -168,3 +175,6 @@ spec:
       - name: host-timezone # was app-claim2
         hostPath:
           path: /etc/timezone
+      - name: postgresql-data
+        hostPath:
+          path: "/tmp/postgresql-data-%USER-ID%-%STAGE%"

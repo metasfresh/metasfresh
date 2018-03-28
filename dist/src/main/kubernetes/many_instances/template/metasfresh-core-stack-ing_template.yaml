@@ -1,0 +1,29 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "metasfresh-core-stack-%USER-ID%-%STAGE%"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.org/ssl-services: "hello-world-svc"
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  tls:
+    - hosts:
+      - "%USER-ID%-%STAGE%.metasfresh.com"
+      secretName: tls-certificate
+  rules:
+  - host: "%USER-ID%-%STAGE%.metasfresh.com"
+    http:
+      paths:
+      - path: /rest
+        backend:
+          serviceName: "metasfresh-core-stack-%USER-ID%-%STAGE%"
+          servicePort: 8080
+      - path: /stomp
+        backend:
+          serviceName: "metasfresh-core-stack-%USER-ID%-%STAGE%"
+          servicePort: 8080
+      - path: /
+        backend:
+          serviceName: "metasfresh-core-stack-%USER-ID%-%STAGE%"
+          servicePort: 80
