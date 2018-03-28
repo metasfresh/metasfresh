@@ -2,6 +2,7 @@ package de.metas.ui.web.product.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -60,14 +61,34 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
+	private List<HUToDistribute> husToQuarantine = new ArrayList<>();
+
 	@Override
 	protected String doIt() throws Exception
 	{
 		getView().streamByIds(getSelectedRowIds())
 				.map(row -> row.getId().toInt())
 				.distinct()
-				.forEach(id -> quarantineHUsForLotNo(id));
+				.forEach(id -> addHUsToQuarantineForLotNo(id));
+
+		createDDOrders();
+
+		setInvoiceCandidatesInDispute();
+
 		return MSG_OK;
+	}
+
+	private void setInvoiceCandidatesInDispute()
+	{
+		final ImmutableList<I_M_HU> hus = husToQuarantine.stream().map(hu -> hu.getHu()).collect(ImmutableList.toImmutableList());
+		setExistingInvoiceCandsInDispute(hus);
+
+	}
+
+	private void createDDOrders()
+	{
+		Services.get(IHUDDOrderBL.class).createQuarantineDDOrderForHUs(husToQuarantine);
+
 	}
 
 	@Override
@@ -82,7 +103,7 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private void quarantineHUsForLotNo(final int lotNoLockId)
+	private void addHUsToQuarantineForLotNo(final int lotNoLockId)
 	{
 		final I_M_Product_LotNumber_Lock lotNoLock = load(lotNoLockId, I_M_Product_LotNumber_Lock.class);
 		final I_M_Attribute lotNoAttribute = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttribute(getCtx());
@@ -98,14 +119,20 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 
 		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(productId, lotNoAttribute, lotNoValue);
 
-		final List<HUToDistribute> husToDistribute = husForAttributeStringValue
-				.stream()
-				.map(hu -> HUToDistribute.of(hu, lotNoLock))
-				.collect(ImmutableList.toImmutableList());
+		for (final I_M_HU hu : husForAttributeStringValue)
+		{
+			final List<I_M_InOutLine> inOutLinesForHU = huAssignmentDAO.retrieveModelsForHU(hu, I_M_InOutLine.class);
+		}
+		
+//		husForAttributeStringValue.stream()
+//		.map(hu -> huAssignmentDAO.retrieveModelsForHU(hu, I_M_InOutLine.class))
+//		.forEach(lines -> addHUsToQuarantine(lines, hu));
+//		final List<HUToDistribute> husToDistribute = husForAttributeStringValue
+//				.stream()
+//				.map(hu -> HUToDistribute.of(hu, lotNoLock))
+//				.collect(ImmutableList.toImmutableList());
 
-		Services.get(IHUDDOrderBL.class).createQuarantineDDOrderForHUs(husToDistribute);
-
-		setExistingInvoiceCandsInDispute(husForAttributeStringValue);
+	//	husToQuarantine.addAll(husToDistribute);
 
 	}
 
