@@ -208,6 +208,29 @@ public interface I_MD_Cockpit_DocumentDetail
     public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+	 * Set Abo-Verlauf.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
+
+	/**
+	 * Get Abo-Verlauf.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_SubscriptionProgress_ID();
+
+    /** Column definition for C_SubscriptionProgress_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_C_SubscriptionProgress_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "C_SubscriptionProgress_ID", null);
+    /** Column name C_SubscriptionProgress_ID */
+    public static final String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -238,29 +261,6 @@ public interface I_MD_Cockpit_DocumentDetail
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Abo-Verlauf.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
-
-	/**
-	 * Get Abo-Verlauf.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_SubscriptionProgress_ID();
-
-    /** Column definition for C_SubscriptionProgress_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_C_SubscriptionProgress_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "C_SubscriptionProgress_ID", null);
-    /** Column name C_SubscriptionProgress_ID */
-    public static final String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
-
-	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -284,6 +284,52 @@ public interface I_MD_Cockpit_DocumentDetail
     public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Wareneingangsdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID);
+
+	/**
+	 * Get Wareneingangsdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ReceiptSchedule_ID();
+
+    /** Column definition for M_ReceiptSchedule_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_M_ReceiptSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "M_ReceiptSchedule_ID", null);
+    /** Column name M_ReceiptSchedule_ID */
+    public static final String COLUMNNAME_M_ReceiptSchedule_ID = "M_ReceiptSchedule_ID";
+
+	/**
+	 * Set Lieferdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Lieferdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ShipmentSchedule_ID();
+
+    /** Column definition for M_ShipmentSchedule_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "M_ShipmentSchedule_ID", null);
+    /** Column name M_ShipmentSchedule_ID */
+    public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
 	 * Set DocumentDetail.
@@ -334,52 +380,6 @@ public interface I_MD_Cockpit_DocumentDetail
     public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, de.metas.material.cockpit.model.I_MD_Cockpit> COLUMN_MD_Cockpit_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, de.metas.material.cockpit.model.I_MD_Cockpit>(I_MD_Cockpit_DocumentDetail.class, "MD_Cockpit_ID", de.metas.material.cockpit.model.I_MD_Cockpit.class);
     /** Column name MD_Cockpit_ID */
     public static final String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
-
-	/**
-	 * Set Wareneingangsdisposition.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID);
-
-	/**
-	 * Get Wareneingangsdisposition.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_ReceiptSchedule_ID();
-
-    /** Column definition for M_ReceiptSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_M_ReceiptSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "M_ReceiptSchedule_ID", null);
-    /** Column name M_ReceiptSchedule_ID */
-    public static final String COLUMNNAME_M_ReceiptSchedule_ID = "M_ReceiptSchedule_ID";
-
-	/**
-	 * Set Lieferdisposition.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
-
-	/**
-	 * Get Lieferdisposition.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_ShipmentSchedule_ID();
-
-    /** Column definition for M_ShipmentSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "M_ShipmentSchedule_ID", null);
-    /** Column name M_ShipmentSchedule_ID */
-    public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
 	 * Set Bestellt/ Beauftragt.
