@@ -26,7 +26,7 @@ FROM m_picking_candidate pc
 
 	
 JOIN AD_Org org ON pc.AD_Org_ID = org.AD_Org_ID AND org.isActive = 'Y'
-JOIN M_ShipmentSchedule ss ON pc.M_ShipmentSchedule_ID = ss.M_ShipmentSchedule_ID AND ss.isActive = 'Y'
+JOIN M_ShipmentSchedule ss ON pc.M_ShipmentSchedule_ID = ss.M_ShipmentSchedule_ID
 
 
 LEFT JOIN C_BPartner bp ON COALESCE(ss.C_BPartner_Override_ID, ss.C_BPartner_ID) = bp.C_BPartner_ID AND bp.isActive = 'Y'
