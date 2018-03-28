@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.ad.security.UserAuthTokenService;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -26,6 +25,7 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.util.web.security.UserAuthTokenService;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItem;

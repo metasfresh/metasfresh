@@ -436,25 +436,25 @@ public class RestHttpPrintConnectionEndpoint implements IPrintConnectionEndpoint
 		{
 			throw new LoginFailedPrintConnectionEndpointException("LoginRequest is null");
 		}
-		final String username = loginRequest.getUsername();
-		if (username == null || username.trim().isEmpty())
-		{
-			throw new LoginFailedPrintConnectionEndpointException("Invalid user name: " + username);
-		}
+//		final String username = loginRequest.getUsername();
+//		if (username == null || username.trim().isEmpty())
+//		{
+//			throw new LoginFailedPrintConnectionEndpointException("Invalid user name: " + username);
+//		}
 
 		//
 		// Send login request and get the response
 		final LoginResponse loginResponse = sendLoginRequest(loginRequest);
 
-		//
-		// Validate the response
-		// Username
-		if (!username.equals(loginResponse.getUsername()))
-		{
-			throw new LoginFailedPrintConnectionEndpointException("Login failed. Got invalid user name."
-					+ "\nRequest: " + loginRequest
-					+ "\nResponse: " + loginResponse);
-		}
+//		//
+//		// Validate the response
+//		// Username
+//		if (!username.equals(loginResponse.getUsername()))
+//		{
+//			throw new LoginFailedPrintConnectionEndpointException("Login failed. Got invalid user name."
+//					+ "\nRequest: " + loginRequest
+//					+ "\nResponse: " + loginResponse);
+//		}
 		// SessionId
 		final String response_sessionId = loginResponse.getSessionId();
 		try

@@ -1,4 +1,4 @@
-package de.metas.server.rest;
+package de.metas.util.web.security;
 
 import java.io.IOException;
 
@@ -13,14 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
 
-import org.adempiere.ad.security.UserAuthTokenService;
 import org.adempiere.ad.security.UserNotAuthorizedException;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-
-import de.metas.Profiles;
 
 /*
  * #%L
@@ -45,7 +41,6 @@ import de.metas.Profiles;
  */
 
 @WebFilter({ "/api/*" })
-@Profile(Profiles.PROFILE_App)
 public class UserAuthTokenFilter implements Filter
 {
 	public static final String HEADER_Authorization = "Authorization";

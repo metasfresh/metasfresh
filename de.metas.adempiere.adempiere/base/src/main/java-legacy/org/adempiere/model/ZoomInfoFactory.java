@@ -172,8 +172,7 @@ public class ZoomInfoFactory
 
 			if (eligibleKeyColumnNames.size() != 1)
 			{
-				ImmutablePair.of(null, Boolean.FALSE);
-				return null;
+				return ImmutablePair.of(null, Boolean.FALSE);
 			}
 
 			return ImmutablePair.of(eligibleKeyColumnNames.get(0), Boolean.TRUE);
