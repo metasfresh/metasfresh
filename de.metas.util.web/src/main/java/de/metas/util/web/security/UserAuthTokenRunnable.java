@@ -1,4 +1,4 @@
-package org.adempiere.ad.security;
+package de.metas.util.web.security;
 
 /*
  * #%L
@@ -23,7 +23,7 @@ package org.adempiere.ad.security;
  */
 
 @FunctionalInterface
-public interface UserAuthTokenCallable<R>
+public interface UserAuthTokenRunnable
 {
-	R call() throws Exception;
+	void run() throws Exception;
 }

@@ -9,6 +9,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
+import de.metas.printing.api.IPrinterBL;
 import de.metas.printing.esb.api.PrinterHW;
 import de.metas.printing.esb.api.PrinterHW.PrinterHWMediaSize;
 import de.metas.printing.esb.api.PrinterHW.PrinterHWMediaTray;
@@ -47,62 +48,67 @@ public class PrinterHWRepo
 			@NonNull final String hostKey,
 			@NonNull final PrinterHWList printerHWList)
 	{
-		final List<PrinterHW> hwPrinters = printerHWList.getHwPrinters();
-		for (final PrinterHW hwPrinter : hwPrinters)
+		final List<PrinterHW> hwPrinterPojos = printerHWList.getHwPrinters();
+		for (final PrinterHW hwPrinterPojo : hwPrinterPojos)
 		{
-			final I_AD_PrinterHW printerRecord = retrieveOrCreatePrinterRecord(hostKey, hwPrinter);
+			final I_AD_PrinterHW printerRecord = retrieveOrCreatePrinterRecord(hostKey, hwPrinterPojo);
 
-			for (final PrinterHWMediaSize mediaSize : hwPrinter.getPrinterHWMediaSizes())
+			for (final PrinterHWMediaSize mediaSizePojo : hwPrinterPojo.getPrinterHWMediaSizes())
 			{
-				retrieveOrCreateMediaSizeRecord(printerRecord, mediaSize);
+				retrieveOrCreateMediaSizeRecord(printerRecord, mediaSizePojo);
 			}
 
-			for (final PrinterHWMediaTray mediaTray : hwPrinter.getPrinterHWMediaTrays())
+			for (final PrinterHWMediaTray mediaTrayPojo : hwPrinterPojo.getPrinterHWMediaTrays())
 			{
-				retrieveOrCreateMediaTrayeRecord(printerRecord, mediaTray);
+				retrieveOrCreateMediaTrayRecord(printerRecord, mediaTrayPojo);
 			}
 		}
 	}
 
 	private void retrieveOrCreateMediaSizeRecord(
 			@NonNull final I_AD_PrinterHW printerRecord,
-			@NonNull final PrinterHWMediaSize mediaSize)
+			@NonNull final PrinterHWMediaSize mediaSizePojo)
 	{
 		I_AD_PrinterHW_MediaSize mediaSizeRecord = Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrinterHW_MediaSize.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_PrinterHW_MediaSize.COLUMN_Name, mediaSize.getName())
+				.addEqualsFilter(I_AD_PrinterHW_MediaSize.COLUMN_Name, mediaSizePojo.getName())
 				.addEqualsFilter(I_AD_PrinterHW_MediaSize.COLUMN_AD_PrinterHW_ID, printerRecord.getAD_PrinterHW_ID())
 				.create()
 				.firstOnly(I_AD_PrinterHW_MediaSize.class);
 		if (mediaSizeRecord == null)
 		{
 			mediaSizeRecord = newInstance(I_AD_PrinterHW_MediaSize.class);
-			mediaSizeRecord.setName(mediaSize.getName());
+			mediaSizeRecord.setName(mediaSizePojo.getName());
 			mediaSizeRecord.setAD_PrinterHW(printerRecord);
 			save(mediaSizeRecord);
 		}
 	}
 
-	private void retrieveOrCreateMediaTrayeRecord(
+	private void retrieveOrCreateMediaTrayRecord(
 			@NonNull final I_AD_PrinterHW printerRecord,
-			@NonNull final PrinterHWMediaTray mediaTray)
+			@NonNull final PrinterHWMediaTray printerTrayPojo)
 	{
-		final Integer trayNumber = Integer.valueOf(mediaTray.getTrayNumber());
+		final Integer trayNumber = Integer.valueOf(printerTrayPojo.getTrayNumber());
 
-		I_AD_PrinterHW_MediaTray mediaSizeRecord = Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrinterHW_MediaTray.class)
+		I_AD_PrinterHW_MediaTray printerTrayRecord = Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrinterHW_MediaTray.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_PrinterHW_MediaTray.COLUMN_TrayNumber, trayNumber)
 				.addEqualsFilter(I_AD_PrinterHW_MediaTray.COLUMN_AD_PrinterHW_ID, printerRecord.getAD_PrinterHW_ID())
 				.create()
 				.firstOnly(I_AD_PrinterHW_MediaTray.class);
-		if (mediaSizeRecord == null)
+		if (printerTrayRecord == null)
 		{
-			mediaSizeRecord = newInstance(I_AD_PrinterHW_MediaTray.class);
-			mediaSizeRecord.setTrayNumber(trayNumber);
-			mediaSizeRecord.setAD_PrinterHW(printerRecord);
+			printerTrayRecord = newInstance(I_AD_PrinterHW_MediaTray.class);
+			printerTrayRecord.setTrayNumber(trayNumber);
+			printerTrayRecord.setAD_PrinterHW(printerRecord);
+			printerTrayRecord.setName(printerTrayPojo.getName());
+			save(printerTrayRecord);
+
+			Services.get(IPrinterBL.class).createDefaultTrayMatching(printerTrayRecord);
 		}
-		mediaSizeRecord.setName(mediaTray.getName());
-		save(mediaSizeRecord);
+
+		printerTrayRecord.setName(printerTrayPojo.getName());
+		save(printerTrayRecord);
 	}
 
 	private I_AD_PrinterHW retrieveOrCreatePrinterRecord(
@@ -115,12 +121,15 @@ public class PrinterHWRepo
 				.addEqualsFilter(I_AD_PrinterHW.COLUMN_Name, hwPrinter.getName())
 				.create()
 				.firstOnly(I_AD_PrinterHW.class);
+
 		if (printerRecord == null)
 		{
 			printerRecord = newInstance(I_AD_PrinterHW.class);
 			printerRecord.setName(hwPrinter.getName());
 			printerRecord.setHostKey(hostKey);
 			save(printerRecord);
+
+			Services.get(IPrinterBL.class).createConfigAndDefaultPrinterMatching(printerRecord);
 		}
 		return printerRecord;
 	}

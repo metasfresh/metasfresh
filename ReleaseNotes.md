@@ -79,6 +79,7 @@ Here come the actual release notes:
     * Fix for the patching of date fields when manipulating in mouse and keaboard kombination.
   * [#1663](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1663) Pos1 does not jump to page 1 anymore
     * Fixes the Home Button in grid View. Now possible to jump to first page in Pagination again.
+  * [#1676](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1676) List widgets with focus follow-up
   * [#1705](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1705) Barcode Scan leaved Webcam switched on
     * Now the Webcam is switched off as soon the Barcode reading process is finished.
 
