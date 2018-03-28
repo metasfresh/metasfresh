@@ -73,7 +73,7 @@ public interface IWarehouseDAO extends ISingletonService
 	 * @return
 	 */
 	I_M_Warehouse retrieveOrgWarehouse(Properties ctx, int adOrgId);
-	
+
 	int retrieveOrgWarehousePOId(int adOrgId);
 
 	/**
@@ -115,5 +115,8 @@ public interface IWarehouseDAO extends ISingletonService
 
 	WarehousePickingGroup getWarehousePickingGroupContainingWarehouseId(int warehouseId);
 
+	WarehousePickingGroup getWarehousePickingGroupById(int warehousePickingGroupId);
+
 	int retrieveLocatorIdByBarcode(String barcode);
+
 }
