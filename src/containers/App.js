@@ -14,7 +14,7 @@ import {
 } from '../actions/AppActions';
 import { noConnection } from '../actions/WindowActions';
 import '../assets/css/styles.css';
-import { generateHotkeys, ShortcutProvider } from '../components/Shortcuts';
+import { generateHotkeys, ShortcutProvider } from '../components/shortcuts';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
 import { LOCAL_LANG } from '../constants/Constants';
@@ -25,7 +25,6 @@ import keymap from '../shortcuts/keymap';
 import configureStore from '../store/configureStore';
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
-
 const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
 

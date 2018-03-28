@@ -1,4 +1,4 @@
-import ShortcutProvider from '../../../components/Shortcuts/ShortcutProvider';
+import ShortcutProvider from '../../../components/shortcuts/ShortcutProvider';
 
 describe('ShortcutProvider', () => {
   it('should return children', () => {
