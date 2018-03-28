@@ -314,10 +314,10 @@ input:checked + .input-slider:before {
     input {
         color: $brand-font-color-secondary;
     }
-     .input-icon-right {
+    .input-icon-right {
         color: $brand-font-color-weak;
     }
-     .input-icon {
+    .input-icon {
         bottom: -3px;
     }
 }
