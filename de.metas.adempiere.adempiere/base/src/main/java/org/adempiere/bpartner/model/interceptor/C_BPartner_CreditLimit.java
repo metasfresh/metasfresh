@@ -4,7 +4,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
@@ -58,17 +57,17 @@ public class C_BPartner_CreditLimit
 			final boolean isAutoApproval = type.isAutoApproval();
 			if (isAutoApproval)
 			{
-				bpCreditLimit.setIsApproved(true);
+				bpCreditLimit.setProcessed(true);
 			}
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void prohibitDeletingApprovedCreditLimit(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
-	{
-		if (bpCreditLimit.isApproved())
-		{
-			throw new AdempiereException("org.adempiere.bpartner.model.interceptor.C_BPartner_CreditLimit.prohibitDeletingApprovedCreditLimit");
-		}
-	}
+//	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+//	public void prohibitDeletingApprovedCreditLimit(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
+//	{
+//		if (bpCreditLimit.isApproved())
+//		{
+//			throw new AdempiereException("org.adempiere.bpartner.model.interceptor.C_BPartner_CreditLimit.prohibitDeletingApprovedCreditLimit");
+//		}
+//	}
 }
