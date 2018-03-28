@@ -14,6 +14,9 @@ Here come the actual release notes:
 **release for week 2018-14**
 
 ## Features
+* metasfreh-webui-frontend
+    * [#1586](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1586) Screen aliginment Improvements
+      * Improves the Look & Feel, mostly vertical alignments - of all Fields and Field Content. Also Size of Lookup widget dropdowns.
 
 ## Fixes
 * metasfresh-webui-frontend
