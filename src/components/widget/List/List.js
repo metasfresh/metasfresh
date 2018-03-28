@@ -313,7 +313,7 @@ ListWidget.propTypes = {
   windowType: PropTypes.string,
   filterWidget: PropTypes.any,
   entity: PropTypes.string,
-  subentity: PropTypes.object,
+  subentity: PropTypes.string,
   subentityId: PropTypes.string,
   viewId: PropTypes.any,
   attribute: PropTypes.any,
