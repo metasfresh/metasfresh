@@ -303,3 +303,53 @@ UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=30,Updated=TO_
 UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=40,Updated=TO_TIMESTAMP('2018-03-28 17:08:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551385
 ;
 
+-- 2018-03-28T17:15:35.380
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-28 17:15:35','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Product Businesspartner Translation',WEBUI_NameBrowse='Product Businesspartner Translation' WHERE AD_Menu_ID=541068 AND AD_Language='en_US'
+;
+
+-- 2018-03-28T17:15:55.591
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-28 17:15:55','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Produkt Businesspartner Translation' WHERE AD_Window_ID=540426 AND AD_Language='en_US'
+;
+
+-- 2018-03-28T17:16:06.825
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-28 17:16:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Produkt Businesspartner Translation' WHERE AD_Tab_ID=541060 AND AD_Language='en_US'
+;
+
+-- 2018-03-28T17:16:33.500
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-28 17:16:33','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Client',Description='',Help='' WHERE AD_Field_ID=563158 AND AD_Language='en_US'
+;
+
+-- 2018-03-28T17:16:44.973
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-28 17:16:44','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Organisation',Description='',Help='' WHERE AD_Field_ID=563159 AND AD_Language='en_US'
+;
+
+-- 2018-03-28T17:16:56.207
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-28 17:16:56','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Customer Label Name' WHERE AD_Field_ID=563160 AND AD_Language='en_US'
+;
+
+-- 2018-03-28T17:17:08.371
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-28 17:17:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Active',Description='',Help='' WHERE AD_Field_ID=563161 AND AD_Language='en_US'
+;
+
+-- 2018-03-28T17:17:33.948
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-28 17:17:33','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Businesspartner Product' WHERE AD_Field_ID=563162 AND AD_Language='en_US'
+;
+
+-- 2018-03-28T17:17:44.197
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-28 17:17:44','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Language',Description='',Help='' WHERE AD_Field_ID=563163 AND AD_Language='en_US'
+;
+
+-- 2018-03-28T17:17:57.466
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-28 17:17:57','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Translated',Description='',Help='' WHERE AD_Field_ID=563164 AND AD_Language='en_US'
+;
+
