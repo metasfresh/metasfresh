@@ -16,10 +16,17 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 
-public class BPartnerCreditLimit_AddRemoveCreditStopStatus extends JavaProcess implements IProcessPrecondition
+/**
+ * This process set credit status to Credit Stop or removes it, in function by parameter <code>IsSetCreditStop</code> <br>
+ * The status <code>CreditStop</code> is removed only if a new credit limit was added and that new credit limit allows it
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class BPartnerStats_AddRemoveCreditStopStatus extends JavaProcess implements IProcessPrecondition
 {
-	final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-	final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+	private  final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+	private  final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 	@Param(parameterName = "IsSetCreditStop", mandatory = true)
 	private boolean isSetCreditStop;
