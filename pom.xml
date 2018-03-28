@@ -34,7 +34,7 @@
 		<!-- this also happens to be the activeMQ.version used by http://servicemix.apache.org/downloads/servicemix-6.1.0 -->
 		<activeMQ.version>5.12.1</activeMQ.version>
 
-		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
+		<spring-boot.version>2.0.0.RELEASE</spring-boot.version>
 
 		<!-- this is the version uses by elasticsearch:2.4.4 which is turn is used 
 			by spring-boot 1.5.3 -->
@@ -43,7 +43,7 @@
 		<!-- Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base 
 			for some reason. -->
 		<!-- For versions info, see https://github.com/spring-projects/spring-boot/blob/v1.5.3.RELEASE/spring-boot-dependencies/pom.xml -->
-		<spring.version>4.3.8.RELEASE</spring.version>
+		<spring.version>5.0.4.RELEASE</spring.version>
 
 		<guava.version>21.0</guava.version>
 
@@ -337,6 +337,11 @@
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
 				<version>${guava.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.code.findbugs</groupId>
+				<artifactId>jsr305</artifactId>
+				<version>3.0.2</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
