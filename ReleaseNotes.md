@@ -20,6 +20,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-webui-frontend
+  * [#1679](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1679) Layout bug with resolution 1920x1200
+    * Fixes a Layout Bug in table header of Grid View, now showing the cells in initial S, M, L sizes again.
   * [#1700](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1700) attribute filter fields are shrinked
     * Fixes the Filter for Attributes e.g. in Window Businesspartner. Now it's able to use the filter again.
 
