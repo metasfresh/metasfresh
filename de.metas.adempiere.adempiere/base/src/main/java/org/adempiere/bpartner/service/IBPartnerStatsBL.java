@@ -49,11 +49,11 @@ public interface IBPartnerStatsBL extends ISingletonService
 		BPartnerStats stat;
 		@NonNull
 		@Default
-		final BigDecimal additionalAmt = BigDecimal.ZERO;
+		BigDecimal additionalAmt = BigDecimal.ZERO;
 		@NonNull
-		final Timestamp date;
+		Timestamp date;
 		@Default
-		final boolean forceCheckCreditStatus = false;
+		boolean forceCheckCreditStatus = false;
 	}
 
 	/**
