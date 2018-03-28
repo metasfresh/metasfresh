@@ -30,6 +30,7 @@ import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToExisti
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToNewHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_RemoveHUFromPickingSlot;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_ReturnQtyToSourceHU;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_TU_Label;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
@@ -206,7 +207,10 @@ public class PickingSlotViewFactory implements IViewFactory
 
 				// "picking-lifecycle" processes
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_M_Picking_Candidate_Process.class),
-				createProcessDescriptorForPickingSlotView(WEBUI_Picking_M_Picking_Candidate_Unprocess.class));
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_M_Picking_Candidate_Unprocess.class),
+
+				// label
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_TU_Label.class));
 	}
 
 	private static RelatedProcessDescriptor createProcessDescriptorForPickingSlotView(@NonNull final Class<?> processClass)
