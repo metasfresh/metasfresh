@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -91,7 +90,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 
 		return huAssignmentDAO.retrieveTopLevelHUsForModel(receiptLine.getInOutLine())
 				.stream()
-				.map(hu -> HUToDistribute.of(hu, receiptLine.getInOutLine().getM_InOut().getC_BPartner(), receiptLine.getLockLotNo()))
+				.map(hu -> HUToDistribute.of(hu, receiptLine.getLockLotNo()))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -107,18 +106,10 @@ public class HUDDOrderBL implements IHUDDOrderBL
 		{
 			throw new AdempiereException(msgBL.getMsg(Env.getCtx(), ERR_M_Warehouse_NoQuarantineWarehouse));
 		}
-		
-		final Map<Integer, List<HUToDistribute>> husToPartner =  partitionHUsPerPartners(husToDistribute);
 
 		// Make sure this runs out of trx because there is a safety check in HUs2DDOrderProducer.process() about it being so.
 		// Please, check de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.process() for more details.
 		trxManager.runOutOfTransaction(createQuarantineDDOrder(husToDistribute, quarantineWarehouse));
-	}
-
-	private Map<Integer, List<HUToDistribute>> partitionHUsPerPartners(final List<HUToDistribute> husToDistribute)
-	{
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	private TrxRunnable createQuarantineDDOrder(final List<HUToDistribute> hus, final I_M_Warehouse quarantineWarehouse)
