@@ -355,7 +355,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final InOutGenerateResult result;
 		{
 			// Create result collector
-			result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true);
+			result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true);
 
 			// Create Receipt producer
 			final boolean createReceiptWithDatePromised = false; // create the InOuts with MovementDate = the current login date

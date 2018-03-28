@@ -81,7 +81,7 @@ public class M_ReceiptSchedule_GenerateInOutFromSelection extends JavaProcess
 			throw new AdempiereException("@" + MSG_NO_RECEIPT_SCHEDULES_SELECTED + "@");
 		}
 
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(false); // storeReceipts=false
+		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(false); // storeReceipts=false
 		final IInOutProducer producer = receiptScheduleBL.createInOutProducer(result, p_IsComplete);
 
 		receiptScheduleBL.generateInOuts(getCtx(), producer, schedules);
