@@ -13,6 +13,13 @@ Here come the actual release notes:
 # metasfresh 5.51 (2018-14)
 **release for week 2018-14**
 
+## Features
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1700](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1700) attribute filter fields are shrinked
+    * Fixes the Filter for Attributes e.g. in Window Businesspartner. Now it's able to use the filter again.
+
 # metasfresh 5.50 (2018-13)
 **release for week 2018-13**
 
@@ -72,8 +79,6 @@ Here come the actual release notes:
     * Fix for the patching of date fields when manipulating in mouse and keaboard kombination.
   * [#1663](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1663) Pos1 does not jump to page 1 anymore
     * Fixes the Home Button in grid View. Now possible to jump to first page in Pagination again.
-  * [#1700](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1700) attribute filter fields are shrinked
-    * Fixes the Filter for Attributes e.g. in Window Businesspartner. Now it's able to use the filter again.
   * [#1705](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1705) Barcode Scan leaved Webcam switched on
     * Now the Webcam is switched off as soon the Barcode reading process is finished.
 
