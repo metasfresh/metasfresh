@@ -33,3 +33,10 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,540947,540763,TO_TIMESTAMP('2018-03-27 14:03:55','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2018-03-27 14:03:55','YYYY-MM-DD HH24:MI:SS'),100,'N','N')
 ;
 
+
+-- 2018-03-28T14:55:07.090
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Classname='org.adempiere.bpartner.process.C_BPartner_Stats_ComputeBPartnerStats', Help='', Value='C_BPartner_Stats_ComputeBPartnerStats',Updated=TO_TIMESTAMP('2018-03-28 14:55:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540947
+;
+
+
