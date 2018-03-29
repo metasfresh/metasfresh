@@ -94,7 +94,7 @@ public class OLCandRegistry
 		@Override
 		public void onOrderLineCreated(final OLCand olCand, final I_C_OrderLine newOrderLine)
 		{
-			listeners.forEach(listener -> onOrderLineCreated(olCand, newOrderLine));
+			listeners.forEach(listener -> listener.onOrderLineCreated(olCand, newOrderLine));
 		}
 	}
 

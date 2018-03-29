@@ -31,6 +31,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -99,7 +100,12 @@ public class C_Order
 				order.getGrandTotal(), order.getC_Currency_ID(), order.getDateOrdered(),
 				order.getC_ConversionType_ID(), order.getAD_Client_ID(), order.getAD_Org_ID());
 
-		final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal, dateOrdered);
+		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
+				.stat(stats)
+				.additionalAmt(grandTotal)
+				.date(dateOrdered)
+				.build();
+		final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(request);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
 		{
