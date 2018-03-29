@@ -2,11 +2,14 @@ package de.metas.ui.web.product.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Attribute;
 
 import com.google.common.collect.ImmutableList;
@@ -98,10 +101,21 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 
 		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(productId, lotNoAttribute, lotNoValue);
 
-		final List<HUToDistribute> husToDistribute = husForAttributeStringValue
-				.stream()
-				.map(hu -> HUToDistribute.of(hu, lotNoLock))
-				.collect(ImmutableList.toImmutableList());
+		final List<HUToDistribute> husToDistribute = new ArrayList<>();
+
+		for (final I_M_HU hu : husForAttributeStringValue)
+		{
+			List<I_M_InOutLine> inOutLines = huAssignmentDAO.retrieveModelsForHU(hu, I_M_InOutLine.class);
+
+			if (Check.isEmpty(inOutLines))
+			{
+				continue;
+			}
+
+			final I_C_BPartner_Location location = inOutLines.get(0).getM_InOut().getC_BPartner_Location();
+
+			husToDistribute.add(HUToDistribute.of(hu, lotNoLock, location));
+		}
 
 		Services.get(IHUDDOrderBL.class).createQuarantineDDOrderForHUs(husToDistribute);
 
