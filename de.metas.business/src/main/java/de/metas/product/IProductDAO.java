@@ -63,4 +63,9 @@ public interface IProductDAO extends ISingletonService
 	I_M_Product retrieveProductByValue(Properties ctx, String value);
 
 	int retrieveProductIdByValue(String value);
+	
+	/** @return M_Product_Category_ID or <code>-1</code> if product does not exist or it was deactivated */
+	int retrieveProductCategoryByProductId(int productId);
+
+	String retrieveProductValueByProductId(int productId);
 }

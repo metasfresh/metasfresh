@@ -159,7 +159,7 @@ public class DDOrderAdvisedHandlerTests
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptor(demandCandidateId);
 
 		final DDOrderAdvisedEvent event = DDOrderAdvisedEvent.builder()
-				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
@@ -354,7 +354,7 @@ public class DDOrderAdvisedHandlerTests
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptor(demandCandidateId);
 
 		final DDOrderAdvisedEvent event = DDOrderAdvisedEvent.builder()
-				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
@@ -381,7 +381,7 @@ public class DDOrderAdvisedHandlerTests
 	{
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = SupplyRequiredDescriptor.builder()
 				.demandCandidateId(demandCandidateId)
-				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
 				.materialDescriptor(createMaterialDescriptorWithProductId(PRODUCT_ID))
 				.build();
 		return supplyRequiredDescriptor;

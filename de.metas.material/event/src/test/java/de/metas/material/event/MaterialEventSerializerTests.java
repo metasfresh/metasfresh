@@ -619,6 +619,6 @@ public class MaterialEventSerializerTests
 
 	private static EventDescriptor createEventDescriptor()
 	{
-		return new EventDescriptor(1, 2);
+		return EventDescriptor.ofClientAndOrg(1, 2);
 	}
 }

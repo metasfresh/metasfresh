@@ -1,6 +1,7 @@
 package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -38,19 +39,24 @@ import lombok.Value;
 @Value
 public class MSV3StockAvailabilityUpdatedEvent
 {
+	@JsonProperty("id")
+	private final String id;
+
 	@JsonProperty("items")
 	private final List<MSV3StockAvailability> items;
 
+	@JsonProperty("deleteAllOtherItems")
+	private final boolean deleteAllOtherItems;
+
 	@JsonCreator
 	@Builder
-	private MSV3StockAvailabilityUpdatedEvent(@JsonProperty("items") @Singular final List<MSV3StockAvailability> items)
+	private MSV3StockAvailabilityUpdatedEvent(
+			@JsonProperty("id") final String id,
+			@JsonProperty("items") @Singular final List<MSV3StockAvailability> items,
+			@JsonProperty("deleteAllOtherItems") final boolean deleteAllOtherItems)
 	{
-		if (items == null || items.isEmpty())
-		{
-			throw new IllegalArgumentException("At least one item is expected");
-		}
-
-		this.items = ImmutableList.copyOf(items);
+		this.id = id != null ? id : UUID.randomUUID().toString();
+		this.items = items != null ? ImmutableList.copyOf(items) : ImmutableList.of();
+		this.deleteAllOtherItems = deleteAllOtherItems;
 	}
-
 }
