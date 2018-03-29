@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import DateTime from 'react-datetime';
 import CalendarContainer from 'react-datetime/src/CalendarContainer';
 import TetherComponent from 'react-tether';
@@ -7,20 +6,6 @@ import classnames from 'classnames';
 
 // TODO: This monkeypatching that's happening here has to go.
 class TetheredDateTime extends DateTime {
-  static propTypes = {
-    initialViewMode: PropTypes.oneOf(['years', 'months', 'days', 'time']),
-  };
-
-  componentWillMount() {
-    const { initialViewMode } = this.props;
-
-    if (initialViewMode) {
-      this.setState({
-        currentView: initialViewMode,
-      });
-    }
-  }
-
   onInputKey = e => {
     if (
       (e.key === 'Tab' && this.props.closeOnTab) ||
