@@ -10,7 +10,6 @@ import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.process.IProcessPrecondition;
@@ -104,7 +103,7 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 
 	private boolean checkSourceHuPreconditionIncludingEmptyHUs()
 	{
-		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveMatchingSourceHUs(getSingleSelectedRow().getHuId());
+		final Collection<Integer> sourceHUs = sourceHUsRepository.retrieveMatchingSourceHUIds(getSingleSelectedRow().getHuId());
 		return !sourceHUs.isEmpty();
 	}
 }

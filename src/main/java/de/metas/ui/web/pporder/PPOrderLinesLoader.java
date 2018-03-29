@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
@@ -175,9 +174,9 @@ class PPOrderLinesLoader
 				.productIds(issueProductIds)
 				.warehouseId(m_Warehouse_ID).build();
 
-		for (final I_M_HU sourceHu : SourceHUsService.get().retrieveMatchingSourceHus(sourceHusQuery))
+		for (final int sourceHUId : SourceHUsService.get().retrieveMatchingSourceHUIds(sourceHusQuery))
 		{
-			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(sourceHu.getM_HU_ID());
+			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(sourceHUId);
 			result.add(createRowForSourceHU(huEditorRow));
 		}
 
