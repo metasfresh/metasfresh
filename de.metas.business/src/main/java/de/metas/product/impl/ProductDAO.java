@@ -143,4 +143,22 @@ public class ProductDAO implements IProductDAO
 				.create()
 				.list(de.metas.product.model.I_M_Product.class);
 	}
+
+	@Override
+	public int retrieveProductCategoryByProductId(final int productId)
+	{
+		if (productId <= 0)
+		{
+			return -1;
+		}
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		return product != null && product.isActive() ? product.getM_Product_Category_ID() : -1;
+	}
+	
+	@Override
+	public String retrieveProductValueByProductId(final int productId)
+	{
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		return product.getValue();
+	}
 }

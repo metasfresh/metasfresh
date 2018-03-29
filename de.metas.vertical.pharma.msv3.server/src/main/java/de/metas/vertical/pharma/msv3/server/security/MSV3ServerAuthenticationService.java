@@ -2,6 +2,7 @@ package de.metas.vertical.pharma.msv3.server.security;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent.ChangeType;
 import lombok.NonNull;
@@ -122,7 +124,31 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void handleEvent(@NonNull final MSV3UserChangedEvent event)
+	public void handleEvent(@NonNull final MSV3UserChangedBatchEvent batchEvent)
+	{
+		final String syncToken = batchEvent.getId();
+
+		//
+		// Update/Delete
+		{
+			final AtomicInteger countUpdated = new AtomicInteger();
+			batchEvent.getEvents().forEach(event -> {
+				handleEvent(event, syncToken);
+				countUpdated.incrementAndGet();
+			});
+			logger.debug("Updated/Deleted {} users", countUpdated);
+		}
+
+		//
+		// Delete
+		if (batchEvent.isDeleteAllOtherUsers())
+		{
+			final long countDeleted = usersRepo.deleteInBatchBySyncTokenNot(syncToken);
+			logger.debug("Deleted {} users", countDeleted);
+		}
+	}
+
+	private void handleEvent(@NonNull final MSV3UserChangedEvent event, final String syncToken)
 	{
 		if (event.getChangeType() == ChangeType.CREATED_OR_UPDATED)
 		{
@@ -138,16 +164,12 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 			user.setPassword(event.getPassword());
 			user.setBpartnerId(event.getBpartnerId());
 			user.setBpartnerLocationId(event.getBpartnerLocationId());
-
+			user.setSyncToken(syncToken);
 			usersRepo.save(user);
 		}
 		else if (event.getChangeType() == ChangeType.DELETED)
 		{
-			final JpaUser user = usersRepo.findByUsername(event.getUsername());
-			if (user != null)
-			{
-				usersRepo.delete(user);
-			}
+			usersRepo.deleteByUsername(event.getUsername());
 		}
 		else
 		{

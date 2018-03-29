@@ -25,7 +25,7 @@ import org.junit.Test;
  * #L%
  */
 
-public class MSV3UserChangedMultiEventTest
+public class MSV3UserChangedBatchEventTest
 {
 	private JSONTestHelper jsonTestHelper;
 
@@ -38,7 +38,7 @@ public class MSV3UserChangedMultiEventTest
 	@Test
 	public void testSerializeDeserialize() throws Exception
 	{
-		jsonTestHelper.testSerializeDeserialize(MSV3UserChangedMultiEvent.builder()
+		jsonTestHelper.testSerializeDeserialize(MSV3UserChangedBatchEvent.builder()
 				.event(MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent()
 						.username("u1")
 						.password("p1")
@@ -46,6 +46,7 @@ public class MSV3UserChangedMultiEventTest
 						.bpartnerLocationId(7654321)
 						.build())
 				.event(MSV3UserChangedEvent.deletedEvent("u2"))
+				.deleteAllOtherUsers(true)
 				.build());
 	}
 
