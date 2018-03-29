@@ -14,12 +14,17 @@ Here come the actual release notes:
 **release for week 2018-14**
 
 ## Features
+* metasfresh
+  * [#3784](https://github.com/metasfresh/metasfresh/issues/3784) Standalone BPartner Product Translation Window
+    * New Window in WebUI that allows the maintenance of Business Partner Product Translations.
 * metasfreh-webui-frontend
     * [#1586](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1586) Screen aliginment Improvements
       * Improves the Look & Feel, mostly vertical alignments - of all Fields and Field Content. Also Size of Lookup widget dropdowns.
 
 ## Fixes
 * metasfresh-webui-frontend
+  * [#1679](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1679) Layout bug with resolution 1920x1200
+    * Fixes a Layout Bug in table header of Grid View, now showing the cells in initial S, M, L sizes again.
   * [#1700](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1700) attribute filter fields are shrinked
     * Fixes the Filter for Attributes e.g. in Window Businesspartner. Now it's able to use the filter again.
 

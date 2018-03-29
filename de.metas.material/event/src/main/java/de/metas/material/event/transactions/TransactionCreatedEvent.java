@@ -41,7 +41,7 @@ public class TransactionCreatedEvent extends AbstractTransactionEvent
 
 	@JsonCreator
 	@Builder
-	public TransactionCreatedEvent(
+	private TransactionCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("shipmentScheduleIds2Qtys") @Singular final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
