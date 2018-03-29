@@ -2214,12 +2214,4 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		save(cand);
 	}
 
-	@Override
-	public void markInvoiceCandInDisputeForReceiptLines(final List<I_M_InOutLine> receiptLines)
-	{
-		receiptLines.stream()
-				.forEach(receiptLine -> markInvoiceCandInDisputeForReceiptLine(receiptLine));
-
-	}
-
 }

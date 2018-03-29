@@ -11,10 +11,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -26,8 +23,6 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -51,8 +46,6 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.allocation.IHUContextProcessor;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
@@ -112,7 +105,6 @@ public class HUs2DDOrderProducer
 	// services
 	private static final transient Logger logger = LogManager.getLogger(HUs2DDOrderProducer.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -128,8 +120,8 @@ public class HUs2DDOrderProducer
 	private I_M_Locator _locatorTo;
 	private Iterator<HUToDistribute> _hus;
 	private final Timestamp date = SystemTime.asDayTimestamp();
-	private I_C_BPartner _partner;
-	private I_C_BPartner_Location _bpLocation;
+	private int _bpartnerId;
+	private int _bpartnerLocationId;
 
 	//
 	// Status
@@ -151,22 +143,14 @@ public class HUs2DDOrderProducer
 
 		// Make sure we are running out of transaction.
 		// NOTE: it won't be a big harm to run in transaction too, but in most of the cases this is not the intention because this could be a long running process
-		trxManager.assertThreadInheritedTrxNotExists();
+		// NOTE2: we still have cases where we cannot avoid being in transaction, so we commented it out. 
+		// trxManager.assertThreadInheritedTrxNotExists();
 
 		prepareProcessing();
 
 		final Properties ctx = getCtx();
 		huTrxBL.createHUContextProcessorExecutor(PlainContextAware.newWithThreadInheritedTrx(ctx))
-				.run(new IHUContextProcessor()
-				{
-
-					@Override
-					public IMutableAllocationResult process(final IHUContext huContext)
-					{
-						processInTrx(huContext);
-						return NULL_RESULT;
-					}
-				});
+				.run(this::processInTrx);
 	}
 
 	protected void processInTrx(IHUContext huContext)
@@ -272,40 +256,41 @@ public class HUs2DDOrderProducer
 		return _ctx;
 	}
 
-	public final HUs2DDOrderProducer setM_Warehouse_To(final I_M_Warehouse warehouseTo)
+	public final HUs2DDOrderProducer setM_Warehouse_To(final org.compiere.model.I_M_Warehouse warehouseTo)
 	{
 		assertNotProcessed();
 
 		Check.assumeNotNull(warehouseTo, "warehouseTo not null");
-		_warehouseTo = warehouseTo;
+		_warehouseTo = InterfaceWrapperHelper.create(warehouseTo, I_M_Warehouse.class);
 		_locatorTo = warehouseBL.getDefaultLocator(_warehouseTo);
 		return this;
 	}
 
-	public HUs2DDOrderProducer setC_BPartner(final I_C_BPartner partner)
+	public HUs2DDOrderProducer setBpartnerId(final int bpartnerId)
 	{
-		Check.assumeNotNull(partner, "Partner not null");
-		_partner = partner;
+		assertNotProcessed();
+		_bpartnerId = bpartnerId;
 		return this;
 	}
 
-	public HUs2DDOrderProducer setC_BPartnerLocation(final I_C_BPartner_Location bpLocation)
+	public HUs2DDOrderProducer setBpartnerLocationId(final int bpartnerLocationId)
 	{
-		Check.assumeNotNull(bpLocation, "Partner Location not null");
-		_bpLocation = bpLocation;
+		assertNotProcessed();
+		_bpartnerLocationId = bpartnerLocationId;
 		return this;
 	}
 
-	private final I_C_BPartner getPartner()
+	private final int getBpartnerId()
 	{
-		Check.assumeNotNull(_partner, "Partner rnot null");
-		return _partner;
+		Check.assumeGreaterThanZero(_bpartnerId, "_bpartnerId");
+		Check.assumeNotNull(_bpartnerId, "Partner rnot null");
+		return _bpartnerId;
 	}
 
-	private final I_C_BPartner_Location getBPLocation()
+	private final int getBpartnerLocationId()
 	{
-		Check.assumeNotNull(_bpLocation, "Partner Location not null");
-		return _bpLocation;
+		Check.assumeGreaterThanZero(_bpartnerLocationId, "_bpLocationId");
+		return _bpartnerLocationId;
 	}
 
 	private final I_M_Warehouse getM_Warehouse_To()
@@ -389,8 +374,8 @@ public class HUs2DDOrderProducer
 		ddOrder.setMRP_Generated(true);
 		ddOrder.setMRP_AllowCleanup(true);
 		ddOrder.setPP_Plant(plant);
-		ddOrder.setC_BPartner(getPartner());
-		ddOrder.setC_BPartner_Location(getBPLocation());
+		ddOrder.setC_BPartner_ID(getBpartnerId());
+		ddOrder.setC_BPartner_Location_ID(getBpartnerLocationId());
 		// order.setSalesRep_ID(productPlanningData.getPlanner_ID());
 
 		ddOrder.setC_DocType_ID(docTypeDO_ID);
@@ -689,27 +674,30 @@ public class HUs2DDOrderProducer
 		}
 	}
 
-	@Builder
 	@Value
 	public static final class HUToDistribute
 	{
-		@NonNull
-		I_M_HU hu;
-
-		@Nullable
-		I_M_Product_LotNumber_Lock lockLotNo;
-		
-		@Nullable 
-		I_C_BPartner_Location bpLocation;
-
-		public static final HUToDistribute of(final I_M_HU hu, final I_M_Product_LotNumber_Lock lockLotNo, final I_C_BPartner_Location bpLocation)
+		public static HUToDistribute ofHU(final I_M_HU hu)
 		{
-			return builder()
-					.hu(hu)
-					.lockLotNo(lockLotNo)
-					.bpLocation(bpLocation)
-					.build();
+			return builder().hu(hu).build();
+		}
+		
+		I_M_HU hu;
+		I_M_Product_LotNumber_Lock lockLotNo;
+		int bpartnerId;
+		int bpartnerLocationId;
 
+		@Builder
+		private HUToDistribute(
+				@NonNull final I_M_HU hu,
+				I_M_Product_LotNumber_Lock lockLotNo,
+				int bpartnerId,
+				int bpartnerLocationId)
+		{
+			this.hu = hu;
+			this.lockLotNo = lockLotNo;
+			this.bpartnerId = bpartnerId;
+			this.bpartnerLocationId = bpartnerLocationId;
 		}
 	}
 }

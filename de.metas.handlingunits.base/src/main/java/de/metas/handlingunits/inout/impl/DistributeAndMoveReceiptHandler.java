@@ -10,7 +10,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.QuarantineInOutLine;
+import de.metas.handlingunits.ddorder.api.QuarantineInOutLine;
 import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutBL;
@@ -22,6 +22,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.product.model.I_M_Product_LotNumber_Lock;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -48,13 +49,7 @@ import lombok.NonNull;
 
 public class DistributeAndMoveReceiptHandler
 {
-
-	public static final DistributeAndMoveReceiptHandler newInstance()
-	{
-		return new DistributeAndMoveReceiptHandler();
-	}
-
-	private I_M_InOut receipt;
+	private final I_M_InOut receipt;
 
 	private List<QuarantineInOutLine> linesToQuarantine = new ArrayList<>();
 	private List<I_M_InOutLine> linesToDD_Order = new ArrayList<>();
@@ -66,13 +61,18 @@ public class DistributeAndMoveReceiptHandler
 	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 	private final IInOutDDOrderBL inoutDDOrderBL = Services.get(IInOutDDOrderBL.class);
 	private final IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
-
-	public void onReceiptComplete(@NonNull final I_M_InOut receipt)
+	
+	@Builder
+	private DistributeAndMoveReceiptHandler(@NonNull final I_M_InOut receipt)
 	{
 		Check.assume(!receipt.isSOTrx(), "InOut shall be a receipt: {}", receipt);
 		Check.assume(!inoutBL.isReversal(receipt), "InOut shall not be a reversal", receipt);
-
+		
 		this.receipt = receipt;
+	}
+
+	public void process()
+	{
 
 		partitionLines();
 
@@ -191,4 +191,12 @@ public class DistributeAndMoveReceiptHandler
 		return false;
 	}
 
+	
+	public static class DistributeAndMoveReceiptHandlerBuilder
+	{
+		public void process()
+		{
+			build().process();
+		}
+	}
 }

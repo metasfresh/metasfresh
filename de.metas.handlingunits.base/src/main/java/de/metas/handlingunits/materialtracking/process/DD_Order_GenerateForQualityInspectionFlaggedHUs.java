@@ -108,8 +108,8 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 		HUs2DDOrderProducer.newProducer()
 				.setContext(getCtx())
 				.setM_Warehouse_To(warehouseTo)
-				.setC_BPartner(orgBPartner)
-				.setC_BPartnerLocation(orgBPLocation)
+				.setBpartnerId(orgBPartner.getC_BPartner_ID())
+				.setBpartnerLocationId(orgBPLocation.getC_BPartner_Location_ID())
 				.setHUs(retriveHUs())
 				.process();
 		return MSG_OK;
@@ -126,18 +126,8 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 				.addFilter(huDDOrderDAO.getHUsNotAlreadyScheduledToMoveFilter())
 				//
 				.createQuery()
-
-				.list(I_M_HU.class)
-				.stream()
-				.map(hu -> createHUToDistribute(hu))
+				.stream(I_M_HU.class)
+				.map(HUToDistribute::ofHU)
 				.iterator();
-	}
-
-	private HUToDistribute createHUToDistribute(final I_M_HU hu)
-	{
-		return HUToDistribute
-				.builder()
-				.hu(hu)
-				.build();
 	}
 }
