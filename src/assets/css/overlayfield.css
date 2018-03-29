@@ -10,69 +10,72 @@
     align-items: center;
     justify-content: center;
     overflow-y: scroll;
-}
 
-@media (min-width: $breakpoint-md){
-    overflow-y: auto;
-}
+    @media (min-width: $breakpoint-md){
+        overflow-y: auto;
+    }
 
-.overlay-field .form-group {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-}
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
 
-.overlay-field input {
-    text-align: center;
-    font-size: 60px;
-}
+    input {
+        text-align: center;
+        font-size: 60px;
+    }
 
-.overlay-field .form-control-label {
-    font-size: 30px;
-    text-align: center;
+    .form-control-label {
+        font-size: 30px;
+        text-align: center;
+    }
 }
 
 .barcode-scanner-widget {
     display: flex;
     flex-direction: column;
     background-color: white;
-    border: solid 1px #C9D5DC;
+    border: solid 1px $brand-light-color;
 }
 
-.scanner-wrapper .drawingBuffer {
-    position: absolute;
-    top: 0;
-    left:0;
-}
+.scanner-wrapper {
+    .drawingBuffer {
+        position: absolute;
+        top: 0;
+        left:0;
+    }
 
-.scanner-window {
-    width: 320px;
-}
+    .btn-close {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        z-index: 10000;
 
-@media (min-width: $breakpoint-md){
-    .scanner-window {
-        width: 640px;
-        float: none;
+        @media (min-width: $breakpoint-md){
+            font-size: 20px;
+        }
     }
 }
 
-.scanner-window video {
-    max-width: 100%;
-    width: 100%;
+.scanner-window {
+    width: 85vw;
+    padding: 20px;
+
+    video {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    @media (min-width: $breakpoint-md){
+        float: none;
+        padding: 30px;
+    }
+
+    @media (min-width: $breakpoint-lg){
+        max-width: 1280px;
+        float: none;
+    }
 }
-
-.scanning-result {
-    margin-bottom: 20px;
-}
-
-.scanning-result .label {
-    font-size: 18px;
-}
-
-.scanner-controls {
-    margin: 20px 0;
-}
-
-

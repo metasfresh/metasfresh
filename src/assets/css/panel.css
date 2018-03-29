@@ -49,11 +49,12 @@
     padding: .25rem .75rem .5rem .75rem;
 }
 
-/*@media only screen and (min-width: $breakpoint-md){*/
+@media only screen and (min-width: $breakpoint-md){
 .desktop {
     .panel-spaced {
         padding: 1rem 1.25rem 1.25rem 1.25rem;
     }
+}
 }
 
 @media only screen and (max-width: $breakpoint) {
@@ -106,7 +107,6 @@
     transition: all 0.2s ease;
 }
 
-/*@media only screen and (min-width: $breakpoint-md){*/
 .desktop {
     .panel-modal-header {
         height: 75px;
@@ -135,7 +135,6 @@
     padding: 0.25rem;
 }
 
-/*@media only screen and (min-width: $breakpoint-md){*/
 .desktop {
     .panel-modal-content {
         max-height: calc(100% - 77px);
@@ -157,7 +156,9 @@
 }
 
 .panel-title {
-    margin-bottom: .625rem;
+    margin-bottom: 0;
+    margin-top: 0;
+    padding-top: .1rem;
 }
 
 .panel-title-spaced {
@@ -170,13 +171,15 @@
     border: solid 0 $brand-border-color;
 }
 
-.panel-prompt-header {
-    box-shadow: none;
-    padding: 0 1rem;
-    height: 50px;
+.tablet, .mobile, .desktop {
+    .panel-prompt-header {
+        box-shadow: none;
+        padding: 0 1rem;
+        height: 50px;
 
-    i {
-        cursor: pointer;
+        i {
+            cursor: pointer;
+        }
     }
 }
 

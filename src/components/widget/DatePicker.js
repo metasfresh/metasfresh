@@ -2,20 +2,12 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import TetheredDateTime from './TetheredDateTime';
+import onClickOutside from 'react-onclickoutside';
 import { addNotification } from '../../actions/AppActions';
 import {
   allowOutsideClick,
   disableOutsideClick,
 } from '../../actions/WindowActions';
-
-const propTypes = {
-  dispatch: PropTypes.func.isRequired,
-  handleBackdropLock: PropTypes.func,
-  patch: PropTypes.func,
-  field: PropTypes.string,
-  value: PropTypes.any,
-  isOpenDatePicker: PropTypes.bool,
-};
 
 class DatePicker extends Component {
   constructor(props) {
@@ -38,12 +30,17 @@ class DatePicker extends Component {
 
   handleBlur = date => {
     const { patch, handleBackdropLock, dispatch, field } = this.props;
-    const { cache } = this.state;
+    const { cache, open } = this.state;
+
+    if (!open) {
+      return;
+    }
 
     try {
       if (
+        date &&
         JSON.stringify(cache) !==
-        (date !== '' ? JSON.stringify(date && date.toDate()) : '')
+          (date !== '' ? JSON.stringify(date && date.toDate()) : '')
       ) {
         patch(date);
       }
@@ -76,7 +73,12 @@ class DatePicker extends Component {
   };
 
   handleClickOutside = () => {
-    this.handleClose();
+    const { open } = this.state;
+
+    if (!open) {
+      return;
+    }
+    this.handleBlur(this.picker.state.selectedDate);
   };
 
   handleKeydown = e => {
@@ -91,9 +93,19 @@ class DatePicker extends Component {
     );
   };
 
+  focusInput = () => {
+    this.inputElement && this.inputElement.focus();
+  };
+
   renderInput = ({ className, ...props }) => (
     <div className={className}>
-      <input className="form-control" {...props} />
+      <input
+        {...props}
+        className="form-control"
+        ref={input => {
+          this.inputElement = input;
+        }}
+      />
     </div>
   );
 
@@ -107,6 +119,8 @@ class DatePicker extends Component {
           renderInput={this.renderInput}
           onBlur={this.handleBlur}
           onFocus={this.handleFocus}
+          open={this.state.open}
+          onFocusInput={this.focusInput}
           {...this.props}
         />
         <i className="meta-icon-calendar" key={0} />
@@ -115,6 +129,13 @@ class DatePicker extends Component {
   }
 }
 
-DatePicker.propTypes = propTypes;
+DatePicker.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  handleBackdropLock: PropTypes.func,
+  patch: PropTypes.func,
+  field: PropTypes.string,
+  value: PropTypes.any,
+  isOpenDatePicker: PropTypes.bool,
+};
 
-export default connect()(DatePicker);
+export default connect()(onClickOutside(DatePicker));

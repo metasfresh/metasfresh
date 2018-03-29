@@ -118,7 +118,7 @@ class RawWidget extends Component {
   };
 
   handleKeyDown = (e, property, value, widgetType) => {
-    if (e.key === 'Enter' && widgetType !== 'LongText') {
+    if ((e.key === 'Enter' || e.key === 'Tab') && widgetType !== 'LongText') {
       this.handlePatch(property, value);
     }
   };
