@@ -15,7 +15,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1600307484L;
+	private static final long serialVersionUID = 236129388L;
 
     /** Standard Constructor */
     public X_MD_Cockpit (Properties ctx, int MD_Cockpit_ID, String trxName)
@@ -24,8 +24,8 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
       /** if (MD_Cockpit_ID == 0)
         {
 			setDateGeneral (new Timestamp( System.currentTimeMillis() ));
-			setMD_Cockpit_ID (0);
 			setM_Product_ID (0);
+			setMD_Cockpit_ID (0);
         } */
     }
 
@@ -76,28 +76,6 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateGeneral);
 	}
 
-	/** Set Materialcockpit.
-		@param MD_Cockpit_ID Materialcockpit	  */
-	@Override
-	public void setMD_Cockpit_ID (int MD_Cockpit_ID)
-	{
-		if (MD_Cockpit_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, Integer.valueOf(MD_Cockpit_ID));
-	}
-
-	/** Get Materialcockpit.
-		@return Materialcockpit	  */
-	@Override
-	public int getMD_Cockpit_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Cockpit_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
@@ -130,6 +108,28 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Materialcockpit.
+		@param MD_Cockpit_ID Materialcockpit	  */
+	@Override
+	public void setMD_Cockpit_ID (int MD_Cockpit_ID)
+	{
+		if (MD_Cockpit_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, Integer.valueOf(MD_Cockpit_ID));
+	}
+
+	/** Get Materialcockpit.
+		@return Materialcockpit	  */
+	@Override
+	public int getMD_Cockpit_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Cockpit_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

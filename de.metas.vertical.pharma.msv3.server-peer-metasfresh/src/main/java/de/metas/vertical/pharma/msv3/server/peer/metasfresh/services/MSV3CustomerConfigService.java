@@ -1,11 +1,16 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh.services;
 
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.vertical.pharma.msv3.server.model.I_MSV3_Customer_Config;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 
@@ -49,14 +54,19 @@ public class MSV3CustomerConfigService
 
 	public void publishAllConfig()
 	{
-		Services.get(IQueryBL.class)
+		final List<MSV3UserChangedEvent> events = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MSV3_Customer_Config.class)
 				// .addOnlyActiveRecordsFilter() // ALL, even if is not active. For those inactive we will generate delete events
 				.orderBy(I_MSV3_Customer_Config.COLUMN_MSV3_Customer_Config_ID)
 				.create()
 				.stream(I_MSV3_Customer_Config.class)
 				.map(configRecord -> toMSV3UserChangedEvent(configRecord))
-				.forEach(msv3ServerPeerService::publishUserChangedEvent);
+				.collect(ImmutableList.toImmutableList());
+
+		msv3ServerPeerService.publishUserChangedEvent(MSV3UserChangedBatchEvent.builder()
+				.events(events)
+				.deleteAllOtherUsers(true)
+				.build());
 	}
 
 	private static MSV3UserChangedEvent toMSV3UserChangedEvent(final I_MSV3_Customer_Config configRecord)

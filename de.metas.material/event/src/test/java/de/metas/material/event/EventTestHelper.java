@@ -74,7 +74,7 @@ public class EventTestHelper
 		return SupplyRequiredDescriptor.builder()
 				.shipmentScheduleId(SHIPMENT_SCHEDULE_ID)
 				.demandCandidateId(41)
-				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
 				.materialDescriptor(createMaterialDescriptorWithProductId(productId))
 				.build();
 	}

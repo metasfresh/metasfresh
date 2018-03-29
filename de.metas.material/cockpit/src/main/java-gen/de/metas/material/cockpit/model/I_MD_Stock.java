@@ -147,29 +147,6 @@ public interface I_MD_Stock
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Betand.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMD_Stock_ID (int MD_Stock_ID);
-
-	/**
-	 * Get Betand.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getMD_Stock_ID();
-
-    /** Column definition for MD_Stock_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Stock, Object> COLUMN_MD_Stock_ID = new org.adempiere.model.ModelColumn<I_MD_Stock, Object>(I_MD_Stock.class, "MD_Stock_ID", null);
-    /** Column name MD_Stock_ID */
-    public static final String COLUMNNAME_MD_Stock_ID = "MD_Stock_ID";
-
-	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -226,6 +203,29 @@ public interface I_MD_Stock
     public static final org.adempiere.model.ModelColumn<I_MD_Stock, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_MD_Stock, org.compiere.model.I_M_Warehouse>(I_MD_Stock.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Betand.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMD_Stock_ID (int MD_Stock_ID);
+
+	/**
+	 * Get Betand.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getMD_Stock_ID();
+
+    /** Column definition for MD_Stock_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Stock, Object> COLUMN_MD_Stock_ID = new org.adempiere.model.ModelColumn<I_MD_Stock, Object>(I_MD_Stock.class, "MD_Stock_ID", null);
+    /** Column name MD_Stock_ID */
+    public static final String COLUMNNAME_MD_Stock_ID = "MD_Stock_ID";
 
 	/**
 	 * Set Bestand.
