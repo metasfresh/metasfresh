@@ -40,7 +40,7 @@ public class MSV3StockAvailability
 	private int qty;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	private MSV3StockAvailability(
 			@JsonProperty("pzn") final long pzn,
 			@JsonProperty("qty") final int qty)

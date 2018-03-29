@@ -869,6 +869,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			guaranteed = guaranteedIteratorRequired.booleanValue();
 		}
+		else if (getKeyColumnNames().size() != 1)
+		{
+			// case: no guaranteed option specified and this table has zero or more than one primary key columns
+			// => cannot use guaranteed iterators
+			guaranteed = false;
+		}
 		else
 		{
 			guaranteed = DEFAULT_OPTION_GuaranteedIteratorRequired;
