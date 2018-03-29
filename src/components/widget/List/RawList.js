@@ -66,6 +66,7 @@ class RawList extends PureComponent {
       selected,
       autoFocus,
       emptyText,
+      isFocused,
     } = this.props;
 
     let dropdownList = this.state.dropdownList;
@@ -118,7 +119,7 @@ class RawList extends PureComponent {
           ...changedValues,
         },
         () => {
-          autoFocus && this.dropdown.focus();
+          autoFocus && !isFocused && this.dropdown.focus();
         }
       );
     }
@@ -129,10 +130,14 @@ class RawList extends PureComponent {
    * on focus.
    */
   handleClick = () => {
-    const { onOpenDropdown } = this.props;
+    const { onOpenDropdown, isToggled, onCloseDropdown } = this.props;
 
-    this.dropdown.focus();
-    onOpenDropdown();
+    if (!isToggled) {
+      this.dropdown.focus();
+      onOpenDropdown();
+    } else {
+      onCloseDropdown();
+    }
   };
 
   handleClickOutside() {
@@ -281,7 +286,6 @@ class RawList extends PureComponent {
           })}
           tabIndex={tabIndex ? tabIndex : 0}
           onFocus={readonly ? null : onFocus}
-          onBlur={this.props.onBlur}
           onClick={readonly ? null : this.handleClick}
           onKeyDown={this.handleKeyDown}
           onKeyUp={this.handleKeyUp}
