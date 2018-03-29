@@ -46,14 +46,15 @@ import lombok.NonNull;
 public class BPartnerStatsBL implements IBPartnerStatsBL
 {
 	@Override
-	public String calculateSOCreditStatus(@NonNull final BPartnerStats bpStats, @NonNull final BigDecimal additionalAmt, @NonNull final Timestamp date)
+	public String calculateSOCreditStatus(@NonNull final CalculateSOCreditStatusRequest request)
 	{
-
-		final IBPartnerStatsDAO bpStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		final BPartnerStats bpStats = request.getStat();
+		final BigDecimal additionalAmt = request.getAdditionalAmt();
+		final Timestamp date = request.getDate();
 
 		final String initialCreditStatus = bpStats.getSOCreditStatus();
 
-		if (additionalAmt == null || additionalAmt.signum() == 0)
+		if (!request.isForceCheckCreditStatus() && additionalAmt.signum() == 0)
 		{
 			return initialCreditStatus;
 		}
@@ -65,7 +66,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 		// Nothing to do
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
-				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
+				|| (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus) && !request.isForceCheckCreditStatus())
 				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
 		{
 			return initialCreditStatus;
@@ -90,10 +91,16 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		return X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
 	}
 
+
 	@Override
 	public boolean isCreditStopSales(@NonNull final BPartnerStats stat, @NonNull final BigDecimal grandTotal, @NonNull final Timestamp date)
 	{
-		final String futureCreditStatus = calculateSOCreditStatus(stat, grandTotal, date);
+		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
+				.stat(stat)
+				.additionalAmt(grandTotal)
+				.date(date)
+				.build();
+		final String futureCreditStatus = calculateSOCreditStatus(request);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(futureCreditStatus))
 		{
