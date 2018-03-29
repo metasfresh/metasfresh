@@ -5,6 +5,7 @@ import SockJs from 'sockjs-client';
 import currentDevice from 'current-device';
 import Stomp from 'stompjs/lib/stomp.min.js';
 import Moment from 'moment';
+import { Set } from 'immutable';
 
 import {
   ACTIVATE_TAB,
@@ -536,7 +537,7 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
               includedTabsInfo: {},
               scope: 'master',
               saveStatus: { saved: true },
-              standardActions: {},
+              standardActions: Set(),
               validStatus: {},
             })
           );
