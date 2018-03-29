@@ -51,13 +51,13 @@ class ListWidget extends Component {
   componentDidUpdate(prevProps) {
     const { isInputEmpty } = this.props;
     const { initialFocus, defaultValue, doNotOpenOnFocus } = this.props;
-    const { autoFocus, isFocused, list } = this.state;
+    const { autoFocus, isToggled, list } = this.state;
 
     if (isInputEmpty && prevProps.isInputEmpty !== isInputEmpty) {
       this.previousValue = '';
     }
 
-    if (prevProps.autoFocus !== autoFocus && !isFocused) {
+    if (prevProps.autoFocus !== autoFocus && !isToggled) {
       if (autoFocus) {
         this.handleFocus();
         !doNotOpenOnFocus && list && list.size > 1 && this.activate();
