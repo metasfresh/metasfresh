@@ -580,7 +580,7 @@ public class SqlDocumentQueryBuilder
 	public static Map<String, Object> extractComposedKey(final DocumentId recordId, final List<? extends SqlEntityFieldBinding> keyFields)
 	{
 		final int count = keyFields.size();
-		if (count <= 1)
+		if (count < 1)
 		{
 			throw new AdempiereException("Invalid composed key: " + keyFields);
 		}
