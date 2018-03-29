@@ -1,3 +1,6 @@
+DO $$ 
+    BEGIN
+        BEGIN
 -- 2018-03-19T16:19:49.858
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543933,0,'IsExportBatchBookings',TO_TIMESTAMP('2018-03-19 16:19:49','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.sepa','Y','Sammelbuchungen exportieren','Sammelbuchungen exportieren',TO_TIMESTAMP('2018-03-19 16:19:49','YYYY-MM-DD HH24:MI:SS'),100)
@@ -30,8 +33,14 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-03-19T16:20:08.042
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_PaySelection','ALTER TABLE public.C_PaySelection ADD COLUMN IsExportBatchBookings CHAR(1) DEFAULT ''Y'' CHECK (IsExportBatchBookings IN (''Y'',''N'')) NOT NULL')
+/* DDL */ PERFORM public.db_alter_table('C_PaySelection','ALTER TABLE public.C_PaySelection ADD COLUMN IsExportBatchBookings CHAR(1) DEFAULT ''Y'' CHECK (IsExportBatchBookings IN (''Y'',''N'')) NOT NULL')
 ;
+        EXCEPTION
+			WHEN unique_violation THEN RAISE NOTICE 'The AD_Element or AD_Column for IsExportBatchBookings already exists in C_PaySelection.';
+            WHEN duplicate_column THEN RAISE NOTICE 'column IsExportBatchBookings already exists in C_PaySelection.';
+        END;
+    END;
+$$
 
 -- 2018-03-19T16:43:42.014
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

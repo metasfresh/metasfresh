@@ -1,5 +1,8 @@
 
 
+DO $$ 
+    BEGIN
+        BEGIN
 -- 2018-03-19T16:23:02.184
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,559568,543933,0,20,540603,'N','IsExportBatchBookings',TO_TIMESTAMP('2018-03-19 16:23:02','YYYY-MM-DD HH24:MI:SS'),100,'N','Y','de.metas.payment.sepa',1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','Sammelbuchungen exportieren',0,0,TO_TIMESTAMP('2018-03-19 16:23:02','YYYY-MM-DD HH24:MI:SS'),100,0)
@@ -12,5 +15,11 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-03-19T16:23:03.878
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('SEPA_Export','ALTER TABLE public.SEPA_Export ADD COLUMN IsExportBatchBookings CHAR(1) DEFAULT ''Y'' CHECK (IsExportBatchBookings IN (''Y'',''N'')) NOT NULL')
+/* DDL */ PERFORM public.db_alter_table('SEPA_Export','ALTER TABLE public.SEPA_Export ADD COLUMN IsExportBatchBookings CHAR(1) DEFAULT ''Y'' CHECK (IsExportBatchBookings IN (''Y'',''N'')) NOT NULL')
 ;
+        EXCEPTION
+            WHEN duplicate_column THEN RAISE NOTICE 'column IsExportBatchBookings already exists in SEPA_Export.';
+            WHEN unique_violation THEN RAISE NOTICE 'The AD_Element or AD_Column for IsExportBatchBookings already exists in SEPA_Export.';
+        END;
+    END;
+$$
