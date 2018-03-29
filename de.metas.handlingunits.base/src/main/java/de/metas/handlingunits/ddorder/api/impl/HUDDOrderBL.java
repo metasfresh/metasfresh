@@ -1,10 +1,13 @@
 package de.metas.handlingunits.ddorder.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -19,6 +22,7 @@ import org.eevolution.model.X_DD_OrderLine;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.service.IWarehouseDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -90,7 +94,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 
 		return huAssignmentDAO.retrieveTopLevelHUsForModel(receiptLine.getInOutLine())
 				.stream()
-				.map(hu -> HUToDistribute.of(hu, receiptLine.getLockLotNo()))
+				.map(hu -> HUToDistribute.of(hu, receiptLine.getLockLotNo(), receiptLine.getInOutLine().getM_InOut().getC_BPartner_Location()))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -107,12 +111,38 @@ public class HUDDOrderBL implements IHUDDOrderBL
 			throw new AdempiereException(msgBL.getMsg(Env.getCtx(), ERR_M_Warehouse_NoQuarantineWarehouse));
 		}
 
+		final Map<Integer, List<HUToDistribute>> locationsToHUs = partitionHUsToLocations(husToDistribute);
+
 		// Make sure this runs out of trx because there is a safety check in HUs2DDOrderProducer.process() about it being so.
 		// Please, check de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.process() for more details.
-		trxManager.runOutOfTransaction(createQuarantineDDOrder(husToDistribute, quarantineWarehouse));
+
+		for (int locationId : locationsToHUs.keySet())
+		{
+			final I_C_BPartner_Location location = load(locationId, I_C_BPartner_Location.class);
+
+			trxManager.runOutOfTransaction(createQuarantineDDOrder(location, locationsToHUs.get(locationId), quarantineWarehouse));
+		}
+
 	}
 
-	private TrxRunnable createQuarantineDDOrder(final List<HUToDistribute> hus, final I_M_Warehouse quarantineWarehouse)
+	private Map<Integer, List<HUToDistribute>> partitionHUsToLocations(List<HUToDistribute> husToDistribute)
+	{
+
+		final Map<Integer, List<HUToDistribute>> partitions = new HashMap<>();
+
+		for (final HUToDistribute huToDistribute : husToDistribute)
+		{
+			if (partitions.get(huToDistribute.getBpLocation().getC_BPartner_Location_ID()) == null)
+			{
+				partitions.computeIfAbsent(huToDistribute.getBpLocation().getC_BPartner_Location_ID(), husList -> new ArrayList<>()).add(huToDistribute);
+
+			}
+		}
+
+		return partitions;
+	}
+
+	private TrxRunnable createQuarantineDDOrder(final I_C_BPartner_Location location, final List<HUToDistribute> hus, final I_M_Warehouse quarantineWarehouse)
 	{
 		final TrxRunnable trxRunnable = new TrxRunnableAdapter()
 		{
@@ -122,6 +152,8 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				HUs2DDOrderProducer.newProducer()
 						.setContext(Env.getCtx())
 						.setM_Warehouse_To(create(quarantineWarehouse, de.metas.handlingunits.model.I_M_Warehouse.class))
+						.setC_BPartner(location.getC_BPartner())
+						.setC_BPartnerLocation(location)
 						.setHUs(hus.iterator())
 						.process();
 			}

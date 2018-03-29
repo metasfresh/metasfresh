@@ -698,12 +698,16 @@ public class HUs2DDOrderProducer
 
 		@Nullable
 		I_M_Product_LotNumber_Lock lockLotNo;
+		
+		@Nullable 
+		I_C_BPartner_Location bpLocation;
 
-		public static final HUToDistribute of(final I_M_HU hu, final I_M_Product_LotNumber_Lock lockLotNo)
+		public static final HUToDistribute of(final I_M_HU hu, final I_M_Product_LotNumber_Lock lockLotNo, final I_C_BPartner_Location bpLocation)
 		{
 			return builder()
 					.hu(hu)
 					.lockLotNo(lockLotNo)
+					.bpLocation(bpLocation)
 					.build();
 
 		}
