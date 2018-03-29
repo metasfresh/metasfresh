@@ -10,12 +10,12 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -77,7 +77,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 @Ignore
 public class HUXmlConverter
 {
-	private static final Map<String, String> tableName2tagName = new HashMap<String, String>();
+	private static final Map<String, String> tableName2tagName = new HashMap<>();
 	static
 	{
 		HUXmlConverter.tableName2tagName.put(I_M_HU_Item.Table_Name, "Item");
@@ -208,7 +208,7 @@ public class HUXmlConverter
 			{
 				node.setAttribute("InstanceName", POJOWrapper.getInstanceName(model));
 			}
-			
+
 			if (POJOWrapper.isHandled(value))
 			{
 				// skip included beans; only IDs are sufficient
@@ -260,7 +260,7 @@ public class HUXmlConverter
 				final String attributeName = attribute == null ? "" : attribute.getName();
 				node.setAttribute("M_Attribute_Name", attributeName);
 			}
-			
+
 		}
 
 		if (parentNode != null)
@@ -294,9 +294,6 @@ public class HUXmlConverter
 
 		// Construct Transformer Factory and Transformer
 		final TransformerFactory tranFactory = TransformerFactory.newInstance();
-		// String jVersion = System.getProperty("java.version");
-		// if (jVersion.startsWith("1.5.0"))
-		tranFactory.setAttribute("indent-number", Integer.valueOf(4));
 
 		Transformer aTransformer;
 		try

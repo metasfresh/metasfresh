@@ -9,6 +9,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Services;
@@ -61,17 +62,19 @@ public class ProductPriceImporter
 	{
 		if (!isValidPriceRecord())
 		{
-			return;
+			throw new AdempiereException("ProductPriceImporter.InvalidProductPriceList");
 		}
 
-		final I_M_PriceList_Version plv = getCreatePriceListVersion(request.getPriceListId(), request.getValidDate());
-		createProductPriceOrUpdateExistentOne(plv);
+		if (request.getPrice().signum() > 0)
+		{
+			final I_M_PriceList_Version plv = getCreatePriceListVersion(request.getPriceListId(), request.getValidDate());
+			createProductPriceOrUpdateExistentOne(plv);
+		}
 	}
 
 	private boolean isValidPriceRecord()
 	{
 		return request.getProductId() > 0
-				&& request.getPrice().signum() > 0
 				&& request.getPriceListId() > 0
 				&& request.getValidDate() != null;
 	}

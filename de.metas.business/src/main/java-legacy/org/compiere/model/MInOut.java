@@ -29,6 +29,7 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
@@ -1283,7 +1284,13 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 
 		final BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
-		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt, getMovementDate());
+
+		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
+				.stat(stats)
+				.additionalAmt(notInvoicedAmt)
+				.date(getMovementDate())
+				.build();
+		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(request);
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
