@@ -420,10 +420,9 @@ class RawWidget extends Component {
         return (
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
-              initialViewMode="time"
               field={fields[0].field}
               timeFormat={true}
-              dateFormat={dateFormat || true}
+              dateFormat={false}
               inputProps={{
                 placeholder: fields[0].emptyText,
                 disabled: widgetData[0].readonly || disabled,
