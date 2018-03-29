@@ -15,7 +15,7 @@ public class X_MD_Stock extends org.compiere.model.PO implements I_MD_Stock, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 701123555L;
+	private static final long serialVersionUID = -1990181053L;
 
     /** Standard Constructor */
     public X_MD_Stock (Properties ctx, int MD_Stock_ID, String trxName)
@@ -24,9 +24,9 @@ public class X_MD_Stock extends org.compiere.model.PO implements I_MD_Stock, org
       /** if (MD_Stock_ID == 0)
         {
 			setAttributesKey (null); // -1002
-			setMD_Stock_ID (0);
 			setM_Product_ID (0);
 			setM_Warehouse_ID (0);
+			setMD_Stock_ID (0);
         } */
     }
 
@@ -59,28 +59,6 @@ public class X_MD_Stock extends org.compiere.model.PO implements I_MD_Stock, org
 	public java.lang.String getAttributesKey () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_AttributesKey);
-	}
-
-	/** Set Betand.
-		@param MD_Stock_ID Betand	  */
-	@Override
-	public void setMD_Stock_ID (int MD_Stock_ID)
-	{
-		if (MD_Stock_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MD_Stock_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Stock_ID, Integer.valueOf(MD_Stock_ID));
-	}
-
-	/** Get Betand.
-		@return Betand	  */
-	@Override
-	public int getMD_Stock_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Stock_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	@Override
@@ -152,6 +130,28 @@ public class X_MD_Stock extends org.compiere.model.PO implements I_MD_Stock, org
 	public int getM_Warehouse_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Betand.
+		@param MD_Stock_ID Betand	  */
+	@Override
+	public void setMD_Stock_ID (int MD_Stock_ID)
+	{
+		if (MD_Stock_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Stock_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MD_Stock_ID, Integer.valueOf(MD_Stock_ID));
+	}
+
+	/** Get Betand.
+		@return Betand	  */
+	@Override
+	public int getMD_Stock_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Stock_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

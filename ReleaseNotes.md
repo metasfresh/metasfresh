@@ -14,6 +14,9 @@ Here come the actual release notes:
 **release for week 2018-14**
 
 ## Features
+* metasfresh
+  * [#3784](https://github.com/metasfresh/metasfresh/issues/3784) Standalone BPartner Product Translation Window
+    * New Window in WebUI that allows the maintenance of Business Partner Product Translations.
 * metasfreh-webui-frontend
     * [#1586](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1586) Screen aliginment Improvements
       * Improves the Look & Feel, mostly vertical alignments - of all Fields and Field Content. Also Size of Lookup widget dropdowns.

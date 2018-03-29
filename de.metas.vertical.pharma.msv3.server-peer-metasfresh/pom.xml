@@ -1,5 +1,7 @@
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -37,6 +39,11 @@
 		<dependency>
 			<groupId>de.metas.vertical.pharma</groupId>
 			<artifactId>metasfresh-pharma.msv3.server-peer</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-cockpit</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

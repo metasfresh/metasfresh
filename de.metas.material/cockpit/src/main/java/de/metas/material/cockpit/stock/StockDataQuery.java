@@ -1,12 +1,10 @@
-package de.metas.vertical.pharma.msv3.server.peer.protocol;
+package de.metas.material.cockpit.stock;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -15,7 +13,7 @@ import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-material-cockpit
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -35,17 +33,21 @@ import lombok.Value;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class MSV3UserChangedMultiEvent
+public class StockDataQuery
 {
-	@JsonProperty("events")
-	private final List<MSV3UserChangedEvent> events;
+	ImmutableSet<Integer> productCategoryIds;
+	Set<Integer> warehouseIds;
+	ImmutableSet<StockDataQueryOrderBy> orderBys;
 
-	@JsonCreator
 	@Builder
-	private MSV3UserChangedMultiEvent(@JsonProperty("events") @Singular @NonNull final List<MSV3UserChangedEvent> events)
+	private StockDataQuery(
+			@NonNull @Singular final ImmutableSet<Integer> productCategoryIds,
+			@NonNull @Singular final Set<Integer> warehouseIds,
+			@NonNull @Singular final ImmutableSet<StockDataQueryOrderBy> orderBys)
 	{
-		this.events = ImmutableList.copyOf(events);
+		this.productCategoryIds = productCategoryIds;
+		this.warehouseIds = Collections.unmodifiableSet(new HashSet<>(warehouseIds)); // we shall accept warehouseId=null
+		this.orderBys = orderBys;
 	}
 }

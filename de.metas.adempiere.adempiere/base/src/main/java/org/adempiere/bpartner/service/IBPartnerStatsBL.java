@@ -6,6 +6,11 @@ import java.sql.Timestamp;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -35,15 +40,35 @@ import org.compiere.model.I_C_BPartner;
 public interface IBPartnerStatsBL extends ISingletonService
 {
 	/**
+	 */
+	@Builder
+	@Value
+	public static class CalculateSOCreditStatusRequest
+	{
+		@NonNull
+		BPartnerStats stat;
+		@NonNull
+		@Default
+		BigDecimal additionalAmt = BigDecimal.ZERO;
+		@NonNull
+		Timestamp date;
+		@Default
+		boolean forceCheckCreditStatus = false;
+	}
+
+	/**
 	 * Calculate the future/simulated SOCreditStatus for the given {@link BPartnerStats} object at a certain date
-	 * No updating
+	 * <br>
+	 * The computation can be forced with the flag <code>forceCheckCreditStatus</code><br>
+	 * If the status is <code>CreditStop</code>, the status can be recomputed only if flag <code>forceCheckCreditStatus</code> is on Y
+	 * <br><b>No updating</b>
 	 *
 	 * @param stat
 	 * @param additionalAmt
 	 * @param date
 	 * @return
 	 */
-	String calculateSOCreditStatus(BPartnerStats stat, BigDecimal additionalAmt, Timestamp date);
+	String calculateSOCreditStatus(CalculateSOCreditStatusRequest request);
 
 
 	/**
