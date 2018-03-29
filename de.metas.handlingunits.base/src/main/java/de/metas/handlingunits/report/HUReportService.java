@@ -279,27 +279,27 @@ public class HUReportService
 	{
 		if (huToReport == null)
 		{
-			logger.error("Param 'hu'==null; nothing to do");
+			logger.info("Param 'hu'==null; nothing to do");
 			return;
 		}
 
 		if (isAutoPrintRequired && !isPickingLabelAutoPrintEnabled())
 		{
-			logger.error("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
+			logger.info("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
 			return;
 		}
 
 		if (!huToReport.isTopLevel())
 		{
-			logger.error("We only print top level HUs; nothing to do; hu={}", huToReport);
+			logger.info("We only print top level HUs; nothing to do; hu={}", huToReport);
 			return;
 		}
 
 		final int adProcessId = retrievePickingLabelProcessID();
-		
+
 		if (adProcessId <= 0)
 		{
-			logger.error("No process configured via SysConfig {}; nothing to do", SYSCONFIG_PICKING_LABEL_PROCESS_ID);
+			logger.info("No process configured via SysConfig {}; nothing to do", SYSCONFIG_PICKING_LABEL_PROCESS_ID);
 			return;
 		}
 
@@ -310,7 +310,7 @@ public class HUReportService
 
 		if (husToProcess.isEmpty())
 		{
-			logger.error("hu's type does not match process {}; nothing to do; hu={}", adProcessId, huToReport);
+			logger.info("hu's type does not match process {}; nothing to do; hu={}", adProcessId, huToReport);
 			return;
 		}
 
