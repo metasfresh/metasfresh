@@ -72,7 +72,7 @@ public class BPartnerCreditLimitRepository
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_IsApproved, true)
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Processed, true)
 				.addCompareFilter(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, Operator.LESS_OR_EQUAL, date)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
