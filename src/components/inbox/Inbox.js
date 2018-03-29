@@ -149,6 +149,7 @@ class Inbox extends Component {
 
 Inbox.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  open: PropTypes.bool,
   onFocus: PropTypes.func,
   modalVisible: PropTypes.bool.isRequired,
 };

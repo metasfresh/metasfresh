@@ -1,6 +1,7 @@
 import cx from 'classnames';
 import counterpart from 'counterpart';
 import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import currentDevice from 'current-device';
@@ -138,6 +139,11 @@ class FiltersFrequent extends Component {
     );
   }
 }
+
+FiltersFrequent.propTypes = {
+  allowOutsideClick: PropTypes.bool.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
+};
 
 const mapStateToProps = state => {
   const { allowOutsideClick, modal } = state.windowHandler;

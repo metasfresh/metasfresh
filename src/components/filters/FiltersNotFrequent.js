@@ -1,5 +1,6 @@
 import counterpart from 'counterpart';
 import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
@@ -129,6 +130,11 @@ class FiltersNotFrequent extends Component {
     );
   }
 }
+
+FiltersNotFrequent.propTypes = {
+  allowOutsideClick: PropTypes.bool.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
+};
 
 const mapStateToProps = state => {
   const { allowOutsideClick, modal } = state.windowHandler;
