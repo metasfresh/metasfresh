@@ -11,6 +11,7 @@
     border:0;
     border-color: $brand-light-color;
     padding: 1px;
+    padding-top: 0;
     cursor: inherit;
     line-height: 21px;
 }
