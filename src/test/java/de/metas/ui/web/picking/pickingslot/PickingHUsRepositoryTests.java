@@ -10,7 +10,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -161,7 +160,7 @@ public class PickingHUsRepositoryTests
 	{
 		final HUEditorViewRepository huEditorViewRepository = new MockedHUEditorViewRepository();
 		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(huEditorViewRepository);
-		final List<HUEditorRow> sourceHUs = pickingHUsRepository.retrieveSourceHUs(ImmutableList.of());
+		final List<HUEditorRow> sourceHUs = pickingHUsRepository.retrieveSourceHUs(PickingSlotRepoQuery.builder().build());
 		assertThat(sourceHUs).isEmpty();
 	}
 

@@ -157,7 +157,8 @@ public class PickingSlotViewFactory implements IViewFactory
 		//
 		// setup the picking slot query and the rowsSupplier which uses the query to retrieve the PickingSlotView's rows.
 		final PickingSlotRepoQueryBuilder queryBuilder = PickingSlotRepoQuery.builder()
-				.pickingCandidates(PickingCandidate.ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM);
+				.pickingCandidates(PickingCandidate.ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM)
+				.currentShipmentScheduleId(currentShipmentScheduleId);
 		if (allShipmentScheduleIds == null || allShipmentScheduleIds.isEmpty())
 		{
 			queryBuilder.shipmentScheduleId(currentShipmentScheduleId);
