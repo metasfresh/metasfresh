@@ -8,37 +8,42 @@
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<version>10.0.0</version>
 	<artifactId>de.metas.report.jasper.commons</artifactId>
 	<packaging>jar</packaging>
 
+	<properties>
+		<batik.version>1.9</batik.version>
+		<barcode4j.version>2.1</barcode4j.version>
+	</properties>
+
 	<dependencies>
 	
 	  <!-- See https://github.com/metasfresh/metasfresh/issues/1918 -->
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>2.11.0</version>
-        </dependency>
 		<dependency>
-			<groupId>batik</groupId>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.11.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-bridge</artifactId>
-			<version>1.6-1</version>
+			<version>${batik.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>batik</groupId>
+			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-svg-dom</artifactId>
-			<version>1.6-1</version>
+			<version>${batik.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>batik</groupId>
+			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-dom</artifactId>
-			<version>1.6-1</version>
+			<version>${batik.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 			<exclusions>
@@ -49,32 +54,32 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>batik</groupId>
+			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-gvt</artifactId>
-			<version>1.6-1</version>
+			<version>${batik.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>batik</groupId>
+			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-util</artifactId>
-			<version>1.6-1</version>
+			<version>${batik.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>batik</groupId>
+			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-css</artifactId>
-			<version>1.6-1</version>
+			<version>${batik.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>net.sf.barcode4j</groupId>
-			<artifactId>barcode4j-fop-ext-complete</artifactId>
-			<version>2.0</version>
-			<type>jar</type>			
+			<artifactId>barcode4j</artifactId>
+			<version>${barcode4j.version}</version>
+			<type>jar</type>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -95,7 +100,7 @@ Therefore we just add this dependency to both
 			<artifactId>DynamicJasper-core-fonts</artifactId>
 			<version>1.0</version>
 		</dependency>
- -->		
+ -->
 	</dependencies>
 
 
