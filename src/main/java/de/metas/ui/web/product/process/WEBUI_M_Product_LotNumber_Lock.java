@@ -9,18 +9,17 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_InOut;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
+import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -60,8 +59,8 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  */
 public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
-	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -105,16 +104,23 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 
 		for (final I_M_HU hu : husForAttributeStringValue)
 		{
-			List<I_M_InOutLine> inOutLines = huAssignmentDAO.retrieveModelsForHU(hu, I_M_InOutLine.class);
+			final List<de.metas.handlingunits.model.I_M_InOutLine> inOutLinesForHU = huInOutDAO.retrieveInOutLinesForHU(hu);
 
-			if (Check.isEmpty(inOutLines))
+			if (Check.isEmpty(inOutLinesForHU))
 			{
 				continue;
 			}
 
-			final I_C_BPartner_Location location = inOutLines.get(0).getM_InOut().getC_BPartner_Location();
+			I_M_InOut firstReceipt = inOutLinesForHU.get(0).getM_InOut();
+			final int bpartnerId = firstReceipt.getC_BPartner_ID();
+			final int bpLocationId = firstReceipt.getC_BPartner_Location_ID();
 
-			husToDistribute.add(HUToDistribute.of(hu, lotNoLock, location));
+			husToDistribute.add(HUToDistribute.builder()
+					.hu(hu)
+					.lockLotNo(lotNoLock)
+					.bpartnerId(bpartnerId)
+					.bpartnerLocationId(bpLocationId)
+					.build());
 		}
 
 		Services.get(IHUDDOrderBL.class).createQuarantineDDOrderForHUs(husToDistribute);
@@ -125,10 +131,11 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 
 	private void setExistingInvoiceCandsInDispute(final List<I_M_HU> hus)
 	{
+
 		hus.stream()
-				.map(hu -> huAssignmentDAO.retrieveModelsForHU(hu, I_M_InOutLine.class))
-				.forEach(lines -> {
-					invoiceCandBL.markInvoiceCandInDisputeForReceiptLines(lines);
+				.flatMap(hu -> huInOutDAO.retrieveInOutLinesForHU(hu).stream())
+				.forEach(line -> {
+					invoiceCandBL.markInvoiceCandInDisputeForReceiptLine(line);
 				});
 
 	}
