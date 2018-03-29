@@ -94,7 +94,7 @@ class TableItem extends PureComponent {
             )[0];
 
             if (elem) {
-              elem.select();
+              elem.focus();
             }
 
             const disabled = document.activeElement.querySelector(
@@ -231,7 +231,7 @@ class TableItem extends PureComponent {
                 key={`${rowId}-${property}`}
                 isRowSelected={this.props.isSelected}
                 isEdited={isEditable || edited === property}
-                onDoubleClick={e =>
+                handleDoubleClick={e =>
                   this.handleEditProperty(e, property, true, widgetData[0])
                 }
                 onClickOutside={e => {
@@ -242,7 +242,9 @@ class TableItem extends PureComponent {
                 onCellChange={onItemChange}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
-                onKeyDown={e => this.handleKeyDown(e, property, widgetData[0])}
+                handleKeyDown={e =>
+                  this.handleKeyDown(e, property, widgetData[0])
+                }
                 listenOnKeysTrue={this.listenOnKeysTrue}
                 listenOnKeysFalse={this.listenOnKeysFalse}
                 closeTableField={e => this.closeTableField(e)}
