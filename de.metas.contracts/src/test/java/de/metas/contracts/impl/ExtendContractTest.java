@@ -3,16 +3,17 @@ package de.metas.contracts.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.contracts.IFlatrateBL;
@@ -28,7 +29,6 @@ import lombok.NonNull;
 
 public class ExtendContractTest extends AbstractFlatrateTermTest
 {
-
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 
 	@Before
@@ -113,7 +113,6 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		while (curentContract.getC_FlatrateTerm_Next() != null);
 	}
 
-	@Ignore
 	@Test
 	public void collisionDetectWhenExtendContractWithExtendingAll_test()
 	{
@@ -127,34 +126,34 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				.nextTermStartDate(null)
 				.build();
 
-		Services.get(IFlatrateBL.class).extendContract(context);
+		assertThatThrownBy(() -> { extendContractWithInfiniteLoop(context); }).isInstanceOf(AdempiereException.class)
+        .hasMessageContaining("Infinite loop!");
 
-		I_C_Flatrate_Term curentContract = contract;
-		do
-		{
-			assertPartnerData(curentContract);
-			final I_C_Flatrate_Term nextflatrateTerm = curentContract.getC_FlatrateTerm_Next();
-			assertThat(nextflatrateTerm).isNotNull();
-			assertThat(curentContract.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Flatrate_Conditions_Next()).isEqualTo(nextflatrateTerm.getC_Flatrate_Conditions());
 
-			final Timestamp startDateNewContract = TimeUtil.addDays(curentContract.getEndDate(), 1);
-			assertThat(nextflatrateTerm.getStartDate()).isEqualTo(startDateNewContract);
 
-			assertThat(curentContract.getMasterStartDate()).isEqualTo(nextflatrateTerm.getMasterStartDate());
-			assertThat(nextflatrateTerm.getMasterStartDate()).isNotNull();
-			assertThat(curentContract.isAutoRenew()).isEqualTo(nextflatrateTerm.isAutoRenew());
-			assertThat(curentContract.getMasterEndDate()).isNotNull();
-			assertThat(nextflatrateTerm.getMasterEndDate()).isNotNull();
-			assertThat(curentContract.getMasterEndDate()).isEqualTo(nextflatrateTerm.getMasterEndDate());
-
-			curentContract = nextflatrateTerm;
-		}
-		while (curentContract.getC_FlatrateTerm_Next() != null);
-
-		//compare the last with the first
-		assertThat(curentContract.getMasterEndDate()).isEqualTo(contract.getMasterEndDate());
 	}
 
+	private void extendContractWithInfiniteLoop(final ContractExtendingRequest context)
+	{
+		final Thread thread = new Thread(() -> Services.get(IFlatrateBL.class).extendContract(context));
+
+		thread.start();
+		long endTimeMillis = System.currentTimeMillis() + 30000;
+		while (thread.isAlive())
+		{
+			if (System.currentTimeMillis() > endTimeMillis)
+			{
+				throw new AdempiereException("Infinite loop!");
+			}
+			try
+			{
+				Thread.sleep(500);
+			}
+			catch (InterruptedException t)
+			{
+			}
+		}
+	}
 
 	private I_C_Flatrate_Term prepareContractForTest(final String autoExtension)
 	{
