@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,6 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -48,10 +50,11 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import lombok.NonNull;
 
 /**
  * This service wraps a {@link HUAndItemsDAO} and caches its results.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -59,7 +62,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 {
 	/**
 	 * Enable/Disable debug validations.
-	 * 
+	 *
 	 * WARNING: enabling this flag is introducing memory leaks!
 	 */
 	public static boolean DEBUG = false;
@@ -163,7 +166,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 		}
 	}
 
-	private final void debugValidateIncludedHUs(final I_M_HU_Item huItem)
+	private final void debugValidateIncludedHUs(@Nullable final I_M_HU_Item huItem)
 	{
 		if (!DEBUG)
 		{
@@ -261,14 +264,22 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 		final I_M_HU_Item huItem = db.createHUItem(hu, piItem);
 		return finalizeAndAddToCache(hu, huItem);
 	}
-	
+
 	@Override
-	public I_M_HU_Item createAggregateHUItem(I_M_HU hu)
+	public I_M_HU_Item createAggregateHUItem(@NonNull final I_M_HU hu)
 	{
 		final I_M_HU_Item huItem = db.createAggregateHUItem(hu);
 		return finalizeAndAddToCache(hu, huItem);
 	}
-	
+
+
+	@Override
+	public I_M_HU_Item createChildHUItem(@NonNull final I_M_HU hu)
+	{
+		final I_M_HU_Item huItem = db.createChildHUItem(hu);
+		return finalizeAndAddToCache(hu, huItem);
+	}
+
 	private I_M_HU_Item finalizeAndAddToCache(final I_M_HU hu, final I_M_HU_Item huItem)
 	{
 		huItem.setM_HU(hu);
@@ -280,7 +291,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 		if (huItems != null)
 		{
 			huItems.add(huItem);
-			
+
 			// sort to make sure that the order we expect is still preserved
 			Collections.sort(huItems, IHandlingUnitsDAO.HU_ITEMS_COMPARATOR);
 
@@ -294,7 +305,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 
 		return huItem;
 	}
-	
+
 	@Override
 	public List<I_M_HU_Item> retrieveItems(final I_M_HU hu)
 	{
@@ -316,7 +327,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 
 		debugValidateHUItems(hu);
 
-		return new ArrayList<I_M_HU_Item>(huItems);
+		return new ArrayList<>(huItems);
 	}
 
 	@Override
@@ -324,7 +335,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	{
 		return db.retrieveParent(hu);
 	}
-	
+
 	@Override
 	public int retrieveParentId(final I_M_HU hu)
 	{
@@ -361,7 +372,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 		}
 
 		debugValidateIncludedHUs(huItem);
-		return new ArrayList<I_M_HU>(includedHUs);
+		return new ArrayList<>(includedHUs);
 	}
 
 	@Override

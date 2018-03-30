@@ -243,7 +243,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			throw new AdempiereException("Failed to convert Qty=" + qty
 					+ " of product=" + (product != null ? product.getValue() : null)
 					+ " from UOM=" + uomFrom.getName()
-					+ " to UOM={}" + uomTo.getName());
+					+ " to UOM=" + uomTo.getName());
 		}
 
 		return result;
@@ -382,7 +382,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return qtyToConvert;
 		}
 
-		BigDecimal rate = getRateForConversionFromProductUOM(ctx, product, uomDest);
+		final BigDecimal rate = getRateForConversionFromProductUOM(ctx, product, uomDest);
 		if (rate != null)
 		{
 			if (BigDecimal.ONE.compareTo(rate) == 0)
@@ -396,7 +396,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		// metas: tsa: begin: 01428
 		// Fallback: check general conversion rates
 		final I_C_UOM productUOM = product.getC_UOM();
-		BigDecimal qtyConv = convert(ctx, productUOM, uomDest, qtyToConvert);
+		final BigDecimal qtyConv = convert(ctx, productUOM, uomDest, qtyToConvert);
 		if (qtyConv != null)
 		{
 			return qtyConv;
@@ -639,7 +639,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return qtyToConvert;
 		}
 
-		BigDecimal rate = getRateForConversionToProductUOM(ctx, product, uomSource);
+		final BigDecimal rate = getRateForConversionToProductUOM(ctx, product, uomSource);
 		if (rate != null)
 		{
 			if (BigDecimal.ONE.compareTo(rate) == 0)
@@ -661,7 +661,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		// Fallback: check general conversion rates
 
 		final I_C_UOM productUOM = product.getC_UOM();
-		BigDecimal conversion = convert(ctx, uomSource, productUOM, qtyToConvert);
+		final BigDecimal conversion = convert(ctx, uomSource, productUOM, qtyToConvert);
 		if (conversion != null)
 		{
 			return conversion;
@@ -687,7 +687,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return qty;
 		}
 
-		BigDecimal rate = getRate(ctx, uomFrom, uomTo);
+		final BigDecimal rate = getRate(ctx, uomFrom, uomTo);
 		if (rate != null)
 		{
 			BigDecimal qtyConv = rate.multiply(qty);

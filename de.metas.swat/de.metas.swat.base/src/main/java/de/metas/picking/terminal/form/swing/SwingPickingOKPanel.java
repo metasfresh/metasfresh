@@ -140,7 +140,11 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 				final String action = String.valueOf(evt.getNewValue());
 				if (IConfirmPanel.ACTION_OK.equals(action))
 				{
-					getTerminalBasePanel().updateInfo();
+					final ITerminalBasePanel terminalBasePanel = getTerminalBasePanel();
+					if (terminalBasePanel != null)
+					{
+						terminalBasePanel.updateInfo();
+					}
 				}
 				else if (IConfirmPanel.ACTION_Cancel.equals(action))
 				{

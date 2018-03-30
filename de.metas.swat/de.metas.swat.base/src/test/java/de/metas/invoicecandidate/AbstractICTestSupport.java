@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -321,7 +320,6 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		final I_C_TaxCategory taxCategory_None = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class, context);
 		taxCategory_None.setC_TaxCategory_ID(100);
 		taxCategory_None.setName("None");
-		taxCategory_None.setIsDefault(false);
 		InterfaceWrapperHelper.save(taxCategory_None);
 
 		this.tax_NotFound = InterfaceWrapperHelper.create(ctx, I_C_Tax.class, ITrx.TRXNAME_None);
@@ -332,7 +330,6 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		final I_C_TaxCategory taxCategory_Default = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class, context);
 		taxCategory_Default.setC_TaxCategory_ID(1000000);
 		taxCategory_Default.setName("Default");
-		taxCategory_Default.setIsDefault(true);
 		InterfaceWrapperHelper.save(taxCategory_Default);
 
 		this.tax_Default = InterfaceWrapperHelper.create(ctx, I_C_Tax.class, ITrx.TRXNAME_None);
@@ -529,15 +526,8 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	protected final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLine(final I_C_Invoice_Candidate ic, final I_M_InOutLine inOutLine)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
-		I_C_InvoiceCandidate_InOutLine iciol = db.getFirstOnly(I_C_InvoiceCandidate_InOutLine.class, new IQueryFilter<I_C_InvoiceCandidate_InOutLine>()
-		{
-			@Override
-			public boolean accept(final I_C_InvoiceCandidate_InOutLine pojo)
-			{
-				return pojo.getC_Invoice_Candidate_ID() == ic.getC_Invoice_Candidate_ID()
-						&& pojo.getM_InOutLine_ID() == inOutLine.getM_InOutLine_ID();
-			}
-		});
+		I_C_InvoiceCandidate_InOutLine iciol = db.getFirstOnly(I_C_InvoiceCandidate_InOutLine.class, pojo -> pojo.getC_Invoice_Candidate_ID() == ic.getC_Invoice_Candidate_ID()
+				&& pojo.getM_InOutLine_ID() == inOutLine.getM_InOutLine_ID());
 
 		if (iciol == null)
 		{

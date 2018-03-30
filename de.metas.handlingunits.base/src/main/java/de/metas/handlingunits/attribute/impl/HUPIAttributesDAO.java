@@ -139,11 +139,11 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 		//
 		// Retrieve an add template attributes (from NoPI)
 		// only if given version is not of NoPI
-		if (M_HU_PI_Version_ID != HandlingUnitsDAO.NO_HU_PI_Version_ID)
+		if (M_HU_PI_Version_ID != HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Version_ID)
 		{
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-			final I_M_HU_PI noPI = handlingUnitsDAO.retrieveNoPI(ctx);
+			final I_M_HU_PI noPI = handlingUnitsDAO.retrievePackingItemTemplatePI(ctx);
 			final List<I_M_HU_PI_Attribute> noPIAttributes = retrieveDirectPIAttributes(noPI);
 
 			// Iterate template attributes and add only those who were not added yet
@@ -175,7 +175,7 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 		
 		//
 		// If the PI attribute is from template then it's a template attribute
-		if (huPIAttribute.getM_HU_PI_Version_ID() == HandlingUnitsDAO.NO_HU_PI_Version_ID)
+		if (huPIAttribute.getM_HU_PI_Version_ID() == HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Version_ID)
 		{
 			if(!huPIAttribute.isActive())
 			{
@@ -192,7 +192,7 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 		final int attributeId = huPIAttribute.getM_Attribute_ID();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPIAttribute);
 		final String trxName = InterfaceWrapperHelper.getTrxName(huPIAttribute);
-		final List<I_M_HU_PI_Attribute> noPIAttributes = retrieveDirectPIAttributes(ctx, HandlingUnitsDAO.NO_HU_PI_Version_ID, trxName);
+		final List<I_M_HU_PI_Attribute> noPIAttributes = retrieveDirectPIAttributes(ctx, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Version_ID, trxName);
 		for (final I_M_HU_PI_Attribute noPIAttribute : noPIAttributes)
 		{
 			if (noPIAttribute.getM_Attribute_ID() == attributeId && noPIAttribute.isActive())

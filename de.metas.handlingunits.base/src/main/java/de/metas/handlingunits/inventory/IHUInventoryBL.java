@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_M_InventoryLine;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
@@ -49,10 +48,4 @@ public interface IHUInventoryBL extends ISingletonService
 	 * @return
 	 */
 	boolean isMaterialDisposal(I_M_Inventory inventory);
-
-	void assignHU(I_M_InventoryLine inventoryLine, I_M_HU topLevelHU);
-
-	List<I_M_HU> getAssignedTopLevelHUs(final I_M_InventoryLine inventoryLine);
-
-	List<I_M_HU> getAssignedTopLevelHUsByInventoryId(int inventoryId);
 }

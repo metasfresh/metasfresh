@@ -123,6 +123,31 @@ public interface I_C_Print_Job_Instructions
     public static final String COLUMNNAME_AD_User_ToPrint_ID = "AD_User_ToPrint_ID";
 
 	/**
+	 * Set Kopien.
+	 * Anzahl der zu erstellenden/zu druckenden Exemplare
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCopies (int Copies);
+
+	/**
+	 * Get Kopien.
+	 * Anzahl der zu erstellenden/zu druckenden Exemplare
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCopies();
+
+    /** Column definition for Copies */
+    public static final org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions, Object> COLUMN_Copies = new org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions, Object>(I_C_Print_Job_Instructions.class, "Copies", null);
+    /** Column name Copies */
+    public static final String COLUMNNAME_Copies = "Copies";
+
+	/**
 	 * Set Druck-Job.
 	 *
 	 * <br>Type: Search
@@ -225,31 +250,6 @@ public interface I_C_Print_Job_Instructions
     public static final org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions, de.metas.printing.model.I_C_Print_Job_Line> COLUMN_C_PrintJob_Line_To_ID = new org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions, de.metas.printing.model.I_C_Print_Job_Line>(I_C_Print_Job_Instructions.class, "C_PrintJob_Line_To_ID", de.metas.printing.model.I_C_Print_Job_Line.class);
     /** Column name C_PrintJob_Line_To_ID */
     public static final String COLUMNNAME_C_PrintJob_Line_To_ID = "C_PrintJob_Line_To_ID";
-
-	/**
-	 * Set Kopien.
-	 * Anzahl der zu erstellenden/zu druckenden Exemplare
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setCopies (int Copies);
-
-	/**
-	 * Get Kopien.
-	 * Anzahl der zu erstellenden/zu druckenden Exemplare
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCopies();
-
-    /** Column definition for Copies */
-    public static final org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions, Object> COLUMN_Copies = new org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions, Object>(I_C_Print_Job_Instructions.class, "Copies", null);
-    /** Column name Copies */
-    public static final String COLUMNNAME_Copies = "Copies";
 
 	/**
 	 * Get Erstellt.

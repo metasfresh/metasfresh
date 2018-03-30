@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2018-03-07T13:29:30 -->
+<!-- 2018-03-28T14:28:44 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="label" pageWidth="294" pageHeight="198" columnWidth="294" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="7f6f4715-2c9f-4a69-8fdd-c5a5d8b66d53">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
@@ -13,6 +13,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="mm"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="mm"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="mm"/>
+	<style name="BarcodeStyle" fill="Solid" hTextAlign="Center" hImageAlign="Center" fontSize="6"/>
 	<parameter name="m_hu_id" class="java.math.BigDecimal">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
@@ -77,7 +78,7 @@
 				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement x="70" y="110" width="160" height="77" uuid="469f87e0-5013-4875-aad2-9f34cdfb86bb"/>
+				<reportElement style="BarcodeStyle" x="20" y="110" width="260" height="77" uuid="469f87e0-5013-4875-aad2-9f34cdfb86bb"/>
 				<jr:EAN128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
 					<jr:codeExpression><![CDATA[$F{barcode}]]></jr:codeExpression>
 				</jr:EAN128>

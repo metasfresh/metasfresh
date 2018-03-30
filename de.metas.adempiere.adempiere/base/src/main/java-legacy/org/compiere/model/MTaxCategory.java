@@ -24,14 +24,14 @@ import org.adempiere.exceptions.AdempiereException;
 
 /**
  * 	Tax Category Model
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MTaxCategory.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
 public class MTaxCategory extends X_C_TaxCategory
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2154364435808111060L;
 
@@ -44,11 +44,6 @@ public class MTaxCategory extends X_C_TaxCategory
 	public MTaxCategory (Properties ctx, int C_TaxCategory_ID, String trxName)
 	{
 		super (ctx, C_TaxCategory_ID, trxName);
-		if (C_TaxCategory_ID == 0)
-		{
-		//	setName (null);
-			setIsDefault (false);
-		}
 	}	//	MTaxCategory
 
 	/**
@@ -61,38 +56,39 @@ public class MTaxCategory extends X_C_TaxCategory
 	{
 		super (ctx, rs, trxName);
 	}	//	MTaxCategory
-	
+
 	/**
 	 * 	getDefaultTax
 	 *	Get the default tax id associated with this tax category
-	 *	
+	 *
 	 */
 	public MTax getDefaultTax()
 	{
 		MTax m_tax = new MTax(getCtx(), 0, get_TrxName());
-		
+
 		String whereClause = I_C_Tax.COLUMNNAME_C_TaxCategory_ID+"=? AND "+ I_C_Tax.COLUMNNAME_IsDefault+"='Y'";
 		List<MTax> list = new Query(getCtx(), MTax.Table_Name, whereClause,  get_TrxName())
 			.setParameters(new Object[]{getC_TaxCategory_ID()})
 			.list();
 		if (list.size() == 1)
+		{
 			m_tax = list.get(0);
+		}
 		else {
-			// Error - should only be one default	
+			// Error - should only be one default
 			throw new AdempiereException("TooManyDefaults");
 		}
-		
-			
-		
+
+
+
 		return m_tax;
 	} // getDefaultTax
-	
+
 	@Override
 	public String toString()
 	{
 		return getClass().getSimpleName()+"["+get_ID()
 		+", Name="+getName()
-		+", IsDefault="+isDefault()
 		+", IsActive="+isActive()
 		+"]";
 	}

@@ -16,6 +16,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.allocation.IAllocationDestination;
@@ -192,6 +194,7 @@ public class M_Inventory
 	public void reverseDisposal(final I_M_Inventory inventory)
 	{
 		final IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
+		final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 
 		if (!(huInventoryBL.isMaterialDisposal(inventory)))
 		{
@@ -207,12 +210,16 @@ public class M_Inventory
 		//
 		// restore HUs from snapshots
 		{
-			final List<I_M_HU> topLevelHUs = huInventoryBL.getAssignedTopLevelHUsByInventoryId(inventory.getM_Inventory_ID());
+			final List<Integer> topLevelHUIds = inventoryDAO.retrieveLinesForInventoryId(inventory.getM_Inventory_ID(), I_M_InventoryLine.class)
+					.stream()
+					.map(I_M_InventoryLine::getM_HU_ID)
+					.collect(ImmutableList.toImmutableList());
+			
 			Services.get(IHUSnapshotDAO.class).restoreHUs()
 					.setContext(PlainContextAware.newWithThreadInheritedTrx())
 					.setSnapshotId(snapshotId)
 					.setDateTrx(inventory.getMovementDate())
-					.addModels(topLevelHUs)
+					.addModelIds(topLevelHUIds)
 					.setReferencedModel(inventory)
 					.restoreFromSnapshot();
 		}

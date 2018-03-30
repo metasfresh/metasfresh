@@ -1,5 +1,12 @@
 package de.metas.inoutcandidate.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -10,21 +17,21 @@ package de.metas.inoutcandidate.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.Timestamp;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,7 +44,8 @@ import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.DBForeignKeyConstraintException;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.Mutable;
@@ -45,18 +53,24 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.Query;
 import org.slf4j.Logger;
 
-import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import ch.qos.logback.classic.Level;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
+import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
+import de.metas.quantity.Quantity;
 
 /**
  * Processes all
- * 
+ *
  * @author ts
  * @task 08648
  *
@@ -156,29 +170,29 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 				.iterate(I_M_ReceiptSchedule.class);
 	}
 
-	private void processReceiptSchedule0(final I_M_ReceiptSchedule item)
+	private void processReceiptSchedule0(final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final ITrx trx = Services.get(ITrxManager.class).getTrx(ITrx.TRXNAME_ThreadInherited);
-		InterfaceWrapperHelper.setTrxName(item, trx.getTrxName()); // this should be not neccesary anymore after we merged uat_, because there we are temporarily setting the item's trx to the
-																	// processor's trx for the time of the processing.
-
-		if (isReceiptScheduleCanBeClosed(item))
+		if (isReceiptScheduleCanBeClosed(receiptSchedule))
 		{
-			receiptScheduleBL.close(item);
-			addLog("Closing M_ReceiptSchedule " + item + " without having created a receipt, because QtyOrdered=" + item.getQtyOrdered() + " and QtyMoved=" + item.getQtyMoved());
+			receiptScheduleBL.close(receiptSchedule);
+			addLog("M_ReceiptSchedule_ID={} - just closing without creating a receipt, because QtyOrdered={} and QtyMoved={}",
+					receiptSchedule.getM_ReceiptSchedule_ID(), receiptSchedule.getQtyOrdered(), receiptSchedule.getQtyMoved());
 			return;
 		}
 
 		if (!isCreateMovement)
 		{
-			item.setM_Warehouse_Dest_ID(0);
-			InterfaceWrapperHelper.save(item);
+			receiptSchedule.setM_Warehouse_Dest_ID(0);
+			save(receiptSchedule);
 		}
 
-		final boolean storeReceipts = true;
+		// create HUs
+		final de.metas.handlingunits.model.I_M_ReceiptSchedule huReceiptSchedule = create(receiptSchedule, de.metas.handlingunits.model.I_M_ReceiptSchedule.class);
+		generateHUsIfNeeded(huReceiptSchedule);
 
 		// Create result collector
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(storeReceipts); // referenceReceipts
+		final boolean storeReceipts = true;
+		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(storeReceipts);
 
 		// Create Receipt producer
 		final Set<Integer> selectedHUIds = null; // null means to assign all planned HUs which are assigned to the receipt schedule's
@@ -186,20 +200,26 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 		final IInOutProducer producer = huReceiptScheduleBL.createInOutProducerFromReceiptScheduleHU(getCtx(), result, selectedHUIds, createReceiptWithDatePromised);
 
 		// Create executor and generate receipts with it
+		final ITrx trx = Services.get(ITrxManager.class).getTrx(ITrx.TRXNAME_ThreadInherited);
 		final ITrxItemProcessorExecutorService executorService = Services.get(ITrxItemProcessorExecutorService.class);
 		final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(getCtx(), trx); // run with the trx that is inherited from the outer item processor.
-		executorService.createExecutor(processorCtx, producer)
-				//
+
+		Services.get(ITrxItemProcessorExecutorService.class).<I_M_ReceiptSchedule, InOutGenerateResult> createExecutor()
+				.setContext(processorCtx)
+				.setProcessor(producer)
 				// Configure executor to fail on first error
 				// NOTE: we expect max. 1 receipt, so it's fine to fail anyways
 				.setExceptionHandler(FailTrxItemExceptionHandler.instance)
 				// Process schedules => receipt(s) will be generated
-				.execute(IteratorUtils.singletonIterator(item));
-		InterfaceWrapperHelper.refresh(item);
-		final boolean rsCanBeClosedNow = isReceiptScheduleCanBeClosed(item);
+				.process(IteratorUtils.singletonIterator(receiptSchedule));
+
+		addLog("M_ReceiptSchedule_ID={} - created a receipt; result={}", receiptSchedule.getM_ReceiptSchedule_ID(), result);
+
+		refresh(receiptSchedule);
+		final boolean rsCanBeClosedNow = isReceiptScheduleCanBeClosed(receiptSchedule);
 		if (rsCanBeClosedNow)
 		{
-			receiptScheduleBL.close(item);
+			receiptScheduleBL.close(receiptSchedule);
 		}
 	}
 
@@ -207,6 +227,55 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 	{
 		final boolean rsCanBeClosedNow = receiptSchedule.getQtyOrdered().signum() > 0 && receiptSchedule.getQtyMoved().compareTo(receiptSchedule.getQtyOrdered()) >= 0;
 		return rsCanBeClosedNow;
+	}
+
+	/**
+	 * Generate it's LU-TU structure automatically
+	 */
+	private void generateHUsIfNeeded(final de.metas.handlingunits.model.I_M_ReceiptSchedule receiptSchedule)
+	{
+		// Skip Receipt schedules which are about Packing Materials
+		if (receiptSchedule.isPackagingMaterial())
+		{
+			return;
+		}
+
+		final IHUReceiptScheduleDAO huReceiptScheduleDAO = Services.get(IHUReceiptScheduleDAO.class);
+		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_ThreadInherited);
+		if (!allocsAll.isEmpty())
+		{
+			addLog("M_ReceiptSchedule_ID={} - already has HUs assinged to it; not creating HUs", receiptSchedule.getM_ReceiptSchedule_ID());
+		}
+
+		try
+		{
+			addLog("M_ReceiptSchedule_ID={} - creating HUs and allocating HUs on the fly", receiptSchedule.getM_ReceiptSchedule_ID());
+
+			final ReceiptScheduleHUGenerator huGenerator =//
+					ReceiptScheduleHUGenerator.newInstance(getContextAware(receiptSchedule));
+
+			huGenerator.addM_ReceiptSchedule(receiptSchedule);
+
+			final I_M_HU_LUTU_Configuration lutuConfig = Services.get(IHUReceiptScheduleBL.class)
+					.createLUTUConfigurationManager(receiptSchedule)
+					.getCreateLUTUConfiguration();
+			save(lutuConfig);
+			huGenerator.setM_HU_LUTU_Configuration(lutuConfig);
+
+			final BigDecimal qtyToAllocate = Services.get(IReceiptScheduleBL.class)
+					.getQtyOrdered(receiptSchedule);
+
+			huGenerator
+					.setQtyToAllocateTarget(Quantity.of(qtyToAllocate, receiptSchedule.getC_UOM()))
+					.generateWithinInheritedTransaction();
+		}
+		catch (final DBForeignKeyConstraintException e)
+		{
+			// task 09016: this case happens from time to time (aprox. 90 times in the first 6 months), if the M_ReceiptsScheulde is deleted due to an order reactivation
+			// don't rethrow the exception;
+			final String msg = "Detected a FK constraint vialoation; We assume that everything was rolled back, but we do not let the processing fail. Check the java comments for details";
+			Loggables.get().withLogger(logger, Level.WARN).addLog(msg);
+		}
 	}
 
 }

@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.bpartner.service.BPartnerStats;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.util.Services;
@@ -38,7 +38,6 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
@@ -106,11 +105,9 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		// Services
-		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
-		final List<I_C_BPartner> bpartners = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_BPartner.class, localTrxName);
-
+		final List<I_C_BPartner> bpartners = retrieveAllItems(I_C_BPartner.class);
 		final boolean alsoSetCreditStatusBaseOnBPGroup = getParameters().getParameterAsBool(PARAM_ALSO_RESET_CREDITSTATUS_FROM_BP_GROUP);
 
 		for (final I_C_BPartner bpartner : bpartners)
@@ -121,11 +118,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 			}
 
 			final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
-			bpartnerStatsDAO.updateOpenItems(stats);
-			bpartnerStatsDAO.updateActualLifeTimeValue(stats);
-			bpartnerStatsDAO.updateSOCreditUsed(stats);
-			bpartnerStatsDAO.updateSOCreditStatus(stats);
-			bpartnerStatsDAO.updateCreditLimitIndicator(stats);
+			bpartnerStatsDAO.updateBPartnerStatistics(stats);
 		}
 
 		return Result.SUCCESS;

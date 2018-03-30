@@ -56,6 +56,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
@@ -354,7 +355,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final InOutGenerateResult result;
 		{
 			// Create result collector
-			result = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true);
+			result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true);
 
 			// Create Receipt producer
 			final boolean createReceiptWithDatePromised = false; // create the InOuts with MovementDate = the current login date
@@ -453,8 +454,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount();
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-		HUReportExecutor.newInstance(ctx)
+		HUReportExecutor.newInstance(Env.getCtx())
 				.numberOfCopies(copies)
 				.executeHUReportAfterCommit(adProcessId, husToProcess);
 	}

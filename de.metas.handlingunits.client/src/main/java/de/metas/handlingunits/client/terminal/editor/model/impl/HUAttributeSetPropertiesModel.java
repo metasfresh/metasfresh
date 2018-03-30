@@ -631,7 +631,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 
 		private final IHUAttributesDAO getHUAttributesDAO()
 		{
-			return attributeStorage.getHUAttributeStorageFactory().getHUAttributesDAO();
+			return attributeStorage.getAttributeStorageFactory().getHUAttributesDAO();
 		}
 
 		public final IAttributeValue getAttributeValue(final I_M_Attribute attribute)

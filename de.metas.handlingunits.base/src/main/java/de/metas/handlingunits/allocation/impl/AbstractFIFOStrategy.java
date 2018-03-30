@@ -121,7 +121,8 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 	/**
 	 * Allocate/Deallocate on HUs which are linked to given HU Item.
 	 *
-	 * The ItemType of given <code>item</code> can be anything (and it's not checked). So, this method can be used to allocate/deallocate on real included HUs or to allocate/deallocate to VHUs linked
+	 * The ItemType of given <code>item</code> can be anything (and it's not checked).<br>
+	 * So, this method can be used to allocate/deallocate on real included HUs or to allocate/deallocate to VHUs linked
 	 * to this material HU item.
 	 */
 	protected IAllocationResult allocateOnIncludedHUItem(

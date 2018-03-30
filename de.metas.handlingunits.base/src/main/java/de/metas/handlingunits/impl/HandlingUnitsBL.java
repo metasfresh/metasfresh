@@ -101,7 +101,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 		final IHandlingUnitsDAO dao = Services.get(IHandlingUnitsDAO.class);
-		if (piId == dao.getNo_HU_PI_ID())
+		if (piId == dao.getPackingItemTemplate_HU_PI_ID())
 		{
 			return false;
 		}
@@ -338,7 +338,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		final int piItemId = piItem.getM_HU_PI_Item_ID();
-		if (piItemId == Services.get(IHandlingUnitsDAO.class).getNo_HU_PI_Item_ID())
+		if (piItemId == Services.get(IHandlingUnitsDAO.class).getPackingItemTemplate_HU_PI_Item_ID())
 		{
 			return true;
 		}
@@ -434,9 +434,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public String getHU_UnitType(final I_M_HU_PI pi)
+	public String getHU_UnitType(@NonNull final I_M_HU_PI pi)
 	{
-		Check.assumeNotNull(pi, "pi not null");
 		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(pi);
 		if (piVersion == null)
 		{
@@ -448,9 +447,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public String getHU_UnitType(final I_M_HU hu)
+	public String getHU_UnitType(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
 		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
 		final String huUnitType = piVersion.getHU_UnitType();
 		return huUnitType;
@@ -533,9 +531,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public String getItemType(final I_M_HU_Item huItem)
+	public String getItemType(@NonNull final I_M_HU_Item huItem)
 	{
-		Check.assumeNotNull(huItem, "huItem not null");
 		final String itemType = huItem.getItemType();
 		if (itemType != null)
 		{

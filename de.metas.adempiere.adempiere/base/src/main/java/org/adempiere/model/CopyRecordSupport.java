@@ -55,9 +55,9 @@ public interface CopyRecordSupport
 	 *            tab
 	 * @return a list of tables with info
 	 */
-	List<TableInfoVO> getSuggestedChildren(PO po, List<TableInfoVO> suggestedChildren);
+	List<CopyRecordSupportTableInfo> getSuggestedChildren(PO po, List<CopyRecordSupportTableInfo> suggestedChildren);
 	
-	default List<TableInfoVO> getSuggestedChildren(final PO po)
+	default List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po)
 	{
 		return getSuggestedChildren(po, ImmutableList.of());
 	}
@@ -75,7 +75,7 @@ public interface CopyRecordSupport
 
 	void setParentPO(PO parentPO);
 
-	void setSuggestedChildrenToCopy(List<TableInfoVO> suggestedChildrenToCopy);
+	void setSuggestedChildrenToCopy(List<CopyRecordSupportTableInfo> suggestedChildrenToCopy);
 
 	void setFromPO_ID(int oldPO_id);
 
