@@ -1016,8 +1016,8 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, localTrxName -> {
 
-			final Set<I_C_Flatrate_Conditions> conditionsBreadCrumb = new HashSet<>();
-			conditionsBreadCrumb.add(context.getContract().getC_Flatrate_Conditions());
+			final Set<Integer> conditionsBreadCrumb = new HashSet<>();
+			conditionsBreadCrumb.add(context.getContract().getC_Flatrate_Conditions_ID());
 
 			ContractExtendingRequest contextUsed = context;
 			I_C_Flatrate_Transition nextTransition = null;
@@ -1039,7 +1039,8 @@ public class FlatrateBL implements IFlatrateBL
 				nextTransition = nextConditions.getC_Flatrate_Transition();
 				Check.assumeNotNull(nextTransition, "C_Flatrate_Transition shall not be null!");
 
-				if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && !conditionsBreadCrumb.add(nextConditions))
+				// infinete loop detection
+				if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && !conditionsBreadCrumb.add(nextConditions.getC_Flatrate_Conditions_ID()))
 				{
 					throw new AdempiereException("Infinite loop detected!");
 				}
