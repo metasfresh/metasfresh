@@ -110,6 +110,8 @@ public final class Main extends AbstractModuleInterceptor
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
+		super.onInit(engine, client);
+		
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 
 		registerFactories();
