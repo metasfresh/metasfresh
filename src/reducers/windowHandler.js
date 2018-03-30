@@ -297,7 +297,7 @@ export default function windowHandler(state = initialState, action) {
           },
         },
       });
-    case UPDATE_DATA_PROPERTY:
+    case UPDATE_DATA_PROPERTY: {
       let value;
 
       if (typeof action.value === 'string') {
@@ -321,7 +321,7 @@ export default function windowHandler(state = initialState, action) {
           },
         },
       });
-
+    }
     case UPDATE_ROW_FIELD_PROPERTY: {
       const { scope, tabid, rowid, property } = action;
       const scState = state[scope];
