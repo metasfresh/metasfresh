@@ -46,15 +46,17 @@ public final class HUPackingInfos
 	{
 		Check.assumeNotNull(hu, "Parameter hu is not null");
 
-		if (Services.get(IHandlingUnitsBL.class).isAggregateHU(hu))
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		
+		if (handlingUnitsBL.isAggregateHU(hu))
 		{
 			return new AggregatedTUPackingInfo(hu);
 		}
 
-		final String huUnitType = Services.get(IHandlingUnitsBL.class).getHU_UnitType(hu);
+		final String huUnitType = handlingUnitsBL.getHU_UnitType(hu);
 		if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType))
 		{
-			return new LUPIPackingInfo(hu.getM_HU_PI_Version().getM_HU_PI());
+			return new LUPIPackingInfo(handlingUnitsBL.getPI(hu));
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitType))
 		{
