@@ -28,8 +28,10 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -1014,12 +1016,16 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, localTrxName -> {
 
+			final Set<I_C_Flatrate_Conditions> conditionsBreadCrumb = new HashSet<>();
+			conditionsBreadCrumb.add(context.getContract().getC_Flatrate_Conditions());
+
 			ContractExtendingRequest contextUsed = context;
 			I_C_Flatrate_Transition nextTransition = null;
 			final List<I_C_Flatrate_Term> contracts = new ArrayList<>();
 			contracts.add(contextUsed.getContract());
 			do
 			{
+
 				extendContract0(contextUsed, localTrxName);
 
 				final I_C_Flatrate_Term currentTerm = contextUsed.getContract();
@@ -1032,6 +1038,11 @@ public class FlatrateBL implements IFlatrateBL
 
 				nextTransition = nextConditions.getC_Flatrate_Transition();
 				Check.assumeNotNull(nextTransition, "C_Flatrate_Transition shall not be null!");
+
+				if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && !conditionsBreadCrumb.add(nextConditions))
+				{
+					throw new AdempiereException("Infinite loop detected!");
+				}
 
 				contextUsed = contextUsed.toBuilder()
 						  .AD_PInstance_ID(context.getAD_PInstance_ID())
