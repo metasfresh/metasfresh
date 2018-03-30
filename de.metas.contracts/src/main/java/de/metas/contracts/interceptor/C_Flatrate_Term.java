@@ -536,9 +536,20 @@ public class C_Flatrate_Term
 		return masterEndDate;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void setMasterDocumentNo(final I_C_Flatrate_Term term)
 	{
-		term.setMasterDocumentNo(InterfaceWrapperHelper.getValueOrNull(term, I_C_Flatrate_Term.COLUMNNAME_DocumentNo));
+		if (!Check.isEmpty(term.getDocumentNo(), true) && Check.isEmpty(term.getMasterDocumentNo(), true))
+		{
+			final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(term);
+			if (ancestor == null)
+			{
+				term.setMasterDocumentNo(term.getDocumentNo());
+			}
+			else
+			{
+				term.setMasterDocumentNo(ancestor.getMasterDocumentNo());
+			}
+		}
 	}
 }
