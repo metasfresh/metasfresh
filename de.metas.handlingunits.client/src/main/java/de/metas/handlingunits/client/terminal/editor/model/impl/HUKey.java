@@ -135,7 +135,7 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		value = new KeyNamePair(huId, name);
 
 		// FIXME: aggregate by CU too
-		final int piId = hu.getM_HU_PI_Version().getM_HU_PI_ID();
+		final int piId = handlingUnitsBL.getPIVersion(hu).getM_HU_PI_ID();
 		if (handlingUnitsBL.isConcretePI(piId))
 		{
 			aggregationKey = Util.mkKey(piId);
