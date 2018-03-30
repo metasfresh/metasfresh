@@ -126,8 +126,8 @@ class TableCell extends PureComponent {
       type,
       rowId,
       tabId,
-      onDoubleClick,
-      onKeyDown,
+      handleDoubleClick,
+      handleKeyDown,
       readonly,
       updatedRow,
       tabIndex,
@@ -159,8 +159,8 @@ class TableCell extends PureComponent {
       <td
         tabIndex={tabIndex}
         ref={c => (this.cell = c)}
-        onDoubleClick={readonly ? null : onDoubleClick}
-        onKeyDown={onKeyDown}
+        onDoubleClick={readonly ? null : handleDoubleClick}
+        onKeyDown={handleKeyDown}
         onContextMenu={handleRightClick}
         className={classnames(
           {
