@@ -79,11 +79,17 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3698](https://github.com/metasfresh/metasfresh/issues/3698) NPE when clicking on picking-slot in swing picking terminal first time
+    * Minor fix for a Null Pointer exception in Swing Client Picking Terminal.
   * [#3717](https://github.com/metasfresh/metasfresh/issues/3717) swing - Bereitstellung POS hangs
+    * Fixes the Window for Distribution order Handling in Java Swing Client.
   * [#3728](https://github.com/metasfresh/metasfresh/issues/3728) Cannot create material receipt if the ADR attribute is disabled in PI template
+    * Fix for Material Receipt creation in case of disabled ADR Attribute.
   * [#3736](https://github.com/metasfresh/metasfresh/issues/3736) Jasper: Qty TU in purchase invoice is wrong again
+    * Fixes the Quantity of transportation units in Purchase Invoice.
   * [#3739](https://github.com/metasfresh/metasfresh/issues/3739) Toplevel TUs are created as aggregate HUs
+    * Solves issues in Handling Units that created Toplevel Handling Units as aggregated elements.
   * [#3746](https://github.com/metasfresh/metasfresh/issues/3746) ZoomTo - exception in console if IsGenericZoomOrigin='N'
+    * Solves an issue that prevented Document References to be shown.
   * [#3755](https://github.com/metasfresh/metasfresh/issues/3755) Error in search of Businesspartner
     * Fixes the SQL of a virtual column in C_BPartner Table.
 
@@ -99,6 +105,7 @@ Here come the actual release notes:
   * [#1663](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1663) Pos1 does not jump to page 1 anymore
     * Fixes the Home Button in grid View. Now possible to jump to first page in Pagination again.
   * [#1676](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1676) List widgets with focus follow-up
+    * Fixe for the List widget, now losing the focus indicator again when moving to other field.
   * [#1705](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1705) Barcode Scan leaved Webcam switched on
     * Now the Webcam is switched off as soon the Barcode reading process is finished.
   * [#1712](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1712) Dropdown list in grid view does not open with mouse click
