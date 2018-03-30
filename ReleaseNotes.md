@@ -36,22 +36,33 @@ Here come the actual release notes:
   * [#3585](https://github.com/metasfresh/metasfresh/issues/3585) WebUI window design: Business Partner Credit Limit
     * Improvement of Busines Partner Credit Limit Fieldnames and Translations.
   * [#3687](https://github.com/metasfresh/metasfresh/issues/3687) Replace flags from tax category with a list
+    * Adjustments on Tax Category that replaces checkboxes with a dropdown list for better maintainability.
   * [#3693](https://github.com/metasfresh/metasfresh/issues/3693) Lot-No lock & control
+    * New Feature that allows the control and lock of Lot-No.
   * [#3703](https://github.com/metasfresh/metasfresh/issues/3703) Material Receipt Candidates Window, add media types for mobile/ tablet
     * Mobile Usage Improvement. Adds Mediatypes to Material Receipt Candidates window (Tablet proptotype).
   * [#3716](https://github.com/metasfresh/metasfresh/issues/3716) Implement MSV3 server
+    * New MSV3 Communication Service - Order and availaibilty check - for german Pharma Industry.
   * [#3721](https://github.com/metasfresh/metasfresh/issues/3721) Create Request on DD_Order to Quarantine warehouse
+    * Now also creating a Request in case of Material Movements to Quaranting Warehouse.
   * [#3724](https://github.com/metasfresh/metasfresh/issues/3724) Allow to run print endpoint as standalone service
+    * New Printing endpoint that allows the printing to be run as standalone service.
   * [#3738](https://github.com/metasfresh/metasfresh/issues/3738) Introduce and use AD_OrgInfo.M_WarehousePO_ID
+    * Default Warehouse for an Organisation to be used when automatically creating Purchase Orders and as initial Warehouse selection.
   * [#3743](https://github.com/metasfresh/metasfresh/issues/3743) Translation of Distribution Editor Quickaction
     * Translation added for the Distribution Editor Quickactions.
   * [#3749](https://github.com/metasfresh/metasfresh/issues/3749) Add isPrintPrice flag in orderLine
+    * New flag that allows to manually define if prices shall be printed in a Order document or not.
   * [#3758](https://github.com/metasfresh/metasfresh/issues/3758) Notify users if msv3-server was not reached
+    * Improvement of the communication with an MSV3 Server in Sales Order, now letting the user know if a connection failed.
 
 * metasfresh-webui-api
   * [#911](https://github.com/metasfresh/metasfresh-webui-api/issues/911) HU attributes shall consider M_HU_PI_Attribute.IsDisplayedUI flag
+    * Now it's possible to track Attributes in handling Units but to not display them in Handlign Unit Editor.
   * [#913](https://github.com/metasfresh/metasfresh-webui-api/issues/913) Add switch for synchronous availiability check
+    * New configuration swith that allows to switch between sync and async availability checks in MSV3 communication.
   * [#919](https://github.com/metasfresh/metasfresh-webui-api/issues/919) Allow to display only positive ATP values in product lookup
+    * Improvement of the Availability check result in MSV3 Sales Orderline. Now only showing results with Available to promise > 0.
 
 * metasfresh-webui-frontend
   * [#1680](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1680) Camera Barcode workflow improvements
