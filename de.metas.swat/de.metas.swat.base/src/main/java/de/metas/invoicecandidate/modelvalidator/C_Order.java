@@ -105,7 +105,7 @@ public class C_Order
 				.additionalAmt(grandTotal)
 				.date(dateOrdered)
 				.build();
-		final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(request);
+		final String calculatedSOCreditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
 		{
