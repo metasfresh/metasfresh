@@ -34,17 +34,17 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3585](https://github.com/metasfresh/metasfresh/issues/3585) WebUI window design: Business Partner Credit Limit
-    * Improvement of Busines Partner Credit Limit Fieldnames and Translations.
+    * Improvement of Business Partner Credit Limit Field Names and Translations.
   * [#3687](https://github.com/metasfresh/metasfresh/issues/3687) Replace flags from tax category with a list
     * Adjustments on Tax Category that replaces checkboxes with a dropdown list for better maintainability.
   * [#3693](https://github.com/metasfresh/metasfresh/issues/3693) Lot-No lock & control
     * New Feature that allows the control and lock of Lot-No.
   * [#3703](https://github.com/metasfresh/metasfresh/issues/3703) Material Receipt Candidates Window, add media types for mobile/ tablet
-    * Mobile Usage Improvement. Adds Mediatypes to Material Receipt Candidates window (Tablet proptotype).
+    * Mobile Usage Improvement. Adds Mediatypes to Material Receipt Candidates window (Tablet prototype).
   * [#3716](https://github.com/metasfresh/metasfresh/issues/3716) Implement MSV3 server
     * New MSV3 Communication Service - Order and availaibilty check - for german Pharma Industry.
   * [#3721](https://github.com/metasfresh/metasfresh/issues/3721) Create Request on DD_Order to Quarantine warehouse
-    * Now also creating a Request in case of Material Movements to Quaranting Warehouse.
+    * Now also creating a Request in case of Material Movements to Quarantine Warehouse.
   * [#3724](https://github.com/metasfresh/metasfresh/issues/3724) Allow to run print endpoint as standalone service
     * New Printing endpoint that allows the printing to be run as standalone service.
   * [#3738](https://github.com/metasfresh/metasfresh/issues/3738) Introduce and use AD_OrgInfo.M_WarehousePO_ID
@@ -58,7 +58,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#911](https://github.com/metasfresh/metasfresh-webui-api/issues/911) HU attributes shall consider M_HU_PI_Attribute.IsDisplayedUI flag
-    * Now it's possible to track Attributes in handling Units but to not display them in Handlign Unit Editor.
+    * Now it's possible to track Attributes in Handling Units but to not display them in Handling Unit Editor.
   * [#913](https://github.com/metasfresh/metasfresh-webui-api/issues/913) Add switch for synchronous availiability check
     * New configuration swith that allows to switch between sync and async availability checks in MSV3 communication.
   * [#919](https://github.com/metasfresh/metasfresh-webui-api/issues/919) Allow to display only positive ATP values in product lookup
@@ -66,9 +66,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1680](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1680) Camera Barcode workflow improvements
-    * Detailed improvements in dthe Barcode workflow for Tablet usage.
+    * Detailed improvements in the Barcode workflow for Tablet usage.
   * [#1681](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1681) Data Entry via barcode scan in Action Parms
-    * New Funcitonality for Barcode Scanning in Action Parms.
+    * New Functionality for Barcode Scanning in Action Parms.
   * [#1684](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1684) Combine dropdown list of <List> and <Lookup> component
     * Improvement of Lookup Widgets and List Components, combined functionality  for better maintainability.
   * [#1692](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1692) Detailed adjustments of User Interface for tablet media size
@@ -80,7 +80,7 @@ Here come the actual release notes:
 * metasfresh
   * [#3698](https://github.com/metasfresh/metasfresh/issues/3698) NPE when clicking on picking-slot in swing picking terminal first time
     * Minor fix for a Null Pointer exception in Swing Client Picking Terminal.
-  * [#3717](https://github.com/metasfresh/metasfresh/issues/3717) swing - Bereitstellung POS hangs
+  * [#3717](https://github.com/metasfresh/metasfresh/issues/3717) Swing - Bereitstellung POS hangs
     * Fixes the Window for Distribution order Handling in Java Swing Client.
   * [#3728](https://github.com/metasfresh/metasfresh/issues/3728) Cannot create material receipt if the ADR attribute is disabled in PI template
     * Fix for Material Receipt creation in case of disabled ADR Attribute.
@@ -95,13 +95,13 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1605](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1605) Scrolling in dropdown fields
-    * Fixes the behavior of dropdown fields when scrolling throught the list.
+    * Fixes the behavior of dropdown fields when scrolling through the list.
   * [#1641](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1641) Combined Lookup Widget Layout Glitch
     * Fixes a Layout Glitch in combined Lookup Fields.
   * [#1649](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1649) Date range widget needs to support 2018-05-01 to 2019-04-30
     * Fixes the date timezone in date widgets.
   * [#1660](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1660) Single Date Field not patched in some cases
-    * Fix for the patching of date fields when manipulating in mouse and keaboard kombination.
+    * Fix for the patching of date fields when manipulating in mouse and keyboard combination.
   * [#1663](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1663) Pos1 does not jump to page 1 anymore
     * Fixes the Home Button in grid View. Now possible to jump to first page in Pagination again.
   * [#1676](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1676) List widgets with focus follow-up
@@ -109,7 +109,7 @@ Here come the actual release notes:
   * [#1705](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1705) Barcode Scan leaved Webcam switched on
     * Now the Webcam is switched off as soon the Barcode reading process is finished.
   * [#1712](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1712) Dropdown list in grid view does not open with mouse click
-    * Fixes the behavior of List and Lookup widgets in Subtab Grid View after doubleklick.
+    * Fixes the behavior of List and Lookup widgets in Subtab Grid View after double click.
 
 
 # metasfresh 5.49 (2018-12)
