@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.OptionalInt;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -15,14 +16,19 @@ import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
@@ -32,6 +38,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.IProductBL;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.packageable.PackageableRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
@@ -58,6 +65,12 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements IProcessPrecondition, IProcessParametersCallout, IProcessDefaultParametersProvider
 {
+
+	@Autowired
+	private PickingCandidateService pickingCandidateService;
+	@Autowired
+	private PickingConfigRepository pickingConfigRepo;
+
 	// services
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
@@ -79,6 +92,8 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	private BigDecimal qtyCU;
 
 	private transient I_M_Product _productToPack; // lazy
+
+	private boolean isAutoProcess = false;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -155,7 +170,16 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 			return;
 		}
 
-		invalidateAndGoBackToPickingSlotsView();
+		if (!isAutoProcess)
+		{
+
+			invalidateAndGoBackToPickingSlotsView();
+		}
+		else
+		{
+			invalidatePickingSlotsView();
+			invalidatePackablesView();
+		}
 	}
 
 	private BigDecimal getQtyCU()
@@ -221,6 +245,19 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 
 		final I_M_HU splitCU = ListUtils.singleElement(splitHUs);
 		addHUIdToCurrentPickingSlot(splitCU.getM_HU_ID());
+
+		// #3778
+		// Process the picking automatically in case it is configured this way.
+
+		isAutoProcess = pickingConfigRepo.getPickingConfig().isAutoProcess();
+
+		if (isAutoProcess)
+		{
+
+			final PickingSlotRow rowToProcess = getPickingSlotRow();
+			pickingCandidateService.processForHUIds(ImmutableList.of(rowToProcess.getHuId()), rowToProcess.getPickingSlotId(), OptionalInt.empty());
+		}
+
 	}
 
 	private int retrieveHUIdToSplit()
@@ -229,4 +266,5 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 				.map(HUEditorRow::getM_HU_ID)
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Only one HU shall be selected")));
 	}
+
 }
