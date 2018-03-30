@@ -87,6 +87,8 @@ Here come the actual release notes:
   * [#1676](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1676) List widgets with focus follow-up
   * [#1705](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1705) Barcode Scan leaved Webcam switched on
     * Now the Webcam is switched off as soon the Barcode reading process is finished.
+  * [#1712](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1712) Dropdown list in grid view does not open with mouse click
+    * Fixes the behavior of List and Lookup widgets in Subtab Grid View after doubleklick.
 
 
 # metasfresh 5.49 (2018-12)
