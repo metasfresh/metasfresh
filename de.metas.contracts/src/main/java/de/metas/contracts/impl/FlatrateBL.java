@@ -1197,6 +1197,8 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setStartDate(firstDayOfNewTerm);
 		nextTerm.setMasterStartDate(currentTerm.getMasterStartDate());
 
+		nextTerm.setMasterDocumentNo(currentTerm.getMasterDocumentNo());
+
 		if (ol != null)
 		{
 			nextTerm.setC_OrderLine_Term(ol);

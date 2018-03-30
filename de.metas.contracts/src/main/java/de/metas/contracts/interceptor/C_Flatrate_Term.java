@@ -535,4 +535,10 @@ public class C_Flatrate_Term
 
 		return masterEndDate;
 	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void setMasterDocumentNo(final I_C_Flatrate_Term term)
+	{
+		term.setMasterDocumentNo(InterfaceWrapperHelper.getValueOrNull(term, I_C_Flatrate_Term.COLUMNNAME_DocumentNo));
+	}
 }
