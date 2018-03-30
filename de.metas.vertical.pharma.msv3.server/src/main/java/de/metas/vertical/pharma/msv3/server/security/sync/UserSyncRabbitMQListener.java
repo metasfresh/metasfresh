@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
-import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
 
 /*
@@ -41,7 +41,7 @@ public class UserSyncRabbitMQListener
 	private MSV3ServerAuthenticationService authService;
 
 	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_UserChangedEvents)
-	public void onUserEvent(final MSV3UserChangedEvent event)
+	public void onUserEvent(final MSV3UserChangedBatchEvent event)
 	{
 		try
 		{

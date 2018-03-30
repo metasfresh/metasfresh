@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 
@@ -196,9 +197,9 @@ public class SourceHUsService
 		return Services.get(ISourceHuDAO.class).retrieveActiveSourceHuMarkers(query);
 	}
 
-	public List<I_M_HU> retrieveMatchingSourceHus(@NonNull final MatchingSourceHusQuery query)
+	public Set<Integer> retrieveMatchingSourceHUIds(@NonNull final MatchingSourceHusQuery query)
 	{
-		return Services.get(ISourceHuDAO.class).retrieveActiveSourceHus(query);
+		return Services.get(ISourceHuDAO.class).retrieveActiveSourceHUIds(query);
 	}
 
 	public boolean isSourceHu(final int huId)

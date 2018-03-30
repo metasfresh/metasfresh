@@ -183,7 +183,7 @@ public class WarehouseDAO implements IWarehouseDAO
 
 		return orgInfo.getM_Warehouse();
 	}
-	
+
 	@Override
 	public int retrieveOrgWarehousePOId(final int adOrgId)
 	{
@@ -196,7 +196,6 @@ public class WarehouseDAO implements IWarehouseDAO
 
 		return orgInfo.getM_WarehousePO_ID();
 	}
-
 
 	@Override
 	@Cached(cacheName = I_M_Warehouse.Table_Name + "#InTransitForOrg")
@@ -290,6 +289,15 @@ public class WarehouseDAO implements IWarehouseDAO
 						.build())
 				.collect(ImmutableList.toImmutableList());
 
+	}
+
+	@Override
+	public WarehousePickingGroup getWarehousePickingGroupById(final int warehousePickingGroupId)
+	{
+		return retrieveWarehouseGroups()
+				.stream()
+				.filter(warehousePickingGroup -> warehousePickingGroup.getId() == warehousePickingGroupId)
+				.findFirst().orElse(null);
 	}
 
 	@Override
