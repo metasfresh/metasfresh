@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -112,10 +113,10 @@ public class SourceHuDAOTest
 		final MatchingSourceHusQuery query = MatchingSourceHusQuery.builder()
 				.productId(product.getM_Product_ID())
 				.warehouseId(wh.getM_Warehouse_ID()).build();
-		final List<I_M_HU> result = new SourceHuDAO().retrieveActiveSourceHus(query);
+		final Set<Integer> resultHUIds = new SourceHuDAO().retrieveActiveSourceHUIds(query);
 
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getM_HU_ID()).isEqualTo(hus.get(0).getM_HU_ID());
+		assertThat(resultHUIds).hasSize(1);
+		assertThat(resultHUIds.iterator().next()).isEqualTo(hus.get(0).getM_HU_ID());
 	}
 
 	private static I_M_HU createHU(
