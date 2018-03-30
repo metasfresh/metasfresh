@@ -126,33 +126,8 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				.nextTermStartDate(null)
 				.build();
 
-		assertThatThrownBy(() -> { extendContractWithInfiniteLoop(context); }).isInstanceOf(AdempiereException.class)
-        .hasMessageContaining("Infinite loop!");
-
-
-
-	}
-
-	private void extendContractWithInfiniteLoop(final ContractExtendingRequest context)
-	{
-		final Thread thread = new Thread(() -> Services.get(IFlatrateBL.class).extendContract(context));
-
-		thread.start();
-		long endTimeMillis = System.currentTimeMillis() + 30000;
-		while (thread.isAlive())
-		{
-			if (System.currentTimeMillis() > endTimeMillis)
-			{
-				throw new AdempiereException("Infinite loop!");
-			}
-			try
-			{
-				Thread.sleep(500);
-			}
-			catch (InterruptedException t)
-			{
-			}
-		}
+		assertThatThrownBy(() -> { Services.get(IFlatrateBL.class).extendContract(context); }).isInstanceOf(AdempiereException.class)
+        .hasMessageContaining("Infinite loop detected!");
 	}
 
 	private I_C_Flatrate_Term prepareContractForTest(final String autoExtension)
