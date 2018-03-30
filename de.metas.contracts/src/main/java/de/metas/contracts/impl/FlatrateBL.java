@@ -28,10 +28,10 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -123,6 +123,8 @@ public class FlatrateBL implements IFlatrateBL
 	 * Message for announcing the user that there are overlapping terms for the term they want to complete
 	 */
 	public static final String MSG_HasOverlapping_Term = "de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm";
+
+	public static final String MSG_INFINITE_LOOP = "de.metas.contracts.impl.FlatrateBL.extendContract.seenFlatrateConditionIds";
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
@@ -1016,8 +1018,9 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, localTrxName -> {
 
-			final Set<Integer> conditionsBreadCrumb = new HashSet<>();
-			conditionsBreadCrumb.add(context.getContract().getC_Flatrate_Conditions_ID());
+			final Map<Integer, String> seenFlatrateCondition = new HashMap<>();
+			final I_C_Flatrate_Conditions currentConditions = context.getContract().getC_Flatrate_Conditions();
+			seenFlatrateCondition.put(currentConditions.getC_Flatrate_Conditions_ID(), currentConditions.getName());
 
 			ContractExtendingRequest contextUsed = context;
 			I_C_Flatrate_Transition nextTransition = null;
@@ -1039,11 +1042,12 @@ public class FlatrateBL implements IFlatrateBL
 				nextTransition = nextConditions.getC_Flatrate_Transition();
 				Check.assumeNotNull(nextTransition, "C_Flatrate_Transition shall not be null!");
 
-				// infinete loop detection
-				if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && !conditionsBreadCrumb.add(nextConditions.getC_Flatrate_Conditions_ID()))
+				// infinite loop detection
+				if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && seenFlatrateCondition.containsKey(nextConditions.getC_Flatrate_Conditions_ID()))
 				{
-					throw new AdempiereException("Infinite loop detected!");
+					throw new AdempiereException(MSG_INFINITE_LOOP, new Object[] {nextConditions.getName(), seenFlatrateCondition.values()});
 				}
+				seenFlatrateCondition.put(nextConditions.getC_Flatrate_Conditions_ID(), nextConditions.getName());
 
 				contextUsed = contextUsed.toBuilder()
 						  .AD_PInstance_ID(context.getAD_PInstance_ID())

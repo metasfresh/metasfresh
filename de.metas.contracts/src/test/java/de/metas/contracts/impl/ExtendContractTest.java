@@ -127,7 +127,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				.build();
 
 		assertThatThrownBy(() -> { Services.get(IFlatrateBL.class).extendContract(context); }).isInstanceOf(AdempiereException.class)
-        .hasMessageContaining("Infinite loop detected!");
+        .hasMessageContaining(FlatrateBL.MSG_INFINITE_LOOP);
 	}
 
 	private I_C_Flatrate_Term prepareContractForTest(final String autoExtension)
