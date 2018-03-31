@@ -20,6 +20,8 @@ Here come the actual release notes:
 * metasfreh-webui-frontend
   * [#1586](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1586) Screen aliginment Improvements
     * Improves the Look & Feel, mostly vertical alignments - of all Fields and Field Content. Also Size of Lookup widget dropdowns.
+  * [#1654](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1654) Provide support for time widgets
+    * Adds support for Time-only widgets. Now not showing the date anymore.
 
 ## Fixes
 * metasfresh-webui-frontend
