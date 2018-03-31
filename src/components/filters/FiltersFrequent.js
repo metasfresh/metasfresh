@@ -1,10 +1,10 @@
 import cx from 'classnames';
 import counterpart from 'counterpart';
 import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import currentDevice from 'current-device';
-
 import FiltersDateStepper from './FiltersDateStepper';
 import FiltersItem from './FiltersItem';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
@@ -49,6 +49,7 @@ class FiltersFrequent extends Component {
       applyFilters,
       clearFilters,
       active,
+      modalVisible,
     } = this.props;
 
     const { openFilterId } = this.state;
@@ -84,6 +85,7 @@ class FiltersFrequent extends Component {
                   ['btn-active']: item.isActive,
                   ['btn-distance']: !dateStepper,
                 })}
+                tabIndex={modalVisible ? -1 : 0}
               >
                 <i className="meta-icon-preview" />
                 {item.isActive &&
@@ -138,8 +140,18 @@ class FiltersFrequent extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  allowOutsideClick: state.windowHandler.allowOutsideClick,
-});
+FiltersFrequent.propTypes = {
+  allowOutsideClick: PropTypes.bool.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
+};
+
+const mapStateToProps = state => {
+  const { allowOutsideClick, modal } = state.windowHandler;
+
+  return {
+    allowOutsideClick,
+    modalVisible: modal.visible,
+  };
+};
 
 export default connect(mapStateToProps)(onClickOutside(FiltersFrequent));

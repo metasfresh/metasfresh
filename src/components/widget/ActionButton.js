@@ -140,7 +140,7 @@ class ActionButton extends Component {
   };
 
   render() {
-    const { data } = this.props;
+    const { data, modalVisible } = this.props;
     const abrev = data.status.value && data.status.value.key;
 
     let value;
@@ -155,7 +155,7 @@ class ActionButton extends Component {
       <div
         onKeyDown={this.handleKeyDown}
         className="meta-dropdown-toggle dropdown-status-toggler js-dropdown-toggler"
-        tabIndex="0"
+        tabIndex={modalVisible ? -1 : 0}
         ref={c => (this.statusDropdown = c)}
         onBlur={this.handleDropdownBlur}
         onFocus={this.handleDropdownFocus}
@@ -179,6 +179,9 @@ class ActionButton extends Component {
 
 ActionButton.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
 };
 
-export default connect()(ActionButton);
+export default connect(state => ({
+  modalVisible: state.windowHandler.modal.visible,
+}))(ActionButton);

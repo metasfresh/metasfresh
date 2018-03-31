@@ -6,8 +6,10 @@ button, .btn {
     position: relative;
 }
 
-.btn:active {
-    box-shadow: inset 0 0 4px rgba(0,0,0,.1);
+.btn {
+    :active, :focus {
+        box-shadow: inset 0 0 4px rgba(0,0,0,.1);
+    }
 }
 
 .btn-flag {
@@ -179,6 +181,9 @@ button, .btn {
 }
 .btn-meta-outline-secondary:hover {
     background-color: color(#000 lightness(95%));
+}
+.btn-meta-outline-secondary:focus {
+    border-color: $brand-font-color;
 }
 
 .btn-distance {

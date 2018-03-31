@@ -34,9 +34,12 @@ class TableFilter extends Component {
       handleBatchEntryToggle,
       supportQuickInput,
       allowCreateNew,
+      modalVisible,
     } = this.props;
 
     const { isTooltipShow } = this.state;
+
+    const tabIndex = fullScreen || modalVisible ? -1 : this.props.tabIndex;
 
     return (
       <div className="form-flex-align table-filter-line">
@@ -47,7 +50,7 @@ class TableFilter extends Component {
                 <button
                   className="btn btn-meta-outline-secondary btn-distance btn-sm"
                   onClick={openModal}
-                  tabIndex="-1"
+                  tabIndex={tabIndex}
                 >
                   {counterpart.translate('window.addNew.caption')}
                 </button>
@@ -62,7 +65,7 @@ class TableFilter extends Component {
                     this.toggleTooltip(keymap.TOGGLE_QUICK_INPUT)
                   }
                   onMouseLeave={this.toggleTooltip}
-                  tabIndex="-1"
+                  tabIndex={tabIndex}
                 >
                   {isBatchEntry
                     ? counterpart.translate('window.batchEntryClose.caption')
@@ -129,6 +132,10 @@ class TableFilter extends Component {
 
 TableFilter.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  tabIndex: PropTypes.number.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
 };
 
-export default connect()(TableFilter);
+export default connect(state => ({
+  modalVisible: state.windowHandler.modal.visible,
+}))(TableFilter);
