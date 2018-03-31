@@ -422,7 +422,7 @@ class RawWidget extends Component {
             <DatePicker
               field={fields[0].field}
               timeFormat={true}
-              dateFormat={dateFormat || true}
+              dateFormat={false}
               inputProps={{
                 placeholder: fields[0].emptyText,
                 disabled: widgetData[0].readonly || disabled,
