@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-import { Map, List } from 'immutable';
+import { Map, List, Set } from 'immutable';
 
 import {
   ACTIVATE_TAB,
@@ -189,7 +189,7 @@ export default function windowHandler(state = initialState, action) {
           layout: {},
           rowData: Map(),
           saveStatus: action.saveStatus,
-          standardActions: new Set(action.standardActions),
+          standardActions: Set(action.standardActions),
           validStatus: action.validStatus,
           includedTabsInfo: action.includedTabsInfo,
           websocket: action.websocket,
@@ -305,7 +305,7 @@ export default function windowHandler(state = initialState, action) {
       } else if (action.property === 'standardActions') {
         // TODO: Evaluate if standardActions of type Set
         // is worth this extra check
-        value = new Set(action.value);
+        value = Set(action.value);
       } else {
         value = Object.assign(
           {},
@@ -322,7 +322,6 @@ export default function windowHandler(state = initialState, action) {
         },
       });
     }
-
     case UPDATE_ROW_FIELD_PROPERTY: {
       const { scope, tabid, rowid, property } = action;
       const scState = state[scope];
