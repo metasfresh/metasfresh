@@ -24,6 +24,8 @@ package org.eevolution.model.validator;
 
 import java.util.List;
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -42,41 +44,26 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 import de.metas.material.planning.pporder.LiberoException;
 
 @Validator(I_PP_Product_BOMLine.class)
+@Callout(I_PP_Product_BOMLine.class)
 public class PP_Product_BOMLine
 {
 	@Init
 	public void init()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Product_BOMLine());
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new PP_Product_BOMLine());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_PP_Product_BOMLine bomLine)
 	{
-		boolean valid = false;
 		if (X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(bomLine.getComponentType()) //
 				&& Check.isEmpty(bomLine.getVariantGroup()))
 		{
 			throw new LiberoException("@MandatoryVariant@");
 		}
 
-		if (X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(bomLine.getComponentType()))
-		{
-			final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
-			final List<I_PP_Product_BOMLine> bomLines = bomDAO.retrieveLines(bomLine.getPP_Product_BOM());
-			for (I_PP_Product_BOMLine bl : bomLines)
-			{
-				if (X_PP_Order_BOMLine.COMPONENTTYPE_Component.equals(bl.getComponentType()) && bomLine.getVariantGroup().equals(bl.getVariantGroup()))
-				{
-					valid = true;
-					continue;
-				}
-			}
-		}
-		else
-		{
-			valid = true;
-		}
+		final boolean valid = Services.get(IProductBOMBL.class).isValidVariantGroup(bomLine);
 		if (!valid)
 		{
 			throw new LiberoException("@NoSuchVariantGroup@");
@@ -126,5 +113,15 @@ public class PP_Product_BOMLine
 		InterfaceWrapperHelper.save(product);
 
 		// TODO: if product's low level changed, we need to update the low level from all bom components where this product is in bom header.
+	}
+
+	@CalloutMethod(columnNames = { I_PP_Product_BOMLine.COLUMNNAME_VariantGroup})
+	private void validateVariantGroup(final I_PP_Product_BOMLine bomLine)
+	{
+		final boolean valid = Services.get(IProductBOMBL.class).isValidVariantGroup(bomLine);
+		if (!valid)
+		{
+			throw new LiberoException("@NoSuchVariantGroup@");
+		}
 	}
 }
