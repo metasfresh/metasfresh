@@ -10,8 +10,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Predicates;
@@ -52,7 +52,7 @@ import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
  */
 
 @Service
-public class MSV3StockAvailabilityService implements InitializingBean
+public class MSV3StockAvailabilityService
 {
 	private static final Logger logger = LogManager.getLogger(MSV3StockAvailabilityService.class);
 
@@ -63,14 +63,14 @@ public class MSV3StockAvailabilityService implements InitializingBean
 	@Autowired
 	private MSV3ServerPeerService msv3ServerPeerService;
 
-	@Override
-	public void afterPropertiesSet()
+	private MSV3ServerConfig getServerConfig()
 	{
+		return msv3ServerConfigService.getServerConfig();
 	}
 
 	public void publishAll()
 	{
-		final MSV3ServerConfig serverConfig = msv3ServerConfigService.getServerConfig();
+		final MSV3ServerConfig serverConfig = getServerConfig();
 		if (!serverConfig.hasProducts())
 		{
 			logger.warn("Asked to publish all stock availabilities but the MSV3 server has no products defined. Doing nothing. Check {}", serverConfig);
@@ -86,7 +86,7 @@ public class MSV3StockAvailabilityService implements InitializingBean
 
 		final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors.groupByAndStream(stockRecordsStream, StockDataRecord::getProductId)
 				.map(records -> toMSV3StockAvailabilityOrNullIfFailed(serverConfig, records))
-				.flatMap(sa -> repeat(sa, 10000))
+				// .flatMap(sa -> repeat(sa, 10000))
 				.filter(Predicates.notNull());
 
 		final List<MSV3StockAvailability> stockAvailabilities = stockAvailabilityStream.collect(ImmutableList.toImmutableList());
@@ -141,7 +141,7 @@ public class MSV3StockAvailabilityService implements InitializingBean
 
 	public void handleStockChangedEvent(final StockChangedEvent event)
 	{
-		final MSV3ServerConfig serverConfig = msv3ServerConfigService.getServerConfig();
+		final MSV3ServerConfig serverConfig = getServerConfig();
 		if (!isEligible(serverConfig, event))
 		{
 			logger.trace("Skip {} because it's not eligible for {}", event, serverConfig);
@@ -220,5 +220,41 @@ public class MSV3StockAvailabilityService implements InitializingBean
 	private int applyQtyAvailableToPromiseMin(final BigDecimal qtyOnHand, final int qtyAvailableToPromiseMin)
 	{
 		return Math.max(qtyOnHand.intValue(), qtyAvailableToPromiseMin);
+	}
+
+	@Async
+	public void publishProductAddedEvent(final int productId)
+	{
+		final MSV3ServerConfig serverConfig = getServerConfig();
+
+		final long pzn = getPZNByProductId(productId);
+		final int qtyOnHand = serverConfig.getQtyAvailableToPromiseMin();
+		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailability.builder()
+				.pzn(pzn)
+				.qty(qtyOnHand)
+				.build());
+	}
+
+	@Async
+	public void publishProductChangedEvent(final int productId)
+	{
+		final MSV3ServerConfig serverConfig = getServerConfig();
+
+		final long pzn = getPZNByProductId(productId);
+		final int qtyOnHand = getQtyOnHand(serverConfig, productId);
+		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailability.builder()
+				.pzn(pzn)
+				.qty(qtyOnHand)
+				.build());
+	}
+
+	@Async
+	public void publishProductDeletedEvent(final int productId)
+	{
+		final long pzn = getPZNByProductId(productId);
+		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailability.builder()
+				.pzn(pzn)
+				.delete(true)
+				.build());
 	}
 }

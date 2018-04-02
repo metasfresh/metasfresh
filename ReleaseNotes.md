@@ -20,6 +20,12 @@ Here come the actual release notes:
 * metasfreh-webui-frontend
   * [#1586](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1586) Screen aliginment Improvements
     * Improves the Look & Feel, mostly vertical alignments - of all Fields and Field Content. Also Size of Lookup widget dropdowns.
+  * [#1606](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1606) Searching in dropdown fields
+    * New Feature allowing to search in List widgets via first character in List element.
+  * [#1654](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1654) Provide support for time widgets
+    * Adds support for Time-only widgets. Now not showing the date anymore.
+  * [#1675](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1675) Tab Sequence
+    * Improved Tab Sequence in generic Windows.
 
 ## Fixes
 * metasfresh-webui-frontend

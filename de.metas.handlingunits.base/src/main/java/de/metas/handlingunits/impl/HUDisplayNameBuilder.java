@@ -22,7 +22,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.logging.LogManager;
 
@@ -202,15 +201,8 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		}
 		else
 		{
-			final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
-			if (piVersion == null || piVersion.getM_HU_PI_Version_ID() <= 0)
-			{
-				piNameRaw = "?";
-			}
-			else
-			{
-				piNameRaw = piVersion.getM_HU_PI().getName();
-			}
+			final I_M_HU_PI pi = Services.get(IHandlingUnitsBL.class).getPI(hu);
+			piNameRaw = pi != null ? pi.getName() : "?";
 		}
 
 		final String piName = escape(piNameRaw);
@@ -220,7 +212,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 	private static String getAggregateHuPiName(final I_M_HU hu)
 	{
 		// note: if HU is an aggregate HU, then there won't be an NPE here.
-		final I_M_HU_PI_Item parentPIItem = hu.getM_HU_Item_Parent().getM_HU_PI_Item();
+		final I_M_HU_PI_Item parentPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(hu.getM_HU_Item_Parent());
 
 		if (parentPIItem == null)
 		{

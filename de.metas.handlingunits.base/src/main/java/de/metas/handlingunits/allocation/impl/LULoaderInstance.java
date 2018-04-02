@@ -73,7 +73,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 	 *
 	 * NOTE: we use {@link SortedSet} because we want items to be sorted by priority. For this we relly on {@link LULoaderItemInstance#compareTo(LULoaderItemInstance)}.
 	 */
-	private final SortedSet<LULoaderItemInstance> luItemInstances = new TreeSet<LULoaderItemInstance>();
+	private final SortedSet<LULoaderItemInstance> luItemInstances = new TreeSet<>();
 
 	/**
 	 * The builder used to create the LU wrapped by this instance. We need to keep it around even after the LU was created, because when {@link #addTU(I_M_HU)} is called,
@@ -194,7 +194,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 			// #gh 460: the HUBuilder doesn't add just any possible HU item anymore, so chances are big that luHU does not yet have a HU-item to attach tuHU to.
 			// therefore we now need to identify the correct HU PI item and create that item on the fly.
 			final I_M_HU_PI_Item piItemForTU = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU,
-					tuHU.getM_HU_PI_Version().getM_HU_PI(),
+					Services.get(IHandlingUnitsBL.class).getPI(tuHU),
 					huContext);
 
 			if (piItemForTU != null)
