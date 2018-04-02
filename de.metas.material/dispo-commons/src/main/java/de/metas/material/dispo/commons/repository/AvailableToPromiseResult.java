@@ -317,7 +317,6 @@ public class AvailableToPromiseResult
 	
 	public BigDecimal getSingleQty()
 	{
-		// TODO Check if this is ok
 		Check.assume(resultGroups.size() == 1, " There should be only one group the the result group {}." , resultGroups);
 		
 		return resultGroups.get(0).getQty();
