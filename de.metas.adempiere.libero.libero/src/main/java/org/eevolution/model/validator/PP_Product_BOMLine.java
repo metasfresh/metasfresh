@@ -116,7 +116,7 @@ public class PP_Product_BOMLine
 	}
 
 	@CalloutMethod(columnNames = { I_PP_Product_BOMLine.COLUMNNAME_VariantGroup})
-	private void validateVariantGroup(final I_PP_Product_BOMLine bomLine)
+	public void validateVariantGroup(final I_PP_Product_BOMLine bomLine)
 	{
 		final boolean valid = Services.get(IProductBOMBL.class).isValidVariantGroup(bomLine);
 		if (!valid)
