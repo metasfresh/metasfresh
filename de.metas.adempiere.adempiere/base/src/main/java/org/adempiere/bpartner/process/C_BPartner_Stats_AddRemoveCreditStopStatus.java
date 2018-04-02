@@ -48,7 +48,7 @@ public class C_BPartner_Stats_AddRemoveCreditStopStatus extends JavaProcess impl
 					.forceCheckCreditStatus(true)
 					.date(SystemTime.asDayTimestamp())
 					.build();
-			creditStatus = bpartnerStatsBL.calculateSOCreditStatus(request);
+			creditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
 		}
 
 		bpStats.setSOCreditStatus(creditStatus);
