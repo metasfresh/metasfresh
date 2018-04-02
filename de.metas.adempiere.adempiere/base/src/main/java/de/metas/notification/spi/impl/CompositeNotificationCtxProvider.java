@@ -14,7 +14,7 @@ import de.metas.notification.spi.INotificationCtxProvider;
 
 /*
  * #%L
- * de.metas.printing.base
+ * 
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -41,9 +41,9 @@ import de.metas.notification.spi.INotificationCtxProvider;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class CompositePrintingNotificationCtxProvider implements INotificationCtxProvider
+public class CompositeNotificationCtxProvider implements INotificationCtxProvider
 {
-	private static final Logger logger = LogManager.getLogger(CompositePrintingNotificationCtxProvider.class);
+	private static final Logger logger = LogManager.getLogger(CompositeNotificationCtxProvider.class);
 
 	private final CopyOnWriteArrayList<INotificationCtxProvider> ctxProviders = new CopyOnWriteArrayList<>();
 	private INotificationCtxProvider defaultCtxProvider = NullNotificationCtxProvider.instance;

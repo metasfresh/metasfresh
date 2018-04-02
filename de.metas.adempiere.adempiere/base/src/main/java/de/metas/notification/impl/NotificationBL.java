@@ -22,7 +22,7 @@ import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.spi.INotificationCtxProvider;
-import de.metas.notification.spi.impl.CompositePrintingNotificationCtxProvider;
+import de.metas.notification.spi.impl.CompositeNotificationCtxProvider;
 
 /*
  * #%L
@@ -48,7 +48,7 @@ import de.metas.notification.spi.impl.CompositePrintingNotificationCtxProvider;
 
 public class NotificationBL implements INotificationBL
 {
-	private final CompositePrintingNotificationCtxProvider ctxProviders = new CompositePrintingNotificationCtxProvider();
+	private final CompositeNotificationCtxProvider ctxProviders = new CompositeNotificationCtxProvider();
 
 	@Override
 	public void notifyUser(final I_AD_User recipient,
