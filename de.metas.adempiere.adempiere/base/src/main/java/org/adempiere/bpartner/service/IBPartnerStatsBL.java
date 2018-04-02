@@ -68,7 +68,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 	 * @param date
 	 * @return
 	 */
-	String calculateSOCreditStatus(CalculateSOCreditStatusRequest request);
+	String calculateProjectedSOCreditStatus(CalculateSOCreditStatusRequest request);
 
 
 	/**
