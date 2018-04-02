@@ -71,7 +71,6 @@ public class C_Flatrate_Transition
 				.setParameters(transition.getC_Flatrate_Transition_ID(), X_C_Flatrate_Conditions.DOCSTATUS_Completed)
 				.setApplyAccessFilter(true)
 				.setOnlyActiveRecords(true)
-				// .setOrderBy(I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID)
 				.match();
 
 		if (hasConditions)
