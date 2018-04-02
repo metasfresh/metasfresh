@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION public.getInitialC_Flatrate_term_ID(p_C_Flatrate_term_ID numeric)
+CREATE OR REPLACE FUNCTION de_metas_contracts.getInitialC_Flatrate_term_ID(p_C_Flatrate_term_ID numeric)
   RETURNS TABLE(C_Flatrate_term_ID numeric) AS
 $BODY$
 WITH RECURSIVE ancestor AS (

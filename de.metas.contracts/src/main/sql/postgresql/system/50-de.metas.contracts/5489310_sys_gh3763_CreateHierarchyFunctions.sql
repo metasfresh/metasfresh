@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION public.getInitialC_Flatrate_term_ID(p_C_Flatrate_term_ID numeric)
+CREATE SCHEMA de_metas_contracts;  
+CREATE OR REPLACE FUNCTION de_metas_contracts.getInitialC_Flatrate_term_ID(p_C_Flatrate_term_ID numeric)
   RETURNS TABLE(C_Flatrate_term_ID numeric) AS
 $BODY$
 WITH RECURSIVE ancestor AS (
@@ -20,9 +21,9 @@ $BODY$
   COST 100
   ROWS 1000;
 
- comment on function public.getInitialC_Flatrate_term_ID(numeric) is 'This function returns the most diatant parent of the givent contract'; 
+ comment on function de_metas_contracts.getInitialC_Flatrate_term_ID(numeric) is 'This function returns the most distant parent of the givent contract'; 
 
-CREATE OR REPLACE FUNCTION public.fetchflatratetermhierarchy_byC_Flatrate_Term_id(IN p_c_flatrate_term_id numeric)
+CREATE OR REPLACE FUNCTION de_metas_contracts.fetchflatratetermhierarchy_byC_Flatrate_Term_id(IN p_c_flatrate_term_id numeric)
   RETURNS TABLE(bill_bpartner_id numeric, initial_ft_id numeric, path numeric[]) AS
 $BODY$
  WITH RECURSIVE node_graph AS (
@@ -55,4 +56,4 @@ $BODY$
   COST 100
   ROWS 1000;
   
-comment on function public.fetchflatratetermhierarchy_byC_Flatrate_Term_id(numeric) is 'This function returns the hierachy chain of a contract';   
+comment on function de_metas_contracts.fetchflatratetermhierarchy_byC_Flatrate_Term_id(numeric) is 'This function returns the hierachy chain of a contract';   

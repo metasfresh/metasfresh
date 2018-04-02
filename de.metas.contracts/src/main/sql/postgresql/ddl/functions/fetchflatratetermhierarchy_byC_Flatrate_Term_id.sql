@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION public.fetchflatratetermhierarchy_byC_Flatrate_Term_id(IN p_c_flatrate_term_id numeric)
+CREATE OR REPLACE FUNCTION de_metas_contracts.fetchflatratetermhierarchy_byC_Flatrate_Term_id(IN p_c_flatrate_term_id numeric)
   RETURNS TABLE(bill_bpartner_id numeric, initial_ft_id numeric, path numeric[]) AS
 $BODY$
  WITH RECURSIVE node_graph AS (
