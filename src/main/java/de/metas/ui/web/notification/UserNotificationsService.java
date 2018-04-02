@@ -69,10 +69,7 @@ public class UserNotificationsService
 		if (!subscribedToEventBus.getAndSet(true))
 		{
 			final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-			eventBusFactory.getAvailableUserNotificationsTopics()
-					.stream()
-					.map(topic -> eventBusFactory.getEventBus(topic))
-					.forEach(eventBus -> eventBus.subscribe(this::forwardEventToNotificationsQueues));
+			eventBusFactory.registerUserNotificationsListener(this::forwardEventToNotificationsQueues);
 		}
 	}
 
