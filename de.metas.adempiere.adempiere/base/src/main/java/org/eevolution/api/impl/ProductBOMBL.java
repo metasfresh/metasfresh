@@ -125,7 +125,8 @@ public class ProductBOMBL implements IProductBOMBL
 		final List<I_PP_Product_BOMLine> bomLines = bomDAO.retrieveLines(bomLine.getPP_Product_BOM());
 		for (I_PP_Product_BOMLine bl : bomLines)
 		{
-			if (X_PP_Order_BOMLine.COMPONENTTYPE_Component.equals(bl.getComponentType()) && bomLine.getVariantGroup().equals(bl.getVariantGroup()))
+			if ((X_PP_Order_BOMLine.COMPONENTTYPE_Component.equals(bl.getComponentType()) || X_PP_Order_BOMLine.COMPONENTTYPE_Packing.equals(bl.getComponentType()))
+					&& bomLine.getVariantGroup().equals(bl.getVariantGroup()))
 			{
 				valid = true;
 				continue;
