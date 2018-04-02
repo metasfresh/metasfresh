@@ -196,7 +196,7 @@ public class BPartnerCreditLimitRepositoryTest
 		bpLimit.setC_BPartner(partner);
 		bpLimit.setC_CreditLimit_Type(type);
 		bpLimit.setAmount(amount);
-		bpLimit.setIsApproved(true);
+		bpLimit.setProcessed(true);
 		bpLimit.setIsActive(true);
 		bpLimit.setDateFrom(dateFrom);
 		save(bpLimit);

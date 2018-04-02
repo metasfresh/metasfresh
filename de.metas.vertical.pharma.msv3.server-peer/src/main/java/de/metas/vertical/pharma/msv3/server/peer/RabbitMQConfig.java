@@ -14,6 +14,7 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 /*
  * #%L
  * metasfresh-pharma.msv3.server-peer-metasfresh
@@ -42,14 +43,15 @@ import org.springframework.messaging.handler.annotation.support.MessageHandlerMe
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
+@Profile("!test")
 @Configuration
 public class RabbitMQConfig
 {
 	public static final String QUEUENAME_MSV3ServerRequests = "msv3-server-requests";
 	public static final String QUEUENAME_UserChangedEvents = "msv3-server-UserChangedEvents";
 	public static final String QUEUENAME_StockAvailabilityUpdatedEvent = "msv3-server-StockAvailabilityUpdatedEvents";
-	public static final String QUEUENAME_CreateOrderRequestEvents = "msv3-server-CreateOrderRequestEvents";
-	public static final String QUEUENAME_CreateOrderResponseEvents = "msv3-server-CreateOrderResponseEvents";
+	public static final String QUEUENAME_SyncOrderRequestEvents = "msv3-server-SyncOrderRequestEvents";
+	public static final String QUEUENAME_SyncOrderResponseEvents = "msv3-server-SyncOrderResponseEvents";
 
 	@Bean
 	List<Declarable> queuesAndBindings()
@@ -58,8 +60,8 @@ public class RabbitMQConfig
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_MSV3ServerRequests))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_UserChangedEvents))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_StockAvailabilityUpdatedEvent))
-				.addAll(createQueueExchangeAndBinding(QUEUENAME_CreateOrderRequestEvents))
-				.addAll(createQueueExchangeAndBinding(QUEUENAME_CreateOrderResponseEvents))
+				.addAll(createQueueExchangeAndBinding(QUEUENAME_SyncOrderRequestEvents))
+				.addAll(createQueueExchangeAndBinding(QUEUENAME_SyncOrderResponseEvents))
 				.build();
 	}
 

@@ -1,11 +1,13 @@
-package de.metas.vertical.pharma.msv3.server.peer.protocol;
+package de.metas.vertical.pharma.msv3.server.process;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.compiere.Adempiere;
+
+import de.metas.process.JavaProcess;
+import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3StockAvailabilityService;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.commons
+ * metasfresh-pharma.msv3.server-peer-metasfresh
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -25,28 +27,14 @@ import org.junit.Test;
  * #L%
  */
 
-public class MSV3StockAvailabilityUpdatedEventTest
+public class MSV3_Server_PublishAllProducts extends JavaProcess
 {
-	private JSONTestHelper jsonTestHelper;
-
-	@Before
-	public void init()
+	@Override
+	protected String doIt() throws Exception
 	{
-		jsonTestHelper = new JSONTestHelper();
+		final MSV3StockAvailabilityService stockAvailabilityService = Adempiere.getBean(MSV3StockAvailabilityService.class);
+		stockAvailabilityService.publishAll();
+		return MSG_OK;
 	}
 
-	@Test
-	public void testSerializeDeserialize() throws Exception
-	{
-		jsonTestHelper.testSerializeDeserialize(MSV3StockAvailabilityUpdatedEvent.builder()
-				.item(MSV3StockAvailability.builder()
-						.pzn(1234567891)
-						.qty(111)
-						.build())
-				.item(MSV3StockAvailability.builder()
-						.pzn(1234567892)
-						.qty(222)
-						.build())
-				.build());
-	}
 }

@@ -149,12 +149,10 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			final I_M_Product product,
 			final Date date)
 	{
-		final I_M_HU_PI_Item itemDef = huItem.getM_HU_PI_Item();
-
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
 		queryVO.setM_Product_ID(product.getM_Product_ID());
 		queryVO.setAllowAnyProduct(true);
-		queryVO.setM_HU_PI_Item_ID(itemDef.getM_HU_PI_Item_ID());
+		queryVO.setM_HU_PI_Item_ID(huItem.getM_HU_PI_Item_ID());
 		queryVO.setDate(date);
 
 		//

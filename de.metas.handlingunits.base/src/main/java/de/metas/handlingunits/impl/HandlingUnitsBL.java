@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,6 +45,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
@@ -297,7 +300,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
+		final I_M_HU_PI_Version piVersion = getPIVersion(hu);
 		if (piVersion == null)
 		{
 			return false;
@@ -354,13 +357,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
-		if (piVersion == null)
-		{
-			return false;
-		}
-
-		return X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(piVersion.getHU_UnitType());
+		final String huUnitType = getHU_UnitType(hu);
+		return X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType);
 	}
 
 	@Override
@@ -403,16 +401,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		{
 			return false;
 		}
-
-		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
-		if (piVersion == null)
+		
+		final String huUnitType = getHU_UnitType(hu);
+		if(huUnitType == null)
 		{
 			return false;
 		}
 
 		//
 		// Case: given HU is a pure TU
-		final String huUnitType = piVersion.getHU_UnitType();
 		if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitType))
 		{
 			return true;
@@ -449,7 +446,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public String getHU_UnitType(@NonNull final I_M_HU hu)
 	{
-		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
+		final I_M_HU_PI_Version piVersion = getPIVersion(hu);
+		if(piVersion == null) // could happen while the HU is building
+		{
+			return null;
+		}
+		
 		final String huUnitType = piVersion.getHU_UnitType();
 		return huUnitType;
 	}
@@ -540,7 +542,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		// FIXME: remove it after we migrate all HUs
-		return huItem.getM_HU_PI_Item().getItemType();
+		return getPIItem(huItem).getItemType();
 	}
 
 	@Override
@@ -759,25 +761,51 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public I_M_HU_PI getPI(final I_M_HU hu)
+	{
+		final I_M_HU_PI_Version piVersion = getPIVersion(hu);
+		return piVersion != null ? piVersion.getM_HU_PI() : null;
+	}
+
+	@Override
+	public I_M_HU_PI_Version getPIVersion(final I_M_HU hu)
+	{
+		final int huPIVersionId = hu.getM_HU_PI_Version_ID();
+		return huPIVersionId > 0 ? loadOutOfTrx(huPIVersionId, I_M_HU_PI_Version.class) : null;
+	}
+
+	@Override
+	public I_M_HU_PI_Item getPIItem(final I_M_HU_Item huItem)
+	{
+		final int piItemId = huItem.getM_HU_PI_Item_ID();
+		return piItemId > 0 ? loadOutOfTrx(piItemId, I_M_HU_PI_Item.class) : null;
+	}
+
+	@Override
+	public I_M_HU_PackingMaterial getHUPackingMaterial(final I_M_HU_Item huItem)
+	{
+		final int packingMaterialId = huItem.getM_HU_PackingMaterial_ID();
+		return packingMaterialId > 0 ? loadOutOfTrx(packingMaterialId, I_M_HU_PackingMaterial.class) : null;
+	}
+
+	@Override
 	public I_M_HU_PI_Version getEffectivePIVersion(final I_M_HU hu)
 	{
 		if (!isAggregateHU(hu))
 		{
-			return hu.getM_HU_PI_Version();
+			return getPIVersion(hu);
 		}
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		// note: if hu is an aggregate HU, then there won't be an NPE here.
-		final I_M_HU_PI_Item parentPIItem = hu.getM_HU_Item_Parent().getM_HU_PI_Item();
-
+		final I_M_HU_PI_Item parentPIItem = getPIItem(hu.getM_HU_Item_Parent());
 		if (parentPIItem == null)
 		{
 			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
 		}
 
 		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
-
 		return handlingUnitsDAO.retrievePICurrentVersionOrNull(included_HU_PI);
 	}
 
@@ -786,12 +814,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		if (!isAggregateHU(hu))
 		{
-			return hu.getM_HU_PI_Version().getM_HU_PI();
+			return getPI(hu);
 		}
 
 		// note: if hu is an aggregate HU, then there won't be an NPE here.
-		final I_M_HU_PI_Item parentPIItem = hu.getM_HU_Item_Parent().getM_HU_PI_Item();
-
+		final I_M_HU_PI_Item parentPIItem = getPIItem(hu.getM_HU_Item_Parent());
 		if (parentPIItem == null)
 		{
 			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.

@@ -15,7 +15,7 @@ import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.server-peer
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -37,15 +37,16 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class MSV3UserChangedMultiEvent
+public class MSV3OrderSyncRequestPackage
 {
-	@JsonProperty("events")
-	private final List<MSV3UserChangedEvent> events;
+	@JsonProperty("items")
+	List<MSV3OrderSyncRequestPackageItem> items;
 
-	@JsonCreator
 	@Builder
-	private MSV3UserChangedMultiEvent(@JsonProperty("events") @Singular @NonNull final List<MSV3UserChangedEvent> events)
+	@JsonCreator
+	private MSV3OrderSyncRequestPackage(
+			@JsonProperty("items") @NonNull @Singular final List<MSV3OrderSyncRequestPackageItem> items)
 	{
-		this.events = ImmutableList.copyOf(events);
+		this.items = ImmutableList.copyOf(items);
 	}
 }

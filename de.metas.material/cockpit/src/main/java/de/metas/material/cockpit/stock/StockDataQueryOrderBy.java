@@ -1,11 +1,11 @@
-package de.metas.vertical.pharma.msv3.server.peer.protocol;
+package de.metas.material.cockpit.stock;
 
-import org.junit.Before;
-import org.junit.Test;
+import de.metas.material.cockpit.model.I_MD_Stock_WarehouseAndProduct_v;
+import lombok.Getter;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server-peer
+ * metasfresh-material-cockpit
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -13,32 +13,30 @@ import org.junit.Test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class MSV3ServerRequestTest
+public enum StockDataQueryOrderBy
 {
-	private JSONTestHelper jsonTestHelper;
+	ProductCategoryId(I_MD_Stock_WarehouseAndProduct_v.COLUMNNAME_M_Product_Category_ID), //
+	ProductId(I_MD_Stock_WarehouseAndProduct_v.COLUMNNAME_M_Product_ID), //
+	WarehouseId(I_MD_Stock_WarehouseAndProduct_v.COLUMNNAME_M_Warehouse_ID) //
+	;
 
-	@Before
-	public void init()
+	@Getter
+	private final String columnName;
+
+	StockDataQueryOrderBy(final String columnName)
 	{
-		jsonTestHelper = new JSONTestHelper();
+		this.columnName = columnName;
 	}
-
-	@Test
-	public void testSerializeDeserialize() throws Exception
-	{
-		jsonTestHelper.testSerializeDeserialize(MSV3ServerRequest.requestAll());
-	}
-
 }

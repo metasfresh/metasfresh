@@ -40,6 +40,7 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.junit.Assert;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -110,8 +111,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 
 		if (_huPI != null)
 		{
-			final I_M_HU_PI_Version actual_huPIVersion = hu.getM_HU_PI_Version();
-			final I_M_HU_PI actual_huPI = actual_huPIVersion == null ? null : actual_huPIVersion.getM_HU_PI();
+			final I_M_HU_PI actual_huPI = Services.get(IHandlingUnitsBL.class).getPI(hu);
 			assertModelEquals(prefix + "HU PI", _huPI, actual_huPI);
 		}
 

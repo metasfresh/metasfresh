@@ -1,11 +1,13 @@
-package de.metas.vertical.pharma.msv3.server.peer.protocol;
+package de.metas.vertical.pharma.msv3.server.peer.metasfresh.services;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server-peer
+ * metasfresh-pharma.msv3.server-peer-metasfresh
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -25,28 +27,14 @@ import org.junit.Test;
  * #L%
  */
 
-public class MSV3UserChangedMultiEventTest
+@Service
+public class MSV3ServerConfigService
 {
-	private JSONTestHelper jsonTestHelper;
+	@Autowired
+	private MSV3ServerConfigRepository serverConfigRepository;
 
-	@Before
-	public void init()
+	public MSV3ServerConfig getServerConfig()
 	{
-		jsonTestHelper = new JSONTestHelper();
+		return serverConfigRepository.getServerConfig();
 	}
-
-	@Test
-	public void testSerializeDeserialize() throws Exception
-	{
-		jsonTestHelper.testSerializeDeserialize(MSV3UserChangedMultiEvent.builder()
-				.event(MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent()
-						.username("u1")
-						.password("p1")
-						.bpartnerId(1234567)
-						.bpartnerLocationId(7654321)
-						.build())
-				.event(MSV3UserChangedEvent.deletedEvent("u2"))
-				.build());
-	}
-
 }
