@@ -51,7 +51,6 @@ import de.metas.handlingunits.client.terminal.mmovement.model.join.ILUTUJoinKey;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.service.ILUTUJoinOrMergeBL;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 
 public final class HUJoinModel extends AbstractLTCUModel
@@ -71,11 +70,11 @@ public final class HUJoinModel extends AbstractLTCUModel
 
 	private final IHUKey rootKeyInitial;
 
-	private final Set<HUKey> originalLUKeys = new IdentityHashSet<HUKey>();
-	private final Set<HUKey> originalTUKeys = new IdentityHashSet<HUKey>();
+	private final Set<HUKey> originalLUKeys = new IdentityHashSet<>();
+	private final Set<HUKey> originalTUKeys = new IdentityHashSet<>();
 
-	private final Set<ILUTUJoinKey> resultLUKeys = new IdentityHashSet<ILUTUJoinKey>();
-	private final Set<ILUTUJoinKey> resultTUKeys = new IdentityHashSet<ILUTUJoinKey>();
+	private final Set<ILUTUJoinKey> resultLUKeys = new IdentityHashSet<>();
+	private final Set<ILUTUJoinKey> resultTUKeys = new IdentityHashSet<>();
 
 	public HUJoinModel(final ITerminalContext terminalContext, final IHUKey rootKey, final Set<HUKey> selectedKeys)
 	{
@@ -123,7 +122,7 @@ public final class HUJoinModel extends AbstractLTCUModel
 
 	private final Map<String, List<ITerminalKey>> getJoinKeys(final Collection<HUKey> keys)
 	{
-		final Map<String, List<ITerminalKey>> result = new HashMap<String, List<ITerminalKey>>();
+		final Map<String, List<ITerminalKey>> result = new HashMap<>();
 		//
 		// Initialize result set with empty keys for LU/TU
 		result.put(X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, new ArrayList<ITerminalKey>());
@@ -140,8 +139,7 @@ public final class HUJoinModel extends AbstractLTCUModel
 			Check.assumeNotNull(key, "all selected keys are not null");
 
 			final I_M_HU hu = key.getM_HU(); // always not null due to HUKey constructor constraints
-			final I_M_HU_PI_Version huPIv = hu.getM_HU_PI_Version();
-			final String unitType = huPIv.getHU_UnitType();
+			final String unitType = handlingUnitsBL.getHU_UnitType(hu);
 
 			//
 			// Retrieve existing result for unitType
@@ -279,7 +277,7 @@ public final class HUJoinModel extends AbstractLTCUModel
 	/**
 	 * Used to cache created {@link IHUKey} luKeys (for Composite/HUKey TU child retrieval)
 	 */
-	private final Map<Integer, IHUKey> cachedHULUKeys = new HashMap<Integer, IHUKey>();
+	private final Map<Integer, IHUKey> cachedHULUKeys = new HashMap<>();
 
 	@Override
 	protected final void onLUPressed(final ITerminalKey key)
@@ -288,7 +286,7 @@ public final class HUJoinModel extends AbstractLTCUModel
 
 		//
 		// Add original TU keys at the beginning of the panel
-		final List<ITerminalKey> resultTUKeys = new ArrayList<ITerminalKey>(this.resultTUKeys);
+		final List<ITerminalKey> resultTUKeys = new ArrayList<>(this.resultTUKeys);
 
 		//
 		// Only add the other TUKeys if there are multiple LUs selected
@@ -361,7 +359,7 @@ public final class HUJoinModel extends AbstractLTCUModel
 
 	private final List<IHUKey> getTULUKeys(final boolean forced)
 	{
-		final List<IHUKey> resultHUTUKeys = new ArrayList<IHUKey>();
+		final List<IHUKey> resultHUTUKeys = new ArrayList<>();
 
 		final List<LUJoinKey> luKeysUnordered = getLUKeyLayout().getKeyLayoutSelectionModel().getSelectedKeys(LUJoinKey.class);
 		final List<LUJoinKey> luKeys = new ArrayList<>(luKeysUnordered);
@@ -430,7 +428,7 @@ public final class HUJoinModel extends AbstractLTCUModel
 
 	private final List<ITerminalKey> getTUCUKeys(final boolean forced)
 	{
-		final List<ITerminalKey> resultCUKeys = new ArrayList<ITerminalKey>();
+		final List<ITerminalKey> resultCUKeys = new ArrayList<>();
 
 		//
 		// Populate CU lane with keys.
@@ -480,7 +478,7 @@ public final class HUJoinModel extends AbstractLTCUModel
 	 */
 	private List<IHUKey> getCreateIncludedVirtualKeys(final ILUTUJoinKey lutuKey, final IHUKeyFactory keyFactory)
 	{
-		final List<IHUKey> includedVirtualKeys = new ArrayList<IHUKey>();
+		final List<IHUKey> includedVirtualKeys = new ArrayList<>();
 
 		final I_M_HU hu = lutuKey.getM_HU();
 

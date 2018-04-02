@@ -503,7 +503,7 @@ public class HUItemStorage implements IHUItemStorage
 		{
 			return Quantity.QTY_INFINITE.intValue();
 		}
-		return item.getM_HU_PI_Item().getQty().intValueExact();
+		return Services.get(IHandlingUnitsBL.class).getPIItem(item).getQty().intValueExact();
 	}
 
 	@Override
@@ -516,7 +516,7 @@ public class HUItemStorage implements IHUItemStorage
 	public List<IProductStorage> getProductStorages(final Date date)
 	{
 		final List<I_M_HU_Item_Storage> storages = dao.retrieveItemStorages(item);
-		final List<IProductStorage> result = new ArrayList<IProductStorage>(storages.size());
+		final List<IProductStorage> result = new ArrayList<>(storages.size());
 		for (final I_M_HU_Item_Storage storage : storages)
 		{
 			final I_M_Product product = storage.getM_Product();

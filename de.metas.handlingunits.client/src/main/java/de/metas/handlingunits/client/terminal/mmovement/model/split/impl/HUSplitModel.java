@@ -38,6 +38,7 @@ import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
@@ -139,7 +140,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 
 	private void loadCUs()
 	{
-		final List<ITerminalKey> keys = new ArrayList<ITerminalKey>();
+		final List<ITerminalKey> keys = new ArrayList<>();
 
 		final List<IHUProductStorage> productStorages = huToSplitKey.getProductStorages();
 		if (productStorages.isEmpty())
@@ -190,7 +191,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 
 		//
 		// Create TU Keys
-		final List<ITerminalKey> keys = new ArrayList<ITerminalKey>(availableHUPIItemProducts.size());
+		final List<ITerminalKey> keys = new ArrayList<>(availableHUPIItemProducts.size());
 		for (final I_M_HU_PI_Item_Product tuPIItemProduct : availableHUPIItemProducts)
 		{
 			final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
@@ -257,7 +258,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 		//
 		// If the TU PI is exacly the same from our HU than accept it right away even if is infinite capacity or not.
 		// We are doing this because else we won't have it in our TU lane and we will end-up in other errors.
-		final I_M_HU_PI_Version huToSplitPIV = huToSplit.getM_HU_PI_Version();
+		final I_M_HU_PI_Version huToSplitPIV = Services.get(IHandlingUnitsBL.class).getPIVersion(huToSplit);
 		if (tuPI.getM_HU_PI_ID() == huToSplitPIV.getM_HU_PI_ID())
 		{
 			return false; // don't skip
@@ -304,7 +305,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 
 		// FIXME: Load NO-HU-PI to handle when e.g IFCOs are not in a Palette
 		// FIXME: Load Original LU if that's the case (???)
-		final List<ITerminalKey> keys = new ArrayList<ITerminalKey>(luPIItems.size());
+		final List<ITerminalKey> keys = new ArrayList<>(luPIItems.size());
 		for (final I_M_HU_PI_Item luPIItem : luPIItems)
 		{
 			final I_M_HU_PI luPI = luPIItem.getM_HU_PI_Version().getM_HU_PI();

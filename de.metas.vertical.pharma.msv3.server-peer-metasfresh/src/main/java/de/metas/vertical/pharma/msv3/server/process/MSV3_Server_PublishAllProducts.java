@@ -1,11 +1,13 @@
-package de.metas.vertical.pharma.msv3.server.peer.protocol;
+package de.metas.vertical.pharma.msv3.server.process;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.compiere.Adempiere;
+
+import de.metas.process.JavaProcess;
+import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3StockAvailabilityService;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server-peer
+ * metasfresh-pharma.msv3.server-peer-metasfresh
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -25,29 +27,14 @@ import org.junit.Test;
  * #L%
  */
 
-public class MSV3UserChangedBatchEventTest
+public class MSV3_Server_PublishAllProducts extends JavaProcess
 {
-	private JSONTestHelper jsonTestHelper;
-
-	@Before
-	public void init()
+	@Override
+	protected String doIt() throws Exception
 	{
-		jsonTestHelper = new JSONTestHelper();
-	}
-
-	@Test
-	public void testSerializeDeserialize() throws Exception
-	{
-		jsonTestHelper.testSerializeDeserialize(MSV3UserChangedBatchEvent.builder()
-				.event(MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent()
-						.username("u1")
-						.password("p1")
-						.bpartnerId(1234567)
-						.bpartnerLocationId(7654321)
-						.build())
-				.event(MSV3UserChangedEvent.deletedEvent("u2"))
-				.deleteAllOtherUsers(true)
-				.build());
+		final MSV3StockAvailabilityService stockAvailabilityService = Adempiere.getBean(MSV3StockAvailabilityService.class);
+		stockAvailabilityService.publishAll();
+		return MSG_OK;
 	}
 
 }

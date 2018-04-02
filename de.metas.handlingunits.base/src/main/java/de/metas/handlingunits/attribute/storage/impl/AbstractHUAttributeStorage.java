@@ -170,13 +170,13 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		// Retrieve M_HU_PI_Attributes
 		// gh #460: in case of an aggregate HU which is created right now, we need to get the pi version the HUBuilder was invoked with.
 		// note that we can't yet get it from the HU's parent item itself, because that item is not yet finalized.
-		final I_M_HU_PI_Version piVersion = IHUBuilder.BUILDER_INVOCATION_HU_PI_VERSION.getValue(hu, hu.getM_HU_PI_Version());
+		final I_M_HU_PI_Version piVersion = IHUBuilder.BUILDER_INVOCATION_HU_PI_VERSION.getValue(hu, handlingUnitsBL.getPIVersion(hu));
 		final List<I_M_HU_PI_Attribute> piAttributes = huPIAttributesDAO.retrievePIAttributes(piVersion);
 
 		//
 		// Generate all M_HU_Attribute records and convert them to IAttributeValue
 		// final List<I_M_HU_Attribute> huAttributes = new ArrayList<I_M_HU_Attribute>(piAttributes.size());
-		final List<IAttributeValue> attributeValues = new ArrayList<IAttributeValue>(piAttributes.size());
+		final List<IAttributeValue> attributeValues = new ArrayList<>(piAttributes.size());
 		for (final I_M_HU_PI_Attribute piAttribute : piAttributes)
 		{
 			final Object valueInitialDefault = getDefaultAttributeValue(defaultAttributesValue, piAttribute.getM_Attribute());
@@ -309,7 +309,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 			return Collections.emptyList();
 		}
 
-		final List<IAttributeValue> attributeValues = new ArrayList<IAttributeValue>(huAttributes.size());
+		final List<IAttributeValue> attributeValues = new ArrayList<>(huAttributes.size());
 		for (final I_M_HU_Attribute huAttr : huAttributes)
 		{
 			final IAttributeValue huAttributeValue = toAttributeValue(huAttr);

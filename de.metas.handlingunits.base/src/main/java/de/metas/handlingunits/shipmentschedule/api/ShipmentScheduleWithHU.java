@@ -449,7 +449,7 @@ public class ShipmentScheduleWithHU
 		final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(shipmentSchedule);
 		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
 
-		final I_M_HU_PI_Item huPIItem = huMaterialItem.getM_HU_PI_Item();
+		final I_M_HU_PI_Item huPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(huMaterialItem);
 		if(huPIItem == null)
 		{
 			return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
