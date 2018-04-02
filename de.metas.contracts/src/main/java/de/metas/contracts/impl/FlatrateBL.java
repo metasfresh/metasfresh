@@ -28,7 +28,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -1018,7 +1018,7 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, localTrxName -> {
 
-			final Map<Integer, String> seenFlatrateCondition = new HashMap<>();
+			final Map<Integer, String> seenFlatrateCondition = new LinkedHashMap<>();
 			final I_C_Flatrate_Conditions currentConditions = context.getContract().getC_Flatrate_Conditions();
 			seenFlatrateCondition.put(currentConditions.getC_Flatrate_Conditions_ID(), currentConditions.getName());
 
