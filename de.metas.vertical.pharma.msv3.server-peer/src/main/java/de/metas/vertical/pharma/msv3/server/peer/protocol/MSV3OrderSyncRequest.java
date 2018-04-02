@@ -1,12 +1,14 @@
-package de.metas.vertical.pharma.msv3.protocol.order;
+package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import lombok.Builder;
 import lombok.NonNull;
@@ -15,7 +17,7 @@ import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.commons
+ * metasfresh-pharma.msv3.server-peer
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -37,42 +39,26 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class OrderResponsePackage
+public class MSV3OrderSyncRequest
 {
-	@JsonProperty("id")
-	Id id;
+	@JsonProperty("orderId")
+	Id orderId;
+	@JsonProperty("bpartner")
+	BPartnerId bpartner;
 
-	@JsonProperty("orderType")
-	OrderType orderType;
-
-	@JsonProperty("orderIdentification")
-	/** One of 4 predefined or one free identifier. May deviate from the request identifier and be replaced by one of the 4 predefined identifiers (see specifications). */
-	String orderIdentification;
-
-	@JsonProperty("supportId")
-	SupportIDType supportId;
-
-	@JsonProperty("packingMaterialId")
-	String packingMaterialId;
-
-	@JsonProperty("items")
-	List<OrderResponsePackageItem> items;
+	@JsonProperty("orderPackages")
+	List<MSV3OrderSyncRequestPackage> orderPackages;
 
 	@Builder
-	private OrderResponsePackage(
-			@JsonProperty("id") @NonNull final Id id,
-			@JsonProperty("orderType") @NonNull final OrderType orderType,
-			@JsonProperty("orderIdentification") @NonNull final String orderIdentification,
-			@JsonProperty("supportId") @NonNull final SupportIDType supportId,
-			@JsonProperty("packingMaterialId") final String packingMaterialId,
-			@JsonProperty("items") @NonNull @Singular final List<OrderResponsePackageItem> items)
+	@JsonCreator
+	private MSV3OrderSyncRequest(
+			@JsonProperty("orderId") @NonNull final Id orderId,
+			@JsonProperty("bpartner") @NonNull final BPartnerId bpartner,
+			@JsonProperty("orderPackages") @NonNull @Singular final List<MSV3OrderSyncRequestPackage> orderPackages)
 	{
-		this.id = id;
-		this.orderType = orderType;
-		this.orderIdentification = orderIdentification;
-		this.supportId = supportId;
-		this.packingMaterialId = packingMaterialId;
-		this.items = ImmutableList.copyOf(items);
+		this.orderId = orderId;
+		this.bpartner = bpartner;
+		this.orderPackages = ImmutableList.copyOf(orderPackages);
 	}
 
 }
