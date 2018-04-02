@@ -83,7 +83,7 @@ class TUPackingInfo implements IHUPackingInfo
 	@Override
 	public I_M_HU_PI getM_TU_HU_PI()
 	{
-		return tuHU.getM_HU_PI_Version().getM_HU_PI();
+		return Services.get(IHandlingUnitsBL.class).getPI(tuHU); 
 	}
 
 	@Override
