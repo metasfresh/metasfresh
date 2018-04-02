@@ -1091,6 +1091,7 @@ public class FlatrateBL implements IFlatrateBL
 					currentTerm.getType_Conditions(), nextTerm.getType_Conditions(), currentTerm);
 
 			currentTerm.setC_FlatrateTerm_Next_ID(nextTerm.getC_Flatrate_Term_ID());
+			InterfaceWrapperHelper.save(currentTerm);
 
 			// gh #549: notify that handler so it might do additional things. In the case of this task, it shall create C_Flatrate_DataEntry records
 			final IFlatrateTermEventService flatrateHandlersService = Services.get(IFlatrateTermEventService.class);
