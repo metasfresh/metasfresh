@@ -76,11 +76,11 @@ public class PurchaseRow implements IViewRow
 	private final JSONLookupValue vendorBPartner;
 	
 	
-	@ViewColumn(captionKey = "AvailableQty", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
+	@ViewColumn(captionKey = "QtyAvailable", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
 	})
-	private final BigDecimal availableQty;
+	private final BigDecimal qtyAvailable;
 
 	@ViewColumn(captionKey = "QtyToDeliver", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
@@ -151,7 +151,7 @@ public class PurchaseRow implements IViewRow
 			@NonNull final IViewRowType rowType,
 			@NonNull final JSONLookupValue product,
 			@Nullable final JSONLookupValue vendorBPartner,
-			@Nullable final BigDecimal availableQty,
+			@Nullable final BigDecimal qtyAvailable,
 			@NonNull final String uomOrAvailablility,
 			@Nullable final BigDecimal qtyToDeliver,
 			@Nullable final BigDecimal qtyToPurchase,
@@ -170,7 +170,7 @@ public class PurchaseRow implements IViewRow
 		this.rowType = rowType;
 		this.product = product;
 		this.vendorBPartner = vendorBPartner;
-		this.availableQty = availableQty;
+		this.qtyAvailable = qtyAvailable;
 		this.uomOrAvailablility = uomOrAvailablility;
 		this.qtyToDeliver = qtyToDeliver;
 		this.qtyToPurchase = Util.coalesce(qtyToPurchase, BigDecimal.ZERO);
@@ -210,7 +210,7 @@ public class PurchaseRow implements IViewRow
 		this.rowType = from.rowType;
 		this.product = from.product;
 		this.vendorBPartner = from.vendorBPartner;
-		this.availableQty = from.availableQty;
+		this.qtyAvailable = from.qtyAvailable;
 		this.uomOrAvailablility = from.uomOrAvailablility;
 		
 		this.qtyToDeliver = from.qtyToDeliver;

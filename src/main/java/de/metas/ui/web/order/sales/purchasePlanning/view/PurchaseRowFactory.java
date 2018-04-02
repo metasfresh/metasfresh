@@ -24,7 +24,6 @@ import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseResult;
 import de.metas.product.IProductBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -89,11 +88,7 @@ public class PurchaseRowFactory
 		atpQueryBuilder.bpartnerId(bpartnerId);
 		atpQueryBuilder.date(datePromised);
 
-		final AvailableToPromiseResult availableStockResult = new AvailableToPromiseRepository().retrieveAvailableStock(atpQueryBuilder.build());
-
-		availableStockResult.getResultGroups().get(0).getQty();
-
-		final BigDecimal availableQty = availableStockResult.getResultGroups().get(0).getQty();
+		final BigDecimal qtyAvailable = new AvailableToPromiseRepository().retrieveAvailableStock(atpQueryBuilder.build()).getSingleQty();
 
 		return PurchaseRow.builder()
 				.rowId(PurchaseRowId.lineId(
@@ -108,7 +103,7 @@ public class PurchaseRowFactory
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				.datePromised(datePromised)
 				.vendorBPartner(vendorBPartner)
-				.availableQty(availableQty)
+				.qtyAvailable(qtyAvailable)
 				.purchaseCandidateId(purchaseCandidate.getPurchaseCandidateId())
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
@@ -127,7 +122,7 @@ public class PurchaseRowFactory
 		atpQueryBuilder.productId(salesOrderLine.getM_Product_ID());
 		atpQueryBuilder.date(salesOrderLine.getDatePromised());
 
-		final BigDecimal availableQty = new AvailableToPromiseRepository().retrieveAvailableStockQtySum(AvailableToPromiseMultiQuery.of(atpQueryBuilder.build()));
+		final BigDecimal qtyAvailable = new AvailableToPromiseRepository().retrieveAvailableStockQtySum(AvailableToPromiseMultiQuery.of(atpQueryBuilder.build()));
 
 		final PurchaseRow groupRow = PurchaseRow.builder()
 				.rowId(PurchaseRowId.groupId(salesOrderLine.getC_OrderLine_ID()))
@@ -135,7 +130,7 @@ public class PurchaseRowFactory
 				.rowType(PurchaseRowType.GROUP)
 				.product(product)
 				.uomOrAvailablility(uom)
-				.availableQty(availableQty)
+				.qtyAvailable(qtyAvailable)
 				.qtyToDeliver(qtyToDeliver)
 				.datePromised(salesOrderLine.getDatePromised())
 				.orgId(salesOrderLine.getAD_Org_ID())
