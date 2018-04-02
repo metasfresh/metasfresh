@@ -15,7 +15,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1900230049L;
+	private static final long serialVersionUID = 1513697870L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (Properties ctx, int C_Flatrate_Term_ID, String trxName)
@@ -1311,6 +1311,25 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Vertrag Nr..
+		@param MasterDocumentNo 
+		Document sequence number of the document
+	  */
+	@Override
+	public void setMasterDocumentNo (java.lang.String MasterDocumentNo)
+	{
+		set_Value (COLUMNNAME_MasterDocumentNo, MasterDocumentNo);
+	}
+
+	/** Get Vertrag Nr..
+		@return Document sequence number of the document
+	  */
+	@Override
+	public java.lang.String getMasterDocumentNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MasterDocumentNo);
 	}
 
 	/** Set Master End Date.
