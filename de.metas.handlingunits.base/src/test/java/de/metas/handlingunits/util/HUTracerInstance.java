@@ -418,7 +418,7 @@ public class HUTracerInstance
 
 	public String toStringName(final I_M_HU hui)
 	{
-		final StringBuilder name = new StringBuilder("HU_").append(hui.getM_HU_PI_Version().getM_HU_PI().getName());
+		final StringBuilder name = new StringBuilder("HU_").append(Services.get(IHandlingUnitsBL.class).getPI(hui).getName());
 
 		final String instanceName = POJOWrapper.getInstanceName(hui);
 		if (!Check.isEmpty(instanceName))

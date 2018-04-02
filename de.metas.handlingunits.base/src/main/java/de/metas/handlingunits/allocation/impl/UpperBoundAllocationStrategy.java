@@ -131,7 +131,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 			{
 				throw new AdempiereException("HUs which are used in " + this + " shall not have included HUs. They shall be pure TUs."
 						+ "\n Item: " + item
-						+ "\n PI: " + item.getM_HU().getM_HU_PI_Version().getM_HU_PI().getName()
+						+ "\n PI: " + handlingUnitsBL.getPI(item.getM_HU()).getName()
 						+ "\n Request: " + request);
 			}
 			return AllocationUtils.nullResult();
