@@ -31,4 +31,6 @@ public interface JpaStockAvailabilityRepository extends JpaRepository<JpaStockAv
 	JpaStockAvailability findByPzn(long pzn);
 
 	long deleteInBatchBySyncTokenNot(String syncToken);
+	
+	long deleteInBatchByPzn(long pzn);
 }

@@ -5,12 +5,14 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.server-peer
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -32,34 +34,25 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class MSV3StockAvailability
+public class MSV3OrderSyncResponseItem
 {
-	@JsonProperty("pzn")
-	private long pzn;
-	@JsonProperty("qty")
-	private int qty;
-	@JsonProperty("delete")
-	private boolean delete;
+	@JsonProperty("orderPackageItemId")
+	Id orderPackageItemId;
+	@JsonProperty("olCandId")
+	int olCandId;
 
+	@Builder
 	@JsonCreator
-	@Builder(toBuilder = true)
-	private MSV3StockAvailability(
-			@JsonProperty("pzn") final long pzn,
-			@JsonProperty("qty") final int qty,
-			@JsonProperty("delete") final boolean delete)
+	private MSV3OrderSyncResponseItem(
+			@JsonProperty("orderPackageItemId") @NonNull final Id orderPackageItemId,
+			@JsonProperty("olCandId") final int olCandId)
 	{
-		if (pzn <= 0)
-		{
-			throw new IllegalArgumentException("pzn shall be > 0");
-		}
-		if (qty < 0)
-		{
-			throw new IllegalArgumentException("qty shall be >= 0");
-		}
-
-		this.pzn = pzn;
-		this.qty = qty;
-		this.delete = delete;
+		this.orderPackageItemId = orderPackageItemId;
+		this.olCandId = olCandId;
 	}
 
+	public String getOrderPackageItemIdAsString()
+	{
+		return orderPackageItemId.getValueAsString();
+	}
 }

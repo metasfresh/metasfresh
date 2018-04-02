@@ -1,6 +1,7 @@
 package de.metas.vertical.pharma.msv3.server.order;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateError;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItem;
@@ -28,7 +28,13 @@ import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrder;
 import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrderPackage;
 import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrderPackageItem;
 import de.metas.vertical.pharma.msv3.server.order.jpa.JpaOrderRepository;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3OrderSyncRequest;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3OrderSyncRequestPackage;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3OrderSyncRequestPackageItem;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3OrderSyncResponse;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3OrderSyncResponseItem;
 import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
+import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityService;
 import lombok.NonNull;
 
 /*
@@ -62,46 +68,58 @@ public class OrderService
 	@Autowired
 	private MSV3ServerPeerService msv3ServerPeerService;
 
+	@Autowired
+	private StockAvailabilityService stockAvailabilityService;
+
 	@Transactional
 	public OrderCreateResponse createOrder(final OrderCreateRequest request)
 	{
-		final JpaOrder jpaOrder = createJpaOrder(request);
-		// jpaOrdersRepo.save(jpaOrder);
+		final OrderResponse order = createOrderResponse(request);
 
+		final JpaOrder jpaOrder = createJpaOrder(order);
 		jpaOrder.markSyncSent();
 		jpaOrdersRepo.save(jpaOrder);
-		msv3ServerPeerService.publishOrderCreateRequest(request);
 
-		return createOrderCreateResponse(jpaOrder);
+		msv3ServerPeerService.publishSyncOrderRequest(MSV3OrderSyncRequest.builder()
+				.orderId(order.getOrderId())
+				.bpartner(order.getBpartnerId())
+				.orderPackages(order.getOrderPackages().stream()
+						.map(orderPackage -> MSV3OrderSyncRequestPackage.builder()
+								.items(orderPackage.getItems().stream()
+										.map(orderPackageItem -> MSV3OrderSyncRequestPackageItem.builder()
+												.id(orderPackageItem.getId())
+												.pzn(orderPackageItem.getPzn())
+												.qty(orderPackageItem.getQty())
+												.build())
+										.collect(ImmutableList.toImmutableList()))
+								.build())
+						.collect(ImmutableList.toImmutableList()))
+				.build());
+
+		return OrderCreateResponse.ok(order);
 	}
 
-	public void confirmOrderSavedOnPeerServer(@NonNull final OrderCreateResponse response)
+	public void confirmOrderSavedOnPeerServer(@NonNull final MSV3OrderSyncResponse response)
 	{
 		if (response.isError())
 		{
-			final OrderCreateError error = response.getError();
-			final JpaOrder jpaOrder = getJpaOrder(error.getOrderId(), error.getBpartnerId());
-			jpaOrder.markSyncError(error.getErrorMsg());
+			final JpaOrder jpaOrder = getJpaOrder(response.getOrderId(), response.getBpartnerId());
+			jpaOrder.markSyncError(response.getErrorMsg());
 			jpaOrdersRepo.save(jpaOrder);
 		}
 		else
 		{
-			final OrderResponse order = response.getOrder();
-			final JpaOrder jpaOrder = getJpaOrder(order.getOrderId(), order.getBpartnerId());
+			final JpaOrder jpaOrder = getJpaOrder(response.getOrderId(), response.getBpartnerId());
 			jpaOrder.markSyncAck();
 
-			final ImmutableMap<String, Integer> itemUuid2olCandId = order.getOrderPackages()
-					.stream()
-					.flatMap(orderResponsePackage -> orderResponsePackage.getItems().stream())
-					.collect(ImmutableMap.toImmutableMap(
-							item -> item.getId().getValueAsString(),
-							OrderResponsePackageItem::getOlCandId));
+			final Map<String, Integer> olCandIdsByPackageItemId = response.getItems()
+					.stream().collect(ImmutableMap.toImmutableMap(MSV3OrderSyncResponseItem::getOrderPackageItemIdAsString, MSV3OrderSyncResponseItem::getOlCandId));
 
 			jpaOrder.visitItems(jpaOrderPackageItem -> {
-				final Integer olCandId = itemUuid2olCandId.get(jpaOrderPackageItem.getUuid());
+				final Integer olCandId = olCandIdsByPackageItemId.get(jpaOrderPackageItem.getUuid());
 				if (olCandId != null && olCandId > 0)
 				{
-					jpaOrderPackageItem.setOl_cand_id(olCandId);
+					jpaOrderPackageItem.setOlCandId(olCandId);
 				}
 			});
 
@@ -109,22 +127,22 @@ public class OrderService
 		}
 	}
 
-	private JpaOrder createJpaOrder(final OrderCreateRequest request)
+	private JpaOrder createJpaOrder(final OrderResponse order)
 	{
 		final JpaOrder jpaOrder = new JpaOrder();
-		jpaOrder.setBpartnerId(request.getBpartnerId().getBpartnerId());
-		jpaOrder.setBpartnerLocationId(request.getBpartnerId().getBpartnerLocationId());
-		jpaOrder.setDocumentNo(request.getOrderId().getValueAsString());
-		jpaOrder.setSupportId(request.getSupportId().getValueAsInt());
+		jpaOrder.setBpartnerId(order.getBpartnerId().getBpartnerId());
+		jpaOrder.setBpartnerLocationId(order.getBpartnerId().getBpartnerLocationId());
+		jpaOrder.setDocumentNo(order.getOrderId().getValueAsString());
+		jpaOrder.setSupportId(order.getSupportId().getValueAsInt());
 		jpaOrder.setOrderStatus(OrderStatus.UNKNOWN_ID);
 		jpaOrder.setNightOperation(false);
-		jpaOrder.addOrderPackages(request.getOrderPackages().stream()
+		jpaOrder.addOrderPackages(order.getOrderPackages().stream()
 				.map(this::createJpaOrderPackage)
 				.collect(ImmutableList.toImmutableList()));
 		return jpaOrder;
 	}
 
-	private JpaOrderPackage createJpaOrderPackage(final OrderCreateRequestPackage orderPackage)
+	private JpaOrderPackage createJpaOrderPackage(final OrderResponsePackage orderPackage)
 	{
 		final JpaOrderPackage jpaOrderPackage = new JpaOrderPackage();
 		jpaOrderPackage.setDocumentNo(orderPackage.getId().getValueAsString());
@@ -138,7 +156,7 @@ public class OrderService
 		return jpaOrderPackage;
 	}
 
-	private JpaOrderPackageItem createJpaOrderPackageItem(final OrderCreateRequestPackageItem orderPackageItem)
+	private JpaOrderPackageItem createJpaOrderPackageItem(final OrderResponsePackageItem orderPackageItem)
 	{
 		JpaOrderPackageItem jpaOrderPackageItem = new JpaOrderPackageItem();
 		jpaOrderPackageItem.setUuid(orderPackageItem.getId().getValueAsString());
@@ -148,9 +166,50 @@ public class OrderService
 		return jpaOrderPackageItem;
 	}
 
-	private OrderCreateResponse createOrderCreateResponse(final JpaOrder jpaOrder)
+	private OrderResponse createOrderResponse(final OrderCreateRequest request)
 	{
-		return OrderCreateResponse.ok(OrderResponse.builder()
+		return OrderResponse.builder()
+				.bpartnerId(request.getBpartnerId())
+				.orderId(request.getOrderId())
+				.supportId(request.getSupportId())
+				.nightOperation(false) // TODO
+				.orderPackages(request.getOrderPackages().stream()
+						.map(this::createOrderResponsePackage)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private OrderResponsePackage createOrderResponsePackage(final OrderCreateRequestPackage requestPackage)
+	{
+		return OrderResponsePackage.builder()
+				.id(requestPackage.getId())
+				.orderType(requestPackage.getOrderType())
+				.orderIdentification(requestPackage.getOrderIdentification())
+				.supportId(requestPackage.getSupportId())
+				.packingMaterialId(requestPackage.getPackingMaterialId())
+				.items(requestPackage.getItems().stream()
+						.map(this::createOrderResponsePackageItem)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private OrderResponsePackageItem createOrderResponsePackageItem(final OrderCreateRequestPackageItem requestPackageItem)
+	{
+		final PZN pzn = requestPackageItem.getPzn();
+		final Quantity qtyAvailable = stockAvailabilityService.getQtyAvailable(pzn)
+				.orElseThrow(() -> new RuntimeException("PZN not found: " + pzn));
+		final Quantity qty = qtyAvailable.min(requestPackageItem.getQty());
+		return OrderResponsePackageItem.builder()
+				.id(requestPackageItem.getId())
+				.pzn(pzn)
+				.qty(qty)
+				.deliverySpecifications(requestPackageItem.getDeliverySpecifications())
+				.build();
+	}
+
+	private OrderResponse createOrderResponse(final JpaOrder jpaOrder)
+	{
+		return OrderResponse.builder()
 				.bpartnerId(BPartnerId.of(jpaOrder.getBpartnerId(), jpaOrder.getBpartnerLocationId()))
 				.orderId(Id.of(jpaOrder.getDocumentNo()))
 				.supportId(SupportIDType.of(jpaOrder.getSupportId()))
@@ -158,7 +217,7 @@ public class OrderService
 				.orderPackages(jpaOrder.getOrderPackages().stream()
 						.map(this::createOrderResponsePackage)
 						.collect(ImmutableList.toImmutableList()))
-				.build());
+				.build();
 	}
 
 	private OrderResponsePackage createOrderResponsePackage(final JpaOrderPackage jpaOrderPackage)
@@ -213,11 +272,11 @@ public class OrderService
 				.build();
 	}
 
-	public List<OrderCreateResponse> getOrders()
+	public List<OrderResponse> getOrders()
 	{
 		return jpaOrdersRepo.findAll()
 				.stream()
-				.map(this::createOrderCreateResponse)
+				.map(this::createOrderResponse)
 				.collect(ImmutableList.toImmutableList());
 	}
 }

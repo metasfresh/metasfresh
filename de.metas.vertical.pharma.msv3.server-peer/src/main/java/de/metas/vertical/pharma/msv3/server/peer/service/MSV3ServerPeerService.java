@@ -9,9 +9,9 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.stereotype.Service;
 
-import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
-import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateResponse;
 import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3OrderSyncRequest;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3OrderSyncResponse;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3PeerAuthToken;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ServerRequest;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
@@ -120,14 +120,14 @@ public class MSV3ServerPeerService
 				.build());
 	}
 
-	public void publishOrderCreateRequest(final OrderCreateRequest request)
+	public void publishSyncOrderRequest(final MSV3OrderSyncRequest request)
 	{
-		convertAndSend(RabbitMQConfig.QUEUENAME_CreateOrderRequestEvents, request);
+		convertAndSend(RabbitMQConfig.QUEUENAME_SyncOrderRequestEvents, request);
 	}
 
-	public void publishOrderCreateResponse(@NonNull final OrderCreateResponse response)
+	public void publishSyncOrderResponse(@NonNull final MSV3OrderSyncResponse response)
 	{
-		convertAndSend(RabbitMQConfig.QUEUENAME_CreateOrderResponseEvents, response);
+		convertAndSend(RabbitMQConfig.QUEUENAME_SyncOrderResponseEvents, response);
 	}
 
 }
