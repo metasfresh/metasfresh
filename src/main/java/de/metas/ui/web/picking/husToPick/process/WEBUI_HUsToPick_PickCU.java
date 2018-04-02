@@ -157,6 +157,9 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	@Override
 	protected String doIt() throws Exception
 	{
+		// #3778
+		// Process the picking automatically in case it is configured this way.
+		isAutoProcess = pickingConfigRepo.getPickingConfig().isAutoProcess();
 		pickCUs();
 
 		return MSG_OK;
@@ -246,10 +249,6 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		final I_M_HU splitCU = ListUtils.singleElement(splitHUs);
 		addHUIdToCurrentPickingSlot(splitCU.getM_HU_ID());
 
-		// #3778
-		// Process the picking automatically in case it is configured this way.
-
-		isAutoProcess = pickingConfigRepo.getPickingConfig().isAutoProcess();
 
 		if (isAutoProcess)
 		{
