@@ -28,3 +28,9 @@ UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-30 14:52:2
 UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-03-30 14:52:23','YYYY-MM-DD HH24:MI:SS'),MsgText='Infinite loop detected! Are you tryng to extend a contract using condition {0}, but these conditions {1} already seen.' WHERE AD_Message_ID=544667 AND AD_Language='en_US'
 ;
 
+-- 2018-04-02T11:50:34.271
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET Value='de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError',Updated=TO_TIMESTAMP('2018-04-02 11:50:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544667
+;
+
+

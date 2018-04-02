@@ -124,7 +124,7 @@ public class FlatrateBL implements IFlatrateBL
 	 */
 	public static final String MSG_HasOverlapping_Term = "de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm";
 
-	public static final String MSG_INFINITE_LOOP = "de.metas.contracts.impl.FlatrateBL.extendContract.seenFlatrateConditionIds";
+	public static final String MSG_INFINITE_LOOP = "de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError";
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
