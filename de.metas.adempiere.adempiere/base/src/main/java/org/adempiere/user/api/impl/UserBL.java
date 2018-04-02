@@ -42,6 +42,7 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
+import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
@@ -85,7 +86,7 @@ public class UserBL implements IUserBL
 
 		int passwordLength = this.passwordLength;
 		final int minPasswordLength = getMinPasswordLength();
-		if(minPasswordLength > 0 && passwordLength < minPasswordLength)
+		if (minPasswordLength > 0 && passwordLength < minPasswordLength)
 		{
 			passwordLength = minPasswordLength;
 		}
@@ -280,10 +281,10 @@ public class UserBL implements IUserBL
 
 		//
 		// Make sure the old password is matching (if required)
-		if(isOldPasswordRequired(ctx, adUserId))
+		if (isOldPasswordRequired(ctx, adUserId))
 		{
 			final String userPassword = user.getPassword();
-			if(Check.isEmpty(userPassword) && !Check.isEmpty(oldPassword))
+			if (Check.isEmpty(userPassword) && !Check.isEmpty(oldPassword))
 			{
 				throw new AdempiereException("@OldPasswordNoMatch@")
 						.setParameter("reason", "User does not have a password set. Please leave empty the OldPassword field.");
@@ -307,13 +308,13 @@ public class UserBL implements IUserBL
 		final IUserRolePermissions loggedInPermissions = userRolePermissionsDAO.retrieveUserRolePermissions(UserRolePermissionsKey.of(ctx));
 
 		// Changing your own password always requires entering the old password
-		if(loggedInPermissions.getAD_User_ID() == adUserId)
+		if (loggedInPermissions.getAD_User_ID() == adUserId)
 		{
 			return true;
 		}
 
 		// If logged in as Administrator, there is no need to enter the old password
-		if(userRolePermissionsDAO.isAdministrator(ctx, adUserId))
+		if (userRolePermissionsDAO.isAdministrator(ctx, adUserId))
 		{
 			return false;
 		}
@@ -430,7 +431,7 @@ public class UserBL implements IUserBL
 		// For them we provide here this workaround which basically validates each of the email addresses,
 		// and considers the AD_User.EMail valid only if all of them are valid.
 		// see https://github.com/metasfresh/metasfresh/issues/1953
-		
+
 		final String emailsListStr = user.getEMail();
 		final List<String> emails = EMail.toEMailsList(emailsListStr);
 		if (emails.isEmpty())
@@ -440,23 +441,23 @@ public class UserBL implements IUserBL
 
 		final boolean haveInvalidEMails = emails.stream().anyMatch(email -> checkEMailValid(email) != null);
 		return !haveInvalidEMails;
-	}	//	isEMailValid
+	}	// isEMailValid
 
 	private static ITranslatableString checkEMailValid(final String email)
 	{
 		if (Check.isEmpty(email, true))
-	{
+		{
 			return ITranslatableString.constant("no email");
 		}
 		try
 		{
 			final InternetAddress ia = new InternetAddress(email, true);
-				ia.validate();	//	throws AddressException
+			ia.validate();	// throws AddressException
 
 			if (ia.getAddress() == null)
 			{
 				return ITranslatableString.constant("invalid email");
-		}
+			}
 
 			return null; // OK
 		}
@@ -483,18 +484,18 @@ public class UserBL implements IUserBL
 		if (Services.get(IClientDAO.class).retriveClient(Env.getCtx()).isSmtpAuthorization())
 		{
 			// SMTP user
-		final String emailUser = user.getEMailUser();
-		if(Check.isEmpty(emailUser, true))
-		{
+			final String emailUser = user.getEMailUser();
+			if (Check.isEmpty(emailUser, true))
+			{
 				return ITranslatableString.constant("no STMP user configured");
-		}
-			
+			}
+
 			// SMTP password
 			final String emailPassword = user.getEMailUserPW();
 			if (Check.isEmpty(emailPassword, false))
-		{
+			{
 				return ITranslatableString.constant("STMP authorization is required but no STMP password configured");
-		}
+			}
 		}
 
 		return null; // OK
@@ -505,5 +506,12 @@ public class UserBL implements IUserBL
 	{
 		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(adUserId);
 		return checkCanSendEMail(user);
-}
+	}
+
+	@Override
+	public UserNotificationsConfig getUserNotificationsConfig(final int adUserId)
+	{
+		return Services.get(IUserDAO.class).getUserNotificationsConfig(adUserId);
+	}
+
 }
