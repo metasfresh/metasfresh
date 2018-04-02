@@ -20,6 +20,11 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResult;
 import de.metas.product.IProductBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -78,6 +83,18 @@ public class PurchaseRowFactory
 
 		final int processedPurchaseCandidateId = purchaseCandidate.isProcessed() ? purchaseCandidate.getPurchaseCandidateId() : 0;
 
+		final AvailableToPromiseQueryBuilder atpQueryBuilder = AvailableToPromiseQuery.builder();
+
+		atpQueryBuilder.productId(purchaseCandidate.getProductId());
+		atpQueryBuilder.bpartnerId(bpartnerId);
+		atpQueryBuilder.date(datePromised);
+
+		final AvailableToPromiseResult availableStockResult = new AvailableToPromiseRepository().retrieveAvailableStock(atpQueryBuilder.build());
+
+		availableStockResult.getResultGroups().get(0).getQty();
+
+		final BigDecimal availableQty = availableStockResult.getResultGroups().get(0).getQty();
+
 		return PurchaseRow.builder()
 				.rowId(PurchaseRowId.lineId(
 						purchaseCandidate.getSalesOrderLineId(),
@@ -91,6 +108,7 @@ public class PurchaseRowFactory
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				.datePromised(datePromised)
 				.vendorBPartner(vendorBPartner)
+				.availableQty(availableQty)
 				.purchaseCandidateId(purchaseCandidate.getPurchaseCandidateId())
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
@@ -104,12 +122,20 @@ public class PurchaseRowFactory
 		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
 		final String uom = createUOMLookupValueForProductId(product.getKeyAsInt());
 
+		final AvailableToPromiseQueryBuilder atpQueryBuilder = AvailableToPromiseQuery.builder();
+
+		atpQueryBuilder.productId(salesOrderLine.getM_Product_ID());
+		atpQueryBuilder.date(salesOrderLine.getDatePromised());
+
+		final BigDecimal availableQty = new AvailableToPromiseRepository().retrieveAvailableStockQtySum(AvailableToPromiseMultiQuery.of(atpQueryBuilder.build()));
+
 		final PurchaseRow groupRow = PurchaseRow.builder()
 				.rowId(PurchaseRowId.groupId(salesOrderLine.getC_OrderLine_ID()))
 				.salesOrderId(salesOrderLine.getC_Order_ID())
 				.rowType(PurchaseRowType.GROUP)
 				.product(product)
 				.uomOrAvailablility(uom)
+				.availableQty(availableQty)
 				.qtyToDeliver(qtyToDeliver)
 				.datePromised(salesOrderLine.getDatePromised())
 				.orgId(salesOrderLine.getAD_Org_ID())
