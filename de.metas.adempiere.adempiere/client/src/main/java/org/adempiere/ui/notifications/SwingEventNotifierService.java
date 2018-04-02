@@ -24,20 +24,15 @@ package org.adempiere.ui.notifications;
 
 
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.event.EventBusConstants;
-import de.metas.event.IEventBusFactory;
-import de.metas.event.Topic;
+import de.metas.logging.LogManager;
 
 /**
  * Service used to manage the event notifier popup (that one that pops up on the bottom-right corner of the screen).
@@ -98,8 +93,7 @@ public final class SwingEventNotifierService
 			}
 			if (frame == null)
 			{
-				final Set<Topic> topicsToSubscribe = Services.get(IEventBusFactory.class).getAvailableUserNotificationsTopics();
-				frame = new SwingEventNotifierFrame(ImmutableSet.copyOf(topicsToSubscribe));
+				frame = new SwingEventNotifierFrame();
 			}
 		}
 		catch (Exception e)
@@ -127,22 +121,6 @@ public final class SwingEventNotifierService
 		catch (Exception e)
 		{
 			logger.warn("Failed disposing the notification frame: " + frame, e);
-		}
-	}
-
-	/**
-	 * Add a topic on which the notifier shall subscribe and display notifications.
-	 * 
-	 * @param topicName
-	 * @deprecated Please use {@link IEventBusFactory#addAvailableUserNotificationsTopic(Topic)}
-	 */
-	@Deprecated
-	public synchronized void addTopicToSubscribe(final Topic topic)
-	{
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(topic);
-		if (frame != null)
-		{
-			frame.addTopicToSubscribe(topic);
 		}
 	}
 
