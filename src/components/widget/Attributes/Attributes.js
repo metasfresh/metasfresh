@@ -245,4 +245,5 @@ export default class Attributes extends Component {
 Attributes.propTypes = {
   patch: PropTypes.func.isRequired,
   handleBackdropLock: PropTypes.func,
+  isModal: PropTypes.bool,
 };

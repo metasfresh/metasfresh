@@ -62,6 +62,7 @@ class AttributesDropdown extends Component {
       attrId,
       disableOnClickOutside,
       enableOnClickOutside,
+      isModal,
     } = this.props;
 
     if (layout) {
@@ -83,6 +84,7 @@ class AttributesDropdown extends Component {
             disableOnClickOutside={disableOnClickOutside}
             enableOnClickOutside={enableOnClickOutside}
             tabIndex={tabIndex}
+            isModal={isModal}
           />
         );
       });
@@ -100,6 +102,7 @@ class AttributesDropdown extends Component {
 
 AttributesDropdown.propTypes = {
   tabIndex: PropTypes.number,
+  isModal: PropTypes.bool,
   data: PropTypes.object.isRequired,
   attributeType: PropTypes.string.isRequired,
   handleChange: PropTypes.func.isRequired,
