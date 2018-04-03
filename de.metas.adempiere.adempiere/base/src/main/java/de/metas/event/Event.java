@@ -327,6 +327,23 @@ public final class Event
 			detailADMessage = adMessage;
 			return this;
 		}
+		
+		public Builder setDetailADMessage(final String adMessage, final List<Object> params)
+		{
+			if (params != null && !params.isEmpty())
+			{
+				for (int i = 0, size = params.size(); i < size; i++)
+				{
+					final String parameterName = String.valueOf(i);
+					final Object parameterValue = params.get(i);
+					putPropertyFromObject(parameterName, parameterValue);
+				}
+			}
+
+			detailADMessage = adMessage;
+			return this;
+		}
+
 
 		private String getDetailADMessage()
 		{
