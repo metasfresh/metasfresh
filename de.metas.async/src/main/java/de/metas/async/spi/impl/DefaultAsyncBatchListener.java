@@ -24,6 +24,8 @@ import de.metas.notification.INotificationBL;
  */
 public class DefaultAsyncBatchListener implements IAsyncBatchListener
 {
+	private static final String MSG_ASYNC_PROCESSED = "Notice_Async_Processed";
+
 	@Override
 	public void createNotice(final I_C_Async_Batch asyncBatch)
 	{
@@ -34,7 +36,9 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 		
 		if (IAsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT.equals(asyncBatchType.getInternalName()))
 		{
-			final String msg = Services.get(IMsgBL.class).getMsg(ctx, "Notice_Async_Processed", new Object[] { asyncBatch.getName() });
+			// TODO: use entirely the user notifications API
+			
+			final String msg = Services.get(IMsgBL.class).getMsg(ctx, MSG_ASYNC_PROCESSED, new Object[] { asyncBatch.getName() });
 
 			if (asyncBatchType.isSendNotification())
 			{
@@ -44,15 +48,13 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 				note.setAD_Table_ID(AD_Table_ID);
 				note.setRecord(AD_Table_ID, asyncBatch.getC_Async_Batch_ID());
 				note.saveEx();
-			}
-			
+			}			
 			if (asyncBatchType.isSendMail())
 			{
 				final int recipientUserId = asyncBatch.getCreatedBy();
 				final int AD_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(I_C_Async_Batch.Table_Name);
 				Services.get(INotificationBL.class).notifyUser(recipientUserId, msg, msg, TableRecordReference.of(AD_Table_ID, asyncBatch.getC_Async_Batch_ID()));
-			}
-			
+			}			
 		}
 	}
 
