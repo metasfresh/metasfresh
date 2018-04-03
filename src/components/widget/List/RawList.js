@@ -149,7 +149,7 @@ class RawList extends PureComponent {
       // was clicked and we skip over it
       if (
         target.classList &&
-        e.target.classList.contains('input-dropdown-list')
+        target.classList.contains('input-dropdown-list')
       ) {
         return;
       }
