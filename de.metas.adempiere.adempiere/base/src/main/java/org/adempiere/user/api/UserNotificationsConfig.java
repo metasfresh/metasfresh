@@ -5,9 +5,12 @@ import java.util.Map;
 
 import org.adempiere.util.Check;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -41,13 +44,15 @@ public class UserNotificationsConfig
 	private int adClientId;
 	private int adOrgId;
 
+	@Getter(AccessLevel.NONE)
+	private final ImmutableList<UserNotificationsGroup> userNotificationGroups; // needed for toBuilder()
 	private Map<NotificationGroupName, UserNotificationsGroup> userNotificationGroupsByInternalName;
 	private final UserNotificationsGroup defaults;
 
 	private String email;
 	private int userInChargeId;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private UserNotificationsConfig(
 			final int adUserId,
 			final int adClientId,
@@ -63,6 +68,7 @@ public class UserNotificationsConfig
 		this.adUserId = adUserId;
 		this.adOrgId = adOrgId >= 0 ? adOrgId : 0;
 
+		this.userNotificationGroups = ImmutableList.copyOf(userNotificationGroups);
 		this.userNotificationGroupsByInternalName = Maps.uniqueIndex(userNotificationGroups, UserNotificationsGroup::getGroupInternalName);
 		this.defaults = defaults;
 
