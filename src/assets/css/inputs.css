@@ -300,7 +300,7 @@ input:checked + .input-slider:before {
     display: inline-block;
 
     &.input-mandatory {
-        border-bottom: 2px solid $brand-mandatory-color !important;
+        border: 2px solid $brand-mandatory-color !important;
     }
 }
 
