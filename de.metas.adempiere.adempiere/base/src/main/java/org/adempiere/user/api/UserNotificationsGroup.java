@@ -34,7 +34,12 @@ import lombok.Value;
 @Value
 public class UserNotificationsGroup
 {
-	public static NotificationGroupName DEFAULT_GroupInternalName = NotificationGroupName.of("default");
+	public static final UserNotificationsGroupBuilder prepareDefault()
+	{
+		return builder().groupInternalName(DEFAULT_GroupInternalName);
+	}
+
+	private static NotificationGroupName DEFAULT_GroupInternalName = NotificationGroupName.of("default");
 
 	private final NotificationGroupName groupInternalName;
 	private final Set<NotificationType> notificationTypes;

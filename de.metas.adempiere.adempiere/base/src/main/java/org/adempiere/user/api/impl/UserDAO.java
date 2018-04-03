@@ -266,8 +266,7 @@ public class UserDAO implements IUserDAO
 				.collect(ImmutableList.toImmutableList());
 
 		final I_AD_User user = retrieveUser(adUserId);
-		final UserNotificationsGroup defaults = UserNotificationsGroup.builder()
-				.groupInternalName(UserNotificationsGroup.DEFAULT_GroupInternalName)
+		final UserNotificationsGroup defaults = UserNotificationsGroup.prepareDefault()
 				.notificationTypes(toNotificationTypes(user.getNotificationType()))
 				.build();
 
