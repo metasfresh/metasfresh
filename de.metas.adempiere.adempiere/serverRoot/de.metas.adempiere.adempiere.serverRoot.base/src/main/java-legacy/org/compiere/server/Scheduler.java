@@ -678,8 +678,7 @@ public class Scheduler extends AdempiereServer
 			final int supervisorId = m_model.getSupervisor_ID();
 			if (supervisorId > 0)
 			{
-				final I_AD_User recipient = userDAO.retrieveUserOrNull(ctx, supervisorId);
-				notificationBL.notifyUser(recipient, MSG_PROCESS_RUN_ERROR, summary + " " + logInfo,
+				notificationBL.notifyUser(supervisorId, MSG_PROCESS_RUN_ERROR, summary + " " + logInfo,
 						new TableRecordReference(AD_Table_ID, Record_ID));
 			}
 		}
@@ -690,8 +689,7 @@ public class Scheduler extends AdempiereServer
 			{
 				for (int i = 0; i < userIDs.length; i++)
 				{
-					final I_AD_User recipient = userDAO.retrieveUserOrNull(ctx, userIDs[i]);
-					notificationBL.notifyUser(recipient, MSG_PROCESS_OK, summary + " " + logInfo,
+					notificationBL.notifyUser(userIDs[i], MSG_PROCESS_OK, summary + " " + logInfo,
 							new TableRecordReference(AD_Table_ID, Record_ID));
 				}
 			}

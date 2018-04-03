@@ -149,10 +149,8 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 						return null;
 					//
 
-					Check.assume(asyncBatch.getCreatedBy() > 0, "CreatedBy is not null!!!");
-					final I_AD_User to = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, trxName);
-
-					notificationBL.notifyUser(to, text.getSubject(), message, TableRecordReference.of(asyncBatch));
+					Check.assume(asyncBatch.getCreatedBy() > 0, "CreatedBy > 0");
+					notificationBL.notifyUser(asyncBatch.getCreatedBy(), text.getSubject(), message, TableRecordReference.of(asyncBatch));
 
 					return null;
 				}

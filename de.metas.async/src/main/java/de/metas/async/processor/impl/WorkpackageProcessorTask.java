@@ -526,7 +526,7 @@ import de.metas.notification.INotificationBL;
 				.registerHandlingMethod(innerTrx -> {
 					final I_C_Queue_WorkPackage wpReloaded = loadOutOfTrx(workPackageId, I_C_Queue_WorkPackage.class);
 					notificationBL.notifyUser(
-							wpReloaded.getAD_User_InCharge(),
+							wpReloaded.getAD_User_InCharge_ID(),
 							MSG_PROCESSING_ERROR_NOTIFICATION_TITLE,
 							msgBL.getMsg(Env.getCtx(),
 									MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,

@@ -6,13 +6,11 @@ package de.metas.async.spi.impl;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.MNote;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
@@ -50,9 +48,9 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 			
 			if (asyncBatchType.isSendMail())
 			{
-				final I_AD_User recipient = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, ITrx.TRXNAME_None);
+				final int recipientUserId = asyncBatch.getCreatedBy();
 				final int AD_Table_ID = Services.get(IADTableDAO.class).retrieveTableId(I_C_Async_Batch.Table_Name);
-				Services.get(INotificationBL.class).notifyUser(recipient, msg, msg, new TableRecordReference(AD_Table_ID, asyncBatch.getC_Async_Batch_ID()));
+				Services.get(INotificationBL.class).notifyUser(recipientUserId, msg, msg, TableRecordReference.of(AD_Table_ID, asyncBatch.getC_Async_Batch_ID()));
 			}
 			
 		}

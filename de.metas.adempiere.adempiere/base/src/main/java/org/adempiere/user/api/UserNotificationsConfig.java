@@ -38,24 +38,55 @@ import lombok.Value;
 public class UserNotificationsConfig
 {
 	private int adUserId;
+	private int adClientId;
+	private int adOrgId;
+
 	private Map<NotificationGroupName, UserNotificationsGroup> userNotificationGroupsByInternalName;
 	private final UserNotificationsGroup defaults;
 
+	private String email;
 	private int userInChargeId;
 
 	@Builder
 	private UserNotificationsConfig(
 			final int adUserId,
+			final int adClientId,
+			final int adOrgId,
 			@NonNull @Singular final List<UserNotificationsGroup> userNotificationGroups,
 			@NonNull final UserNotificationsGroup defaults,
+			final String email,
 			final int userInChargeId)
 	{
 		Check.assumeGreaterOrEqualToZero(adUserId, "adUserId");
 
+		this.adClientId = adClientId >= 0 ? adClientId : 0;
 		this.adUserId = adUserId;
+		this.adOrgId = adOrgId >= 0 ? adOrgId : 0;
+
 		this.userNotificationGroupsByInternalName = Maps.uniqueIndex(userNotificationGroups, UserNotificationsGroup::getGroupInternalName);
 		this.defaults = defaults;
+
+		this.email = Check.isEmpty(email, true) ? null : email.trim();
 		this.userInChargeId = userInChargeId > 0 ? userInChargeId : -1;
 	}
 
+	public boolean isUserInChargeSet()
+	{
+		return userInChargeId > 0;
+	}
+
+	public boolean isNotifyUserInCharge()
+	{
+		return defaults.isNotifyUserInCharge();
+	}
+
+	public boolean isNotifyByEMail()
+	{
+		return defaults.isNotifyByEMail();
+	}
+
+	public boolean isNotifyByInternalMessage()
+	{
+		return defaults.isNotifyByInternalMessage();
+	}
 }

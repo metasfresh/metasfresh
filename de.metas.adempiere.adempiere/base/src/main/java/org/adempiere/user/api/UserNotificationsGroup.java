@@ -47,4 +47,19 @@ public class UserNotificationsGroup
 		this.groupInternalName = groupInternalName;
 		this.notificationTypes = ImmutableSet.copyOf(notificationTypes);
 	}
+
+	public boolean isNotifyUserInCharge()
+	{
+		return notificationTypes.contains(NotificationType.NotifyUserInCharge);
+	}
+
+	public boolean isNotifyByEMail()
+	{
+		return notificationTypes.contains(NotificationType.EMail);
+	}
+
+	public boolean isNotifyByInternalMessage()
+	{
+		return notificationTypes.contains(NotificationType.Notice);
+	}
 }
