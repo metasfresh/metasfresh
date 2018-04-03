@@ -1,5 +1,6 @@
 package de.metas.i18n;
 
+import java.util.List;
 import java.util.Map;
 
 /*
@@ -60,6 +61,8 @@ public interface IMsgBL extends ISingletonService
 	 * @return translated text
 	 */
 	String getMsg(Properties ctx, String adMessage, Object[] params);
+	
+	String getMsg(final String adMessage, final List<Object> params);
 
 	/**
 	 * Get translated text message for AD_Message
