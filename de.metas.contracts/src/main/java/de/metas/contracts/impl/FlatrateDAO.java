@@ -840,7 +840,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	public I_C_Flatrate_Term retrieveAncestorFlatrateTerm(@NonNull final I_C_Flatrate_Term contract)
 	{
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class, contract)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID, contract.getC_Flatrate_Term_ID())

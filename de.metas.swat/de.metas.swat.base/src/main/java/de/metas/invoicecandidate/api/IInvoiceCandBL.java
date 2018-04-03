@@ -464,5 +464,4 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void markInvoiceCandInDisputeForReceiptLine(I_M_InOutLine inOutLine);
 
-	void markInvoiceCandInDisputeForReceiptLines(List<I_M_InOutLine> lines);
 }
