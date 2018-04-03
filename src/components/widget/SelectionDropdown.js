@@ -155,17 +155,17 @@ export default class SelectionDropdown extends Component {
           navigate(false);
           break;
         case 'Escape':
+          event.preventDefault();
           onCancel();
           break;
         case 'Enter':
+          event.preventDefault();
           onSelect(selected);
           break;
         default:
           return;
       }
     }
-
-    event.preventDefault();
   };
 
   handleKeyUp = () => {
