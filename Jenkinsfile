@@ -32,7 +32,7 @@ Set to false if this build is called from elsewhere and the orchestrating also t
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
 	]),
 	pipelineTriggers([]),
-	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
+	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')) // keep the last 10 builds
 ])
 
 timestamps
