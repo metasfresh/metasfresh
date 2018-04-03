@@ -15,6 +15,8 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Note;
 import org.compiere.util.Env;
 
+import com.google.common.base.Joiner;
+
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
@@ -61,20 +63,10 @@ public class NotificationBL implements INotificationBL
 		final IUserBL userBL = Services.get(IUserBL.class);
 		final UserNotificationsConfig notificationsConfig = userBL.getUserNotificationsConfig(recipientUserId);
 
-		// task 09833
-		// Provide more specific information to the user, in case there exists a notification context provider
-		final String specificInfo = ctxProviders.getTextMessageIfApplies(referencedRecord).orNull();
-		final StringBuilder detailedMsgText = new StringBuilder();
-		detailedMsgText.append(messageText);
-		if (specificInfo != null)
-		{
-			if (!messageText.isEmpty())
-			{
-				detailedMsgText.append(" ");
-			}
-			detailedMsgText.append(specificInfo);
-		}
-		final String messageToUse = detailedMsgText.toString();
+		final String messageToUse = Joiner.on(" ")
+				.skipNulls()
+				.join(Check.isEmpty(messageText, true) ? null : messageText.trim(),
+						getTextMessageOrNull(referencedRecord));
 
 		notifyUser0(notificationsConfig, adMessage, messageToUse, referencedRecord);
 
@@ -100,7 +92,7 @@ public class NotificationBL implements INotificationBL
 			{
 				sendMail(notificationsConfig, adMessage, messageText, referencedRecord);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				final String messageText2 = "An attempt to mail the following text failed with " + e.getClass() + ": " + e.getLocalizedMessage() + ":\n"
 						+ messageText;
@@ -138,16 +130,19 @@ public class NotificationBL implements INotificationBL
 			final ITableRecordReference referencedRecord)
 	{
 		final IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
-
-		final int adMessageID = msgDAO.retrieveIdByValue(Env.getCtx(), adMessage);
+		final int adMessageId = msgDAO.retrieveIdByValue(Env.getCtx(), adMessage);
 
 		final I_AD_Note note = InterfaceWrapperHelper.newInstance(I_AD_Note.class);
 		note.setAD_User_ID(userNotificationsConfig.getAdUserId());
-		note.setAD_Message_ID(adMessageID);
+		note.setAD_Message_ID(adMessageId);
 		note.setAD_Org_ID(userNotificationsConfig.getAdOrgId());
 		note.setTextMsg(messageText);
-		note.setAD_Table_ID(referencedRecord.getAD_Table_ID());
-		note.setRecord_ID(referencedRecord.getRecord_ID());
+
+		if (referencedRecord != null)
+		{
+			note.setAD_Table_ID(referencedRecord.getAD_Table_ID());
+			note.setRecord_ID(referencedRecord.getRecord_ID());
+		}
 
 		InterfaceWrapperHelper.save(note);
 	}
@@ -186,6 +181,18 @@ public class NotificationBL implements INotificationBL
 
 		final EMail mail = mailBL.createEMail(ctx, mailBox, userNotificationsConfig.getEmail(), subject, mailBody.toString(), false);
 		mailBL.send(mail);
+	}
+
+	private String getTextMessageOrNull(final ITableRecordReference referencedRecord)
+	{
+		if (referencedRecord == null)
+		{
+			return null;
+		}
+
+		// Provide more specific information to the user, in case there exists a notification context provider (task 09833)
+		final String referencedRecordAsString = ctxProviders.getTextMessageIfApplies(referencedRecord).orNull();
+		return Check.isEmpty(referencedRecordAsString, true) ? null : referencedRecordAsString;
 	}
 
 	@Override
