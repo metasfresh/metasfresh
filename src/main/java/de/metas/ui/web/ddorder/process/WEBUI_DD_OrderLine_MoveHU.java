@@ -2,14 +2,19 @@ package de.metas.ui.web.ddorder.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.util.List;
+
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.model.I_DD_OrderLine;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
+import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -19,6 +24,7 @@ import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 
 /*
  * #%L
@@ -79,6 +85,23 @@ public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implemen
 		{
 			final IViewRow row = getSingleSelectedRow();
 			return row.getFieldJsonValueAsInt(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, -1);
+		}
+		else if (PARAM_M_HU_ID.equals(parameterName))
+		{
+			final int ddOrderLineId = getSingleSelectedRow().getId().toInt();
+			
+			final List<Integer> huIds = Services.get(IHUDDOrderDAO.class).retrieveHUIdsScheduledToMove(getCtx(), ImmutableSet.of(ddOrderLineId));
+		
+			if(Check.isEmpty(huIds))
+			{
+				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+			}
+			
+			final int huId = huIds.get(0);
+			final I_M_HU hu = load(huId, I_M_HU.class);
+			
+			return IntegerLookupValue.of(huIds.get(0), hu.getValue());
+		
 		}
 		else
 		{

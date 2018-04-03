@@ -21,14 +21,14 @@ package de.metas.ui.web.picking.pickingslot;
  * #L%
  */
 
-import java.util.List;
+import java.util.Set;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.picking.model.I_M_PickingSlot;
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -39,22 +39,13 @@ import lombok.Value;
  *
  */
 @Value
-@Builder
 public class PickingSlotRepoQuery
 {
+	@VisibleForTesting
 	public static PickingSlotRepoQuery of(final int shipmentScheduleId)
 	{
-		return builder().shipmentScheduleId(shipmentScheduleId).build();
+		return builder().currentShipmentScheduleId(shipmentScheduleId).shipmentScheduleId(shipmentScheduleId).build();
 	}
-
-	public static PickingSlotRepoQuery of(final List<Integer> shipmentScheduleIds)
-	{
-		return builder().shipmentScheduleIds(shipmentScheduleIds).build();
-	}
-
-	@NonNull
-	@Singular
-	ImmutableList<Integer> shipmentScheduleIds;
 
 	public enum PickingCandidate
 	{
@@ -79,11 +70,27 @@ public class PickingSlotRepoQuery
 		ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM,
 	}
 
-	/**
-	 * Optional; a <code>null</code> value means "return both with and without"
-	 */
-	@Default
-	PickingCandidate pickingCandidates = PickingCandidate.ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM;
-	
+	int currentShipmentScheduleId;
+	ImmutableSet<Integer> shipmentScheduleIds;
+	PickingCandidate pickingCandidates;
 	String pickingSlotBarcode;
+
+	@Builder
+	private PickingSlotRepoQuery(
+			final int currentShipmentScheduleId,
+			@Singular final Set<Integer> shipmentScheduleIds,
+			final PickingCandidate pickingCandidates,
+			final String pickingSlotBarcode)
+	{
+		if (currentShipmentScheduleId > 0 && !shipmentScheduleIds.contains(currentShipmentScheduleId))
+		{
+			throw new IllegalArgumentException("Current shipment schedule " + currentShipmentScheduleId + " is not in all shipment schedules list: " + shipmentScheduleIds);
+		}
+
+		this.currentShipmentScheduleId = currentShipmentScheduleId;
+		this.shipmentScheduleIds = ImmutableSet.copyOf(shipmentScheduleIds);
+		this.pickingCandidates = pickingCandidates != null ? pickingCandidates : PickingCandidate.ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM;
+		this.pickingSlotBarcode = pickingSlotBarcode;
+	}
+
 }

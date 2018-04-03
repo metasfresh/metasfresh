@@ -195,9 +195,11 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@NonNull final I_M_HU hu,
 			final int topLevelHUId)
 	{
-		final boolean aggregatedTU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
+		// final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		final String huUnitTypeCode = hu.getM_HU_PI_Version().getHU_UnitType();
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final boolean aggregatedTU = handlingUnitsBL.isAggregateHU(hu);
+		final String huUnitTypeCode = handlingUnitsBL.getHU_UnitType(hu);
 		final HUEditorRowType huRecordType;
 		if (aggregatedTU)
 		{
@@ -258,7 +260,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final int topLevelHUIdEffective = topLevelHUId > 0 ? topLevelHUId : huId;
 		if (aggregatedTU)
 		{
-			final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+			final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 			storageFactory
 					.getStorage(hu)
 					.getProductStorages()
@@ -278,7 +280,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeCode))
 		{
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-			final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+			final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 			handlingUnitsDAO.retrieveIncludedHUs(hu)
 					.stream()
 					.map(includedVHU -> storageFactory.getStorage(includedVHU))
@@ -295,7 +297,12 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			throw new HUException("Unknown HU_UnitType=" + huUnitTypeCode + " for " + hu);
 		}
 
-		return huEditorRow.build();
+		final HUEditorRow huEditorRowBuilt = huEditorRow.build();
+
+		// stopwatch.stop();
+		// System.out.println("createHUEditorRow: created " + huEditorRowBuilt + " in " + stopwatch);
+
+		return huEditorRowBuilt;
 	}
 
 	private static final String extractPackingInfo(final I_M_HU hu, final HUEditorRowType huUnitType)
@@ -343,12 +350,14 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@NonNull final IHUProductStorage huStorage,
 			final boolean processed)
 	{
+		// final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		final I_M_HU hu = huStorage.getM_HU();
 		final int huId = hu.getM_HU_ID();
 		final I_M_Product product = huStorage.getM_Product();
 		final HUEditorRowAttributesProvider attributesProviderEffective = huId != parent_HU_ID ? attributesProvider : null;
 
-		return HUEditorRow.builder(windowId)
+		final HUEditorRow huEditorRow = HUEditorRow.builder(windowId)
 				.setRowId(HUEditorRowId.ofHUStorage(huId, topLevelHUId, product.getM_Product_ID()))
 				.setType(HUEditorRowType.HUStorage)
 				.setTopLevel(false)
@@ -365,6 +374,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setQtyCU(huStorage.getQty())
 				//
 				.build();
+
+		// System.out.println("createHUEditorRow: created " + huEditorRow + " (storage) in " + stopwatch);
+		return huEditorRow;
 	}
 
 	private static JSONLookupValue createHUStatusLookupValue(final I_M_HU hu)
