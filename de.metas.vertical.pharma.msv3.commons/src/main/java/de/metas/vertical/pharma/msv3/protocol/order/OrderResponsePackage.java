@@ -64,7 +64,7 @@ public class OrderResponsePackage
 			@JsonProperty("orderType") @NonNull final OrderType orderType,
 			@JsonProperty("orderIdentification") @NonNull final String orderIdentification,
 			@JsonProperty("supportId") @NonNull final SupportIDType supportId,
-			@JsonProperty("packingMaterialId") @NonNull final String packingMaterialId,
+			@JsonProperty("packingMaterialId") final String packingMaterialId,
 			@JsonProperty("items") @NonNull @Singular final List<OrderResponsePackageItem> items)
 	{
 		this.id = id;

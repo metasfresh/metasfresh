@@ -397,6 +397,34 @@ public final class Check
 		assume(cond, exceptionClass, assumptionMessage, params);
 	}
 
+	public static int assumeGreaterThanZero(final int valueInt, final String valueName)
+	{
+		if (valueInt <= 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " > 0 but it was " + valueInt);
+		}
+		return valueInt;
+	}
+
+	public static int assumeGreaterOrEqualToZero(final int valueInt, final String valueName)
+	{
+		if (valueInt < 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " >= 0 but it was " + valueInt);
+		}
+		return valueInt;
+	}
+
+	public static BigDecimal assumeGreaterOrEqualToZero(final BigDecimal valueBD, final String valueName)
+	{
+		assumeNotNull(valueName, "" + valueName + " is not null");
+		if (valueBD == null || valueBD.signum() < 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " >= 0 but it was " + valueBD);
+		}
+		return valueBD;
+	}
+
 	/**
 	 * This method similar to {@link #assume(boolean, String, Object...)}, but the message should be formulated in terms of an error message instead of an assumption.
 	 * <p>
@@ -455,7 +483,7 @@ public final class Check
 			throwOrLogEx(exceptionClass, "Error: " + errMsgFormated);
 		}
 	}
-	
+
 	public static void fail(final String errMsg, final Object... params)
 	{
 		final String errMsgFormated = StringUtils.formatMessage(errMsg, params);

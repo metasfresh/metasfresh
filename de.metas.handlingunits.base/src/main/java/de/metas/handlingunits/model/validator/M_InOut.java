@@ -48,8 +48,8 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
-import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptHandler;
+import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -346,7 +346,6 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onReceiptComplete(final de.metas.inout.model.I_M_InOut receipt)
 	{
-
 		if (receipt.isSOTrx())
 		{
 			// nothing in case of shipments
@@ -358,7 +357,9 @@ public class M_InOut
 			return;
 		}
 
-		DistributeAndMoveReceiptHandler.newInstance().onReceiptComplete(receipt);
+		DistributeAndMoveReceiptHandler.builder()
+				.receipt(receipt)
+				.process();
 	}
 
 }

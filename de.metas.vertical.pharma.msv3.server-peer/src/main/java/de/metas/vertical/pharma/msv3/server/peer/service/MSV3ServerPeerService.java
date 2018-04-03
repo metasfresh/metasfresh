@@ -1,19 +1,22 @@
 package de.metas.vertical.pharma.msv3.server.peer.service;
 
+import java.util.Collection;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
-import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
-import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateResponse;
 import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3OrderSyncRequest;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3OrderSyncResponse;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3PeerAuthToken;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ServerRequest;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
 import lombok.NonNull;
 
@@ -44,24 +47,25 @@ public class MSV3ServerPeerService
 {
 	private static final Logger logger = LoggerFactory.getLogger(MSV3ServerPeerService.class);
 
-	private final RabbitTemplate rabbitTemplate;
+	private final AmqpTemplate amqpTemplate;
 	private final MSV3PeerAuthToken msv3PeerAuthToken;
 
 	public MSV3ServerPeerService(
-			final Optional<RabbitTemplate> rabbitTemplate,
+			final Optional<AmqpTemplate> amqpTemplate,
 			final Optional<MSV3PeerAuthToken> msv3PeerAuthToken)
 	{
-		this.rabbitTemplate = rabbitTemplate.orElse(null); // tolerate the case when RabbitMQ is not enabled
+		this.amqpTemplate = amqpTemplate.orElse(null); // tolerate the case when AMQP is not enabled
 		this.msv3PeerAuthToken = msv3PeerAuthToken.orElse(null);
 	}
 
 	private void convertAndSend(final String routingKey, final Object message)
 	{
-		if (rabbitTemplate == null)
+		if (amqpTemplate == null)
 		{
-			throw new IllegalStateException("RabbitMQ is not enabled");
+			throw new IllegalStateException("AMQP is not enabled");
 		}
-		rabbitTemplate.convertAndSend(routingKey, message, this::messagePostProcess);
+		amqpTemplate.convertAndSend(routingKey, message, this::messagePostProcess);
+		logger.trace("AMQP sent to {}: {}", routingKey, message);
 	}
 
 	private Message messagePostProcess(final Message message)
@@ -80,9 +84,16 @@ public class MSV3ServerPeerService
 		logger.info("Requested all data from MSV3 server peer");
 	}
 
-	public void publishUserChangedEvent(@NonNull final MSV3UserChangedEvent event)
+	public void publishUserChangedEvent(@NonNull final MSV3UserChangedBatchEvent event)
 	{
 		convertAndSend(RabbitMQConfig.QUEUENAME_UserChangedEvents, event);
+	}
+
+	public void publishUserChangedEvent(@NonNull final MSV3UserChangedEvent event)
+	{
+		convertAndSend(RabbitMQConfig.QUEUENAME_UserChangedEvents, MSV3UserChangedBatchEvent.builder()
+				.event(event)
+				.build());
 	}
 
 	public void publishStockAvailabilityUpdatedEvent(@NonNull final MSV3StockAvailabilityUpdatedEvent event)
@@ -90,14 +101,33 @@ public class MSV3ServerPeerService
 		convertAndSend(RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent, event);
 	}
 
-	public void publishOrderCreateRequest(final OrderCreateRequest request)
+	public void publishStockAvailabilityUpdatedEvent(@NonNull final MSV3StockAvailability stockAvailability)
 	{
-		convertAndSend(RabbitMQConfig.QUEUENAME_CreateOrderRequestEvents, request);
+		convertAndSend(RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent, MSV3StockAvailabilityUpdatedEvent.builder()
+				.item(stockAvailability)
+				.build());
 	}
 
-	public void publishOrderCreateResponse(@NonNull final OrderCreateResponse response)
+	public void publishStockAvailabilityUpdatedEvent(@NonNull final Collection<MSV3StockAvailability> stockAvailabilities)
 	{
-		convertAndSend(RabbitMQConfig.QUEUENAME_CreateOrderResponseEvents, response);
+		if (stockAvailabilities.isEmpty())
+		{
+			return;
+		}
+
+		convertAndSend(RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent, MSV3StockAvailabilityUpdatedEvent.builder()
+				.items(stockAvailabilities)
+				.build());
+	}
+
+	public void publishSyncOrderRequest(final MSV3OrderSyncRequest request)
+	{
+		convertAndSend(RabbitMQConfig.QUEUENAME_SyncOrderRequestEvents, request);
+	}
+
+	public void publishSyncOrderResponse(@NonNull final MSV3OrderSyncResponse response)
+	{
+		convertAndSend(RabbitMQConfig.QUEUENAME_SyncOrderResponseEvents, response);
 	}
 
 }

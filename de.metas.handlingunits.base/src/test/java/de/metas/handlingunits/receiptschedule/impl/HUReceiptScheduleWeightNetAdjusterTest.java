@@ -148,7 +148,7 @@ public class HUReceiptScheduleWeightNetAdjusterTest extends AbstractRSAllocation
 				.addM_ReceiptSchedules(receiptSchedules);
 		huGenerator.getLUTUConfigurationManager()
 				.setCurrentLUTUConfigurationAndSave(createM_HU_LUTU_Configuration_ForTU(materialItemProductTomato_430));
-		final List<I_M_HU> paloxes = huGenerator.generate();
+		final List<I_M_HU> paloxes = huGenerator.generateWithinOwnTransaction();
 
 		//
 		// Change WeightGross to our generated HUs.

@@ -43,7 +43,7 @@ import lombok.ToString;
  */
 
 @Entity
-@Table(name = "order_header", uniqueConstraints = @UniqueConstraint(name = "order_header_uq", columnNames = { "documentNo", "bpartnerId" }))
+@Table(name = "msv3_order_header", uniqueConstraints = @UniqueConstraint(name = "order_header_uq", columnNames = { "documentNo", "bpartnerId" }))
 @Getter
 @Setter
 @ToString

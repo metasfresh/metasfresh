@@ -10,12 +10,12 @@ package de.metas.contracts.interceptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,7 +48,7 @@ public class C_Flatrate_Transition
 	private static final String MSG_TRANSAITION_ERROR_EXISTING_CO_CONDITIONS_0P = "Transition_Error_Existing_CO_Conditions";
 
 	private static final String MSG_TRANSITION_ERROR_ENDS_WITH_CALENDAR_YEAR = "EndsWithCalendarYear";
-	
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
 	public void disallowNotSupportedDocActions(final I_C_Flatrate_Transition transition)
 	{
@@ -71,7 +71,6 @@ public class C_Flatrate_Transition
 				.setParameters(transition.getC_Flatrate_Transition_ID(), X_C_Flatrate_Conditions.DOCSTATUS_Completed)
 				.setApplyAccessFilter(true)
 				.setOnlyActiveRecords(true)
-				// .setOrderBy(I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID)
 				.match();
 
 		if (hasConditions)
@@ -82,7 +81,7 @@ public class C_Flatrate_Transition
 
 	/**
 	 * In order for the term to end with the calendar year, its duration needs to be one year
-	 * 
+	 *
 	 * @param transition
 	 * @task 03742
 	 */
@@ -97,7 +96,7 @@ public class C_Flatrate_Transition
 			// nothing to do
 			return;
 		}
-		
+
 		/*
 		 * If EndsWithCalendarYear='Y', then the selected C_Calendar_Contract_ID needs to meet the following conditions: for every C_Year of the calendar Length: DatenEnd of the C_Year's last period
 		 * must be one year after DateStart of the C_Year's first period No gaps: For every period A of a given calendar, there must be either another period B with B's StartDate beeing A's EndDate
@@ -106,11 +105,11 @@ public class C_Flatrate_Transition
 		 */
 
 		final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
-		
+
 		final I_C_Calendar calendarContract = transition.getC_Calendar_Contract();
-			
+
 		calendarBL.checkCorrectCalendar(calendarContract);
-		
+
 		final String termDurationUnit = transition.getTermDurationUnit();
 
 		final int termDuration = transition.getTermDuration();

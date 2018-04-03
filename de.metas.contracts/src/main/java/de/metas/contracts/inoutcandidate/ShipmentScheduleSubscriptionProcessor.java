@@ -29,15 +29,14 @@ import java.util.Properties;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.i18n.IMsgBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 
 /**
@@ -82,9 +81,7 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 			final DeliveryLineCandidate inOutLine,
 			final String trxName)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final I_M_ShipmentSchedule sched = inOutLine.getShipmentSchedule();
-		final String iolDeliveryRule = shipmentScheduleBL.getDeliveryRule(sched);
+		final String iolDeliveryRule = inOutLine.getDeliveryRule();
 
 		if (!DELIVERYRULE_MitNaechsterAbolieferung.equals(iolDeliveryRule))
 		{
@@ -100,7 +97,7 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 		if (!atLeastOneSubscription)
 		{
 			candidates.addStatusInfo(inOutLine, Services.get(IMsgBL.class).getMsg(ctx, MSG_WITH_NEXT_SUBSCRIPTION));
-			inOutLine.setDiscarded(true);
+			inOutLine.setDiscarded();
 			return 1;
 		}
 
@@ -131,13 +128,14 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 
 			// find out if 'currentLine' has an open subscription delivery
 			// (which means that it is to be delivered right now)
-			final I_M_ShipmentSchedule sched = inOutLine.getShipmentSchedule();
+			final TableRecordReference scheduleReference = inOutLine.getReferenced();
 
-			if (InterfaceWrapperHelper.getTableId(I_C_SubscriptionProgress.class) == sched.getAD_Table_ID())
+			if(I_C_SubscriptionProgress.Table_Name.equals(scheduleReference.getTableName()))
 			{
-				final I_C_SubscriptionProgress sp = InterfaceWrapperHelper.create(ctx, sched.getRecord_ID(), I_C_SubscriptionProgress.class, trxName);
-				Check.assume(X_C_SubscriptionProgress.STATUS_Open.equals(sp.getStatus()),
-						sp + "referenced by " + sched + " doesn't have status " + sp.getStatus());
+				final I_C_SubscriptionProgress sp = scheduleReference.getModel(PlainContextAware.newWithTrxName(ctx, trxName), I_C_SubscriptionProgress.class);
+				final String status = sp.getStatus();
+				Check.assume(X_C_SubscriptionProgress.STATUS_Open.equals(status),
+						"{} referenced by {} doesn't have status {}", sp, inOutLine, status);
 				atLeastOneSubscription = true;
 				break;
 			}

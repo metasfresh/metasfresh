@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.msv3.server.jpa;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.UUID;
 
 import javax.persistence.GeneratedValue;
@@ -8,6 +8,8 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 
@@ -59,15 +61,18 @@ public abstract class AbstractEntity
 	private final int version = VERSION_INITIAL;
 
 	@Setter(AccessLevel.NONE)
-	private LocalDateTime dateCreated;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateCreated;
+
 	@Setter(AccessLevel.NONE)
-	private LocalDateTime dateUpdated;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateUpdated;
 
 	@PreUpdate
 	@PrePersist
 	public void updateCreatedUpdated()
 	{
-		final LocalDateTime now = LocalDateTime.now();
+		final Date now = new Date();
 		this.dateUpdated = now;
 		if (dateCreated == null)
 		{

@@ -18,6 +18,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
@@ -423,6 +424,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isAggregateHU(I_M_HU hu);
 
+	I_M_HU_PI getPI(I_M_HU hu);
+
+	I_M_HU_PI_Version getPIVersion(I_M_HU hu);
+	
+	I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
+
 	/**
 	 * If the given {@code hu} is a aggregate HU, return the PI version of the HUs that are <i>represented</i> within the aggregate HU.<br>
 	 * Otherwise, return the given {@code hu}'s own/direct PI version.
@@ -440,4 +447,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return
 	 */
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
+
+	I_M_HU_PackingMaterial getHUPackingMaterial(I_M_HU_Item huItem);
 }

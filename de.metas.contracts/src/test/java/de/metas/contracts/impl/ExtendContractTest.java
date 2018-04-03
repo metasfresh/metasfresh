@@ -3,12 +3,14 @@ package de.metas.contracts.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
@@ -27,7 +29,6 @@ import lombok.NonNull;
 
 public class ExtendContractTest extends AbstractFlatrateTermTest
 {
-
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 
 	@Before
@@ -78,7 +79,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	@Test
 	public void extendContractWithExtendingAll_test()
 	{
-		final I_C_Flatrate_Term contract = prepareContractForExtrendingAllTest();
+		final I_C_Flatrate_Term contract = prepareContractForExtrendingAllTest(false);
 
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
 				.AD_PInstance_ID(1)
@@ -112,6 +113,23 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		while (curentContract.getC_FlatrateTerm_Next() != null);
 	}
 
+	@Test
+	public void collisionDetectWhenExtendContractWithExtendingAll_test()
+	{
+		final I_C_Flatrate_Term contract = prepareContractForExtrendingAllTest(true);
+
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(1)
+				.contract(contract)
+				.forceExtend(false)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+
+		assertThatThrownBy(() -> { Services.get(IFlatrateBL.class).extendContract(context); }).isInstanceOf(AdempiereException.class)
+        .hasMessageContaining(FlatrateBL.MSG_INFINITE_LOOP);
+	}
+
 	private I_C_Flatrate_Term prepareContractForTest(final String autoExtension)
 	{
 		prepareBPartner();
@@ -122,7 +140,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		return contract;
 	}
 
-	private I_C_Flatrate_Term prepareContractForExtrendingAllTest()
+	private I_C_Flatrate_Term prepareContractForExtrendingAllTest(final boolean infiniteLoop)
 	{
 		prepareBPartner();
 		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem(startDate);
@@ -164,7 +182,14 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 			}
 			else
 			{
-				transition.setExtensionType(null);
+				if (infiniteLoop)
+				{
+					transition.setC_Flatrate_Conditions_Next(conditions.get(0));
+				}
+				else
+				{
+					transition.setExtensionType(null);
+				}
 			}
 			save(transition);
 		}
@@ -172,6 +197,8 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions.get(0), productAndPricingSystem.getProduct(), startDate);
 		return contract;
 	}
+
+
 
 	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term currentflatrateTerm)
 	{

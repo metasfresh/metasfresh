@@ -29,7 +29,7 @@ import de.metas.inout.model.I_M_InOut;
 /**
  * Intended to be used by InOut creating {@link org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor}s to create both shipments and receipts.
  * <p>
- * Use {@link IInOutCandidateBL#createInOutGenerateResult(boolean)} to get an instance.
+ * Use {@link IInOutCandidateBL#createEmptyInOutGenerateResult(boolean)} to get an instance.
  * 
  */
 public interface InOutGenerateResult

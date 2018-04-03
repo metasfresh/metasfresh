@@ -35,7 +35,7 @@ import lombok.ToString;
  */
 
 @Entity
-@Table(name = "order_package_item")
+@Table(name = "msv3_order_package_item")
 @Getter
 @Setter
 @ToString
@@ -47,5 +47,5 @@ public class JpaOrderPackageItem extends AbstractEntity
 	private long pzn;
 	private int qty;
 	private DeliverySpecifications deliverySpecifications;
-	private int ol_cand_id;
+	private int olCandId;
 }

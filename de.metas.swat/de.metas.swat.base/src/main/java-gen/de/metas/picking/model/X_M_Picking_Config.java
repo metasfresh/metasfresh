@@ -14,7 +14,7 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 431910809L;
+	private static final long serialVersionUID = 1247752507L;
 
     /** Standard Constructor */
     public X_M_Picking_Config (Properties ctx, int M_Picking_Config_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
       /** if (M_Picking_Config_ID == 0)
         {
 			setIsAllowOverdelivery (false); // N
+			setIsAutoProcess (false); // N
 			setM_Picking_Config_ID (0);
 			setWEBUI_PickingTerminal_ViewProfile (null);
         } */
@@ -57,6 +58,29 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
 	public boolean isAllowOverdelivery () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAllowOverdelivery);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsAutoProcess.
+		@param IsAutoProcess IsAutoProcess	  */
+	@Override
+	public void setIsAutoProcess (boolean IsAutoProcess)
+	{
+		set_Value (COLUMNNAME_IsAutoProcess, Boolean.valueOf(IsAutoProcess));
+	}
+
+	/** Get IsAutoProcess.
+		@return IsAutoProcess	  */
+	@Override
+	public boolean isAutoProcess () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAutoProcess);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

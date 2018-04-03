@@ -366,7 +366,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				qty = BigDecimal.ONE;
 			}
 
-			final I_M_HU_PackingMaterial packingMaterial = huItem.getM_HU_PackingMaterial();
+			final I_M_HU_PackingMaterial packingMaterial = handlingUnitsBL.getHUPackingMaterial(huItem);
 
 			packingMaterials.add(ImmutablePair.of(packingMaterial, qty.intValueExact()));
 		}
@@ -782,7 +782,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU hu)
 	{
 		Check.assumeNotNull(hu, "hu not null");
-		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
+		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(hu);
 		final I_C_BPartner bpartner = hu.getC_BPartner();
 		final I_M_HU_PackingMaterial pm = retrievePackingMaterial(piVersion, bpartner);
 		return pm;

@@ -1,11 +1,12 @@
 package de.metas.vertical.pharma.msv3.server.stockAvailability;
 
-import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.AvailabilityType;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
@@ -13,11 +14,6 @@ import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilit
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse.StockAvailabilityResponseBuilder;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItem;
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPart;
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPartType;
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitution;
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitutionReason;
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitutionType;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
@@ -49,6 +45,8 @@ import lombok.NonNull;
 @Service
 public class StockAvailabilityService
 {
+	private static final Logger logger = LoggerFactory.getLogger(StockAvailabilityService.class);
+
 	@Autowired
 	private JpaStockAvailabilityRepository stockAvailabilityRepo;
 
@@ -81,48 +79,61 @@ public class StockAvailabilityService
 		return responseBuilder.build();
 	}
 
-	private StockAvailabilityResponse createMockAnswer(final StockAvailabilityQuery query)
+	public Optional<Quantity> getQtyAvailable(@NonNull final PZN pzn)
 	{
-		return StockAvailabilityResponse.builder()
-				.id(query.getId())
-				.availabilityType(AvailabilityType.SPECIFIC)
-				.items(query.getItems().stream()
-						.map(queryItem -> StockAvailabilityResponseItem.builder()
-								.pzn(queryItem.getPzn())
-								.qty(queryItem.getQtyRequired())
-								.substitution(StockAvailabilitySubstitution.builder()
-										.pzn(PZN.of(queryItem.getPzn().getValueAsLong() * 100 + 9))
-										.reason(StockAvailabilitySubstitutionReason.OUT_OF_TRADE)
-										.type(StockAvailabilitySubstitutionType.PROPOSAL)
-										.build())
-								.part(StockAvailabilityResponseItemPart.builder()
-										.qty(queryItem.getQtyRequired())
-										.type(StockAvailabilityResponseItemPartType.NORMAL)
-										.deliveryDate(LocalDateTime.of(2018, 3, 20, 3, 00))
-										.reason(StockAvailabilitySubstitutionReason.NO_INFO)
-										// .tour(tour)
-										// .tourDeviation(tourDeviation)
-										.build())
-								.build())
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+		final JpaStockAvailability jpaStockAvailability = stockAvailabilityRepo.findByPzn(pzn.getValueAsLong());
+		if (jpaStockAvailability == null)
+		{
+			return Optional.empty();
+		}
+
+		final Quantity qty = Quantity.of(jpaStockAvailability.getQty());
+		return Optional.of(qty);
 	}
 
 	public void handleEvent(@NonNull final MSV3StockAvailabilityUpdatedEvent event)
 	{
-		event.getItems().forEach(this::updateStockAvailability);
-	}
+		final String syncToken = event.getId();
 
-	private void updateStockAvailability(@NonNull final MSV3StockAvailability request)
-	{
-		JpaStockAvailability jpaStockAvailability = stockAvailabilityRepo.findByPzn(request.getPzn());
-		if (jpaStockAvailability == null)
+		//
+		// Update
 		{
-			jpaStockAvailability = new JpaStockAvailability();
-			jpaStockAvailability.setPzn(request.getPzn());
+			final AtomicInteger countUpdated = new AtomicInteger();
+			event.getItems().forEach(eventItem -> {
+				updateStockAvailability(eventItem, syncToken);
+				countUpdated.incrementAndGet();
+			});
+			logger.debug("Updated {} stock availability records", countUpdated);
 		}
 
-		jpaStockAvailability.setQty(request.getQty());
-		stockAvailabilityRepo.save(jpaStockAvailability);
+		//
+		// Delete
+		if (event.isDeleteAllOtherItems())
+		{
+			final long countDeleted = stockAvailabilityRepo.deleteInBatchBySyncTokenNot(syncToken);
+			logger.debug("Deleted {} stock availability records", countDeleted);
+		}
+
+	}
+
+	private void updateStockAvailability(@NonNull final MSV3StockAvailability request, final String syncToken)
+	{
+		if (request.isDelete())
+		{
+			stockAvailabilityRepo.deleteInBatchByPzn(request.getPzn());
+		}
+		else
+		{
+			JpaStockAvailability jpaStockAvailability = stockAvailabilityRepo.findByPzn(request.getPzn());
+			if (jpaStockAvailability == null)
+			{
+				jpaStockAvailability = new JpaStockAvailability();
+				jpaStockAvailability.setPzn(request.getPzn());
+			}
+
+			jpaStockAvailability.setQty(request.getQty());
+			jpaStockAvailability.setSyncToken(syncToken);
+			stockAvailabilityRepo.save(jpaStockAvailability);
+		}
 	}
 }
