@@ -115,6 +115,7 @@
 
     .td-md {
         width: 144px;
+        min-width: 144px;
         max-width: 144px;
     }
 
