@@ -201,7 +201,7 @@ input {
     display: inline-block;
     width: 44px;
     height: 22px;
-    margin-top: .5rem;
+    margin-top: .225rem;
     margin-left: .5rem;
     margin-bottom:0;
 
@@ -742,20 +742,22 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     display: block;
     min-width: 5rem;
     max-width: 10rem;
+
+    &::selection {
+        background-color: none;
+        color: inherit;
+    }
 }
 
 .attributes-in-table {
     padding: .3rem;
     padding-left: .5rem;
-}
 
-.attributes-in-table .tag {
-    padding: .095rem .3rem;
-}
-
-.attributes::selection {
-    background-color: none;
-    color: inherit;
+     .tag {
+        padding: .25rem .3rem .15rem;
+        line-height: 1;
+        font-size: 0.8rem;
+    }
 }
 
 .attributes-dropdown {
@@ -771,34 +773,51 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     align-items: center;
     flex-direction: row;
     flex:1;
-}
 
-.quick-input-container > * {
-    margin:0;
-    flex:2;
-}
+     > * {
+        margin:0;
+        flex:2;
+    }
 
-.quick-input-container .hint {
-    flex:1;
-}
+     .hint {
+        flex:1;
+    }
 
-.quick-input-container > *:first-of-type {
-    flex:4;
+     > *:first-of-type {
+        flex:4;
+    }
 }
 
 
 /* Table inputs */
 
-table .List .input-dropdown-item-title {
-    font-weight: normal;
-}
+table {
+    .List .input-dropdown-item-title {
+        font-weight: normal;
+    }
 
-table .input-secondary .input-icon-right {
-    color: $brand-icon-color;
-}
+    .input-secondary .input-icon-right {
+        color: $brand-icon-color;
+    }
 
-table .input-icon {
-    color: $brand-icon-color;
+    .input-icon {
+        color: $brand-icon-color;
+    }
+
+    .rdtPicker tbody {
+        background-color: white;
+    }
+
+    .rdtPicker td,
+    .rdtPicker th {
+        height: 28px;
+    }
+
+    .rdtPicker table td,
+    .rdtPicker table th {
+        vertical-align: middle;
+        padding: 0;
+    }
 }
 
 .table .rdtPicker thead th {
@@ -812,19 +831,4 @@ table .input-icon {
 
 .table-striped tbody .rdtPicker tr:nth-of-type(odd) {
     background-color: white;
-}
-
-table .rdtPicker tbody {
-    background-color: white;
-}
-
-table .rdtPicker td,
-.rdtPicker th {
-    height: 28px;
-}
-
-table .rdtPicker table td,
-.rdtPicker table th {
-    vertical-align: middle;
-    padding: 0;
 }
