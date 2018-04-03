@@ -17,3 +17,7 @@ dist
 coverage
 
 package-lock.json
+
+test_setup 
+src/__tests__  
+cypress
