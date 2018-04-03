@@ -118,12 +118,13 @@ export default class SelectionDropdown extends Component {
     );
 
     const selectedIndex = items.indexOf(selected);
+    const itemsSize = items.get ? items.size : items.length;
     let selectedNew = null;
 
-    if (selectedIndex > -1 && selectedIndex < items.size - 1) {
-      selectedNew = items.get(selectedIndex + 1);
+    if (selectedIndex > -1 && selectedIndex < itemsSize - 1) {
+      selectedNew = this.get(items, selectedIndex + 1);
     } else {
-      selectedNew = items.get(0);
+      selectedNew = this.get(items, 0);
     }
 
     if (!selectedNew) {
