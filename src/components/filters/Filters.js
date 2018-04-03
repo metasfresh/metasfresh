@@ -197,7 +197,9 @@ class Filters extends Component {
 
     return (
       <div className="filter-wrapper js-not-unselect">
-        <span>{counterpart.translate('window.filters.caption')}: </span>
+        <span className="filter-caption">
+          {`${counterpart.translate('window.filters.caption')}: `}
+        </span>
         <div className="filter-wrapper">
           {!!frequentFilters.length && (
             <FiltersFrequent

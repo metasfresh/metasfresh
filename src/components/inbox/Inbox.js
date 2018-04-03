@@ -66,14 +66,6 @@ class Inbox extends Component {
     deleteUserNotification(item.id).then(() => {});
   };
 
-  componentDidUpdate() {
-    const { open } = this.props;
-    const inboxWrapper = document.getElementsByClassName('js-inbox-wrapper')[0];
-    if (inboxWrapper && open) {
-      inboxWrapper.focus();
-    }
-  }
-
   handleKeyDown = e => {
     const { close } = this.props;
     const inboxItem = document.getElementsByClassName('js-inbox-item')[0];
@@ -86,6 +78,11 @@ class Inbox extends Component {
           }
         }
         break;
+
+      case 'Tab':
+        close && close();
+        break;
+
       case 'Escape':
         e.preventDefault();
         close && close();
@@ -94,12 +91,14 @@ class Inbox extends Component {
   };
 
   render() {
-    const { open, inbox, all, close } = this.props;
+    const { open, inbox, all, close, modalVisible, onFocus } = this.props;
+
     return (
       <div
         className="js-inbox-wrapper"
         onKeyDown={e => this.handleKeyDown(e)}
-        tabIndex={0}
+        onFocus={onFocus}
+        tabIndex={modalVisible ? -1 : 0}
       >
         {(all || open) && (
           <div className={all ? 'inbox-all ' : 'inbox'}>
@@ -150,6 +149,15 @@ class Inbox extends Component {
 
 Inbox.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  open: PropTypes.bool,
+  onFocus: PropTypes.func,
+  modalVisible: PropTypes.bool.isRequired,
 };
 
-export default connect()(onClickOutside(Inbox));
+Inbox.defaultProps = {
+  onFocus: () => {},
+};
+
+export default connect(state => ({
+  modalVisible: state.windowHandler.modal.visible,
+}))(onClickOutside(Inbox));

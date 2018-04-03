@@ -495,6 +495,7 @@ class Header extends Component {
                 <Inbox
                   open={isInboxOpen}
                   close={this.handleInboxOpen}
+                  onFocus={() => this.handleInboxOpen(true)}
                   disableOnClickOutside={!isInboxOpen}
                   inbox={inbox}
                 />

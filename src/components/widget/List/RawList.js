@@ -284,7 +284,7 @@ class RawList extends PureComponent {
             opened: isToggled,
             'input-mandatory': !lookupList && mandatory && !selected,
           })}
-          tabIndex={tabIndex ? tabIndex : 0}
+          tabIndex={tabIndex}
           onFocus={readonly ? null : onFocus}
           onClick={readonly ? null : this.handleClick}
           onKeyDown={this.handleKeyDown}
@@ -377,6 +377,10 @@ RawList.propTypes = {
   onSelect: PropTypes.func.isRequired,
   onOpenDropdown: PropTypes.func.isRequired,
   onCloseDropdown: PropTypes.func.isRequired,
+};
+
+RawList.defaultProps = {
+  tabIndex: -1,
 };
 
 export default onClickOutside(RawList);

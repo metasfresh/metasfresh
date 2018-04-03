@@ -390,6 +390,7 @@ class TableItem extends PureComponent {
 
   render() {
     const {
+      key,
       isSelected,
       fieldsByName,
       cols,
@@ -408,6 +409,7 @@ class TableItem extends PureComponent {
 
     return (
       <tr
+        key={key}
         onClick={onClick}
         onDoubleClick={onDoubleClick}
         className={classnames({

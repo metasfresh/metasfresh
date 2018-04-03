@@ -956,87 +956,81 @@ class Table extends Component {
     return rows
       .filter(row => collapsedRows.indexOf(row[keyProperty]) === -1)
       .map((item, i) => (
-        <tbody key={i}>
-          <TableItem
-            {...item}
-            {...{
-              entity,
-              cols,
-              type,
-              mainTable,
-              indentSupported,
-              selected,
-              docId,
-              tabIndex,
-              readonly,
-              collapsible,
-              viewId,
-            }}
-            collapsed={collapsedParentsRows.indexOf(item[keyProperty]) > -1}
-            odd={i & 1}
-            ref={c => {
-              if (c) {
-                const keyProp = item[keyProperty];
-                this.rowRefs[keyProp] = c.wrappedInstance;
-              }
-            }}
-            rowId={item[keyProperty]}
-            tabId={tabid}
-            onDoubleClick={() =>
-              onDoubleClick && onDoubleClick(item[keyProperty])
+        <TableItem
+          {...item}
+          {...{
+            entity,
+            cols,
+            type,
+            mainTable,
+            indentSupported,
+            selected,
+            docId,
+            tabIndex,
+            readonly,
+            collapsible,
+            viewId,
+          }}
+          key={`${i}-${docId}`}
+          collapsed={collapsedParentsRows.indexOf(item[keyProperty]) > -1}
+          odd={i & 1}
+          ref={c => {
+            if (c) {
+              const keyProp = item[keyProperty];
+              this.rowRefs[keyProp] = c.wrappedInstance;
             }
-            onClick={e => {
-              const selected = this.handleClick(e, keyProperty, item);
+          }}
+          rowId={item[keyProperty]}
+          tabId={tabid}
+          onDoubleClick={() =>
+            onDoubleClick && onDoubleClick(item[keyProperty])
+          }
+          onClick={e => {
+            const selected = this.handleClick(e, keyProperty, item);
 
-              if (openIncludedViewOnSelect) {
-                showIncludedViewOnSelect({
-                  showIncludedView: selected && item.supportIncludedViews,
-                  forceClose: !selected,
-                  windowType: item.supportIncludedViews
-                    ? item.includedView.windowType || item.includedView.windowId
-                    : null,
-                  viewId: item.supportIncludedViews
-                    ? item.includedView.viewId
-                    : '',
-                });
-              }
-            }}
-            handleRightClick={(
+            if (openIncludedViewOnSelect) {
+              showIncludedViewOnSelect({
+                showIncludedView: selected && item.supportIncludedViews,
+                forceClose: !selected,
+                windowType: item.supportIncludedViews
+                  ? item.includedView.windowType || item.includedView.windowId
+                  : null,
+                viewId: item.supportIncludedViews
+                  ? item.includedView.viewId
+                  : '',
+              });
+            }
+          }}
+          handleRightClick={(e, fieldName, supportZoomInto, supportFieldEdit) =>
+            this.handleRightClick(
               e,
+              item[keyProperty],
               fieldName,
-              supportZoomInto,
+              !!supportZoomInto,
               supportFieldEdit
-            ) =>
-              this.handleRightClick(
-                e,
-                item[keyProperty],
-                fieldName,
-                !!supportZoomInto,
-                supportFieldEdit
-              )
-            }
-            changeListenOnTrue={() => this.changeListen(true)}
-            changeListenOnFalse={() => this.changeListen(false)}
-            newRow={i === rows.length - 1 ? newRow : false}
-            isSelected={
-              selected.indexOf(item[keyProperty]) > -1 || selected[0] === 'all'
-            }
-            handleSelect={this.selectRangeProduct}
-            contextType={item.type}
-            caption={item.caption ? item.caption : ''}
-            colspan={item.colspan}
-            notSaved={item.saveStatus && !item.saveStatus.saved}
-            getSizeClass={this.getSizeClass}
-            handleRowCollapse={() =>
-              this.handleRowCollapse(
-                item,
-                collapsedParentsRows.indexOf(item[keyProperty]) > -1
-              )
-            }
-            onItemChange={this.handleItemChange}
-            onCopy={this.handleCopy}
-          />
-        </tbody>
+            )
+          }
+          changeListenOnTrue={() => this.changeListen(true)}
+          changeListenOnFalse={() => this.changeListen(false)}
+          newRow={i === rows.length - 1 ? newRow : false}
+          isSelected={
+            selected.indexOf(item[keyProperty]) > -1 || selected[0] === 'all'
+          }
+          handleSelect={this.selectRangeProduct}
+          contextType={item.type}
+          caption={item.caption ? item.caption : ''}
+          colspan={item.colspan}
+          notSaved={item.saveStatus && !item.saveStatus.saved}
+          getSizeClass={this.getSizeClass}
+          handleRowCollapse={() =>
+            this.handleRowCollapse(
+              item,
+              collapsedParentsRows.indexOf(item[keyProperty]) > -1
+            )
+          }
+          onItemChange={this.handleItemChange}
+          onCopy={this.handleCopy}
+        />
       ));
   };
 
@@ -1191,7 +1185,6 @@ class Table extends Component {
                 }
               )}
               onKeyDown={this.handleKeyDown}
-              tabIndex={tabIndex}
               ref={c => (this.table = c)}
               onCopy={this.handleCopy}
             >
@@ -1209,8 +1202,8 @@ class Table extends Component {
                   deselect={this.deselectAllProducts}
                 />
               </thead>
-              {this.renderTableBody()}
-              <tfoot ref={c => (this.tfoot = c)} tabIndex={tabIndex} />
+              <tbody>{this.renderTableBody()}</tbody>
+              <tfoot ref={c => (this.tfoot = c)} />
             </table>
 
             {this.renderEmptyInfo(rowData, tabid)}
