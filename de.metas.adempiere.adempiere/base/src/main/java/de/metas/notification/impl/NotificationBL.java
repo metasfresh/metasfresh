@@ -1,7 +1,6 @@
 package de.metas.notification.impl;
 
 import java.util.LinkedHashSet;
-import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -14,15 +13,19 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Note;
 import org.compiere.util.Env;
-
-import com.google.common.base.Joiner;
+import org.slf4j.Logger;
 
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
+import de.metas.event.Event;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.spi.INotificationCtxProvider;
 import de.metas.notification.spi.impl.CompositeNotificationCtxProvider;
 import lombok.NonNull;
@@ -51,57 +54,112 @@ import lombok.NonNull;
 
 public class NotificationBL implements INotificationBL
 {
+	private static final Logger logger = LogManager.getLogger(NotificationBL.class);
+
 	private final CompositeNotificationCtxProvider ctxProviders = new CompositeNotificationCtxProvider();
 
+	/** AD_Message to be used when there was no AD_Message provided */
+	private static final String MSG_DEFAULT_NOTICE_SUBJECT = "webui.window.notification.caption";
+
 	@Override
-	public void notifyUser(
-			final int recipientUserId,
-			final String adMessage,
-			final String messageText,
-			final ITableRecordReference referencedRecord)
+	public void notifyUser(@NonNull final UserNotificationRequest request)
 	{
-		final IUserBL userBL = Services.get(IUserBL.class);
-		final UserNotificationsConfig notificationsConfig = userBL.getUserNotificationsConfig(recipientUserId);
+		final UserNotificationRequest requestEffective = request.toBuilder()
+				.notificationsConfig(resolveUserNotificationsConfig(request))
+				.targetRecordDisplayText(resolveTargetRecordDisplayText(request))
+				.build();
 
-		final String messageToUse = Joiner.on(" ")
-				.skipNulls()
-				.join(Check.isEmpty(messageText, true) ? null : messageText.trim(),
-						getTextMessageOrNull(referencedRecord));
+		notifyUser0(requestEffective);
 
-		notifyUser0(notificationsConfig, adMessage, messageToUse, referencedRecord);
-
+		final UserNotificationsConfig notificationsConfig = requestEffective.getNotificationsConfig();
 		if (notificationsConfig.isNotifyUserInCharge() && notificationsConfig.isUserInChargeSet())
 		{
 			final UserNotificationsConfig userInChargeNotificationsConfig = findEffectiveUserInChargeConfig(notificationsConfig);
 			if (notificationsConfig.getAdUserId() != userInChargeNotificationsConfig.getAdUserId())
 			{
-				notifyUser0(userInChargeNotificationsConfig, adMessage, messageText, referencedRecord);
+				notifyUser0(requestEffective.toBuilder()
+						.notificationsConfig(userInChargeNotificationsConfig)
+						.build());
 			}
 		}
 	}
 
-	private void notifyUser0(
-			final UserNotificationsConfig notificationsConfig,
-			final String adMessage,
-			final String messageText,
-			final ITableRecordReference referencedRecord)
+	private UserNotificationsConfig resolveUserNotificationsConfig(final UserNotificationRequest request)
 	{
+		if (request.getNotificationsConfig() != null)
+		{
+			return request.getNotificationsConfig();
+		}
+
+		final IUserBL userBL = Services.get(IUserBL.class);
+		return userBL.getUserNotificationsConfig(request.getRecipientUserId());
+	}
+
+	private String resolveTargetRecordDisplayText(final UserNotificationRequest request)
+	{
+		if (request.getTargetRecord() == null)
+		{
+			return null;
+		}
+		if (!Check.isEmpty(request.getTargetRecordDisplayText()))
+		{
+			return request.getTargetRecordDisplayText();
+		}
+
+		// Provide more specific information to the user, in case there exists a notification context provider (task 09833)
+		final String targetRecordDisplayText = ctxProviders.getTextMessageIfApplies(request.getTargetRecord()).orNull();
+		return Check.isEmpty(targetRecordDisplayText, true) ? null : targetRecordDisplayText;
+	}
+
+	private String extractSubjectText(final UserNotificationRequest request)
+	{
+		if (!Check.isEmpty(request.getSubjectPlain()))
+		{
+			return request.getSubjectPlain();
+		}
+
+		if (!Check.isEmpty(request.getSubjectADMessage()))
+		{
+			return Services.get(IMsgBL.class).getMsg(request.getSubjectADMessage(), request.getSubjectADMessageParams());
+		}
+
+		return "";
+	}
+
+	private String extractContentText(final UserNotificationRequest request)
+	{
+		if (!Check.isEmpty(request.getContentPlain()))
+		{
+			return request.getContentPlain();
+		}
+
+		if (!Check.isEmpty(request.getContentADMessage()))
+		{
+			return Services.get(IMsgBL.class).getMsg(request.getContentADMessage(), request.getContentADMessageParams());
+		}
+
+		return "";
+	}
+
+	private void notifyUser0(final UserNotificationRequest request)
+	{
+		final UserNotificationsConfig notificationsConfig = request.getNotificationsConfig();
 		if (notificationsConfig.isNotifyByEMail())
 		{
 			try
 			{
-				sendMail(notificationsConfig, adMessage, messageText, referencedRecord);
+				sendMail(request);
 			}
-			catch (final Exception e)
+			catch (final Exception ex)
 			{
-				final String messageText2 = "An attempt to mail the following text failed with " + e.getClass() + ": " + e.getLocalizedMessage() + ":\n"
-						+ messageText;
-				createNotice(notificationsConfig, adMessage, messageText2, referencedRecord);
+				logger.warn("Failed sending email for {}. Trying to Send user notification instead.", request, ex);
+				createNotice(request);
 			}
 		}
+
 		if (notificationsConfig.isNotifyByInternalMessage())
 		{
-			createNotice(notificationsConfig, adMessage, messageText, referencedRecord);
+			createNotice(request);
 		}
 	}
 
@@ -123,76 +181,108 @@ public class NotificationBL implements INotificationBL
 		return currentNotificationsConfig;
 	}
 
-	private void createNotice(
-			final UserNotificationsConfig userNotificationsConfig,
-			final String adMessage,
-			final String messageText,
-			final ITableRecordReference referencedRecord)
+	private void createNotice(final UserNotificationRequest request)
+	{
+		final Event event = Event.builder()
+				.setSummary(extractSubjectText(request))
+				.setDetailADMessage(request.getContentADMessage(), request.getContentADMessageParams())
+				.addRecipient_User_ID(request.getRecipientUserId())
+				.setRecord(request.getTargetRecord())
+				.setSuggestedWindowId(request.getTargetADWindowId())
+				.build();
+
+		final Topic topic = null; // TODO: extract topic from request
+		
+		Services.get(IEventBusFactory.class)
+				.getEventBus(topic)
+				.postEvent(event);
+	}
+
+	private void createNotice_OLD(final UserNotificationRequest request)
 	{
 		final IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
-		final int adMessageId = msgDAO.retrieveIdByValue(Env.getCtx(), adMessage);
+		final int adMessageId = msgDAO.retrieveIdByValue(Env.getCtx(), request.getSubjectADMessageOr(MSG_DEFAULT_NOTICE_SUBJECT));
+
+		final UserNotificationsConfig notificationsConfig = request.getNotificationsConfig();
 
 		final I_AD_Note note = InterfaceWrapperHelper.newInstance(I_AD_Note.class);
-		note.setAD_User_ID(userNotificationsConfig.getAdUserId());
+		note.setAD_User_ID(notificationsConfig.getAdUserId());
 		note.setAD_Message_ID(adMessageId);
-		note.setAD_Org_ID(userNotificationsConfig.getAdOrgId());
-		note.setTextMsg(messageText);
+		note.setAD_Org_ID(notificationsConfig.getAdOrgId());
+		note.setTextMsg(extractContentText(request));
 
-		if (referencedRecord != null)
+		final ITableRecordReference targetRecord = request.getTargetRecord();
+		if (targetRecord != null)
 		{
-			note.setAD_Table_ID(referencedRecord.getAD_Table_ID());
-			note.setRecord_ID(referencedRecord.getRecord_ID());
+			note.setAD_Table_ID(targetRecord.getAD_Table_ID());
+			note.setRecord_ID(targetRecord.getRecord_ID());
+			final int targetADWindowId = request.getTargetADWindowId();
+			if (targetADWindowId > 0)
+			{
+				note.setAD_Window_ID(targetADWindowId);
+			}
 		}
 
 		InterfaceWrapperHelper.save(note);
 	}
 
-	private void sendMail(
-			final UserNotificationsConfig userNotificationsConfig,
-			final String adMessage,
-			final String messageText,
-			final ITableRecordReference referencedRecord)
+	private void sendMail(final UserNotificationRequest request)
+	{
+		final UserNotificationsConfig notificationsConfig = request.getNotificationsConfig();
+		final Mailbox mailbox = resolveMailbox(notificationsConfig);
+
+		final String subject = extractSubjectText(request);
+
+		final boolean html = false;
+		final String content = extractMailContent(request);
+
+		final IMailBL mailBL = Services.get(IMailBL.class);
+		final EMail mail = mailBL.createEMail(Env.getCtx(),
+				mailbox,
+				notificationsConfig.getEmail(),
+				subject,
+				content,
+				html);
+		mailBL.send(mail);
+	}
+
+	private Mailbox resolveMailbox(@NonNull final UserNotificationsConfig notificationsConfig)
 	{
 		final IMailBL mailBL = Services.get(IMailBL.class);
 		final IClientDAO clientDAO = Services.get(IClientDAO.class);
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-		final Properties ctx = Env.getCtx();
-		final String subject = msgBL.getMsg(ctx, adMessage);
-
-		final I_AD_Client adClient = clientDAO.retriveClient(ctx, userNotificationsConfig.getAdClientId());
-		final Mailbox mailBox = mailBL.findMailBox(
+		final I_AD_Client adClient = clientDAO.retriveClient(Env.getCtx(), notificationsConfig.getAdClientId());
+		final Mailbox mailbox = mailBL.findMailBox(
 				adClient,
-				userNotificationsConfig.getAdOrgId(),
+				notificationsConfig.getAdOrgId(),
 				0,  // AD_Process_ID
 				null,  // C_DocType - Task FRESH-203 this shall work as before
 				null,  // customType
 				null); // sender
-		Check.assumeNotNull(mailBox, "IMailbox for adClient={}, AD_Org_ID={}", adClient, userNotificationsConfig.getAdOrgId());
-
-		final StringBuilder mailBody = new StringBuilder();
-		mailBody.append("\n" + messageText + "\n");
-
-		if (referencedRecord != null)
-		{
-			mailBody.append(msgBL.parseTranslation(ctx, "@" + referencedRecord.getTableName() + "_ID@: "));
-			mailBody.append(referencedRecord.getRecord_ID());
-		}
-
-		final EMail mail = mailBL.createEMail(ctx, mailBox, userNotificationsConfig.getEmail(), subject, mailBody.toString(), false);
-		mailBL.send(mail);
+		Check.assumeNotNull(mailbox, "IMailbox for adClient={}, AD_Org_ID={}", adClient, notificationsConfig.getAdOrgId());
+		return mailbox;
 	}
 
-	private String getTextMessageOrNull(final ITableRecordReference referencedRecord)
+	private String extractMailContent(final UserNotificationRequest request)
 	{
-		if (referencedRecord == null)
+		final StringBuilder mailBody = new StringBuilder();
+
+		final String messageText = extractContentText(request);
+		if (!Check.isEmpty(messageText))
 		{
-			return null;
+			mailBody.append(messageText);
 		}
 
-		// Provide more specific information to the user, in case there exists a notification context provider (task 09833)
-		final String referencedRecordAsString = ctxProviders.getTextMessageIfApplies(referencedRecord).orNull();
-		return Check.isEmpty(referencedRecordAsString, true) ? null : referencedRecordAsString;
+		final String targetRecordDisplayText = resolveTargetRecordDisplayText(request);
+		if (!Check.isEmpty(targetRecordDisplayText))
+		{
+			if (mailBody.length() > 0)
+			{
+				mailBody.append("\n");
+			}
+			mailBody.append(targetRecordDisplayText);
+		}
+
+		return mailBody.toString();
 	}
 
 	@Override
