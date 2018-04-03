@@ -140,10 +140,20 @@ class RawList extends PureComponent {
     }
   };
 
-  handleClickOutside() {
+  handleClickOutside(e) {
     const { isFocused, onCloseDropdown, onBlur, selected } = this.props;
+    const { target } = e;
 
     if (isFocused) {
+      // if target has the dropdown class it means that scrollbar
+      // was clicked and we skip over it
+      if (
+        target.classList &&
+        e.target.classList.contains('input-dropdown-list')
+      ) {
+        return;
+      }
+
       this.setState(
         {
           selected: selected || null,
