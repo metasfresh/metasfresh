@@ -50,6 +50,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_C_Print_Job_Detail;
@@ -122,11 +123,12 @@ public class C_Print_Job_Instructions
 					.registerHandlingMethod(innerTrx -> {
 						final I_C_Print_Job_Instructions printJobInstructionsReloaded = loadOutOfTrx(printJobInstructionsID, I_C_Print_Job_Instructions.class);
 
-						notificationBL.notifyUser(
-								userToPrintID,
-								MSG_CLIENT_REPORTS_PRINT_ERROR,
-								printJobInstructionsReloaded.getErrorMsg(),
-								TableRecordReference.of(printJobInstructionsReloaded));
+						notificationBL.notifyUser(UserNotificationRequest.builder()
+								.recipientUserId(userToPrintID)
+								.subjectADMessage(MSG_CLIENT_REPORTS_PRINT_ERROR)
+								.contentPlain(printJobInstructionsReloaded.getErrorMsg())
+								.targetRecord(TableRecordReference.of(printJobInstructionsReloaded))
+								.build());
 					});
 		}
 	}
@@ -221,11 +223,12 @@ public class C_Print_Job_Instructions
 									final String statusName = adReferenceDAO.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status);
 									final String timeoutMsg = msgBL.getMsg(ctx, MSG_CLIENT_PRINT_TIMEOUT_DETAILS, new Object[] { printTimeOutSeconds, statusName });
 
-									notificationBL.notifyUser(
-											userToPrintID,
-											MSG_CLIENT_PRINT_TIMEOUT,
-											timeoutMsg,
-											TableRecordReference.of(printJobInstructionsReloaded));
+									notificationBL.notifyUser(UserNotificationRequest.builder()
+											.recipientUserId(userToPrintID)
+											.subjectADMessage(MSG_CLIENT_PRINT_TIMEOUT)
+											.contentPlain(timeoutMsg)
+											.targetRecord(TableRecordReference.of(printJobInstructionsReloaded))
+											.build());
 								}
 								return null;
 							},

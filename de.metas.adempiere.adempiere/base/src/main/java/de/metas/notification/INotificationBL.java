@@ -1,7 +1,6 @@
 package de.metas.notification;
 
 import org.adempiere.util.ISingletonService;
-import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.notification.spi.INotificationCtxProvider;
 
@@ -29,11 +28,7 @@ import de.metas.notification.spi.INotificationCtxProvider;
 
 public interface INotificationBL extends ISingletonService
 {
-	void notifyUser(
-			int recipientUserId,
-			String adMessage,
-			String messageText,
-			ITableRecordReference referencedrecord);
+	void notifyUser(UserNotificationRequest request);
 
 	/**
 	 * This method will be used when a new <{@code INotificationCtxProvider} implementation is registered.

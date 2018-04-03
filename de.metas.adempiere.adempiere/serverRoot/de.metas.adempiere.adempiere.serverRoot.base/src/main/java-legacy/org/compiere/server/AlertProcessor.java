@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 import org.adempiere.impexp.ArrayExcelExporter;
 import org.adempiere.user.api.IUserBL;
@@ -133,13 +134,13 @@ public class AlertProcessor extends AdempiereServer
 		//
 		boolean valid = true;
 		boolean processed = false;
-		ArrayList<File> attachments = new ArrayList<File>();
+		ArrayList<File> attachments = new ArrayList<>();
 		MAlertRule[] rules = alert.getRules(false);
 		for (int i = 0; i < rules.length; i++)
 		{
 			if (i > 0)
 				message.append(Env.NL);
-			String trxName = null;		//	assume r/o
+			final String trxName = null;		//	assume r/o
 
 			MAlertRule rule = rules[i];
 			if (!rule.isValid())
@@ -239,8 +240,8 @@ public class AlertProcessor extends AdempiereServer
 		message.append(Msg.translate(getCtx(), "Date")).append(" : ")
 				.append(df.format(new Timestamp(System.currentTimeMillis())));
 
-		Collection<Integer> users = alert.getRecipientUsers();
-		int countMail = notifyUsers(users, alert.getAlertSubject(), message.toString(), attachments);
+		final Set<Integer> userIds = alert.getRecipientUsers();
+		int countMail = notifyUsers(userIds, alert.getAlertSubject(), message.toString(), attachments);
 
 		m_summary.append(alert.getName()).append(" (EMails+Notes=").append(countMail).append(") - ");
 		return valid;
@@ -248,23 +249,32 @@ public class AlertProcessor extends AdempiereServer
 
 	/**
 	 * Notify users
-	 * @param users AD_User_ID list
+	 * @param userIds AD_User_ID list
 	 * @param subject email subject
 	 * @param message email message
 	 * @param attachments
 	 * @return how many email were sent
 	 */
-	private int notifyUsers(Collection<Integer> users, String subject, String message, Collection<File> attachments)
+	private int notifyUsers(
+			final Set<Integer> userIds,
+			final String subject,
+			final String message,
+			final Collection<File> attachments)
 	{
+		if(userIds.isEmpty())
+		{
+			return 0;
+		}
+		
 		final IUserBL userBL = Services.get(IUserBL.class);
 		final IUserDAO userDAO = Services.get(IUserDAO.class);
 		
 		int countMail = 0;
-		for (int user_id : users)
+		for (final int userId : userIds)
 		{
-			I_AD_User user = userDAO.retrieveUserOrNull(getCtx(), user_id);
+			I_AD_User user = userDAO.retrieveUserOrNull(getCtx(), userId);
 			if (userBL.isNotificationEMail(user)) {
-				if (m_client.sendEMailAttachments (user_id, subject, message, attachments))
+				if (m_client.sendEMailAttachments (userId, subject, message, attachments))
 				{
 					countMail++;
 				}
@@ -277,7 +287,7 @@ public class AlertProcessor extends AdempiereServer
 					
 					// Notice
 					int AD_Message_ID = 52244;  /* TODO - Hardcoded message=notes */
-					MNote note = new MNote(getCtx(), AD_Message_ID, user_id, trx.getTrxName());
+					MNote note = new MNote(getCtx(), AD_Message_ID, userId, trx.getTrxName());
 					note.setClientOrg(m_model.getAD_Client_ID(), m_model.getAD_Org_ID());
 					note.setTextMsg(message);
 					note.saveEx();
@@ -307,7 +317,7 @@ public class AlertProcessor extends AdempiereServer
 	 */
 	private ArrayList<ArrayList<Object>> getData (String sql, String trxName) throws Exception
 	{
-		ArrayList<ArrayList<Object>> data = new ArrayList<ArrayList<Object>>();
+		ArrayList<ArrayList<Object>> data = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		Exception error = null;
@@ -319,8 +329,8 @@ public class AlertProcessor extends AdempiereServer
 			boolean isFirstRow = true;
 			while (rs.next ())
 			{
-				ArrayList<Object> header = (isFirstRow ? new ArrayList<Object>() : null);
-				ArrayList<Object> row = new ArrayList<Object>();
+				ArrayList<Object> header = (isFirstRow ? new ArrayList<>() : null);
+				ArrayList<Object> row = new ArrayList<>();
 				for (int col = 1; col <= meta.getColumnCount(); col++)
 				{
 					if (isFirstRow) {
