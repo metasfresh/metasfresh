@@ -19,25 +19,23 @@ import org.compiere.model.I_C_Invoice;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.slf4j.Logger;
 
-import de.metas.event.Event;
 import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
-import de.metas.event.QueueableForwardingEventBus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 
 /**
  * {@link IEventBus} wrapper implementation tailored for sending events about generated invoices.
@@ -45,12 +43,11 @@ import de.metas.logging.LogManager;
  * @author tsa
  *
  */
-public class InvoiceGeneratedEventBus extends QueueableForwardingEventBus
+public class InvoiceUserNotificationsProducer
 {
-	public static final InvoiceGeneratedEventBus newInstance()
+	public static final InvoiceUserNotificationsProducer newInstance()
 	{
-		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
-		return new InvoiceGeneratedEventBus(eventBus);
+		return new InvoiceUserNotificationsProducer();
 	}
 
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
@@ -58,27 +55,12 @@ public class InvoiceGeneratedEventBus extends QueueableForwardingEventBus
 			.type(Type.REMOTE)
 			.build();
 
-	private static final transient Logger logger = LogManager.getLogger(InvoiceGeneratedEventBus.class);
+	private static final transient Logger logger = LogManager.getLogger(InvoiceUserNotificationsProducer.class);
 
 	private static final String MSG_Event_InvoiceGenerated = "Event_InvoiceGenerated";
 
-	private InvoiceGeneratedEventBus(IEventBus delegate)
+	private InvoiceUserNotificationsProducer()
 	{
-		super(delegate);
-	}
-
-	@Override
-	public InvoiceGeneratedEventBus queueEvents()
-	{
-		super.queueEvents();
-		return this;
-	}
-
-	@Override
-	public InvoiceGeneratedEventBus queueEventsUntilTrxCommit(final String trxName)
-	{
-		super.queueEventsUntilTrxCommit(trxName);
-		return this;
 	}
 
 	/**
@@ -86,7 +68,7 @@ public class InvoiceGeneratedEventBus extends QueueableForwardingEventBus
 	 *
 	 * @param inouts
 	 */
-	public InvoiceGeneratedEventBus notify(final I_C_Invoice invoice, final int recipientUserId)
+	public InvoiceUserNotificationsProducer notifyGenerated(final I_C_Invoice invoice, final int recipientUserId)
 	{
 		if (invoice == null)
 		{
@@ -95,18 +77,17 @@ public class InvoiceGeneratedEventBus extends QueueableForwardingEventBus
 
 		try
 		{
-			final Event event = createInvoiceGeneratedEvent(invoice, recipientUserId);
-			postEvent(event);
+			postNotification(createInvoiceGeneratedEvent(invoice, recipientUserId));
 		}
-		catch (Exception e)
+		catch (final Exception ex)
 		{
-			logger.warn("Failed creating event for invoice " + invoice + ". Ignored.", e);
+			logger.warn("Failed creating event for invoice {}. Ignored.", invoice, ex);
 		}
 
 		return this;
 	}
 
-	private final Event createInvoiceGeneratedEvent(final I_C_Invoice invoice, final int recipientUserId)
+	private final UserNotificationRequest createInvoiceGeneratedEvent(final I_C_Invoice invoice, final int recipientUserId)
 	{
 		Check.assumeNotNull(invoice, "invoice not null");
 
@@ -114,12 +95,26 @@ public class InvoiceGeneratedEventBus extends QueueableForwardingEventBus
 		final String bpValue = bpartner.getValue();
 		final String bpName = bpartner.getName();
 
-		final Event event = Event.builder()
-				.setDetailADMessage(MSG_Event_InvoiceGenerated, TableRecordReference.of(invoice), bpValue, bpName)
-				.addRecipient_User_ID(recipientUserId <= 0 ? invoice.getCreatedBy() : recipientUserId)
-				.setRecord(TableRecordReference.of(invoice))
+		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
+
+		return newUserNotificationRequest()
+				.recipientUserId(recipientUserId <= 0 ? invoice.getCreatedBy() : recipientUserId)
+				.contentADMessage(MSG_Event_InvoiceGenerated)
+				.contentADMessageParam(invoiceRef)
+				.contentADMessageParam(bpValue)
+				.contentADMessageParam(bpName)
+				.targetRecord(invoiceRef)
 				.build();
-		return event;
 	}
 
+	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
+	{
+		return UserNotificationRequest.builder()
+				.topic(EVENTBUS_TOPIC);
+	}
+
+	private void postNotification(final UserNotificationRequest notification)
+	{
+		Services.get(INotificationBL.class).notifyUserAfterCommit(notification);
+	}
 }
