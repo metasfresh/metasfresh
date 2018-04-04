@@ -78,6 +78,10 @@ public class UserNotificationsGroup
 
 	public boolean hasAnyNotificationTypeExceptUserInCharge()
 	{
+		if(notificationTypes.isEmpty())
+		{
+			return false;
+		}
 		return notificationTypes.size() > 1 || !isNotifyUserInCharge();
 	}
 }
