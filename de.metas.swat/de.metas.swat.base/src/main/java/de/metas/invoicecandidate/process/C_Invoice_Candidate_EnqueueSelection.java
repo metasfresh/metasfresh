@@ -51,10 +51,6 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.process.RunOutOfTrx;
 
-/**
- * @author cg
- *
- */
 public class C_Invoice_Candidate_EnqueueSelection extends JavaProcess
 {
 	private static final String MSG_InvoiceCandidate_PerformEnqueuing = "C_InvoiceCandidate_PerformEnqueuing";
@@ -122,7 +118,7 @@ public class C_Invoice_Candidate_EnqueueSelection extends JavaProcess
 		{
 			performEnqueuing = true;
 		}
-		
+
 		// if the enqueuing was not accepted by the user, do nothing
 		if (!performEnqueuing)
 		{
@@ -183,7 +179,7 @@ public class C_Invoice_Candidate_EnqueueSelection extends JavaProcess
 		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter;
 		if(Ini.isClient())
 		{
-			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all 
+			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all
 			userSelectionFilter = getProcessInfo().getQueryFilter();
 		}
 		else

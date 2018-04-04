@@ -46,9 +46,6 @@ import de.metas.tax.model.I_C_VAT_SmallBusiness;
 
 public class TaxDAO implements ITaxDAO
 {
-	private static int noTaxFoundID = 100;
-	private static int noTaxCategoryFoundID = 100;
-
 	@Override
 	@Cached(cacheName = I_C_VAT_SmallBusiness.Table_Name + "#By#C_BPartner_ID#Date")
 	public boolean retrieveIsTaxExempt(
@@ -109,7 +106,7 @@ public class TaxDAO implements ITaxDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Tax.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Tax_ID, noTaxFoundID)
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Tax_ID, C_TAX_ID_NO_TAX_FOUND)
 				.create()
 				.firstOnlyNotNull(I_C_Tax.class);
 	}
@@ -120,7 +117,7 @@ public class TaxDAO implements ITaxDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, noTaxCategoryFoundID)
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, C_TAX_CATEGORY_ID_NO_CATEGORY_FOUND)
 				.create()
 				.firstOnlyNotNull(I_C_TaxCategory.class);
 	}

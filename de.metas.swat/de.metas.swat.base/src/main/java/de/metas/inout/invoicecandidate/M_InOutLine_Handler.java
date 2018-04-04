@@ -1,6 +1,6 @@
 package de.metas.inout.invoicecandidate;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -50,14 +50,16 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -67,6 +69,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -80,9 +83,6 @@ import lombok.NonNull;
 
 /**
  * Creates {@link I_C_Invoice_Candidate}s from {@link I_M_InOutLine}s which do not reference an order line.
- *
- * @author tsa
- *
  */
 public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 {
@@ -123,7 +123,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
+	public InvoiceCandidateGenerateResult createCandidatesFor(@NonNull final InvoiceCandidateGenerateRequest request)
 	{
 		final I_M_InOutLine inOutLine = request.getModel(I_M_InOutLine.class);
 
@@ -132,56 +132,71 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
-	 *
-	 * @param inOutLine
-	 * @return created invoice candidate or <code>null</code> if there was no need to create an invoice candidate
+	 * @return created invoice candidates; might be empty, if there was no need to create any invoice candidate
 	 */
-	private List<I_C_Invoice_Candidate> createCandidatesForInOutLine(final I_M_InOutLine inOutLine)
+	@VisibleForTesting
+	List<I_C_Invoice_Candidate> createCandidatesForInOutLine(@NonNull final I_M_InOutLine inOutLine)
 	{
 		// Don't create any invoice candidate if already created
 		if (inOutLine.isInvoiceCandidate())
 		{
-			return null;
+			return ImmutableList.of();
 		}
+
+		final ImmutableList.Builder<I_C_Invoice_Candidate> createdInvoiceCandidates = ImmutableList.builder();
 
 		if (inOutLine.isPackagingMaterial() && inOutLine.getM_InOut().isSOTrx()) // split only in case of sales
 		{
 			final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-			final List<I_M_InOutLine> allReferencingLines = inOutDAO.retrieveAllReferencingLinesBuilder(inOutLine)
+			final List<I_M_InOutLine> referencingLines = inOutDAO.retrieveAllReferencingLinesBuilder(inOutLine)
+					.addOnlyActiveRecordsFilter()
 					.create()
 					.list(I_M_InOutLine.class);
+			final Multimap<Integer, I_M_InOutLine> paymentTermId2referencingLines = //
+					Multimaps.index(referencingLines, referencingLine -> extractPaymentTermId(referencingLine));
 
-			if (!allReferencingLines.isEmpty())
+			for (final int paymentTermId : paymentTermId2referencingLines.keySet())
 			{
-				// creates multiple ICs which refer the packing material line if the package material line was created from several products
-				return allReferencingLines.stream()
-									.map(refInOutLine -> createInvoiceCandidateAndSetRefPackingInOutLine(inOutLine, refInOutLine))
-									.collect(ImmutableList.toImmutableList());
+				final I_C_Invoice_Candidate ic = createInvoiceCandidateForInOutLineOrNull(inOutLine, paymentTermId);
+				if (ic != null)
+				{
+					createdInvoiceCandidates.add(ic);
+				}
 			}
-
 		}
-
-		return ImmutableList.of(createInvoiceCandidateForInOutLine(inOutLine));
+		else
+		{
+			final int paymentTermId = extractPaymentTermId(inOutLine);
+			final I_C_Invoice_Candidate ic = createInvoiceCandidateForInOutLineOrNull(inOutLine, paymentTermId);
+			if (ic != null)
+			{
+				createdInvoiceCandidates.add(ic);
+			}
+		}
+		return createdInvoiceCandidates.build();
 	}
 
-	/**
-	 * creates the IC for corresponding inout line and set the reference to the initial inout line who generated the packing inout line
-	 * @param inOutLine
-	 * @param refInOutLine
-	 * @return
-	 */
-	private I_C_Invoice_Candidate createInvoiceCandidateAndSetRefPackingInOutLine(@NonNull final I_M_InOutLine inOutLine, @NonNull final I_M_InOutLine refInOutLine)
-	{
-		final I_C_Invoice_Candidate ic = createInvoiceCandidateForInOutLine(inOutLine);
-		ic.setRef_PackingMaterial_InOutLine(refInOutLine);
-		save(ic);
-		return ic;
-	}
-
-	private I_C_Invoice_Candidate createInvoiceCandidateForInOutLine(final I_M_InOutLine inOutLine)
+	private I_C_Invoice_Candidate createInvoiceCandidateForInOutLineOrNull(
+			final I_M_InOutLine inOutLine,
+			final int paymentTermId)
 	{
 		final I_M_InOut inOut = InterfaceWrapperHelper.create(inOutLine.getM_InOut(), I_M_InOut.class);
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class, inOutLine);
+
+		// extractQtyDelivered() depends on the C_PaymentTerm to be set
+		ic.setC_PaymentTerm_ID(paymentTermId);
+
+		TableRecordCacheLocal.setReferencedValue(ic, inOutLine);
+		ic.setIsPackagingMaterial(inOutLine.isPackagingMaterial());
+
+		// order & delivery stuff
+		setOrderedData(ic);
+		if (ic.getQtyOrdered().signum() == 0)
+		{
+			return null; // we won't create a new IC that has qtyOrdered=zero right from the start
+		}
+
+		setDeliveredData(ic);
 
 		final int adOrgId = inOutLine.getAD_Org_ID();
 		ic.setAD_Org_ID(adOrgId);
@@ -202,17 +217,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		//
-		// Document reference
-		{
-			setM_InOutLine(ic, inOutLine);
-
-			// ic.setC_Order(inoutOrder); // is set further down
-
-			// if this inOutLine had an order line, this handler would not be in charge to start with
-			// ic.setC_OrderLine_ID(inOutLine.getC_OrderLine_ID());
-		}
-
-		//
 		// Set the bill related details
 		{
 			setBPartnerData(ic, inOutLine);
@@ -224,18 +228,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final int chargeId = inOutLine.getC_Charge_ID();
 		{
 			ic.setM_Product_ID(productId);
-			ic.setIsPackagingMaterial(inOutLine.isPackagingMaterial());
 			ic.setC_Charge_ID(chargeId);
 
 			setC_UOM_ID(ic);
 			ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
-		}
-
-		//
-		// order & delivery stuff
-		{
-			setOrderedData(ic);
-			setDeliveredData(ic);
 		}
 
 		//
@@ -402,7 +398,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
 		if (docActionBL.isDocumentStatusOneOf(inOut, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(ic);
@@ -411,66 +406,118 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 		else
 		{
-			// Corrected, voiced etc document. Set qty to zero.
+			// reversed, voided etc document. Set qty to zero.
 			ic.setQtyOrdered(BigDecimal.ZERO);
 		}
 
-		setC_PaymentTerm(ic);
-
 	}
 
-	private BigDecimal extractQtyDelivered(final I_C_Invoice_Candidate ic)
+	private BigDecimal extractQtyDelivered(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		if (ic.isPackagingMaterial() && ic.getRef_PackingMaterial_InOutLine() != null)
+		if (!ic.isPackagingMaterial())
 		{
-			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(ic.getRef_PackingMaterial_InOutLine(), I_M_InOutLine.class);
-			return inOutLine.getQtyEnteredTU();
+			final I_M_InOutLine inOutLine = getM_InOutLine(ic);
+			return inOutLine.getMovementQty();
 		}
 
-		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
-		return inOutLine.getMovementQty();
+		final I_M_InOutLine packagingInOutLine = getM_InOutLine(ic);
+
+		// get all material lines that reference to packagingInOutLine
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+		final List<I_M_InOutLine> referencingInOutLines = inOutDAO.retrieveAllReferencingLinesBuilder(packagingInOutLine)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_M_InOutLine.class);
+
+		BigDecimal qtyDeliveredLeftToAllocate = packagingInOutLine.getMovementQty();
+		BigDecimal qtyDeliveredForThisIC = ZERO;
+		for (final I_M_InOutLine referencingInOutLine : referencingInOutLines)
+		{
+			final BigDecimal qtyOfReferencingInOutLine = referencingInOutLine.getQtyEnteredTU();
+
+			if (extractPaymentTermId(referencingInOutLine) == ic.getC_PaymentTerm_ID())
+			{
+				final BigDecimal qtyToAddForThisIC = qtyOfReferencingInOutLine.min(qtyDeliveredLeftToAllocate);
+				qtyDeliveredForThisIC = qtyDeliveredForThisIC.add(qtyToAddForThisIC);
+			}
+
+			qtyDeliveredLeftToAllocate = qtyDeliveredLeftToAllocate.subtract(qtyOfReferencingInOutLine);
+
+			if (qtyDeliveredLeftToAllocate.signum() <= 0)
+			{
+				break; // we saw enough
+			}
+
+		}
+		return qtyDeliveredForThisIC;
 	}
 
-	private void setC_PaymentTerm(final I_C_Invoice_Candidate ic)
+	@VisibleForTesting
+	int extractPaymentTermId(@NonNull final I_M_InOutLine inOutLine)
 	{
-		if (!ic.isSOTrx())
+		if (inOutLine.getC_OrderLine_ID() > 0)
 		{
-			return;
+			// this won't be the case for the actual iol this handler is dealing with, but maybe for one of its related iols
+			return extractPaymentTermIdViaOrderLine(inOutLine);
 		}
 
-		final int paymentTermId;
-		final I_M_InOutLine inOutLine = ic.isPackagingMaterial() && ic.getRef_PackingMaterial_InOutLine() != null
-				? InterfaceWrapperHelper.create(ic.getRef_PackingMaterial_InOutLine(), I_M_InOutLine.class)
-				: getM_InOutLine(ic);
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
-		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-		final List<org.compiere.model.I_M_InOutLine> lines = inoutDAO.retrieveAllLines(inOutLine.getM_InOut());
-		final List<I_C_OrderLine> orderLinesWithPaymentTerm = lines.stream()
-				.filter(ioline -> ioline.getC_OrderLine_ID() > 0)
-				.map(ioline -> ioline.getC_OrderLine())
-				.filter(oline -> oline.getC_PaymentTerm_Override_ID() > 0)
-				.collect(ImmutableList.toImmutableList());
-
-		if (inOutLine.getC_OrderLine() != null
-				&& inOutLine.getC_OrderLine().getC_PaymentTerm_Override_ID() > 0)
+		// extract the C_PaymentTerm_ID from the first iol that references 'inOutLine'
+		final List<I_M_InOutLine> referencingLines = inOutDAO.retrieveAllReferencingLinesBuilder(inOutLine)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, null)
+				.create()
+				.list(I_M_InOutLine.class);
+		for (final I_M_InOutLine refencingLine : referencingLines)
 		{
-			paymentTermId = inOutLine.getC_OrderLine().getC_PaymentTerm_Override_ID();
-		}
-		// if exists order lines with payment term overwritten, take it from the first line
-		else if (!orderLinesWithPaymentTerm.isEmpty())
-		{
-			paymentTermId = orderLinesWithPaymentTerm.get(0).getC_PaymentTerm_Override_ID();
-		}
-		else if (ic.getC_Order() != null)
-		{
-			paymentTermId = ic.getC_Order().getC_PaymentTerm_ID();
-		}
-		else
-		{
-			paymentTermId = -1;
+			final int paymentTermId = extractPaymentTermIdViaOrderLine(refencingLine);
+			if (paymentTermId > 0)
+			{
+				return paymentTermId;
+			}
 		}
 
-		ic.setC_PaymentTerm_ID(paymentTermId);
+		// fallback: get the C_PaymentTerm_ID from the first "sibling" line
+		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOutLine.getM_InOut(), I_M_InOutLine.class);
+		for (final I_M_InOutLine line : lines)
+		{
+			final int paymentTermId = extractPaymentTermIdViaOrderLine(line);
+			if (paymentTermId > 0)
+			{
+				return paymentTermId;
+			}
+		}
+
+		// last fallback
+		if (inOutLine.getM_InOut().getC_Order_ID() > 0)
+		{
+			return inOutLine.getM_InOut().getC_Order().getC_PaymentTerm_ID();
+		}
+
+		return -1;
+	}
+
+	/**
+	 * Note that the ioLines handled by {@link M_InOut_Handler} per se don't have an order-line themselves.
+	 *
+	 * @param inOutLine an inout line that is somehow related to the lines which this handler handles.
+	 */
+	@VisibleForTesting
+	int extractPaymentTermIdViaOrderLine(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
+	{
+		if (inOutLine.getC_OrderLine_ID() <= 0)
+		{
+			return -1;
+		}
+
+		final I_C_OrderLine ol = inOutLine.getC_OrderLine(); //
+		if (ol.getC_PaymentTerm_Override_ID() > 0)
+		{
+			return ol.getC_PaymentTerm_Override_ID();
+		}
+
+		return ol.getC_Order().getC_PaymentTerm_ID();
 	}
 
 	/**
@@ -510,13 +557,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	public static I_M_InOutLine getM_InOutLineOrNull(final I_C_Invoice_Candidate ic)
 	{
 		return TableRecordCacheLocal.getReferencedValue(ic, I_M_InOutLine.class);
-	}
-
-	private static void setM_InOutLine(final I_C_Invoice_Candidate ic, final I_M_InOutLine inoutLine)
-	{
-		Check.assumeNotNull(ic, "ic not null");
-		Check.assumeNotNull(inoutLine, "inoutLine not null");
-		TableRecordCacheLocal.setReferencedValue(ic, inoutLine);
 	}
 
 	@Override
