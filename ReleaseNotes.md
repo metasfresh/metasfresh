@@ -10,13 +10,27 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.52 (2018-15)
+**release for week 2018-15**
+
+## Features
+
+## Fixes
+
 # metasfresh 5.51 (2018-14)
 **release for week 2018-14**
 
 ## Features
 * metasfresh
+  * [#3675](https://github.com/metasfresh/metasfresh/issues/3675) Introducing master documentno to give each contract chain a unique number
+  * [#3711](https://github.com/metasfresh/metasfresh/issues/3711) Contracts: Detect loops when extending a contract
+  * [#3725](https://github.com/metasfresh/metasfresh/issues/3725) Update to latest jasper & faster maven plugin
+  * [#3770](https://github.com/metasfresh/metasfresh/issues/3770) Solve issues around the print endpoint
+  * [#3776](https://github.com/metasfresh/metasfresh/issues/3776) Distribution Editor initial HU Assignment
+  * [#3778](https://github.com/metasfresh/metasfresh/issues/3778) Automactically process picked CU's
   * [#3784](https://github.com/metasfresh/metasfresh/issues/3784) Standalone BPartner Product Translation Window
     * New Window in WebUI that allows the maintenance of Business Partner Product Translations.
+
 * metasfreh-webui-frontend
   * [#1586](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1586) Screen aliginment Improvements
     * Improves the Look & Feel, mostly vertical alignments - of all Fields and Field Content. Also Size of Lookup widget dropdowns.
@@ -28,6 +42,17 @@ Here come the actual release notes:
     * Improved Tab Sequence in generic Windows.
 
 ## Fixes
+* metasfresh
+  * [#3793](https://github.com/metasfresh/metasfresh/issues/3793) Cache: root documents are no longer invalidated
+  * [#3741](https://github.com/metasfresh/metasfresh/issues/3741) Credit Limit Detail Improvements
+  * [#3748](https://github.com/metasfresh/metasfresh/issues/3748) Pharma: Regular import does not fail if prices aren't imported
+  * [#3761](https://github.com/metasfresh/metasfresh/issues/3761) Check Limit in BPartner changes from order to invoice
+  * [#3762](https://github.com/metasfresh/metasfresh/issues/3762) Check Limit in BPartner increases on purchase side
+  * [#3804](https://github.com/metasfresh/metasfresh/issues/3804) Error AnnotationConfigEmbeddedWebApplicationContext has not been refreshed yet
+
+* metasfresh-webui-api
+  * [#925](https://github.com/metasfresh/metasfresh-webui-api/issues/925) Picking terminal: sometimes picking slot vanishes
+
 * metasfresh-webui-frontend
   * [#1679](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1679) Layout bug with resolution 1920x1200
     * Fixes a Layout Bug in table header of Grid View, now showing the cells in initial S, M, L sizes again.
