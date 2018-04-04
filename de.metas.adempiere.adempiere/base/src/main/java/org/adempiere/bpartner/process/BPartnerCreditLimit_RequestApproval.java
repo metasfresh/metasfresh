@@ -1,50 +1,34 @@
 package org.adempiere.bpartner.process;
 
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 
-import de.metas.event.Event;
-import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 
 public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements IProcessPrecondition
 {
+	private static final String PARAM_ApprovedBy_ID = I_C_BPartner_CreditLimit.COLUMNNAME_ApprovedBy_ID;
+	@Param(parameterName = PARAM_ApprovedBy_ID, mandatory = true)
+	private int approvedByUserId;
 
-	@Param(parameterName = I_C_BPartner_CreditLimit.COLUMNNAME_ApprovedBy_ID, mandatory = true)
-	private int approvedBy_ID;
-
-	public static final Topic TOPIC_CreditLimitRequestApproval = Topic.builder()
-			.name("org.adempiere.bpartner.process.CreditLimit")
+	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
+			.name("de.metas.bpartner.UserNotifications.CreditLimit")
 			.type(Type.REMOTE)
 			.build();
 
 	private static final String MSG_Event_RequestApproval = "org.adempiere.bpartner.process.BPartnerCreditLimit_RequestApproval";
-	private final int bpartnerWindowId = 123;
-
-	@Override
-	protected String doIt()
-	{
-		final I_C_BPartner_CreditLimit bpCreditLimit = getRecord(I_C_BPartner_CreditLimit.class);
-
-		final Event event = Event.builder()
-				.setDetailADMessage(MSG_Event_RequestApproval)
-				.addRecipient_User_ID(approvedBy_ID)
-				.setRecord(TableRecordReference.of(bpCreditLimit.getC_BPartner()))
-				.setSuggestedWindowId(bpartnerWindowId)
-				.build();
-
-		Services.get(IEventBusFactory.class).getEventBus(TOPIC_CreditLimitRequestApproval)
-				.postEvent(event);
-
-		return "@Success@";
-	}
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -60,5 +44,27 @@ public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements 
 		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Override
+	@RunOutOfTrx
+	protected String doIt()
+	{
+		if (approvedByUserId <= 0)
+		{
+			throw new FillMandatoryException(PARAM_ApprovedBy_ID);
+		}
+
+		final I_C_BPartner_CreditLimit bpCreditLimit = getRecord(I_C_BPartner_CreditLimit.class);
+
+		Services.get(INotificationBL.class)
+				.notifyUser(UserNotificationRequest.builder()
+						.topic(USER_NOTIFICATIONS_TOPIC)
+						.recipientUserId(approvedByUserId)
+						.contentADMessage(MSG_Event_RequestApproval)
+						.targetRecord(TableRecordReference.of(I_C_BPartner.Table_Name, bpCreditLimit.getC_BPartner_ID()))
+						.build());
+
+		return MSG_OK;
 	}
 }

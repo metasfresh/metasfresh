@@ -21,3 +21,9 @@ INSERT INTO AD_NotificationGroup (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsAct
 VALUES (0,0,TO_TIMESTAMP('2018-04-04 17:55:33','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2018-04-04 17:55:33','YYYY-MM-DD HH24:MI:SS'),100,540003,'D','Material Shipment/Receipt/Returns','de.metas.inout.UserNotifications')
 ;
 
+-- 2018-04-04T19:14:16.183
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_NotificationGroup (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy,AD_NotificationGroup_ID,EntityType,Name,InternalName) 
+VALUES (0,0,TO_TIMESTAMP('2018-04-04 19:14:16','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2018-04-04 19:14:16','YYYY-MM-DD HH24:MI:SS'),100,540007,'D','BPartner - Credit Limit Approval','de.metas.bpartner.UserNotifications.CreditLimit')
+;
+

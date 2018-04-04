@@ -97,7 +97,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
-		return ImmutableList.of(BPartnerCreditLimit_RequestApproval.TOPIC_CreditLimitRequestApproval);
+		return ImmutableList.of(BPartnerCreditLimit_RequestApproval.USER_NOTIFICATIONS_TOPIC);
 	}
 
 	@Override
