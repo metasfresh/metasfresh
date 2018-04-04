@@ -501,7 +501,7 @@ import de.metas.notification.UserNotificationRequest;
 
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
 		notificationBL.notifyUserAfterCommit(UserNotificationRequest.builder()
-				.topic(Async_Constants.EVENTBUS_WORKPACKAGE_PROCESSING_ERRORS)
+				.topic(Async_Constants.WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC)
 				.recipientUserId(userInChargeId)
 				.subjectADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TITLE)
 				.contentADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TEXT)
