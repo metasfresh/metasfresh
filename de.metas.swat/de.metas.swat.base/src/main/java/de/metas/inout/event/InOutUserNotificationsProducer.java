@@ -57,7 +57,7 @@ public final class InOutUserNotificationsProducer
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.name("de.metas.inout.InOut.ProcessedEvents")
+			.name("de.metas.inout.UserNotifications")
 			.type(Type.REMOTE)
 			.build();
 

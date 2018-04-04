@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.event.Topic;
-import de.metas.event.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import lombok.NonNull;
@@ -56,10 +55,7 @@ public class ReturnInOutUserNotificationsProducer
 	}
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
-	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.name("de.metas.inout.ReturnInOut.ProcessedEvents")
-			.type(Type.REMOTE)
-			.build();
+	public static final Topic EVENTBUS_TOPIC = InOutUserNotificationsProducer.EVENTBUS_TOPIC;
 
 	// services
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);

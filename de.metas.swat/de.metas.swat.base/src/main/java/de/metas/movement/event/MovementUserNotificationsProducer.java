@@ -50,7 +50,7 @@ public class MovementUserNotificationsProducer
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.name("de.metas.movement.Movement.ProcessedEvents")
+			.name("de.metas.movement.UserNotifications")
 			.type(Type.REMOTE)
 			.build();
 

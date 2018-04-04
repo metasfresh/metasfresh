@@ -51,7 +51,7 @@ public class InvoiceUserNotificationsProducer
 	}
 
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.name("de.metas.invoicecandidate.InvoiceCandWorkpackageProcessor")
+			.name("de.metas.invoicecandidate.UserNotifications")
 			.type(Type.REMOTE)
 			.build();
 

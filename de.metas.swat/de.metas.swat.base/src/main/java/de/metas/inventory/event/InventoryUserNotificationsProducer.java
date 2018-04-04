@@ -48,7 +48,7 @@ public class InventoryUserNotificationsProducer
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.name("de.metas.inventory.Inventory.ProcessedEvents")
+			.name("de.metas.inventory.UserNotifications")
 			.type(Type.REMOTE)
 			.build();
 
