@@ -196,7 +196,6 @@
 }
 
 .react-autosuggest__suggestions-list li {
-    padding: 5px 10px;
     cursor: pointer;
     border-bottom: 1px solid $brand-super-light-color;
 }
@@ -204,4 +203,14 @@
 .react-autosuggest__suggestions-list li:hover {
     color: white;
     background-color: $brand-color-primary;
+}
+
+.autosuggest-option {
+    display: block;
+    padding: 5px 10px;
+
+    &.selected {
+        color: white;
+        background-color: $brand-color-primary;   
+    }
 }
