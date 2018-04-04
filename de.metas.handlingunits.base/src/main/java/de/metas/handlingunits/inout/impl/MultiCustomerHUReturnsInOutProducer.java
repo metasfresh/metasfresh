@@ -37,7 +37,7 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.inout.event.ReturnInOutUserNotificationsProduder;
+import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
 
 /*
  * #%L
@@ -205,7 +205,7 @@ public class MultiCustomerHUReturnsInOutProducer
 		{
 			if (_manualCustomerReturn == null)
 			{
-				ReturnInOutUserNotificationsProduder.newInstance()
+				ReturnInOutUserNotificationsProducer.newInstance()
 						.notify(returnInOuts);
 			}
 

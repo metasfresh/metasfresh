@@ -27,7 +27,7 @@ import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.inout.event.ReturnInOutUserNotificationsProduder;
+import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
 
 /*
  * #%L
@@ -126,7 +126,7 @@ public class ManualCustomerReturnInOutProducer
 		{
 			if (_manualCustomerReturn != null)
 			{
-				ReturnInOutUserNotificationsProduder.newInstance()
+				ReturnInOutUserNotificationsProducer.newInstance()
 						.notify(returnInOuts);
 			}
 
