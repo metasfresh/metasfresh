@@ -87,6 +87,8 @@ public class Main extends AbstractModuleInterceptor
 			logger.info("Printing is disabled; not registering any printing MIs, callouts etc");
 			return;
 		}
+		
+		super.onInit(engine, client);
 
 		//
 		// Configure tables which are skipped when we record migration scripts
