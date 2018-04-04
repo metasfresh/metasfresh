@@ -67,12 +67,10 @@ public class CompositeNotificationCtxProvider implements INotificationCtxProvide
 		for (final INotificationCtxProvider ctxProvider : ctxProviders)
 		{
 			final Optional<String> textMessage = ctxProvider.getTextMessageIfApplies(referencedRecord);
-			if (textMessage == null || !textMessage.isPresent())
+			if (textMessage != null && textMessage.isPresent())
 			{
-				continue;
+				return textMessage;
 			}
-
-			return textMessage;
 		}
 
 		// Fallback to default provider
