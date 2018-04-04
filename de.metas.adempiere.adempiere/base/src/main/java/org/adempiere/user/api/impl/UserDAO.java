@@ -255,33 +255,37 @@ public class UserDAO implements IUserDAO
 	{
 		Check.assumeGreaterOrEqualToZero(adUserId, "adUserId");
 
+		final I_AD_User user = retrieveUser(adUserId);
+		final int userInChargeId = user.getAD_User_InCharge_ID();
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final List<UserNotificationsGroup> userNotificationGroups = queryBL.createQueryBuilderOutOfTrx(I_AD_User_NotificationGroup.class)
 				.addEqualsFilter(I_AD_User_NotificationGroup.COLUMN_AD_User_ID, adUserId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_AD_User_NotificationGroup.class)
-				.map(this::toUserNotificationsGroup)
+				.map(notificationsGroupRecord -> prepareUserNotificationsGroup(notificationsGroupRecord)
+						.userInChargeId(userInChargeId)
+						.build())
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 
-		final I_AD_User user = retrieveUser(adUserId);
 		final UserNotificationsGroup defaults = UserNotificationsGroup.prepareDefault()
 				.notificationTypes(toNotificationTypes(user.getNotificationType()))
+				.userInChargeId(userInChargeId)
 				.build();
 
 		return UserNotificationsConfig.builder()
-				.adUserId(user.getAD_User_ID())
+				.userId(user.getAD_User_ID())
 				.adClientId(user.getAD_Client_ID())
 				.adOrgId(user.getAD_Org_ID())
 				.userNotificationGroups(userNotificationGroups)
 				.defaults(defaults)
 				.email(user.getEMail())
-				.userInChargeId(user.getAD_User_InCharge_ID())
 				.build();
 	}
 
-	private UserNotificationsGroup toUserNotificationsGroup(final I_AD_User_NotificationGroup notificationsGroupRecord)
+	private UserNotificationsGroup.UserNotificationsGroupBuilder prepareUserNotificationsGroup(final I_AD_User_NotificationGroup notificationsGroupRecord)
 	{
 		if (!notificationsGroupRecord.isActive())
 		{
@@ -298,8 +302,7 @@ public class UserDAO implements IUserDAO
 
 		return UserNotificationsGroup.builder()
 				.groupInternalName(groupInternalName)
-				.notificationTypes(toNotificationTypes(notificationsGroupRecord.getNotificationType()))
-				.build();
+				.notificationTypes(toNotificationTypes(notificationsGroupRecord.getNotificationType()));
 	}
 
 	private static Set<NotificationType> toNotificationTypes(final String notificationTypeCode)

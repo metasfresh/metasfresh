@@ -10,7 +10,6 @@ import java.util.Set;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.NotificationType;
 import org.adempiere.user.api.UserNotificationsConfig;
-import org.adempiere.user.api.UserNotificationsGroup;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -40,7 +39,7 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 			return;
 		}
 
-		final UserNotificationsConfig notificationsConfig = createUserNotificationsConfig(asyncBatch.getCreatedBy(), asyncBatchType);
+		final UserNotificationsConfig notificationsConfig = createUserNotificationsConfigOrNull(asyncBatch.getCreatedBy(), asyncBatchType);
 		if (notificationsConfig == null)
 		{
 			return;
@@ -58,7 +57,7 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 						.build());
 	}
 
-	private static UserNotificationsConfig createUserNotificationsConfig(final int recipientUserId, final I_C_Async_Batch_Type asyncBatchType)
+	private static UserNotificationsConfig createUserNotificationsConfigOrNull(final int recipientUserId, final I_C_Async_Batch_Type asyncBatchType)
 	{
 		final Set<NotificationType> notificationTypes = extractNotificationTypes(asyncBatchType);
 		if (notificationTypes.isEmpty())
@@ -67,11 +66,7 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 		}
 
 		final IUserBL userBL = Services.get(IUserBL.class);
-		return userBL.getUserNotificationsConfig(recipientUserId)
-				.toBuilder()
-				.clearUserNotificationGroups()
-				.defaults(UserNotificationsGroup.prepareDefault().notificationTypes(notificationTypes).build())
-				.build();
+		return userBL.getUserNotificationsConfig(recipientUserId).deriveWithNotificationTypes(notificationTypes);
 	}
 
 	private static Set<NotificationType> extractNotificationTypes(final I_C_Async_Batch_Type asyncBatchType)

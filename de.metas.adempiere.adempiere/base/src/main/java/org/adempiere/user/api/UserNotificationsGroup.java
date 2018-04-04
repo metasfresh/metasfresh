@@ -43,14 +43,22 @@ public class UserNotificationsGroup
 
 	private final NotificationGroupName groupInternalName;
 	private final Set<NotificationType> notificationTypes;
+	private final int userInChargeId;
 
 	@Builder
 	private UserNotificationsGroup(
 			@NonNull final NotificationGroupName groupInternalName,
-			@Singular final Set<NotificationType> notificationTypes)
+			@Singular final Set<NotificationType> notificationTypes,
+			final int userInChargeId)
 	{
 		this.groupInternalName = groupInternalName;
 		this.notificationTypes = ImmutableSet.copyOf(notificationTypes);
+		this.userInChargeId = userInChargeId > 0 ? userInChargeId : -1;
+	}
+
+	public boolean isUserInChargeSet()
+	{
+		return userInChargeId > 0;
 	}
 
 	public boolean isNotifyUserInCharge()
@@ -66,5 +74,10 @@ public class UserNotificationsGroup
 	public boolean isNotifyByInternalMessage()
 	{
 		return notificationTypes.contains(NotificationType.Notice);
+	}
+
+	public boolean hasAnyNotificationTypeExceptUserInCharge()
+	{
+		return notificationTypes.size() > 1 || !isNotifyUserInCharge();
 	}
 }

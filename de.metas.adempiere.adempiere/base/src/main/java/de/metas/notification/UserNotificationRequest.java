@@ -3,12 +3,19 @@ package de.metas.notification;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
+import org.adempiere.user.api.NotificationGroupName;
 import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.event.EventBusConstants;
+import de.metas.event.Topic;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -44,6 +51,8 @@ public class UserNotificationRequest
 	int recipientUserId;
 	UserNotificationsConfig notificationsConfig;
 
+	Topic topic;
+
 	String subjectPlain;
 	String subjectADMessage;
 	List<Object> subjectADMessageParams;
@@ -61,6 +70,8 @@ public class UserNotificationRequest
 			final int recipientUserId,
 			final UserNotificationsConfig notificationsConfig,
 			//
+			final Topic topic,
+			//
 			final String subjectPlain,
 			final String subjectADMessage,
 			@Singular final List<Object> subjectADMessageParams,
@@ -76,12 +87,14 @@ public class UserNotificationRequest
 		this.notificationsConfig = notificationsConfig;
 		if (notificationsConfig != null)
 		{
-			this.recipientUserId = notificationsConfig.getAdUserId();
+			this.recipientUserId = notificationsConfig.getUserId();
 		}
 		else
 		{
 			this.recipientUserId = recipientUserId;
 		}
+
+		this.topic = topic != null ? topic : EventBusConstants.TOPIC_GeneralNotifications;
 
 		this.subjectPlain = subjectPlain;
 		this.subjectADMessage = subjectADMessage;
@@ -98,11 +111,26 @@ public class UserNotificationRequest
 
 	private static List<Object> copyADMessageParams(final List<Object> params)
 	{
-		return params != null && !params.isEmpty() ? Collections.unmodifiableList(new ArrayList<>(params)) : null;
+		return params != null && !params.isEmpty() ? Collections.unmodifiableList(new ArrayList<>(params)) : ImmutableList.of();
 	}
 
 	public String getSubjectADMessageOr(final String defaultValue)
 	{
 		return !Check.isEmpty(subjectADMessage) ? subjectADMessage : defaultValue;
+	}
+
+	public NotificationGroupName getNotificationGroupName()
+	{
+		return NotificationGroupName.of(getTopic().getName());
+	}
+
+	public UserNotificationRequest deriveByNotificationsConfig(@NonNull final UserNotificationsConfig notificationsConfig)
+	{
+		if (Objects.equals(this.notificationsConfig, notificationsConfig))
+		{
+			return this;
+		}
+
+		return toBuilder().notificationsConfig(notificationsConfig).build();
 	}
 }

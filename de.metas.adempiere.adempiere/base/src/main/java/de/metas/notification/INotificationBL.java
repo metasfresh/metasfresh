@@ -1,5 +1,7 @@
 package de.metas.notification;
 
+import java.util.List;
+
 import org.adempiere.util.ISingletonService;
 
 import de.metas.notification.spi.INotificationCtxProvider;
@@ -29,6 +31,10 @@ import de.metas.notification.spi.INotificationCtxProvider;
 public interface INotificationBL extends ISingletonService
 {
 	void notifyUser(UserNotificationRequest request);
+	
+	void notifyUserAfterCommit(UserNotificationRequest request);
+
+	void notifyUserAfterCommit(List<UserNotificationRequest> requests);
 
 	/**
 	 * This method will be used when a new <{@code INotificationCtxProvider} implementation is registered.

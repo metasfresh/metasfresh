@@ -48,7 +48,6 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.printing.api.IPrintingDAO;
@@ -103,34 +102,23 @@ public class C_Print_Job_Instructions
 		}
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final INotificationBL notificationBL = Services.get(INotificationBL.class);
-
 		final boolean notifyUser = sysConfigBL.getBooleanValue(SYSCONFIG_NOTIFY_PRINT_RECEIVER_ON_ERROR,
 				false, // default
 				jobInstructions.getAD_Client_ID(),
 				jobInstructions.getAD_Org_ID());
-		if (notifyUser)
+		if (!notifyUser)
 		{
-			final int printJobInstructionsID = jobInstructions.getC_Print_Job_Instructions_ID();
-			final int userToPrintID = jobInstructions.getAD_User_ToPrint_ID();
-			final String trxName = InterfaceWrapperHelper.getTrxName(jobInstructions);
-
-			// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
-			final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-			trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-					.newEventListener(TrxEventTiming.AFTER_COMMIT)
-					.registerHandlingMethod(innerTrx -> {
-						final I_C_Print_Job_Instructions printJobInstructionsReloaded = loadOutOfTrx(printJobInstructionsID, I_C_Print_Job_Instructions.class);
-
-						notificationBL.notifyUser(UserNotificationRequest.builder()
-								.recipientUserId(userToPrintID)
-								.subjectADMessage(MSG_CLIENT_REPORTS_PRINT_ERROR)
-								.contentPlain(printJobInstructionsReloaded.getErrorMsg())
-								.targetRecord(TableRecordReference.of(printJobInstructionsReloaded))
-								.build());
-					});
+			return;
 		}
+
+		// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
+		final INotificationBL notificationBL = Services.get(INotificationBL.class);
+		notificationBL.notifyUserAfterCommit(UserNotificationRequest.builder()
+				.recipientUserId(jobInstructions.getAD_User_ToPrint_ID())
+				.subjectADMessage(MSG_CLIENT_REPORTS_PRINT_ERROR)
+				.contentPlain(jobInstructions.getErrorMsg())
+				.targetRecord(TableRecordReference.of(I_C_Print_Job_Instructions.Table_Name, jobInstructions.getC_Print_Job_Instructions_ID()))
+				.build());
 	}
 
 	/**
@@ -194,8 +182,8 @@ public class C_Print_Job_Instructions
 			return; // nothing to do
 		}
 
-		final int printJobInstructionsID = jobInstructions.getC_Print_Job_Instructions_ID();
-		final int userToPrintID = jobInstructions.getAD_User_ToPrint_ID();
+		final int printJobInstructionsId = jobInstructions.getC_Print_Job_Instructions_ID();
+		final int userToPrintId = jobInstructions.getAD_User_ToPrint_ID();
 		final String status = jobInstructions.getStatus();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
 		final String trxName = InterfaceWrapperHelper.getTrxName(jobInstructions);
@@ -213,21 +201,18 @@ public class C_Print_Job_Instructions
 							() -> {
 								final INotificationBL notificationBL = Services.get(INotificationBL.class);
 								final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-								final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-								final I_C_Print_Job_Instructions printJobInstructionsReloaded = loadOutOfTrx(printJobInstructionsID, I_C_Print_Job_Instructions.class);
-
+								final I_C_Print_Job_Instructions printJobInstructionsReloaded = loadOutOfTrx(printJobInstructionsId, I_C_Print_Job_Instructions.class);
 								if (status.equals(printJobInstructionsReloaded.getStatus()))
 								{
 									// the status is still unchanged after the specified timeout => notify the user
-									final String statusName = adReferenceDAO.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status);
-									final String timeoutMsg = msgBL.getMsg(ctx, MSG_CLIENT_PRINT_TIMEOUT_DETAILS, new Object[] { printTimeOutSeconds, statusName });
-
 									notificationBL.notifyUser(UserNotificationRequest.builder()
-											.recipientUserId(userToPrintID)
+											.recipientUserId(userToPrintId)
 											.subjectADMessage(MSG_CLIENT_PRINT_TIMEOUT)
-											.contentPlain(timeoutMsg)
-											.targetRecord(TableRecordReference.of(printJobInstructionsReloaded))
+											.contentADMessage(MSG_CLIENT_PRINT_TIMEOUT_DETAILS)
+											.contentADMessageParam(printTimeOutSeconds)
+											.contentADMessageParam(adReferenceDAO.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status))
+											.targetRecord(TableRecordReference.of(I_C_Print_Job_Instructions.Table_Name, printJobInstructionsId))
 											.build());
 								}
 								return null;

@@ -17,7 +17,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.api.IMaterialBalanceDetailBL;
 import de.metas.inout.api.IMaterialBalanceDetailDAO;
-import de.metas.inout.event.InOutProcessedEventBus;
+import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.event.ReturnInOutProcessedEventBus;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout_Async;
@@ -30,7 +30,7 @@ public class M_InOut
 	public void onInit()
 	{
 		// Setup event bus topics on which swing client notification listener shall subscribe
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InOutProcessedEventBus.EVENTBUS_TOPIC);
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InOutUserNotificationsProducer.EVENTBUS_TOPIC);
 		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(ReturnInOutProcessedEventBus.EVENTBUS_TOPIC);
 	}
 

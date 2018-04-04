@@ -1,7 +1,5 @@
 package de.metas.async.processor.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.async
@@ -31,7 +29,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
@@ -77,15 +74,12 @@ import de.metas.async.processor.IWorkpackageSkipRequest;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.async.spi.IWorkpackageProcessor2;
-import de.metas.event.Event;
-import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
-import de.metas.i18n.IMsgBL;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 
 /* package */class WorkpackageProcessorTask implements Runnable
 {
@@ -482,69 +476,39 @@ import de.metas.notification.INotificationBL;
 
 		// log error to console (for later audit):
 		final Level logLevel = Services.get(IDeveloperModeBL.class).isEnabled() ? Level.WARN : Level.INFO;
-		LoggingHelper.log(logger, logLevel, "Error while processing workpackage: " + workPackage, ex);
-
+		LoggingHelper.log(logger, logLevel, "Error while processing workpackage: {}", workPackage, ex);
 		Loggables.get().addLog("Error while processing workpackage: {0}", workPackage);
 
-		// 09700: notify the user in charge, if one was set
-		if (workPackage.getAD_User_InCharge_ID() > 0)
+		notifyErrorAfterCommit(workPackage, ex);
+	}
+
+	private void notifyErrorAfterCommit(final I_C_Queue_WorkPackage workpackage, final AdempiereException ex)
+	{
+		final int userInChargeId = workpackage.getAD_User_InCharge_ID();
+		if (userInChargeId <= 0)
 		{
-			// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
-			notifyErrorAfterCommit(workPackage.getC_Queue_WorkPackage_ID());
-
-			if (!ex.isUserNotified())
-			{
-				ex.markUserNotified();
-
-				final ITrxManager trxManager = Services.get(ITrxManager.class);
-				final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-				final IEventBus eventBus = eventBusFactory.getEventBus(Async_Constants.EVENTBUS_WORKPACKAGE_PROCESSING_ERRORS);
-
-				trxManager.getCurrentTrxListenerManagerOrAutoCommit()
-						.newEventListener(TrxEventTiming.AFTER_COMMIT)
-						.registerHandlingMethod(innerTrx -> eventBus.postEvent(createWorkpackageProcessingErrorEvent(workPackage, ex)));
-			}
+			return;
 		}
-	}
 
-	/**
-	 *
-	 * @param ctx
-	 * @param workPackageId
-	 * @param trxName
-	 * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
-	 */
-	private void notifyErrorAfterCommit(final int workPackageId)
-	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		if (ex.isUserNotified())
+		{
+			return;
+		}
+		ex.markUserNotified();
+		final String errorMsg = ex.getLocalizedMessage();
+
+		final int workpackageId = workpackage.getC_Queue_WorkPackage_ID();
+
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
-				.registerHandlingMethod(innerTrx -> {
-					final I_C_Queue_WorkPackage wpReloaded = loadOutOfTrx(workPackageId, I_C_Queue_WorkPackage.class);
-					notificationBL.notifyUser(
-							wpReloaded.getAD_User_InCharge_ID(),
-							MSG_PROCESSING_ERROR_NOTIFICATION_TITLE,
-							msgBL.getMsg(Env.getCtx(),
-									MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,
-									new Object[] { workPackageId, wpReloaded.getErrorMsg() }),
-							TableRecordReference.of(wpReloaded));
-				});
-	}
-
-	private Event createWorkpackageProcessingErrorEvent(final I_C_Queue_WorkPackage workpackage, final Exception ex)
-	{
-		return Event.builder()
-				.setDetailADMessage(
-						MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,
-						workpackage.getC_Queue_WorkPackage_ID(),
-						ex.getLocalizedMessage())
-				.addRecipient_User_ID(workpackage.getAD_User_InCharge_ID())
-				.setRecord(TableRecordReference.of(workpackage))
-				.build();
+		notificationBL.notifyUserAfterCommit(UserNotificationRequest.builder()
+				.topic(Async_Constants.EVENTBUS_WORKPACKAGE_PROCESSING_ERRORS)
+				.recipientUserId(userInChargeId)
+				.subjectADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TITLE)
+				.contentADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TEXT)
+				.contentADMessageParam(workpackageId)
+				.contentADMessageParam(errorMsg)
+				.targetRecord(TableRecordReference.of(I_C_Queue_WorkPackage.Table_Name, workpackageId))
+				.build());
 	}
 
 	/**

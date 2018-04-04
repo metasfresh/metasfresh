@@ -47,6 +47,7 @@ import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.INotifyAsyncBatch;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 
 public class NotifyAsyncBatch implements INotifyAsyncBatch
 {
@@ -95,6 +96,7 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 		Boolean isSent = null;
 		try
 		{
+			// FIXME: pls refactor this thing....
 
 			MADBoilerPlate.sendEMail(new IEMailEditor()
 			{
@@ -150,7 +152,12 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 					//
 
 					Check.assume(asyncBatch.getCreatedBy() > 0, "CreatedBy > 0");
-					notificationBL.notifyUser(asyncBatch.getCreatedBy(), text.getSubject(), message, TableRecordReference.of(asyncBatch));
+					notificationBL.notifyUser(UserNotificationRequest.builder()
+							.recipientUserId(asyncBatch.getCreatedBy())
+							.subjectPlain(text.getSubject())
+							.contentPlain(message)
+							.targetRecord(TableRecordReference.of(asyncBatch))
+							.build());
 
 					return null;
 				}

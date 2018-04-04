@@ -2,6 +2,7 @@ package org.adempiere.user.api;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.util.Check;
 
@@ -40,7 +41,7 @@ import lombok.Value;
 @Value
 public class UserNotificationsConfig
 {
-	private int adUserId;
+	private int userId;
 	private int adClientId;
 	private int adOrgId;
 
@@ -50,22 +51,20 @@ public class UserNotificationsConfig
 	private final UserNotificationsGroup defaults;
 
 	private String email;
-	private int userInChargeId;
 
 	@Builder(toBuilder = true)
 	private UserNotificationsConfig(
-			final int adUserId,
+			@NonNull final Integer userId,
 			final int adClientId,
 			final int adOrgId,
 			@NonNull @Singular final List<UserNotificationsGroup> userNotificationGroups,
 			@NonNull final UserNotificationsGroup defaults,
-			final String email,
-			final int userInChargeId)
+			final String email)
 	{
-		Check.assumeGreaterOrEqualToZero(adUserId, "adUserId");
+		Check.assumeGreaterOrEqualToZero(userId, "adUserId");
 
 		this.adClientId = adClientId >= 0 ? adClientId : 0;
-		this.adUserId = adUserId;
+		this.userId = userId;
 		this.adOrgId = adOrgId >= 0 ? adOrgId : 0;
 
 		this.userNotificationGroups = ImmutableList.copyOf(userNotificationGroups);
@@ -73,26 +72,18 @@ public class UserNotificationsConfig
 		this.defaults = defaults;
 
 		this.email = Check.isEmpty(email, true) ? null : email.trim();
-		this.userInChargeId = userInChargeId > 0 ? userInChargeId : -1;
 	}
 
-	public boolean isUserInChargeSet()
+	public UserNotificationsGroup getGroupByName(@NonNull final NotificationGroupName groupName)
 	{
-		return userInChargeId > 0;
+		return userNotificationGroupsByInternalName.getOrDefault(groupName, defaults);
 	}
 
-	public boolean isNotifyUserInCharge()
+	public UserNotificationsConfig deriveWithNotificationTypes(final Set<NotificationType> notificationTypes)
 	{
-		return defaults.isNotifyUserInCharge();
-	}
-
-	public boolean isNotifyByEMail()
-	{
-		return defaults.isNotifyByEMail();
-	}
-
-	public boolean isNotifyByInternalMessage()
-	{
-		return defaults.isNotifyByInternalMessage();
+		return toBuilder()
+				.clearUserNotificationGroups()
+				.defaults(UserNotificationsGroup.prepareDefault().notificationTypes(notificationTypes).build())
+				.build();
 	}
 }

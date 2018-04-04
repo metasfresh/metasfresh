@@ -63,10 +63,10 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
@@ -419,11 +419,9 @@ public class Scheduler extends AdempiereServer
 
 		// notify supervisor if error
 		// metas: c.ghita@metas.ro: start
-		final I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(pi.getCtx(), pi.getAD_User_ID());
 		final int adPInstanceTableId = Services.get(IADTableDAO.class).retrieveTableId(I_AD_PInstance.Table_Name);
 
 		notify(ok,
-				from,
 				pi.getTitle(),
 				result.getSummary(),
 				result.getLogInfo(),
@@ -469,10 +467,9 @@ public class Scheduler extends AdempiereServer
 		final int adTaskTableID = Services.get(IADTableDAO.class).retrieveTableId(I_AD_Task.Table_Name);
 
 		notify(ok,
-				null, // user-from
 				task.getName(), // subject
 				summary,
-				"",
+				"", // log info
 				adTaskTableID,
 				task.get_ID());
 		return summary;
@@ -650,48 +647,52 @@ public class Scheduler extends AdempiereServer
 	 * @param subject
 	 * @param summary
 	 * @param logInfo
-	 * @param AD_Table_ID
-	 * @param Record_ID
+	 * @param adTableId
+	 * @param recordId
 	 */
 
-	private void notify(final boolean ok,
-			final I_AD_User from,
+	private void notify(
+			final boolean ok,
 			final String subject,
 			final String summary,
 			final String logInfo,
-			final int AD_Table_ID,
-			final int Record_ID)
+			final int adTableId,
+			final int recordId)
 	{
 		final Properties ctx = getCtx();
-
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 		// notify supervisor if error
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-		final int adClientID = Env.getAD_Client_ID(ctx);
-		final int adOrgID = Env.getAD_Org_ID(ctx);
-		if (!ok &&
-				sysConfigBL.getBooleanValue(SYSCONFIG_NOTIFY_ON_NOT_OK, false, adClientID, adOrgID))
+		final int adClientId = Env.getAD_Client_ID(ctx);
+		final int adOrgId = Env.getAD_Org_ID(ctx);
+		if (!ok)
 		{
-			final int supervisorId = m_model.getSupervisor_ID();
-			if (supervisorId > 0)
+			if (sysConfigBL.getBooleanValue(SYSCONFIG_NOTIFY_ON_NOT_OK, false, adClientId, adOrgId))
 			{
-				notificationBL.notifyUser(supervisorId, MSG_PROCESS_RUN_ERROR, summary + " " + logInfo,
-						new TableRecordReference(AD_Table_ID, Record_ID));
+				final int supervisorId = m_model.getSupervisor_ID();
+				if (supervisorId > 0)
+				{
+					notificationBL.notifyUser(UserNotificationRequest.builder()
+							.recipientUserId(supervisorId)
+							.subjectADMessage(MSG_PROCESS_RUN_ERROR)
+							.contentPlain(summary + " " + logInfo)
+							.targetRecord(TableRecordReference.of(adTableId, recordId))
+							.build());
+				}
 			}
 		}
-		else if (sysConfigBL.getBooleanValue(SYSCONFIG_NOTIFY_ON_OK, false, adClientID, adOrgID))
+		else if (sysConfigBL.getBooleanValue(SYSCONFIG_NOTIFY_ON_OK, false, adClientId, adOrgId))
 		{
-			final Integer[] userIDs = m_model.getRecipientAD_User_IDs();
-			if (userIDs.length > 0)
+			for (final int userId : m_model.getRecipientAD_User_IDs())
 			{
-				for (int i = 0; i < userIDs.length; i++)
-				{
-					notificationBL.notifyUser(userIDs[i], MSG_PROCESS_OK, summary + " " + logInfo,
-							new TableRecordReference(AD_Table_ID, Record_ID));
-				}
+				notificationBL.notifyUser(UserNotificationRequest.builder()
+						.recipientUserId(userId)
+						.subjectADMessage(MSG_PROCESS_OK)
+						.contentPlain(summary + " " + logInfo)
+						.targetRecord(TableRecordReference.of(adTableId, recordId))
+						.build());
 			}
 		}
 	}
