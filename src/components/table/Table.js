@@ -19,8 +19,8 @@ import {
   selectTableItems,
 } from '../../actions/WindowActions';
 import Prompt from '../app/Prompt';
-import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortcuts';
-import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
+import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
+import TableContextShortcuts from '../keyshortcuts/TableContextShortcuts';
 import TableContextMenu from './TableContextMenu';
 import TableFilter from './TableFilter';
 import TableHeader from './TableHeader';

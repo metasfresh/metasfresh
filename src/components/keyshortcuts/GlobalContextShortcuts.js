@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
-import { Shortcut } from '../Shortcuts';
+import { Shortcut } from '../keyshortcuts';
+import { arePropTypesIdentical } from '../../utils';
 
 export default class GlobalContextShortcuts extends Component {
   handlers = {
@@ -97,6 +98,9 @@ export default class GlobalContextShortcuts extends Component {
       }
     },
   };
+
+  shouldComponentUpdate = nextProps =>
+    !arePropTypesIdentical(nextProps, this.props);
 
   render() {
     return [

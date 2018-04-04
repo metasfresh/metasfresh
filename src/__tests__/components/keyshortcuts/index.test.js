@@ -1,15 +1,15 @@
 import { expect } from 'chai';
 
-import _Shortcut from '../../../components/Shortcuts/Shortcut';
-import _ShortcutProvider from '../../../components/Shortcuts/ShortcutProvider';
-import _generateHotkeys from '../../../components/Shortcuts/generateHotkeys';
+import _Shortcut from '../../../components/keyshortcuts/Shortcut';
+import _ShortcutProvider from '../../../components/keyshortcuts/ShortcutProvider';
+import _generateHotkeys from '../../../components/keyshortcuts/generateHotkeys';
 import {
   generateHotkeys,
   Shortcut,
   ShortcutProvider,
-} from '../../../components/Shortcuts/index.js';
+} from '../../../components/keyshortcuts/index.js';
 
-describe('Shortcuts/index.js', () => {
+describe('keyshortcuts/index.js', () => {
   it('should export ShortcutProvider', () => {
     expect(ShortcutProvider).to.equal(_ShortcutProvider);
   });
