@@ -3,10 +3,8 @@ package de.metas.movement.event;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Movement;
 import org.compiere.util.Env;
 
@@ -49,13 +47,14 @@ public class MovementUserNotificationsProducer
 	}
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
-	public static final Topic EVENTBUS_TOPIC = Topic.builder()
+	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.movement.UserNotifications")
 			.type(Type.REMOTE)
 			.build();
 
 	// services
-	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	private static final String MSG_Event_MovementGenerated = "Event_MovementGenerated";
 
@@ -63,12 +62,6 @@ public class MovementUserNotificationsProducer
 	{
 	}
 
-	/**
-	 * Post events about given shipment/receipts that were processed.
-	 *
-	 * @param inouts
-	 * @see #notifyProcessed(I_M_InOut)
-	 */
 	public MovementUserNotificationsProducer notifyProcessed(final Collection<? extends I_M_Movement> movements)
 	{
 		if (movements == null || movements.isEmpty())
@@ -83,32 +76,19 @@ public class MovementUserNotificationsProducer
 		return this;
 	}
 
-	/**
-	 * Post events about given shipment/receipts that were processed, i.e.
-	 * <ul>
-	 * <li>if inout's DocStatus is Completed, a "generated" notification will be sent
-	 * <li>if inout's DocStatus is Voided or Reversed, a "reversed" notification will be sent
-	 * </ul>
-	 *
-	 * @param inout
-	 */
-	public final MovementUserNotificationsProducer notifyProcessed(final I_M_Movement movement)
+	public final MovementUserNotificationsProducer notifyProcessed(@NonNull final I_M_Movement movement)
 	{
-		Check.assumeNotNull(movement, "inout not null");
 		notifyProcessed(ImmutableList.of(movement));
 		return this;
 	}
 
 	private final UserNotificationRequest createUserNotification(@NonNull final I_M_Movement movement)
 	{
-		final String adMessage = getNotificationAD_Message(movement);
 		final int recipientUserId = getNotificationRecipientUserId(movement);
-
 		final TableRecordReference movementRef = TableRecordReference.of(movement);
-
 		return newUserNotificationRequest()
 				.recipientUserId(recipientUserId)
-				.contentADMessage(adMessage)
+				.contentADMessage(MSG_Event_MovementGenerated)
 				.contentADMessageParam(movementRef)
 				.targetRecord(movementRef)
 				.build();
@@ -117,20 +97,14 @@ public class MovementUserNotificationsProducer
 	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
 	{
 		return UserNotificationRequest.builder()
-				.topic(EVENTBUS_TOPIC);
-	}
-
-	private final String getNotificationAD_Message(final I_M_Movement movement)
-	{
-
-		return MSG_Event_MovementGenerated;
+				.topic(USER_NOTIFICATIONS_TOPIC);
 	}
 
 	private final int getNotificationRecipientUserId(final I_M_Movement movement)
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
-		if (docActionBL.isDocumentReversedOrVoided(movement))
+		if (documentBL.isDocumentReversedOrVoided(movement))
 		{
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
 			if (currentUserId > 0)
@@ -150,6 +124,6 @@ public class MovementUserNotificationsProducer
 
 	private void postNotifications(final List<UserNotificationRequest> notifications)
 	{
-		Services.get(INotificationBL.class).notifyUserAfterCommit(notifications);
+		notificationBL.notifyUserAfterCommit(notifications);
 	}
 }

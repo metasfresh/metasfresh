@@ -62,7 +62,7 @@ public class M_Movement
 	public void onInit()
 	{
 		// Setup event bus topics on which swing client notification listener shall subscribe
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(MovementUserNotificationsProducer.EVENTBUS_TOPIC);
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(MovementUserNotificationsProducer.USER_NOTIFICATIONS_TOPIC);
 	}
 
 	private M_Movement()
