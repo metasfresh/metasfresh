@@ -300,7 +300,7 @@ input:checked + .input-slider:before {
     display: inline-block;
 
     &.input-mandatory {
-        border-bottom: 2px solid $brand-mandatory-color !important;
+        border: 2px solid $brand-mandatory-color !important;
     }
 }
 
@@ -435,6 +435,7 @@ input:checked + .input-slider:before {
     position: relative;
     display: inline-block;
     padding-right: 0.5rem;
+    border-radius: 3px;
 }
 
 .input-icon-right{
@@ -467,6 +468,7 @@ input:checked + .input-slider:before {
     cursor: pointer;
     min-width: 200px;
     padding: .125rem .5rem;
+    border-radius: 3px;
 
     &:focus {
         outline-width: 0;
