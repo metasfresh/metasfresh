@@ -28,7 +28,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -121,6 +123,8 @@ public class FlatrateBL implements IFlatrateBL
 	 * Message for announcing the user that there are overlapping terms for the term they want to complete
 	 */
 	public static final String MSG_HasOverlapping_Term = "de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm";
+
+	public static final String MSG_INFINITE_LOOP = "de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError";
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
@@ -1014,12 +1018,17 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, localTrxName -> {
 
+			final Map<Integer, String> seenFlatrateCondition = new LinkedHashMap<>();
+			final I_C_Flatrate_Conditions currentConditions = context.getContract().getC_Flatrate_Conditions();
+			seenFlatrateCondition.put(currentConditions.getC_Flatrate_Conditions_ID(), currentConditions.getName());
+
 			ContractExtendingRequest contextUsed = context;
 			I_C_Flatrate_Transition nextTransition = null;
 			final List<I_C_Flatrate_Term> contracts = new ArrayList<>();
 			contracts.add(contextUsed.getContract());
 			do
 			{
+
 				extendContract0(contextUsed, localTrxName);
 
 				final I_C_Flatrate_Term currentTerm = contextUsed.getContract();
@@ -1032,6 +1041,13 @@ public class FlatrateBL implements IFlatrateBL
 
 				nextTransition = nextConditions.getC_Flatrate_Transition();
 				Check.assumeNotNull(nextTransition, "C_Flatrate_Transition shall not be null!");
+
+				// infinite loop detection
+				if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && seenFlatrateCondition.containsKey(nextConditions.getC_Flatrate_Conditions_ID()))
+				{
+					throw new AdempiereException(MSG_INFINITE_LOOP, new Object[] {nextConditions.getName(), seenFlatrateCondition.values()});
+				}
+				seenFlatrateCondition.put(nextConditions.getC_Flatrate_Conditions_ID(), nextConditions.getName());
 
 				contextUsed = contextUsed.toBuilder()
 						  .AD_PInstance_ID(context.getAD_PInstance_ID())
@@ -1091,6 +1107,7 @@ public class FlatrateBL implements IFlatrateBL
 					currentTerm.getType_Conditions(), nextTerm.getType_Conditions(), currentTerm);
 
 			currentTerm.setC_FlatrateTerm_Next_ID(nextTerm.getC_Flatrate_Term_ID());
+			InterfaceWrapperHelper.save(currentTerm);
 
 			// gh #549: notify that handler so it might do additional things. In the case of this task, it shall create C_Flatrate_DataEntry records
 			final IFlatrateTermEventService flatrateHandlersService = Services.get(IFlatrateTermEventService.class);

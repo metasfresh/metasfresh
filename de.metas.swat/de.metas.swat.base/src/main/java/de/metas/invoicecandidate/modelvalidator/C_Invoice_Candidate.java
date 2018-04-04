@@ -420,7 +420,7 @@ public class C_Invoice_Candidate
 		groupChangesHandler.onInvoiceCandidateChanged(invoiceCandidate);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt, I_C_Invoice_Candidate.COLUMNNAME_Processed })
 	public void triggerUpdateBPStats(final I_C_Invoice_Candidate ic)
 	{
 		if (ic.getLineNetAmt().signum() > 0)

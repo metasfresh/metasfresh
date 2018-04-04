@@ -1290,7 +1290,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				.additionalAmt(notInvoicedAmt)
 				.date(getMovementDate())
 				.build();
-		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(request);
+		final String calculatedCreditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerOverSCreditHold@ - @TotalOpenBalance@="

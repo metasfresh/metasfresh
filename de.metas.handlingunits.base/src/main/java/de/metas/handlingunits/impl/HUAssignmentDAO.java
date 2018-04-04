@@ -162,7 +162,11 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
 		final int recordId = InterfaceWrapperHelper.getId(model);
+		return retrieveTopLevelHUsForModel(ctx, adTableId, recordId, trxName);
+	}
 
+	private List<I_M_HU> retrieveTopLevelHUsForModel(final Properties ctx, final int adTableId, final int recordId, final String trxName)
+	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Assignment.class, ctx, trxName)
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId)
@@ -265,7 +269,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
 		final int recordId = InterfaceWrapperHelper.getId(model);
 
-		final Set<Integer> huIds = new HashSet<Integer>(husToUnAssign.size());
+		final Set<Integer> huIds = new HashSet<>(husToUnAssign.size());
 		for (final I_M_HU hu : husToUnAssign)
 		{
 			huIds.add(hu.getM_HU_ID());
