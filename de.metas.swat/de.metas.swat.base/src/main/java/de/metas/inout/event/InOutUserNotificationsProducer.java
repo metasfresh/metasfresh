@@ -122,15 +122,15 @@ public final class InOutUserNotificationsProducer
 		final String adMessage = getNotificationAD_Message(inout);
 		final int recipientUserId = getNotificationRecipientUserId(inout);
 
-		final TableRecordReference targetRecord = TableRecordReference.of(inout);
+		final TableRecordReference inoutRef = TableRecordReference.of(inout);
 
 		return newUserNotificationRequest()
 				.recipientUserId(recipientUserId)
 				.contentADMessage(adMessage)
-				.contentADMessageParam(inout.getDocumentNo())
+				.contentADMessageParam(inoutRef)
 				.contentADMessageParam(bpValue)
 				.contentADMessageParam(bpName)
-				.targetRecord(targetRecord)
+				.targetRecord(inoutRef)
 				.build();
 	}
 

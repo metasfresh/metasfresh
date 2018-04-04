@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.IClientDAO;
@@ -18,19 +17,16 @@ import org.adempiere.user.api.UserNotificationsGroup;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.text.MapFormat;
-import org.apache.ecs.xhtml.a;
+import org.apache.ecs.ClearElement;
 import org.apache.ecs.xhtml.body;
 import org.apache.ecs.xhtml.br;
 import org.apache.ecs.xhtml.html;
 import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Note;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
@@ -38,7 +34,6 @@ import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 import de.metas.event.Event;
 import de.metas.event.IEventBusFactory;
-import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
@@ -73,14 +68,11 @@ public class NotificationBL implements INotificationBL
 {
 	private static final Logger logger = LogManager.getLogger(NotificationBL.class);
 
-	private final CompositeNotificationCtxProvider ctxProviders = new CompositeNotificationCtxProvider();
-
-	/** AD_Message to be used when there was no AD_Message provided */
-	private static final String MSG_DEFAULT_NOTICE_SUBJECT = "webui.window.notification.caption";
-
 	private static final String SYSCONFIG_WEBUI_FRONTEND_URL = "webui.frontend.url";
 	private static final String SYSCONFIG_WEBUI_FRONTEND_DOCUMENT_PATH = "webui.frontend.documentPath";
 	private static final String DEFAULT_WEBUI_FRONTEND_DOCUMENT_PATH = "/window/{windowId}/{recordId}";
+
+	private final CompositeNotificationCtxProvider ctxProviders = new CompositeNotificationCtxProvider();
 
 	@Override
 	public void notifyUserAfterCommit(@NonNull final UserNotificationRequest request)
@@ -189,7 +181,7 @@ public class NotificationBL implements INotificationBL
 		return "";
 	}
 
-	private String extractContentText(final UserNotificationRequest request)
+	private String extractContentText(final UserNotificationRequest request, final boolean html)
 	{
 		if (!Check.isEmpty(request.getContentPlain()))
 		{
@@ -198,7 +190,9 @@ public class NotificationBL implements INotificationBL
 
 		if (!Check.isEmpty(request.getContentADMessage()))
 		{
-			return Services.get(IMsgBL.class).getMsg(request.getContentADMessage(), request.getContentADMessageParams());
+			return prepareMessageFormatter(request)
+					.html(html)
+					.format(request.getContentADMessage(), request.getContentADMessageParams());
 		}
 
 		return "";
@@ -308,34 +302,6 @@ public class NotificationBL implements INotificationBL
 		}
 	}
 
-	private void createNotice_OLD(final UserNotificationRequest request)
-	{
-		final IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
-		final int adMessageId = msgDAO.retrieveIdByValue(Env.getCtx(), request.getSubjectADMessageOr(MSG_DEFAULT_NOTICE_SUBJECT));
-
-		final UserNotificationsConfig notificationsConfig = request.getNotificationsConfig();
-
-		final I_AD_Note note = InterfaceWrapperHelper.newInstance(I_AD_Note.class);
-		note.setAD_User_ID(notificationsConfig.getUserId());
-		note.setAD_Message_ID(adMessageId);
-		note.setAD_Org_ID(notificationsConfig.getAdOrgId());
-		note.setTextMsg(extractContentText(request));
-
-		final ITableRecordReference targetRecord = request.getTargetRecord();
-		if (targetRecord != null)
-		{
-			note.setAD_Table_ID(targetRecord.getAD_Table_ID());
-			note.setRecord_ID(targetRecord.getRecord_ID());
-			final int targetADWindowId = request.getTargetADWindowId();
-			if (targetADWindowId > 0)
-			{
-				note.setAD_Window_ID(targetADWindowId);
-			}
-		}
-
-		InterfaceWrapperHelper.save(note);
-	}
-
 	private void sendMail(final UserNotificationRequest request)
 	{
 		final UserNotificationsConfig notificationsConfig = request.getNotificationsConfig();
@@ -347,7 +313,7 @@ public class NotificationBL implements INotificationBL
 		String subject = extractSubjectText(request);
 		if (Check.isEmpty(subject, true) && content != null)
 		{
-			subject = extractContentText(request);
+			subject = extractContentText(request, /* html */false);
 			if (subject.length() > 100)
 			{
 				subject = subject.substring(0, 100 - 3) + "...";
@@ -383,64 +349,39 @@ public class NotificationBL implements INotificationBL
 	private String extractMailContent(final UserNotificationRequest request)
 	{
 		final body htmlBody = new body();
-		final String messageText = extractContentText(request);
-		if (!Check.isEmpty(messageText))
+		final String htmlBodyString = extractContentText(request, /* html */true);
+		if (!Check.isEmpty(htmlBodyString))
 		{
 			Splitter.on("\n")
-					.splitToList(messageText.trim())
-					.forEach(line -> htmlBody.addElement(line).addElement(new br()));
-		}
-
-		final a targetRecordHtmlLink = extractTargetRecordHtmlLink(request);
-		if (targetRecordHtmlLink != null)
-		{
-			htmlBody.addElement(new br()).addElement(targetRecordHtmlLink);
+					.splitToList(htmlBodyString.trim())
+					.forEach(htmlLine -> htmlBody.addElement(new ClearElement(htmlLine)).addElement(new br()));
 		}
 
 		return new html().addElement(htmlBody).toString();
 	}
 
-	private a extractTargetRecordHtmlLink(final UserNotificationRequest request)
+	private NotificationMessageFormatter prepareMessageFormatter(final UserNotificationRequest request)
 	{
-		final String url = extractTargetRecordUrl(request);
-		if (url == null)
-		{
-			return null;
-		}
+		final NotificationMessageFormatter formatter = NotificationMessageFormatter.newInstance()
+				.webuiDocumentUrl(getDocumentUrl());
 
-		final String targetRecordDisplayText = resolveTargetRecordDisplayText(request);
-		if (Check.isEmpty(targetRecordDisplayText))
-		{
-			return null;
-		}
-
-		return new a(url, targetRecordDisplayText);
-	}
-
-	private String extractTargetRecordUrl(final UserNotificationRequest request)
-	{
 		final ITableRecordReference targetRecord = request.getTargetRecord();
-		if (targetRecord == null)
+		if (targetRecord != null)
 		{
-			return null;
+			final String targetRecordDisplayText = request.getTargetRecordDisplayText();
+			if (!Check.isEmpty(targetRecordDisplayText))
+			{
+				formatter.recordDisplayText(targetRecord, targetRecordDisplayText);
+			}
+
+			final int targetWindowId = request.getTargetADWindowId();
+			if (targetWindowId > 0)
+			{
+				formatter.recordWindowId(targetRecord, targetWindowId);
+			}
 		}
 
-		final int targetWindowId = request.getTargetADWindowId();
-		if (targetWindowId <= 0)
-		{
-			return null;
-		}
-
-		final String documentUrl = getDocumentUrl();
-		if (Check.isEmpty(documentUrl))
-		{
-			return null;
-		}
-
-		return MapFormat.format(documentUrl, ImmutableMap.<String, Object> builder()
-				.put("windowId", targetWindowId)
-				.put("recordId", targetRecord.getRecord_ID())
-				.build());
+		return formatter;
 	}
 
 	private String getDocumentUrl()
