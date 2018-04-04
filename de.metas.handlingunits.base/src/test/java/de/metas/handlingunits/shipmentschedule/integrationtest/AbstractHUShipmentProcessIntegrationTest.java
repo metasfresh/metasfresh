@@ -25,6 +25,7 @@ import static de.metas.business.BusinessTestHelper.createBPartner;
 import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +38,6 @@ import java.util.List;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -237,9 +237,9 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		
 		//
 		// Create doctype
-		final I_C_DocType docType = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_DocType.class);
+		final I_C_DocType docType = newInstanceOutOfTrx(I_C_DocType.class);
 		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery);
-		InterfaceWrapperHelper.save(docType);
+		save(docType);
 
 		initializeAttributeConfig(handlerRecord);
 	}
@@ -427,10 +427,10 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		
 		//
 		// Make sure the current user is configured to receive notifications
-		final I_AD_User user = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		final I_AD_User user = newInstance(I_AD_User.class);
 		user.setAD_User_ID(0);
 		user.setNotificationType(X_AD_User.NOTIFICATIONTYPE_Notice);
-		InterfaceWrapperHelper.save(user);
+		save(user);
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, user.getAD_User_ID());
 
 
