@@ -57,7 +57,7 @@ public class OrdersCollector implements IOrdersCollector
 	private static final String MSG_Event_Generated = "Event_ProcurementPurchaseOrderGenerated";
 	private final DocumentUserNotificationsProducer<I_C_Order> orderGeneratedNotifier = DocumentUserNotificationsProducer.<I_C_Order> builder()
 			.logger(ProcurementConstants.getLogger(OrdersCollector.class))
-			.topic(ProcurementConstants.EVENTBUS_TOPIC_PurchaseOrderGenerated)
+			.topic(ProcurementConstants.USER_NOTIFICATIONS_TOPIC)
 			.eventAD_Message(MSG_Event_Generated)
 			.eventAD_MessageParamsExtractor(OrdersCollector::extractUserNotificationADMessageParams)
 			.build();
