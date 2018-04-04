@@ -37,6 +37,7 @@ import java.util.List;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -44,11 +45,16 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_AD_User;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
@@ -228,6 +234,12 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		final I_M_IolCandHandler handlerRecord = ((ShipmentScheduleHandlerBL)shipmentScheduleHandlerBL)
 				.retrieveHandlerRecordOrNull(OrderLineShipmentScheduleHandler.class.getName());
 		assertThat(handlerRecord).isNotNull(); // should have been registered by super.initialize();
+		
+		//
+		// Create doctype
+		final I_C_DocType docType = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_DocType.class);
+		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery);
+		InterfaceWrapperHelper.save(docType);
 
 		initializeAttributeConfig(handlerRecord);
 	}
@@ -412,6 +424,15 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 				.assertExpected_ShipmentScheduleWithHUs("after split IShipmentScheduleWithHU candidates", candidatesSorted);
 
 		final InOutGeneratedNotificationChecker notificationsChecker = InOutGeneratedNotificationChecker.createAnSubscribe();
+		
+		//
+		// Make sure the current user is configured to receive notifications
+		final I_AD_User user = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		user.setAD_User_ID(0);
+		user.setNotificationType(X_AD_User.NOTIFICATIONTYPE_Notice);
+		InterfaceWrapperHelper.save(user);
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, user.getAD_User_ID());
+
 
 		// Generate shipments
 		huShippingFacade.generateShippingDocuments();
