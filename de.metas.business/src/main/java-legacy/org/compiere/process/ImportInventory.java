@@ -20,10 +20,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.Services;
@@ -36,6 +32,8 @@ import org.compiere.model.X_I_Inventory;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
 
 /**
@@ -60,26 +58,41 @@ public class ImportInventory extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
+			String name = element.getParameterName();
+			if (element.getParameter() == null)
+			{
 				;
+			}
 			else if (name.equals("AD_Client_ID"))
-				p_AD_Client_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			{
+				p_AD_Client_ID = ((BigDecimal)element.getParameter()).intValue();
+			}
 			else if (name.equals("AD_Org_ID"))
-				p_AD_Org_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			{
+				p_AD_Org_ID = ((BigDecimal)element.getParameter()).intValue();
+			}
 			else if (name.equals("M_Locator_ID"))
-				p_M_Locator_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			{
+				p_M_Locator_ID = ((BigDecimal)element.getParameter()).intValue();
+			}
 			else if (name.equals("MovementDate"))
-				p_MovementDate = (Timestamp)para[i].getParameter();
+			{
+				p_MovementDate = (Timestamp)element.getParameter();
+			}
 			else if (name.equals("DeleteOldImported"))
-				p_DeleteOldImported = "Y".equals(para[i].getParameter());
+			{
+				p_DeleteOldImported = "Y".equals(element.getParameter());
+			}
 			else
+			{
 				log.error("Unknown Parameter: " + name);
+			}
 		}
 	}	//	prepare
 
@@ -89,6 +102,7 @@ public class ImportInventory extends JavaProcess
 	 *  @return Message
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws java.lang.Exception
 	{
 		log.info("M_Locator_ID=" + p_M_Locator_ID + ",MovementDate=" + p_MovementDate);
@@ -113,7 +127,9 @@ public class ImportInventory extends JavaProcess
 			  + "SET AD_Client_ID = COALESCE (AD_Client_ID,").append (p_AD_Client_ID).append ("),"
 			  + " AD_Org_ID = COALESCE (AD_Org_ID,").append (p_AD_Org_ID).append ("),");
 		if (p_MovementDate != null)
+		{
 			sql.append(" MovementDate = COALESCE (MovementDate,").append (DB.TO_DATE(p_MovementDate)).append ("),");
+		}
 		sql.append(" IsActive = COALESCE (IsActive, 'Y'),"
 			  + " Created = COALESCE (Created, now()),"
 			  + " CreatedBy = COALESCE (CreatedBy, 0),"
@@ -133,7 +149,9 @@ public class ImportInventory extends JavaProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("Invalid Org=" + no);
+		}
 
 
 		//	Location
@@ -166,7 +184,9 @@ public class ImportInventory extends JavaProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("No Location=" + no);
+		}
 
 
 		//	Set M_Warehouse_ID
@@ -182,7 +202,9 @@ public class ImportInventory extends JavaProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("No Warehouse=" + no);
+		}
 
 
 		//	Product
@@ -206,7 +228,9 @@ public class ImportInventory extends JavaProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("No Product=" + no);
+		}
 
 		//	No QtyCount
 		sql = new StringBuffer ("UPDATE I_Inventory "
@@ -215,10 +239,12 @@ public class ImportInventory extends JavaProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate (sql.toString (), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("No QtyCount=" + no);
+		}
 
 		commitEx();
-		
+
 		/*********************************************************************/
 
 		MInventory inventory = null;
@@ -267,20 +293,24 @@ public class ImportInventory extends JavaProcess
 				if (imp.getLot() != null || imp.getSerNo() != null)
 				{
 					MProduct product = MProduct.get(getCtx(), imp.getM_Product_ID());
-					if (product.isInstanceAttribute())
+					if (Services.get(IProductBL.class).isInstanceAttribute(product))
 					{
 						I_M_AttributeSet mas = Services.get(IProductBL.class).getM_AttributeSet(product);
 						MAttributeSetInstance masi = new MAttributeSetInstance(getCtx(), 0, mas.getM_AttributeSet_ID(), get_TrxName());
 						if (mas.isLot() && imp.getLot() != null)
+						{
 							masi.setLot(imp.getLot(), imp.getM_Product_ID());
+						}
 						if (mas.isSerNo() && imp.getSerNo() != null)
+						{
 							masi.setSerNo(imp.getSerNo());
+						}
 						Services.get(IAttributeSetInstanceBL.class).setDescription(masi);
 						masi.save();
 						M_AttributeSetInstance_ID = masi.getM_AttributeSetInstance_ID();
 					}
 				}
-				MInventoryLine line = new MInventoryLine (inventory, 
+				MInventoryLine line = new MInventoryLine (inventory,
 					imp.getM_Locator_ID(), imp.getM_Product_ID(), M_AttributeSetInstance_ID,
 					imp.getQtyBook(), imp.getQtyCount());
 				if (line.save())
@@ -290,7 +320,9 @@ public class ImportInventory extends JavaProcess
 					imp.setM_InventoryLine_ID(line.getM_InventoryLine_ID());
 					imp.setProcessed(true);
 					if (imp.save())
+					{
 						noInsertLine++;
+					}
 				}
 			}
 			rs.close();
