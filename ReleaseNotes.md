@@ -14,6 +14,9 @@ Here come the actual release notes:
 **release for week 2018-15**
 
 ## Features
+* metasfresh-webui-frontend
+  * [#1709](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1709) Harmonize Border Look&Feel between Lookup and List widget
+    * Improvement of List widget border to Lookup widget border. Now having a harmonized look & feel.
 
 ## Fixes
 * metasfresh-webui-frontend
