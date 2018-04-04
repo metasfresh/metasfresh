@@ -16,6 +16,9 @@ Here come the actual release notes:
 ## Features
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1555](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1555) Can not enter "-" into any search field
+    * Fixes the search and filtering for special characters. Now it's able to search for minus, underscore and different other characters too.
 
 # metasfresh 5.51 (2018-14)
 **release for week 2018-14**
