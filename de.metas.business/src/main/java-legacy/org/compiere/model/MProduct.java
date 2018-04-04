@@ -356,22 +356,6 @@ public class MProduct extends X_M_Product
 	}	// getAttributeSet
 
 	/**
-	 * Has the Product Instance Attribute
-	 *
-	 * @return true if instance attributes
-	 */
-	public boolean isInstanceAttribute()
-	{
-		I_M_AttributeSet mas = Services.get(IProductBL.class).getM_AttributeSet(this);
-
-		if (mas == null)
-		{
-			return false;
-		}
-		return mas.isInstanceAttribute();
-	}	// isInstanceAttribute
-
-	/**
 	 * Create One Asset Per UOM
 	 *
 	 * @return individual asset
@@ -562,11 +546,11 @@ public class MProduct extends X_M_Product
 			BigDecimal OnHand = Env.ZERO;
 			BigDecimal Ordered = Env.ZERO;
 			BigDecimal Reserved = Env.ZERO;
-			for (int i = 0; i < storages.length; i++)
+			for (MStorage storage : storages)
 			{
-				OnHand = OnHand.add(storages[i].getQtyOnHand());
-				Ordered = OnHand.add(storages[i].getQtyOrdered());
-				Reserved = OnHand.add(storages[i].getQtyReserved());
+				OnHand = OnHand.add(storage.getQtyOnHand());
+				Ordered = OnHand.add(storage.getQtyOrdered());
+				Reserved = OnHand.add(storage.getQtyReserved());
 			}
 			String errMsg = "";
 			if (OnHand.signum() != 0)
