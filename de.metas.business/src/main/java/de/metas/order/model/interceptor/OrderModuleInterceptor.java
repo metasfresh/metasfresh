@@ -32,7 +32,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
-		return ImmutableList.of(OrderUserNotifications.EVENTBUS_TOPIC);
+		return ImmutableList.of(OrderUserNotifications.USER_NOTIFICATIONS_TOPIC);
 	}
 
 	@Override

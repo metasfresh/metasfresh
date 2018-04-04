@@ -56,8 +56,8 @@ public class OrderUserNotifications
 		return new OrderUserNotifications();
 	}
 
-	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.name("de.metas.order.OrderUserNotifications")
+	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
+			.name("de.metas.order.UserNotifications")
 			.type(Type.REMOTE)
 			.build();
 
@@ -132,7 +132,7 @@ public class OrderUserNotifications
 	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
 	{
 		return UserNotificationRequest.builder()
-				.topic(EVENTBUS_TOPIC);
+				.topic(USER_NOTIFICATIONS_TOPIC);
 	}
 
 	private static ADMessageAndParams extractOrderCompletedADMessageAndParams(final I_C_Order order)
