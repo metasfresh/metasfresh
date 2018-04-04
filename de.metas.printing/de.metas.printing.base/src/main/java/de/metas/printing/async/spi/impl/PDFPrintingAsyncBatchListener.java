@@ -179,10 +179,6 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 	{
 		private final Map<Integer, Integer> countersByPrintPackageId = new HashMap<>();
 
-		public SeenPrintPackages()
-		{
-		}
-
 		public boolean isEmpty()
 		{
 			return countersByPrintPackageId.isEmpty();
