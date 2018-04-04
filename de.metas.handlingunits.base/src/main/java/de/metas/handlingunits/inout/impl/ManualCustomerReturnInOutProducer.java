@@ -27,7 +27,7 @@ import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.inout.event.ReturnInOutProcessedEventBus;
+import de.metas.inout.event.ReturnInOutUserNotificationsProduder;
 
 /*
  * #%L
@@ -126,8 +126,7 @@ public class ManualCustomerReturnInOutProducer
 		{
 			if (_manualCustomerReturn != null)
 			{
-				ReturnInOutProcessedEventBus.newInstance()
-						.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
+				ReturnInOutUserNotificationsProduder.newInstance()
 						.notify(returnInOuts);
 			}
 
