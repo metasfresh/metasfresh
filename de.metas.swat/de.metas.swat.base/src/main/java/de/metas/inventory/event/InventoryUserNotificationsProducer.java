@@ -85,14 +85,11 @@ public class InventoryUserNotificationsProducer
 
 	private final UserNotificationRequest createUserNotification(@NonNull final I_M_Inventory inventory)
 	{
-		final String adMessage = getNotificationAD_Message(inventory);
-		final int recipientUserId = getNotificationRecipientUserId(inventory);
-
 		final TableRecordReference inventoryRef = TableRecordReference.of(inventory);
 
 		return newUserNotificationRequest()
-				.recipientUserId(recipientUserId)
-				.contentADMessage(adMessage)
+				.recipientUserId(getNotificationRecipientUserId(inventory))
+				.contentADMessage(MSG_Event_InventoryGenerated)
 				.contentADMessageParam(inventoryRef)
 				.targetRecord(inventoryRef)
 				.targetADWindowId(WINDOW_INTERNAL_INVENTORY)
@@ -104,11 +101,6 @@ public class InventoryUserNotificationsProducer
 	{
 		return UserNotificationRequest.builder()
 				.topic(EVENTBUS_TOPIC);
-	}
-
-	private final String getNotificationAD_Message(final I_M_Inventory inventory)
-	{
-		return MSG_Event_InventoryGenerated;
 	}
 
 	private final int getNotificationRecipientUserId(final I_M_Inventory inventory)
