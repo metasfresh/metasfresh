@@ -65,10 +65,12 @@ public class PurchaseRowFactory
 			@NotNull final Date datePromised)
 	{
 		final int bpartnerId = purchaseCandidate.getVendorBPartnerId();
+		final int productId;
 		final JSONLookupValue vendorBPartner = createBPartnerLookupValue(bpartnerId);
 		final JSONLookupValue product;
 		if (vendorProductInfo != null)
 		{
+			productId = vendorProductInfo.getProductId();
 			product = createProductLookupValue(
 					vendorProductInfo.getProductId(),
 					vendorProductInfo.getProductNo(),
@@ -76,20 +78,16 @@ public class PurchaseRowFactory
 		}
 		else
 		{
-			product = createProductLookupValue(purchaseCandidate.getProductId());
+			productId = purchaseCandidate.getProductId();
+			product = createProductLookupValue(productId);
 		}
 		final String uom = createUOMLookupValueForProductId(product.getKeyAsInt());
 
 		final int processedPurchaseCandidateId = purchaseCandidate.isProcessed() ? purchaseCandidate.getPurchaseCandidateId() : 0;
 
-		final AvailableToPromiseQueryBuilder atpQueryBuilder = AvailableToPromiseQuery.builder();
+	
 
-		atpQueryBuilder.productId(purchaseCandidate.getProductId());
-		atpQueryBuilder.bpartnerId(bpartnerId);
-		atpQueryBuilder.date(datePromised);
-
-		final BigDecimal qtyAvailable = new AvailableToPromiseRepository().retrieveAvailableStock(atpQueryBuilder.build()).getSingleQty();
-
+		
 		return PurchaseRow.builder()
 				.rowId(PurchaseRowId.lineId(
 						purchaseCandidate.getSalesOrderLineId(),
@@ -103,7 +101,6 @@ public class PurchaseRowFactory
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				.datePromised(datePromised)
 				.vendorBPartner(vendorBPartner)
-				.qtyAvailable(qtyAvailable)
 				.purchaseCandidateId(purchaseCandidate.getPurchaseCandidateId())
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
