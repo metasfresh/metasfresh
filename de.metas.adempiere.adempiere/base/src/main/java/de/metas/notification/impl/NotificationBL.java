@@ -370,7 +370,7 @@ public class NotificationBL implements INotificationBL
 		String subject = extractSubjectText(request);
 		if (Check.isEmpty(subject, true))
 		{
-			subject = extractSubjectFromContent(content);
+			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
 		}
 
 		final IMailBL mailBL = Services.get(IMailBL.class);
