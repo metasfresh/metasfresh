@@ -349,6 +349,7 @@ public class NotificationBL implements INotificationBL
 				subject,
 				content,
 				html);
+		request.getAttachments().forEach(mail::addAttachment);
 		mailBL.send(mail);
 	}
 

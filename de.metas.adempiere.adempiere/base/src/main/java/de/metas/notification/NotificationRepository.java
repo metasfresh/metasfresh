@@ -11,12 +11,14 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Note;
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.attachments.IAttachmentBL;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.logging.LogManager;
 import de.metas.notification.UserNotification.UserNotificationBuilder;
@@ -112,6 +114,13 @@ public class NotificationRepository
 
 		//
 		InterfaceWrapperHelper.save(notificationPO);
+
+		final List<Resource> attachments = request.getAttachments();
+		if (!attachments.isEmpty())
+		{
+			final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
+			attachmentBL.addEntriesFromResources(notificationPO, attachments);
+		}
 
 		return toUserNotification(notificationPO);
 	}

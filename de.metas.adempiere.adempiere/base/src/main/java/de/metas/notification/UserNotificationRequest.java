@@ -9,6 +9,7 @@ import org.adempiere.user.api.NotificationGroupName;
 import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.springframework.core.io.Resource;
 
 import com.google.common.collect.ImmutableList;
 
@@ -66,6 +67,8 @@ public class UserNotificationRequest
 	String targetRecordDisplayText;
 	ITableRecordReference targetRecord;
 	int targetADWindowId;
+	
+	List<Resource> attachments;
 
 	@Builder(toBuilder = true)
 	private UserNotificationRequest(
@@ -86,7 +89,9 @@ public class UserNotificationRequest
 			//
 			String targetRecordDisplayText,
 			final ITableRecordReference targetRecord,
-			final int targetADWindowId)
+			final int targetADWindowId,
+			//
+			@Singular final List<Resource> attachments)
 	{
 		this.notificationsConfig = notificationsConfig;
 		if (notificationsConfig != null)
@@ -113,6 +118,8 @@ public class UserNotificationRequest
 		this.targetRecordDisplayText = targetRecordDisplayText;
 		this.targetRecord = targetRecord;
 		this.targetADWindowId = targetADWindowId;
+		
+		this.attachments = ImmutableList.copyOf(attachments);
 	}
 
 	private static List<Object> copyADMessageParams(final List<Object> params)
