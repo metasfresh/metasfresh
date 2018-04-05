@@ -48,7 +48,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.X_AD_User;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -399,28 +398,6 @@ public class UserBL implements IUserBL
 		InterfaceWrapperHelper.save(user);
 
 		return user;
-	}
-
-	@Override
-	public boolean isNotificationEMail(final I_AD_User user)
-	{
-		final String s = user.getNotificationType();
-		return s == null || X_AD_User.NOTIFICATIONTYPE_EMail.equals(s)
-				|| X_AD_User.NOTIFICATIONTYPE_EMailPlusNotice.equals(s);
-	}
-
-	@Override
-	public boolean isNotificationNote(final I_AD_User user)
-	{
-		final String s = user.getNotificationType();
-		return s != null && (X_AD_User.NOTIFICATIONTYPE_Notice.equals(s)
-				|| X_AD_User.NOTIFICATIONTYPE_EMailPlusNotice.equals(s));
-	}
-
-	@Override
-	public boolean isNotifyUserIncharge(final I_AD_User user)
-	{
-		return de.metas.adempiere.model.I_AD_User.NOTIFICATIONTYPE_NotifyUserInCharge.equals(user.getNotificationType());
 	}
 
 	@Override

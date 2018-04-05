@@ -89,22 +89,6 @@ public interface IUserBL extends ISingletonService
 	String buildContactName(final String firstName, final String lastName);
 
 	/**
-	 * Get Notification via EMail
-	 *
-	 * @return true if email
-	 */
-	boolean isNotificationEMail(I_AD_User user);
-
-	/**
-	 * Get Notification via <code>AD_Note</code>
-	 *
-	 * @return true if note
-	 */
-	boolean isNotificationNote(I_AD_User user);
-
-	boolean isNotifyUserIncharge(I_AD_User recipient);
-
-	/**
 	 * Is the email valid
 	 *
 	 * @return return true if email is valid (artificial check)
