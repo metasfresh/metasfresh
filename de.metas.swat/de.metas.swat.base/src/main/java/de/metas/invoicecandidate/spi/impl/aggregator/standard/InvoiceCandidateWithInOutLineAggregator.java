@@ -564,9 +564,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 	private int getC_PaymentTerm_ID()
 	{
-		return InterfaceWrapperHelper.getValueOverrideOrValue(
+		final Integer valueOrNull = InterfaceWrapperHelper.getValueOverrideOrValue(
 				getFirstInvoiceCandidate(),
 				I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID);
+		return valueOrNull == null ? 0 : valueOrNull;
 	}
 
 	/** @return effective tax to use in invoice line */
