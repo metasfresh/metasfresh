@@ -349,14 +349,6 @@ public class NotificationBL implements INotificationBL
 		{
 			logger.warn("Failed saving and sending notification: {}", request, ex);
 		}
-
-		try
-		{
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Failed sending notification: {}", request, ex);
-		}
 	}
 
 	private void sendMail(final UserNotificationRequest request)
