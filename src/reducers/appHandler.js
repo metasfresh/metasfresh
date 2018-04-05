@@ -154,6 +154,19 @@ export default function appHandler(state = initialState, action) {
         },
       });
 
+    case types.READ_ALL_NOTIFICATIONS:
+      var read = { read: true };
+      return update(state, {
+        inbox: {
+          notifications: {
+            $set: state.inbox.notifications.map(item => ({ ...item, ...read })),
+          },
+          unreadCount: {
+            $set: 0,
+          },
+        },
+      });
+
     case types.SET_PROCESS_STATE_PENDING:
       return {
         ...state,

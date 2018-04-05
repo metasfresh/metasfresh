@@ -235,6 +235,8 @@ export function loginSuccess(auth) {
               notification.unreadCount
             )
           );
+        } else if (notification.eventType === 'ReadAll') {
+          dispatch(readAllNotifications());
         } else if (notification.eventType === 'Delete') {
           dispatch(
             removeNotification(
@@ -362,6 +364,12 @@ export function removeNotification(msg, count) {
     type: types.REMOVE_NOTIFICATION,
     notification: msg,
     unreadCount: count,
+  };
+}
+
+export function readAllNotifications() {
+  return {
+    type: types.READ_ALL_NOTIFICATIONS,
   };
 }
 
