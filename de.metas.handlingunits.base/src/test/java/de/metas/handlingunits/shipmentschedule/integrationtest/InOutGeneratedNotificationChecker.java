@@ -37,6 +37,8 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.notification.UserNotification;
+import de.metas.notification.UserNotificationUtils;
 
 /**
  * Listens to InOutGenerate topic, collects the inouts which were notified and later can compare with a given list.
@@ -67,7 +69,8 @@ public class InOutGeneratedNotificationChecker implements IEventListener
 	@Override
 	public void onEvent(final IEventBus eventBus, final Event event)
 	{
-		final ITableRecordReference inoutRecord = event.getRecord();
+		final UserNotification notification = UserNotificationUtils.toUserNotification(event);
+		final ITableRecordReference inoutRecord = notification.getTargetRecord();
 		final int inoutId = inoutRecord.getRecord_ID();
 
 		notifiedInOutIds.add(inoutId);
