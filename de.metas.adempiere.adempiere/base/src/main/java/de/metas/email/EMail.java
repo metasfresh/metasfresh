@@ -46,6 +46,7 @@ import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -839,6 +840,12 @@ public final class EMail implements Serializable
 		}
 		addAttachment(EMailAttachment.of(file));
 	}
+	
+	public void addAttachment(@NonNull final Resource resource)
+	{
+		addAttachment(EMailAttachment.of(resource));
+	}
+
 
 	/**
 	 * Add a collection of attachments
