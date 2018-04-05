@@ -53,6 +53,8 @@ public class UserNotificationRequest
 
 	Topic topic;
 
+	boolean important;
+
 	String subjectPlain;
 	String subjectADMessage;
 	List<Object> subjectADMessageParams;
@@ -71,6 +73,8 @@ public class UserNotificationRequest
 			final UserNotificationsConfig notificationsConfig,
 			//
 			final Topic topic,
+			//
+			final boolean important,
 			//
 			final String subjectPlain,
 			final String subjectADMessage,
@@ -95,6 +99,8 @@ public class UserNotificationRequest
 		}
 
 		this.topic = topic != null ? topic : EventBusConstants.TOPIC_GeneralNotifications;
+
+		this.important = important;
 
 		this.subjectPlain = subjectPlain;
 		this.subjectADMessage = subjectADMessage;

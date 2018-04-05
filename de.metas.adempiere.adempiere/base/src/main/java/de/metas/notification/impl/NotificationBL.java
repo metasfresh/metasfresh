@@ -21,6 +21,7 @@ import org.apache.ecs.ClearElement;
 import org.apache.ecs.xhtml.body;
 import org.apache.ecs.xhtml.br;
 import org.apache.ecs.xhtml.html;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -32,12 +33,14 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
-import de.metas.event.Event;
 import de.metas.event.IEventBusFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
+import de.metas.notification.NotificationRepository;
+import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationUtils;
 import de.metas.notification.spi.INotificationCtxProvider;
 import de.metas.notification.spi.impl.CompositeNotificationCtxProvider;
 import lombok.NonNull;
@@ -165,8 +168,8 @@ public class NotificationBL implements INotificationBL
 		final RecordZoomWindowFinder recordWindowFinder = RecordZoomWindowFinder.newInstance(request.getTargetRecord());
 		return recordWindowFinder.findAD_Window_ID();
 	}
-
-	private String extractSubjectText(final UserNotificationRequest request)
+	
+	private static String extractSubjectText(final UserNotificationRequest request)
 	{
 		if (!Check.isEmpty(request.getSubjectPlain()))
 		{
@@ -180,6 +183,7 @@ public class NotificationBL implements INotificationBL
 
 		return "";
 	}
+
 
 	private String extractContentText(final UserNotificationRequest request, final boolean html)
 	{
@@ -202,6 +206,8 @@ public class NotificationBL implements INotificationBL
 	{
 		final UserNotificationsConfig notificationsConfig = request.getNotificationsConfig();
 		final UserNotificationsGroup notificationsGroup = notificationsConfig.getGroupByName(request.getNotificationGroupName());
+		boolean notifyByInternalMessage = notificationsGroup.isNotifyByInternalMessage();
+
 		if (notificationsGroup.isNotifyByEMail())
 		{
 			try
@@ -211,13 +217,13 @@ public class NotificationBL implements INotificationBL
 			catch (final Exception ex)
 			{
 				logger.warn("Failed sending email for {}. Trying to Send user notification instead.", request, ex);
-				createNotice(request);
+				notifyByInternalMessage = true;
 			}
 		}
 
-		if (notificationsGroup.isNotifyByInternalMessage())
+		if (notifyByInternalMessage)
 		{
-			createNotice(request);
+			sendNotice(request);
 		}
 	}
 
@@ -280,23 +286,26 @@ public class NotificationBL implements INotificationBL
 		return result;
 	}
 
-	private void createNotice(final UserNotificationRequest request)
+	private void sendNotice(final UserNotificationRequest request)
 	{
 		try
 		{
-			final Event event = Event.builder()
-					.setSummary(extractSubjectText(request))
-					.setDetailADMessage(request.getContentADMessage(), request.getContentADMessageParams())
-					.addRecipient_User_ID(request.getRecipientUserId())
-					.setRecord(request.getTargetRecord())
-					.setSuggestedWindowId(request.getTargetADWindowId())
-					.build();
+			final NotificationRepository notificationsRepo = Adempiere.getBean(NotificationRepository.class);
+			final UserNotification notification = notificationsRepo.save(request);
 
 			Services.get(IEventBusFactory.class)
 					.getEventBus(request.getTopic())
-					.postEvent(event);
+					.postEvent(UserNotificationUtils.toEvent(notification));
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
+		{
+			logger.warn("Failed saving and sending notification: {}", request, ex);
+		}
+
+		try
+		{
+		}
+		catch (final Exception ex)
 		{
 			logger.warn("Failed sending notification: {}", request, ex);
 		}
