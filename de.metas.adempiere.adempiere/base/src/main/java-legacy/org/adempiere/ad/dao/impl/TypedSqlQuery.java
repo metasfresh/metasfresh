@@ -1626,11 +1626,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public int updateDirectly(final IQueryUpdater<T> queryUpdater)
+	public int updateDirectly(@NonNull final IQueryUpdater<T> queryUpdater)
 	{
-		Check.assumeNotNull(queryUpdater, "queryUpdater");
-
-		//
 		// Check if it's an ISqlQueryUpdater then we can update it directly
 		if (queryUpdater instanceof ISqlQueryUpdater)
 		{

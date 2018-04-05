@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaymentTerm;
@@ -80,7 +79,7 @@ public class InvoiceCandDAOTest
 		save(unrelatedInvoiceCandidateWithoutPaymentTerm);
 
 		// invoke the method under test and refresh all ICs
-		new InvoiceCandDAO().updateMissingPaymentTermIds(selectionId, ITrx.TRXNAME_ThreadInherited);
+		new InvoiceCandDAO().updateMissingPaymentTermIds(selectionId);
 
 		refreshAll(ImmutableList.of(
 				invoiceCandidateWithoutPaymentTerm1,
