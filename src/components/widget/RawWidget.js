@@ -757,6 +757,7 @@ class RawWidget extends Component {
             tabIndex={tabIndex}
             autoFocus={autoFocus}
             readonly={readonly}
+            isModal={isModal}
           />
         );
       case 'Image':
