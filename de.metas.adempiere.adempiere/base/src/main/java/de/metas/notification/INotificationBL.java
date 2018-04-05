@@ -36,17 +36,7 @@ public interface INotificationBL extends ISingletonService
 
 	void notifyUserAfterCommit(List<UserNotificationRequest> requests);
 
-	/**
-	 * This method will be used when a new <{@code INotificationCtxProvider} implementation is registered.
-	 * 
-	 * @param ctxProvider
-	 */
 	void addCtxProvider(INotificationCtxProvider ctxProvider);
 
-	/**
-	 * Sets the default {@link INotificationCtxProvider} to be used if none of the registered ones match.
-	 * 
-	 * @param defaultCtxProvider
-	 */
 	void setDefaultCtxProvider(INotificationCtxProvider defaultCtxProvider);
 }
