@@ -484,6 +484,8 @@ input:checked + .input-slider:before {
 
         &.focused {
             border-bottom-color: $input-focused-border;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
         }
 
         &.opened {
