@@ -60,6 +60,7 @@ public class M_InOutLine_HandlerTest
 	private static final BigDecimal FOUR = new BigDecimal(4);
 	private static final BigDecimal FIVE = new BigDecimal(5);;
 	private static final BigDecimal SIX = new BigDecimal(6);
+	private static final BigDecimal NINE = TEN.subtract(ONE);
 
 	private I_M_InOutLine packagingInOutLine;
 	private I_M_InOut inout;
@@ -130,7 +131,7 @@ public class M_InOutLine_HandlerTest
 	{
 		final I_M_InOutLine materialInOutLine = createMaterialInOutLine(paymentTermA);
 
-		final int paymentTermId = inOutLineHandlerUnderTest.extractPaymentTermIdViaOrderLine(materialInOutLine);
+		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLine(materialInOutLine);
 
 		assertThat(paymentTermId).isEqualTo(paymentTermA.getC_PaymentTerm_ID());
 	}
@@ -140,7 +141,7 @@ public class M_InOutLine_HandlerTest
 	{
 		final I_M_InOutLine materialInOutLine = createMaterialInOutLine(null);
 
-		final int paymentTermId = inOutLineHandlerUnderTest.extractPaymentTermIdViaOrderLine(materialInOutLine);
+		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLine(materialInOutLine);
 
 		assertThat(paymentTermId).isLessThanOrEqualTo(0);
 	}
@@ -150,7 +151,7 @@ public class M_InOutLine_HandlerTest
 	{
 		createMaterialInOutLine(paymentTermA);
 
-		final int paymentTermId = inOutLineHandlerUnderTest.extractPaymentTermId(packagingInOutLine);
+		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermId(packagingInOutLine);
 
 		assertThat(paymentTermId).isEqualTo(paymentTermA.getC_PaymentTerm_ID());
 	}
@@ -166,7 +167,7 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermB);
 		createMaterialInOutLine(paymentTermA);
 
-		final int paymentTermId = inOutLineHandlerUnderTest.extractPaymentTermId(packagingInOutLine);
+		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermId(packagingInOutLine);
 		assertThat(paymentTermId).isEqualTo(paymentTermB.getC_PaymentTerm_ID());
 	}
 
@@ -178,7 +179,7 @@ public class M_InOutLine_HandlerTest
 
 		createUnrelatedMaterialInOutLine(paymentTermA, TEN);
 
-		final int paymentTermId = inOutLineHandlerUnderTest.extractPaymentTermId(packagingInOutLine);
+		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermId(packagingInOutLine);
 		assertThat(paymentTermId).isEqualTo(paymentTermA.getC_PaymentTerm_ID());
 	}
 
@@ -194,6 +195,47 @@ public class M_InOutLine_HandlerTest
 		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermA));
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
+	}
+
+	@Test
+	public void createCandidatesForInOutLine_one_packagingInOutLine()
+	{
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+		assertThat(ic.isPackagingMaterial()).isTrue();
+		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
+	}
+
+	@Test
+	public void createCandidatesForInOutLine_two_materialInOutLines_one_without_paymentterm()
+	{
+		createMaterialInOutLine(null, FIVE);
+		createMaterialInOutLine(paymentTermB, SIX);
+
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+		assertThat(ic.isPackagingMaterial()).isTrue();
+		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermB));
+		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
+	}
+
+	@Test
+	public void createCandidatesForInOutLine_two_materialInOutLines_both_without_paymentterm()
+	{
+		createMaterialInOutLine(null, FIVE);
+		createMaterialInOutLine(null, SIX);
+
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+		assertThat(ic.isPackagingMaterial()).isTrue();
+		assertThat(ic).has(invoiceCandidateWithTerm(null));
+		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
 	}
 
 	@Test
@@ -245,6 +287,34 @@ public class M_InOutLine_HandlerTest
 						assertThat(ic.isPackagingMaterial()).isTrue();
 						assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
 					});
+	}
+
+	@Test
+	public void createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_both_have_smallQtyEnteredTU()
+	{
+		createMaterialInOutLine(paymentTermA, ONE);
+		createMaterialInOutLine(paymentTermB, FOUR);
+
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+
+		assertThat(result).hasSize(2);
+		assertThat(result).allSatisfy(ic -> assertThat(ic.isPackagingMaterial()).isTrue());
+
+		assertThat(result)
+				.filteredOn(invoiceCandidateWithTerm(paymentTermA))
+				.hasSize(1)
+				.allSatisfy(ic -> {
+					assertThat(ic.isPackagingMaterial()).isTrue();
+					assertThat(ic.getQtyDelivered()).isEqualByComparingTo(ONE);
+				});
+
+		assertThat(result)
+				.filteredOn(invoiceCandidateWithTerm(paymentTermB))
+				.hasSize(1)
+				.allSatisfy(ic -> {
+					assertThat(ic.isPackagingMaterial()).isTrue();
+					assertThat(ic.getQtyDelivered()).isEqualByComparingTo(NINE); // we need to account for packagingInOutLine's full qty of TEN
+				});
 	}
 
 	@Test
