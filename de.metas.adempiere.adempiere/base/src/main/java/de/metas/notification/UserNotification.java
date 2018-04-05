@@ -187,7 +187,7 @@ public class UserNotification
 		return !isRead();
 	}
 
-	/* package */ synchronized boolean setRead(final boolean read)
+	public synchronized boolean setRead(final boolean read)
 	{
 		final boolean readOld = this.read;
 		this.read = read;

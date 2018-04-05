@@ -24,7 +24,6 @@ import org.apache.ecs.ClearElement;
 import org.apache.ecs.xhtml.body;
 import org.apache.ecs.xhtml.br;
 import org.apache.ecs.xhtml.html;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -40,7 +39,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
-import de.metas.notification.NotificationRepository;
+import de.metas.notification.INotificationRepository;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationUtils;
@@ -338,7 +337,7 @@ public class NotificationBL implements INotificationBL
 	{
 		try
 		{
-			final NotificationRepository notificationsRepo = Adempiere.getBean(NotificationRepository.class);
+			final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
 			final UserNotification notification = notificationsRepo.save(request);
 
 			Services.get(IEventBusFactory.class)

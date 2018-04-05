@@ -8,16 +8,16 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Message;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.notification.impl.NotificationRepository;
 
 /*
  * #%L
@@ -50,10 +50,7 @@ public class NotificationRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final ObjectMapper jsonMapper = new ObjectMapper();
-		jsonMapper.findAndRegisterModules();
-
-		notificationRepo = new NotificationRepository(jsonMapper);
+		notificationRepo = (NotificationRepository)Services.get(INotificationRepository.class);
 	}
 
 	@Test
@@ -84,7 +81,7 @@ public class NotificationRepositoryTest
 				.targetADWindowId(444)
 				.build());
 
-		final List<UserNotification> userNotifications = notificationRepo.getByUser(123, Integer.MAX_VALUE);
+		final List<UserNotification> userNotifications = notificationRepo.getByUserId(123, Integer.MAX_VALUE);
 		final UserNotification userNotification = ListUtils.singleElement(userNotifications);
 		assertThat(userNotification).isEqualTo(notificationSaved);
 	}

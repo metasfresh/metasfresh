@@ -1,4 +1,4 @@
-package de.metas.notification;
+package de.metas.notification.impl;
 
 import java.util.List;
 
@@ -13,7 +13,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Note;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +21,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.logging.LogManager;
+import de.metas.notification.INotificationRepository;
+import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotification.UserNotificationBuilder;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationTargetType;
 import lombok.NonNull;
 
 /*
@@ -47,8 +50,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Repository
-public class NotificationRepository
+public class NotificationRepository implements INotificationRepository
 {
 	private static final Logger logger = LogManager.getLogger(NotificationRepository.class);
 
@@ -57,11 +59,13 @@ public class NotificationRepository
 
 	private final ObjectMapper jsonMapper;
 
-	public NotificationRepository(@NonNull final ObjectMapper jsonMapper)
+	public NotificationRepository()
 	{
-		this.jsonMapper = jsonMapper;
+		jsonMapper = new ObjectMapper();
+		jsonMapper.findAndRegisterModules();
 	}
 
+	@Override
 	public UserNotification save(@NonNull final UserNotificationRequest request)
 	{
 		final I_AD_Note notificationPO = InterfaceWrapperHelper.newInstance(I_AD_Note.class);
@@ -195,7 +199,8 @@ public class NotificationRepository
 				.addEqualsFilter(I_AD_Note.COLUMN_AD_User_ID, adUserId);
 	}
 
-	public List<UserNotification> getByUser(final int adUserId, final int limit)
+	@Override
+	public List<UserNotification> getByUserId(final int adUserId, final int limit)
 	{
 		return retrieveNotesByUserId(adUserId)
 				.orderByDescending(I_AD_Note.COLUMNNAME_AD_Note_ID)
@@ -218,6 +223,7 @@ public class NotificationRepository
 		return markAsReadById(notification.getId());
 	}
 
+	@Override
 	public boolean markAsReadById(final int notificationId)
 	{
 		final I_AD_Note notificationPO = retrieveAD_Note(notificationId);
@@ -256,6 +262,7 @@ public class NotificationRepository
 		return true;
 	}
 
+	@Override
 	public void markAllAsReadByUserId(final int adUserId)
 	{
 		retrieveNotesByUserId(adUserId)
@@ -269,6 +276,7 @@ public class NotificationRepository
 		return InterfaceWrapperHelper.load(adNoteId, I_AD_Note.class);
 	}
 
+	@Override
 	public boolean deleteById(final int notificationId)
 	{
 		final I_AD_Note notificationPO = retrieveAD_Note(notificationId);
@@ -282,6 +290,7 @@ public class NotificationRepository
 		return true;
 	}
 
+	@Override
 	public int getUnreadCountByUserId(final int adUserId)
 	{
 		return retrieveNotesByUserId(adUserId)
@@ -290,6 +299,7 @@ public class NotificationRepository
 				.count();
 	}
 
+	@Override
 	public int getTotalCountByUserId(final int adUserId)
 	{
 		return retrieveNotesByUserId(adUserId)
