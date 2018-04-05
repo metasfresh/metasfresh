@@ -390,7 +390,8 @@ public final class Event
 		{
 			if (params != null && !params.isEmpty())
 			{
-				for (int i = 0, size = params.size(); i < size; i++)
+				final int paramsCount = params.size();
+				for (int i = 0; i < paramsCount; i++)
 				{
 					final String parameterName = String.valueOf(i);
 					final Object parameterValue = params.get(i);
