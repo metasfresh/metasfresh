@@ -13,7 +13,7 @@ import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.logging.LogManager;
-import de.metas.notification.NotificationRepository;
+import de.metas.notification.INotificationRepository;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationUtils;
 import de.metas.notification.UserNotificationsList;
@@ -48,9 +48,6 @@ public class UserNotificationsService
 	private static final Logger logger = LogManager.getLogger(UserNotificationsService.class);
 
 	@Autowired
-	private NotificationRepository notificationsRepo;
-
-	@Autowired
 	private WebsocketSender websocketSender;
 
 	private final ConcurrentHashMap<Integer, UserNotificationsQueue> adUserId2notifications = new ConcurrentHashMap<>();
@@ -83,7 +80,7 @@ public class UserNotificationsService
 		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId, k -> UserNotificationsQueue.builder()
 				.adUserId(adUserId)
 				.adLanguage(adLanguage)
-				.notificationsRepo(notificationsRepo)
+				.notificationsRepo(Services.get(INotificationRepository.class))
 				.websocketSender(websocketSender)
 				.build());
 

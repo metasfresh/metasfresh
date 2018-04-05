@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
-import de.metas.notification.NotificationRepository;
+import de.metas.notification.INotificationRepository;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.notification.json.JSONNotification;
@@ -51,7 +51,7 @@ public class UserNotificationsQueue
 
 	private final Set<String> activeSessions = ConcurrentHashMap.newKeySet();
 
-	private final NotificationRepository notificationsRepo;
+	private final INotificationRepository notificationsRepo;
 
 	private final WebsocketSender websocketSender;
 	private final String websocketEndpoint;
@@ -60,7 +60,7 @@ public class UserNotificationsQueue
 	private UserNotificationsQueue(
 			final int adUserId,
 			@NonNull final String adLanguage,
-			@NonNull final NotificationRepository notificationsRepo,
+			@NonNull final INotificationRepository notificationsRepo,
 			@NonNull final WebsocketSender websocketSender)
 	{
 		Check.assumeGreaterOrEqualToZero(adUserId, "adUserId");
@@ -101,7 +101,7 @@ public class UserNotificationsQueue
 
 	public UserNotificationsList getNotificationsAsList(final int limit)
 	{
-		final List<UserNotification> notifications = notificationsRepo.getByUser(adUserId, limit);
+		final List<UserNotification> notifications = notificationsRepo.getByUserId(adUserId, limit);
 		final boolean fullyLoaded = limit <= 0 || notifications.size() <= limit;
 
 		final int totalCount;
