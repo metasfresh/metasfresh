@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2018-03-28T14:28:44 -->
+<!-- 2018-04-05T11:56:00 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="label" pageWidth="294" pageHeight="198" columnWidth="294" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="7f6f4715-2c9f-4a69-8fdd-c5a5d8b66d53">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
@@ -43,7 +43,7 @@
 				<reportElement x="20" y="36" width="260" height="1" uuid="a9629495-d83a-4a0a-b384-21b64864a636"/>
 			</line>
 			<textField isBlankWhenNull="true">
-				<reportElement x="50" y="40" width="100" height="13" uuid="6d529c23-ecb4-4d98-a8a6-21e77ab5a9de">
+				<reportElement x="40" y="40" width="110" height="13" uuid="6d529c23-ecb4-4d98-a8a6-21e77ab5a9de">
 					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
 				</reportElement>
 				<textElement textAlignment="Left">
@@ -52,7 +52,7 @@
 				<textFieldExpression><![CDATA[$F{bp_gln}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="50" y="65" width="40" height="21" uuid="f57f4587-5a39-4194-8275-279f829378d9"/>
+				<reportElement x="40" y="65" width="50" height="21" uuid="f57f4587-5a39-4194-8275-279f829378d9"/>
 				<textElement textAlignment="Left">
 					<font size="16" isBold="true"/>
 				</textElement>

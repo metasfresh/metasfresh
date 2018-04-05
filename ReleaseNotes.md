@@ -14,8 +14,15 @@ Here come the actual release notes:
 **release for week 2018-15**
 
 ## Features
+* metasfresh-webui-frontend
+  * [#1709](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1709) Harmonize Border Look&Feel between Lookup and List widget
+    * Improvement of List widget border to Lookup widget border. Now having a harmonized look & feel.
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1555](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1555) Can not enter "-" into any search field
+    * Fixes the search and filtering for special characters. Now it's able to search for minus, underscore and different other characters too.
+  * [#1725](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1725) Tab not working in address modal window
 
 # metasfresh 5.51 (2018-14)
 **release for week 2018-14**
