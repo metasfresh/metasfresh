@@ -230,8 +230,8 @@ export function loginSuccess(auth) {
 
         if (notification.eventType === 'Read') {
           dispatch(
-            updateNotification(
-              notification.notification,
+            readNotification(
+              notification.notificationId,
               notification.unreadCount
             )
           );
@@ -343,27 +343,27 @@ export function getNotificationsSuccess(notifications, unreadCount) {
   };
 }
 
-export function updateNotification(msg, count) {
+export function readNotification(notificationId, unreadCount) {
   return {
-    type: types.UPDATE_NOTIFICATION,
-    notification: msg,
-    unreadCount: count,
+    type: types.READ_NOTIFICATION,
+    notificationId,
+    unreadCount,
   };
 }
 
-export function newNotification(msg, count) {
+export function newNotification(notification, unreadCount) {
   return {
     type: types.NEW_NOTIFICATION,
-    notification: msg,
-    unreadCount: count,
+    notification,
+    unreadCount,
   };
 }
 
-export function removeNotification(msg, count) {
+export function removeNotification(notificationId, unreadCount) {
   return {
     type: types.REMOVE_NOTIFICATION,
-    notification: msg,
-    unreadCount: count,
+    notificationId,
+    unreadCount,
   };
 }
 
