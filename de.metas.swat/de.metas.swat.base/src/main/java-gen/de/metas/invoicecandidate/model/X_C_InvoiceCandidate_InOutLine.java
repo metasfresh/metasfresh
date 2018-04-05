@@ -15,7 +15,7 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 435803552L;
+	private static final long serialVersionUID = 1599709875L;
 
     /** Standard Constructor */
     public X_C_InvoiceCandidate_InOutLine (Properties ctx, int C_InvoiceCandidate_InOutLine_ID, String trxName)
@@ -25,7 +25,6 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
         {
 			setC_InvoiceCandidate_InOutLine_ID (0);
 			setQtyInvoiced (BigDecimal.ZERO); // 0
-			setType (null); // MA
         } */
     }
 
@@ -203,34 +202,5 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	/** 
-	 * Type AD_Reference_ID=540846
-	 * Reference name: C_InvoiceCandidate_InOutLine_Type
-	 */
-	public static final int TYPE_AD_Reference_ID=540846;
-	/** package = PK */
-	public static final String TYPE_Package = "PK";
-	/** material = MA */
-	public static final String TYPE_Material = "MA";
-	/** Set Art.
-		@param Type 
-		Type of Validation (SQL, Java Script, Java Language)
-	  */
-	@Override
-	public void setType (java.lang.String Type)
-	{
-
-		set_Value (COLUMNNAME_Type, Type);
-	}
-
-	/** Get Art.
-		@return Type of Validation (SQL, Java Script, Java Language)
-	  */
-	@Override
-	public java.lang.String getType () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Type);
 	}
 }
