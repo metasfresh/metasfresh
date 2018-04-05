@@ -17,6 +17,7 @@ import org.adempiere.user.api.UserNotificationsGroup;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ecs.ClearElement;
 import org.apache.ecs.xhtml.body;
 import org.apache.ecs.xhtml.br;
@@ -168,7 +169,7 @@ public class NotificationBL implements INotificationBL
 		final RecordZoomWindowFinder recordWindowFinder = RecordZoomWindowFinder.newInstance(request.getTargetRecord());
 		return recordWindowFinder.findAD_Window_ID();
 	}
-	
+
 	private static String extractSubjectText(final UserNotificationRequest request)
 	{
 		if (!Check.isEmpty(request.getSubjectPlain()))
@@ -184,6 +185,22 @@ public class NotificationBL implements INotificationBL
 		return "";
 	}
 
+	private static String extractSubjectFromContent(final String content)
+	{
+		if (Check.isEmpty(content, true))
+		{
+			return "";
+		}
+
+		String subject = content.trim();
+		final int idx = subject.indexOf("\n");
+		if (idx > 0)
+		{
+			subject = subject.substring(0, idx).trim();
+		}
+
+		return StringUtils.abbreviate(subject, 100);
+	}
 
 	private String extractContentText(final UserNotificationRequest request, final boolean html)
 	{
@@ -320,13 +337,9 @@ public class NotificationBL implements INotificationBL
 		final String content = extractMailContent(request);
 
 		String subject = extractSubjectText(request);
-		if (Check.isEmpty(subject, true) && content != null)
+		if (Check.isEmpty(subject, true))
 		{
-			subject = extractContentText(request, /* html */false);
-			if (subject.length() > 100)
-			{
-				subject = subject.substring(0, 100 - 3) + "...";
-			}
+			subject = extractSubjectFromContent(content);
 		}
 
 		final IMailBL mailBL = Services.get(IMailBL.class);
