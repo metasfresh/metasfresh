@@ -3,16 +3,11 @@ package de.metas.ui.web.notification;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.notification.NotificationRepository;
@@ -23,6 +18,7 @@ import de.metas.ui.web.notification.json.JSONNotificationEvent;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
 import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -56,9 +52,6 @@ public class UserNotificationsQueue
 	private final Set<String> activeSessions = ConcurrentHashMap.newKeySet();
 
 	private final NotificationRepository notificationsRepo;
-	private final ConcurrentHashMap<String, UserNotification> id2notification = new ConcurrentHashMap<>();
-	private final ConcurrentLinkedDeque<UserNotification> notifications = new ConcurrentLinkedDeque<>();
-	private final AtomicInteger unreadCount = new AtomicInteger(0);
 
 	private final WebsocketSender websocketSender;
 	private final String websocketEndpoint;
@@ -66,25 +59,15 @@ public class UserNotificationsQueue
 	@Builder
 	private UserNotificationsQueue(
 			final int adUserId,
-			final String adLanguage,
-			final NotificationRepository notificationsRepo,
-			final WebsocketSender websocketSender)
+			@NonNull final String adLanguage,
+			@NonNull final NotificationRepository notificationsRepo,
+			@NonNull final WebsocketSender websocketSender)
 	{
+		Check.assumeGreaterOrEqualToZero(adUserId, "adUserId");
+
 		this.adUserId = adUserId;
 		this.adLanguage = adLanguage;
-
-		//
-		// Load notifications from repository
 		this.notificationsRepo = notificationsRepo;
-		notificationsRepo.getByUser(adUserId)
-				.forEach(notification -> {
-					notifications.addFirst(notification);
-					id2notification.put(notification.getIdAsString(), notification);
-					if (!notification.isRead())
-					{
-						unreadCount.incrementAndGet();
-					}
-				});
 
 		this.websocketSender = websocketSender;
 		websocketEndpoint = WebSocketConfig.buildNotificationsTopicName(adUserId);
@@ -97,7 +80,6 @@ public class UserNotificationsQueue
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("websocketEndpoint", websocketEndpoint)
-				.add("unread", unreadCount.get())
 				.toString();
 	}
 
@@ -119,18 +101,23 @@ public class UserNotificationsQueue
 
 	public UserNotificationsList getNotificationsAsList(final int limit)
 	{
-		if (limit <= 0)
+		final List<UserNotification> notifications = notificationsRepo.getByUser(adUserId, limit);
+		final boolean fullyLoaded = limit <= 0 || notifications.size() <= limit;
+
+		final int totalCount;
+		final int unreadCount;
+		if (fullyLoaded)
 		{
-			final List<UserNotification> notifications = ImmutableList.copyOf(this.notifications);
-			return UserNotificationsList.of(notifications, notifications.size(), getUnreadCount());
+			totalCount = notifications.size();
+			unreadCount = (int)notifications.stream().filter(UserNotification::isNotRead).count();
 		}
 		else
 		{
-			final List<UserNotification> notifications = this.notifications.stream()
-					.limit(limit)
-					.collect(GuavaCollectors.toImmutableList());
-			return UserNotificationsList.of(notifications, this.notifications.size(), getUnreadCount());
+			totalCount = notificationsRepo.getTotalCountByUserId(adUserId);
+			unreadCount = notificationsRepo.getUnreadCountByUserId(adUserId);
 		}
+
+		return UserNotificationsList.of(notifications, totalCount, unreadCount);
 	}
 
 	public void addActiveSessionId(final String sessionId)
@@ -151,106 +138,41 @@ public class UserNotificationsQueue
 		return !activeSessions.isEmpty();
 	}
 
-	/* package */void addNotification(final UserNotification notification)
+	/* package */void addNotification(@NonNull final UserNotification notification)
 	{
-		Check.assumeNotNull(notification, "Parameter notification is not null");
+		final int adUserId = getAD_User_ID();
+		Check.assume(notification.getRecipientUserId() == adUserId, "notification's recipient user ID shall be {}: {}", adUserId, notification);
 
-		if (notification.getRecipientUserId() != getAD_User_ID())
-		{
-			logger.warn("Skip adding notification to queue because the recipient user does not match: notification={}, queue={}", notification, this);
-			return;
-		}
-
-		//
-		// Add notification to list and map
-		final UserNotification notificationOld = id2notification.put(notification.getIdAsString(), notification);
-		if (notificationOld != null)
-		{
-			// already added, shall not happen
-			logger.warn("Skip adding notification {} because it's ID is already present in {}", notification, this);
-			return;
-		}
-		notifications.addFirst(notification);
-
-		//
-		// Update unreadCount
-		if (!notification.isRead())
-		{
-			unreadCount.incrementAndGet();
-		}
-
-		logger.trace("Added notification to {}: {}", this, notification); // NOTE: log after updating unreadCount
-
-		//
-		// Notify on websocket
 		final JSONNotification jsonNotification = JSONNotification.of(notification, adLanguage);
-		fireEventOnWebsocket(JSONNotificationEvent.eventNew(jsonNotification, unreadCount.get()));
+		fireEventOnWebsocket(JSONNotificationEvent.eventNew(jsonNotification, getUnreadCount()));
 	}
 
 	public void markAsRead(final String notificationId)
 	{
-		final UserNotification notification = id2notification.get(notificationId);
-		if (notification == null)
-		{
-			throw new IllegalArgumentException("Notification for id=" + notificationId + " not found in " + this);
-		}
-
-		markAsRead(notification);
+		notificationsRepo.markAsReadById(Integer.parseInt(notificationId));
+		fireEventOnWebsocket(JSONNotificationEvent.eventRead(notificationId, getUnreadCount()));
 	}
 
 	public void markAllAsRead()
 	{
 		logger.trace("Marking all notifications as read (if any) for {}...", this);
-		id2notification.values().forEach(this::markAsRead);
-	}
-
-	private void markAsRead(final UserNotification notification)
-	{
-		final boolean changed = notificationsRepo.markAsRead(notification);
-		if (!changed)
-		{
-			return;
-		}
-
-		//
-		// Update unreadCount
-		unreadCount.decrementAndGet();
-
-		//
-		// Notify on websocket
-		final JSONNotification jsonNotification = JSONNotification.of(notification, adLanguage);
-		fireEventOnWebsocket(JSONNotificationEvent.eventRead(jsonNotification, unreadCount.get()));
+		notificationsRepo.markAllAsReadByUserId(getAD_User_ID());
+		fireEventOnWebsocket(JSONNotificationEvent.eventReadAll());
 	}
 
 	public int getUnreadCount()
 	{
-		return unreadCount.get();
+		return notificationsRepo.getUnreadCountByUserId(getAD_User_ID());
 	}
 
-	public void setLanguage(final String adLanguage)
+	public void setLanguage(@NonNull final String adLanguage)
 	{
-		Preconditions.checkNotNull(adLanguage, "language");
 		this.adLanguage = adLanguage;
 	}
 
 	public void delete(final String notificationId)
 	{
 		notificationsRepo.deleteById(Integer.parseInt(notificationId));
-
-		final UserNotification notification = id2notification.remove(notificationId);
-		if (notification != null)
-		{
-			notifications.remove(notification);
-		}
-
-		// Update unread count
-		if (notification != null && !notification.isRead())
-		{
-			unreadCount.decrementAndGet();
-		}
-
-		//
-		// Notify on websocket
-		fireEventOnWebsocket(JSONNotificationEvent.eventDeleted(notificationId, unreadCount.get()));
+		fireEventOnWebsocket(JSONNotificationEvent.eventDeleted(notificationId, getUnreadCount()));
 	}
 }

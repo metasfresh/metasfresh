@@ -67,10 +67,18 @@ public final class JSONNotificationEvent implements Serializable
 		return new JSONNotificationEvent(EventType.New, notificationId, notification, unreadCount);
 	}
 
-	public static final JSONNotificationEvent eventRead(final JSONNotification notification, final int unreadCount)
+	public static final JSONNotificationEvent eventRead(final String notificationId, final int unreadCount)
 	{
-		String notificationId = notification.getId();
+		final JSONNotification notification = null;
 		return new JSONNotificationEvent(EventType.Read, notificationId, notification, unreadCount);
+	}
+
+	public static final JSONNotificationEvent eventReadAll()
+	{
+		final String notificationId = null;
+		final JSONNotification notification = null;
+		final int unreadCount = 0;
+		return new JSONNotificationEvent(EventType.ReadAll, notificationId, notification, unreadCount);
 	}
 
 	public static final JSONNotificationEvent eventDeleted(final String notificationId, final int unreadCount)
@@ -81,7 +89,7 @@ public final class JSONNotificationEvent implements Serializable
 
 	public static enum EventType
 	{
-		New, Read, Delete
+		New, Read, ReadAll, Delete
 	};
 
 	@JsonProperty("eventType")
