@@ -21,7 +21,7 @@ public class Topic
 	{
 		return builder().name(name).type(Type.REMOTE).build();
 	}
-	
+
 	public static final Topic local(final String name)
 	{
 		return builder().name(name).type(Type.LOCAL).build();
@@ -32,8 +32,8 @@ public class Topic
 		return builder().name(name).type(type).build();
 	}
 
-	@Builder
-	public Topic(
+	@Builder(toBuilder = true)
+	private Topic(
 			@NonNull final String name,
 			@NonNull final Type type)
 	{
@@ -41,6 +41,16 @@ public class Topic
 		this.type = type;
 
 		this.fullName = type + "." + name;
+	}
+
+	public Topic toLocal()
+	{
+		if (type == Type.LOCAL)
+		{
+			return this;
+		}
+
+		return toBuilder().type(Type.LOCAL).build();
 	}
 
 }
