@@ -3,6 +3,7 @@ package de.metas.inout.invoicecandidate;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,6 +18,8 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
 import org.junit.Before;
@@ -28,6 +31,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.tax.api.ITaxDAO;
 
 /*
  * #%L
@@ -67,7 +71,7 @@ public class M_InOutLine_HandlerTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		BusinessTestHelper.createDefaultBusinessRecords();
+		createDefaultBusinessRecords();
 
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
 		save(bPartner);
@@ -102,6 +106,23 @@ public class M_InOutLine_HandlerTest
 		save(paymentTermB);
 
 		inOutLineHandlerUnderTest = new M_InOutLine_Handler();
+	}
+
+	/**
+	 * @deprecated please replace this with {@link BusinessTestHelper}'s createDefaultBusinessRecords() method.
+	 *             Having this method here is just due to cherry-picking and is just supposed to be in branch 2018-12.
+	 */
+	@Deprecated
+	private static void createDefaultBusinessRecords()
+	{
+		final I_C_TaxCategory noTaxCategoryFound = newInstanceOutOfTrx(I_C_TaxCategory.class);
+		noTaxCategoryFound.setC_TaxCategory_ID(ITaxDAO.C_TAX_CATEGORY_ID_NO_CATEGORY_FOUND);
+		save(noTaxCategoryFound);
+
+		final I_C_Tax noTaxFound = newInstanceOutOfTrx(I_C_Tax.class);
+		noTaxFound.setC_Tax_ID(ITaxDAO.C_TAX_ID_NO_TAX_FOUND);
+		noTaxFound.setC_TaxCategory(noTaxCategoryFound);
+		save(noTaxFound);
 	}
 
 	@Test
@@ -189,18 +210,20 @@ public class M_InOutLine_HandlerTest
 		assertThat(result)
 				.filteredOn(invoiceCandidateWithTerm(paymentTermA))
 				.hasSize(1)
-				.allSatisfy(ic -> {
-					assertThat(ic.isPackagingMaterial()).isTrue();
-					assertThat(ic.getQtyDelivered()).isEqualByComparingTo(FIVE); // value taken from the first material-inoutLine
-				});
+				.allSatisfy(ic ->
+					{
+						assertThat(ic.isPackagingMaterial()).isTrue();
+						assertThat(ic.getQtyDelivered()).isEqualByComparingTo(FIVE); // value taken from the first material-inoutLine
+					});
 
 		assertThat(result)
 				.filteredOn(invoiceCandidateWithTerm(paymentTermB))
 				.hasSize(1)
-				.allSatisfy(ic -> {
-					assertThat(ic.isPackagingMaterial()).isTrue();
-					assertThat(ic.getQtyDelivered()).isEqualByComparingTo(FIVE); // five and not six, because packagingInOutLine only has movementQty=10
-				});
+				.allSatisfy(ic ->
+					{
+						assertThat(ic.isPackagingMaterial()).isTrue();
+						assertThat(ic.getQtyDelivered()).isEqualByComparingTo(FIVE); // five and not six, because packagingInOutLine only has movementQty=10
+					});
 	}
 
 	@Test
@@ -217,10 +240,11 @@ public class M_InOutLine_HandlerTest
 		assertThat(result)
 				.filteredOn(invoiceCandidateWithTerm(paymentTermA))
 				.hasSize(1)
-				.allSatisfy(ic -> {
-					assertThat(ic.isPackagingMaterial()).isTrue();
-					assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
-				});
+				.allSatisfy(ic ->
+					{
+						assertThat(ic.isPackagingMaterial()).isTrue();
+						assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
+					});
 	}
 
 	@Test
@@ -236,18 +260,20 @@ public class M_InOutLine_HandlerTest
 		assertThat(result)
 				.filteredOn(invoiceCandidateWithTerm(paymentTermB))
 				.hasSize(1)
-				.allSatisfy(ic -> {
-					assertThat(ic.isPackagingMaterial()).isTrue();
-					assertThat(ic.getQtyDelivered()).isEqualByComparingTo(SIX); // the full qty of the first material inoutline
-				});
+				.allSatisfy(ic ->
+					{
+						assertThat(ic.isPackagingMaterial()).isTrue();
+						assertThat(ic.getQtyDelivered()).isEqualByComparingTo(SIX); // the full qty of the first material inoutline
+					});
 
 		assertThat(result)
 				.filteredOn(invoiceCandidateWithTerm(paymentTermA))
 				.hasSize(1)
-				.allSatisfy(ic -> {
-					assertThat(ic.isPackagingMaterial()).isTrue();
-					assertThat(ic.getQtyDelivered()).isEqualByComparingTo(FOUR);
-				});
+				.allSatisfy(ic ->
+					{
+						assertThat(ic.isPackagingMaterial()).isTrue();
+						assertThat(ic.getQtyDelivered()).isEqualByComparingTo(FOUR);
+					});
 	}
 
 	@Test
@@ -267,18 +293,20 @@ public class M_InOutLine_HandlerTest
 		assertThat(result)
 				.filteredOn(invoiceCandidateWithTerm(paymentTermA))
 				.hasSize(1)
-				.allSatisfy(ic -> {
-					assertThat(ic.isPackagingMaterial()).isTrue();
-					assertThat(ic.getQtyDelivered()).isEqualByComparingTo(FIVE.negate()); // value taken from the first material-inoutLine
-				});
+				.allSatisfy(ic ->
+					{
+						assertThat(ic.isPackagingMaterial()).isTrue();
+						assertThat(ic.getQtyDelivered()).isEqualByComparingTo(FIVE.negate()); // value taken from the first material-inoutLine
+					});
 
 		assertThat(result)
 				.filteredOn(invoiceCandidateWithTerm(paymentTermB))
 				.hasSize(1)
-				.allSatisfy(ic -> {
-					assertThat(ic.isPackagingMaterial()).isTrue();
-					assertThat(ic.getQtyDelivered()).isEqualByComparingTo(FIVE.negate()); // five and not six, because packagingInOutLine only has movementQty=10
-				});
+				.allSatisfy(ic ->
+					{
+						assertThat(ic.isPackagingMaterial()).isTrue();
+						assertThat(ic.getQtyDelivered()).isEqualByComparingTo(FIVE.negate()); // five and not six, because packagingInOutLine only has movementQty=10
+					});
 	}
 
 	@Test

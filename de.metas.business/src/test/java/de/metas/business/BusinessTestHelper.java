@@ -8,8 +8,6 @@ import java.math.BigDecimal;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Locator;
@@ -19,7 +17,6 @@ import org.compiere.model.X_C_UOM;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.tax.api.ITaxDAO;
 
 /*
  * #%L
@@ -234,18 +231,5 @@ public final class BusinessTestHelper
 		locator.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		save(locator);
 		return locator;
-	}
-
-	public static void createDefaultBusinessRecords()
-	{
-		final I_C_TaxCategory noTaxCategoryFound = newInstanceOutOfTrx(I_C_TaxCategory.class);
-		noTaxCategoryFound.setC_TaxCategory_ID(ITaxDAO.C_TAX_CATEGORY_ID_NO_CATEGORY_FOUND);
-		save(noTaxCategoryFound);
-
-		final I_C_Tax noTaxFound = newInstanceOutOfTrx(I_C_Tax.class);
-		noTaxFound.setC_Tax_ID(ITaxDAO.C_TAX_ID_NO_TAX_FOUND);
-		noTaxFound.setC_TaxCategory(noTaxCategoryFound);
-		save(noTaxFound);
-
 	}
 }
