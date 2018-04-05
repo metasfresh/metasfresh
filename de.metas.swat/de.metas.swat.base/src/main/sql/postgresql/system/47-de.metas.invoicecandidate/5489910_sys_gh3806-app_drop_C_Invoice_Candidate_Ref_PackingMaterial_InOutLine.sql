@@ -11,4 +11,4 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=558625
 DELETE FROM AD_Column WHERE AD_Column_ID=558625
 ;
 
-ALTER TABLE C_Invoice_Candidate DROP COLUMN Ref_PackingMaterial_InOutLine_ID;
+SELECT db_alter_table('C_Invoice_Candidate', 'ALTER TABLE C_Invoice_Candidate DROP COLUMN Ref_PackingMaterial_InOutLine_ID');
