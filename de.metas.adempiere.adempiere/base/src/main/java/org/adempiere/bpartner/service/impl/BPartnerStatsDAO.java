@@ -140,18 +140,8 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final String trxName = ITrx.TRXNAME_None;
 
 		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
-		final String sql = "SELECT "
-				// open invoices
-				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)) FROM C_Invoice_v i "
-				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsSOTrx='Y' AND i.IsPaid='N' AND i.DocStatus IN ('CO','CL')),0), "
-				// unallocated payments
-				+ "COALESCE((SELECT SUM(currencyBase(Paymentavailable(p.C_Payment_ID),p.C_Currency_ID,p.DateTrx,p.AD_Client_ID,p.AD_Org_ID)) FROM C_Payment_v p "
-				+ "WHERE p.C_BPartner_ID=bp.C_BPartner_ID AND p.IsAllocated='N'"
-				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0)*(-1), "
-				// open invoice candidates
-				+ "COALESCE((SELECT SUM(currencyBase(ic.LineNetAmt,ic.C_Currency_ID,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
-				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N'),0) "
-				+ "FROM C_BPartner bp "
+		final String sql = "SELECT OpenOrderAmt, OpenInvoiceAmt, UnallocatedPaymentAmt "
+				+ "FROM C_BPartner_OpenAmounts_v  "
 				+ "WHERE C_BPartner_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -162,10 +152,10 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				final BigDecimal openInvoiceAmt = rs.getBigDecimal(1);
-				final BigDecimal unallocatedPaymentAmt = rs.getBigDecimal(2);
-				final BigDecimal openInvoiceCandidateAmt = rs.getBigDecimal(3);
-				final BigDecimal SO_CreditUsed = openInvoiceAmt.add(unallocatedPaymentAmt).add(openInvoiceCandidateAmt);
+				final BigDecimal openOrderAmt = rs.getBigDecimal(1);
+				final BigDecimal openInvoiceAmt = rs.getBigDecimal(2);
+				final BigDecimal unallocatedPaymentAmt = rs.getBigDecimal(3);
+				final BigDecimal SO_CreditUsed = openInvoiceAmt.add(unallocatedPaymentAmt).add(openOrderAmt);
 				return SO_CreditUsed;
 			}
 			else
