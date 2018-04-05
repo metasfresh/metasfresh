@@ -181,6 +181,11 @@ public class UserNotification
 	{
 		return read;
 	}
+	
+	public boolean isNotRead()
+	{
+		return !isRead();
+	}
 
 	/* package */ synchronized boolean setRead(final boolean read)
 	{
