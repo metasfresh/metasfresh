@@ -55,7 +55,7 @@ import de.metas.process.RunOutOfTrx;
  * @author cg
  *
  */
-public class C_Invoice_Candidate_EnqueueSelection extends JavaProcess
+public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess
 {
 	private static final String MSG_InvoiceCandidate_PerformEnqueuing = "C_InvoiceCandidate_PerformEnqueuing";
 	//
