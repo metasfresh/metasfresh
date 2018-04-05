@@ -3,6 +3,7 @@ package de.metas.notification;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -186,20 +187,26 @@ public class NotificationRepository
 		return builder.build();
 	}
 
-	public List<UserNotification> getByUser(final int adUserId)
+	private IQueryBuilder<I_AD_Note> retrieveNotesByUserId(final int adUserId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Note.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Note.COLUMN_AD_User_ID, adUserId)
-				.orderBy(I_AD_Note.COLUMN_AD_Note_ID)
+				.addEqualsFilter(I_AD_Note.COLUMN_AD_User_ID, adUserId);
+	}
+
+	public List<UserNotification> getByUser(final int adUserId, final int limit)
+	{
+		return retrieveNotesByUserId(adUserId)
+				.orderByDescending(I_AD_Note.COLUMNNAME_AD_Note_ID)
+				.setLimit(limit)
 				.create()
 				.stream(I_AD_Note.class)
 				.map(this::toUserNotification)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public boolean markAsRead(final UserNotification notification)
+	public boolean markAsRead(@NonNull final UserNotification notification)
 	{
 		final boolean alreadyRead = notification.setRead(true);
 		if (alreadyRead)
@@ -208,13 +215,52 @@ public class NotificationRepository
 			return false;
 		}
 
-		final I_AD_Note notificationPO = retrieveAD_Note(notification.getId());
-		notificationPO.setProcessed(true);
+		return markAsReadById(notification.getId());
+	}
+
+	public boolean markAsReadById(final int notificationId)
+	{
+		final I_AD_Note notificationPO = retrieveAD_Note(notificationId);
+		if (notificationPO == null)
+		{
+			return false;
+		}
+
+		return markAsRead(notificationPO);
+	}
+
+	private boolean markAsRead(@NonNull final I_AD_Note notificationPO)
+	{
+		if (notificationPO.isProcessed())
+		{
+			return false;
+		}
+
+		if (!markAsReadNoSave(notificationPO))
+		{
+			return false;
+		}
+
 		InterfaceWrapperHelper.save(notificationPO);
-
-		logger.trace("Marked notification as read on {}: {}", notification); // NOTE: log after updating unreadCount
-
+		logger.trace("Marked notification read: {}", notificationPO);
 		return true;
+	}
+
+	private boolean markAsReadNoSave(@NonNull final I_AD_Note notificationPO)
+	{
+		if (notificationPO.isProcessed())
+		{
+			return false;
+		}
+		notificationPO.setProcessed(true);
+		return true;
+	}
+
+	public void markAllAsReadByUserId(final int adUserId)
+	{
+		retrieveNotesByUserId(adUserId)
+				.create()
+				.update(this::markAsReadNoSave);
 	}
 
 	private I_AD_Note retrieveAD_Note(final int adNoteId)
@@ -223,16 +269,31 @@ public class NotificationRepository
 		return InterfaceWrapperHelper.load(adNoteId, I_AD_Note.class);
 	}
 
-	public void deleteById(final int notificationId)
+	public boolean deleteById(final int notificationId)
 	{
 		final I_AD_Note notificationPO = retrieveAD_Note(notificationId);
 		if (notificationPO == null)
 		{
-			return;
+			return false;
 		}
 
 		notificationPO.setProcessed(false);
 		InterfaceWrapperHelper.delete(notificationPO);
+		return true;
 	}
 
+	public int getUnreadCountByUserId(final int adUserId)
+	{
+		return retrieveNotesByUserId(adUserId)
+				.addEqualsFilter(I_AD_Note.COLUMN_Processed, false)
+				.create()
+				.count();
+	}
+
+	public int getTotalCountByUserId(final int adUserId)
+	{
+		return retrieveNotesByUserId(adUserId)
+				.create()
+				.count();
+	}
 }

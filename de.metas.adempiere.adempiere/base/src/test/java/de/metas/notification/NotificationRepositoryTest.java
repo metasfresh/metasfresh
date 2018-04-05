@@ -85,7 +85,7 @@ public class NotificationRepositoryTest
 				.targetADWindowId(444)
 				.build());
 
-		final List<UserNotification> userNotifications = notificationRepo.getByUser(123);
+		final List<UserNotification> userNotifications = notificationRepo.getByUser(123, Integer.MAX_VALUE);
 		final UserNotification userNotification = ListUtils.singleElement(userNotifications);
 		assertThat(userNotification).isEqualTo(notificationSaved);
 	}
