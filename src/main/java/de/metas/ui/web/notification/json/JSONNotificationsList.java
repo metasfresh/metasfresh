@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.notification.UserNotificationsList;
+import de.metas.notification.UserNotificationsList;
 
 /*
  * #%L

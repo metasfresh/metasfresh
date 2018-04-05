@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Splitter;
 
+import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.notification.json.JSONNotificationsList;
 import de.metas.ui.web.session.UserSession;

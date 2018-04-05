@@ -1,6 +1,5 @@
 package de.metas.ui.web.notification;
 
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -14,6 +13,10 @@ import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.logging.LogManager;
+import de.metas.notification.NotificationRepository;
+import de.metas.notification.UserNotification;
+import de.metas.notification.UserNotificationUtils;
+import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.session.UserSession.LanguagedChangedEvent;
 import de.metas.ui.web.websocket.WebsocketSender;
 
@@ -45,7 +48,7 @@ public class UserNotificationsService
 	private static final Logger logger = LogManager.getLogger(UserNotificationsService.class);
 
 	@Autowired
-	private UserNotificationRepository notificationsRepo;
+	private NotificationRepository notificationsRepo;
 
 	@Autowired
 	private WebsocketSender websocketSender;
@@ -77,7 +80,13 @@ public class UserNotificationsService
 	{
 		logger.trace("Enabling for sessionId={}, adUserId={}, adLanguage={}", sessionId, adUserId, adLanguage);
 
-		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId, k -> new UserNotificationsQueue(adUserId, adLanguage, notificationsRepo, websocketSender));
+		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId, k -> UserNotificationsQueue.builder()
+				.adUserId(adUserId)
+				.adLanguage(adLanguage)
+				.notificationsRepo(notificationsRepo)
+				.websocketSender(websocketSender)
+				.build());
+
 		notificationsQueue.addActiveSessionId(sessionId);
 
 		subscribeToEventTopicsIfNeeded();
@@ -117,19 +126,16 @@ public class UserNotificationsService
 	{
 		logger.trace("Got event from {}: {}", eventBus, event);
 
-		final List<UserNotification> notifications = notificationsRepo.save(event);
+		final UserNotification notification = UserNotificationUtils.toUserNotification(event);
+		final int recipientUserId = notification.getRecipientUserId();
+		final UserNotificationsQueue notificationsQueue = getNotificationsQueueOrNull(recipientUserId);
+		if (notificationsQueue == null)
+		{
+			logger.trace("No notification queue was found for recipientUserId={}", recipientUserId);
+			return;
+		}
 
-		notifications.forEach(notification -> {
-			final int recipientUserId = notification.getRecipientUserId();
-			final UserNotificationsQueue notificationsQueue = getNotificationsQueueOrNull(recipientUserId);
-			if (notificationsQueue == null)
-			{
-				logger.trace("No notification queue was found for recipientUserId={}", recipientUserId);
-				return;
-			}
-
-			notificationsQueue.addNotification(notification);
-		});
+		notificationsQueue.addNotification(notification);
 	}
 
 	public void markNotificationAsRead(final int adUserId, final String notificationId)
@@ -146,7 +152,7 @@ public class UserNotificationsService
 	{
 		return getNotificationsQueue(adUserId).getUnreadCount();
 	}
-	
+
 	public void deleteNotification(final int adUserId, final String notificationId)
 	{
 		getNotificationsQueue(adUserId).delete(notificationId);

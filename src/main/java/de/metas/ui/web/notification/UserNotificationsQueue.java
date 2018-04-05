@@ -15,10 +15,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.notification.NotificationRepository;
+import de.metas.notification.UserNotification;
+import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.notification.json.JSONNotification;
 import de.metas.ui.web.notification.json.JSONNotificationEvent;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
+import lombok.Builder;
 
 /*
  * #%L
@@ -51,7 +55,7 @@ public class UserNotificationsQueue
 
 	private final Set<String> activeSessions = ConcurrentHashMap.newKeySet();
 
-	private final UserNotificationRepository notificationsRepo;
+	private final NotificationRepository notificationsRepo;
 	private final ConcurrentHashMap<String, UserNotification> id2notification = new ConcurrentHashMap<>();
 	private final ConcurrentLinkedDeque<UserNotification> notifications = new ConcurrentLinkedDeque<>();
 	private final AtomicInteger unreadCount = new AtomicInteger(0);
@@ -59,12 +63,13 @@ public class UserNotificationsQueue
 	private final WebsocketSender websocketSender;
 	private final String websocketEndpoint;
 
-	/* package */ UserNotificationsQueue(final int adUserId,
+	@Builder
+	private UserNotificationsQueue(
+			final int adUserId,
 			final String adLanguage,
-			final UserNotificationRepository notificationsRepo,
+			final NotificationRepository notificationsRepo,
 			final WebsocketSender websocketSender)
 	{
-		super();
 		this.adUserId = adUserId;
 		this.adLanguage = adLanguage;
 
@@ -74,7 +79,7 @@ public class UserNotificationsQueue
 		notificationsRepo.getByUser(adUserId)
 				.forEach(notification -> {
 					notifications.addFirst(notification);
-					id2notification.put(notification.getId(), notification);
+					id2notification.put(notification.getIdAsString(), notification);
 					if (!notification.isRead())
 					{
 						unreadCount.incrementAndGet();
@@ -158,7 +163,7 @@ public class UserNotificationsQueue
 
 		//
 		// Add notification to list and map
-		final UserNotification notificationOld = id2notification.put(notification.getId(), notification);
+		final UserNotification notificationOld = id2notification.put(notification.getIdAsString(), notification);
 		if (notificationOld != null)
 		{
 			// already added, shall not happen
@@ -230,10 +235,10 @@ public class UserNotificationsQueue
 
 	public void delete(final String notificationId)
 	{
-		notificationsRepo.delete(notificationId);
+		notificationsRepo.deleteById(Integer.parseInt(notificationId));
 
 		final UserNotification notification = id2notification.remove(notificationId);
-		if(notification != null)
+		if (notification != null)
 		{
 			notifications.remove(notification);
 		}
