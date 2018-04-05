@@ -6,7 +6,7 @@ UPDATE AD_Process SET Classname='de.metas.invoicecandidate.process.C_Invoice_Can
 -- 2018-04-05T08:08:18.798
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Process_Para (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540304,541281,20,'SupplementMissingPaymentTermIds',TO_TIMESTAMP('2018-04-05 08:08:18','YYYY-MM-DD HH24:MI:SS'),100,'Y','Legt fest, ob bei RKn mit leeren Zahlungsbedingung (z.B. aus Leergutrücknahmen) automatisch die Zahlungsbedingung eines anderen RK übernommen werden soll.','de.metas.invoicecandidate',0,'Durch die Übernahme der Zahlungsbedingung können betroffenen RKn zusammen mit anderen RKn in eine gemeinsame Rechnung übernommen werden.
-Sollten bei den ausgewählten RKn mehrere Zahlungsbedingungen vorkommen, dann wird die Zahlungsbedingung des ältesten ausgewählten Rechnungskandidaten übernommen.','Y','N','Y','N','Y','N','Leere RK-Zahlungsbedingungen Nachtragen',50,TO_TIMESTAMP('2018-04-05 08:08:18','YYYY-MM-DD HH24:MI:SS'),100)
+Sollten bei den ausgewählten RKn mehrere Zahlungsbedingungen vorkommen, dann wird die Zahlungsbedingung des ältesten ausgewählten Rechnungskandidaten übernommen.','Y','N','Y','N','Y','N','Leere RK-Zahlungsbedingungen nachtragen',50,TO_TIMESTAMP('2018-04-05 08:08:18','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2018-04-05T08:08:18.800
