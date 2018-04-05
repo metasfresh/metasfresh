@@ -43,7 +43,6 @@ import de.metas.event.Type;
 
 public class NotificationRepositoryTest
 {
-	private ObjectMapper jsonMapper;
 	private NotificationRepository notificationRepo;
 
 	@Before
@@ -51,7 +50,7 @@ public class NotificationRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		jsonMapper = new ObjectMapper();
+		final ObjectMapper jsonMapper = new ObjectMapper();
 		jsonMapper.findAndRegisterModules();
 
 		notificationRepo = new NotificationRepository(jsonMapper);
