@@ -56,6 +56,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
@@ -76,6 +77,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheModel;
 import de.metas.adempiere.util.CacheTrx;
@@ -1008,10 +1010,77 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.list(I_C_Invoice_Candidate.class);
 	}
 
+
 	@Override
-	public final <ValueType> void updateColumnForSelection(
-			final String invoiceCandidateColumnName,
-			final ValueType value,
+	public final void updateDateInvoiced(final Timestamp dateInvoiced, final int selectionId, final String trxName)
+	{
+		updateColumnForSelection(
+				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,    // invoiceCandidateColumnName
+				dateInvoiced,    // value
+				false,    // updateOnlyIfNull
+				selectionId,    // selectionId
+				trxName // trxName
+		);
+	}
+
+	@Override
+	public final void updateDateAcct(final Timestamp dateAcct, final int selectionId, final String trxName)
+	{
+		updateColumnForSelection(
+				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,    // invoiceCandidateColumnName
+				dateAcct,    // value
+				false,    // updateOnlyIfNull
+				selectionId,    // selectionId
+				trxName // trxName
+		);
+	}
+
+	@Override
+	public final void updatePOReference(final String poReference, final int selectionId, final String trxName)
+	{
+		updateColumnForSelection(
+				I_C_Invoice_Candidate.COLUMNNAME_POReference,    // invoiceCandidateColumnName
+				poReference,    // value
+				false,    // updateOnlyIfNull
+				selectionId,    // selectionId
+				trxName // trxName
+		);
+	}
+
+	@Override
+	public void updateMissingPaymentTermIds(
+			final int selectionId,
+			@Nullable final String trxName)
+	{
+		final I_C_Invoice_Candidate firstInvoiceCandidateWithPaymentTermId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.setOnlySelection(selectionId)
+				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_PaymentTerm_ID, null)
+				.orderBy()
+				.addColumnAscending(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID).endOrderBy()
+				.create()
+				.first();
+		if (firstInvoiceCandidateWithPaymentTermId == null)
+		{
+			Loggables.get().withLogger(logger, Level.INFO)
+					.addLog("updateMissingPaymentTermIds - No C_Invoice_Candidate selected by selectionId={} has a C_PaymentTerm_ID; nothing to update", selectionId);
+			return;
+		}
+		final Integer paymentTermId = firstInvoiceCandidateWithPaymentTermId.getC_PaymentTerm_ID();
+
+		updateColumnForSelection(
+				I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID, // invoiceCandidateColumnName
+				paymentTermId,    // value
+				true,    // updateOnlyIfNull
+				selectionId,    // selectionId
+				trxName // trxName
+		);
+	}
+
+	@Override
+	public final <T> void updateColumnForSelection(
+			final String columnName,
+			final T value,
 			final boolean updateOnlyIfNull,
 			final int selectionId,
 			final String trxName)
@@ -1024,78 +1093,47 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQueryBuilder<I_C_Invoice_Candidate> selectionQueryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.setOnlySelection(selectionId)
-				.addNotEqualsFilter(invoiceCandidateColumnName, value) // skip those which have our value set
+				.addNotEqualsFilter(columnName, value) // skip those which have our value set
 		;
 		if (updateOnlyIfNull)
 		{
-			selectionQueryBuilder.addEqualsFilter(invoiceCandidateColumnName, null);
+			selectionQueryBuilder.addEqualsFilter(columnName, null);
 		}
 		final int selectionToUpdateId = selectionQueryBuilder.create().createSelection();
 		if (selectionToUpdateId <= 0)
 		{
-			// nothing to update
+			Loggables.get().withLogger(logger, Level.INFO)
+					.addLog("updateColumnForSelection - No C_Invoice_Candidate needs to be updated; selectionId={}, columnName={}; updateOnlyIfNull={}, newValue={}",
+							selectionId, columnName, updateOnlyIfNull, value);
 			return;
 		}
 
-		//
 		// Update our new selection
-		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
+		final int updateCount = queryBL
+				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.setOnlySelection(selectionToUpdateId)
 				.create()
 				.updateDirectly()
-				.addSetColumnValue(invoiceCandidateColumnName, value)
+				.addSetColumnValue(columnName, value)
 				.execute();
 
-		//
+		Loggables.get().withLogger(logger, Level.INFO)
+				.addLog("updateColumnForSelection - {} C_Invoice_Candidates were updated; selectionId={}, columnName={}; updateOnlyIfNull={}, newValue={}",
+						updateCount, selectionId, columnName, updateOnlyIfNull, value);
+
 		// Invalidate the candidates which we updated
 		invalidateCandsForSelection(selectionToUpdateId, trxName);
 	}
 
 	@Override
-	public final void updateDateInvoiced(final Timestamp dateInvoiced, final int ADPinstance_ID, final String trxName)
-	{
-		updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,    // invoiceCandidateColumnName
-				dateInvoiced,    // value
-				false,    // updateOnlyIfNull
-				ADPinstance_ID,    // selectionId
-				trxName // trxName
-		);
-	}
-
-	@Override
-	public final void updateDateAcct(final Timestamp dateAcct, final int ADPinstance_ID, final String trxName)
-	{
-		updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,    // invoiceCandidateColumnName
-				dateAcct,    // value
-				false,    // updateOnlyIfNull
-				ADPinstance_ID,    // selectionId
-				trxName // trxName
-		);
-	}
-
-	@Override
-	public final void updatePOReference(final String poReference, final int ADPinstance_ID, final String trxName)
-	{
-		updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_POReference,    // invoiceCandidateColumnName
-				poReference,    // value
-				false,    // updateOnlyIfNull
-				ADPinstance_ID,    // selectionId
-				trxName // trxName
-		);
-	}
-
-	@Override
-	// @Cached
-	public BigDecimal retrieveInvoicableAmount(final @CacheCtx Properties ctx,
+	public BigDecimal retrieveInvoicableAmount(
+			final Properties ctx,
 			final IInvoiceCandidateQuery query,
 			final int targetCurrencyId,
 			final int adClientId,
 			final int adOrgId,
 			final String amountColumnName,
-			@CacheTrx final String trxName)
+			final String trxName)
 	{
 		final StringBuilder whereClause = new StringBuilder("1=1");
 		final List<Object> params = new ArrayList<>();
