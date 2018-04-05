@@ -50,6 +50,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_HeaderAggregation;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import lombok.NonNull;
 
 public class AggregationBL implements IAggregationBL
 {
@@ -217,7 +218,7 @@ public class AggregationBL implements IAggregationBL
 	}
 
 	@Override
-	public void setHeaderAggregationKey(final I_C_Invoice_Candidate ic)
+	public void setHeaderAggregationKey(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		// If the invoice candidate is flagged as "IsToClear", we shall reset the header aggregation key and invoicing group ASAP (08637)
 		if (ic.isToClear())

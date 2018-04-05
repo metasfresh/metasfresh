@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -33,7 +35,6 @@ import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
@@ -234,7 +235,7 @@ import lombok.NonNull;
 			try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 			{
 				ic.setApprovalForInvoicing(false);
-				InterfaceWrapperHelper.save(ic);
+				save(ic);
 			}
 
 			invoiceCandidateSelectionCount++; // increment AFTER validating that it was approved for invoicing etc
@@ -318,14 +319,13 @@ import lombok.NonNull;
 		return true;
 	}
 
-	private final void prepareSelectionForEnqueueing(final int adPInstanceId)
+	private final void prepareSelectionForEnqueueing(final int selectionId)
 	{
 		final Timestamp today = invoiceCandBL.getToday();
-		final String trxName = getTrxNameNotNull();
 
 		//
 		// Check incomplete compensation groups
-		final Set<String> incompleteOrderDocumentNo = invoiceCandDAO.retrieveOrderDocumentNosForIncompleteGroupsFromSelection(adPInstanceId);
+		final Set<String> incompleteOrderDocumentNo = invoiceCandDAO.retrieveOrderDocumentNosForIncompleteGroupsFromSelection(selectionId);
 		if (!incompleteOrderDocumentNo.isEmpty())
 		{
 			final String incompleteOrderDocumentNoStr = Joiner.on(", ").join(incompleteOrderDocumentNo);
@@ -337,26 +337,26 @@ import lombok.NonNull;
 		// task 08628: always make sure that every IC has the *same* dateInvoiced. possible other dates that were previously set don't matter.
 		// this is critical because we assume that dateInvoiced is not part of the aggregation key, so different values would fail the invoicing
 		final Timestamp dateInvoiced = getInvoicingParams().getDateInvoiced() != null ? getInvoicingParams().getDateInvoiced() : invoiceCandBL.getToday();
-		invoiceCandDAO.updateDateInvoiced(dateInvoiced, adPInstanceId, trxName);
+		invoiceCandDAO.updateDateInvoiced(dateInvoiced, selectionId);
 
 		//
 		// Updating candidates previous to enqueueing, if the parameter has been set (task 08437)
 		// task 08628: same as for dateInvoiced
 		final Timestamp dateAcct = getInvoicingParams().getDateAcct() != null ? getInvoicingParams().getDateAcct() : dateInvoiced;
-		invoiceCandDAO.updateDateAcct(dateAcct, adPInstanceId, trxName);
+		invoiceCandDAO.updateDateAcct(dateAcct, selectionId);
 
 		//
 		// Update POReference (task 07978)
 		final String poReference = getInvoicingParams().getPOReference();
 		if (!Check.isEmpty(poReference, true))
 		{
-			invoiceCandDAO.updatePOReference(poReference, adPInstanceId, trxName);
+			invoiceCandDAO.updatePOReference(poReference, selectionId);
 		}
 
 		// issue https://github.com/metasfresh/metasfresh/issues/3809
 		if (getInvoicingParams().isSupplementMissingPaymentTermIds())
 		{
-			invoiceCandDAO.updateMissingPaymentTermIds(adPInstanceId, trxName);
+			invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
 		}
 
 		//
@@ -371,14 +371,14 @@ import lombok.NonNull;
 				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,
 				today, // value
 				true, // updateOnlyIfNull
-				adPInstanceId, // selectionId
-				trxName);
+				selectionId // selectionId
+		);
 		invoiceCandDAO.updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,
 				ModelColumnNameValue.forColumnName(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced), // value
 				true, // updateOnlyIfNull
-				adPInstanceId, // selectionId
-				trxName);
+				selectionId // selectionId
+		);
 	}
 
 	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final int adPInstanceId)

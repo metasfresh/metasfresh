@@ -10,12 +10,12 @@ package de.metas.aggregation.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,9 +36,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
 
 import com.google.common.collect.ImmutableList;
 
@@ -48,6 +45,8 @@ import de.metas.aggregation.api.IAggregationAttribute;
 import de.metas.aggregation.api.IAggregationItem;
 import de.metas.aggregation.api.IAggregationItem.Type;
 import de.metas.aggregation.api.IAggregationKey;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /* package */@SuppressWarnings("unused")
 final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationKeyBuilder<ModelType>
@@ -63,7 +62,7 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 	// see: http://stackoverflow.com/questions/4387170/decimalformat-formatdouble-in-different-threads
 
 	/** Debug? if enabled, the generated keys will also contain the source column name */
-	private static final boolean debug = Adempiere.isUnitTestMode(); // only for JUnit tests; easy to debug them 
+	private static final boolean debug = Adempiere.isUnitTestMode(); // only for JUnit tests; easy to debug them
 
 	//
 	// Parameters
@@ -71,13 +70,10 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 	@ToStringBuilder(skip = true)
 	private final List<String> columnNames;
 
-	public GenericAggregationKeyBuilder(final Class<ModelType> modelClass, final IAggregation aggregation)
+	public GenericAggregationKeyBuilder(
+			@NonNull final Class<ModelType> modelClass,
+			@NonNull final IAggregation aggregation)
 	{
-		super();
-
-		Check.assumeNotNull(modelClass, "modelClass not null");
-		Check.assumeNotNull(aggregation, "aggregation not null");
-
 		final String modelTableName = InterfaceWrapperHelper.getTableName(modelClass);
 		Check.assume(modelTableName.equals(aggregation.getTableName()), "Aggregation's model {} shall match {}", aggregation, modelClass);
 
@@ -116,11 +112,8 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 		return new AggregationKey(Util.mkKey(keyValues.toArray()), aggregation.getC_Aggregation_ID());
 	}
 
-	private final List<Object> extractKeyValues(final ModelType model)
+	private final List<Object> extractKeyValues(@NonNull final ModelType model)
 	{
-		Check.assumeNotNull(model, "model not null");
-
-		//
 		// Assert model's table name is matching
 		final String modelTableName = InterfaceWrapperHelper.getModelTableName(model);
 		if (!aggregation.getTableName().equals(modelTableName))
@@ -128,7 +121,7 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 			throw new AdempiereException("Aggregation " + aggregation + " cannot be applied on " + model);
 		}
 
-		final List<Object> keyValues = new ArrayList<Object>();
+		final List<Object> keyValues = new ArrayList<>();
 
 		//
 		// Collect C_Aggregation_ID to make sure we are not comparing things from different aggregation keys
@@ -172,7 +165,7 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 	{
 		final String columnName = aggregationItem.getColumnName();
 		final Object value = InterfaceWrapperHelper.getValueOverrideOrValue(model, columnName);
-		
+
 		Object valueNormalized = normalizeValue(value, model, aggregationItem);
 		if (debug)
 		{
@@ -186,7 +179,7 @@ final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationK
 	{
 		final IAggregationAttribute attribute = aggregationItem.getAttribute();
 		final Evaluatee ctx = InterfaceWrapperHelper.getEvaluatee(model);
-		
+
 		Object value = attribute.evaluate(ctx);
 
 		values.add(value);
