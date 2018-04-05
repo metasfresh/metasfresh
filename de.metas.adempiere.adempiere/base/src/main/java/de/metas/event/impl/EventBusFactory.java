@@ -88,8 +88,8 @@ public class EventBusFactory implements IEventBusFactory
 
 		//
 		// Setup default user notification topics
-		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralNotifications);
-		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralNotificationsLocal);
+		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralUserNotifications);
+		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralUserNotificationsLocal);
 	}
 
 	@Override
