@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refreshAll;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -15,6 +16,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -89,17 +91,22 @@ public class InvoiceCandDAOTest
 				unrelatedInvoiceCandidateWithoutPaymentTerm));
 
 		// verify
-		assertThat(invoiceCandidateWithoutPaymentTerm1.getC_PaymentTerm_ID()).isEqualTo(paymentTerm1.getC_PaymentTerm_ID());
-		assertThat(invoiceCandidateWithoutPaymentTerm2.getC_PaymentTerm_ID()).isEqualTo(paymentTerm1.getC_PaymentTerm_ID());
-		assertThat(invoiceCandidateWithPaymentTerm1.getC_PaymentTerm_ID()).isEqualTo(paymentTerm1.getC_PaymentTerm_ID());
+		assertThat(getPaymentTermId(invoiceCandidateWithoutPaymentTerm1)).isEqualTo(paymentTerm1.getC_PaymentTerm_ID());
+		assertThat(getPaymentTermId(invoiceCandidateWithoutPaymentTerm2)).isEqualTo(paymentTerm1.getC_PaymentTerm_ID());
+		assertThat(getPaymentTermId(invoiceCandidateWithPaymentTerm1)).isEqualTo(paymentTerm1.getC_PaymentTerm_ID());
 
-		assertThat(invoiceCandidateWithPaymentTerm2.getC_PaymentTerm_ID())
+		assertThat(getPaymentTermId(invoiceCandidateWithPaymentTerm2))
 				.as("invoiceCandidateWithPaymentTerm2 shall be left unchanged because it already has a C_PaymentTerm_ID")
 				.isEqualTo(paymentTerm2.getC_PaymentTerm_ID());
 
-		assertThat(unrelatedInvoiceCandidateWithoutPaymentTerm.getC_PaymentTerm_ID())
+		assertThat(getPaymentTermId(unrelatedInvoiceCandidateWithoutPaymentTerm))
 				.as("unrelatedInvoiceCandidateWithoutPaymentTerm shall be left unchanged because it's not part of the selection")
 				.isLessThanOrEqualTo(0);
 	}
 
+	private int getPaymentTermId(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final Integer paymentTermIdOrNull = getValueOverrideOrValue(ic, I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID);
+		return paymentTermIdOrNull == null ? 0 : paymentTermIdOrNull;
+	}
 }
