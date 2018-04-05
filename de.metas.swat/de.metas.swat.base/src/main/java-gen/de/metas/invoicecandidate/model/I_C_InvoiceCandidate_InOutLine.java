@@ -282,31 +282,6 @@ public interface I_C_InvoiceCandidate_InOutLine
     public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
 
 	/**
-	 * Set Art.
-	 * Type of Validation (SQL, Java Script, Java Language)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setType (java.lang.String Type);
-
-	/**
-	 * Get Art.
-	 * Type of Validation (SQL, Java Script, Java Language)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getType();
-
-    /** Column definition for Type */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_Type = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "Type", null);
-    /** Column name Type */
-    public static final String COLUMNNAME_Type = "Type";
-
-	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
