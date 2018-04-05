@@ -76,12 +76,26 @@ public class UserNotificationsGroup
 		return notificationTypes.contains(NotificationType.Notice);
 	}
 
-	public boolean hasAnyNotificationTypeExceptUserInCharge()
+	public boolean hasAnyNotificationTypesExceptUserInCharge()
 	{
-		if(notificationTypes.isEmpty())
+		return hasAnyNotificationTypesExcept(NotificationType.NotifyUserInCharge);
+	}
+
+	public boolean hasAnyNotificationTypesExcept(final NotificationType typeToExclude)
+	{
+		final int notificationTypesCount = notificationTypes.size();
+		if (notificationTypesCount <= 0)
 		{
 			return false;
 		}
-		return notificationTypes.size() > 1 || !isNotifyUserInCharge();
+		else if (notificationTypesCount == 1)
+		{
+			return !notificationTypes.contains(typeToExclude);
+		}
+		else // notificationTypesCount > 1
+		{
+			return true;
+		}
 	}
+
 }

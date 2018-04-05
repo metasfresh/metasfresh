@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.api.NotificationGroupName;
 import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.util.Check;
@@ -49,6 +50,7 @@ import lombok.Value;
 @Value
 public class UserNotificationRequest
 {
+	boolean broadcastToAllUsers;
 	int recipientUserId;
 	UserNotificationsConfig notificationsConfig;
 
@@ -67,12 +69,16 @@ public class UserNotificationRequest
 	String targetRecordDisplayText;
 	ITableRecordReference targetRecord;
 	int targetADWindowId;
-	
+
 	List<Resource> attachments;
+	
+	// Options
+	boolean noEmail;
 
 	@Builder(toBuilder = true)
 	private UserNotificationRequest(
-			final int recipientUserId,
+			final boolean broadcastToAllUsers,
+			final Integer recipientUserId,
 			final UserNotificationsConfig notificationsConfig,
 			//
 			final Topic topic,
@@ -91,19 +97,31 @@ public class UserNotificationRequest
 			final ITableRecordReference targetRecord,
 			final int targetADWindowId,
 			//
-			@Singular final List<Resource> attachments)
+			@Singular final List<Resource> attachments,
+			// Options:
+			final boolean noEmail)
 	{
-		this.notificationsConfig = notificationsConfig;
-		if (notificationsConfig != null)
+		this.broadcastToAllUsers = broadcastToAllUsers;
+		if (broadcastToAllUsers)
 		{
-			this.recipientUserId = notificationsConfig.getUserId();
+			this.notificationsConfig = null;
+			this.recipientUserId = -1;
 		}
 		else
 		{
-			this.recipientUserId = recipientUserId;
+			this.notificationsConfig = notificationsConfig;
+			if (notificationsConfig != null)
+			{
+				this.recipientUserId = notificationsConfig.getUserId();
+			}
+			else
+			{
+				Check.assume(recipientUserId != null && recipientUserId >= 0, "recipientUserId >= 0 but it was {}", recipientUserId);
+				this.recipientUserId = recipientUserId;
+			}
 		}
 
-		this.topic = topic != null ? topic : EventBusConstants.TOPIC_GeneralNotifications;
+		this.topic = topic != null ? topic : EventBusConstants.TOPIC_GeneralUserNotifications;
 
 		this.important = important;
 
@@ -118,13 +136,24 @@ public class UserNotificationRequest
 		this.targetRecordDisplayText = targetRecordDisplayText;
 		this.targetRecord = targetRecord;
 		this.targetADWindowId = targetADWindowId;
-		
+
 		this.attachments = ImmutableList.copyOf(attachments);
+		
+		this.noEmail = noEmail;
 	}
 
 	private static List<Object> copyADMessageParams(final List<Object> params)
 	{
 		return params != null && !params.isEmpty() ? Collections.unmodifiableList(new ArrayList<>(params)) : ImmutableList.of();
+	}
+
+	public int getRecipientUserId()
+	{
+		if (isBroadcastToAllUsers())
+		{
+			throw new AdempiereException("recipientUserId not available when broadcastToAllUsers is set: " + this);
+		}
+		return recipientUserId;
 	}
 
 	public String getSubjectADMessageOr(final String defaultValue)
@@ -144,6 +173,17 @@ public class UserNotificationRequest
 			return this;
 		}
 
-		return toBuilder().notificationsConfig(notificationsConfig).build();
+		return toBuilder().broadcastToAllUsers(false).notificationsConfig(notificationsConfig).build();
+	}
+
+	public UserNotificationRequest deriveByRecipientUserId(final int recipientUserId)
+	{
+		Check.assumeGreaterOrEqualToZero(recipientUserId, "recipientUserId");
+		if (!broadcastToAllUsers && this.recipientUserId == recipientUserId)
+		{
+			return this;
+		}
+
+		return toBuilder().broadcastToAllUsers(false).recipientUserId(recipientUserId).notificationsConfig(null).build();
 	}
 }

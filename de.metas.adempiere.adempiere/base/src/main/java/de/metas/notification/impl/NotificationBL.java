@@ -3,6 +3,7 @@ package de.metas.notification.impl;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -11,6 +12,7 @@ import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserBL;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.user.api.NotificationGroupName;
 import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.user.api.UserNotificationsGroup;
@@ -109,13 +111,40 @@ public class NotificationBL implements INotificationBL
 	@Override
 	public void notifyUser(@NonNull final UserNotificationRequest request)
 	{
-		final UserNotificationRequest requestEffective = request.toBuilder()
+		Stream.of(resolve(request))
+				.flatMap(this::explodeByUser)
+				.flatMap(this::explodeByEffectiveNotificationsConfigs)
+				.forEach(this::notifyUser0);
+	}
+
+	private UserNotificationRequest resolve(final UserNotificationRequest request)
+	{
+		return request.toBuilder()
 				.targetRecordDisplayText(resolveTargetRecordDisplayText(request))
 				.targetADWindowId(resolveTargetWindowId(request))
 				.build();
+	}
 
-		final List<UserNotificationsConfig> notificationsConfigs = extractEffectiveNotificationsConfigs(requestEffective);
-		notificationsConfigs.forEach(notificationsConfig -> notifyUser0(requestEffective.deriveByNotificationsConfig(notificationsConfig)));
+	private Stream<UserNotificationRequest> explodeByUser(final UserNotificationRequest request)
+	{
+		if (request.isBroadcastToAllUsers())
+		{
+			final IUserDAO usersRepo = Services.get(IUserDAO.class);
+			return usersRepo.retrieveSystemUserIds()
+					.stream()
+					.map(request::deriveByRecipientUserId);
+		}
+		else
+		{
+			return Stream.of(request);
+		}
+	}
+
+	private Stream<UserNotificationRequest> explodeByEffectiveNotificationsConfigs(final UserNotificationRequest request)
+	{
+		return extractEffectiveNotificationsConfigs(request)
+				.stream()
+				.map(request::deriveByNotificationsConfig);
 	}
 
 	private String resolveTargetRecordDisplayText(final UserNotificationRequest request)
@@ -225,7 +254,7 @@ public class NotificationBL implements INotificationBL
 		final UserNotificationsGroup notificationsGroup = notificationsConfig.getGroupByName(request.getNotificationGroupName());
 		boolean notifyByInternalMessage = notificationsGroup.isNotifyByInternalMessage();
 
-		if (notificationsGroup.isNotifyByEMail())
+		if (notificationsGroup.isNotifyByEMail() && !request.isNoEmail())
 		{
 			try
 			{
@@ -246,6 +275,8 @@ public class NotificationBL implements INotificationBL
 
 	private List<UserNotificationsConfig> extractEffectiveNotificationsConfigs(@NonNull final UserNotificationRequest request)
 	{
+		Check.assume(!request.isBroadcastToAllUsers(), "request shall not have broadcast flag set: {}", request);
+
 		final UserNotificationsConfig notificationsConfig;
 		if (request.getNotificationsConfig() != null)
 		{
@@ -280,7 +311,7 @@ public class NotificationBL implements INotificationBL
 			}
 
 			final UserNotificationsGroup currentNotificationsGroup = currentNotificationsConfig.getGroupByName(groupName);
-			if (currentNotificationsGroup.hasAnyNotificationTypeExceptUserInCharge())
+			if (currentNotificationsGroup.hasAnyNotificationTypesExceptUserInCharge())
 			{
 				result.add(currentNotificationsConfig);
 			}
