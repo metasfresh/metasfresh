@@ -314,11 +314,4 @@ public class AvailableToPromiseResult
 
 		resultGroups.add(group);
 	}
-	
-	public BigDecimal getSingleQty()
-	{
-		Check.assume(resultGroups.size() == 1, " There should be only one group the the result group {}." , resultGroups);
-		
-		return resultGroups.get(0).getQty();
-	}
 }
