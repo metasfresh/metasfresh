@@ -73,23 +73,15 @@ public class MTax extends X_C_Tax
 	}	//	get
 
 	/**	Cache						*/
-	private static CCache<Integer,MTax>		s_cache	= new CCache<>(Table_Name, 5);
-	/**	Cache of Client						*/
-	private static CCache<Integer,MTax[]>	s_cacheAll = new CCache<>(Table_Name, 5);
+	private static final CCache<Integer,MTax> s_cache = new CCache<>(Table_Name, 5);
 	/**	Static Logger	*/
-	private static Logger	s_log	= LogManager.getLogger(MTax.class);
+	private static final Logger s_log = LogManager.getLogger(MTax.class);
 
 	
-	/**************************************************************************
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param C_Tax_ID id
-	 *	@param trxName transaction
-	 */
 	public MTax (Properties ctx, int C_Tax_ID, String trxName)
 	{
 		super (ctx, C_Tax_ID, trxName);
-		if (C_Tax_ID == 0)
+		if (is_new())
 		{
 		//	setC_Tax_ID (0);		PK
 			setIsDefault (false);
@@ -97,7 +89,7 @@ public class MTax extends X_C_Tax
 			setIsSummary (false);
 			setIsTaxExempt (false);
 		//	setName (null);
-			setRate (Env.ZERO);
+			setRate (BigDecimal.ZERO);
 			setRequiresTaxCertificate (false);
 		//	setC_TaxCategory_ID (0);	//	FK
 			setSOPOType (SOPOTYPE_Both);
@@ -106,12 +98,6 @@ public class MTax extends X_C_Tax
 		}
 	}	//	MTax
 
-	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
-	 */
 	public MTax (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -129,18 +115,12 @@ public class MTax extends X_C_Tax
 	{
 		this (ctx, 0, trxName);
 		setName (Name);
-		setRate (Rate == null ? Env.ZERO : Rate);
+		setRate (Rate == null ? BigDecimal.ZERO : Rate);
 		setC_TaxCategory_ID (C_TaxCategory_ID);	//	FK
 	}	//	MTax
 
-	/**	100					*/
-	private static BigDecimal ONEHUNDRED = new BigDecimal(100);
 	/**	Child Taxes			*/
 	private MTax[]			m_childTaxes = null;
-	/** Postal Codes		*/
-	private MTaxPostal[]	m_postals = null;
-	
-	
 	/**
 	 * 	Get Child Taxes
 	 * 	@param requery reload
