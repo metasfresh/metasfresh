@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -127,7 +129,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		return MSG_OK;
 	}
 
-	private void printPickingLabel(final HUToReportWrapper huToReport)
+	private void printPickingLabel(@Nullable final HUToReportWrapper huToReport)
 	{
 		final HUReportService huReportService = HUReportService.get();
 		huReportService.printPickingLabel(huToReport, true);

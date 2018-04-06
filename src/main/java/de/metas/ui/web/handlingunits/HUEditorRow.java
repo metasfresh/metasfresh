@@ -247,6 +247,11 @@ public final class HUEditorRow implements IViewRow
 	{
 		return processed;
 	}
+	
+	public int getBPartnerId()
+	{
+		return bpartnerId;
+	}
 
 	public int getBPartnerId()
 	{
@@ -723,6 +728,17 @@ public final class HUEditorRow implements IViewRow
 		private JSONLookupValue getLocator()
 		{
 			return locator;
+		}
+		
+		public Builder setBPartnerId(final int bpartnerId)
+		{
+			this.bpartnerId = bpartnerId;
+			return this;
+		}
+		
+		private int getBPartnerId()
+		{
+			return bpartnerId;
 		}
 
 		public Builder setBPartnerId(final int bpartnerId)
