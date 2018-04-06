@@ -86,16 +86,9 @@ class TableContextMenu extends Component {
     dispatch(setFilter(filter, refType));
 
     window.open(
-      '/window/' +
-        refType +
-        '?refType=' +
-        type +
-        '&refId=' +
-        docId +
-        '&refTabId=' +
-        tabId +
-        '&refRowIds=' +
-        JSON.stringify(selected || []),
+      `/window/${refType}?refType=${type}&refId=${docId}&refTabId=${tabId}&refRowIds=${JSON.stringify(
+        selected || []
+      )}`,
       '_blank'
     );
   };
