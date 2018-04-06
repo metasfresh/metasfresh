@@ -118,7 +118,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		{
 			performEnqueuing = true;
 		}
-		
+
 		// if the enqueuing was not accepted by the user, do nothing
 		if (!performEnqueuing)
 		{
@@ -179,7 +179,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter;
 		if(Ini.isClient())
 		{
-			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all 
+			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all
 			userSelectionFilter = getProcessInfo().getQueryFilter();
 		}
 		else
