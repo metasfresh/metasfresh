@@ -35,11 +35,15 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3675](https://github.com/metasfresh/metasfresh/issues/3675) Introducing master documentno to give each contract chain a unique number
+    * New Master Contract No created to allow the grouping of chanined subscription contracts.
   * [#3711](https://github.com/metasfresh/metasfresh/issues/3711) Contracts: Detect loops when extending a contract
+    * Improvement of contracts prolongations, detecting a minor case where a loop could occur.
   * [#3725](https://github.com/metasfresh/metasfresh/issues/3725) Update to latest jasper & faster maven plugin
-  * [#3770](https://github.com/metasfresh/metasfresh/issues/3770) Solve issues around the print endpoint
+    * Performance improvement of the jasper build process, updated to latest jasper and maven plugin.
   * [#3776](https://github.com/metasfresh/metasfresh/issues/3776) Distribution Editor initial HU Assignment
+    * Improved workflow in Distribution Editor Relocate action. Now the corresponding Handling Unit for the Distribution Orderline is initially selected.
   * [#3778](https://github.com/metasfresh/metasfresh/issues/3778) Automactically process picked CU's
+    * Picking Improvement, now automatically processing picked CU's. In case of errors the user can reactivate again.
   * [#3784](https://github.com/metasfresh/metasfresh/issues/3784) Standalone BPartner Product Translation Window
     * New Window in WebUI that allows the maintenance of Business Partner Product Translations.
 
@@ -55,6 +59,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#3770](https://github.com/metasfresh/metasfresh/issues/3770) Solve issues around the print endpoint
   * [#3793](https://github.com/metasfresh/metasfresh/issues/3793) Cache: root documents are no longer invalidated
   * [#3741](https://github.com/metasfresh/metasfresh/issues/3741) Credit Limit Detail Improvements
   * [#3748](https://github.com/metasfresh/metasfresh/issues/3748) Pharma: Regular import does not fail if prices aren't imported
