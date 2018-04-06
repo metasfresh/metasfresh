@@ -277,10 +277,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @throws DBException
 	 */
 	@Override
-	public <ET extends T> List<ET> list() throws DBException
+	public List<T> list() throws DBException
 	{
-		final Class<ET> clazz = null; // N/A
-		return list(clazz);
+		return list(modelClass);
 	}
 
 	@Override

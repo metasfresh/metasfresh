@@ -92,7 +92,7 @@ public interface IQuery<T>
 
 	String getTableName();
 
-	<ET extends T> List<ET> list() throws DBException;
+	List<T> list() throws DBException;
 
 	/**
 	 * Return a list of all po that match the query criteria.
