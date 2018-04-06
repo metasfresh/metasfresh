@@ -223,7 +223,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.retrieveAllReferencingLinesBuilder(inOutLine)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.list();
+// !!!important!!! without specifying the class, we get a list of MInOutLines!
+// the compiler won't notice anything, but when we try to cast them to de.metas.invoicecandidate.model.I_M_InOutLine, we get a ClassCastException
+// in this case, the ClassCastException happened when we tried to apply these inoutLines to a function (iol -> extractPaymentTerm(iol))
+				.list(I_M_InOutLine.class);
 		return referencingLines;
 	}
 
