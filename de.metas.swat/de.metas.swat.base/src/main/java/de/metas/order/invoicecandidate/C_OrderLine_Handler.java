@@ -290,14 +290,14 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
 
-		if (orderLine.getC_PaymentTerm_Override() == null)
+		if (orderLine.getC_PaymentTerm_Override_ID() > 0)
 		{
-			final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-			ic.setC_PaymentTerm(order.getC_PaymentTerm());
+			ic.setC_PaymentTerm_ID(orderLine.getC_PaymentTerm_Override_ID());
 		}
 		else
 		{
-			ic.setC_PaymentTerm(orderLine.getC_PaymentTerm_Override());
+			final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+			ic.setC_PaymentTerm_ID(order.getC_PaymentTerm_ID());
 		}
 	}
 

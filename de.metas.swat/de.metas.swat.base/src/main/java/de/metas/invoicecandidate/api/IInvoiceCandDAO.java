@@ -203,30 +203,30 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Updates <code>dateInvoiced</code> of candidates from selection.
 	 *
-	 * @param dateInvoiced new value to be set
-	 * @param AD_Pinstance_ID id of the <code>T_Selection</code> containing the candidates that shall be updated.
-	 * @param trxName
+	 * @param dateInvoiced new value to be set.
+	 * @param selectionId id of the <code>T_Selection</code> containing the candidates that shall be updated.
 	 */
-	void updateDateInvoiced(Timestamp dateInvoiced, int AD_Pinstance_ID, String trxName);
+	void updateDateInvoiced(Timestamp dateInvoiced, int selectionId);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>DateAcct</code> column
+	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>DateAcct</code> column.
 	 *
-	 * @param p_DateInvoiced
-	 * @param ad_PInstance_ID
-	 * @param trxName
 	 * @task 08437
 	 */
-	void updateDateAcct(Timestamp dateAcct, int ad_PInstance_ID, String trxName);
+	void updateDateAcct(Timestamp dateAcct, int selectionId);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>POReference</code> column
-	 *
-	 * @param poReference
-	 * @param ad_PInstance_ID
-	 * @param trxName
+	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>POReference</code> column.
 	 */
-	void updatePOReference(String poReference, int ad_PInstance_ID, String trxName);
+	void updatePOReference(String poReference, int selectionId);
+
+	/**
+	 * Updates the {@link I_C_Invoice_Candidate#COLUMN_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
+	 * The ID those ICs are updated with is taken from the selected IC with the smallest {@code C_Invoice_Candidate_ID} that has a {@code C_PaymentTerm_ID}.
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/3809
+	 */
+	void updateMissingPaymentTermIds(int selectionId);
 
 	/**
 	 * Mass-update a given invoice candidate column.
@@ -237,9 +237,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @param value value to set (you can also use {@link ModelColumnNameValue})
 	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
 	 * @param selectionId invoice candidates selection (AD_PInstance_ID)
-	 * @param trxName
 	 */
-	<ValueType> void updateColumnForSelection(String invoiceCandidateColumnName, ValueType value, boolean updateOnlyIfNull, int selectionId, String trxName);
+	<ValueType> void updateColumnForSelection(String invoiceCandidateColumnName, ValueType value, boolean updateOnlyIfNull, int selectionId);
 
 	/**
 	 * Gets the sum of all {@link I_C_Invoice_Candidate#COLUMNNAME_NetAmtToInvoice} values of the invoice candidates that have the given bPartner and are invoiceable before or at the given date. The
