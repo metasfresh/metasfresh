@@ -60,15 +60,23 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3770](https://github.com/metasfresh/metasfresh/issues/3770) Solve issues around the print endpoint
+    * Fixes different Bugs in print endpoint. Now its possible to use the printing service in WebUI.
   * [#3793](https://github.com/metasfresh/metasfresh/issues/3793) Cache: root documents are no longer invalidated
+    * Cache improvment, now not invalidating root documents anymore.
   * [#3741](https://github.com/metasfresh/metasfresh/issues/3741) Credit Limit Detail Improvements
+    * Detail improvements for the credit limit feature.
   * [#3748](https://github.com/metasfresh/metasfresh/issues/3748) Pharma: Regular import does not fail if prices aren't imported
+    * Fixes a minor Bug in Pharma Product Import, now throwing an error in case the prices are not imported.
   * [#3761](https://github.com/metasfresh/metasfresh/issues/3761) Check Limit in BPartner changes from order to invoice
+    * Credit Limit Improvement for check between Sales Order an Invoice.
   * [#3762](https://github.com/metasfresh/metasfresh/issues/3762) Check Limit in BPartner increases on purchase side
+    * Bugfix in Credit Limit Check, now not increasing the credit limit when creating Purchase Orders.
   * [#3804](https://github.com/metasfresh/metasfresh/issues/3804) Error AnnotationConfigEmbeddedWebApplicationContext has not been refreshed yet
+    * Internal Housekeeping Maintenance.
 
 * metasfresh-webui-api
   * [#925](https://github.com/metasfresh/metasfresh-webui-api/issues/925) Picking terminal: sometimes picking slot vanishes
+    * Fixes a Bug in WebUI Frontend. Eliminates cases in which the Picking Slot silently dissappeared from Screen.
 
 * metasfresh-webui-frontend
   * [#1679](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1679) Layout bug with resolution 1920x1200
