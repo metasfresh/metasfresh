@@ -37,7 +37,7 @@ public class MHRDepartment extends X_HR_Department
 		List<MHRDepartment> list = new Query(Env.getCtx(), X_HR_Department.Table_Name, "AD_Client_ID=?", null)
 											.setParameters(new Object[] {Env.getAD_Client_ID(ctx)})
 											.setOrderBy(COLUMNNAME_Name)
-											.list();
+											.list(MHRDepartment.class);
 		for (MHRDepartment dep : list)
 		{
 			s_cache.put(dep.get_ID(), dep);
@@ -69,7 +69,7 @@ public class MHRDepartment extends X_HR_Department
 		return dep;
 	}
 	
-	private static CCache<Integer, MHRDepartment> s_cache = new CCache<Integer, MHRDepartment>(Table_Name, 50, 0);
+	private static CCache<Integer, MHRDepartment> s_cache = new CCache<>(Table_Name, 50, 0);
 	
 	/**
 	 * @param ctx

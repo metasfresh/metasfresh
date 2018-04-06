@@ -141,7 +141,7 @@ public class PackageLabel extends JavaProcess
 				List<X_M_Package> list = new Query(io.getCtx(), X_M_Package.Table_Name, whereClause, io.get_TrxName())
 									.setParameters(getRecord_ID())
 									.setClient_ID()
-									.list();
+									.list(X_M_Package.class);
 				for (X_M_Package packg : list)
 				{
 					packg.setM_Shipper_ID(M_Shipper_ID.intValue());

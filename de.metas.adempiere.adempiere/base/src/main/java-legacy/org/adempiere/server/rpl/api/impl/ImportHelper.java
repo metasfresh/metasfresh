@@ -1291,7 +1291,7 @@ public class ImportHelper implements IImportHelper
 			final List<PO> list = new Query(ctx, lookupTableName, whereClause.toString(), trxName)
 					.setOnlyActiveRecords(true)
 					.setParameters(params)
-					.list();
+					.list(PO.class);
 			lookupValues.addAll(list);
 		}
 
