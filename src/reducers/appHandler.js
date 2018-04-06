@@ -101,7 +101,7 @@ export default function appHandler(state = initialState, action) {
       };
 
     // END OF NOTIFICATION ACTIONS
-    case types.GET_NOTIFICATIONS_SUCCESS:
+    case types.GET_NOTIFICATIONS_SUCCESS: {
       return {
         ...state,
         inbox: {
@@ -110,8 +110,9 @@ export default function appHandler(state = initialState, action) {
           unreadCount: action.unreadCount,
         },
       };
+    }
 
-    case types.NEW_NOTIFICATION:
+    case types.NEW_NOTIFICATION: {
       return update(state, {
         inbox: {
           notifications: {
@@ -122,13 +123,14 @@ export default function appHandler(state = initialState, action) {
           },
         },
       });
+    }
 
-    case types.REMOVE_NOTIFICATION:
+    case types.REMOVE_NOTIFICATION: {
       return update(state, {
         inbox: {
           notifications: {
             $set: state.inbox.notifications.filter(
-              item => item.id !== action.notification
+              item => item.id !== action.notificationId
             ),
           },
           unreadCount: {
@@ -136,15 +138,16 @@ export default function appHandler(state = initialState, action) {
           },
         },
       });
+    }
 
-    case types.UPDATE_NOTIFICATION:
+    case types.READ_NOTIFICATION: {
       return update(state, {
         inbox: {
           notifications: {
             $set: state.inbox.notifications.map(
               item =>
-                item.id === action.notification.id
-                  ? { ...item, ...action.notification }
+                item.id === action.notificationId
+                  ? { ...item, read: true }
                   : item
             ),
           },
@@ -153,6 +156,23 @@ export default function appHandler(state = initialState, action) {
           },
         },
       });
+    }
+
+    case types.READ_ALL_NOTIFICATIONS: {
+      return update(state, {
+        inbox: {
+          notifications: {
+            $set: state.inbox.notifications.map(item => ({
+              ...item,
+              read: true,
+            })),
+          },
+          unreadCount: {
+            $set: 0,
+          },
+        },
+      });
+    }
 
     case types.SET_PROCESS_STATE_PENDING:
       return {
