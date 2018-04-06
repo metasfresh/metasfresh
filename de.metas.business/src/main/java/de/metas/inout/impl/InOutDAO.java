@@ -42,6 +42,7 @@ import org.compiere.model.I_M_InOutLine;
 
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
+import lombok.NonNull;
 
 public class InOutDAO implements IInOutDAO
 {
@@ -65,13 +66,11 @@ public class InOutDAO implements IInOutDAO
 		return retrieveLines(inOut, retrieveAll, inoutLineClass);
 	}
 
-	private <T extends I_M_InOutLine> List<T> retrieveLines(final I_M_InOut inOut,
+	private <T extends I_M_InOutLine> List<T> retrieveLines(
+			@NonNull final I_M_InOut inOut,
 			final boolean retrieveAll,
-			final Class<T> inoutLineClass)
+			@NonNull final Class<T> inoutLineClass)
 	{
-		Check.assumeNotNull(inOut, "inOut not null");
-		Check.assumeNotNull(inoutLineClass, "inoutLineClass not null");
-
 		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, inOut)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inOut.getM_InOut_ID());
 
@@ -181,7 +180,9 @@ public class InOutDAO implements IInOutDAO
 				.createQueryBuilder(I_M_InOutLine.class, packingMaterialLine)
 				// .addOnlyActiveRecordsFilter() add all, also inactive ones
 				.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_PackingMaterial_InOutLine_ID, packingMaterialLine.getM_InOutLine_ID())
-				.orderBy().addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).endOrderBy();
+				.orderBy()
+				.addColumn(I_M_InOutLine.COLUMNNAME_Line)
+				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).endOrderBy();
 
 	}
 

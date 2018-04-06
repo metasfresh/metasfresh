@@ -42,7 +42,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 
 import de.metas.inout.IInOutDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;

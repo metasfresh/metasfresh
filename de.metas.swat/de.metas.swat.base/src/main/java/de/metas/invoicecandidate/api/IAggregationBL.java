@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.adempiere.util.IProcessor;
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOutLine;
 

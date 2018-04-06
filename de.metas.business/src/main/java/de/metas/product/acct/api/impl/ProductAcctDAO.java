@@ -43,11 +43,9 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.product.IProductDAO;
 import de.metas.product.acct.api.IProductAcctDAO;
 
-/**
- * @author al
- */
 public class ProductAcctDAO implements IProductAcctDAO
 {
+
 	@Override
 	public I_C_Activity retrieveActivityForAcct(
 			final IContextAware contextProvider,
@@ -87,7 +85,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 
 	@Override
 	public I_M_Product_Acct retrieveProductAcctOrNull(I_C_AcctSchema acctSchema, final int productId)
-	{		
+	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(acctSchema);
 		final int acctSchemaId = acctSchema.getC_AcctSchema_ID();
 		return retrieveProductAcctOrNull(ctx, acctSchemaId, productId);

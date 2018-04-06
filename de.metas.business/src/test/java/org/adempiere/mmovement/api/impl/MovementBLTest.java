@@ -10,12 +10,12 @@ package org.adempiere.mmovement.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AcctSchemaDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,17 +41,10 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
-import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * Test {@link MovementBL}
- * 
- * @author RC
- *
- */
 public class MovementBLTest
 {
 	/** Service under test */
@@ -65,7 +57,7 @@ public class MovementBLTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		this.context = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+		this.context = PlainContextAware.newOutOfTrx();
 
 		//
 		// Service under test
@@ -76,7 +68,6 @@ public class MovementBLTest
 		this.acctSchema = InterfaceWrapperHelper.newInstance(I_C_AcctSchema.class, context);
 		InterfaceWrapperHelper.save(acctSchema);
 
-		//
 		// Mock accounting schema retrieval
 		Services.registerService(IAcctSchemaDAO.class, new AcctSchemaDAO()
 		{
@@ -109,7 +100,7 @@ public class MovementBLTest
 		movementBL.setC_Activities(movementLine);
 
 		Assert.assertEquals("Movement line shall have the activity of the warehouse", activityFrom, movementLine.getC_ActivityFrom());
-		
+
 		Assert.assertEquals("Movement line shall have the activity of the warehouse dest", activityTo, movementLine.getC_Activity());
 	}
 
@@ -120,20 +111,14 @@ public class MovementBLTest
 	public void test_setCActivity_productActivity()
 	{
 		final I_C_Activity productActivity = createActivity();
-
 		final I_M_Product product = createProduct(productActivity);
-		
 		final I_M_Locator locatorFrom  =createLocator(null);
-		
 		final I_M_Locator locatorTo = createLocator(null);
-
 		final I_M_MovementLine movementLine = createMovementLine(product, locatorFrom, locatorTo);
 
 		movementBL.setC_Activities(movementLine);
 
 		Assert.assertEquals("Movement line shall have the activity of the product", productActivity, movementLine.getC_Activity());
-		
-
 		Assert.assertEquals("Movement line shall have the activityFrom of the product", productActivity, movementLine.getC_ActivityFrom());
 	}
 
