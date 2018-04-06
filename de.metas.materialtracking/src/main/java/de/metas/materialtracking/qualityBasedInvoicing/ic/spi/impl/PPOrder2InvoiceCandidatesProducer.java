@@ -63,6 +63,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.impl.PricingContextBuilde
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLineGroup;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGroupsBuilder;
+import lombok.NonNull;
 
 /**
  * Producer which is able to take quality orders ({@link I_PP_Order}s) as input and creates invoice candidates. Called by
@@ -116,14 +117,13 @@ import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGr
 	 * @param ppOrder quality inspection order
 	 * @return created invoice candidates
 	 */
-	public List<I_C_Invoice_Candidate> createInvoiceCandidates(final I_PP_Order ppOrder)
+	public List<I_C_Invoice_Candidate> createInvoiceCandidates(@NonNull final I_PP_Order ppOrder)
 	{
 		Check.assumeNotNull(_qualityInspectionHandlerRecord, "Field _ilCandHandler of {} is not null", this);
 		Check.assumeNotNull(qualityInspectionHandler, "Field qualityInspectionHandler of {} is not null", this);
 
 		//
 		// Validate the model
-		Check.assumeNotNull(ppOrder, "Param 'ppOrder' is not null");
 		final IClientOrgAware clientOrgAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(ppOrder, IClientOrgAware.class);
 		Check.assumeNotNull(clientOrgAware, "Param ppOrder={} is a IClientOrgAware", ppOrder);
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(ppOrder);
