@@ -28,6 +28,8 @@ Here come the actual release notes:
     * Fixes a Bug in modal location editor window, now allowing to use Tab there again.
   * [#1730](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1730) Create purchase orders process - fields collapse
     * Improved Purchase Create action in sales order. Now not collapsing the tree after entering a Quantity value.
+  * [#1734](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1734) Picking Terminal opens with all rows uncollapsed
+    * Performance Improvement of Picking Terminal view, now openening collapsed and much faster.
 
 # metasfresh 5.51 (2018-14)
 **release for week 2018-14**
