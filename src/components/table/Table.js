@@ -153,7 +153,9 @@ class Table extends Component {
     }
 
     if (!is(prevProps.rowData, rowData)) {
-      this.getIndentData();
+      // special case for the picking terminal
+      const firstLoad = prevProps.rowData.get(1) ? false : true;
+      this.getIndentData(firstLoad);
     }
 
     if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
