@@ -29,6 +29,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOutLine;
 
+import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 
@@ -43,9 +44,9 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	 * @param shipmentSchedule
 	 * @param clazz
 	 * @return QtyPicked records
-	 * @see #retrievePickedNotDeliveredRecords(I_M_ShipmentSchedule, String)
+	 * @see #retrieveNotOnShipmentLineRecords(I_M_ShipmentSchedule, String)
 	 */
-	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrievePickedNotDeliveredRecords(I_M_ShipmentSchedule shipmentSchedule, Class<T> clazz);
+	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveNotOnShipmentLineRecords(I_M_ShipmentSchedule shipmentSchedule, Class<T> clazz);
 
 	/**
 	 * Return a query builder for those {@link I_M_ShipmentSchedule_QtyPicked} records that reference the given shipmentSchedule and that do also reference an
@@ -56,7 +57,7 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	 * @param shipmentSchedule
 	 * @return QtyPicked records
 	 */
-	IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrievePickedAndDeliveredRecordsQuery(I_M_ShipmentSchedule shipmentSchedule);
+	IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsQuery(I_M_ShipmentSchedule shipmentSchedule);
 
 	/**
 	 * Retrieves Picked (but not delivered) Qty for given <code>shipmentSchedule</code>.
@@ -64,7 +65,7 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	 * @param shipmentSchedule
 	 * @return QtyPicked value; never return null
 	 */
-	BigDecimal retrievePickedNotDeliveredQty(I_M_ShipmentSchedule shipmentSchedule);
+	BigDecimal retrieveNotOnShipmentLineQty(I_M_ShipmentSchedule shipmentSchedule);
 
 	/**
 	 * Retrieve all Picked records (delivered or not, active or not)
@@ -87,7 +88,7 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 
 	/**
 	 * Retrieve all shipments schedules that are linked with the given inout line
-	 * 
+	 *
 	 * @param inoutLine
 	 * @return
 	 */
@@ -95,7 +96,7 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 
 	/**
 	 * Query which collects M_ShipmentSchedules form I_M_ShipmentSchedule_QtyPicked if they pair with the given inoutline
-	 * 
+	 *
 	 * @param inoutLine
 	 * @return
 	 */
@@ -104,11 +105,21 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	/**
 	 * Retrieves the summed <code>MovementQty</code>s of all <b>processed
 	 * </p>
-	 * <code>M_I_InOutLines</code> which are linkned to the given <code>shipmentSchedule</code> via
+	 * <code>M_I_InOutLines</code> which are linked to the given <code>shipmentSchedule</code> via
 	 * <code>M_ShipmentSchedule_QtyPicked</code>.
 	 *
 	 * @param shipmentSchedule
 	 * @return
 	 */
 	BigDecimal retrieveQtyDelivered(I_M_ShipmentSchedule shipmentSchedule);
+
+	/**
+	 * Updates {@link I_M_ShipmentSchedule_QtyPicked#COLUMN_Processed} according to the given {@code inOut}.
+	 */
+	void updateProcessedFlagsForShipment(I_M_InOut inOut);
+
+	/**
+	 * Returns the quantity that is either just picked or on a just drafted shipment line.
+	 */
+	BigDecimal retrieveQtyPickedAndUnconfirmed(I_M_ShipmentSchedule shipmentSchedule);
 }

@@ -45,6 +45,8 @@ import org.compiere.model.IQuery;
 
 import com.google.common.collect.ImmutableMap;
 
+import lombok.NonNull;
+
 /* package */class QueryBuilder<T> implements IQueryBuilder<T>
 {
 	private final Class<T> modelClass;
@@ -87,7 +89,7 @@ import com.google.common.collect.ImmutableMap;
 		this.modelKeyColumnName = null; // lazy
 
 		this.modelTableName = InterfaceWrapperHelper.getTableName(modelClass, tableName);
-		
+
 		final IQueryBL factory = Services.get(IQueryBL.class);
 		filters = factory.createCompositeQueryFilter(this.modelTableName); // always use the tableName we just fetched because it might be that modelClass is not providing a tableName.
 	}
@@ -96,7 +98,6 @@ import com.google.common.collect.ImmutableMap;
 
 	private QueryBuilder(final QueryBuilder<T> from)
 	{
-		super();
 		this.modelClass = from.modelClass;
 		this.modelTableName = from.modelTableName;
 		this.modelKeyColumnName = from.modelKeyColumnName;
@@ -171,7 +172,7 @@ import com.google.common.collect.ImmutableMap;
 
 		return this;
 	}
-	
+
 	@Override
 	public IQueryBuilder<T> addFiltersUnboxed(final ICompositeQueryFilter<T> compositeFilter)
 	{
@@ -421,7 +422,7 @@ import com.google.common.collect.ImmutableMap;
 		filters.addInArrayOrAllFilter(columnName, values);
 		return this;
 	}
-	
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public <V> IQueryBuilder<T> addInArrayFilter(final String columnName, final V... values)
@@ -589,7 +590,8 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	@Override
-	public <CollectedBaseType, CollectedType extends CollectedBaseType, ParentModelType> IQueryBuilder<CollectedType> andCollect(final ModelColumn<ParentModelType, CollectedBaseType> column,
+	public <CollectedBaseType, CollectedType extends CollectedBaseType, ParentModelType> IQueryBuilder<CollectedType> andCollect(
+			@NonNull final ModelColumn<ParentModelType, CollectedBaseType> column,
 			Class<CollectedType> collectedType)
 	{
 		final IQuery<T> query = create();

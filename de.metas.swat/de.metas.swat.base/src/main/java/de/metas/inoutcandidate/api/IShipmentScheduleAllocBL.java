@@ -43,14 +43,6 @@ public interface IShipmentScheduleAllocBL extends ISingletonService
 	I_M_ShipmentSchedule_QtyPicked addQtyPicked(I_M_ShipmentSchedule sched, Quantity qtyPickedDiff);
 
 	/**
-	 * Gets QtyPicked (AND which was not already delivered) on given shipment schedule
-	 *
-	 * @param sched
-	 * @return QtyPicked or ZERO; never null
-	 */
-	BigDecimal getQtyPicked(I_M_ShipmentSchedule sched);
-
-	/**
 	 * Set QtyPicked for given shipment schedule
 	 *
 	 * @param sched
