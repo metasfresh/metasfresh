@@ -1634,9 +1634,13 @@ public class ImportHelper implements IImportHelper
 		}
 		else
 		{
-			// task 08569: is there is no incoming session, then *do not* fall back to the one from '_initialCtx', but make it explicit that there is no session.
+			// task 08569: if there is no incoming session, then *do not* fall back to the one from '_initialCtx', but make it explicit that there is no session.
 			// this XML needs to have a request handler that deals with the situation (e.g. by doing a login)
-			setReplicationCtx(ctx, Env.CTXNAME_AD_Session_ID, Env.CTXVALUE_AD_SESSION_ID_NONE, false);
+
+			// issue https://github.com/metasfresh/metasfresh/issues/3819: overwrite = true
+			// allow overwriting since _initialCtx might have an #AD_Session_ID (which we don't want to use, but none the less)
+			final boolean overwrite = true;
+			setReplicationCtx(ctx, Env.CTXNAME_AD_Session_ID, Env.CTXVALUE_AD_SESSION_ID_NONE, overwrite);
 		}
 
 		//
