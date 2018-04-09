@@ -35,11 +35,15 @@ class Subheader extends Component {
   componentDidMount() {
     document.getElementsByClassName('js-subheader-column')[0].focus();
 
-    const entity = this.props.entity === 'board' ? 'board' : 'window';
+    const { entity, windowType } = this.props;
+    const entityType = entity === 'board' ? 'board' : 'window';
 
-    elementPathRequest(entity, this.props.windowType).then(response => {
-      this.setState({ elementPath: response.data });
-    });
+    // Main dashboard view doesn't have a windowTyep and is throwing 404
+    if (windowType) {
+      elementPathRequest(entityType, this.props.windowType).then(response => {
+        this.setState({ elementPath: response.data });
+      });
+    }
   }
 
   handleKeyDown = e => {
