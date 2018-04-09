@@ -10,6 +10,11 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.53 (2018-16)
+**release for week 2018-16**
+
+
+
 # metasfresh 5.52 (2018-15)
 **release for week 2018-15**
 
@@ -19,6 +24,13 @@ Here come the actual release notes:
     * Improvement of List widget border to Lookup widget border. Now having a harmonized look & feel.
 
 ## Fixes
+* metasfresh
+  * [#3767](https://github.com/metasfresh/metasfresh/issues/3767) Picking TU Label error when GLN is missing in PartnerLocation
+  * [#3773](https://github.com/metasfresh/metasfresh/issues/3773) Regression on process M_ReceiptSchedule_Generate_M_InOuts
+  * [#3806](https://github.com/metasfresh/metasfresh/issues/3806) packaging-inout-lines are split into too many invoice candidates
+  * [#3809](https://github.com/metasfresh/metasfresh/issues/3809) InvoiceCandidates without C_PaymentTerm_ID can't be invoiced together with other ICs
+  * [#3815](https://github.com/metasfresh/metasfresh/issues/3815) QtyOrdered sometimes updated wrongly on C_Order close
+
 * metasfresh-webui-frontend
   * [#1555](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1555) Can not enter "-" into any search field
     * Fixes the search and filtering for special characters. Now it's able to search for minus, underscore and different other characters too.
