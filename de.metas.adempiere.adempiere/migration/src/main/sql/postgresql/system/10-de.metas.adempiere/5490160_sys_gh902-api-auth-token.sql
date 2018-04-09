@@ -223,3 +223,53 @@ UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-04-09 17:15:3
 UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2018-04-09 17:15:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551400
 ;
 
+-- 2018-04-09T17:20:09.217
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Authentifizierung Tokens',Updated=TO_TIMESTAMP('2018-04-09 17:20:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=541053
+;
+
+-- 2018-04-09T17:20:16.158
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-09 17:20:16','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Tab_ID=541053 AND AD_Language='en_US'
+;
+
+-- 2018-04-09T17:20:37.078
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Drucken Login Anforderung',Updated=TO_TIMESTAMP('2018-04-09 17:20:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540651
+;
+
+-- 2018-04-09T17:20:43.810
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Drucken Login',Updated=TO_TIMESTAMP('2018-04-09 17:20:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540651
+;
+
+-- 2018-04-09T17:20:51.001
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-09 17:20:51','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Tab_ID=540651 AND AD_Language='en_US'
+;
+
+-- 2018-04-09T17:21:20.552
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Registrierte eMail',Updated=TO_TIMESTAMP('2018-04-09 17:21:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=555228
+;
+
+-- 2018-04-09T17:21:27.319
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Host Schlüssel',Updated=TO_TIMESTAMP('2018-04-09 17:21:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=555254
+;
+
+-- 2018-04-09T17:21:38.030
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Nutzer Login',Updated=TO_TIMESTAMP('2018-04-09 17:21:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=555227
+;
+
+-- 2018-04-09T17:21:48.290
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-09 17:21:48','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=555228 AND AD_Language='en_US'
+;
+
+-- 2018-04-09T17:21:53.765
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-09 17:21:53','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=555254 AND AD_Language='en_US'
+;
+
