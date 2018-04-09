@@ -92,6 +92,6 @@ public class MFreightCostDetail extends X_M_FreightCostDetail {
 		query.setParameters(parameters);
 		query.setOrderBy(orderBy);
 	
-		return query.list();
+		return query.list(MFreightCostDetail.class);
 	}
 }

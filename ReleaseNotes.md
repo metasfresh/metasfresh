@@ -10,6 +10,25 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.53 (2018-16)
+**release for week 2018-16**
+
+## Features
+* metasfresh-webui-frontend
+  * [#1539](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1539) eMail Editor mailTo List not showing selected entry
+    * Improvement of the Adress Lookup in eMail Editor. Now showing which entry is selected.
+  * [#1648](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1648) Dropdown value in filters cannot be deleted after selection
+    * Iporvement of Filter ctiteria, now possible to empty aleady set values in List Widgets.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1274](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1274) Edit Fields in Main Grid View Improvements
+    * Minor Improvement of Grid Cell Edit Mode, now aboiding the Detail View if double Clicking on Field in Edit Mode.
+  * [#1462](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1462) broke: cannot completely delete a numeric field in grid view
+    * Fixes the Grid View Edit Mode for numeric Fields that shall be zeroed when backspace.
+  * [#1612](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1612) modal view: quickActions not called when selecting all rows from all pages
+    * Fixes the possibility to select more than 20 Grid lines and use Quickactions.
+
 # metasfresh 5.52 (2018-15)
 **release for week 2018-15**
 
@@ -19,10 +38,24 @@ Here come the actual release notes:
     * Improvement of List widget border to Lookup widget border. Now having a harmonized look & feel.
 
 ## Fixes
+* metasfresh
+  * [#3767](https://github.com/metasfresh/metasfresh/issues/3767) Picking TU Label error when GLN is missing in PartnerLocation
+  * [#3773](https://github.com/metasfresh/metasfresh/issues/3773) Regression on process M_ReceiptSchedule_Generate_M_InOuts
+  * [#3806](https://github.com/metasfresh/metasfresh/issues/3806) packaging-inout-lines are split into too many invoice candidates
+  * [#3809](https://github.com/metasfresh/metasfresh/issues/3809) InvoiceCandidates without C_PaymentTerm_ID can't be invoiced together with other ICs
+  * [#3815](https://github.com/metasfresh/metasfresh/issues/3815) QtyOrdered sometimes updated wrongly on C_Order close
+
 * metasfresh-webui-frontend
   * [#1555](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1555) Can not enter "-" into any search field
     * Fixes the search and filtering for special characters. Now it's able to search for minus, underscore and different other characters too.
+  * [#1723](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1723) Error in console when typing in search field
+    * Fixes a minor error that appeared in console when searching in lookup widgets.
   * [#1725](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1725) Tab not working in address modal window
+    * Fixes a Bug in modal location editor window, now allowing to use Tab there again.
+  * [#1730](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1730) Create purchase orders process - fields collapse
+    * Improved Purchase Create action in sales order. Now not collapsing the tree after entering a Quantity value.
+  * [#1734](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1734) Picking Terminal opens with all rows uncollapsed
+    * Performance Improvement of Picking Terminal view, now openening collapsed and much faster.
 
 # metasfresh 5.51 (2018-14)
 **release for week 2018-14**
@@ -30,11 +63,15 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3675](https://github.com/metasfresh/metasfresh/issues/3675) Introducing master documentno to give each contract chain a unique number
+    * New Master Contract No created to allow the grouping of chanined subscription contracts.
   * [#3711](https://github.com/metasfresh/metasfresh/issues/3711) Contracts: Detect loops when extending a contract
+    * Improvement of contracts prolongations, detecting a minor case where a loop could occur.
   * [#3725](https://github.com/metasfresh/metasfresh/issues/3725) Update to latest jasper & faster maven plugin
-  * [#3770](https://github.com/metasfresh/metasfresh/issues/3770) Solve issues around the print endpoint
+    * Performance improvement of the jasper build process, updated to latest jasper and maven plugin.
   * [#3776](https://github.com/metasfresh/metasfresh/issues/3776) Distribution Editor initial HU Assignment
+    * Improved workflow in Distribution Editor Relocate action. Now the corresponding Handling Unit for the Distribution Orderline is initially selected.
   * [#3778](https://github.com/metasfresh/metasfresh/issues/3778) Automactically process picked CU's
+    * Picking Improvement, now automatically processing picked CU's. In case of errors the user can reactivate again.
   * [#3784](https://github.com/metasfresh/metasfresh/issues/3784) Standalone BPartner Product Translation Window
     * New Window in WebUI that allows the maintenance of Business Partner Product Translations.
 
@@ -50,15 +87,24 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#3770](https://github.com/metasfresh/metasfresh/issues/3770) Solve issues around the print endpoint
+    * Fixes different Bugs in print endpoint. Now its possible to use the printing service in WebUI.
   * [#3793](https://github.com/metasfresh/metasfresh/issues/3793) Cache: root documents are no longer invalidated
+    * Cache improvment, now not invalidating root documents anymore.
   * [#3741](https://github.com/metasfresh/metasfresh/issues/3741) Credit Limit Detail Improvements
+    * Detail improvements for the credit limit feature.
   * [#3748](https://github.com/metasfresh/metasfresh/issues/3748) Pharma: Regular import does not fail if prices aren't imported
+    * Fixes a minor Bug in Pharma Product Import, now throwing an error in case the prices are not imported.
   * [#3761](https://github.com/metasfresh/metasfresh/issues/3761) Check Limit in BPartner changes from order to invoice
+    * Credit Limit Improvement for check between Sales Order an Invoice.
   * [#3762](https://github.com/metasfresh/metasfresh/issues/3762) Check Limit in BPartner increases on purchase side
+    * Bugfix in Credit Limit Check, now not increasing the credit limit when creating Purchase Orders.
   * [#3804](https://github.com/metasfresh/metasfresh/issues/3804) Error AnnotationConfigEmbeddedWebApplicationContext has not been refreshed yet
+    * Internal Housekeeping Maintenance.
 
 * metasfresh-webui-api
   * [#925](https://github.com/metasfresh/metasfresh-webui-api/issues/925) Picking terminal: sometimes picking slot vanishes
+    * Fixes a Bug in WebUI Frontend. Eliminates cases in which the Picking Slot silently dissappeared from Screen.
 
 * metasfresh-webui-frontend
   * [#1679](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1679) Layout bug with resolution 1920x1200

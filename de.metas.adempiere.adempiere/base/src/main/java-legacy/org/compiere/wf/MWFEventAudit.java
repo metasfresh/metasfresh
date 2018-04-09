@@ -51,6 +51,7 @@ public class MWFEventAudit extends X_AD_WF_EventAudit
 	 * @return event audit or null
 	 * @deprecated Deprecated since 3.4.0. Use instead {@link #get(Properties, int, int, String)}
 	 */
+	@Deprecated
 	public static MWFEventAudit[] get (Properties ctx, int AD_WF_Process_ID, int AD_WF_Node_ID)
 	{
 		return get(ctx, AD_WF_Process_ID, AD_WF_Node_ID, null);
@@ -66,7 +67,7 @@ public class MWFEventAudit extends X_AD_WF_EventAudit
 	 */
 	public static MWFEventAudit[] get (Properties ctx, int AD_WF_Process_ID, int AD_WF_Node_ID, String trxName)
 	{
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer("AD_WF_Process_ID=?"); 
 		params.add(AD_WF_Process_ID);
 		if (AD_WF_Node_ID > 0)
@@ -77,7 +78,7 @@ public class MWFEventAudit extends X_AD_WF_EventAudit
 		List<MWFEventAudit> list = new Query(ctx, Table_Name, whereClause.toString(), trxName)
 					.setParameters(params)
 					.setOrderBy(COLUMNNAME_AD_WF_EventAudit_ID)
-					.list();
+					.list(MWFEventAudit.class);
 		//
 		MWFEventAudit[] retValue = new MWFEventAudit[list.size()];
 		list.toArray (retValue);
@@ -91,6 +92,7 @@ public class MWFEventAudit extends X_AD_WF_EventAudit
 	 * @return event audit or null
 	 * @deprecated Deprecated since 3.4.0. Use instead {@link #get(Properties, int, String)}
 	 */
+	@Deprecated
 	public static MWFEventAudit[] get (Properties ctx, int AD_WF_Process_ID)
 	{
 		return get(ctx, AD_WF_Process_ID, null);

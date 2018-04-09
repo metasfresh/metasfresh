@@ -26,7 +26,7 @@ package de.metas.invoicecandidate.api;
 import java.util.List;
 import java.util.Set;
 
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;

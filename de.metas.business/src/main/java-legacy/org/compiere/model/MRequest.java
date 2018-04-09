@@ -242,20 +242,6 @@ public class MRequest extends X_R_Request
 	}	//	setDueType
 
 	
-	/**************************************************************************
-	 * 	Get Action History
-	 *	@return array of actions
-	 */
-	public MRequestAction[] getActions()
-	{
-		final String whereClause = MRequestAction.COLUMNNAME_R_Request_ID+"=?";
-		List<MRequestAction> list = new Query(getCtx(), MRequestAction.Table_Name, whereClause, get_TrxName())
-										.setParameters(new Object[]{get_ID()})
-										.setOrderBy("Created DESC")
-										.list();
-		return list.toArray(new MRequestAction[list.size()]);
-	}	//	getActions
-
 	/**
 	 * 	Get Updates
 	 * 	@param confidentialType maximum confidential type - null = all
@@ -267,8 +253,8 @@ public class MRequest extends X_R_Request
 		List<MRequestUpdate> listUpdates = new Query(getCtx(), MRequestUpdate.Table_Name, whereClause, get_TrxName())
 										.setParameters(new Object[]{get_ID()})
 										.setOrderBy("Created DESC")
-										.list();
-		ArrayList<MRequestUpdate> list = new ArrayList<MRequestUpdate>();
+										.list(MRequestUpdate.class);
+		ArrayList<MRequestUpdate> list = new ArrayList<>();
 		for (MRequestUpdate ru : listUpdates)
 		{
 			if (confidentialType != null)
@@ -796,7 +782,7 @@ public class MRequest extends X_R_Request
 		
 		//	Change Log
 		m_changed = false;
-		ArrayList<String> sendInfo = new ArrayList<String>();
+		ArrayList<String> sendInfo = new ArrayList<>();
 		MRequestAction ra = new MRequestAction(this, false);
 		//
 		if (checkChange(ra, "R_RequestType_ID"))
@@ -1137,7 +1123,7 @@ public class MRequest extends X_R_Request
 		int failure = 0;
 		int notices = 0;
 		//
-		ArrayList<Integer> userList = new ArrayList<Integer>();
+		ArrayList<Integer> userList = new ArrayList<>();
 		final String sql = "SELECT u.AD_User_ID, u.NotificationType, u.EMail, u.Name, MAX(r.AD_Role_ID) "
 			+ "FROM RV_RequestUpdates_Only ru"
 			+ " INNER JOIN AD_User u ON (ru.AD_User_ID=u.AD_User_ID OR u.AD_User_ID=?)"

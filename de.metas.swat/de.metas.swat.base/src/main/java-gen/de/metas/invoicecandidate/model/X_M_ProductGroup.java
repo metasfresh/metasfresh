@@ -14,7 +14,7 @@ public class X_M_ProductGroup extends org.compiere.model.PO implements I_M_Produ
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1869927929L;
+	private static final long serialVersionUID = 803712055L;
 
     /** Standard Constructor */
     public X_M_ProductGroup (Properties ctx, int M_ProductGroup_ID, String trxName)
@@ -22,8 +22,8 @@ public class X_M_ProductGroup extends org.compiere.model.PO implements I_M_Produ
       super (ctx, M_ProductGroup_ID, trxName);
       /** if (M_ProductGroup_ID == 0)
         {
-			setM_Product_Proxy_ID (0);
 			setM_ProductGroup_ID (0);
+			setM_Product_Proxy_ID (0);
 			setName (null);
         } */
     }
@@ -42,6 +42,31 @@ public class X_M_ProductGroup extends org.compiere.model.PO implements I_M_Produ
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Produktgruppe.
+		@param M_ProductGroup_ID 
+		Fasst eine Anzahl von Produkten oder Produktkategorien zu einer Gruppe zusammen.
+	  */
+	@Override
+	public void setM_ProductGroup_ID (int M_ProductGroup_ID)
+	{
+		if (M_ProductGroup_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_ProductGroup_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_ProductGroup_ID, Integer.valueOf(M_ProductGroup_ID));
+	}
+
+	/** Get Produktgruppe.
+		@return Fasst eine Anzahl von Produkten oder Produktkategorien zu einer Gruppe zusammen.
+	  */
+	@Override
+	public int getM_ProductGroup_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ProductGroup_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_M_Product getM_Product_Proxy() throws RuntimeException
@@ -75,31 +100,6 @@ public class X_M_ProductGroup extends org.compiere.model.PO implements I_M_Produ
 	public int getM_Product_Proxy_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Proxy_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Produktgruppe.
-		@param M_ProductGroup_ID 
-		Fasst eine Anzahl von Produkten oder Produktkategorien zu einer Gruppe zusammen.
-	  */
-	@Override
-	public void setM_ProductGroup_ID (int M_ProductGroup_ID)
-	{
-		if (M_ProductGroup_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_ProductGroup_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_ProductGroup_ID, Integer.valueOf(M_ProductGroup_ID));
-	}
-
-	/** Get Produktgruppe.
-		@return Fasst eine Anzahl von Produkten oder Produktkategorien zu einer Gruppe zusammen.
-	  */
-	@Override
-	public int getM_ProductGroup_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ProductGroup_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

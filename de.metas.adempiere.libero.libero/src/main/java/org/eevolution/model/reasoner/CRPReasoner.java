@@ -131,7 +131,7 @@ public class CRPReasoner
 
 	public Query getPPOrdersNotCompletedQuery(int S_Resource_ID, String trxName)
 	{
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		
 		StringBuffer whereClause = new StringBuffer();
 		
@@ -166,7 +166,7 @@ public class CRPReasoner
 			return new MPPOrder[0];
 		}
 
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		params.add(r.getS_Resource_ID());
 		final String whereClause = 
 			// Checks the requested resource id directly on order node, not on resource id of the order
@@ -181,7 +181,7 @@ public class CRPReasoner
 		
 		List<MPPOrder> list = new Query(getCtx(r), MPPOrder.Table_Name, whereClause, null)
 									.setParameters(params)
-									.list();
+									.list(MPPOrder.class);
 		return list.toArray(new MPPOrder[list.size()]);
 	}  
 
@@ -192,7 +192,7 @@ public class CRPReasoner
 			return new MPPOrderNode[0];
 		}
 
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		String whereClause = MPPOrderNode.COLUMNNAME_S_Resource_ID+"=? AND AD_Client_ID=?";
 		params.add(r.getS_Resource_ID());
 		params.add(r.getAD_Client_ID());
@@ -201,7 +201,7 @@ public class CRPReasoner
 		
 		List<MPPOrderNode> list = new Query(getCtx(r), MPPOrderNode.Table_Name, whereClause, null)
 									.setParameters(params)
-									.list();
+									.list(MPPOrderNode.class);
 		return list.toArray(new MPPOrderNode[list.size()]);
 	}  
 
@@ -253,7 +253,7 @@ public class CRPReasoner
 	{
 		MResourceType t = MResourceType.get(getCtx(r), r.getS_ResourceType_ID());
 		Timestamp date = dateTime;
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		String whereClause;
 		String orderByClause;
 		int direction;
