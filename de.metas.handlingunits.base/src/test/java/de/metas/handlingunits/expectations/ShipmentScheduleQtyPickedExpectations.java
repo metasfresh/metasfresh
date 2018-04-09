@@ -80,7 +80,9 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 
 		if (qtyPicked != null)
 		{
-			final BigDecimal qtyPickedActual = shipmentScheduleAllocBL.getQtyPicked(shipmentSchedule);
+			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+			final BigDecimal qtyPickedActual = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentSchedule);
+
 			assertEquals(prefix + "QtyPicked", qtyPicked, qtyPickedActual);
 		}
 
@@ -126,7 +128,7 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 	{
 		Check.assumeNotNull(shipmentSchedule, "shipmentSchedule not null");
 
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = Services.get(IShipmentScheduleAllocDAO.class).retrievePickedNotDeliveredRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = Services.get(IShipmentScheduleAllocDAO.class).retrieveNotOnShipmentLineRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
 
 		return assertExpected(message, qtyPickedRecords);
 	}
