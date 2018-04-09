@@ -2,6 +2,7 @@ package de.metas.inout.invoicecandidate;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -129,7 +130,7 @@ public class M_InOutLine_HandlerTest
 	@Test
 	public void extractPaymentTermIdViaOrderLine_from_materialInOutLine_with_paymentTerm()
 	{
-		final I_M_InOutLine materialInOutLine = createMaterialInOutLine(paymentTermA);
+		final org.compiere.model.I_M_InOutLine materialInOutLine = createMaterialInOutLine(paymentTermA);
 
 		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLine(materialInOutLine);
 
@@ -139,7 +140,7 @@ public class M_InOutLine_HandlerTest
 	@Test
 	public void extractPaymentTermIdViaOrderLine_from_materialInOutLine_without_paymentTerm()
 	{
-		final I_M_InOutLine materialInOutLine = createMaterialInOutLine(null);
+		final org.compiere.model.I_M_InOutLine materialInOutLine = createMaterialInOutLine(null);
 
 		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLine(materialInOutLine);
 
@@ -395,7 +396,7 @@ public class M_InOutLine_HandlerTest
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
 	}
 
-	private I_M_InOutLine createMaterialInOutLine(@Nullable final I_C_PaymentTerm paymentTerm)
+	private org.compiere.model.I_M_InOutLine createMaterialInOutLine(@Nullable final I_C_PaymentTerm paymentTerm)
 	{
 		return createMaterialInOutLine(
 				paymentTerm,
@@ -403,20 +404,22 @@ public class M_InOutLine_HandlerTest
 		);
 	}
 
-	private I_M_InOutLine createMaterialInOutLine(
+	private org.compiere.model.I_M_InOutLine createMaterialInOutLine(
 			@Nullable final I_C_PaymentTerm paymentTerm,
 			@Nullable final BigDecimal qtyEnteredTU)
 	{
-		final I_M_InOutLine unrelatedMaterialInOutLine = createUnrelatedMaterialInOutLine(
+		final org.compiere.model.I_M_InOutLine unrelatedMaterialInOutLine = createUnrelatedMaterialInOutLine(
 				paymentTerm,
 				qtyEnteredTU);
-		unrelatedMaterialInOutLine.setM_PackingMaterial_InOutLine(packagingInOutLine);
-		save(unrelatedMaterialInOutLine);
+		
+		final I_M_InOutLine	materialInOutLineExt = create(unrelatedMaterialInOutLine, I_M_InOutLine.class);
+		materialInOutLineExt.setM_PackingMaterial_InOutLine(packagingInOutLine);
+		save(materialInOutLineExt);
 
 		return unrelatedMaterialInOutLine;
 	}
 
-	private I_M_InOutLine createUnrelatedMaterialInOutLine(
+	private org.compiere.model.I_M_InOutLine createUnrelatedMaterialInOutLine(
 			@Nullable final I_C_PaymentTerm paymentTerm,
 			@Nullable final BigDecimal qtyEnteredTU)
 	{
@@ -431,14 +434,17 @@ public class M_InOutLine_HandlerTest
 		orderLine.setC_PaymentTerm_Override(paymentTerm);
 		save(orderLine);
 
-		final I_M_InOutLine materialInOutLine = newInstance(I_M_InOutLine.class);
+		final org.compiere.model.I_M_InOutLine materialInOutLine = newInstance(org.compiere.model.I_M_InOutLine.class);
 		materialInOutLine.setIsActive(true);
 		materialInOutLine.setM_InOut(inout);
 		materialInOutLine.setC_OrderLine(orderLine);
 		materialInOutLine.setM_Product(materialProduct);
-		materialInOutLine.setQtyEnteredTU(qtyEnteredTU);
-		materialInOutLine.setIsPackagingMaterial(false);
 		save(materialInOutLine);
+		
+		final I_M_InOutLine	materialInOutLineExt = create(materialInOutLine, I_M_InOutLine.class);
+		materialInOutLineExt.setQtyEnteredTU(qtyEnteredTU);
+		materialInOutLineExt.setIsPackagingMaterial(false);
+		save(materialInOutLineExt);
 
 		return materialInOutLine;
 	}
