@@ -739,7 +739,7 @@ public class DPDRoutingService implements IDPDRoutingService
 
 		Properties ctx = InterfaceWrapperHelper.getCtx(pack);
 		String trxName = InterfaceWrapperHelper.getTrxName(pack);
-		return new Query(ctx, I_M_PackageInfo.Table_Name, whereClause, trxName).setParameters(parameters).list();
+		return new Query(ctx, I_M_PackageInfo.Table_Name, whereClause, trxName).setParameters(parameters).list(I_M_PackageInfo.class);
 	}
 
 }

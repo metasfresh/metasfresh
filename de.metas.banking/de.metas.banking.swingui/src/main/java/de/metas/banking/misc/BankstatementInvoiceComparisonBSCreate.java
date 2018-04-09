@@ -272,7 +272,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 
 		final List<I_C_BP_BankAccount> bankAccountList = new Query(Env.getCtx(),
 				I_C_BP_BankAccount.Table_Name, whereClause, null).setClient_ID()
-				.setOnlyActiveRecords(true).list();
+				.setOnlyActiveRecords(true).list(I_C_BP_BankAccount.class);
 
 		return bankAccountList;
 	}
@@ -288,7 +288,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 		final List<MBankStatement> bankStatementList = new Query(Env.getCtx(),
 				I_C_BankStatement.Table_Name, whereClause, null).setClient_ID()
 				.setOnlyActiveRecords(true).setOrderBy(
-						I_C_BankStatement.COLUMNNAME_StatementDate).list();
+						I_C_BankStatement.COLUMNNAME_StatementDate).list(MBankStatement.class);
 
 		return bankStatementList;
 	}

@@ -63,7 +63,7 @@ public class MExpenseType extends X_S_ExpenseType
 	 * 	Get Product
 	 *	@return product
 	 */
-	public MProduct getProduct()
+	private MProduct getProduct()
 	{
 		if (m_product == null)
 		{
@@ -81,6 +81,7 @@ public class MExpenseType extends X_S_ExpenseType
 	 *	@param newRecord
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (newRecord)
@@ -99,6 +100,7 @@ public class MExpenseType extends X_S_ExpenseType
 	 *	@param success success
 	 *	@return success
 	 */
+	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (!success)

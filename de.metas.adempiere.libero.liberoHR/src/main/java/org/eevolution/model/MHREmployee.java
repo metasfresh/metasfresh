@@ -64,7 +64,7 @@ public class MHREmployee extends X_HR_Employee
 	 */
 	public static MBPartner[] getEmployees (MHRProcess p)
 	{
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		whereClause.append(" C_BPartner.C_BPartner_ID IN (SELECT e.C_BPartner_ID FROM HR_Employee e WHERE e.IsActive=?");
 		// Just active employee
@@ -113,7 +113,7 @@ public class MHREmployee extends X_HR_Employee
 								.setParameters(params)
 								.setOnlyActiveRecords(true)
 								.setOrderBy(COLUMNNAME_Name)
-								.list();
+								.list(MBPartner.class);
 
 		return list.toArray(new MBPartner[list.size()]);
 	}	//	getEmployees
@@ -128,7 +128,7 @@ public class MHREmployee extends X_HR_Employee
 	}
 
 	/** Cache */
-	private static CCache<Integer, MHREmployee> s_cache = new CCache<Integer, MHREmployee>(Table_Name, 1000);
+	private static CCache<Integer, MHREmployee> s_cache = new CCache<>(Table_Name, 1000);
 	
 	/**************************************************************************
 	 * 	Invoice Line Constructor

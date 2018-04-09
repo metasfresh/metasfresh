@@ -173,7 +173,7 @@ public class MWFProcess extends X_AD_WF_Process
 	 *	@param onlyActive only active activities
 	 *	@return array of activities
 	 */
-	public MWFActivity[] getActivities (boolean requery, boolean onlyActive, String trxName)
+	private MWFActivity[] getActivities (boolean requery, boolean onlyActive, String trxName)
 	{
 		if (!requery && m_activities != null)
 			return m_activities;
@@ -188,7 +188,7 @@ public class MWFProcess extends X_AD_WF_Process
 		}
 		List<MWFActivity> list = new Query(getCtx(), MWFActivity.Table_Name, whereClause.toString(), trxName)
 								.setParameters(params)
-								.list();
+								.list(MWFActivity.class);
 		m_activities = new MWFActivity[list.size ()];
 		list.toArray (m_activities);
 		return m_activities;

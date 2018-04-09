@@ -41,12 +41,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import java.util.Vector;
-import org.slf4j.Logger;
 
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-
+import org.adempiere.util.Check;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.GridTab;
 import org.compiere.model.MInOut;
@@ -58,10 +57,13 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
 import org.compiere.model.MRMA;
 import org.compiere.model.MRMALine;
+import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+
+import de.metas.i18n.Msg;
 
 /**
  *  Create Invoice Transactions from PO Orders or Receipt
@@ -89,6 +91,7 @@ public class CreateFromInvoice extends CreateFrom
 	 *  Dynamic Init
 	 *  @return true if initialized
 	 */
+	@Override
 	public boolean dynInit() throws Exception
 	{
 		log.info("");
@@ -103,7 +106,7 @@ public class CreateFromInvoice extends CreateFrom
 	 */
 	protected ArrayList<KeyNamePair> loadShipmentData (int C_BPartner_ID)
 	{
-		ArrayList<KeyNamePair> list = new ArrayList<KeyNamePair>();
+		ArrayList<KeyNamePair> list = new ArrayList<>();
 
 		//	Display
 		StringBuffer display = new StringBuffer("s.DocumentNo||' - '||")
@@ -147,7 +150,7 @@ public class CreateFromInvoice extends CreateFrom
 	 *  @param C_BPartner_ID BPartner
 	 */
 	protected ArrayList<KeyNamePair> loadRMAData(int C_BPartner_ID) {
-		ArrayList<KeyNamePair> list = new ArrayList<KeyNamePair>();
+		ArrayList<KeyNamePair> list = new ArrayList<>();
 
 		String sqlStmt = "SELECT r.M_RMA_ID, r.DocumentNo || '-' || r.Amt from M_RMA r "
 				+ "WHERE ISSOTRX='N' AND r.DocStatus in ('CO', 'CL') "
@@ -196,7 +199,7 @@ public class CreateFromInvoice extends CreateFrom
 			m_rma = new MRMA (Env.getCtx(), inout.getM_RMA_ID(), null);
 
 		//
-		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+		Vector<Vector<Object>> data = new Vector<>();
 		StringBuffer sql = new StringBuffer("SELECT "	//	QtyEntered
 			+ "l.MovementQty-SUM(COALESCE(mi.Qty, 0)), l.QtyEntered/l.MovementQty,"
 			+ " l.C_UOM_ID, COALESCE(uom.UOMSymbol, uom.Name),"			//  3..4
@@ -228,7 +231,7 @@ public class CreateFromInvoice extends CreateFrom
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				Vector<Object> line = new Vector<Object>(7);
+				Vector<Object> line = new Vector<>(7);
 				line.add(new Boolean(false));           //  0-Selection
 				BigDecimal qtyMovement = rs.getBigDecimal(1);
 				BigDecimal multiplier = rs.getBigDecimal(2);
@@ -270,7 +273,7 @@ public class CreateFromInvoice extends CreateFrom
 
 //	    MRMA m_rma = new MRMA(Env.getCtx(), M_RMA_ID, null);
 
-	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+	    Vector<Vector<Object>> data = new Vector<>();
 	    StringBuffer sqlStmt = new StringBuffer();
 	    sqlStmt.append("SELECT rl.M_RMALine_ID, rl.line, rl.Qty - COALESCE(rl.QtyInvoiced, 0), iol.M_Product_ID, p.Name, uom.C_UOM_ID, COALESCE(uom.UOMSymbol,uom.Name) ");
 	    sqlStmt.append("FROM M_RMALine rl INNER JOIN M_InOutLine iol ON rl.M_InOutLine_ID=iol.M_InOutLine_ID ");
@@ -315,7 +318,7 @@ public class CreateFromInvoice extends CreateFrom
 
 	        while (rs.next())
             {
-	            Vector<Object> line = new Vector<Object>(7);
+	            Vector<Object> line = new Vector<>(7);
 	            line.add(new Boolean(false));   // 0-Selection
 	            line.add(rs.getBigDecimal(3));  // 1-Qty
 	            KeyNamePair pp = new KeyNamePair(rs.getInt(6), rs.getString(7));
@@ -347,6 +350,7 @@ public class CreateFromInvoice extends CreateFrom
 	/**
 	 *  List number of rows selected
 	 */
+	@Override
 	public void info()
 	{
 
@@ -370,6 +374,7 @@ public class CreateFromInvoice extends CreateFrom
 	 *  Save - Create Invoice Lines
 	 *  @return true if saved
 	 */
+	@Override
 	public boolean save(IMiniTable miniTable, String trxName)
 	{
 		//  Invoice
@@ -471,8 +476,7 @@ public class CreateFromInvoice extends CreateFrom
 				else if (C_OrderLine_ID > 0)
 				{
 					String whereClause = "EXISTS (SELECT 1 FROM M_InOut io WHERE io.M_InOut_ID=M_InOutLine.M_InOut_ID AND io.DocStatus IN ('CO','CL'))";
-					MInOutLine[] lines = MInOutLine.getOfOrderLine(Env.getCtx(),
-						C_OrderLine_ID, whereClause, trxName);
+					MInOutLine[] lines = getInOutLinesByOrderLineId(Env.getCtx(), C_OrderLine_ID, whereClause, trxName);
 					log.debug("Receipt Lines with OrderLine = #" + lines.length);
 					if (lines.length > 0)
 					{
@@ -496,7 +500,7 @@ public class CreateFromInvoice extends CreateFrom
 				else if (M_RMALine_ID != 0)
 				{
 					String whereClause = "EXISTS (SELECT 1 FROM M_InOut io WHERE io.M_InOut_ID=M_InOutLine.M_InOut_ID AND io.DocStatus IN ('CO','CL'))";
-					MInOutLine[] lines = MInOutLine.getOfRMALine(Env.getCtx(), M_RMALine_ID, whereClause, null);
+					MInOutLine[] lines = getInOutLinesByRMALineId(Env.getCtx(), M_RMALine_ID, whereClause, null);
 					log.debug("Receipt Lines with RMALine = #" + lines.length);
 					if (lines.length > 0)
 					{
@@ -562,11 +566,48 @@ public class CreateFromInvoice extends CreateFrom
 
 		return true;
 	}   //  saveInvoice
+	
+	/**
+	 * Get Ship lines Of Order Line
+	 *
+	 * @param ctx context
+	 * @param C_OrderLine_ID line
+	 * @param where optional addition where clause
+	 * @param trxName transaction
+	 * @return array of receipt lines
+	 */
+	private static MInOutLine[] getInOutLinesByOrderLineId(Properties ctx, int C_OrderLine_ID, String where, String trxName)
+	{
+		String whereClause = "C_OrderLine_ID=?" + (!Check.isEmpty(where, true) ? " AND " + where : "");
+		List<MInOutLine> list = new Query(ctx, MInOutLine.Table_Name, whereClause, trxName)
+				.setParameters(new Object[] { C_OrderLine_ID })
+				.list(MInOutLine.class);
+		return list.toArray(new MInOutLine[list.size()]);
+	}
+
+	/**
+	 * Get Ship lines Of RMA Line
+	 *
+	 * @param ctx context
+	 * @param M_RMALine_ID line
+	 * @param where optional addition where clause
+	 * @param trxName transaction
+	 * @return array of receipt lines
+	 */
+	public static MInOutLine[] getInOutLinesByRMALineId(Properties ctx, int M_RMALine_ID, String where, String trxName)
+	{
+		String whereClause = "M_RMALine_ID=? " + (!Check.isEmpty(where, true) ? " AND " + where : "");
+		List<MInOutLine> list = new Query(ctx, MInOutLine.Table_Name, whereClause, trxName)
+				.setParameters(new Object[] { M_RMALine_ID })
+				.list(MInOutLine.class);
+		return list.toArray(new MInOutLine[list.size()]);
+	}	// getOfRMALine
+
 
 	protected Vector<String> getOISColumnNames()
 	{
 		//  Header Info
-	    Vector<String> columnNames = new Vector<String>(7);
+	    Vector<String> columnNames = new Vector<>(7);
 	    columnNames.add(Msg.getMsg(Env.getCtx(), "Select"));
 	    columnNames.add(Msg.translate(Env.getCtx(), "Quantity"));
 	    columnNames.add(Msg.translate(Env.getCtx(), "C_UOM_ID"));
