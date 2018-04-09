@@ -13,7 +13,10 @@ Here come the actual release notes:
 # metasfresh 5.53 (2018-16)
 **release for week 2018-16**
 
-
+## Features
+* metasfresh-webui-frontend
+  * [#1539](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1539) eMail Editor mailTo List not showing selected entry
+    * Improvement of the Adress Lookup in eMail Editor. Now showing which entry is selected.
 
 # metasfresh 5.52 (2018-15)
 **release for week 2018-15**
