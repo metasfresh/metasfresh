@@ -2,6 +2,7 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { List } from 'immutable';
 
 import { addNotification } from '../../actions/AppActions';
 import {
@@ -22,8 +23,10 @@ class NewEmail extends Component {
     this.state = {
       init: false,
       cached: {},
-      templates: [],
+      templates: List(),
       template: {},
+      listFocused: true,
+      listToggled: false,
     };
   }
 
@@ -56,7 +59,7 @@ class NewEmail extends Component {
   getTemplates = () => {
     getTemplates().then(res => {
       this.setState({
-        templates: res.data.values,
+        templates: List(res.data.values),
       });
     });
   };
@@ -113,6 +116,30 @@ class NewEmail extends Component {
     });
   };
 
+  handleFocus = () => {
+    this.setState({
+      listFocused: true,
+    });
+  };
+
+  handleBlur = () => {
+    this.setState({
+      listFocused: false,
+    });
+  };
+
+  closeTemplatesList = () => {
+    this.setState({
+      listToggled: false,
+    });
+  };
+
+  openTemplatesList = () => {
+    this.setState({
+      listToggled: true,
+    });
+  };
+
   render() {
     const { handleCloseEmail, windowId, docId } = this.props;
     const {
@@ -124,6 +151,8 @@ class NewEmail extends Component {
       to,
       templates,
       template,
+      listFocused,
+      listToggled,
     } = this.state;
 
     if (!init) return false;
@@ -136,13 +165,19 @@ class NewEmail extends Component {
               <span className="email-headline">
                 {counterpart.translate('window.email.new')}
               </span>
-              {templates.length > 0 && (
+              {templates.size > 0 && (
                 <div className="email-templates">
                   <RawList
                     rank="primary"
                     list={templates}
                     onSelect={option => this.handleTemplate(option)}
                     selected={template}
+                    isFocused={listFocused}
+                    isToggled={listToggled}
+                    onOpenDropdown={this.openTemplatesList}
+                    onCloseDropdown={this.closeTemplatesList}
+                    onFocus={this.handleFocus}
+                    onBlur={this.handleBlur}
                   />
                 </div>
               )}

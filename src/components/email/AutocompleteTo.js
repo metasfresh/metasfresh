@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Autosuggest from 'react-autosuggest';
 import TagsInput from 'react-tagsinput';
+import classnames from 'classnames';
 
 import 'react-tagsinput/react-tagsinput.css';
 
@@ -45,6 +46,20 @@ class AutocompleteTo extends Component {
     });
   };
 
+  renderSuggestion = option => {
+    const { tags } = this.state;
+
+    return (
+      <span
+        className={classnames('autosuggest-option', {
+          selected: tags.includes(option.caption),
+        })}
+      >
+        {option.caption}
+      </span>
+    );
+  };
+
   autocompleteRenderInput = ({ addTag, ...props }) => {
     const { suggestions } = this.state;
 
@@ -62,7 +77,7 @@ class AutocompleteTo extends Component {
         suggestions={suggestions}
         shouldRenderSuggestions={value => value && value.trim().length > 0}
         getSuggestionValue={s => s.caption}
-        renderSuggestion={s => <span>{s.caption}</span>}
+        renderSuggestion={this.renderSuggestion}
         inputProps={{ ...props, onChange: handleOnChange }}
         onSuggestionSelected={(e, { suggestion }) => {
           addTag(suggestion.caption);
