@@ -21,6 +21,9 @@ Here come the actual release notes:
     * Iporvement of Filter ctiteria, now possible to empty aleady set values in List Widgets.
 
 ## Fixes
+* metasfresh-webui-api
+  * [#902](https://github.com/metasfresh/metasfresh-webui-api/issues/902) API token is not shown in the webui
+    * Improved User Window with Authentication Subtab.
 * metasfresh-webui-frontend
   * [#1274](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1274) Edit Fields in Main Grid View Improvements
     * Minor Improvement of Grid Cell Edit Mode, now aboiding the Detail View if double Clicking on Field in Edit Mode.
