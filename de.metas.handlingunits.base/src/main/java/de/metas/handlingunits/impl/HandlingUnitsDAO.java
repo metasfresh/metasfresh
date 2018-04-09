@@ -93,9 +93,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	// NOTE: it's public only for testing purposes
-	public static final int NO_HU_PI_ID = 100;
-	public static final int NO_HU_PI_Version_ID = 100;
-	public static final int NO_HU_PI_Item_ID = 540004;
+	public static final int PACKING_ITEM_TEMPLATE_HU_PI_ID = 100;
+	public static final int PACKING_ITEM_TEMPLATE_HU_PI_Version_ID = 100;
+	public static final int PACKING_ITEM_TEMPLATE_HU_PI_Item_ID = 540004;
+
 	public static final int VIRTUAL_HU_PI_ID = 101;
 	public static final int VIRTUAL_HU_PI_Version_ID = 101;
 	public static final int VIRTUAL_HU_PI_Item_ID = 101;
@@ -113,12 +114,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_PI retrieveNoPI(final Properties ctx)
+	public I_M_HU_PI retrievePackingItemTemplatePI(final Properties ctx)
 	{
-		final I_M_HU_PI noPI = retrievePI(ctx, NO_HU_PI_ID);
+		final I_M_HU_PI noPI = retrievePI(ctx, PACKING_ITEM_TEMPLATE_HU_PI_ID);
 		if (noPI == null)
 		{
-			throw new AdempiereException("@NotFound@ @M_HU_PI_ID@ NoPI (ID=" + NO_HU_PI_ID + ")");
+			throw new AdempiereException("@NotFound@ @M_HU_PI_ID@ NoPI (ID=" + PACKING_ITEM_TEMPLATE_HU_PI_ID + ")");
 		}
 
 		return noPI;
@@ -126,12 +127,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	@Cached
-	public I_M_HU_PI_Item retrieveNoPIItem(@CacheCtx final Properties ctx)
+	public I_M_HU_PI_Item retrievePackingItemTemplatePIItem(@CacheCtx final Properties ctx)
 	{
-		final I_M_HU_PI_Item noPIItem = InterfaceWrapperHelper.create(ctx, NO_HU_PI_Item_ID, I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
+		final I_M_HU_PI_Item noPIItem = InterfaceWrapperHelper.create(ctx, PACKING_ITEM_TEMPLATE_HU_PI_Item_ID, I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
 		if (noPIItem == null)
 		{
-			throw new AdempiereException("@NotFound@ @M_HU_PI_Item_ID@ NoPI (ID=" + NO_HU_PI_Item_ID + ")");
+			throw new AdempiereException("@NotFound@ @M_HU_PI_Item_ID@ NoPI (ID=" + PACKING_ITEM_TEMPLATE_HU_PI_Item_ID + ")");
 		}
 
 		return noPIItem;
@@ -175,15 +176,15 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public int getNo_HU_PI_ID()
+	public int getPackingItemTemplate_HU_PI_ID()
 	{
-		return NO_HU_PI_ID;
+		return PACKING_ITEM_TEMPLATE_HU_PI_ID;
 	}
 
 	@Override
-	public int getNo_HU_PI_Item_ID()
+	public int getPackingItemTemplate_HU_PI_Item_ID()
 	{
-		return NO_HU_PI_Item_ID;
+		return PACKING_ITEM_TEMPLATE_HU_PI_Item_ID;
 	}
 
 	@Override
@@ -305,9 +306,15 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_Item createAggregateHUItem(final I_M_HU hu)
+	public I_M_HU_Item createAggregateHUItem(@NonNull final I_M_HU hu)
 	{
 		return getHUAndItemsDAO().createAggregateHUItem(hu);
+	}
+
+	@Override
+	public I_M_HU_Item createChildHUItem(@NonNull final I_M_HU hu)
+	{
+		return getHUAndItemsDAO().createChildHUItem(hu);
 	}
 
 	@Override
@@ -359,7 +366,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				qty = BigDecimal.ONE;
 			}
 
-			final I_M_HU_PackingMaterial packingMaterial = huItem.getM_HU_PackingMaterial();
+			final I_M_HU_PackingMaterial packingMaterial = handlingUnitsBL.getHUPackingMaterial(huItem);
 
 			packingMaterials.add(ImmutablePair.of(packingMaterial, qty.intValueExact()));
 		}
@@ -652,7 +659,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		//
 		// Fetch only those PI Items which have our given huPI included
 		// 08254: if No-PI, don't add included HU filter
-		if (huPIId != getNo_HU_PI_ID())
+		if (huPIId != getPackingItemTemplate_HU_PI_ID())
 		{
 			piItemsQueryBuilder.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, huPIId);
 		}
@@ -775,7 +782,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU hu)
 	{
 		Check.assumeNotNull(hu, "hu not null");
-		final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
+		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(hu);
 		final I_C_BPartner bpartner = hu.getC_BPartner();
 		final I_M_HU_PackingMaterial pm = retrievePackingMaterial(piVersion, bpartner);
 		return pm;

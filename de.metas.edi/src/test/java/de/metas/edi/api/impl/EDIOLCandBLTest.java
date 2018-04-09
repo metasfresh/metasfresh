@@ -66,7 +66,7 @@ public class EDIOLCandBLTest
 	public void test_IsEdiEnabled_No_WhenDataSourceIsNull()
 	{
 		final I_C_OLCand olCand = InterfaceWrapperHelper.create(Env.getCtx(), I_C_OLCand.class, ITrx.TRXNAME_None);
-		olCand.setAD_InputDataSource(null);
+		olCand.setAD_InputDataSource_ID(-1);
 		InterfaceWrapperHelper.save(olCand);
 		
 		Assert.assertEquals(false, ediOLCandBL.isEDIInput(olCand));
@@ -75,7 +75,7 @@ public class EDIOLCandBLTest
 	private I_C_OLCand createOLCandWithInputDataSource(final boolean isEdiEnabled)
 	{
 		final I_C_OLCand olCand = InterfaceWrapperHelper.create(Env.getCtx(), I_C_OLCand.class, ITrx.TRXNAME_None);
-		olCand.setAD_InputDataSource(createInputDataSource(isEdiEnabled));
+		olCand.setAD_InputDataSource_ID(createInputDataSource(isEdiEnabled).getAD_InputDataSource_ID());
 		InterfaceWrapperHelper.save(olCand);
 		return olCand;
 		

@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -340,4 +341,16 @@ public final class GuavaCollectors
 
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
+
+	public static <T> Stream<List<T>> groupByAndStream(final Stream<T> stream, final Function<T, ?> classifier)
+	{
+		final boolean parallel = false;
+		return StreamSupport.stream(new GroupByClassifierSpliterator<>(stream.spliterator(), classifier), parallel);
+	}
+
+	public static <T> Stream<List<T>> batchAndStream(final Stream<T> stream, final int batchSize)
+	{
+		return StreamSupport.stream(new BatchSpliterator<>(stream.spliterator(), batchSize), stream.isParallel());
+	}
+
 }

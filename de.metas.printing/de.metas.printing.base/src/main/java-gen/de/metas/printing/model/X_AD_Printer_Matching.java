@@ -5,16 +5,16 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_Printer_Matching
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public class X_AD_Printer_Matching extends org.compiere.model.PO implements I_AD_Printer_Matching, org.compiere.model.I_Persistent 
+public class X_AD_Printer_Matching extends org.compiere.model.PO implements I_AD_Printer_Matching, org.compiere.model.I_Persistent
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1896204380L;
+	private static final long serialVersionUID = -568370510L;
 
     /** Standard Constructor */
     public X_AD_Printer_Matching (Properties ctx, int AD_Printer_Matching_ID, String trxName)
@@ -23,9 +23,9 @@ public class X_AD_Printer_Matching extends org.compiere.model.PO implements I_AD
       /** if (AD_Printer_Matching_ID == 0)
         {
 			setAD_Printer_Config_ID (0);
+			setAD_PrinterHW_ID (0);
 			setAD_Printer_ID (0);
 			setAD_Printer_Matching_ID (0);
-			setAD_PrinterHW_ID (0);
         } */
     }
 
@@ -40,7 +40,7 @@ public class X_AD_Printer_Matching extends org.compiere.model.PO implements I_AD
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      final org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
@@ -61,74 +61,18 @@ public class X_AD_Printer_Matching extends org.compiere.model.PO implements I_AD
 	@Override
 	public void setAD_Printer_Config_ID (int AD_Printer_Config_ID)
 	{
-		if (AD_Printer_Config_ID < 1) 
+		if (AD_Printer_Config_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_AD_Printer_Config_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_AD_Printer_Config_ID, Integer.valueOf(AD_Printer_Config_ID));
 	}
 
 	/** Get Printer Matching Config.
 		@return Printer Matching Config	  */
 	@Override
-	public int getAD_Printer_Config_ID () 
+	public int getAD_Printer_Config_ID ()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Printer_Config_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public I_AD_Printer getAD_Printer() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Printer_ID, I_AD_Printer.class);
-	}
-
-	@Override
-	public void setAD_Printer(I_AD_Printer AD_Printer)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Printer_ID, I_AD_Printer.class, AD_Printer);
-	}
-
-	/** Set Logischer Drucker.
-		@param AD_Printer_ID Logischer Drucker	  */
-	@Override
-	public void setAD_Printer_ID (int AD_Printer_ID)
-	{
-		if (AD_Printer_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_AD_Printer_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Printer_ID, Integer.valueOf(AD_Printer_ID));
-	}
-
-	/** Get Logischer Drucker.
-		@return Logischer Drucker	  */
-	@Override
-	public int getAD_Printer_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Printer_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Printer matching.
-		@param AD_Printer_Matching_ID Printer matching	  */
-	@Override
-	public void setAD_Printer_Matching_ID (int AD_Printer_Matching_ID)
-	{
-		if (AD_Printer_Matching_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_AD_Printer_Matching_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Printer_Matching_ID, Integer.valueOf(AD_Printer_Matching_ID));
-	}
-
-	/** Get Printer matching.
-		@return Printer matching	  */
-	@Override
-	public int getAD_Printer_Matching_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Printer_Matching_ID);
+		final Integer ii = (Integer)get_Value(COLUMNNAME_AD_Printer_Config_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -151,18 +95,62 @@ public class X_AD_Printer_Matching extends org.compiere.model.PO implements I_AD
 	@Override
 	public void setAD_PrinterHW_ID (int AD_PrinterHW_ID)
 	{
-		if (AD_PrinterHW_ID < 1) 
+		if (AD_PrinterHW_ID < 1)
 			set_Value (COLUMNNAME_AD_PrinterHW_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_PrinterHW_ID, Integer.valueOf(AD_PrinterHW_ID));
 	}
 
 	/** Get Hardware-Drucker.
 		@return Hardware-Drucker	  */
 	@Override
-	public int getAD_PrinterHW_ID () 
+	public int getAD_PrinterHW_ID ()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrinterHW_ID);
+		final Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrinterHW_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Logischer Drucker.
+		@param AD_Printer_ID Logischer Drucker	  */
+	@Override
+	public void setAD_Printer_ID (int AD_Printer_ID)
+	{
+		if (AD_Printer_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_AD_Printer_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_AD_Printer_ID, Integer.valueOf(AD_Printer_ID));
+	}
+
+	/** Get Logischer Drucker.
+		@return Logischer Drucker	  */
+	@Override
+	public int getAD_Printer_ID ()
+	{
+		final Integer ii = (Integer)get_Value(COLUMNNAME_AD_Printer_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Printer matching.
+		@param AD_Printer_Matching_ID Printer matching	  */
+	@Override
+	public void setAD_Printer_Matching_ID (int AD_Printer_Matching_ID)
+	{
+		if (AD_Printer_Matching_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_AD_Printer_Matching_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_AD_Printer_Matching_ID, Integer.valueOf(AD_Printer_Matching_ID));
+	}
+
+	/** Get Printer matching.
+		@return Printer matching	  */
+	@Override
+	public int getAD_Printer_Matching_ID ()
+	{
+		final Integer ii = (Integer)get_Value(COLUMNNAME_AD_Printer_Matching_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -179,7 +167,7 @@ public class X_AD_Printer_Matching extends org.compiere.model.PO implements I_AD
 	/** Get AD_Tray_Matching_IncludedTab.
 		@return AD_Tray_Matching_IncludedTab	  */
 	@Override
-	public java.lang.String getAD_Tray_Matching_IncludedTab () 
+	public java.lang.String getAD_Tray_Matching_IncludedTab ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_AD_Tray_Matching_IncludedTab);
 	}
@@ -195,27 +183,8 @@ public class X_AD_Printer_Matching extends org.compiere.model.PO implements I_AD
 	/** Get Beschreibung.
 		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
-	}
-
-	/** Set Host key.
-		@param HostKey 
-		Unique identifier of a host
-	  */
-	@Override
-	public void setHostKey (java.lang.String HostKey)
-	{
-		set_ValueNoCheck (COLUMNNAME_HostKey, HostKey);
-	}
-
-	/** Get Host key.
-		@return Unique identifier of a host
-	  */
-	@Override
-	public java.lang.String getHostKey () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_HostKey);
 	}
 }

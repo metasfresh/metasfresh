@@ -518,10 +518,10 @@ public class C_Flatrate_Term
 
 		term.setMasterEndDate(masterEndDate);
 	}
-	
+
 	private Timestamp computeMasterEndDateIfC_FlatrateTerm_Next_IDChanged(@NonNull final I_C_Flatrate_Term term, Timestamp masterEndDate)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID) && !term.isAutoRenew())
+		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID) )
 		{
 			if (term.getC_FlatrateTerm_Next_ID() > 0)
 			{
@@ -532,7 +532,24 @@ public class C_Flatrate_Term
 				masterEndDate = term.getEndDate();
 			}
 		}
-		
+
 		return masterEndDate;
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
+	public void setMasterDocumentNo(final I_C_Flatrate_Term term)
+	{
+		if (!Check.isEmpty(term.getDocumentNo(), true) && Check.isEmpty(term.getMasterDocumentNo(), true))
+		{
+			final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(term);
+			if (ancestor == null)
+			{
+				term.setMasterDocumentNo(term.getDocumentNo());
+			}
+			else
+			{
+				term.setMasterDocumentNo(ancestor.getMasterDocumentNo());
+			}
+		}
 	}
 }

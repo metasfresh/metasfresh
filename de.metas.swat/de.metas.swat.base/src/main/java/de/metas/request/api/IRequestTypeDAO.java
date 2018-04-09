@@ -1,7 +1,5 @@
 package de.metas.request.api;
 
-import java.util.Properties;
-
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_R_RequestType;
 
@@ -30,8 +28,8 @@ import org.compiere.model.I_R_RequestType;
 public interface IRequestTypeDAO extends ISingletonService
 {
 
-	I_R_RequestType retrieveVendorRequestType(Properties ctx);
+	I_R_RequestType retrieveVendorRequestType();
 
-	I_R_RequestType retrieveCustomerRequestType(Properties ctx);
+	I_R_RequestType retrieveCustomerRequestType();
 
 }

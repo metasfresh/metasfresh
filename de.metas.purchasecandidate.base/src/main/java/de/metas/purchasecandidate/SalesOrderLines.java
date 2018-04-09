@@ -16,6 +16,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_OrderLine;
 
 import com.google.common.base.Predicates;
@@ -186,8 +187,19 @@ public class SalesOrderLines
 				.uomId(salesOrderLine.getC_UOM_ID())
 				.vendorProductInfo(VendorProductInfo.fromDataRecord(vendorProductInfo))
 				.vendorBPartnerId(vendorProductInfo.getC_BPartner_ID())
-				.warehouseId(salesOrderLine.getM_Warehouse_ID())
+				.warehouseId(getWarehousePOId(salesOrderLine))
 				.build();
+	}
+	
+	private int getWarehousePOId(final I_C_OrderLine salesOrderLine)
+	{
+		final int orgWarehousePOId = Services.get(IWarehouseDAO.class).retrieveOrgWarehousePOId(salesOrderLine.getAD_Org_ID());
+		if(orgWarehousePOId > 0)
+		{
+			return orgWarehousePOId;
+		}
+		
+		return salesOrderLine.getM_Warehouse_ID();
 	}
 
 	private Map<Integer, I_C_BPartner_Product> retriveVendorId2VendorProductInfo(@NonNull final I_C_OrderLine salesOrderLine)

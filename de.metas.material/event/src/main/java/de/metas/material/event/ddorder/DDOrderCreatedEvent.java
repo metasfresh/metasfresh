@@ -1,5 +1,7 @@
 package de.metas.material.event.ddorder;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -45,8 +47,13 @@ public class DDOrderCreatedEvent extends AbstractDDOrderEvent
 			@JsonProperty("ddOrder") @NonNull final DDOrder ddOrder,
 			@JsonProperty("fromWarehouseId") final int fromWarehouseId,
 			@JsonProperty("toWarehouseId") final int toWarehouseId,
-			@JsonProperty("supplyRequiredDescriptor") @NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
+			@JsonProperty("supplyRequiredDescriptor") @Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		super(eventDescriptor, ddOrder, fromWarehouseId, toWarehouseId, supplyRequiredDescriptor);
+		super(
+				eventDescriptor,
+				ddOrder,
+				fromWarehouseId,
+				toWarehouseId,
+				supplyRequiredDescriptor);
 	}
 }

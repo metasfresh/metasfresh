@@ -54,6 +54,8 @@ public class EventTestHelper
 
 	public static final int WAREHOUSE_ID = 51;
 
+	public static final int SHIPMENT_SCHEDULE_ID = 21;
+
 	public static final int PRODUCT_ID = 24;
 
 	public static final int BPARTNER_ID = 25;
@@ -70,9 +72,9 @@ public class EventTestHelper
 	public static SupplyRequiredDescriptor createSupplyRequiredDescriptorWithProductId(final int productId)
 	{
 		return SupplyRequiredDescriptor.builder()
-				.shipmentScheduleId(21)
+				.shipmentScheduleId(SHIPMENT_SCHEDULE_ID)
 				.demandCandidateId(41)
-				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
 				.materialDescriptor(createMaterialDescriptorWithProductId(productId))
 				.build();
 	}

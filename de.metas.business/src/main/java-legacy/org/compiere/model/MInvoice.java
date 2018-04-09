@@ -33,8 +33,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
@@ -107,7 +105,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		final List<MInvoice> list = new Query(ctx, Table_Name, COLUMNNAME_C_BPartner_ID + "=?", trxName)
 				.setParameters(new Object[] { C_BPartner_ID })
-				.list();
+				.list(MInvoice.class);
 		return list.toArray(new MInvoice[list.size()]);
 	}	// getOfBPartner
 
@@ -603,7 +601,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final List<MInvoiceLine> list = new Query(getCtx(), MInvoiceLine.Table_Name, whereClauseFinal, get_TrxName())
 				.setParameters(new Object[] { getC_Invoice_ID() })
 				.setOrderBy(MInvoiceLine.COLUMNNAME_Line)
-				.list();
+				.list(MInvoiceLine.class);
 		// optimization: link the C_Invoice
 		for (final I_C_InvoiceLine invoiceLine : list)
 		{
@@ -713,7 +711,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final String whereClause = MInvoiceTax.COLUMNNAME_C_Invoice_ID + "=?";
 		final List<MInvoiceTax> list = new Query(getCtx(), MInvoiceTax.Table_Name, whereClause, get_TrxName())
 				.setParameters(new Object[] { get_ID() })
-				.list();
+				.list(MInvoiceTax.class);
 		m_taxes = list.toArray(new MInvoiceTax[list.size()]);
 		return m_taxes;
 	}	// getTaxes
@@ -1840,12 +1838,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 			return IDocument.STATUS_Invalid;
 		}
-
-		// FRESH-152 Update BP Statistics
-		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
-						.bpartnerId(getC_BPartner_ID())
-						.build());
 
 		// Update Project
 		if (isSOTrx() && getC_Project_ID() != 0)

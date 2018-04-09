@@ -118,7 +118,7 @@ public class CountryAwareAttributeUpdater
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.getCreateASI(asiAware);
 
 		// Check if our attribute was already set in the ASI
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attributeId, InterfaceWrapperHelper.getTrxName(asi));
+		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attributeId);
 		if (ai != null)
 		{
 			// In case it was, just leave it as it is

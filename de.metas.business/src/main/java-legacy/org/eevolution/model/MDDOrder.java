@@ -242,7 +242,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		List<MDDOrderLine> list = new Query(getCtx(), MDDOrderLine.Table_Name, whereClauseFinal.toString(), get_TrxName())
 				.setParameters(new Object[] { getDD_Order_ID() })
 				.setOrderBy(orderClause)
-				.list();
+				.list(MDDOrderLine.class);
 		return list.toArray(new MDDOrderLine[list.size()]);
 	}	// getLines
 

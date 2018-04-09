@@ -29,9 +29,9 @@ import java.util.Properties;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -119,7 +119,7 @@ public final class MPayment extends X_C_Payment
 		final String whereClause = "C_BPartner_ID=?";
 		final List<MPayment> list = new Query(ctx, I_C_Payment.Table_Name, whereClause, trxName)
 				.setParameters(C_BPartner_ID)
-				.list();
+				.list(MPayment.class);
 
 		//
 		final MPayment[] retValue = new MPayment[list.size()];
@@ -2930,7 +2930,7 @@ public final class MPayment extends X_C_Payment
 		final List<MInvoice> invoices = new Query(getCtx(), I_C_Invoice.Table_Name, whereClause, get_TrxName())
 				.setParameters(parameters)
 				.setClient_ID()
-				.list();
+				.list(MInvoice.class);
 
 		if (invoices.size() == 1)
 		{

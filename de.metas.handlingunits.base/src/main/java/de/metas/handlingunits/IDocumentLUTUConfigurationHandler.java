@@ -56,7 +56,7 @@ public interface IDocumentLUTUConfigurationHandler<T>
 	 *
 	 * @param lutuConfiguration
 	 */
-	void updateLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfiguration, final T documentLine);
+	void updateLUTUConfigurationFromPPOrder(final I_M_HU_LUTU_Configuration lutuConfiguration, final T documentLine);
 
 	/**
 	 * Set documentLine's current LU/TU Configuration.

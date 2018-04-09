@@ -1,6 +1,7 @@
 package de.metas.material.event.pporder;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -9,6 +10,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_S_Resource;
+import org.compiere.util.Util;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -57,13 +59,12 @@ public class PPOrder
 	int productPlanningId;
 
 	/**
-	 * Not persisted in the {@code PP_Order} data record, but
-	 * when material-dispo posts {@link PPOrderRequestedEvent}, it contains a group-ID,
+	 * Not persisted in the {@code PP_Order} data record.
+	 * When the material-dispo posts a {@link PPOrderRequestedEvent}, it contains a group-ID,
 	 * and the respective {@link PPOrderCreatedEvent} contains the same group-ID.
 	 */
 	int materialDispoGroupId;
 
-	@NonNull
 	ProductDescriptor productDescriptor;
 
 	/**
@@ -81,22 +82,20 @@ public class PPOrder
 	/**
 	 * This is usually the respective supply candidates' date value.
 	 */
-	@NonNull
 	Date datePromised;
 
 	/**
 	 * This is usually the respective demand candiates' date value.
 	 */
-	@NonNull
 	Date dateStartSchedule;
 
-	@NonNull
-	BigDecimal quantity;
+	BigDecimal qtyRequired;
+
+	BigDecimal qtyDelivered;
 
 	/**
 	 * Attention, might be {@code null}.
 	 */
-	@Singular
 	List<PPOrderLine> lines;
 
 	@JsonCreator
@@ -113,7 +112,8 @@ public class PPOrder
 			@JsonProperty("docStatus") @Nullable final String docStatus,
 			@JsonProperty("datePromised") @NonNull final Date datePromised,
 			@JsonProperty("dateStartSchedule") @NonNull final Date dateStartSchedule,
-			@JsonProperty("quantity") @NonNull final BigDecimal quantity,
+			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
+			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
 			@JsonProperty("lines") @Singular final List<PPOrderLine> lines,
 			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
 	{
@@ -130,7 +130,10 @@ public class PPOrder
 		this.docStatus = docStatus;
 		this.datePromised = datePromised;
 		this.dateStartSchedule = dateStartSchedule;
-		this.quantity = quantity;
+
+		this.qtyRequired = qtyRequired;
+		this.qtyDelivered =Util.coalesce(qtyDelivered, ZERO);
+
 		this.lines = lines;
 
 		this.materialDispoGroupId = materialDispoGroupId;

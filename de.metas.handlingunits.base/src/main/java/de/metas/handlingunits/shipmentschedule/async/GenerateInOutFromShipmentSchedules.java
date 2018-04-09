@@ -560,10 +560,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		return source;
 	}
 
-	private ILUTUProducerAllocationDestination createLUTUProducerDestination(final I_M_ShipmentSchedule schedule)
+	private ILUTUProducerAllocationDestination createLUTUProducerDestination(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		Check.assumeNotNull(schedule, "schedule not null");
-
 		final I_M_HU_LUTU_Configuration lutuConfiguration = huShipmentScheduleBL.deriveM_HU_LUTU_Configuration(schedule);
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		lutuConfigurationFactory.save(lutuConfiguration);

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
@@ -77,7 +79,19 @@ public class PPOrderPojoSupplier
 		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
-	public PPOrder supplyPPOrderPojo(@NonNull final IMaterialRequest request)
+	public PPOrder supplyPPOrderPojoWithLines(
+			@NonNull final IMaterialRequest request)
+	{
+		final PPOrder ppOrder = supplyPPOrderPojo(request);
+
+		final PPOrder ppOrderWithLines = ppOrder
+				.toBuilder()
+				.lines(supplyPPOrderLinePojos(ppOrder)).build();
+
+		return ppOrderWithLines;
+	}
+
+	private PPOrder supplyPPOrderPojo(@NonNull final IMaterialRequest request)
 	{
 		final IMaterialPlanningContext mrpContext = request.getMrpContext();
 
@@ -110,7 +124,7 @@ public class PPOrderPojoSupplier
 
 		final Timestamp dateStartSchedule = TimeUtil.addDays(dateFinishSchedule, -durationDays);
 
-		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(productPlanningData);
+		final ProductDescriptor productDescriptor = createPPOrderProductDescriptor(mrpContext);
 
 		final Quantity ppOrderQuantity = Services.get(IUOMConversionBL.class)
 				.convertToProductUOM(qtyToSupply, mrpContext.getM_Product_ID());
@@ -130,7 +144,7 @@ public class PPOrderPojoSupplier
 				.datePromised(dateFinishSchedule)
 				.dateStartSchedule(dateStartSchedule)
 
-				.quantity(ppOrderQuantity.getQty())
+				.qtyRequired(ppOrderQuantity.getQty())
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
 				.bPartnerId(request.getMrpDemandBPartnerId());
@@ -138,15 +152,23 @@ public class PPOrderPojoSupplier
 		return ppOrderPojoBuilder.build();
 	}
 
-	public PPOrder supplyPPOrderPojoWithLines(
-			@NonNull final IMaterialRequest request)
+	/**
+	 * Creates the "header" product descriptor.
+	 * Does not use the given {@code mrpContext}'s product-planning record,
+	 * because it might have less specific (or none!) storageAttributesKey.
+	 */
+	private ProductDescriptor createPPOrderProductDescriptor(final IMaterialPlanningContext mrpContext)
 	{
-		final PPOrder ppOrder = supplyPPOrderPojo(request);
+		final int asiId = mrpContext.getM_AttributeSetInstance_ID();
+		final AttributesKey attributesKey = AttributesKeys
+				.createAttributesKeyFromASIStorageAttributes(asiId)
+				.orElse(AttributesKey.NONE);
 
-		final PPOrder ppOrderWithLines = ppOrder.toBuilder()
-				.lines(supplyPPOrderLinePojos(ppOrder)).build();
-
-		return ppOrderWithLines;
+		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
+				mrpContext.getM_Product_ID(),
+				attributesKey,
+				asiId);
+		return productDescriptor;
 	}
 
 	private int calculateDurationDays(
@@ -179,7 +201,7 @@ public class PPOrderPojoSupplier
 		return leadtimeCalc.intValueExact();
 	}
 
-	public List<PPOrderLine> supplyPPOrderLinePojos(@NonNull final PPOrder ppOrder)
+	private List<PPOrderLine> supplyPPOrderLinePojos(@NonNull final PPOrder ppOrder)
 	{
 		final I_PP_Product_BOM productBOM = retriveAndVerifyBOM(ppOrder);
 
@@ -192,7 +214,7 @@ public class PPOrderPojoSupplier
 		{
 			if (!productBOMBL.isValidFromTo(productBomLine, ppOrder.getDateStartSchedule()))
 			{
-				logger.debug("BOM Line skiped - " + productBomLine);
+				logger.debug("BOM Line skipped - " + productBomLine);
 				continue;
 			}
 
@@ -210,7 +232,7 @@ public class PPOrderPojoSupplier
 					.build();
 
 			final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-			final BigDecimal qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder, ppOrder.getQuantity());
+			final BigDecimal qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder, ppOrder.getQtyRequired());
 
 			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.toBuilder()
 					.qtyRequired(qtyRequired).build();

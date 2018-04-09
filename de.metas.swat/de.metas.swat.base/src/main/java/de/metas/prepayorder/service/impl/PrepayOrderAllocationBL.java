@@ -90,7 +90,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 			// result==true means that a MAllocationLine line has been created for each MPaymentAllocate.
 
 			// set to collect the orders that where allocated
-			final Map<Integer, MOrder> orderId2order = new HashMap<Integer, MOrder>();
+			final Map<Integer, MOrder> orderId2order = new HashMap<>();
 
 			// check if the allocation lines that have just been created need to be augmented with C_Order_ID
 			for (final MPaymentAllocate paPO : MPaymentAllocate.get(payment))
@@ -249,9 +249,9 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 							.setParameters(invoice.getC_Order_ID())
 							.setOnlyActiveRecords(true)
 							.setClient_ID()
-							.list();
+							.list(MAllocationLine.class);
 
-			final Map<Integer, MAllocationHdr> id2Hdr = new HashMap<Integer, MAllocationHdr>();
+			final Map<Integer, MAllocationHdr> id2Hdr = new HashMap<>();
 
 			for (final MAllocationLine allocLine : allocLines)
 			{
@@ -317,9 +317,9 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 						.setParameters(invoice.getC_Order_ID())
 						.setOnlyActiveRecords(true)
 						.setClient_ID()
-						.list();
+						.list(MAllocationLine.class);
 
-		final Map<Integer, MAllocationHdr> id2Hdr = new HashMap<Integer, MAllocationHdr>();
+		final Map<Integer, MAllocationHdr> id2Hdr = new HashMap<>();
 
 		// add the invoice's ID to those lines and collect the C_AllocationHdrs for reposting
 		for (final MAllocationLine allocLine : allocLines)
@@ -382,9 +382,9 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 							.setParameters(hdr.get_Table_ID(), hdr.get_ID())
 							.setClient_ID()
 							.setOnlyActiveRecords(true)
-							.list();
+							.list(MFactAcct.class);
 
-			final Map<Integer, MAcctSchema> ass = new HashMap<Integer, MAcctSchema>();
+			final Map<Integer, MAcctSchema> ass = new HashMap<>();
 
 			for (final MFactAcct fact : existingFacts)
 			{
@@ -450,7 +450,7 @@ public class PrepayOrderAllocationBL implements IPrepayOrderAllocationBL
 								.setParameters(allocationTableId, hdr.getC_AllocationHdr_ID())
 								.setClient_ID()
 								.setOnlyActiveRecords(true)
-								.list();
+								.list(MFactAcct.class);
 
 				if (!existingFacts.isEmpty())
 				{

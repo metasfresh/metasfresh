@@ -318,7 +318,7 @@ public class HUTransformTestsBase
 		// Custom TU capacity (if specified)
 		if (customQtyCUsPerTU > 0)
 		{
-			lutuProducer.addTUCapacity(cuProduct, BigDecimal.valueOf(customQtyCUsPerTU), cuUOM);
+			lutuProducer.addCUPerTU(cuProduct, BigDecimal.valueOf(customQtyCUsPerTU), cuUOM);
 		}
 
 		final TestHelperLoadRequest loadRequest = HUTestHelper.TestHelperLoadRequest.builder()

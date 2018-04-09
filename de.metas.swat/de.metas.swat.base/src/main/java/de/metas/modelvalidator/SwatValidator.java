@@ -113,8 +113,6 @@ import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
 import de.metas.request.model.validator.R_Request;
-import de.metas.request.service.IRequestCreator;
-import de.metas.request.service.impl.AsyncRequestCreator;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
 
 /**
@@ -172,9 +170,6 @@ public class SwatValidator implements ModelValidator
 
 		// task FRESH-152: BPartner Stats Updater
 		Services.registerService(IBPartnerStatisticsUpdater.class, new AsyncBPartnerStatisticsUpdater());
-
-		// task FRESH-636: Request Creator
-		Services.registerService(IRequestCreator.class, new AsyncRequestCreator());
 
 		engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
 		engine.addModelChange(I_M_InOutLine.Table_Name, this);
@@ -275,7 +270,6 @@ public class SwatValidator implements ModelValidator
 		{
 			engine.addModelValidator(new M_MatchInv(), client);
 		}
-
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(OrderAndInOutInvoiceCandidateListener.instance);

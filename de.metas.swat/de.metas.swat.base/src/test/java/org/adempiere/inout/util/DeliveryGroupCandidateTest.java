@@ -50,9 +50,7 @@ public class DeliveryGroupCandidateTest
 				.bPartnerAddress("bPartnerAddress")
 				.build();
 
-		final DeliveryLineCandidate line = new DeliveryLineCandidate(group, newInstance(I_M_ShipmentSchedule.class), CompleteStatus.OK);
-
-		group.getLines().add(line);
+		final DeliveryLineCandidate line = group.addLine(newInstance(I_M_ShipmentSchedule.class), CompleteStatus.OK);
 
 		assertThat(group.toString()).isNotEmpty();
 		group.hashCode(); // throws no exception

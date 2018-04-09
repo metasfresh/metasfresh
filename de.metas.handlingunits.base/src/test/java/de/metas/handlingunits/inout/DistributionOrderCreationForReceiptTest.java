@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.util.Services;
@@ -71,7 +72,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 		createRSAlloc(receiptLine, rs);
 
-		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceipt(receipt);
+		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceiptLines(Collections.singletonList(receiptLine));
 
 		assertThat(movements).isEmpty();
 	}
@@ -93,6 +94,8 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 		final BigDecimal qty1 = new BigDecimal(300);
 		final I_M_InOutLine receiptLine = createReceiptLine("Product1", receiptLocator, receipt, qty1, false);
+		receiptLine.setM_Warehouse_Dest(transitWarehouse);
+		save(receiptLine);
 		final int productID = receiptLine.getM_Product_ID();
 
 		final I_DD_NetworkDistribution networkDistribution = createNetworkDistributionWithLine(receiptWarehouse, transitWarehouse);

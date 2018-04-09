@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,14 +43,17 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	// Services
 	private final IAttributeStrategyFactory attributeStrategyFactory = Services.get(IAttributeStrategyFactory.class);
 	private final I_M_HU_PI_Attribute huPIAttribute;
-	
+
 	private volatile Boolean _definedByTemplate; // lazy
 
-	public AbstractHUAttributeValue(final IAttributeStorage attributeStorage, final I_M_HU_PI_Attribute huPIAttribute, final Boolean isTemplateAttribute)
+	public AbstractHUAttributeValue(
+			final IAttributeStorage attributeStorage,
+			final I_M_HU_PI_Attribute huPIAttribute,
+			final Boolean isTemplateAttribute)
 	{
 		super(attributeStorage, huPIAttribute.getM_Attribute());
 		this.huPIAttribute = huPIAttribute;
-		
+
 		this._definedByTemplate = isTemplateAttribute; // null is OK
 	}
 
@@ -99,7 +102,7 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	{
 		return huPIAttribute.isUseInASI();
 	}
-	
+
 	@Override
 	public boolean isDefinedByTemplate()
 	{
@@ -139,7 +142,7 @@ public abstract class AbstractHUAttributeValue extends AbstractAttributeValue
 	{
 		return huPIAttribute.isReadOnly();
 	}
-	
+
 	@Override
 	public boolean isDisplayedUI()
 	{

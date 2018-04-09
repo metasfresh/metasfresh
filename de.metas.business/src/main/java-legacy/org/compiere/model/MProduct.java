@@ -77,12 +77,12 @@ public class MProduct extends X_M_Product
 	 * @param trxName trx
 	 * @return MProduct
 	 */
-	public static MProduct[] get(Properties ctx, String whereClause, String trxName)
+	static MProduct[] get(Properties ctx, String whereClause, String trxName)
 	{
 		int AD_Client_ID = Env.getAD_Client_ID(ctx);
 		List<MProduct> list = new Query(ctx, Table_Name, "AD_Client_ID=? AND " + whereClause, trxName)
 				.setParameters(new Object[] { AD_Client_ID })
-				.list();
+				.list(MProduct.class);
 		return list.toArray(new MProduct[list.size()]);
 	}	// get
 
@@ -98,7 +98,7 @@ public class MProduct extends X_M_Product
 		String whereClause = "AD_Client_ID=? AND UPC=?";
 		Query q = new Query(ctx, Table_Name, whereClause, trxName);
 		q.setParameters(new Object[] { Env.getAD_Client_ID(ctx), upc });
-		return (q.list());
+		return (q.list(MProduct.class));
 	}
 
 	/**
@@ -419,7 +419,7 @@ public class MProduct extends X_M_Product
 				.setOnlyActiveRecords(true)
 				.setOrderBy(MProductDownload.COLUMNNAME_Name)
 				.setParameters(new Object[] { get_ID() })
-				.list();
+				.list(MProductDownload.class);
 		m_downloads = list.toArray(new MProductDownload[list.size()]);
 		return m_downloads;
 	}	// getProductDownloads

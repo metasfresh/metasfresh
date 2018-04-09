@@ -3,6 +3,8 @@
  */
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -68,7 +70,6 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
@@ -100,6 +101,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
 import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
@@ -115,6 +117,7 @@ import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
@@ -2181,4 +2184,34 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 		}
 	}
+
+	@Override
+	public void markInvoiceCandInDisputeForReceiptLine(final I_M_InOutLine receiptLine)
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		final IInOutBL inoutBL = Services.get(IInOutBL.class);
+
+		if (receiptLine.getM_InOut().isSOTrx())
+		{
+			// not interesting. Do nothing
+			return;
+		}
+
+		if (inoutBL.isReversal(receiptLine))
+		{
+			// not interesting, Do nothing
+			return;
+		}
+
+		invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(receiptLine)
+				.stream()
+				.forEach(cand -> setCandInDispute(cand));
+	}
+
+	private void setCandInDispute(final I_C_Invoice_Candidate cand)
+	{
+		cand.setIsInDispute(true);
+		save(cand);
+	}
+
 }

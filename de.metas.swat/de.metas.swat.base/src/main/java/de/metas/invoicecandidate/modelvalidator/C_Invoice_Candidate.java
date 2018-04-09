@@ -30,11 +30,13 @@ import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.ModelValidator;
@@ -416,6 +418,19 @@ public class C_Invoice_Candidate
 	public void handleCompensantionGroupRelatedChanges(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		groupChangesHandler.onInvoiceCandidateChanged(invoiceCandidate);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt, I_C_Invoice_Candidate.COLUMNNAME_Processed })
+	public void triggerUpdateBPStats(final I_C_Invoice_Candidate ic)
+	{
+		if (ic.getLineNetAmt().signum() > 0)
+		{
+			Services.get(IBPartnerStatisticsUpdater.class)
+			.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+					.bpartnerId(ic.getBill_BPartner_ID())
+					.build());
+
+		}
 	}
 
 }

@@ -66,16 +66,6 @@ public interface IAttributeDAO extends ISingletonService
 	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
 
 	/**
-	 * Retrieve instance attribute for given <code>attributeId</code>
-	 *
-	 * @param attributeSetInstance
-	 * @param attributeId M_Attribute_ID
-	 * @param trxName
-	 * @return attribute instance or null
-	 */
-	I_M_AttributeInstance retrieveAttributeInstance(I_M_AttributeSetInstance attributeSetInstance, int attributeId, String trxName);
-
-	/**
 	 * Same as {@link #retrieveAttributeInstance(I_M_AttributeSetInstance, int, String)} but <code>attributeSetInstance</code>'s trxName will be used.
 	 *
 	 * @param attributeSetInstance

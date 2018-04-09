@@ -353,6 +353,6 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		invoiceLine.setQtyInvoiced(creditMemoQtyInvoiced);
 		invoiceLine.setLine(10);
 		InterfaceWrapperHelper.save(invoiceLine);
-		return new ImmutablePair<>(invoice, invoiceLine);
+		return ImmutablePair.of(invoice, invoiceLine);
 	}
 }

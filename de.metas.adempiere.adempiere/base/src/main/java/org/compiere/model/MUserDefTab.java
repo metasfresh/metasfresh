@@ -51,18 +51,18 @@ public class MUserDefTab extends X_AD_UserDef_Tab
 		super(ctx, rs, trxName);
 	}
 	
-	public MUserDefField[] getFields(boolean reload)
+	private MUserDefField[] getFields(boolean reload)
 	{
 		if (!reload && m_fields != null)
 		{
 			return m_fields;
 		}
 		final String whereClause = MUserDefField.COLUMNNAME_AD_UserDef_Tab_ID+"=?";
-		final List<MUserDefTab> list = new Query(getCtx(), MUserDefField.Table_Name, whereClause, get_TrxName())
+		final List<MUserDefField> list = new Query(getCtx(), MUserDefField.Table_Name, whereClause, get_TrxName())
 								.setParameters(get_ID())
 								.setOnlyActiveRecords(true)
 								.setOrderBy(MUserDefField.COLUMNNAME_AD_Field_ID)
-								.list();
+								.list(MUserDefField.class);
 		//
 		m_fields = list.toArray(new MUserDefField[list.size()]);
 		return m_fields;

@@ -69,6 +69,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				.actualLifeTimeValue(statsRecord.getActualLifeTimeValue())
 				.openItems(statsRecord.getOpenItems())
 				.recordId(statsRecord.getC_BPartner_Stats_ID())
+				.bpartnerId(partner.getC_BPartner_ID())
 				.soCreditStatus(statsRecord.getSOCreditStatus())
 				.soCreditUsed(statsRecord.getSO_CreditUsed())
 				.build();
@@ -138,21 +139,10 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 		final String trxName = ITrx.TRXNAME_None;
 
-		BigDecimal SO_CreditUsed = BigDecimal.ZERO;
-
 		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
-		final String sql = "SELECT "
-				// open invoices
-				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)) FROM C_Invoice_v i "
-				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsSOTrx='Y' AND i.IsPaid='N' AND i.DocStatus IN ('CO','CL')),0), "
-				// unallocated payments
-				+ "COALESCE((SELECT SUM(currencyBase(Paymentavailable(p.C_Payment_ID),p.C_Currency_ID,p.DateTrx,p.AD_Client_ID,p.AD_Org_ID)) FROM C_Payment_v p "
-				+ "WHERE p.C_BPartner_ID=bp.C_BPartner_ID AND p.IsAllocated='N'"
-				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0)*(-1), "
-				// open invoice candidates
-				+ "COALESCE((SELECT SUM(currencyBase(ic.LineNetAmt,ic.C_Currency_ID,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
-				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N'),0) "
-				+ "FROM C_BPartner bp " + "WHERE C_BPartner_ID=?";
+		final String sql = "SELECT OpenOrderAmt, OpenInvoiceAmt, UnallocatedPaymentAmt "
+				+ "FROM C_BPartner_OpenAmounts_v  "
+				+ "WHERE C_BPartner_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -162,7 +152,15 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				SO_CreditUsed = rs.getBigDecimal(1).add(rs.getBigDecimal(2)).add(rs.getBigDecimal(3));
+				final BigDecimal openOrderAmt = rs.getBigDecimal(1);
+				final BigDecimal openInvoiceAmt = rs.getBigDecimal(2);
+				final BigDecimal unallocatedPaymentAmt = rs.getBigDecimal(3);
+				final BigDecimal SO_CreditUsed = openInvoiceAmt.add(unallocatedPaymentAmt).add(openOrderAmt);
+				return SO_CreditUsed;
+			}
+			else
+			{
+				return BigDecimal.ZERO;
 			}
 
 		}
@@ -174,21 +172,50 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		{
 			DB.close(rs, pstmt);
 		}
+	}
 
-		return SO_CreditUsed;
+
+	@Override
+	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final String soCreditStatus)
+	{
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+
+		stats.setSOCreditStatus(soCreditStatus);
+
+		InterfaceWrapperHelper.save(stats);
+
+	}
+
+	private I_C_BPartner_Stats loadDataRecord(@NonNull final BPartnerStats bpStats)
+	{
+		return load(bpStats.getRecordId(), I_C_BPartner_Stats.class);
 	}
 
 	@Override
-	public void updateSOCreditUsed(final BPartnerStats bpStats)
+	public void updateBPartnerStatistics(BPartnerStats bpStats)
 	{
-		final BigDecimal SO_CreditUsed = retrieveSOCreditUsed(bpStats);
+		updateOpenItems(bpStats);
+		updateActualLifeTimeValue(bpStats);
+		updateSOCreditUsed(bpStats);
+		updateSOCreditStatus(bpStats);
+		updateCreditLimitIndicator(bpStats);
+	}
+
+	private void updateOpenItems(@NonNull final BPartnerStats bpStats)
+	{
+		// load the statistics
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
-		stats.setSO_CreditUsed(SO_CreditUsed);
+
+		final BigDecimal openItems = retrieveOpenItems(bpStats);
+
+		// update the statistics with the up tp date openItems
+		stats.setOpenItems(openItems);
+
+		// save in db
 		InterfaceWrapperHelper.save(stats);
 	}
 
-	@Override
-	public void updateActualLifeTimeValue(final BPartnerStats bpStats)
+	private void updateActualLifeTimeValue(final BPartnerStats bpStats)
 	{
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 
@@ -231,12 +258,23 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		InterfaceWrapperHelper.save(stats);
 	}
 
-	@Override
-	public void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
+	private void updateSOCreditUsed(final BPartnerStats bpStats)
+	{
+		final BigDecimal SO_CreditUsed = retrieveSOCreditUsed(bpStats);
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+		stats.setSO_CreditUsed(SO_CreditUsed);
+		InterfaceWrapperHelper.save(stats);
+	}
+
+	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
 
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-		final I_C_BPartner partner = retrieveC_BPartner(bpStats);
+		final I_C_BPartner partner = load(bpStats.getBpartnerId(), I_C_BPartner.class);
+
+		// load the statistics
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+		final BigDecimal creditUsed = stats.getSO_CreditUsed();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), SystemTime.asDayTimestamp());
@@ -254,7 +292,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		}
 
 		// Above Credit Limit
-		if (creditLimit.compareTo(retrieveSOCreditUsed(bpStats)) < 0)
+		if (creditLimit.compareTo(creditUsed) < 0)
 		{
 			creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
 		}
@@ -263,7 +301,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			// Above Watch Limit
 			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
 
-			if (watchAmt.compareTo(bpStats.getSOCreditUsed()) < 0)
+			if (watchAmt.compareTo(creditUsed) < 0)
 			{
 				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
 			}
@@ -277,27 +315,11 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		setSOCreditStatus(bpStats, creditStatusToSet);
 	}
 
-	@Override
-	public void updateOpenItems(@NonNull final BPartnerStats bpStats)
-	{
-		// load the statistics
-		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
-
-		final BigDecimal openItems = retrieveOpenItems(bpStats);
-
-		// update the statistics with the up tp date openItems
-		stats.setOpenItems(openItems);
-
-		// save in db
-		InterfaceWrapperHelper.save(stats);
-	}
-
-	@Override
-	public void updateCreditLimitIndicator(@NonNull final BPartnerStats bstats)
+	private void updateCreditLimitIndicator(@NonNull final BPartnerStats bstats)
 	{
 		// load the statistics
 		final I_C_BPartner_Stats stats = loadDataRecord(bstats);
-		final BigDecimal creditUsed = retrieveSOCreditUsed(bstats);
+		final BigDecimal creditUsed = stats.getSO_CreditUsed();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
@@ -311,30 +333,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		stats.setCreditLimitIndicator(percentSring);
 		InterfaceWrapperHelper.save(stats);
-	}
-
-	@Override
-	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final String soCreditStatus)
-	{
-		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
-
-		stats.setSOCreditStatus(soCreditStatus);
-
-		InterfaceWrapperHelper.save(stats);
-
-	}
-
-	@Override
-	public I_C_BPartner retrieveC_BPartner(@NonNull final BPartnerStats bpStats)
-	{
-		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
-
-		return stats.getC_BPartner();
-	}
-
-	private I_C_BPartner_Stats loadDataRecord(@NonNull final BPartnerStats bpStats)
-	{
-		return load(bpStats.getRecordId(), I_C_BPartner_Stats.class);
 	}
 
 }

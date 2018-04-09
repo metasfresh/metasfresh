@@ -32,6 +32,8 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
@@ -69,6 +71,7 @@ import org.slf4j.Logger;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Abstract {@link ITrxManager} implementation without any dependencies on a native stuff.
@@ -162,7 +165,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 				{
 					trxOld.close();
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					throw new TrxException("Failed closing the old transaction: " + trxOld, e);
 				}
@@ -499,7 +502,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(r);
 		call(trxName, callable);
 	}
-	
+
 	@Override
 	public void run(final String trxName, final Runnable runnable)
 	{
@@ -696,11 +699,11 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 	}
 
-	private final <T> T call0(final TrxCallable<T> callable, final ITrxRunConfig cfg, final String trxName)
+	private final <T> T call0(
+			@NonNull final TrxCallable<T> callable,
+			@NonNull final ITrxRunConfig cfg,
+			@Nullable final String trxName)
 	{
-		Check.assumeNotNull(callable, IllegalTrxRunStateException.class, "Param 'callable' is not null");
-		Check.assumeNotNull(cfg, IllegalTrxRunStateException.class, "Param 'cfg' is not null");
-
 		// Validate trxName
 		if (isNull(trxName))
 		{
@@ -771,7 +774,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			callableResult = TrxCallableWrappers.wrapAsTrxCallableWithTrxNameIfNeeded(callable).call(trxName);
 
 			// Commit the transaction if we were asked to do it
-			OnRunnableSuccess onRunnableSuccess = cfg.getOnRunnableSuccess();
+			final OnRunnableSuccess onRunnableSuccess = cfg.getOnRunnableSuccess();
 			if (onRunnableSuccess == OnRunnableSuccess.COMMIT)
 			{
 				// if (trxPropagation != TrxPropagation.REQUIRES_NEW)
@@ -893,7 +896,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 					{
 						trx.releaseSavepoint(savepoint);
 					}
-					catch (Exception e)
+					catch (final Exception e)
 					{
 						final String errmsg = "There was an exception while rolling back to savepoint. Going forward."
 								+ "\n Trx: " + trx
@@ -959,7 +962,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			{
 				runnable.doFinally();
 			}
-			catch (Throwable doFinallyException)
+			catch (final Throwable doFinallyException)
 			{
 				// Propagate the doFinallyException only if we are not currently throwing another exception.
 				// If we are currently throwing another exception, we suppress this one.

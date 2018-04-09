@@ -47,6 +47,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
+import org.compiere.util.Env;
 import org.eevolution.model.I_M_Warehouse_Routing;
 
 import com.google.common.collect.ImmutableList;
@@ -184,6 +185,19 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
+	public int retrieveOrgWarehousePOId(final int adOrgId)
+	{
+		final I_AD_OrgInfo orgInfo = Services.get(IOrgDAO.class).retrieveOrgInfo(Env.getCtx(), adOrgId, ITrx.TRXNAME_None);
+		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
+		if (orgInfo == null)
+		{
+			return -1;
+		}
+
+		return orgInfo.getM_WarehousePO_ID();
+	}
+
+	@Override
 	@Cached(cacheName = I_M_Warehouse.Table_Name + "#InTransitForOrg")
 	public List<I_M_Warehouse> retrieveWarehousesInTransitForOrg(@CacheCtx final Properties ctx, final int adOrgId)
 	{
@@ -275,6 +289,15 @@ public class WarehouseDAO implements IWarehouseDAO
 						.build())
 				.collect(ImmutableList.toImmutableList());
 
+	}
+
+	@Override
+	public WarehousePickingGroup getWarehousePickingGroupById(final int warehousePickingGroupId)
+	{
+		return retrieveWarehouseGroups()
+				.stream()
+				.filter(warehousePickingGroup -> warehousePickingGroup.getId() == warehousePickingGroupId)
+				.findFirst().orElse(null);
 	}
 
 	@Override

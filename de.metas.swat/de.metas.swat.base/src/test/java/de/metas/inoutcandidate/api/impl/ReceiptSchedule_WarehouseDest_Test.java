@@ -123,7 +123,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 
 		//
 		// Generate Receipt
-		final InOutGenerateResult receiptGenerateResult = Services.get(IInOutCandidateBL.class).createInOutGenerateResult(true); // storeReceipts=true
+		final InOutGenerateResult receiptGenerateResult = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true); // storeReceipts=true
 		final IInOutProducer receiptProducer = receiptScheduleBL.createInOutProducer(receiptGenerateResult, false); // complete=false
 		receiptScheduleBL.generateInOuts(ctx, receiptProducer, schedules.iterator());
 
@@ -132,7 +132,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		final List<I_M_InOut> receipts = receiptGenerateResult.getInOuts();
 		Assert.assertEquals("Only one receipt shall be produced", 1, receipts.size());
 		final I_M_InOut receipt = receipts.get(0);
-		List<org.compiere.model.I_M_InOutLine> receiptLines = Services.get(IInOutDAO.class).retrieveLines(receipt);
+		List<I_M_InOutLine> receiptLines = Services.get(IInOutDAO.class).retrieveLines(receipt,I_M_InOutLine.class);
 		final I_M_InOutLine receiptLine1 = InterfaceWrapperHelper.create(receiptLines.get(0), I_M_InOutLine.class);
 
 		// Check receipt's warehouse
@@ -145,7 +145,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 
 		//
 		// Generate Movement from receipt
-		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceipt(receipt);
+		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceiptLines(receiptLines);
 		Assert.assertNotNull("Movement shall be generated", movements);
 		Assert.assertEquals("Only one movement shall be generated", 1, movements.size());
 		final I_M_Movement movement = movements.get(0);
@@ -185,7 +185,9 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		final BigDecimal qty2 = new BigDecimal(13);
 		createReceiptLine("Product2", receiptLocator, receipt, qty2, true);
 
-		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceipt(receipt);
+		List<I_M_InOutLine> receiptLines = Services.get(IInOutDAO.class).retrieveLines(receipt,I_M_InOutLine.class);
+		
+		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceiptLines(receiptLines);
 
 		Assert.assertEquals("2 movements shall be created", 2, movements.size());
 
@@ -206,7 +208,8 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		final BigDecimal qty2 = new BigDecimal(13);
 		final I_M_InOutLine receiptLine = createReceiptLine("Product2", receiptLocator, receipt, qty2, true);
 
-		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceipt(receipt);
+		List<I_M_InOutLine> receiptLines = Services.get(IInOutDAO.class).retrieveLines(receipt,I_M_InOutLine.class);
+		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceiptLines(receiptLines);
 
 		Assert.assertEquals("1 movements shall be created", 1, movements.size());
 
@@ -233,7 +236,8 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		final BigDecimal qty1 = new BigDecimal(300);
 		final I_M_InOutLine receiptLine = createReceiptLine("Product1", receiptLocator, receipt, qty1, false);
 
-		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceipt(receipt);
+		List<I_M_InOutLine> receiptLines = Services.get(IInOutDAO.class).retrieveLines(receipt,I_M_InOutLine.class);
+		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceiptLines(receiptLines);
 
 		Assert.assertEquals("1 movements shall be created", 1, movements.size());
 
@@ -262,7 +266,8 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		final BigDecimal qty1 = new BigDecimal(300);
 		createReceiptLine("Product1", receiptLocator, receipt, qty1, false);
 
-		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceipt(receipt);
+		List<I_M_InOutLine> receiptLines = Services.get(IInOutDAO.class).retrieveLines(receipt,I_M_InOutLine.class);
+		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceiptLines(receiptLines);
 
 		Assert.assertTrue("No movement shall be created is the warehouses from receipt are identical", movements.isEmpty());
 
@@ -285,7 +290,9 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		final BigDecimal qty2 = new BigDecimal(13);
 		final I_M_InOutLine receiptLine = createReceiptLine("Product2", receiptLocator, receipt, qty2, true);
 
-		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceipt(receipt);
+		List<I_M_InOutLine> receiptLines = Services.get(IInOutDAO.class).retrieveLines(receipt,I_M_InOutLine.class);
+		
+		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceiptLines(receiptLines);
 
 		Assert.assertEquals("1 movements shall be created", 1, movements.size());
 

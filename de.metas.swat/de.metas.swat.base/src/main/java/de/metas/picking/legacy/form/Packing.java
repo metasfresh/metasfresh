@@ -338,7 +338,8 @@ public abstract class Packing extends MvcGenForm
 			throw new AdempiereException(t.getLocalizedMessage(), t);
 		}
 
-		invokeProcess(detailsModel);
+		// related to https://github.com/metasfresh/metasfresh/issues/456
+		// invokeProcess(detailsModel);
 	}
 
 	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds, boolean displayNonItems)

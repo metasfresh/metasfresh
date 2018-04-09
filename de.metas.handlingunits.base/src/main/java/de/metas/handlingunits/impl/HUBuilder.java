@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -60,6 +62,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUStorageDAO;
+import lombok.NonNull;
 
 /**
  * Important class to build new HUs. Use {@link IHandlingUnitsDAO#createHUBuilder(IHUContext)} to get an isntance.
@@ -261,7 +264,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	 * @param parentItem
 	 * @return
 	 */
-	private I_M_HU createInstanceRecursively(final I_M_HU_PI_Version huPIVersion, final I_M_HU_Item parentItem)
+	private I_M_HU createInstanceRecursively(@NonNull final I_M_HU_PI_Version huPIVersion, @Nullable final I_M_HU_Item parentItem)
 	{
 		//
 		// Check if parent item was specified, make sure it was saved
@@ -450,13 +453,6 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	 */
 	private I_M_HU_PI_Item_Product getM_HU_PI_Item_ProductOrNull(final I_M_HU_LUTU_Configuration lutuConfig, final I_M_HU parentHU, final I_M_HU hu)
 	{
-		//
-		// Top level HUs shall not have a PIIP (can have a complete mix inside)
-		// if (handlingUnitsBL.isTopLevel(hu))
-		// {
-		// return null;
-		// }
-
 		I_M_HU_PI_Item_Product piip = getM_HU_PI_Item_Product();
 		if (piip != null)
 		{
@@ -528,10 +524,10 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 			}
 
 			// For any given 'hu' we only want either a material item or an aggregated item, but not both.
-			boolean hasMaterialItem = false;
+			boolean huHasMaterialItem = false;
 
 			// Create "regular" material items and packing-material items that are declared by the PI
-			final I_M_HU_PI_Version piVersion = hu.getM_HU_PI_Version();
+			final I_M_HU_PI_Version piVersion = handlingUnitsBL.getPIVersion(hu);
 			final List<I_M_HU_PI_Item> piItems = handlingUnitsDAO.retrievePIItems(piVersion, getC_BPartner());
 
 			for (final I_M_HU_PI_Item piItem : piItems)
@@ -553,21 +549,32 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 
 				if (X_M_HU_Item.ITEMTYPE_Material.equals(handlingUnitsBL.getItemType(item)))
 				{
-					hasMaterialItem = true;
+					huHasMaterialItem = true;
 				}
 			}
 
 			// The given HU is not configured to hold material itself because e.g. it is a palet.
 			// Therefore we add one "aggregate" item which can then later onwards represent the child-HUs and its content.
-			if (!hasMaterialItem && !handlingUnitsBL.isAggregateHU(hu))
+			final boolean huIsNotYetAnAggregate = !handlingUnitsBL.isAggregateHU(hu);
+			final boolean huIsVirtual = handlingUnitsBL.isVirtual(hu);
+			final boolean huIsLU = handlingUnitsBL.isLoadingUnit(hu);
+			if (!huHasMaterialItem && huIsNotYetAnAggregate)
 			{
-				final I_M_HU_Item bagItem = handlingUnitsDAO.createAggregateHUItem(hu);
-				result.add(bagItem);
+				if (huIsLU)
+				{
+					final I_M_HU_Item aggregateItem = handlingUnitsDAO.createAggregateHUItem(hu);
 
-				// Notify Storage DAO that a new item was just created
-				huStorageDAO.initHUItemStorages(bagItem);
+					result.add(aggregateItem);
+					huStorageDAO.initHUItemStorages(aggregateItem); // Notify Storage DAO that a new item was just created
+				}
+				else if (!huIsVirtual)
+				{
+					final I_M_HU_Item childItem = handlingUnitsDAO.createChildHUItem(hu);
+
+					result.add(childItem);
+					huStorageDAO.initHUItemStorages(childItem); // Notify Storage DAO that a new item was just created
+				}
 			}
-
 			return result;
 		}
 	}
