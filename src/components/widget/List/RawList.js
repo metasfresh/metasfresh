@@ -183,6 +183,12 @@ class RawList extends PureComponent {
     });
   };
 
+  handleClear = event => {
+    event.stopPropagation();
+
+    this.props.onSelect(null);
+  };
+
   handleTemporarySelection = selected => {
     this.setState({
       selected,
@@ -251,6 +257,7 @@ class RawList extends PureComponent {
       isToggled,
       isFocused,
       onFocus,
+      clearable,
     } = this.props;
 
     let value = '';
@@ -301,7 +308,7 @@ class RawList extends PureComponent {
           onKeyUp={this.handleKeyUp}
         >
           <div
-            className={classnames('input-dropdown input-block input-readonly', {
+            className={classnames('input-dropdown input-block', {
               'input-secondary': rank,
               pulse: updated,
               'input-mandatory': mandatory && !selected,
@@ -333,8 +340,15 @@ class RawList extends PureComponent {
                 disabled={readonly || disabled}
               />
             </div>
-            <div className="input-icon">
-              <i className="meta-icon-down-1 input-icon-sm" />
+            {clearable &&
+              selected &&
+              !readonly && (
+                <div className="input-icon" onClick={this.handleClear}>
+                  <i className="meta-icon-close-alt" />
+                </div>
+              )}
+            <div className="input-icon input-readonly">
+              <i className="meta-icon-down-1" />
             </div>
           </div>
         </div>
@@ -359,6 +373,7 @@ class RawList extends PureComponent {
 RawList.propTypes = {
   filter: PropTypes.object,
   readonly: PropTypes.bool,
+  clearable: PropTypes.bool,
   // Immutable List
   list: PropTypes.object,
   rank: PropTypes.any,
@@ -391,6 +406,7 @@ RawList.propTypes = {
 
 RawList.defaultProps = {
   tabIndex: -1,
+  clearable: true,
 };
 
 export default onClickOutside(RawList);
