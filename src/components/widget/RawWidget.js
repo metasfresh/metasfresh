@@ -180,9 +180,7 @@ class RawWidget extends Component {
 
   getClassNames = ({ icon, forcedPrimary } = {}) => {
     const { widgetData, gridAlign, type, updated, rowId, isModal } = this.props;
-
     const { isEdited } = this.state;
-
     const { readonly, value, mandatory, validStatus } = widgetData[0];
 
     return this.classNames({
@@ -254,16 +252,14 @@ class RawWidget extends Component {
       isOpenDatePicker,
       dateFormat,
     } = this.props;
-    const widgetValue = data || widgetData[0].value;
+    const widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
     const widgetField = filterWidget
       ? fields[0].parameterName
       : fields[0].field;
-
     const readonly = widgetData[0].readonly;
-
     let tabIndex = this.props.tabIndex;
 
     if (fullScreen || readonly || (modalVisible && !isModal)) {

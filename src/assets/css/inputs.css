@@ -792,6 +792,14 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     }
 }
 
+/* Others */
+
+.tagsinput {
+}
+
+.react-tagsinput--focused {
+    z-index: 100;
+}
 
 /* Table inputs */
 

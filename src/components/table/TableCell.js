@@ -161,7 +161,10 @@ class TableCell extends PureComponent {
       <td
         tabIndex={modalVisible ? -1 : tabIndex}
         ref={c => (this.cell = c)}
-        onDoubleClick={readonly ? null : handleDoubleClick}
+        onDoubleClick={e => {
+          if (isEdited) e.stopPropagation();
+          if (!readonly) handleDoubleClick(e);
+        }}
         onKeyDown={handleKeyDown}
         onContextMenu={handleRightClick}
         className={classnames(

@@ -298,6 +298,10 @@ class DocumentList extends Component {
       return true;
     }
 
+    if (selected && selected[0] === 'all') {
+      return true;
+    }
+
     let rows = [];
 
     data &&

@@ -412,6 +412,7 @@ class Lookup extends Component {
                         this.linkedList.push(c.getWrappedInstance());
                       }
                     }}
+                    clearable={false}
                     readonly={disabled || readonly}
                     lookupList={true}
                     autoFocus={isCurrentProperty}
