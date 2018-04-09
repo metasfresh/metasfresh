@@ -17,6 +17,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1539](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1539) eMail Editor mailTo List not showing selected entry
     * Improvement of the Adress Lookup in eMail Editor. Now showing which entry is selected.
+  * [#1648](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1648) Dropdown value in filters cannot be deleted after selection
+    * Iporvement of Filter ctiteria, now possible to empty aleady set values in List Widgets.
 
 ## Fixes
 * metasfresh-webui-frontend
@@ -24,6 +26,8 @@ Here come the actual release notes:
     * Minor Improvement of Grid Cell Edit Mode, now aboiding the Detail View if double Clicking on Field in Edit Mode.
   * [#1462](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1462) broke: cannot completely delete a numeric field in grid view
     * Fixes the Grid View Edit Mode for numeric Fields that shall be zeroed when backspace.
+  * [#1612](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1612) modal view: quickActions not called when selecting all rows from all pages
+    * Fixes the possibility to select more than 20 Grid lines and use Quickactions.
 
 # metasfresh 5.52 (2018-15)
 **release for week 2018-15**
