@@ -62,11 +62,12 @@ export class ChartWidget extends Component {
             (editmode ? 'draggable-widget-edited ' : '')
           }
           onDoubleClick={
-            !editmode &&
-            (() => {
-              isMaximized ? maximizeWidget() : maximizeWidget(id);
-              this.toggleMenu(false);
-            })
+            editmode
+              ? undefined
+              : () => {
+                  isMaximized ? maximizeWidget() : maximizeWidget(id);
+                  this.toggleMenu(false);
+                }
           }
         >
           <p className="draggable-widget-title">
