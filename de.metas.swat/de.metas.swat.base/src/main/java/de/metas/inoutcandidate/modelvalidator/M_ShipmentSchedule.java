@@ -50,6 +50,7 @@ import org.compiere.model.ModelValidator;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -277,7 +278,7 @@ public class M_ShipmentSchedule
 					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated,
 					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override
 			})
-	public void updateQtyOrdered(final I_M_ShipmentSchedule shipmentSchedule)
+	public void updateQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		shipmentScheduleBL.updateQtyOrdered(shipmentSchedule);
@@ -293,7 +294,7 @@ public class M_ShipmentSchedule
 		updateQtyOrderedOfOrderLineAndReserveStock(shipmentSchedule);
 	}
 
-	private void updateQtyOrderedOfOrderLineAndReserveStock(final I_M_ShipmentSchedule shipmentSchedule)
+	private void updateQtyOrderedOfOrderLineAndReserveStock(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		if (shipmentSchedule.getAD_Table_ID() != getTableId(I_C_OrderLine.class))
 		{
@@ -311,10 +312,17 @@ public class M_ShipmentSchedule
 			return; // avoid unnecessary changes
 		}
 
+		final I_C_Order order = orderLine.getC_Order();
+		final boolean orderNotCompleted = !Services.get(IDocumentBL.class).isDocumentCompleted(order);
+		if(orderNotCompleted)
+		{
+			// issue https://github.com/metasfresh/metasfresh/issues/3815
+			return; // don't update e.g. an order that was closed just now, while the async shipment-schedule creation took place.
+		}
+
 		// note: don't try to suppress shipment schedule invalidation, because maybe other scheds also need updating when this order's qtyOrdered changes.
 		orderLine.setQtyOrdered(qtyOrdered);
 
-		final I_C_Order order = orderLine.getC_Order();
 
 		final MOrder orderPO = LegacyAdapters.convertToPO(order);
 		final MOrderLine orderLinePO = LegacyAdapters.convertToPO(orderLine);
