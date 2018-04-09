@@ -44,13 +44,11 @@ export default class BarcodeScanner extends Component {
     Quagga.offDetected(this._onDetected);
   }
 
-  _handleStop = skipCloseCallback => {
+  _handleStop = () => {
     Quagga.offDetected(this._onDetected);
     Quagga.stop();
 
-    if (!skipCloseCallback) {
-      this.props.onClose();
-    }
+    this.props.onClose();
   };
 
   _onDetected = result => {

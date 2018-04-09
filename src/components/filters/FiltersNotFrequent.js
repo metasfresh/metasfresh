@@ -17,12 +17,13 @@ class FiltersNotFrequent extends Component {
     };
   }
 
-  handleClickOutside = () => {
-    this.outsideClick();
-  };
-
-  outsideClick = () => {
+  handleClickOutside = ({ target }) => {
     const { widgetShown, dropdownToggled, allowOutsideClick } = this.props;
+
+    if (target.classList && target.classList.contains('input-dropdown-list')) {
+      return;
+    }
+
     if (allowOutsideClick && !widgetShown) {
       dropdownToggled();
       this.toggleDropdown(false);
@@ -56,9 +57,7 @@ class FiltersNotFrequent extends Component {
     } = this.props;
 
     const { isOpenDropdown, openFilterId } = this.state;
-
     const openFilter = getItemsByProperty(data, 'filterId', openFilterId)[0];
-
     const activeFilters = data.filter(filter => filter.isActive);
     const activeFilter = activeFilters.length === 1 && activeFilters[0];
 

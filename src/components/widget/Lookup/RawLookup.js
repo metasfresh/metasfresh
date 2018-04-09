@@ -230,9 +230,16 @@ class RawLookup extends Component {
   };
 
   handleFocus = () => {
-    this.setState({
-      isFocused: true,
-    });
+    const { onHandleFocus } = this.props;
+
+    this.setState(
+      {
+        isFocused: true,
+      },
+      () => {
+        onHandleFocus && onHandleFocus();
+      }
+    );
   };
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {

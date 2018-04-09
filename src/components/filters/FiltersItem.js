@@ -6,7 +6,7 @@ import TetherComponent from 'react-tether';
 
 import keymap from '../../shortcuts/keymap';
 import OverlayField from '../app/OverlayField';
-import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
+import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import RawWidget from '../widget/RawWidget';
 import {

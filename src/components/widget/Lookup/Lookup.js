@@ -268,6 +268,8 @@ class Lookup extends Component {
       scanning,
       barcodeSelected,
       scannerElement,
+      onHandleBlur,
+      onFocus,
     } = this.props;
 
     const {
@@ -278,6 +280,7 @@ class Lookup extends Component {
       localClearing,
       fireDropdownList,
       autofocusDisabled,
+      isDropdownListOpen,
     } = this.state;
 
     this.linkedList = [];
@@ -348,8 +351,9 @@ class Lookup extends Component {
                   fireDropdownList={fireDropdownList}
                   handleInputEmptyStatus={this.handleInputEmptyStatus}
                   enableAutofocus={this.enableAutofocus}
-                  onHandleBlur={this.props.onHandleBlur}
-                  isOpen={this.state.isDropdownListOpen}
+                  onHandleBlur={onHandleBlur}
+                  onHandleFocus={onFocus}
+                  isOpen={isDropdownListOpen}
                   onDropdownListToggle={this.dropdownListToggle}
                   {...{
                     placeholder,

@@ -55,12 +55,15 @@ class RawWidget extends Component {
    * DOM element outside of it's parent's tree.
    */
   focus = () => {
-    const { handleFocus, disableOnClickOutside, entity } = this.props;
+    const { dispatch, handleFocus, disableOnClickOutside, entity } = this.props;
 
     if (this.rawWidget && this.rawWidget.focus) {
       this.rawWidget.focus();
     }
 
+    dispatch(disableShortcut());
+
+    // don't disable onclickoutside for the attributes widget
     if (entity !== 'pattribute') {
       disableOnClickOutside && disableOnClickOutside();
     }
