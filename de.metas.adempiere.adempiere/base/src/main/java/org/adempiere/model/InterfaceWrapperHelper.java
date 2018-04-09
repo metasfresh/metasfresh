@@ -746,7 +746,7 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	private static final IModelClassInfo getModelClassInfoOrNull(final Class<?> clazz)
+	private static final IModelClassInfo getModelClassInfoOrNull(@Nullable final Class<?> clazz)
 	{
 		return ModelClassIntrospector
 				.getInstance()

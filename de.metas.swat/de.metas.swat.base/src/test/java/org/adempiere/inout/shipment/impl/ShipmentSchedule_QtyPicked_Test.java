@@ -100,13 +100,13 @@ public class ShipmentSchedule_QtyPicked_Test
 		// final BigDecimal qtyPickedActual = shipmentScheduleBL.getQtyPicked(shipmentSchedule);
 
 		Assert.assertThat("Invalid getQtyPicked()",
-				shipmentScheduleAllocBL.getQtyPicked(shipmentSchedule), // Actual
+				Services.get(IShipmentScheduleAllocDAO.class).retrieveNotOnShipmentLineQty(shipmentSchedule), // Actual
 				Matchers.comparesEqualTo(qtyPicked) // Expected
 		);
 
 		//
 		// Now check the DAO
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
 		Assert.assertNotNull("QtyPicked records not found", qtyPickedRecords);
 		Assert.assertEquals("Only one QtyPicked record expected", 1, qtyPickedRecords.size());
 
@@ -141,7 +141,7 @@ public class ShipmentSchedule_QtyPicked_Test
 		final I_M_ShipmentSchedule shipmentSchedule = createShipmentSchedule();
 
 		Assert.assertThat("Invalid initial QtyPicked",
-				shipmentScheduleAllocBL.getQtyPicked(shipmentSchedule), // Actual
+				shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentSchedule), // Actual
 				Matchers.comparesEqualTo(BigDecimal.ZERO) // Expected
 		);
 
@@ -161,7 +161,7 @@ public class ShipmentSchedule_QtyPicked_Test
 		Assert.assertNotNull("QtyPicked record was not created", qtyPickedRecord);
 
 		Assert.assertThat("Invalid getQtyPicked()",
-				shipmentScheduleAllocBL.getQtyPicked(shipmentSchedule), // Actual
+				Services.get(IShipmentScheduleAllocDAO.class).retrieveNotOnShipmentLineQty(shipmentSchedule), // Actual
 				Matchers.comparesEqualTo(qtyPickedExpected) // Expected
 		);
 
