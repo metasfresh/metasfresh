@@ -18,6 +18,11 @@ Here come the actual release notes:
   * [#1539](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1539) eMail Editor mailTo List not showing selected entry
     * Improvement of the Adress Lookup in eMail Editor. Now showing which entry is selected.
 
+## Fixes
+* metasfresh-webui-frontend
+  * [#1462](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1462) broke: cannot completely delete a numeric field in grid view
+    * Fixes the Grid View Edit Mode for numeric Fields that shall be zeroed when backspace.
+
 # metasfresh 5.52 (2018-15)
 **release for week 2018-15**
 
