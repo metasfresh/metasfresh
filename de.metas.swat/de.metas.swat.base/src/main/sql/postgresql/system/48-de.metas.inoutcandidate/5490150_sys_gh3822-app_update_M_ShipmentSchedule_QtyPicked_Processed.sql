@@ -1,6 +1,6 @@
 
 UPDATE M_ShipmentSchedule_QtyPicked
-SET Processed='Y', Updated=now(), Updateby=99
+SET Processed='Y', Updated=now(), UpdatedBy=99
 WHERE M_ShipmentSchedule_QtyPicked_ID IN
 (
 	SELECT a.M_ShipmentSchedule_QtyPicked_ID
