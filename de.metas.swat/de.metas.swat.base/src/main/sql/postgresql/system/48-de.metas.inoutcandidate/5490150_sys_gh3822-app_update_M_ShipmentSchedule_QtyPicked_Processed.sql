@@ -13,6 +13,6 @@ WHERE M_ShipmentSchedule_QtyPicked_ID IN
 		AND (
 			s.Processed='N' 
 			OR 
-			s.Created >= (now() - interval '1 week') 
+			s.Created >= (now() - interval '4 weeks') 
 		)
 );
