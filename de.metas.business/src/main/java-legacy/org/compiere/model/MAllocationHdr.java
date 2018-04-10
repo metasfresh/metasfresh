@@ -171,7 +171,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		final Query query = MTable.get(ctx, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
 				.createQuery(whereClause, trxName);
 		query.setParameters(new Object[] { C_Cash_ID });
-		final List<MAllocationHdr> list = query.list();
+		final List<MAllocationHdr> list = query.list(MAllocationHdr.class);
 		final MAllocationHdr[] retValue = new MAllocationHdr[list.size()];
 		list.toArray(retValue);
 		return retValue;

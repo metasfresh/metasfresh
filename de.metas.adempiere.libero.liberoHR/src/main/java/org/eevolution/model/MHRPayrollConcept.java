@@ -84,7 +84,7 @@ public class MHRPayrollConcept extends X_HR_PayrollConcept
 												.setOnlyActiveRecords(true)
 												.setParameters(new Object[]{p.getHR_Payroll_ID()})
 												.setOrderBy(COLUMNNAME_SeqNo)
-												.list();	
+												.list(MHRPayrollConcept.class);
 		return list.toArray(new MHRPayrollConcept[list.size()]);
 	}
 

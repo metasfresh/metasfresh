@@ -46,7 +46,7 @@ import lombok.NonNull;
 public class BPartnerStatsBL implements IBPartnerStatsBL
 {
 	@Override
-	public String calculateSOCreditStatus(@NonNull final CalculateSOCreditStatusRequest request)
+	public String calculateProjectedSOCreditStatus(@NonNull final CalculateSOCreditStatusRequest request)
 	{
 		final BPartnerStats bpStats = request.getStat();
 		final BigDecimal additionalAmt = request.getAdditionalAmt();
@@ -67,7 +67,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		// Nothing to do
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
 				|| (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus) && !request.isForceCheckCreditStatus())
-				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
+				|| creditLimit.signum() == 0)
 		{
 			return initialCreditStatus;
 		}
@@ -100,7 +100,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 				.additionalAmt(grandTotal)
 				.date(date)
 				.build();
-		final String futureCreditStatus = calculateSOCreditStatus(request);
+		final String futureCreditStatus = calculateProjectedSOCreditStatus(request);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(futureCreditStatus))
 		{

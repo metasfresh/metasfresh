@@ -79,7 +79,7 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 			final I_C_InvoiceLine invoiceLine, final String whereClause,
 			final String trxName)
 	{
-		final List<I_C_LandedCost> list = new ArrayList<I_C_LandedCost>();
+		final List<I_C_LandedCost> list = new ArrayList<>();
 
 		String sql = "SELECT * FROM C_LandedCost WHERE C_InvoiceLine_ID=? ";
 		if (whereClause != null)
@@ -128,7 +128,7 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 				+ "=?";
 
 		return new Query(ctx, tableName, whereClause, trxName).setParameters(
-				invoiceLineId).setOnlyActiveRecords(true).setClient_ID().list();
+				invoiceLineId).setOnlyActiveRecords(true).setClient_ID().list(MInvoiceLine.class);
 
 	}
 
@@ -167,7 +167,7 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(adOrg);
 
 		final StringBuilder whereClause = new StringBuilder();
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 
 		whereClause.append(I_C_Invoice.COLUMNNAME_AD_Org_ID).append("=?");
 		params.add(adOrgID);
@@ -187,7 +187,7 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 	{
 		final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
 		final MInvoiceTax[] resultArray = invoicePO.getTaxes(true);
-		final List<I_C_InvoiceTax> result = new ArrayList<I_C_InvoiceTax>();
+		final List<I_C_InvoiceTax> result = new ArrayList<>();
 		for (final MInvoiceTax tax : resultArray)
 		{
 			result.add(tax);

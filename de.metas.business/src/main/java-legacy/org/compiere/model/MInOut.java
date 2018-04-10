@@ -706,7 +706,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 		final List<MInOutConfirm> list = new Query(getCtx(), MInOutConfirm.Table_Name, "M_InOut_ID=?", get_TrxName())
 				.setParameters(new Object[] { getM_InOut_ID() })
-				.list();
+				.list(MInOutConfirm.class);
 		m_confirms = new MInOutConfirm[list.size()];
 		list.toArray(m_confirms);
 		return m_confirms;
@@ -1290,7 +1290,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				.additionalAmt(notInvoicedAmt)
 				.date(getMovementDate())
 				.build();
-		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(request);
+		final String calculatedCreditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
@@ -1363,10 +1363,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 
 		// Outstanding (not processed) Incoming Confirmations ?
-		final MInOutConfirm[] confirmations = getConfirmations(true);
-		for (final MInOutConfirm confirmation : confirmations)
+		for (final MInOutConfirm confirm : getConfirmations(true))
 		{
-			final MInOutConfirm confirm = confirmation;
 			if (!confirm.isProcessed())
 			{
 				if (MInOutConfirm.CONFIRMTYPE_CustomerConfirmation.equals(confirm.getConfirmType()))
