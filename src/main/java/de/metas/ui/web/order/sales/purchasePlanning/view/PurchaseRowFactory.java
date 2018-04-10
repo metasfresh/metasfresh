@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQueryBL;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.product.IProductBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -58,6 +59,13 @@ import lombok.NonNull;
 @Service
 public class PurchaseRowFactory
 {
+	private final AvailableToPromiseRepository availableToPromiseRepository;
+	
+	public PurchaseRowFactory(@NonNull AvailableToPromiseRepository availableToPromiseRepository)
+	{
+		this.availableToPromiseRepository = availableToPromiseRepository;
+	}
+
 	@Builder(builderMethodName = "rowFromPurchaseCandidateBuilder", builderClassName = "RowFromPurchaseCandidateBuilder")
 	private PurchaseRow buildRowFromPurchaseCandidate(@NonNull final PurchaseCandidate purchaseCandidate,
 			@Nullable final VendorProductInfo vendorProductInfo, @NotNull final Date datePromised)
@@ -86,16 +94,24 @@ public class PurchaseRowFactory
 		return PurchaseRow.builder()
 				.rowId(PurchaseRowId.lineId(purchaseCandidate.getSalesOrderLineId(), bpartnerId,
 						processedPurchaseCandidateId))
-				.salesOrderId(purchaseCandidate.getSalesOrderId()).rowType(PurchaseRowType.LINE).product(product)
-				.uomOrAvailablility(uom).qtyToPurchase(purchaseCandidate.getQtyToPurchase())
-				.purchasedQty(purchaseCandidate.getPurchasedQty()).datePromised(datePromised)
-				.vendorBPartner(vendorBPartner).purchaseCandidateId(purchaseCandidate.getPurchaseCandidateId())
-				.orgId(purchaseCandidate.getOrgId()).warehouseId(purchaseCandidate.getWarehouseId())
-				.readonly(purchaseCandidate.isProcessedOrLocked()).build();
+				.salesOrderId(purchaseCandidate.getSalesOrderId())
+				.rowType(PurchaseRowType.LINE).product(product)
+				.uomOrAvailablility(uom)
+				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
+				.purchasedQty(purchaseCandidate.getPurchasedQty())
+				.datePromised(datePromised)
+				.vendorBPartner(vendorBPartner)
+				.purchaseCandidateId(purchaseCandidate.getPurchaseCandidateId())
+				.orgId(purchaseCandidate.getOrgId())
+				.warehouseId(purchaseCandidate.getWarehouseId())
+				.readonly(purchaseCandidate.isProcessedOrLocked())
+				.build();
 	}
 
 	public PurchaseRow createGroupRow(final I_C_OrderLine salesOrderLine, final List<PurchaseRow> rows)
 	{
+
+		
 		final JSONLookupValue product = createProductLookupValue(salesOrderLine.getM_Product_ID());
 		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
 		final String uom = createUOMLookupValueForProductId(product.getKeyAsInt());
@@ -103,21 +119,28 @@ public class PurchaseRowFactory
 		final AvailableToPromiseQueryBuilder atpQueryBuilder = AvailableToPromiseQuery.builder();
 
 		atpQueryBuilder.productId(salesOrderLine.getM_Product_ID());
-		atpQueryBuilder.date(salesOrderLine.getDatePromised());
+		atpQueryBuilder.date(salesOrderLine.getC_Order().getPreparationDate());
+		
+		AvailableToPromiseQueryBL.addStorageAttributeKeysToQueryBuilder(atpQueryBuilder);
 
-		final BigDecimal qtyAvailable = new AvailableToPromiseRepository()
+		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository
 				.retrieveAvailableStockQtySum(AvailableToPromiseMultiQuery.of(atpQueryBuilder.build()));
 
 		final PurchaseRow groupRow = PurchaseRow.builder()
 				.rowId(PurchaseRowId.groupId(salesOrderLine.getC_OrderLine_ID()))
-				.salesOrderId(salesOrderLine.getC_Order_ID()).rowType(PurchaseRowType.GROUP).product(product)
-				.uomOrAvailablility(uom).qtyAvailable(qtyAvailable).qtyToDeliver(qtyToDeliver)
-				.datePromised(salesOrderLine.getDatePromised()).orgId(salesOrderLine.getAD_Org_ID())
-				.warehouseId(salesOrderLine.getM_Warehouse_ID()).includedRows(rows).readonly(true) // grouping lines are
-																									 // always readonly
+				.salesOrderId(salesOrderLine.getC_Order_ID())
+				.rowType(PurchaseRowType.GROUP).product(product)
+				.uomOrAvailablility(uom)
+				.qtyAvailableToPromise(qtyAvailableToPromise)
+				.qtyToDeliver(qtyToDeliver)
+				.datePromised(salesOrderLine.getDatePromised())
+				.orgId(salesOrderLine.getAD_Org_ID())
+				.warehouseId(salesOrderLine.getM_Warehouse_ID())
+				.includedRows(rows).readonly(true) // grouping lines are always readonly
 				.build();
 		return groupRow;
 	}
+	
 
 	@Builder(builderMethodName = "rowFromAvailabilityResultBuilder", builderClassName = "RowFromAvailabilityResultBuilder")
 	private PurchaseRow buildRowFromFromAvailabilityResult(@NonNull PurchaseRow parentRow,
