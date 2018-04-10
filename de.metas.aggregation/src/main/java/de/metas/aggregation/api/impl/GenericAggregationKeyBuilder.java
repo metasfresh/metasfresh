@@ -48,7 +48,7 @@ import de.metas.aggregation.api.IAggregationKey;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
-/* package */@SuppressWarnings("unused")
+/* package */
 final class GenericAggregationKeyBuilder<ModelType> extends AbstractAggregationKeyBuilder<ModelType>
 {
 	// services
