@@ -74,13 +74,12 @@ public class PurchaseRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
 	})
 	private final JSONLookupValue vendorBPartner;
-	
-	
-	@ViewColumn(captionKey = "QtyAvailable", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
+
+	@ViewColumn(captionKey = "Qty_AvailableToPromise", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
 	})
-	private final BigDecimal qtyAvailable;
+	private final BigDecimal qtyAvailableToPromise;
 
 	@ViewColumn(captionKey = "QtyToDeliver", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
@@ -151,7 +150,7 @@ public class PurchaseRow implements IViewRow
 			@NonNull final IViewRowType rowType,
 			@NonNull final JSONLookupValue product,
 			@Nullable final JSONLookupValue vendorBPartner,
-			@Nullable final BigDecimal qtyAvailable,
+			@Nullable final BigDecimal qtyAvailableToPromise,
 			@NonNull final String uomOrAvailablility,
 			@Nullable final BigDecimal qtyToDeliver,
 			@Nullable final BigDecimal qtyToPurchase,
@@ -170,7 +169,7 @@ public class PurchaseRow implements IViewRow
 		this.rowType = rowType;
 		this.product = product;
 		this.vendorBPartner = vendorBPartner;
-		this.qtyAvailable = qtyAvailable;
+		this.qtyAvailableToPromise = qtyAvailableToPromise;
 		this.uomOrAvailablility = uomOrAvailablility;
 		this.qtyToDeliver = qtyToDeliver;
 		this.qtyToPurchase = Util.coalesce(qtyToPurchase, BigDecimal.ZERO);
@@ -210,9 +209,9 @@ public class PurchaseRow implements IViewRow
 		this.rowType = from.rowType;
 		this.product = from.product;
 		this.vendorBPartner = from.vendorBPartner;
-		this.qtyAvailable = from.qtyAvailable;
+		this.qtyAvailableToPromise = from.qtyAvailableToPromise;
 		this.uomOrAvailablility = from.uomOrAvailablility;
-		
+
 		this.qtyToDeliver = from.qtyToDeliver;
 		this.qtyToPurchase = from.qtyToPurchase;
 		this.purchasedQty = from.purchasedQty;
@@ -338,7 +337,7 @@ public class PurchaseRow implements IViewRow
 	{
 		BigDecimal qtyToPurchaseSum = BigDecimal.ZERO;
 		BigDecimal purchasedQtySum = BigDecimal.ZERO;
-		for(final PurchaseRow includedRow: getIncludedRows())
+		for (final PurchaseRow includedRow : getIncludedRows())
 		{
 			qtyToPurchaseSum = qtyToPurchaseSum.add(includedRow.getQtyToPurchase());
 			purchasedQtySum = purchasedQtySum.add(includedRow.getPurchasedQty());
