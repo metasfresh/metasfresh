@@ -1,13 +1,10 @@
 package org.adempiere.model;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.function.Supplier;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -378,38 +375,15 @@ public class RecordZoomWindowFinder
 
 	private static final WindowIds retrieveDefaultWindowIds(final String tableName)
 	{
-		//
-		// Load SO and PO AD_Window_IDs from AD_Table definition
-		final String sql = "SELECT AD_Window_ID, PO_Window_ID FROM AD_Table WHERE TableName=?";
-		final Object[] sqlParams = new Object[] { tableName };
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+		if (tableId <= 0)
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			DB.setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				final int soWindowId = rs.getInt(1);
-				final int poWindowId = rs.getInt(2);
-				return WindowIds.of(soWindowId, poWindowId);
-			}
-			else
-			{
-				return WindowIds.NONE;
-			}
+			return WindowIds.NONE;
 		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
+		final I_AD_Table table = load(tableId, I_AD_Table.class);
+		final int soWindowId = table.getAD_Window_ID();
+		final int poWindowId = table.getPO_Window_ID();
+		return WindowIds.of(soWindowId, poWindowId);
 	}
 
 	private static final boolean retriveIsSOTrx(final String tableName, final String sqlWhereClause)
