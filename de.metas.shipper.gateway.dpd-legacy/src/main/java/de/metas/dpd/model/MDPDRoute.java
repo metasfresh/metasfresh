@@ -72,8 +72,8 @@ public class MDPDRoute extends X_DPD_Route
 		final Collection<MDPDRoute> routesPostal = retrieveForCountryAndPostal(
 				ctx, countryCode, postal, routeFileInfoId, date, trxName);
 
-		final Set<MDPDRoute> withGivenServiceCode = new HashSet<MDPDRoute>();
-		final Set<MDPDRoute> withoutServiceCode = new HashSet<MDPDRoute>();
+		final Set<MDPDRoute> withGivenServiceCode = new HashSet<>();
+		final Set<MDPDRoute> withoutServiceCode = new HashSet<>();
 
 		for (final MDPDRoute route : routesPostal)
 		{
@@ -99,8 +99,8 @@ public class MDPDRoute extends X_DPD_Route
 			routesServiceCode = withGivenServiceCode;
 		}
 
-		final Set<MDPDRoute> withGivenRoutingDepot = new HashSet<MDPDRoute>();
-		final Set<MDPDRoute> withoutRoutingDepot = new HashSet<MDPDRoute>();
+		final Set<MDPDRoute> withGivenRoutingDepot = new HashSet<>();
+		final Set<MDPDRoute> withoutRoutingDepot = new HashSet<>();
 
 		final MDPDFileInfo depotFileInfo = MDPDFileInfo.retrieve(ctx, "DEPOTS",
 				date, trxName);
@@ -274,7 +274,7 @@ public class MDPDRoute extends X_DPD_Route
 
 		return new Query(ctx, Table_Name, whereClause, trxName).setParameters(
 				parameters).setOnlyActiveRecords(true).setOrderBy(
-				COLUMNNAME_BeginPostCode).list();
+				COLUMNNAME_BeginPostCode).list(MDPDRoute.class);
 	}
 
 	@Override

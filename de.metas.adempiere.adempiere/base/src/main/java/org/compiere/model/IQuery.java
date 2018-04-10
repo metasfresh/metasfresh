@@ -92,7 +92,7 @@ public interface IQuery<T>
 
 	String getTableName();
 
-	<ET extends T> List<ET> list() throws DBException;
+	List<T> list() throws DBException;
 
 	/**
 	 * Return a list of all po that match the query criteria.
@@ -366,7 +366,6 @@ public interface IQuery<T>
 	int delete();
 
 	/**
-	 *
 	 * @return executor which will assist you to mass-update fields of models which are matched by this query
 	 */
 	ICompositeQueryUpdaterExecutor<T> updateDirectly();
@@ -484,7 +483,7 @@ public interface IQuery<T>
 	 * @param distinct
 	 */
 	void addUnion(IQuery<T> query, boolean distinct);
-	
+
 	default IQuery<T> addUnions(final Collection<IQuery<T>> queries, final boolean distinct)
 	{
 		queries.forEach(query -> addUnion(query, distinct));

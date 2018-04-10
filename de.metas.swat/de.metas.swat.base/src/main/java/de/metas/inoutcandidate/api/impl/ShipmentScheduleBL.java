@@ -454,16 +454,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
 			// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
 			// * QtyPicked from QtyPicked records
-			BigDecimal qtyUnconfirmedShipments;
+			final BigDecimal qtyPickList;
 			{
-				qtyUnconfirmedShipments = qtyOnHands.getQtyUnconfirmedShipmentsPerShipmentSchedule(sched);
-
 				// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
-				final BigDecimal qtyPickedNotDelivered = shipmentScheduleAllocDAO.retrievePickedNotDeliveredQty(sched);
-				qtyUnconfirmedShipments = qtyUnconfirmedShipments.add(qtyPickedNotDelivered);
+				qtyPickList = shipmentScheduleAllocDAO.retrieveQtyPickedAndUnconfirmed(sched);
 
 				// Update shipment schedule's field
-				sched.setQtyPickList(qtyUnconfirmedShipments);
+				sched.setQtyPickList(qtyPickList);
 			}
 
 			final I_M_Product product = create(olAndSched.getSched().getM_Product(), I_M_Product.class);
@@ -478,7 +475,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 					continue;
 				}
 			}
-			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.mkQtyToDeliver(qtyRequired, qtyUnconfirmedShipments);
+			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.mkQtyToDeliver(qtyRequired, qtyPickList);
 
 			final boolean ruleCompleteOrder = DELIVERYRULE_CompleteOrder.equals(deliveryRule);
 
@@ -513,7 +510,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				// delivery rule force
 				logger.debug("Force - OnHand=" + qtyOnHandBeforeAllocation
-						+ " (Unconfirmed=" + qtyUnconfirmedShipments + "), ToDeliver=" + qtyToDeliver
+						+ " (QtyPickList=" + qtyPickList + "), ToDeliver=" + qtyToDeliver
 						+ ", Delivering=" + qtyToDeliver);
 
 				createLine(ctx, olAndSched, qtyToDeliver, storages, ruleForce, completeStatus, candidates, trxName);
@@ -538,7 +535,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 					// If the created line will make it into a real shipment will be
 					// decided later.
 					logger.debug("CompleteLine - OnHand=" + qtyOnHandBeforeAllocation
-							+ " (Unconfirmed=" + qtyUnconfirmedShipments + "), ToDeliver=" + qtyToDeliver
+							+ " (QtyPickList=" + qtyPickList + "), ToDeliver=" + qtyToDeliver
 							+ ", FullLine=" + completeStatus);
 
 					createLine(ctx, olAndSched, deliver, storages, ruleForce, completeStatus, candidates, trxName);
@@ -546,7 +543,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				else
 				{
 					logger.debug("No qtyOnHand to deliver[SKIP] - OnHand=" + qtyOnHandBeforeAllocation
-							+ " (Unconfirmed=" + qtyUnconfirmedShipments + "), ToDeliver=" + qtyToDeliver
+							+ " (QtyPickList=" + qtyPickList + "), ToDeliver=" + qtyToDeliver
 							+ ", FullLine=" + completeStatus);
 				}
 			}
@@ -554,7 +551,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				throw new AdempiereException(
 						"Unsupported delivery rule: " + deliveryRule
-								+ " - OnHand=" + qtyOnHandBeforeAllocation + " (Unconfirmed=" + qtyUnconfirmedShipments + "), ToDeliver=" + qtyToDeliver);
+								+ " - OnHand=" + qtyOnHandBeforeAllocation + " (PickedNotDelivered=" + qtyPickList + "), ToDeliver=" + qtyToDeliver);
 			}
 		}
 
@@ -656,7 +653,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				inoutLine.setQtyToDeliver(qty);
 			}
-			
+
 			candidates.addLine(inoutLine);
 			return;
 		}

@@ -687,7 +687,7 @@ public class MOrder extends X_C_Order implements IDocument
 		final List<MOrderLine> list = new Query(getCtx(), MOrderLine.Table_Name, whereClauseFinal.toString(), get_TrxName())
 				.setParameters(new Object[] { get_ID() })
 				.setOrderBy(orderBy)
-				.list();
+				.list(MOrderLine.class);
 
 		//
 		return list.toArray(new MOrderLine[list.size()]);
@@ -787,7 +787,7 @@ public class MOrder extends X_C_Order implements IDocument
 		//
 		final List<MOrderTax> list = new Query(getCtx(), MOrderTax.Table_Name, "C_Order_ID=?", get_TrxName())
 				.setParameters(new Object[] { get_ID() })
-				.list();
+				.list(MOrderTax.class);
 		m_taxes = list.toArray(new MOrderTax[list.size()]);
 		return m_taxes;
 	}	// getTaxes
@@ -806,7 +806,7 @@ public class MOrder extends X_C_Order implements IDocument
 		final List<MInvoice> list = new Query(getCtx(), MInvoice.Table_Name, whereClause, get_TrxName())
 				.setParameters(new Object[] { get_ID() })
 				.setOrderBy("C_Invoice_ID DESC")
-				.list();
+				.list(MInvoice.class);
 		return list.toArray(new MInvoice[list.size()]);
 	}	// getInvoices
 

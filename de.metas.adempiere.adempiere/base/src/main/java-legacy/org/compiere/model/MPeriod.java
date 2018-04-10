@@ -332,7 +332,7 @@ public class MPeriod extends X_C_Period
 	}	//	getFirstInYear
 
 	/**	Cache							*/
-	private static CCache<Integer,MPeriod> s_cache = new CCache<Integer,MPeriod>("C_Period", 10);
+	private static CCache<Integer,MPeriod> s_cache = new CCache<>("C_Period", 10);
 	
 	/**	Logger							*/
 	private static Logger			s_log = LogManager.getLogger(MPeriod.class); 
@@ -533,7 +533,7 @@ public class MPeriod extends X_C_Period
 				getStartDate(), getEndDate(),
 				getPeriodType()});
 		
-		List<MPeriod> periods = query.list();
+		List<MPeriod> periods = query.list(MPeriod.class);
 		
 		for ( int i=0; i < periods.size(); i++)
 		{

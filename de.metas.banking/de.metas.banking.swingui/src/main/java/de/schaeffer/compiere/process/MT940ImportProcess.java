@@ -34,14 +34,13 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MOrder;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.JavaProcess;
-
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.banking.misc.ImportBankstatementCtrl;
+import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
 import de.schaeffer.compiere.mt940.Bankstatement;
 import de.schaeffer.compiere.mt940.Parser;
 
@@ -96,14 +95,14 @@ public class MT940ImportProcess extends JavaProcess {
 
 		final List<MInvoice> invoiceList = new Query(getCtx(),
 				I_C_Invoice.Table_Name, whereClauseInvoice, get_TrxName())
-				.setOnlyActiveRecords(true).setClient_ID().list();
+				.setOnlyActiveRecords(true).setClient_ID().list(MInvoice.class);
 
 		final String whereClauseOrder = Env.getUserRolePermissions().getOrgWhere(false)
 				+ " AND ( paymentrule not in ('B','K','') AND DocStatus='WP' )";
 
 		final List<MOrder> orderList = new Query(getCtx(),
 				I_C_Order.Table_Name, whereClauseOrder, get_TrxName())
-				.setOnlyActiveRecords(true).setClient_ID().list();
+				.setOnlyActiveRecords(true).setClient_ID().list(MOrder.class);
 
 		new ImportBankstatementCtrl(statement, invoiceList, orderList);
 		return null;
