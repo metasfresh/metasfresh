@@ -43,8 +43,8 @@ import de.metas.notification.INotificationRepository;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationUtils;
-import de.metas.notification.spi.INotificationCtxProvider;
-import de.metas.notification.spi.impl.CompositeNotificationCtxProvider;
+import de.metas.notification.spi.IRecordTextProvider;
+import de.metas.notification.spi.impl.CompositeRecordTextProvider;
 import lombok.NonNull;
 
 /*
@@ -77,7 +77,7 @@ public class NotificationBL implements INotificationBL
 	private static final String SYSCONFIG_WEBUI_FRONTEND_DOCUMENT_PATH = "webui.frontend.documentPath";
 	private static final String DEFAULT_WEBUI_FRONTEND_DOCUMENT_PATH = "/window/{windowId}/{recordId}";
 
-	private final CompositeNotificationCtxProvider ctxProviders = new CompositeNotificationCtxProvider();
+	private final CompositeRecordTextProvider ctxProviders = new CompositeRecordTextProvider();
 
 	@Override
 	public void notifyUserAfterCommit(@NonNull final UserNotificationRequest request)
@@ -116,7 +116,7 @@ public class NotificationBL implements INotificationBL
 				.forEach(this::notifyUser0);
 	}
 
-	private UserNotificationRequest resolve(final UserNotificationRequest request)
+	private UserNotificationRequest resolve(@NonNull final UserNotificationRequest request)
 	{
 		return request.toBuilder()
 				.targetRecordDisplayText(resolveTargetRecordDisplayText(request))
@@ -146,7 +146,7 @@ public class NotificationBL implements INotificationBL
 				.map(request::deriveByNotificationsConfig);
 	}
 
-	private String resolveTargetRecordDisplayText(final UserNotificationRequest request)
+	private String resolveTargetRecordDisplayText(@NonNull final UserNotificationRequest request)
 	{
 		final ITableRecordReference targetRecord = request.getTargetRecord();
 		if (targetRecord == null)
@@ -445,13 +445,13 @@ public class NotificationBL implements INotificationBL
 	}
 
 	@Override
-	public void addCtxProvider(final INotificationCtxProvider ctxProvider)
+	public void addCtxProvider(final IRecordTextProvider ctxProvider)
 	{
 		ctxProviders.addCtxProvider(ctxProvider);
 	}
 
 	@Override
-	public void setDefaultCtxProvider(final INotificationCtxProvider defaultCtxProvider)
+	public void setDefaultCtxProvider(final IRecordTextProvider defaultCtxProvider)
 	{
 		ctxProviders.setDefaultCtxProvider(defaultCtxProvider);
 	}

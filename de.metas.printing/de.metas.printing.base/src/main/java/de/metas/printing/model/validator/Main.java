@@ -67,7 +67,7 @@ import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.spi.impl.DefaultPrintingNotificationCtxProvider;
+import de.metas.printing.spi.impl.DefaultPrintingRecordTextProvider;
 import de.metas.printing.spi.impl.DocumentPrintingQueueHandler;
 
 /**
@@ -159,7 +159,7 @@ public class Main extends AbstractModuleInterceptor
 
 		// task 09833
 		// Register the Default Printing Info ctx provider
-		Services.get(INotificationBL.class).setDefaultCtxProvider(DefaultPrintingNotificationCtxProvider.instance);
+		Services.get(INotificationBL.class).setDefaultCtxProvider(DefaultPrintingRecordTextProvider.instance);
 
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new PDFPrintingAsyncBatchListener(), Printing_Constants.C_Async_Batch_InternalName_PDFPrinting);
 	}

@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.api.NotificationGroupName;
 import org.adempiere.user.api.UserNotificationsConfig;
@@ -35,7 +37,7 @@ import lombok.Value;
  * or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * 
+ *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
@@ -58,11 +60,17 @@ public class UserNotificationRequest
 
 	boolean important;
 
+	/** Optional; takes precedence over {@link #subjectADMessage}, if set. */
 	String subjectPlain;
+
+	/** Optional */
 	String subjectADMessage;
 	List<Object> subjectADMessageParams;
 
+	/** Optional; takes precedence over {@link #contentADMessage}, if set. */
 	String contentPlain;
+
+	/** Optional */
 	String contentADMessage;
 	List<Object> contentADMessageParams;
 
@@ -71,7 +79,7 @@ public class UserNotificationRequest
 	int targetADWindowId;
 
 	List<Resource> attachments;
-	
+
 	// Options
 	boolean noEmail;
 
@@ -85,16 +93,16 @@ public class UserNotificationRequest
 			//
 			final boolean important,
 			//
-			final String subjectPlain,
-			final String subjectADMessage,
+			@Nullable final String subjectPlain,
+			@Nullable final String subjectADMessage,
 			@Singular final List<Object> subjectADMessageParams,
 			//
 			final String contentPlain,
 			final String contentADMessage,
 			@Singular final List<Object> contentADMessageParams,
 			//
-			String targetRecordDisplayText,
-			final ITableRecordReference targetRecord,
+			@Nullable String targetRecordDisplayText,
+			@Nullable final ITableRecordReference targetRecord,
 			final int targetADWindowId,
 			//
 			@Singular final List<Resource> attachments,
@@ -138,7 +146,7 @@ public class UserNotificationRequest
 		this.targetADWindowId = targetADWindowId;
 
 		this.attachments = ImmutableList.copyOf(attachments);
-		
+
 		this.noEmail = noEmail;
 	}
 

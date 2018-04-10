@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.notification.spi.INotificationCtxProvider;
+import de.metas.notification.spi.IRecordTextProvider;
 
 /*
  * #%L
@@ -36,7 +36,7 @@ public interface INotificationBL extends ISingletonService
 
 	void notifyUserAfterCommit(List<UserNotificationRequest> requests);
 
-	void addCtxProvider(INotificationCtxProvider ctxProvider);
+	void addCtxProvider(IRecordTextProvider ctxProvider);
 
-	void setDefaultCtxProvider(INotificationCtxProvider defaultCtxProvider);
+	void setDefaultCtxProvider(IRecordTextProvider defaultCtxProvider);
 }

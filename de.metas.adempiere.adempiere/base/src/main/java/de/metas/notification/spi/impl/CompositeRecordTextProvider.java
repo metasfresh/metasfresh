@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Optional;
 
 import de.metas.logging.LogManager;
-import de.metas.notification.spi.INotificationCtxProvider;
+import de.metas.notification.spi.IRecordTextProvider;
 
 /*
  * #%L
@@ -41,20 +41,20 @@ import de.metas.notification.spi.INotificationCtxProvider;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class CompositeNotificationCtxProvider implements INotificationCtxProvider
+public class CompositeRecordTextProvider implements IRecordTextProvider
 {
-	private static final Logger logger = LogManager.getLogger(CompositeNotificationCtxProvider.class);
+	private static final Logger logger = LogManager.getLogger(CompositeRecordTextProvider.class);
 
-	private final CopyOnWriteArrayList<INotificationCtxProvider> ctxProviders = new CopyOnWriteArrayList<>();
-	private INotificationCtxProvider defaultCtxProvider = NullNotificationCtxProvider.instance;
+	private final CopyOnWriteArrayList<IRecordTextProvider> ctxProviders = new CopyOnWriteArrayList<>();
+	private IRecordTextProvider defaultCtxProvider = NullRecordTextProvider.instance;
 
-	public final void addCtxProvider(final INotificationCtxProvider ctxProvider)
+	public final void addCtxProvider(final IRecordTextProvider ctxProvider)
 	{
 		Check.assumeNotNull(ctxProvider, "ctx provider not null");
 		ctxProviders.addIfAbsent(ctxProvider);
 	}
 
-	public void setDefaultCtxProvider(final INotificationCtxProvider defaultCtxProvider)
+	public void setDefaultCtxProvider(final IRecordTextProvider defaultCtxProvider)
 	{
 		Check.assumeNotNull(defaultCtxProvider, "defaultCtxProvider not null");
 		this.defaultCtxProvider = defaultCtxProvider;
@@ -64,7 +64,7 @@ public class CompositeNotificationCtxProvider implements INotificationCtxProvide
 	public Optional<String> getTextMessageIfApplies(final ITableRecordReference referencedRecord)
 	{
 		// take the providers one by one and see if any of them applies to the given referenced record
-		for (final INotificationCtxProvider ctxProvider : ctxProviders)
+		for (final IRecordTextProvider ctxProvider : ctxProviders)
 		{
 			final Optional<String> textMessage = ctxProvider.getTextMessageIfApplies(referencedRecord);
 			if (textMessage != null && textMessage.isPresent())

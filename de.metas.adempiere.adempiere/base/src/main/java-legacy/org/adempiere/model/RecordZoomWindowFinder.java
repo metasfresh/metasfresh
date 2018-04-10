@@ -11,7 +11,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
@@ -206,12 +205,6 @@ public class RecordZoomWindowFinder
 
 	public int findAD_Window_ID()
 	{
-		// in case of JUnit test don't try to fetch the actual windowId because database is needed.
-		if (Adempiere.isUnitTestMode())
-		{
-			return -1;
-		}
-
 		final WindowIds windowIds = getEffectiveWindowIds();
 		return windowIds.getAD_Window_ID_ByIsSOTrx(() -> getIsSOTrxEffective());
 	}
