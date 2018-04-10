@@ -62,40 +62,32 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 		implements
 		IProcessPrecondition
 {
-	private final IInvoiceCandBL invoiceCandBL = Services
-			.get(IInvoiceCandBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
+	private final ILotNumberDateAttributeDAO lotNumberDateAttributeDAO = Services.get(ILotNumberDateAttributeDAO.class);
 
-	private List<HUToDistribute> husToDistribute = new ArrayList<>();
+	private List<HUToDistribute> husToQuarantine = new ArrayList<>();
 
 	@Override
 	protected String doIt() throws Exception
 	{
 		getView().streamByIds(getSelectedRowIds())
-				.map(row -> row.getId().toInt()).distinct()
-				.forEach(id -> createQuarantineHUs(id));
+				.map(row -> row.getId().toInt())
+				.distinct()
+				.forEach(this::createQuarantineHUsByLotNoLockId);
 
-		createQuarantineDDOrders();
+		huDDOrderBL.createQuarantineDDOrderForHUs(husToQuarantine);
 		setInvoiceCandsInDispute();
 
 		return MSG_OK;
 	}
 
-	private void createQuarantineDDOrders()
-	{
-		Services.get(IHUDDOrderBL.class)
-				.createQuarantineDDOrderForHUs(husToDistribute);
-
-	}
-
 	private void setInvoiceCandsInDispute()
 	{
-		husToDistribute.stream().map(HUToDistribute::getHu).collect(ImmutableList.toImmutableList())
-				.stream()
+		husToQuarantine.stream().map(HUToDistribute::getHu)
 				.flatMap(hu -> huInOutDAO.retrieveInOutLinesForHU(hu).stream())
-				.forEach(line -> {
-					invoiceCandBL.markInvoiceCandInDisputeForReceiptLine(line);
-				});
+				.forEach(invoiceCandBL::markInvoiceCandInDisputeForReceiptLine);
 	}
 
 	@Override
@@ -110,13 +102,13 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private void createQuarantineHUs(final int lotNoLockId)
+	private void createQuarantineHUsByLotNoLockId(final int lotNoLockId)
 	{
-		final I_M_Product_LotNumber_Lock lotNoLock = load(lotNoLockId,
+		final I_M_Product_LotNumber_Lock lotNoLock = load(
+				lotNoLockId,
 				I_M_Product_LotNumber_Lock.class);
-		final I_M_Attribute lotNoAttribute = Services
-				.get(ILotNumberDateAttributeDAO.class)
-				.getLotNumberAttribute(getCtx());
+
+		final I_M_Attribute lotNoAttribute = lotNumberDateAttributeDAO.getLotNumberAttribute(getCtx());
 
 		if (lotNoAttribute == null)
 		{
@@ -128,7 +120,9 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 		final String lotNoValue = lotNoLock.getLot();
 
 		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(
-				productId, lotNoAttribute, lotNoValue);
+				productId,
+				lotNoAttribute,
+				lotNoValue);
 
 		for (final I_M_HU hu : husForAttributeStringValue)
 		{
@@ -140,13 +134,16 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 				continue;
 			}
 
-			I_M_InOut firstReceipt = inOutLinesForHU.get(0).getM_InOut();
+			final I_M_InOut firstReceipt = inOutLinesForHU.get(0).getM_InOut();
 			final int bpartnerId = firstReceipt.getC_BPartner_ID();
 			final int bpLocationId = firstReceipt.getC_BPartner_Location_ID();
 
-			husToDistribute.add(HUToDistribute.builder().hu(hu)
-					.lockLotNo(lotNoLock).bpartnerId(bpartnerId)
-					.bpartnerLocationId(bpLocationId).build());
+			husToQuarantine.add(HUToDistribute.builder()
+					.hu(hu)
+					.lockLotNo(lotNoLock)
+					.bpartnerId(bpartnerId)
+					.bpartnerLocationId(bpLocationId)
+					.build());
 		}
 
 	}
@@ -157,8 +154,7 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 		return Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
 				.addOnlyWithProductId(productId)
 				.addOnlyWithAttribute(attribute, value)
-				.addHUStatusesToInclude(ImmutableList.of(X_M_HU.HUSTATUS_Picked,
-						X_M_HU.HUSTATUS_Active))
+				.addHUStatusesToInclude(ImmutableList.of(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active))
 				.list();
 	}
 
