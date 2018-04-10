@@ -60,7 +60,7 @@ import lombok.NonNull;
 public class PurchaseRowFactory
 {
 	private final AvailableToPromiseRepository availableToPromiseRepository;
-	
+
 	public PurchaseRowFactory(@NonNull AvailableToPromiseRepository availableToPromiseRepository)
 	{
 		this.availableToPromiseRepository = availableToPromiseRepository;
@@ -77,7 +77,9 @@ public class PurchaseRowFactory
 		if (vendorProductInfo != null)
 		{
 			productId = vendorProductInfo.getProductId();
-			product = createProductLookupValue(vendorProductInfo.getProductId(), vendorProductInfo.getProductNo(),
+			product = createProductLookupValue(
+					vendorProductInfo.getProductId(),
+					vendorProductInfo.getProductNo(),
 					vendorProductInfo.getProductName());
 		}
 		else
@@ -92,8 +94,7 @@ public class PurchaseRowFactory
 				: 0;
 
 		return PurchaseRow.builder()
-				.rowId(PurchaseRowId.lineId(purchaseCandidate.getSalesOrderLineId(), bpartnerId,
-						processedPurchaseCandidateId))
+				.rowId(PurchaseRowId.lineId(purchaseCandidate.getSalesOrderLineId(), bpartnerId, processedPurchaseCandidateId))
 				.salesOrderId(purchaseCandidate.getSalesOrderId())
 				.rowType(PurchaseRowType.LINE).product(product)
 				.uomOrAvailablility(uom)
@@ -110,8 +111,6 @@ public class PurchaseRowFactory
 
 	public PurchaseRow createGroupRow(final I_C_OrderLine salesOrderLine, final List<PurchaseRow> rows)
 	{
-
-		
 		final JSONLookupValue product = createProductLookupValue(salesOrderLine.getM_Product_ID());
 		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
 		final String uom = createUOMLookupValueForProductId(product.getKeyAsInt());
@@ -120,7 +119,7 @@ public class PurchaseRowFactory
 
 		atpQueryBuilder.productId(salesOrderLine.getM_Product_ID());
 		atpQueryBuilder.date(salesOrderLine.getC_Order().getPreparationDate());
-		
+
 		AvailableToPromiseQueryBL.addStorageAttributeKeysToQueryBuilder(atpQueryBuilder);
 
 		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository
@@ -140,7 +139,6 @@ public class PurchaseRowFactory
 				.build();
 		return groupRow;
 	}
-	
 
 	@Builder(builderMethodName = "rowFromAvailabilityResultBuilder", builderClassName = "RowFromAvailabilityResultBuilder")
 	private PurchaseRow buildRowFromFromAvailabilityResult(@NonNull PurchaseRow parentRow,
