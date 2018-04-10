@@ -39,6 +39,11 @@ import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+
 /**
  * 	Invoice Not realized Gain & Loss.
  * 	The actual data shown is T_InvoiceGL_v
@@ -223,7 +228,7 @@ public class InvoiceNGL extends JavaProcess
 	 	List <X_T_InvoiceGL> list = new Query(getCtx(), X_T_InvoiceGL.Table_Name, whereClause, get_TrxName())
 			.setParameters(new Object[]{getAD_PInstance_ID()})
 			.setOrderBy("AD_Org_ID")
-			.list();	
+			.list(X_T_InvoiceGL.class);	
 		//FR: [ 2214883 ] Remove SQL code and Replace for Query
 
 		if (list.size() == 0)

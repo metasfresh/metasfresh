@@ -88,14 +88,14 @@ public interface IInvoiceCandidateHandler
 	 * @param model
 	 * @return {@code true} if the invoice candidates shall be automatically generated for the given particular model.
 	 */
-	default boolean isCreateMissingCandidatesAutomatically(Object model)
+	default boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
 		return true;
 	}
 
 	/**
 	 * Returns {@code AFTER_COMPLETE} by default.
-	 * 
+	 *
 	 * @return {@link DocTimingType} when to create the missing invoice candidates automatically; shall never return null.
 	 */
 	default DocTimingType getAutomaticallyCreateMissingCandidatesDocTiming()
@@ -176,11 +176,15 @@ public interface IInvoiceCandidateHandler
 	boolean isUserInChargeUserEditable();
 
 	/**
-	 * Method responsible for setting {@link I_C_Invoice_Candidate#setNetAmtToInvoice(java.math.BigDecimal)}.
-	 *
-	 * @param ic
+	 * Set NetAmtToInvoice = PriceActual * QtyToInvoice - DiscountAmt, rounded to currency precision.<br>
+	 * (i.e. method responsible for setting {@link I_C_Invoice_Candidate#setNetAmtToInvoice(java.math.BigDecimal)}).
 	 */
 	void setNetAmtToInvoice(I_C_Invoice_Candidate ic);
+
+	/**
+	 * Set the "full" open invoicable amount, no matter what the invoice rule is.
+	 */
+	void setLineNetAmt(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Method responsible for setting
@@ -212,7 +216,7 @@ public interface IInvoiceCandidateHandler
 	 */
 	void setDeliveredData(I_C_Invoice_Candidate ic);
 
-	default PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate ic)
+	default PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
 		return PriceAndTax.NONE;
 	}
@@ -239,7 +243,7 @@ public interface IInvoiceCandidateHandler
 
 	/**
 	 * Price and tax info calculation result.
-	 * 
+	 *
 	 * All fields are optional and only those filled will be set back to invoice candidate.
 	 */
 	@lombok.Value
@@ -260,7 +264,7 @@ public interface IInvoiceCandidateHandler
 
 		int taxCategoryId;
 		Boolean taxIncluded;
-		
+
 		BigDecimal compensationGroupBaseAmt;
 	}
 }

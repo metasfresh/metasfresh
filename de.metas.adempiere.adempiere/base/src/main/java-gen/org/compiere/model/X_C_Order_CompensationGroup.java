@@ -14,7 +14,7 @@ public class X_C_Order_CompensationGroup extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -643933114L;
+	private static final long serialVersionUID = 1743012349L;
 
     /** Standard Constructor */
     public X_C_Order_CompensationGroup (Properties ctx, int C_Order_CompensationGroup_ID, String trxName)
@@ -42,6 +42,40 @@ public class X_C_Order_CompensationGroup extends org.compiere.model.PO implement
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public de.metas.order.model.I_C_CompensationGroup_Schema getC_CompensationGroup_Schema() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CompensationGroup_Schema_ID, de.metas.order.model.I_C_CompensationGroup_Schema.class);
+	}
+
+	@Override
+	public void setC_CompensationGroup_Schema(de.metas.order.model.I_C_CompensationGroup_Schema C_CompensationGroup_Schema)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CompensationGroup_Schema_ID, de.metas.order.model.I_C_CompensationGroup_Schema.class, C_CompensationGroup_Schema);
+	}
+
+	/** Set Compensation Group Schema.
+		@param C_CompensationGroup_Schema_ID Compensation Group Schema	  */
+	@Override
+	public void setC_CompensationGroup_Schema_ID (int C_CompensationGroup_Schema_ID)
+	{
+		if (C_CompensationGroup_Schema_ID < 1) 
+			set_Value (COLUMNNAME_C_CompensationGroup_Schema_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CompensationGroup_Schema_ID, Integer.valueOf(C_CompensationGroup_Schema_ID));
+	}
+
+	/** Get Compensation Group Schema.
+		@return Compensation Group Schema	  */
+	@Override
+	public int getC_CompensationGroup_Schema_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_CompensationGroup_Schema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set Order Compensation Group.
 		@param C_Order_CompensationGroup_ID Order Compensation Group	  */
@@ -114,7 +148,7 @@ public class X_C_Order_CompensationGroup extends org.compiere.model.PO implement
 		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
 	}
 
-	/** Set Produkt-Kategorie.
+	/** Set Produkt Kategorie.
 		@param M_Product_Category_ID 
 		Kategorie eines Produktes
 	  */
@@ -127,7 +161,7 @@ public class X_C_Order_CompensationGroup extends org.compiere.model.PO implement
 			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
 	}
 
-	/** Get Produkt-Kategorie.
+	/** Get Produkt Kategorie.
 		@return Kategorie eines Produktes
 	  */
 	@Override

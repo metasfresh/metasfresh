@@ -23,6 +23,29 @@ public interface I_MD_Candidate_Demand_Detail
     /** Load Meta Data */
 
 	/**
+	 * Set Istmenge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setActualQty (java.math.BigDecimal ActualQty);
+
+	/**
+	 * Get Istmenge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getActualQty();
+
+    /** Column definition for ActualQty */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object> COLUMN_ActualQty = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object>(I_MD_Candidate_Demand_Detail.class, "ActualQty", null);
+    /** Column name ActualQty */
+    public static final String COLUMNNAME_ActualQty = "ActualQty";
+
+	/**
 	 * Get Mandant.
 	 * Mandant für diese Installation.
 	 *
@@ -276,6 +299,29 @@ public interface I_MD_Candidate_Demand_Detail
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object>(I_MD_Candidate_Demand_Detail.class, "M_ShipmentSchedule_ID", null);
     /** Column name M_ShipmentSchedule_ID */
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
+	 * Set Geplante Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPlannedQty (java.math.BigDecimal PlannedQty);
+
+	/**
+	 * Get Geplante Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPlannedQty();
+
+    /** Column definition for PlannedQty */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object> COLUMN_PlannedQty = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object>(I_MD_Candidate_Demand_Detail.class, "PlannedQty", null);
+    /** Column name PlannedQty */
+    public static final String COLUMNNAME_PlannedQty = "PlannedQty";
 
 	/**
 	 * Get Aktualisiert.

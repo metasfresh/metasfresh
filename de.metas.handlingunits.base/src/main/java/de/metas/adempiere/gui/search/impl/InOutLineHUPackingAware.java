@@ -10,12 +10,12 @@ package de.metas.adempiere.gui.search.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -39,17 +38,15 @@ import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import lombok.NonNull;
 
 public class InOutLineHUPackingAware implements IHUPackingAware
 {
 	private final I_M_InOutLine inoutLine;
 	private final PlainHUPackingAware values = new PlainHUPackingAware();
 
-	public InOutLineHUPackingAware(final I_M_InOutLine inoutLine)
+	public InOutLineHUPackingAware(@NonNull final I_M_InOutLine inoutLine)
 	{
-		super();
-
-		Check.assumeNotNull(inoutLine, "orderLine not null");
 		this.inoutLine = inoutLine;
 	}
 
@@ -154,13 +151,13 @@ public class InOutLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public BigDecimal getQtyPacks()
+	public BigDecimal getQtyTU()
 	{
 		return inoutLine.getQtyEnteredTU();
 	}
 
 	@Override
-	public void setQtyPacks(final BigDecimal qtyPacks)
+	public void setQtyTU(final BigDecimal qtyPacks)
 	{
 		inoutLine.setQtyEnteredTU(qtyPacks);
 	}

@@ -243,7 +243,7 @@ public abstract class PO
 			throw new IllegalArgumentException("Invalid PO Info - " + p_info);
 		m_KeyColumns = p_info.getKeyColumnNamesAsArray();
 		//
-		int size = p_info.getColumnCount();
+		final int size = p_info.getColumnCount();
 		m_oldValues = new Object[size];
 		m_newValues = new Object[size];
 		m_valueLoaded = new boolean[size]; // metas
@@ -473,10 +473,10 @@ public abstract class PO
 				index = get_ColumnIndex("Description");
 			if (index != -1)
 			{
-				PO po1 = (PO)o1;
-				Object comp1 = po1.get_Value(index);
-				PO po2 = (PO)o2;
-				Object comp2 = po2.get_Value(index);
+				final PO po1 = (PO)o1;
+				final Object comp1 = po1.get_Value(index);
+				final PO po2 = (PO)o2;
+				final Object comp2 = po2.get_Value(index);
 				if (comp1 == null)
 					return -1;
 				else if (comp2 == null)
@@ -531,7 +531,7 @@ public abstract class PO
 			return -1;
 		}
 
-		Object oo = m_IDs[0];
+		final Object oo = m_IDs[0];
 		if (oo != null && oo instanceof Integer)
 			return ((Integer)oo).intValue();
 		return 0;
@@ -617,7 +617,7 @@ public abstract class PO
 	 */
 	public final int get_ValueAsInt(final int index)
 	{
-		Object value = get_Value(index);
+		final Object value = get_Value(index);
 		if (value == null)
 			return 0;
 		if (value instanceof Integer)
@@ -626,7 +626,7 @@ public abstract class PO
 		{
 			return Integer.parseInt(value.toString());
 		}
-		catch (NumberFormatException ex)
+		catch (final NumberFormatException ex)
 		{
 			log.warn(p_info.getColumnName(index) + " - " + ex.getMessage());
 			return 0;
@@ -641,7 +641,7 @@ public abstract class PO
 	 */
 	public final Object get_Value(final String columnName)
 	{
-		int index = get_ColumnIndex(columnName);
+		final int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
 			log.warn("Column {} not found in method PO.get_Value", columnName);
@@ -710,7 +710,7 @@ public abstract class PO
 	 */
 	public final Object get_ValueOfColumn(final int AD_Column_ID)
 	{
-		int index = p_info.getColumnIndex(AD_Column_ID);
+		final int index = p_info.getColumnIndex(AD_Column_ID);
 		if (index < 0)
 		{
 			log.warn("Column with AD_Column_ID={} not found in method PO.get_ValueOfColumn", AD_Column_ID);
@@ -744,7 +744,7 @@ public abstract class PO
 	 */
 	public final Object get_ValueOld(final String columnName)
 	{
-		int index = get_ColumnIndex(columnName);
+		final int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
 			log.warn("Column {} not found in method PO.get_ValueOld", columnName);
@@ -761,7 +761,7 @@ public abstract class PO
 	 */
 	public final int get_ValueOldAsInt(final String columnName)
 	{
-		int index = get_ColumnIndex(columnName);
+		final int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
 			log.warn("Column {} not found in method PO.get_ValueOldAsInt", columnName);
@@ -772,7 +772,7 @@ public abstract class PO
 
 	public final int get_ValueOldAsInt(final int index)
 	{
-		Object value = get_ValueOld(index);
+		final Object value = get_ValueOld(index);
 		if (value == null)
 			return 0;
 		if (value instanceof Integer)
@@ -781,7 +781,7 @@ public abstract class PO
 		{
 			return Integer.parseInt(value.toString());
 		}
-		catch (NumberFormatException ex)
+		catch (final NumberFormatException ex)
 		{
 			log.warn(get_ColumnName(index) + " - " + ex.getMessage());
 			return 0;
@@ -844,7 +844,7 @@ public abstract class PO
 	 */
 	public final boolean is_ValueChanged(final String columnName)
 	{
-		int index = get_ColumnIndex(columnName);
+		final int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
 			log.warn("Column {} not found in method PO.is_ValueChanged", columnName);
@@ -889,7 +889,7 @@ public abstract class PO
 			return nValue;
 		if (nValue instanceof BigDecimal)
 		{
-			BigDecimal obd = (BigDecimal)oValue;
+			final BigDecimal obd = (BigDecimal)oValue;
 			return ((BigDecimal)nValue).subtract(obd);
 		}
 		else if (nValue instanceof Integer)
@@ -914,7 +914,7 @@ public abstract class PO
 	 */
 	public final Object get_ValueDifference(final String columnName)
 	{
-		int index = get_ColumnIndex(columnName);
+		final int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
 			log.warn("Column {} not found in method PO.get_ValueDifference", columnName);
@@ -936,7 +936,7 @@ public abstract class PO
 				&& value.toString().toUpperCase().indexOf("=NULL") != -1)
 			log.warn("Invalid Null Value - " + ColumnName + "=" + value);
 
-		int index = get_ColumnIndex(ColumnName);
+		final int index = get_ColumnIndex(ColumnName);
 		if (index < 0)
 		{
 			log.warn("Column {} not found in method PO.set_Value", ColumnName);
@@ -945,7 +945,7 @@ public abstract class PO
 		if (ColumnName.endsWith("_ID") && value instanceof String)
 		{
 			// Convert to Integer only if info class is Integer - teo_sarca [ 2859125 ]
-			Class<?> clazz = p_info.getColumnClass(p_info.getColumnIndex(ColumnName));
+			final Class<?> clazz = p_info.getColumnClass(p_info.getColumnIndex(ColumnName));
 			if (Integer.class == clazz)
 			{
 				log.error("Invalid Data Type for " + ColumnName + "=" + value);
@@ -971,7 +971,7 @@ public abstract class PO
 			log.warn("Index invalid - " + index);
 			return false;
 		}
-		String ColumnName = p_info.getColumnName(index);
+		final String ColumnName = p_info.getColumnName(index);
 		//
 		if (p_info.isVirtualColumn(index))
 		{
@@ -1079,7 +1079,7 @@ public abstract class PO
 				{
 					m_newValues[index] = new Integer((String)value);
 				}
-				catch (NumberFormatException e)
+				catch (final NumberFormatException e)
 				{
 					log.error(ColumnName
 							+ " - Class invalid(1): " + value.getClass().toString()
@@ -1094,7 +1094,7 @@ public abstract class PO
 				return false;
 			}
 			// Validate (Min/Max)
-			String error = p_info.validate(index, value);
+			final String error = p_info.validate(index, value);
 			if (error != null)
 			{
 				log.warn(ColumnName + "=" + value + " - " + error);
@@ -1103,8 +1103,8 @@ public abstract class PO
 			// Length for String
 			if (p_info.getColumnClass(index) == String.class)
 			{
-				String stringValue = value.toString();
-				int length = p_info.getFieldLength(index);
+				final String stringValue = value.toString();
+				final int length = p_info.getFieldLength(index);
 				if (stringValue.length() > length && length > 0)
 				{
 					log.warn(ColumnName + " - Value too long - truncated to length=" + length
@@ -1121,7 +1121,7 @@ public abstract class PO
 				if (!hasListValue)
 				{
 					final StringBuilder validValues = new StringBuilder();
-					for (ValueNamePair vp : MRefList.getList(getCtx(), p_info.getColumn(index).AD_Reference_Value_ID, false))
+					for (final ValueNamePair vp : MRefList.getList(getCtx(), p_info.getColumn(index).AD_Reference_Value_ID, false))
 						validValues.append(" - ").append(vp.getValue());
 					throw new IllegalArgumentException(ColumnName + " Invalid value - "
 							+ value + " - Reference_ID=" + p_info.getColumn(index).AD_Reference_Value_ID + validValues.toString());
@@ -1146,7 +1146,7 @@ public abstract class PO
 	// metas: changed from protected to public
 	public final boolean set_ValueNoCheck(final String ColumnName, final Object value)
 	{
-		int index = get_ColumnIndex(ColumnName);
+		final int index = get_ColumnIndex(ColumnName);
 		if (index < 0)
 		{
 			log.warn("Column {} not found in method PO.set_ValueNoCheck", ColumnName);
@@ -1187,10 +1187,10 @@ public abstract class PO
 			{
 				try
 				{
-					int intValue = Integer.parseInt((String)value);
+					final int intValue = Integer.parseInt((String)value);
 					m_newValues[index] = Integer.valueOf(intValue);
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					log.warn(get_ColumnName(index)
 							+ " - Class invalid(3): " + value.getClass().toString()
@@ -1208,14 +1208,14 @@ public abstract class PO
 
 			//
 			// Validate (Min/Max)
-			String error = p_info.validate(index, value);
+			final String error = p_info.validate(index, value);
 			if (error != null)
 				log.warn(get_ColumnName(index) + "=" + value + " - " + error);
 			// length for String
 			if (p_info.getColumnClass(index) == String.class)
 			{
-				String stringValue = value.toString();
-				int length = p_info.getFieldLength(index);
+				final String stringValue = value.toString();
+				final int length = p_info.getFieldLength(index);
 				if (stringValue.length() > length && length > 0)
 				{
 					log.warn(get_ColumnName(index) + " - Value too long - truncated to length=" + length);
@@ -1287,7 +1287,7 @@ public abstract class PO
 	{
 		// [ 1845793 ] PO.set_CustomColumn not updating correctly m_newValues
 		// this is for columns not in PO - verify and call proper method if exists
-		int poIndex = get_ColumnIndex(columnName);
+		final int poIndex = get_ColumnIndex(columnName);
 		// metas: tsa: correct, it should be greather OR EQUAL because else first column is skiped and we get duplicate column error on insert
 		if (poIndex >= 0)
 		{
@@ -1419,14 +1419,14 @@ public abstract class PO
 	 */
 	public final String get_DisplayValue(final String columnName, final boolean currentValue)
 	{
-		Object value = currentValue ? get_Value(columnName) : get_ValueOld(columnName);
+		final Object value = currentValue ? get_Value(columnName) : get_ValueOld(columnName);
 		if (value == null)
 			return "./.";
-		String retValue = value.toString();
-		int index = get_ColumnIndex(columnName);
+		final String retValue = value.toString();
+		final int index = get_ColumnIndex(columnName);
 		if (index < 0)
 			return retValue;
-		int dt = get_ColumnDisplayType(index);
+		final int dt = get_ColumnDisplayType(index);
 		if (DisplayType.isText(dt) || DisplayType.YesNo == dt)
 			return retValue;
 		// Lookup
@@ -1503,7 +1503,7 @@ public abstract class PO
 						{
 							if (to.getDynAttribute(PO.DYNATTR_CopyRecordSupport) != null)
 							{
-								CopyRecordSupport cps = (CopyRecordSupport)to.getDynAttribute(PO.DYNATTR_CopyRecordSupport);
+								final CopyRecordSupport cps = (CopyRecordSupport)to.getDynAttribute(PO.DYNATTR_CopyRecordSupport);
 								to.m_newValues[toColumnIndex] = cps.getValueToCopy(to, from, fromColumnName);
 							}
 							break;
@@ -1726,7 +1726,7 @@ public abstract class PO
 			// metas: 01537
 			m_stale = false;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			String msg = "";
 			if (m_trxName != null)
@@ -1762,7 +1762,7 @@ public abstract class PO
 	 */
 	protected final boolean load(final ResultSet rs)
 	{
-		int size = get_ColumnCount();
+		final int size = get_ColumnCount();
 		boolean success = true;
 		int index = 0;
 		log.trace("Loading from ResultSet");
@@ -1783,9 +1783,9 @@ public abstract class PO
 	private final boolean loadColumn(final int index, final ResultSet rs)
 	{
 		boolean success = true;
-		String columnName = p_info.getColumnName(index);
-		Class<?> clazz = p_info.getColumnClass(index);
-		int dt = p_info.getColumnDisplayType(index);
+		final String columnName = p_info.getColumnName(index);
+		final Class<?> clazz = p_info.getColumnClass(index);
+		final int dt = p_info.getColumnDisplayType(index);
 		try
 		{
 			if (clazz == Integer.class)
@@ -1817,7 +1817,7 @@ public abstract class PO
 			if (log.isTraceEnabled())
 				log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			if (p_info.isVirtualColumn(index)) 	// if rs constructor used
 			{
@@ -1857,7 +1857,7 @@ public abstract class PO
 				success = loadColumn(index, rs);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e);
 		}
@@ -1878,19 +1878,19 @@ public abstract class PO
 	 */
 	protected final boolean load(final HashMap<String, String> hmIn)
 	{
-		int size = get_ColumnCount();
+		final int size = get_ColumnCount();
 		boolean success = true;
 		int index = 0;
 		log.trace("Loading from HashMap");
 		// load column values
 		for (index = 0; index < size; index++)
 		{
-			String columnName = p_info.getColumnName(index);
-			String value = hmIn.get(columnName);
+			final String columnName = p_info.getColumnName(index);
+			final String value = hmIn.get(columnName);
 			if (value == null)
 				continue;
-			Class<?> clazz = p_info.getColumnClass(index);
-			int dt = p_info.getColumnDisplayType(index);
+			final Class<?> clazz = p_info.getColumnClass(index);
+			final int dt = p_info.getColumnDisplayType(index);
 			try
 			{
 				if (clazz == Integer.class)
@@ -1911,7 +1911,7 @@ public abstract class PO
 				if (log.isTraceEnabled())
 					log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				if (p_info.isVirtualColumn(index)) 	// if rs constructor used
 				{
@@ -2001,19 +2001,19 @@ public abstract class PO
 	 */
 	protected final HashMap<String, String> get_HashMap()
 	{
-		HashMap<String, String> hmOut = new HashMap<>();
-		int size = get_ColumnCount();
+		final HashMap<String, String> hmOut = new HashMap<>();
+		final int size = get_ColumnCount();
 		for (int i = 0; i < size; i++)
 		{
-			Object value = get_Value(i);
+			final Object value = get_Value(i);
 			// Don't insert NULL values (allows Database defaults)
 			if (value == null
 					|| p_info.isVirtualColumn(i))
 				continue;
 			// Display Type
-			int dt = p_info.getColumnDisplayType(i);
+			final int dt = p_info.getColumnDisplayType(i);
 			// Based on class of definition, not class of value
-			Class<?> c = p_info.getColumnClass(i);
+			final Class<?> c = p_info.getColumnClass(i);
 			String stringValue = null;
 			if (c == Object.class)
 				;	// saveNewSpecial (value, i));
@@ -2045,12 +2045,12 @@ public abstract class PO
 		// Custom Columns
 		if (m_custom != null)
 		{
-			Iterator<String> it = m_custom.keySet().iterator();
+			final Iterator<String> it = m_custom.keySet().iterator();
 			while (it.hasNext())
 			{
-				String column = it.next();
+				final String column = it.next();
 				// int index = p_info.getColumnIndex(column);
-				String value = m_custom.get(column);
+				final String value = m_custom.get(column);
 				if (value != null)
 					hmOut.put(column, value);
 			}
@@ -2128,7 +2128,7 @@ public abstract class PO
 		{
 			if (p_info.isVirtualColumn(i))
 				continue;
-			String colName = p_info.getColumnName(i);
+			final String colName = p_info.getColumnName(i);
 			// Set Standard Values
 			if (colName.endsWith("tedBy"))
 				m_newValues[i] = new Integer(Env.getAD_User_ID(ctx));
@@ -2160,7 +2160,7 @@ public abstract class PO
 		m_IDs = new Object[size];
 		for (int i = 0; i < size; i++)
 		{
-			String keyColumnName = m_KeyColumns[i];
+			final String keyColumnName = m_KeyColumns[i];
 			final Object valueObj = get_Value(keyColumnName);
 			if (keyColumnName.endsWith("_ID"))
 			{
@@ -2173,7 +2173,7 @@ public abstract class PO
 						valueInt = I_ZERO;
 					}
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					log.error("Failed to cast ID column to Integer: " + keyColumnName + ", value=" + valueObj, e);
 					valueInt = null;
@@ -2196,7 +2196,7 @@ public abstract class PO
 	 */
 	protected final boolean isMandatoryOK()
 	{
-		int size = get_ColumnCount();
+		final int size = get_ColumnCount();
 		for (int i = 0; i < size; i++)
 		{
 			if (p_info.isColumnMandatory(i))
@@ -2231,7 +2231,7 @@ public abstract class PO
 	@Override
 	public final int getAD_Client_ID()
 	{
-		Integer ii = (Integer)get_Value("AD_Client_ID");
+		final Integer ii = (Integer)get_Value("AD_Client_ID");
 		if (ii == null)
 			return 0;
 		return ii.intValue();
@@ -2256,7 +2256,7 @@ public abstract class PO
 	@Override
 	public int getAD_Org_ID()
 	{
-		Integer ii = (Integer)get_Value("AD_Org_ID");
+		final Integer ii = (Integer)get_Value("AD_Org_ID");
 		if (ii == null)
 			return 0;
 		return ii.intValue();
@@ -2311,7 +2311,7 @@ public abstract class PO
 	 */
 	public final boolean isActive()
 	{
-		Boolean bb = (Boolean)get_Value("IsActive");
+		final Boolean bb = (Boolean)get_Value("IsActive");
 		if (bb != null)
 			return bb.booleanValue();
 		return false;
@@ -2344,7 +2344,7 @@ public abstract class PO
 	 */
 	final public int getCreatedBy()
 	{
-		Integer ii = (Integer)get_Value("CreatedBy");
+		final Integer ii = (Integer)get_Value("CreatedBy");
 		if (ii == null)
 			return 0;
 		return ii.intValue();
@@ -2357,7 +2357,7 @@ public abstract class PO
 	 */
 	final public int getUpdatedBy()
 	{
-		Integer ii = (Integer)get_Value("UpdatedBy");
+		final Integer ii = (Integer)get_Value("UpdatedBy");
 		if (ii == null)
 			return 0;
 		return ii.intValue();
@@ -2408,7 +2408,7 @@ public abstract class PO
 		// If no translation found or not translated, fallback to original:
 		if (retValue == null)
 		{
-			Object val = get_Value(columnName);
+			final Object val = get_Value(columnName);
 			retValue = (val != null ? val.toString() : null);
 		}
 		//
@@ -2668,7 +2668,7 @@ public abstract class PO
 			saveEx();
 			success = true;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			success = false;
 			log.error("Error while saving {}", this, e);
@@ -2961,7 +2961,7 @@ public abstract class PO
 			{
 				Class.forName("org.compiere.wf.DocWorkflowManager");
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 			}
 		}
@@ -3015,7 +3015,7 @@ public abstract class PO
 	 */
 	public final boolean is_Changed()
 	{
-		int size = get_ColumnCount();
+		final int size = get_ColumnCount();
 		for (int i = 0; i < size; i++)
 		{
 			// Test if the column has changed - teo_sarca [ 1704828 ]
@@ -3065,16 +3065,16 @@ public abstract class PO
 	 */
 	private final boolean saveUpdate() throws Exception
 	{
-		String where = get_WhereClause(true);
+		final String where = get_WhereClause(true);
 		//
 		boolean changes = false;
-		StringBuilder sql = new StringBuilder("UPDATE ");
+		final StringBuilder sql = new StringBuilder("UPDATE ");
 		sql.append(p_info.getTableName()).append(" SET ");
 		boolean updated = false;
 		boolean updatedBy = false;
 		lobReset();
 
-		int size = get_ColumnCount();
+		final int size = get_ColumnCount();
 		for (int i = 0; i < size; i++)
 		{
 			Object value = m_newValues[i];
@@ -3116,7 +3116,7 @@ public abstract class PO
 			// Update Document No
 			if (columnName.equals("DocumentNo"))
 			{
-				String documentNo = (String)value;
+				final String documentNo = (String)value;
 				if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(documentNo))
 				{
 					value = null;
@@ -3190,16 +3190,16 @@ public abstract class PO
 		// Custom Columns (cannot be logged as no column)
 		if (m_custom != null)
 		{
-			Iterator<String> it = m_custom.keySet().iterator();
+			final Iterator<String> it = m_custom.keySet().iterator();
 			while (it.hasNext())
 			{
 				if (changes)
 					sql.append(", ");
 				changes = true;
 				//
-				String column = it.next();
-				String value = m_custom.get(column);
-				int index = p_info.getColumnIndex(column);
+				final String column = it.next();
+				final String value = m_custom.get(column);
+				final int index = p_info.getColumnIndex(column);
 				sql.append(column).append("=").append(encrypt(index, value));
 			}
 			m_custom = null;
@@ -3213,7 +3213,7 @@ public abstract class PO
 
 			if (!updated) 	// Updated not explicitly set
 			{
-				Timestamp now = new Timestamp(System.currentTimeMillis());
+				final Timestamp now = new Timestamp(System.currentTimeMillis());
 				set_ValueNoCheck("Updated", now);
 				sql.append(",Updated=").append(DB.TO_DATE(now, false));
 			}
@@ -3569,7 +3569,7 @@ public abstract class PO
 					sqlValues.append(saveNewSpecial(value, i));
 				}
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				String msg = "";
 				if (m_trxName != null)
@@ -3591,7 +3591,7 @@ public abstract class PO
 			{
 				final String column = it.next();
 				final int index = p_info.getColumnIndex(column);
-				String value = m_custom.get(column);
+				final String value = m_custom.get(column);
 				if (doComma)
 				{
 					sqlInsert.append(",");
@@ -3735,9 +3735,9 @@ public abstract class PO
 	 */
 	protected String saveNewSpecial(final Object value, final int index)
 	{
-		String colName = p_info.getColumnName(index);
-		String colClass = p_info.getColumnClass(index).toString();
-		String colValue = value == null ? "null" : value.getClass().toString();
+		final String colName = p_info.getColumnName(index);
+		final String colClass = p_info.getColumnClass(index).toString();
+		final String colValue = value == null ? "null" : value.getClass().toString();
 		// int dt = p_info.getColumnDisplayType(index);
 
 		log.error("Unknown class for column " + colName
@@ -3801,7 +3801,7 @@ public abstract class PO
 			deleteEx(force);
 			success = true;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			success = false;
 			log.error("Error while deleting " + this, e);
@@ -3873,7 +3873,7 @@ public abstract class PO
 		// Make sure record is not already processed (or we do "force" delete)
 		if (!force)
 		{
-			int iProcessed = get_ColumnIndex("Processed");
+			final int iProcessed = get_ColumnIndex("Processed");
 			if (iProcessed != -1)
 			{
 				final Boolean processed = (Boolean)get_Value(iProcessed);
@@ -4174,7 +4174,7 @@ public abstract class PO
 					s_acctColumns.add(rs.getString(1));
 				}
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				log.error(acctTable, e);
 			}
@@ -4288,11 +4288,11 @@ public abstract class PO
 	 */
 	public final boolean lock()
 	{
-		int index = get_ProcessingIndex();
+		final int index = get_ProcessingIndex();
 		if (index != -1)
 		{
 			set_ValueNoCheck(index, true); // metas: 01537: replaced: m_newValues[index] = Boolean.TRUE; // direct
-			String sql = "UPDATE " + p_info.getTableName()
+			final String sql = "UPDATE " + p_info.getTableName()
 					+ " SET Processing='Y' WHERE (Processing='N' OR Processing IS NULL) AND "
 					+ get_WhereClause(true);
 			boolean success = false;
@@ -4328,11 +4328,11 @@ public abstract class PO
 	public final boolean unlock(final String trxName)
 	{
 		// log.warn(trxName);
-		int index = get_ProcessingIndex();
+		final int index = get_ProcessingIndex();
 		if (index != -1)
 		{
 			set_ValueNoCheck(index, false); // metas: 01537: replaced: m_newValues[index] = Boolean.FALSE; // direct
-			String sql = "UPDATE " + p_info.getTableName()
+			final String sql = "UPDATE " + p_info.getTableName()
 					+ " SET Processing='N' WHERE " + get_WhereClause(true);
 			boolean success = false;
 			if (isUseTimeoutForUpdate())
@@ -4391,7 +4391,7 @@ public abstract class PO
 	 */
 	public void dump(final int index)
 	{
-		StringBuilder sb = new StringBuilder(" ").append(index);
+		final StringBuilder sb = new StringBuilder(" ").append(index);
 		if (index < 0 || index >= get_ColumnCount())
 		{
 			log.trace(sb.append(": invalid").toString());
@@ -4422,8 +4422,8 @@ public abstract class PO
 	 */
 	public static int[] getAllIDs(final String TableName, final String WhereClause, final String trxName)
 	{
-		ArrayList<Integer> list = new ArrayList<>();
-		StringBuilder sql = new StringBuilder("SELECT ");
+		final ArrayList<Integer> list = new ArrayList<>();
+		final StringBuilder sql = new StringBuilder("SELECT ");
 		sql.append(TableName).append("_ID FROM ").append(TableName);
 		if (WhereClause != null && WhereClause.length() > 0)
 			sql.append(" WHERE ").append(WhereClause);
@@ -4436,7 +4436,7 @@ public abstract class PO
 			while (rs.next())
 				list.add(new Integer(rs.getInt(1)));
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			s_log.error(sql.toString(), e);
 			return null;
@@ -4448,7 +4448,7 @@ public abstract class PO
 			pstmt = null;
 		}
 		// Convert to array
-		int[] retValue = new int[list.size()];
+		final int[] retValue = new int[list.size()];
 		for (int i = 0; i < retValue.length; i++)
 			retValue[i] = list.get(i).intValue();
 		return retValue;
@@ -4495,13 +4495,13 @@ public abstract class PO
 				retValue = value;
 			else if (value instanceof Clob) 		// returns String
 			{
-				Clob clob = (Clob)value;
+				final Clob clob = (Clob)value;
 				length = clob.length();
 				retValue = clob.getSubString(1, (int)length);
 			}
 			else if (value instanceof Blob) 	// returns byte[]
 			{
-				Blob blob = (Blob)value;
+				final Blob blob = (Blob)value;
 				length = blob.length();
 				int index = 1;	// correct
 				if (blob.getClass().getName().equals("oracle.jdbc.rowset.OracleSerialBlob"))
@@ -4512,7 +4512,7 @@ public abstract class PO
 			else
 				log.error("Unknown: " + value);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error("Length=" + length, e);
 		}
@@ -4540,7 +4540,7 @@ public abstract class PO
 	private void lobAdd(final Object value, final int index, final int displayType)
 	{
 		log.trace("Adding LOB: Value={}", value);
-		PO_LOB lob = new PO_LOB(p_info.getTableName(), get_ColumnName(index),
+		final PO_LOB lob = new PO_LOB(p_info.getTableName(), get_ColumnName(index),
 				get_WhereClause(true), displayType, value);
 		if (m_lobInfo == null)
 			m_lobInfo = new ArrayList<>();
@@ -4589,18 +4589,18 @@ public abstract class PO
 		//
 		try
 		{
-			StringWriter writer = new StringWriter();
-			StreamResult result = new StreamResult(writer);
-			DOMSource source = new DOMSource(get_xmlDocument(xml.length() != 0));
-			TransformerFactory tFactory = TransformerFactory.newInstance();
-			Transformer transformer = tFactory.newTransformer();
+			final StringWriter writer = new StringWriter();
+			final StreamResult result = new StreamResult(writer);
+			final DOMSource source = new DOMSource(get_xmlDocument(xml.length() != 0));
+			final TransformerFactory tFactory = TransformerFactory.newInstance();
+			final Transformer transformer = tFactory.newTransformer();
 			transformer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
 			transformer.transform(source, result);
-			StringBuffer newXML = writer.getBuffer();
+			final StringBuffer newXML = writer.getBuffer();
 			//
 			if (xml.length() != 0)
 			{	// // <?xml version="1.0" encoding="UTF-8"?>
-				int tagIndex = newXML.indexOf("?>");
+				final int tagIndex = newXML.indexOf("?>");
 				if (tagIndex != -1)
 					xml.append(newXML.substring(tagIndex + 2));
 				else
@@ -4609,7 +4609,7 @@ public abstract class PO
 			else
 				xml.append(newXML);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error("", e);
 		}
@@ -4632,35 +4632,35 @@ public abstract class PO
 		Document document = null;
 		try
 		{
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder = factory.newDocumentBuilder();
+			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			final DocumentBuilder builder = factory.newDocumentBuilder();
 			document = builder.newDocument();
 			if (!noComment)
 				document.appendChild(document.createComment(Adempiere.getSummaryAscii()));
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error("", e);
 		}
 		// Root
-		Element root = document.createElement(get_TableName());
+		final Element root = document.createElement(get_TableName());
 		root.setAttribute(XML_ATTRIBUTE_AD_Table_ID, String.valueOf(get_Table_ID()));
 		root.setAttribute(XML_ATTRIBUTE_Record_ID, String.valueOf(get_ID()));
 		document.appendChild(root);
 		// Columns
-		int size = get_ColumnCount();
+		final int size = get_ColumnCount();
 		for (int i = 0; i < size; i++)
 		{
 			if (p_info.isVirtualColumn(i))
 				continue;
 
-			Element col = document.createElement(p_info.getColumnName(i));
+			final Element col = document.createElement(p_info.getColumnName(i));
 			//
-			Object value = get_Value(i);
+			final Object value = get_Value(i);
 			// Display Type
-			int dt = p_info.getColumnDisplayType(i);
+			final int dt = p_info.getColumnDisplayType(i);
 			// Based on class of definition, not class of value
-			Class<?> c = p_info.getColumnClass(i);
+			final Class<?> c = p_info.getColumnClass(i);
 			if (value == null || value.equals(Null.NULL))
 				;
 			else if (c == Object.class)
@@ -4690,14 +4690,14 @@ public abstract class PO
 		// Custom Columns
 		if (m_custom != null)
 		{
-			Iterator<String> it = m_custom.keySet().iterator();
+			final Iterator<String> it = m_custom.keySet().iterator();
 			while (it.hasNext())
 			{
-				String columnName = it.next();
+				final String columnName = it.next();
 				// int index = p_info.getColumnIndex(columnName);
-				String value = m_custom.get(columnName);
+				final String value = m_custom.get(columnName);
 				//
-				Element col = document.createElement(columnName);
+				final Element col = document.createElement(columnName);
 				if (value != null)
 					col.appendChild(document.createTextNode(value));
 				root.appendChild(col);
@@ -4723,7 +4723,7 @@ public abstract class PO
 	 */
 	public static void set_TrxName(final PO[] lines, final String trxName)
 	{
-		for (PO line : lines)
+		for (final PO line : lines)
 			line.set_TrxName(trxName);
 	}
 
@@ -4735,7 +4735,7 @@ public abstract class PO
 	 */
 	public final int get_ValueAsInt(final String columnName)
 	{
-		int idx = get_ColumnIndex(columnName);
+		final int idx = get_ColumnIndex(columnName);
 		if (idx < 0)
 		{
 			return 0;
@@ -4752,7 +4752,7 @@ public abstract class PO
 	// metas: tsa: changed and introduced get_ValueAsBoolean(int)
 	public final boolean get_ValueAsBoolean(final String columnName)
 	{
-		int idx = get_ColumnIndex(columnName);
+		final int idx = get_ColumnIndex(columnName);
 		if (idx < 0)
 		{
 			return false;
@@ -4762,7 +4762,7 @@ public abstract class PO
 
 	public final boolean get_ValueAsBoolean(final int index)
 	{
-		Object oo = get_Value(index);
+		final Object oo = get_Value(index);
 		if (oo != null)
 		{
 			if (oo instanceof Boolean)
@@ -4869,7 +4869,7 @@ public abstract class PO
 	@Override
 	public final String get_ValueOldAsString(final String columnName)
 	{
-		int index = get_ColumnIndex(columnName);
+		final int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
 			log.warn("Column {} not found in method PO.get_ValueOldAsString", columnName);
@@ -4880,7 +4880,7 @@ public abstract class PO
 
 	public final String get_ValueOldAsString(final int index)
 	{
-		Object value = get_ValueOld(index);
+		final Object value = get_ValueOld(index);
 		if (value == null)
 			return "";
 		return value.toString();
@@ -5060,7 +5060,7 @@ public abstract class PO
 
 	public final Timestamp get_ValueAsTimestamp(final String columnName)
 	{
-		int idx = get_ColumnIndex(columnName);
+		final int idx = get_ColumnIndex(columnName);
 		if (idx < 0)
 		{
 			return null;
@@ -5144,7 +5144,7 @@ public abstract class PO
 			}
 			po = constructor.newInstance(getCtx(), ID_NewInstanceNoInit, m_trxName);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException("Cannot create a new instance of " + this, e);
 		}

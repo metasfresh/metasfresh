@@ -44,7 +44,6 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.async.ShipmentScheduleWithHUComparator;
 import lombok.NonNull;
@@ -173,7 +172,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	}
 
 	@Override
-	public List<IShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(@NonNull final List<I_M_HU> hus)
+	public List<ShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(@NonNull final List<I_M_HU> hus)
 	{
 		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -182,7 +181,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 
 		//
 		// Iterate HUs and collect candidates from them
-		final List<IShipmentScheduleWithHU> result = new ArrayList<>();
+		final List<ShipmentScheduleWithHU> result = new ArrayList<>();
 		for (final I_M_HU hu : hus)
 		{
 			// Make sure we are dealing with an top level HU
@@ -193,7 +192,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 
 			//
 			// Retrieve and create candidates from shipment schedule QtyPicked assignments
-			final List<IShipmentScheduleWithHU> candidatesForHU = new ArrayList<>();
+			final List<ShipmentScheduleWithHU> candidatesForHU = new ArrayList<>();
 			final List<I_M_ShipmentSchedule_QtyPicked> shipmentSchedulesQtyPicked //
 					= huShipmentScheduleDAO.retriveQtyPickedNotDeliveredForTopLevelHU(hu);
 			for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentSchedulesQtyPicked)
@@ -209,7 +208,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 				// continue;
 				// }
 
-				final IShipmentScheduleWithHU candidate = //
+				final ShipmentScheduleWithHU candidate = //
 						ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext);
 				candidatesForHU.add(candidate);
 			}

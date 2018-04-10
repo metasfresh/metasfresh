@@ -110,13 +110,13 @@ public class PurchaseCandidateRepository
 
 	public void saveAll(final Collection<PurchaseCandidate> purchaseCandidates)
 	{
-		boolean doLock = true;
+		final boolean doLock = true;
 		saveAll(purchaseCandidates, doLock);
 	}
 
 	public void saveAllNoLock(final Collection<PurchaseCandidate> purchaseCandidates)
 	{
-		boolean doLock = false;
+		final boolean doLock = false;
 		saveAll(purchaseCandidates, doLock);
 	}
 
@@ -152,11 +152,15 @@ public class PurchaseCandidateRepository
 		final ILockAutoCloseable lock = doLock && !existingPurchaseCandidateIds.isEmpty() ? lockByIds(existingPurchaseCandidateIds) : null;
 		try
 		{
-			purchaseCandidatesToSave.forEach(purchaseCandidate -> {
+			for (final PurchaseCandidate purchaseCandidate : purchaseCandidatesToSave)
+			{
 				final int repoId = purchaseCandidate.getPurchaseCandidateId();
 				final I_C_PurchaseCandidate existingRecord = repoId > 0 ? existingRecordsById.get(repoId) : null;
-				save(purchaseCandidate, existingRecord);
-			});
+				createOrUpdateRecord(purchaseCandidate, existingRecord);
+
+				purchaseItemRepository.storeRecords(purchaseCandidate.getPurchaseOrderItems());
+				purchaseItemRepository.storeRecords(purchaseCandidate.getPurchaseErrorItems());
+			} ;
 		}
 		finally
 		{
@@ -180,7 +184,7 @@ public class PurchaseCandidateRepository
 	/**
 	 * Note to dev: keep in sync with {@link #toPurchaseCandidate(I_C_PurchaseCandidate)}
 	 */
-	private final void save(final PurchaseCandidate purchaseCandidate, final I_C_PurchaseCandidate existingRecord)
+	private final void createOrUpdateRecord(final PurchaseCandidate purchaseCandidate, final I_C_PurchaseCandidate existingRecord)
 	{
 		if (existingRecord != null)
 		{
@@ -226,13 +230,14 @@ public class PurchaseCandidateRepository
 	}
 
 	/**
-	 * Note to dev: keep in sync with {@link #save(PurchaseCandidate, I_C_PurchaseCandidate)}
+	 * Note to dev: keep in sync with {@link #createOrUpdateRecord(PurchaseCandidate, I_C_PurchaseCandidate)}
 	 */
 	private PurchaseCandidate toPurchaseCandidate(@NonNull final I_C_PurchaseCandidate purchaseCandidatePO)
 	{
 		final boolean locked = Services.get(ILockManager.class).isLocked(purchaseCandidatePO);
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
+				.locked(locked)
 				.purchaseCandidateId(purchaseCandidatePO.getC_PurchaseCandidate_ID())
 				.salesOrderId(purchaseCandidatePO.getC_OrderSO_ID())
 				.salesOrderLineId(purchaseCandidatePO.getC_OrderLineSO_ID())
@@ -245,7 +250,6 @@ public class PurchaseCandidateRepository
 				.qtyToPurchase(purchaseCandidatePO.getQtyToPurchase())
 				.dateRequired(purchaseCandidatePO.getDateRequired())
 				.processed(purchaseCandidatePO.isProcessed())
-				.locked(locked)
 				.build();
 
 		purchaseItemRepository.retrieveForPurchaseCandidate(purchaseCandidate);

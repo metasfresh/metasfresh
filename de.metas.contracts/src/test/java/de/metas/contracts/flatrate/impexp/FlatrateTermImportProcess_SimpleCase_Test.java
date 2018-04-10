@@ -31,11 +31,15 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
+import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 
 /*
@@ -61,11 +65,15 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class,
-		ShutdownListener.class,
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
+
+		// note: we need to bring in theses classes because of setupModuleInterceptors_Contracts_Full()
 		InOutLinesWithMissingInvoiceCandidate.class,
 		ShipmentScheduleSubscriptionReferenceProvider.class,
-		OrderGroupRepository.class })
+		OrderGroupRepository.class,
+		OrderGroupCompensationChangesHandler.class,
+		GroupTemplateRepository.class,
+		GroupCompensationLineCreateRequestFactory.class })
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {
 	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -107,7 +115,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
-				.isAutoRenew(true)
+				.extensionType(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
@@ -173,7 +181,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
-				.isAutoRenew(true)
+				.extensionType(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
@@ -234,7 +242,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
 				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
-				.isAutoRenew(true)
+				.extensionType(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
@@ -305,7 +313,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 	private void assertShipmentSchedules(final I_C_Flatrate_Term flatrateTerm, final boolean isActiveFT)
 	{
-		List<I_M_ShipmentSchedule> createdShipmentCands = createMissingShipmentSchedules(flatrateTerm);
+		final List<I_M_ShipmentSchedule> createdShipmentCands = createMissingShipmentSchedules(flatrateTerm);
 		if (isActiveFT)
 		{
 			assertThat(createdShipmentCands).hasSize(1);

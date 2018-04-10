@@ -194,7 +194,7 @@ public class CostBillOfMaterial extends JavaProcess
 									.setParameters(params)
 									.setOnlyActiveRecords(true)
 									.setOrderBy(MPPProductBOM.COLUMNNAME_Value)
-									.list();
+									.list(MPPProductBOM.class);
 		return list;
 	}
 

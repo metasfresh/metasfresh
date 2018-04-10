@@ -1178,6 +1178,31 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Vertrag Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMasterDocumentNo (java.lang.String MasterDocumentNo);
+
+	/**
+	 * Get Vertrag Nr..
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMasterDocumentNo();
+
+    /** Column definition for MasterDocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterDocumentNo = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "MasterDocumentNo", null);
+    /** Column name MasterDocumentNo */
+    public static final String COLUMNNAME_MasterDocumentNo = "MasterDocumentNo";
+
+	/**
 	 * Set Master End Date.
 	 *
 	 * <br>Type: Date

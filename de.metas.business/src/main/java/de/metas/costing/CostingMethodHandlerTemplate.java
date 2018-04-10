@@ -107,10 +107,6 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		{
 			return createCostForInventoryLine(request);
 		}
-		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_ProductionLine))
-		{
-			return createCostForProductionLine(request);
-		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_C_ProjectIssue))
 		{
 			return createCostForProjectIssue(request);
@@ -174,11 +170,6 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	protected CostDetailCreateResult createCostForInventoryLine(final CostDetailCreateRequest request)
 	{
 		return createOutboundCostDefaultImpl(request);
-	}
-
-	protected CostDetailCreateResult createCostForProductionLine(final CostDetailCreateRequest request)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	protected CostDetailCreateResult createCostForProjectIssue(final CostDetailCreateRequest request)

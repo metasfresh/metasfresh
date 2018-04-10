@@ -97,7 +97,6 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.impl.MTransactionAllocationSourceDestination;
 import de.metas.handlingunits.allocation.transfer.IHUJoinBL;
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
@@ -139,6 +138,7 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.handlingunits.test.HUListAssertsBuilder;
@@ -661,13 +661,13 @@ public class HUTestHelper
 	{
 		final I_M_HU_PI huDefNone = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
 		huDefNone.setName("NoPI");
-		huDefNone.setM_HU_PI_ID(HandlingUnitsDAO.NO_HU_PI_ID);
+		huDefNone.setM_HU_PI_ID(HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_ID);
 		InterfaceWrapperHelper.save(huDefNone);
 
 		final String huUnitType = null; // any
-		createVersion(huDefNone, true, huUnitType, HandlingUnitsDAO.NO_HU_PI_Version_ID);
+		createVersion(huDefNone, true, huUnitType, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Version_ID);
 
-		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.NO_HU_PI_Item_ID);
+		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Item_ID);
 		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductDAO.NO_HU_PI_Item_Product_ID);
 
 		return huDefNone;
@@ -680,8 +680,9 @@ public class HUTestHelper
 		huDefVirtual.setM_HU_PI_ID(HandlingUnitsDAO.VIRTUAL_HU_PI_ID);
 		InterfaceWrapperHelper.save(huDefVirtual);
 
-		final String huUnitType = null; // any
-		createVersion(huDefVirtual, true, huUnitType, HandlingUnitsDAO.VIRTUAL_HU_PI_Version_ID);
+		createVersion(huDefVirtual,
+				true, // isCurrent
+				X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, HandlingUnitsDAO.VIRTUAL_HU_PI_Version_ID);
 
 		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID);
 		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID);
@@ -988,13 +989,9 @@ public class HUTestHelper
 		return packingMaterial;
 	}
 
-	public I_M_HU_PI createHUDefinition(final String name)
-	{
-		final String huUnitType = null;
-		return createHUDefinition(name, huUnitType);
-	}
-
-	public I_M_HU_PI createHUDefinition(final String name, final String huUnitType)
+	public I_M_HU_PI createHUDefinition(
+			@NonNull final String name,
+			@NonNull final String huUnitType)
 	{
 		final I_M_HU_PI pi = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
 		pi.setName(name);
@@ -1018,7 +1015,11 @@ public class HUTestHelper
 		return createVersion(handlingUnit, current, huUnitType, huPIVersionId);
 	}
 
-	private I_M_HU_PI_Version createVersion(final I_M_HU_PI pi, final boolean current, final String huUnitType, final Integer huPIVersionId)
+	private I_M_HU_PI_Version createVersion(
+			final I_M_HU_PI pi,
+			final boolean current,
+			final String huUnitType,
+			final Integer huPIVersionId)
 	{
 		final I_M_HU_PI_Version version = InterfaceWrapperHelper.create(ctx, I_M_HU_PI_Version.class, ITrx.TRXNAME_None);
 		version.setName(pi.getName());
@@ -1351,7 +1352,7 @@ public class HUTestHelper
 			final ILUTUProducerAllocationDestination allocationDestination,
 			final BigDecimal cuQty)
 	{
-		final Capacity tuCapacity = allocationDestination.getTUCapacity();
+		final Capacity tuCapacity = allocationDestination.getSingleCUPerTU();
 		final I_M_Product cuProduct = tuCapacity.getM_Product();
 		final I_C_UOM cuUOM = tuCapacity.getC_UOM();
 
@@ -1463,12 +1464,14 @@ public class HUTestHelper
 
 	public List<I_M_HU> retrieveAllHandlingUnitsOfType(final I_M_HU_PI huPI)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		
 		final List<I_M_HU> result = new ArrayList<>();
 
 		// Filter
 		for (final I_M_HU hu : retrieveAllHandlingUnits())
 		{
-			if (hu.getM_HU_PI_Version().getM_HU_PI_ID() != huPI.getM_HU_PI_ID())
+			if (handlingUnitsBL.getPIVersion(hu).getM_HU_PI_ID() != huPI.getM_HU_PI_ID())
 			{
 				continue;
 			}
@@ -1571,7 +1574,6 @@ public class HUTestHelper
 		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
 
 		final IAllocationSource source = new MTransactionAllocationSourceDestination(mtrx);
-		// final HUProducerDestination destination = new HUProducerDestination(huPI);
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 		lutuProducer.setLUPI(huPI);
@@ -1708,8 +1710,7 @@ public class HUTestHelper
 
 	/**
 	 * This method creates one or many HU(s) and distributes the products and Qtys of the given transaction document (e.g. material receipt) among those instances' material-HU-items. The method also
-	 * creates a {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} which references the given transactionDoc. The trx-hdr has a one line for every
-	 * {@link org.compiere.model.I_M_TransactionAllocation} of the given transaction doc and one line for every created {@link de.metas.handlingunits.model.I_M_HU_Item}.
+	 * creates a {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} which references the given transactionDoc.
 	 *
 	 * @param incomingTrxDoc the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
 	 * @param huPI
@@ -1774,7 +1775,7 @@ public class HUTestHelper
 
 	public boolean isNoPI(final I_M_HU_PI pi)
 	{
-		return pi.getM_HU_PI_ID() == Services.get(IHandlingUnitsDAO.class).getNo_HU_PI_ID();
+		return pi.getM_HU_PI_ID() == Services.get(IHandlingUnitsDAO.class).getPackingItemTemplate_HU_PI_ID();
 	}
 
 	public boolean isVirtualPI(final I_M_HU_PI pi)
@@ -1884,15 +1885,9 @@ public class HUTestHelper
 	public void joinHUs(final IHUContext huContext, final I_M_HU loadingUnit, final I_M_HU... tradingUnits)
 	{
 		trxBL.createHUContextProcessorExecutor(huContext)
-				.run(new IHUContextProcessor()
-				{
-
-					@Override
-					public IMutableAllocationResult process(IHUContext huContextLocal)
-					{
-						joinHUs(huContextLocal, loadingUnit, Arrays.asList(tradingUnits));
-						return NULL_RESULT;
-					}
+				.run((IHUContextProcessor)huContextLocal -> {
+					joinHUs(huContextLocal, loadingUnit, Arrays.asList(tradingUnits));
+					return IHUContextProcessor.NULL_RESULT;
 				});
 	}
 

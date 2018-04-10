@@ -51,7 +51,7 @@ public class C_OrderLine
 	public void updateQtyTU(final I_C_OrderLine orderLine, final ICalloutField field)
 	{
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
-		Services.get(IHUPackingAwareBL.class).setQtyPacks(packingAware);
+		Services.get(IHUPackingAwareBL.class).setQtyTU(packingAware);
 		packingAware.setQty(packingAware.getQty());
 	}
 
@@ -65,8 +65,8 @@ public class C_OrderLine
 	public void updateQtyCU(final I_C_OrderLine orderLine, final ICalloutField field)
 	{
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
-		final Integer qtyPacks = packingAware.getQtyPacks().intValue();
-		Services.get(IHUPackingAwareBL.class).setQty(packingAware, qtyPacks);
+		final Integer qtyPacks = packingAware.getQtyTU().intValue();
+		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks);
 
 		// Update lineNetAmt, because QtyEnteredCU changed : see task 06727
 		Services.get(IOrderLineBL.class).updateLineNetAmt(orderLine, orderLine.getQtyEntered(), BigDecimal.ONE);

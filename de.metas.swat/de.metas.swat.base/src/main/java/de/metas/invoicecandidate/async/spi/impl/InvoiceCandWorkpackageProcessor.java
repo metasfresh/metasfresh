@@ -55,7 +55,7 @@ import de.metas.lock.api.ILock;
 /**
  * Generate {@link I_C_Invoice}s for given {@link I_C_Invoice_Candidate}s.
  *
- * @author tsa
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
@@ -76,7 +76,6 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	 */
 	public InvoiceCandWorkpackageProcessor(final IInvoiceGenerateResult result)
 	{
-		super();
 		Check.assumeNotNull(result, "result not null");
 		_result = result;
 	}
@@ -119,7 +118,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 			Loggables.get().addLog(createInvoiceResultsSummary);
 
 			// invalidate them all at once
-			invoiceCandDAO.invalidateCands(candidatesOfPackage, localTrxName);
+			invoiceCandDAO.invalidateCands(candidatesOfPackage);
 		}
 
 		//

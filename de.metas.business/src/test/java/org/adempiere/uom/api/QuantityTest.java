@@ -10,17 +10,19 @@ package org.adempiere.uom.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+import static java.math.BigDecimal.ONE;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -242,4 +244,17 @@ public class QuantityTest
 		qty.add(qtyToAdd); // expect: QuantitiesUOMNotMatchingExpection
 	}
 
+	@Test
+	public void compare_same_uom_different_amout()
+	{
+		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
+
+		final BigDecimal qtyAmount = new BigDecimal("123");
+
+		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
+		final Quantity qtyToCompare = Quantity.of(qtyAmount.add(ONE), qty_uom);
+
+		assertThat(qtyToCompare).isGreaterThan(qty);
+		assertThat(qty).isLessThan(qtyToCompare);
+	}
 }

@@ -15,7 +15,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 156960694L;
+	private static final long serialVersionUID = 183979313L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (Properties ctx, int M_ReceiptSchedule_ID, String trxName)
@@ -29,7 +29,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 			setDeliveryRule (null);
 			setDeliveryViaRule (null);
 			setIsBPartnerAddress_Override (false); // N
-			setIsCreateDistributionOrder (false); // N
 			setIsPackagingMaterial (false); // N
 			setM_Product_ID (0);
 			setM_ReceiptSchedule_ID (0);
@@ -195,43 +194,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Override);
-	}
-
-	/** Set Standort abw..
-		@param C_BP_Location_Override_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
-	{
-		if (C_BP_Location_Override_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
-	}
-
-	/** Get Standort abw..
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_Location_Override_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
 	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
@@ -337,6 +299,43 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public int getC_BPartner_Override_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Override);
+	}
+
+	/** Set Standort abw..
+		@param C_BP_Location_Override_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
+	{
+		if (C_BP_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
+	}
+
+	/** Get Standort abw..
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BP_Location_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -680,29 +679,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return false;
 	}
 
-	/** Set IsCreateDistributionOrder.
-		@param IsCreateDistributionOrder IsCreateDistributionOrder	  */
-	@Override
-	public void setIsCreateDistributionOrder (boolean IsCreateDistributionOrder)
-	{
-		set_Value (COLUMNNAME_IsCreateDistributionOrder, Boolean.valueOf(IsCreateDistributionOrder));
-	}
-
-	/** Get IsCreateDistributionOrder.
-		@return IsCreateDistributionOrder	  */
-	@Override
-	public boolean isCreateDistributionOrder () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsCreateDistributionOrder);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Verpackungsmaterial.
 		@param IsPackagingMaterial Verpackungsmaterial	  */
 	@Override
@@ -795,6 +771,25 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Bewegungsdatum.
+		@param MovementDate 
+		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	  */
+	@Override
+	public void setMovementDate (java.sql.Timestamp MovementDate)
+	{
+		set_Value (COLUMNNAME_MovementDate, MovementDate);
+	}
+
+	/** Get Bewegungsdatum.
+		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	  */
+	@Override
+	public java.sql.Timestamp getMovementDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
 	}
 
 	@Override
@@ -964,23 +959,30 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return ii.intValue();
 	}
 
-	/** Set Bewegungsdatum.
-		@param MovementDate 
-		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
+	/** 
+	 * OnMaterialReceiptWithDestWarehouse AD_Reference_ID=540835
+	 * Reference name: OnMaterialReceiptWithDestWarehouse_List
+	 */
+	public static final int ONMATERIALRECEIPTWITHDESTWAREHOUSE_AD_Reference_ID=540835;
+	/** CreateMovement = M */
+	public static final String ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement = "M";
+	/** Create Distribution Order = D */
+	public static final String ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder = "D";
+	/** Set OnMaterialReceiptWithDestWarehouse.
+		@param OnMaterialReceiptWithDestWarehouse OnMaterialReceiptWithDestWarehouse	  */
 	@Override
-	public void setMovementDate (java.sql.Timestamp MovementDate)
+	public void setOnMaterialReceiptWithDestWarehouse (java.lang.String OnMaterialReceiptWithDestWarehouse)
 	{
-		set_Value (COLUMNNAME_MovementDate, MovementDate);
+
+		set_Value (COLUMNNAME_OnMaterialReceiptWithDestWarehouse, OnMaterialReceiptWithDestWarehouse);
 	}
 
-	/** Get Bewegungsdatum.
-		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
+	/** Get OnMaterialReceiptWithDestWarehouse.
+		@return OnMaterialReceiptWithDestWarehouse	  */
 	@Override
-	public java.sql.Timestamp getMovementDate () 
+	public java.lang.String getOnMaterialReceiptWithDestWarehouse () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
+		return (java.lang.String)get_Value(COLUMNNAME_OnMaterialReceiptWithDestWarehouse);
 	}
 
 	/** 
@@ -1114,9 +1116,9 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return bd;
 	}
 
-	/** Set Bestellte Menge.
+	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
-		Bestellte Menge
+		Bestellt/ Beauftragt
 	  */
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
@@ -1124,8 +1126,8 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		set_ValueNoCheck (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellte Menge.
-		@return Bestellte Menge
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
 	  */
 	@Override
 	public java.math.BigDecimal getQtyOrdered () 

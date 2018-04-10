@@ -97,7 +97,7 @@ public class HUShippingFacade
 
 	//
 	// State
-	private List<IShipmentScheduleWithHU> _candidates; // lazy
+	private List<ShipmentScheduleWithHU> _candidates; // lazy
 	private InOutGenerateResult shipmentsGenerateResult;
 	private final ArrayList<I_M_Package> mpackagesCreated = new ArrayList<>();
 
@@ -121,7 +121,7 @@ public class HUShippingFacade
 	}
 
 	@VisibleForTesting
-	public List<IShipmentScheduleWithHU> getCandidates()
+	public List<ShipmentScheduleWithHU> getCandidates()
 	{
 		if (_candidates == null)
 		{
@@ -163,7 +163,7 @@ public class HUShippingFacade
 
 	private void generateShipments()
 	{
-		final List<IShipmentScheduleWithHU> candidates = getCandidates();
+		final List<ShipmentScheduleWithHU> candidates = getCandidates();
 		shipmentsGenerateResult = huShipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(completeShipments)

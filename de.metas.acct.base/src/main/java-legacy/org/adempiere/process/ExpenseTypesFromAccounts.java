@@ -45,6 +45,9 @@ import org.compiere.model.X_M_Product_Acct;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+
 /**
  * Creates expense type products from a given range of expense account 
  * elements.
@@ -55,6 +58,7 @@ import de.metas.process.ProcessInfoParameter;
  *
  * @author Daniel Tamm
  */
+@Deprecated // TODO delete it
 public class ExpenseTypesFromAccounts extends JavaProcess {
 
     private int m_clientId;
@@ -120,7 +124,7 @@ public class ExpenseTypesFromAccounts extends JavaProcess {
         // Read all existing applicable products into memory for quick comparison.
         List<MProduct> products = new Query(getCtx(), MProduct.Table_Name, "ProductType=?", get_TrxName())
                 .setParameters(new Object[]{MProduct.PRODUCTTYPE_ExpenseType})
-                .list();
+                .list(MProduct.class);
 
         Map<String,MProduct> productMap = new TreeMap<>();
         for (Iterator<MProduct> it = products.iterator(); it.hasNext();) {
@@ -136,7 +140,7 @@ public class ExpenseTypesFromAccounts extends JavaProcess {
                     "C_AcctSchema_ID=? and AD_Client_ID=? and AD_Org_ID=0",
                     get_TrxName())
                 .setParameters(new Object[]{m_acctSchemaId, m_clientId})
-                .list();
+                .list(MAccount.class);
 
         Map<Integer, MAccount> validCombMap = new TreeMap<>();
         for (Iterator<MAccount> it = validCombs.iterator(); it.hasNext();) {
@@ -151,7 +155,7 @@ public class ExpenseTypesFromAccounts extends JavaProcess {
                     "AccountType=? and isSummary='N' and Value>=? and Value<=? and AD_Client_ID=?",
                     get_TrxName())
                 .setParameters(new Object[]{MElementValue.ACCOUNTTYPE_Expense, m_startElement, m_endElement, m_clientId})
-                .list();
+                .list(MElementValue.class);
 
         MElementValue elem;
         MProductPrice priceRec;

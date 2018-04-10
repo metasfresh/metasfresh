@@ -4,6 +4,12 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner;
+
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -34,15 +40,35 @@ import org.adempiere.util.ISingletonService;
 public interface IBPartnerStatsBL extends ISingletonService
 {
 	/**
-	 * Calculate the future/simulated SOCreditStatus for the given {@link IBPartnerStats} object at a certain date
-	 * No updating
+	 */
+	@Builder
+	@Value
+	public static class CalculateSOCreditStatusRequest
+	{
+		@NonNull
+		BPartnerStats stat;
+		@NonNull
+		@Default
+		BigDecimal additionalAmt = BigDecimal.ZERO;
+		@NonNull
+		Timestamp date;
+		@Default
+		boolean forceCheckCreditStatus = false;
+	}
+
+	/**
+	 * Calculate the future/simulated SOCreditStatus for the given {@link BPartnerStats} object at a certain date
+	 * <br>
+	 * The computation can be forced with the flag <code>forceCheckCreditStatus</code><br>
+	 * If the status is <code>CreditStop</code>, the status can be recomputed only if flag <code>forceCheckCreditStatus</code> is on Y
+	 * <br><b>No updating</b>
 	 *
 	 * @param stat
 	 * @param additionalAmt
 	 * @param date
 	 * @return
 	 */
-	String calculateSOCreditStatus(IBPartnerStats stat, BigDecimal additionalAmt, Timestamp date);
+	String calculateProjectedSOCreditStatus(CalculateSOCreditStatusRequest request);
 
 
 	/**
@@ -54,7 +80,7 @@ public interface IBPartnerStatsBL extends ISingletonService
 	 * @param date
 	 * @return
 	 */
-	boolean isCreditStopSales(IBPartnerStats stat, BigDecimal grandTotal, Timestamp date);
+	boolean isCreditStopSales(BPartnerStats stat, BigDecimal grandTotal, Timestamp date);
 
 
 	/**
@@ -63,5 +89,8 @@ public interface IBPartnerStatsBL extends ISingletonService
 	 * @param stats
 	 * @return
 	 */
-	BigDecimal getCreditWatchRatio(IBPartnerStats stats);
+	BigDecimal getCreditWatchRatio(BPartnerStats stats);
+
+
+	void resetCreditStatusFromBPGroup(I_C_BPartner bpartner);
 }

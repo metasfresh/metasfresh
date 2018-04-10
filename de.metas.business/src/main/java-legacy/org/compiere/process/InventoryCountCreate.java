@@ -23,18 +23,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MInventory;
 import org.compiere.model.MInventoryLine;
-import org.compiere.model.MInventoryLineMA;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Create Inventory Count List with current Book value
@@ -70,6 +68,7 @@ public class InventoryCountCreate extends JavaProcess
 	/**
 	 * Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -104,6 +103,7 @@ public class InventoryCountCreate extends JavaProcess
 	 * @return message
 	 * @throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("M_Inventory_ID=" + p_M_Inventory_ID
@@ -312,14 +312,6 @@ public class InventoryCountCreate extends JavaProcess
 				m_line.save();
 				return 0;
 			}
-			// Save Old Line info
-			else if (m_line.getM_AttributeSetInstance_ID() != 0)
-			{
-				MInventoryLineMA ma = new MInventoryLineMA(m_line,
-						m_line.getM_AttributeSetInstance_ID(), m_line.getQtyBook());
-				if (!ma.save())
-					;
-			}
 			m_line.setM_AttributeSetInstance_ID(0);
 			m_line.setQtyBook(m_line.getQtyBook().add(QtyOnHand));
 
@@ -333,11 +325,6 @@ public class InventoryCountCreate extends JavaProcess
 			}
 			m_line.setQtyCount(qtyCount);
 			m_line.save();
-			//
-			MInventoryLineMA ma = new MInventoryLineMA(m_line,
-					M_AttributeSetInstance_ID, QtyOnHand);
-			if (!ma.save())
-				;
 			return 0;
 		}
 		// 07511_1 
@@ -370,7 +357,7 @@ public class InventoryCountCreate extends JavaProcess
 		int subTreeRootParentId = 0;
 		String retString = " ";
 		String sql = " SELECT M_Product_Category_ID, M_Product_Category_Parent_ID FROM M_Product_Category";
-		final Vector<SimpleTreeNode> categories = new Vector<SimpleTreeNode>(100);
+		final Vector<SimpleTreeNode> categories = new Vector<>(100);
 		Statement stmt = DB.createStatement();
 		ResultSet rs = stmt.executeQuery(sql);
 		while (rs.next())

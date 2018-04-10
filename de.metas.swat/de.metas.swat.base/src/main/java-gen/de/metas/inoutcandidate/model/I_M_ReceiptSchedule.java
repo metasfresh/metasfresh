@@ -200,35 +200,6 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_BPartnerAddress_Override = "BPartnerAddress_Override";
 
 	/**
-	 * Set Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
-
-	/**
-	 * Get Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BP_Location_Override_ID();
-
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override();
-
-	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override);
-
-    /** Column definition for C_BP_Location_Override_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BP_Location_Override_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner_Location>(I_M_ReceiptSchedule.class, "C_BP_Location_Override_ID", org.compiere.model.I_C_BPartner_Location.class);
-    /** Column name C_BP_Location_Override_ID */
-    public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
-
-	/**
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
@@ -314,6 +285,35 @@ public interface I_M_ReceiptSchedule
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_Override_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner>(I_M_ReceiptSchedule.class, "C_BPartner_Override_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_Override_ID */
     public static final String COLUMNNAME_C_BPartner_Override_ID = "C_BPartner_Override_ID";
+
+	/**
+	 * Set Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
+
+	/**
+	 * Get Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BP_Location_Override_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override();
+
+	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override);
+
+    /** Column definition for C_BP_Location_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BP_Location_Override_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner_Location>(I_M_ReceiptSchedule.class, "C_BP_Location_Override_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name C_BP_Location_Override_ID */
+    public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
 
 	/**
 	 * Set Belegart.
@@ -403,35 +403,6 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_UOM>(I_M_ReceiptSchedule.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -460,6 +431,35 @@ public interface I_M_ReceiptSchedule
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_User>(I_M_ReceiptSchedule.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_UOM>(I_M_ReceiptSchedule.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Auftragsdatum.
@@ -654,29 +654,6 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_IsBPartnerAddress_Override = "IsBPartnerAddress_Override";
 
 	/**
-	 * Set IsCreateDistributionOrder.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsCreateDistributionOrder (boolean IsCreateDistributionOrder);
-
-	/**
-	 * Get IsCreateDistributionOrder.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isCreateDistributionOrder();
-
-    /** Column definition for IsCreateDistributionOrder */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_IsCreateDistributionOrder = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "IsCreateDistributionOrder", null);
-    /** Column name IsCreateDistributionOrder */
-    public static final String COLUMNNAME_IsCreateDistributionOrder = "IsCreateDistributionOrder";
-
-	/**
 	 * Set Verpackungsmaterial.
 	 *
 	 * <br>Type: YesNo
@@ -754,6 +731,31 @@ public interface I_M_ReceiptSchedule
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, de.metas.inoutcandidate.model.I_M_IolCandHandler> COLUMN_M_IolCandHandler_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, de.metas.inoutcandidate.model.I_M_IolCandHandler>(I_M_ReceiptSchedule.class, "M_IolCandHandler_ID", de.metas.inoutcandidate.model.I_M_IolCandHandler.class);
     /** Column name M_IolCandHandler_ID */
     public static final String COLUMNNAME_M_IolCandHandler_ID = "M_IolCandHandler_ID";
+
+	/**
+	 * Set Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMovementDate (java.sql.Timestamp MovementDate);
+
+	/**
+	 * Get Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getMovementDate();
+
+    /** Column definition for MovementDate */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "MovementDate", null);
+    /** Column name MovementDate */
+    public static final String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
 	 * Set Produkt.
@@ -893,29 +895,27 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_M_Warehouse_Override_ID = "M_Warehouse_Override_ID";
 
 	/**
-	 * Set Bewegungsdatum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 * Set OnMaterialReceiptWithDestWarehouse.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMovementDate (java.sql.Timestamp MovementDate);
+	public void setOnMaterialReceiptWithDestWarehouse (java.lang.String OnMaterialReceiptWithDestWarehouse);
 
 	/**
-	 * Get Bewegungsdatum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 * Get OnMaterialReceiptWithDestWarehouse.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getMovementDate();
+	public java.lang.String getOnMaterialReceiptWithDestWarehouse();
 
-    /** Column definition for MovementDate */
-    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "MovementDate", null);
-    /** Column name MovementDate */
-    public static final String COLUMNNAME_MovementDate = "MovementDate";
+    /** Column definition for OnMaterialReceiptWithDestWarehouse */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_OnMaterialReceiptWithDestWarehouse = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "OnMaterialReceiptWithDestWarehouse", null);
+    /** Column name OnMaterialReceiptWithDestWarehouse */
+    public static final String COLUMNNAME_OnMaterialReceiptWithDestWarehouse = "OnMaterialReceiptWithDestWarehouse";
 
 	/**
 	 * Set Priorität.
@@ -1037,8 +1037,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_QtyMovedWithIssues = "QtyMovedWithIssues";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Bestellte Menge
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1047,8 +1047,8 @@ public interface I_M_ReceiptSchedule
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Bestellte Menge
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

@@ -86,12 +86,8 @@ public interface I_C_Print_Job_Detail
 	 */
 	public int getAD_PrinterRouting_ID();
 
-	public I_AD_PrinterRouting getAD_PrinterRouting();
-
-	public void setAD_PrinterRouting(I_AD_PrinterRouting AD_PrinterRouting);
-
     /** Column definition for AD_PrinterRouting_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Print_Job_Detail, I_AD_PrinterRouting> COLUMN_AD_PrinterRouting_ID = new org.adempiere.model.ModelColumn<I_C_Print_Job_Detail, I_AD_PrinterRouting>(I_C_Print_Job_Detail.class, "AD_PrinterRouting_ID", I_AD_PrinterRouting.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Print_Job_Detail, Object> COLUMN_AD_PrinterRouting_ID = new org.adempiere.model.ModelColumn<I_C_Print_Job_Detail, Object>(I_C_Print_Job_Detail.class, "AD_PrinterRouting_ID", null);
     /** Column name AD_PrinterRouting_ID */
     public static final String COLUMNNAME_AD_PrinterRouting_ID = "AD_PrinterRouting_ID";
 

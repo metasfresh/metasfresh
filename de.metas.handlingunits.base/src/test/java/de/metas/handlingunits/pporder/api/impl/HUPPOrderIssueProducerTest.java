@@ -83,13 +83,19 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
+import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
 		StartupListener.class, ShutdownListener.class,
-		/* needed because in MRPTestHelper, we register AdempiereBaseValidator which in turn registers a C_OrderLine interceptor the needs this class. */
+		/* needed because in MRPTestHelper, we register AdempiereBaseValidator which in turn registers a C_OrderLine interceptor that needs this class. */
 		OrderGroupRepository.class,
+		OrderGroupCompensationChangesHandler.class,
+		GroupTemplateRepository.class,
+		GroupCompensationLineCreateRequestFactory.class,
 		PPOrderPojoConverter.class,
 		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class
 		})

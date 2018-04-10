@@ -43,6 +43,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Wrap a PO object to a given bean interface. Example
@@ -615,12 +616,11 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	/**
 	 * Returns 0 if there is (or could be) a valid record with ID=0), like for example <code>AD_User_ID</code>.
 	 *
-	 * @param columnName
-	 * @return
+	 * @param columnName upper/locawer case is ignored.
 	 */
-	public static final int getFirstValidIdByColumnName(final String columnName)
+	public static final int getFirstValidIdByColumnName(@NonNull final String columnName)
 	{
-		if (_ColumnNamesWithFirstValidIdZERO.contains(columnName))
+		if (_ColumnNamesWithFirstValidIdZERO.contains(columnName.toLowerCase()))
 		{
 			return 0;
 		}
@@ -632,15 +632,15 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * FIXME: get rid of this hardcoded list
 	 */
 	private static final Set<String> _ColumnNamesWithFirstValidIdZERO = ImmutableSet.<String> builder()
-			.add("AD_Client_ID")
-			.add("AD_Org_ID")
-			.add("Record_ID")
-			.add("C_DocType_ID")
-			.add("Node_ID")
-			.add("AD_User_ID")
-			.add("AD_Role_ID")
-			.add("M_AttributeSet_ID")
-			.add("M_AttributeSetInstance_ID")
+			.add("AD_Client_ID".toLowerCase())
+			.add("AD_Org_ID".toLowerCase())
+			.add("Record_ID".toLowerCase())
+			.add("C_DocType_ID".toLowerCase())
+			.add("Node_ID".toLowerCase())
+			.add("AD_User_ID".toLowerCase())
+			.add("AD_Role_ID".toLowerCase())
+			.add("M_AttributeSet_ID".toLowerCase())
+			.add("M_AttributeSetInstance_ID".toLowerCase())
 			.build();
 
 	protected Object invokeParent(final Method method, final Object[] args) throws Exception

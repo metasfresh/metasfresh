@@ -64,6 +64,7 @@ public class CandidateChangeService
 					.setParameter("candidate", candidate);
 		}
 
+		candidate.validate();
 		return candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
 

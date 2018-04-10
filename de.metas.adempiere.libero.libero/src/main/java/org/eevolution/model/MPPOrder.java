@@ -49,6 +49,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
 import org.compiere.model.ModelValidationEngine;
@@ -62,11 +63,14 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderNodeBL;
+import org.eevolution.model.validator.PPOrderChangedEventFactory;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
@@ -215,7 +219,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			final String whereClause = COLUMNNAME_PP_Product_BOM_ID + "=? AND " + COLUMNNAME_AD_Workflow_ID + "=?";
 			final MQMSpecification qms = new Query(getCtx(), I_QM_Specification.Table_Name, whereClause, get_TrxName())
 					.setParameters(new Object[] { getPP_Product_BOM_ID(), getAD_Workflow_ID() })
-					.firstOnly();
+					.firstOnly(MQMSpecification.class);
 			return qms != null ? qms.isValid(getM_AttributeSetInstance_ID()) : true;
 		}
 		else
@@ -367,6 +371,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public boolean closeIt()
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
+		
+		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(this);
 
 		//
 		// Check already closed
@@ -385,12 +391,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			setDocStatus(docStatus);
 			setDocAction(ACTION_None);
 		}
-
-		// 06946: Commented out for now as a working increment.
-		// if (!isDelivered())
-		// {
-		// throw new LiberoException("Cannot close this document because do not exist transactions"); // TODO: Create Message for Translation
-		// }
 
 		//
 		// Create usage variances
@@ -440,6 +440,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// Call Model Validator: AFTER_CLOSE
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
+
+		final PPOrderChangedEvent changeEvent = eventFactory
+				.inspectPPOrderAfterChange();
+
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		materialEventService.postEventAfterNextCommit(changeEvent);
 
 		return true;
 	}

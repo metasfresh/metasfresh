@@ -2,6 +2,7 @@ package org.adempiere.bpartner.service;
 
 import java.math.BigDecimal;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
@@ -37,9 +38,15 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * Instead, create a new IBPartnerStats object based on the found bp stats and return it.
 	 *
 	 * @param partner
-	 * @return the {@link IBPartnerStats} object
+	 * @return the {@link BPartnerStats} object
 	 */
-	IBPartnerStats retrieveBPartnerStats(I_C_BPartner partner);
+	BPartnerStats getCreateBPartnerStats(I_C_BPartner partner);
+	
+	default BPartnerStats getCreateBPartnerStats(final int bpartnerId)
+	{
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		return getCreateBPartnerStats(bpartner);
+	}
 
 	/**
 	 * Retrieve the total open balance value for the given stats using the old legacy sql
@@ -48,56 +55,17 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @param stats
 	 * @return
 	 */
-	BigDecimal retrieveOpenItems(IBPartnerStats stats);
+	BigDecimal retrieveOpenItems(BPartnerStats stats);
 
-	/**
-	 * Retrieve the SOCreditUsed value for the given stats using the old legacy sql
-	 * Note: This will have to be re-implemented in order to not search in the db each time a new document is created.
-	 *
-	 * @param stats
-	 * @return
-	 */
-	void updateSOCreditUsed(IBPartnerStats stats);
-
-	/**
-	 * Retrieve the ActualLifeTimeValue for the given stats using the old legacy sql
-	 * Note: This will have to be re-implemented in order to not search in the db each time a new document is created.
-	 *
-	 * @param stats
-	 * @return
-	 */
-	void updateActualLifeTimeValue(IBPartnerStats stats);
 
 	/**
 	 * Set the given soCreditStatus value to the I_C_BPartner_Stats entry linked with the stats object
 	 *
 	 * @param stats
 	 */
-	void setSOCreditStatus(IBPartnerStats stats, String soCreditStatus);
+	void setSOCreditStatus(BPartnerStats stats, String soCreditStatus);
 
-	/**
-	 * Retrieve the bpartner for which the bpStats object was made
-	 *
-	 * @param bpStats
-	 * @return
-	 */
-	I_C_BPartner retrieveC_BPartner(IBPartnerStats bpStats);
+	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 
-	/**
-	 * Update the SOCreditStatus based on the legacy sql
-	 *
-	 * @param bpStats
-	 */
-	void updateSOCreditStatus(IBPartnerStats bpStats);
-
-	/**
-	 * Update the TotalOpenBalance based on the legacy sql
-	 *
-	 * @param bpStats
-	 */
-	void updateOpenItems(IBPartnerStats bpStats);
-
-	BigDecimal retrieveSOCreditUsed(IBPartnerStats bpStats);
-
-	void updateCreditLimitIndicator(IBPartnerStats bstats);
+	void updateBPartnerStatistics(BPartnerStats bpStats);
 }

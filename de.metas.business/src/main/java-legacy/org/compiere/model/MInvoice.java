@@ -27,16 +27,13 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -108,7 +105,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		final List<MInvoice> list = new Query(ctx, Table_Name, COLUMNNAME_C_BPartner_ID + "=?", trxName)
 				.setParameters(new Object[] { C_BPartner_ID })
-				.list();
+				.list(MInvoice.class);
 		return list.toArray(new MInvoice[list.size()]);
 	}	// getOfBPartner
 
@@ -604,7 +601,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final List<MInvoiceLine> list = new Query(getCtx(), MInvoiceLine.Table_Name, whereClauseFinal, get_TrxName())
 				.setParameters(new Object[] { getC_Invoice_ID() })
 				.setOrderBy(MInvoiceLine.COLUMNNAME_Line)
-				.list();
+				.list(MInvoiceLine.class);
 		// optimization: link the C_Invoice
 		for (final I_C_InvoiceLine invoiceLine : list)
 		{
@@ -714,7 +711,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final String whereClause = MInvoiceTax.COLUMNNAME_C_Invoice_ID + "=?";
 		final List<MInvoiceTax> list = new Query(getCtx(), MInvoiceTax.Table_Name, whereClause, get_TrxName())
 				.setParameters(new Object[] { get_ID() })
-				.list();
+				.list(MInvoiceTax.class);
 		m_taxes = list.toArray(new MInvoiceTax[list.size()]);
 		return m_taxes;
 	}	// getTaxes
@@ -1374,7 +1371,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-			final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
 			final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 			final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateInvoiced());
 
@@ -1841,10 +1838,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 			return IDocument.STATUS_Invalid;
 		}
-
-		// FRESH-152 Update BP Statistics
-		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(getC_BPartner_ID()), ITrx.TRXNAME_None);
 
 		// Update Project
 		if (isSOTrx() && getC_Project_ID() != 0)

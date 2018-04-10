@@ -29,7 +29,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 
@@ -54,7 +54,6 @@ public class M_InOutLine
 			final I_C_Invoice_Candidate ic = iciol.getC_Invoice_Candidate();
 
 			InterfaceWrapperHelper.delete(iciol);
-
 			invoiceCandDAO.invalidateCand(ic);
 		}
 	}

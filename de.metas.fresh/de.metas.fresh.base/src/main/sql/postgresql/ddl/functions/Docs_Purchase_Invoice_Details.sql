@@ -52,7 +52,7 @@ SELECT
 		END,
 		''
 	) AS Attributes,
-	SUM(piip.QtyenteredTU)			AS HUQty,
+	SUM(il.QtyenteredTU) 			AS HUQty,
 	piip.name				AS HUName,
 	SUM(il.QtyInvoicedInPriceUOM) AS qtyinvoicedinpriceuom,
 	SUM(CASE
@@ -171,11 +171,11 @@ FROM
 	) io2 ON il.C_InvoiceLine_ID = io2.C_InvoiceLine_ID
 	-- Get Packing instruction
 	LEFT OUTER JOIN (
-		SELECT DISTINCT String_Agg( Name, E'\n' ORDER BY Name ) AS Name, C_InvoiceLine_ID, SUM(qtyEnteredTU) over (partition by C_InvoiceLine_ID) as qtyenteredTU
+		SELECT 	String_Agg( Name, E'\n' ORDER BY Name ) AS Name, C_InvoiceLine_ID
 		FROM	(
 				SELECT DISTINCT
 					COALESCE ( pifb.name, pi.name ) AS name,
-					C_InvoiceLine_ID, iol.qtyEnteredTU
+					C_InvoiceLine_ID
 				FROM
 					Report.fresh_IL_TO_IOL_V iliol
 					INNER JOIN M_InOutLine iol ON iliol.M_InOutLine_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
@@ -192,9 +192,8 @@ FROM
 				WHERE
 					piv.M_HU_PI_Version_ID != 101  
 					AND iliol.C_Invoice_ID = $1
-					
 			) pi
-		GROUP BY C_InvoiceLine_ID, qtyEnteredTU
+		GROUP BY C_InvoiceLine_ID
 	) piip ON il.C_InvoiceLine_ID = piip.C_InvoiceLine_ID
 
 	-- Get Attributes

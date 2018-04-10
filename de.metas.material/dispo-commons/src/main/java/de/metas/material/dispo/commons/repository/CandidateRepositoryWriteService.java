@@ -5,8 +5,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.Objects;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
@@ -86,7 +89,7 @@ public class CandidateRepositoryWriteService
 		return addOrUpdate(candidate, true);
 	}
 
-	public Candidate updateCandidate(@NonNull final Candidate candidate)
+	public Candidate updateCandidateById(@NonNull final Candidate candidate)
 	{
 		Check.errorIf(candidate.getId() <= 0, "The candidate parameter needs to have Id>0; candidate={}", candidate);
 		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());
@@ -191,8 +194,11 @@ public class CandidateRepositoryWriteService
 
 		candidateRecord.setStorageAttributesKey(computeStorageAttributesKeyToStore(materialDescriptor));
 
-		candidateRecord.setQty(candidate.getQuantity());
+		final BigDecimal quantity = candidate.getQuantity();
+		candidateRecord.setQty(stripZerosAfterTheDigit(quantity));
 		candidateRecord.setDateProjected(new Timestamp(materialDescriptor.getDate().getTime()));
+
+		updatRecordFromDemandDetail(candidateRecord, candidate.getDemandDetail());
 
 		if (candidate.getBusinessCase() != null)
 		{
@@ -224,6 +230,48 @@ public class CandidateRepositoryWriteService
 		}
 	}
 
+	/**
+	 * Update the demand related reference columns, but don't reset them to zero.
+	 * Note that we have them as physical columns for performance reasons.
+	 */
+	private void updatRecordFromDemandDetail(
+			@NonNull final I_MD_Candidate candidateRecord,
+			@Nullable final DemandDetail demandDetail)
+	{
+		if (demandDetail == null)
+		{
+			return;
+		}
+
+		final boolean demandDetailWouldResetOrderId = demandDetail.getOrderId() == 0 && candidateRecord.getC_Order_ID() > 0;
+		if (!demandDetailWouldResetOrderId)
+		{
+			candidateRecord.setC_Order_ID(demandDetail.getOrderId());
+		}
+
+		final boolean demandDetailWouldResetForecastId = demandDetail.getForecastId() == 0 && candidateRecord.getM_Forecast_ID() > 0;
+		if (!demandDetailWouldResetForecastId)
+		{
+			candidateRecord.setM_Forecast_ID(demandDetail.getForecastId());
+		}
+
+		final boolean demandDetailWouldResetShipmentScheduleId = demandDetail.getShipmentScheduleId() == 0 && candidateRecord.getM_ShipmentSchedule_ID() > 0;
+		if (!demandDetailWouldResetShipmentScheduleId)
+		{
+			candidateRecord.setM_ShipmentSchedule_ID(demandDetail.getShipmentScheduleId());
+		}
+	}
+
+	private BigDecimal stripZerosAfterTheDigit(final BigDecimal quantity)
+	{
+		final BigDecimal stripTrailingZeros = quantity.stripTrailingZeros();
+		if (stripTrailingZeros.scale() < 0)
+		{
+			return stripTrailingZeros.setScale(0, RoundingMode.UNNECESSARY);
+		}
+		return stripTrailingZeros;
+	}
+
 	@NonNull
 	private String computeStorageAttributesKeyToStore(@NonNull final MaterialDescriptor materialDescriptor)
 	{
@@ -243,7 +291,7 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
-		final ProductionDetail productionDetail = candidate.getProductionDetail();
+		final ProductionDetail productionDetail = ProductionDetail.castOrNull(candidate.getBusinessCaseDetail());
 		if (productionDetail == null)
 		{
 			return;
@@ -280,7 +328,7 @@ public class CandidateRepositoryWriteService
 		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(productionDetail.getPpOrderLineId());
 		productionDetailRecordToUpdate.setPP_Order_DocStatus(productionDetail.getPpOrderDocStatus());
 		productionDetailRecordToUpdate.setPlannedQty(productionDetail.getPlannedQty());
-		productionDetailRecordToUpdate.setActualQty(productionDetail.getActualQty());
+		productionDetailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
 		save(productionDetailRecordToUpdate);
 	}
@@ -289,7 +337,7 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
-		final DistributionDetail distributionDetail = candidate.getDistributionDetail();
+		final DistributionDetail distributionDetail = DistributionDetail.castOrNull(candidate.getBusinessCaseDetail());
 		if (distributionDetail == null)
 		{
 			return;
@@ -317,7 +365,7 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus());
 		detailRecordToUpdate.setM_Shipper_ID(distributionDetail.getShipperId());
 		detailRecordToUpdate.setPlannedQty(distributionDetail.getPlannedQty());
-		detailRecordToUpdate.setActualQty(distributionDetail.getPlannedQty());
+		detailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
 		save(detailRecordToUpdate);
 	}
@@ -343,11 +391,14 @@ public class CandidateRepositoryWriteService
 		{
 			detailRecordToUpdate = existingDetail;
 		}
+
 		final DemandDetail demandDetail = candidate.getDemandDetail();
 		detailRecordToUpdate.setM_ForecastLine_ID(demandDetail.getForecastLineId());
 		detailRecordToUpdate.setM_ShipmentSchedule_ID(demandDetail.getShipmentScheduleId());
 		detailRecordToUpdate.setC_OrderLine_ID(demandDetail.getOrderLineId());
 		detailRecordToUpdate.setC_SubscriptionProgress_ID(demandDetail.getSubscriptionProgressId());
+		detailRecordToUpdate.setPlannedQty(demandDetail.getPlannedQty());
+		detailRecordToUpdate.setActualQty(candidate.computeActualQty());
 
 		save(detailRecordToUpdate);
 	}

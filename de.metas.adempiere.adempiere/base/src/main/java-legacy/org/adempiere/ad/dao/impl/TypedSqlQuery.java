@@ -45,6 +45,7 @@ import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.PO;
@@ -276,10 +277,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @throws DBException
 	 */
 	@Override
-	public <ET extends T> List<ET> list() throws DBException
+	public List<T> list() throws DBException
 	{
-		final Class<ET> clazz = null; // N/A
-		return list(clazz);
+		return list(modelClass);
 	}
 
 	@Override
@@ -867,6 +867,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		if (guaranteedIteratorRequired != null)
 		{
 			guaranteed = guaranteedIteratorRequired.booleanValue();
+		}
+		else if (getKeyColumnNames().size() != 1)
+		{
+			// case: no guaranteed option specified and this table has zero or more than one primary key columns
+			// => cannot use guaranteed iterators
+			guaranteed = false;
 		}
 		else
 		{
@@ -1625,11 +1631,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public int updateDirectly(final IQueryUpdater<T> queryUpdater)
+	public int updateDirectly(@NonNull final IQueryUpdater<T> queryUpdater)
 	{
-		Check.assumeNotNull(queryUpdater, "queryUpdater");
-
-		//
 		// Check if it's an ISqlQueryUpdater then we can update it directly
 		if (queryUpdater instanceof ISqlQueryUpdater)
 		{
@@ -1648,20 +1651,27 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public int update(final IQueryUpdater<T> queryUpdater)
 	{
 		final Iterator<T> records = iterate(modelClass, true); // guaranteed=true
-		int countUpdated = 0;
-		while (records.hasNext())
+		try
 		{
-			final T record = records.next();
-			final boolean updated = queryUpdater.update(record);
-			if (updated)
+			int countUpdated = 0;
+			while (records.hasNext())
 			{
-				InterfaceWrapperHelper.save(record);
-				countUpdated++;
-			}
+				final T record = records.next();
+				final boolean updated = queryUpdater.update(record);
+				if (updated)
+				{
+					InterfaceWrapperHelper.save(record);
+					countUpdated++;
+				}
 
+			}
+			return countUpdated;
+		}
+		finally
+		{
+			IteratorUtils.closeQuietly(records);
 		}
 
-		return countUpdated;
 	}
 
 	private final int updateSql(final ISqlQueryUpdater<T> sqlQueryUpdater)

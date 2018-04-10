@@ -3,29 +3,6 @@
  */
 package de.metas.picking.service;
 
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +27,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.AbstractPackingItem;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /**
@@ -63,7 +41,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	private I_C_BPartner partner; // lazy loaded
 	private I_C_BPartner_Location bpLocation; // lazy loaded
 
-	FreshPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys)
+	FreshPackingItem(final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys)
 	{
 		super(scheds2Qtys);
 	}
@@ -198,8 +176,8 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final Set<Integer> warehouseIds = new HashSet<Integer>();
-		final Set<I_M_Warehouse> warehouses = new HashSet<I_M_Warehouse>();
+		final Set<Integer> warehouseIds = new HashSet<>();
+		final Set<I_M_Warehouse> warehouses = new HashSet<>();
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
 			final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(shipmentSchedule);
@@ -231,7 +209,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final Set<Integer> warehouseIds = new HashSet<Integer>();
+		final Set<Integer> warehouseIds = new HashSet<>();
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
 			final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(shipmentSchedule);
@@ -250,10 +228,10 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 
 	@Override
 	public IFreshPackingItem subtractToPackingItem(
-			@NonNull final BigDecimal subtrahent,
+			@NonNull final Quantity subtrahent,
 			@Nullable final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
-		final Map<I_M_ShipmentSchedule, BigDecimal> sched2qty = subtract(subtrahent, acceptShipmentSchedulePredicate);
+		final Map<I_M_ShipmentSchedule, Quantity> sched2qty = subtract(subtrahent, acceptShipmentSchedulePredicate);
 		return FreshPackingItemHelper.create(sched2qty);
 	}
 

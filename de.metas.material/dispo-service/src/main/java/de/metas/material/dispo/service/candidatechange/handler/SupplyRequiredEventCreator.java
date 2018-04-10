@@ -73,8 +73,10 @@ public class SupplyRequiredEventCreator
 		{
 			final DemandDetail demandDetail = demandCandidate.getDemandDetail();
 			descriptorBuilder
-					.forecastLineId(demandDetail.getForecastLineId())
 					.shipmentScheduleId(demandDetail.getShipmentScheduleId())
+					.forecastId(demandDetail.getForecastId())
+					.forecastLineId(demandDetail.getForecastLineId())
+					.orderId(demandDetail.getOrderId())
 					.orderLineId(demandDetail.getOrderLineId())
 					.subscriptionProgressId(demandDetail.getSubscriptionProgressId());
 		}
@@ -87,7 +89,7 @@ public class SupplyRequiredEventCreator
 	{
 		return SupplyRequiredDescriptor.builder()
 				.demandCandidateId(candidate.getId())
-				.eventDescriptor(new EventDescriptor(candidate.getClientId(), candidate.getOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(candidate.getClientId(), candidate.getOrgId()))
 				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty));
 	}
 

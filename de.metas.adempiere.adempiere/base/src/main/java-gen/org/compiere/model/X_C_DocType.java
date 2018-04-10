@@ -14,7 +14,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1315474791L;
+	private static final long serialVersionUID = 943610238L;
 
     /** Standard Constructor */
     public X_C_DocType (Properties ctx, int C_DocType_ID, String trxName)
@@ -387,8 +387,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_CashJournal = "CMC";
 	/** PaymentAllocation = CMA */
 	public static final String DOCBASETYPE_PaymentAllocation = "CMA";
-	/** MaterialProduction = MMP */
-	public static final String DOCBASETYPE_MaterialProduction = "MMP";
 	/** MatchInvoice = MXI */
 	public static final String DOCBASETYPE_MatchInvoice = "MXI";
 	/** MatchPO = MXP */
@@ -528,8 +526,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_DownPayment = "DP";
 	/** Saldokorektur = EC */
 	public static final String DOCSUBTYPE_Saldokorektur = "EC";
-	/** Material Disposal = MD */
-	public static final String DOCSUBTYPE_MaterialDisposal = "MD";
+	/** Internal Use Inventory = IUI */
+	public static final String DOCSUBTYPE_InternalUseInventory = "IUI";
 	/** Set Doc Sub Type.
 		@param DocSubType 
 		Document Sub Type

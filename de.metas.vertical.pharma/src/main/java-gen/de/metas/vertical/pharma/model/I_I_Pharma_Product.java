@@ -301,20 +301,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A00PPN.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA00PPN (int A00PPN);
+	public void setA00PPN (java.math.BigDecimal A00PPN);
 
 	/**
 	 * Get A00PPN.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA00PPN();
+	public java.math.BigDecimal getA00PPN();
 
     /** Column definition for A00PPN */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A00PPN = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A00PPN", null);
@@ -345,7 +345,7 @@ public interface I_I_Pharma_Product
     public static final String COLUMNNAME_A00PZN = "A00PZN";
 
 	/**
-	 * Set A00SSATZ - Statusindikator Artikelsatz.
+	 * Set A00SSATZ.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -354,7 +354,7 @@ public interface I_I_Pharma_Product
 	public void setA00SSATZ (java.lang.String A00SSATZ);
 
 	/**
-	 * Get A00SSATZ - Statusindikator Artikelsatz.
+	 * Get A00SSATZ.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2979,6 +2979,33 @@ public interface I_I_Pharma_Product
     public static final String COLUMNNAME_AVP_Price_List_ID = "AVP_Price_List_ID";
 
 	/**
+	 * Set Data import.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DataImport_ID (int C_DataImport_ID);
+
+	/**
+	 * Get Data import.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DataImport_ID();
+
+	public org.compiere.model.I_C_DataImport getC_DataImport();
+
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport);
+
+    /** Column definition for C_DataImport_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_C_DataImport> COLUMN_C_DataImport_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_C_DataImport>(I_I_Pharma_Product.class, "C_DataImport_ID", org.compiere.model.I_C_DataImport.class);
+    /** Column name C_DataImport_ID */
+    public static final String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -3159,6 +3186,35 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, de.metas.vertical.pharma.model.I_M_DosageForm> COLUMN_M_DosageForm_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, de.metas.vertical.pharma.model.I_M_DosageForm>(I_I_Pharma_Product.class, "M_DosageForm_ID", de.metas.vertical.pharma.model.I_M_DosageForm.class);
     /** Column name M_DosageForm_ID */
     public static final String COLUMNNAME_M_DosageForm_ID = "M_DosageForm_ID";
+
+	/**
+	 * Set Produkt Kategorie.
+	 * Kategorie eines Produktes
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_Category_ID (int M_Product_Category_ID);
+
+	/**
+	 * Get Produkt Kategorie.
+	 * Kategorie eines Produktes
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_Category_ID();
+
+	public org.compiere.model.I_M_Product_Category getM_Product_Category();
+
+	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
+
+    /** Column definition for M_Product_Category_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_Product_Category>(I_I_Pharma_Product.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
+    /** Column name M_Product_Category_ID */
+    public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
 
 	/**
 	 * Set Produkt.

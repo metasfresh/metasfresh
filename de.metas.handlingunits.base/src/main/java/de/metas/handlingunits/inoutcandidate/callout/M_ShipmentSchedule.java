@@ -56,8 +56,8 @@ public class M_ShipmentSchedule
 		// Calculate and set QtyEntered(CU) from M_HU_PI_Item_Product and QtyEnteredTU(aka QtyPacks)
 		final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 		final ShipmentScheduleHUPackingAware packingAware = new ShipmentScheduleHUPackingAware(shipmentSchedule);
-		final int qtyTU = packingAware.getQtyPacks().intValueExact();
-		huPackingAwareBL.setQty(packingAware, qtyTU);
+		final int qtyTU = packingAware.getQtyTU().intValueExact();
+		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyTU);
 
 	}
 }

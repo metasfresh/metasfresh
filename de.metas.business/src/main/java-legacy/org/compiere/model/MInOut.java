@@ -27,8 +27,9 @@ import java.util.Properties;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
@@ -707,7 +708,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 		final List<MInOutConfirm> list = new Query(getCtx(), MInOutConfirm.Table_Name, "M_InOut_ID=?", get_TrxName())
 				.setParameters(new Object[] { getM_InOut_ID() })
-				.list();
+				.list(MInOutConfirm.class);
 		m_confirms = new MInOutConfirm[list.size()];
 		list.toArray(m_confirms);
 		return m_confirms;
@@ -1264,7 +1265,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final BigDecimal creditUsed = stats.getSOCreditUsed();
 
@@ -1285,7 +1286,13 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 
 		final BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
-		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt, getMovementDate());
+
+		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
+				.stat(stats)
+				.additionalAmt(notInvoicedAmt)
+				.date(getMovementDate())
+				.build();
+		final String calculatedCreditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
@@ -1358,10 +1365,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 
 		// Outstanding (not processed) Incoming Confirmations ?
-		final MInOutConfirm[] confirmations = getConfirmations(true);
-		for (final MInOutConfirm confirmation : confirmations)
+		for (final MInOutConfirm confirm : getConfirmations(true))
 		{
-			final MInOutConfirm confirm = confirmation;
 			if (!confirm.isProcessed())
 			{
 				if (MInOutConfirm.CONFIRMTYPE_CustomerConfirmation.equals(confirm.getConfirmType()))

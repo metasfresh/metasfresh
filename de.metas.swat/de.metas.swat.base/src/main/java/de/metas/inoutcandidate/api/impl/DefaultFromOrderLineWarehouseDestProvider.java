@@ -89,8 +89,7 @@ import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(
-				context.getCtx() //
-				, context.getAD_Org_ID() //
+				context.getAD_Org_ID() //
 				, 0  // M_Warehouse_ID
 				, 0  // S_Resource_ID
 				, context.getM_Product_ID() // M_Product_ID

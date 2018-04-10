@@ -12,7 +12,6 @@ import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.I_M_MovementLine;
-import org.compiere.model.I_M_ProductionLine;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import lombok.NonNull;
@@ -48,7 +47,6 @@ public class CostingDocumentRef
 	public static final String TABLE_NAME_M_InOutLine = I_M_InOutLine.Table_Name;
 	public static final String TABLE_NAME_M_InventoryLine = I_M_InventoryLine.Table_Name;
 	public static final String TABLE_NAME_M_MovementLine = I_M_MovementLine.Table_Name;
-	public static final String TABLE_NAME_M_ProductionLine = I_M_ProductionLine.Table_Name;
 	public static final String TABLE_NAME_C_ProjectIssue = I_C_ProjectIssue.Table_Name;
 	public static final String TABLE_NAME_PP_Cost_Collector = I_PP_Cost_Collector.Table_Name;
 
@@ -92,12 +90,6 @@ public class CostingDocumentRef
 	{
 		final Boolean outboundTrx = Boolean.FALSE;
 		return new CostingDocumentRef(TABLE_NAME_M_MovementLine, movementLineId, I_M_CostDetail.COLUMNNAME_M_MovementLine_ID, outboundTrx);
-	}
-
-	public static CostingDocumentRef ofProductionLineId(final int productionLineId)
-	{
-		final Boolean outboundTrx = null;
-		return new CostingDocumentRef(TABLE_NAME_M_ProductionLine, productionLineId, I_M_CostDetail.COLUMNNAME_M_ProductionLine_ID, outboundTrx);
 	}
 
 	public static CostingDocumentRef ofProjectIssueId(final int projectIssueId)

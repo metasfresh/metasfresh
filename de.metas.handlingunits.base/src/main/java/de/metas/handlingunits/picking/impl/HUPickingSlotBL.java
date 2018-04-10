@@ -112,20 +112,23 @@ public class HUPickingSlotBL
 	@Override
 	public IQueueActionResult createCurrentHU(final I_M_PickingSlot pickingSlot, final I_M_HU_PI_Item_Product itemProduct)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		
 		//
 		// Check: there is no current HU in this picking slot
 		if (pickingSlot.getM_HU_ID() > 0)
 		{
 			// We already have an HU in this slot => ERROR
 			final I_M_HU currentHU = pickingSlot.getM_HU();
-			final String currentHUStr = currentHU == null ? "-" : currentHU.getValue() + " - " + currentHU.getM_HU_PI_Version().getName();
+			final String currentHUStr = currentHU == null ? "-"
+					: currentHU.getValue() + " - " + handlingUnitsBL.getPIVersion(currentHU).getName();
 			throw new AdempiereException("@HandlingUnitAlreadyOpen@: " + currentHUStr);
 		}
 
 		//
 		// Create HU Context
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(pickingSlot);
-		final IHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
 
 		//
 		// Create the new HU
@@ -326,7 +329,7 @@ public class HUPickingSlotBL
 		if (pickingSlotHU == null)
 		{
 			pickingSlotHU = InterfaceWrapperHelper.newInstance(I_M_PickingSlot_HU.class, huContext);
-			pickingSlotHU.setM_PickingSlot(pickingSlot);
+			pickingSlotHU.setM_PickingSlot_ID(pickingSlot.getM_PickingSlot_ID());
 			pickingSlotHU.setM_HU(hu);
 		}
 
@@ -596,11 +599,11 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsQuery request)
+	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsQuery query)
 	{
 		final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction = vhus -> RetrieveAvailableHUsToPickFilters.retrieveFullTreeAndExcludePickingHUs(vhus);
 
-		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(request, vhuToEndResultFunction);
+		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(query, vhuToEndResultFunction);
 	}
 
 	@Override

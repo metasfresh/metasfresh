@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -161,21 +161,12 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public I_M_AttributeInstance retrieveAttributeInstance(final I_M_AttributeSetInstance attributeSetInstance, final int attributeId)
 	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSetInstance);
-		return retrieveAttributeInstance(attributeSetInstance, attributeId, trxName);
-	}
-
-	@Override
-	public I_M_AttributeInstance retrieveAttributeInstance(final I_M_AttributeSetInstance attributeSetInstance, final int attributeId, final String trxName)
-	{
 		if (attributeSetInstance == null)
 		{
 			return null;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
-
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeInstance.class, ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeInstance.class)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstance.getM_AttributeSetInstance_ID())
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
@@ -381,12 +372,23 @@ public class AttributeDAO implements IAttributeDAO
 
 	@Override
 	@Cached(cacheName = I_M_AttributeSet.Table_Name + "#ID=0")
-	public I_M_AttributeSet retrieveNoAttributeSet(@CacheCtx final Properties ctx)
+	public I_M_AttributeSet retrieveNoAttributeSet()
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_AttributeSet.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_M_AttributeSet.class)
 				.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, AttributeConstants.M_AttributeSet_ID_None)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSet.class);
+	}
+
+	@Override
+	@Cached(cacheName = I_M_AttributeSetInstance.Table_Name + "#ID=0")
+	public I_M_AttributeSetInstance retrieveNoAttributeSetInstance()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_AttributeSetInstance.class)
+				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeConstants.M_AttributeSetInstance_ID_None)
+				.create()
+				.firstOnlyNotNull(I_M_AttributeSetInstance.class);
 	}
 }

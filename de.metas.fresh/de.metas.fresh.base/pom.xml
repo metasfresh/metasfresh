@@ -202,13 +202,6 @@
 			<artifactId>de.metas.jax.rs</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-		
-		<!-- those two are required when we run with -Dorg.adempiere.server.embedded=true -->
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
 
 		<!--
 		Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer.

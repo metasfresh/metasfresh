@@ -114,7 +114,7 @@ public class RequestMaterialOrderService
 				ppOrderBuilder.orderLineId(groupMember.getDemandDetail().getOrderLineId());
 			}
 
-			final ProductionDetail prodDetail = groupMember.getProductionDetail();
+			final ProductionDetail prodDetail = ProductionDetail.cast(groupMember.getBusinessCaseDetail());
 			final MaterialDescriptor materialDescriptor = groupMember.getMaterialDescriptor();
 			if (prodDetail.getProductBomLineId() <= 0)
 			{
@@ -126,7 +126,7 @@ public class RequestMaterialOrderService
 						.plantId(prodDetail.getPlantId())
 						.productDescriptor(materialDescriptor)
 						.bPartnerId(materialDescriptor.getBPartnerId())
-						.quantity(groupMember.getQuantity())
+						.qtyRequired(groupMember.getQuantity())
 						.warehouseId(groupMember.getWarehouseId());
 			}
 			else
@@ -159,7 +159,7 @@ public class RequestMaterialOrderService
 		ppOrderBuilder.materialDispoGroupId(firstGroupMember.getEffectiveGroupId());
 
 		return PPOrderRequestedEvent.builder()
-				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.dateOrdered(SystemTime.asDate())
 				.ppOrder(ppOrderBuilder.build())
 				.build();
@@ -206,7 +206,7 @@ public class RequestMaterialOrderService
 				ddOrderLineBuilder.salesOrderLineId(groupMember.getDemandDetail().getOrderLineId());
 			}
 
-			final DistributionDetail distributionDetail = groupMember.getDistributionDetail();
+			final DistributionDetail distributionDetail = DistributionDetail.cast(groupMember.getBusinessCaseDetail());
 			ddOrderBuilder
 					.plantId(distributionDetail.getPlantId())
 					.productPlanningId(distributionDetail.getProductPlanningId())
@@ -214,7 +214,6 @@ public class RequestMaterialOrderService
 
 			ddOrderLineBuilder
 					.networkDistributionLineId(distributionDetail.getNetworkDistributionLineId());
-
 		}
 
 		final int durationDays = TimeUtil.getDaysBetween(startDate, endDate);
@@ -222,14 +221,13 @@ public class RequestMaterialOrderService
 		final Candidate firstGroupMember = group.get(0);
 
 		return DDOrderRequestedEvent.builder()
-				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.dateOrdered(SystemTime.asDate())
 				.ddOrder(ddOrderBuilder
 						.line(ddOrderLineBuilder
 								.durationDays(durationDays)
 								.build())
 						.build())
-				.groupId(firstGroupMember.getEffectiveGroupId())
 				.build();
 	}
 }

@@ -182,6 +182,29 @@ public interface I_M_Product
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Auszeichnungsname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomerLabelName (java.lang.String CustomerLabelName);
+
+	/**
+	 * Get Auszeichnungsname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCustomerLabelName();
+
+    /** Column definition for CustomerLabelName */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_CustomerLabelName = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "CustomerLabelName", null);
+    /** Column name CustomerLabelName */
+    public static final String COLUMNNAME_CustomerLabelName = "CustomerLabelName";
+
+	/**
 	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
@@ -395,6 +418,31 @@ public interface I_M_Product
     public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_GroupCompensationType = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "GroupCompensationType", null);
     /** Column name GroupCompensationType */
     public static final String COLUMNNAME_GroupCompensationType = "GroupCompensationType";
+
+	/**
+	 * Set Min. Garantie-Tage.
+	 * Minumum number of guarantee days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setGuaranteeDaysMin (int GuaranteeDaysMin);
+
+	/**
+	 * Get Min. Garantie-Tage.
+	 * Minumum number of guarantee days
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getGuaranteeDaysMin();
+
+    /** Column definition for GuaranteeDaysMin */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_GuaranteeDaysMin = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "GuaranteeDaysMin", null);
+    /** Column name GuaranteeDaysMin */
+    public static final String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
 
 	/**
 	 * Set Kommentar/Hilfe.
@@ -936,8 +984,8 @@ public interface I_M_Product
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
-	 * Set Produkt-Kategorie.
-	 * Category of a Product
+	 * Set Produkt Kategorie.
+	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -946,8 +994,8 @@ public interface I_M_Product
 	public void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
-	 * Get Produkt-Kategorie.
-	 * Category of a Product
+	 * Get Produkt Kategorie.
+	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -1118,21 +1166,21 @@ public interface I_M_Product
 	 * Set Package Size.
 	 * Size of a package
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPackageSize (java.math.BigDecimal PackageSize);
+	public void setPackageSize (java.lang.String PackageSize);
 
 	/**
 	 * Get Package Size.
 	 * Size of a package
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPackageSize();
+	public java.lang.String getPackageSize();
 
     /** Column definition for PackageSize */
     public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_PackageSize = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "PackageSize", null);

@@ -72,7 +72,6 @@ public class SupplyCandiateHandler implements CandidateHandler
 	 *
 	 * @param supplyCandidate
 	 */
-
 	@Override
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate supplyCandidate)
 	{
@@ -101,12 +100,23 @@ public class SupplyCandiateHandler implements CandidateHandler
 		}
 		else
 		{
-			// figure out if there is stock candidate that is a child of a demand candidate with has the same demand details that we have
-			final CandidatesQuery queryForExistingDemandChild = CandidatesQuery.builder()
-					.type(CandidateType.STOCK)
-					.parentDemandDetail(supplyCandidateWithIdAndParentId.getDemandDetail())
-					.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(supplyCandidate.getMaterialDescriptor()))
-					.build();
+			// Figure out if there is stock candidate that is a child of a demand candidate with has the same demand details that we have.
+			final CandidatesQuery queryForExistingDemandChild;
+			if (extractDemandCandidateId(supplyCandidate) > 0)
+			{
+				queryForExistingDemandChild = CandidatesQuery.builder()
+						.type(CandidateType.STOCK)
+						.parentId(extractDemandCandidateId(supplyCandidate))
+						.build();
+			}
+			else
+			{
+				queryForExistingDemandChild = CandidatesQuery.builder()
+						.type(CandidateType.STOCK)
+						.parentDemandDetail(supplyCandidateWithIdAndParentId.getDemandDetail())
+						.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(supplyCandidate.getMaterialDescriptor()))
+						.build();
+			}
 
 			final Candidate existingDemandChildStock = candidateRepository.retrieveLatestMatchOrNull(queryForExistingDemandChild);
 			if (existingDemandChildStock != null)
@@ -127,15 +137,11 @@ public class SupplyCandiateHandler implements CandidateHandler
 			}
 		}
 
-		final BigDecimal delta = parentStockCandidateWithIdAndDelta.getQuantity();
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
-				parentStockCandidateWithIdAndDelta.getMaterialDescriptor(),
-				parentStockCandidateWithIdAndDelta.getGroupId(),
-				delta);
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(parentStockCandidateWithIdAndDelta);
 
 		// set the stock candidate as parent for the supply candidate
 		// the return value would have qty=0, but in the repository we updated the parent-ID
-		candidateRepositoryWriteService.updateCandidate(
+		candidateRepositoryWriteService.updateCandidateById(
 				supplyCandidateWithIdAndParentId
 						.withParentId(parentStockCandidateWithIdAndDelta.getId())
 						.withSeqNo(parentStockCandidateWithIdAndDelta.getSeqNo() + 1));
@@ -143,6 +149,15 @@ public class SupplyCandiateHandler implements CandidateHandler
 		return supplyCandidateDeltaWithId
 				.withParentId(parentStockCandidateWithIdAndDelta.getId())
 				.withSeqNo(parentStockCandidateWithIdAndDelta.getSeqNo() + 1);
+	}
+
+	private int extractDemandCandidateId(@NonNull final Candidate supplyCandidate)
+	{
+		if (supplyCandidate.getDemandDetail() == null)
+		{
+			return 0;
+		}
+		return supplyCandidate.getDemandDetail().getDemandCandidateId();
 	}
 
 	private void assertCorrectCandidateType(@NonNull final Candidate supplyCandidate)

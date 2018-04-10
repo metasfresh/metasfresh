@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.tourplanning.model;
 
 
@@ -32,7 +16,7 @@ public interface I_M_TourVersion
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -48,7 +32,7 @@ public interface I_M_TourVersion
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_TourVersion, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_TourVersion, org.compiere.model.I_AD_Client>(I_M_TourVersion.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,7 +59,7 @@ public interface I_M_TourVersion
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -303,7 +287,7 @@ public interface I_M_TourVersion
 	 */
 	public int getM_Tour_ID();
 
-	public de.metas.tourplanning.model.I_M_Tour getM_Tour() throws RuntimeException;
+	public de.metas.tourplanning.model.I_M_Tour getM_Tour();
 
 	public void setM_Tour(de.metas.tourplanning.model.I_M_Tour M_Tour);
 
@@ -561,8 +545,8 @@ public interface I_M_TourVersion
     public static final String COLUMNNAME_OnWednesday = "OnWednesday";
 
 	/**
-	 * Set Bereitstellungszeit.
-	 * Bereitstellungszeit für Montag
+	 * Set Bereitstellungszeit Mo.
+	 * Preparation time for monday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -571,8 +555,8 @@ public interface I_M_TourVersion
 	public void setPreparationTime_1 (java.sql.Timestamp PreparationTime_1);
 
 	/**
-	 * Get Bereitstellungszeit.
-	 * Bereitstellungszeit für Montag
+	 * Get Bereitstellungszeit Mo.
+	 * Preparation time for monday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -586,8 +570,8 @@ public interface I_M_TourVersion
     public static final String COLUMNNAME_PreparationTime_1 = "PreparationTime_1";
 
 	/**
-	 * Set Bereitstellungszeit.
-	 * Bereitstellungszeit für Dienstag
+	 * Set Bereitstellungszeit Di.
+	 * Preparation time for tuesday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -596,8 +580,8 @@ public interface I_M_TourVersion
 	public void setPreparationTime_2 (java.sql.Timestamp PreparationTime_2);
 
 	/**
-	 * Get Bereitstellungszeit.
-	 * Bereitstellungszeit für Dienstag
+	 * Get Bereitstellungszeit Di.
+	 * Preparation time for tuesday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -611,8 +595,8 @@ public interface I_M_TourVersion
     public static final String COLUMNNAME_PreparationTime_2 = "PreparationTime_2";
 
 	/**
-	 * Set Bereitstellungszeit.
-	 * Bereitstellungszeit für Mittwoch
+	 * Set Bereitstellungszeit Mi.
+	 * Preparation time for wednesday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -621,8 +605,8 @@ public interface I_M_TourVersion
 	public void setPreparationTime_3 (java.sql.Timestamp PreparationTime_3);
 
 	/**
-	 * Get Bereitstellungszeit.
-	 * Bereitstellungszeit für Mittwoch
+	 * Get Bereitstellungszeit Mi.
+	 * Preparation time for wednesday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -636,8 +620,8 @@ public interface I_M_TourVersion
     public static final String COLUMNNAME_PreparationTime_3 = "PreparationTime_3";
 
 	/**
-	 * Set Bereitstellungszeit.
-	 * Bereitstellungszeit für Donnerstag
+	 * Set Bereitstellungszeit Do.
+	 * Preparation time for thursday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -646,8 +630,8 @@ public interface I_M_TourVersion
 	public void setPreparationTime_4 (java.sql.Timestamp PreparationTime_4);
 
 	/**
-	 * Get Bereitstellungszeit.
-	 * Bereitstellungszeit für Donnerstag
+	 * Get Bereitstellungszeit Do.
+	 * Preparation time for thursday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -661,8 +645,8 @@ public interface I_M_TourVersion
     public static final String COLUMNNAME_PreparationTime_4 = "PreparationTime_4";
 
 	/**
-	 * Set Bereitstellungszeit.
-	 * Bereitstellungszeit für Freitag
+	 * Set Bereitstellungszeit Fr.
+	 * Preparation time for Friday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -671,8 +655,8 @@ public interface I_M_TourVersion
 	public void setPreparationTime_5 (java.sql.Timestamp PreparationTime_5);
 
 	/**
-	 * Get Bereitstellungszeit.
-	 * Bereitstellungszeit für Freitag
+	 * Get Bereitstellungszeit Fr.
+	 * Preparation time for Friday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -686,8 +670,8 @@ public interface I_M_TourVersion
     public static final String COLUMNNAME_PreparationTime_5 = "PreparationTime_5";
 
 	/**
-	 * Set Bereitstellungszeit.
-	 * Bereitstellungszeit für Samstag
+	 * Set Bereitstellungszeit Sa.
+	 * Preparation time for Saturday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -696,8 +680,8 @@ public interface I_M_TourVersion
 	public void setPreparationTime_6 (java.sql.Timestamp PreparationTime_6);
 
 	/**
-	 * Get Bereitstellungszeit.
-	 * Bereitstellungszeit für Samstag
+	 * Get Bereitstellungszeit Sa.
+	 * Preparation time for Saturday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -711,8 +695,8 @@ public interface I_M_TourVersion
     public static final String COLUMNNAME_PreparationTime_6 = "PreparationTime_6";
 
 	/**
-	 * Set Bereitstellungszeit.
-	 * Bereitstellungszeit für Sonntag
+	 * Set Bereitstellungszeit So.
+	 * Preparation time for Sunday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -721,8 +705,8 @@ public interface I_M_TourVersion
 	public void setPreparationTime_7 (java.sql.Timestamp PreparationTime_7);
 
 	/**
-	 * Get Bereitstellungszeit.
-	 * Bereitstellungszeit für Sonntag
+	 * Get Bereitstellungszeit So.
+	 * Preparation time for Sunday
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false

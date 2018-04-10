@@ -9,6 +9,7 @@ import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.TRANSACTION_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,8 +30,10 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.commons.RepositoryTestHelper;
+import de.metas.material.dispo.commons.candidate.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
@@ -176,6 +179,33 @@ public class CandiateRepositoryRetrievalTests
 
 	private IPair<Candidate, I_MD_Candidate> perform_retrieve_with_ProductionDetail()
 	{
+		final I_MD_Candidate_Prod_Detail productionDetailRecord = createProdDetailRecord(101, 111);
+
+		final CandidatesQuery query = CandidatesQuery.fromId(productionDetailRecord.getMD_Candidate().getMD_Candidate_ID());
+
+		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
+		assertThat(cand).isNotNull();
+
+		final MaterialDescriptor materialDescriptor = cand.getMaterialDescriptor();
+		assertThat(materialDescriptor.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(materialDescriptor.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(materialDescriptor.getDate()).isEqualTo(NOW);
+
+		final ProductionDetail productionDetail = ProductionDetail.cast(cand.getBusinessCaseDetail());
+		assertThat(productionDetail).isNotNull();
+		assertThat(productionDetail.getPlannedQty()).isZero();
+		assertThat(productionDetail.getDescription()).isEqualTo("description1");
+		assertThat(productionDetail.getProductBomLineId()).isEqualTo(71);
+		assertThat(productionDetail.getProductPlanningId()).isEqualTo(81);
+		assertThat(productionDetail.getPpOrderId()).isEqualTo(101);
+		assertThat(productionDetail.getPpOrderLineId()).isEqualTo(111);
+		assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo("ppOrderDocStatus1");
+
+		return ImmutablePair.of(cand, productionDetailRecord.getMD_Candidate());
+	}
+
+	private I_MD_Candidate_Prod_Detail createProdDetailRecord(final int ppOrderId, final int ppOrderLineId)
+	{
 		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		record.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION);
@@ -187,31 +217,12 @@ public class CandiateRepositoryRetrievalTests
 		productionDetailRecord.setPP_Product_BOMLine_ID(71);
 		productionDetailRecord.setPP_Product_Planning_ID(81);
 		productionDetailRecord.setMD_Candidate(record);
-		productionDetailRecord.setPP_Order_ID(101);
-		productionDetailRecord.setPP_Order_BOMLine_ID(111);
+		productionDetailRecord.setPP_Order_ID(ppOrderId);
+		productionDetailRecord.setPP_Order_BOMLine_ID(ppOrderLineId);
 		productionDetailRecord.setPP_Order_DocStatus("ppOrderDocStatus1");
 		save(productionDetailRecord);
 
-		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(record.getMD_Candidate_ID()));
-		assertThat(cand).isNotNull();
-
-		final MaterialDescriptor materialDescriptor = cand.getMaterialDescriptor();
-		assertThat(materialDescriptor.getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(materialDescriptor.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(materialDescriptor.getDate()).isEqualTo(NOW);
-
-		final ProductionDetail productionDetail = cand.getProductionDetail();
-		assertThat(productionDetail).isNotNull();
-		assertThat(productionDetail.getActualQty()).isZero();
-		assertThat(productionDetail.getPlannedQty()).isZero();
-		assertThat(productionDetail.getDescription()).isEqualTo("description1");
-		assertThat(productionDetail.getProductBomLineId()).isEqualTo(71);
-		assertThat(productionDetail.getProductPlanningId()).isEqualTo(81);
-		assertThat(productionDetail.getPpOrderId()).isEqualTo(101);
-		assertThat(productionDetail.getPpOrderLineId()).isEqualTo(111);
-		assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo("ppOrderDocStatus1");
-
-		return ImmutablePair.of(cand, record);
+		return productionDetailRecord;
 	}
 
 	/**
@@ -246,6 +257,43 @@ public class CandiateRepositoryRetrievalTests
 	}
 
 	@Test
+	public void retrieveExact_with_ProductionDetail_ppOrderId_only()
+	{
+
+		final I_MD_Candidate_Prod_Detail prodDetailRecord = createProdDetailRecord(101, 0);
+		createProdDetailRecord(101, 112);
+		createProdDetailRecord(101, 113);
+
+		final ProductionDetailsQuery poductionDetailsQuery = ProductionDetailsQuery.builder()
+				.ppOrderId(101)
+				.ppOrderLineId(ProductionDetailsQuery.NO_PP_ORDER_LINE_ID)
+				.build();
+		final CandidatesQuery candidatesQuery = CandidatesQuery.builder().productionDetailsQuery(poductionDetailsQuery).build();
+
+		final List<Candidate> retrievedCandidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(candidatesQuery);
+		assertThat(retrievedCandidates).hasSize(1);
+		assertThat(retrievedCandidates.get(0).getId()).isEqualTo(prodDetailRecord.getMD_Candidate_ID());
+	}
+
+	@Test
+	public void retrieveExact_with_ProductionDetail_ppOrderLineId()
+	{
+		createProdDetailRecord(101, 0);
+		final I_MD_Candidate_Prod_Detail prodDetailRecord = createProdDetailRecord(101, 112);
+		createProdDetailRecord(101, 113);
+
+		final ProductionDetailsQuery poductionDetailsQuery = ProductionDetailsQuery.builder()
+				.ppOrderId(101)
+				.ppOrderLineId(112)
+				.build();
+		final CandidatesQuery candidatesQuery = CandidatesQuery.builder().productionDetailsQuery(poductionDetailsQuery).build();
+
+		final List<Candidate> retrievedCandidates = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(candidatesQuery);
+		assertThat(retrievedCandidates).hasSize(1);
+		assertThat(retrievedCandidates.get(0).getId()).isEqualTo(prodDetailRecord.getMD_Candidate_ID());
+	}
+
+	@Test
 	public void retrieve_with_DistributionDetail()
 	{
 		perform_retrieve_with_DistributionDetail();
@@ -273,14 +321,18 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(cand.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(cand.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(cand.getMaterialDescriptor().getDate()).isEqualTo(NOW);
-		assertThat(cand.getProductionDetail()).isNull();
-		assertThat(cand.getDistributionDetail()).isNotNull();
-		assertThat(cand.getDistributionDetail().getNetworkDistributionLineId()).isEqualTo(71);
-		assertThat(cand.getDistributionDetail().getProductPlanningId()).isEqualTo(81);
-		assertThat(cand.getDistributionDetail().getDdOrderId()).isEqualTo(101);
-		assertThat(cand.getDistributionDetail().getDdOrderLineId()).isEqualTo(111);
-		assertThat(cand.getDistributionDetail().getShipperId()).isEqualTo(121);
-		assertThat(cand.getDistributionDetail().getDdOrderDocStatus()).isEqualTo("ddOrderDocStatus1");
+
+		final BusinessCaseDetail businessCaseDetail = cand.getBusinessCaseDetail();
+		assertThat(ProductionDetail.castOrNull(businessCaseDetail)).isNull();
+
+		final DistributionDetail distributionDetail = DistributionDetail.castOrNull(businessCaseDetail);
+		assertThat(distributionDetail).isNotNull();
+		assertThat(distributionDetail.getNetworkDistributionLineId()).isEqualTo(71);
+		assertThat(distributionDetail.getProductPlanningId()).isEqualTo(81);
+		assertThat(distributionDetail.getDdOrderId()).isEqualTo(101);
+		assertThat(distributionDetail.getDdOrderLineId()).isEqualTo(111);
+		assertThat(distributionDetail.getShipperId()).isEqualTo(121);
+		assertThat(distributionDetail.getDdOrderDocStatus()).isEqualTo("ddOrderDocStatus1");
 
 		return ImmutablePair.of(cand, record);
 	}
@@ -295,7 +347,7 @@ public class CandiateRepositoryRetrievalTests
 		final IPair<Candidate, I_MD_Candidate> pair = perform_retrieve_with_DistributionDetail();
 
 		final Candidate candidateWithDistributionDetail = pair.getLeft();
-		assertThat(candidateWithDistributionDetail.getDistributionDetail()).isNotNull();
+		assertThat(distrDetailOrNull(candidateWithDistributionDetail)).isNotNull();
 
 		final I_MD_Candidate record = pair.getRight();
 
@@ -308,7 +360,7 @@ public class CandiateRepositoryRetrievalTests
 		final Candidate expectedResultWithDistDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(candidateWithDistributionDetail, false));
 		assertThat(expectedResultWithDistDetails).isNotNull();
-		assertThat(expectedResultWithDistDetails.getDistributionDetail()).isNotNull();
+		assertThat(distrDetailOrNull(expectedResultWithDistDetails)).isNotNull();
 		assertThat(expectedResultWithDistDetails.getId()).isEqualTo(record.getMD_Candidate_ID());
 
 		final CandidatesQuery withoutdistDetailsQuery = CandidatesQuery
@@ -318,8 +370,14 @@ public class CandiateRepositoryRetrievalTests
 				.retrieveLatestMatchOrNull(withoutdistDetailsQuery);
 
 		assertThat(expectedRecordWithoutDistDetails).isNotNull();
-		assertThat(expectedRecordWithoutDistDetails.getDistributionDetail()).isNull();
+		assertThat(distrDetailOrNull(expectedRecordWithoutDistDetails)).isNull();
 		assertThat(expectedRecordWithoutDistDetails.getId()).isEqualTo(otherRecord.getMD_Candidate_ID());
+	}
+
+	private DistributionDetail distrDetailOrNull(final Candidate candidateWithDistributionDetail)
+	{
+		final DistributionDetail distributionDetail = DistributionDetail.castOrNull(candidateWithDistributionDetail.getBusinessCaseDetail());
+		return distributionDetail;
 	}
 
 	@Test
@@ -356,7 +414,7 @@ public class CandiateRepositoryRetrievalTests
 
 	/**
 	 * Verifies that demand details are also used as filter criterion
-	 * If this one fails, i recommend to first check if {@link #retrieve_with_DemandDetail()} works
+	 * If this one fails, i recommend to first check if {@link #retrieve_with_id_and_demandDetail()} works
 	 */
 	@Test
 	public void retrieveExact_with_demandDetail_filtered()
@@ -385,7 +443,7 @@ public class CandiateRepositoryRetrievalTests
 				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(
 						cand
 								.withId(0)
-								.withDemandDetail(DemandDetail.forForecastLineId(74)),
+								.withBusinessCaseDetail(DemandDetail.forForecastLineId(74, 84, TEN)),
 						false));
 
 		assertThat(expectedRecordWithoutDemandDetails).isNotNull();
@@ -411,7 +469,7 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(cand.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(cand.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(cand.getMaterialDescriptor().getDate()).isEqualTo(NOW);
-		assertThat(cand.getProductionDetail()).isNull();
+		assertThat(ProductionDetail.castOrNull(cand.getBusinessCaseDetail())).isNull();
 		assertThat(cand.getDemandDetail().getOrderLineId()).isEqualTo(62);
 		assertThat(cand.getDemandDetail().getForecastLineId()).isEqualTo(72);
 
@@ -499,7 +557,7 @@ public class CandiateRepositoryRetrievalTests
 		createCandiateRecordWithShipmentScheduleId(35);
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(25, -1))
+				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(25, -1, -1, TEN))
 				.build();
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 
@@ -523,11 +581,11 @@ public class CandiateRepositoryRetrievalTests
 	@Test
 	public void retrieveMatches_by_forecastLineId()
 	{
-		final I_MD_Candidate candidateRecord = createCandiateRecordWithForecastLineId(25);
-		createCandiateRecordWithForecastLineId(35);
+		final I_MD_Candidate candidateRecord = createCandiateRecordWithForecastLineId(25, 26);
+		createCandiateRecordWithForecastLineId(35, 36);
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.demandDetail(DemandDetail.forForecastLineId(25))
+				.demandDetail(DemandDetail.forForecastLineId(25, 35, TEN))
 				.build();
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 
@@ -539,9 +597,14 @@ public class CandiateRepositoryRetrievalTests
 
 	}
 
-	private static I_MD_Candidate createCandiateRecordWithForecastLineId(final int forecastLineId)
+	private static I_MD_Candidate createCandiateRecordWithForecastLineId(
+			final int forecastLineId,
+			final int forecastId)
 	{
 		final I_MD_Candidate candidateRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
+		candidateRecord.setM_Forecast_ID(forecastId);
+		save(candidateRecord);
+
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = newInstance(I_MD_Candidate_Demand_Detail.class);
 		demandDetailRecord.setMD_Candidate(candidateRecord);
 		demandDetailRecord.setM_ForecastLine_ID(forecastLineId);

@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,19 +37,21 @@ import org.compiere.util.Env;
 
 /**
  * Material Attributes DAO
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public interface IAttributeDAO extends ISingletonService
 {
 	/**
-	 * Retrieves the "No Attribute Set" instance (i.e. M_AttributeSet_ID = {@link #M_AttributeSet_ID_None}).
-	 * 
-	 * @param ctx
-	 * @return no attribute set instance; never returns null
+	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeConstants#M_AttributeSet_ID_None}).
 	 */
-	I_M_AttributeSet retrieveNoAttributeSet(Properties ctx);
+	I_M_AttributeSet retrieveNoAttributeSet();
+
+	/**
+	 * Retrieves the "No Attribute Set Instance" (i.e. M_AttributeSetInstance_ID = {@link AttributeConstants#M_AttributeSetInstance_ID_None}).
+	 */
+	I_M_AttributeSetInstance retrieveNoAttributeSetInstance();
 
 	I_M_Attribute retrieveAttributeById(Properties ctx, int attributeId);
 
@@ -57,25 +59,15 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Retrieves all attribute instances associated with an attribute instance set.
-	 * 
+	 *
 	 * @param attributeSetInstance may be {@code null}, in which case an empty list is returned.
 	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by {@code M_Attribute_ID}. Never {@code null}
 	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
 
 	/**
-	 * Retrieve instance attribute for given <code>attributeId</code>
-	 * 
-	 * @param attributeSetInstance
-	 * @param attributeId M_Attribute_ID
-	 * @param trxName
-	 * @return attribute instance or null
-	 */
-	I_M_AttributeInstance retrieveAttributeInstance(I_M_AttributeSetInstance attributeSetInstance, int attributeId, String trxName);
-
-	/**
 	 * Same as {@link #retrieveAttributeInstance(I_M_AttributeSetInstance, int, String)} but <code>attributeSetInstance</code>'s trxName will be used.
-	 * 
+	 *
 	 * @param attributeSetInstance
 	 * @param attributeId M_Attribute_ID
 	 * @return attribute instance or null
@@ -84,7 +76,7 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Retrieve all attribute values that are defined for SO/PO transactions.
-	 * 
+	 *
 	 * @param attribute
 	 * @param isSOTrx if NULL, retrieve all attribute values.
 	 * @return
@@ -93,7 +85,7 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Retrieves all attributes in a set that are (or aren't) instance attributes
-	 * 
+	 *
 	 * @param attributeSet
 	 * @param isInstanceAttribute
 	 * @return
@@ -102,7 +94,7 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Check if an attribute belongs to an attribute set (via M_AttributeUse).
-	 * 
+	 *
 	 * @param attributeSetId
 	 * @param attributeId
 	 * @param ctxProvider
@@ -116,9 +108,9 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Retrieves substitutes (M_AttributeValue.Value) for given value.
-	 * 
+	 *
 	 * Example use case:
-	 * 
+	 *
 	 * <pre>
 	 * We have following attribute values:
 	 * * A&B
@@ -126,7 +118,7 @@ public interface IAttributeDAO extends ISingletonService
 	 * * A
 	 * * B
 	 * * C
-	 * 
+	 *
 	 * We want to specify that when "A" or "B" is needed then we can also use "A&B".
 	 * For that, in {@link I_M_AttributeValue_Mapping} we insert following records:
 	 * (M_AttributeValue_ID, M_AttributeValue_To_ID)
@@ -134,10 +126,10 @@ public interface IAttributeDAO extends ISingletonService
 	 * * A&B,  B
 	 * * A&C,  A
 	 * * A&C,  C
-	 * 
+	 *
 	 * Now, when we call {@link #retrieveAttributeValueSubstitutes(I_M_Attribute, String)} with value="A" we will get a set of {"A&B", "A&C"}.
 	 * </pre>
-	 * 
+	 *
 	 * @param attribute
 	 * @param value
 	 * @return substitutes (M_AttributeValue.Value).
@@ -146,7 +138,7 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Gets {@link I_M_Attribute} by it's Value (a.k.a. Internal Name)
-	 * 
+	 *
 	 * @param ctx
 	 * @param value
 	 * @param clazz
@@ -165,9 +157,9 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Creates a new {@link I_M_AttributeInstance}.
-	 * 
+	 *
 	 * NOTE: it is not saving it
-	 * 
+	 *
 	 * @param ctx
 	 * @param asi
 	 * @param attributeId
@@ -178,7 +170,7 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Creates a new {@link I_M_AttributeSetInstance} (including it's {@link I_M_AttributeInstance}s) by copying given <code>asi</code>
-	 * 
+	 *
 	 * @param fromASI
 	 * @return asi copy
 	 */
@@ -194,7 +186,7 @@ public interface IAttributeDAO extends ISingletonService
 				.overrideM_AttributeSet_ID(overrideM_AttributeSet_ID)
 				.copy();
 	}
-	
+
 	default ASICopy prepareCopy(final I_M_AttributeSetInstance fromASI)
 	{
 		return ASICopy.newInstance(fromASI);

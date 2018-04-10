@@ -68,10 +68,12 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.terminal.Utils;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.product.IStoragePA;
+import de.metas.quantity.Quantity;
 
 /**
  * Packing View
@@ -162,7 +164,7 @@ public abstract class Packing extends MvcGenForm
 		{
 			model.reload();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			displayError(ex);
 		}
@@ -286,7 +288,7 @@ public abstract class Packing extends MvcGenForm
 			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@");
 		}
 
-		final List<OlAndSched> olsAndScheds = new ArrayList<OlAndSched>();
+		final List<OlAndSched> olsAndScheds = new ArrayList<>();
 		for (final int id : shipmentScheduleIds)
 		{
 			final I_M_ShipmentSchedule sched = InterfaceWrapperHelper.create(ctx, id, I_M_ShipmentSchedule.class, ITrx.TRXNAME_None);
@@ -314,13 +316,10 @@ public abstract class Packing extends MvcGenForm
 		final IPackingDetailsModel detailsModel;
 		try
 		{
-			// lock our affected shipment schedules
-			lockShipmentSchedules(ctx, olsAndScheds);
-
 			// prepare our "problem" description
 			final Collection<IPackingItem> unallocatedLines = createUnallocatedLines(olsAndScheds, displayNonItems);
 
-			final List<I_M_ShipmentSchedule> nonItemScheds = new ArrayList<I_M_ShipmentSchedule>();
+			final List<I_M_ShipmentSchedule> nonItemScheds = new ArrayList<>();
 
 			for (final OlAndSched oldAndSched : olsAndScheds)
 			{
@@ -332,26 +331,15 @@ public abstract class Packing extends MvcGenForm
 			}
 
 			detailsModel = createPackingDetailsModel(ctx, rows, unallocatedLines, nonItemScheds);
-
-			if (model.isPOSMode())
-			{
-				markAsProcessed();
-				return;
 			}
-
-			if (detailsModel.getValidState() == PackingDetailsMd.STATE_INVALID)
-			{
-				markAsProcessed();
-				return;
-			}
-		}
 		catch (final Throwable t)
 		{
 			unlockShipmentSchedules();
 			throw new AdempiereException(t.getLocalizedMessage(), t);
 		}
 
-		invokeProcess(detailsModel);
+		// related to https://github.com/metasfresh/metasfresh/issues/456
+		// invokeProcess(detailsModel);
 	}
 
 	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds, boolean displayNonItems)
@@ -359,9 +347,9 @@ public abstract class Packing extends MvcGenForm
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final Collection<IPackingItem> unallocatedLines = new ArrayList<IPackingItem>();
+		final Collection<IPackingItem> unallocatedLines = new ArrayList<>();
 
-		final Map<ArrayKey, IPackingItem> key2Sched = new HashMap<ArrayKey, IPackingItem>();
+		final Map<ArrayKey, IPackingItem> key2Sched = new HashMap<>();
 
 		for (final OlAndSched oldAndSched : olsAndScheds)
 		{
@@ -369,7 +357,12 @@ public abstract class Packing extends MvcGenForm
 			if (sched.isDisplayed() || displayNonItems)
 			{
 				final BigDecimal qtyToDeliver = shipmentScheduleEffectiveBL.getQtyToDeliver(sched);
-				final Map<I_M_ShipmentSchedule, BigDecimal> schedWithQty = Collections.singletonMap(sched, qtyToDeliver);
+
+				final Map<I_M_ShipmentSchedule, Quantity> schedWithQty = Collections.singletonMap(
+						sched,
+						Quantity.of(
+								qtyToDeliver,
+								shipmentScheduleBL.getUomOfProduct(sched)));
 
 				// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
 				final boolean includeBPartner = true;
@@ -404,7 +397,7 @@ public abstract class Packing extends MvcGenForm
 
 		final IStoragePA storagePA = Services.get(IStoragePA.class);
 
-		final Collection<AvailableBins> containers = new ArrayList<AvailableBins>();
+		final Collection<AvailableBins> containers = new ArrayList<>();
 
 		final int warehouseId = model.getM_Warehouse_ID();
 		final List<I_M_PackagingContainer> pcs = packagingDAO.retrieveContainers(warehouseId, ITrx.TRXNAME_None);
@@ -430,7 +423,7 @@ public abstract class Packing extends MvcGenForm
 		BigDecimal qty = Env.ZERO;
 		for (final IPackingItem item : unallocatedLines)
 		{
-			qty = qty.add(item.getQtySum());
+			qty = qty.add(Utils.convertToItemUOM(item, item.getQtySum()));
 		}
 		//
 		final int bpId = model.getBPartnerIdForRow(rows[0]); // in this case is only one row selected
@@ -475,70 +468,21 @@ public abstract class Packing extends MvcGenForm
 	}
 
 	/**
-	 * Lock given shipment schedules
-	 *
-	 * @param ctx
-	 * @param olsAndScheds
-	 */
-	private void lockShipmentSchedules(final Properties ctx, final List<OlAndSched> olsAndScheds)
-	{
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(String localTrxName)
-			{
-				shipmentSchedulePA.createLocksForShipmentRun(olsAndScheds,
-						adPInstanceId,  // AD_PInstance_ID
-						Env.getAD_User_ID(ctx),
-						localTrxName);
-			}
-		});
-	}
-
-	/**
 	 * Unlock all shipment schedules which were locked in {@link #createPackingDetails(Properties, int)}
 	 */
 	public void unlockShipmentSchedules()
 	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adUserId = Env.getAD_User_ID(ctx);
 
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final boolean updateOnlyLocked = true;
+		trxManager.run((TrxRunnable)localTrxName -> {
+			final boolean updateOnlyLocked = true;
 
-				shipmentScheduleUpdater.updateShipmentSchedule(
-						ctx,
-						adClientId,
-						adUserId,
-						adPInstanceId,
-						updateOnlyLocked,
-						localTrxName);
-				shipmentSchedulePA.deleteUnprocessedLocksForShipmentRun(
-						adPInstanceId,
-						adUserId,
-						localTrxName); // 02217
-			}
-		});
-	}
-
-	public void markAsProcessed()
-	{
-		final int adUserId = Env.getAD_User_ID(ctx);
-
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(String localTrxName)
-			{
-				shipmentSchedulePA.markLocksForShipmentRunProcessed(
-						adPInstanceId,  // AD_PInstance_ID
-						adUserId,
-						localTrxName);
-			}
+			shipmentScheduleUpdater.updateShipmentSchedule(
+					ctx,
+					adUserId,
+					adPInstanceId,
+					updateOnlyLocked,
+					localTrxName);
 		});
 	}
 
@@ -547,22 +491,22 @@ public abstract class Packing extends MvcGenForm
 		// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
 		// NOTE assume this is not called
 		throw new UnsupportedOperationException();
-		
-//		final int processId = processPA.retrieveProcessId(PerformPackaging.class, ITrx.TRXNAME_None);
-//
-//		final ProcessInfo pi = new ProcessInfo(MSG_DOING_PACKAGING, processId);
-//		pi.setTitle("Kommisionierungsbelege");
-//		pi.setWindowNo(getModel().getWindowNo());
-//		pi.setParameter(new ProcessInfoParameter[] {
-//				new ProcessInfoParameter("selection", model.getPackingTreeModel().getUsedBins(), null, "pipSelectection", null) //
-//				, new ProcessInfoParameter("shipper", model.getSelectedShipper(), null, "pipShipper", null) //
-//				, new ProcessInfoParameter("nonItems", model.getNonItems(), null, "pipNonItems", null) //
-//		});
-//
-//		return ProcessCtl.builder()
-//				.setAsyncParent(this)
-//				.setProcessInfo(pi)
-//				.execute();
+
+		// final int processId = processPA.retrieveProcessId(PerformPackaging.class, ITrx.TRXNAME_None);
+		//
+		// final ProcessInfo pi = new ProcessInfo(MSG_DOING_PACKAGING, processId);
+		// pi.setTitle("Kommisionierungsbelege");
+		// pi.setWindowNo(getModel().getWindowNo());
+		// pi.setParameter(new ProcessInfoParameter[] {
+		// new ProcessInfoParameter("selection", model.getPackingTreeModel().getUsedBins(), null, "pipSelectection", null) //
+		// , new ProcessInfoParameter("shipper", model.getSelectedShipper(), null, "pipShipper", null) //
+		// , new ProcessInfoParameter("nonItems", model.getNonItems(), null, "pipNonItems", null) //
+		// });
+		//
+		// return ProcessCtl.builder()
+		// .setAsyncParent(this)
+		// .setProcessInfo(pi)
+		// .execute();
 	}
 
 	@Override

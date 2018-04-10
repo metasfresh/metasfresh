@@ -82,6 +82,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.exception.MonitoringException;
 import de.metas.process.IADPInstanceDAO;
+import lombok.NonNull;
 
 public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngine
 {
@@ -267,7 +268,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			return null;
 		}
 
-		Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
+		final Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
 		if (tableRecords == null || tableRecords.isEmpty())
 		{
 			throw new RuntimeException("No cached object found for clazz=" + clazz + ", id=" + id);
@@ -384,7 +385,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 				wrapper.setTrxName(localTrxName);
 
 				int id = wrapper.getId();
-				final boolean isNew = id <= 0;
+				final boolean isNew = id <= wrapper.idForNewModel();
 
 				fireModelChanged(model, isNew ? ModelChangeType.BEFORE_NEW : ModelChangeType.BEFORE_CHANGE);
 
@@ -440,24 +441,21 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 	}
 
-	private void putCopy(final Map<Integer, Object> tableRecords, final int id, final Object model, final boolean isNew)
+	private void putCopy(
+			final Map<Integer, Object> tableRecords,
+			final int id,
+			@NonNull final Object model,
+			final boolean isNew)
 	{
-		Check.assumeNotNull(model, "model not null");
-
-		if (id <= 0)
-		{
-			throw new AdempiereException("ID shall be > 0");
-		}
+		final int defaultId = POJOWrapper.getWrapper(model).idForNewModel();
+		Check.errorIf(id <= defaultId, "The given model needs to have an ID > {}; actual id={}; isNew={}; model={}", defaultId, id, isNew, model);
 
 		final Object modelCopy = copy(model);
 		POJOWrapper.setTrxName(modelCopy, ITrx.TRXNAME_None);
 
 		// Make sure the model's ID is correct
 		final int modelCopyId = InterfaceWrapperHelper.getId(modelCopy);
-		if (modelCopyId != id)
-		{
-			throw new AdempiereException("Model's ID (" + modelCopyId + ") does not match expected ID=" + id);
-		}
+		Check.errorIf(modelCopyId != id, "Model's ID ({}) does not match expected ID={}", modelCopy, id);
 
 		final Object modelOld = tableRecords.put(id, modelCopy);
 
@@ -522,7 +520,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 
 		final List<T> result = filter == null ? new ArrayList<>() : new ArrayList<>(recordsMap.size());
-		for (Object o : recordsMap.values())
+		for (final Object o : recordsMap.values())
 		{
 			final T record = copy(POJOWrapper.create(o, clazz));
 			if (filter == null // accept everything if filter is null
@@ -681,7 +679,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 		Collections.sort(tableNamesToUse);
 
-		for (String tableName : tableNamesToUse)
+		for (final String tableName : tableNamesToUse)
 		{
 			final Map<Integer, Object> map = cachedObjects.get(tableName);
 			if (map == null || map.isEmpty())
@@ -860,11 +858,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		{
 			interceptors.onModelChange(model, changeType);
 		}
-		catch (AdempiereException e)
+		catch (final AdempiereException e)
 		{
 			throw e;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException(e.getLocalizedMessage(), e);
 		}
@@ -883,11 +881,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		{
 			interceptors.onDocValidate(doc, timing);
 		}
-		catch (AdempiereException e)
+		catch (final AdempiereException e)
 		{
 			throw e;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException(e.getLocalizedMessage(), e);
 		}
@@ -952,7 +950,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			final String jmxName = jmxBean.getJMXName();
 			name = new ObjectName(jmxName);
 		}
-		catch (MalformedObjectNameException e)
+		catch (final MalformedObjectNameException e)
 		{
 			throw new MonitoringException("Unable to create jmx ObjectName", e);
 		}
@@ -969,19 +967,19 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 				mbs.registerMBean(jmxBean, name);
 			}
 		}
-		catch (InstanceAlreadyExistsException e)
+		catch (final InstanceAlreadyExistsException e)
 		{
 			throw new MonitoringException("Unable to register mbean", e);
 		}
-		catch (MBeanRegistrationException e)
+		catch (final MBeanRegistrationException e)
 		{
 			throw new MonitoringException("Unable to register mbean", e);
 		}
-		catch (NotCompliantMBeanException e)
+		catch (final NotCompliantMBeanException e)
 		{
 			throw new MonitoringException("Unable to register mbean", e);
 		}
-		catch (InstanceNotFoundException e)
+		catch (final InstanceNotFoundException e)
 		{
 			throw new MonitoringException("Unable to unregister mbean", e);
 		}
@@ -1001,12 +999,12 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		{
 			mbs.unregisterMBean(jmxName);
 		}
-		catch (MBeanRegistrationException e)
+		catch (final MBeanRegistrationException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		catch (InstanceNotFoundException e)
+		catch (final InstanceNotFoundException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();

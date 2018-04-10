@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1226392063L;
+	private static final long serialVersionUID = -1776266296L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -105,7 +105,11 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	@Override
 	public void setC_Order_ID (int C_Order_ID)
 	{
-		throw new IllegalArgumentException ("C_Order_ID is virtual column");	}
+		if (C_Order_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
+	}
 
 	/** Get Auftrag.
 		@return Auftrag
@@ -362,7 +366,11 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	@Override
 	public void setM_Forecast_ID (int M_Forecast_ID)
 	{
-		throw new IllegalArgumentException ("M_Forecast_ID is virtual column");	}
+		if (M_Forecast_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Forecast_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Forecast_ID, Integer.valueOf(M_Forecast_ID));
+	}
 
 	/** Get Prognose.
 		@return Vorhersagen zu Material-/Produkt-/Artikelentwicklung
@@ -418,7 +426,11 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	@Override
 	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
 	{
-		throw new IllegalArgumentException ("M_ShipmentSchedule_ID is virtual column");	}
+		if (M_ShipmentSchedule_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
+	}
 
 	/** Get Lieferdisposition.
 		@return Lieferdisposition	  */
@@ -485,6 +497,42 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public java.math.BigDecimal getQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Zusagbar (ATP).
+		@param Qty_AvailableToPromise Zusagbar (ATP)	  */
+	@Override
+	public void setQty_AvailableToPromise (java.math.BigDecimal Qty_AvailableToPromise)
+	{
+		throw new IllegalArgumentException ("Qty_AvailableToPromise is virtual column");	}
+
+	/** Get Zusagbar (ATP).
+		@return Zusagbar (ATP)	  */
+	@Override
+	public java.math.BigDecimal getQty_AvailableToPromise () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_AvailableToPromise);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Menge.
+		@param Qty_Display Menge	  */
+	@Override
+	public void setQty_Display (java.math.BigDecimal Qty_Display)
+	{
+		throw new IllegalArgumentException ("Qty_Display is virtual column");	}
+
+	/** Get Menge.
+		@return Menge	  */
+	@Override
+	public java.math.BigDecimal getQty_Display () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Display);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

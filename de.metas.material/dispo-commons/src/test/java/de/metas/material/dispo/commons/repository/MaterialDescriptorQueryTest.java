@@ -76,7 +76,7 @@ public class MaterialDescriptorQueryTest
 		assertThat(result.getProductId()).isLessThanOrEqualTo(0);
 		assertThat(result.getStorageAttributesKey())
 				.isSameAs(AttributesKey.ALL);
-		assertThat(result.getBPartnerId()).isSameAs(StockQuery.BPARTNER_ID_ANY);
+		assertThat(result.getBPartnerId()).isSameAs(AvailableToPromiseQuery.BPARTNER_ID_ANY);
 	}
 
 }

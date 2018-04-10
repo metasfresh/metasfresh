@@ -141,6 +141,11 @@ public interface IADProcessDAO extends ISingletonService
 	 */
 	I_AD_Process retrieveProcessById(Properties ctx, int adProcessId);
 
+	default I_AD_Process retrieveProcessById(final int adProcessId)
+	{
+		return retrieveProcessById(Env.getCtx(), adProcessId);
+	}
+
 	/**
 	 * Retrieves the ID of the <code>AD_Process</code> whose {@link I_AD_Process#COLUMN_Value} is equal to the given <code>processValue</code>. Assumes that <code>AD_Process.Value</code> is unique.
 	 *
@@ -165,6 +170,11 @@ public interface IADProcessDAO extends ISingletonService
 	Collection<I_AD_Process_Para> retrieveProcessParameters(I_AD_Process process);
 
 	I_AD_Process_Para retriveProcessParameter(Properties ctx, int adProcessId, String parameterName);
+
+	default I_AD_Process_Para retriveProcessParameter(final int adProcessId, final String parameterName)
+	{
+		return retriveProcessParameter(Env.getCtx(), adProcessId, parameterName);
+	}
 
 	/**
 	 * Add process execution statistics.

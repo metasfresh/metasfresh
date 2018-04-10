@@ -170,58 +170,6 @@ public interface I_MD_Cockpit
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Materialcockpit.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMD_Cockpit_ID (int MD_Cockpit_ID);
-
-	/**
-	 * Get Materialcockpit.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getMD_Cockpit_ID();
-
-    /** Column definition for MD_Cockpit_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
-    /** Column name MD_Cockpit_ID */
-    public static final String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
-
-	/**
-	 * Set Produkt-Kategorie.
-	 * Kategorie eines Produktes
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Product_Category_ID (int M_Product_Category_ID);
-
-	/**
-	 * Get Produkt-Kategorie.
-	 * Kategorie eines Produktes
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Product_Category_ID();
-
-	public org.compiere.model.I_M_Product_Category getM_Product_Category();
-
-	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
-
-    /** Column definition for M_Product_Category_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_M_Product_Category>(I_MD_Cockpit.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
-    /** Column name M_Product_Category_ID */
-    public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
-
-	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -249,6 +197,29 @@ public interface I_MD_Cockpit
     public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_M_Product>(I_MD_Cockpit.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Materialcockpit.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMD_Cockpit_ID (int MD_Cockpit_ID);
+
+	/**
+	 * Get Materialcockpit.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getMD_Cockpit_ID();
+
+    /** Column definition for MD_Cockpit_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
+    /** Column name MD_Cockpit_ID */
+    public static final String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
 
 	/**
 	 * Set Zusage Lieferant.
@@ -449,7 +420,7 @@ public interface I_MD_Cockpit
     public static final String COLUMNNAME_QtyOnHandEstimate = "QtyOnHandEstimate";
 
 	/**
-	 * Set Benötigte Menge für Produktion.
+	 * Set Menge für Produktion.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -458,7 +429,7 @@ public interface I_MD_Cockpit
 	public void setQtyRequiredForProduction (java.math.BigDecimal QtyRequiredForProduction);
 
 	/**
-	 * Get Benötigte Menge für Produktion.
+	 * Get Menge für Produktion.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -472,7 +443,7 @@ public interface I_MD_Cockpit
     public static final String COLUMNNAME_QtyRequiredForProduction = "QtyRequiredForProduction";
 
 	/**
-	 * Set Noch offene bestellte Menge.
+	 * Set Bestellt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -481,7 +452,7 @@ public interface I_MD_Cockpit
 	public void setQtyReserved_Purchase (java.math.BigDecimal QtyReserved_Purchase);
 
 	/**
-	 * Get Noch offene bestellte Menge.
+	 * Get Bestellt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -495,7 +466,7 @@ public interface I_MD_Cockpit
     public static final String COLUMNNAME_QtyReserved_Purchase = "QtyReserved_Purchase";
 
 	/**
-	 * Set Noch offene beauftragte Menge.
+	 * Set Beauftragt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -504,7 +475,7 @@ public interface I_MD_Cockpit
 	public void setQtyReserved_Sale (java.math.BigDecimal QtyReserved_Sale);
 
 	/**
-	 * Get Noch offene beauftragte Menge.
+	 * Get Beauftragt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

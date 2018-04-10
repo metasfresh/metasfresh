@@ -72,8 +72,11 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	private static final transient Logger log = LogManager.getLogger(POJOWrapper.class);
 
 	public static final int DEFAULT_VALUE_int = 0;
-	public static final int DEFAULT_VALUE_ID = 0;
 	public static final BigDecimal DEFAULT_VALUE_BigDecimal = BigDecimal.ZERO;
+
+	public static final int ID_ZERO = 0;
+	public static final int ID_MINUS_ONE = -1;
+
 	private static final AtomicLong nextInstanceId = new AtomicLong(0);
 
 	private static final String DYNATTR_IsJustCreated = POJOWrapper.class.getName() + "#IsJustCreated";
@@ -441,6 +444,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	private boolean strictValues = false;
 	public static final boolean DEFAULT_StrictValues = false;
+
 	private static boolean strictValuesDefault = DEFAULT_StrictValues;
 	private static boolean allowRefreshingChangedModels = false;
 
@@ -657,7 +661,9 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			if (propertyNameLowerCase.endsWith("_ID"))
 			{
-				value = DEFAULT_VALUE_ID;
+				// e.g. if a PP_Order has no ASI, we still return 0 because that's the "NO-ASI"-asi's ID
+				// value = idForNewModel(propertyNameLowerCase);
+				value = ID_ZERO;
 			}
 			else
 			{
@@ -709,7 +715,8 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			final Map<String, Object> values = getInnerValuesToSet();
 			values.remove(propertyName);
-			values.put(idPropertyName, DEFAULT_VALUE_ID);
+			// also for e.g. the M_AttributeSetInstance, we put null as zero (and not -1), because there is a "no-asi"-ASI with ID=null
+			values.put(idPropertyName, ID_ZERO);
 			return;
 		}
 
@@ -833,29 +840,29 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		//
 		// Get the column name which contains the ID of model that we are going to retrieve
 		// NOTE: atm we are supporting both cases (e.g. M_Product and M_Product_ID) to be backward compatible, but in future we shall support only the "M_Product_ID" like columns.
-		final String idColumnName;
+		final String modelIdColumnName;
 		if (propertyName.endsWith("_ID"))
 		{
-			idColumnName = propertyName;
+			modelIdColumnName = propertyName;
 		}
 		else
 		{
-			idColumnName = propertyName + "_ID";
+			modelIdColumnName = propertyName + "_ID";
 		}
 
 		//
 		// Get ID column value
 		final int id;
-		if (hasColumnName(idColumnName))
+		if (hasColumnName(modelIdColumnName))
 		{
-			final Integer idObj = (Integer)getValue(idColumnName, Integer.class);
+			final Integer idObj = (Integer)getValue(modelIdColumnName, Integer.class);
 			if (idObj == null)
 			{
-				id = DEFAULT_VALUE_ID;
+				id = idForNewModel(modelIdColumnName);
 			}
-			else if (idObj <= 0)
+			else if (idObj <= idForNewModel(modelIdColumnName))
 			{
-				id = DEFAULT_VALUE_ID;
+				id = idForNewModel(modelIdColumnName);
 			}
 			else
 			{
@@ -864,7 +871,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		else
 		{
-			id = DEFAULT_VALUE_ID;
+			id = idForNewModel(modelIdColumnName);
 		}
 
 		//
@@ -875,7 +882,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		final int valueCachedId;
 		if (valueCachedObj == null)
 		{
-			valueCachedId = DEFAULT_VALUE_ID;
+			valueCachedId = idForNewModel(modelIdColumnName);
 			valueCached = null;
 			valueCachedWrapper = null;
 		}
@@ -884,14 +891,14 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			final POJOWrapper wrapper = getWrapper(valueCachedObj);
 			if (wrapper == null)
 			{
-				valueCachedId = DEFAULT_VALUE_ID;
+				valueCachedId = idForNewModel(modelIdColumnName);
 				valueCached = null;
 				valueCachedWrapper = wrapper;
 			}
-			else if (wrapper.getId() <= 0)
+			else if (wrapper.getId() <= idForNewModel(modelIdColumnName))
 			{
-				valueCachedId = DEFAULT_VALUE_ID;
-				if (id > 0)
+				valueCachedId = idForNewModel(modelIdColumnName);
+				if (id > idForNewModel(modelIdColumnName))
 				{
 					// Case: we have a cached object which was not saved, but in meantime we have an ID set there
 					valueCached = null;
@@ -917,7 +924,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 				&& valueCachedWrapper != null
 				&& Objects.equals(this.getTrxName(), valueCachedWrapper.getTrxName()))
 		{
-			if (valueCachedId > 0 && !valueCachedWrapper.hasChanges())
+			if (valueCachedId > idForNewModel(modelIdColumnName) && !valueCachedWrapper.hasChanges())
 			{
 				final boolean discardChanges = false;
 
@@ -931,7 +938,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			return valueCached;
 		}
 
-		if (id <= DEFAULT_VALUE_ID)
+		if (id <= idForNewModel(modelIdColumnName))
 		{
 			return null;
 		}
@@ -972,18 +979,22 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return values.get(propertyName);
 	}
 
-	public void setValue(final String propertyName, final Object value)
+	public void setValue(
+			@NonNull final String propertyName,
+			@Nullable final Object value)
 	{
+		final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(propertyName);
+
 		if (propertyName.equalsIgnoreCase(idColumnName))
 		{
 			final int idOld = getId();
-			final int id = toId(value);
+			final int id = toId(value, propertyName);
 			if (idOld == id)
 			{
 				return;
 			}
 
-			if (idOld > 0 && id <= 0)
+			if (idOld > idForNewModel(propertyName) && id < firstValidId)
 			{
 				throw new AdempiereException("Cannot reset ID for " + this);
 			}
@@ -999,11 +1010,11 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 
 		//
-		// Reset cached model if any and if value is "-1"
+		// Reset cached model if any and id value is "-1"
 		if (propertyName.endsWith("_ID"))
 		{
-			final int id = toId(value);
-			if (id <= 0)
+			final int id = toId(value, propertyName);
+			if (id < firstValidId)
 			{
 				final String modelPropertyName = propertyName.substring(0, propertyName.length() - 3);
 				values.put(modelPropertyName, null);
@@ -1034,7 +1045,28 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	public int getId()
 	{
 		final Integer id = (Integer)getValue(idColumnName, Integer.class, false); // enforceStrictValues=false
-		return id == null ? DEFAULT_VALUE_ID : id.intValue();
+		if (id != null)
+		{
+			return id;
+		}
+		return idForNewModel();
+	}
+
+	/**
+	 * @return zero for most new models,
+	 *         but e.g. for an unsaved {@code I_AD_User} record, it will return {@code -1},
+	 *         because there actually is a saved AD_User with ID=0 (system user).
+	 *
+	 * @see InterfaceWrapperHelper#getFirstValidIdByColumnName(String)
+	 */
+	public int idForNewModel()
+	{
+		return idForNewModel(idColumnName);
+	}
+
+	private static int idForNewModel(@NonNull final String idColumnName)
+	{
+		return InterfaceWrapperHelper.getFirstValidIdByColumnName(idColumnName) - 1;
 	}
 
 	public void setId(final int id)
@@ -1513,29 +1545,22 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return printReferencedModels;
 	}
 
-	private static final int toId(final Object value)
+	private final int toId(final Object value, final String columnName)
 	{
 		if (value == null)
 		{
-			return DEFAULT_VALUE_ID;
+			return idForNewModel();
 		}
 		else if (value instanceof Integer)
 		{
 			final Integer valueInt = (Integer)value;
-			if (valueInt <= 0)
-			{
-				return DEFAULT_VALUE_ID;
-			}
-			else
-			{
-				return valueInt;
-			}
+			return Integer.max(valueInt, idForNewModel(columnName));
 		}
 		else if (value instanceof String)
 		{
 			// Case: C_BPartner.AD_OrgBP_ID
 			final int valueInt = Integer.parseInt(value.toString());
-			return valueInt <= 0 ? DEFAULT_VALUE_ID : valueInt;
+			return Integer.max(valueInt, idForNewModel(columnName));
 		}
 		else
 		{

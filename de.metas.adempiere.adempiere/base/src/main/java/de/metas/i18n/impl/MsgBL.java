@@ -48,9 +48,15 @@ import de.metas.i18n.Msg;
 public class MsgBL implements IMsgBL
 {
 	@Override
-	public String getMsg(final String language, final String message, final Object[] params)
+	public String getMsg(final String adLanguage, final String message)
 	{
-		return Msg.getMsg(language, message, params);
+		return Msg.getMsg(adLanguage, message);
+	}
+
+	@Override
+	public String getMsg(final String adLanguage, final String message, final Object[] params)
+	{
+		return Msg.getMsg(adLanguage, message, params);
 	}
 
 	@Override
@@ -85,6 +91,12 @@ public class MsgBL implements IMsgBL
 	}
 
 	@Override
+	public String translate(final String adLanguage, final String text)
+	{
+		return Msg.translate(adLanguage, text);
+	}
+
+	@Override
 	public String translate(final Properties ctx, final String text, final boolean isSOTrx)
 	{
 		return Msg.translate(ctx, text, isSOTrx);
@@ -104,6 +116,12 @@ public class MsgBL implements IMsgBL
 	public String parseTranslation(final Properties ctx, final String message)
 	{
 		return Msg.parseTranslation(ctx, message);
+	}
+
+	@Override
+	public String parseTranslation(final String adLanguage, final String message)
+	{
+		return Msg.parseTranslation(adLanguage, message);
 	}
 
 	@Override

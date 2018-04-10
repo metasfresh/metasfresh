@@ -10,12 +10,12 @@ package de.metas.materialtransaction.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,11 +37,11 @@ import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_MovementLine;
-import org.compiere.model.I_M_ProductionLine;
 import org.compiere.model.I_M_Transaction;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import de.metas.materialtransaction.IMTransactionDAO;
+import lombok.NonNull;
 
 public class MTransactionDAO implements IMTransactionDAO
 {
@@ -56,35 +56,29 @@ public class MTransactionDAO implements IMTransactionDAO
 				.list(I_M_Transaction.class);
 	}
 
-	private IQueryFilter<I_M_Transaction> createReferencedModelQueryFilter(final Object referencedModel)
+	private IQueryFilter<I_M_Transaction> createReferencedModelQueryFilter(@NonNull final Object referencedModel)
 	{
-		Check.assumeNotNull(referencedModel, "referencedModel not null");
-
 		final String tableName = InterfaceWrapperHelper.getModelTableName(referencedModel);
 		final int id = InterfaceWrapperHelper.getId(referencedModel);
 		if (I_M_InOutLine.Table_Name.equals(tableName))
 		{
-			return new EqualsQueryFilter<I_M_Transaction>(I_M_Transaction.COLUMNNAME_M_InOutLine_ID, id);
+			return new EqualsQueryFilter<>(I_M_Transaction.COLUMNNAME_M_InOutLine_ID, id);
 		}
 		else if (I_M_InventoryLine.Table_Name.equals(tableName))
 		{
-			return new EqualsQueryFilter<I_M_Transaction>(I_M_Transaction.COLUMNNAME_M_InventoryLine_ID, id);
+			return new EqualsQueryFilter<>(I_M_Transaction.COLUMNNAME_M_InventoryLine_ID, id);
 		}
 		else if (I_M_MovementLine.Table_Name.equals(tableName))
 		{
-			return new EqualsQueryFilter<I_M_Transaction>(I_M_Transaction.COLUMNNAME_M_MovementLine_ID, id);
-		}
-		else if (I_M_ProductionLine.Table_Name.equals(tableName))
-		{
-			return new EqualsQueryFilter<I_M_Transaction>(I_M_Transaction.COLUMNNAME_M_ProductionLine_ID, id);
+			return new EqualsQueryFilter<>(I_M_Transaction.COLUMNNAME_M_MovementLine_ID, id);
 		}
 		else if (I_C_ProjectIssue.Table_Name.equals(tableName))
 		{
-			return new EqualsQueryFilter<I_M_Transaction>(I_M_Transaction.COLUMNNAME_C_ProjectIssue_ID, id);
+			return new EqualsQueryFilter<>(I_M_Transaction.COLUMNNAME_C_ProjectIssue_ID, id);
 		}
 		else if (I_PP_Cost_Collector.Table_Name.equals(tableName))
 		{
-			return new EqualsQueryFilter<I_M_Transaction>(I_M_Transaction.COLUMNNAME_PP_Cost_Collector_ID, id);
+			return new EqualsQueryFilter<>(I_M_Transaction.COLUMNNAME_PP_Cost_Collector_ID, id);
 		}
 		else
 		{

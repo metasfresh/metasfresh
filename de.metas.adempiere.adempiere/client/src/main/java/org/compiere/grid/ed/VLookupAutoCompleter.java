@@ -16,15 +16,14 @@ package org.compiere.grid.ed;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -74,7 +73,7 @@ import de.metas.logging.LogManager;
 /* package */class VLookupAutoCompleter extends FieldAutoCompleter
 {
 	private static final Logger log = LogManager.getLogger(VLookupAutoCompleter.class);
-	
+
 	private final VLookup editor;
 	private final MLookupInfo lookupInfo;
 	// private final MLookup lookup;
@@ -147,8 +146,8 @@ import de.metas.logging.LogManager;
 
 		//
 		// Init Search Columns
-		final List<String> searchColumns = new ArrayList<String>();
-		final List<String> searchColumnsSQL = new ArrayList<String>();
+		final List<String> searchColumns = new ArrayList<>();
+		final List<String> searchColumnsSQL = new ArrayList<>();
 		{
 			for (final MColumn c : table.getColumns(false))
 			{
@@ -161,7 +160,7 @@ import de.metas.logging.LogManager;
 						searchColumnsSQL.add(c.getColumnSQL());
 					}
 					// Case: translated column (FRESH-220)
-					else if (c.isTranslated() && !isBaseLanguage)
+					else if (lookupInfo.isTranslated() && c.isTranslated() && !isBaseLanguage)
 					{
 						// NOTE: we need to use the fully qualified name because else we will get sql errors like "ERROR: column reference "name" is ambiguous"
 						searchColumnsSQL.add(tableName + "_Trl." + c.getColumnName());
@@ -174,7 +173,7 @@ import de.metas.logging.LogManager;
 			}
 		}
 
-		final List<Object> paramsTemplate = new ArrayList<Object>();
+		final List<Object> paramsTemplate = new ArrayList<>();
 		final StringBuffer sqlWhere = new StringBuffer();
 
 		sqlWhere.append(tableName).append(".IsActive=?");
@@ -195,7 +194,7 @@ import de.metas.logging.LogManager;
 				sqlWhere.append("UPPER(");
 				if (searchColumn.equals(searchColumnsSQL))
 				{
-					sqlWhere.append(DBConstants.FUNC_unaccent_string(tableName+"."+searchColumn));
+					sqlWhere.append(DBConstants.FUNC_unaccent_string(tableName + "." + searchColumn));
 				}
 				else
 				{
@@ -305,7 +304,7 @@ import de.metas.logging.LogManager;
 
 			final IStringExpression sqlWhereValRuleExpr = validationRule.getPrefilterWhereClause();
 			final String sqlWhereValRule = sqlWhereValRuleExpr.evaluate(getValidationContext(), OnVariableNotFound.ReturnNoResult);
-			if(sqlWhereValRuleExpr.isNoResult(sqlWhereValRule))
+			if (sqlWhereValRuleExpr.isNoResult(sqlWhereValRule))
 			{
 				return null;
 			}

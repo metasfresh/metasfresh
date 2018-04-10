@@ -95,12 +95,12 @@ public final class ProductBL implements IProductBL
 	{
 		return product.getC_UOM();
 	}
-
+	
 	@Override
 	public I_C_UOM getStockingUOM(final int productId)
 	{
 		Check.assume(productId > 0, "productId > 0");
-		final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 		return getStockingUOM(product);
 	}
 
@@ -185,11 +185,16 @@ public final class ProductBL implements IProductBL
 
 		return isItem(product);
 	}
-
+	
 	@Override
 	public boolean isStocked(final int productId)
 	{
-		Check.assume(productId > 0, "productId > 0");
+		if(productId <= 0)
+		{
+			return false; 
+		}
+		
+		// NOTE: we rely on table cache config
 		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 		return isStocked(product);
 	}

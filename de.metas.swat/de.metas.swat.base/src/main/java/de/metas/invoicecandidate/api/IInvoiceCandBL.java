@@ -41,6 +41,7 @@ import org.compiere.model.I_M_AttributeInstance;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 
@@ -200,7 +201,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Determine if the candidate has been changed manually or by the background process.<br>
 	 * This information is currently used by {@link de.metas.invoicecandidate.process.C_Invoice_Candidate_Update}.
 	 *
-	 * Used for a check in the model validator, to avoid invalidating candidates while the process validates or creates them.
+	 * Used inside the invalidate code within {@link IInvoiceCandDAO}, to avoid invalidating candidates while the process validates or creates them.
 	 *
 	 * @param candidate
 	 * @return
@@ -453,4 +454,14 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param invoice
 	 */
 	void closePartiallyInvoiced_InvoiceCandidates(I_C_Invoice invoice);
+
+	/**
+	 * Compute the qty (in stocking UOM) that was ordered but not yet invoiced.<br>
+	 * Also account for negative ordered quantities.<br>
+	 * The result does not depend on the given ic's invoice rule.
+	 */
+	BigDecimal computeOpenQty(I_C_Invoice_Candidate ic);
+
+	void markInvoiceCandInDisputeForReceiptLine(I_M_InOutLine inOutLine);
+
 }

@@ -6,8 +6,11 @@ import static de.metas.material.event.EventTestHelper.CLIENT_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.SHIPMENT_SCHEDULE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptor;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -23,14 +26,14 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.event.log.EventLogUserService;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -80,17 +83,16 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 	public static final int intermediateWarehouseId = 20;
 
-	private final BigDecimal eleven = BigDecimal.TEN.add(BigDecimal.ONE);
+	private static final BigDecimal NINE = TEN.subtract(ONE);
+
+	private static final BigDecimal ELEVEN = TEN.add(ONE);
 
 	@Mocked
 	private PostMaterialEventService postMaterialEventService;
 
-	@Mocked
-	private EventLogUserService eventLogUserService;
-
 	private PPOrderAdvisedHandler ppOrderAdvisedHandler;
 
-	private StockRepository stockRepository;
+	private AvailableToPromiseRepository stockRepository;
 
 	private PPOrderCreatedHandler ppOrderCreatedHandler;
 
@@ -105,7 +107,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				candidateRepositoryRetrieval,
 				candidateRepositoryWriteService);
 
-		stockRepository = new StockRepository();
+		stockRepository = new AvailableToPromiseRepository();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryWriteService, stockCandidateService),
@@ -127,8 +129,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(
 				candidateChangeHandler,
-				candidateRepositoryRetrieval,
-				eventLogUserService);
+				candidateRepositoryRetrieval);
 	}
 
 	@Test
@@ -161,17 +162,17 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 			@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1); //
-		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // we have two different inputs
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // the ppOrder has two different input/issue lines
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(3); // one stock record per supply, one per demand
 
 		final I_MD_Candidate t2Stock = DispoTestUtils.filter(CandidateType.STOCK, AFTER_NOW).get(0);
-		assertThat(t2Stock.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+		assertThat(t2Stock.getQty()).isEqualByComparingTo(NINE);
 		assertThat(t2Stock.getM_Product_ID()).isEqualTo(PRODUCT_ID);
 		assertThat(t2Stock.getMD_Candidate_GroupId()).isGreaterThan(0); // stock candidates have their own groupIds too
 		assertThat(t2Stock.getMD_Candidate_Parent_ID()).isLessThanOrEqualTo(0);
 
 		final I_MD_Candidate t2Supply = DispoTestUtils.filter(CandidateType.SUPPLY, AFTER_NOW).get(0);
-		assertThat(t2Supply.getQty()).isEqualByComparingTo(BigDecimal.ONE);
+		assertThat(t2Supply.getQty()).isEqualByComparingTo(NINE);
 		assertThat(t2Supply.getM_Product_ID()).isEqualTo(PRODUCT_ID);
 		assertThat(t2Supply.getMD_Candidate_Parent_ID()).isEqualTo(t2Stock.getMD_Candidate_ID());
 		assertThat(t2Supply.getMD_Candidate_GroupId()).isNotEqualTo(t2Stock.getMD_Candidate_GroupId()); // stock candidates' groupIds are different from supply/demand groups' groupIds
@@ -180,14 +181,14 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		assertThat(supplyDemandGroupId).isGreaterThan(0);
 
 		final I_MD_Candidate t1Product1Demand = DispoTestUtils.filter(CandidateType.DEMAND, NOW, rawProduct1Id).get(0);
-		assertThat(t1Product1Demand.getQty()).isEqualByComparingTo(BigDecimal.TEN);
+		assertThat(t1Product1Demand.getQty()).isEqualByComparingTo(NINE);
 		assertThat(t1Product1Demand.getM_Product_ID()).isEqualTo(rawProduct1Id);
 		assertThat(t1Product1Demand.getMD_Candidate_GroupId()).isEqualTo(supplyDemandGroupId);
 		// no parent relationship between production supply and demand because it can be m:n
 		// assertThat(t1Product1Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID());
 
 		final I_MD_Candidate t1Product1Stock = DispoTestUtils.filter(CandidateType.STOCK, NOW, rawProduct1Id).get(0);
-		assertThat(t1Product1Stock.getQty()).isEqualByComparingTo(BigDecimal.TEN.negate());
+		assertThat(t1Product1Stock.getQty()).isEqualByComparingTo(NINE.negate());
 		assertThat(t1Product1Stock.getM_Product_ID()).isEqualTo(rawProduct1Id);
 		assertThat(t1Product1Stock.getMD_Candidate_GroupId()).isGreaterThan(0);  // stock candidates have their own groupIds too
 		assertThat(t1Product1Stock.getMD_Candidate_GroupId()).isNotEqualTo(supplyDemandGroupId);  // stock candidates' groupIds are different from supply/demand groups' groupIds
@@ -196,14 +197,14 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		assertThat(t1Product1Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Product1Demand.getMD_Candidate_ID());
 
 		final I_MD_Candidate t1Product2Demand = DispoTestUtils.filter(CandidateType.DEMAND, NOW, rawProduct2Id).get(0);
-		assertThat(t1Product2Demand.getQty()).isEqualByComparingTo(eleven);
+		assertThat(t1Product2Demand.getQty()).isEqualByComparingTo(TEN);
 		assertThat(t1Product2Demand.getM_Product_ID()).isEqualTo(rawProduct2Id);
 		assertThat(t1Product2Demand.getMD_Candidate_GroupId()).isEqualTo(supplyDemandGroupId);
 		// no parent relationship between production supply and demand because it can be m:n
 		// assertThat(t1Product2Demand.getMD_Candidate_Parent_ID()).isEqualTo(t2Supply.getMD_Candidate_ID());
 
 		final I_MD_Candidate t1Product2Stock = DispoTestUtils.filter(CandidateType.STOCK, NOW, rawProduct2Id).get(0);
-		assertThat(t1Product2Stock.getQty()).isEqualByComparingTo(eleven.negate());
+		assertThat(t1Product2Stock.getQty()).isEqualByComparingTo(TEN.negate());
 		assertThat(t1Product2Stock.getM_Product_ID()).isEqualTo(rawProduct2Id);
 		assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isGreaterThan(0); // stock candidates have their own groupIds too
 		assertThat(t1Product2Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Product2Demand.getMD_Candidate_ID());
@@ -213,14 +214,26 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOorderId(r, ppOrderId));
 		assertThat(DispoTestUtils.retrieveAllRecords()).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
 
-		if (ppOrderEvent instanceof PPOrderAdvisedEvent)
-		{
-			final List<I_MD_Candidate_Prod_Detail> allProductionDetails = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
-					.create().list();
-			final boolean pickIfFeasibleFromEvent = ppOrderAdvisedHandler.extractIsDirectlyPickSupply(ppOrderEvent).toBoolean();
-			assertThat(allProductionDetails).allSatisfy(d -> assertThat(d.isPickDirectlyIfFeasible()).isEqualTo(pickIfFeasibleFromEvent));
-		}
+		// verify the production details' isPickDirectlyIfFeasible flag
+		final List<I_MD_Candidate_Prod_Detail> allProductionDetails = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
+				.create().list();
+		assertThat(allProductionDetails).as("each (non-stock) candidate shall have one production detail").hasSize(3);
+
+		assertThat(allProductionDetails)
+				.allSatisfy(d -> assertThat(d.isPickDirectlyIfFeasible()).isTrue());
+
+		// verify the demand details
+		final List<I_MD_Candidate_Demand_Detail> allDemandDetails = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
+				.create().list();
+
+		assertThat(allDemandDetails).as("each (non-stock) candidate shall have one demand detail").hasSize(3);
+
+		// note: SHIPMENT_SCHEDULE_ID is the constant used when the event's demand detail was created
+		assertThat(allDemandDetails)
+				.allSatisfy(d -> assertThat(d.getM_ShipmentSchedule_ID()).isEqualTo(SHIPMENT_SCHEDULE_ID));
+
 		return supplyDemandGroupId;
 	}
 
@@ -248,7 +261,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		final PPOrder ppOrder = createPpOrderWithPpOrderId(0, 0);
 
 		final PPOrderAdvisedEvent event = PPOrderAdvisedEvent.builder()
-				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
 				.directlyPickSupply(directlyPickSupply)
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.ppOrder(ppOrder)
@@ -262,7 +275,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		final PPOrder ppOrder = createPpOrderWithPpOrderId(ppOrderId, groupId);
 
 		final PPOrderCreatedEvent event = PPOrderCreatedEvent.builder()
-				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
 				.ppOrder(ppOrder)
 				.build();
 
@@ -283,7 +296,8 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				.datePromised(AFTER_NOW)
 				.dateStartSchedule(NOW)
 				.productDescriptor(createProductDescriptor())
-				.quantity(BigDecimal.ONE)
+				.qtyRequired(TEN)
+				.qtyDelivered(ONE)
 				.warehouseId(intermediateWarehouseId)
 				.bPartnerId(BPARTNER_ID)
 				.plantId(120)
@@ -295,7 +309,8 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 						.description("descr1")
 						.productDescriptor(rawProductDescriptor1)
 						.issueOrReceiveDate(NOW)
-						.qtyRequired(BigDecimal.TEN)
+						.qtyRequired(TEN)
+						.qtyDelivered(ONE)
 						.productBomLineId(1020)
 						.receipt(false)
 						.build())
@@ -304,7 +319,8 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 						.description("descr2")
 						.productDescriptor(rawProductDescriptor2)
 						.issueOrReceiveDate(NOW)
-						.qtyRequired(eleven)
+						.qtyRequired(ELEVEN)
+						.qtyDelivered(ONE)
 						.productBomLineId(1030)
 						.receipt(false)
 						.build())

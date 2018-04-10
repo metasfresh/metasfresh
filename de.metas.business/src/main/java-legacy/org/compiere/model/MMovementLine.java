@@ -18,7 +18,6 @@ package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -333,27 +332,6 @@ public class MMovementLine extends X_M_MovementLine
 		//      set to 0 explicitly to reset 
 		set_Value (COLUMNNAME_M_LocatorTo_ID, M_LocatorTo_ID); 
 	}       //      M_LocatorTo_ID 
-
-	/** 
-	 *  Get Movement lines Of Distribution Order Line 
-	 *  @param ctx context 
-	 *  @param DD_OrderLine_ID line 
-	 *  @param where optional addition where clause 
-	 *  @param trxName transaction 
-	 *      @return array of receipt lines 
-	 */ 
-	public static MMovementLine[] getOfOrderLine (Properties ctx, 
-			int DD_OrderLine_ID, String where, String trxName) 
-	{
-		String whereClause = COLUMNNAME_DD_OrderLine_ID+"=?"; 
-		if (where != null && where.length() > 0) 
-			whereClause += " AND (" + where + ")";
-		//
-		List<MMovementLine> list = new Query(ctx, Table_Name, whereClause, trxName)
-										.setParameters(new Object[]{DD_OrderLine_ID})
-										.list();
-		return list.toArray(new MMovementLine[list.size()]);
-	}       //      getOfOrderLine 
 
 	@Override
 	public String toString()

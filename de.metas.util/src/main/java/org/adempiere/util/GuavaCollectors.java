@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -341,27 +342,15 @@ public final class GuavaCollectors
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	public static <T> Collector<T, ?, T> singleElementOrNullOrThrow(@NonNull final Function<List<T>, ? extends RuntimeException> exceptionSupplier)
+	public static <T> Stream<List<T>> groupByAndStream(final Stream<T> stream, final Function<T, ?> classifier)
 	{
-		final Supplier<List<T>> supplier = ArrayList::new;
-		final BiConsumer<List<T>, T> accumulator = (list, value) -> list.add(value);
-		final BinaryOperator<List<T>> combiner = (l, r) -> {
-			l.addAll(r);
-			return l;
-		};
-		final Function<List<T>, T> finisher = list -> {
-			if (list.isEmpty())
-			{
-				return null;
-			}
-			else if (list.size() != 1)
-			{
-				throw exceptionSupplier.apply(list);
-			}
-			return list.get(0);
-		};
+		final boolean parallel = false;
+		return StreamSupport.stream(new GroupByClassifierSpliterator<>(stream.spliterator(), classifier), parallel);
+	}
 
-		return Collector.of(supplier, accumulator, combiner, finisher);
+	public static <T> Stream<List<T>> batchAndStream(final Stream<T> stream, final int batchSize)
+	{
+		return StreamSupport.stream(new BatchSpliterator<>(stream.spliterator(), batchSize), stream.isParallel());
 	}
 
 }

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 
 @Interceptor(I_C_OrderLine.class)
@@ -19,14 +20,14 @@ public class C_OrderLine
 	private static final ModelDynAttributeAccessor<I_C_OrderLine, Boolean> DYNATTR_SkipUpdatingGroupFlatrateConditions = new ModelDynAttributeAccessor<>("SkipUpdatingGroupFlatrateConditions", Boolean.class);
 
 	@Autowired
-	private OrderGroupRepository orderGroupsRepo;
+	private OrderGroupCompensationChangesHandler groupChangesHandler;
 
 	public C_OrderLine()
 	{
 		Adempiere.autowire(this);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW }, skipIfCopying = true)
 	public void setSameFlatrateConditionsForWholeCompensationGroupWhenGroupIsCreated(final I_C_OrderLine orderLine)
 	{
 		if (!orderLine.isGroupCompensationLine())
@@ -49,7 +50,7 @@ public class C_OrderLine
 	 * 
 	 * @task https://github.com/metasfresh/metasfresh/issues/3150
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, skipIfCopying = true)
 	public void setSameFlatrateConditionsForWholeCompensationGroupWhenOneGroupLineChanged(final I_C_OrderLine orderLine)
 	{
 		if (DYNATTR_SkipUpdatingGroupFlatrateConditions.getValue(orderLine, Boolean.FALSE))
@@ -64,13 +65,15 @@ public class C_OrderLine
 		}
 
 		final int flatrateConditionsId = orderLine.getC_Flatrate_Conditions_ID();
-		int excludeOrderLineId = orderLine.getC_OrderLine_ID();
+		final int excludeOrderLineId = orderLine.getC_OrderLine_ID();
 		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, excludeOrderLineId);
+
+		groupChangesHandler.recreateGroupOnOrderLineChanged(orderLine);
 	}
 
 	private int retrieveFirstFlatrateConditionsIdForCompensationGroup(final GroupId groupId)
 	{
-		final Integer flatrateConditionsId = orderGroupsRepo.retrieveGroupOrderLinesQuery(groupId)
+		final Integer flatrateConditionsId = groupChangesHandler.retrieveGroupOrderLinesQuery(groupId)
 				.addNotNull(I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID)
 				.orderBy(I_C_OrderLine.COLUMNNAME_Line)
 				.orderBy(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
@@ -81,7 +84,7 @@ public class C_OrderLine
 
 	private void setFlatrateConditionsIdToCompensationGroup(final int flatrateConditionsId, final GroupId groupId, final int excludeOrderLineId)
 	{
-		orderGroupsRepo.retrieveGroupOrderLinesQuery(groupId)
+		groupChangesHandler.retrieveGroupOrderLinesQuery(groupId)
 				.addNotEqualsFilter(I_C_OrderLine.COLUMN_C_OrderLine_ID, excludeOrderLineId)
 				.addNotEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditionsId > 0 ? flatrateConditionsId : null)
 				.create()

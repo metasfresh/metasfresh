@@ -1,5 +1,8 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -10,24 +13,21 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
@@ -38,73 +38,73 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 {
-	@Override
-	public BigDecimal getQtyPicked(final I_M_ShipmentSchedule sched)
+	private enum Mode
 	{
-		Check.assumeNotNull(sched, "sched not null");
-		return Services.get(IShipmentScheduleAllocDAO.class).retrievePickedNotDeliveredQty(sched);
+		/** Just take the given {@code qtyPicked} (converted to sched's UOM ) and set it as the new {@code schedQtyPicked}'s {@code QtyPicked value}. */
+		JUST_SET_QTY,
+
+		/** Retrieve the sched's qty that is picked, but not yet shipped, and subtract that quantity from the given {@code qtyPicked}. */
+		SUBTRACT_FROM_ALREADY_PICKED_QTY
 	}
 
 	@Override
 	public void setQtyPicked(final I_M_ShipmentSchedule sched, final BigDecimal qtyPicked)
 	{
-		boolean justAdd = false;
 		final I_C_UOM uom = Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched);
-		setQtyPicked(sched, qtyPicked, uom, justAdd);
+		setQtyPicked(sched, Quantity.of(qtyPicked, uom), Mode.SUBTRACT_FROM_ALREADY_PICKED_QTY);
 	}
 
 	@Override
-	public I_M_ShipmentSchedule_QtyPicked addQtyPicked(final I_M_ShipmentSchedule sched, final BigDecimal qtyPickedDiff, final I_C_UOM uom)
+	public I_M_ShipmentSchedule_QtyPicked addQtyPicked(
+			final I_M_ShipmentSchedule sched,
+			final Quantity qtyPickedDiff)
 	{
-		boolean justAdd = true;
-		return setQtyPicked(sched, qtyPickedDiff, uom, justAdd);
+		return setQtyPicked(sched, qtyPickedDiff, Mode.JUST_SET_QTY);
 	}
 
 	/**
 	 * Adds or sets QtyPicked
-	 * 
-	 * @param sched
-	 * @param qtyPicked
-	 * @param uom
+	 *
 	 * @param justAdd if true, then if will create a {@link I_M_ShipmentSchedule_QtyPicked} only for difference between given <code>qtyPicked</code> and current qty picked.
+	 *
 	 * @return {@link I_M_ShipmentSchedule_QtyPicked} created record
 	 */
 	private I_M_ShipmentSchedule_QtyPicked setQtyPicked(
 			@NonNull final I_M_ShipmentSchedule sched,
-			@NonNull final BigDecimal qtyPicked,
-			@NonNull final I_C_UOM uom,
-			final boolean justAdd)
+			@NonNull final Quantity qtyPicked,
+			@NonNull final Mode mode)
 	{
 		// Convert QtyPicked to shipment schedule's UOM
-		final org.compiere.model.I_M_Product product = sched.getM_Product();
 		final I_C_UOM schedUOM = Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched);
-		final BigDecimal qtyPickedConv = Services.get(IUOMConversionBL.class).convertQty(product,
-				qtyPicked,
-				uom, // from UOM
+		final BigDecimal qtyPickedConv = Services.get(IUOMConversionBL.class).convertQty(sched.getM_Product_ID(),
+				qtyPicked.getQty(),
+				qtyPicked.getUOM(), // from UOM
 				schedUOM // to UOM
-				);
+		);
 
 		final BigDecimal qtyPickedToAdd;
-		if (justAdd)
+		if (Mode.JUST_SET_QTY.equals(mode))
 		{
 			qtyPickedToAdd = qtyPickedConv;
 		}
 		else
 		{
-			final BigDecimal qtyPickedOld = Services.get(IShipmentScheduleAllocDAO.class).retrievePickedNotDeliveredQty(sched);
+			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+			final BigDecimal qtyPickedOld = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(sched);
 			qtyPickedToAdd = qtyPickedConv.subtract(qtyPickedOld);
 		}
 
-		final I_M_ShipmentSchedule_QtyPicked schedQtyPicked = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_QtyPicked.class, sched);
+		final I_M_ShipmentSchedule_QtyPicked schedQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class, sched);
 		schedQtyPicked.setAD_Org_ID(sched.getAD_Org_ID());
 		schedQtyPicked.setM_ShipmentSchedule(sched);
 		schedQtyPicked.setIsActive(true);
 		schedQtyPicked.setQtyPicked(qtyPickedToAdd);
-		InterfaceWrapperHelper.save(schedQtyPicked);
+		save(schedQtyPicked);
 
 		return schedQtyPicked;
 	}
@@ -115,13 +115,13 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 		// task 08959
 		// Only the allocations made on inout lines that belong to a completed inout are considered Delivered.
 		final I_M_InOutLine line = alloc.getM_InOutLine();
-		if(line == null)
+		if (line == null)
 		{
 			return false;
 		}
-		
+
 		final org.compiere.model.I_M_InOut io = line.getM_InOut();
-		
-		return Services.get(IDocumentBL.class).isDocumentCompleted(io);
+
+		return Services.get(IDocumentBL.class).isDocumentCompletedOrClosed(io);
 	}
 }

@@ -39,7 +39,6 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -135,14 +134,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	@Override
 	public void createMissingCandidates(@NonNull final List<I_C_ILCandHandler> handlerRecords)
 	{
-		Services.get(ITrxManager.class).run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String trxName) throws Exception
-			{
-				createInvoiceCandidates(handlerRecords, InvoiceCandidateHandlerBL.NO_MODEL);
-			}
-		});
+		Services.get(ITrxManager.class).run(trxName -> createInvoiceCandidates(handlerRecords, InvoiceCandidateHandlerBL.NO_MODEL));
 	}
 
 	@Override
@@ -360,7 +352,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	private void updateDefaultsAndSaveSingleCandidate(
-			@NonNull final IInvoiceCandidateHandler handler, 
+			@NonNull final IInvoiceCandidateHandler handler,
 			@NonNull final I_C_Invoice_Candidate ic)
 	{
 		Check.assumeNotNull(handler, "handler not null");
@@ -413,7 +405,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final OnInvalidateForModelAction onInvalidateForModelAction = handler.getOnInvalidateForModelAction();
 			if (onInvalidateForModelAction == OnInvalidateForModelAction.RECREATE_ASYNC)
 			{
-				// just plainly invalidate the actual IC as hand.
+				// just plainly invalidate the actual IC at hand.
 				invoiceCandDAO.invalidateCand(ic);
 				continue;
 			}
@@ -468,6 +460,13 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	@Override
+	public void setLineNetAmt(final I_C_Invoice_Candidate ic)
+	{
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+		handler.setLineNetAmt(ic);
+	}
+
+	@Override
 	public void setOrderedData(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
@@ -506,7 +505,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			}
 		}
 	}
-	
+
 	@Override
 	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{

@@ -38,7 +38,7 @@ import java.util.Properties;
 public class MCostDetail extends X_M_CostDetail
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 5452006110417178583L;
 
@@ -106,8 +106,6 @@ public class MCostDetail extends X_M_CostDetail
 			sb.append(",M_MovementLine_ID=").append(getM_MovementLine_ID());
 		if (getM_InventoryLine_ID() != 0)
 			sb.append(",M_InventoryLine_ID=").append(getM_InventoryLine_ID());
-		if (getM_ProductionLine_ID() != 0)
-			sb.append(",M_ProductionLine_ID=").append(getM_ProductionLine_ID());
 		sb.append(",Amt=").append(getAmt())
 				.append(",Qty=").append(getQty());
 

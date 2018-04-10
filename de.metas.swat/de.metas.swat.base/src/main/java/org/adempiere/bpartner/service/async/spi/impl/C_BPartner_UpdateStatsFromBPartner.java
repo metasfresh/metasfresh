@@ -23,21 +23,27 @@ package org.adempiere.bpartner.service.async.spi.impl;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
-import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.BPartnerStats;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
 
-import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Update BPartner's TotalOpenBalance and SO_CreditUsed fields.
@@ -47,91 +53,51 @@ import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
  */
 public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdapter
 {
-	public static void createWorkpackage(final Properties ctx, final Set<Integer> bpartnerIds, final String trxName)
+	final static private String PARAM_ALSO_RESET_CREDITSTATUS_FROM_BP_GROUP = "alsoResetCreditStatusFromBPGroup";
+
+	public static void createWorkpackage(@NonNull final BPartnerStatisticsUpdateRequest request)
 	{
-		if (bpartnerIds == null || bpartnerIds.isEmpty())
+		for (final int bpartnerId : request.getBpartnerIds())
 		{
-			return;
-		}
-
-		for (final Integer bpartnerId : bpartnerIds)
-		{
-			if (bpartnerId == null || bpartnerId <= 0)
-			{
-				continue;
-			}
-
-			SCHEDULER.schedule(BPartnerToUpdate.of(ctx, bpartnerId, trxName));
+			SCHEDULER.schedule(BPartnerToUpdate.builder()
+					.bpartnerId(bpartnerId)
+					.alsoResetCreditStatusFromBPGroup(request.isAlsoResetCreditStatusFromBPGroup())
+					.build());
 		}
 	}
 
+	@Builder
+	@Value
 	private static final class BPartnerToUpdate
 	{
-		public static BPartnerToUpdate of(final Properties ctx, final int bpartnerId, final String trxName)
-		{
-			return new BPartnerToUpdate(ctx, bpartnerId, trxName);
-		}
-
-		private final Properties ctx;
-		private final String trxName;
 		private final int bpartnerId;
-
-		private BPartnerToUpdate(final Properties ctx, final int bpartnerId, final String trxName)
-		{
-			super();
-			this.ctx = ctx;
-			this.bpartnerId = bpartnerId;
-			this.trxName = trxName;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("bpartnerId", bpartnerId)
-					.toString();
-		}
-
-		public Properties getCtx()
-		{
-			return ctx;
-		}
-
-		public String getTrxName()
-		{
-			return trxName;
-		}
-
-		public int getC_BPartner_ID()
-		{
-			return bpartnerId;
-		}
+		private final boolean alsoResetCreditStatusFromBPGroup;
 	}
 
 	private static final WorkpackagesOnCommitSchedulerTemplate<BPartnerToUpdate> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<BPartnerToUpdate>(C_BPartner_UpdateStatsFromBPartner.class)
 	{
 		@Override
-		protected boolean isEligibleForScheduling(final BPartnerToUpdate model)
-		{
-			return model != null && model.getC_BPartner_ID() > 0;
-		};
-
-		@Override
 		protected Properties extractCtxFromItem(final BPartnerToUpdate item)
 		{
-			return item.getCtx();
+			return Env.getCtx();
 		}
 
 		@Override
 		protected String extractTrxNameFromItem(final BPartnerToUpdate item)
 		{
-			return item.getTrxName();
+			return ITrx.TRXNAME_ThreadInherited;
 		}
 
 		@Override
 		protected Object extractModelToEnqueueFromItem(final Collector collector, final BPartnerToUpdate item)
 		{
-			return new TableRecordReference(I_C_BPartner.Table_Name, item.getC_BPartner_ID());
+			return new TableRecordReference(I_C_BPartner.Table_Name, item.getBpartnerId());
+		}
+
+		@Override
+		protected Map<String, Object> extractParametersFromItem(BPartnerToUpdate item)
+		{
+			return ImmutableMap.of(PARAM_ALSO_RESET_CREDITSTATUS_FROM_BP_GROUP, item.isAlsoResetCreditStatusFromBPGroup());
 		}
 	};
 
@@ -139,24 +105,23 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		// Services
-		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
-		final List<I_C_BPartner> bpartners = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_BPartner.class, localTrxName);
+		final List<I_C_BPartner> bpartners = retrieveAllItems(I_C_BPartner.class);
+		final boolean alsoSetCreditStatusBaseOnBPGroup = getParameters().getParameterAsBool(PARAM_ALSO_RESET_CREDITSTATUS_FROM_BP_GROUP);
 
 		for (final I_C_BPartner bpartner : bpartners)
 		{
-			final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
+			if (alsoSetCreditStatusBaseOnBPGroup)
+			{
+				Services.get(IBPartnerStatsBL.class).resetCreditStatusFromBPGroup(bpartner);
+			}
 
-			bpartnerStatsDAO.updateOpenItems(stats);
-			bpartnerStatsDAO.updateActualLifeTimeValue(stats);
-			bpartnerStatsDAO.updateSOCreditUsed(stats);
-			bpartnerStatsDAO.updateSOCreditStatus(stats);
-			bpartnerStatsDAO.updateCreditLimitIndicator(stats);
+			final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
+			bpartnerStatsDAO.updateBPartnerStatistics(stats);
 		}
 
 		return Result.SUCCESS;
 	}
-
 
 }

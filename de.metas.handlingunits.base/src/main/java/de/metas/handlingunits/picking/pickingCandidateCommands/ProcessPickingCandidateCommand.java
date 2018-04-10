@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.IdentityHashMap;
@@ -28,12 +30,14 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -62,14 +66,15 @@ import lombok.Singular;
 
 /**
  * Process picking candidate.
- * 
+ *
  * The status will be changed from InProgress to Processed.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class ProcessPickingCandidateCommand
 {
+
 	private static final Logger logger = LogManager.getLogger(ProcessPickingCandidateCommand.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IPackingService packingService = Services.get(IPackingService.class);
@@ -77,6 +82,7 @@ public class ProcessPickingCandidateCommand
 
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
+	private final PickingConfigRepository pickingConfigRepository;
 
 	private final List<Integer> huIds;
 	private final int pickingSlotId;
@@ -88,12 +94,14 @@ public class ProcessPickingCandidateCommand
 	private ProcessPickingCandidateCommand(
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
+			@NonNull final PickingConfigRepository pickingConfigRepository,
 			@NonNull @Singular final List<Integer> huIds,
 			final int pickingSlotId,
 			final int shipmentScheduleId)
 	{
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
+		this.pickingConfigRepository = pickingConfigRepository;
 
 		Preconditions.checkArgument(!huIds.isEmpty(), "huIds not empty");
 		this.huIds = ImmutableList.copyOf(huIds);
@@ -136,9 +144,12 @@ public class ProcessPickingCandidateCommand
 		packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
 		packingContext.setPackingItemsMapKey(pickingSlotId);
 
+		final boolean isAllowOverdelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery();
+
 		// Allocate given HUs to "itemToPack"
 		new HU2PackingItemsAllocator()
 				.setItemToPack(itemToPack)
+				.setAllowOverdelivery(isAllowOverdelivery)
 				.setPackingContext(packingContext)
 				.setFromHUs(ImmutableList.of(hu))
 				.allocate();
@@ -146,14 +157,15 @@ public class ProcessPickingCandidateCommand
 
 	private IFreshPackingItem createItemToPack(final int huId)
 	{
-		final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new IdentityHashMap<>();
+		final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys = new IdentityHashMap<>();
 
 		final List<I_M_Picking_Candidate> pickingCandidates = getPickingCandidatesForHUId(huId);
 		for (final I_M_Picking_Candidate pc : pickingCandidates)
 		{
-			final I_M_ShipmentSchedule shipmentSchedule = pc.getM_ShipmentSchedule();
+			final int shipmentScheduleId = pc.getM_ShipmentSchedule_ID();
+			final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
 			final BigDecimal qty = pc.getQtyPicked();
-			scheds2Qtys.put(shipmentSchedule, qty);
+			scheds2Qtys.put(shipmentSchedule, Quantity.of(qty, pc.getC_UOM()));
 		}
 
 		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(scheds2Qtys);

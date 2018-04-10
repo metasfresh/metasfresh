@@ -49,7 +49,7 @@ public class M_TourVersionLine
 	public void checkIsToBeFetched(final I_M_TourVersionLine tourVersionLine)
 	{
 		final I_C_BPartner partner = tourVersionLine.getC_BPartner();
-		if (!partner.isVendor() && tourVersionLine.isToBeFetched())
+		if (partner != null && !partner.isVendor() && tourVersionLine.isToBeFetched())
 		{
 			throw new BPartnerNotVendorException(partner);
 		}

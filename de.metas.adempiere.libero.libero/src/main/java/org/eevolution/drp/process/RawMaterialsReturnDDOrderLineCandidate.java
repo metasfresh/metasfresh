@@ -145,14 +145,14 @@ import lombok.NonNull;
 		//
 		// Retrieve Plant of current warehouse (where our Quantitites currently are)
 		final I_M_Warehouse warehouse = locator.getM_Warehouse();
-		final I_S_Resource warehousePlant = productPlanningDAO.findPlant(ctx, warehouse.getAD_Org_ID(),
+		final I_S_Resource warehousePlant = productPlanningDAO.findPlant(warehouse.getAD_Org_ID(),
 				warehouse,
 				attributeSetInstanceAware.getM_Product_ID(),
 				attributeSetInstanceAware.getM_AttributeSetInstance_ID());
 
 		//
 		// Retrieve Product Planning
-		productPlanning = productPlanningDAO.find(ctx,
+		productPlanning = productPlanningDAO.find(
 				warehouse.getAD_Org_ID(),
 				warehouse.getM_Warehouse_ID(),
 				warehousePlant == null ? 0 : warehousePlant.getS_Resource_ID(),
@@ -204,7 +204,6 @@ import lombok.NonNull;
 		try
 		{
 			rawMaterialsPlant = productPlanningDAO.findPlant(
-					ctx,
 					rawMaterialsWarehouse.getAD_Org_ID(),
 					warehouse,
 					attributeSetInstanceAware.getM_Product_ID(),

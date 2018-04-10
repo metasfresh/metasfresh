@@ -1,29 +1,5 @@
 package de.metas.handlingunits.util;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -31,6 +7,7 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.model.I_M_HU;
+import lombok.NonNull;
 
 /**
  * Contains definition of top-level handling units and LU-TU-VHUs
@@ -56,14 +33,12 @@ public final class HUTopLevel implements Comparable<HUTopLevel>
 	@ToStringBuilder(skip = true)
 	private final int vhuId;
 
-	public HUTopLevel(final I_M_HU topLevelHU,
+	public HUTopLevel(
+			@NonNull final I_M_HU topLevelHU,
 			final I_M_HU luHU,
 			final I_M_HU tuHU,
 			final I_M_HU vhu)
 	{
-		super();
-
-		Check.assumeNotNull(topLevelHU, "topLevelHU not null");
 		this.topLevelHU = topLevelHU;
 
 		this.luHU = luHU;
@@ -71,15 +46,14 @@ public final class HUTopLevel implements Comparable<HUTopLevel>
 		this.vhu = vhu;
 
 		topLevelHUId = topLevelHU == null || topLevelHU.getM_HU_ID() <= 0 ? -1 : topLevelHU.getM_HU_ID();
+
 		luHUId = luHU == null || luHU.getM_HU_ID() <= 0 ? -1 : luHU.getM_HU_ID();
+
 		tuHUId = tuHU == null || tuHU.getM_HU_ID() <= 0 ? -1 : tuHU.getM_HU_ID();
+
 		vhuId = vhu == null || vhu.getM_HU_ID() <= 0 ? -1 : vhu.getM_HU_ID();
-		hashKey = Util.mkKey(
-				topLevelHUId
-				, luHUId
-				, tuHUId
-				, vhuId
-				);
+
+		hashKey = Util.mkKey(topLevelHUId, luHUId, tuHUId, vhuId);
 	}
 
 	@Override

@@ -64,6 +64,7 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.MProduct;
+import org.compiere.model.MTransaction;
 import org.compiere.model.MUOM;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -870,7 +871,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		}
 		else if (isIssue())
 		{
-			return X_M_Transaction.MOVEMENTTYPE_WorkOrder_;
+			return MTransaction.MOVEMENTTYPE_WorkOrderMinus;
 		}
 		else
 		{

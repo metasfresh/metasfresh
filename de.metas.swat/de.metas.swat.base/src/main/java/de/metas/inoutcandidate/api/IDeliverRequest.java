@@ -2,7 +2,7 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 
-import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 
 /*
  * #%L
@@ -28,7 +28,7 @@ import de.metas.inoutcandidate.spi.IShipmentScheduleHandler;
 
 /**
  * Instances of this class are provided by {@link IShipmentScheduleHandlerBL#createDeliverRequest(de.metas.inoutcandidate.model.I_M_ShipmentSchedule)}, but the actual implementation is in the implementaers
- * of {@link IShipmentScheduleHandler}.
+ * of {@link ShipmentScheduleHandler}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *

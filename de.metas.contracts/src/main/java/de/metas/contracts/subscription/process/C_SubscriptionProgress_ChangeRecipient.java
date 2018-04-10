@@ -35,10 +35,10 @@ public class C_SubscriptionProgress_ChangeRecipient
 		extends C_SubscriptionProgressBase
 {
 
-	@Param(parameterName = "DateGeneral", mandatory = true)
+	@Param(parameterName = "DateGeneral", mandatory = false)
 	private Timestamp dateFrom;
 
-	@Param(parameterName = "DateGeneral", mandatory = true, parameterTo = true)
+	@Param(parameterName = "DateGeneral", mandatory = false, parameterTo = true)
 	private Timestamp dateTo;
 
 	@Param(parameterName = "DropShip_BPartner_ID", mandatory = true)

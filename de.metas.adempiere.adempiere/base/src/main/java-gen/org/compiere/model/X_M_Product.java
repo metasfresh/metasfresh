@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 799612071L;
+	private static final long serialVersionUID = 1358865702L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -152,6 +152,22 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getClassification () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Classification);
+	}
+
+	/** Set Auszeichnungsname.
+		@param CustomerLabelName Auszeichnungsname	  */
+	@Override
+	public void setCustomerLabelName (java.lang.String CustomerLabelName)
+	{
+		set_Value (COLUMNNAME_CustomerLabelName, CustomerLabelName);
+	}
+
+	/** Get Auszeichnungsname.
+		@return Auszeichnungsname	  */
+	@Override
+	public java.lang.String getCustomerLabelName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CustomerLabelName);
 	}
 
 	/** Set Beschreibung.
@@ -335,6 +351,28 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getGroupCompensationType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationType);
+	}
+
+	/** Set Min. Garantie-Tage.
+		@param GuaranteeDaysMin 
+		Minumum number of guarantee days
+	  */
+	@Override
+	public void setGuaranteeDaysMin (int GuaranteeDaysMin)
+	{
+		set_Value (COLUMNNAME_GuaranteeDaysMin, Integer.valueOf(GuaranteeDaysMin));
+	}
+
+	/** Get Min. Garantie-Tage.
+		@return Minumum number of guarantee days
+	  */
+	@Override
+	public int getGuaranteeDaysMin () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_GuaranteeDaysMin);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Kommentar/Hilfe.
@@ -888,9 +926,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
 	}
 
-	/** Set Produkt-Kategorie.
+	/** Set Produkt Kategorie.
 		@param M_Product_Category_ID 
-		Category of a Product
+		Kategorie eines Produktes
 	  */
 	@Override
 	public void setM_Product_Category_ID (int M_Product_Category_ID)
@@ -901,8 +939,8 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
 	}
 
-	/** Get Produkt-Kategorie.
-		@return Category of a Product
+	/** Get Produkt Kategorie.
+		@return Kategorie eines Produktes
 	  */
 	@Override
 	public int getM_Product_Category_ID () 
@@ -962,6 +1000,11 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return (java.lang.String)get_Value(COLUMNNAME_M_ProductPlanningSchema_Selector);
 	}
 
+	/** 
+	 * Manufacturer AD_Reference_ID=138
+	 * Reference name: C_BPartner (Trx)
+	 */
+	public static final int MANUFACTURER_AD_Reference_ID=138;
 	/** Set Hersteller.
 		@param Manufacturer 
 		Hersteller des Produktes
@@ -969,6 +1012,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public void setManufacturer (java.lang.String Manufacturer)
 	{
+
 		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
 	}
 
@@ -1068,7 +1112,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		Size of a package
 	  */
 	@Override
-	public void setPackageSize (java.math.BigDecimal PackageSize)
+	public void setPackageSize (java.lang.String PackageSize)
 	{
 		set_Value (COLUMNNAME_PackageSize, PackageSize);
 	}
@@ -1077,12 +1121,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		@return Size of a package
 	  */
 	@Override
-	public java.math.BigDecimal getPackageSize () 
+	public java.lang.String getPackageSize () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageSize);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		return (java.lang.String)get_Value(COLUMNNAME_PackageSize);
 	}
 
 	/** Set Verarbeiten.

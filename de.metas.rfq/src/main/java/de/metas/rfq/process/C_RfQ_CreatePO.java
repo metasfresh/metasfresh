@@ -256,9 +256,9 @@ public class C_RfQ_CreatePO extends JavaProcess
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		ol.setQtyEntered(rfqLineQty.getQty());
-		final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(
+		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(
 				Quantity.of(rfqLineQty.getQty(), rfqLineQty.getC_UOM()),
-				ol.getM_Product());
-		ol.setQtyOrdered(qtyOrdered);
+				ol.getM_Product_ID());
+		ol.setQtyOrdered(qtyOrdered.getQty());
 	}
 }

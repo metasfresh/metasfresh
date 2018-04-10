@@ -2,16 +2,23 @@ package de.metas;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
+import org.adempiere.ad.dao.impl.QuerySelectionToDeleteHelper;
+import org.adempiere.ad.dao.model.I_T_Query_Selection;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
+import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,6 +30,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.logging.LogManager;
 import de.metas.server.housekeep.MissingTranslationHouseKeepingTask;
@@ -57,12 +66,10 @@ import de.metas.server.housekeep.SignDatabaseBuildHouseKeepingTask;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@SpringBootApplication(scanBasePackages =
-	{ "de.metas", "org.adempiere" })
-@ServletComponentScan(value =
-	{ "de.metas", "org.adempiere" })
+@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
+@ServletComponentScan(value = { "de.metas", "org.adempiere" })
 @Profile(Profiles.PROFILE_App)
-public class ServerBoot
+public class ServerBoot implements InitializingBean
 {
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
@@ -70,10 +77,13 @@ public class ServerBoot
 	 */
 	public static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
 
-
+	private static final Logger logger = LogManager.getLogger(ServerBoot.class);
 
 	@Autowired
 	private ApplicationContext applicationContext;
+
+	@Value("${metasfresh.query.clearQuerySelectionRateInSeconds:60}")
+	private int clearQuerySelectionsRateInSeconds;
 
 	public static void main(final String[] args)
 	{
@@ -87,7 +97,11 @@ public class ServerBoot
 				.web(true)
 				// consider removing the jasper profile
 				// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
-				.profiles(Profiles.PROFILE_App, Profiles.PROFILE_JasperServer)
+				// same goes for PrintService
+				.profiles(
+						Profiles.PROFILE_App,
+						Profiles.PROFILE_JasperService,
+						Profiles.PROFILE_PrintService)
 				.run(args);
 	}
 
@@ -154,4 +168,33 @@ public class ServerBoot
 		return adempiere;
 	}
 
+	@Override
+	public void afterPropertiesSet() throws Exception
+	{
+		if (clearQuerySelectionsRateInSeconds > 0)
+		{
+			final ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(
+					1, // corePoolSize
+					CustomizableThreadFactory.builder()
+							.setDaemon(true)
+							.setThreadNamePrefix("cleanup-" + I_T_Query_Selection.Table_Name)
+							.build());
+
+			scheduledExecutor.scheduleAtFixedRate(
+					QuerySelectionToDeleteHelper::deleteScheduledSelectionsNoFail, // command, don't fail because on failure the task won't be re-scheduled so it's game over
+					clearQuerySelectionsRateInSeconds, // initialDelay
+					clearQuerySelectionsRateInSeconds, // period
+					TimeUnit.SECONDS // timeUnit
+			);
+			logger.info("Clearing query selection table each {} seconds", clearQuerySelectionsRateInSeconds);
+		}
+	}
+
+	@Bean
+	public ObjectMapper objectMapper()
+	{
+		final ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.findAndRegisterModules();
+		return objectMapper;
+	}
 }

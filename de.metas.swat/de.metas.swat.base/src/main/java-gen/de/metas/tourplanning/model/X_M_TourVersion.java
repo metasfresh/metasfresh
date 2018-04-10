@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.tourplanning.model;
 
@@ -30,7 +14,7 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 914035679L;
+	private static final long serialVersionUID = -497148905L;
 
     /** Standard Constructor */
     public X_M_TourVersion (Properties ctx, int M_TourVersion_ID, String trxName)
@@ -58,14 +42,6 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_M_TourVersion[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** Set Intervall (in Monaten).
@@ -489,9 +465,9 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		return false;
 	}
 
-	/** Set Bereitstellungszeit.
+	/** Set Bereitstellungszeit Mo.
 		@param PreparationTime_1 
-		Bereitstellungszeit für Montag
+		Preparation time for monday
 	  */
 	@Override
 	public void setPreparationTime_1 (java.sql.Timestamp PreparationTime_1)
@@ -499,8 +475,8 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		set_Value (COLUMNNAME_PreparationTime_1, PreparationTime_1);
 	}
 
-	/** Get Bereitstellungszeit.
-		@return Bereitstellungszeit für Montag
+	/** Get Bereitstellungszeit Mo.
+		@return Preparation time for monday
 	  */
 	@Override
 	public java.sql.Timestamp getPreparationTime_1 () 
@@ -508,9 +484,9 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_1);
 	}
 
-	/** Set Bereitstellungszeit.
+	/** Set Bereitstellungszeit Di.
 		@param PreparationTime_2 
-		Bereitstellungszeit für Dienstag
+		Preparation time for tuesday
 	  */
 	@Override
 	public void setPreparationTime_2 (java.sql.Timestamp PreparationTime_2)
@@ -518,8 +494,8 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		set_Value (COLUMNNAME_PreparationTime_2, PreparationTime_2);
 	}
 
-	/** Get Bereitstellungszeit.
-		@return Bereitstellungszeit für Dienstag
+	/** Get Bereitstellungszeit Di.
+		@return Preparation time for tuesday
 	  */
 	@Override
 	public java.sql.Timestamp getPreparationTime_2 () 
@@ -527,9 +503,9 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_2);
 	}
 
-	/** Set Bereitstellungszeit.
+	/** Set Bereitstellungszeit Mi.
 		@param PreparationTime_3 
-		Bereitstellungszeit für Mittwoch
+		Preparation time for wednesday
 	  */
 	@Override
 	public void setPreparationTime_3 (java.sql.Timestamp PreparationTime_3)
@@ -537,8 +513,8 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		set_Value (COLUMNNAME_PreparationTime_3, PreparationTime_3);
 	}
 
-	/** Get Bereitstellungszeit.
-		@return Bereitstellungszeit für Mittwoch
+	/** Get Bereitstellungszeit Mi.
+		@return Preparation time for wednesday
 	  */
 	@Override
 	public java.sql.Timestamp getPreparationTime_3 () 
@@ -546,9 +522,9 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_3);
 	}
 
-	/** Set Bereitstellungszeit.
+	/** Set Bereitstellungszeit Do.
 		@param PreparationTime_4 
-		Bereitstellungszeit für Donnerstag
+		Preparation time for thursday
 	  */
 	@Override
 	public void setPreparationTime_4 (java.sql.Timestamp PreparationTime_4)
@@ -556,8 +532,8 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		set_Value (COLUMNNAME_PreparationTime_4, PreparationTime_4);
 	}
 
-	/** Get Bereitstellungszeit.
-		@return Bereitstellungszeit für Donnerstag
+	/** Get Bereitstellungszeit Do.
+		@return Preparation time for thursday
 	  */
 	@Override
 	public java.sql.Timestamp getPreparationTime_4 () 
@@ -565,9 +541,9 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_4);
 	}
 
-	/** Set Bereitstellungszeit.
+	/** Set Bereitstellungszeit Fr.
 		@param PreparationTime_5 
-		Bereitstellungszeit für Freitag
+		Preparation time for Friday
 	  */
 	@Override
 	public void setPreparationTime_5 (java.sql.Timestamp PreparationTime_5)
@@ -575,8 +551,8 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		set_Value (COLUMNNAME_PreparationTime_5, PreparationTime_5);
 	}
 
-	/** Get Bereitstellungszeit.
-		@return Bereitstellungszeit für Freitag
+	/** Get Bereitstellungszeit Fr.
+		@return Preparation time for Friday
 	  */
 	@Override
 	public java.sql.Timestamp getPreparationTime_5 () 
@@ -584,9 +560,9 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_5);
 	}
 
-	/** Set Bereitstellungszeit.
+	/** Set Bereitstellungszeit Sa.
 		@param PreparationTime_6 
-		Bereitstellungszeit für Samstag
+		Preparation time for Saturday
 	  */
 	@Override
 	public void setPreparationTime_6 (java.sql.Timestamp PreparationTime_6)
@@ -594,8 +570,8 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		set_Value (COLUMNNAME_PreparationTime_6, PreparationTime_6);
 	}
 
-	/** Get Bereitstellungszeit.
-		@return Bereitstellungszeit für Samstag
+	/** Get Bereitstellungszeit Sa.
+		@return Preparation time for Saturday
 	  */
 	@Override
 	public java.sql.Timestamp getPreparationTime_6 () 
@@ -603,9 +579,9 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_6);
 	}
 
-	/** Set Bereitstellungszeit.
+	/** Set Bereitstellungszeit So.
 		@param PreparationTime_7 
-		Bereitstellungszeit für Sonntag
+		Preparation time for Sunday
 	  */
 	@Override
 	public void setPreparationTime_7 (java.sql.Timestamp PreparationTime_7)
@@ -613,8 +589,8 @@ public class X_M_TourVersion extends org.compiere.model.PO implements I_M_TourVe
 		set_Value (COLUMNNAME_PreparationTime_7, PreparationTime_7);
 	}
 
-	/** Get Bereitstellungszeit.
-		@return Bereitstellungszeit für Sonntag
+	/** Get Bereitstellungszeit So.
+		@return Preparation time for Sunday
 	  */
 	@Override
 	public java.sql.Timestamp getPreparationTime_7 () 

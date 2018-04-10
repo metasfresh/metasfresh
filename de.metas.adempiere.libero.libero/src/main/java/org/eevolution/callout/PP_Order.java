@@ -25,7 +25,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
  */
 
 import java.math.BigDecimal;
-import java.util.Properties;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -173,9 +172,7 @@ public class PP_Order extends CalloutEngine
 	 */
 	protected static I_PP_Product_Planning findPP_Product_Planning(final I_PP_Order ppOrder)
 	{
-		final Properties ctx = Env.getCtx();
-
-		I_PP_Product_Planning pp = Services.get(IProductPlanningDAO.class).find(ctx,
+		I_PP_Product_Planning pp = Services.get(IProductPlanningDAO.class).find(
 				ppOrder.getAD_Org_ID(),
 				ppOrder.getM_Warehouse_ID(),
 				ppOrder.getS_Resource_ID(),

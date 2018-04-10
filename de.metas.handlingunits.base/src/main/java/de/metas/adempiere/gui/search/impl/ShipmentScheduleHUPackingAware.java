@@ -10,12 +10,12 @@ package de.metas.adempiere.gui.search.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,7 +26,6 @@ package de.metas.adempiere.gui.search.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -36,6 +35,7 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import lombok.NonNull;
 
 public class ShipmentScheduleHUPackingAware implements IHUPackingAware
 {
@@ -43,10 +43,8 @@ public class ShipmentScheduleHUPackingAware implements IHUPackingAware
 	private final I_M_ShipmentSchedule shipmentSchedule;
 	private final PlainHUPackingAware values = new PlainHUPackingAware();
 
-	public ShipmentScheduleHUPackingAware(final I_M_ShipmentSchedule shipmentSchedule)
+	public ShipmentScheduleHUPackingAware(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		super();
-		Check.assumeNotNull(shipmentSchedule, "shipmentSchedule not null");
 		this.shipmentSchedule = shipmentSchedule;
 	}
 
@@ -108,9 +106,8 @@ public class ShipmentScheduleHUPackingAware implements IHUPackingAware
 	{
 		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
 		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(shipmentSchedule);
-		
-		return qtyOrdered;
 
+		return qtyOrdered;
 	}
 
 	@Override
@@ -133,13 +130,13 @@ public class ShipmentScheduleHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public BigDecimal getQtyPacks()
+	public BigDecimal getQtyTU()
 	{
 		return shipmentSchedule.getQtyOrdered_TU();
 	}
 
 	@Override
-	public void setQtyPacks(final BigDecimal qtyPacks)
+	public void setQtyTU(final BigDecimal qtyPacks)
 	{
 		shipmentSchedule.setQtyOrdered_TU(qtyPacks);
 

@@ -79,14 +79,17 @@ public class StockCandidateService
 			final CandidatesQuery stockQuery = createStockQueryBuilderWithDateOperator(candidate, DateOperator.BEFORE_OR_AT);
 			previousStockOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(stockQuery);
 		}
-		// TODO i know from the unit tests this kindof works, but i need to better understand it
+
 		final BigDecimal newQty;
 		if (previousStockOrNull == null)
 		{
 			newQty = candidate.getQuantity();
 		}
-		else if (previousStockOrNull.getDate().before(candidate.getDate()))
+		else if (previousStockOrNull.getDate().before(candidate.getDate())
+				|| previousStockOrNull.getSeqNo() < candidate.getSeqNo())
 		{
+			// since we do have an *earlier* stock candidate, we base our new candidate's qty on the former candidate
+			// TODO: i'm pretty sure there is just one, so we might drop this summing..
 			final CandidatesQuery stockQuery = createStockQueryBuilderWithDateOperator(previousStockOrNull, DateOperator.AT);
 			final BigDecimal previousQuantity = candidateRepositoryRetrieval
 					.retrieveOrderedByDateAndSeqNo(stockQuery).stream().map(Candidate::getQuantity)
@@ -96,7 +99,8 @@ public class StockCandidateService
 		}
 		else
 		{
-			// previousStockOrNull has the same date as the given "candidate"
+			// previousStockOrNull has the same date as the given "candidate", but a bigger SeqNo.
+			// Therefore we consider it "after"
 			newQty = candidate.getQuantity();
 		}
 
@@ -116,21 +120,6 @@ public class StockCandidateService
 				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())
 				.groupId(groupId)
-				.build();
-	}
-
-	private CandidatesQuery createStockQueryBuilderWithDateOperator(
-			@NonNull final Candidate candidate,
-			@NonNull final DateOperator dateOperator)
-	{
-		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
-				.forDescriptor(candidate.getMaterialDescriptor(), dateOperator);
-
-		return CandidatesQuery.builder()
-				.materialDescriptorQuery(materialDescriptorQuery)
-				.type(CandidateType.STOCK)
-				.matchExactStorageAttributesKey(true)
-				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
 				.build();
 	}
 
@@ -163,39 +152,65 @@ public class StockCandidateService
 	}
 
 	/**
-	 * Selects all stock candidates which have the same product and locator but a later timestamp than the one from the given {@code segment}.
+	 * Selects all stock candidates which have the same product and locator but a later timestamp than the one from the given {@code materialDescriptor}.
 	 * Iterate them and add the given {@code delta} to their quantity.
 	 * <p>
-	 * That's it for now :-). Don't alter those stock candidates' children or parents.
 	 *
-	 * @param productDescriptor the product to match against
-	 * @param warehouseId the warehouse ID to match against
-	 * @param date the date to match against (i.e. everything after this date shall be a match)
+	 * @param materialDescriptor the product to match against
 	 * @param groupId the groupId to set to every stock record that we matched
 	 * @param delta the quantity (positive or negative) to add to every stock record that we matched
 	 */
 	public void applyDeltaToMatchingLaterStockCandidates(
-			@NonNull final MaterialDescriptor materialDescriptor,
-			@NonNull final Integer groupId,
-			@NonNull final BigDecimal delta)
+			@NonNull final Candidate stockWithDelta)
 	{
-		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
-				.forDescriptor(materialDescriptor, DateOperator.AFTER);
-
-		final CandidatesQuery query = CandidatesQuery.builder()
-				.type(CandidateType.STOCK)
-				.materialDescriptorQuery(materialDescriptorQuery)
-				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
-				.matchExactStorageAttributesKey(true)
-				.build();
+		final CandidatesQuery query = createStockQueryBuilderWithDateOperator(
+				stockWithDelta,
+				DateOperator.AT_OR_AFTER);
 
 		final List<Candidate> candidatesToUpdate = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 		for (final Candidate candidate : candidatesToUpdate)
 		{
+			final boolean sameDateButLowerSeqNo = //
+					candidate.getDate().equals(stockWithDelta.getDate())
+							&& candidate.getSeqNo() <= stockWithDelta.getSeqNo();
+			if (sameDateButLowerSeqNo)
+			{
+				continue;
+			}
+
+			final BigDecimal delta = stockWithDelta.getQuantity();
 			final BigDecimal newQty = candidate.getQuantity().add(delta);
-			candidateRepositoryWriteService.updateCandidate(candidate
+			candidateRepositoryWriteService.updateCandidateById(candidate
 					.withQuantity(newQty)
-					.withGroupId(groupId));
+					.withGroupId(stockWithDelta.getGroupId()));
 		}
+	}
+
+	private CandidatesQuery createStockQueryBuilderWithDateOperator(
+			@NonNull final Candidate candidate,
+			@NonNull final DateOperator dateOperator)
+	{
+		final MaterialDescriptorQuery materialDescriptorQuery = //
+				createMaterialDescriptorQueryWithoutBPartner(candidate.getMaterialDescriptor(), dateOperator);
+
+		return CandidatesQuery.builder()
+				.materialDescriptorQuery(materialDescriptorQuery)
+				.type(CandidateType.STOCK)
+				.matchExactStorageAttributesKey(true)
+				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
+				.build();
+	}
+
+	private MaterialDescriptorQuery createMaterialDescriptorQueryWithoutBPartner(final MaterialDescriptor materialDescriptor, final DateOperator dateoperator)
+	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				// .bPartnerId(bPartnerId) // don't filter by bpartner because ATP changes affect all of them
+				.date(materialDescriptor.getDate())
+				.dateOperator(dateoperator)
+				.productId(materialDescriptor.getProductId())
+				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
+				.warehouseId(materialDescriptor.getWarehouseId())
+				.build();
+		return materialDescriptorQuery;
 	}
 }

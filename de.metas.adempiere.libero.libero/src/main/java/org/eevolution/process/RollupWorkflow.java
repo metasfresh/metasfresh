@@ -201,10 +201,10 @@ public class RollupWorkflow extends JavaProcess
 			params.add(p_M_Product_Category_ID);
 		}
 
-		Collection<MProduct> products = new Query(getCtx(), MProduct.Table_Name, whereClause.toString(), get_TrxName())
-				.setOrderBy(MProduct.COLUMNNAME_LowLevel)
-				.setParameters(params)
-				.list();
+		Collection<MProduct> products = new Query(getCtx(),MProduct.Table_Name, whereClause.toString(), get_TrxName())
+											.setOrderBy(MProduct.COLUMNNAME_LowLevel)
+											.setParameters(params)
+											.list(MProduct.class);
 		return products;
 	}
 

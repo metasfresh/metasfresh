@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Transaction;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_InventoryLine;
+import org.compiere.model.I_M_MovementLine;
+import org.eevolution.model.I_PP_Cost_Collector;
 
 import com.google.common.collect.ImmutableList;
 
@@ -51,24 +54,31 @@ public class M_Transaction_HuOnHandQtyChangeDescriptor
 	}
 
 	public List<HUOnHandQtyChangeDescriptor> createHuDescriptorsForInOutLine(
-			@NonNull final I_M_Transaction transaction,
+			@NonNull final I_M_InOutLine inOutLine,
 			final boolean deleted)
 	{
-		return createHUDescriptorsForModel(transaction.getM_InOutLine(), deleted);
+		return createHUDescriptorsForModel(inOutLine, deleted);
 	}
 
 	public List<HUOnHandQtyChangeDescriptor> createHuDescriptorsForCostCollector(
-			@NonNull final I_M_Transaction transaction,
+			@NonNull final I_PP_Cost_Collector costCollector,
 			final boolean deleted)
 	{
-		return createHUDescriptorsForModel(transaction.getPP_Cost_Collector(), deleted);
+		return createHUDescriptorsForModel(costCollector, deleted);
 	}
 
 	public List<HUOnHandQtyChangeDescriptor> createHuDescriptorsForMovementLine(
-			@NonNull final I_M_Transaction transaction,
+			@NonNull final I_M_MovementLine movementLine,
 			final boolean deleted)
 	{
-		return createHUDescriptorsForModel(transaction.getM_MovementLine(), deleted);
+		return createHUDescriptorsForModel(movementLine, deleted);
+	}
+
+	public List<HUOnHandQtyChangeDescriptor> createHuDescriptorsForInventoryLine(
+			@NonNull final I_M_InventoryLine inventoryLine,
+			final boolean deleted)
+	{
+		return createHUDescriptorsForModel(inventoryLine, deleted);
 	}
 
 	private static List<HUOnHandQtyChangeDescriptor> createHUDescriptorsForModel(

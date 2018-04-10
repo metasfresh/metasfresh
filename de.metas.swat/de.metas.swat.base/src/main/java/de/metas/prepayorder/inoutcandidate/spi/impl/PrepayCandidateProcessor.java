@@ -69,7 +69,7 @@ public class PrepayCandidateProcessor implements IShipmentSchedulesAfterFirstPas
 		{
 			for (final DeliveryLineCandidate ioLine : inOut.getLines())
 			{
-				final TableRecordReference scheduleReference = TableRecordReference.ofReferenced(ioLine.getShipmentSchedule());
+				final TableRecordReference scheduleReference = ioLine.getReferenced();
 				if (!I_C_OrderLine.Table_Name.equals(scheduleReference.getTableName()))
 				{
 					continue;
@@ -93,14 +93,14 @@ public class PrepayCandidateProcessor implements IShipmentSchedulesAfterFirstPas
 					candidates.addStatusInfo(ioLine, statusInfo);
 
 					// discard the line if the qty has been set manually
-					if (ioLine.getShipmentSchedule().getQtyToDeliver_Override().signum() <= 0)
+					if (ioLine.getQtyToDeliverOverride().signum() <= 0)
 					{
-						logger.debug("Discarding candidate for " + ioLine.getShipmentSchedule());
-						ioLine.setDiscarded(true);
+						logger.debug("Discarding candidate for {}", ioLine);
+						ioLine.setDiscarded();
 					}
 					else
 					{
-						logger.debug("Not discarding line despite insufficent allocation, because " + ioLine.getShipmentSchedule() + " has a qty override");
+						logger.debug("Not discarding line despite insufficent allocation, because {} has a qty override", ioLine);
 					}
 				}
 			}

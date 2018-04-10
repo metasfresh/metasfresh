@@ -155,9 +155,9 @@ public class HUPIAttributeBuilder
 
 		huPIAttr.setPropagationType(propagationType);
 
-		huPIAttr.setSplitterStrategy_JavaClass(createADJavaClassFromClass(ctx, splitterStrategyClass));
-		huPIAttr.setAggregationStrategy_JavaClass(createADJavaClassFromClass(ctx, aggregationStrategyClass));
-		huPIAttr.setHU_TansferStrategy_JavaClass(createADJavaClassFromClass(ctx, transferStrategyClass));
+		huPIAttr.setSplitterStrategy_JavaClass_ID(createADJavaClassFromClass(ctx, splitterStrategyClass).getAD_JavaClass_ID());
+		huPIAttr.setAggregationStrategy_JavaClass_ID(createADJavaClassFromClass(ctx, aggregationStrategyClass).getAD_JavaClass_ID());
+		huPIAttr.setHU_TansferStrategy_JavaClass_ID(createADJavaClassFromClass(ctx, transferStrategyClass).getAD_JavaClass_ID());
 
 		InterfaceWrapperHelper.save(huPIAttr);
 

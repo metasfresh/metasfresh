@@ -15,7 +15,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1853514962L;
+	private static final long serialVersionUID = 236129388L;
 
     /** Standard Constructor */
     public X_MD_Cockpit (Properties ctx, int MD_Cockpit_ID, String trxName)
@@ -24,8 +24,8 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
       /** if (MD_Cockpit_ID == 0)
         {
 			setDateGeneral (new Timestamp( System.currentTimeMillis() ));
-			setMD_Cockpit_ID (0);
 			setM_Product_ID (0);
+			setMD_Cockpit_ID (0);
         } */
     }
 
@@ -76,65 +76,6 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateGeneral);
 	}
 
-	/** Set Materialcockpit.
-		@param MD_Cockpit_ID Materialcockpit	  */
-	@Override
-	public void setMD_Cockpit_ID (int MD_Cockpit_ID)
-	{
-		if (MD_Cockpit_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, Integer.valueOf(MD_Cockpit_ID));
-	}
-
-	/** Get Materialcockpit.
-		@return Materialcockpit	  */
-	@Override
-	public int getMD_Cockpit_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Cockpit_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product_Category getM_Product_Category() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class);
-	}
-
-	@Override
-	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
-	}
-
-	/** Set Produkt-Kategorie.
-		@param M_Product_Category_ID 
-		Kategorie eines Produktes
-	  */
-	@Override
-	public void setM_Product_Category_ID (int M_Product_Category_ID)
-	{
-		if (M_Product_Category_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_Category_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
-	}
-
-	/** Get Produkt-Kategorie.
-		@return Kategorie eines Produktes
-	  */
-	@Override
-	public int getM_Product_Category_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Category_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
@@ -167,6 +108,28 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Materialcockpit.
+		@param MD_Cockpit_ID Materialcockpit	  */
+	@Override
+	public void setMD_Cockpit_ID (int MD_Cockpit_ID)
+	{
+		if (MD_Cockpit_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, Integer.valueOf(MD_Cockpit_ID));
+	}
+
+	/** Get Materialcockpit.
+		@return Materialcockpit	  */
+	@Override
+	public int getMD_Cockpit_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Cockpit_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -348,16 +311,16 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 		return bd;
 	}
 
-	/** Set Benötigte Menge für Produktion.
-		@param QtyRequiredForProduction Benötigte Menge für Produktion	  */
+	/** Set Menge für Produktion.
+		@param QtyRequiredForProduction Menge für Produktion	  */
 	@Override
 	public void setQtyRequiredForProduction (java.math.BigDecimal QtyRequiredForProduction)
 	{
 		set_Value (COLUMNNAME_QtyRequiredForProduction, QtyRequiredForProduction);
 	}
 
-	/** Get Benötigte Menge für Produktion.
-		@return Benötigte Menge für Produktion	  */
+	/** Get Menge für Produktion.
+		@return Menge für Produktion	  */
 	@Override
 	public java.math.BigDecimal getQtyRequiredForProduction () 
 	{
@@ -367,16 +330,16 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 		return bd;
 	}
 
-	/** Set Noch offene bestellte Menge.
-		@param QtyReserved_Purchase Noch offene bestellte Menge	  */
+	/** Set Bestellt.
+		@param QtyReserved_Purchase Bestellt	  */
 	@Override
 	public void setQtyReserved_Purchase (java.math.BigDecimal QtyReserved_Purchase)
 	{
 		set_Value (COLUMNNAME_QtyReserved_Purchase, QtyReserved_Purchase);
 	}
 
-	/** Get Noch offene bestellte Menge.
-		@return Noch offene bestellte Menge	  */
+	/** Get Bestellt.
+		@return Bestellt	  */
 	@Override
 	public java.math.BigDecimal getQtyReserved_Purchase () 
 	{
@@ -386,16 +349,16 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 		return bd;
 	}
 
-	/** Set Noch offene beauftragte Menge.
-		@param QtyReserved_Sale Noch offene beauftragte Menge	  */
+	/** Set Beauftragt.
+		@param QtyReserved_Sale Beauftragt	  */
 	@Override
 	public void setQtyReserved_Sale (java.math.BigDecimal QtyReserved_Sale)
 	{
 		set_Value (COLUMNNAME_QtyReserved_Sale, QtyReserved_Sale);
 	}
 
-	/** Get Noch offene beauftragte Menge.
-		@return Noch offene beauftragte Menge	  */
+	/** Get Beauftragt.
+		@return Beauftragt	  */
 	@Override
 	public java.math.BigDecimal getQtyReserved_Sale () 
 	{

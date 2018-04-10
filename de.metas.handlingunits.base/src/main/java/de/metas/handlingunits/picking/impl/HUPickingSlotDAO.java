@@ -13,12 +13,12 @@ import java.util.HashSet;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +35,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
@@ -52,6 +51,7 @@ import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import lombok.NonNull;
 
 public class HUPickingSlotDAO implements IHUPickingSlotDAO
 {
@@ -164,6 +164,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 				.createQueryBuilder(I_M_PickingSlot_HU.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_PickingSlot_HU.COLUMN_M_PickingSlot_ID, pickingSlotIds)
+				.orderBy(I_M_PickingSlot_HU.COLUMN_M_PickingSlot_HU_ID)
 				.create()
 				.stream(I_M_PickingSlot_HU.class)
 				.forEach(pickingSlotHU -> pickingSlotId2huIds.put(pickingSlotHU.getM_PickingSlot_ID(), pickingSlotHU.getM_HU_ID()));
@@ -270,11 +271,10 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	}
 
 	@Override
-	public List<I_M_PickingSlot> retrievePickingSlots(final I_C_BPartner partner, final I_M_Locator locator)
+	public List<I_M_PickingSlot> retrievePickingSlots(
+			@NonNull final I_C_BPartner partner,
+			@NonNull final I_M_Locator locator)
 	{
-		Check.assumeNotNull(partner, "partner not null");
-		Check.assumeNotNull(locator, "locator not null");
-
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PickingSlot.class, partner)
 				.addEqualsFilter(de.metas.picking.model.I_M_PickingSlot.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())

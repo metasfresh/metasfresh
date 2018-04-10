@@ -645,35 +645,6 @@ public interface I_M_CostDetail
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Produktions-Position.
-	 * Document Line representing a production
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_ProductionLine_ID (int M_ProductionLine_ID);
-
-	/**
-	 * Get Produktions-Position.
-	 * Document Line representing a production
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_ProductionLine_ID();
-
-	public org.compiere.model.I_M_ProductionLine getM_ProductionLine();
-
-	public void setM_ProductionLine(org.compiere.model.I_M_ProductionLine M_ProductionLine);
-
-    /** Column definition for M_ProductionLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_M_ProductionLine> COLUMN_M_ProductionLine_ID = new org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_M_ProductionLine>(I_M_CostDetail.class, "M_ProductionLine_ID", org.compiere.model.I_M_ProductionLine.class);
-    /** Column name M_ProductionLine_ID */
-    public static final String COLUMNNAME_M_ProductionLine_ID = "M_ProductionLine_ID";
-
-	/**
 	 * Set Manufacturing Cost Collector.
 	 *
 	 * <br>Type: Search

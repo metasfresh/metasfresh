@@ -1,5 +1,9 @@
 package de.metas.ui.web.base.model;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 /*
  * #%L
  * de.metas.ui.web.base
@@ -31,6 +35,13 @@ public interface I_T_WEBUI_ViewSelection
 	/** i.e. the sequence number for ordering */
 	String COLUMNNAME_Line = "Line";
 
-	/** Record ID / Aggregate record ID / Root record ID */
-	String COLUMNNAME_Record_ID = "Record_ID";
+	//
+	// Record IDs / Aggregate record IDs / Root record IDs
+	// IMPORTANT: keep in sync with I_T_WEBUI_ViewSelectionLine !!!
+	String COLUMNNAME_IntKey1 = "IntKey1";
+	String COLUMNNAME_IntKey2 = "IntKey2";
+	final List<String> COLUMNNAME_IntKeys = ImmutableList.of(COLUMNNAME_IntKey1, COLUMNNAME_IntKey2);
+
+	String COLUMNNAME_StringKey1 = "StringKey1";
+	final List<String> COLUMNNAME_StringKeys = ImmutableList.of(COLUMNNAME_StringKey1);
 }

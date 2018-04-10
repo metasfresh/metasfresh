@@ -15,7 +15,7 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -545768687L;
+	private static final long serialVersionUID = 34082079L;
 
     /** Standard Constructor */
     public X_MD_Cockpit_DocumentDetail (Properties ctx, int MD_Cockpit_DocumentDetail_ID, String trxName)
@@ -235,6 +235,50 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 		return ii.intValue();
 	}
 
+	/** Set Wareneingangsdisposition.
+		@param M_ReceiptSchedule_ID Wareneingangsdisposition	  */
+	@Override
+	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID)
+	{
+		if (M_ReceiptSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, Integer.valueOf(M_ReceiptSchedule_ID));
+	}
+
+	/** Get Wareneingangsdisposition.
+		@return Wareneingangsdisposition	  */
+	@Override
+	public int getM_ReceiptSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ReceiptSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Lieferdisposition.
+		@param M_ShipmentSchedule_ID Lieferdisposition	  */
+	@Override
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	{
+		if (M_ShipmentSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
+	}
+
+	/** Get Lieferdisposition.
+		@return Lieferdisposition	  */
+	@Override
+	public int getM_ShipmentSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set DocumentDetail.
 		@param MD_Cockpit_DocumentDetail_ID DocumentDetail	  */
 	@Override
@@ -291,62 +335,18 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 		return ii.intValue();
 	}
 
-	/** Set Wareneingangsdisposition.
-		@param M_ReceiptSchedule_ID Wareneingangsdisposition	  */
-	@Override
-	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID)
-	{
-		if (M_ReceiptSchedule_ID < 1) 
-			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, Integer.valueOf(M_ReceiptSchedule_ID));
-	}
-
-	/** Get Wareneingangsdisposition.
-		@return Wareneingangsdisposition	  */
-	@Override
-	public int getM_ReceiptSchedule_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ReceiptSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Lieferdisposition.
-		@param M_ShipmentSchedule_ID Lieferdisposition	  */
-	@Override
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
-	{
-		if (M_ShipmentSchedule_ID < 1) 
-			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
-	}
-
-	/** Get Lieferdisposition.
-		@return Lieferdisposition	  */
-	@Override
-	public int getM_ShipmentSchedule_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Bestellte Menge.
+	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
-		Bestellte Menge
+		Bestellt/ Beauftragt
 	  */
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
 	{
-		set_ValueNoCheck (COLUMNNAME_QtyOrdered, QtyOrdered);
+		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellte Menge.
-		@return Bestellte Menge
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
 	  */
 	@Override
 	public java.math.BigDecimal getQtyOrdered () 
@@ -357,18 +357,18 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 		return bd;
 	}
 
-	/** Set Reservierte Menge.
+	/** Set Offen.
 		@param QtyReserved 
-		Reservierte Menge
+		Offene Menge
 	  */
 	@Override
 	public void setQtyReserved (java.math.BigDecimal QtyReserved)
 	{
-		set_ValueNoCheck (COLUMNNAME_QtyReserved, QtyReserved);
+		set_Value (COLUMNNAME_QtyReserved, QtyReserved);
 	}
 
-	/** Get Reservierte Menge.
-		@return Reservierte Menge
+	/** Get Offen.
+		@return Offene Menge
 	  */
 	@Override
 	public java.math.BigDecimal getQtyReserved () 

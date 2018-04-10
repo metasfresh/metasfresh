@@ -5,6 +5,9 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.valueOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -22,7 +25,9 @@ import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
+import de.metas.material.event.ddorder.DDOrderCreatedEvent;
+import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.forecast.Forecast;
@@ -36,9 +41,7 @@ import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDes
 import de.metas.material.event.pporder.PPOrderChangedEvent.DeletedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
-import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
@@ -80,46 +83,81 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 
 public class MaterialEventSerializerTests
 {
+
+
+	private static final BigDecimal ELEVEN = TEN.add(ONE);
+
+	private static final BigDecimal TWELVE = ELEVEN.add(ONE);
+
+	private static final BigDecimal THIRTEEN = TWELVE.add(ONE);
+
 	@Test
 	public void ddOrderRequestedEvent()
 	{
 		final DDOrderRequestedEvent event = DDOrderRequestedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.dateOrdered(NOW)
-				.groupId(20)
-				.ddOrder(createDdOrder())
+				.ddOrder(createDdOrder(0))
 				.build();
-
+		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
 	@Test
-	public void ddOrderAdvisedOrCreatedEvent()
+	public void ddOrderAdvisedEvent()
 	{
-		final DDOrderAdvisedOrCreatedEvent event = DDOrderAdvisedOrCreatedEvent.builder()
+		final DDOrderAdvisedEvent event = DDOrderAdvisedEvent.builder()
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.advisedToCreateDDrder(true)
-				.ddOrder(createDdOrder())
+				.pickIfFeasible(false)
+				.ddOrder(createDdOrder(0))
 				.fromWarehouseId(30)
 				.eventDescriptor(createEventDescriptor())
 				.toWarehouseId(40)
+				.build();
+		event.validate();
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
+	public void ddOrderCreatedEvent()
+	{
+		final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
+				.ddOrder(createDdOrder(20))
+				.fromWarehouseId(30)
+				.eventDescriptor(createEventDescriptor())
+				.toWarehouseId(40)
+				.build();
+		event.validate();
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
+	public void ddOrderChangedDocStatusEvent()
+	{
+		final DDOrderDocStatusChangedEvent event = DDOrderDocStatusChangedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.ddOrderId(10)
+				.newDocStatus("newDocStatus")
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
-	private DDOrder createDdOrder()
+	private DDOrder createDdOrder(final int ddOrderId)
 	{
 		return DDOrder.builder()
 				.datePromised(SystemTime.asDayTimestamp())
-				.ddOrderId(30)
+				.ddOrderId(ddOrderId)
 				.docStatus("IP")
+				.materialDispoGroupId(35)
 				.line(DDOrderLine.builder()
 						.productDescriptor(createProductDescriptor())
 						.ddOrderLineId(21)
 						.durationDays(31)
 						.networkDistributionLineId(41)
-						.qty(BigDecimal.TEN)
+						.qty(TEN)
 						.salesOrderLineId(61)
 						.build())
 				.orgId(40)
@@ -157,7 +195,8 @@ public class MaterialEventSerializerTests
 						.plantId(110)
 						.productDescriptor(createProductDescriptor())
 						.productPlanningId(130)
-						.quantity(BigDecimal.TEN)
+						.qtyRequired(TEN)
+						.qtyDelivered(ONE)
 						.warehouseId(WAREHOUSE_ID)
 						.line(createPPOrderLine())
 						.line(PPOrderLine.builder()
@@ -165,12 +204,13 @@ public class MaterialEventSerializerTests
 								.issueOrReceiveDate(NOW)
 								.description("desc2")
 								.productBomLineId(380)
-								.qtyRequired(BigDecimal.valueOf(320))
+								.qtyRequired(valueOf(320))
 								.receipt(false)
 								.build())
 						.build())
 				.build();
 
+		event.validate();
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
@@ -182,7 +222,6 @@ public class MaterialEventSerializerTests
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.ppOrder(createPPOrder())
 				.build();
-
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
@@ -194,33 +233,6 @@ public class MaterialEventSerializerTests
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.ppOrder(createPPOrder())
 				.build();
-
-		assertEventEqualAfterSerializeDeserialize(event);
-	}
-
-	@Test
-	public void ppOrderChangedDocStatusEvent()
-	{
-		final PPOrderDocStatusChangedEvent event = PPOrderDocStatusChangedEvent.builder()
-				.eventDescriptor(createEventDescriptor())
-				.ppOrderId(10)
-				.newDocStatus("newDocStatus")
-				.build();
-
-		assertEventEqualAfterSerializeDeserialize(event);
-	}
-
-	@Test
-	public void ppOrderProductionQtyChangedEvent()
-	{
-		final PPOrderProductionQtyChangedEvent event = PPOrderProductionQtyChangedEvent.builder()
-				.eventDescriptor(createEventDescriptor())
-				.ppOrderId(10)
-				.ppOrderLineId(20)
-				.oldQuantity(new BigDecimal("30"))
-				.newQuantity(new BigDecimal("40"))
-				.build();
-
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
@@ -238,21 +250,31 @@ public class MaterialEventSerializerTests
 	@Test
 	public void ppOrderQtyEnteredChangedEvent()
 	{
+
 		final PPOrderChangedEvent event = PPOrderChangedEvent.builder()
 				.productDescriptor(createProductDescriptor())
-				.datePromised(NOW)
+				.newDatePromised(NOW)
+				.oldDatePromised(SystemTime.asTimestamp())
 				.ppOrderId(10)
+				.oldDocStatus("CO")
+				.newDocStatus("CL")
+				.oldQtyRequired(TEN)
+				.newQtyRequired(ELEVEN)
+				.oldQtyDelivered(TWELVE)
+				.newQtyDelivered(THIRTEEN)
 				.deletedPPOrderLine(DeletedPPOrderLineDescriptor.builder()
 						.productDescriptor(createProductDescriptorWithOffSet(1))
 						.issueOrReceiveDate(NOW)
 						.ppOrderLineId(20)
-						.quantity(new BigDecimal("40"))
+						.qtyRequired(new BigDecimal("40"))
+						.qtyDelivered(new BigDecimal("41"))
 						.build())
 				.deletedPPOrderLine(DeletedPPOrderLineDescriptor.builder()
 						.productDescriptor(createProductDescriptorWithOffSet(2))
 						.issueOrReceiveDate(NOW)
 						.ppOrderLineId(30)
-						.quantity(new BigDecimal("50"))
+						.qtyRequired(new BigDecimal("50"))
+						.qtyDelivered(new BigDecimal("51"))
 						.build())
 				.eventDescriptor(createEventDescriptor())
 				.newPPOrderLine(createPPOrderLine())
@@ -261,8 +283,10 @@ public class MaterialEventSerializerTests
 						.issueOrReceiveDate(NOW)
 						.oldPPOrderLineId(40)
 						.newPPOrderLineId(50)
-						.oldQuantity(new BigDecimal("60"))
-						.newQuantity(new BigDecimal("70"))
+						.oldQtyRequired(new BigDecimal("60"))
+						.newQtyRequired(new BigDecimal("70"))
+						.oldQtyDelivered(new BigDecimal("61"))
+						.newQtyDelivered(new BigDecimal("71"))
 						.build())
 				.build();
 		assertEventEqualAfterSerializeDeserialize(event);
@@ -277,7 +301,8 @@ public class MaterialEventSerializerTests
 				.plantId(110)
 				.productDescriptor(createProductDescriptor())
 				.productPlanningId(130)
-				.quantity(BigDecimal.TEN)
+				.qtyRequired(TEN)
+				.qtyDelivered(ONE)
 				.warehouseId(150)
 				.line(createPPOrderLine())
 				.line(PPOrderLine.builder()
@@ -285,7 +310,7 @@ public class MaterialEventSerializerTests
 						.issueOrReceiveDate(NOW)
 						.description("desc2")
 						.productBomLineId(380)
-						.qtyRequired(BigDecimal.valueOf(320))
+						.qtyRequired(valueOf(320))
 						.receipt(false)
 						.build())
 				.build();
@@ -298,7 +323,7 @@ public class MaterialEventSerializerTests
 				.issueOrReceiveDate(NOW)
 				.description("desc1")
 				.productBomLineId(280)
-				.qtyRequired(BigDecimal.valueOf(220))
+				.qtyRequired(valueOf(220))
 				.receipt(true)
 				.build();
 	}
@@ -514,12 +539,12 @@ public class MaterialEventSerializerTests
 				.transactionId(10)
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.shipmentScheduleIds2Qty(20, BigDecimal.TEN)
-				.shipmentScheduleIds2Qty(21, BigDecimal.ONE.negate())
+				.shipmentScheduleIds2Qty(20, TEN)
+				.shipmentScheduleIds2Qty(21, ONE.negate())
 				.huOnHandQtyChangeDescriptor(HUOnHandQtyChangeDescriptor.builder()
 						.huId(30)
-						.quantity(BigDecimal.TEN)
-						.quantityDelta(BigDecimal.ONE)
+						.quantity(TEN)
+						.quantityDelta(ONE)
 						.build())
 				.build();
 		return evt;
@@ -533,8 +558,8 @@ public class MaterialEventSerializerTests
 				.transactionId(10)
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.shipmentScheduleIds2Qty(20, BigDecimal.TEN)
-				.shipmentScheduleIds2Qty(21, BigDecimal.ONE.negate())
+				.shipmentScheduleIds2Qty(20, TEN)
+				.shipmentScheduleIds2Qty(21, ONE.negate())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(evt);
@@ -594,6 +619,6 @@ public class MaterialEventSerializerTests
 
 	private static EventDescriptor createEventDescriptor()
 	{
-		return new EventDescriptor(1, 2);
+		return EventDescriptor.ofClientAndOrg(1, 2);
 	}
 }

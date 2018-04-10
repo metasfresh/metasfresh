@@ -1,13 +1,11 @@
 package de.metas.inout.model.validator;
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.ModelValidator;
@@ -22,11 +20,12 @@ import de.metas.inout.api.IMaterialBalanceDetailDAO;
 import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inout.event.ReturnInOutProcessedEventBus;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.request.service.IRequestCreator;
+import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout_Async;
 
-@Validator(I_M_InOut.class)
+@Interceptor(I_M_InOut.class)
 public class M_InOut
 {
+
 	@Init
 	public void onInit()
 	{
@@ -47,33 +46,6 @@ public class M_InOut
 	public void updateDeliveryToAddress(final I_M_InOut doc)
 	{
 		Services.get(IDocumentLocationBL.class).setDeliveryToAddress(doc);
-	}
-
-	/**
-	 * Generate movements from receipt (if needed).
-	 *
-	 * This is the counter-part of {@link #reverseMovements(I_M_InOut)}.
-	 *
-	 * @param inout
-	 */
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void generateMovement(final I_M_InOut inout)
-	{
-		// We are generating movements only for receipts
-		if (inout.isSOTrx())
-		{
-			return;
-		}
-
-		// Don't generate movements for a reversal document
-		if (Services.get(IInOutBL.class).isReversal(inout))
-		{
-			return;
-		}
-
-		// Actually generate the movements
-		final IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
-		inoutMovementBL.generateMovementFromReceipt(inout);
 	}
 
 	/**
@@ -151,11 +123,15 @@ public class M_InOut
 			return;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inOut);
-		final String trxName = InterfaceWrapperHelper.getTrxName(inOut);
-
 		// In case there are lines with issues, trigger the request creation for them.
 		// Note: The request creation will be done async
-		Services.get(IRequestCreator.class).createRequests(ctx, linesWithQualityIssues, trxName);
+		C_Request_CreateFromInout_Async.createWorkpackage(linesWithQualityIssues);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
+	public void cacheResetShipmentStatistics(final I_M_InOut inOut)
+	{
+		Services.get(IInOutBL.class).invalidateStatistics(inOut);
+
 	}
 }

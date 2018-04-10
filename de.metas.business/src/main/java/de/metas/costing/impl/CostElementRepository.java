@@ -9,7 +9,6 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.util.CCache;
@@ -80,18 +79,24 @@ public class CostElementRepository implements ICostElementRepository
 	@Override
 	public CostElement getOrCreateMaterialCostElement(final int adClientId, @NonNull final CostingMethod costingMethod)
 	{
-		final CostElement costElement = getIndexedCostElements()
+		final List<CostElement> costElements = getIndexedCostElements()
 				.stream()
 				.filter(ce -> ce.getAdClientId() == adClientId)
 				.filter(ce -> ce.getCostingMethod() == costingMethod)
 				.filter(ce -> ce.getCostElementType() == CostElementType.Material)
-				.collect(GuavaCollectors.singleElementOrNullOrThrow(costElements -> new AdempiereException("Only one cost element was expected but got " + costElements)));
-		if (costElement != null)
+				.collect(ImmutableList.toImmutableList());
+		if(costElements.isEmpty())
 		{
-			return costElement;
+			return createNewDefaultCostingElement(adClientId, costingMethod);
 		}
-
-		return createNewDefaultCostingElement(adClientId, costingMethod);
+		else if (costElements.size() == 1)
+		{
+			return costElements.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("Only one cost element was expected but got " + costElements);
+		}
 	}
 
 	private CostElement createNewDefaultCostingElement(final int adClientId, @NonNull final CostingMethod costingMethod)

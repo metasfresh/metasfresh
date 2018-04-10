@@ -44,7 +44,7 @@ public class SupplyRequiredEventCreatorTest
 	@Test
 	public void createMaterialDemandEvent()
 	{
-		final Candidate demandCandidate = Candidate.builderForEventDescr(new EventDescriptor(20, 30))
+		final Candidate demandCandidate = Candidate.builderForEventDescr(EventDescriptor.ofClientAndOrg(20, 30))
 				.id(10)
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
@@ -58,6 +58,7 @@ public class SupplyRequiredEventCreatorTest
 						.warehouseId(WAREHOUSE_ID)
 						.build())
 				.build();
+
 		final SupplyRequiredEvent result = SupplyRequiredEventCreator.createSupplyRequiredEvent(demandCandidate, BigDecimal.TEN);
 		assertThat(result).isNotNull();
 		assertThat(result.getEventDescriptor().getClientId()).isEqualTo(20);

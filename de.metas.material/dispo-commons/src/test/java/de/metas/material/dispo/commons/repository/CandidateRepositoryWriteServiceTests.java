@@ -10,6 +10,7 @@ import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -36,14 +37,15 @@ import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.event.commons.MaterialDescriptor;
 
 /*
  * #%L
@@ -89,9 +91,16 @@ public class CandidateRepositoryWriteServiceTests
 	@Test
 	public void updateCandidateRecordFromCandidate()
 	{
+		final int shipmentScheduleId = 20;
+		final int orderId = 40;
+
+		final MaterialDescriptor materialDescriptorWithAlotOfDigits = createMaterialDescriptor()
+				.withQuantity(new BigDecimal("0.00000000000000"));
+
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.materialDescriptor(createMaterialDescriptor())
+				.materialDescriptor(materialDescriptorWithAlotOfDigits)
+				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleId, 30, orderId, TEN))
 				.build();
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 
@@ -102,6 +111,9 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(candidateRecord.getC_BPartner_ID()).isEqualTo(BPARTNER_ID);
 		assertThat(candidateRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY.getAsString());
 		assertThat(candidateRecord.getM_AttributeSetInstance_ID()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
+		assertThat(candidateRecord.getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleId);
+		assertThat(candidateRecord.getC_Order_ID()).isEqualTo(orderId);
+		assertThat(candidateRecord.getQty()).isEqualTo(BigDecimal.ZERO);
 	}
 
 	@Test
@@ -110,7 +122,7 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(20, -1))
+				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(20, -1, -1, TEN))
 				.build();
 
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
@@ -208,7 +220,7 @@ public class CandidateRepositoryWriteServiceTests
 				.materialDescriptor(createMaterialDescriptor())
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
-				.productionDetail(ProductionDetail.builder()
+				.businessCaseDetail(ProductionDetail.builder()
 						.description("description")
 						.plantId(60)
 						.productBomLineId(70)
@@ -218,6 +230,7 @@ public class CandidateRepositoryWriteServiceTests
 						.ppOrderDocStatus("ppOrderDocStatus")
 						.advised(Flag.TRUE)
 						.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
+						.plannedQty(TEN)
 						.build())
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
@@ -309,7 +322,7 @@ public class CandidateRepositoryWriteServiceTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(createMaterialDescriptor())
-				.distributionDetail(DistributionDetail.builder()
+				.businessCaseDetail(DistributionDetail.builder()
 						.productPlanningId(80)
 						.plantId(85)
 						.networkDistributionLineId(90)
@@ -317,6 +330,7 @@ public class CandidateRepositoryWriteServiceTests
 						.ddOrderLineId(110)
 						.shipperId(120)
 						.ddOrderDocStatus("ddOrderDocStatus")
+						.plannedQty(TEN)
 						.build())
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(distributionCandidate);
@@ -349,7 +363,7 @@ public class CandidateRepositoryWriteServiceTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(createMaterialDescriptor())
-				.demandDetail(DemandDetail.forOrderLineIdOrNull(61))
+				.businessCaseDetail(DemandDetail.forForecastLineId(61, 71, TEN))
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 
@@ -360,10 +374,11 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
 		assertThat(record.getMD_Candidate_BusinessCase()).isEqualTo(productionCandidate.getBusinessCase().toString());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
+		assertThat(record.getM_Forecast_ID()).isEqualTo(71);
 
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Demand_Detail.class).create().firstOnly(I_MD_Candidate_Demand_Detail.class);
 		assertThat(demandDetailRecord).isNotNull();
-		assertThat(demandDetailRecord.getC_OrderLine_ID()).isEqualTo(61);
+		assertThat(demandDetailRecord.getM_ForecastLine_ID()).isEqualTo(61);
 	}
 
 	@Test
@@ -377,7 +392,7 @@ public class CandidateRepositoryWriteServiceTests
 				.orgId(ORG_ID)
 				.materialDescriptor(createMaterialDescriptor()
 						.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
-				.demandDetail(DemandDetail.forOrderLineIdOrNull(61))
+				.businessCaseDetail(DemandDetail.forForecastLineId(61, 62, TEN))
 				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 33))
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
@@ -389,6 +404,7 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
 		assertThat(record.getMD_Candidate_BusinessCase()).isEqualTo(productionCandidate.getBusinessCase().toString());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
+		assertThat(record.getM_Forecast_ID()).as("The demandDetail's forecastId shall be set to the MD_Candidate").isEqualTo(62);
 
 		final I_MD_Candidate_Transaction_Detail transactionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Transaction_Detail.class).create().firstOnly(I_MD_Candidate_Transaction_Detail.class);
 		assertThat(transactionDetailRecord).isNotNull();

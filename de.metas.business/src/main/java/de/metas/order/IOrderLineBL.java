@@ -119,6 +119,10 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, int precision);
 
+	BigDecimal calculateDiscountFromPrices(BigDecimal priceEntered, BigDecimal priceActual, int precision);
+
+	BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(BigDecimal priceActual, BigDecimal discount, int precision);
+
 	/**
 	 * Retrieves the {@code M_ProductPrice} for the given {@code orderLine}'s {@code M_Product_ID} and {@code M_PriceList_Version_ID} and returns that pp's {@code C_TaxCategory_ID}.
 	 * <p>

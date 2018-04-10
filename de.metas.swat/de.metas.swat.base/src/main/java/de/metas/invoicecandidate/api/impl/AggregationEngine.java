@@ -45,7 +45,7 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
@@ -117,7 +117,7 @@ public class AggregationEngine implements IAggregationEngine
 	}
 
 	@Override
-	public final IAggregationEngine addInvoiceCandidate(final I_C_Invoice_Candidate ic)
+	public final IAggregationEngine addInvoiceCandidate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		Check.assume(!ic.isToClear(), "{} has IsToClear='N'", ic);
 		Check.assume(!ic.isProcessed(), "{} not processed", ic);
@@ -500,7 +500,7 @@ public class AggregationEngine implements IAggregationEngine
 
 	private int getC_PaymentTerm_ID(final InvoiceHeaderImpl invoiceHeader)
 	{
-		int C_PaymentTerm_ID = extractC_PaymentTerm_IDFromLines(invoiceHeader);
+		final int C_PaymentTerm_ID = extractC_PaymentTerm_IDFromLines(invoiceHeader);
 
 		if (C_PaymentTerm_ID > 0)
 		{
@@ -536,7 +536,7 @@ public class AggregationEngine implements IAggregationEngine
 		if (uniquePaymentTermLines.size() == 1)
 		{
 			final Set<Integer> ids = uniquePaymentTermLines.keySet();
-			int id = ids.iterator().next();
+			final int id = ids.iterator().next();
 			if (id > 0)
 			{
 				return id;

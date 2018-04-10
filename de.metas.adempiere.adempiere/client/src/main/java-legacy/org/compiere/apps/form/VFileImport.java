@@ -51,7 +51,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.fileimport.FileImportPreviewColumnFactory;
 import org.compiere.apps.form.fileimport.FileImportPreviewTableModel;
-import org.compiere.apps.form.fileimport.FileImportReader;
+import org.compiere.impexp.FileImportReader;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.impexp.ImportStatus;

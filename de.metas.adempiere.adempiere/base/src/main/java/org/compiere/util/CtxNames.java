@@ -92,6 +92,16 @@ public class CtxNames
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	public static CtxName ofNameAndDefaultValue(
+			@NonNull final String name,
+			@Nullable final String defaultValue)
+	{
+		return new CtxName(
+				name, ImmutableList.of(), // modifiers
+				defaultValue // defaultValue
+				);
+	}
+
 	public static CtxName parse(final String contextWithoutMarkers)
 	{
 		if (contextWithoutMarkers == null)
@@ -108,7 +118,7 @@ public class CtxNames
 	}
 
 	/**
-	 * 
+	 *
 	 * @param contextWithoutMarkers
 	 * @param modifiers found modifiers are added to this list
 	 * @return

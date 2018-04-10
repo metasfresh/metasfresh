@@ -32,8 +32,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+
+import lombok.NonNull;
 
 /**
  * An {@link IEventBus} wrapper implementation which can be asked to collect posted events and send them all together when {@link #flush()} is called.
@@ -52,9 +53,8 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 	}
 
 	@Override
-	public final void postEvent(final Event event)
+	public final void postEvent(@NonNull final Event event)
 	{
-		Check.assumeNotNull(event, "event not null");
 		if (queuing)
 		{
 			queuedEvents.add(event);

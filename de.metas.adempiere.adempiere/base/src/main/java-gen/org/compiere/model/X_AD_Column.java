@@ -15,7 +15,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 301871257L;
+	private static final long serialVersionUID = 1164764599L;
 
     /** Standard Constructor */
     public X_AD_Column (Properties ctx, int AD_Column_ID, String trxName)
@@ -35,6 +35,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 			setIsAutocomplete (false); // N
 			setIsCalculated (false); // N
 			setIsEncrypted (null); // N
+			setIsForceIncludeInGeneratedModel (false); // N
 			setIsIdentifier (false);
 			setIsKey (false);
 			setIsLazyLoading (false); // N
@@ -687,6 +688,58 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public java.lang.String getIsEncrypted () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_IsEncrypted);
+	}
+
+	/** Set Force include in generated model.
+		@param IsForceIncludeInGeneratedModel 
+		Force including this column in java generated interface and class
+	  */
+	@Override
+	public void setIsForceIncludeInGeneratedModel (boolean IsForceIncludeInGeneratedModel)
+	{
+		set_Value (COLUMNNAME_IsForceIncludeInGeneratedModel, Boolean.valueOf(IsForceIncludeInGeneratedModel));
+	}
+
+	/** Get Force include in generated model.
+		@return Force including this column in java generated interface and class
+	  */
+	@Override
+	public boolean isForceIncludeInGeneratedModel () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsForceIncludeInGeneratedModel);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set GenericZoom Quellspalte.
+		@param IsGenericZoomOrigin 
+		Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	  */
+	@Override
+	public void setIsGenericZoomOrigin (boolean IsGenericZoomOrigin)
+	{
+		set_Value (COLUMNNAME_IsGenericZoomOrigin, Boolean.valueOf(IsGenericZoomOrigin));
+	}
+
+	/** Get GenericZoom Quellspalte.
+		@return Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	  */
+	@Override
+	public boolean isGenericZoomOrigin () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsGenericZoomOrigin);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Identifier.

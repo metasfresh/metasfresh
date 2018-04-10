@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.picking.terminal;
 
@@ -13,12 +13,12 @@ package de.metas.picking.terminal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,7 +51,7 @@ import de.metas.picking.terminal.Utils.PackingStates;
 
 /**
  * @author cg
- * 
+ *
  */
 public class ProductKey extends TerminalKey
 {
@@ -89,9 +89,9 @@ public class ProductKey extends TerminalKey
 
 	/**
 	 * Wraps {@link PackingStates} enumeration
-	 * 
+	 *
 	 * @author tsa
-	 * 
+	 *
 	 */
 	private class ProductStatus implements ITerminalKeyStatus
 	{
@@ -155,9 +155,9 @@ public class ProductKey extends TerminalKey
 		// NOTE: please think twice before changing this number because it was tuned for 1024x740 resolution
 		// see http://dewiki908/mediawiki/index.php/05863_Fenster_Kommissionierung_-_bessere_Ausnutzung_Kn%C3%B6pfefelder_f%C3%BCr_Textausgabe_%28102244669218%29
 		final int maxLength = 25;
-		
+
 		final String pValue = Utils.mkTruncatedstring(product.getValue(), maxLength);
-		final String pName = Utils.mkTruncatedstring(product.getName(), maxLength); 
+		final String pName = Utils.mkTruncatedstring(product.getName(), maxLength);
 		final String bpName = Utils.mkTruncatedstring(partner.getName(), maxLength);
 		final String bplName = Utils.mkTruncatedstring(bpLoc.getName(), maxLength);
 		final String name = pValue
@@ -174,7 +174,7 @@ public class ProductKey extends TerminalKey
 	//
 
 	protected ProductKey(
-			final ITerminalContext terminalContext, 
+			final ITerminalContext terminalContext,
 			final IPackingItem pck,
 			final int boxNo,
 			final I_C_BPartner bpartner,
@@ -211,7 +211,7 @@ public class ProductKey extends TerminalKey
 		this.product = InterfaceWrapperHelper.create(ctx, value.getKey(), I_M_Product.class, ITrx.TRXNAME_None);
 		this.bpartner = null;
 		this.bpLocation = null;
-		
+
 		this.id = buildId();
 	}
 
@@ -232,7 +232,7 @@ public class ProductKey extends TerminalKey
 		// id = "" + key.getC_POSKey_ID()
 		// + (value != null ? "#" + value.getKey() : "")
 		//		+ "-" + UUID.randomUUID();
-		
+
 	}
 
 	void setBoxNo(final int no)
@@ -346,7 +346,7 @@ public class ProductKey extends TerminalKey
 	{
 		return product;
 	}
-	
+
 	public int getC_BPartner_ID()
 	{
 		return bpartner == null ? -1 : bpartner.getC_BPartner_ID();
@@ -361,7 +361,7 @@ public class ProductKey extends TerminalKey
 	{
 		return bpLocation;
 	}
-	
+
 	public int getC_BPartner_Location_ID()
 	{
 		return bpLocation == null ? -1 : bpLocation.getC_BPartner_Location_ID();
@@ -377,6 +377,6 @@ public class ProductKey extends TerminalKey
 		{
 			return BigDecimal.ZERO;
 		}
-		return pck.getQtySum();		
+		return Utils.convertToItemUOM(pck, pck.getQtySum());
 	}
 }

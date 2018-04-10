@@ -10,12 +10,12 @@ package de.metas.handlingunits.expectations;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +34,7 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.junit.Assert;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -56,7 +56,7 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 
 	/**
 	 * Asserts only the expectations for this instance's included shipment schedule. You might rather want to call {@link #assertExpected(String)}.
-	 * 
+	 *
 	 * @param message
 	 * @return
 	 */
@@ -80,7 +80,9 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 
 		if (qtyPicked != null)
 		{
-			final BigDecimal qtyPickedActual = shipmentScheduleAllocBL.getQtyPicked(shipmentSchedule);
+			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+			final BigDecimal qtyPickedActual = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentSchedule);
+
 			assertEquals(prefix + "QtyPicked", qtyPicked, qtyPickedActual);
 		}
 
@@ -126,12 +128,14 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 	{
 		Check.assumeNotNull(shipmentSchedule, "shipmentSchedule not null");
 
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = Services.get(IShipmentScheduleAllocDAO.class).retrievePickedNotDeliveredRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = Services.get(IShipmentScheduleAllocDAO.class).retrieveNotOnShipmentLineRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
 
 		return assertExpected(message, qtyPickedRecords);
 	}
 
-	public ShipmentScheduleQtyPickedExpectations assertExpected_ShipmentScheduleWithHUs(final String message, final List<IShipmentScheduleWithHU> candidates)
+	public ShipmentScheduleQtyPickedExpectations assertExpected_ShipmentScheduleWithHUs(
+			final String message,
+			final List<ShipmentScheduleWithHU> candidates)
 	{
 		Assert.assertNotNull(message + " candidates not null", candidates);
 
@@ -151,11 +155,13 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 		return this;
 	}
 
-	public ShipmentScheduleQtyPickedExpectations assertExpected_ShipmentScheduleWithHUs(final String message, final Iterator<IShipmentScheduleWithHU> candidates)
+	public ShipmentScheduleQtyPickedExpectations assertExpected_ShipmentScheduleWithHUs(
+			final String message,
+			final Iterator<ShipmentScheduleWithHU> candidates)
 	{
 		Assert.assertNotNull(message + " candidates not null", candidates);
 
-		final List<IShipmentScheduleWithHU> candidatesList = IteratorUtils.toList(candidates);
+		final List<ShipmentScheduleWithHU> candidatesList = IteratorUtils.toList(candidates);
 		return assertExpected_ShipmentScheduleWithHUs(message, candidatesList);
 	}
 

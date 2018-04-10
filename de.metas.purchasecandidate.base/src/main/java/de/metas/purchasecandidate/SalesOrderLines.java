@@ -16,8 +16,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_OrderLine;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -60,7 +62,7 @@ public class SalesOrderLines
 {
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 
-	private ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> salesOrderLineWithCandidates //
+	private final ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> salesOrderLineWithCandidates //
 			= ExtendedMemorizingSupplier.of(() -> loadOrCreatePurchaseCandidates0());
 
 	private final ImmutableList<Integer> salesOrderLineIds;
@@ -80,14 +82,13 @@ public class SalesOrderLines
 
 		final Map<Integer, I_C_OrderLine> salesOrderLineId2Line = deriveOrderLineId2OrderLine();
 
-		//
 		// add pre-existing purchase candidates to the result
 		final ImmutableListMultimap<Integer, PurchaseCandidate> salesOrderLineId2PreExistingPurchaseCandidates = //
 				purchaseCandidateRepository
 						.streamAllBySalesOrderLineIds(salesOrderLineIds)
 						.collect(GuavaCollectors.toImmutableListMultimap(PurchaseCandidate::getSalesOrderLineId));
 
-		for (int salesOrderLineId : salesOrderLineId2PreExistingPurchaseCandidates.keySet())
+		for (final int salesOrderLineId : salesOrderLineId2PreExistingPurchaseCandidates.keySet())
 		{
 			resultBuilder.putAll(
 					salesOrderLineId2Line.get(salesOrderLineId),
@@ -95,10 +96,10 @@ public class SalesOrderLines
 		}
 
 		final Set<Integer> alreadySeenVendorProductInfoIds = salesOrderLineId2PreExistingPurchaseCandidates.values().stream()
+				.filter(Predicates.not(PurchaseCandidate::isProcessed))
 				.map(purchaseCandidate -> purchaseCandidate.getVendorProductInfo().getBPartnerProductId())
 				.collect(ImmutableSet.toImmutableSet());
 
-		//
 		// create and add new purchase candidates
 		for (final I_C_OrderLine salesOrderLine : salesOrderLineId2Line.values())
 		{
@@ -186,8 +187,19 @@ public class SalesOrderLines
 				.uomId(salesOrderLine.getC_UOM_ID())
 				.vendorProductInfo(VendorProductInfo.fromDataRecord(vendorProductInfo))
 				.vendorBPartnerId(vendorProductInfo.getC_BPartner_ID())
-				.warehouseId(salesOrderLine.getM_Warehouse_ID())
+				.warehouseId(getWarehousePOId(salesOrderLine))
 				.build();
+	}
+	
+	private int getWarehousePOId(final I_C_OrderLine salesOrderLine)
+	{
+		final int orgWarehousePOId = Services.get(IWarehouseDAO.class).retrieveOrgWarehousePOId(salesOrderLine.getAD_Org_ID());
+		if(orgWarehousePOId > 0)
+		{
+			return orgWarehousePOId;
+		}
+		
+		return salesOrderLine.getM_Warehouse_ID();
 	}
 
 	private Map<Integer, I_C_BPartner_Product> retriveVendorId2VendorProductInfo(@NonNull final I_C_OrderLine salesOrderLine)

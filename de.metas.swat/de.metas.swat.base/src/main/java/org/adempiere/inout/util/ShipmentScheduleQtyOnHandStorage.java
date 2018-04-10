@@ -1,28 +1,5 @@
 package org.adempiere.inout.util;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -47,11 +24,11 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.dispo.commons.repository.StockMultiQuery;
-import de.metas.material.dispo.commons.repository.StockQuery;
-import de.metas.material.dispo.commons.repository.StockQuery.StockQueryBuilder;
-import de.metas.material.dispo.commons.repository.StockRepository;
-import de.metas.material.dispo.commons.repository.StockResult;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseResult;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 
@@ -82,11 +59,11 @@ public class ShipmentScheduleQtyOnHandStorage
 	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	private final List<ShipmentScheduleAvailableStockDetail> stockDetails;
-	private final Map<ArrayKey, StockQuery> cachedMaterialQueries = new HashMap<>();
+	private final Map<ArrayKey, AvailableToPromiseQuery> cachedMaterialQueries = new HashMap<>();
 
 	private ShipmentScheduleQtyOnHandStorage(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
-		final StockRepository stockRepository = Adempiere.getBean(StockRepository.class);
+		final AvailableToPromiseRepository stockRepository = Adempiere.getBean(AvailableToPromiseRepository.class);
 		stockDetails = createStockDetailsFromShipmentSchedules(shipmentSchedules, stockRepository);
 	}
 
@@ -98,25 +75,25 @@ public class ShipmentScheduleQtyOnHandStorage
 				.toString();
 	}
 
-	private final List<ShipmentScheduleAvailableStockDetail> createStockDetailsFromShipmentSchedules(final List<I_M_ShipmentSchedule> shipmentSchedules, final StockRepository stockRepository)
+	private final List<ShipmentScheduleAvailableStockDetail> createStockDetailsFromShipmentSchedules(final List<I_M_ShipmentSchedule> shipmentSchedules, final AvailableToPromiseRepository stockRepository)
 	{
 		if (shipmentSchedules.isEmpty())
 		{
 			return ImmutableList.of();
 		}
-		final StockMultiQuery multiQuery = createMaterialMultiQueryOrNull(shipmentSchedules);
+		final AvailableToPromiseMultiQuery multiQuery = createMaterialMultiQueryOrNull(shipmentSchedules);
 		if (multiQuery == null)
 		{
 			return ImmutableList.of();
 		}
 
-		final StockResult stockResult = stockRepository.retrieveAvailableStock(multiQuery);
+		final AvailableToPromiseResult stockResult = stockRepository.retrieveAvailableStock(multiQuery);
 		return createStockDetails(stockResult);
 	}
 
-	private StockMultiQuery createMaterialMultiQueryOrNull(final List<I_M_ShipmentSchedule> shipmentSchedules)
+	private AvailableToPromiseMultiQuery createMaterialMultiQueryOrNull(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
-		final Set<StockQuery> materialQueries = shipmentSchedules.stream()
+		final Set<AvailableToPromiseQuery> materialQueries = shipmentSchedules.stream()
 				.map(this::getMaterialQuery)
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
@@ -125,13 +102,13 @@ public class ShipmentScheduleQtyOnHandStorage
 			return null;
 		}
 
-		return StockMultiQuery.builder()
+		return AvailableToPromiseMultiQuery.builder()
 				.queries(materialQueries)
 				.addToPredefinedBuckets(false)
 				.build();
 	}
 
-	public StockQuery getMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
+	public AvailableToPromiseQuery getMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		// In case the DeliveryRule is Force, there is no point to load the storage, because it's not needed.
 		// FIXME: make sure this works performance wise, then remove the commented code
@@ -152,7 +129,7 @@ public class ShipmentScheduleQtyOnHandStorage
 		return cachedMaterialQueries.computeIfAbsent(materialQueryCacheKey, k -> createMaterialQuery(sched));
 	}
 
-	private StockQuery createMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
+	private AvailableToPromiseQuery createMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final int shipmentScheduleWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
 		final WarehousePickingGroup warehousePickingGroup = warehouseDAO.getWarehousePickingGroupContainingWarehouseId(shipmentScheduleWarehouseId);
@@ -161,7 +138,8 @@ public class ShipmentScheduleQtyOnHandStorage
 		final int productId = sched.getM_Product_ID();
 		final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
 		final Date date = shipmentScheduleEffectiveBL.getPreparationDate(sched);
-		final StockQueryBuilder stockQueryBuilder = StockQuery.builder()
+
+		final AvailableToPromiseQueryBuilder stockQueryBuilder = AvailableToPromiseQuery.builder()
 				.warehouseIds(warehouseIds)
 				.productId(productId)
 				.bpartnerId(bpartnerId)
@@ -180,7 +158,7 @@ public class ShipmentScheduleQtyOnHandStorage
 		return stockQueryBuilder.build();
 	}
 
-	private static final List<ShipmentScheduleAvailableStockDetail> createStockDetails(final StockResult stockResult)
+	private static final List<ShipmentScheduleAvailableStockDetail> createStockDetails(final AvailableToPromiseResult stockResult)
 	{
 		return stockResult
 				.getResultGroups()
@@ -189,7 +167,7 @@ public class ShipmentScheduleQtyOnHandStorage
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ShipmentScheduleAvailableStockDetail createStockDetail(final StockResult.ResultGroup result)
+	private static ShipmentScheduleAvailableStockDetail createStockDetail(final AvailableToPromiseResult.ResultGroup result)
 	{
 		return ShipmentScheduleAvailableStockDetail.builder()
 				.productId(result.getProductId())
@@ -200,14 +178,14 @@ public class ShipmentScheduleQtyOnHandStorage
 				.build();
 	}
 
-	private Stream<ShipmentScheduleAvailableStockDetail> streamStockDetailsMatching(final StockQuery materialQuery)
+	private Stream<ShipmentScheduleAvailableStockDetail> streamStockDetailsMatching(final AvailableToPromiseQuery materialQuery)
 	{
 		return stockDetails
 				.stream()
 				.filter(stockDetail -> matching(materialQuery, stockDetail));
 	}
 
-	private static boolean matching(final StockQuery query, final ShipmentScheduleAvailableStockDetail stockDetail)
+	private static boolean matching(final AvailableToPromiseQuery query, final ShipmentScheduleAvailableStockDetail stockDetail)
 	{
 		//
 		// Product
@@ -228,7 +206,7 @@ public class ShipmentScheduleQtyOnHandStorage
 		//
 		// Partner
 		final int stockBPartnerId = stockDetail.getBpartnerId();
-		if (stockBPartnerId == StockQuery.BPARTNER_ID_NONE)
+		if (stockBPartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
 		{
 			// always match the available stock which is not allocated to a particular BPartner
 		}
@@ -260,14 +238,8 @@ public class ShipmentScheduleQtyOnHandStorage
 			return Collections.emptyList();
 		}
 
-		final StockQuery materialQuery = getMaterialQuery(sched);
+		final AvailableToPromiseQuery materialQuery = getMaterialQuery(sched);
 		return streamStockDetailsMatching(materialQuery)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	// TODO: remove it
-	public BigDecimal getQtyUnconfirmedShipmentsPerShipmentSchedule(final I_M_ShipmentSchedule sched)
-	{
-		return BigDecimal.ZERO;
 	}
 }

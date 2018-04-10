@@ -13,7 +13,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
@@ -57,7 +57,7 @@ public class DDOrderAdvisedOrCreatedEventCreator
 		this.ddOrderPojoSupplier = ddOrderPojoSupplier;
 	}
 
-	public List<DDOrderAdvisedOrCreatedEvent> createDDOrderAdvisedEvents(
+	public List<DDOrderAdvisedEvent> createDDOrderAdvisedEvents(
 			final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			final IMutableMRPContext mrpContext)
 	{
@@ -66,21 +66,19 @@ public class DDOrderAdvisedOrCreatedEventCreator
 			return ImmutableList.of();
 		}
 
-		final List<DDOrderAdvisedOrCreatedEvent> events = new ArrayList<>();
+		final List<DDOrderAdvisedEvent> events = new ArrayList<>();
 
 		final List<DDOrder> ddOrders = ddOrderPojoSupplier
 				.supplyPojos(
-						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext),
-						SupplyRequiredHandlerUtils.mkMRPNotesCollector());
+						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext));
 
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
-
 		for (final DDOrder ddOrder : ddOrders)
 		{
 			for (final DDOrderLine ddOrderLine : ddOrder.getLines())
 			{
 				Check.errorIf(ddOrderLine.getNetworkDistributionLineId() <= 0,
-						"Every DDOrderLine pojo created by this planner needs to have detworkDistributionLineId > 0, but this one hasn't; ddOrderLine={}",
+						"Every DDOrderLine pojo created by this planner needs to have networkDistributionLineId > 0, but this one hasn't; ddOrderLine={}",
 						ddOrderLine);
 
 				final I_DD_NetworkDistributionLine networkLine = InterfaceWrapperHelper.create(
@@ -89,9 +87,9 @@ public class DDOrderAdvisedOrCreatedEventCreator
 						I_DD_NetworkDistributionLine.class,
 						mrpContext.getTrxName());
 
-				final DDOrderAdvisedOrCreatedEvent distributionAdvisedEvent = DDOrderAdvisedOrCreatedEvent.builder()
+				final DDOrderAdvisedEvent distributionAdvisedEvent = DDOrderAdvisedEvent.builder()
 						.supplyRequiredDescriptor(supplyRequiredDescriptor)
-						.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor().createNew())
+						.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
 						.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
 						.toWarehouseId(networkLine.getM_Warehouse_ID())
 						.ddOrder(ddOrder)

@@ -148,7 +148,7 @@ public class MUOM extends X_C_UOM
 	{
 		List<MUOM> list = new Query(ctx, Table_Name, "IsActive='Y'", null)
 				.setApplyAccessFilter(true)
-				.list();
+				.list(MUOM.class);
 		//
 		for (MUOM uom : list)
 		{

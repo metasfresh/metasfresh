@@ -1,14 +1,18 @@
 package de.metas.material.dispo.commons.candidate;
 
+import java.math.BigDecimal;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 
+import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -34,22 +38,28 @@ import lombok.Value;
  * #L%
  */
 @Value
-public class DemandDetail
+@Builder(toBuilder = true)
+public class DemandDetail implements BusinessCaseDetail
 {
 	public static DemandDetail forDocumentDescriptor(
 			final int shipmentScheduleId,
-			@NonNull final DocumentLineDescriptor documentDescriptor)
+			@NonNull final DocumentLineDescriptor documentDescriptor,
+			@NonNull final BigDecimal plannedQty)
 	{
+		final int orderId;
 		final int orderLineId;
 		final int subscriptionProgressId;
 		if (documentDescriptor instanceof OrderLineDescriptor)
 		{
-			orderLineId = ((OrderLineDescriptor)documentDescriptor).getOrderLineId();
+			final OrderLineDescriptor orderLineDescriptor = (OrderLineDescriptor)documentDescriptor;
+			orderLineId = orderLineDescriptor.getOrderLineId();
+			orderId = orderLineDescriptor.getOrderId();
 			subscriptionProgressId = -1;
 		}
 		else if (documentDescriptor instanceof SubscriptionLineDescriptor)
 		{
-			orderLineId = -1;
+			orderLineId = 0;
+			orderId = 0;
 			subscriptionProgressId = ((SubscriptionLineDescriptor)documentDescriptor).getSubscriptionProgressId();
 		}
 		else
@@ -59,63 +69,110 @@ public class DemandDetail
 			return null;
 		}
 
-		return new DemandDetail(
-				-1,
-				shipmentScheduleId,
-				orderLineId,
-				subscriptionProgressId);
+		return DemandDetail.builder()
+				.shipmentScheduleId(shipmentScheduleId)
+				.orderLineId(orderLineId)
+				.orderId(orderId)
+				.subscriptionProgressId(subscriptionProgressId)
+				.plannedQty(plannedQty).build();
 	}
 
-	public static DemandDetail createOrNull(
+	public static DemandDetail forSupplyRequiredDescriptorOrNull(
 			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		if (supplyRequiredDescriptor == null)
 		{
 			return null;
 		}
-		return new DemandDetail(
-				supplyRequiredDescriptor.getForecastLineId(),
-				supplyRequiredDescriptor.getShipmentScheduleId(),
-				supplyRequiredDescriptor.getOrderLineId(),
-				supplyRequiredDescriptor.getSubscriptionProgressId());
+		return DemandDetail.builder()
+				.demandCandidateId(supplyRequiredDescriptor.getDemandCandidateId())
+				.forecastId(supplyRequiredDescriptor.getForecastId())
+				.forecastLineId(supplyRequiredDescriptor.getForecastLineId())
+				.orderId(supplyRequiredDescriptor.getOrderId())
+				.orderLineId(supplyRequiredDescriptor.getOrderLineId())
+				.shipmentScheduleId(supplyRequiredDescriptor.getShipmentScheduleId())
+				.subscriptionProgressId(supplyRequiredDescriptor.getSubscriptionProgressId())
+				.plannedQty(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
+				.build();
 	}
 
 	public static DemandDetail forDemandDetailRecord(
 			@NonNull final I_MD_Candidate_Demand_Detail demandDetailRecord)
 	{
-		return new DemandDetail(
-				demandDetailRecord.getM_ForecastLine_ID(),
-				demandDetailRecord.getM_ShipmentSchedule_ID(),
-				demandDetailRecord.getC_OrderLine_ID(),
-				demandDetailRecord.getC_SubscriptionProgress_ID());
+		final I_MD_Candidate demandRecord = demandDetailRecord.getMD_Candidate();
+
+		return DemandDetail.builder()
+				.shipmentScheduleId(demandDetailRecord.getM_ShipmentSchedule_ID())
+				.forecastId(demandRecord.getM_Forecast_ID())
+				.forecastLineId(demandDetailRecord.getM_ForecastLine_ID())
+				.orderId(demandRecord.getC_Order_ID())
+				.orderLineId(demandDetailRecord.getC_OrderLine_ID())
+				.subscriptionProgressId(demandDetailRecord.getC_SubscriptionProgress_ID())
+				.plannedQty(demandDetailRecord.getPlannedQty()).build();
 	}
 
 	public static DemandDetail forShipmentScheduleIdAndOrderLineId(
 			final int shipmentScheduleId,
-			final int orderLineId)
+			final int orderLineId,
+			final int orderId,
+			@NonNull final BigDecimal plannedQty)
 	{
-		return new DemandDetail(-1, shipmentScheduleId, orderLineId, -1);
+		return DemandDetail.builder()
+				.shipmentScheduleId(shipmentScheduleId)
+				.orderLineId(orderLineId)
+				.orderId(orderId)
+				.plannedQty(plannedQty).build();
 	}
 
-	public static DemandDetail forOrderLineIdOrNull(int salesOrderLineId)
+	public static DemandDetail forForecastLineId(
+			final int forecastLineId,
+			final int forecastId,
+			@NonNull final BigDecimal plannedQty)
 	{
-		if (salesOrderLineId <= 0)
-		{
-			return null;
-		}
-		return new DemandDetail(-1, -1, salesOrderLineId, -1);
+		return DemandDetail.builder()
+				.forecastLineId(forecastLineId)
+				.forecastId(forecastId)
+				.plannedQty(plannedQty).build();
 	}
 
-	public static DemandDetail forForecastLineId(final int forecastLineId)
-	{
-		return new DemandDetail(forecastLineId, -1, -1, -1);
-	}
+	int forecastId;
 
 	int forecastLineId;
 
 	int shipmentScheduleId;
 
+	int orderId;
+
 	int orderLineId;
 
 	int subscriptionProgressId;
+
+	BigDecimal plannedQty;
+
+	/**
+	 * Used when a new supply candidate is created, to link it to it's respective demand candidate;
+	 * When a demand detail is loaded from DB, this field is always <= 0.
+	 */
+	int demandCandidateId;
+
+	@Override
+	public CandidateBusinessCase getCandidateBusinessCase()
+	{
+		return CandidateBusinessCase.SHIPMENT;
+	}
+
+	public static DemandDetail castOrNull(@Nullable final BusinessCaseDetail businessCaseDetail)
+	{
+		final boolean canBeCast = businessCaseDetail != null && businessCaseDetail instanceof DemandDetail;
+		if (canBeCast)
+		{
+			return cast(businessCaseDetail);
+		}
+		return null;
+	}
+
+	public static DemandDetail cast(@NonNull final BusinessCaseDetail businessCaseDetail)
+	{
+		return (DemandDetail)businessCaseDetail;
+	}
 }

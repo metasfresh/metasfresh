@@ -16,8 +16,8 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
  */
 public interface IInOutProducerFromShipmentScheduleWithHU
 {
-	InOutGenerateResult createShipments(List<IShipmentScheduleWithHU> candidates);
-	
+	InOutGenerateResult createShipments(List<ShipmentScheduleWithHU> candidates);
+
 	IInOutProducerFromShipmentScheduleWithHU setProcessShipments(boolean processShipments);
 
 	/**
@@ -36,7 +36,8 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	IInOutProducerFromShipmentScheduleWithHU setCreatePackingLines(boolean createPackingLines);
 
 	/**
-	 * Sets if shipment lines shall be flagged as manual packing materials
+	 * Sets if shipment lines shall be flagged as manual packing materials.<br>
+	 * Makes sense for dirty "adhoc" shipments that don't have actually picked handling units.
 	 *
 	 * @param manualPackingMaterial
 	 * @return this
@@ -47,11 +48,11 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	/**
 	 * If the flag IsShipmentDateToday is true, the shipment will be created for today, no matter what delivery dates are set in the shipment schedules.
 	 * Otherwise, the date on the shipment will be the minimum date of the shipment schedules, not older than today.
-	 * 
+	 *
 	 * @param forceDateToday
 	 * @return
 	 */
 	IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday);
-	
+
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
 }

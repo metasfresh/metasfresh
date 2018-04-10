@@ -69,6 +69,33 @@ public interface I_C_Order_CompensationGroup
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Compensation Group Schema.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_CompensationGroup_Schema_ID (int C_CompensationGroup_Schema_ID);
+
+	/**
+	 * Get Compensation Group Schema.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_CompensationGroup_Schema_ID();
+
+	public de.metas.order.model.I_C_CompensationGroup_Schema getC_CompensationGroup_Schema();
+
+	public void setC_CompensationGroup_Schema(de.metas.order.model.I_C_CompensationGroup_Schema C_CompensationGroup_Schema);
+
+    /** Column definition for C_CompensationGroup_Schema_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_CompensationGroup, de.metas.order.model.I_C_CompensationGroup_Schema> COLUMN_C_CompensationGroup_Schema_ID = new org.adempiere.model.ModelColumn<I_C_Order_CompensationGroup, de.metas.order.model.I_C_CompensationGroup_Schema>(I_C_Order_CompensationGroup.class, "C_CompensationGroup_Schema_ID", de.metas.order.model.I_C_CompensationGroup_Schema.class);
+    /** Column name C_CompensationGroup_Schema_ID */
+    public static final String COLUMNNAME_C_CompensationGroup_Schema_ID = "C_CompensationGroup_Schema_ID";
+
+	/**
 	 * Set Order Compensation Group.
 	 *
 	 * <br>Type: ID
@@ -176,7 +203,7 @@ public interface I_C_Order_CompensationGroup
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Produkt-Kategorie.
+	 * Set Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: Search
@@ -186,7 +213,7 @@ public interface I_C_Order_CompensationGroup
 	public void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
-	 * Get Produkt-Kategorie.
+	 * Get Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: Search

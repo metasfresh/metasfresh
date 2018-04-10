@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-07-20T16:21:16 -->
+<!-- 2018-03-13T17:05:29 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/openitems/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -15,9 +15,7 @@
 	<parameter name="InvoiceCollectionType" class="java.lang.String">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
-	<parameter name="DaysDue" class="java.math.BigDecimal">
-		<defaultValueExpression><![CDATA[new BigDecimal(-999999)]]></defaultValueExpression>
-	</parameter>
+	<parameter name="DaysDue" class="java.math.BigDecimal"/>
 	<parameter name="C_BPartner_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>

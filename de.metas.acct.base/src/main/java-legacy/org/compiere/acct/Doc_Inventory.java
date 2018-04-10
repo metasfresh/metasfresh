@@ -19,7 +19,6 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.minventory.api.IInventoryDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Inventory;
@@ -30,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
+import de.metas.inventory.IInventoryDAO;
 
 /**
  * Post Inventory Documents.
@@ -68,7 +68,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 	private List<DocLine_Inventory> loadLines(final I_M_Inventory inventory)
 	{
 		return Services.get(IInventoryDAO.class)
-				.retrieveLinesForInventory(inventory)
+				.retrieveLinesForInventoryId(inventory.getM_Inventory_ID())
 				.stream()
 				.map(line -> new DocLine_Inventory(line, this))
 				.filter(docLine -> !docLine.getQty().isZero())

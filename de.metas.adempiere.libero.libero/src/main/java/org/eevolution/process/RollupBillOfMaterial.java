@@ -379,9 +379,9 @@ public class RollupBillOfMaterial extends JavaProcess
 			params.add(p_ProductType);
 		}
 
-		return new Query(getCtx(), I_M_Product.Table_Name, whereClause.toString(), get_TrxName())
+		return new Query(getCtx(), MProduct.Table_Name, whereClause.toString(), get_TrxName())
 				.setParameters(params)
-				.list();
+				.list(MProduct.class);
 	}
 
 	/**

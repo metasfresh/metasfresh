@@ -9,6 +9,8 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import lombok.Builder;
@@ -48,8 +50,14 @@ import lombok.experimental.Wither;
 @Wither
 public final class CandidatesQuery
 {
+	/**
+	 * Use this constant as parent-ID to indicate that the parent-ID shall not be considered in the query.
+	 */
 	public static final int UNSPECIFIED_PARENT_ID = -1;
 
+	/**
+	 * Use this constant as ID to indicate that the ID shall not be considered in the query.
+	 */
 	public static final int UNSPECIFIED_ID = -1;
 
 	/**
@@ -67,11 +75,11 @@ public final class CandidatesQuery
 		}
 
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery
-				.ofProductionDetailOrNull(candidate.getProductionDetail());
+				.ofProductionDetailOrNull(ProductionDetail.castOrNull(candidate.getBusinessCaseDetail()));
 
 		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery
-				.ofDistributionDetailOrNull(candidate.getDistributionDetail());
-		
+				.ofDistributionDetailOrNull(DistributionDetail.castOrNull(candidate.getBusinessCaseDetail()));
+
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
 				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(candidate.getMaterialDescriptor()))
 				.matchExactStorageAttributesKey(true)

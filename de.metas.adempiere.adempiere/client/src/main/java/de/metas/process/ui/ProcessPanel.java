@@ -74,6 +74,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 	private final I_AD_Process _adProcessTrl;
 	private final int m_WindowNo;
 	private final int m_TabNo;
+	private final int adWindowId;
 	private final String whereClause;
 	private final int adTableId;
 	private final int recordId;
@@ -98,7 +99,6 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 	 */
 	ProcessPanel(final ProcessDialogBuilder builder)
 	{
-		super();
 		this.ctx = Env.getCtx();
 
 		//
@@ -118,6 +118,8 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 		whereClause = builder.getWhereClause();
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
+
+		adWindowId = builder.getAD_Window_ID();
 
 		skipResultsPanel = builder.isSkipResultsPanel();
 		printPreview = builder.isPrintPreview();
@@ -489,6 +491,7 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 				.setWhereClause(whereClause)
 				.setRecord(adTableId, recordId)
 				.setWindowNo(m_WindowNo).setTabNo(m_TabNo)
+				.setAD_Window_ID(adWindowId)
 				.addParameters(parameterPanel == null ? ImmutableList.of() : parameterPanel.createParameters())
 				.setPrintPreview(printPreview)
 				.build();
@@ -605,14 +608,14 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 			{
 				closeWindow = true;
 			}
-			
+
 			// #863
 			// Do not show result window for any process that doesn't allow rerun
 			if(!_allowProcessReRun)
 			{
 				closeWindow = true;
 			}
-			
+
 		}
 		//
 		// Close the window
@@ -676,11 +679,11 @@ class ProcessPanel implements ProcessDialog, ActionListener, IProcessExecutionLi
 			@Override
 			public Dimension getPreferredSize()
 			{
-				Dimension d = super.getPreferredSize();
-				Dimension m = getMaximumSize();
+				final Dimension d = super.getPreferredSize();
+				final Dimension m = getMaximumSize();
 				if (d.height > m.height || d.width > m.width)
 				{
-					Dimension d1 = new Dimension();
+					final Dimension d1 = new Dimension();
 					d1.height = Math.min(d.height, m.height);
 					d1.width = Math.min(d.width, m.width);
 					return d1;

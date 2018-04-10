@@ -33,7 +33,6 @@ import java.text.DateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -89,8 +88,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			// FIXME: this is a workaround because our persistence engine returns NULL in case
 			// the ID=0, even if is existing in database
 			// Also see task http://dewiki908/mediawiki/index.php/08765_Introduce_AD_Table.IDRangeStart_%28107200611713%29
-			final Properties ctx = InterfaceWrapperHelper.getCtx(asi);
-			as = attributesDAO.retrieveNoAttributeSet(ctx);
+			as = attributesDAO.retrieveNoAttributeSet();
 		}
 
 		final StringBuilder sb = new StringBuilder();
@@ -199,9 +197,8 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public I_M_AttributeSetInstance createASI(final I_M_Product product)
+	public I_M_AttributeSetInstance createASI(@NonNull final I_M_Product product)
 	{
-		Check.assumeNotNull(product, "Product must not be null");
 		final I_M_AttributeSetInstance asiNew = newInstance(I_M_AttributeSetInstance.class, product);
 
 		// use the method from the service so if the product doesn't have an AS, it can be taken from product category
@@ -355,7 +352,10 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
 			final Date dateValue = attributeSet.getValueAsDate(attribute);
-			attributeInstance.setValueDate(new Timestamp(dateValue.getTime()));
+			if (dateValue != null)
+			{
+				attributeInstance.setValueDate(new Timestamp(dateValue.getTime()));
+			}
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 		{

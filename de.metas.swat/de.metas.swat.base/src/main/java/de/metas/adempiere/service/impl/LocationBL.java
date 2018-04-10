@@ -10,12 +10,12 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -77,7 +77,7 @@ public class LocationBL implements ILocationBL
 			return;
 		}
 
-		String postal = address.getPostcode().trim();
+		final String postal = address.getPostcode().trim();
 		log.debug("Checking: " + postal);
 
 		if (checkOnCPostal(ctx, address.getCountryCode(), postal))
@@ -98,8 +98,8 @@ public class LocationBL implements ILocationBL
 	@Override
 	public List<com.akunagroup.uk.postcode.AddressInterface> lookupPostcode(Properties ctx, String countryCode, String city, String postal)
 	{
-		List<com.akunagroup.uk.postcode.AddressInterface> list = new ArrayList<>();
-		for (I_C_Postal cpostal : retrievePostals(ctx, countryCode, city, postal, null))
+		final List<com.akunagroup.uk.postcode.AddressInterface> list = new ArrayList<>();
+		for (final I_C_Postal cpostal : retrievePostals(ctx, countryCode, city, postal, null))
 		{
 			list.add(new CPostalAddressAdapter(cpostal));
 		}
@@ -219,11 +219,11 @@ public class LocationBL implements ILocationBL
 	{
 		log.debug("Checking: postal=" + postal + ", countryCode=" + countryCode);
 
-		I_C_Country country = getCountryByCode(ctx, countryCode);
+		final I_C_Country country = getCountryByCode(ctx, countryCode);
 		if (country == null)
 			throw new AdempiereException("@NotFound@ @C_Country_ID@ (@CountryCode@:" + countryCode + ")");
 
-		boolean found = new Query(ctx, I_C_Postal.Table_Name, SQL_WhereClause_C_Postal_ByPostal, null)
+		final boolean found = new Query(ctx, I_C_Postal.Table_Name, SQL_WhereClause_C_Postal_ByPostal, null)
 				.setParameters(country.getC_Country_ID(), postal)
 				.setOnlyActiveRecords(true)
 				.setApplyAccessFilterRW(false) // rw=false
@@ -250,7 +250,7 @@ public class LocationBL implements ILocationBL
 
 		if (countryId <= 0)
 		{
-			I_C_Country country = getCountryByCode(ctx, address.getCountryCode());
+			final I_C_Country country = getCountryByCode(ctx, address.getCountryCode());
 			if (country == null)
 			{
 				throw new AdempiereException("@NotFound@ @C_Country_ID@ (@CountryCode@:" + address.getCountryCode());
@@ -581,7 +581,7 @@ public class LocationBL implements ILocationBL
 	{
 		final String trxName = null;
 
-		I_C_Country country = getCountryByCode(ctx, countryCode);
+		final I_C_Country country = getCountryByCode(ctx, countryCode);
 		if (country == null)
 		{
 			throw new AdempiereException("@NotFound@ @C_Country_ID@ (@CountryCode@:" + countryCode + ")");
@@ -643,7 +643,12 @@ public class LocationBL implements ILocationBL
 		return addr;
 	}
 
-	public String mkAddress(I_C_Location location, boolean isLocalAddress, final I_C_BPartner bPartner, String bPartnerBlock, String userBlock)
+	public String mkAddress(
+			I_C_Location location,
+			boolean isLocalAddress,
+			final I_C_BPartner bPartner,
+			String bPartnerBlock,
+			String userBlock)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final String adLanguage;

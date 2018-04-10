@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockDataUpdateRequest;
-import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
+import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
@@ -45,10 +45,10 @@ import lombok.NonNull;
 public class TransactionEventHandlerForStockRecords
 		implements MaterialEventHandler<AbstractTransactionEvent>
 {
-	private final StockDataUpdateRequestHandler dataUpdateRequestHandler;
+	private final StockRepository dataUpdateRequestHandler;
 
 	public TransactionEventHandlerForStockRecords(
-			@NonNull final StockDataUpdateRequestHandler dataUpdateRequestHandler)
+			@NonNull final StockRepository dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 	}

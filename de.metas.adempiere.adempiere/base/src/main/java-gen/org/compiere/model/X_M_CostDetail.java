@@ -15,7 +15,7 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 203076198L;
+	private static final long serialVersionUID = -1377042531L;
 
     /** Standard Constructor */
     public X_M_CostDetail (Properties ctx, int M_CostDetail_ID, String trxName)
@@ -651,43 +651,6 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_ProductionLine getM_ProductionLine() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_ProductionLine_ID, org.compiere.model.I_M_ProductionLine.class);
-	}
-
-	@Override
-	public void setM_ProductionLine(org.compiere.model.I_M_ProductionLine M_ProductionLine)
-	{
-		set_ValueFromPO(COLUMNNAME_M_ProductionLine_ID, org.compiere.model.I_M_ProductionLine.class, M_ProductionLine);
-	}
-
-	/** Set Produktions-Position.
-		@param M_ProductionLine_ID 
-		Document Line representing a production
-	  */
-	@Override
-	public void setM_ProductionLine_ID (int M_ProductionLine_ID)
-	{
-		if (M_ProductionLine_ID < 1) 
-			set_Value (COLUMNNAME_M_ProductionLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ProductionLine_ID, Integer.valueOf(M_ProductionLine_ID));
-	}
-
-	/** Get Produktions-Position.
-		@return Document Line representing a production
-	  */
-	@Override
-	public int getM_ProductionLine_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ProductionLine_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

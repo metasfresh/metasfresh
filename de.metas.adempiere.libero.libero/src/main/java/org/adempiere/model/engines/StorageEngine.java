@@ -318,7 +318,7 @@ public class StorageEngine
 		final List<PO> list = new Query(ctx, tableName, whereClause, trxName)
 				.setParameters(new Object[] { model.get_ID() })
 				.setOrderBy(IDColumnName)
-				.list();
+				.list(PO.class);
 
 		final List<IInventoryAllocation> inventoryAllocationList = InterfaceWrapperHelper.createList(list, IInventoryAllocation.class);
 		IInventoryAllocation[] arr = new IInventoryAllocation[list.size()];

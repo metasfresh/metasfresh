@@ -14,6 +14,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -45,7 +46,7 @@ import lombok.NonNull;
 @Repository
 public class PurchaseItemRepository
 {
-	public void storeNewRecords(@NonNull final List<? extends PurchaseItem> purchaseItems)
+	public void storeRecords(@NonNull final List<? extends PurchaseItem> purchaseItems)
 	{
 		purchaseItems.forEach(PurchaseItemRepository::validateAndStore);
 	}
@@ -81,21 +82,29 @@ public class PurchaseItemRepository
 
 	private static void store(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
-		final I_C_PurchaseCandidate_Alloc record = newInstance(I_C_PurchaseCandidate_Alloc.class);
+		final I_C_PurchaseCandidate_Alloc record = createOrLoadRecord(purchaseOrderItem);
+
 		record.setAD_Org_ID(purchaseOrderItem.getOrgId());
 
 		record.setC_PurchaseCandidate_ID(purchaseOrderItem.getPurchaseCandidate().getPurchaseCandidateId());
 		record.setC_OrderPO_ID(purchaseOrderItem.getPurchaseOrderId());
 		record.setC_OrderLinePO_ID(purchaseOrderItem.getPurchaseOrderLineId());
+		record.setDatePromised(TimeUtil.asTimestamp(purchaseOrderItem.getDatePromised()));
+		record.setRemotePurchaseOrderId(purchaseOrderItem.getRemotePurchaseOrderId());
 
-		record.setAD_Table_ID(purchaseOrderItem.getTransactionReference().getAD_Table_ID());
-		record.setRecord_ID(purchaseOrderItem.getTransactionReference().getRecord_ID());
+		final ITableRecordReference transactionReference = purchaseOrderItem.getTransactionReference();
+		if (transactionReference != null)
+		{
+			record.setAD_Table_ID(transactionReference.getAD_Table_ID());
+			record.setRecord_ID(transactionReference.getRecord_ID());
+		}
 		save(record);
 	}
 
 	private static void store(@NonNull final PurchaseErrorItem purchaseErrorItem)
 	{
-		final I_C_PurchaseCandidate_Alloc record = newInstance(I_C_PurchaseCandidate_Alloc.class);
+		final I_C_PurchaseCandidate_Alloc record = createOrLoadRecord(purchaseErrorItem);
+
 		record.setAD_Org_ID(purchaseErrorItem.getOrgId());
 
 		record.setC_PurchaseCandidate_ID(purchaseErrorItem.getPurchaseCandidateId());
@@ -109,6 +118,21 @@ public class PurchaseItemRepository
 		record.setAD_Table_ID(purchaseErrorItem.getTransactionReference().getAD_Table_ID());
 		record.setRecord_ID(purchaseErrorItem.getTransactionReference().getRecord_ID());
 		save(record);
+	}
+
+	private static I_C_PurchaseCandidate_Alloc createOrLoadRecord(
+			@NonNull final PurchaseItem purchaseOrderItem)
+	{
+		final I_C_PurchaseCandidate_Alloc record;
+		if (purchaseOrderItem.getPurchaseItemId() > 0)
+		{
+			record = load(purchaseOrderItem.getPurchaseItemId(), I_C_PurchaseCandidate_Alloc.class);
+		}
+		else
+		{
+			record = newInstance(I_C_PurchaseCandidate_Alloc.class);
+		}
+		return record;
 	}
 
 	public void retrieveForPurchaseCandidate(
@@ -127,7 +151,7 @@ public class PurchaseItemRepository
 		}
 	}
 
-	private static PurchaseItem createForRecord(
+	private static void createForRecord(
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final I_C_PurchaseCandidate_Alloc record)
 	{
@@ -137,15 +161,23 @@ public class PurchaseItemRepository
 		{
 			final I_C_OrderLine purchaseOrderLine = load(record.getC_OrderLinePO_ID(), I_C_OrderLine.class);
 
-			return purchaseCandidate.createOrderItem()
+			final PurchaseOrderItem purchaseOrderItem = PurchaseOrderItem.builder()
+					.purchaseCandidate(purchaseCandidate)
+					.purchaseItemId(record.getC_PurchaseCandidate_Alloc_ID())
 					.datePromised(record.getDatePromised())
 					.purchasedQty(purchaseOrderLine.getQtyOrdered())
 					.remotePurchaseOrderId(record.getRemotePurchaseOrderId())
 					.transactionReference(transactionReference)
-					.buildAndAddToParent();
+					.purchaseOrderId(purchaseOrderLine.getC_Order_ID())
+					.purchaseOrderLineId(purchaseOrderLine.getC_OrderLine_ID())
+					.build();
+
+			purchaseCandidate.addLoadedPurchaseOrderItem(purchaseOrderItem);
+			return;
 
 		}
-		return purchaseCandidate.createErrorItem()
+		purchaseCandidate.createErrorItem()
+				.purchaseItemId(record.getC_PurchaseCandidate_Alloc_ID())
 				.issue(record.getAD_Issue())
 				.transactionReference(transactionReference)
 				.buildAndAdd();

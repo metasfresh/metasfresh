@@ -2,7 +2,6 @@ package de.metas.event.log.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -38,13 +37,12 @@ import lombok.NonNull;
 
 public class EventLogEntryCollector implements IAutoCloseable
 {
-
 	private final static ThreadLocal<EventLogEntryCollector> threadLocalCollector = new ThreadLocal<>();
 
 	@Getter
 	private final Event event;
 
-	private List<EventLogEntry> eventLogs = new ArrayList<>();
+	private final List<EventLogEntry> eventLogs = new ArrayList<>();
 
 	private EventLogEntryCollector(@NonNull final Event event)
 	{
@@ -82,6 +80,8 @@ public class EventLogEntryCollector implements IAutoCloseable
 	public void addEventLog(@NonNull final EventLogEntryRequest eventLogRequest)
 	{
 		final EventLogEntry eventLog = EventLogEntry.builder().uuid(event.getUuid())
+				.clientId(eventLogRequest.getClientId())
+				.orgId(eventLogRequest.getOrgId())
 				.processed(eventLogRequest.isProcessed())
 				.error(eventLogRequest.isError())
 				.adIssueId(eventLogRequest.getAdIssueId())
@@ -92,15 +92,17 @@ public class EventLogEntryCollector implements IAutoCloseable
 		eventLogs.add(eventLog);
 	}
 
-	public UUID getEventUuid()
-	{
-		return event.getUuid();
-	}
-
 	@Override
 	public void close()
 	{
 		threadLocalCollector.remove();
+		
+		// Avoid throwing exception because EventLogService is not available in unit tests
+		if(Adempiere.isUnitTestMode())
+		{
+			return;
+		}
+		
 		final EventLogService eventStoreService = Adempiere.getBean(EventLogService.class);
 		eventLogs.forEach(eventLog -> {
 			eventStoreService.storeEventLogEntry(eventLog);

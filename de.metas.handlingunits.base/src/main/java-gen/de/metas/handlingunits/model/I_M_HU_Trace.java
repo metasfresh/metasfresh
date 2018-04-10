@@ -72,7 +72,7 @@ public interface I_M_HU_Trace
 	 * Set Belegart.
 	 * Belegart oder Verarbeitungsvorgaben
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -82,7 +82,7 @@ public interface I_M_HU_Trace
 	 * Get Belegart.
 	 * Belegart oder Verarbeitungsvorgaben
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -405,12 +405,8 @@ public interface I_M_HU_Trace
 	 */
 	public int getM_ShipmentSchedule_ID();
 
-	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule();
-
-	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule);
-
     /** Column definition for M_ShipmentSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, de.metas.inoutcandidate.model.I_M_ShipmentSchedule>(I_M_HU_Trace.class, "M_ShipmentSchedule_ID", de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, Object>(I_M_HU_Trace.class, "M_ShipmentSchedule_ID", null);
     /** Column name M_ShipmentSchedule_ID */
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 

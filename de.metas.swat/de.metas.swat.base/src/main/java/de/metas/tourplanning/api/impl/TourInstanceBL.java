@@ -45,7 +45,7 @@ public class TourInstanceBL implements ITourInstanceBL
 	private I_M_Tour_Instance createGenericTourInstance(final IContextAware context, final ITourInstanceQueryParams params)
 	{
 		final I_M_Tour_Instance tourInstanceNew = createTourInstanceDraft(context, params);
-		tourInstanceNew.setM_ShipperTransportation(null); // a generic tour instance does not have a shipper transportation
+		tourInstanceNew.setM_ShipperTransportation_ID(-1); // a generic tour instance does not have a shipper transportation
 		InterfaceWrapperHelper.save(tourInstanceNew);
 		return tourInstanceNew;
 	}

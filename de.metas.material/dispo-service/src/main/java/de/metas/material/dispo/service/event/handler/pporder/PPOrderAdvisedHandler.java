@@ -18,7 +18,6 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
@@ -79,32 +78,13 @@ public final class PPOrderAdvisedHandler
 	@Override
 	public void validateEvent(@NonNull final PPOrderAdvisedEvent event)
 	{
-		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
-		Check.errorIf(supplyRequiredDescriptor == null, "The given ppOrderAdvisedEvent has no supplyRequiredDescriptor");
-		supplyRequiredDescriptor.validate();
-
-		final PPOrder ppOrder = event.getPpOrder();
-
-		Check.errorIf(ppOrder.getPpOrderId() > 0,
-				"The given ppOrderAdvisedEvent's ppOrder may not yet have an ID; ppOrder={}", ppOrder);
-
-		final int productPlanningId = ppOrder.getProductPlanningId();
-		Check.errorIf(productPlanningId <= 0,
-				"The given ppOrderAdvisedEvent event has a ppOrder with productPlanningId={}", productPlanningId);
-
-		ppOrder.getLines().forEach(ppOrderLine -> {
-
-			final int productBomLineId = ppOrderLine.getProductBomLineId();
-			Check.errorIf(productBomLineId <= 0,
-					"The given ppOrderAdvisedEvent event has a ppOrderLine with productBomLineId={}; ppOrderLine={}",
-					productBomLineId, ppOrderLine);
-		});
+		event.validate();
 	}
 
 	@Override
 	public void handleEvent(@NonNull final PPOrderAdvisedEvent event)
 	{
-		final int groupId = handlePPOrderAdvisedOrCreatedEvent(event);
+		final int groupId = handleAbstractPPOrderEvent(event);
 
 		if (event.isDirectlyCreatePPOrder())
 		{
@@ -113,11 +93,13 @@ public final class PPOrderAdvisedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createPreExistingCandidatesQuery(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	protected CandidatesQuery createPreExistingCandidatesQuery(
+			@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		final PPOrderAdvisedEvent ppOrderAdvisedEvent = cast(ppOrderEvent);
 
-		final DemandDetail demandDetail = DemandDetail.createOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
+		final DemandDetail demandDetail = //
+				DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
 		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ppOrderAdvisedEvent);
 
 		final PPOrder ppOrder = ppOrderAdvisedEvent.getPpOrder();
@@ -140,13 +122,15 @@ public final class PPOrderAdvisedHandler
 			@NonNull final PPOrderLine ppOrderLine,
 			@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
-		final PPOrderAdvisedEvent ppOrderAdvisedEvent = (PPOrderAdvisedEvent)ppOrderEvent;
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = cast(ppOrderEvent);
 
-		final DemandDetail demandDetail = DemandDetail.createOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
+		final DemandDetail demandDetail = //
+				DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
 		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ppOrderAdvisedEvent);
 
+		final PPOrder ppOrder = ppOrderAdvisedEvent.getPpOrder();
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
-				.productPlanningId(ppOrderLine.getProductBomLineId())
+				.productPlanningId(ppOrder.getProductPlanningId())
 				.productBomLineId(ppOrderLine.getProductBomLineId())
 				.build();
 
@@ -178,5 +162,4 @@ public final class PPOrderAdvisedHandler
 		final PPOrderAdvisedEvent ppOrderAdvisedEvent = (PPOrderAdvisedEvent)ppOrderEvent;
 		return ppOrderAdvisedEvent;
 	}
-
 }

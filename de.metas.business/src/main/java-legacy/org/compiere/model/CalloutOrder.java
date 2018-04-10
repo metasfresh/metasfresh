@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,6 +28,8 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
+import org.adempiere.bpartner.service.BPartnerStats;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
@@ -62,7 +65,6 @@ import lombok.Value;
 // metas: synched with rev 9749
 public class CalloutOrder extends CalloutEngine
 {
-	private static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
 	private static final String CTX_UOMConversion = "UOMConversion";
 
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
@@ -332,21 +334,9 @@ public class CalloutOrder extends CalloutEngine
 				+ " p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
 				+ " lship.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID,"
-				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus
-				+ ", stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
-				+ ", "
+				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, "
 				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID "
-				+ "FROM C_BPartner p"
-
-				+ " INNER JOIN "
-				+ I_C_BPartner_Stats.Table_Name
-				+ " stats ON (p."
-				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
-				+ " = stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
-				+ ")"
+				+ " FROM C_BPartner p"
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
 				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y')"
@@ -455,37 +445,20 @@ public class CalloutOrder extends CalloutEngine
 				// CreditAvailable
 				if (IsSOTrx)
 				{
-					final String creditStatus = rs.getString("SOCreditStatus");
-					final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
-							.bpartnerId(C_BPartner_ID)
-							.creditStatus(creditStatus)
-							.evalCreditstatus(true)
-							.evaluationDate(order.getDateOrdered())
-							.build();
-					if (isChkCreditLimit(creditLimitRequest))
-					{
-						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(C_BPartner_ID, order.getDateOrdered());
-						final double creditUsed = rs.getDouble("SO_CreditUsed");
-						final BigDecimal CreditAvailable = creditLimit.subtract(BigDecimal.valueOf(creditUsed));
-						if (!rs.wasNull() && CreditAvailable.signum() < 0)
-						{
-							calloutField.fireDataStatusEEvent(MSG_CreditLimitOver, DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable), false);
-						}
-					}
+					checkCreditLimit(calloutField, order);
 				}
 
 				// PO Reference
 				String s = rs.getString("POReference");
 				if (s != null && s.length() != 0)
-				 {
+				{
 					order.setPOReference(s);
-				// should not be reset to null if we entered already value!
-				// VHARCQ, accepted YS makes sense that way
-				// TODO: should get checked and removed if no longer needed!
-				/*
-				 * else mTab.setValue("POReference", null);
-				 */
+					// should not be reset to null if we entered already value!
+					// VHARCQ, accepted YS makes sense that way
+					// TODO: should get checked and removed if no longer needed!
+					/*
+					 * else mTab.setValue("POReference", null);
+					 */
 				}
 
 				// SO Description
@@ -523,7 +496,7 @@ public class CalloutOrder extends CalloutEngine
 							s = "P";
 						}
 						if (IsSOTrx && ("S".equals(s) || "U".equals(s)))
-						 {
+						{
 							s = "P"; // Payment Term
 						}
 						order.setPaymentRule(s);
@@ -578,6 +551,38 @@ public class CalloutOrder extends CalloutEngine
 		}
 		return NO_ERROR;
 	} // bPartner
+
+	private void checkCreditLimit(
+			@NonNull final ICalloutField calloutField,
+			@NonNull final I_C_Order order)
+	{
+		final I_C_BPartner bPartner = order.getC_BPartner();
+		final BPartnerStats bPartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bPartner);
+
+		final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
+				.bpartnerId(bPartner.getC_BPartner_ID())
+				.creditStatus(bPartnerStats.getSOCreditStatus())
+				.evalCreditstatus(true)
+				.evaluationDate(order.getDateOrdered())
+				.build();
+
+		if (!isChkCreditLimit(creditLimitRequest))
+		{
+			return;
+		}
+
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bPartner.getC_BPartner_ID(), order.getDateOrdered());
+
+		final BigDecimal CreditAvailable = creditLimit.subtract(bPartnerStats.getSOCreditUsed());
+		if (CreditAvailable.signum() < 0)
+		{
+			calloutField.fireDataStatusEEvent(
+					MSG_CreditLimitOver,
+					DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable),
+					false);
+		}
+	}
 
 	/**
 	 * Order Header - Invoice BPartner. - M_PriceList_ID (+ Context) - Bill_Location_ID - Bill_User_ID - POReference - SO_Description - IsDiscountPrinted - InvoiceRule/PaymentRule - C_PaymentTerm_ID
@@ -772,7 +777,7 @@ public class CalloutOrder extends CalloutEngine
 							s = "P";
 						}
 						if (IsSOTrx && ("S".equals(s) || "U".equals(s)))
-						 {
+						{
 							s = "P"; // Payment Term
 						}
 						order.setPaymentRule(s);
@@ -818,11 +823,7 @@ public class CalloutOrder extends CalloutEngine
 			return NO_ERROR;
 		}
 
-		// Tax Included
 		order.setIsTaxIncluded(priceList.isTaxIncluded());
-		// Price Limit Enforce
-		calloutField.putContext(CTX_EnforcePriceLimit, priceList.isEnforcePriceLimit());
-		// Currency
 		order.setC_Currency_ID(priceList.getC_Currency_ID());
 
 		return NO_ERROR;
@@ -1031,7 +1032,7 @@ public class CalloutOrder extends CalloutEngine
 		final int C_Charge_ID = ol.getC_Charge_ID();
 		log.debug("Product={}, C_Charge_ID={}", M_Product_ID, C_Charge_ID);
 		if (M_Product_ID <= 0 && C_Charge_ID <= 0)
-		 {
+		{
 			return amt(calloutField); //
 		}
 
@@ -1043,7 +1044,7 @@ public class CalloutOrder extends CalloutEngine
 			shipC_BPartner_Location_ID = order.getC_BPartner_Location_ID();
 		}
 		if (shipC_BPartner_Location_ID <= 0)
-		 {
+		{
 			return amt(calloutField); //
 		}
 		log.debug("Ship BP_Location={}", shipC_BPartner_Location_ID);
@@ -1104,19 +1105,15 @@ public class CalloutOrder extends CalloutEngine
 	} // tax
 
 	/**
-	 * Order Line - Amount. - called from QtyOrdered, Discount and PriceActual - calculates Discount or Actual Amount - calculates LineNetAmt - enforces PriceLimit
+	 * Order Line - Amount. - calculates Discount or Actual Amount - calculates LineNetAmt - enforces PriceLimit
+	 *
+	 * Triggered by: C_UOM_ID, Discount, PriceActual, PriceEntered, PriceList, QtyOrdered, S_ResourceAssignment_ID
 	 */
 	public String amt(final ICalloutField calloutField)
 	{
-		final Object value = calloutField.getValue();
-		if (isCalloutActive() || value == null)
+		if (isCalloutActive() || calloutField.getValue() == null)
 		{
 			return NO_ERROR;
-		}
-
-		if (steps)
-		{
-			log.warn("init");
 		}
 
 		final Properties ctx = calloutField.getCtx();
@@ -1124,156 +1121,117 @@ public class CalloutOrder extends CalloutEngine
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
 		final I_C_Order order = orderLine.getC_Order();
 
-		final int C_UOM_To_ID = orderLine.getPrice_UOM_ID();
-		final int M_Product_ID = orderLine.getM_Product_ID();
-		final int M_PriceList_ID = order.getM_PriceList_ID();
-		// final int M_PriceList_Version_ID = Env.getContextAsInt(ctx, WindowNo, "M_PriceList_Version_ID");
-		final int StdPrecision = MPriceList.getStandardPrecision(ctx, M_PriceList_ID);
-		// get values
-		final BigDecimal QtyEntered = orderLine.getQtyEntered();
-		final BigDecimal QtyOrdered = orderLine.getQtyOrdered();
-		log.debug("QtyEntered={}, Ordered={}, UOM={}", QtyEntered, QtyOrdered, C_UOM_To_ID);
+		final int priceUOMId = orderLine.getPrice_UOM_ID();
+		final int productId = orderLine.getM_Product_ID();
+		final int stdPrecision = MPriceList.getStandardPrecision(ctx, order.getM_PriceList_ID());
+
 		//
-		BigDecimal PriceEntered = orderLine.getPriceEntered();
-		BigDecimal PriceActual = orderLine.getPriceActual();
-		BigDecimal Discount = orderLine.getDiscount();
-		BigDecimal PriceLimit = orderLine.getPriceLimit();
-		BigDecimal PriceList = orderLine.getPriceList();
-		log.debug("PriceList=" + PriceList + ", Limit=" + PriceLimit + ", Precision=" + StdPrecision);
-		log.debug("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual + ", Discount=" + Discount);
+		BigDecimal priceEntered;
+		BigDecimal priceActual;
 
 		// Qty changed - recalc price
-		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName)
-				|| I_C_OrderLine.COLUMNNAME_QtyEntered.equals(changedColumnName)
-				|| I_C_OrderLine.COLUMNNAME_M_Product_ID.equals(changedColumnName))
+		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		// && !"N".equals(Env.getContext(ctx, WindowNo, CTX_DiscountSchema))
 		{
 			updatePrices(orderLine);
-			PriceEntered = orderLine.getPriceEntered();
-			PriceActual = orderLine.getPriceActual();
-			Discount = orderLine.getDiscount();
-			PriceLimit = orderLine.getPriceLimit();
-			PriceList = orderLine.getPriceList();
+			priceEntered = orderLine.getPriceEntered();
+			priceActual = orderLine.getPriceActual();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceActual.equals(changedColumnName))
 		{
-			PriceActual = (BigDecimal)value;
-			PriceEntered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, PriceActual);
-			if (PriceEntered == null)
+			priceActual = orderLine.getPriceActual();
+			priceEntered = MUOMConversion.convertToProductUOM(ctx, productId, priceUOMId, priceActual);
+			if (priceEntered == null)
 			{
-				PriceEntered = PriceActual;
+				priceEntered = priceActual;
 			}
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))
 		{
 			Services.get(IOrderLineBL.class).calculatePriceActual(orderLine, -1); // precision=-1, preserving old behavior (->called method shall find out itself)
-			PriceEntered = orderLine.getPriceEntered();
-			PriceActual = orderLine.getPriceActual();
+			priceActual = orderLine.getPriceActual();
+			priceEntered = orderLine.getPriceEntered();
 		}
-
-		// metas: *** Discount veraendert? ***
-		// -> PriceActual
-		// -> LineNetAmt
-		if (I_C_OrderLine.COLUMNNAME_Discount.equals(changedColumnName))
+		else if (I_C_OrderLine.COLUMNNAME_Discount.equals(changedColumnName))
 		{
-			// metas
-			// if (PriceList.doubleValue() != 0)
-			// PriceActual = new BigDecimal((100.0 - Discount.doubleValue())
-			// / 100.0 * PriceList.doubleValue());
-			// metas ende
-			if (PriceEntered.doubleValue() != 0)
+			priceEntered = orderLine.getPriceEntered();
+			if (priceEntered.signum() != 0)
 			{
-				PriceActual = new BigDecimal((100.0 - Discount.doubleValue()) / 100.0 * PriceEntered.doubleValue());
+				final BigDecimal discount = orderLine.getDiscount();
+				priceActual = Services.get(IOrderLineBL.class).subtractDiscount(priceEntered, discount, stdPrecision);
 			}
-
-			if (PriceActual.scale() > StdPrecision)
-			 {
-				PriceActual = PriceActual.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
-			// metas
-			// PriceEntered = MUOMConversion.convertProductFrom(ctx, M_Product_ID,
-			// C_UOM_To_ID, PriceActual);
-			// metas ende
+			else
+			{
+				priceActual = orderLine.getPriceActual();
 			}
-
-			// metas us1064
-			// if (PriceEntered == null)
-			// PriceEntered = PriceActual;
-			orderLine.setPriceEntered(PriceEntered);
-			// mTab.setValue("PriceActual", PriceActual);
-			// metas us1064 end
 		}
-		// calculate Discount
+		// C_UOM_ID, PriceList, S_ResourceAssignment_ID
 		else
 		{
-			if (PriceList.intValue() == 0)
+			priceEntered = orderLine.getPriceEntered();
+			priceActual = orderLine.getPriceActual();
+		}
+
+		//
+		// Check PriceActual and enforce PriceLimit.
+		// Also, update Discount or PriceEntered if needed.
+		BigDecimal discount;
+		boolean underLimitPrice = false;
+		final BigDecimal priceLimit = orderLine.getPriceLimit();
+		if (priceLimit.signum() != 0
+				&& priceActual.compareTo(priceLimit) < 0
+				&& isEnforcePriceLimit(orderLine, order.isSOTrx()))
+		{
+			underLimitPrice = true;
+			priceActual = priceLimit;
+
+			if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName) && priceEntered.signum() != 0)
 			{
-				Discount = BigDecimal.ZERO;
+				discount = orderLine.getDiscount();
+				priceEntered = Services.get(IOrderLineBL.class).calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, stdPrecision);
 			}
-			// metas
-			// else
-			// Discount = new BigDecimal(
-			// (PriceList.doubleValue() - PriceActual.doubleValue())
-			// / PriceList.doubleValue() * 100.0);
-			if (Discount.scale() > 2)
-			 {
-				Discount = Discount.setScale(2, BigDecimal.ROUND_HALF_UP);
-			// metas
-			// mTab.setValue("Discount", Discount);
-			// Discount = new BigDecimal(0);
-			// mTab.setValue("Discount", Discount);
+			else if (priceEntered.signum() != 0)
+			{
+				discount = Services.get(IOrderLineBL.class).calculateDiscountFromPrices(priceEntered, priceActual, stdPrecision);
+			}
+			else
+			{
+				discount = orderLine.getDiscount();
 			}
 		}
-		log.debug("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual + ", Discount=" + Discount);
-
-		// Check Price Limit?
-		if (isEnforcePriceLimit(calloutField, order.isSOTrx())
-				&& PriceLimit.signum() != 0 && PriceActual.compareTo(PriceLimit) < 0)
+		else
 		{
-			PriceActual = PriceLimit;
-			PriceEntered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, PriceLimit);
-			if (PriceEntered == null)
-			{
-				PriceEntered = PriceLimit;
-			}
-			log.debug("(under) PriceEntered=" + PriceEntered + ", Actual" + PriceLimit);
-			orderLine.setPriceActual(PriceActual);
-			// 07090: this (complicated, legacy) is just about updating price amounts, not priceUOM -> not touching the price UOM here
-			orderLine.setPriceEntered(PriceEntered);
+			discount = orderLine.getDiscount();
+		}
+
+		//
+		// Update order line
+		orderLine.setPriceEntered(priceEntered);
+		orderLine.setPriceActual(priceActual);
+		orderLine.setDiscount(discount);
+		updateLineNetAmtAndTax(orderLine, stdPrecision);
+		if (underLimitPrice)
+		{
 			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, "", false);
-
-			// Repeat Discount calc
-			if (PriceList.intValue() != 0)
-			{
-				Discount = new BigDecimal(
-						(PriceList.doubleValue() - PriceActual.doubleValue())
-								/ PriceList.doubleValue() * 100.0);
-				if (Discount.scale() > 2)
-				{
-					Discount = Discount.setScale(2, BigDecimal.ROUND_HALF_UP);
-				}
-				orderLine.setDiscount(Discount);
-			}
 		}
-
-		orderLine.setPriceActual(PriceActual);
-		// 07090: this (complicated, legacy) is just about updating price amounts, not priceUOM -> not touching the price UOM here
-		// Make sure we use the converted quantity for calculation, since the priceActual is for the price's UOM, while the quantity ordered is for the product's UOM.
-
-		// Line Net Amt
-		final BigDecimal qtyEnteredInPriceUOM = Services.get(IOrderLineBL.class).convertQtyEnteredToPriceUOM(orderLine);
-
-		BigDecimal LineNetAmt = qtyEnteredInPriceUOM.multiply(PriceActual);
-		if (LineNetAmt.scale() > StdPrecision)
-		{
-			LineNetAmt = LineNetAmt.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
-		}
-		orderLine.setLineNetAmt(LineNetAmt);
-
-		Services.get(IOrderLineBL.class).setTaxAmtInfoIfNotIgnored(ctx, orderLine, ITrx.TRXNAME_None);
 
 		//
 		return NO_ERROR;
 	} // amt
+
+	private static void updateLineNetAmtAndTax(final I_C_OrderLine orderLine, final int stdPrecision)
+	{
+		final BigDecimal priceActual = orderLine.getPriceActual();
+		final BigDecimal qtyEnteredInPriceUOM = Services.get(IOrderLineBL.class).convertQtyEnteredToPriceUOM(orderLine);
+		BigDecimal LineNetAmt = qtyEnteredInPriceUOM.multiply(priceActual);
+		if (LineNetAmt.scale() > stdPrecision)
+		{
+			LineNetAmt = LineNetAmt.setScale(stdPrecision, RoundingMode.HALF_UP);
+		}
+		orderLine.setLineNetAmt(LineNetAmt);
+
+		Services.get(IOrderLineBL.class).setTaxAmtInfoIfNotIgnored(Env.getCtx(), orderLine, ITrx.TRXNAME_None);
+	}
 
 	/**
 	 * Order Line - Quantity. - called from C_UOM_ID, QtyEntered, QtyOrdered - enforces qty UOM relationship
@@ -1509,7 +1467,6 @@ public class CalloutOrder extends CalloutEngine
 		final Timestamp evaluationDate;
 	}
 
-
 	/**
 	 * Decides whether the business partner's credit limit should be checked.
 	 *
@@ -1517,9 +1474,8 @@ public class CalloutOrder extends CalloutEngine
 	 * @param creditStatus
 	 * @param evalCreditstatus if <code>true</code>, the result set's column <code>"SOCreditStatus"</code> is also used for the decision
 	 * @return
-	 * @throws SQLException if one is thrown while accessing the result set (in particular if evalCreditstatus is <code>true</code>, but the result set doesn't contain<code>"SOCreditStatus"</code>).
 	 */
-	private boolean isChkCreditLimit(@NonNull final CreditLimitRequest creditlimitrequest) throws SQLException
+	private boolean isChkCreditLimit(@NonNull final CreditLimitRequest creditlimitrequest)
 	{
 		final int bpartnerId = creditlimitrequest.getBpartnerId();
 		final String creditStatus = creditlimitrequest.getCreditStatus();
@@ -1690,7 +1646,7 @@ public class CalloutOrder extends CalloutEngine
 		return NO_ERROR;
 	}
 
-	private static boolean isEnforcePriceLimit(final ICalloutField calloutField, final boolean isSOTrx)
+	private static boolean isEnforcePriceLimit(final I_C_OrderLine orderLine, final boolean isSOTrx)
 	{
 		// We enforce PriceLimit only for sales orders
 		if (!isSOTrx)
@@ -1698,8 +1654,7 @@ public class CalloutOrder extends CalloutEngine
 			return false;
 		}
 
-		final boolean epl = calloutField.getContextAsBoolean(CTX_EnforcePriceLimit);
-		if (!epl)
+		if (!orderLine.isEnforcePriceLimit())
 		{
 			return false;
 		}

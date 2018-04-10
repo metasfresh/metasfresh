@@ -1,7 +1,5 @@
 package de.metas.inoutcandidate.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-
 import java.sql.Timestamp;
 
 /*
@@ -48,6 +46,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.model.X_PP_Product_Planning;
 
 import com.google.common.base.MoreObjects;
 
@@ -66,6 +65,9 @@ import de.metas.material.planning.IProductPlanningDAO;
  */
 public class OrderLineReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 {
+
+	private final static String DEFAULT_OnMaterialReceiptWithDestWarehouse = X_PP_Product_Planning.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement;
+
 	@Override
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
 	{
@@ -211,9 +213,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		final String headerAggregationKey = receiptScheduleBL.getHeaderAggregationKeyBuilder().buildKey(receiptSchedule);
 		receiptSchedule.setHeaderAggregationKey(headerAggregationKey);
 
-		// #3409
-		final boolean isCreateDDOrder = isCreateDDOrder(line);
-		receiptSchedule.setIsCreateDistributionOrder(isCreateDDOrder);
+		// #3549
+		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(getOnMaterialReceiptWithDestWarehouse(line));
 
 		//
 		// Save & return
@@ -221,18 +222,17 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		return receiptSchedule;
 	}
 
-	private boolean isCreateDDOrder(final I_C_OrderLine orderLine)
+	private String getOnMaterialReceiptWithDestWarehouse(final I_C_OrderLine orderLine)
 	{
+
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 		final int productId = orderLine.getM_Product_ID();
-		final Properties ctx = getCtx(orderLine);
 		final int orgId = orderLine.getAD_Org_ID();
 		final int asiId = orderLine.getM_AttributeSetInstance_ID();
 
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(
-				ctx //
-				, orgId //
+				 orgId //
 				, 0  // M_Warehouse_ID
 				, 0  // S_Resource_ID
 				, productId //
@@ -241,10 +241,12 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		if (productPlanning == null)
 		{
 			// fallback to old behaviour -> a movement is created instead of dd_Order
-			return false;
+			return DEFAULT_OnMaterialReceiptWithDestWarehouse;
 		}
+		
+		final String onMaterialReceiptWithDestWarehouse = productPlanning.getOnMaterialReceiptWithDestWarehouse();
 
-		return productPlanning.isCreateDistributionOrder();
+		return Check.isEmpty(onMaterialReceiptWithDestWarehouse) ? DEFAULT_OnMaterialReceiptWithDestWarehouse : onMaterialReceiptWithDestWarehouse;
 
 	}
 
@@ -280,7 +282,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 			final int lotNumberDateAttrID = lotNumberDateAttr.getM_Attribute_ID();
-			I_M_AttributeInstance lotNumberDateAI = attributeDAO.retrieveAttributeInstance(rsASI, lotNumberDateAttrID, trxName);
+			I_M_AttributeInstance lotNumberDateAI = attributeDAO.retrieveAttributeInstance(rsASI, lotNumberDateAttrID);
 
 			if (lotNumberDateAI == null)
 			{
@@ -321,7 +323,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 			final int lotNumberAttrID = lotNumberAttr.getM_Attribute_ID();
-			I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(rsASI, lotNumberAttrID, trxName);
+			I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(rsASI, lotNumberAttrID);
 
 			if (lotNumberAI == null)
 			{
