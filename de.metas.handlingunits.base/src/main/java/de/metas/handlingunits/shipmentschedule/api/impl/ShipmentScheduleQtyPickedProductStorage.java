@@ -10,18 +10,17 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -32,7 +31,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
-import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -48,7 +47,6 @@ import de.metas.quantity.CapacityInterface;
 public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStorage
 {
 	private final transient IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final transient IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 
 	private final I_M_ShipmentSchedule shipmentSchedule;
 	private boolean staled = false;
@@ -68,8 +66,8 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 
 		//
 		// Calculate the initial Qty (i.e. Qty To Pick) as target Qty minus how much was picked and not delivered, minus how much was delivered
-		// NOTE: we cannot relly on QtyToDeliver because that one is about what it needs to be delivered and we are able to deliver it.
-		// But in our case we need to have how much is Picked but not delivered because we want to let the API/user to "un-pick" that quantity if he wants.
+		// NOTE: we cannot rely on QtyToDeliver because that one is about what it needs to be delivered *and* we are able to deliver it.
+		// But in our case we need to have how much is Picked but not delivered because we want to let the API/user to "un-pick" that quantity if they want.
 
 		final CapacityInterface capacityTotal = getTotalCapacity();
 		final BigDecimal qtyTarget = capacityTotal.getCapacityQty();
@@ -80,8 +78,11 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 		final boolean hasQtyToDeliverOverride = !InterfaceWrapperHelper.isNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 		if (!hasQtyToDeliverOverride)
 		{
-			final BigDecimal qtyPickedNotDelivered = shipmentScheduleAllocBL.getQtyPicked(shipmentSchedule);
+			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+
+			final BigDecimal qtyPickedNotDelivered = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentSchedule);
 			final BigDecimal qtyDelivered = shipmentSchedule.getQtyDelivered();
+
 			qtyToPick = qtyToPick.subtract(qtyPickedNotDelivered).subtract(qtyDelivered);
 		}
 
@@ -119,7 +120,7 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 				product, // product
 				uom, // uom
 				false // allowNegativeCapacity
-				);
+		);
 	}
 
 	@Override

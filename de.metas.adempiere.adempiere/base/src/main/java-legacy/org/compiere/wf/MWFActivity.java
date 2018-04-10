@@ -103,7 +103,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 * @param activeOnly if true only not processed records are returned
 	 * @return activity
 	 */
-	public static MWFActivity[] get(Properties ctx, int AD_Table_ID, int Record_ID, boolean activeOnly)
+	private static MWFActivity[] get(Properties ctx, int AD_Table_ID, int Record_ID, boolean activeOnly)
 	{
 		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer("AD_Table_ID=? AND Record_ID=?");
@@ -117,7 +117,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		List<MWFActivity> list = new Query(ctx, Table_Name, whereClause.toString(), null)
 				.setParameters(params)
 				.setOrderBy(COLUMNNAME_AD_WF_Activity_ID)
-				.list();
+				.list(MWFActivity.class);
 
 		MWFActivity[] retValue = new MWFActivity[list.size()];
 		list.toArray(retValue);

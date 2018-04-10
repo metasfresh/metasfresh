@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.BPartnerStats;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.util.Services;
@@ -208,7 +208,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 	 */
 	public MDunningRunLine[] getLines(boolean onlyInvoices)
 	{
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 
 		whereClause.append("C_DunningRunEntry_ID=?");
@@ -220,7 +220,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 		List<MDunningRunLine> list = new Query(getCtx(), I_C_DunningRunLine.Table_Name, whereClause.toString(), get_TrxName())
 				.setParameters(params)
 				.setOrderBy(I_C_DunningRunLine.COLUMNNAME_C_DunningRunLine_ID)
-				.list();
+				.list(MDunningRunLine.class);
 		//
 		MDunningRunLine[] retValue = new MDunningRunLine[list.size()];
 		list.toArray(retValue);

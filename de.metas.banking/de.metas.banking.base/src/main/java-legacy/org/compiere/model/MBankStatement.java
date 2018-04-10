@@ -139,7 +139,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		List<MBankStatementLine> list = new Query(getCtx(), I_C_BankStatementLine.Table_Name, I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID + "=?", get_TrxName())
 				.setParameters(this.getC_BankStatement_ID())
 				.setOrderBy(I_C_BankStatementLine.COLUMNNAME_Line)
-				.list();
+				.list(MBankStatementLine.class);
 
 		MBankStatementLine[] retValue = new MBankStatementLine[list.size()];
 		list.toArray(retValue);

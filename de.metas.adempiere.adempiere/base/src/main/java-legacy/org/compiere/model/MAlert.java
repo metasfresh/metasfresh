@@ -95,7 +95,7 @@ public class MAlert extends X_AD_Alert
 		List <MAlertRule> list = new Query(getCtx(), MAlertRule.Table_Name, whereClause, null)
 			.setParameters(new Object[]{getAD_Alert_ID()})
 			.setOrderBy("Name, AD_AlertRule_ID")
-			.list()
+			.list(MAlertRule.class)
 		;
 		for (int i = 0; i < list.size(); i ++) {
 			MAlertRule rule = list.get( i );
@@ -120,8 +120,7 @@ public class MAlert extends X_AD_Alert
 		String whereClause = "AD_Alert_ID=?";
 		List <MAlertRecipient> list = new Query(getCtx(), MAlertRecipient.Table_Name, whereClause, null)
 			.setParameters(new Object[]{getAD_Alert_ID()})
-			.list()
-		;
+			.list(MAlertRecipient.class);
 		//
 		m_recipients = new MAlertRecipient[ list.size() ];
 		m_recipients = list.toArray (m_recipients);

@@ -150,7 +150,7 @@ public class MCostElement extends X_M_CostElement
 		return new Query(context.getCtx(), MCostElement.Table_Name, whereClause, context.getTrxName())
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
-				.list();
+				.list(MCostElement.class);
 	}	// getCostElementCostingMethod
 
 	/**
@@ -277,7 +277,7 @@ public class MCostElement extends X_M_CostElement
 		String whereClause = "AD_Client_ID = ? AND AD_Org_ID = ?";
 		List<MCostElement> list = new Query(ctx, Table_Name, whereClause, trxName)
 				.setParameters(new Object[] { AD_Client_ID, AD_Org_ID })
-				.list();
+				.list(MCostElement.class);
 		MCostElement[] retValue = new MCostElement[list.size()];
 		list.toArray(retValue);
 		return retValue;

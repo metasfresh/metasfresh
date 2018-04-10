@@ -64,7 +64,7 @@ public class PickingCandidateRepository
 		final List<I_M_ShipmentSchedule> scheds = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huId)
-				.andCollect(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID)
+				.andCollect(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, I_M_ShipmentSchedule.class)
 				.create()
 				.list();
 		return scheds;
