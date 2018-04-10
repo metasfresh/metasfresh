@@ -78,6 +78,7 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 				.forEach(this::createQuarantineHUsByLotNoLockId);
 
 		huDDOrderBL.createQuarantineDDOrderForHUs(husToQuarantine);
+
 		setInvoiceCandsInDispute();
 
 		return MSG_OK;
