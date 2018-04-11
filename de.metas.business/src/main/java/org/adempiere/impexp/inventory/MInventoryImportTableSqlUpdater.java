@@ -111,6 +111,21 @@ public class MInventoryImportTableSqlUpdater
 		}
 	}
 
+	private void dbUpdateLocator(@NonNull final String whereClause, @NonNull final Properties ctx)
+	{
+		final int adClientId = Env.getAD_Client_ID(ctx);
+
+		// Set M_Warehouse_ID
+		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
+				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Locator l WHERE i.M_Locator_ID=l.M_Locator_ID) ")
+				.append("WHERE M_Locator_ID IS NOT NULL ")
+				.append("AND I_IsImported<>'Y' AND AD_Client_ID = ")
+				.append(adClientId)
+				.append(whereClause);
+		int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set Warehouse from Locator =" + no);
+	}
+
 	private void dbUpdateWarehouse(@NonNull final String whereClause, @NonNull final Properties ctx)
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
