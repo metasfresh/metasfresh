@@ -69,3 +69,49 @@ UPDATE AD_Field SET DisplayLogic='@IsPriceOverride@ = Y & @PriceBase@ = P ',Upda
 UPDATE AD_Field SET DisplayLogic='@IsPriceOverride@ = Y & @PriceBase@ = F',Updated=TO_TIMESTAMP('2018-04-11 14:20:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563197
 ;
 
+
+
+
+-- 2018-04-11T17:19:26.944
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,563194,0,406,551409,540609,'F',TO_TIMESTAMP('2018-04-11 17:19:26','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','IsPriceOverride',140,0,0,TO_TIMESTAMP('2018-04-11 17:19:26','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-04-11T17:19:48.572
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,563195,0,406,551410,540609,'F',TO_TIMESTAMP('2018-04-11 17:19:48','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','PriceBase',150,0,0,TO_TIMESTAMP('2018-04-11 17:19:48','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-04-11T17:20:06.556
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,563193,0,406,551411,540609,'F',TO_TIMESTAMP('2018-04-11 17:20:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','Base Pricing System',160,0,0,TO_TIMESTAMP('2018-04-11 17:20:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-04-11T17:20:46.486
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,563196,0,406,551412,540609,'F',TO_TIMESTAMP('2018-04-11 17:20:46','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','Std AddAmt',170,0,0,TO_TIMESTAMP('2018-04-11 17:20:46','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-04-11T17:32:09.806
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,563197,0,406,551413,540609,'F',TO_TIMESTAMP('2018-04-11 17:32:09','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','Standardpreis',180,0,0,TO_TIMESTAMP('2018-04-11 17:32:09','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-04-11T18:12:18.150
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544676,0,TO_TIMESTAMP('2018-04-11 18:12:17','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','No Product Price found for pricing system {} and product {}.','I',TO_TIMESTAMP('2018-04-11 18:12:17','YYYY-MM-DD HH24:MI:SS'),100,'M_DiscountSchemaBreak_NoProductPrice')
+;
+
+-- 2018-04-11T18:12:18.155
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Message_ID=544676 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+
+
+
+-- 2018-04-11T18:23:51.797
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='No Product Price found for pricing system {0} and product {1}.',Updated=TO_TIMESTAMP('2018-04-11 18:23:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544676
+;
+
