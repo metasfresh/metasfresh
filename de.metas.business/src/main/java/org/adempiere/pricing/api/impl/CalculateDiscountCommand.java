@@ -15,6 +15,7 @@ import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_AttributeInstance;
@@ -25,7 +26,9 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchemaBreak;
+import org.compiere.util.Env;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.pricing.ProductPrices;
 import lombok.NonNull;
 
@@ -57,6 +60,7 @@ import lombok.NonNull;
  */
 /* package */ class CalculateDiscountCommand
 {
+	private final static String MSG_M_DiscountSchemaBreak_NoProductPrice = "M_DiscountSchemaBreak_NoProductPrice";
 
 	final CalculateDiscountRequest request;
 
@@ -105,14 +109,14 @@ import lombok.NonNull;
 	{
 		final String priceBase = breakApplied.getPriceBase();
 
-		final I_M_ProductPrice productPrice = findProductPrice(breakApplied);
-
-		final BigDecimal priceStd = productPrice.getPriceStd();
-		final BigDecimal priceList = productPrice.getPriceList();
-		final BigDecimal priceLimit = productPrice.getPriceLimit();
-
 		if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
 		{
+
+			final I_M_ProductPrice productPrice = findProductPrice(breakApplied);
+
+			final BigDecimal priceStd = productPrice.getPriceStd();
+			final BigDecimal priceList = productPrice.getPriceList();
+			final BigDecimal priceLimit = productPrice.getPriceLimit();
 
 			final BigDecimal stdAddAmt = breakApplied.getStd_AddAmt();
 
@@ -125,8 +129,10 @@ import lombok.NonNull;
 		}
 		else if (X_M_DiscountSchemaBreak.PRICEBASE_Fixed.equals(priceBase))
 		{
+			final BigDecimal discountSchemaBreakStdPrice = breakApplied.getPriceStd();
+
 			return DiscountResult.builder()
-					.priceStdOverride(priceStd)
+					.priceStdOverride(discountSchemaBreakStdPrice)
 					.build();
 		}
 		else
@@ -135,7 +141,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private I_M_ProductPrice findProductPrice(I_M_DiscountSchemaBreak breakApplied)
+	private I_M_ProductPrice findProductPrice(final I_M_DiscountSchemaBreak breakApplied)
 	{
 		final I_M_PricingSystem basePricingSystem = breakApplied.getBase_PricingSystem();
 
@@ -143,7 +149,7 @@ import lombok.NonNull;
 
 		final I_C_Country country = request.getCountry();
 		final boolean isSOTrx = request.isSOTrx();
-		final Timestamp pricedate = request.getPriceDate();
+		final Timestamp priceDate = request.getPriceDate();
 
 		final int productId = request.getM_Product_ID();
 
@@ -151,13 +157,18 @@ import lombok.NonNull;
 				.getCurrentPriceListVersionOrNull(
 						basePricingSystem,
 						country,
-						pricedate,
+						priceDate,
 						isSOTrx,
 						null);
 
+		final String msg = Services.get(IMsgBL.class).getMsg(
+				Env.getCtx(),
+				MSG_M_DiscountSchemaBreak_NoProductPrice,
+				new Object[] { basePricingSystem, productId });
+
 		final I_M_ProductPrice productPrice = Optional
 				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId))
-				.orElseThrow(() -> new AdempiereException("No Product Price found for pricing system {} and product {}", new Object[] { basePricingSystem, productId }));
+				.orElseThrow(() -> new AdempiereException(msg));
 
 		return productPrice;
 
