@@ -13,6 +13,7 @@ import org.compiere.model.I_AD_Color;
 import org.compiere.model.MImage;
 import org.compiere.model.X_AD_Color;
 import org.compiere.util.CCache;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -130,13 +131,15 @@ public class ColorRepository implements IColorRepository
 	{
 		final Color flatColor = MFColor.ofFlatColorHexString(flatColorHexString).getFlatColor();
 		final I_AD_Color existingColorRecord = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Color.class)
+				.createQueryBuilderOutOfTrx(I_AD_Color.class)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
+				.addOnlyContextClientOrSystem()
 				.addEqualsFilter(I_AD_Color.COLUMNNAME_ColorType, X_AD_Color.COLORTYPE_NormalFlat)
 				.addEqualsFilter(I_AD_Color.COLUMNNAME_Red, flatColor.getRed())
 				.addEqualsFilter(I_AD_Color.COLUMNNAME_Green, flatColor.getGreen())
 				.addEqualsFilter(I_AD_Color.COLUMNNAME_Blue, flatColor.getBlue())
+				.orderByDescending(I_AD_Color.COLUMNNAME_AD_Client_ID)
+				.orderBy(I_AD_Color.COLUMNNAME_AD_Color_ID)
 				.create()
 				.first();
 		if (existingColorRecord != null)
@@ -144,11 +147,17 @@ public class ColorRepository implements IColorRepository
 			return existingColorRecord.getAD_Color_ID();
 		}
 
-		final I_AD_Color newColorRecord = InterfaceWrapperHelper.newInstance(I_AD_Color.class);
+		final I_AD_Color newColorRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Color.class);
+		newColorRecord.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
+		newColorRecord.setName(flatColorHexString.toLowerCase());
 		newColorRecord.setColorType(X_AD_Color.COLORTYPE_NormalFlat);
 		newColorRecord.setRed(flatColor.getRed());
 		newColorRecord.setGreen(flatColor.getGreen());
 		newColorRecord.setBlue(flatColor.getBlue());
+		//
+		newColorRecord.setAlpha(0);
+		newColorRecord.setImageAlpha(BigDecimal.ZERO);
+		//
 		InterfaceWrapperHelper.save(newColorRecord);
 
 		return newColorRecord.getAD_Color_ID();

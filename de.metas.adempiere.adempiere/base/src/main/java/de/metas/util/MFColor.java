@@ -456,15 +456,4 @@ public final class MFColor implements Serializable
 				throw new IllegalStateException("Type not supported: " + getType());
 		}
 	}
-
-	public String getFlatColorHexString()
-	{
-		if (!isFlat())
-		{
-			throw new IllegalStateException("Not a flat color: " + this);
-		}
-
-		final Color flatColor = getFlatColor();
-		return String.format("#%02x%02x%02x", flatColor.getRed(), flatColor.getGreen(), flatColor.getBlue());
-	}
 }
