@@ -291,6 +291,28 @@ public class M_InOutLine_HandlerTest
 	}
 
 	@Test
+	public void createCandidatesForInOutLine_two_materialInOutLines_both_without_paymentterm_smallQtyEnteredTU()
+	{
+		createMaterialInOutLine(null, ONE);
+		createMaterialInOutLine(null, ONE);
+
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+		assertThat(ic.isPackagingMaterial()).isTrue();
+		assertThat(ic).has(invoiceCandidateWithTerm(null));
+		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
+
+		// make sure that on later updates, the qty remains the same
+		final BigDecimal updateQty = inOutLineHandlerUnderTest.extractQtyDelivered(ic, Mode.UPDATE);
+		assertThat(updateQty).isEqualByComparingTo(TEN);
+		inOutLineHandlerUnderTest.setOrderedData(ic);
+		inOutLineHandlerUnderTest.setDeliveredData(ic);
+		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
+	}
+	
+	@Test
 	public void createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms()
 	{
 		createMaterialInOutLine(paymentTermA, FIVE);
@@ -535,6 +557,79 @@ public class M_InOutLine_HandlerTest
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
 		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermA));
+		assertThat(ic.isPackagingMaterial()).isTrue();
+		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate()); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
+		
+		inOutLineHandlerUnderTest.setOrderedData(ic);
+		inOutLineHandlerUnderTest.setDeliveredData(ic);
+		
+		assertThat(ic.isPackagingMaterial()).isTrue();
+		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate()); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
+	}
+	
+	@Test
+	public void createCandidatesForInOutLine_two_materialInOutLine_same_payment_term_smallQtyEnteredTU()
+	{
+		createMaterialInOutLine(paymentTermA, ONE);
+		createMaterialInOutLine(paymentTermA, ONE);
+
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
+				.createCandidatesForInOutLine(packagingInOutLine);
+
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermA));
+		assertThat(ic.isPackagingMaterial()).isTrue();
+		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
+		
+		inOutLineHandlerUnderTest.setOrderedData(ic);
+		inOutLineHandlerUnderTest.setDeliveredData(ic);
+		
+		assertThat(ic.isPackagingMaterial()).isTrue();
+		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
+	}
+		
+	@Test
+	public void createCandidatesForInOutLine_two_materialInOutLine_same_payment_term_customer_return_smallQtyEnteredTU()
+	{
+		inout.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerReturns); // we'll expect the ICs' quantities to be negated
+		save(inout);
+		
+		createMaterialInOutLine(paymentTermA, ONE);
+		createMaterialInOutLine(paymentTermA, ONE);
+
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
+				.createCandidatesForInOutLine(packagingInOutLine);
+
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermA));
+		assertThat(ic.isPackagingMaterial()).isTrue();
+		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate());
+		
+		inOutLineHandlerUnderTest.setOrderedData(ic);
+		inOutLineHandlerUnderTest.setDeliveredData(ic);
+		
+		assertThat(ic.isPackagingMaterial()).isTrue();
+		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate());
+	}
+	
+	
+	@Test
+	public void createCandidatesForInOutLine_two_materialInOutLine_both_without_payment_term_customer_return()
+	{
+		inout.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerReturns); // we'll expect the ICs' quantities to be negated
+		save(inout);
+		
+		createMaterialInOutLine(null, FIVE);
+		createMaterialInOutLine(null, TEN);
+
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
+				.createCandidatesForInOutLine(packagingInOutLine);
+
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+		assertThat(ic).has(invoiceCandidateWithTerm(null));
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate()); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
 		
