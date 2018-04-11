@@ -43,6 +43,7 @@ import org.compiere.util.TimeUtil;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.JavaProcess;
 
+@Deprecated // TODO delete it
 public class ConvertBPartnerMemo extends JavaProcess {
 
 	@Override
@@ -52,7 +53,7 @@ public class ConvertBPartnerMemo extends JavaProcess {
 
 		final List<MBPartner> bPartners = new Query(getCtx(),
 				I_C_BPartner.Table_Name, whereClause, get_TrxName())
-				.setOnlyActiveRecords(true).setClient_ID().list();
+				.setOnlyActiveRecords(true).setClient_ID().list(MBPartner.class);
 
 		final Timestamp startDate = SystemTime.asTimestamp();
 		int counter = 0;

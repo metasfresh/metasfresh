@@ -639,7 +639,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_HU_PI_Item_Product piItemProduct_Effective = hupip;
 
 		shipmentSchedule.setM_HU_PI_Item_Product_Calculated(piItemProduct_Effective);
-		shipmentSchedule.setM_HU_PI_Item_Product_Override(piItemProduct_Effective);
 		shipmentSchedule.setM_HU_PI_Item_Product(piItemProduct_Effective);
 	}
 

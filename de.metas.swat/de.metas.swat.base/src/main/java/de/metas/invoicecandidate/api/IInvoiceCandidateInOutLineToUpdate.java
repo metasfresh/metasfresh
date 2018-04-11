@@ -25,7 +25,7 @@ package de.metas.invoicecandidate.api;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 
 public interface IInvoiceCandidateInOutLineToUpdate
 {

@@ -449,7 +449,7 @@ class TrxItemChunkProcessorExecutor<IT, RT> implements ITrxItemProcessorExecutor
 
 		//
 		// Set current thread transaction
-		// NOTE: we will not reset it because we relly that "execute" method will restore the state in any case
+		// NOTE: we will not reset it because we rely that "execute" method will restore the state in any case
 		trxManager.setThreadInheritedTrxName(chunkTrx.getTrxName());
 	}
 

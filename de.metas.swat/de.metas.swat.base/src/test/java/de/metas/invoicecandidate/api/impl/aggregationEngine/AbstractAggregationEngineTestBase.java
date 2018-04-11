@@ -38,7 +38,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.junit.Assert;
