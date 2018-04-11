@@ -4,19 +4,29 @@
 package org.adempiere.pricing.api.impl;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.api.CalculateDiscountRequest;
 import org.adempiere.pricing.api.DiscountResult;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
+import org.adempiere.pricing.api.IPriceListBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_M_DiscountSchema;
+import org.compiere.model.X_M_DiscountSchemaBreak;
 
+import de.metas.pricing.ProductPrices;
 import lombok.NonNull;
 
 /*
@@ -73,27 +83,101 @@ import lombok.NonNull;
 		}
 
 		final I_M_DiscountSchemaBreak breakApplied = fetchDiscountSchemaBreak();
+
 		if (breakApplied != null)
 		{
-			final BigDecimal discount;
-			if (breakApplied.isBPartnerFlatDiscount())
+			if (breakApplied.isPriceOverride())
 			{
-				discount = request.getBPartnerFlatDiscount();
+				return computeIndividualPriceForDiscountSchemaBreak(breakApplied);
 			}
-			else
-			{
-				discount = breakApplied.getBreakDiscount();
-			}
-			return DiscountResult.builder()
-					.discount(discount)
-					.C_PaymentTerm_ID(breakApplied.getC_PaymentTerm_ID())
-					.build();
+
+			return computeDefaultDiscountForDiscoutSchemaBreak(breakApplied);
+
 		}
 
 		return DiscountResult.builder()
 				.discount(BigDecimal.ZERO)
 				.build();
 
+	}
+
+	private DiscountResult computeIndividualPriceForDiscountSchemaBreak(final I_M_DiscountSchemaBreak breakApplied)
+	{
+		final String priceBase = breakApplied.getPriceBase();
+
+		final I_M_ProductPrice productPrice = findProductPrice(breakApplied);
+
+		final BigDecimal priceStd = productPrice.getPriceStd();
+		final BigDecimal priceList = productPrice.getPriceList();
+		final BigDecimal priceLimit = productPrice.getPriceLimit();
+
+		if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
+		{
+
+			final BigDecimal stdAddAmt = breakApplied.getStd_AddAmt();
+
+			return DiscountResult.builder()
+					.priceListOverride(priceList)
+					.priceLimitOverride(priceLimit)
+					.priceStdOverride(priceStd.add(stdAddAmt))
+					.build();
+
+		}
+		else if (X_M_DiscountSchemaBreak.PRICEBASE_Fixed.equals(priceBase))
+		{
+			return DiscountResult.builder()
+					.priceStdOverride(priceStd)
+					.build();
+		}
+		else
+		{
+			throw new AdempiereException("PriceBase value unknown: " + priceBase);
+		}
+	}
+
+	private I_M_ProductPrice findProductPrice(I_M_DiscountSchemaBreak breakApplied)
+	{
+		final I_M_PricingSystem basePricingSystem = breakApplied.getBase_PricingSystem();
+
+		Check.assumeNotNull(basePricingSystem, "BasePricingSystem shall not be not null for the discount schema break {}", breakApplied);
+
+		final I_C_Country country = request.getCountry();
+		final boolean isSOTrx = request.isSOTrx();
+		final Timestamp pricedate = request.getPriceDate();
+
+		final int productId = request.getM_Product_ID();
+
+		final I_M_PriceList_Version priceListVersion = Services.get(IPriceListBL.class)
+				.getCurrentPriceListVersionOrNull(
+						basePricingSystem,
+						country,
+						pricedate,
+						isSOTrx,
+						null);
+
+		final I_M_ProductPrice productPrice = Optional
+				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId))
+				.orElseThrow(() -> new AdempiereException("No Product Price found for pricing system {} and product {}", new Object[] { basePricingSystem, productId }));
+
+		return productPrice;
+
+	}
+
+	private DiscountResult computeDefaultDiscountForDiscoutSchemaBreak(final I_M_DiscountSchemaBreak breakApplied)
+	{
+		final BigDecimal discount;
+		if (breakApplied.isBPartnerFlatDiscount())
+		{
+			discount = request.getBPartnerFlatDiscount();
+		}
+		else
+		{
+			discount = breakApplied.getBreakDiscount();
+		}
+		return DiscountResult.builder()
+				.discount(discount)
+				.C_PaymentTerm_ID(breakApplied.getC_PaymentTerm_ID())
+				.build();
 	}
 
 	private DiscountResult computeFlatDiscount(@NonNull final I_M_DiscountSchema schema, @NonNull final BigDecimal bpFlatDiscountToUse)
