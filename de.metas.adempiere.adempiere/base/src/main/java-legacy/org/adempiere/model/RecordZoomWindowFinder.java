@@ -1,8 +1,8 @@
 package org.adempiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Check;
@@ -373,14 +373,14 @@ public class RecordZoomWindowFinder
 		return POInfo.getPOInfo(tableName).getKeyColumnName();
 	}
 
-	private static final WindowIds retrieveDefaultWindowIds(final String tableName)
+	private static final WindowIds retrieveDefaultWindowIds(@Nullable final String tableName)
 	{
-		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		if (tableId <= 0)
+		final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTableOrNull(tableName);
+		if (table == null)
 		{
 			return WindowIds.NONE;
 		}
-		final I_AD_Table table = load(tableId, I_AD_Table.class);
+
 		final int soWindowId = table.getAD_Window_ID();
 		final int poWindowId = table.getPO_Window_ID();
 		return WindowIds.of(soWindowId, poWindowId);

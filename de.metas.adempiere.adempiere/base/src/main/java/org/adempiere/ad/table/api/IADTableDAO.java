@@ -145,6 +145,8 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	I_AD_Table retrieveTable(String tableName);
 
+	I_AD_Table retrieveTableOrNull(String tableName);
+
 	/**
 	 * Retrieve all the columns of the given table
 	 *
