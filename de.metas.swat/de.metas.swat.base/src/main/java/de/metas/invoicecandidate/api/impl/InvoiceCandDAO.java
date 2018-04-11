@@ -48,7 +48,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
-import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -64,7 +63,6 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
@@ -95,6 +93,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
 import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
@@ -366,7 +365,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLineQuery(final I_M_InOutLine inoutLine)
+	public final IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLineQuery(
+			@NonNull final I_M_InOutLine inoutLine)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -380,6 +380,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// ICs which are directly created for this inout line
 		{
 			final ICompositeQueryFilter<I_C_Invoice_Candidate> filter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_M_InOutLine.class))
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, inoutLine.getM_InOutLine_ID());
 
@@ -391,6 +392,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		if (inoutLine.getC_OrderLine_ID() > 0)
 		{
 			final ICompositeQueryFilter<I_C_Invoice_Candidate> filter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, inoutLine.getC_OrderLine_ID());
 
@@ -401,6 +403,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// IC-IOL associations
 		{
 			final IQuery<I_C_InvoiceCandidate_InOutLine> queryForICIOLs = retrieveICIOLAssociationsForInOutLineInclInactiveQuery(inoutLine)
+					.addOnlyActiveRecordsFilter()
 					.create();
 
 			queryBuilder.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, queryForICIOLs);
