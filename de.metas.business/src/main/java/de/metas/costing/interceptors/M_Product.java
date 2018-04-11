@@ -33,7 +33,7 @@ import de.metas.costing.ICurrentCostsRepository;
  * #L%
  */
 
-@Component
+@Component("de.metas.costing.interceptors.M_Product")
 @Interceptor(I_M_Product.class)
 public class M_Product
 {
@@ -47,7 +47,7 @@ public class M_Product
 	{
 		if (costDetailsRepo.hasCostDetailsForProductId(product.getM_Product_ID()))
 		{
-			throw new AdempiereException("@SaveUomError@");
+			throw new AdempiereException("@CannotDeleteProductsWithCostDetails@");
 		}
 
 	}
