@@ -1,5 +1,5 @@
 DROP VIEW IF EXISTS de_metas_invoicecandidate.c_invoice_candidate_failed_to_update_v;
-de_metas_invoicecandidate.c_invoice_candidate_wrong_qty_iol_v
+DROP VIEW IF EXISTS de_metas_invoicecandidate.c_invoice_candidate_wrong_qty_iol_v;
 
 CREATE OR REPLACE VIEW de_metas_invoicecandidate.c_invoice_candidate_wrong_qty_iol_v AS 
 SELECT 
