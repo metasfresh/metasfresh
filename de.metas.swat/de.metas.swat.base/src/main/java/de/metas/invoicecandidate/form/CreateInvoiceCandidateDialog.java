@@ -52,6 +52,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -71,7 +72,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.Lookup;
-import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DisplayType;
@@ -256,7 +256,7 @@ public class CreateInvoiceCandidateDialog
 
 	private final void jbInit(final ISwingEditorFactory factory)
 	{
-		CompiereColor.setBackground(mainPanel);
+		AdempierePLAF.setDefaultBackground(mainPanel);
 		mainPanel.setLayout(mainLayout);
 
 		//
