@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -52,11 +53,11 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCost;
 import org.compiere.model.MProduct;
 import org.compiere.model.MTransaction;
 import org.compiere.model.PO;
@@ -226,13 +227,13 @@ public class CostEngine
 		return price.roundToPrecisionIfNeeded(precision);
 	}
 
-	public Collection<MCost> getByElement(final MProduct product, final MAcctSchema as,
+	public Collection<I_M_Cost> getByElement(final MProduct product, final MAcctSchema as,
 			final int M_CostType_ID, final int AD_Org_ID, final int M_AttributeSetInstance_ID, final int M_CostElement_ID)
 	{
 		final CostDimension cd = new CostDimension(product, as, M_CostType_ID,
 				AD_Org_ID, M_AttributeSetInstance_ID,
 				M_CostElement_ID);
-		return cd.toQuery(MCost.class, product.get_TrxName())
+		return cd.toQuery(I_M_Cost.class, product.get_TrxName())
 				.setOnlyActiveRecords(true)
 				.list();
 	}
@@ -374,6 +375,7 @@ public class CostEngine
 		cd.setAmt(amt.getValue());
 		cd.setQty(Qty);
 		cd.setDescription(Description);
+		cd.setIsSOTrx(false);
 
 		return cd;
 	}	// I_M_CostDetail
@@ -489,7 +491,7 @@ public class CostEngine
 		if (product != null)
 		{
 			cdv.setM_Product_ID(product.getM_Product_ID());
-			cdv.setM_AttributeSetInstance_ID(0);
+			cdv.setM_AttributeSetInstance_ID(AttributeConstants.M_AttributeSetInstance_ID_None);
 		}
 		if (as != null)
 		{
@@ -503,6 +505,7 @@ public class CostEngine
 		cdv.setPP_Cost_Collector_ID(ccv.getPP_Cost_Collector_ID());
 		cdv.setAmt(amt.getValue());
 		cdv.setQty(qty);
+		cdv.setIsSOTrx(false);
 		InterfaceWrapperHelper.save(cdv);
 		processCostDetail(cdv);
 		return cdv;

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
@@ -52,7 +53,6 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCost;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_CostElement;
@@ -256,8 +256,8 @@ public class RollupWorkflow extends JavaProcess
 				continue;
 			}
 			final CostDimension d = new CostDimension(product, m_as, p_M_CostType_ID, p_AD_Org_ID, 0, element.getId());
-			final List<MCost> costs = d.toQuery(MCost.class, get_TrxName()).list();
-			for (MCost cost : costs)
+			final List<I_M_Cost> costs = d.toQuery(I_M_Cost.class, get_TrxName()).list();
+			for (I_M_Cost cost : costs)
 			{
 				final int precision = MAcctSchema.get(Env.getCtx(), cost.getC_AcctSchema_ID()).getCostingPrecision();
 				BigDecimal segmentCost = BigDecimal.ZERO;
@@ -280,7 +280,7 @@ public class RollupWorkflow extends JavaProcess
 				}
 				//
 				cost.setCurrentCostPrice(segmentCost);
-				cost.saveEx();
+				InterfaceWrapperHelper.save(cost);
 				// Update Workflow cost
 				workflow.setCost(workflow.getCost().add(segmentCost));
 			} // MCost

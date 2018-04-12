@@ -34,8 +34,12 @@ public interface ICostDetailService
 
 	void voidAndDeleteForDocument(CostingDocumentRef documentRef);
 
+	/** does nothing */
+	@Deprecated
 	void processIfCostImmediate(I_M_CostDetail costDetail);
 
+	/** does nothing */
+	@Deprecated
 	void processAllForProduct(int productId);
 
 	/** @return seed cost or null */

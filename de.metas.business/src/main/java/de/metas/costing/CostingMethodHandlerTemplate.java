@@ -234,6 +234,10 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		{
 			costDetail.setIsSOTrx(documentRef.getOutboundTrx());
 		}
+		else
+		{
+			costDetail.setIsSOTrx(false);
+		}
 
 		costDetail.setProcessed(true); // TODO: get rid of Processed flag, or always set it!
 

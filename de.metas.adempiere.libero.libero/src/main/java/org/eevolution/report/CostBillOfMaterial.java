@@ -50,7 +50,6 @@ import org.adempiere.model.engines.CostEngineFactory;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCost;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_CostElement;
@@ -105,11 +104,11 @@ public class CostBillOfMaterial extends JavaProcess
 				p_C_AcctSchema_ID= para.getParameterAsInt();
 				m_as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
 			}
-			else if (name.equals(MCost.COLUMNNAME_M_CostType_ID))
+			else if (name.equals(I_M_Cost.COLUMNNAME_M_CostType_ID))
 				p_M_CostType_ID= para.getParameterAsInt();
 			else if (name.equals(X_M_CostElement.COLUMNNAME_CostingMethod))
 				p_ConstingMethod=(String)para.getParameter();
-			else if (name.equals(MCost.COLUMNNAME_M_Product_ID))
+			else if (name.equals(I_M_Cost.COLUMNNAME_M_Product_ID))
 				p_M_Product_ID = para.getParameterAsInt();
 			else
 				log.error("prepare - Unknown Parameter: " + name);
@@ -244,7 +243,7 @@ public class CostBillOfMaterial extends JavaProcess
 			//
 			// Set Costs:
 			final CostEngine engine = CostEngineFactory.getCostEngine(getAD_Client_ID());
-			Collection<MCost> costs = engine.getByElement(
+			Collection<I_M_Cost> costs = engine.getByElement(
 					product,
 					m_as,
 					p_M_CostType_ID,
@@ -256,7 +255,7 @@ public class CostBillOfMaterial extends JavaProcess
 			BigDecimal futureCostPrice = BigDecimal.ZERO;
 			BigDecimal futureCostPriceLL = BigDecimal.ZERO;
 			boolean isCostFrozen = false;
-			for (MCost cost : costs)
+			for (I_M_Cost cost : costs)
 			{
 				currentCostPrice = currentCostPrice.add(cost.getCurrentCostPrice());
 				currentCostPriceLL = currentCostPriceLL.add(cost.getCurrentCostPriceLL());

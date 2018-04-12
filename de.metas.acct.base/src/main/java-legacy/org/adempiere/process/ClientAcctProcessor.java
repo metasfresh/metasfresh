@@ -40,8 +40,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.acct.Doc;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MClient;
-import org.compiere.model.MCost;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
 
@@ -65,8 +63,6 @@ public class ClientAcctProcessor extends JavaProcess
 
 	/** Last Summary */
 	private StringBuilder m_summary = new StringBuilder();
-	/** Client info */
-	private MClient m_client = null;
 	/** Accounting Schema */
 	private MAcctSchema[] m_ass = null;
 
@@ -107,8 +103,6 @@ public class ClientAcctProcessor extends JavaProcess
 			throw new AdempiereException("@ClientAccountingNotEnabled@");
 		}
 
-		m_client = MClient.get(getCtx(), getAD_Client_ID());
-
 		if (p_C_AcctSchema_ID == 0)
 			m_ass = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
 		else
@@ -116,7 +110,6 @@ public class ClientAcctProcessor extends JavaProcess
 			m_ass = new MAcctSchema[] { new MAcctSchema(getCtx(), p_C_AcctSchema_ID, get_TrxName()) };
 
 		postSession();
-		MCost.create(m_client);
 
 		addLog(m_summary.toString());
 

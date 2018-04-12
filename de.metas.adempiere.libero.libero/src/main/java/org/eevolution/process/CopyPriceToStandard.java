@@ -41,11 +41,12 @@ package org.eevolution.process;
 import java.math.BigDecimal;
 import java.util.Collection;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
+import org.compiere.model.I_M_Cost;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCost;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductPrice;
@@ -138,13 +139,13 @@ public class CopyPriceToStandard extends JavaProcess
 			}
 			MProduct product = MProduct.get(getCtx(), pprice.getM_Product_ID());
 			CostDimension d = new CostDimension(product, as, p_M_CostType_ID, p_AD_Org_ID, 0, p_M_CostElement_ID);
-			Collection<MCost> costs = d.toQuery(MCost.class, get_TrxName()).list();
-			for (MCost cost : costs)
+			Collection<I_M_Cost> costs = d.toQuery(I_M_Cost.class, get_TrxName()).list();
+			for (I_M_Cost cost : costs)
 			{
 				if (cost.getM_CostElement_ID() == element.getId())
 				{
 					cost.setFutureCostPrice(price);
-					cost.saveEx();
+					InterfaceWrapperHelper.save(cost);
 					count_updated++;
 					break;
 				}

@@ -27,11 +27,9 @@ import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.acct.Doc;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.MAcctProcessor;
 import org.compiere.model.MAcctProcessorLog;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCost;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
@@ -52,19 +50,13 @@ public class AcctProcessor extends AdempiereServer
 	{
 		super(model, 30);	// 30 seconds delay
 		m_model = model;
-		m_client = model.getAD_Client();
 	}	// AcctProcessor
 
 	/** The Concrete Model */
 	private MAcctProcessor m_model = null;
 	/** Last Summary */
 	private StringBuffer m_summary = new StringBuffer();
-	/** Client onfo */
-	private I_AD_Client m_client = null;
 
-	/**
-	 * Work
-	 */
 	@Override
 	protected void doWork()
 	{
@@ -83,7 +75,6 @@ public class AcctProcessor extends AdempiereServer
 
 		//
 		postSession();
-		MCost.create(m_client);
 		//
 		final int no = m_model.deleteLog();
 		m_summary.append("Logs deleted=").append(no);
@@ -137,7 +128,7 @@ public class AcctProcessor extends AdempiereServer
 					boolean postOk = false; // was the posting ok?
 					try
 					{
-						final Doc doc = docFactory.get(getCtx(), docMetaInfo, acctSchemas, rs, ITrx.TRXNAME_None);
+						final Doc<?> doc = docFactory.get(getCtx(), docMetaInfo, acctSchemas, rs, ITrx.TRXNAME_None);
 						if (doc == null)
 						{
 							log.error(getName() + ": No Doc for " + tableName);

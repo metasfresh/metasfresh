@@ -1,5 +1,6 @@
 package de.metas.costing.impl;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -144,6 +145,15 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		costRecord.setM_Product_ID(costSegment.getProductId());
 		costRecord.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId());
 		costRecord.setM_CostElement_ID(costElementId);
+
+		costRecord.setCurrentCostPrice(BigDecimal.ZERO);
+		costRecord.setCurrentCostPriceLL(BigDecimal.ZERO);
+		costRecord.setFutureCostPrice(BigDecimal.ZERO);
+		costRecord.setFutureCostPriceLL(BigDecimal.ZERO);
+		costRecord.setCurrentQty(BigDecimal.ZERO);
+		costRecord.setCumulatedAmt(BigDecimal.ZERO);
+		costRecord.setCumulatedQty(BigDecimal.ZERO);
+
 		InterfaceWrapperHelper.save(costRecord);
 
 		return toCurrentCost(costRecord);
