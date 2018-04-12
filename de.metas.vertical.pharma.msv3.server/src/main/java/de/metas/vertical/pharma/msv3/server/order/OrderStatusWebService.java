@@ -66,8 +66,8 @@ public class OrderStatusWebService
 		authService.assertValidClientSoftwareId(soapRequest.getClientSoftwareKennung());
 
 		final Id orderId = Id.of(soapRequest.getBestellId());
-		final BPartnerId bpartnerId = authService.getCurrentUser().getBpartnerId();
-		final OrderStatusResponse response = orderService.getOrderStatus(orderId, bpartnerId);
+		final BPartnerId bpartner = authService.getCurrentBPartner();
+		final OrderStatusResponse response = orderService.getOrderStatus(orderId, bpartner);
 
 		return jaxbConverters.toJAXB(response);
 	}
