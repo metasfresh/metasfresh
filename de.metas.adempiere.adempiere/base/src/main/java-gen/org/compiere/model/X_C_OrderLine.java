@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1018485497L;
+	private static final long serialVersionUID = 948765074L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -1294,6 +1294,43 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getM_AttributeSetInstance_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_DiscountSchemaBreak getM_DiscountSchemaBreak() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_DiscountSchemaBreak_ID, org.compiere.model.I_M_DiscountSchemaBreak.class);
+	}
+
+	@Override
+	public void setM_DiscountSchemaBreak(org.compiere.model.I_M_DiscountSchemaBreak M_DiscountSchemaBreak)
+	{
+		set_ValueFromPO(COLUMNNAME_M_DiscountSchemaBreak_ID, org.compiere.model.I_M_DiscountSchemaBreak.class, M_DiscountSchemaBreak);
+	}
+
+	/** Set Discount Schema Break.
+		@param M_DiscountSchemaBreak_ID 
+		Trade Discount Break
+	  */
+	@Override
+	public void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID)
+	{
+		if (M_DiscountSchemaBreak_ID < 1) 
+			set_Value (COLUMNNAME_M_DiscountSchemaBreak_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_DiscountSchemaBreak_ID, Integer.valueOf(M_DiscountSchemaBreak_ID));
+	}
+
+	/** Get Discount Schema Break.
+		@return Trade Discount Break
+	  */
+	@Override
+	public int getM_DiscountSchemaBreak_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchemaBreak_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
