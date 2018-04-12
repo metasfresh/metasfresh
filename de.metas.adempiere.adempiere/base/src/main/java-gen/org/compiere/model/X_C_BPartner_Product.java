@@ -4,7 +4,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_BPartner_Product
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 674564741L;
+	private static final long serialVersionUID = -1052335496L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product (Properties ctx, int C_BPartner_Product_ID, String trxName)
@@ -26,10 +25,9 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
         {
 			setC_BPartner_ID (0);
 			setC_BPartner_Product_ID (0);
-			setIsCurrentVendor (false);
-// N
-			setIsDropShip (false);
-// N
+			setIsCurrentVendor (false); // N
+			setIsDropShip (false); // N
+			setIsSalesBan (false); // N
 			setM_Product_ID (0);
 			setShelfLifeMinDays (0);
 			setShelfLifeMinPct (0);
@@ -144,6 +142,22 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return ii.intValue();
 	}
 
+	/** Set Auszeichnungsname.
+		@param CustomerLabelName Auszeichnungsname	  */
+	@Override
+	public void setCustomerLabelName (java.lang.String CustomerLabelName)
+	{
+		set_Value (COLUMNNAME_CustomerLabelName, CustomerLabelName);
+	}
+
+	/** Get Auszeichnungsname.
+		@return Auszeichnungsname	  */
+	@Override
+	public java.lang.String getCustomerLabelName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CustomerLabelName);
+	}
+
 	/** Set Zugesicherte Lieferzeit.
 		@param DeliveryTime_Promised 
 		Zugesicherte Anzahl Tage zwischen Bestellung und Lieferung
@@ -234,23 +248,27 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return false;
 	}
 
-	/** Set Hersteller.
-		@param Manufacturer 
-		Manufacturer of the Product
-	  */
+	/** Set Ban on sales documents.
+		@param IsSalesBan Ban on sales documents	  */
 	@Override
-	public void setManufacturer (java.lang.String Manufacturer)
+	public void setIsSalesBan (boolean IsSalesBan)
 	{
-		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
+		set_Value (COLUMNNAME_IsSalesBan, Boolean.valueOf(IsSalesBan));
 	}
 
-	/** Get Hersteller.
-		@return Manufacturer of the Product
-	  */
+	/** Get Ban on sales documents.
+		@return Ban on sales documents	  */
 	@Override
-	public java.lang.String getManufacturer () 
+	public boolean isSalesBan () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
+		Object oo = get_Value(COLUMNNAME_IsSalesBan);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
@@ -290,6 +308,25 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return ii.intValue();
 	}
 
+	/** Set Hersteller.
+		@param Manufacturer 
+		Manufacturer of the Product
+	  */
+	@Override
+	public void setManufacturer (java.lang.String Manufacturer)
+	{
+		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
+	}
+
+	/** Get Hersteller.
+		@return Manufacturer of the Product
+	  */
+	@Override
+	public java.lang.String getManufacturer () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
+	}
+
 	/** Set Mindestbestellmenge.
 		@param Order_Min 
 		Mindestbestellmenge in Mengeneinheit
@@ -308,7 +345,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Min);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -330,7 +367,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Pack);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -352,8 +389,24 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityRating);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Sales Ban Reason.
+		@param SalesBanReason Sales Ban Reason	  */
+	@Override
+	public void setSalesBanReason (java.lang.String SalesBanReason)
+	{
+		set_Value (COLUMNNAME_SalesBanReason, SalesBanReason);
+	}
+
+	/** Get Sales Ban Reason.
+		@return Sales Ban Reason	  */
+	@Override
+	public java.lang.String getSalesBanReason () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SalesBanReason);
 	}
 
 	/** Set Mindesthaltbarkeit Tage.

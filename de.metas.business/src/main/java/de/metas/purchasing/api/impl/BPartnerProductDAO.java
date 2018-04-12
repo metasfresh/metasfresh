@@ -42,10 +42,13 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.purchasing.api.ProductExclude;
 
 /**
  * @author cg
@@ -185,5 +188,28 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.create()
 				.setOrderBy(bppOrderBy)
 				.first(I_C_BPartner_Product.class);
+	}
+
+	@Override
+	public List<ProductExclude> retrieveAllProductSalesExcludes()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsSalesBan, true)
+				.create()
+				.stream()
+				.map(bpartnerProduct -> toProductExclude(bpartnerProduct))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static ProductExclude toProductExclude(I_C_BPartner_Product bpartnerProduct)
+	{
+		return ProductExclude.builder()
+				.productId(bpartnerProduct.getM_Product_ID())
+				.bpartnerId(bpartnerProduct.getC_BPartner_ID())
+				.reason(bpartnerProduct.getSalesBanReason())
+				.build();
 	}
 }

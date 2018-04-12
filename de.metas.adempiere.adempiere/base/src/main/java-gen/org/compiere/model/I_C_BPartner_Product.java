@@ -178,6 +178,29 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Auszeichnungsname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomerLabelName (java.lang.String CustomerLabelName);
+
+	/**
+	 * Get Auszeichnungsname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCustomerLabelName();
+
+    /** Column definition for CustomerLabelName */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_CustomerLabelName = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "CustomerLabelName", null);
+    /** Column name CustomerLabelName */
+    public static final String COLUMNNAME_CustomerLabelName = "CustomerLabelName";
+
+	/**
 	 * Set Zugesicherte Lieferzeit.
 	 * Zugesicherte Anzahl Tage zwischen Bestellung und Lieferung
 	 *
@@ -301,29 +324,27 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
-	 * Set Hersteller.
-	 * Manufacturer of the Product
+	 * Set Ban on sales documents.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setManufacturer (java.lang.String Manufacturer);
+	public void setIsSalesBan (boolean IsSalesBan);
 
 	/**
-	 * Get Hersteller.
-	 * Manufacturer of the Product
+	 * Get Ban on sales documents.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getManufacturer();
+	public boolean isSalesBan();
 
-    /** Column definition for Manufacturer */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_Manufacturer = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "Manufacturer", null);
-    /** Column name Manufacturer */
-    public static final String COLUMNNAME_Manufacturer = "Manufacturer";
+    /** Column definition for IsSalesBan */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_IsSalesBan = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "IsSalesBan", null);
+    /** Column name IsSalesBan */
+    public static final String COLUMNNAME_IsSalesBan = "IsSalesBan";
 
 	/**
 	 * Set Produkt.
@@ -353,6 +374,31 @@ public interface I_C_BPartner_Product
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_Product>(I_C_BPartner_Product.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Hersteller.
+	 * Manufacturer of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setManufacturer (java.lang.String Manufacturer);
+
+	/**
+	 * Get Hersteller.
+	 * Manufacturer of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getManufacturer();
+
+    /** Column definition for Manufacturer */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_Manufacturer = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "Manufacturer", null);
+    /** Column name Manufacturer */
+    public static final String COLUMNNAME_Manufacturer = "Manufacturer";
 
 	/**
 	 * Set Mindestbestellmenge.
@@ -428,6 +474,29 @@ public interface I_C_BPartner_Product
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_QualityRating = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "QualityRating", null);
     /** Column name QualityRating */
     public static final String COLUMNNAME_QualityRating = "QualityRating";
+
+	/**
+	 * Set Sales Ban Reason.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSalesBanReason (java.lang.String SalesBanReason);
+
+	/**
+	 * Get Sales Ban Reason.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSalesBanReason();
+
+    /** Column definition for SalesBanReason */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_SalesBanReason = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "SalesBanReason", null);
+    /** Column name SalesBanReason */
+    public static final String COLUMNNAME_SalesBanReason = "SalesBanReason";
 
 	/**
 	 * Set Mindesthaltbarkeit Tage.
