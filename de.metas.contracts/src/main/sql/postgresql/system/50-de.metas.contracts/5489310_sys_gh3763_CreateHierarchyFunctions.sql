@@ -1,5 +1,13 @@
+DROP FUNCTION IF EXISTS fetchflatratetermhierarchy_byC_Flatrate_Term_id(numeric);
+DROP FUNCTION IF EXISTS fetchInitialC_Flatrate_term_ID(numeric);
+DROP FUNCTION IF EXISTS getInitialC_Flatrate_term_ID(numeric);
+
+DROP FUNCTION IF EXISTS de_metas_contracts.fetchflatratetermhierarchy_byC_Flatrate_Term_id(numeric);
+DROP FUNCTION IF EXISTS de_metas_contracts.fetchInitialC_Flatrate_term_ID(numeric);
+DROP FUNCTION IF EXISTS de_metas_contracts.getInitialC_Flatrate_term_ID(numeric);
+
 CREATE SCHEMA de_metas_contracts;  
-CREATE OR REPLACE FUNCTION de_metas_contracts.getInitialC_Flatrate_term_ID(p_C_Flatrate_term_ID numeric)
+CREATE OR REPLACE FUNCTION de_metas_contracts.fetchInitialC_Flatrate_term_ID(p_C_Flatrate_term_ID numeric)
   RETURNS TABLE(C_Flatrate_term_ID numeric) AS
 $BODY$
 WITH RECURSIVE ancestor AS (
@@ -21,7 +29,7 @@ $BODY$
   COST 100
   ROWS 1000;
 
- comment on function de_metas_contracts.getInitialC_Flatrate_term_ID(numeric) is 'This function returns the most distant parent of the givent contract'; 
+ comment on function de_metas_contracts.fetchInitialC_Flatrate_term_ID(numeric) is 'This function returns the most distant parent of the givent contract'; 
 
 CREATE OR REPLACE FUNCTION de_metas_contracts.fetchflatratetermhierarchy_byC_Flatrate_Term_id(IN p_c_flatrate_term_id numeric)
   RETURNS TABLE(bill_bpartner_id numeric, initial_ft_id numeric, path numeric[]) AS
@@ -29,7 +37,7 @@ $BODY$
  WITH RECURSIVE node_graph AS (
    SELECT ft.bill_bpartner_id, ft.c_flatrate_term_id as initial_ft_id, ft.c_flatrateterm_next_id as next_ft_id, ARRAY[ft.c_flatrate_term_id, ft.c_flatrateterm_next_id] AS path
    FROM   c_flatrate_term ft 
-     JOIN de_metas_contracts.getInitialC_Flatrate_term_ID(p_c_flatrate_term_id) as parent on parent.c_flatrate_term_id = ft.c_flatrate_term_id 
+     JOIN de_metas_contracts.fetchInitialC_Flatrate_term_ID(p_c_flatrate_term_id) as parent on parent.c_flatrate_term_id = ft.c_flatrate_term_id 
 
    UNION  ALL
 

@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION de_metas_contracts.getInitialC_Flatrate_term_ID(p_C_Flatrate_term_ID numeric)
+CREATE OR REPLACE FUNCTION de_metas_contracts.fetchInitialC_Flatrate_term_ID(p_C_Flatrate_term_ID numeric)
   RETURNS TABLE(C_Flatrate_term_ID numeric) AS
 $BODY$
 WITH RECURSIVE ancestor AS (
@@ -19,3 +19,4 @@ $BODY$
   LANGUAGE sql STABLE
   COST 100
   ROWS 1000;
+comment on function de_metas_contracts.fetchInitialC_Flatrate_term_ID(numeric) is 'This function returns the most distant parent of the givent contract'; 

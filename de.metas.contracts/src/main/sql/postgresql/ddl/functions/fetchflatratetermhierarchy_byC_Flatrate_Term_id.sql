@@ -4,7 +4,7 @@ $BODY$
  WITH RECURSIVE node_graph AS (
    SELECT ft.bill_bpartner_id, ft.c_flatrate_term_id as initial_ft_id, ft.c_flatrateterm_next_id as next_ft_id, ARRAY[ft.c_flatrate_term_id, ft.c_flatrateterm_next_id] AS path
    FROM   c_flatrate_term ft 
-     JOIN getInitialC_Flatrate_term_ID(p_c_flatrate_term_id) as parent on parent.c_flatrate_term_id = ft.c_flatrate_term_id 
+     JOIN fetchInitialC_Flatrate_term_ID(p_c_flatrate_term_id) as parent on parent.c_flatrate_term_id = ft.c_flatrate_term_id 
 
    UNION  ALL
 
@@ -30,3 +30,4 @@ $BODY$
   LANGUAGE sql STABLE
   COST 100
   ROWS 1000;
+comment on function de_metas_contracts.fetchflatratetermhierarchy_byC_Flatrate_Term_id(numeric) is 'This function returns the hierachy chain of a contract';     
