@@ -93,7 +93,9 @@ public class M_CostElement
 		 */
 
 		if (costElement.getAD_Org_ID() != 0)
+		{
 			costElement.setAD_Org_ID(0);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
