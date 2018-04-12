@@ -83,7 +83,7 @@ public class MCommission extends X_C_Commission
 		List<MCommissionLine> list  = new Query(getCtx(), MCommissionLine.Table_Name, whereClause, get_TrxName())
 		.setParameters(new Object[]{getC_Commission_ID()})
 		.setOrderBy("Line")
-		.list();	
+		.list(MCommissionLine.class);	
 		//	Convert
 		MCommissionLine[] retValue = new MCommissionLine[list.size()];
 		list.toArray(retValue);
@@ -94,6 +94,7 @@ public class MCommission extends X_C_Commission
 	 * 	Set Date Last Run
 	 *	@param DateLastRun date
 	 */
+	@Override
 	public void setDateLastRun (Timestamp DateLastRun)
 	{
 		if (DateLastRun != null)

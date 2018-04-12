@@ -20,13 +20,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *  Product Lot
@@ -43,26 +43,6 @@ public class MLot extends X_M_Lot
 	private static final long serialVersionUID = -2238962371935615958L;
 	/**	Logger					*/
 	private static Logger		s_log = LogManager.getLogger(MLot.class);
-
-	/**
-	 * 	Get Lots for Product
-	 *	@param ctx context
-	 *	@param M_Product_ID product
-	 *	@param trxName transaction
-	 *	@return Array of Lots for Product
-	 */
-	public static MLot[] getProductLots (Properties ctx, int M_Product_ID, String trxName)
-	{
-		//FR: [ 2214883 ] Remove SQL code and Replace for Query - red1
-		String whereClause = "M_Product_ID=?";
-		List <MLot> list = new Query(ctx, MLot.Table_Name, whereClause, trxName)
-			.setParameters(new Object[]{M_Product_ID})
- 			.list();
-		//
-		MLot[] retValue = new MLot[list.size()];
-		list.toArray(retValue);
-		return retValue;
-	}	//	getProductLots
 
 	/**
 	 * 	Get Lot for Product
@@ -108,7 +88,7 @@ public class MLot extends X_M_Lot
 	public static KeyNamePair[] getProductLotPairs (int M_Product_ID, String trxName)
 	{
 		String sql = "SELECT M_Lot_ID, Name FROM M_Lot WHERE M_Product_ID=?";
-		ArrayList<KeyNamePair> list = new ArrayList<KeyNamePair>();
+		ArrayList<KeyNamePair> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -183,6 +163,7 @@ public class MLot extends X_M_Lot
 	 *	String Representation
 	 * 	@return info
 	 */
+	@Override
 	public String toString()
 	{
 		return getName();

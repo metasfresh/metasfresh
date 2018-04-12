@@ -54,7 +54,7 @@ public class MScheduler extends X_AD_Scheduler
 	{
 		List<MScheduler> list = new Query(ctx, Table_Name, null, null)
 		.setOnlyActiveRecords(true)
-		.list();
+		.list(MScheduler.class);
 		MScheduler[] retValue = new MScheduler[list.size ()];
 		list.toArray (retValue);
 		return retValue;
@@ -134,7 +134,7 @@ public class MScheduler extends X_AD_Scheduler
 		List<MSchedulerLog> list = new Query(getCtx(), MSchedulerLog.Table_Name, whereClause, get_TrxName())
 		.setParameters(new Object[]{getAD_Scheduler_ID()})
 		.setOrderBy("Created DESC")
-		.list();
+		.list(MSchedulerLog.class);
 		MSchedulerLog[] retValue = new MSchedulerLog[list.size ()];
 		list.toArray (retValue);
 		return retValue;
@@ -197,7 +197,7 @@ public class MScheduler extends X_AD_Scheduler
 		final List<MSchedulerRecipient> list = new Query(getCtx(), MSchedulerRecipient.Table_Name, whereClause, get_TrxName())
 		.setParameters(new Object[]{getAD_Scheduler_ID()})
 		.setOnlyActiveRecords(true)
-		.list();
+		.list(MSchedulerRecipient.class);
 		m_recipients = new MSchedulerRecipient[list.size()];
 		list.toArray(m_recipients);
 		return m_recipients;
@@ -209,7 +209,7 @@ public class MScheduler extends X_AD_Scheduler
 	 */
 	public Integer[] getRecipientAD_User_IDs()
 	{
-		TreeSet<Integer> list = new TreeSet<Integer>();
+		TreeSet<Integer> list = new TreeSet<>();
 		MSchedulerRecipient[] recipients = getRecipients(false);
 		for (int i = 0; i < recipients.length; i++)
 		{

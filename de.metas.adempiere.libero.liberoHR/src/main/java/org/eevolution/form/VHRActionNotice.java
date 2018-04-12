@@ -38,6 +38,7 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.FormFrame;
@@ -49,7 +50,6 @@ import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.MRefList;
 import org.compiere.model.MTable;
-import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
@@ -63,10 +63,8 @@ import org.eevolution.model.MHRMovement;
 import org.eevolution.model.MHRPeriod;
 import org.eevolution.model.MHRProcess;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -91,6 +89,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 	 *  @param WindowNo window
 	 *  @param frame frame
 	 */
+	@Override
 	public void init (int WindowNo, FormFrame frame)
 	{
 		log.info("");
@@ -149,7 +148,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 	 */
 	private void jbInit()
 	{
-		CompiereColor.setBackground(this);
+		AdempierePLAF.setDefaultBackground(this);
 		mainPanel.setLayout(mainLayout);
 		///mainPanel.setSize(500, 500);
 		mainPanel.setPreferredSize(new Dimension(1000, 400));
@@ -290,6 +289,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 	/**
 	 * 	Dispose
 	 */
+	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
@@ -302,6 +302,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 	 *  vetoableChange
 	 *  @param e event
 	 */
+	@Override
 	public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException 
 	{
 		fieldConcept.setReadWrite(true);
@@ -310,7 +311,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 		log.debug("Event Property "+ e.getPropertyName());
 		processChangeEvent(e);
 		Integer   HR_Period_ID = new MHRProcess(Env.getCtx(),(Integer)fieldProcess.getValue(),null).getHR_Period_ID(); 
-		String date = DB.TO_DATE((Timestamp)fieldValidFrom.getValue());
+		String date = DB.TO_DATE(fieldValidFrom.getValue());
 		int existRange = DB.getSQLValueEx(null,"SELECT * FROM HR_Period WHERE " +date+
 				" >= StartDate AND "+date+	" <= EndDate AND HR_Period_ID = "+HR_Period_ID);
 		// Exist of Range Payroll
@@ -327,6 +328,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 	 *	Action Listener
 	 *  @param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		log.debug("Event "+ e);
@@ -431,8 +433,8 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 				movementOK.setAmount(fieldAmount.getValue() != null ? (BigDecimal)fieldAmount.getValue() : Env.ZERO );
 				movementOK.setTextMsg(fieldText.getValue() != null ? (String)fieldText.getValue().toString() : "");
 				movementOK.setServiceDate(fieldDate.getValue() != null ? (Timestamp)fieldDate.getValue() : null);
-				movementOK.setValidFrom((Timestamp)fieldValidFrom.getTimestamp());
-				movementOK.setValidTo((Timestamp)fieldValidFrom.getTimestamp());
+				movementOK.setValidFrom(fieldValidFrom.getTimestamp());
+				movementOK.setValidTo(fieldValidFrom.getTimestamp());
 				MHREmployee employee  = MHREmployee.getActiveEmployee(Env.getCtx(), movementOK.getC_BPartner_ID(), null);
 				if (employee != null) {
 					movementOK.setHR_Department_ID(employee.getHR_Department_ID());
@@ -657,7 +659,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 		if(fieldConcept.getValue() == null )
 			return 0;
 		int HR_Movement_ID = 0;
-		String date = DB.TO_DATE((Timestamp)fieldValidFrom.getValue());
+		String date = DB.TO_DATE(fieldValidFrom.getValue());
 		int Process_ID  = 0; KeyNamePair ppp = (KeyNamePair)fieldProcess.getSelectedItem();
 		int Employee_ID = 0; KeyNamePair ppe = (KeyNamePair)fieldEmployee.getSelectedItem();
 		int Concept_ID  = 0; KeyNamePair ppc = (KeyNamePair)fieldConcept.getSelectedItem();

@@ -55,6 +55,7 @@ import javax.swing.table.TableColumnModel;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.model.tree.spi.IPOTreeSupport;
@@ -89,10 +90,8 @@ import org.compiere.model.GridTabMaxRows;
 import org.compiere.model.GridTable;
 import org.compiere.model.GridWindow;
 import org.compiere.model.I_AD_Color;
-import org.compiere.model.MColor;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
-import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
@@ -110,6 +109,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 
 import de.metas.logging.LogManager;
+import de.metas.util.IColorRepository;
+import de.metas.util.MFColor;
 
 
 /**
@@ -235,7 +236,7 @@ public final class GridController extends CPanel
 			log.error("", e);
 		}
 
-		final CompiereColor backgroundColor = builder.getBackgroundColor();
+		final MFColor backgroundColor = builder.getBackgroundColor();
 		if (backgroundColor != null)
 		{
 			setBackgroundColor(backgroundColor);
@@ -1076,7 +1077,7 @@ public final class GridController extends CPanel
 			return Collections.emptyList();
 		}
 		
-		final List<GridController> children = new ArrayList<GridController>(synchronizerList.size());
+		final List<GridController> children = new ArrayList<>(synchronizerList.size());
 		for (final GridSynchronizer s : synchronizerList)
 		{
 			final GridController child = s.getChild();
@@ -1926,7 +1927,7 @@ public final class GridController extends CPanel
 	}
 
 	/** Cache fields color logic: WindowNo -> SQL -> Color */
-	private static final CCache<Integer, Map<String, Color>> s_cacheColors = new CCache<Integer, Map<String, Color>>(I_AD_Color.Table_Name + "_ForColorLogic", 20, 10);
+	private static final CCache<Integer, Map<String, Color>> s_cacheColors = new CCache<>(I_AD_Color.Table_Name + "_ForColorLogic", 20, 10);
 	private static final Color ColorNone = new Color(0);
 	/**
 	 * Get Color for given GridField. (metas-2009_0021_AP1_CR045)
@@ -1956,31 +1957,30 @@ public final class GridController extends CPanel
 		Map<String, Color> winColorsCache = s_cacheColors.get(field.getWindowNo());
 		if (winColorsCache == null)
 		{
-			winColorsCache = new HashMap<String, Color>(50);
+			winColorsCache = new HashMap<>(50);
 			s_cacheColors.put(field.getWindowNo(), winColorsCache);
 		}
 		
-		Color color = winColorsCache.get(sql);
-		if (color != null)
+		Color awtColor = winColorsCache.get(sql);
+		if (awtColor != null)
 		{
-			if (color == ColorNone)
-				color = null;
-			if (log.isTraceEnabled())
-				log.trace("color=" + color + " (cached)(sql=" + sql + ")");
-			return color;
+			if (awtColor == ColorNone)
+				awtColor = null;
+			log.trace("color={} (cached)(sql={})", awtColor, sql);
+			return awtColor;
 		}
 		
 		// Check database
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		int AD_Color_ID = -1;
+		int adColorId = -1;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				AD_Color_ID = rs.getInt(1);
+				adColorId = rs.getInt(1);
 			}
 		}
 		catch (SQLException e)
@@ -1991,7 +1991,7 @@ public final class GridController extends CPanel
 			
 			// Better not throw DBException because will break the UI
 			// throw new DBException(e, sql);
-			log.warn(e.getLocalizedMessage() + " - SQL=" + sql, e);
+			log.warn("Failed fetching the color for {} -- SQL={}", field, e);
 			return null;
 		}
 		finally
@@ -2001,29 +2001,23 @@ public final class GridController extends CPanel
 			pstmt = null;
 		}
 		//
-		if (AD_Color_ID <= 0)
+		if (adColorId <= 0)
 		{
 			winColorsCache.put(sql, ColorNone);
 			return null;
 		}
 		//
-		final MColor adColor = MColor.get(Env.getCtx(), AD_Color_ID);
-		if (adColor == null)
-		{
-			winColorsCache.put(sql, ColorNone);
-			return null;
-		}
-		final CompiereColor compiereColor = adColor.getAdempiereColor();
-		if (compiereColor == null)
+		final MFColor color = Services.get(IColorRepository.class).getColorById(adColorId);
+		if (color == null)
 		{
 			winColorsCache.put(sql, ColorNone);
 			return null;
 		}
 		
-		color = compiereColor.getFlatColor();
-		winColorsCache.put(sql, color == null ? ColorNone : color);
+		awtColor = color.getFlatColor();
+		winColorsCache.put(sql, awtColor == null ? ColorNone : awtColor);
 		
-		return color;
+		return awtColor;
 	}
 
 	/**
@@ -2243,7 +2237,7 @@ public final class GridController extends CPanel
 			return aPanel;
 		}
 		
-		private final CompiereColor getBackgroundColor()
+		private final MFColor getBackgroundColor()
 		{
 			// use Window level background color
 			return getGridWindow().getColor();

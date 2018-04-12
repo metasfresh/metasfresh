@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -72,8 +73,7 @@ public class MReplicationStrategy extends X_AD_ReplicationStrategy {
 			.setParameters(getAD_ReplicationStrategy_ID())
 			.setOnlyActiveRecords(true)
 			//.setApplyAccessFilter(false) // metas: tsa: don't use this because on initialization AD_Client_ID will be always zero
-			.list()
-		;
+			.list(X_AD_ReplicationTable.class);
 	}
 	
 	/**
@@ -86,8 +86,7 @@ public class MReplicationStrategy extends X_AD_ReplicationStrategy {
 			.setParameters(getAD_ReplicationStrategy_ID())
 			.setOnlyActiveRecords(true)
 			//.setApplyAccessFilter(false) // metas: tsa: don't use this because on initialization AD_Client_ID will be always zero
-			.list()
-		;	
+			.list(X_AD_ReplicationDocument.class);
 	}
 	
 	/**

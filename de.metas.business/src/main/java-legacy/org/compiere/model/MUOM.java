@@ -87,7 +87,7 @@ public class MUOM extends X_C_UOM
 	/*************************************************************************/
 
 	/** UOM Cache */
-	private static CCache<Integer, MUOM> s_cache = new CCache<Integer, MUOM>(Table_Name, 30);
+	private static CCache<Integer, MUOM> s_cache = new CCache<>(Table_Name, 30);
 
 	/**
 	 * Get UOM from Cache
@@ -119,6 +119,7 @@ public class MUOM extends X_C_UOM
 	 * @return MUOM if found, null if not found
 	 * @deprecated Deprecated because it's error phrone (no AD_Client_ID is enforced) and because it's used only in one AIT.
 	 */
+	@Deprecated
 	public static MUOM get(Properties ctx, String name, String trxName)
 	{
 		MUOM uom = (MUOM)TableModelLoader.instance.getPO(ctx, Table_Name, "Name = ?", new Object[] { name }, trxName);
@@ -147,7 +148,7 @@ public class MUOM extends X_C_UOM
 	{
 		List<MUOM> list = new Query(ctx, Table_Name, "IsActive='Y'", null)
 				.setApplyAccessFilter(true)
-				.list();
+				.list(MUOM.class);
 		//
 		for (MUOM uom : list)
 		{

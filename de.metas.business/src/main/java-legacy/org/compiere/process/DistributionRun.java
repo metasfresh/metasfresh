@@ -627,7 +627,7 @@ public class DistributionRun extends JavaProcess
 			List<MDistributionRunDetail> records = new Query(getCtx(), 
 												   MDistributionRunDetail.Table_Name,
 												   MDistributionRunDetail.COLUMNNAME_M_DistributionRun_ID + "=?",												  
-												   get_TrxName()).setParameters( new Object[]{p_M_DistributionRun_ID}).list();
+												   get_TrxName()).setParameters( new Object[]{p_M_DistributionRun_ID}).list(MDistributionRunDetail.class);
 			
 			for(MDistributionRunDetail record : records)
 			{
@@ -733,7 +733,7 @@ public class DistributionRun extends JavaProcess
 			createQuery(MDistributionRunDetail.COLUMNNAME_M_DistributionRun_ID + "=?", get_TrxName());
 			query.setParameters(new Object[]{p_M_DistributionRun_ID});
 			
-			List<MDistributionRunDetail> records = query.list();
+			List<MDistributionRunDetail> records = query.list(MDistributionRunDetail.class);
 			
 			for(MDistributionRunDetail record : records)
 			{
