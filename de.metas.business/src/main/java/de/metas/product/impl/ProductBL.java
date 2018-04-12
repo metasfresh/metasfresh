@@ -302,6 +302,15 @@ public final class ProductBL implements IProductBL
 		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 		return getCostingLevel(product, as);
 	}
+	
+	@Override
+	public CostingLevel getCostingLevel(final int productId, final int acctSchemaId)
+	{
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		final I_C_AcctSchema as = loadOutOfTrx(acctSchemaId, I_C_AcctSchema.class);
+		return getCostingLevel(product, as);
+	}
+
 
 	@Override
 	public CostingMethod getCostingMethod(final I_M_Product product, final I_C_AcctSchema as)

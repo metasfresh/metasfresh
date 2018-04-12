@@ -60,7 +60,7 @@ public interface IProductBL extends ISingletonService
 	 * @return true if item
 	 */
 	boolean isItem(I_M_Product product);
-	
+
 	default boolean isItem(final int productId)
 	{
 		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
@@ -109,15 +109,11 @@ public interface IProductBL extends ISingletonService
 
 	I_M_AttributeSetInstance getCreateASI(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID);
 
-	/**
-	 * Get Product Costing Level
-	 *
-	 * @param as accounting schema
-	 * @return product costing level
-	 */
 	CostingLevel getCostingLevel(I_M_Product product, I_C_AcctSchema as);
 
 	CostingLevel getCostingLevel(int productId, I_C_AcctSchema as);
+
+	CostingLevel getCostingLevel(int productId, int acctSchemaId);
 
 	/**
 	 * Get Product Costing Method
