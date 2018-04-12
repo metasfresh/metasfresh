@@ -49,4 +49,7 @@ public class DiscountResult
 	private final BigDecimal priceStdOverride = null;
 	@Default
 	private final BigDecimal priceLimitOverride = null;
+
+	@Default
+	private final int discountSchemaBreakId = -1;
 }

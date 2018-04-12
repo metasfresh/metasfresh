@@ -89,27 +89,32 @@ import lombok.NonNull;
 
 		final I_M_DiscountSchemaBreak breakApplied = fetchDiscountSchemaBreak();
 
-		DiscountResultBuilder priceForDiscountSchemaBreak = null;
+		final DiscountResultBuilder priceForDiscountSchemaBreak = DiscountResult.builder();
 
 		if (breakApplied != null)
 		{
+			priceForDiscountSchemaBreak.discountSchemaBreakId(breakApplied.getM_DiscountSchemaBreak_ID());
+			
 			if (breakApplied.isPriceOverride())
 			{
-				priceForDiscountSchemaBreak = computePriceForDiscountSchemaBreak(breakApplied);
+				computePriceForDiscountSchemaBreak(priceForDiscountSchemaBreak, breakApplied);
 			}
 
 			return computeDefaultDiscountForDiscoutSchemaBreak(priceForDiscountSchemaBreak, breakApplied);
 
 		}
 
-		return DiscountResult.builder()
+		return priceForDiscountSchemaBreak
 				.discount(BigDecimal.ZERO)
 				.build();
 
 	}
 
-	private DiscountResultBuilder computePriceForDiscountSchemaBreak(final I_M_DiscountSchemaBreak breakApplied)
+	private DiscountResultBuilder computePriceForDiscountSchemaBreak(final DiscountResultBuilder priceForDiscountSchemaBreak, final I_M_DiscountSchemaBreak breakApplied)
 	{
+		final DiscountResultBuilder discountForDiscountSchemaBreak = priceForDiscountSchemaBreak == null ? DiscountResult.builder() : priceForDiscountSchemaBreak;
+
+		
 		final String priceBase = breakApplied.getPriceBase();
 
 		if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
@@ -123,7 +128,7 @@ import lombok.NonNull;
 
 			final BigDecimal stdAddAmt = breakApplied.getStd_AddAmt();
 
-			return DiscountResult.builder()
+			return discountForDiscountSchemaBreak
 					.priceListOverride(priceList)
 					.priceLimitOverride(priceLimit)
 					.priceStdOverride(priceStd.add(stdAddAmt));

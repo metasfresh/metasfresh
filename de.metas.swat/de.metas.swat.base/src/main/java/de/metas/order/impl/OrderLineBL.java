@@ -43,6 +43,7 @@ import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -76,7 +77,10 @@ public class OrderLineBL implements IOrderLineBL
 {
 
 	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
+
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
+	
+	private static final String SYSCONFIG_NoPriceConditionsColorName = "de.metas.order.NoPriceConditionsColorName";
 
 	private final Set<Integer> ignoredOlIds = new HashSet<>();
 
@@ -172,6 +176,8 @@ public class OrderLineBL implements IOrderLineBL
 
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
+		
+		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
 
 		updateLineNetAmt(orderLine, qtyEntered, factor);
 	}
@@ -666,6 +672,8 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 		orderLine.setEnforcePriceLimit(pricingResult.isEnforcePriceLimit());
+		
+		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
 
 		//
 		// UI
@@ -941,6 +949,31 @@ public class OrderLineBL implements IOrderLineBL
 			}
 		}
 
+	}
+
+	@Override
+	public void updateNoPriceConditionsColorName(final I_C_OrderLine orderLine)
+	{
+		final int colourId = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_NoPriceConditionsColorName, -1);
+		
+		
+		if(colourId <= 0)
+		{
+			// do nothing
+			return;
+		}
+		
+		final int discountSchemaBreakID = orderLine.getM_DiscountSchemaBreak_ID();
+		if(discountSchemaBreakID > 0)
+		{
+			// the discountSchemaBreak was eventually set. The colour warning is no longer needed
+			orderLine.setNoPriceConditionsColor_ID(-1);
+		}
+		else
+		{
+			orderLine.setNoPriceConditionsColor_ID(colourId);
+		}
+				
 	}
 
 }
