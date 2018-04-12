@@ -151,9 +151,7 @@ public class Discount implements IPricingRule
 					.M_Product_Category_ID(result.getM_Product_Category_ID())
 					.instances(null)
 					.bPartnerFlatDiscount(flatDiscount)
-					.country(pricingCtx.getC_Country())
-					.isSOTrx(isSOTrx)
-					.priceDate(pricingCtx.getPriceDate())
+					.pricingCtx(pricingCtx)
 					.build();
 		}
 
@@ -171,9 +169,7 @@ public class Discount implements IPricingRule
 					.M_Product_Category_ID(result.getM_Product_Category_ID())
 					.instances(instances)
 					.bPartnerFlatDiscount(flatDiscount)
-					.country(pricingCtx.getC_Country())
-					.isSOTrx(isSOTrx)
-					.priceDate(pricingCtx.getPriceDate())
+					.pricingCtx(pricingCtx)
 					.build();
 		}
 
