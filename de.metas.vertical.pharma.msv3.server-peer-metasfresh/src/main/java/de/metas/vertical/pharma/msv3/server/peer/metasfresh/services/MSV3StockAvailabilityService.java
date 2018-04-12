@@ -24,7 +24,12 @@ import de.metas.material.cockpit.stock.StockDataRecord;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.product.IProductDAO;
+import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExclude;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent.MSV3ProductExcludesUpdateEventBuilder;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
@@ -70,31 +75,55 @@ public class MSV3StockAvailabilityService
 
 	public void publishAll()
 	{
+		publishAll_StockAvailability();
+		publishAll_ProductExcludes();
+	}
+
+	private void publishAll_StockAvailability()
+	{
 		final MSV3ServerConfig serverConfig = getServerConfig();
 		if (!serverConfig.hasProducts())
 		{
-			logger.warn("Asked to publish all stock availabilities but the MSV3 server has no products defined. Doing nothing. Check {}", serverConfig);
+			logger.warn("Asked to publish all stock availabilities but the MSV3 server has no products defined. Deleting all products. Check {}", serverConfig);
+			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.deletedAll());
 			return;
 		}
+		else
+		{
+			final Stream<StockDataRecord> stockRecordsStream = stockRepository.streamStockDataRecords(StockDataQuery.builder()
+					.productCategoryIds(serverConfig.getProductCategoryIds())
+					.warehouseIds(serverConfig.getWarehouseIds())
+					.warehouseId(null) // accept also those which aren't in any warehouse yet
+					.orderBy(StockDataQueryOrderBy.ProductId)
+					.build());
 
-		final Stream<StockDataRecord> stockRecordsStream = stockRepository.streamStockDataRecords(StockDataQuery.builder()
-				.productCategoryIds(serverConfig.getProductCategoryIds())
-				.warehouseIds(serverConfig.getWarehouseIds())
-				.warehouseId(null) // accept also those which aren't in any warehouse yet
-				.orderBy(StockDataQueryOrderBy.ProductId)
-				.build());
+			final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors.groupByAndStream(stockRecordsStream, StockDataRecord::getProductId)
+					.map(records -> toMSV3StockAvailabilityOrNullIfFailed(serverConfig, records))
+					// .flatMap(sa -> repeat(sa, 10000))
+					.filter(Predicates.notNull());
 
-		final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors.groupByAndStream(stockRecordsStream, StockDataRecord::getProductId)
-				.map(records -> toMSV3StockAvailabilityOrNullIfFailed(serverConfig, records))
-				// .flatMap(sa -> repeat(sa, 10000))
-				.filter(Predicates.notNull());
+			final List<MSV3StockAvailability> stockAvailabilities = stockAvailabilityStream.collect(ImmutableList.toImmutableList());
 
-		final List<MSV3StockAvailability> stockAvailabilities = stockAvailabilityStream.collect(ImmutableList.toImmutableList());
+			msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.builder()
+					.items(stockAvailabilities)
+					.deleteAllOtherItems(true)
+					.build());
+		}
+	}
 
-		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.builder()
-				.items(stockAvailabilities)
-				.deleteAllOtherItems(true)
-				.build());
+	private void publishAll_ProductExcludes()
+	{
+		final MSV3ProductExcludesUpdateEventBuilder eventsBuilder = MSV3ProductExcludesUpdateEvent.builder()
+				.deleteAllOtherItems(true);
+
+		Services.get(IBPartnerProductDAO.class)
+				.retrieveAllProductSalesExcludes()
+				.forEach(productExclude -> eventsBuilder.item(MSV3ProductExclude.builder()
+						.pzn(getPZNByProductId(productExclude.getProductId()))
+						.bpartnerId(productExclude.getBpartnerId())
+						.build()));
+
+		msv3ServerPeerService.publishProductExcludes(eventsBuilder.build());
 	}
 
 	// used for dev stress testing
@@ -123,10 +152,10 @@ public class MSV3StockAvailabilityService
 	{
 		Check.assumeNotEmpty(records, "records is not empty");
 
-		final long pzn = getPZNByProductValue(records.get(0).getProductValue());
+		final PZN pzn = getPZNByProductValue(records.get(0).getProductValue());
 		final int qtyOnHand = calculateQtyOnHand(serverConfig, records);
 		return MSV3StockAvailability.builder()
-				.pzn(pzn)
+				.pzn(pzn.getValueAsLong())
 				.qty(qtyOnHand)
 				.build();
 	}
@@ -181,12 +210,12 @@ public class MSV3StockAvailabilityService
 	private MSV3StockAvailability createStockAvailabilityEventForProductId(final MSV3ServerConfig serverConfig, final int productId)
 	{
 		return MSV3StockAvailability.builder()
-				.pzn(getPZNByProductId(productId))
+				.pzn(getPZNByProductId(productId).getValueAsLong())
 				.qty(getQtyOnHand(serverConfig, productId))
 				.build();
 	}
 
-	private long getPZNByProductId(final int productId)
+	private PZN getPZNByProductId(final int productId)
 	{
 		try
 		{
@@ -199,11 +228,12 @@ public class MSV3StockAvailabilityService
 		}
 	}
 
-	private long getPZNByProductValue(final String productValue)
+	private PZN getPZNByProductValue(final String productValue)
 	{
 		try
 		{
-			return Long.parseLong(productValue.trim());
+			final long pznAsLong = Long.parseLong(productValue.trim());
+			return PZN.of(pznAsLong);
 		}
 		catch (final Exception ex)
 		{
@@ -227,10 +257,10 @@ public class MSV3StockAvailabilityService
 	{
 		final MSV3ServerConfig serverConfig = getServerConfig();
 
-		final long pzn = getPZNByProductId(productId);
+		final PZN pzn = getPZNByProductId(productId);
 		final int qtyOnHand = serverConfig.getQtyAvailableToPromiseMin();
 		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailability.builder()
-				.pzn(pzn)
+				.pzn(pzn.getValueAsLong())
 				.qty(qtyOnHand)
 				.build());
 	}
@@ -240,10 +270,10 @@ public class MSV3StockAvailabilityService
 	{
 		final MSV3ServerConfig serverConfig = getServerConfig();
 
-		final long pzn = getPZNByProductId(productId);
+		final PZN pzn = getPZNByProductId(productId);
 		final int qtyOnHand = getQtyOnHand(serverConfig, productId);
 		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailability.builder()
-				.pzn(pzn)
+				.pzn(pzn.getValueAsLong())
 				.qty(qtyOnHand)
 				.build());
 	}
@@ -251,10 +281,59 @@ public class MSV3StockAvailabilityService
 	@Async
 	public void publishProductDeletedEvent(final int productId)
 	{
-		final long pzn = getPZNByProductId(productId);
+		final PZN pzn = getPZNByProductId(productId);
 		msv3ServerPeerService.publishStockAvailabilityUpdatedEvent(MSV3StockAvailability.builder()
-				.pzn(pzn)
+				.pzn(pzn.getValueAsLong())
 				.delete(true)
 				.build());
 	}
+
+	public void publishProductExcludeAddedOrChanged(final int productId, final int newBPartnerId, final int oldBPartnerId)
+	{
+		Check.assumeGreaterThanZero(newBPartnerId, "newBPartnerId");
+
+		final PZN pzn = getPZNByProductId(productId);
+
+		final MSV3ProductExcludesUpdateEventBuilder eventBuilder = MSV3ProductExcludesUpdateEvent.builder();
+
+		if (oldBPartnerId > 0 && newBPartnerId != oldBPartnerId)
+		{
+			eventBuilder.item(MSV3ProductExclude.builder()
+					.pzn(pzn)
+					.bpartnerId(oldBPartnerId)
+					.delete(true)
+					.build());
+		}
+
+		eventBuilder.item(MSV3ProductExclude.builder()
+				.pzn(pzn)
+				.bpartnerId(newBPartnerId)
+				.build());
+
+		msv3ServerPeerService.publishProductExcludes(eventBuilder.build());
+	}
+
+	public void publishProductExcludeDeleted(final int productId, final int... bpartnerIds)
+	{
+		final PZN pzn = getPZNByProductId(productId);
+
+		final List<MSV3ProductExclude> eventItems = IntStream.of(bpartnerIds)
+				.filter(bpartnerId -> bpartnerId > 0)
+				.distinct()
+				.mapToObj(bpartnerId -> MSV3ProductExclude.builder()
+						.pzn(pzn)
+						.bpartnerId(bpartnerId)
+						.delete(true)
+						.build())
+				.collect(ImmutableList.toImmutableList());
+		if (eventItems.isEmpty())
+		{
+			return;
+		}
+
+		msv3ServerPeerService.publishProductExcludes(MSV3ProductExcludesUpdateEvent.builder()
+				.items(eventItems)
+				.build());
+	}
+
 }

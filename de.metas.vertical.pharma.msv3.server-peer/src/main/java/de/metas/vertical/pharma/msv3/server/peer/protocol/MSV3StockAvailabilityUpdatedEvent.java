@@ -39,6 +39,11 @@ import lombok.Value;
 @Value
 public class MSV3StockAvailabilityUpdatedEvent
 {
+	public static MSV3StockAvailabilityUpdatedEvent deletedAll()
+	{
+		return builder().deleteAllOtherItems(true).build();
+	}
+	
 	@JsonProperty("id")
 	private final String id;
 
