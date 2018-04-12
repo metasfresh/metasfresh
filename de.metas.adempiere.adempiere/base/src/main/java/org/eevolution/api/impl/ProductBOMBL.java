@@ -120,7 +120,7 @@ public class ProductBOMBL implements IProductBOMBL
 			return true;
 		}
 
-		boolean valid = false;
+		boolean isComponentOrPacking = false;
 		final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
 		final List<I_PP_Product_BOMLine> bomLines = bomDAO.retrieveLines(bomLine.getPP_Product_BOM());
 		for (I_PP_Product_BOMLine bl : bomLines)
@@ -128,11 +128,11 @@ public class ProductBOMBL implements IProductBOMBL
 			if ((X_PP_Order_BOMLine.COMPONENTTYPE_Component.equals(bl.getComponentType()) || X_PP_Order_BOMLine.COMPONENTTYPE_Packing.equals(bl.getComponentType()))
 					&& bomLine.getVariantGroup().equals(bl.getVariantGroup()))
 			{
-				valid = true;
+				isComponentOrPacking = true;
 				continue;
 			}
 		}
 
-		return valid;
+		return isComponentOrPacking;
 	}
 }
