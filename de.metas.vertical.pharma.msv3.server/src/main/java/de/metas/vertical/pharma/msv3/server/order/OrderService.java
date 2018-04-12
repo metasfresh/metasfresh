@@ -174,12 +174,12 @@ public class OrderService
 				.supportId(request.getSupportId())
 				.nightOperation(false) // TODO
 				.orderPackages(request.getOrderPackages().stream()
-						.map(this::createOrderResponsePackage)
+						.map(requestPackage -> createOrderResponsePackage(requestPackage, request.getBpartnerId()))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
-	private OrderResponsePackage createOrderResponsePackage(final OrderCreateRequestPackage requestPackage)
+	private OrderResponsePackage createOrderResponsePackage(final OrderCreateRequestPackage requestPackage, final BPartnerId bpartner)
 	{
 		return OrderResponsePackage.builder()
 				.id(requestPackage.getId())
@@ -188,15 +188,15 @@ public class OrderService
 				.supportId(requestPackage.getSupportId())
 				.packingMaterialId(requestPackage.getPackingMaterialId())
 				.items(requestPackage.getItems().stream()
-						.map(this::createOrderResponsePackageItem)
+						.map(requestPackageItem -> createOrderResponsePackageItem(requestPackageItem, bpartner))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
-	private OrderResponsePackageItem createOrderResponsePackageItem(final OrderCreateRequestPackageItem requestPackageItem)
+	private OrderResponsePackageItem createOrderResponsePackageItem(final OrderCreateRequestPackageItem requestPackageItem, final BPartnerId bpartner)
 	{
 		final PZN pzn = requestPackageItem.getPzn();
-		final Quantity qtyAvailable = stockAvailabilityService.getQtyAvailable(pzn)
+		final Quantity qtyAvailable = stockAvailabilityService.getQtyAvailable(pzn, bpartner)
 				.orElseThrow(() -> new RuntimeException("PZN not found: " + pzn));
 		final Quantity qty = qtyAvailable.min(requestPackageItem.getQty());
 		return OrderResponsePackageItem.builder()

@@ -1,14 +1,13 @@
 package de.metas.vertical.pharma.msv3.server.stockAvailability.sync;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
+import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
-import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityService;
 
 /*
@@ -33,38 +32,19 @@ import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityS
  * #L%
  */
 
-@Component
-public class StockAvailabilityRabbitMQListener
+@RestController
+@RequestMapping(ProductExcludeBackendSyncRestEndpoint.ENDPOINT)
+public class ProductExcludeBackendSyncRestEndpoint
 {
-	private static final Logger logger = LoggerFactory.getLogger(StockAvailabilityRabbitMQListener.class);
+	public static final String ENDPOINT = MSV3ServerConstants.BACKEND_SYNC_REST_ENDPOINT + "/productExclude";
 
 	@Autowired
 	private StockAvailabilityService stockAvailabilityService;
 
-	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent)
-	public void onStockAvailabilityUpdatedEvent(final MSV3StockAvailabilityUpdatedEvent event)
+	@PostMapping
+	public void onEvent(@RequestBody final MSV3ProductExcludesUpdateEvent event)
 	{
-		try
-		{
-			stockAvailabilityService.handleEvent(event);
-		}
-		catch (Exception ex)
-		{
-			logger.warn("Failed handling event: {}", event, ex);
-		}
-	}
-
-	@RabbitListener(queues = RabbitMQConfig.QUEUENAME_ProductExcludeUpdatedEvents)
-	public void onProductExcludesUpdateEvent(final MSV3ProductExcludesUpdateEvent event)
-	{
-		try
-		{
-			stockAvailabilityService.handleEvent(event);
-		}
-		catch (Exception ex)
-		{
-			logger.warn("Failed handling event: {}", event, ex);
-		}
+		stockAvailabilityService.handleEvent(event);
 	}
 
 }

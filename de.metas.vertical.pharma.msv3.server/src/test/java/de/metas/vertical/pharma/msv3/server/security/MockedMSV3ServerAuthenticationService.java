@@ -1,12 +1,4 @@
-package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
+package de.metas.vertical.pharma.msv3.server.security;
 
 /*
  * #%L
@@ -30,27 +22,28 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class StockAvailabilityQuery
+public class MockedMSV3ServerAuthenticationService extends MSV3ServerAuthenticationService
 {
-	String id;
-	BPartnerId bpartner;
-	ImmutableList<StockAvailabilityQueryItem> items;
+	private MSV3User currentUser;
 
-	@Builder
-	private StockAvailabilityQuery(
-			@NonNull final String id,
-			@NonNull final BPartnerId bpartner,
-			@NonNull @Singular final ImmutableList<StockAvailabilityQueryItem> items)
+	public MockedMSV3ServerAuthenticationService(final JpaUserRepository usersRepo)
 	{
-		if (items.isEmpty())
-		{
-			throw new IllegalArgumentException("Query shall have at least one item");
-		}
-
-		this.id = id;
-		this.bpartner = bpartner;
-		this.items = items;
+		super(usersRepo, /* serverAdminUsername */null, /* serverAdminPassword */null);
 	}
 
+	@Override
+	public MSV3User getCurrentUser()
+	{
+		if (currentUser != null)
+		{
+			return currentUser;
+		}
+
+		return super.getCurrentUser();
+	}
+
+	public void setCurrentUser(final MSV3User currentUser)
+	{
+		this.currentUser = currentUser;
+	}
 }
