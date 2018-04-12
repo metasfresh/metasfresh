@@ -19,4 +19,6 @@ $BODY$
   LANGUAGE sql STABLE
   COST 100
   ROWS 1000;
-comment on function de_metas_contracts.fetchInitialC_Flatrate_term_ID(numeric) is 'This function returns the most distant parent of the givent contract'; 
+comment on function de_metas_contracts.fetchInitialC_Flatrate_term_ID(numeric) is 'This function returns the most distant parent of the givent contract. The function looks recursivelly in back and returns the farthest flatrate term.
+E.g. If we have next tree 1000281->1000282->1000283->1000284->1000285 . For 1000281 distance will be 0 and is the only result, which means that is the initial flatrate term. But for 1000283, will have 3 lines: 1000283 with distance 0, 
+1000282 with distance 1 and 1000281 with distance 2. And the function choose the biggest distance, so the farthest flatrate term. So will return 1000281.'; 
