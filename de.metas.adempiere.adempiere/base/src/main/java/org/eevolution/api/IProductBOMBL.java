@@ -60,8 +60,10 @@ public interface IProductBOMBL extends ISingletonService
 	BigDecimal calculateQtyWithScrap(BigDecimal qty, BigDecimal qtyScrap);
 
 	/**
-	 * checks if a BOMLine which is a <code>X_PP_Product_BOMLine.COMPONENTTYPE_Variant</code> has a valid VariantGroup<br>
-	 *  Valid variant group means that exists at least one other BOMLine which has Component Type <code>X_PP_Order_BOMLine.COMPONENTTYPE_Component</code> or <code>X_PP_Order_BOMLine.COMPONENTTYPE_Packing</code>
+	 * Checks if a BOMLine which is a <code>X_PP_Product_BOMLine.COMPONENTTYPE_Variant</code> has a valid VariantGroup<br>
+	 *
+	 * Valid variant group means that exists at least one other BOMLine which has Component Type <code>X_PP_Order_BOMLine.COMPONENTTYPE_Component</code>
+	 * or <code>X_PP_Order_BOMLine.COMPONENTTYPE_Packing</code> and same VariantGroup.
 	 *
 	 * @param bomLine
 	 * @return
