@@ -29,6 +29,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchemaBreak;
+import org.compiere.util.Util;
 
 import lombok.NonNull;
 
@@ -98,7 +99,7 @@ import lombok.NonNull;
 		final I_M_DiscountSchema schema = request.getSchema();
 		if (schema.isBPartnerFlatDiscount())
 		{
-			final BigDecimal bpFlatDiscountToUse = request.getBPartnerFlatDiscount() == null ? BigDecimal.ZERO : request.getBPartnerFlatDiscount();
+			final BigDecimal bpFlatDiscountToUse = Util.coalesce(request.getBPartnerFlatDiscount(), BigDecimal.ZERO);
 			return DiscountResult.builder()
 					.discount(bpFlatDiscountToUse)
 					.build();
@@ -126,7 +127,7 @@ import lombok.NonNull;
 			computePriceForDiscountSchemaBreak(result, breakApplied);
 		}
 
-		computeDefaultDiscountForDiscoutSchemaBreak(result, breakApplied);
+		computeDefaultDiscountForDiscountSchemaBreak(result, breakApplied);
 
 		return result.build();
 	}
@@ -205,7 +206,7 @@ import lombok.NonNull;
 		return newPricingCtx;
 	}
 
-	private void computeDefaultDiscountForDiscoutSchemaBreak(final DiscountResultBuilder result, final I_M_DiscountSchemaBreak breakApplied)
+	private void computeDefaultDiscountForDiscountSchemaBreak(final DiscountResultBuilder result, final I_M_DiscountSchemaBreak breakApplied)
 	{
 		final BigDecimal discount;
 		if (breakApplied.isBPartnerFlatDiscount())
