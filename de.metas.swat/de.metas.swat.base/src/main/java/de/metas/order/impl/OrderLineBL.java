@@ -956,23 +956,23 @@ public class OrderLineBL implements IOrderLineBL
 	public void updateNoPriceConditionsColor(final I_C_OrderLine orderLine)
 	{
 
-		final String colourName = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_NoPriceConditionsColorName, "-");
+		final String colorName = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_NoPriceConditionsColorName, "-");
 
 		final int discountSchemaBreakId = orderLine.getM_DiscountSchemaBreak_ID();
 
 		if (discountSchemaBreakId > 0)
 		{
-			// the discountSchemaBreak was eventually set. The colour warning is no longer needed
+			// the discountSchemaBreak was eventually set. The color warning is no longer needed
 			orderLine.setNoPriceConditionsColor_ID(-1);
 			
 			return;
 		}
 
-		final int colourId = getNoPriceConditionsColorId(colourName);
+		final int colorId = getNoPriceConditionsColorId(colorName);
 		
-		if (colourId > 0)
+		if (colorId > 0)
 		{
-			orderLine.setNoPriceConditionsColor_ID(colourId);
+			orderLine.setNoPriceConditionsColor_ID(colorId);
 		}
 
 	}
