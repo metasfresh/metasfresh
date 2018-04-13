@@ -167,10 +167,6 @@
     max-width: 100px;
 }
 
-.document-list-table {
-    flex: 2.6;
-}
-
 .table-fade-out {
     opacity: .65;
 }
@@ -281,7 +277,12 @@
 
 .table-flex-wrapper {
     display: flex;
+    flex-grow: 1;
     flex-direction: column;
+
+    .document-list-table {
+        flex: 2.6;
+    }
 }
 
 .table-flex-wrapper-row {
