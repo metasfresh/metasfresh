@@ -37,14 +37,3 @@ DELETE FROM AD_Column WHERE AD_Column_ID=8825
 /* DDL */ SELECT public.db_alter_table('I_Inventory','ALTER TABLE public.I_Inventory DROP COLUMN QtyBook')
 ;
 
-
-------------
-
-
-update I_Inventory
-set X = dimensions[1] ,
-Y = dimensions[2],
-Z = dimensions[3]
-from (select I_Inventory_ID, regexp_split_to_array(LocatorValue, '-') dimensions from I_Inventory ) as dim
-where dim.I_Inventory_ID = I_Inventory.I_Inventory_ID 
-
