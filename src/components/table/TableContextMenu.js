@@ -174,7 +174,7 @@ class TableContextMenu extends Component {
         {handleDelete && (
           <div className="context-menu-item" onClick={handleDelete}>
             <i className="meta-icon-trash" />
-            {` ${counterpart.translate('window.delete')}`}
+            {` ${counterpart.translate('window.delete.caption')}`}
             <span className="tooltip-inline">{keymap.REMOVE_SELECTED}</span>
           </div>
         )}
