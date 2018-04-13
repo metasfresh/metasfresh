@@ -15,7 +15,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -101321116L;
+	private static final long serialVersionUID = 308810635L;
 
     /** Standard Constructor */
     public X_I_Inventory (Properties ctx, int I_Inventory_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
         {
 			setI_Inventory_ID (0);
 			setI_IsImported (false);
+			setIsLotBlocked (false); // N
         } */
     }
 
@@ -42,6 +43,81 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Datum der letzten Inventur.
+		@param DateLastInventory 
+		Datum der letzten Inventur
+	  */
+	@Override
+	public void setDateLastInventory (java.sql.Timestamp DateLastInventory)
+	{
+		set_Value (COLUMNNAME_DateLastInventory, DateLastInventory);
+	}
+
+	/** Get Datum der letzten Inventur.
+		@return Datum der letzten Inventur
+	  */
+	@Override
+	public java.sql.Timestamp getDateLastInventory () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateLastInventory);
+	}
+
+	/** Set Eingangsdatum.
+		@param DateReceived 
+		Datum, zu dem ein Produkt empfangen wurde
+	  */
+	@Override
+	public void setDateReceived (java.sql.Timestamp DateReceived)
+	{
+		set_Value (COLUMNNAME_DateReceived, DateReceived);
+	}
+
+	/** Get Eingangsdatum.
+		@return Datum, zu dem ein Produkt empfangen wurde
+	  */
+	@Override
+	public java.sql.Timestamp getDateReceived () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateReceived);
+	}
 
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
@@ -120,6 +196,29 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public boolean isI_IsImported () 
 	{
 		Object oo = get_Value(COLUMNNAME_I_IsImported);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Lot Blocked.
+		@param IsLotBlocked Lot Blocked	  */
+	@Override
+	public void setIsLotBlocked (boolean IsLotBlocked)
+	{
+		set_Value (COLUMNNAME_IsLotBlocked, Boolean.valueOf(IsLotBlocked));
+	}
+
+	/** Get Lot Blocked.
+		@return Lot Blocked	  */
+	@Override
+	public boolean isLotBlocked () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsLotBlocked);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -461,6 +560,22 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return (java.lang.String)get_Value(COLUMNNAME_SerNo);
 	}
 
+	/** Set TE.
+		@param TE TE	  */
+	@Override
+	public void setTE (java.lang.String TE)
+	{
+		set_Value (COLUMNNAME_TE, TE);
+	}
+
+	/** Get TE.
+		@return TE	  */
+	@Override
+	public java.lang.String getTE () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TE);
+	}
+
 	/** Set UPC/EAN.
 		@param UPC 
 		Bar Code (Universal Product Code or its superset European Article Number)
@@ -535,6 +650,22 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public java.lang.String getX () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_X);
+	}
+
+	/** Set Regal.
+		@param X1 Regal	  */
+	@Override
+	public void setX1 (java.lang.String X1)
+	{
+		set_Value (COLUMNNAME_X1, X1);
+	}
+
+	/** Get Regal.
+		@return Regal	  */
+	@Override
+	public java.lang.String getX1 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_X1);
 	}
 
 	/** Set Fach.

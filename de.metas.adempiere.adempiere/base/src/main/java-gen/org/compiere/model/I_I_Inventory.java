@@ -69,6 +69,35 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_ID();
+
+	public org.compiere.model.I_C_BPartner getC_BPartner();
+
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_BPartner>(I_I_Inventory.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -97,6 +126,56 @@ public interface I_I_Inventory
     public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_AD_User>(I_I_Inventory.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Datum der letzten Inventur.
+	 * Datum der letzten Inventur
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDateLastInventory (java.sql.Timestamp DateLastInventory);
+
+	/**
+	 * Get Datum der letzten Inventur.
+	 * Datum der letzten Inventur
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDateLastInventory();
+
+    /** Column definition for DateLastInventory */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_DateLastInventory = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "DateLastInventory", null);
+    /** Column name DateLastInventory */
+    public static final String COLUMNNAME_DateLastInventory = "DateLastInventory";
+
+	/**
+	 * Set Eingangsdatum.
+	 * Datum, zu dem ein Produkt empfangen wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDateReceived (java.sql.Timestamp DateReceived);
+
+	/**
+	 * Get Eingangsdatum.
+	 * Datum, zu dem ein Produkt empfangen wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDateReceived();
+
+    /** Column definition for DateReceived */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_DateReceived = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "DateReceived", null);
+    /** Column name DateReceived */
+    public static final String COLUMNNAME_DateReceived = "DateReceived";
 
 	/**
 	 * Set Beschreibung.
@@ -220,6 +299,29 @@ public interface I_I_Inventory
     public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Lot Blocked.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsLotBlocked (boolean IsLotBlocked);
+
+	/**
+	 * Get Lot Blocked.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isLotBlocked();
+
+    /** Column definition for IsLotBlocked */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_IsLotBlocked = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "IsLotBlocked", null);
+    /** Column name IsLotBlocked */
+    public static final String COLUMNNAME_IsLotBlocked = "IsLotBlocked";
 
 	/**
 	 * Set Lagerort-Schlüssel.
@@ -540,6 +642,29 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_SerNo = "SerNo";
 
 	/**
+	 * Set TE.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTE (java.lang.String TE);
+
+	/**
+	 * Get TE.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTE();
+
+    /** Column definition for TE */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_TE = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "TE", null);
+    /** Column name TE */
+    public static final String COLUMNNAME_TE = "TE";
+
+	/**
 	 * Set UPC/EAN.
 	 * Bar Code (Universal Product Code or its superset European Article Number)
 	 *
@@ -668,6 +793,29 @@ public interface I_I_Inventory
     public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_X = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "X", null);
     /** Column name X */
     public static final String COLUMNNAME_X = "X";
+
+	/**
+	 * Set Regal.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setX1 (java.lang.String X1);
+
+	/**
+	 * Get Regal.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getX1();
+
+    /** Column definition for X1 */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_X1 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "X1", null);
+    /** Column name X1 */
+    public static final String COLUMNNAME_X1 = "X1";
 
 	/**
 	 * Set Fach.
