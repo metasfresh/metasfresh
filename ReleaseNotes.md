@@ -14,6 +14,10 @@ Here come the actual release notes:
 **release for week 2018-16**
 
 ## Features
+* metasfresh
+  * [#3844](https://github.com/metasfresh/metasfresh/issues/3844) WebUI: Add Translations for Context Menu to de_DE
+    * Adds new Translations for context menu of metasfresh WebUI.
+    
 * metasfresh-webui-frontend
   * [#1539](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1539) eMail Editor mailTo List not showing selected entry
     * Improvement of the Adress Lookup in eMail Editor. Now showing which entry is selected.
