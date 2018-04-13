@@ -296,11 +296,17 @@ public class OrderFastInput extends CalloutEngine
 
 		final I_C_BPartner partner = ol.getC_BPartner();
 		//
-		final I_C_BPartner_Product bannedProductForPartner = bpProductDAO.getBannedProductForPartner(ol.getM_Product_ID(), partner.getC_BPartner_ID());
+		final I_C_BPartner_Product bannedProductForPartner = bpProductDAO.getBannedProductForPartner(
+				ol.getM_Product_ID(), 
+				partner.getC_BPartner_ID());
 
 		if (bannedProductForPartner != null)
 		{
-			final String msg = Services.get(IMsgBL.class).getMsg(Env.getCtx(), BPartnerProductDAO.MSG_ProductSalesBanError, new Object[] { partner, bannedProductForPartner.getSalesBanReason() });
+			final String msg = Services.get(IMsgBL.class).getMsg(
+					Env.getCtx(), 
+					BPartnerProductDAO.MSG_ProductSalesBanError, 
+					new Object[] { partner, bannedProductForPartner.getSalesBanReason() });
+			
 			throw new AdempiereException(msg);
 		}
 
