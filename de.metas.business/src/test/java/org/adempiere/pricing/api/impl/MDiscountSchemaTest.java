@@ -48,6 +48,7 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
@@ -629,6 +630,9 @@ public class MDiscountSchemaTest
 
 	private I_M_DiscountSchemaBreak createBreak(final I_M_DiscountSchema schema, final int seqNo)
 	{
+		schema.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
+		save(schema);
+		
 		final I_M_DiscountSchemaBreak schemaBreak = newInstance(I_M_DiscountSchemaBreak.class, contextProvider);
 		schemaBreak.setM_DiscountSchema_ID(schema.getM_DiscountSchema_ID());
 		schemaBreak.setSeqNo(seqNo);
