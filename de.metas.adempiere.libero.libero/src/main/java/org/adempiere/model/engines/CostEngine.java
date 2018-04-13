@@ -53,7 +53,6 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
@@ -227,17 +226,6 @@ public class CostEngine
 		return price.roundToPrecisionIfNeeded(precision);
 	}
 
-	public Collection<I_M_Cost> getByElement(final MProduct product, final MAcctSchema as,
-			final int M_CostType_ID, final int AD_Org_ID, final int M_AttributeSetInstance_ID, final int M_CostElement_ID)
-	{
-		final CostDimension cd = new CostDimension(product, as, M_CostType_ID,
-				AD_Org_ID, M_AttributeSetInstance_ID,
-				M_CostElement_ID);
-		return cd.toQuery(I_M_Cost.class, product.get_TrxName())
-				.setOnlyActiveRecords(true)
-				.list();
-	}
-
 	/**
 	 * Get Cost Detail
 	 *
@@ -277,7 +265,7 @@ public class CostEngine
 	 * @param model
 	 * @param mtrx Material Transaction
 	 */
-	public void createCostDetail(final IDocumentLine model, final MTransaction mtrx)
+	void createCostDetail(final IDocumentLine model, final MTransaction mtrx)
 	{
 		final I_PP_Cost_Collector cc = model instanceof MPPCostCollector ? (MPPCostCollector)model : null;
 

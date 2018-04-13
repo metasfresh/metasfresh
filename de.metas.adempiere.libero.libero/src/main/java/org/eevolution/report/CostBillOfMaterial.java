@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.engines.CostDimension;
 import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
 import org.compiere.Adempiere;
@@ -243,7 +244,7 @@ public class CostBillOfMaterial extends JavaProcess
 			//
 			// Set Costs:
 			final CostEngine engine = CostEngineFactory.getCostEngine(getAD_Client_ID());
-			Collection<I_M_Cost> costs = engine.getByElement(
+			Collection<I_M_Cost> costs = getCostsByElement(
 					product,
 					m_as,
 					p_M_CostType_ID,
@@ -285,7 +286,7 @@ public class CostBillOfMaterial extends JavaProcess
 		}
 	}
 
-	public List<CostElement> getCostElements()
+	private List<CostElement> getCostElements()
 	{
 		if (m_costElements == null)
 		{
@@ -294,4 +295,16 @@ public class CostBillOfMaterial extends JavaProcess
 		return m_costElements;
 	}
 	private List<CostElement> m_costElements = null;
+	
+	private static Collection<I_M_Cost> getCostsByElement(final MProduct product, final MAcctSchema as,
+			final int M_CostType_ID, final int AD_Org_ID, final int M_AttributeSetInstance_ID, final int M_CostElement_ID)
+	{
+		final CostDimension cd = new CostDimension(product, as, M_CostType_ID,
+				AD_Org_ID, M_AttributeSetInstance_ID,
+				M_CostElement_ID);
+		return cd.toQuery(I_M_Cost.class, product.get_TrxName())
+				.setOnlyActiveRecords(true)
+				.list();
+	}
+
 }
