@@ -132,31 +132,25 @@ import lombok.NonNull;
 		return result.build();
 	}
 
-	private void computePriceForDiscountSchemaBreak(final DiscountResultBuilder result, final I_M_DiscountSchemaBreak breakApplied)
+	private void computePriceForDiscountSchemaBreak(final DiscountResultBuilder result, final I_M_DiscountSchemaBreak discountSchemaBreak)
 	{
-		final String priceBase = breakApplied.getPriceBase();
-
+		final String priceBase = discountSchemaBreak.getPriceBase();
 		if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
 		{
-
-			final IPricingResult productPrices = findPricesForSchemaBreak(breakApplied);
-
+			final IPricingResult productPrices = findPricesForSchemaBreak(discountSchemaBreak);
 			final BigDecimal priceStd = productPrices.getPriceStd();
 			final BigDecimal priceList = productPrices.getPriceList();
 			final BigDecimal priceLimit = productPrices.getPriceLimit();
 
-			final BigDecimal stdAddAmt = breakApplied.getStd_AddAmt();
+			final BigDecimal stdAddAmt = discountSchemaBreak.getStd_AddAmt();
 
 			result.priceListOverride(priceList);
 			result.priceLimitOverride(priceLimit);
 			result.priceStdOverride(priceStd.add(stdAddAmt));
-
 		}
 		else if (X_M_DiscountSchemaBreak.PRICEBASE_Fixed.equals(priceBase))
 		{
-			final BigDecimal discountSchemaBreakStdPrice = breakApplied.getPriceStd();
-
-			result.priceStdOverride(discountSchemaBreakStdPrice);
+			result.priceStdOverride(discountSchemaBreak.getPriceStd());
 		}
 		else
 		{
@@ -164,16 +158,15 @@ import lombok.NonNull;
 		}
 	}
 
-	private IPricingResult findPricesForSchemaBreak(final I_M_DiscountSchemaBreak breakApplied)
+	private IPricingResult findPricesForSchemaBreak(final I_M_DiscountSchemaBreak discountSchemaBreak)
 	{
-		final I_M_PricingSystem basePricingSystem = breakApplied.getBase_PricingSystem();
-
-		Check.assumeNotNull(basePricingSystem, "BasePricingSystem shall not be not null for the discount schema break {}", breakApplied);
+		final I_M_PricingSystem basePricingSystem = discountSchemaBreak.getBase_PricingSystem();
+		Check.assumeNotNull(basePricingSystem, "BasePricingSystem shall not be not null for the discount schema break {}", discountSchemaBreak);
 
 		final IPricingContext pricingCtx = request.getPricingCtx();
-
+		Check.assumeNotNull(pricingCtx, "pricingCtx shall not be null for {}", request);
+		
 		final IPricingContext basePricingSystemPricingCtx = createBasePricingSystemPricingCtx(pricingCtx, basePricingSystem);
-
 		final IPricingResult pricingResult = pricingBL.calculatePrice(basePricingSystemPricingCtx);
 
 		return pricingResult;
