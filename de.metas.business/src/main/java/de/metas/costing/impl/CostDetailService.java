@@ -128,7 +128,7 @@ public class CostDetailService implements ICostDetailService
 				.collect(Collectors.toMap(
 						CostDetailCreateResult::getCostElement, // keyMapper
 						CostDetailCreateResult::getAmt, // valueMapper
-						(amt1, amt2) -> amt1.add(amt2))); // mergeFunction
+						CostAmount::add)); // mergeFunction
 
 		return CostResult.builder()
 				.costSegment(costSegment)
