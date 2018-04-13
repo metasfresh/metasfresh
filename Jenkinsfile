@@ -128,7 +128,7 @@ node('agent && linux')
 					dockerBuildAndPush(printDockerConf)
 
 					final DockerConf msv3ServerDockerConf = materialDispoDockerConf
-						.withArtifactName('metasfresh-pharma.msv3.server')
+						.withArtifactName('de.metas.vertical.pharma.msv3.server')
 						.withWorkDir('de.metas.vertical.pharma.msv3.server/target/docker');
 					dockerBuildAndPush(msv3ServerDockerConf)
 

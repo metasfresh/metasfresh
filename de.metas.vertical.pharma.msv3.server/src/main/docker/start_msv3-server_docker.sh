@@ -98,7 +98,7 @@ run_metasfresh()
  -Dspring.jpa.show-sql=${debug_jpa_show_sql}\
  -Dmsv3server.startup.requestAllData=${SERVER_REQUEST_ALL_DATA_ON_STARTUP}
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
- -jar metasfresh-pharma.msv3.server.jar
+ -jar de.metas.vertical.pharma.msv3.server.jar
 }
 
 echo "*********************************"
