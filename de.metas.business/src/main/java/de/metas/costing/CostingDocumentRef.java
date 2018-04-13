@@ -115,7 +115,7 @@ public class CostingDocumentRef
 			@NonNull final String costDetailColumnName,
 			@Nullable final Boolean outboundTrx)
 	{
-		Check.assume(recordId > 0, "recordId > 0");
+		Check.assumeGreaterThanZero(recordId, "recordId");
 
 		this.tableName = tableName;
 		this.recordId = recordId;
