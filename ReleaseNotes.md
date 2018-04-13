@@ -45,10 +45,15 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3767](https://github.com/metasfresh/metasfresh/issues/3767) Picking TU Label error when GLN is missing in PartnerLocation
+    * Fixes an error in the Picking Label. Now hiding the Barcode in cae the Businesspartner does not have a GLN.
   * [#3773](https://github.com/metasfresh/metasfresh/issues/3773) Regression on process M_ReceiptSchedule_Generate_M_InOuts
-  * [#3806](https://github.com/metasfresh/metasfresh/issues/3806) packaging-inout-lines are split into too many invoice candidates
+    * Fixes various issues in the Receipt Document generation Process in Material Receipt Schedule.
+  * [#3806](https://github.com/metasfresh/metasfresh/issues/3806) Packaging-inout-lines are split into too many invoice candidates
+    * Fixes an error in Invoice Generation with not grouping Packaging Lines in Invoice Candidates.
   * [#3809](https://github.com/metasfresh/metasfresh/issues/3809) InvoiceCandidates without C_PaymentTerm_ID can't be invoiced together with other ICs
+    * Fixes an Error in Invoice Candidates. The Packaging Inoutlines had a wrong PaymentTerm and were not grouped/ matched be the new Aggregation Header.
   * [#3815](https://github.com/metasfresh/metasfresh/issues/3815) QtyOrdered sometimes updated wrongly on C_Order close
+    * Bugfix for the Quantity Ordered result in Invoicecandidates, that was wrongly set after creation and immediate close of sales orders.
 
 * metasfresh-webui-frontend
   * [#1555](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1555) Can not enter "-" into any search field
