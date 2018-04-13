@@ -71,6 +71,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.IColorRepository;
 import lombok.NonNull;
 
 public class OrderLineBL implements IOrderLineBL
@@ -79,7 +80,7 @@ public class OrderLineBL implements IOrderLineBL
 	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
-	
+
 	private static final String SYSCONFIG_NoPriceConditionsColorName = "de.metas.order.NoPriceConditionsColorName";
 
 	private final Set<Integer> ignoredOlIds = new HashSet<>();
@@ -176,7 +177,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
-		
+
 		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
 
 		updateLineNetAmt(orderLine, qtyEntered, factor);
@@ -672,7 +673,7 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 		orderLine.setEnforcePriceLimit(pricingResult.isEnforcePriceLimit());
-		
+
 		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
 
 		//
@@ -952,28 +953,33 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updateNoPriceConditionsColorName(final I_C_OrderLine orderLine)
+	public void updateNoPriceConditionsColor(final I_C_OrderLine orderLine)
 	{
-		final int colourId = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_NoPriceConditionsColorName, -1);
-		
-		
-		if(colourId <= 0)
-		{
-			// do nothing
-			return;
-		}
-		
-		final int discountSchemaBreakID = orderLine.getM_DiscountSchemaBreak_ID();
-		if(discountSchemaBreakID > 0)
+
+		final String colourName = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_NoPriceConditionsColorName, "-");
+
+		final int discountSchemaBreakId = orderLine.getM_DiscountSchemaBreak_ID();
+
+		if (discountSchemaBreakId > 0)
 		{
 			// the discountSchemaBreak was eventually set. The colour warning is no longer needed
 			orderLine.setNoPriceConditionsColor_ID(-1);
+			
+			return;
 		}
-		else
+
+		final int colourId = getNoPriceConditionsColorId(colourName);
+		
+		if (colourId > 0)
 		{
 			orderLine.setNoPriceConditionsColor_ID(colourId);
 		}
-				
+
+	}
+
+	private int getNoPriceConditionsColorId(final String name)
+	{
+		return Services.get(IColorRepository.class).getColorIdByName(name);
 	}
 
 }

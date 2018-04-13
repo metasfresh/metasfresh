@@ -49,6 +49,7 @@ public class ColorRepository implements IColorRepository
 	private static final Logger logger = LogManager.getLogger(ColorRepository.class);
 
 	private static final CCache<Integer, MFColor> colorValuesById = CCache.<Integer, MFColor> newCache(I_AD_Color.Table_Name, 20, CCache.EXPIREMINUTES_Never);
+	private static final CCache<String, Integer> colourIdByName = CCache.<String, Integer> newCache(I_AD_Color.Table_Name + "#by#Name", 10, CCache.EXPIREMINUTES_Never);
 
 	@Override
 	public MFColor getColorById(final int adColorId)
@@ -161,6 +162,25 @@ public class ColorRepository implements IColorRepository
 		InterfaceWrapperHelper.save(newColorRecord);
 
 		return newColorRecord.getAD_Color_ID();
+	}
+
+	
+
+	@Override
+	public int getColorIdByName(final String colourName)
+	{
+		return colourIdByName.getOrLoad(colourName, () -> retrieveColourIdByName(colourName));
+	}
+
+	private int retrieveColourIdByName(final String colourName)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Color.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClientOrSystem()
+				.addEqualsFilter(I_AD_Color.COLUMNNAME_Name, colourName)
+				.create()
+				.firstIdOnly();
 	}
 
 }
