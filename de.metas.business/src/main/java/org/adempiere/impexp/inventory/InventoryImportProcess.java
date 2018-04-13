@@ -38,7 +38,6 @@ import lombok.NonNull;
 public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 {
 	private static final Logger logger = LogManager.getLogger(InventoryImportProcess.class);
-	private static final String PARAM_M_Locator_ID = "M_Locator_ID";
 
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
@@ -60,14 +59,6 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		return org.compiere.model.I_M_Inventory.Table_Name;
 	}
 
-//	@Override
-//	protected Map<String, Object> getImportTableDefaultValues()
-//	{
-////		return ImmutableMap.<String, Object> builder()
-////				.put(I_I_Inventory.COLUMNNAME_, X_I_Product.PRODUCTTYPE_Item)
-////				.build();
-//	}
-
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
@@ -75,13 +66,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		MInventoryImportTableSqlUpdater.builder()
 				.whereClause(whereClause)
 				.ctx(getCtx())
-				.locatorId(getM_Locator_ID())
 				.updateIInventory();
-	}
-
-	private int getM_Locator_ID()
-	{
-		return getParameters().getParameterAsInt(PARAM_M_Locator_ID);
 	}
 
 	@Override
