@@ -39,6 +39,8 @@ import lombok.Value;
 @Value
 public class DiscountResult
 {
+	public static final DiscountResult ZERO = builder().discount(BigDecimal.ZERO).build();
+	
 	@Default
 	private final BigDecimal discount = BigDecimal.ZERO;
 	@Default

@@ -72,43 +72,66 @@ import lombok.NonNull;
 
 	public DiscountResult calculateDiscount()
 	{
-		final BigDecimal bpFlatDiscountToUse = request.getBPartnerFlatDiscount() == null ? BigDecimal.ZERO : request.getBPartnerFlatDiscount();
 		final String discountType = request.getSchema().getDiscountType();
 
 		if (X_M_DiscountSchema.DISCOUNTTYPE_FlatPercent.equals(discountType))
 		{
-			return computeFlatDiscount(request.getSchema(), bpFlatDiscountToUse);
+			return computeFlatDiscount();
 		}
 		else if (X_M_DiscountSchema.DISCOUNTTYPE_Formula.equals(discountType)
 				|| X_M_DiscountSchema.DISCOUNTTYPE_Pricelist.equals(discountType))
 		{
-			return DiscountResult.builder()
-					.discount(BigDecimal.ZERO)
-					.build();
+			return DiscountResult.ZERO;
 		}
-
-		final I_M_DiscountSchemaBreak breakApplied = fetchDiscountSchemaBreak();
-
-		DiscountResultBuilder priceForDiscountSchemaBreak = null;
-
-		if (breakApplied != null)
+		else if (X_M_DiscountSchema.DISCOUNTTYPE_Breaks.equals(discountType))
 		{
-			if (breakApplied.isPriceOverride())
-			{
-				priceForDiscountSchemaBreak = computePriceForDiscountSchemaBreak(breakApplied);
-			}
-
-			return computeDefaultDiscountForDiscoutSchemaBreak(priceForDiscountSchemaBreak, breakApplied);
-
+			return computeBreaksDiscount();
 		}
-
-		return DiscountResult.builder()
-				.discount(BigDecimal.ZERO)
-				.build();
-
+		else
+		{
+			throw new AdempiereException("@NotSupported@ @DiscountType@: " + discountType);
+		}
 	}
 
-	private DiscountResultBuilder computePriceForDiscountSchemaBreak(final I_M_DiscountSchemaBreak breakApplied)
+	private DiscountResult computeFlatDiscount()
+	{
+		final I_M_DiscountSchema schema = request.getSchema();
+		if (schema.isBPartnerFlatDiscount())
+		{
+			final BigDecimal bpFlatDiscountToUse = request.getBPartnerFlatDiscount() == null ? BigDecimal.ZERO : request.getBPartnerFlatDiscount();
+			return DiscountResult.builder()
+					.discount(bpFlatDiscountToUse)
+					.build();
+		}
+		else
+		{
+			return DiscountResult.builder()
+					.discount(schema.getFlatDiscount())
+					.build();
+		}
+	}
+
+	private DiscountResult computeBreaksDiscount()
+	{
+		final I_M_DiscountSchemaBreak breakApplied = fetchDiscountSchemaBreak();
+		if (breakApplied == null)
+		{
+			return DiscountResult.ZERO;
+		}
+
+		final DiscountResultBuilder result = DiscountResult.builder();
+
+		if (breakApplied.isPriceOverride())
+		{
+			computePriceForDiscountSchemaBreak(result, breakApplied);
+		}
+
+		computeDefaultDiscountForDiscoutSchemaBreak(result, breakApplied);
+
+		return result.build();
+	}
+
+	private void computePriceForDiscountSchemaBreak(final DiscountResultBuilder result, final I_M_DiscountSchemaBreak breakApplied)
 	{
 		final String priceBase = breakApplied.getPriceBase();
 
@@ -123,18 +146,16 @@ import lombok.NonNull;
 
 			final BigDecimal stdAddAmt = breakApplied.getStd_AddAmt();
 
-			return DiscountResult.builder()
-					.priceListOverride(priceList)
-					.priceLimitOverride(priceLimit)
-					.priceStdOverride(priceStd.add(stdAddAmt));
+			result.priceListOverride(priceList);
+			result.priceLimitOverride(priceLimit);
+			result.priceStdOverride(priceStd.add(stdAddAmt));
 
 		}
 		else if (X_M_DiscountSchemaBreak.PRICEBASE_Fixed.equals(priceBase))
 		{
 			final BigDecimal discountSchemaBreakStdPrice = breakApplied.getPriceStd();
 
-			return DiscountResult.builder()
-					.priceStdOverride(discountSchemaBreakStdPrice);
+			result.priceStdOverride(discountSchemaBreakStdPrice);
 		}
 		else
 		{
@@ -184,10 +205,8 @@ import lombok.NonNull;
 		return newPricingCtx;
 	}
 
-	private DiscountResult computeDefaultDiscountForDiscoutSchemaBreak(final DiscountResultBuilder priceForDiscountSchemaBreak, final I_M_DiscountSchemaBreak breakApplied)
+	private void computeDefaultDiscountForDiscoutSchemaBreak(final DiscountResultBuilder result, final I_M_DiscountSchemaBreak breakApplied)
 	{
-		final DiscountResultBuilder discountForDiscountSchemaBreak = priceForDiscountSchemaBreak == null ? DiscountResult.builder() : priceForDiscountSchemaBreak;
-
 		final BigDecimal discount;
 		if (breakApplied.isBPartnerFlatDiscount())
 		{
@@ -197,27 +216,9 @@ import lombok.NonNull;
 		{
 			discount = breakApplied.getBreakDiscount();
 		}
-		
-		return discountForDiscountSchemaBreak
-				.discount(discount)
-				.C_PaymentTerm_ID(breakApplied.getC_PaymentTerm_ID())
-				.build();
-	}
 
-	private DiscountResult computeFlatDiscount(@NonNull final I_M_DiscountSchema schema, @NonNull final BigDecimal bpFlatDiscountToUse)
-	{
-		if (schema.isBPartnerFlatDiscount())
-		{
-			return DiscountResult.builder()
-					.discount(bpFlatDiscountToUse)
-					.build();
-		}
-		else
-		{
-			return DiscountResult.builder()
-					.discount(schema.getFlatDiscount())
-					.build();
-		}
+		result.discount(discount);
+		result.C_PaymentTerm_ID(breakApplied.getC_PaymentTerm_ID());
 	}
 
 	private I_M_DiscountSchemaBreak fetchDiscountSchemaBreak()
