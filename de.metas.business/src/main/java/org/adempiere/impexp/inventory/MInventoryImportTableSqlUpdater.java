@@ -3,10 +3,15 @@ package org.adempiere.impexp.inventory;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
 
+import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_I_Inventory;
+import org.compiere.model.I_M_Locator;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -51,11 +56,12 @@ public class MInventoryImportTableSqlUpdater
 	private static final transient Logger logger = LogManager.getLogger(MInventoryImportTableSqlUpdater.class);
 
 	@Builder(buildMethodName = "updateIInventory")
-	private void updateInventoryImportTable(@NonNull final String whereClause, @NonNull final Properties ctx, final int locatorId)
+	private void updateInventoryImportTable(@NonNull final String whereClause, @NonNull final Properties ctx)
 	{
 		dbUpdateOrgs(whereClause);
-		dbUpdateLocations(whereClause, ctx, locatorId);
+		dbUpdateLocatorDimensions(whereClause, ctx);
 		dbUpdateWarehouse(whereClause, ctx);
+		dbUpdateCreateLocators(whereClause, ctx);
 		dbUpdateProducts(whereClause, ctx);
 
 		dbUpdateErrorMessages(whereClause, ctx);
@@ -74,7 +80,31 @@ public class MInventoryImportTableSqlUpdater
 		logger.debug("Set Org ={}", no);
 	}
 
-	private void dbUpdateLocations(@NonNull final String whereClause, @NonNull final Properties ctx, final int locatorId)
+	private void dbUpdateLocatorDimensions(@NonNull final String whereClause, @NonNull final Properties ctx)
+	{
+		final int adClientId = Env.getAD_Client_ID(ctx);
+
+		// Set M_Warehouse_ID
+		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
+				.append("SET warehouseValue = dimensions.warehouseValue, X = dimensions.locatorX , Y = dimensions.locatorY, Z = dimensions.locatorZ, X1 = dimensions.locatorX1 ")
+				.append("FROM (SELECT I_Inventory_ID, d.warehouseValue, d.locatorValue, d.locatorX, d.locatorY, d.locatorZ, d.locatorX1 ")
+				.append("	FROM I_Inventory as inv")
+				.append("	JOIN extractLocatorDimensions(inv.locatorvalue) as d on d.locatorvalue=inv.locatorvalue")
+				.append(") AS dimensions")
+				.append("WHERE AND I_IsImported<>'Y' AND AD_Client_ID = ")
+				.append(adClientId)
+				.append(whereClause);
+		int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set Warehouse from Locator =" + no);
+	}
+
+	private void dbUpdateCreateLocators(@NonNull final String whereClause, @NonNull final Properties ctx)
+	{
+		dbUpdateLocators(whereClause, ctx);
+		dbCreateLocators(whereClause, ctx);
+	}
+
+	private void dbUpdateLocators(@NonNull final String whereClause, @NonNull final Properties ctx)
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
@@ -86,44 +116,39 @@ public class MInventoryImportTableSqlUpdater
 				.append(whereClause);
 		int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set Locator from Value =" + no);
-
-		sql = new StringBuilder("UPDATE I_Inventory i ")
-				.append("SET M_Locator_ID=(SELECT MAX(M_Locator_ID) FROM M_Locator l")
-				.append(" WHERE i.X=l.X AND i.Y=l.Y AND i.Z=l.Z AND i.AD_Client_ID=l.AD_Client_ID) ")
-				.append("WHERE M_Locator_ID IS NULL AND X IS NOT NULL AND Y IS NOT NULL AND Z IS NOT NULL")
-				.append("AND I_IsImported<>'Y' AND AD_Client_ID = ")
-				.append(adClientId)
-				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Locator from X,Y,Z =" + no);
-
-		if (locatorId > 0)
-		{
-			sql = new StringBuilder("UPDATE I_Inventory ")
-					.append("SET M_Locator_ID = ")
-					.append(locatorId)
-					.append(" WHERE M_Locator_ID IS NULL")
-					.append("AND I_IsImported<>'Y' AND AD_Client_ID = ")
-					.append(adClientId)
-					.append(whereClause);
-			no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-			logger.debug("Set Locator from Parameter=" + no);
-		}
 	}
 
-	private void dbUpdateLocator(@NonNull final String whereClause, @NonNull final Properties ctx)
+	private void dbCreateLocators(@NonNull final String whereClause, @NonNull final Properties ctx)
 	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
+		final List<I_I_Inventory> unmatchedLocator = Services.get(IQueryBL.class).createQueryBuilder(I_I_Inventory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_I_Inventory.COLUMNNAME_I_IsImported, false)
+				.addNotNull(I_I_Inventory.COLUMN_LocatorValue)
+				.addNotNull(I_I_Inventory.COLUMN_WarehouseValue)
+				.addEqualsFilter(I_I_Inventory.COLUMNNAME_M_Locator_ID, null)
+				.create()
+				.list(I_I_Inventory.class);
 
-		// Set M_Warehouse_ID
-		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
-				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Locator l WHERE i.M_Locator_ID=l.M_Locator_ID) ")
-				.append("WHERE M_Locator_ID IS NOT NULL ")
-				.append("AND I_IsImported<>'Y' AND AD_Client_ID = ")
-				.append(adClientId)
-				.append(whereClause);
-		int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Warehouse from Locator =" + no);
+		unmatchedLocator.forEach(importRecord -> {
+			final I_M_Locator locator = createNewMLocator(importRecord);
+			importRecord.setM_Locator(locator);
+			InterfaceWrapperHelper.save(importRecord);
+		});
+	}
+
+	private I_M_Locator createNewMLocator(@NonNull final I_I_Inventory importRecord)
+	{
+		final I_M_Locator locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
+		locator.setAD_Org_ID(importRecord.getAD_Org_ID());
+		locator.setM_Warehouse_ID(importRecord.getM_Warehouse_ID());
+		locator.setValue(importRecord.getLocatorValue());
+		locator.setX(importRecord.getX());
+		locator.setY(importRecord.getY());
+		locator.setZ(importRecord.getZ());
+		locator.setX1(importRecord.getX1());
+		locator.setDateLastInventory(importRecord.getDateLastInventory());
+		InterfaceWrapperHelper.save(locator);
+		return locator;
 	}
 
 	private void dbUpdateWarehouse(@NonNull final String whereClause, @NonNull final Properties ctx)
@@ -131,14 +156,14 @@ public class MInventoryImportTableSqlUpdater
 		final int adClientId = Env.getAD_Client_ID(ctx);
 
 		// Set M_Warehouse_ID
-		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
-				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Locator l WHERE i.M_Locator_ID=l.M_Locator_ID) ")
-				.append("WHERE M_Locator_ID IS NOT NULL ")
+		final StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
+				.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE i.warehouseValue=w.value) ")
+				.append("WHERE M_Warehouse_ID IS NOT NULL ")
 				.append("AND I_IsImported<>'Y' AND AD_Client_ID = ")
 				.append(adClientId)
 				.append(whereClause);
 		int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Warehouse from Locator =" + no);
+		logger.debug("Set Warehouse =" + no);
 	}
 
 	private void dbUpdateProducts(@NonNull final String whereClause, @NonNull final Properties ctx)
@@ -179,7 +204,7 @@ public class MInventoryImportTableSqlUpdater
 		logger.info("Invalid Org={}", no);
 
 		sql = new StringBuilder("UPDATE I_Inventory ")
-				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Location, ' ")
+				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Locator, ' ")
 				.append("WHERE M_Locator_ID IS NULL")
 				.append("AND I_IsImported<>'Y' AND AD_Client_ID = ")
 				.append(adClientId)
@@ -216,15 +241,15 @@ public class MInventoryImportTableSqlUpdater
 
 		// No QtyCount
 		sql = new StringBuilder("UPDATE I_Inventory ")
-				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Qty Count, ' ")
-				.append("WHERE QtyCount IS NULL ")
+				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No QtyInternalUse, ' ")
+				.append("WHERE QtyInternalUse IS NULL ")
 				.append("AND I_IsImported<>'Y' AND AD_Client_ID = ")
 				.append(adClientId)
 				.append(whereClause);
 		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
-			logger.warn("No QtyCount=" + no);
+			logger.warn("No QtyInternalUse=" + no);
 		}
 
 	}
