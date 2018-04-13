@@ -45,7 +45,7 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3767](https://github.com/metasfresh/metasfresh/issues/3767) Picking TU Label error when GLN is missing in PartnerLocation
-    * Fixes an error in the Picking Label. Now hiding the Barcode in cae the Businesspartner does not have a GLN.
+    * Fixes an error in the Picking Label. Now hiding the Barcode in case the Businesspartner does not have a GLN.
   * [#3773](https://github.com/metasfresh/metasfresh/issues/3773) Regression on process M_ReceiptSchedule_Generate_M_InOuts
     * Fixes various issues in the Receipt Document generation Process in Material Receipt Schedule.
   * [#3806](https://github.com/metasfresh/metasfresh/issues/3806) Packaging-inout-lines are split into too many invoice candidates
@@ -65,7 +65,7 @@ Here come the actual release notes:
   * [#1730](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1730) Create purchase orders process - fields collapse
     * Improved Purchase Create action in sales order. Now not collapsing the tree after entering a Quantity value.
   * [#1734](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1734) Picking Terminal opens with all rows uncollapsed
-    * Performance Improvement of Picking Terminal view, now openening collapsed and much faster.
+    * Performance Improvement of Picking Terminal view, now opening collapsed and much faster.
   * [#1744](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1744) Table doesn't take the full available height
     * Fixes a Layout Issue in Grid View Presentation with Pagination widget.
 
