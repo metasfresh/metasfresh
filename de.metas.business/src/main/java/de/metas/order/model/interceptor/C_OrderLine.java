@@ -254,4 +254,12 @@ public class C_OrderLine
 		groupChangesHandler.onOrderLineDeleted(orderLine);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_M_DiscountSchemaBreak_ID)
+	public void updateNoPriceConditionsColor(final I_C_OrderLine orderLine)
+	{
+
+		Services.get(IOrderLineBL.class).updateNoPriceConditionsColor(orderLine);
+
+	}
+
 }

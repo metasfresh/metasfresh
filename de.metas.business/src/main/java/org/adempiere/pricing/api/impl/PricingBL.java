@@ -330,7 +330,7 @@ public class PricingBL implements IPricingBL
 	@Override
 	public IPricingResult createInitialResult(final IPricingContext pricingCtx)
 	{
-		final PricingResult result = new PricingResult();
+		final IPricingResult result = new PricingResult();
 		result.setM_PricingSystem_ID(pricingCtx.getM_PricingSystem_ID());
 		result.setM_PriceList_ID(pricingCtx.getM_PriceList_ID());
 		result.setM_PriceList_Version_ID(pricingCtx.getM_PriceList_Version_ID());

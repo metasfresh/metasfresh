@@ -29,4 +29,6 @@ public interface IColorRepository extends ISingletonService
 	MFColor getColorById(int adColorId);
 
 	int saveFlatColorAndReturnId(String flatColorHexString);
+	
+	int getColorIdByName(String name);
 }
