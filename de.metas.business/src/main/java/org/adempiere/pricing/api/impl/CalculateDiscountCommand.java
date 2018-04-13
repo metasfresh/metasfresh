@@ -4,7 +4,6 @@
 package org.adempiere.pricing.api.impl;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,18 +14,14 @@ import org.adempiere.pricing.api.DiscountResult.DiscountResultBuilder;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
-import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchemaBreak;
 import org.compiere.util.Util;
@@ -62,7 +57,6 @@ import lombok.NonNull;
 /* package */ class CalculateDiscountCommand
 {
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
-	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 
 	final CalculateDiscountRequest request;
 
@@ -160,40 +154,26 @@ import lombok.NonNull;
 
 	private IPricingResult findPricesForSchemaBreak(final I_M_DiscountSchemaBreak discountSchemaBreak)
 	{
-		final I_M_PricingSystem basePricingSystem = discountSchemaBreak.getBase_PricingSystem();
-		Check.assumeNotNull(basePricingSystem, "BasePricingSystem shall not be not null for the discount schema break {}", discountSchemaBreak);
+		final int basePricingSystemId = discountSchemaBreak.getBase_PricingSystem_ID();
+		Check.assumeGreaterThanZero(basePricingSystemId, "basePricingSystemId");
 
 		final IPricingContext pricingCtx = request.getPricingCtx();
 		Check.assumeNotNull(pricingCtx, "pricingCtx shall not be null for {}", request);
-		
-		final IPricingContext basePricingSystemPricingCtx = createBasePricingSystemPricingCtx(pricingCtx, basePricingSystem);
+
+		final IPricingContext basePricingSystemPricingCtx = createBasePricingSystemPricingCtx(pricingCtx, basePricingSystemId);
 		final IPricingResult pricingResult = pricingBL.calculatePrice(basePricingSystemPricingCtx);
 
 		return pricingResult;
 	}
 
-	private IPricingContext createBasePricingSystemPricingCtx(final IPricingContext pricingCtx, final I_M_PricingSystem basePricingSystem)
+	private IPricingContext createBasePricingSystemPricingCtx(final IPricingContext pricingCtx, final int basePricingSystemId)
 	{
-		final I_C_Country country = pricingCtx.getC_Country();
-		final boolean isSOTrx = pricingCtx.isSOTrx();
-		final Timestamp priceDate = pricingCtx.getPriceDate();
-
-		final I_M_PriceList_Version priceListVersion = priceListBL.getCurrentPriceListVersionOrNull(
-				basePricingSystem,
-				country,
-				priceDate,
-				isSOTrx,
-				null);
-
-		if (priceListVersion == null)
-		{
-			throw new AdempiereException("Price list version not found");
-		}
+		Check.assumeGreaterThanZero(basePricingSystemId, "basePricingSystemId");
 
 		final IEditablePricingContext newPricingCtx = pricingCtx.copy();
-		newPricingCtx.setM_PricingSystem_ID(basePricingSystem.getM_PricingSystem_ID());
-		newPricingCtx.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
-		newPricingCtx.setM_PriceList_ID(priceListVersion.getM_PriceList_ID());
+		newPricingCtx.setM_PricingSystem_ID(basePricingSystemId);
+		newPricingCtx.setM_PriceList_ID(-1); // will be recomputed
+		newPricingCtx.setM_PriceList_Version_ID(-1); // will be recomputed
 		newPricingCtx.setDisallowDiscount(true);
 
 		return newPricingCtx;
