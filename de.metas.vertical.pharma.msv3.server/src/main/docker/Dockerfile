@@ -22,7 +22,7 @@ RUN dos2unix /opt/metasfresh-msv3-server/start_msv3-server_docker.sh
 # make our start command executable
 RUN chmod 700 /opt/metasfresh-msv3-server/start_msv3-server_docker.sh
 
-COPY ./metasfresh-pharma.msv3.server.jar /opt/metasfresh-msv3-server/
-RUN sh -c 'touch /opt/metasfresh-msv3-server/metasfresh-pharma.msv3.server.jar'
+COPY ./de.metas.vertical.pharma.msv3.server.jar /opt/metasfresh-msv3-server/
+RUN sh -c 'touch /opt/metasfresh-msv3-server/de.metas.vertical.pharma.msv3.server.jar'
 
 ENTRYPOINT ["/opt/metasfresh-msv3-server/start_msv3-server_docker.sh"]
