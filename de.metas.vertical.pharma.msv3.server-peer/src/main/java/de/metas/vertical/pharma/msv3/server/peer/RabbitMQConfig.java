@@ -50,6 +50,7 @@ public class RabbitMQConfig
 	public static final String QUEUENAME_MSV3ServerRequests = "msv3-server-requests";
 	public static final String QUEUENAME_UserChangedEvents = "msv3-server-UserChangedEvents";
 	public static final String QUEUENAME_StockAvailabilityUpdatedEvent = "msv3-server-StockAvailabilityUpdatedEvents";
+	public static final String QUEUENAME_ProductExcludeUpdatedEvents = "msv3-server-ProductExcludeUpdatedEvents";
 	public static final String QUEUENAME_SyncOrderRequestEvents = "msv3-server-SyncOrderRequestEvents";
 	public static final String QUEUENAME_SyncOrderResponseEvents = "msv3-server-SyncOrderResponseEvents";
 
@@ -60,6 +61,7 @@ public class RabbitMQConfig
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_MSV3ServerRequests))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_UserChangedEvents))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_StockAvailabilityUpdatedEvent))
+				.addAll(createQueueExchangeAndBinding(QUEUENAME_ProductExcludeUpdatedEvents))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_SyncOrderRequestEvents))
 				.addAll(createQueueExchangeAndBinding(QUEUENAME_SyncOrderResponseEvents))
 				.build();
