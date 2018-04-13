@@ -3,7 +3,7 @@ set -e
 
 # The variables have defaults that can be set from outside, e.g. via -e "DB_HOST=mydbms" or from the docker-compose.yml file.
 # Also see https://docs.docker.com/engine/reference/builder/#environment-replacement
-db_host=${DB_HOST:-db}
+db_host=${DB_HOST:-localhost}
 db_port=${DB_PORT:-5432}
 db_name=${DB_NAME:-msv3server}
 db_user=${DB_USER:-msv3server}
@@ -51,6 +51,22 @@ echo_variable_values()
  echo "DB_PASSWORD=*******"
 }
 
+wait_dbms()
+{
+	echo "**************************************"
+	echo "Wait for the database server to start " # host & port were logged by echo_variable_values
+	echo "**************************************"
+	
+	echo "We will repeatedly invoke 'nc -z ${db_host} ${db_port}' until it returns successfully"
+	echo "."
+	until nc -z $db_host $db_port
+	do
+		sleep 1
+		echo -n "."
+	done
+	echo "Database Server has started"
+}
+
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
 run_metasfresh()
 {
@@ -95,6 +111,8 @@ then
 	echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}, so from here we will output all bash commands; set to n (just the lowercase letter) to skip this."
 	set -x
 fi
+
+wait_dbms
 
 run_metasfresh
 exit 0 
