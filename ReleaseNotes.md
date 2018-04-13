@@ -18,7 +18,9 @@ Here come the actual release notes:
   * [#1539](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1539) eMail Editor mailTo List not showing selected entry
     * Improvement of the Adress Lookup in eMail Editor. Now showing which entry is selected.
   * [#1648](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1648) Dropdown value in filters cannot be deleted after selection
-    * Iporvement of Filter ctiteria, now possible to empty aleady set values in List Widgets.
+    * Improvement of Filter ctiteria, now possible to empty aleady set values in List Widgets.
+  * [#1742](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1742) Context Menu translateable
+    * Improvement of Context Menu in Grid View, now translatable.
 
 ## Fixes
 * metasfresh-webui-api
