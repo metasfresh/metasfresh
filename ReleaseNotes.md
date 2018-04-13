@@ -59,6 +59,8 @@ Here come the actual release notes:
     * Improved Purchase Create action in sales order. Now not collapsing the tree after entering a Quantity value.
   * [#1734](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1734) Picking Terminal opens with all rows uncollapsed
     * Performance Improvement of Picking Terminal view, now openening collapsed and much faster.
+  * [#1744](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1744) Table doesn't take the full available height
+    * Fixes a Layout Issue in Grid View Presentation with Pagination widget.
 
 # metasfresh 5.51 (2018-14)
 **release for week 2018-14**
