@@ -56,6 +56,9 @@ import de.metas.purchasing.api.ProductExclude;
  */
 public class BPartnerProductDAO implements IBPartnerProductDAO
 {
+
+	public static final String MSG_ProductSalesBanError = "ProductSalesBanError";
+
 	@Override
 	public List<I_C_BPartner_Product> retrieveBPartnerForProduct(final Properties ctx, final int Vendor_ID, final int productId, final int orgId)
 	{
@@ -211,5 +214,20 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.bpartnerId(bpartnerProduct.getC_BPartner_ID())
 				.reason(bpartnerProduct.getSalesBanReason())
 				.build();
+	}
+
+	@Override
+	public I_C_BPartner_Product getBannedProductForPartner(final int productId, final int partnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partnerId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsSalesBan, true)
+				.create()
+				.firstOnly(I_C_BPartner_Product.class);
+
 	}
 }

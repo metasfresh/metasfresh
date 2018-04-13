@@ -13,11 +13,11 @@ package de.metas.adempiere.callout;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,6 +34,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -43,6 +44,7 @@ import org.compiere.apps.search.NullInfoWindowGridRowBuilders;
 import org.compiere.apps.search.impl.InfoWindowGridRowBuilders;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
@@ -53,10 +55,14 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.i18n.IMsgBL;
+import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.purchasing.api.impl.BPartnerProductDAO;
 
 /**
  * This callout's default behavior is determined by {@link ProductQtyOrderFastInputHandler}. To change the behavior, explicitly add further handlers using
@@ -116,7 +122,7 @@ public class OrderFastInput extends CalloutEngine
 		{
 			return NO_ERROR;
 		}
-		
+
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 		if (!order.isSOTrx())
 		{
@@ -190,11 +196,11 @@ public class OrderFastInput extends CalloutEngine
 		}
 
 		final GridTab gridTab = getGridTab(calloutField);
-		if(gridTab == null)
+		if (gridTab == null)
 		{
 			return NullInfoWindowGridRowBuilders.instance;
 		}
-		
+
 		final InfoWindowGridRowBuilders singletonBuilder = new InfoWindowGridRowBuilders();
 		final IGridTabRowBuilder builder = handlers.createLineBuilderFromHeader(gridTab);
 		builder.setSource(order);
@@ -261,6 +267,7 @@ public class OrderFastInput extends CalloutEngine
 	public static I_C_OrderLine addOrderLine(final Properties ctx, final I_C_Order order, final Consumer<Object> orderLineCustomizer)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		final IBPartnerProductDAO bpProductDAO = Services.get(IBPartnerProductDAO.class);
 
 		final I_C_OrderLine ol = orderLineBL.createOrderLine(order);
 
@@ -286,6 +293,16 @@ public class OrderFastInput extends CalloutEngine
 			ol.setAD_User_ID(AD_User_ID);
 		}
 		// end: cg: 01717
+
+		final I_C_BPartner partner = ol.getC_BPartner();
+		//
+		final I_C_BPartner_Product bannedProductForPartner = bpProductDAO.getBannedProductForPartner(ol.getM_Product_ID(), partner.getC_BPartner_ID());
+
+		if (bannedProductForPartner != null)
+		{
+			final String msg = Services.get(IMsgBL.class).getMsg(Env.getCtx(), BPartnerProductDAO.MSG_ProductSalesBanError, new Object[] { partner, bannedProductForPartner.getSalesBanReason() });
+			throw new AdempiereException(msg);
+		}
 
 		// set the prices before saveEx, because otherwise, priceEntered is
 		// reset and that way IOrderLineBL.setPrices can't tell whether it
@@ -368,7 +385,7 @@ public class OrderFastInput extends CalloutEngine
 		{
 			return;
 		}
-		
+
 		if (bPartnerId <= 0 && mTab.getField(COLUMNNAME_C_BPartner_ID).isDisplayed(true))
 		{
 			mTab.getField(COLUMNNAME_C_BPartner_ID).requestFocus();
@@ -403,11 +420,11 @@ public class OrderFastInput extends CalloutEngine
 	public static void clearFields(final ICalloutRecord calloutRecord, final boolean save)
 	{
 		final GridTab gridTab = GridTab.fromCalloutRecordOrNull(calloutRecord);
-		if(gridTab == null)
+		if (gridTab == null)
 		{
 			return;
 		}
-		
+
 		handlers.clearFields(gridTab);
 		if (save)
 		{
