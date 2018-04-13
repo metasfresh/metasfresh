@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 
 import lombok.Builder;
 import lombok.Builder.Default;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -39,16 +40,16 @@ import lombok.Value;
 @Value
 public class DiscountResult
 {
+	public static final DiscountResult ZERO = builder().discount(BigDecimal.ZERO).build();
+	
 	@Default
-	private final BigDecimal discount = BigDecimal.ZERO;
+	@NonNull
+	BigDecimal discount = BigDecimal.ZERO;
 	@Default
-	private final int C_PaymentTerm_ID = -1;
-	@Default
-	private final BigDecimal priceListOverride = null;
-	@Default
-	private final BigDecimal priceStdOverride = null;
-	@Default
-	private final BigDecimal priceLimitOverride = null;
+	int C_PaymentTerm_ID = -1;
+	BigDecimal priceListOverride;
+	BigDecimal priceStdOverride;
+	BigDecimal priceLimitOverride;
 
 	@Default
 	private final int discountSchemaBreakId = -1;
