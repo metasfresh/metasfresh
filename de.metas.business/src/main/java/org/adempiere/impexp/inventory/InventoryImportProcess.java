@@ -3,6 +3,7 @@ package org.adempiere.impexp.inventory;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -10,13 +11,17 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_I_Inventory;
-import org.compiere.model.I_M_AttributeSet;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
@@ -24,6 +29,8 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_I_Inventory;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -38,8 +45,15 @@ import lombok.NonNull;
 public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 {
 	private static final Logger logger = LogManager.getLogger(InventoryImportProcess.class);
-
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	final ILotNumberDateAttributeDAO lotNumberDateAttributeDAO =  Services.get(ILotNumberDateAttributeDAO.class);
+
+	private static final String ATTR_BestBeforeDate = "HU_BestBeforeDate";
+	private static final String ATTR_TE = "HU_TE";
+	private static final String ATTR_DateReceived = "HU_DateReceived";
+	private static final String ATTR_SubProducerBPartner_Value = "SubProducerBPartner";
 
 	@Override
 	public Class<I_I_Inventory> getImportModelClass()
@@ -60,6 +74,14 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	}
 
 	@Override
+	protected Map<String, Object> getImportTableDefaultValues()
+	{
+		return ImmutableMap.<String, Object> builder()
+				.put(I_I_Inventory.COLUMNNAME_MovementDate, SystemTime.asDayTimestamp())
+				.build();
+	}
+
+	@Override
 	protected void updateAndValidateImportRecords()
 	{
 		final String whereClause = getWhereClause();
@@ -72,7 +94,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	@Override
 	protected String getImportOrderBySql()
 	{
-		return I_I_Inventory.COLUMNNAME_SerNo;
+		return I_I_Inventory.COLUMNNAME_WarehouseValue;
 	}
 
 	@Override
@@ -80,7 +102,6 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	{
 		return new X_I_Inventory(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
-
 
 	@Override
 	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_Inventory importRecord) throws Exception
@@ -139,7 +160,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		inventoryImportResult = importRecord.getM_Inventory_ID() <= 0 ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 
 		final I_M_Inventory inventory;
-		if (importRecord.getM_Inventory_ID()  <= 0)	// Insert new Inventory
+		if (importRecord.getM_Inventory_ID() <= 0)	// Insert new Inventory
 		{
 			inventory = createNewMInventory(importRecord);
 		}
@@ -177,7 +198,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	}
 
 	/**
-	 * 	 reuse previous inventory
+	 * reuse previous inventory
 	 *
 	 * @param importRecord
 	 * @param previousImportRecord
@@ -235,31 +256,57 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	private int extractM_AttributeSetInstance_ID(@NonNull final I_I_Inventory importRecord)
 	{
 		int M_AttributeSetInstance_ID = 0;
-		if (importRecord.getLot() != null || importRecord.getSerNo() != null)
+		final I_M_Product product = InterfaceWrapperHelper.load(importRecord.getM_Product_ID(), I_M_Product.class);
+		if (productBL.isInstanceAttribute(product))
 		{
-			final I_M_Product product = InterfaceWrapperHelper.load(importRecord.getM_Product_ID(), I_M_Product.class);
-			if (productBL.isInstanceAttribute(product))
-			{
-				final I_M_AttributeSet mas = productBL.getM_AttributeSet(product);
-				final I_M_AttributeSetInstance masi = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class);
-				masi.setM_AttributeSet(mas);
+			final Properties ctx = InterfaceWrapperHelper.getCtx(importRecord);
 
-				if (mas.isLot() && importRecord.getLot() != null)
-				{
-//					masi.setLot(importRecord.getLot(), importRecord.getM_Product_ID());
-				}
-				if (mas.isSerNo() && importRecord.getSerNo() != null)
-				{
-					masi.setSerNo(importRecord.getSerNo());
-				}
-				Services.get(IAttributeSetInstanceBL.class).setDescription(masi);
-				InterfaceWrapperHelper.save(masi);
-				M_AttributeSetInstance_ID = masi.getM_AttributeSetInstance_ID();
-			}
+			final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(importRecord.getM_Product());
+
+			// lot
+			final I_M_Attribute lotNumberAttr = lotNumberDateAttributeDAO.getLotNumberAttribute(ctx);
+			final I_M_AttributeValue lotNoAttrValue = createAttributeValue(lotNumberAttr, importRecord.getLot(), importRecord.getLot());
+			attributeSetInstanceBL.getCreateAttributeInstance(asi, lotNoAttrValue);
+			//
+			// BestBeforeDate
+			final I_M_Attribute bestBeforeDateAttr = attributeDAO.retrieveAttributeByValue(ctx, ATTR_BestBeforeDate, I_M_Attribute.class);
+			final I_M_AttributeValue bestBeforeDateValue = createAttributeValue(bestBeforeDateAttr, importRecord.getHU_BestBeforeDate().toString(), importRecord.getHU_BestBeforeDate().toString());
+			attributeSetInstanceBL.getCreateAttributeInstance(asi, bestBeforeDateValue);
+			//
+			// TE
+			final I_M_Attribute TEAttr = attributeDAO.retrieveAttributeByValue(ctx, ATTR_TE, I_M_Attribute.class);
+			final I_M_AttributeValue TEValue = createAttributeValue(TEAttr, importRecord.getTE(), importRecord.getTE());
+			attributeSetInstanceBL.getCreateAttributeInstance(asi, TEValue);
+			//
+			// DateReceived
+			final I_M_Attribute dateReceivedAttr = attributeDAO.retrieveAttributeByValue(ctx, ATTR_DateReceived, I_M_Attribute.class);
+			final I_M_AttributeValue dateReceivedValue = createAttributeValue(dateReceivedAttr, importRecord.getDateReceived().toString(), importRecord.getDateReceived().toString());
+			attributeSetInstanceBL.getCreateAttributeInstance(asi, dateReceivedValue);
+			//
+			// SubProducerBPartner_Value
+			final I_M_Attribute subProducerBPartnettr = attributeDAO.retrieveAttributeByValue(ctx, ATTR_SubProducerBPartner_Value, I_M_Attribute.class);
+			final I_M_AttributeValue subProducerBPartneValue = createAttributeValue(subProducerBPartnettr, importRecord.getSubProducerBPartner_Value(), importRecord.getSubProducerBPartner_Value());
+			attributeSetInstanceBL.getCreateAttributeInstance(asi, subProducerBPartneValue);
+
+			attributeSetInstanceBL.setDescription(asi);
+			InterfaceWrapperHelper.save(asi);
+
+			M_AttributeSetInstance_ID = asi.getM_AttributeSetInstance_ID();
 		}
 
 		return M_AttributeSetInstance_ID;
 	}
 
+
+	private I_M_AttributeValue createAttributeValue(@NonNull final I_M_Attribute attribute, @NonNull final String value, @NonNull final String name)
+	{
+		final I_M_AttributeValue attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class);
+		attributeValue.setM_Attribute(attribute);
+		attributeValue.setValue(value);
+		attributeValue.setName(name);
+		attributeValue.setIsActive(true);
+		InterfaceWrapperHelper.save(attributeValue);
+		return attributeValue;
+	}
 
 }

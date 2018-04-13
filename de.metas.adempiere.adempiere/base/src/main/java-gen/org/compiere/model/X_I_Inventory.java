@@ -15,7 +15,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 308810635L;
+	private static final long serialVersionUID = 715637675L;
 
     /** Standard Constructor */
     public X_I_Inventory (Properties ctx, int I_Inventory_ID, String trxName)
@@ -43,43 +43,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public int getC_BPartner_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	/** Set Datum der letzten Inventur.
 		@param DateLastInventory 
@@ -133,6 +96,22 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Best Before Date.
+		@param HU_BestBeforeDate Best Before Date	  */
+	@Override
+	public void setHU_BestBeforeDate (java.sql.Timestamp HU_BestBeforeDate)
+	{
+		set_Value (COLUMNNAME_HU_BestBeforeDate, HU_BestBeforeDate);
+	}
+
+	/** Get Best Before Date.
+		@return Best Before Date	  */
+	@Override
+	public java.sql.Timestamp getHU_BestBeforeDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_HU_BestBeforeDate);
 	}
 
 	/** Set Import-Fehlermeldung.
@@ -558,6 +537,28 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public java.lang.String getSerNo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SerNo);
+	}
+
+	/** 
+	 * SubProducerBPartner_Value AD_Reference_ID=138
+	 * Reference name: C_BPartner (Trx)
+	 */
+	public static final int SUBPRODUCERBPARTNER_VALUE_AD_Reference_ID=138;
+	/** Set SubProducerBPartner_Value.
+		@param SubProducerBPartner_Value SubProducerBPartner_Value	  */
+	@Override
+	public void setSubProducerBPartner_Value (java.lang.String SubProducerBPartner_Value)
+	{
+
+		set_Value (COLUMNNAME_SubProducerBPartner_Value, SubProducerBPartner_Value);
+	}
+
+	/** Get SubProducerBPartner_Value.
+		@return SubProducerBPartner_Value	  */
+	@Override
+	public java.lang.String getSubProducerBPartner_Value () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SubProducerBPartner_Value);
 	}
 
 	/** Set TE.

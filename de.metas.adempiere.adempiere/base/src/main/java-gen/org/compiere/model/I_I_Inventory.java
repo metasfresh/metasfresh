@@ -69,35 +69,6 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
-
-	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_BPartner>(I_I_Inventory.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -199,6 +170,29 @@ public interface I_I_Inventory
     public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Best Before Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setHU_BestBeforeDate (java.sql.Timestamp HU_BestBeforeDate);
+
+	/**
+	 * Get Best Before Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getHU_BestBeforeDate();
+
+    /** Column definition for HU_BestBeforeDate */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_HU_BestBeforeDate = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "HU_BestBeforeDate", null);
+    /** Column name HU_BestBeforeDate */
+    public static final String COLUMNNAME_HU_BestBeforeDate = "HU_BestBeforeDate";
 
 	/**
 	 * Set Import-Fehlermeldung.
@@ -640,6 +634,29 @@ public interface I_I_Inventory
     public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_SerNo = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "SerNo", null);
     /** Column name SerNo */
     public static final String COLUMNNAME_SerNo = "SerNo";
+
+	/**
+	 * Set SubProducerBPartner_Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSubProducerBPartner_Value (java.lang.String SubProducerBPartner_Value);
+
+	/**
+	 * Get SubProducerBPartner_Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSubProducerBPartner_Value();
+
+    /** Column definition for SubProducerBPartner_Value */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_SubProducerBPartner_Value = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "SubProducerBPartner_Value", null);
+    /** Column name SubProducerBPartner_Value */
+    public static final String COLUMNNAME_SubProducerBPartner_Value = "SubProducerBPartner_Value";
 
 	/**
 	 * Set TE.
