@@ -11,7 +11,7 @@ db_host=${DB_HOST:-db}
 db_port=${DB_PORT:-5432}
 db_name=${DB_NAME:-metasfresh}
 db_user=${DB_USER:-metasfresh}
-db_password=${DB_PASSWORD:-metasfresh}
+db_password=${DB_PASSWORD:-$(echo $secret_db_password)}
 
 # elastic search
 es_host=${ES_HOST:-search}
@@ -26,7 +26,7 @@ app_host=${APP_HOST:-app}
 
 echo_variable_values()
 {
- echo "Note: all these variables can be set using the -e parameter."
+ echo "Note: all these variables can be set from outside."
  echo ""
  echo "DB_HOST=${db_host}"
  echo "DB_PORT=${db_port}"
@@ -53,12 +53,6 @@ set_properties()
  fi
 }
 
-#set_hosts()
-#{
-# if [[ -z $(grep ${app_host} /etc/hosts) ]]; then
-#        sed -i 's/'$(hostname)'/'$(hostname)' '${app_host}'/' /etc/hosts
-# fi
-#}
 wait_dbms()
 {
  until nc -z $db_host $db_port
@@ -66,24 +60,6 @@ wait_dbms()
    sleep 1
  done
 }
-
-#run_install()
-#{
-# if [[ ! -f /opt/metasfresh/metasfresh-app.jar ]]; then#
-#	cp -R /opt/metasfresh/dist/deploy/* /opt/metasfresh/
-#    chmod 700 /opt/metasfresh/metasfresh-app.jar
-#	chown root:root -R /opt/metasfresh
-#	
-#	mkdir -p /opt/metasfresh/reports/ 
-#	chmod -R a+w /opt/metasfresh/reports/
-# fi
-#}
-
-# run_db_update()
-# {
-#  sleep 10
-#  cd /opt/metasfresh/dist/install/ && java -jar ./lib/de.metas.migration.cli.jar $@
-# } 
 
 run_metasfresh()
 {
@@ -104,8 +80,6 @@ run_metasfresh()
  -jar metasfresh-app.jar
 }
 
-# run_install
-
 echo_variable_values
 
 set_properties /opt/metasfresh/metasfresh.properties
@@ -113,8 +87,6 @@ set_properties /opt/metasfresh/local_settings.properties
 set_properties /root/local_settings.properties
 
 wait_dbms
-
-# run_db_update
 
 run_metasfresh
 
