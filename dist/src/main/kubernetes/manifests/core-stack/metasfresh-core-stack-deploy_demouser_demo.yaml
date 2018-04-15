@@ -1,26 +1,25 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: F:\kubernetes\kompose.exe convert
-    kompose.version: 1.9.0 (093c756)
-  creationTimestamp: null
+  name: "metasfresh-core-stack-demouser-demo"
   labels:
     de.metas.deployment.type: metasfresh-core-stack
+    de.metas.deployment.user: "demouser"
     de.metas.deployment.stage: "demo"
-    de.metas.deployment.user: "tobi"
-  name: "metasfresh-core-stack-pet"
+    de.metas.deployment.name: "metasfresh-core-stack-demouser-demo"
+  namespace: "default"
+# can be created with kubectl create namespace demo"
+#  namespace: "demo"
 spec:
   replicas: 1
   strategy:
     type: Recreate
   template:
     metadata:
-      creationTimestamp: null
       labels:
         de.metas.deployment.type: metasfresh-core-stack
+        de.metas.deployment.user: "demouser"
         de.metas.deployment.stage: "demo"
-        de.metas.deployment.user: "tobi"
     spec:
       containers:
 #
@@ -29,6 +28,8 @@ spec:
         name: db
         image: docker.metasfresh.com/postgres:10.3
         imagePullPolicy: Always
+        ports:
+          - containerPort: 5432
         resources: {}
         volumeMounts:
         - mountPath: /etc/localtime
@@ -39,8 +40,8 @@ spec:
           readOnly: true
         - mountPath: /var/lib/postgresql/data
           name: postgresql-data
-          #
-# metasfresh-app          
+#
+# metasfresh-app
       - env:
         - name: METASFRESH_HOME
           value: /opt/metasfresh
@@ -56,20 +57,22 @@ spec:
           value: metasfresh-admin
         - name: ADMIN_PORT
           value: '9090'
-# this one we have on docker.metasfresh.com, so let's try getting from there
         name: app
         image: docker.metasfresh.com/metasfresh/metasfresh-app-dev:gh18_dist_LATEST
         imagePullPolicy: Always
+        ports:
+          - containerPort: 61616 # activemq
+          - containerPort: 8282  # embedded tomcat
+          - containerPort: 8788  # remote debugging
         resources: 
           requests:
-            memory: 1124M
-            cpu: 500m
+            memory: 1200M
         volumeMounts:
         - mountPath: /etc/localtime
-          name: host-localtime # was app-claim1
+          name: host-localtime
           readOnly: true
         - mountPath: /etc/timezone
-          name: host-timezone # was app-claim2
+          name: host-timezone
           readOnly: true
 #
 # metasfresh-webui-api
@@ -86,22 +89,21 @@ spec:
           value: metasfresh-admin
         - name: ADMIN_PORT
           value: '9090'          
-# this one we have on docker.metasfresh.com, so let's try getting from there
         name: webapi
         image: docker.metasfresh.com/metasfresh/metasfresh-webui-api-dev:gh18_dist_LATEST
         imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        - containerPort: 8789 # remote debugging
         resources: 
           requests:
             memory: 600M
-#           cpu: 500m
         volumeMounts:
-#        - mountPath: /opt/metasfresh-webui-api/log
-#          name: webapi-claim0
         - mountPath: /etc/localtime
-          name: host-localtime # was webapi-claim1
+          name: host-localtime
           readOnly: true
         - mountPath: /etc/timezone
-          name: host-timezone # was webapi-claim2
+          name: host-timezone
           readOnly: true
 #
 # Elastic search
@@ -121,17 +123,19 @@ spec:
 #        - mountPath: /usr/share/elasticsearch/data
 #          name: search-claim0
         - mountPath: /etc/localtime
-          name: host-localtime # was search-claim1
+          name: host-localtime
           readOnly: true
         - mountPath: /etc/timezone
-          name: host-timezone # was search-claim2
+          name: host-timezone
           readOnly: true
 # webui
       - env:
         - name: WEBUI_API_HOST
-          value: localhost 
+          value: "demouser-demo.metasfresh.com"
         - name: WEBUI_API_PORT
-          value: '8080'         
+        # our ingress controller is made available via nodeport 32130
+          value: '32130'
+        #  value: '443'         
         name: webui
         image: docker.metasfresh.com/metasfresh/metasfresh-webui-dev:gh18_dist_LATEST
         imagePullPolicy: Always
@@ -141,10 +145,10 @@ spec:
         resources: {}
         volumeMounts:
         - mountPath: /etc/localtime
-          name: host-localtime # was webui-claim0
+          name: host-localtime
           readOnly: true
         - mountPath: /etc/timezone
-          name: host-timezone # was webui-claim1
+          name: host-timezone
           readOnly: true
       restartPolicy: Always
       initContainers:
@@ -172,4 +176,4 @@ spec:
           path: /etc/timezone
       - name: postgresql-data
         hostPath:
-          path: /tmp/postgresql-data
+          path: "/tmp/postgresql-data-demouser-demo"

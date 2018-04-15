@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "metasfresh-core-stack-demouser-demo"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    # not sure if we need this..to dig into it, this issue can be a starting point: 
+    #  https://github.com/nginxinc/kubernetes-ingress/pull/62
+    # nginx.org/ssl-services: "hello-world-svc"
+    ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+      - "demouser-demo.metasfresh.com"
+      secretName: tls-certificate
+  rules:
+  - host: "demouser-demo.metasfresh.com"
+    http:
+      paths:
+      - path: /rest
+        backend:
+          serviceName: "metasfresh-core-stack-demouser-demo"
+          servicePort: 8080
+      - path: /stomp
+        backend:
+          serviceName: "metasfresh-core-stack-demouser-demo"
+          servicePort: 8080
+      - path: /
+        backend:
+          serviceName: "metasfresh-core-stack-demouser-demo"
+          servicePort: 80
