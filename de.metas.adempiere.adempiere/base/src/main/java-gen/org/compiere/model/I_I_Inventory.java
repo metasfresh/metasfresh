@@ -636,6 +636,33 @@ public interface I_I_Inventory
     public static final String COLUMNNAME_SerNo = "SerNo";
 
 	/**
+	 * Set Unterlieferanten.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSubProducer_BPartner_ID (int SubProducer_BPartner_ID);
+
+	/**
+	 * Get Unterlieferanten.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSubProducer_BPartner_ID();
+
+	public org.compiere.model.I_C_BPartner getSubProducer_BPartner();
+
+	public void setSubProducer_BPartner(org.compiere.model.I_C_BPartner SubProducer_BPartner);
+
+    /** Column definition for SubProducer_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_BPartner> COLUMN_SubProducer_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_BPartner>(I_I_Inventory.class, "SubProducer_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name SubProducer_BPartner_ID */
+    public static final String COLUMNNAME_SubProducer_BPartner_ID = "SubProducer_BPartner_ID";
+
+	/**
 	 * Set SubProducerBPartner_Value.
 	 *
 	 * <br>Type: String

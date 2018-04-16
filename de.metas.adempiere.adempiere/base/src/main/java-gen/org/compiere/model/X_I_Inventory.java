@@ -15,7 +15,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 715637675L;
+	private static final long serialVersionUID = -1320550584L;
 
     /** Standard Constructor */
     public X_I_Inventory (Properties ctx, int I_Inventory_ID, String trxName)
@@ -537,6 +537,40 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public java.lang.String getSerNo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SerNo);
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getSubProducer_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_SubProducer_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setSubProducer_BPartner(org.compiere.model.I_C_BPartner SubProducer_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_SubProducer_BPartner_ID, org.compiere.model.I_C_BPartner.class, SubProducer_BPartner);
+	}
+
+	/** Set Unterlieferanten.
+		@param SubProducer_BPartner_ID Unterlieferanten	  */
+	@Override
+	public void setSubProducer_BPartner_ID (int SubProducer_BPartner_ID)
+	{
+		if (SubProducer_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_SubProducer_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_SubProducer_BPartner_ID, Integer.valueOf(SubProducer_BPartner_ID));
+	}
+
+	/** Get Unterlieferanten.
+		@return Unterlieferanten	  */
+	@Override
+	public int getSubProducer_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SubProducer_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** 

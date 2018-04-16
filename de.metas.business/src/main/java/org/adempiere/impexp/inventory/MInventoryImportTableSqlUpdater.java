@@ -57,6 +57,7 @@ public class MInventoryImportTableSqlUpdater
 		dbUpdateWarehouse(whereClause);
 		dbUpdateCreateLocators(whereClause);
 		dbUpdateProducts(whereClause);
+		dbUpdateSubProducer(whereClause);
 
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -160,6 +161,18 @@ public class MInventoryImportTableSqlUpdater
 		logger.debug("Set Product from UPC=" + no);
 	}
 
+	private void dbUpdateSubProducer(@NonNull final String whereClause)
+	{
+		// Set M_Warehouse_ID
+		final StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
+				.append("SET SubProducer_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner bp WHERE i.SubProducerBPartner_Value=bp.value) ")
+				.append("WHERE SubProducer_BPartner_ID IS NULL ")
+				.append("AND I_IsImported<>'Y' ")
+				.append(whereClause);
+		int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set Partners =" + no);
+	}
+
 	private void dbUpdateErrorMessages(@NonNull final String whereClause)
 	{
 		StringBuilder sql;
@@ -196,6 +209,17 @@ public class MInventoryImportTableSqlUpdater
 		if (no != 0)
 		{
 			logger.warn("No Product=" + no);
+		}
+
+		sql = new StringBuilder("UPDATE I_Inventory ")
+				.append("SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Partner, ' ")
+				.append("WHERE SubProducer_BPartner_ID IS NULL ")
+				.append("AND I_IsImported<>'Y' ")
+				.append(whereClause);
+		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		if (no != 0)
+		{
+			logger.warn("No Partners=" + no);
 		}
 
 		// No QtyCount

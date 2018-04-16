@@ -304,7 +304,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 			if (!Check.isEmpty(importRecord.getSubProducerBPartner_Value(), true))
 			{
 				final I_M_Attribute subProducerBPartnettr = attributeDAO.retrieveAttributeByValue(ctx, ATTR_SubProducerBPartner_Value, I_M_Attribute.class);
-				final I_M_AttributeValue subProducerBPartneValue = getOrCreateAttributeValue(subProducerBPartnettr, importRecord.getSubProducerBPartner_Value());
+				final I_M_AttributeValue subProducerBPartneValue = getOrCreateAttributeValue(subProducerBPartnettr, String.valueOf(importRecord.getSubProducer_BPartner_ID()));
 				attributeSetInstanceBL.getCreateAttributeInstance(asi, subProducerBPartneValue);
 			}
 			attributeSetInstanceBL.setDescription(asi);
