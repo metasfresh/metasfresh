@@ -7,11 +7,16 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
@@ -19,6 +24,7 @@ import org.compiere.model.X_M_Inventory;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -29,6 +35,7 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -86,6 +93,10 @@ public class M_Inventory
 			{
 				subtractQtyDiffFromHU(inventoryLine);
 			}
+
+			final I_M_HU hu = InterfaceWrapperHelper.load(inventoryLine.getM_HU_ID(), I_M_HU.class);
+			setAttributes(hu, inventoryLine.getM_AttributeSetInstance());
+			InterfaceWrapperHelper.save(hu);
 		}
 	}
 
@@ -187,6 +198,23 @@ public class M_Inventory
 		else
 		{
 			throw new HUException("No HU was created by " + huDestination);
+		}
+	}
+
+	private void setAttributes(final I_M_HU hu, final I_M_AttributeSetInstance attributeSetInstance)
+	{
+		final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(attributeSetInstance);
+		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		final IAttributeStorage huAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+
+		for (final I_M_AttributeInstance instance : instances)
+		{
+			final I_M_Attribute attribute = instance.getM_Attribute();
+			final I_M_AttributeValue attrValue = instance.getM_AttributeValue();
+			if (attribute != null)
+			{
+				huAttributeStorage.setValue(attribute, attrValue.getValue());
+			}
 		}
 	}
 
