@@ -136,7 +136,7 @@ import lombok.NonNull;
 			final BigDecimal priceList = productPrices.getPriceList();
 			final BigDecimal priceLimit = productPrices.getPriceLimit();
 
-			final BigDecimal stdAddAmt = Util.coalesce(discountSchemaBreak.getStd_AddAmt(), BigDecimal.ZERO);
+			final BigDecimal stdAddAmt = discountSchemaBreak.getStd_AddAmt();
 
 			result.priceListOverride(priceList);
 			result.priceLimitOverride(priceLimit);
