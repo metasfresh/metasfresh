@@ -30,6 +30,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -652,12 +653,21 @@ public final class DocumentFieldDescriptor
 					return valueConv;
 				}
 			}
-			else if(Password.class == targetType)
+			else if (Password.class == targetType)
 			{
 				final Password password = Password.ofNullableString(value.toString());
 				@SuppressWarnings("unchecked")
 				final T valueConv = (T)password;
 				return valueConv;
+			}
+			else if (ColorValue.class == targetType)
+			{
+				if (value instanceof String)
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)ColorValue.ofHexString(value.toString());
+					return valueConv;
+				}
 			}
 		}
 		catch (final Exception e)
@@ -667,12 +677,12 @@ public final class DocumentFieldDescriptor
 					+ "\n Widget type: " + widgetType
 					+ "\n Reason: " + e.getLocalizedMessage(), e);
 		}
-		
+
 		//
 		// Fallbacks
-		
+
 		// consider empty strings as null objects
-		if(value instanceof String || value.toString().isEmpty())
+		if (value instanceof String || value.toString().isEmpty())
 		{
 			return null;
 		}
