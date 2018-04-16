@@ -63,6 +63,8 @@ MF_ARTIFACT_VERSIONS['metasfresh-webui'] = params.MF_METASFRESH_WEBUI_API_VERSIO
 MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = params.MF_METASFRESH_WEBUI_FRONTEND_VERSION ?: "LATEST";
 MF_ARTIFACT_VERSIONS['metasfresh-esb-camel'] = params.MF_METASFRESH_ESB_CAMEL_VERSION ?: "LATEST";
 
+String dbInitDockerImageName; // will be set if and when the docker image is created
+
 timestamps
 {
 	MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
@@ -161,10 +163,11 @@ node('agent && linux && libc6-i386')
 
 				final def MF_ARTIFACT_URLS = [:];
 				MF_ARTIFACT_URLS['metasfresh-admin'] = "${mvnConf.resolveRepoURL}/de/metas/admin/metasfresh-admin/${urlEncodedMavenProps['metasfresh-admin.version']}/metasfresh-admin-${urlEncodedMavenProps['metasfresh-admin.version']}.jar"
-				MF_ARTIFACT_URLS['metasfresh-dist'] =  "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-dist.tar.gz"
-				MF_ARTIFACT_URLS['metasfresh-material-dispo']=  "${mvnConf.resolveRepoURL}/de/metas/material/metasfresh-material-dispo-service/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-material-dispo-service-${urlEncodedMavenProps['metasfresh.version']}.jar"
-				MF_ARTIFACT_URLS['metasfresh-procurement-webui']=  "${mvnConf.resolveRepoURL}/de/metas/procurement/de.metas.procurement.webui/${urlEncodedMavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${urlEncodedMavenProps['metasfresh-procurement-webui.version']}.jar"
-				MF_ARTIFACT_URLS['metasfresh-webui'] =  "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-api/${urlEncodedMavenProps['metasfresh-webui-api.version']}/metasfresh-webui-api-${urlEncodedMavenProps['metasfresh-webui-api.version']}.jar"
+				MF_ARTIFACT_URLS['metasfresh-dist'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-dist.tar.gz"
+				MF_ARTIFACT_URLS['metasfresh-dist-sql-only'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-sql-only.tar.gz"
+				MF_ARTIFACT_URLS['metasfresh-material-dispo'] = "${mvnConf.resolveRepoURL}/de/metas/material/metasfresh-material-dispo-service/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-material-dispo-service-${urlEncodedMavenProps['metasfresh.version']}.jar"
+				MF_ARTIFACT_URLS['metasfresh-procurement-webui'] = "${mvnConf.resolveRepoURL}/de/metas/procurement/de.metas.procurement.webui/${urlEncodedMavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${urlEncodedMavenProps['metasfresh-procurement-webui.version']}.jar"
+				MF_ARTIFACT_URLS['metasfresh-webui'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-api/${urlEncodedMavenProps['metasfresh-webui-api.version']}/metasfresh-webui-api-${urlEncodedMavenProps['metasfresh-webui-api.version']}.jar"
 				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${urlEncodedMavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${urlEncodedMavenProps['metasfresh-webui-frontend.version']}.tar.gz"
 
 				// Note: for the rollout-job's URL with the 'parambuild' to work on this pipelined jenkins, we need the https://wiki.jenkins-ci.org/display/JENKINS/Build+With+Parameters+Plugin, and *not* version 1.3, but later.
@@ -191,7 +194,7 @@ node('agent && linux && libc6-i386')
 <h3>Deployable artifacts</h3>
 <ul>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist']}\">dist-tar.gz</a></li>
-	<li><a href=\"${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\">sql-only-tar.gz</a></li>
 	<li><a href=\"${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-swingui/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-swingui-${misc.urlEncode(MF_VERSION)}-client.zip\">client.zip</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
@@ -219,27 +222,40 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 		} // withEnv
 	} // configFileProvider
 
-stage('Build&Push docker images')
-{
-	final DockerConf appDockerConf = new DockerConf(
-					'metasfresh-app-dev', // artifactName
-					MF_UPSTREAM_BRANCH, // branchName
-					MF_VERSION, // versionSuffix
-					'dist/target/docker/app') // workDir
-	dockerBuildAndPush(appDockerConf)
+	stage('Build&Push docker images')
+	{
+		final DockerConf appDockerConf = new DockerConf(
+						'metasfresh-app-dev', // artifactName
+						MF_UPSTREAM_BRANCH, // branchName
+						MF_VERSION, // versionSuffix
+						'dist/target/docker/app') // workDir
+		dockerBuildAndPush(appDockerConf)
 
-	final DockerConf dbInitDockerConf = appDockerConf
-					.withArtifactName('metasfresh-db-init-pg-10-3')
-					.withWorkDir('dist/target/docker/db-init')
-	dockerBuildAndPush(dbInitDockerConf)
+		final DockerConf dbInitDockerConf = appDockerConf
+						.withArtifactName('metasfresh-db-init-pg-10-3')
+						.withWorkDir('dist/target/docker/db-init')
+		dbInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
 
-	// clean up the workspace after (successfull) builds
-	cleanWs cleanWhenAborted: false, cleanWhenFailure: false
-}
+		// clean up the workspace after (successfull) builds
+		cleanWs cleanWhenAborted: false, cleanWhenFailure: false
+	}
 } // node
 
-	// we need this one for both "Test-SQL" and "Deployment
-	def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
+stage('Test SQL-Migration (docker)')
+{
+	if(params.MF_SKIP_SQL_MIGRATION_TEST)
+	{
+		echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
+	}
+	else
+	{
+		sh "docker run ${dbInitDockerImageName} -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\""
+	}
+}
+
+/*
+// we need this one for both "Test-SQL" and "Deployment
+def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
 
 	final packagingPart=packaging ? ":${packaging}" : ""
 	final classifierPart=classifier ? ":${classifier}" : ""
@@ -277,7 +293,6 @@ def invokeRemote = { String sshTargetHost, String sshTargetUser, String director
 	sh "ssh ${sshTargetUser}@${sshTargetHost} \"cd ${directory} && ${shellScript}\""
 }
 
-
 stage('Test SQL-Migration')
 {
 	if(params.MF_SKIP_SQL_MIGRATION_TEST)
@@ -308,7 +323,7 @@ stage('Test SQL-Migration')
 				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "${deployDir}/dist/install");
 				final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
 				final VALIDATE_MIGRATION_TEST_DB="tmp-metasfresh-dist-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${MF_VERSION}"
-						.replaceAll('[^a-zA-Z0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
+						.replaceAll('[^a-zA-Z0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in its DB names
 						.toLowerCase(); // also, DB names are generally in lowercase
 
 				invokeRemoteInInstallDir("./sql_remote.sh -n ${VALIDATE_MIGRATION_TEMPLATE_DB} ${VALIDATE_MIGRATION_TEST_DB}");
@@ -318,5 +333,5 @@ stage('Test SQL-Migration')
 		}
 	} // if(params.MF_SKIP_SQL_MIGRATION_TEST)
 } // stage
-
+*/
 } // timestamps
