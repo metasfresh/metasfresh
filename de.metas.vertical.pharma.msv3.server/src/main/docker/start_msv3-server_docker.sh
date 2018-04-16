@@ -96,7 +96,7 @@ run_metasfresh()
  -Dspring.datasource.password=${db_password}\
  -Dspring.jpa.hibernate.ddl-auto=create-drop\
  -Dspring.jpa.show-sql=${debug_jpa_show_sql}\
- -Dmsv3server.startup.requestAllData=${SERVER_REQUEST_ALL_DATA_ON_STARTUP}
+ -Dmsv3server.startup.requestAllData=${request_all_data_on_startup} \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
  -jar de.metas.vertical.pharma.msv3.server.jar
 }
