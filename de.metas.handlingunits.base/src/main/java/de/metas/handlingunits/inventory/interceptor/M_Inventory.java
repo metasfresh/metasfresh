@@ -7,16 +7,12 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mmovement.api.IMovementDAO;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
@@ -24,29 +20,38 @@ import org.compiere.model.X_M_Inventory;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.IHUContextProcessor;
+import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
+import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
+import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -95,27 +100,52 @@ public class M_Inventory
 			}
 
 			final I_M_HU hu = InterfaceWrapperHelper.load(inventoryLine.getM_HU_ID(), I_M_HU.class);
-			setAttributes(hu, inventoryLine.getM_AttributeSetInstance());
+			transferAttributesToHU(inventoryLine, hu);
 			InterfaceWrapperHelper.save(hu);
 		}
 	}
 
-	private void setAttributes(final I_M_HU hu, final I_M_AttributeSetInstance attributeSetInstance)
+	private final void transferAttributesToHU(
+			@NonNull final I_M_InventoryLine inventoryLine,
+			@NonNull final I_M_HU hu)
 	{
-		final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(attributeSetInstance);
-		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
-		final IAttributeStorage huAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+		final IContextAware contextInitial = InterfaceWrapperHelper.getContextAware(inventoryLine);
+		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(contextInitial);
 
-		for (final I_M_AttributeInstance instance : instances)
-		{
-			final I_M_Attribute attribute = instance.getM_Attribute();
-			final I_M_AttributeValue attrValue = instance.getM_AttributeValue();
-			if (attribute != null)
+		executor.run((IHUContextProcessor)huContext -> {
+			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
+			final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+
+			//
+			// Transfer ASI attributes from inventory line to our HU
+			final IAttributeStorage asiAttributeStorageFrom = attributeStorageFactory.getAttributeStorageIfHandled(inventoryLine);
+			if (asiAttributeStorageFrom == null)
 			{
-				huAttributeStorage.setValue(attribute, attrValue.getValue());
+				return IHUContextProcessor.NULL_RESULT; // can't transfer from nothing
 			}
-		}
+			final IAttributeStorage huAttributeStorageTo = attributeStorageFactory.getAttributeStorage(hu);
+
+			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
+			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
+
+			final IHUAttributeTransferRequest request = new HUAttributeTransferRequestBuilder(huContext)
+					.setProduct(inventoryLine.getM_Product())
+					.setQty(inventoryLine.getQtyInternalUse())
+					.setUOM(inventoryLine.getC_UOM())
+					.setAttributeStorageFrom(asiAttributeStorageFrom)
+					.setAttributeStorageTo(huAttributeStorageTo)
+					.setHUStorageFrom(huStorageFrom)
+					.create();
+
+			trxAttributesBuilder.transferAttributes(request);
+
+			return IHUContextProcessor.NULL_RESULT; // we don't care
+		});
+
+
 	}
+
 
 	private void addQtyDiffToHU(final I_M_InventoryLine inventoryLine)
 	{
