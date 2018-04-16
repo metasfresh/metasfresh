@@ -74,9 +74,12 @@ public final class Constants
 	public static final String ATTR_ReceiptInOutLine_ID = "HU_ReceiptInOutLine_ID";
 
 	public static final String ATTR_BestBeforeDate = "HU_BestBeforeDate";
-	
+
 	public static final String ATTR_Expired = "HU_Expired";
 	public static final String ATTR_Expired_Value_Expired = "expired";
+
+	public static final String ATTR_TE = "HU_TE";
+	public static final String ATTR_DateReceived = "HU_DateReceived";
 
 	public static String sqlBestBeforeDate(final String huIdColumnName)
 	{
