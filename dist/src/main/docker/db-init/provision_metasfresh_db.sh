@@ -10,7 +10,7 @@ db_host=${DB_HOST:-localhost}
 db_port=${DB_PORT:-5432}
 
 db_name=${DB_NAME:-metasfresh}
-DB_USER=${DB_USER:-metasfresh}
+db_user=${DB_USER:-metasfresh}
 db_password=${DB_PASSWORD:-$(echo $secret_db_password)}
 
 url_seed_dump=${URL_SEED_DUMP:-http://www.metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump}
@@ -36,10 +36,10 @@ apply_migration_scripts_from_artifact
 
 create_role_if_not_exists()
 {
-	if psql -t -c '\du' | cut -d \| -f 1 | grep -qw $DB_USER; then
-		echo "Role $DB_USER already exists"
+	if psql -t -c '\du' | cut -d \| -f 1 | grep -qw $db_user; then
+		echo "Role $db_user already exists"
 	else
-		echo "Role $DB_USER does not yet exist"
+		echo "Role $db_user does not yet exist"
 		create_role
 	fi
 }
@@ -62,7 +62,7 @@ create_role()
 	echo " Creating role ..."
 	echo "==================="
 	psql -v ON_ERROR_STOP=1 --username=postgres <<- EOSQL
-CREATE ROLE $DB_USER LOGIN ENCRYPTED PASSWORD '$db_password' SUPERUSER INHERIT NOCREATEDB NOCREATEROLE;
+CREATE ROLE $db_user LOGIN ENCRYPTED PASSWORD '$db_password' SUPERUSER INHERIT NOCREATEDB NOCREATEROLE;
 EOSQL
 	echo "==========="
 	echo " ... done!"
@@ -75,8 +75,8 @@ create_db()
 	echo " Creating database and permissions ..."
 	echo "======================================="
 	psql -v ON_ERROR_STOP=1 --username=postgres <<- EOSQL
-CREATE DATABASE $db_name WITH OWNER = $DB_USER;
-GRANT ALL PRIVILEGES ON DATABASE $db_name to $DB_USER;
+CREATE DATABASE $db_name WITH OWNER = $db_user;
+GRANT ALL PRIVILEGES ON DATABASE $db_name to $db_user;
 EOSQL
 	echo "==========="
 	echo " ... done!"
@@ -98,7 +98,7 @@ import_dump()
 	curl -o $OUTPUT_FILE $url_seed_dump
 	
 	echo "Populating database with initital seed... "
-	pg_restore -Fc -U "$DB_USER" -d "$db_password" $OUTPUT_FILE
+	pg_restore -Fc -U "$db_user" -d "$db_password" $OUTPUT_FILE
 	echo "=========="
 	echo " ...done!"
 	echo "=========="	
@@ -127,7 +127,7 @@ apply_migration_scripts_from_artifact()
 METASFRESH_DB_SERVER=${db_host}
 METASFRESH_db_port=${db_port}
 METASFRESH_db_name=${db_name}
-METASFRESH_DB_USER=${DB_USER}
+METASFRESH_DB_USER=${db_user}
 METASFRESH_db_password=${db_password}
 EOL
 
