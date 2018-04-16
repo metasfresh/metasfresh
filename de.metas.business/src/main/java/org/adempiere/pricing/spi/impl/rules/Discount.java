@@ -90,7 +90,7 @@ public class Discount implements IPricingRule
 	}
 
 	@Override
-	public void calculate(IPricingContext pricingCtx, IPricingResult result)
+	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
 		if (!applies(pricingCtx, result))
 		{
@@ -179,6 +179,7 @@ public class Discount implements IPricingRule
 		result.setM_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
 		result.setDiscount(disccountResult.getDiscount());
 		result.setC_PaymentTerm_ID(disccountResult.getC_PaymentTerm_ID());
+		result.setM_DiscountSchemaBreak_ID(disccountResult.getDiscountSchemaBreakId());
 		
 		final BigDecimal priceStdOverride = disccountResult.getPriceStdOverride();
 		final BigDecimal priceListOverride = disccountResult.getPriceListOverride();
