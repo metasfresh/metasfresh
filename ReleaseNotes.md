@@ -10,14 +10,29 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.54 (2018-17)
+**release for week 2018-17**
+
+## Features
+
+## Fixes
+
 # metasfresh 5.53 (2018-16)
 **release for week 2018-16**
 
 ## Features
 * metasfresh
+  * [#3816](https://github.com/metasfresh/metasfresh/issues/3816) technical: Adapt Query.list() to avoid ClassCastExceptions
+  * [#3822](https://github.com/metasfresh/metasfresh/issues/3822) ShipmentSchedule.QtyPickList not updated from drafted shipments
+  * [#3833](https://github.com/metasfresh/metasfresh/issues/3833) Enhanced Pricing, allowing detailed individual Pricesystems per Product and Businesspartner
+  * [#3835](https://github.com/metasfresh/metasfresh/issues/3835) No recording of Products without pricing Conditions
   * [#3844](https://github.com/metasfresh/metasfresh/issues/3844) WebUI: Add Translations for Context Menu to de_DE
     * Adds new Translations for context menu of metasfresh WebUI.
-    
+  * [#3849](https://github.com/metasfresh/metasfresh/issues/3849) Error with ATP presentation in Sales Order Batch entry
+
+* metasfresh-webui-api
+  * [#852](https://github.com/metasfresh/metasfresh-webui-api/issues/852) Color Indicator Widget functionality API
+
 * metasfresh-webui-frontend
   * [#1539](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1539) eMail Editor mailTo List not showing selected entry
     * Improvement of the Adress Lookup in eMail Editor. Now showing which entry is selected.
@@ -27,9 +42,18 @@ Here come the actual release notes:
     * Improvement of Context Menu in Grid View, now translatable.
 
 ## Fixes
+* metasfresh
+  * [#3375](https://github.com/metasfresh/metasfresh/issues/3375) Quantity picked in Shipment Schedules doesn't update
+  * [#3819](https://github.com/metasfresh/metasfresh/issues/3819) EDI - "Resubmit Selection" from import processor log not working anymore
+  * [#3838](https://github.com/metasfresh/metasfresh/issues/3838) packaging invoice candidate updated incorrectly
+  * [#3842](https://github.com/metasfresh/metasfresh/issues/3842) Cannot access server logs via Server Monitor
+  * [#3843](https://github.com/metasfresh/metasfresh/issues/3843) wrong parent.relativePath in different pom.xmls
+    * thx to [#gp1864](https://github.com/gp1864)!
+
 * metasfresh-webui-api
   * [#902](https://github.com/metasfresh/metasfresh-webui-api/issues/902) API token is not shown in the webui
     * Improved User Window with Authentication Subtab.
+  
 * metasfresh-webui-frontend
   * [#1274](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1274) Edit Fields in Main Grid View Improvements
     * Minor Improvement of Grid Cell Edit Mode, now aboiding the Detail View if double Clicking on Field in Edit Mode.
