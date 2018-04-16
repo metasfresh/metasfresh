@@ -60,7 +60,7 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 			final String msg = Services.get(IMsgBL.class).getMsg(
 					Env.getCtx(),
 					IBPartnerProductDAO.MSG_ProductSalesBanError,
-					new Object[] { invoice.getC_BPartner(), bannedProductForPartner.getSalesBanReason() });
+					new Object[] { invoice.getC_BPartner().getName(), bannedProductForPartner.getSalesBanReason() });
 
 			throw new AdempiereException(msg);
 		}
