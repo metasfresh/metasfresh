@@ -302,7 +302,7 @@ public class OrderFastInput extends CalloutEngine
 			final String msg = Services.get(IMsgBL.class).getMsg(
 					Env.getCtx(), 
 					IBPartnerProductDAO.MSG_ProductSalesBanError, 
-					new Object[] { ol.getC_BPartner(), bannedProductForPartner.getSalesBanReason() });
+					new Object[] { ol.getC_BPartner().getName(), bannedProductForPartner.getSalesBanReason() });
 			
 			throw new AdempiereException(msg);
 		}
