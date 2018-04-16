@@ -7,8 +7,8 @@ FROM docker.metasfresh.com:6000/ubuntu:16.04
 RUN apt update \
     && apt -y full-upgrade \
     && apt -y install openjdk-8-jdk-headless \
-    && apt -y install nc \
-    && apt install dos2unix \
+    && apt -y install netcat \
+    && apt -y install dos2unix \
     && apt -y autoremove \
     && apt -y autoclean
 
