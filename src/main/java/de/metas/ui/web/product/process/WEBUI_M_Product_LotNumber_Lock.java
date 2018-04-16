@@ -149,8 +149,10 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 
 	}
 
-	private List<I_M_HU> retrieveHUsForAttributeStringValue(final int productId,
-			final I_M_Attribute attribute, final String value)
+	private List<I_M_HU> retrieveHUsForAttributeStringValue(
+			final int productId,
+			final I_M_Attribute attribute,
+			final String value)
 	{
 		return Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
 				.addOnlyWithProductId(productId)
