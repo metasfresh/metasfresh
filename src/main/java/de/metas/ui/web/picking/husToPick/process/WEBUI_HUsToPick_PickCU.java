@@ -249,13 +249,19 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		final I_M_HU splitCU = ListUtils.singleElement(splitHUs);
 		addHUIdToCurrentPickingSlot(splitCU.getM_HU_ID());
 
-
 		if (isAutoProcess)
 		{
+			autoProcessPicking(splitCU);
 
-			final PickingSlotRow rowToProcess = getPickingSlotRow();
-			pickingCandidateService.processForHUIds(ImmutableList.of(rowToProcess.getHuId()), rowToProcess.getPickingSlotId(), OptionalInt.empty());
 		}
+
+	}
+
+	private void autoProcessPicking(final I_M_HU splitCU)
+	{
+
+		final PickingSlotRow rowToProcess = getPickingSlotRow();
+		pickingCandidateService.processForHUIds(ImmutableList.of(splitCU.getM_HU_ID()), rowToProcess.getPickingSlotId(), OptionalInt.empty());
 
 	}
 
