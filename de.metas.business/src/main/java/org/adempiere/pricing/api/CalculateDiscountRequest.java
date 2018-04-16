@@ -55,6 +55,7 @@ public class CalculateDiscountRequest
 	private final int M_Product_Category_ID;
 	private final BigDecimal bPartnerFlatDiscount;
 	private final List<I_M_AttributeInstance> instances;
+	private final IPricingContext pricingCtx;
 
 	@Builder
 	private CalculateDiscountRequest(
@@ -64,7 +65,8 @@ public class CalculateDiscountRequest
 			final int M_Product_ID,
 			final int M_Product_Category_ID,
 			final BigDecimal bPartnerFlatDiscount,
-			final List<I_M_AttributeInstance> instances)
+			final List<I_M_AttributeInstance> instances,
+			final IPricingContext pricingCtx)
 	{
 		this.schema = schema;
 		this.qty = qty;
@@ -73,5 +75,6 @@ public class CalculateDiscountRequest
 		this.M_Product_Category_ID = M_Product_Category_ID;
 		this.bPartnerFlatDiscount = bPartnerFlatDiscount;
 		this.instances = instances != null ? ImmutableList.copyOf(instances) : ImmutableList.of();
+		this.pricingCtx = pricingCtx;
 	}
 }

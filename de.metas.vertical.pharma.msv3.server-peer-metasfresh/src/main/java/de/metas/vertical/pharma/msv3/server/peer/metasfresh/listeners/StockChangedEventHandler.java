@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.services.MSV3StockAvailabilityService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,7 +47,13 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 	}
 
 	@Override
-	public void handleEvent(final StockChangedEvent event)
+	public void validateEvent(@NonNull final StockChangedEvent event)
+	{
+		event.validate();
+	}
+
+	@Override
+	public void handleEvent(@NonNull final StockChangedEvent event)
 	{
 		stockAvailabilityService.handleStockChangedEvent(event);
 	}

@@ -9,7 +9,7 @@
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent</artifactId>
 		<version>10.0.0</version>
-		<relativePath>../../de.metas.parent/pom.xml</relativePath>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
