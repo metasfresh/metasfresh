@@ -10,6 +10,34 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.53 (2018-16)
+**release for week 2018-16**
+
+## Features
+* metasfresh
+  * [#3844](https://github.com/metasfresh/metasfresh/issues/3844) WebUI: Add Translations for Context Menu to de_DE
+    * Adds new Translations for context menu of metasfresh WebUI.
+    
+* metasfresh-webui-frontend
+  * [#1539](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1539) eMail Editor mailTo List not showing selected entry
+    * Improvement of the Adress Lookup in eMail Editor. Now showing which entry is selected.
+  * [#1648](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1648) Dropdown value in filters cannot be deleted after selection
+    * Improvement of Filter ctiteria, now possible to empty aleady set values in List Widgets.
+  * [#1742](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1742) Context Menu translateable
+    * Improvement of Context Menu in Grid View, now translatable.
+
+## Fixes
+* metasfresh-webui-api
+  * [#902](https://github.com/metasfresh/metasfresh-webui-api/issues/902) API token is not shown in the webui
+    * Improved User Window with Authentication Subtab.
+* metasfresh-webui-frontend
+  * [#1274](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1274) Edit Fields in Main Grid View Improvements
+    * Minor Improvement of Grid Cell Edit Mode, now aboiding the Detail View if double Clicking on Field in Edit Mode.
+  * [#1462](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1462) broke: cannot completely delete a numeric field in grid view
+    * Fixes the Grid View Edit Mode for numeric Fields that shall be zeroed when backspace.
+  * [#1612](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1612) modal view: quickActions not called when selecting all rows from all pages
+    * Fixes the possibility to select more than 20 Grid lines and use Quickactions.
+
 # metasfresh 5.52 (2018-15)
 **release for week 2018-15**
 
@@ -19,6 +47,18 @@ Here come the actual release notes:
     * Improvement of List widget border to Lookup widget border. Now having a harmonized look & feel.
 
 ## Fixes
+* metasfresh
+  * [#3767](https://github.com/metasfresh/metasfresh/issues/3767) Picking TU Label error when GLN is missing in PartnerLocation
+    * Fixes an error in the Picking Label. Now hiding the Barcode in case the Businesspartner does not have a GLN.
+  * [#3773](https://github.com/metasfresh/metasfresh/issues/3773) Regression on process M_ReceiptSchedule_Generate_M_InOuts
+    * Fixes various issues in the Receipt Document generation Process in Material Receipt Schedule.
+  * [#3806](https://github.com/metasfresh/metasfresh/issues/3806) Packaging-inout-lines are split into too many invoice candidates
+    * Fixes an error in Invoice Generation with not grouping Packaging Lines in Invoice Candidates.
+  * [#3809](https://github.com/metasfresh/metasfresh/issues/3809) InvoiceCandidates without C_PaymentTerm_ID can't be invoiced together with other ICs
+    * Fixes an Error in Invoice Candidates. The Packaging Inoutlines had a wrong PaymentTerm and were not grouped/ matched be the new Aggregation Header.
+  * [#3815](https://github.com/metasfresh/metasfresh/issues/3815) QtyOrdered sometimes updated wrongly on C_Order close
+    * Bugfix for the Quantity Ordered result in Invoicecandidates, that was wrongly set after creation and immediate close of sales orders.
+
 * metasfresh-webui-frontend
   * [#1555](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1555) Can not enter "-" into any search field
     * Fixes the search and filtering for special characters. Now it's able to search for minus, underscore and different other characters too.
@@ -29,7 +69,9 @@ Here come the actual release notes:
   * [#1730](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1730) Create purchase orders process - fields collapse
     * Improved Purchase Create action in sales order. Now not collapsing the tree after entering a Quantity value.
   * [#1734](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1734) Picking Terminal opens with all rows uncollapsed
-    * Performance Improvement of Picking Terminal view, now openening collapsed and much faster.
+    * Performance Improvement of Picking Terminal view, now opening collapsed and much faster.
+  * [#1744](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1744) Table doesn't take the full available height
+    * Fixes a Layout Issue in Grid View Presentation with Pagination widget.
 
 # metasfresh 5.51 (2018-14)
 **release for week 2018-14**

@@ -65,7 +65,6 @@ import org.compiere.apps.form.FormPanel;
 import org.compiere.grid.VPanel;
 import org.compiere.model.GridField;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.table.AnnotatedTableFactory;
 import org.compiere.util.DisplayType;
@@ -213,7 +212,7 @@ final class ReadPaymentForm
 	private void jbInit()
 	{
 		final CPanel panel = new CPanel();
-		CompiereColor.setBackground(panel);
+		AdempierePLAF.setDefaultBackground(panel);
 
 		// mainPanel
 		final BorderLayout mainLayout = new BorderLayout();

@@ -104,6 +104,11 @@ public class MSV3ServerAuthenticationService implements UserDetailsService
 	{
 		// TODO implement
 	}
+	
+	public BPartnerId getCurrentBPartner()
+	{
+		return getCurrentUser().getBpartnerId();
+	}
 
 	public MSV3User getCurrentUser()
 	{

@@ -6,22 +6,24 @@ SELECT
 	ic.created, 
 	ic.updated, 
 	dt.name, 
-	COALESCE(ic.datetoinvoice_override, ic.datetoinvoice) AS "coalesce", 
+	COALESCE(ic.datetoinvoice_override, ic.datetoinvoice) AS "datetoinvoice_effective", 
 	ic.qtydelivered, 
 	sum(iol.movementqty) AS sum
 FROM c_invoice_candidate ic
-   JOIN c_doctype dt ON dt.c_doctype_id = ic.c_doctypeinvoice_id
    JOIN c_invoicecandidate_inoutline ic_iol ON ic_iol.c_invoice_candidate_id = ic.c_invoice_candidate_id
    JOIN m_inoutline iol ON iol.m_inoutline_id = ic_iol.m_inoutline_id
    JOIN m_inout io ON io.m_inout_id = iol.m_inout_id
+   LEFT JOIN c_doctype dt ON dt.c_doctype_id = ic.c_doctypeinvoice_id
    LEFT JOIN c_orderline ol ON ol.c_orderline_id = ic.c_orderline_id
    LEFT JOIN c_invoice_candidate_recompute icr ON icr.c_invoice_candidate_id = ic.c_invoice_candidate_id
 WHERE true 
-	AND (ic.updated + interval '10 minutes') < now() 
+	AND ic.IsActive='Y'
+	AND ic_iol.IsActive='Y'
+	AND ic.c_orderline_id IS NULL 
+	AND (ic.updated + interval '10 minutes') < now() /* last update more than 10 mintes ago */
 	AND COALESCE(ic.processed_override, ic.processed) = 'N'
 	AND io.docstatus IN ('CO', 'CL')
-	AND icr.c_invoice_candidate_id IS NULL 
-	AND ol.c_orderline_id IS NULL 
+	AND icr.c_invoice_candidate_id IS NULL /* not currently flagged as recompute */
 GROUP BY 
 	ic.c_invoice_candidate_id, 
 	ic.created, 

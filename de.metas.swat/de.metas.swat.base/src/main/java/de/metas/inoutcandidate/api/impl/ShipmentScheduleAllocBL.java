@@ -28,7 +28,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
@@ -44,13 +43,6 @@ import lombok.NonNull;
 
 public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 {
-	@Override
-	public BigDecimal getQtyPicked(final I_M_ShipmentSchedule sched)
-	{
-		Check.assumeNotNull(sched, "sched not null");
-		return Services.get(IShipmentScheduleAllocDAO.class).retrievePickedNotDeliveredQty(sched);
-	}
-
 	private enum Mode
 	{
 		/** Just take the given {@code qtyPicked} (converted to sched's UOM ) and set it as the new {@code schedQtyPicked}'s {@code QtyPicked value}. */
@@ -88,9 +80,8 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 			@NonNull final Mode mode)
 	{
 		// Convert QtyPicked to shipment schedule's UOM
-		final org.compiere.model.I_M_Product product = sched.getM_Product();
 		final I_C_UOM schedUOM = Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched);
-		final BigDecimal qtyPickedConv = Services.get(IUOMConversionBL.class).convertQty(product,
+		final BigDecimal qtyPickedConv = Services.get(IUOMConversionBL.class).convertQty(sched.getM_Product_ID(),
 				qtyPicked.getQty(),
 				qtyPicked.getUOM(), // from UOM
 				schedUOM // to UOM
@@ -104,7 +95,7 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 		else
 		{
 			final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-			final BigDecimal qtyPickedOld = shipmentScheduleAllocDAO.retrievePickedNotDeliveredQty(sched);
+			final BigDecimal qtyPickedOld = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(sched);
 			qtyPickedToAdd = qtyPickedConv.subtract(qtyPickedOld);
 		}
 

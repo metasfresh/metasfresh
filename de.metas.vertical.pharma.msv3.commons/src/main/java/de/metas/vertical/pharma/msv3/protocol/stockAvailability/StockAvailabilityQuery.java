@@ -2,6 +2,7 @@ package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -33,11 +34,13 @@ import lombok.Value;
 public class StockAvailabilityQuery
 {
 	String id;
+	BPartnerId bpartner;
 	ImmutableList<StockAvailabilityQueryItem> items;
 
 	@Builder
 	private StockAvailabilityQuery(
 			@NonNull final String id,
+			@NonNull final BPartnerId bpartner,
 			@NonNull @Singular final ImmutableList<StockAvailabilityQueryItem> items)
 	{
 		if (items.isEmpty())
@@ -46,6 +49,7 @@ public class StockAvailabilityQuery
 		}
 
 		this.id = id;
+		this.bpartner = bpartner;
 		this.items = items;
 	}
 
