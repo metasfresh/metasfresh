@@ -1,29 +1,3 @@
--- 2018-04-16T17:07:47.785
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO M_Attribute (AD_Client_ID,AD_Org_ID,AttributeValueType,C_UOM_ID,Created,CreatedBy,IsActive,IsAttrDocumentRelevant,IsHighVolume,IsInstanceAttribute,IsMandatory,IsPricingRelevant,IsReadOnlyValues,IsStorageRelevant,IsTransferWhenNull,M_Attribute_ID,Name,Updated,UpdatedBy,Value,ValueMax,ValueMin) VALUES (0,0,'S',100,TO_TIMESTAMP('2018-04-16 17:07:47','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','N','N','N',540035,'TE',TO_TIMESTAMP('2018-04-16 17:07:47','YYYY-MM-DD HH24:MI:SS'),100,'HU_TE',0,0)
-;
-
--- 2018-04-16T17:08:50.398
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO M_Attribute (AD_Client_ID,AD_Org_ID,AttributeValueType,Created,CreatedBy,IsActive,IsAttrDocumentRelevant,IsHighVolume,IsInstanceAttribute,IsMandatory,IsPricingRelevant,IsReadOnlyValues,IsStorageRelevant,IsTransferWhenNull,M_Attribute_ID,Name,Updated,UpdatedBy,Value,ValueMax,ValueMin) VALUES (0,0,'D',TO_TIMESTAMP('2018-04-16 17:08:50','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N','N','N',540036,'DateReceived',TO_TIMESTAMP('2018-04-16 17:08:50','YYYY-MM-DD HH24:MI:SS'),100,'HU_DateReceived',0,0)
-;
-
--- 2018-04-16T17:08:57.164
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE M_Attribute SET IsInstanceAttribute='Y',Updated=TO_TIMESTAMP('2018-04-16 17:08:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540035
-;
-
--- 2018-04-16T17:08:57.166
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE M_AttributeSet mas SET IsInstanceAttribute='Y' WHERE IsInstanceAttribute='N' AND EXISTS (SELECT * FROM M_AttributeUse mau WHERE mas.M_AttributeSet_ID=mau.M_AttributeSet_ID AND mau.M_Attribute_ID=540035)
-;
-
-
-----------------------------------------
-
-
-
-
 -- 2018-04-16T17:18:51.471
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_ImpFormat SET IsActive='Y',Updated=TO_TIMESTAMP('2018-04-16 17:18:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_ID=531098
@@ -98,4 +72,83 @@ INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFo
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,ConstantValue,Created,CreatedBy,DataFormat,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,559690,531098,540538,0,'1000000',TO_TIMESTAMP('2018-04-16 17:28:11','YYYY-MM-DD HH24:MI:SS'),100,'dd.mm.yyyy','S','.','N',0,'Y','Eingangsdatum',210,21,TO_TIMESTAMP('2018-04-16 17:28:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
+
+
+
+-- 2018-04-16T18:03:19.623
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='DD.MM.YYYY HH:mm:ss',Updated=TO_TIMESTAMP('2018-04-16 18:03:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540532
+;
+
+-- 2018-04-16T18:05:34.112
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='MM.YYYY',Updated=TO_TIMESTAMP('2018-04-16 18:05:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540535
+;
+
+-- 2018-04-16T18:07:29.642
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET Name='SubProducerBPartner_Value',Updated=TO_TIMESTAMP('2018-04-16 18:07:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540538
+;
+
+-- 2018-04-16T18:10:09.311
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='01.MM.YYYY',Updated=TO_TIMESTAMP('2018-04-16 18:10:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540535
+;
+
+-- 2018-04-16T18:11:16.287
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='', DataType='S',Updated=TO_TIMESTAMP('2018-04-16 18:11:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540535
+;
+
+-- 2018-04-16T18:20:16.129
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='MM.YYYY', DataType='D',Updated=TO_TIMESTAMP('2018-04-16 18:20:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540535
+;
+
+-- 2018-04-16T18:23:09.176
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET AD_Column_ID=8824,Updated=TO_TIMESTAMP('2018-04-16 18:23:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=531104
+;
+
+-- 2018-04-16T18:39:43.994
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='DD.MM.YYYY HH:MI:SS',Updated=TO_TIMESTAMP('2018-04-16 18:39:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540532
+;
+
+-- 2018-04-16T18:40:00.637
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='DD.MM.YYYY',Updated=TO_TIMESTAMP('2018-04-16 18:40:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540537
+;
+
+-- 2018-04-16T18:42:58.677
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='dd.MM.yyyy',Updated=TO_TIMESTAMP('2018-04-16 18:42:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540537
+;
+
+-- 2018-04-16T18:43:12.995
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='dd.MM.yyyy HH:MI:SS',Updated=TO_TIMESTAMP('2018-04-16 18:43:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540532
+;
+
+-- 2018-04-16T18:44:30.487
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='MM.yyyy',Updated=TO_TIMESTAMP('2018-04-16 18:44:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540535
+;
+
+-- 2018-04-16T18:47:35.192
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataType='S',Updated=TO_TIMESTAMP('2018-04-16 18:47:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=531104
+;
+
+-- 2018-04-16T18:47:52.269
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='dd.MM.yyyy hh:MI:ss',Updated=TO_TIMESTAMP('2018-04-16 18:47:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540532
+;
+
+-- 2018-04-16T18:51:00.145
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='dd.MM.yyyy hh:mm:ss',Updated=TO_TIMESTAMP('2018-04-16 18:51:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540532
+;
+
+
 
