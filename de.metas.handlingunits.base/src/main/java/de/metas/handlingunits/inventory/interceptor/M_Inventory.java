@@ -100,6 +100,23 @@ public class M_Inventory
 		}
 	}
 
+	private void setAttributes(final I_M_HU hu, final I_M_AttributeSetInstance attributeSetInstance)
+	{
+		final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(attributeSetInstance);
+		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		final IAttributeStorage huAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+
+		for (final I_M_AttributeInstance instance : instances)
+		{
+			final I_M_Attribute attribute = instance.getM_Attribute();
+			final I_M_AttributeValue attrValue = instance.getM_AttributeValue();
+			if (attribute != null)
+			{
+				huAttributeStorage.setValue(attribute, attrValue.getValue());
+			}
+		}
+	}
+
 	private void addQtyDiffToHU(final I_M_InventoryLine inventoryLine)
 	{
 		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQty(inventoryLine);
@@ -198,23 +215,6 @@ public class M_Inventory
 		else
 		{
 			throw new HUException("No HU was created by " + huDestination);
-		}
-	}
-
-	private void setAttributes(final I_M_HU hu, final I_M_AttributeSetInstance attributeSetInstance)
-	{
-		final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(attributeSetInstance);
-		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
-		final IAttributeStorage huAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
-
-		for (final I_M_AttributeInstance instance : instances)
-		{
-			final I_M_Attribute attribute = instance.getM_Attribute();
-			final I_M_AttributeValue attrValue = instance.getM_AttributeValue();
-			if (attribute != null)
-			{
-				huAttributeStorage.setValue(attribute, attrValue.getValue());
-			}
 		}
 	}
 
