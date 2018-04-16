@@ -88,7 +88,7 @@ public class BPartnerCreditLimitRepository
 		final Comparator<I_C_BPartner_CreditLimit> byDateFromRevesed = //
 				Comparator.<I_C_BPartner_CreditLimit, Date> comparing(bpCreditLimit -> bpCreditLimit.getDateFrom()).reversed();
 
-		return byTypeSeqNoReversed.thenComparing(byDateFromRevesed);
+		return byDateFromRevesed.thenComparing(byTypeSeqNoReversed);
 	}
 
 	@Builder
