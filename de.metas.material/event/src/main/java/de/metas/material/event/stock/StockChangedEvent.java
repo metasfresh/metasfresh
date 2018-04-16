@@ -4,11 +4,12 @@ import java.math.BigDecimal;
 
 import org.adempiere.util.Check;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -36,6 +37,8 @@ import lombok.Value;
 @Value
 public class StockChangedEvent implements MaterialEvent
 {
+	public static final String TYPE = "StockChangedEvent";
+
 	EventDescriptor eventDescriptor;
 	ProductDescriptor productDescriptor;
 	int warehouseId;
@@ -43,22 +46,29 @@ public class StockChangedEvent implements MaterialEvent
 	BigDecimal qtyOnHandOld;
 
 	@Builder
-	private StockChangedEvent(
-			@NonNull final EventDescriptor eventDescriptor,
-			@NonNull final ProductDescriptor productDescriptor,
-			final int warehouseId,
-			@NonNull final BigDecimal qtyOnHand,
-			@NonNull final BigDecimal qtyOnHandOld)
+	public StockChangedEvent(
+			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
+			@JsonProperty("productDescriptor") final ProductDescriptor productDescriptor,
+			@JsonProperty("warehouseId") final int warehouseId,
+			@JsonProperty("qtyOnHand") final BigDecimal qtyOnHand,
+			@JsonProperty("qtyOnHandOld") final BigDecimal qtyOnHandOld)
 	{
-		Check.assume(warehouseId > 0, "warehouseId > 0");
-
 		this.eventDescriptor = eventDescriptor;
 		this.productDescriptor = productDescriptor;
 		this.warehouseId = warehouseId;
 		this.qtyOnHand = qtyOnHand;
 		this.qtyOnHandOld = qtyOnHandOld;
 	}
-	
+
+	public void validate()
+	{
+		Check.errorIf(eventDescriptor == null, "eventDescriptor may not be null; this={}", this);
+		Check.errorIf(productDescriptor == null, "productDescriptor may not be null; this={}", this);
+		Check.errorIf(qtyOnHand == null, "qtyOnHand may not be null; this={}", this);
+		Check.errorIf(qtyOnHandOld == null, "qtyOnHandOld may not be null; this={}", this);
+		Check.errorIf(warehouseId <= 0, "warehouseId needs to be > 0; this={}", this);
+	}
+
 	public int getProductId()
 	{
 		return productDescriptor.getProductId();

@@ -242,4 +242,14 @@ public interface IOrderLineBL extends ISingletonService
 	 * @return true if the line shall be copied and false if not
 	 */
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
+
+	/**
+	 * Task #3835
+	 * If the de.metas.order.NoPriceConditionsColorName sysconfig is set and the orderLine.M_DiscountSchemaBreak_ID is not set, the orderLine.NoPriceConditionsColor_ID will be set to the colourId corresponding with the name provided in the sys config.
+	 * If the de.metas.order.NoPriceConditionsColorName sysconfig is set and the orderLine.M_DiscountSchemaBreak_ID is set, the orderLine.NoPriceConditionsColor_ID will be set to null because a color warning is not needed.
+	 * If the sys config is not set, do nothing because the functionality is not needed
+	 * 
+	 * @param orderLine
+	 */
+	void updateNoPriceConditionsColor(I_C_OrderLine orderLine);
 }

@@ -114,7 +114,8 @@ import lombok.NonNull;
 			return DiscountResult.ZERO;
 		}
 
-		final DiscountResultBuilder result = DiscountResult.builder();
+		final DiscountResultBuilder result = DiscountResult.builder()
+				.discountSchemaBreakId(breakApplied.getM_DiscountSchemaBreak_ID());
 
 		if (breakApplied.isPriceOverride())
 		{
