@@ -41,10 +41,6 @@ import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 import javax.swing.event.ChangeListener;
@@ -57,11 +53,14 @@ import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.GenForm;
 import org.compiere.apps.form.VInOutGen;
 import org.compiere.minigrid.MiniTable;
-import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextPane;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
 
 /**
  * Custom form view (panel)
@@ -136,7 +135,7 @@ public abstract class MvcVGenPanel extends CPanel implements IFormView {
 	 * @throws Exception
 	 */
 	final void jbInit() {
-		CompiereColor.setBackground(this);
+		AdempierePLAF.setDefaultBackground(this);
 		//
 		selPanel.setLayout(selPanelLayout);
 

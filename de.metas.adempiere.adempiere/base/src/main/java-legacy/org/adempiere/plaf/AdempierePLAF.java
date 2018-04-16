@@ -27,8 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
+import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
@@ -45,10 +45,14 @@ import org.compiere.swing.ColorBlind;
 import org.compiere.util.Ini;
 import org.compiere.util.ValueNamePair;
 import org.reflections.ReflectionUtils;
+import org.slf4j.Logger;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.looks.plastic.PlasticTheme;
+
+import de.metas.logging.LogManager;
+import de.metas.util.MFColor;
 
 /**
  *  Variable Pluggable Look And Feel.
@@ -714,5 +718,10 @@ public final class AdempierePLAF
 			return defaultValue;
 		}
 		return value.toString();
+	}
+	
+	public static void setDefaultBackground(final JComponent comp)
+	{
+		comp.putClientProperty(AdempiereLookAndFeel.BACKGROUND, MFColor.ofFlatColor(AdempierePLAF.getFormBackground()));
 	}
 }   //  AdempierePLAF

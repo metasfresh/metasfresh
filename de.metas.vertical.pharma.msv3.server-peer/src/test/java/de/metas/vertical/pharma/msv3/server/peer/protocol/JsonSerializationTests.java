@@ -64,6 +64,17 @@ public class JsonSerializationTests
 	}
 
 	@Test
+	public void test_MSV3ProductExcludesUpdateEvent() throws Exception
+	{
+		jsonTestHelper.testSerializeDeserialize(MSV3ProductExcludesUpdateEvent.builder()
+				.item(MSV3ProductExclude.builder()
+						.pzn(PZN.of(1234567891))
+						.bpartnerId(1234)
+						.build())
+				.build());
+	}
+
+	@Test
 	public void test_MSV3UserChangedBatchEvent() throws Exception
 	{
 		jsonTestHelper.testSerializeDeserialize(MSV3UserChangedBatchEvent.builder()
