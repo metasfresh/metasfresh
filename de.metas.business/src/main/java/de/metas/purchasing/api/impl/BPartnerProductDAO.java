@@ -56,9 +56,6 @@ import de.metas.purchasing.api.ProductExclude;
  */
 public class BPartnerProductDAO implements IBPartnerProductDAO
 {
-
-	public static final String MSG_ProductSalesBanError = "ProductSalesBanError";
-
 	@Override
 	public List<I_C_BPartner_Product> retrieveBPartnerForProduct(final Properties ctx, final int Vendor_ID, final int productId, final int orgId)
 	{

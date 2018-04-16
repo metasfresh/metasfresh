@@ -62,7 +62,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
-import de.metas.purchasing.api.impl.BPartnerProductDAO;
 
 /**
  * This callout's default behavior is determined by {@link ProductQtyOrderFastInputHandler}. To change the behavior, explicitly add further handlers using
@@ -304,7 +303,7 @@ public class OrderFastInput extends CalloutEngine
 		{
 			final String msg = Services.get(IMsgBL.class).getMsg(
 					Env.getCtx(), 
-					BPartnerProductDAO.MSG_ProductSalesBanError, 
+					IBPartnerProductDAO.MSG_ProductSalesBanError, 
 					new Object[] { partner, bannedProductForPartner.getSalesBanReason() });
 			
 			throw new AdempiereException(msg);
