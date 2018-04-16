@@ -508,3 +508,109 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Help,Description,Name, IsTran
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,563462,0,178,551443,541165,'F',TO_TIMESTAMP('2018-04-13 16:40:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','Datum der letzten Inventur',120,0,0,TO_TIMESTAMP('2018-04-13 16:40:06','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+-- 2018-04-13T19:11:51.210
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2018-04-13 19:11:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559683
+;
+
+-- 2018-04-13T19:13:44.822
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Element_ID=542467, AD_Reference_ID=18, AD_Reference_Value_ID=138, ColumnName='SubProducer_BPartner_ID', Description=NULL, EntityType='de.metas.swat', Help=NULL, Name='Unterlieferanten',Updated=TO_TIMESTAMP('2018-04-13 19:13:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559686
+;
+
+-- 2018-04-13T19:13:44.827
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Unterlieferanten', Description=NULL, Help=NULL WHERE AD_Column_ID=559686
+;
+
+-- 2018-04-13T19:13:49.038
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('I_Inventory','ALTER TABLE public.I_Inventory ADD COLUMN SubProducer_BPartner_ID NUMERIC(10)')
+;
+
+-- 2018-04-13T19:13:49.054
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE I_Inventory ADD CONSTRAINT SubProducerBPartner_IInventory FOREIGN KEY (SubProducer_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED
+;
+
+SELECT public.db_alter_table('I_Inventory','ALTER TABLE public.I_Inventory DROP COLUMN C_BPartner_ID')
+;
+
+-- 2018-04-13T19:15:41.495
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543960,0,'SubProducerBPartner_Value',TO_TIMESTAMP('2018-04-13 19:15:41','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','SubProducerBPartner_Value','SubProducerBPartner_Value',TO_TIMESTAMP('2018-04-13 19:15:41','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-04-13T19:15:41.497
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Element_ID, t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Element_ID=543960 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2018-04-13T19:16:02.256
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,559690,543960,0,10,138,572,'N','SubProducerBPartner_Value',TO_TIMESTAMP('2018-04-13 19:16:02','YYYY-MM-DD HH24:MI:SS'),100,'N','D',60,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','SubProducerBPartner_Value',0,0,TO_TIMESTAMP('2018-04-13 19:16:02','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2018-04-13T19:16:02.261
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=559690 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-04-13T19:16:05.029
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('I_Inventory','ALTER TABLE public.I_Inventory ADD COLUMN SubProducerBPartner_Value VARCHAR(60)')
+;
+
+-- 2018-04-13T19:19:39.709
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,559690,563463,0,481,0,TO_TIMESTAMP('2018-04-13 19:19:39','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','SubProducerBPartner_Value',310,340,0,1,1,TO_TIMESTAMP('2018-04-13 19:19:39','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-04-13T19:19:39.715
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=563463 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2018-04-13T19:25:25.596
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=270,Updated=TO_TIMESTAMP('2018-04-13 19:25:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563463
+;
+
+-- 2018-04-13T19:25:25.600
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=280,Updated=TO_TIMESTAMP('2018-04-13 19:25:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563461
+;
+
+-- 2018-04-13T19:25:25.603
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=290,Updated=TO_TIMESTAMP('2018-04-13 19:25:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=6706
+;
+
+-- 2018-04-13T19:25:25.607
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=300,Updated=TO_TIMESTAMP('2018-04-13 19:25:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=6697
+;
+
+-- 2018-04-13T19:25:25.611
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=310,Updated=TO_TIMESTAMP('2018-04-13 19:25:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563458
+;
+
+-- 2018-04-13T19:25:43.126
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=260,Updated=TO_TIMESTAMP('2018-04-13 19:25:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563463
+;
+
+-- 2018-04-13T19:25:43.130
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=270,Updated=TO_TIMESTAMP('2018-04-13 19:25:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563460
+;
+
+-- 2018-04-13T19:25:49.416
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsSameLine='Y',Updated=TO_TIMESTAMP('2018-04-13 19:25:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563460
+;
+
+
+
