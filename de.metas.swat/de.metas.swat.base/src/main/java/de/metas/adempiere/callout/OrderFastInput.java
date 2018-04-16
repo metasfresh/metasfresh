@@ -34,7 +34,6 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -54,13 +53,11 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.i18n.IMsgBL;
-import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
-import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.purchasing.api.IBPartnerProductBL;
 
 /**
  * This callout's default behavior is determined by {@link ProductQtyOrderFastInputHandler}. To change the behavior, explicitly add further handlers using
@@ -264,8 +261,7 @@ public class OrderFastInput extends CalloutEngine
 
 	public static I_C_OrderLine addOrderLine(final Properties ctx, final I_C_Order order, final Consumer<Object> orderLineCustomizer)
 	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final IBPartnerProductDAO bpProductDAO = Services.get(IBPartnerProductDAO.class);
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);		
 
 		final I_C_OrderLine ol = orderLineBL.createOrderLine(order);
 
@@ -292,20 +288,8 @@ public class OrderFastInput extends CalloutEngine
 		}
 		// end: cg: 01717
 
-		//
-		final I_C_BPartner_Product bannedProductForPartner = bpProductDAO.getBannedProductForPartner(
-				ol.getM_Product_ID(), 
-				ol.getC_BPartner_ID());
-
-		if (bannedProductForPartner != null)
-		{
-			final String msg = Services.get(IMsgBL.class).getMsg(
-					Env.getCtx(), 
-					IBPartnerProductDAO.MSG_ProductSalesBanError, 
-					new Object[] { ol.getC_BPartner().getName(), bannedProductForPartner.getSalesBanReason() });
-			
-			throw new AdempiereException(msg);
-		}
+		// 3834
+		Services.get(IBPartnerProductBL.class).assertProductNotBanned(ol.getM_Product_ID(), ol.getC_BPartner_ID());
 
 		// set the prices before saveEx, because otherwise, priceEntered is
 		// reset and that way IOrderLineBL.setPrices can't tell whether it
