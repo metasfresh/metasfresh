@@ -44,7 +44,6 @@ import org.compiere.apps.search.NullInfoWindowGridRowBuilders;
 import org.compiere.apps.search.impl.InfoWindowGridRowBuilders;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridTab;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
@@ -293,18 +292,17 @@ public class OrderFastInput extends CalloutEngine
 		}
 		// end: cg: 01717
 
-		final I_C_BPartner partner = ol.getC_BPartner();
 		//
 		final I_C_BPartner_Product bannedProductForPartner = bpProductDAO.getBannedProductForPartner(
 				ol.getM_Product_ID(), 
-				partner.getC_BPartner_ID());
+				ol.getC_BPartner_ID());
 
 		if (bannedProductForPartner != null)
 		{
 			final String msg = Services.get(IMsgBL.class).getMsg(
 					Env.getCtx(), 
 					IBPartnerProductDAO.MSG_ProductSalesBanError, 
-					new Object[] { partner, bannedProductForPartner.getSalesBanReason() });
+					new Object[] { ol.getC_BPartner(), bannedProductForPartner.getSalesBanReason() });
 			
 			throw new AdempiereException(msg);
 		}
