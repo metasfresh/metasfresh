@@ -38,8 +38,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQueryBL;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -492,15 +490,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return productLookupValues;
 		}
 
-		final AvailableToPromiseQueryBuilder atpQueryBuilder = AvailableToPromiseQuery.builder();
-		AvailableToPromiseQueryBL.addStorageAttributeKeysToQueryBuilder(atpQueryBuilder);
-
-		atpQueryBuilder.productIds(productLookupValues.getKeysAsInt());
-		atpQueryBuilder.date(dateOrNull);
-
-		// invoke the query
-		final AvailableToPromiseResultForWebui availableStock = //
-				availableToPromiseAdapter.retrieveAvailableStock(atpQueryBuilder.build());
+		final AvailableToPromiseResultForWebui availableStock = availableToPromiseAdapter.retrieveAvailableStock(AvailableToPromiseQuery.builder()
+				.productIds(productLookupValues.getKeysAsInt())
+				.storageAttributesKeys(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
+				.date(dateOrNull)
+				.build());
 		final List<Group> availableStockGroups = availableStock.getGroups();
 
 		// process the query's result into those explodedProductValues

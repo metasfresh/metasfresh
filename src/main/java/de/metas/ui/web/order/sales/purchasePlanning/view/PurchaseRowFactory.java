@@ -20,10 +20,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQueryBL;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.product.IProductBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -115,15 +112,11 @@ public class PurchaseRowFactory
 		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
 		final String uom = createUOMLookupValueForProductId(product.getKeyAsInt());
 
-		final AvailableToPromiseQueryBuilder atpQueryBuilder = AvailableToPromiseQuery.builder();
-
-		atpQueryBuilder.productId(salesOrderLine.getM_Product_ID());
-		atpQueryBuilder.date(salesOrderLine.getC_Order().getPreparationDate());
-
-		AvailableToPromiseQueryBL.addStorageAttributeKeysToQueryBuilder(atpQueryBuilder);
-
-		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository
-				.retrieveAvailableStockQtySum(AvailableToPromiseMultiQuery.of(atpQueryBuilder.build()));
+		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository.retrieveAvailableStockQtySum(AvailableToPromiseQuery.builder()
+				.productId(salesOrderLine.getM_Product_ID())
+				.storageAttributesKeys(availableToPromiseRepository.getPredefinedStorageAttributeKeys())
+				.date(salesOrderLine.getC_Order().getPreparationDate())
+				.build());
 
 		final PurchaseRow groupRow = PurchaseRow.builder()
 				.rowId(PurchaseRowId.groupId(salesOrderLine.getC_OrderLine_ID()))
