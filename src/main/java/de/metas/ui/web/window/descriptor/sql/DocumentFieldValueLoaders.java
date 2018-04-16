@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor.sql;
 
+import java.awt.Color;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -9,18 +10,24 @@ import java.sql.Timestamp;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
+import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 import org.compiere.util.SecureEngine;
 import org.slf4j.Logger;
 
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
+import de.metas.util.IColorRepository;
+import de.metas.util.MFColor;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -130,6 +137,12 @@ public final class DocumentFieldValueLoaders
 	{
 		return new LabelsLookupValueDocumentFieldValueLoader(sqlColumnName);
 	}
+
+	public static final DocumentFieldValueLoader toColor(final String sqlColumnName)
+	{
+		return new ColorDocumentFieldValueLoader(sqlColumnName);
+	}
+
 	//
 	//
 	//
@@ -409,6 +422,34 @@ public final class DocumentFieldValueLoaders
 			final String linkColumnName = lookup.getLinkColumnName();
 			final int linkId = rs.getInt(linkColumnName);
 			return lookup.retrieveExistingValues(linkId);
+		}
+	}
+
+	@Builder
+	@Value
+	private static class ColorDocumentFieldValueLoader implements DocumentFieldValueLoader
+	{
+		@NonNull
+		private final String sqlColumnName;
+
+		@Override
+		public Object retrieveFieldValue(ResultSet rs, boolean isDisplayColumnAvailable, String adLanguage, LookupDescriptor lookupDescriptor) throws SQLException
+		{
+			final int adColorId = rs.getInt(sqlColumnName);
+			if (adColorId <= 0)
+			{
+				return null;
+			}
+
+			final IColorRepository colorRepository = Services.get(IColorRepository.class);
+			final MFColor color = colorRepository.getColorById(adColorId);
+			if (color == null)
+			{
+				return null;
+			}
+
+			final Color awtColor = color.toFlatColor().getFlatColor();
+			return ColorValue.ofRGB(awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
 		}
 
 	}

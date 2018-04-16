@@ -9,6 +9,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -440,6 +441,10 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			else if (DocumentFieldWidgetType.Labels.getValueClass().equals(valueClass))
 			{
 				return DocumentFieldValueLoaders.toLabelValues(sqlColumnName);
+			}
+			else if(ColorValue.class == valueClass)
+			{
+				return DocumentFieldValueLoaders.toColor(sqlColumnName);
 			}
 			else
 			{
