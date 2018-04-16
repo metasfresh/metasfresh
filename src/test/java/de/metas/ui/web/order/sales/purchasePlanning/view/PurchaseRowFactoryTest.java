@@ -14,6 +14,7 @@ import org.compiere.model.I_M_Product;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -52,7 +53,7 @@ public class PurchaseRowFactoryTest
 	public void test()
 	{
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(30);
-		final PurchaseRowFactory purchaseRowFactory = new PurchaseRowFactory();
+		final PurchaseRowFactory purchaseRowFactory = new PurchaseRowFactory(new AvailableToPromiseRepository());
 
 		final PurchaseRow candidateRow = purchaseRowFactory
 				.rowFromPurchaseCandidateBuilder()
