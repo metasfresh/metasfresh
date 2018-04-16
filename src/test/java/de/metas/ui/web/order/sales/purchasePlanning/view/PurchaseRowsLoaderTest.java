@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
 import de.metas.interfaces.I_C_BPartner_Product;
+import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLines;
@@ -127,7 +128,7 @@ public class PurchaseRowsLoaderTest
 
 		final PurchaseRowsLoader loader = PurchaseRowsLoader.builder()
 				.salesOrderLines(salesOrderLines)
-				.purchaseRowFactory(new PurchaseRowFactory())
+				.purchaseRowFactory(new PurchaseRowFactory(new AvailableToPromiseRepository()))
 				.viewSupplier(() -> null)
 				.build();
 
