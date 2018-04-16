@@ -15,7 +15,7 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -586976278L;
+	private static final long serialVersionUID = 2123339649L;
 
     /** Standard Constructor */
     public X_M_DiscountSchemaBreak (Properties ctx, int M_DiscountSchemaBreak_ID, String trxName)
@@ -30,7 +30,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 			setM_DiscountSchema_ID (0);
 			setM_DiscountSchemaBreak_ID (0);
 			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM M_DiscountSchemaBreak WHERE M_DiscountSchema_ID=@M_DiscountSchema_ID@
-			setStd_AddAmt (BigDecimal.ZERO);
         } */
     }
 
