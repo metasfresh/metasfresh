@@ -5,13 +5,14 @@ LABEL maintainer="dev@metasfresh-com"
 # add this repository so we can install openjdk
 RUN echo "deb http://http.debian.net/debian jessie-backports main" >> /etc/apt/sources.list
 
-RUN apt update --assume-yes \
-  && apt upgrade --assume-yes \
-  && apt install curl --assume-yes \
+RUN apt -y update \
+    && apt -y upgrade \
+    && apt -y install curl \
 # install openjdk so that we can run mg migrate from within the provisioning script
-  && apt install libcups2 --assume-yes \
-  && apt install -t jessie-backports openjdk-8-jre-headless --assume-yes \
-  && apt install autoremove
+    && apt -y install libcups2 \
+    && apt -y install -t jessie-backports openjdk-8-jre-headless \
+    && apt -y autoremove \
+    && apt -y clean
 
 COPY provision_metasfresh_db.sh /docker-entrypoint-initdb.d/
 

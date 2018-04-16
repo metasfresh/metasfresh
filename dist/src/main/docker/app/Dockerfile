@@ -6,7 +6,7 @@ RUN apt update \
     && apt -y install curl \
     && apt -y install openjdk-8-jdk-headless \
     && apt -y autoremove \
-    && apt -y autoclean
+    && apt -y clean
 
 RUN mkdir -p /opt/metasfresh
 
