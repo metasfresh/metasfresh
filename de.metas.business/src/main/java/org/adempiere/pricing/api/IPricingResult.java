@@ -161,4 +161,8 @@ public interface IPricingResult
 	boolean isDiscountEditable();
 
 	void setDiscountEditable(boolean isDiscountEditable);
+
+	void setM_DiscountSchemaBreak_ID(final int M_DiscountSchemaBreak_ID);
+
+	int getM_DiscountSchemaBreak_ID();
 }
