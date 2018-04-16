@@ -1,34 +1,34 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  creationTimestamp: null
+  name: "metasfresh-print-demouser-demo"
   labels:
     de.metas.deployment.type: metasfresh-print
-    de.metas.deployment.user: "tobi"
     de.metas.deployment.stage: "demo"
-  name: "metasfresh-print-tobi-demo"
+    de.metas.deployment.user: "demouser"
 spec:
   replicas: 1
   strategy:
     type: Recreate
   template:
     metadata:
-      creationTimestamp: null
       labels:
         de.metas.deployment.type: metasfresh-print
-        de.metas.deployment.user: "tobi"
+        de.metas.deployment.user: "demouser"
         de.metas.deployment.stage: "demo"
     spec:
       containers:
       - env:
         - name: DB_HOST
-          value: 'metasfresh-all-in-one-tobi-demo'
+          value: "metasfresh-core-stack-demouser-demo"
         - name: DB_PORT
           value: '5432'
         - name: DEBUG_PRINT_BASH_CMDS
           value: 'y'
         - name: DB_WAIT_FOR_DBMS
           value: 'y'
+        - name: JAVA_MAX_HEAP
+          value: '100M'
         - name: METASFRESH_ADMIN_URL
           value: 'http://metasfresh-admin:9090'
         - name: SERVER_PORT
@@ -43,7 +43,7 @@ spec:
           - containerPort: 8791
         resources: 
           requests:
-            memory: 300M
+            memory: 128M
 #            cpu: 500m
         volumeMounts:
         - mountPath: /etc/localtime
@@ -60,4 +60,3 @@ spec:
       - name: host-timezone
         hostPath:
           path: /etc/timezone
-status: {}

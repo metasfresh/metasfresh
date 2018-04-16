@@ -13,18 +13,15 @@ spec:
     type: Recreate
   template:
     metadata:
-      creationTimestamp: null
       labels:
         de.metas.service: metasfresh-admin
     spec:
       containers:
       - name: metasfresh-admin
         image: docker.metasfresh.com/metasfresh/metasfresh-admin:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 9090
         resources:
-          limits:
-            memory: 256Mi
           requests:
-            cpu: 100m
             memory: 256Mi
