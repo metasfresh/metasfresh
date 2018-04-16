@@ -550,7 +550,7 @@ public interface I_M_DiscountSchemaBreak
 	 * Amount added to a price as a surcharge
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setStd_AddAmt (java.math.BigDecimal Std_AddAmt);
@@ -560,7 +560,7 @@ public interface I_M_DiscountSchemaBreak
 	 * Amount added to a price as a surcharge
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.math.BigDecimal getStd_AddAmt();
