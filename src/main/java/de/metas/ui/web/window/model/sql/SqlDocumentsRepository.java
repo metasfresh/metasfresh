@@ -40,6 +40,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
+import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -69,6 +70,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
+import de.metas.util.IColorRepository;
 import lombok.NonNull;
 
 /*
@@ -843,6 +845,12 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				final Map<String, Object> map = (Map<String, Object>)value;
 				final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 				return lookupValue == null ? null : lookupValue.getIdAsInt();
+			}
+			else if (ColorValue.class.equals(valueClass))
+			{
+				final ColorValue color = (ColorValue)value;
+				final int adColorId = Services.get(IColorRepository.class).saveFlatColorAndReturnId(color.getHexString());
+				return adColorId;
 			}
 		}
 		else if (String.class.equals(targetClass))

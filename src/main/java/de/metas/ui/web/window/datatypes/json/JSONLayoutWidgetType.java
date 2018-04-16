@@ -46,6 +46,7 @@ public enum JSONLayoutWidgetType
 	, YesNo, Switch
 
 	, Image
+	, Color
 	, BinaryData
 
 	, Button, ActionButton, ProcessButton, ZoomIntoButton
@@ -88,6 +89,7 @@ public enum JSONLayoutWidgetType
 			.put(DocumentFieldWidgetType.YesNo, JSONLayoutWidgetType.YesNo)
 			.put(DocumentFieldWidgetType.Switch, JSONLayoutWidgetType.Switch)
 			.put(DocumentFieldWidgetType.Image, JSONLayoutWidgetType.Image)
+			.put(DocumentFieldWidgetType.Color, JSONLayoutWidgetType.Color)
 			.put(DocumentFieldWidgetType.BinaryData, JSONLayoutWidgetType.BinaryData)
 			.put(DocumentFieldWidgetType.Button, JSONLayoutWidgetType.Button)
 			.put(DocumentFieldWidgetType.ActionButton, JSONLayoutWidgetType.ActionButton)

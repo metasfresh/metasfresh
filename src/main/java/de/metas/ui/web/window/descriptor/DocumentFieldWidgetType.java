@@ -7,6 +7,7 @@ import org.compiere.util.DisplayType;
 
 import com.google.common.collect.Sets;
 
+import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -68,6 +69,7 @@ public enum DocumentFieldWidgetType
 	, Address(LayoutAlign.Left, IntegerLookupValue.class, DisplayType.Location) //
 	, ProductAttributes(LayoutAlign.Left, IntegerLookupValue.class, DisplayType.PAttribute) //
 	, Image(LayoutAlign.Left, Integer.class, DisplayType.Image) //
+	, Color(LayoutAlign.Center, ColorValue.class, DisplayType.Color) //
 	, BinaryData(LayoutAlign.Left, byte[].class, DisplayType.Binary) // TODO: not supported, search for references and see
 
 	//
