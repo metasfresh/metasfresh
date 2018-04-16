@@ -4,8 +4,6 @@ set -e
 
 # These two variables are used when applying the migration scripts
 # everything else in this script assumes that the DB runs locally
-#db_host=192.168.99.100
-#db_port=31973
 db_host=${DB_HOST:-localhost}
 db_port=${DB_PORT:-5432}
 
@@ -29,10 +27,6 @@ echo_variable_values()
  echo "URL_SEED_DUMP=${url_seed_dump}"
  echo "URL_MIGRATION_SCRIPTS_PACKAGE=${url_migration_scripts_package}"
 }
-
-create_role_if_not_exists
-create_db_and_import_seed_dump_if_not_exists
-apply_migration_scripts_from_artifact
 
 create_role_if_not_exists()
 {
@@ -139,3 +133,7 @@ EOL
 	echo " ...done!"
 	echo "=========="
 }
+
+create_role_if_not_exists
+create_db_and_import_seed_dump_if_not_exists
+apply_migration_scripts_from_artifact
