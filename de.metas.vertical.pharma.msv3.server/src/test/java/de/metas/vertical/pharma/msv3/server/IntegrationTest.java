@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -27,10 +28,16 @@ import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.server.IntegrationTest.IntegrationTestConfiguration;
 import de.metas.vertical.pharma.msv3.server.order.OrderWebService;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExclude;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
+import de.metas.vertical.pharma.msv3.server.security.JpaUserRepository;
+import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
+import de.metas.vertical.pharma.msv3.server.security.MSV3User;
+import de.metas.vertical.pharma.msv3.server.security.MockedMSV3ServerAuthenticationService;
 import de.metas.vertical.pharma.msv3.server.security.sync.UserSyncRabbitMQListener;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityWebService;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.sync.StockAvailabilityRabbitMQListener;
@@ -57,12 +64,12 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Verfuegbarkeitsanfrag
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -73,6 +80,7 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Verfuegbarkeitsanfrag
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = IntegrationTestConfiguration.class)
 @TestPropertySource(locations = "classpath:application-integrationtest.properties")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class IntegrationTest
 {
 	@TestConfiguration
@@ -85,12 +93,22 @@ public class IntegrationTest
 		{
 			return new MockedAmqpTemplate();
 		}
+
+		@Bean
+		@Primary
+		public MSV3ServerAuthenticationService msv3ServerAuthenticationService(final JpaUserRepository usersRepo)
+		{
+			return new MockedMSV3ServerAuthenticationService(usersRepo);
+		}
 	}
 
 	private static final PZN PZN_1 = PZN.of(123456789);
 	private static final PZN PZN_MISSING = PZN.of(1234567891);
 
-	private ObjectFactory jaxbObjectFactory = new ObjectFactory();
+	private final ObjectFactory jaxbObjectFactory = new ObjectFactory();
+
+	@Autowired
+	private MockedMSV3ServerAuthenticationService authService;
 
 	@Autowired
 	private UserSyncRabbitMQListener usersListener;
@@ -103,6 +121,15 @@ public class IntegrationTest
 	@Autowired
 	private OrderWebService orderWebService;
 
+	private void setupDummyCurrentUserForBPartnerId(final int bpartnerId)
+	{
+		authService.setCurrentUser(MSV3User.builder()
+				.username("user")
+				.password("pass")
+				.bpartnerId(BPartnerId.of(bpartnerId, 1234567))
+				.build());
+	}
+
 	@Test
 	public void testUsers()
 	{
@@ -112,6 +139,8 @@ public class IntegrationTest
 	@Test
 	public void testStockAvailability()
 	{
+		setupDummyCurrentUserForBPartnerId(1234);
+
 		createOrUpdateStockAvailability(PZN_1, 33);
 		testStockAvailability(PZN_1, 10, 10);
 		testStockAvailability(PZN_1, 33, 33);
@@ -124,7 +153,21 @@ public class IntegrationTest
 	@Test
 	public void testStockAvailability_UnknownPZN()
 	{
+		setupDummyCurrentUserForBPartnerId(1234);
+
 		testStockAvailability(PZN_MISSING, 100, 0);
+	}
+
+	@Test
+	public void testStockAvailability_ExcludedProduct()
+	{
+		setupDummyCurrentUserForBPartnerId(1234);
+
+		createOrUpdateStockAvailability(PZN_1, 100);
+		testStockAvailability(PZN_1, 150, 100);
+
+		excludeProduct(PZN_1, 1234);
+		testStockAvailability(PZN_1, 150, 0);
 	}
 
 	@Test
@@ -133,7 +176,7 @@ public class IntegrationTest
 	{
 		createOrUpdateUser("user", "pass", BPartnerId.of(1234, 5678));
 		SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("user", "pass"));
-		
+
 		createOrUpdateStockAvailability(PZN_1, 10);
 		testOrder(PZN_1, 5, 5);
 		testOrder(PZN_1, 10, 10);
@@ -185,7 +228,7 @@ public class IntegrationTest
 
 	private void createOrUpdateStockAvailability(final PZN pzn, final int qtyAvailable)
 	{
-		stockAvailabilityListener.onEvent(MSV3StockAvailabilityUpdatedEvent.builder()
+		stockAvailabilityListener.onStockAvailabilityUpdatedEvent(MSV3StockAvailabilityUpdatedEvent.builder()
 				.item(MSV3StockAvailability.builder()
 						.pzn(pzn.getValueAsLong())
 						.qty(qtyAvailable)
@@ -193,7 +236,17 @@ public class IntegrationTest
 				.build());
 	}
 
-	private void testStockAvailability(PZN pzn, final int qtyRequired, final int qtyExpected)
+	private void excludeProduct(final PZN pzn, final int bpartnerId)
+	{
+		stockAvailabilityListener.onProductExcludesUpdateEvent(MSV3ProductExcludesUpdateEvent.builder()
+				.item(MSV3ProductExclude.builder()
+						.pzn(pzn)
+						.bpartnerId(bpartnerId)
+						.build())
+				.build());
+	}
+
+	private void testStockAvailability(final PZN pzn, final int qtyRequired, final int qtyExpected)
 	{
 		final VerfuegbarkeitAnfragenResponse soapResponse = stockAvailabilityWebService.getStockAvailability(createStockAvailabilityQuery(pzn, qtyRequired)).getValue();
 		assertThat(soapResponse.getReturn().getArtikel().get(0).getAnfragePzn()).isEqualTo(pzn.getValueAsLong());

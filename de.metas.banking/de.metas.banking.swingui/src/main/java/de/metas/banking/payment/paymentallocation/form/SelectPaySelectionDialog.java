@@ -45,6 +45,7 @@ import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -58,7 +59,6 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.Lookup;
 import org.compiere.model.MLookupFactory;
-import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DisplayType;
@@ -218,7 +218,7 @@ final class SelectPaySelectionDialog
 
 	private final void jbInit()
 	{
-		CompiereColor.setBackground(mainPanel);
+		AdempierePLAF.setDefaultBackground(mainPanel);
 		mainPanel.setLayout(mainLayout);
 
 		//
