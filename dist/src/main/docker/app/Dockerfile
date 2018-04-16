@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-RUN apt update 
+RUN apt update \
     && apt -y full-upgrade \
     && apt -y install netcat \
     && apt -y install curl \
