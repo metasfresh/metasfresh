@@ -112,7 +112,14 @@ then
 	set -x
 fi
 
-wait_dbms
+if [ "$db_wait_for_dbms" != "n" ];
+then
+	echo "DB_WAIT_FOR_DBMS=${db_wait_for_dbms}, so we wait for the DBMS to be reachable; set to n (just the lowercase letter) to skip this."
+	wait_dbms
+
+else
+	echo "DB_WAIT_FOR_DBMS=${db_wait_for_dbms}, so we do not wait for the DBMS to be reachable."
+fi
 
 run_metasfresh
 exit 0 
