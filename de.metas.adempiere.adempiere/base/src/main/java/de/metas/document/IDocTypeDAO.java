@@ -23,6 +23,7 @@ package de.metas.document;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -37,7 +38,7 @@ import lombok.Value;
 public interface IDocTypeDAO extends ISingletonService
 {
 	I_C_DocType getById(int docTypeId);
-	
+
 	/**
 	 * @return C_DocType_ID or -1 if not found
 	 */
@@ -69,7 +70,7 @@ public interface IDocTypeDAO extends ISingletonService
 	@Deprecated
 	I_C_DocType getDocType(String docBaseType, String docSubType, int adClientId, int adOrgId);
 
-	I_C_DocType getDocTypeOrNull(DocTypeQuery query);
+	Optional<I_C_DocType> retrieveDocType(DocTypeQuery docTypeQuery);
 
 	/**
 	 * Retrieve all the doc types of a certain base type as a list
@@ -81,7 +82,7 @@ public interface IDocTypeDAO extends ISingletonService
 
 	/**
 	 * Retrieve the Counter_DocBaseType that fits the given DocBaseType.
-	 * 
+	 *
 	 * @param ctx
 	 * @param docBaseType
 	 * @return
