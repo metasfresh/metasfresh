@@ -13,3 +13,35 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 UPDATE AD_Message SET MsgType='E',Updated=TO_TIMESTAMP('2018-04-13 18:15:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544677
 ;
 
+
+
+-- 2018-04-17T15:05:57.793
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Product not allowed to be sold to customer {0} because {1}.',Updated=TO_TIMESTAMP('2018-04-17 15:05:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544677
+;
+
+-- 2018-04-17T15:07:00.565
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Das Produkt darf nicht an den Kunden {0} verkauft werden. Grund: {1}',Updated=TO_TIMESTAMP('2018-04-17 15:07:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544677
+;
+
+-- 2018-04-17T15:07:06.731
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-17 15:07:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Message_ID=544677 AND AD_Language='en_US'
+;
+
+-- 2018-04-17T15:07:23.529
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-17 15:07:23','YYYY-MM-DD HH24:MI:SS'),MsgText='Das Produkt darf nicht an den Kunden {0} verkauft werden. Grund: {1}' WHERE AD_Message_ID=544677 AND AD_Language='de_CH'
+;
+
+-- 2018-04-17T15:10:21.466
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-17 15:10:21','YYYY-MM-DD HH24:MI:SS'),MsgText='Product not allowed to be sold to customer {0} because {1}.' WHERE AD_Message_ID=544677 AND AD_Language='en_US'
+;
+
+-- 2018-04-17T15:10:25.632
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-17 15:10:25','YYYY-MM-DD HH24:MI:SS'),MsgText='Product not allowed to be sold to customer {0} because {1}.' WHERE AD_Message_ID=544677 AND AD_Language='nl_NL'
+;
+
