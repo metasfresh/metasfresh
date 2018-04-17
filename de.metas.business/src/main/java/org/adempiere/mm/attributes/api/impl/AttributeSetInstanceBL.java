@@ -34,6 +34,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -42,6 +43,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -51,6 +53,7 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
@@ -247,20 +250,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		}
 		attributeInstance.setM_AttributeSetInstance(asi);
 		attributeInstance.setM_AttributeValue(attributeValue);
-
-		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValue.getM_Attribute().getAttributeValueType()))
-		{
-			attributeInstance.setValueNumber(new BigDecimal(attributeValue.getValue()));
-		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValue.getM_Attribute().getAttributeValueType()))
-		{
-			attributeInstance.setValueDate(Timestamp.valueOf(attributeValue.getValue()));
-		}
-		else
-		{
-			attributeInstance.setValue(attributeValue.getValue());
-		}
-
+		attributeInstance.setValue(attributeValue.getValue());
 		attributeInstance.setM_Attribute_ID(attributeId);
 		save(attributeInstance);
 
@@ -286,6 +276,43 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		instanceNew.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
 		save(instanceNew);
 		return instanceNew;
+	}
+
+	@Override
+	public void setAttributeInstanceValue(@NonNull final I_M_AttributeSetInstance asi, @NonNull final I_M_Attribute attribute, @NonNull final Object value)
+	{
+		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attribute.getM_Attribute_ID());
+		if (attributeInstance == null)
+		{
+			throw new AdempiereException("instanceExisting not exists");
+		}
+
+		final String attributeValueType = attribute.getAttributeValueType();
+		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		{
+			attributeInstance.setValueDate(Env.parseTimestamp(value.toString()));
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		{
+			attributeInstance.setValue(value.toString());
+
+			final I_M_AttributeValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attribute, value.toString());
+			attributeInstance.setM_AttributeValue(attributeValue);
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		{
+			attributeInstance.setValueNumber(NumberUtils.asBigDecimal(value.toString(), null));
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		{
+			attributeInstance.setValue(value.toString());
+		}
+		else
+		{
+			throw new IllegalArgumentException("@NotSupported@ @AttributeValueType@=" + attributeValueType + ", @M_Attribute_ID@=" + attribute);
+		}
+
+		save(attributeInstance);
 	}
 
 	@Override
