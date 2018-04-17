@@ -46,21 +46,21 @@ public class C_BPartner_Product
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_C_BPartner_Product bpartnerProduct)
 	{
-		if (!bpartnerProduct.isSalesBan())
+		if (!bpartnerProduct.isExcludedFromSale())
 		{
 			return;
 		}
 
-		if (Check.isEmpty(bpartnerProduct.getSalesBanReason(), true))
+		if (Check.isEmpty(bpartnerProduct.getExclusionFromSaleReason(), true))
 		{
-			throw new FillMandatoryException(I_C_BPartner_Product.COLUMNNAME_SalesBanReason);
+			throw new FillMandatoryException(I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason);
 		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void onAfterNew(final I_C_BPartner_Product bpartnerProduct)
 	{
-		if (!isSalesBan(bpartnerProduct))
+		if (!isExcludedFromSaleToCustomer(bpartnerProduct))
 		{
 			return;
 		}
@@ -73,13 +73,13 @@ public class C_BPartner_Product
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, //
-			ifColumnsChanged = { I_C_BPartner_Product.COLUMNNAME_IsActive, I_C_BPartner_Product.COLUMNNAME_IsSalesBan, I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID })
+			ifColumnsChanged = { I_C_BPartner_Product.COLUMNNAME_IsActive, I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID })
 	public void onAfterChanged(final I_C_BPartner_Product bpartnerProduct)
 	{
 		final I_C_BPartner_Product bpartnerProductOld = InterfaceWrapperHelper.createOld(bpartnerProduct, I_C_BPartner_Product.class);
-		final boolean wasBanned = isSalesBan(bpartnerProductOld);
-		final boolean isBanned = isSalesBan(bpartnerProduct);
-		if (!wasBanned && !isBanned)
+		final boolean wasExcludedFromSale = isExcludedFromSaleToCustomer(bpartnerProductOld);
+		final boolean isExcludedFromSale = isExcludedFromSaleToCustomer(bpartnerProduct);
+		if (!wasExcludedFromSale && !isExcludedFromSale)
 		{
 			return;
 		}
@@ -88,7 +88,7 @@ public class C_BPartner_Product
 		final int productId = bpartnerProduct.getM_Product_ID();
 		final int newBPartnerId = bpartnerProduct.getC_BPartner_ID();
 		final int oldBPartnerId = bpartnerProductOld.getC_BPartner_ID();
-		if (isBanned)
+		if (isExcludedFromSale)
 		{
 			runAfterCommit(() -> stockAvailabilityService.publishProductExcludeAddedOrChanged(productId, newBPartnerId, oldBPartnerId));
 		}
@@ -110,9 +110,9 @@ public class C_BPartner_Product
 		runAfterCommit(() -> stockAvailabilityService.publishProductExcludeDeleted(productId, newBPartnerId, oldBPartnerId));
 	}
 
-	private static boolean isSalesBan(final I_C_BPartner_Product bpartnerProduct)
+	private static boolean isExcludedFromSaleToCustomer(final I_C_BPartner_Product bpartnerProduct)
 	{
-		return bpartnerProduct.isActive() && bpartnerProduct.isSalesBan();
+		return bpartnerProduct.isActive() && bpartnerProduct.isExcludedFromSale();
 	}
 
 	private MSV3StockAvailabilityService getStockAvailabilityService()

@@ -26,6 +26,7 @@ package de.metas.purchasing.api.impl;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -197,34 +198,39 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsSalesBan, true)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, true)
 				.create()
 				.stream()
 				.map(bpartnerProduct -> toProductExclude(bpartnerProduct))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ProductExclude toProductExclude(I_C_BPartner_Product bpartnerProduct)
+	private static ProductExclude toProductExclude(final I_C_BPartner_Product bpartnerProduct)
 	{
 		return ProductExclude.builder()
 				.productId(bpartnerProduct.getM_Product_ID())
 				.bpartnerId(bpartnerProduct.getC_BPartner_ID())
-				.reason(bpartnerProduct.getSalesBanReason())
+				.reason(bpartnerProduct.getExclusionFromSaleReason())
 				.build();
 	}
 
 	@Override
-	public I_C_BPartner_Product getBannedProductForPartner(final int productId, final int partnerId)
+	public Optional<ProductExclude> getExcludedFromSaleToCustomer(final int productId, final int partnerId)
 	{
-		return Services.get(IQueryBL.class)
+		final I_C_BPartner_Product bpartnerProduct = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, true)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partnerId)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsSalesBan, true)
 				.create()
 				.firstOnly(I_C_BPartner_Product.class);
-
+		if(bpartnerProduct == null)
+		{
+			return Optional.empty();
+		}
+		
+		return Optional.of(toProductExclude(bpartnerProduct));
 	}
 }

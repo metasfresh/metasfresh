@@ -26,6 +26,7 @@ package de.metas.purchasing.api;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
@@ -89,5 +90,5 @@ public interface IBPartnerProductDAO extends ISingletonService
 
 	List<ProductExclude> retrieveAllProductSalesExcludes();
 
-	I_C_BPartner_Product getBannedProductForPartner(int productId, int partnerId);
+	Optional<ProductExclude> getExcludedFromSaleToCustomer(int productId, int partnerId);
 }

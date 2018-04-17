@@ -8,9 +8,9 @@ import org.compiere.util.Env;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.purchasing.api.IBPartnerProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.purchasing.api.ProductExclude;
 
 /*
  * #%L
@@ -37,24 +37,22 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 public class BPartnerProductBL implements IBPartnerProductBL
 {
 	@Override
-	public void assertProductNotBanned(final int productId, final int bpartnerId)
+	public void assertNotExcludedFromSaleToCustomer(final int productId, final int bpartnerId)
 	{
-
 		final IBPartnerProductDAO bpProductDAO = Services.get(IBPartnerProductDAO.class);
 
-		final I_C_BPartner_Product bannedProductForPartner = bpProductDAO.getBannedProductForPartner(
-				productId,
-				bpartnerId);
+		bpProductDAO.getExcludedFromSaleToCustomer(productId, bpartnerId)
+				.ifPresent(this::throwException);
+	}
 
-		if (bannedProductForPartner != null)
-		{
-			final I_C_BPartner partner = loadOutOfTrx(bpartnerId, I_C_BPartner.class);
-			final String msg = Services.get(IMsgBL.class).getMsg(
-					Env.getCtx(),
-					IBPartnerProductDAO.MSG_ProductSalesBanError,
-					new Object[] { partner.getName(), bannedProductForPartner.getSalesBanReason() });
+	private void throwException(final ProductExclude productExclude)
+	{
+		final I_C_BPartner partner = loadOutOfTrx(productExclude.getBpartnerId(), I_C_BPartner.class);
+		final String msg = Services.get(IMsgBL.class).getMsg(
+				Env.getCtx(),
+				IBPartnerProductDAO.MSG_ProductSalesBanError,
+				new Object[] { partner.getName(), productExclude.getReason() });
 
-			throw new AdempiereException(msg);
-		}
+		throw new AdempiereException(msg);
 	}
 }

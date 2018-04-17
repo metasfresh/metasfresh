@@ -289,7 +289,7 @@ public class OrderFastInput extends CalloutEngine
 		// end: cg: 01717
 
 		// 3834
-		Services.get(IBPartnerProductBL.class).assertProductNotBanned(ol.getM_Product_ID(), ol.getC_BPartner_ID());
+		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(ol.getM_Product_ID(), ol.getC_BPartner_ID());
 
 		// set the prices before saveEx, because otherwise, priceEntered is
 		// reset and that way IOrderLineBL.setPrices can't tell whether it

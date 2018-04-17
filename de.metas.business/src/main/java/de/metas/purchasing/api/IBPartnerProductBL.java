@@ -30,6 +30,6 @@ public interface IBPartnerProductBL extends ISingletonService
 	/**
 	 * Throw an exception if the product and partner are involved in a C_BPartnerProduct entry that is flagged as IsSalesBan.
 	 */
-	void assertProductNotBanned(final int productId, final int bpartnerId);
+	void assertNotExcludedFromSaleToCustomer(final int productId, final int bpartnerId);
 
 }
