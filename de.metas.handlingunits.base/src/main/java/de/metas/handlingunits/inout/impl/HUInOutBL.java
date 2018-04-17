@@ -321,7 +321,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isVendorReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery) // in the case of returns the docSubType is null
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
 				.isSOTrx(false)
 				.build();
 
