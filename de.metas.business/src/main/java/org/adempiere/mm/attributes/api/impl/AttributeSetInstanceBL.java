@@ -247,7 +247,20 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		}
 		attributeInstance.setM_AttributeSetInstance(asi);
 		attributeInstance.setM_AttributeValue(attributeValue);
-		attributeInstance.setValue(attributeValue.getValue());
+
+		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValue.getM_Attribute().getAttributeValueType()))
+		{
+			attributeInstance.setValueNumber(new BigDecimal(attributeValue.getValue()));
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValue.getM_Attribute().getAttributeValueType()))
+		{
+			attributeInstance.setValueDate(Timestamp.valueOf(attributeValue.getValue()));
+		}
+		else
+		{
+			attributeInstance.setValue(attributeValue.getValue());
+		}
+
 		attributeInstance.setM_Attribute_ID(attributeId);
 		save(attributeInstance);
 
