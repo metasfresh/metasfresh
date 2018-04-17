@@ -59,6 +59,12 @@ public class MsgBL implements IMsgBL
 	{
 		return Msg.getMsg(adLanguage, message, params);
 	}
+	
+	@Override
+	public String getMsg(final String adLanguage, final String message, final List<Object> params)
+	{
+		return Msg.getMsg(adLanguage, message, params != null && !params.isEmpty() ? params.toArray() : null);
+	}
 
 	@Override
 	public String getMsg(final Properties ctx, final String adMessage)

@@ -43,6 +43,8 @@ public interface IMsgBL extends ISingletonService
 	 */
 	String getMsg(String adLanguage, String message, Object[] params);
 
+	String getMsg(String adLanguage, String message, List<Object> params);
+
 	/**
 	 * Get translated text message for AD_Message
 	 * 

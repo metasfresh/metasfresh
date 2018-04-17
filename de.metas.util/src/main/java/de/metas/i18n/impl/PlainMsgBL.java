@@ -46,6 +46,12 @@ public class PlainMsgBL implements IMsgBL
 	{
 		return adLanguage + "_" + message + "_" + Arrays.toString(params);
 	}
+	
+	@Override
+	public String getMsg(final String adLanguage, final String message, final List<Object> params)
+	{
+		return adLanguage + "_" + message + "_" + params;
+	}
 
 	@Override
 	public String getMsg(final Properties ctx, final String adMessage)
