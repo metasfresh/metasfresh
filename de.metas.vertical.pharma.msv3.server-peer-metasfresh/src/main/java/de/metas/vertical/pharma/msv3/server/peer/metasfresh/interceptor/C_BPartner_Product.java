@@ -42,18 +42,6 @@ import lombok.NonNull;
 @Component("de.metas.vertical.pharma.msv3.server.peer.metasfresh.interceptor.C_BPartner_Product")
 public class C_BPartner_Product
 {
-	private MSV3StockAvailabilityService getStockAvailabilityService()
-	{
-		return Adempiere.getBean(MSV3StockAvailabilityService.class);
-	}
-
-	private void runAfterCommit(@NonNull final Runnable runnable)
-	{
-		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(trx -> runnable.run());
-	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_C_BPartner_Product bpartnerProduct)
@@ -67,11 +55,6 @@ public class C_BPartner_Product
 		{
 			throw new FillMandatoryException(I_C_BPartner_Product.COLUMNNAME_SalesBanReason);
 		}
-	}
-
-	private static boolean isSalesBan(final I_C_BPartner_Product bpartnerProduct)
-	{
-		return bpartnerProduct.isActive() && bpartnerProduct.isSalesBan();
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
@@ -125,5 +108,23 @@ public class C_BPartner_Product
 		final int newBPartnerId = bpartnerProduct.getC_BPartner_ID();
 		final int oldBPartnerId = bpartnerProductOld.getC_BPartner_ID();
 		runAfterCommit(() -> stockAvailabilityService.publishProductExcludeDeleted(productId, newBPartnerId, oldBPartnerId));
+	}
+
+	private static boolean isSalesBan(final I_C_BPartner_Product bpartnerProduct)
+	{
+		return bpartnerProduct.isActive() && bpartnerProduct.isSalesBan();
+	}
+
+	private MSV3StockAvailabilityService getStockAvailabilityService()
+	{
+		return Adempiere.getBean(MSV3StockAvailabilityService.class);
+	}
+
+	private void runAfterCommit(@NonNull final Runnable runnable)
+	{
+		Services.get(ITrxManager.class)
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> runnable.run());
 	}
 }
