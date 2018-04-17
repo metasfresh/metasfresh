@@ -264,7 +264,7 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	public List<I_M_InOut> updateManualCustomerReturnInOutForHUs(
-			final I_M_InOut manualCustomerReturn, 
+			final I_M_InOut manualCustomerReturn,
 			final Map<Integer, List<I_M_HU>> lineToHus)
 	{
 		Check.assume(isCustomerReturn(manualCustomerReturn), " {0} not a customer return", manualCustomerReturn);
@@ -304,23 +304,17 @@ public class HUInOutBL implements IHUInOutBL
 				.isSOTrx(true)
 				.build();
 
-		final Optional<I_C_DocType> returnsDocType = Services.get(IDocTypeDAO.class)
+		final Optional<I_C_DocType> vendorReturnDocType = Services.get(IDocTypeDAO.class)
 				.retrieveDocType(docTypeQuery);
 
-		if (!returnsDocType.isPresent())
+		if (!vendorReturnDocType.isPresent())
 		{
 			// there is no customer return doc type defined in the project. Return false by default
 			return false;
 		}
 
-		if (returnsDocType.get().getC_DocType_ID() != inOut.getC_DocType_ID())
-		{
-			// the inout is not a customer return
-			return false;
-		}
-
-		// the inout is a customer return
-		return true;
+		final boolean inoutHasCustomerReturnDocType = vendorReturnDocType.get().getC_DocType_ID() == inOut.getC_DocType_ID();
+		return inoutHasCustomerReturnDocType;
 	}
 
 	@Override
@@ -331,23 +325,17 @@ public class HUInOutBL implements IHUInOutBL
 				.isSOTrx(false)
 				.build();
 
-		final Optional<I_C_DocType> returnsDocType = Services.get(IDocTypeDAO.class)
+		final Optional<I_C_DocType> customerReturnDocType = Services.get(IDocTypeDAO.class)
 				.retrieveDocType(docTypeQuery);
 
-		if (!returnsDocType.isPresent())
+		if (!customerReturnDocType.isPresent())
 		{
 			// there is no customer return doc type defined in the project. Return false by default
 			return false;
 		}
 
-		if (returnsDocType.get().getC_DocType_ID() != inOut.getC_DocType_ID())
-		{
-			// the inout is not a customer return
-			return false;
-		}
-
-		// the inout is a customer return
-		return true;
+		final boolean inoutHasVendorReturnDocType = customerReturnDocType.get().getC_DocType_ID() == inOut.getC_DocType_ID();
+		return inoutHasVendorReturnDocType;
 	}
 
 	private DocTypeQueryBuilder createQueryBuilder(@NonNull final org.compiere.model.I_M_InOut inOut)
