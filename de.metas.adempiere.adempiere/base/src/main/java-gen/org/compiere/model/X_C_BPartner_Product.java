@@ -15,7 +15,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1052335496L;
+	private static final long serialVersionUID = 2079751182L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product (Properties ctx, int C_BPartner_Product_ID, String trxName)
@@ -27,7 +27,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 			setC_BPartner_Product_ID (0);
 			setIsCurrentVendor (false); // N
 			setIsDropShip (false); // N
-			setIsSalesBan (false); // N
+			setIsExcludedFromSale (false); // N
 			setM_Product_ID (0);
 			setShelfLifeMinDays (0);
 			setShelfLifeMinPct (0);
@@ -196,6 +196,22 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set Exclusion From Sale Reason.
+		@param ExclusionFromSaleReason Exclusion From Sale Reason	  */
+	@Override
+	public void setExclusionFromSaleReason (java.lang.String ExclusionFromSaleReason)
+	{
+		set_Value (COLUMNNAME_ExclusionFromSaleReason, ExclusionFromSaleReason);
+	}
+
+	/** Get Exclusion From Sale Reason.
+		@return Exclusion From Sale Reason	  */
+	@Override
+	public java.lang.String getExclusionFromSaleReason () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExclusionFromSaleReason);
+	}
+
 	/** Set Gegenwärtiger Lieferant.
 		@param IsCurrentVendor 
 		Diesen Lieferanten für Bepreisung und Lagerauffüllung verwenden
@@ -248,20 +264,20 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return false;
 	}
 
-	/** Set Ban on sales documents.
-		@param IsSalesBan Ban on sales documents	  */
+	/** Set Exclusion from sales documents.
+		@param IsExcludedFromSale Exclusion from sales documents	  */
 	@Override
-	public void setIsSalesBan (boolean IsSalesBan)
+	public void setIsExcludedFromSale (boolean IsExcludedFromSale)
 	{
-		set_Value (COLUMNNAME_IsSalesBan, Boolean.valueOf(IsSalesBan));
+		set_Value (COLUMNNAME_IsExcludedFromSale, Boolean.valueOf(IsExcludedFromSale));
 	}
 
-	/** Get Ban on sales documents.
-		@return Ban on sales documents	  */
+	/** Get Exclusion from sales documents.
+		@return Exclusion from sales documents	  */
 	@Override
-	public boolean isSalesBan () 
+	public boolean isExcludedFromSale () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSalesBan);
+		Object oo = get_Value(COLUMNNAME_IsExcludedFromSale);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -391,22 +407,6 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	/** Set Sales Ban Reason.
-		@param SalesBanReason Sales Ban Reason	  */
-	@Override
-	public void setSalesBanReason (java.lang.String SalesBanReason)
-	{
-		set_Value (COLUMNNAME_SalesBanReason, SalesBanReason);
-	}
-
-	/** Get Sales Ban Reason.
-		@return Sales Ban Reason	  */
-	@Override
-	public java.lang.String getSalesBanReason () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_SalesBanReason);
 	}
 
 	/** Set Mindesthaltbarkeit Tage.

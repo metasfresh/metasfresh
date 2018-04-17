@@ -249,6 +249,29 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Exclusion From Sale Reason.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExclusionFromSaleReason (java.lang.String ExclusionFromSaleReason);
+
+	/**
+	 * Get Exclusion From Sale Reason.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExclusionFromSaleReason();
+
+    /** Column definition for ExclusionFromSaleReason */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_ExclusionFromSaleReason = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "ExclusionFromSaleReason", null);
+    /** Column name ExclusionFromSaleReason */
+    public static final String COLUMNNAME_ExclusionFromSaleReason = "ExclusionFromSaleReason";
+
+	/**
 	 * Set Aktiv.
 	 * The record is active in the system
 	 *
@@ -324,27 +347,27 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
-	 * Set Ban on sales documents.
+	 * Set Exclusion from sales documents.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSalesBan (boolean IsSalesBan);
+	public void setIsExcludedFromSale (boolean IsExcludedFromSale);
 
 	/**
-	 * Get Ban on sales documents.
+	 * Get Exclusion from sales documents.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isSalesBan();
+	public boolean isExcludedFromSale();
 
-    /** Column definition for IsSalesBan */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_IsSalesBan = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "IsSalesBan", null);
-    /** Column name IsSalesBan */
-    public static final String COLUMNNAME_IsSalesBan = "IsSalesBan";
+    /** Column definition for IsExcludedFromSale */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_IsExcludedFromSale = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "IsExcludedFromSale", null);
+    /** Column name IsExcludedFromSale */
+    public static final String COLUMNNAME_IsExcludedFromSale = "IsExcludedFromSale";
 
 	/**
 	 * Set Produkt.
@@ -474,29 +497,6 @@ public interface I_C_BPartner_Product
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_QualityRating = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "QualityRating", null);
     /** Column name QualityRating */
     public static final String COLUMNNAME_QualityRating = "QualityRating";
-
-	/**
-	 * Set Sales Ban Reason.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setSalesBanReason (java.lang.String SalesBanReason);
-
-	/**
-	 * Get Sales Ban Reason.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getSalesBanReason();
-
-    /** Column definition for SalesBanReason */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_SalesBanReason = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "SalesBanReason", null);
-    /** Column name SalesBanReason */
-    public static final String COLUMNNAME_SalesBanReason = "SalesBanReason";
 
 	/**
 	 * Set Mindesthaltbarkeit Tage.
