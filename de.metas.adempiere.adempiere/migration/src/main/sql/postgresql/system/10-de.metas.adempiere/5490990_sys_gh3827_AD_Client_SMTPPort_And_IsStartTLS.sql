@@ -78,9 +78,6 @@ UPDATE AD_Column SET AD_Reference_ID=11,Updated=TO_TIMESTAMP('2018-04-17 13:18:5
 ;
 
 
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Client SET SMTPPort=25 WHERE SMTPPort IS NULL
-;
 -- 2018-04-17T14:07:28.482
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2018-04-17 14:07:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559712

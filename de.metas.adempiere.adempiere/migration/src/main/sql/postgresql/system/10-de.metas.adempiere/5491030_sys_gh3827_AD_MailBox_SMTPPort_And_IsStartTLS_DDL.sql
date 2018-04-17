@@ -21,14 +21,15 @@ INSERT INTO t_alter_column values('ad_mailbox','SMTPPort','NUMERIC(10)',null,'25
 
 
 
-
--- 2018-04-17T14:07:51.531
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('ad_mailbox','SMTPPort','NUMERIC(10)',null,'25')
-;
-
 -- 2018-04-17T14:07:51.538
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('ad_mailbox','SMTPPort',null,'NULL',null)
+;
+
+
+
+-- 2018-04-17T13:19:24.716
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_MailBox SET SMTPPort=25 WHERE SMTPPort IS NULL
 ;
 

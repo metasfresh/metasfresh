@@ -22,3 +22,10 @@ INSERT INTO t_alter_column values('ad_client','SMTPPort','NUMERIC(10)',null,'25'
 INSERT INTO t_alter_column values('ad_client','SMTPPort',null,'NULL',null)
 ;
 
+
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Client SET SMTPPort=25 WHERE SMTPPort IS NULL
+;
+
+
+
