@@ -47,7 +47,7 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 		final IInvoiceLineQuickInput invoiceLineQuickInput = quickInput.getQuickInputDocumentAs(IInvoiceLineQuickInput.class);
 
 		// 3834
-		Services.get(IBPartnerProductBL.class).assertProductNotBanned(
+		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(
 				invoiceLineQuickInput.getM_Product_ID(),
 				invoice.getC_BPartner_ID());
 
