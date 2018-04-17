@@ -173,3 +173,48 @@ UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-17 13:25:5
 UPDATE AD_Process SET Name='Charge nach Sperrlager verschieben',Updated=TO_TIMESTAMP('2018-04-17 13:26:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540937
 ;
 
+-- 2018-04-17T13:31:28.863
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2018-04-17 13:31:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551323
+;
+
+-- 2018-04-17T13:31:32.591
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2018-04-17 13:31:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551324
+;
+
+-- 2018-04-17T13:31:47.976
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2018-04-17 13:31:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551331
+;
+
+-- 2018-04-17T13:32:01.921
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-04-17 13:32:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551320
+;
+
+-- 2018-04-17T13:32:05.102
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-04-17 13:32:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551321
+;
+
+-- 2018-04-17T13:37:46.262
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=10,Updated=TO_TIMESTAMP('2018-04-17 13:37:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551323
+;
+
+-- 2018-04-17T13:37:46.264
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=20,Updated=TO_TIMESTAMP('2018-04-17 13:37:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551324
+;
+
+-- 2018-04-17T13:37:46.265
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=30,Updated=TO_TIMESTAMP('2018-04-17 13:37:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551322
+;
+
+-- 2018-04-17T13:37:46.266
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=40,Updated=TO_TIMESTAMP('2018-04-17 13:37:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551321
+;
+
