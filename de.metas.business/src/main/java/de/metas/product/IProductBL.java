@@ -42,6 +42,8 @@ import de.metas.costing.CostingMethod;
 
 public interface IProductBL extends ISingletonService
 {
+	String getProductName(final int productId);
+	
 	int getUOMPrecision(I_M_Product product);
 
 	default int getUOMPrecision(final int productId)

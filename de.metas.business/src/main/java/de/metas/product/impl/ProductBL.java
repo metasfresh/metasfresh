@@ -63,6 +63,23 @@ public final class ProductBL implements IProductBL
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
 
 	@Override
+	public String getProductName(final int productId)
+	{
+		if (productId <= 0)
+		{
+			return "<" + productId + ">";
+		}
+
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		if (product == null)
+		{
+			return "<" + productId + ">";
+		}
+
+		return product.getName();
+	}
+
+	@Override
 	public int getUOMPrecision(final I_M_Product product)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
@@ -81,7 +98,7 @@ public final class ProductBL implements IProductBL
 		}
 		return policy;
 	}
-	
+
 	@Override
 	public String getMMPolicy(final int productId)
 	{
@@ -95,7 +112,7 @@ public final class ProductBL implements IProductBL
 	{
 		return product.getC_UOM();
 	}
-	
+
 	@Override
 	public I_C_UOM getStockingUOM(final int productId)
 	{
@@ -185,15 +202,15 @@ public final class ProductBL implements IProductBL
 
 		return isItem(product);
 	}
-	
+
 	@Override
 	public boolean isStocked(final int productId)
 	{
-		if(productId <= 0)
+		if (productId <= 0)
 		{
-			return false; 
+			return false;
 		}
-		
+
 		// NOTE: we rely on table cache config
 		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 		return isStocked(product);
@@ -302,7 +319,7 @@ public final class ProductBL implements IProductBL
 		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 		return getCostingLevel(product, as);
 	}
-	
+
 	@Override
 	public CostingLevel getCostingLevel(final int productId, final int acctSchemaId)
 	{
@@ -310,7 +327,6 @@ public final class ProductBL implements IProductBL
 		final I_C_AcctSchema as = loadOutOfTrx(acctSchemaId, I_C_AcctSchema.class);
 		return getCostingLevel(product, as);
 	}
-
 
 	@Override
 	public CostingMethod getCostingMethod(final I_M_Product product, final I_C_AcctSchema as)
@@ -354,7 +370,7 @@ public final class ProductBL implements IProductBL
 		// If CostingLevel is BatchLot ASI is always mandatory - check all client acct schemas
 		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(Env.getCtx(), product.getAD_Client_ID()))
 		{
-			if(as.isSkipOrg(product.getAD_Org_ID()))
+			if (as.isSkipOrg(product.getAD_Org_ID()))
 			{
 				continue;
 			}
@@ -364,7 +380,7 @@ public final class ProductBL implements IProductBL
 				return true;
 			}
 		}
-		
+
 		//
 		// Check Attribute Set settings
 		final int M_AttributeSet_ID = getM_AttributeSet_ID(product);
