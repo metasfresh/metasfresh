@@ -77,7 +77,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	protected CostDetailCreateResult createCostForCostCollector(CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForCostCollector(final CostDetailCreateRequest request)
 	{
 		// TODO Auto-generated method stub
 		throw new AdempiereException("Standard costs should be already created");
