@@ -36,13 +36,13 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import de.metas.document.DocTypeQuery;
+import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
@@ -69,6 +69,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import lombok.NonNull;
 
 public class HUInOutBL implements IHUInOutBL
 {
@@ -78,12 +79,10 @@ public class HUInOutBL implements IHUInOutBL
 	private static final transient Logger logger = LogManager.getLogger(HUInOutBL.class);
 
 	@Override
-	public void updatePackingMaterialInOutLine(final de.metas.inout.model.I_M_InOutLine inoutLine,
-			final HUPackingMaterialDocumentLineCandidate candidate)
+	public void updatePackingMaterialInOutLine(
+			@NonNull final de.metas.inout.model.I_M_InOutLine inoutLine,
+			@NonNull final HUPackingMaterialDocumentLineCandidate candidate)
 	{
-		Check.assumeNotNull(inoutLine, "inoutLine not null");
-		Check.assumeNotNull(candidate, "candidate not null");
-
 		final I_M_InOutLine inoutLineHU = InterfaceWrapperHelper.create(inoutLine, I_M_InOutLine.class);
 
 		final I_M_Product product = candidate.getM_Product();
@@ -260,7 +259,9 @@ public class HUInOutBL implements IHUInOutBL
 				.create();
 	}
 
-	public List<I_M_InOut> updateManualCustomerReturnInOutForHUs(final I_M_InOut manualCustomerReturn,final Map<Integer, List<I_M_HU>> lineToHus)
+	public List<I_M_InOut> updateManualCustomerReturnInOutForHUs(
+			final I_M_InOut manualCustomerReturn,
+			final Map<Integer, List<I_M_HU>> lineToHus)
 	{
 		Check.assume(isCustomerReturn(manualCustomerReturn), " {0} not a customer return", manualCustomerReturn);
 
@@ -292,59 +293,34 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public boolean isCustomerReturn(final org.compiere.model.I_M_InOut inOut)
+	public boolean isCustomerReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
-		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
-				.getDocTypeOrNull(DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
-						.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
-						.isSOTrx(true)
-						.adClientId(inOut.getAD_Client_ID())
-						.adOrgId(inOut.getAD_Org_ID())
-						.build());
+		final DocTypeQuery docTypeQuery = createQueryBuilder(inOut)
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.isSOTrx(true)
+				.build();
 
-		if (returnsDocType == null)
-		{
-			// there is no customer return doc type defined in the project. Return false by default
-			return false;
-		}
-
-		if (returnsDocType.getC_DocType_ID() != inOut.getC_DocType_ID())
-		{
-			// the inout is not a customer return
-			return false;
-		}
-
-		// the inout is a customer return
-		return true;
+		return Services.get(IDocTypeDAO.class).queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
 	}
 
 	@Override
-	public boolean isVendorReturn(final org.compiere.model.I_M_InOut inOut)
+	public boolean isVendorReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
-		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
-				.getDocTypeOrNull(DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
-						.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
-						.isSOTrx(false)
-						.adClientId(inOut.getAD_Client_ID())
-						.adOrgId(inOut.getAD_Org_ID())
-						.build());
+		final DocTypeQuery docTypeQuery = createQueryBuilder(inOut)
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+				.isSOTrx(false)
+				.build();
 
-		if (returnsDocType == null)
-		{
-			// there is no customer return doc type defined in the project. Return false by default
-			return false;
-		}
+		return Services.get(IDocTypeDAO.class).queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+	}
 
-		if (returnsDocType.getC_DocType_ID() != inOut.getC_DocType_ID())
-		{
-			// the inout is not a customer return
-			return false;
-		}
-
-		// the inout is a customer return
-		return true;
+	private DocTypeQueryBuilder createQueryBuilder(@NonNull final org.compiere.model.I_M_InOut inOut)
+	{
+		final DocTypeQueryBuilder builder = DocTypeQuery.builder()
+				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
+				.adClientId(inOut.getAD_Client_ID())
+				.adOrgId(inOut.getAD_Org_ID());
+		return builder;
 	}
 
 	@Override
@@ -369,10 +345,10 @@ public class HUInOutBL implements IHUInOutBL
 		{
 			final CustomerReturnLineHUGenerator huGenerator = CustomerReturnLineHUGenerator.newInstance(ctxAware);
 			huGenerator.addM_InOutLine(customerReturnLine);
-			
+
 			final List<I_M_HU> currentHUs = huGenerator.generate();
 			hus.addAll(currentHUs);
-			
+
 			lineToHus.put(customerReturnLine.getM_InOutLine_ID(), currentHUs);
 		}
 
