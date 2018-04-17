@@ -277,6 +277,7 @@ public class UserDAO implements IUserDAO
 
 		return UserNotificationsConfig.builder()
 				.userId(user.getAD_User_ID())
+				.userADLanguage(user.getAD_Language())
 				.adClientId(user.getAD_Client_ID())
 				.adOrgId(user.getAD_Org_ID())
 				.userNotificationGroups(userNotificationGroups)

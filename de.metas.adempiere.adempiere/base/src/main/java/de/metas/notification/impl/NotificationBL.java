@@ -207,7 +207,8 @@ public class NotificationBL implements INotificationBL
 
 		if (!Check.isEmpty(request.getSubjectADMessage()))
 		{
-			return Services.get(IMsgBL.class).getMsg(request.getSubjectADMessage(), request.getSubjectADMessageParams());
+			final String adLanguage = request.getADLanguageOrGet(Env::getADLanguageOrBaseLanguage);
+			return Services.get(IMsgBL.class).getMsg(adLanguage, request.getSubjectADMessage(), request.getSubjectADMessageParams());
 		}
 
 		return "";
@@ -241,6 +242,7 @@ public class NotificationBL implements INotificationBL
 		{
 			return prepareMessageFormatter(request)
 					.html(html)
+					.adLanguage(request.getADLanguageOrGet(Env::getADLanguageOrBaseLanguage))
 					.format(request.getContentADMessage(), request.getContentADMessageParams());
 		}
 

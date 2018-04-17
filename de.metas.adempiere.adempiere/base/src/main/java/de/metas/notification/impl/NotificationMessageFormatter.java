@@ -82,7 +82,7 @@ final class NotificationMessageFormatter
 
 	public NotificationMessageFormatter adLanguage(final String adLanguage)
 	{
-		this.adLanguage = adLanguage;
+		this.adLanguage = Check.isEmpty(adLanguage, true) ? null : adLanguage;
 		return this;
 	}
 

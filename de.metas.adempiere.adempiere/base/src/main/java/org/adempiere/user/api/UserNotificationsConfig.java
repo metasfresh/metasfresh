@@ -42,6 +42,7 @@ import lombok.Value;
 public class UserNotificationsConfig
 {
 	private int userId;
+	private String userADLanguage; // might be null
 	private int adClientId;
 	private int adOrgId;
 
@@ -55,6 +56,7 @@ public class UserNotificationsConfig
 	@Builder(toBuilder = true)
 	private UserNotificationsConfig(
 			@NonNull final Integer userId,
+			final String userADLanguage,
 			final int adClientId,
 			final int adOrgId,
 			@NonNull @Singular final List<UserNotificationsGroup> userNotificationGroups,
@@ -63,8 +65,10 @@ public class UserNotificationsConfig
 	{
 		Check.assumeGreaterOrEqualToZero(userId, "adUserId");
 
-		this.adClientId = adClientId >= 0 ? adClientId : 0;
 		this.userId = userId;
+		this.userADLanguage = Check.isEmpty(userADLanguage) ? null : userADLanguage;
+		
+		this.adClientId = adClientId >= 0 ? adClientId : 0;
 		this.adOrgId = adOrgId >= 0 ? adOrgId : 0;
 
 		this.userNotificationGroups = ImmutableList.copyOf(userNotificationGroups);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -162,6 +163,12 @@ public class UserNotificationRequest
 			throw new AdempiereException("recipientUserId not available when broadcastToAllUsers is set: " + this);
 		}
 		return recipientUserId;
+	}
+	
+	public String getADLanguageOrGet(final Supplier<String> defaultLanguageSupplier)
+	{
+		final String adLanguage = getNotificationsConfig().getUserADLanguage();
+		return adLanguage != null ? adLanguage : defaultLanguageSupplier.get();
 	}
 
 	public String getSubjectADMessageOr(final String defaultValue)
