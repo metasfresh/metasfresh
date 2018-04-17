@@ -1,8 +1,10 @@
 var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
+import config from './config';
 
 module.exports = {
+  mode: 'production',
   devtool: 'cheap-module-source-map',
   entry: ['./src/index.jsx', './favicon.png'],
   output: {
@@ -15,43 +17,59 @@ module.exports = {
       'process.env': {
         NODE_ENV: JSON.stringify('production'),
       },
+      API_URL: config.API_URL,
+      WS_URL: config.WS_URL,
     }),
     new HtmlWebpackPlugin({
       template: './index.html',
     }),
   ],
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.jsx?$/,
-        loaders: ['babel'],
+        loader: 'babel-loader',
         include: path.join(__dirname, 'src'),
       },
       {
         test: /\.(jpg|png|svg|eot|woff|woff2|ttf|gif)$/,
-        loader: 'file?name=[path][name].[ext]',
+        use: {
+          loader: 'file-loader',
+          options: {
+            name: '[path][name].[hash].[ext]',
+          },
+        },
       },
       {
         test: /\.css$/,
-        loaders: ['style-loader', 'css-loader', 'postcss-loader'],
+        use: [
+          'style-loader',
+          { loader: 'css-loader', options: { importLoaders: 1 } },
+          {
+            loader: 'postcss-loader',
+            options: {
+              ident: 'postcss',
+              plugins: () => [
+                require('postcss-import')({
+                  addDependencyTo: webpack,
+                  path: ['node_modules'],
+                }),
+                require('postcss-color-function'),
+                require('postcss-url')(),
+                require('autoprefixer')({ browsers: ['last 2 versions'] }),
+                require('precss')(),
+              ],
+            },
+          },
+        ],
       },
       {
         test: /\.html$/,
-        loader: 'html',
+        loader: 'html-loader',
       },
     ],
   },
-  postcss: () => [
-    require('postcss-import')({
-      addDependencyTo: webpack,
-      path: ['node_modules'],
-    }),
-    require('postcss-color-function'),
-    require('postcss-url')(),
-    require('autoprefixer')({ browsers: ['last 2 versions'] }),
-    require('precss')(),
-  ],
   resolve: {
-    extensions: ['', '.js', '.json'],
+    extensions: ['.js', '.json'],
   },
 };
