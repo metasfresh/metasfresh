@@ -75,15 +75,15 @@ public class EMailJsonTest
 	public void test_Mailbox() throws Exception
 	{
 		final Mailbox mailbox = Mailbox.builder()
-				.setSmtpHost("smtpHost")
-				.setEmail("from@email.com")
-				.setSmtpAuthorization(true)
-				.setUsername("username")
-				.setPassword("password111")
-				.setSendFromServer(true)
-				.setAD_Client_ID(1234)
-				.setAD_User_ID(5678)
-				.setColumnUserTo("columnUserTo")
+				.smtpHost("smtpHost")
+				.email("from@email.com")
+				.smtpAuthorization(true)
+				.username("username")
+				.password("password111")
+				.sendFromServer(true)
+				.adClientId(1234)
+				.adUserId(5678)
+				.columnUserTo("columnUserTo")
 				.build();
 		testJsonToStringEquals(mailbox);
 	}
@@ -92,15 +92,15 @@ public class EMailJsonTest
 	public void test_EMail() throws Exception
 	{
 		final Mailbox mailbox = Mailbox.builder()
-				.setSmtpHost("smtpHost")
-				.setEmail("from@email.com")
-				.setSmtpAuthorization(true)
-				.setUsername("username")
-				.setPassword("password111")
-				.setSendFromServer(true)
-				.setAD_Client_ID(1234)
-				.setAD_User_ID(5678)
-				.setColumnUserTo("columnUserTo")
+				.smtpHost("smtpHost")
+				.email("from@email.com")
+				.smtpAuthorization(true)
+				.username("username")
+				.password("password111")
+				.sendFromServer(true)
+				.adClientId(1234)
+				.adUserId(5678)
+				.columnUserTo("columnUserTo")
 				.build();
 		final String to = "to@email.com";
 		final String subject = "test email subject";
