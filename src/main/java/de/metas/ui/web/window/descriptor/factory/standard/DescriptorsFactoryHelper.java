@@ -211,6 +211,10 @@ public final class DescriptorsFactoryHelper
 		{
 			return DocumentFieldWidgetType.Image;
 		}
+		else if (displayType == DisplayType.Color)
+		{
+			return DocumentFieldWidgetType.Color;
+		}
 		else if (displayType == DisplayType.Binary)
 		{
 			return DocumentFieldWidgetType.BinaryData;

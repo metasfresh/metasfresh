@@ -3,6 +3,7 @@ package de.metas.ui.web.material.adapter;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -156,5 +157,10 @@ public class AvailableToPromiseAdapter
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
 					.setParameter("storageAttributesKey", attributesKey);
 		}
+	}
+	
+	public Set<AttributesKey> getPredefinedStorageAttributeKeys()
+	{
+		return stockRepository.getPredefinedStorageAttributeKeys();
 	}
 }
