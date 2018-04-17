@@ -148,3 +148,28 @@ UPDATE AD_UI_Element SET SeqNo=10,Updated=TO_TIMESTAMP('2018-04-17 13:17:26','YY
 UPDATE AD_UI_Element SET SeqNo=20,Updated=TO_TIMESTAMP('2018-04-17 13:17:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551324
 ;
 
+-- 2018-04-17T13:23:04.513
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2018-04-17 13:23:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559563
+;
+
+-- 2018-04-17T13:25:14.555
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Chargen nach Sperrlager verschieben',Updated=TO_TIMESTAMP('2018-04-17 13:25:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540937
+;
+
+-- 2018-04-17T13:25:43.175
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-17 13:25:43','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Lot No. movement to Quarantine Warehouse' WHERE AD_Process_ID=540937 AND AD_Language='en_US'
+;
+
+-- 2018-04-17T13:25:54.417
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-17 13:25:54','YYYY-MM-DD HH24:MI:SS'),Name='Move Lot No. to Quarantine Warehouse' WHERE AD_Process_ID=540937 AND AD_Language='en_US'
+;
+
+-- 2018-04-17T13:26:25.732
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Charge nach Sperrlager verschieben',Updated=TO_TIMESTAMP('2018-04-17 13:26:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540937
+;
+
