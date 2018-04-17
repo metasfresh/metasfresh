@@ -53,6 +53,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
+import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -83,7 +84,6 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 
 public class MaterialEventSerializerTests
 {
-
 
 	private static final BigDecimal ELEVEN = TEN.add(ONE);
 
@@ -439,6 +439,21 @@ public class MaterialEventSerializerTests
 		assertEventEqualAfterSerializeDeserialize(shipmentScheduleCreatedEvent);
 	}
 
+	@Test
+	public void stockChangedEvent()
+	{
+		final StockChangedEvent stockChangedEvent = //
+				StockChangedEvent.builder()
+						.eventDescriptor(createEventDescriptor())
+						.productDescriptor(createProductDescriptor())
+						.qtyOnHand(ONE)
+						.qtyOnHandOld(TEN)
+						.warehouseId(WAREHOUSE_ID)
+						.build();
+		stockChangedEvent.validate();
+		assertEventEqualAfterSerializeDeserialize(stockChangedEvent);
+	}
+
 	private static OrderLineDescriptor createOrderLineDescriptor()
 	{
 		return OrderLineDescriptor.builder()
@@ -619,6 +634,6 @@ public class MaterialEventSerializerTests
 
 	private static EventDescriptor createEventDescriptor()
 	{
-		return new EventDescriptor(1, 2);
+		return EventDescriptor.ofClientAndOrg(1, 2);
 	}
 }

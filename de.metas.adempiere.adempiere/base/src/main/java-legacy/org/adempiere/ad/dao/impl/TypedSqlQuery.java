@@ -277,10 +277,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @throws DBException
 	 */
 	@Override
-	public <ET extends T> List<ET> list() throws DBException
+	public List<T> list() throws DBException
 	{
-		final Class<ET> clazz = null; // N/A
-		return list(clazz);
+		return list(modelClass);
 	}
 
 	@Override
@@ -868,6 +867,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		if (guaranteedIteratorRequired != null)
 		{
 			guaranteed = guaranteedIteratorRequired.booleanValue();
+		}
+		else if (getKeyColumnNames().size() != 1)
+		{
+			// case: no guaranteed option specified and this table has zero or more than one primary key columns
+			// => cannot use guaranteed iterators
+			guaranteed = false;
 		}
 		else
 		{
@@ -1626,11 +1631,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public int updateDirectly(final IQueryUpdater<T> queryUpdater)
+	public int updateDirectly(@NonNull final IQueryUpdater<T> queryUpdater)
 	{
-		Check.assumeNotNull(queryUpdater, "queryUpdater");
-
-		//
 		// Check if it's an ISqlQueryUpdater then we can update it directly
 		if (queryUpdater instanceof ISqlQueryUpdater)
 		{

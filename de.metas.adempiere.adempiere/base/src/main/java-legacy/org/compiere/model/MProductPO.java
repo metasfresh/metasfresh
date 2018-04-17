@@ -47,7 +47,7 @@ public class MProductPO extends X_M_Product_PO
 		List<MProductPO> list = new Query(ctx, Table_Name, whereClause, trxName)
 									.setParameters(new Object[]{M_Product_ID, "Y"})
 									.setOrderBy("IsCurrentVendor DESC")
-									.list();
+									.list(MProductPO.class);
 		return list.toArray(new MProductPO[list.size()]);
 	}	//	getOfProduct
 

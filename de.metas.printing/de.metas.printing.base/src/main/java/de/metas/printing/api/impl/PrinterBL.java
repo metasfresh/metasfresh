@@ -1,6 +1,12 @@
 package de.metas.printing.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -15,25 +21,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrinterBL;
@@ -52,37 +58,60 @@ import lombok.NonNull;
 
 public class PrinterBL implements IPrinterBL
 {
-
 	@Override
-	public I_AD_Printer_Config createPrinterConfigIfNoneExists(final I_AD_PrinterHW printerHW)
+	public boolean createConfigAndDefaultPrinterMatching(@NonNull final I_AD_PrinterHW printerHW)
+	{
+		final Properties ctx = getCtx(printerHW);
+
+		final I_AD_Printer_Config printerConfig = createPrinterConfigIfNoneExists(printerHW);
+
+		final List<I_AD_Printer> printers = Services.get(IPrintingDAO.class).retrievePrinters(ctx, printerHW.getAD_Org_ID());
+
+		if (printers.isEmpty())
+		{
+			// no logical printer defined, nothing to match
+			return false;
+		}
+
+		boolean anythingCreated = false;
+		for (final I_AD_Printer printer : printers)
+		{
+			// Generate default matching
+			final I_AD_Printer_Matching printerMatchingOrNull = createPrinterMatchingIfNoneExists(printerConfig, printer, printerHW);
+			anythingCreated = anythingCreated || printerMatchingOrNull != null;
+		}
+		return anythingCreated;
+	}
+
+	/**
+	 * If there is not yet any printer matching for the given <code>printerHW</code>'s host key, then this method creates one.
+	 */
+	private I_AD_Printer_Config createPrinterConfigIfNoneExists(final I_AD_PrinterHW printerHW)
 	{
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-		final I_AD_Printer_Config existientPrinterConfig = printingDAO.retrievePrinterConfig(PlainContextAware.newOutOfTrx(InterfaceWrapperHelper.getCtx(printerHW)),
+		final I_AD_Printer_Config existientPrinterConfig = printingDAO.retrievePrinterConfig(PlainContextAware.newOutOfTrx(getCtx(printerHW)),
 				printerHW.getHostKey(),
 				printerHW.getUpdatedBy());
-		if(existientPrinterConfig != null)
+		if (existientPrinterConfig != null)
 		{
 			return existientPrinterConfig;
 		}
 
-		final I_AD_Printer_Config newPrinterConfig = InterfaceWrapperHelper.newInstance(I_AD_Printer_Config.class, printerHW);
+		final I_AD_Printer_Config newPrinterConfig = newInstance(I_AD_Printer_Config.class, printerHW);
 		newPrinterConfig.setAD_Org_ID(printerHW.getAD_Org_ID());
 		newPrinterConfig.setConfigHostKey(printerHW.getHostKey());
 		newPrinterConfig.setIsSharedPrinterConfig(false); // not shared by default
-		InterfaceWrapperHelper.save(newPrinterConfig);
+		save(newPrinterConfig);
 
 		return newPrinterConfig;
 	}
 
-	@Override
-	public I_AD_Printer_Matching createPrinterMatchingIfNoneExists(
+	@VisibleForTesting
+	I_AD_Printer_Matching createPrinterMatchingIfNoneExists(
 			final I_AD_Printer_Config config,
 			final I_AD_Printer printer,
-			final I_AD_PrinterHW printerHW,
-			final String trxName)
+			final I_AD_PrinterHW printerHW)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printer);
-
 		// first search ; if exists return null
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
@@ -92,25 +121,50 @@ public class PrinterBL implements IPrinterBL
 			return null;
 		}
 
-		final I_AD_Printer_Matching matching = InterfaceWrapperHelper.create(ctx, I_AD_Printer_Matching.class, trxName);
+		final I_AD_Printer_Matching matching = newInstance(I_AD_Printer_Matching.class);
 		matching.setAD_Printer_Config(config);
 		matching.setAD_Org_ID(printerHW.getAD_Org_ID());
 		matching.setAD_Printer_ID(printer.getAD_Printer_ID());
 		matching.setAD_PrinterHW(printerHW);
-		matching.setHostKey(printerHW.getHostKey());
-		InterfaceWrapperHelper.save(matching);
+		save(matching);
 		return matching;
 	}
 
 	@Override
-	public I_AD_PrinterTray_Matching createTrayMatchingIfNoneExists(
+	public boolean createDefaultTrayMatching(@NonNull final I_AD_PrinterHW_MediaTray printerTrayHW)
+	{
+		final I_AD_PrinterHW printerHW = printerTrayHW.getAD_PrinterHW();
+
+		final List<I_AD_Printer_Matching> printerMatchings = //
+				Services.get(IPrintingDAO.class).retrievePrinterMatchings(printerHW);
+		if (printerMatchings.isEmpty())
+		{
+			// no printer matching was found for printerHW => nothing to match
+			return false;
+		}
+
+		boolean anythingCreated = false;
+		for (final I_AD_Printer_Matching printerMatching : printerMatchings)
+		{
+			final I_AD_Printer printer = load(printerMatching.getAD_Printer_ID(), I_AD_Printer.class);
+			final List<I_AD_Printer_Tray> trays = Services.get(IPrintingDAO.class).retrieveTrays(printer);
+
+			for (final I_AD_Printer_Tray tray : trays)
+			{
+				// Create tray matching
+				final I_AD_PrinterTray_Matching trayMatchingOrNull = createTrayMatchingIfNoneExists(printerMatching, tray, printerTrayHW);
+				anythingCreated = anythingCreated || trayMatchingOrNull != null;
+			}
+		}
+		return anythingCreated;
+	}
+
+	@VisibleForTesting
+	I_AD_PrinterTray_Matching createTrayMatchingIfNoneExists(
 			final I_AD_Printer_Matching printerMatching,
 			final I_AD_Printer_Tray tray,
-			final I_AD_PrinterHW_MediaTray printerTrayHW,
-			final String trxName)
+			final I_AD_PrinterHW_MediaTray printerTrayHW)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printerTrayHW);
-
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
 		// first search ; if exists return null
@@ -120,12 +174,12 @@ public class PrinterBL implements IPrinterBL
 			return null;
 		}
 
-		final I_AD_PrinterTray_Matching trayMatching = InterfaceWrapperHelper.create(ctx, I_AD_PrinterTray_Matching.class, trxName);
+		final I_AD_PrinterTray_Matching trayMatching = newInstance(I_AD_PrinterTray_Matching.class);
 		trayMatching.setAD_Org_ID(printerTrayHW.getAD_Org_ID());
 		trayMatching.setAD_Printer_Matching(printerMatching);
 		trayMatching.setAD_Printer_Tray(tray);
 		trayMatching.setAD_PrinterHW_MediaTray(printerTrayHW);
-		InterfaceWrapperHelper.save(trayMatching);
+		save(trayMatching);
 
 		return trayMatching;
 	}
@@ -133,8 +187,8 @@ public class PrinterBL implements IPrinterBL
 	@Override
 	public I_AD_PrinterHW_Calibration createCalibrationIfNoneExists(final I_AD_PrinterTray_Matching printerTrayMatching)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printerTrayMatching);
-		final String trxName = InterfaceWrapperHelper.getTrxName(printerTrayMatching);
+		final Properties ctx = getCtx(printerTrayMatching);
+		final String trxName = getTrxName(printerTrayMatching);
 
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
@@ -148,7 +202,7 @@ public class PrinterBL implements IPrinterBL
 			return null; // nothing to do, calibration already exists
 		}
 
-		final I_AD_PrinterHW_Calibration cal = InterfaceWrapperHelper.create(ctx, I_AD_PrinterHW_Calibration.class, trxName);
+		final I_AD_PrinterHW_Calibration cal = create(ctx, I_AD_PrinterHW_Calibration.class, trxName);
 
 		cal.setAD_PrinterHW(printerHW);
 		cal.setAD_PrinterHW_MediaSize(hwMediaSize);
@@ -157,7 +211,7 @@ public class PrinterBL implements IPrinterBL
 		cal.setMeasurementX(Printing_Constants.AD_PrinterHW_Calibration_JASPER_REF_X_MM);
 		cal.setMeasurementY(Printing_Constants.AD_PrinterHW_Calibration_JASPER_REF_Y_MM);
 
-		InterfaceWrapperHelper.save(cal);
+		save(cal);
 
 		return cal;
 	}
@@ -179,7 +233,7 @@ public class PrinterBL implements IPrinterBL
 			// delete existing tray matchings;
 			for (final I_AD_PrinterTray_Matching trayMatching : existingPrinterTrayMatchings)
 			{
-				InterfaceWrapperHelper.delete(trayMatching);
+				delete(trayMatching);
 			}
 		}
 		else if (existingPrinterTrayMatchings.isEmpty() && defaultHWTray != null)
@@ -189,11 +243,11 @@ public class PrinterBL implements IPrinterBL
 			final I_AD_Printer printer = load(printerMatching.getAD_Printer_ID(), I_AD_Printer.class);
 			for (final I_AD_Printer_Tray logicalTray : dao.retrieveTrays(printer))
 			{
-				final I_AD_PrinterTray_Matching trayMatching = InterfaceWrapperHelper.newInstance(I_AD_PrinterTray_Matching.class, printerMatching);
+				final I_AD_PrinterTray_Matching trayMatching = newInstance(I_AD_PrinterTray_Matching.class, printerMatching);
 				trayMatching.setAD_Printer_Matching(printerMatching);
 				trayMatching.setAD_Printer_Tray(logicalTray);
 				trayMatching.setAD_PrinterHW_MediaTray(defaultHWTray);
-				InterfaceWrapperHelper.save(trayMatching);
+				save(trayMatching);
 			}
 		}
 		else
@@ -206,7 +260,7 @@ public class PrinterBL implements IPrinterBL
 			for (final I_AD_PrinterTray_Matching trayMatching : existingPrinterTrayMatchings)
 			{
 				trayMatching.setAD_PrinterHW_MediaTray(defaultHWTray);
-				InterfaceWrapperHelper.save(trayMatching);
+				save(trayMatching);
 			}
 		}
 	}
@@ -214,6 +268,6 @@ public class PrinterBL implements IPrinterBL
 	@Override
 	public boolean isPDFPrinter(@NonNull final I_AD_PrinterHW printerHW)
 	{
-		return  X_AD_PrinterHW.OUTPUTTYPE_PDF.equals(printerHW.getOutputType());
+		return X_AD_PrinterHW.OUTPUTTYPE_PDF.equals(printerHW.getOutputType());
 	}
 }

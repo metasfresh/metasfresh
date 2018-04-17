@@ -1464,12 +1464,14 @@ public class HUTestHelper
 
 	public List<I_M_HU> retrieveAllHandlingUnitsOfType(final I_M_HU_PI huPI)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		
 		final List<I_M_HU> result = new ArrayList<>();
 
 		// Filter
 		for (final I_M_HU hu : retrieveAllHandlingUnits())
 		{
-			if (hu.getM_HU_PI_Version().getM_HU_PI_ID() != huPI.getM_HU_PI_ID())
+			if (handlingUnitsBL.getPIVersion(hu).getM_HU_PI_ID() != huPI.getM_HU_PI_ID())
 			{
 				continue;
 			}

@@ -110,7 +110,7 @@ public class MRequisition extends X_M_Requisition implements IDocument
 	 	List <MRequisitionLine> list = new Query(getCtx(), MRequisitionLine.Table_Name, whereClause, get_TrxName())
 			.setParameters(new Object[]{get_ID()})
 			.setOrderBy(MRequisitionLine.COLUMNNAME_Line)
-			.list();
+			.list(MRequisitionLine.class);
 	 	//  red1 - end -
 
 		m_lines = new MRequisitionLine[list.size ()];

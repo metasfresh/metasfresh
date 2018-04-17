@@ -2,6 +2,7 @@ package org.adempiere.bpartner.service;
 
 import java.math.BigDecimal;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
@@ -40,6 +41,12 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @return the {@link BPartnerStats} object
 	 */
 	BPartnerStats getCreateBPartnerStats(I_C_BPartner partner);
+	
+	default BPartnerStats getCreateBPartnerStats(final int bpartnerId)
+	{
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		return getCreateBPartnerStats(bpartner);
+	}
 
 	/**
 	 * Retrieve the total open balance value for the given stats using the old legacy sql

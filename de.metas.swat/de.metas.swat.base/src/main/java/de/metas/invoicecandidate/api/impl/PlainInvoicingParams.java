@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,45 +25,48 @@ package de.metas.invoicecandidate.api.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.util.lang.ObjectUtils;
+import javax.annotation.Nullable;
 
 import de.metas.invoicecandidate.api.IInvoicingParams;
+import lombok.ToString;
 
+@ToString
 public class PlainInvoicingParams implements IInvoicingParams
 {
-	private Boolean onlyApprovedForInvoicing;
-	private Boolean consolidateApprovedICs;
-	private Boolean ignoreInvoiceSchedule;
-	private Timestamp dateInvoiced;
-	private boolean dateInvoicedSet = false;
-	private Timestamp dateAcct;
-	private boolean dateAcctSet = false;
-	private String poReference;
-	private boolean poReferenceSet = false;
-	private BigDecimal check_NetAmtToInvoice = null;
+	private Boolean onlyApprovedForInvoicing = null;
+	private Boolean consolidateApprovedICs = null;
+	private Boolean ignoreInvoiceSchedule = null;
+	private Boolean supplementMissingPaymentTermIds = null;
 
-	private final IInvoicingParams defaults;
 	private boolean storeInvoicesInResult = false;
 	private boolean assumeOneInvoice = false;
 
+	private Timestamp dateInvoiced;
+	private boolean dateInvoicedSet = false;
+
+	private Timestamp dateAcct;
+	private boolean dateAcctSet = false;
+
+	private String poReference;
+	private boolean poReferenceSet = false;
+
+
+	private BigDecimal check_NetAmtToInvoice = null;
+
+	private final IInvoicingParams defaults;
+
+
 	public PlainInvoicingParams()
 	{
-		this((IInvoicingParams)null);
+		this(null);
 	}
 
 	/**
 	 * @param defaults defaults to fallback in case a parameter is not set on this level
 	 */
-	public PlainInvoicingParams(final IInvoicingParams defaults)
+	public PlainInvoicingParams(@Nullable final IInvoicingParams defaults)
 	{
-		super();
 		this.defaults = defaults;
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 
 	@Override
@@ -195,10 +198,24 @@ public class PlainInvoicingParams implements IInvoicingParams
 		}
 	}
 
-	public void setPOReference(final String poReference)
+	public void setPOReference(@Nullable final String poReference)
 	{
 		this.poReference = poReference;
 		this.poReferenceSet = true;
+	}
+
+	@Override
+	public boolean isSupplementMissingPaymentTermIds()
+	{
+		if (supplementMissingPaymentTermIds != null)
+		{
+			return supplementMissingPaymentTermIds;
+		}
+		else if (defaults != null)
+		{
+			return defaults.isSupplementMissingPaymentTermIds();
+		}
+		return false;
 	}
 
 	@Override
@@ -212,10 +229,8 @@ public class PlainInvoicingParams implements IInvoicingParams
 		{
 			return defaults.getCheck_NetAmtToInvoice();
 		}
-		else
-		{
-			return null;
-		}
+
+		return null;
 	}
 
 	public PlainInvoicingParams setStoreInvoicesInResult(final boolean storeInvoicesInResult)
@@ -241,5 +256,4 @@ public class PlainInvoicingParams implements IInvoicingParams
 	{
 		return assumeOneInvoice;
 	}
-
 }

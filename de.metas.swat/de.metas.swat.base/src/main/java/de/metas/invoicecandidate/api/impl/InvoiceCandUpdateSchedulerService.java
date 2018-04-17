@@ -33,6 +33,4 @@ public class InvoiceCandUpdateSchedulerService implements IInvoiceCandUpdateSche
 	{
 		UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(request);
 	}
-	
-	
 }

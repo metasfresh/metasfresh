@@ -122,7 +122,7 @@ public final class HUAssert
 	{
 		final boolean destroyed = Services.get(IHandlingUnitsBL.class).isDestroyed(hu);
 		Assert.assertTrue("HU shall be destroyed"
-				+ "\nPI:" + hu.getM_HU_PI_Version().getM_HU_PI().getName()
+				+ "\nPI:" + Services.get(IHandlingUnitsBL.class).getPI(hu).getName()
 				+ "\nHU:" + hu,
 				destroyed);
 	}
@@ -182,7 +182,7 @@ public final class HUAssert
 	{
 		Assert.assertNotNull("hu shall not be null", hu);
 
-		final I_M_HU_PI_Version huPiVersion = hu.getM_HU_PI_Version();
+		final I_M_HU_PI_Version huPiVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(hu);
 		Assert.assertNotNull("HU_PI_Version shall not be null for " + hu, huPiVersion);
 
 		final I_M_HU_PI huPI = huPiVersion.getM_HU_PI();

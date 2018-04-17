@@ -25,8 +25,10 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 
 import java.util.List;
 
+import org.adempiere.util.Services;
 import org.compiere.util.Util;
 
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -79,7 +81,7 @@ public class CompositeHUKeyNameBuilder extends AbstractHUKeyNameBuilder<Composit
 			final HUKey huKey = (HUKey)child;
 			if (piName == null)
 			{
-				final I_M_HU_PI huPI = huKey.getM_HU().getM_HU_PI_Version().getM_HU_PI();
+				final I_M_HU_PI huPI = Services.get(IHandlingUnitsBL.class).getPI(huKey.getM_HU());
 				piName = huPI.getName();
 				break;
 			}

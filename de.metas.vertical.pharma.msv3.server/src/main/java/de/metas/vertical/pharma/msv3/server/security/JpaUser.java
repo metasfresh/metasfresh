@@ -1,6 +1,10 @@
 package de.metas.vertical.pharma.msv3.server.security;
 
+import java.util.UUID;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
@@ -33,7 +37,10 @@ import lombok.ToString;
  */
 
 @Entity
-@Table(name = "msv3_user", uniqueConstraints = @UniqueConstraint(name = "user_uq", columnNames = { "username" }))
+@Table(name = "msv3_user", //
+		uniqueConstraints = @UniqueConstraint(name = "user_uq", columnNames = { "username" }), //
+		indexes = @Index(name = "user_sync_token", columnList = "sync_token") //
+)
 @Getter
 @Setter
 @ToString
@@ -48,7 +55,11 @@ public class JpaUser extends AbstractEntity
 
 	@NotNull
 	private Integer bpartnerId;
-	
+
 	@NotNull
 	private Integer bpartnerLocationId;
+
+	@Column(name = "sync_token")
+	@NotNull
+	private String syncToken = UUID.randomUUID().toString();
 }

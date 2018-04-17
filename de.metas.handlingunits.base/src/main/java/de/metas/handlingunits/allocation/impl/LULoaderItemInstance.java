@@ -26,6 +26,7 @@ package de.metas.handlingunits.allocation.impl;
 import org.adempiere.util.Services;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -52,7 +53,7 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 		this.luItem = luItem;
 		luItemStorage = huContext.getHUStorageFactory().getStorage(luItem);
 
-		final I_M_HU_PI_Item luPIItem = luItem.getM_HU_PI_Item();
+		final I_M_HU_PI_Item luPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(luItem);
 		luPIItemId = luPIItem.getM_HU_PI_Item_ID();
 
 		int requiredBPartnerId = luPIItem.getC_BPartner_ID();
@@ -156,7 +157,7 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 		// Check if TU's M_HU_PI_ID is accepted
 		if (requiredTU_HU_PI_ID > 0)
 		{
-			final int tuPIId = tuHU.getM_HU_PI_Version().getM_HU_PI_ID();
+			final int tuPIId = Services.get(IHandlingUnitsBL.class).getPIVersion(tuHU).getM_HU_PI_ID();
 			if (tuPIId != requiredTU_HU_PI_ID)
 			{
 				return false;

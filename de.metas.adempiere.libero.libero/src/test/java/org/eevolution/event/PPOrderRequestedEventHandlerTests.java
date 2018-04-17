@@ -178,7 +178,7 @@ public class PPOrderRequestedEventHandlerTests
 	public void testOnlyPPOrder()
 	{
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
-				.eventDescriptor(new EventDescriptor(0, 10))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(0, 10))
 				.dateOrdered(SystemTime.asDate())
 				.ppOrder(ppOrderPojo).build();
 
@@ -216,7 +216,7 @@ public class PPOrderRequestedEventHandlerTests
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new PP_Order(), null); // enable the MI supposed to supplement lines
 
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
-				.eventDescriptor(new EventDescriptor(0, 10))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(0, 10))
 				.dateOrdered(SystemTime.asDate())
 				.ppOrder(ppOrderPojo).build();
 

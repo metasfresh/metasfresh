@@ -32,10 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MElementValue;
@@ -47,6 +43,9 @@ import org.compiere.model.Query;
 import org.compiere.model.X_M_Product_Acct;
 import org.compiere.util.Env;
 
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+
 /**
  * Creates expense type products from a given range of expense account 
  * elements.
@@ -57,6 +56,7 @@ import org.compiere.util.Env;
  *
  * @author Daniel Tamm
  */
+@Deprecated // TODO delete it
 public class ExpenseTypesFromAccounts extends JavaProcess {
 
     private int m_clientId;
@@ -122,9 +122,9 @@ public class ExpenseTypesFromAccounts extends JavaProcess {
         // Read all existing applicable products into memory for quick comparison.
         List<MProduct> products = new Query(getCtx(), MProduct.Table_Name, "ProductType=?", get_TrxName())
                 .setParameters(new Object[]{MProduct.PRODUCTTYPE_ExpenseType})
-                .list();
+                .list(MProduct.class);
 
-        Map<String,MProduct> productMap = new TreeMap<String, MProduct>();
+        Map<String,MProduct> productMap = new TreeMap<>();
         for (Iterator<MProduct> it = products.iterator(); it.hasNext();) {
             product = it.next();
             productMap.put(product.getValue(), product);
@@ -138,9 +138,9 @@ public class ExpenseTypesFromAccounts extends JavaProcess {
                     "C_AcctSchema_ID=? and AD_Client_ID=? and AD_Org_ID=0",
                     get_TrxName())
                 .setParameters(new Object[]{m_acctSchemaId, m_clientId})
-                .list();
+                .list(MAccount.class);
 
-        Map<Integer, MAccount> validCombMap = new TreeMap<Integer, MAccount>();
+        Map<Integer, MAccount> validCombMap = new TreeMap<>();
         for (Iterator<MAccount> it = validCombs.iterator(); it.hasNext();) {
             validComb = it.next();
             validCombMap.put(validComb.getAccount_ID(), validComb);
@@ -153,7 +153,7 @@ public class ExpenseTypesFromAccounts extends JavaProcess {
                     "AccountType=? and isSummary='N' and Value>=? and Value<=? and AD_Client_ID=?",
                     get_TrxName())
                 .setParameters(new Object[]{MElementValue.ACCOUNTTYPE_Expense, m_startElement, m_endElement, m_clientId})
-                .list();
+                .list(MElementValue.class);
 
         MElementValue elem;
         MProductPrice priceRec;

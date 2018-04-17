@@ -3,12 +3,17 @@ package org.adempiere.inout.util;
 import java.math.BigDecimal;
 
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.compiere.model.I_M_Product;
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 /*
  * #%L
@@ -43,6 +48,7 @@ public class DeliveryLineCandidate
 	private final DeliveryGroupCandidate group;
 
 	@NonNull
+	@Getter(AccessLevel.NONE)
 	private final I_M_ShipmentSchedule shipmentSchedule;
 
 	private final int shipmentScheduleId;
@@ -50,6 +56,7 @@ public class DeliveryLineCandidate
 	@NonNull
 	private BigDecimal qtyToDeliver = BigDecimal.ZERO;
 
+	@Setter(AccessLevel.NONE)
 	private boolean discarded = false;
 
 	@NonNull
@@ -66,8 +73,39 @@ public class DeliveryLineCandidate
 		this.completeStatus = completeStatus;
 	}
 
-	public I_M_Product getM_Product()
+	public int getProductId()
 	{
-		return shipmentSchedule.getM_Product();
+		return shipmentSchedule.getM_Product_ID();
+	}
+	
+	public TableRecordReference getReferenced()
+	{
+		return TableRecordReference.ofReferenced(shipmentSchedule);
+	}
+	
+	public BigDecimal getQtyToDeliverOverride()
+	{
+		return shipmentSchedule.getQtyToDeliver_Override();
+	}
+	
+	public int getBillBPartnerId()
+	{
+		return shipmentSchedule.getBill_BPartner_ID();
+	}
+	
+	public String getDeliveryRule()
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		return shipmentScheduleBL.getDeliveryRule(shipmentSchedule);
+	}
+	
+	public void setDiscarded()
+	{
+		this.discarded = true;
+	}
+	
+	public void removeFromGroup()
+	{
+		group.removeLine(this);
 	}
 }

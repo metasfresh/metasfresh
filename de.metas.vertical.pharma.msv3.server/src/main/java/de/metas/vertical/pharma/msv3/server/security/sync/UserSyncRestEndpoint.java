@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
-import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedMultiEvent;
 import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
 import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
 import de.metas.vertical.pharma.msv3.server.security.MSV3User;
@@ -52,9 +52,9 @@ public class UserSyncRestEndpoint
 	private MSV3ServerPeerService msv3ServerPeerService;
 
 	@PostMapping
-	public void processEvents(@RequestBody final MSV3UserChangedMultiEvent multiEvents)
+	public void processBatchEvent(@RequestBody final MSV3UserChangedBatchEvent batchEvent)
 	{
-		multiEvents.getEvents().forEach(authService::handleEvent);
+		authService.handleEvent(batchEvent);
 	}
 
 	// TODO: remove this endpoint, it's only for testing/debugging

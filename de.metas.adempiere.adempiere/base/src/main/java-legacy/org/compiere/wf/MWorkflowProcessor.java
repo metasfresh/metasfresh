@@ -52,7 +52,7 @@ public class MWorkflowProcessor extends X_AD_WorkflowProcessor
 	{
 		List<MWorkflowProcessor> list = new Query(ctx, Table_Name, null, null)
 					.setOnlyActiveRecords(true)
-					.list();
+					.list(MWorkflowProcessor.class);
 		MWorkflowProcessor[] retValue = new MWorkflowProcessor[list.size ()];
 		list.toArray (retValue);
 		return retValue;
@@ -85,6 +85,7 @@ public class MWorkflowProcessor extends X_AD_WorkflowProcessor
 	 * 	Get Server ID
 	 *	@return id
 	 */
+	@Override
 	public String getServerID ()
 	{
 		return "WorkflowProcessor" + get_ID();
@@ -95,6 +96,7 @@ public class MWorkflowProcessor extends X_AD_WorkflowProcessor
 	 *	@param requery requery
 	 *	@return date next run
 	 */
+	@Override
 	public Timestamp getDateNextRun (boolean requery)
 	{
 		if (requery)
@@ -106,12 +108,13 @@ public class MWorkflowProcessor extends X_AD_WorkflowProcessor
 	 * 	Get Logs
 	 *	@return logs
 	 */
+	@Override
 	public AdempiereProcessorLog[] getLogs ()
 	{
 		List<MWorkflowProcessorLog> list = new Query(getCtx(), MWorkflowProcessorLog.Table_Name, "AD_WorkflowProcessor_ID=?", get_TrxName())
 			.setParameters(new Object[]{getAD_WorkflowProcessor_ID()})
 			.setOrderBy("Created DESC")
-			.list();
+			.list(MWorkflowProcessorLog.class);
 		MWorkflowProcessorLog[] retValue = new MWorkflowProcessorLog[list.size ()];
 		list.toArray (retValue);
 		return retValue;

@@ -175,7 +175,7 @@ public class CostBillOfMaterial extends JavaProcess
 	 */
 	private List<MPPProductBOM> getBOMs(MProduct product, boolean includeAlternativeBOMs)
 	{
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		whereClause.append(MPPProductBOM.COLUMNNAME_M_Product_ID).append("=?");
 		params.add(product.get_ID());
@@ -189,7 +189,7 @@ public class CostBillOfMaterial extends JavaProcess
 									.setParameters(params)
 									.setOnlyActiveRecords(true)
 									.setOrderBy(MPPProductBOM.COLUMNNAME_Value)
-									.list();
+									.list(MPPProductBOM.class);
 		return list;
 	}
 

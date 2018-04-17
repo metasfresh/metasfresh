@@ -35,7 +35,7 @@ public interface I_M_HU
 	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_AD_Client>(I_M_HU.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -64,7 +64,7 @@ public interface I_M_HU
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_AD_Org>(I_M_HU.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -93,7 +93,7 @@ public interface I_M_HU
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_C_BPartner>(I_M_HU.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -122,7 +122,7 @@ public interface I_M_HU
 	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
 
     /** Column definition for C_BPartner_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_C_BPartner_Location>(I_M_HU.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
@@ -137,7 +137,7 @@ public interface I_M_HU
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -152,7 +152,7 @@ public interface I_M_HU
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_AD_User>(I_M_HU.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -177,7 +177,7 @@ public interface I_M_HU
 	public boolean isHUPlanningReceiptOwnerPM();
 
     /** Column definition for HUPlanningReceiptOwnerPM */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_HUPlanningReceiptOwnerPM = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "HUPlanningReceiptOwnerPM", null);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_HUPlanningReceiptOwnerPM = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "HUPlanningReceiptOwnerPM", null);
     /** Column name HUPlanningReceiptOwnerPM */
     public static final String COLUMNNAME_HUPlanningReceiptOwnerPM = "HUPlanningReceiptOwnerPM";
 
@@ -200,7 +200,7 @@ public interface I_M_HU
 	public java.lang.String getHUStatus();
 
     /** Column definition for HUStatus */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_HUStatus = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "HUStatus", null);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_HUStatus = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "HUStatus", null);
     /** Column name HUStatus */
     public static final String COLUMNNAME_HUStatus = "HUStatus";
 
@@ -225,7 +225,7 @@ public interface I_M_HU
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -252,7 +252,7 @@ public interface I_M_HU
 	public boolean isChildHU();
 
     /** Column definition for IsChildHU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_IsChildHU = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "IsChildHU", null);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_IsChildHU = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "IsChildHU", null);
     /** Column name IsChildHU */
     public static final String COLUMNNAME_IsChildHU = "IsChildHU";
 
@@ -277,7 +277,7 @@ public interface I_M_HU
 	public boolean isLocked();
 
     /** Column definition for Locked */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_Locked = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "Locked", null);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_Locked = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "Locked", null);
     /** Column name Locked */
     public static final String COLUMNNAME_Locked = "Locked";
 
@@ -300,7 +300,7 @@ public interface I_M_HU
 	public int getM_HU_ID();
 
     /** Column definition for M_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "M_HU_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "M_HU_ID", null);
     /** Column name M_HU_ID */
     public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
@@ -327,7 +327,7 @@ public interface I_M_HU
 	public void setM_HU_Item_Parent(de.metas.handlingunits.model.I_M_HU_Item M_HU_Item_Parent);
 
     /** Column definition for M_HU_Item_Parent_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU_Item> COLUMN_M_HU_Item_Parent_ID = new org.adempiere.model.ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU_Item>(I_M_HU.class, "M_HU_Item_Parent_ID", de.metas.handlingunits.model.I_M_HU_Item.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU_Item> COLUMN_M_HU_Item_Parent_ID = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "M_HU_Item_Parent_ID", de.metas.handlingunits.model.I_M_HU_Item.class);
     /** Column name M_HU_Item_Parent_ID */
     public static final String COLUMNNAME_M_HU_Item_Parent_ID = "M_HU_Item_Parent_ID";
 
@@ -354,7 +354,7 @@ public interface I_M_HU
 	public void setM_HU_LUTU_Configuration(de.metas.handlingunits.model.I_M_HU_LUTU_Configuration M_HU_LUTU_Configuration);
 
     /** Column definition for M_HU_LUTU_Configuration_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU_LUTU_Configuration> COLUMN_M_HU_LUTU_Configuration_ID = new org.adempiere.model.ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU_LUTU_Configuration>(I_M_HU.class, "M_HU_LUTU_Configuration_ID", de.metas.handlingunits.model.I_M_HU_LUTU_Configuration.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU_LUTU_Configuration> COLUMN_M_HU_LUTU_Configuration_ID = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "M_HU_LUTU_Configuration_ID", de.metas.handlingunits.model.I_M_HU_LUTU_Configuration.class);
     /** Column name M_HU_LUTU_Configuration_ID */
     public static final String COLUMNNAME_M_HU_LUTU_Configuration_ID = "M_HU_LUTU_Configuration_ID";
 
@@ -381,7 +381,7 @@ public interface I_M_HU
 	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
 
     /** Column definition for M_HU_PI_Item_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU_PI_Item_Product> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU_PI_Item_Product>(I_M_HU.class, "M_HU_PI_Item_Product_ID", de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU_PI_Item_Product> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "M_HU_PI_Item_Product_ID", de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
     /** Column name M_HU_PI_Item_Product_ID */
     public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
@@ -403,12 +403,12 @@ public interface I_M_HU
 	 */
 	public int getM_HU_PI_Version_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version();
+//	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version();
 
 	public void setM_HU_PI_Version(de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version);
 
     /** Column definition for M_HU_PI_Version_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU_PI_Version> COLUMN_M_HU_PI_Version_ID = new org.adempiere.model.ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU_PI_Version>(I_M_HU.class, "M_HU_PI_Version_ID", de.metas.handlingunits.model.I_M_HU_PI_Version.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU_PI_Version> COLUMN_M_HU_PI_Version_ID = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "M_HU_PI_Version_ID", de.metas.handlingunits.model.I_M_HU_PI_Version.class);
     /** Column name M_HU_PI_Version_ID */
     public static final String COLUMNNAME_M_HU_PI_Version_ID = "M_HU_PI_Version_ID";
 
@@ -437,7 +437,7 @@ public interface I_M_HU
 	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
 
     /** Column definition for M_Locator_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_M_Locator>(I_M_HU.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
@@ -469,7 +469,7 @@ public interface I_M_HU
 	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
 
     /** Column definition for M_Product_Category_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_M_Product_Category>(I_M_HU.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
     /** Column name M_Product_Category_ID */
     public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
 
@@ -504,7 +504,7 @@ public interface I_M_HU
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_M_Product>(I_M_HU.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -519,7 +519,7 @@ public interface I_M_HU
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -534,7 +534,7 @@ public interface I_M_HU
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_AD_User>(I_M_HU.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
@@ -559,7 +559,7 @@ public interface I_M_HU
 	public java.lang.String getValue();
 
     /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "Value", null);
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<>(I_M_HU.class, "Value", null);
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";
 }

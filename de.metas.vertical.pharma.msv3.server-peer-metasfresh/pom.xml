@@ -22,6 +22,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util.web</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>de.metas.salescandidate</groupId>
 			<artifactId>de.metas.salescandidate.base</artifactId>
 			<version>${metasfresh.version}</version>
@@ -34,6 +39,11 @@
 		<dependency>
 			<groupId>de.metas.vertical.pharma</groupId>
 			<artifactId>metasfresh-pharma.msv3.server-peer</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-cockpit</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 
