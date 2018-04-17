@@ -305,4 +305,27 @@ public class CtxNamesTests
 		final Date value = ctxName.getValueAsDate(context);
 		assertThat(value).isNull();
 	}
+
+	@Test
+	public void test_getValueAsString_QuotedIfNotDefault()
+	{
+		final CtxName ctxName = CtxNames.parseWithMarkers("@SomeVar/quotedIfNotDefault/someDefaultValue@");
+		final MockedEvaluatee2 context = new MockedEvaluatee2();
+		context.put("SomeVar", "aaa");
+
+		final String value = ctxName.getValueAsString(context);
+		assertThat(value).isEqualTo("'aaa'");
+	}
+
+	@Test
+	public void test_getValueAsString_QuotedIfNotDefault_VarMissing()
+	{
+		final CtxName ctxName = CtxNames.parseWithMarkers("@SomeVar/quotedIfNotDefault/someDefaultValue@");
+		final MockedEvaluatee2 context = new MockedEvaluatee2();
+		// context.put("SomeVar", "aaa");
+
+		final String value = ctxName.getValueAsString(context);
+		assertThat(value).isEqualTo("someDefaultValue");
+	}
+
 }
