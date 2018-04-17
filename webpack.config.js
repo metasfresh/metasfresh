@@ -19,7 +19,6 @@ module.exports = {
   },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
-    // new webpack.NoErrorsPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
     new HtmlWebpackPlugin({
       template: 'index.html',
@@ -32,7 +31,7 @@ module.exports = {
     rules: [
       {
         test: /\.jsx?$/,
-        use: 'babel-loader',
+        loader: 'babel-loader',
         include: path.join(__dirname, 'src'),
       },
       {
@@ -56,12 +55,12 @@ module.exports = {
               plugins: () => [
                 require('postcss-import')({
                   addDependencyTo: webpack,
-                  path: ['node_modules'],
+                  path: ['node_modules', 'src/assets'],
                 }),
                 require('postcss-color-function'),
                 require('postcss-url')(),
-                require('autoprefixer')({ browsers: ['last 2 versions'] }),
                 require('precss')(),
+                require('autoprefixer')({ browsers: ['last 2 versions'] }),
               ],
             },
           },
