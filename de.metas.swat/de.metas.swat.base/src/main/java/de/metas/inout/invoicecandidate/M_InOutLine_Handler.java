@@ -263,7 +263,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setIsPackagingMaterial(inOutLine.isPackagingMaterial());
 
 		// order & delivery stuff
-		setOrderedData(ic, forcedQtyToAllocate, Mode.CREATE);
+		final boolean callerCanCreateAdditionalICs = true; // our calling code will create further ICs if needed
+		setOrderedData(ic, forcedQtyToAllocate, callerCanCreateAdditionalICs);
 		if (ic.getQtyOrdered().signum() == 0)
 		{
 			return null; // we won't create a new IC that has qtyOrdered=zero right from the start
@@ -453,13 +454,15 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		setOrderedData(ic, null, Mode.UPDATE);
+		// we won't create another IC, so the method we call needs to allocate it all to the given IC
+		final boolean callerCanCreateAdditionalICs = false;
+		setOrderedData(ic, null, callerCanCreateAdditionalICs);
 	}
 
 	private void setOrderedData(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@Nullable BigDecimal forcedQtyOrdered,
-			@NonNull final Mode mode)
+			final boolean callerCanCreateAdditionalICs)
 	{
 
 		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
@@ -485,7 +488,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final BigDecimal qtyMultiplier = getQtyMultiplier(ic);
 			final BigDecimal qtyOrdered = Util.coalesceSuppliers(
 					() -> forcedQtyOrdered,
-					() -> extractQtyDelivered(ic, mode));
+					() -> extractQtyDelivered(ic, callerCanCreateAdditionalICs));
 
 			final BigDecimal qtyDelivered = qtyOrdered.multiply(qtyMultiplier);
 			ic.setQtyOrdered(qtyDelivered);
@@ -500,7 +503,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	@VisibleForTesting
 	BigDecimal extractQtyDelivered(
 			@NonNull final I_C_Invoice_Candidate ic,
-			@NonNull final Mode mode)
+			final boolean callerCanCreateAdditionalICs)
 	{
 		if (!ic.isPackagingMaterial())
 		{
@@ -522,21 +525,20 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			return inOutLine.getMovementQty();
 		}
 
-//		BigDecimal qtyDeliveredLeftToAllocateForIcPaymentTerm = packagingInOutLine.getMovementQty(); 
 		BigDecimal qtyDeliveredLeftToAllocateForAnyPaymentTerm = packagingInOutLine.getMovementQty();
+		BigDecimal qtyDeliveredLeftToAllocateForCurentICsPaymentTerm = packagingInOutLine.getMovementQty();
 		BigDecimal qtyAllocatedViaReferencingInoutLines = ZERO;
 		for (final I_M_InOutLine referencingInOutLine : referencingInOutLines)
 		{
 			final BigDecimal qtyOfReferencingInOutLine = referencingInOutLine.getQtyEnteredTU();
 
-			if (extractPaymentTermId(referencingInOutLine) == ic.getC_PaymentTerm_ID())
+			if (inoutLineFitsWithPaymentTermId(referencingInOutLine, ic.getC_PaymentTerm_ID()))
 			{
 				final BigDecimal qtyToAddForThisIC = qtyOfReferencingInOutLine.min(qtyDeliveredLeftToAllocateForAnyPaymentTerm);
 				qtyAllocatedViaReferencingInoutLines = qtyAllocatedViaReferencingInoutLines.add(qtyToAddForThisIC);
-//				qtyDeliveredLeftToAllocateForIcPaymentTerm = qtyDeliveredLeftToAllocateForIcPaymentTerm.subtract(qtyOfReferencingInOutLine);
-				qtyDeliveredLeftToAllocateForAnyPaymentTerm = qtyDeliveredLeftToAllocateForAnyPaymentTerm.subtract(qtyOfReferencingInOutLine);
+				qtyDeliveredLeftToAllocateForCurentICsPaymentTerm = qtyDeliveredLeftToAllocateForCurentICsPaymentTerm.subtract(qtyOfReferencingInOutLine);
 			}
-
+			qtyDeliveredLeftToAllocateForAnyPaymentTerm = qtyDeliveredLeftToAllocateForAnyPaymentTerm.subtract(qtyOfReferencingInOutLine);
 
 			if (qtyDeliveredLeftToAllocateForAnyPaymentTerm.signum() <= 0)
 			{
@@ -546,18 +548,18 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		if (qtyDeliveredLeftToAllocateForAnyPaymentTerm.signum() <= 0)
 		{
+			// the referencingInOutLines' QtyEnteredTUs were large enough to cover the whole packagingInOutLine.getMovementQty()
 			return qtyAllocatedViaReferencingInoutLines;
 		}
 
-		// qtyDeliveredForThisIC is too small because the referencingInOutLine's QtyEnteredTUs are too small
-		if (mode == Mode.CREATE)
+		if (callerCanCreateAdditionalICs)
 		{
-			// the IC creating code will create another or do whatever it takes to take care of this
+			// the IC creating code will create another IC or do whatever it takes to take care of the not-yet allocated quantity.
 			return qtyAllocatedViaReferencingInoutLines;
 		}
 
-//		BigDecimal otherICsQties = ZERO;
-		List<I_C_Invoice_Candidate> icsForPackagingInOutLine = Services.get(IInvoiceCandDAO.class).retrieveInvoiceCandidatesForInOutLine(packagingInOutLine);
+		// check which of the packagingInOutLine's qty is already allocated to another IC
+		final List<I_C_Invoice_Candidate> icsForPackagingInOutLine = Services.get(IInvoiceCandDAO.class).retrieveInvoiceCandidatesForInOutLine(packagingInOutLine);
 		for (final I_C_Invoice_Candidate currentIcForPackagingInOutLine : icsForPackagingInOutLine)
 		{
 			boolean currentIcIsTheGivenIc = currentIcForPackagingInOutLine.getC_Invoice_Candidate_ID() == ic.getC_Invoice_Candidate_ID();
@@ -565,23 +567,23 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			{
 				continue;
 			}
-			final BigDecimal currentIcQty = currentIcForPackagingInOutLine.getQtyDelivered();
-			
-			//otherICsQties = otherICsQties.add(currentIcQty);
-			qtyDeliveredLeftToAllocateForAnyPaymentTerm = qtyDeliveredLeftToAllocateForAnyPaymentTerm.subtract(currentIcQty);
+			final BigDecimal currentIcQty = currentIcForPackagingInOutLine.getQtyDelivered().abs();
+			qtyDeliveredLeftToAllocateForCurentICsPaymentTerm = qtyDeliveredLeftToAllocateForCurentICsPaymentTerm.subtract(currentIcQty);
 		}
 		if (qtyDeliveredLeftToAllocateForAnyPaymentTerm.signum() <= 0)
 		{
-			return qtyAllocatedViaReferencingInoutLines.add(qtyDeliveredLeftToAllocateForAnyPaymentTerm);
+			return qtyAllocatedViaReferencingInoutLines.add(qtyDeliveredLeftToAllocateForAnyPaymentTerm.max(ZERO));
 		}
 
-//		final boolean missingQtyIsAllocatedToOtherIcs = otherICsQties.compareTo(qtyDeliveredLeftToAllocateForAnyPaymentTerm) >= 0;
-//		if (missingQtyIsAllocatedToOtherIcs)
-//		{
-//			return qtyAllocatedViaReferencingInoutLines;
-//		}
+		return qtyAllocatedViaReferencingInoutLines.add(qtyDeliveredLeftToAllocateForCurentICsPaymentTerm);
+	}
 
-		return qtyAllocatedViaReferencingInoutLines.add(qtyDeliveredLeftToAllocateForAnyPaymentTerm);
+	private boolean inoutLineFitsWithPaymentTermId(
+			@NonNull final I_M_InOutLine inOutLine,
+			final int paymentTermId)
+	{
+		final int paymentTermIdOfInOutLine = extractPaymentTermId(inOutLine);
+		return paymentTermIdOfInOutLine <= 0 || paymentTermIdOfInOutLine == paymentTermId;
 	}
 
 	@VisibleForTesting

@@ -41,6 +41,11 @@ public class StockAvailabilityQueryItem
 			@NonNull final Quantity qtyRequired,
 			@NonNull final RequirementType requirementType)
 	{
+		if (qtyRequired.isZero())
+		{
+			throw new IllegalArgumentException("qtyRequired shall be greater than ZERO: " + qtyRequired);
+		}
+
 		this.pzn = pzn;
 		this.qtyRequired = qtyRequired;
 		this.requirementType = requirementType;

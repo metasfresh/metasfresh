@@ -13,15 +13,14 @@ package org.adempiere.pricing.spi.impl.rules;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -50,7 +49,9 @@ import de.metas.logging.LogManager;
  * Discount Calculations
  *
  * @author Jorg Janke
- * @author tobi42 metas us1064 <li>calculateDiscount only calculates (retrieves) the discount, but does not alter priceStd. <li>Therefore, <code>m_PriceStd</code> is not changed from its
+ * @author tobi42 metas us1064
+ *         <li>calculateDiscount only calculates (retrieves) the discount, but does not alter priceStd.
+ *         <li>Therefore, <code>m_PriceStd</code> is not changed from its
  *         respective productPrice.
  * @author Teo Sarca - refactory
  *
@@ -89,7 +90,7 @@ public class Discount implements IPricingRule
 	}
 
 	@Override
-	public void calculate(IPricingContext pricingCtx, IPricingResult result)
+	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
 		if (!applies(pricingCtx, result))
 		{
@@ -136,7 +137,6 @@ public class Discount implements IPricingRule
 
 		final CalculateDiscountRequest request;
 
-
 		final IAttributeSetInstanceAware asiAware = Services
 				.get(IAttributeSetInstanceAwareFactoryService.class)
 				.createOrNull(pricingCtx.getReferencedObject());
@@ -151,6 +151,7 @@ public class Discount implements IPricingRule
 					.M_Product_Category_ID(result.getM_Product_Category_ID())
 					.instances(null)
 					.bPartnerFlatDiscount(flatDiscount)
+					.pricingCtx(pricingCtx)
 					.build();
 		}
 
@@ -168,6 +169,7 @@ public class Discount implements IPricingRule
 					.M_Product_Category_ID(result.getM_Product_Category_ID())
 					.instances(instances)
 					.bPartnerFlatDiscount(flatDiscount)
+					.pricingCtx(pricingCtx)
 					.build();
 		}
 
@@ -177,6 +179,26 @@ public class Discount implements IPricingRule
 		result.setM_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
 		result.setDiscount(disccountResult.getDiscount());
 		result.setC_PaymentTerm_ID(disccountResult.getC_PaymentTerm_ID());
+		result.setM_DiscountSchemaBreak_ID(disccountResult.getDiscountSchemaBreakId());
+		
+		final BigDecimal priceStdOverride = disccountResult.getPriceStdOverride();
+		final BigDecimal priceListOverride = disccountResult.getPriceListOverride();
+		final BigDecimal priceLimitOverride = disccountResult.getPriceLimitOverride();
+		
+		if(priceStdOverride != null)
+		{
+			result.setPriceStd(priceStdOverride);
+		}
+		
+		if(priceListOverride != null)
+		{
+			result.setPriceList(priceListOverride);
+		}
+		
+		if(priceLimitOverride != null)
+		{
+			result.setPriceLimit(priceLimitOverride);
+		}
 		// metas us1064 end
 	}
 }

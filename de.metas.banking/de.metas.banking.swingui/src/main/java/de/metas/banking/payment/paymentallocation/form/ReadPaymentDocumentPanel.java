@@ -51,6 +51,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
@@ -63,7 +64,6 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.Lookup;
 import org.compiere.model.MLookupFactory;
-import org.compiere.plaf.CompiereColor;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
@@ -260,7 +260,7 @@ class ReadPaymentDocumentPanel
 
 	private final void jbInit()
 	{
-		CompiereColor.setBackground(mainPanel);
+		AdempierePLAF.setDefaultBackground(mainPanel);
 		mainPanel.setLayout(new BorderLayout());
 
 		//
