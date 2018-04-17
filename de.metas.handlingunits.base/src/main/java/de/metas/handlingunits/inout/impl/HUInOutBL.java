@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -37,7 +36,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -81,12 +79,10 @@ public class HUInOutBL implements IHUInOutBL
 	private static final transient Logger logger = LogManager.getLogger(HUInOutBL.class);
 
 	@Override
-	public void updatePackingMaterialInOutLine(final de.metas.inout.model.I_M_InOutLine inoutLine,
-			final HUPackingMaterialDocumentLineCandidate candidate)
+	public void updatePackingMaterialInOutLine(
+			@NonNull final de.metas.inout.model.I_M_InOutLine inoutLine,
+			@NonNull final HUPackingMaterialDocumentLineCandidate candidate)
 	{
-		Check.assumeNotNull(inoutLine, "inoutLine not null");
-		Check.assumeNotNull(candidate, "candidate not null");
-
 		final I_M_InOutLine inoutLineHU = InterfaceWrapperHelper.create(inoutLine, I_M_InOutLine.class);
 
 		final I_M_Product product = candidate.getM_Product();
@@ -304,17 +300,7 @@ public class HUInOutBL implements IHUInOutBL
 				.isSOTrx(true)
 				.build();
 
-		final Optional<I_C_DocType> vendorReturnDocType = Services.get(IDocTypeDAO.class)
-				.retrieveDocType(docTypeQuery);
-
-		if (!vendorReturnDocType.isPresent())
-		{
-			// there is no customer return doc type defined in the project. Return false by default
-			return false;
-		}
-
-		final boolean inoutHasCustomerReturnDocType = vendorReturnDocType.get().getC_DocType_ID() == inOut.getC_DocType_ID();
-		return inoutHasCustomerReturnDocType;
+		return Services.get(IDocTypeDAO.class).queryMatchesDocTypeId(docTypeQuery, inOut);
 	}
 
 	@Override
@@ -325,17 +311,7 @@ public class HUInOutBL implements IHUInOutBL
 				.isSOTrx(false)
 				.build();
 
-		final Optional<I_C_DocType> customerReturnDocType = Services.get(IDocTypeDAO.class)
-				.retrieveDocType(docTypeQuery);
-
-		if (!customerReturnDocType.isPresent())
-		{
-			// there is no customer return doc type defined in the project. Return false by default
-			return false;
-		}
-
-		final boolean inoutHasVendorReturnDocType = customerReturnDocType.get().getC_DocType_ID() == inOut.getC_DocType_ID();
-		return inoutHasVendorReturnDocType;
+		return Services.get(IDocTypeDAO.class).queryMatchesDocTypeId(docTypeQuery, inOut);
 	}
 
 	private DocTypeQueryBuilder createQueryBuilder(@NonNull final org.compiere.model.I_M_InOut inOut)
