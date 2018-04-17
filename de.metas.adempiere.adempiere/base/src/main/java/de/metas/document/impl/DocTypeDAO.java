@@ -52,7 +52,6 @@ import de.metas.adempiere.util.CacheTrx;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocumentBL;
 import lombok.NonNull;
 
 public class DocTypeDAO implements IDocTypeDAO
@@ -166,14 +165,8 @@ public class DocTypeDAO implements IDocTypeDAO
 	@Override
 	public boolean queryMatchesDocTypeId(
 			@NonNull final DocTypeQuery docTypeQuery,
-			@NonNull final Object documentModel)
+			final int docTypeId)
 	{
-		final Integer docTypeId = InterfaceWrapperHelper.getValueOrNull(docTypeQuery, IDocumentBL.COLUMNNAME_C_DocType_ID);
-		if (docTypeId == null)
-		{
-			return false;
-		}
-
 		final boolean queryMatchesDocTypeId = createDocTypeByBaseTypeQuery(Env.getCtx(), ITrx.TRXNAME_None, docTypeQuery)
 				.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, docTypeId)
 				.create()

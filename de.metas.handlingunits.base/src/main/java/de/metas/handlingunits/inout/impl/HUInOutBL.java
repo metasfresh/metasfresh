@@ -300,7 +300,7 @@ public class HUInOutBL implements IHUInOutBL
 				.isSOTrx(true)
 				.build();
 
-		return Services.get(IDocTypeDAO.class).queryMatchesDocTypeId(docTypeQuery, inOut);
+		return Services.get(IDocTypeDAO.class).queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
 	}
 
 	@Override
@@ -311,7 +311,7 @@ public class HUInOutBL implements IHUInOutBL
 				.isSOTrx(false)
 				.build();
 
-		return Services.get(IDocTypeDAO.class).queryMatchesDocTypeId(docTypeQuery, inOut);
+		return Services.get(IDocTypeDAO.class).queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
 	}
 
 	private DocTypeQueryBuilder createQueryBuilder(@NonNull final org.compiere.model.I_M_InOut inOut)

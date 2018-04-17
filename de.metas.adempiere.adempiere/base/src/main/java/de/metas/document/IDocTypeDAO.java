@@ -71,7 +71,7 @@ public interface IDocTypeDAO extends ISingletonService
 	 * Returns {@code true} if the given {@code documentModel}'s {@link IDocumentBL#COLUMNNAME_C_DocType_ID} value
 	 * is one of the ID that are matched by the given {@code docTypeQuery}.
 	 */
-	boolean queryMatchesDocTypeId(DocTypeQuery docTypeQuery, Object documentModel);
+	boolean queryMatchesDocTypeId(DocTypeQuery docTypeQuery, int docTypeId);
 
 	/**
 	 * Retrieve all the doc types of a certain base type as a list
