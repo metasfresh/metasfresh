@@ -13,6 +13,10 @@ Here come the actual release notes:
 # metasfresh 5.54 (2018-17)
 **release for week 2018-17**
 
+* metasfresh
+  * [#3866](https://github.com/metasfresh/metasfresh/issues/3866) WebUI: Translation for Product LotNo Lock Window
+    * Improved Window Layout and additional Translations for de_DE and en_US.
+
 ## Features
 
 ## Fixes
