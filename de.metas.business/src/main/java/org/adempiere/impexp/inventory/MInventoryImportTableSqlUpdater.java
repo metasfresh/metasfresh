@@ -92,7 +92,7 @@ public class MInventoryImportTableSqlUpdater
 	private void dbUpdateCreateLocators(@NonNull final String whereClause)
 	{
 		dbUpdateLocators(whereClause);
-		dbCreateLocators(whereClause);
+		dbCreateLocators();
 	}
 
 	private void dbUpdateLocators(@NonNull final String whereClause)
@@ -107,7 +107,7 @@ public class MInventoryImportTableSqlUpdater
 		logger.debug("Set Locator from Value =" + no);
 	}
 
-	private void dbCreateLocators(@NonNull final String whereClause)
+	private void dbCreateLocators()
 	{
 		final List<I_I_Inventory> unmatchedLocator = Services.get(IQueryBL.class).createQueryBuilder(I_I_Inventory.class)
 				.addOnlyActiveRecordsFilter()

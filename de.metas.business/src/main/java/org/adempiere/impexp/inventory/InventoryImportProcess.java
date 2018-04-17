@@ -68,7 +68,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	@Override
 	protected String getTargetTableName()
 	{
-		return org.compiere.model.I_M_Inventory.Table_Name;
+		return I_M_Inventory.Table_Name;
 	}
 
 	@Override
