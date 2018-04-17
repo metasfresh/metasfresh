@@ -33,7 +33,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.Query;
+import org.compiere.model.IQuery;
 
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
@@ -85,6 +85,7 @@ public class C_Flatrate_Term_Extend
 		else
 		{
 			final Iterator<I_C_Flatrate_Term> termsToExtend = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+					.addOnlyActiveRecordsFilter()
 					.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_AD_PInstance_EndOfTerm_ID, 0, null)
 					.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
 					.addCompareFilter(I_C_Flatrate_Term.COLUMN_NoticeDate, Operator.LESS, SystemTime.asTimestamp())
@@ -92,8 +93,7 @@ public class C_Flatrate_Term_Extend
 					.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
 					.create()
 					.setClient_ID()
-					.setOnlyActiveRecords(true)
-					.setOption(Query.OPTION_GuaranteedIteratorRequired, true) // guaranteed = true, because the term extension changes AD_PInstance_EndOfTerm_ID
+					.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // guaranteed = true, because the term extension changes AD_PInstance_EndOfTerm_ID
 					.iterate(I_C_Flatrate_Term.class);
 
 			int counter = 0;

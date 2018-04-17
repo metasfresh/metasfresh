@@ -211,11 +211,11 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	}
 
 	@Override
-	public <T> T getValue(final Object model, final String columnName, final boolean throwExIfColumnNotFound, final boolean useOverrideColumnIfAvailable)
+	public <T> T getValue(
+			@NonNull final Object model,
+			@NonNull final String columnName,
+			final boolean throwExIfColumnNotFound, final boolean useOverrideColumnIfAvailable)
 	{
-		Check.assumeNotNull(model, "model is not null");
-		Check.assumeNotNull(columnName, "columnName is not null");
-
 		return getHelperThatCanHandle(model)
 				.getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
