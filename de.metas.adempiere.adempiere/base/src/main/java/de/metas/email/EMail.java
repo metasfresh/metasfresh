@@ -371,22 +371,18 @@ public final class EMail implements Serializable
 		props.put("mail.store.protocol", "smtp");
 		props.put("mail.transport.protocol", "smtp");
 		props.put("mail.host", smtpHost);
-		if (logger.isTraceEnabled())
+		props.put("mail.smtp.port", mailbox.getSmtpPort());
+		if(mailbox.isStartTLS())
 		{
-			props.put("mail.debug", "true");
+			props.put("mail.smtp.starttls.enable", "true");
 		}
-
-		//
 		if (auth != null)
 		{
 			props.put("mail.smtp.auth", "true");
 		}
-		if ("smtp.gmail.com".equalsIgnoreCase(smtpHost))
+		if (logger.isTraceEnabled())
 		{
-			// TODO: make it configurable
-			// Enable gmail port and ttls - Hardcoded
-			props.put("mail.smtp.port", "587");
-			props.put("mail.smtp.starttls.enable", "true");
+			props.put("mail.debug", "true");
 		}
 
 		final Session session = Session.getInstance(props, auth);
