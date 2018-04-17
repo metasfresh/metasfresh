@@ -25,7 +25,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
@@ -427,11 +426,17 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		}
 
 		final I_M_Product_Acct productAcct = productAcctDAO.retrieveProductAcctOrNull(as, productId);
-		Check.assumeNotNull(productAcct, "Product {} has accounting definition records", productId);
+		if(productAcct == null)
+		{
+			final String productName = Services.get(IProductBL.class).getProductName(productId);
+			throw newPostingException().setC_AcctSchema(as).setDetailMessage("Product " + productName + " has no accounting definition records");
+		}
+
 		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(productAcct, acctType.getColumnName());
 		if (validCombinationId == null || validCombinationId <= 0)
 		{
-			throw newPostingException().setC_AcctSchema(as).setDetailMessage("No Product Account for account type: " + acctType);
+			final String productName = Services.get(IProductBL.class).getProductName(productId);
+			throw newPostingException().setC_AcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + " and product " + productName);
 		}
 
 		return accountDAO.retrieveAccountById(getCtx(), validCombinationId);
