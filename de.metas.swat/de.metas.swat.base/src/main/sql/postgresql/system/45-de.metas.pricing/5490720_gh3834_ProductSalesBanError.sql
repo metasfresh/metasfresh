@@ -45,3 +45,8 @@ UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-17 15:10:2
 UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-17 15:10:25','YYYY-MM-DD HH24:MI:SS'),MsgText='Product not allowed to be sold to customer {0} because {1}.' WHERE AD_Message_ID=544677 AND AD_Language='nl_NL'
 ;
 
+-- 2018-04-17T17:34:57.048
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET Value='ProductSalesExclusionError',Updated=TO_TIMESTAMP('2018-04-17 17:34:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544677
+;
+

@@ -42,7 +42,7 @@ import de.metas.interfaces.I_C_BPartner_Product;
 public interface IBPartnerProductDAO extends ISingletonService
 {
 
-	public static final String MSG_ProductSalesBanError = "ProductSalesBanError";
+	public static final String MSG_ProductSalesExclusionError = "ProductSalesExclusionError";
 	
 	/**
 	 * Retrieves all C_BPartner_Products for selected vendor

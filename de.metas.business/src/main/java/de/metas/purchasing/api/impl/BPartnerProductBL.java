@@ -50,7 +50,7 @@ public class BPartnerProductBL implements IBPartnerProductBL
 		final I_C_BPartner partner = loadOutOfTrx(productExclude.getBpartnerId(), I_C_BPartner.class);
 		final String msg = Services.get(IMsgBL.class).getMsg(
 				Env.getCtx(),
-				IBPartnerProductDAO.MSG_ProductSalesBanError,
+				IBPartnerProductDAO.MSG_ProductSalesExclusionError,
 				new Object[] { partner.getName(), productExclude.getReason() });
 
 		throw new AdempiereException(msg);
