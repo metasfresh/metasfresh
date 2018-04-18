@@ -2,8 +2,6 @@ package de.metas.costing;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.I_M_CostDetail;
-
 /*
  * #%L
  * de.metas.business
@@ -33,14 +31,6 @@ public interface ICostDetailService
 	CostResult createReversalCostDetails(CostDetailReverseRequest request);
 
 	void voidAndDeleteForDocument(CostingDocumentRef documentRef);
-
-	/** does nothing */
-	@Deprecated
-	void processIfCostImmediate(I_M_CostDetail costDetail);
-
-	/** does nothing */
-	@Deprecated
-	void processAllForProduct(int productId);
 
 	/** @return seed cost or null */
 	BigDecimal calculateSeedCosts(CostSegment costSegment, CostingMethod costingMethod, final int orderLineId);

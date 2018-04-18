@@ -77,7 +77,6 @@ import de.metas.costing.CostElementType;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
-import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.document.engine.IDocument;
@@ -395,7 +394,9 @@ public class CostEngine
 
 	private void processCostDetail(final I_M_CostDetail cd)
 	{
-		Adempiere.getBean(ICostDetailService.class).processIfCostImmediate(cd);
+		cd.setProcessed(true);
+		InterfaceWrapperHelper.save(cd);
+		// Adempiere.getBean(ICostDetailService.class).processIfCostImmediate(cd);
 	}
 
 	public static boolean isActivityControlElement(final CostElement element)

@@ -172,18 +172,6 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
-	public void processIfCostImmediate(final I_M_CostDetail costDetail)
-	{
-		// assume already processed
-	}
-
-	@Override
-	public void processAllForProduct(final int productId)
-	{
-		// assume already processed
-	}
-
-	@Override
 	public void voidAndDeleteForDocument(final CostingDocumentRef documentRef)
 	{
 		costDetailsRepo.getAllForDocument(documentRef)
