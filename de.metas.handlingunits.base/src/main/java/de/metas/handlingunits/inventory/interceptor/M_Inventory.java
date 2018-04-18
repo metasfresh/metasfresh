@@ -8,7 +8,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mmovement.api.IMovementDAO;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -110,8 +109,7 @@ public class M_Inventory
 			@NonNull final I_M_HU hu)
 	{
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-		final IContextAware contextInitial = InterfaceWrapperHelper.getContextAware(inventoryLine);
-		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(contextInitial);
+		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor();
 
 		executor.run((IHUContextProcessor)huContext -> {
 			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
@@ -142,8 +140,6 @@ public class M_Inventory
 
 			return IHUContextProcessor.NULL_RESULT; // we don't care
 		});
-
-
 	}
 
 
