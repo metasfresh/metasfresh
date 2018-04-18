@@ -21,7 +21,7 @@ import NavigationTree from './containers/NavigationTree.js';
 
 let hasTutorial = false;
 
-export const getRoutes = (store, auth) => {
+export const getRoutes = (store, auth, plugins) => {
   const authRequired = (nextState, replace, callback) => {
     hasTutorial =
       nextState &&
@@ -59,40 +59,70 @@ export const getRoutes = (store, auth) => {
       .then(() => store.dispatch(push('/login')));
   };
 
+  const getPluginsRoutes = plugins => {
+    if (plugins.length) {
+      return plugins.map((plugin, i) => {
+        if (plugin.userDropdownLink) {
+          return (
+            <Route
+              key={i}
+              path={`/window/${plugin.userDropdownLink.url}`}
+              component={plugin.component}
+            />
+          );
+        }
+      });
+    }
+  };
+
+  const childRoutes = [
+    {
+      path: '/window/:windowType',
+      getComponent: nextState => (
+        <DocList
+          query={nextState.location.query}
+          windowType={nextState.params.windowType}
+        />
+      )
+    },
+    {
+      path: '/window/:windowType/:docId',
+      component: MasterWindow,
+      onEnter: nextState =>
+        store.dispatch(
+          createWindow(nextState.params.windowType, nextState.params.docId)
+        )
+    },
+    {
+      path: '/sitemap',
+      component: NavigationTree,
+    },
+    {
+      path: '/board/:boardId',
+      getComponent: nextState => (
+        <Board
+          query={nextState.location.query}
+          boardId={nextState.params.boardId}
+        />
+      )
+    },
+    {
+      path: '/inbox',
+      component: InboxAll,
+    },
+    {
+      path: 'logout',
+      component: logout,
+    },
+    getPluginsRoutes(plugins)
+  ];
+
   return (
     <Route path="/">
-      <Route onEnter={authRequired}>
+      <Route onEnter={authRequired}
+        childRoutes={childRoutes}
+      >
         <IndexRoute component={Dashboard} />
-        <Route
-          path="/window/:windowType"
-          component={nextState => (
-            <DocList
-              query={nextState.location.query}
-              windowType={nextState.params.windowType}
-            />
-          )}
-        />
-        <Route
-          path="/window/:windowType/:docId"
-          component={MasterWindow}
-          onEnter={nextState =>
-            store.dispatch(
-              createWindow(nextState.params.windowType, nextState.params.docId)
-            )
-          }
-        />
-        <Route path="/sitemap" component={NavigationTree} />
-        <Route
-          path="/board/:boardId"
-          component={nextState => (
-            <Board
-              query={nextState.location.query}
-              boardId={nextState.params.boardId}
-            />
-          )}
-        />
-        <Route path="/inbox" component={InboxAll} />
-        <Route path="/logout" onEnter={logout} />
       </Route>
       <Route
         path="/login"
@@ -107,4 +137,6 @@ export const getRoutes = (store, auth) => {
       <Route path="*" component={NoMatch} />
     </Route>
   );
+
+  return routes;
 };
