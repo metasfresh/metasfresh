@@ -3,11 +3,11 @@ package de.metas.material.event.commons;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -50,6 +50,21 @@ public class AttributesKeyTest
 		final AttributesKey attributesKeyDeserialized = jsonObjectMapper.readValue(json, AttributesKey.class);
 		assertThat(attributesKeyDeserialized).isEqualTo(attributesKey);
 		assertThat(attributesKeyDeserialized.getAsString()).isEqualTo(attributesKeyStr);
-		assertThat(attributesKeyDeserialized.getAttributeValueIds()).isEqualTo(Arrays.asList(1, 2, 3, 4));
+		assertThat(attributesKeyDeserialized.getAttributeValueIds()).isEqualTo(ImmutableSet.of(1, 2, 3, 4));
 	}
+
+	@Test
+	public void test_ofString()
+	{
+		final String keyStr = "3" + AttributesKey.ATTRIBUTES_KEY_DELIMITER + "1" + AttributesKey.ATTRIBUTES_KEY_DELIMITER + "2";
+		final String keyNormStr = "1" + AttributesKey.ATTRIBUTES_KEY_DELIMITER + "2" + AttributesKey.ATTRIBUTES_KEY_DELIMITER + "3";
+		assertThat(AttributesKey.ofString(keyStr).getAsString()).isEqualTo(keyNormStr);
+	}
+
+	@Test
+	public void test_ofString_NONE()
+	{
+		assertThat(AttributesKey.ofString("   ")).isSameAs(AttributesKey.NONE);
+	}
+
 }
