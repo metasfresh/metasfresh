@@ -36,6 +36,8 @@ import de.metas.purchasing.api.ProductExclude;
 
 public class BPartnerProductBL implements IBPartnerProductBL
 {
+	public static final String MSG_ProductSalesExclusionError = "ProductSalesExclusionError";
+	
 	@Override
 	public void assertNotExcludedFromSaleToCustomer(final int productId, final int bpartnerId)
 	{
@@ -50,7 +52,7 @@ public class BPartnerProductBL implements IBPartnerProductBL
 		final I_C_BPartner partner = loadOutOfTrx(productExclude.getBpartnerId(), I_C_BPartner.class);
 		final String msg = Services.get(IMsgBL.class).getMsg(
 				Env.getCtx(),
-				IBPartnerProductDAO.MSG_ProductSalesExclusionError,
+				MSG_ProductSalesExclusionError,
 				new Object[] { partner.getName(), productExclude.getReason() });
 
 		throw new AdempiereException(msg);
