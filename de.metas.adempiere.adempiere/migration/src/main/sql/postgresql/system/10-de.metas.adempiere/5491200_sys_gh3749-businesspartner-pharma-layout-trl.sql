@@ -308,3 +308,28 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:11:48'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:12:17','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Farming Producer' WHERE AD_Field_ID=562295 AND AD_Language='en_US'
 ;
 
+-- 2018-04-18T11:18:01.265
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:18:01','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Address',Description='' WHERE AD_Field_ID=562323 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T11:18:19.864
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:18:19','YYYY-MM-DD HH24:MI:SS'),Name='Location' WHERE AD_Field_ID=562322 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T11:20:51.098
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:20:51','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Is Ship To Default' WHERE AD_Field_ID=562325 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T11:27:45.949
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:27:45','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Replication Lookup Default',Help='' WHERE AD_Field_ID=562331 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T11:29:59.081
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:29:59','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Is Invoice Default' WHERE AD_Field_ID=562328 AND AD_Language='en_US'
+;
+
