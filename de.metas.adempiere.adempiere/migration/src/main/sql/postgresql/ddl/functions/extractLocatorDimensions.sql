@@ -36,7 +36,3 @@ END;
 $BODY$
 LANGUAGE plpgsql STABLE
 COST 100;
-
-
-
-
