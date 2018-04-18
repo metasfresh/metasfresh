@@ -291,18 +291,12 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		{
 			attributeInstance.setValueDate(Env.parseTimestamp(value.toString()));
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
-		{
-			attributeInstance.setValue(value.toString());
-
-			final I_M_AttributeValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attribute, value.toString());
-			attributeInstance.setM_AttributeValue(attributeValue);
-		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
 			attributeInstance.setValueNumber(NumberUtils.asBigDecimal(value.toString(), null));
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType)
+				|| X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
 			attributeInstance.setValue(value.toString());
 		}
