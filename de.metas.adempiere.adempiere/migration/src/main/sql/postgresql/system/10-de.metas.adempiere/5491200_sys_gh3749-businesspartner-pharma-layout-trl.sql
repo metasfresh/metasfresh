@@ -63,3 +63,78 @@ UPDATE AD_Field SET Name='Memo Lieferung',Updated=TO_TIMESTAMP('2018-04-18 09:13
 UPDATE AD_Field SET Name='Memo Abrechnung',Updated=TO_TIMESTAMP('2018-04-18 09:13:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562087
 ;
 
+-- 2018-04-18T09:19:02.493
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=10,Updated=TO_TIMESTAMP('2018-04-18 09:19:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550608
+;
+
+-- 2018-04-18T09:19:04.621
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=20,Updated=TO_TIMESTAMP('2018-04-18 09:19:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550606
+;
+
+-- 2018-04-18T09:19:06.375
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=30,Updated=TO_TIMESTAMP('2018-04-18 09:19:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550638
+;
+
+-- 2018-04-18T09:19:08.217
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=40,Updated=TO_TIMESTAMP('2018-04-18 09:19:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550639
+;
+
+-- 2018-04-18T09:19:10.276
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=50,Updated=TO_TIMESTAMP('2018-04-18 09:19:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550634
+;
+
+-- 2018-04-18T09:19:12.151
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=60,Updated=TO_TIMESTAMP('2018-04-18 09:19:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550605
+;
+
+-- 2018-04-18T09:19:16.049
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=70,Updated=TO_TIMESTAMP('2018-04-18 09:19:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550604
+;
+
+-- 2018-04-18T09:20:36.763
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:20:36','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Requests' WHERE AD_Tab_ID=541013 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T09:20:44.845
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:20:44','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Customer' WHERE AD_Tab_ID=541014 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T09:20:53.374
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:20:53','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Vendor' WHERE AD_Tab_ID=541015 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T09:21:22.489
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:21:22','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Location' WHERE AD_Tab_ID=541016 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T09:21:31.963
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:21:31','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Contact' WHERE AD_Tab_ID=541017 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T09:24:12.188
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:24:12','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Subscription Progress' WHERE AD_Tab_ID=541021 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T09:24:29.993
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:24:29','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Print Format' WHERE AD_Tab_ID=541019 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T09:25:39.722
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:25:39','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Bank Account' WHERE AD_Tab_ID=541018 AND AD_Language='en_US'
+;
+
