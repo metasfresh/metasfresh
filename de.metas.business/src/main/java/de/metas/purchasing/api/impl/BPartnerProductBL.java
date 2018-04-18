@@ -36,7 +36,7 @@ import de.metas.purchasing.api.ProductExclude;
 
 public class BPartnerProductBL implements IBPartnerProductBL
 {
-	public static final String MSG_ProductSalesExclusionError = "ProductSalesExclusionError";
+	private static final String MSG_ProductSalesExclusionError = "ProductSalesExclusionError";
 	
 	@Override
 	public void assertNotExcludedFromSaleToCustomer(final int productId, final int bpartnerId)
