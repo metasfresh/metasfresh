@@ -97,6 +97,8 @@ public class ShipmentScheduleWithHU
 
 	/**
 	 * Create an "empty" instance with no HUs inside. Used if a shipment without HU allocation has to be created.
+	 * 
+	 * @param qtyPicked in this case qtyPicked can only be the quantity of an "unconfirmed" (i.e. drafted) shipment line.
 	 */
 	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
@@ -414,14 +416,11 @@ public class ShipmentScheduleWithHU
 	}
 
 	/**
-	 *
 	 * @return never returns {@code null}. If none is found, it returns the "virtual" packing instruction (i.e. "No Packing Item").
 	 */
 	public I_M_HU_PI_Item_Product retrieveM_HU_PI_Item_Product()
 	{
 		final I_M_HU topLevelHU = getTopLevelHU();
-
-		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		if (topLevelHU == null)
 		{
 			return retrievePiipForReferencedRecord();
@@ -448,6 +447,7 @@ public class ShipmentScheduleWithHU
 		final I_C_BPartner bPartner = shipmentScheduleEffectiveBL.getBPartner(shipmentSchedule);
 		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
 
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		final I_M_HU_PI_Item_Product matchingPiip = hupiItemProductDAO.retrievePIMaterialItemProduct(
 				huMaterialItem.getM_HU_PI_Item(),
 				bPartner,

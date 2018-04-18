@@ -136,9 +136,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IAutoCloseable onCloseCreateMissingScheds = //
 				() -> {
-					postponeMissingSchedsCreationUntilClose.set(false);
-					CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
-				};
+						postponeMissingSchedsCreationUntilClose.set(false);
+						CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
+					};
 
 		return onCloseCreateMissingScheds;
 	}
@@ -909,7 +909,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public I_C_UOM getUomOfProduct(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		return sched.getM_Product().getC_UOM();
+		return sched
+				.getM_Product()
+				.getC_UOM();
 	}
 
 	@Override
