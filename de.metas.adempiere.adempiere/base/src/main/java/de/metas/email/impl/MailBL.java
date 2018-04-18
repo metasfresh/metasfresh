@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -15,7 +16,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.email.EmailValidator;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
@@ -274,10 +274,18 @@ public class MailBL implements IMailBL
 	@Override
 	public void validateEmail(@Nullable final String email)
 	{
-		if (!Check.isEmpty(email, true) && !EmailValidator.validate(email))
+		if (Check.isEmpty(email, true))
 		{
 			throw new AdempiereException("@EmailNotValid@");
+		}
 
+		try
+		{
+			new InternetAddress(email).validate();
+		}
+		catch (AddressException ex)
+		{
+			throw new AdempiereException("@EmailNotValid@: " + ex.getLocalizedMessage(), ex);
 		}
 	}
 }
