@@ -333,3 +333,23 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:27:45'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:29:59','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Is Invoice Default' WHERE AD_Field_ID=562328 AND AD_Language='en_US'
 ;
 
+-- 2018-04-18T11:35:46.327
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:35:46','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Christmas Gift' WHERE AD_Field_ID=562374 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T11:36:37.856
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:36:37','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Sales Contact' WHERE AD_Field_ID=562388 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T11:37:09.342
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:37:09','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Is Default Contact' WHERE AD_Field_ID=562372 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T11:37:26.522
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 11:37:26','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Invoice Contact Default' WHERE AD_Field_ID=562392 AND AD_Language='en_US'
+;
+
