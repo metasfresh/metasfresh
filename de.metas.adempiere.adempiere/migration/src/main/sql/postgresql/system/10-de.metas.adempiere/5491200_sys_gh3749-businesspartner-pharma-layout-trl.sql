@@ -138,3 +138,48 @@ UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:24:29','
 UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:25:39','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Bank Account' WHERE AD_Tab_ID=541018 AND AD_Language='en_US'
 ;
 
+-- 2018-04-18T09:28:31.625
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:28:31','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Pricing System',Description='',Help='' WHERE AD_Field_ID=562211 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T09:29:14.890
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:29:14','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Customer Group' WHERE AD_Field_ID=562207 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T09:29:33.375
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:29:33','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='ADR Customer' WHERE AD_Field_ID=562223 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T09:30:14.660
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:30:14','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Aggregation for Sales Invoices',Description='' WHERE AD_Field_ID=562230 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T09:30:47.897
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 09:30:47','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Aggregation for Sales Invoice Lines' WHERE AD_Field_ID=562231 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T10:48:37.172
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 10:48:37','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Hide Packing Material in Shipment',Description='',Help='' WHERE AD_Field_ID=562229 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T10:49:57.061
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 10:49:57','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Consolidate Shipments allowed' WHERE AD_Field_ID=562222 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T10:50:37.578
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 10:50:37','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Statistic Group' WHERE AD_Field_ID=562224 AND AD_Language='en_US'
+;
+
+-- 2018-04-18T10:58:54.662
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-18 10:58:54','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Disable Order Checkup Report',Description='' WHERE AD_Field_ID=562219 AND AD_Language='en_US'
+;
+
