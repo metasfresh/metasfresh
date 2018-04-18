@@ -6,6 +6,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_M_Locator;
 import org.compiere.util.DB;
@@ -124,14 +125,22 @@ public class MInventoryImportTableSqlUpdater
 				.list(I_I_Inventory.class);
 
 		unmatchedLocator.forEach(importRecord -> {
-			final I_M_Locator locator = createNewMLocator(importRecord);
+			final I_M_Locator locator = getCreateNewMLocator(importRecord);
 			importRecord.setM_Locator(locator);
 			InterfaceWrapperHelper.save(importRecord);
 		});
 	}
 
-	private I_M_Locator createNewMLocator(@NonNull final I_I_Inventory importRecord)
+	private I_M_Locator getCreateNewMLocator(@NonNull final I_I_Inventory importRecord)
 	{
+		//
+		//check if exists, because might be created meanwhile
+		final int locatorId = Services.get(IWarehouseDAO.class).retrieveLocatorIdByValueAndWarehouseId(importRecord.getLocatorValue(), importRecord.getM_Warehouse_ID());
+		if (locatorId > 0)
+		{
+			return InterfaceWrapperHelper.load(locatorId, I_M_Locator.class);
+		}
+
 		final I_M_Locator locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
 		locator.setAD_Org_ID(importRecord.getAD_Org_ID());
 		locator.setM_Warehouse_ID(importRecord.getM_Warehouse_ID());
