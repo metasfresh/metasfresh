@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -44,6 +42,8 @@ import org.springframework.core.io.FileSystemResource;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
@@ -871,8 +871,8 @@ public class MRequest extends X_R_Request
 
 				// No confidential to externals
 				if (isInternalUser
-						&& (getConfidentialTypeEntry().equals(CONFIDENTIALTYPE_Internal)
-								|| getConfidentialTypeEntry().equals(CONFIDENTIALTYPE_PrivateInformation)))
+						&& (CONFIDENTIALTYPE_Internal.equals(getConfidentialTypeEntry())
+								|| CONFIDENTIALTYPE_PrivateInformation.equals(getConfidentialTypeEntry())))
 				{
 					continue;
 				}
