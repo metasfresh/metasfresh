@@ -1,8 +1,5 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.translate;
-
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -10,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -20,8 +18,12 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.translate;
+
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.IProductBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
@@ -114,8 +116,11 @@ public class PurchaseRowFactory
 
 		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository.retrieveAvailableStockQtySum(AvailableToPromiseQuery.builder()
 				.productId(salesOrderLine.getM_Product_ID())
-				.storageAttributesKeys(availableToPromiseRepository.getPredefinedStorageAttributeKeys())
 				.date(salesOrderLine.getC_Order().getPreparationDate())
+				.storageAttributesKey(AttributesKeys
+						.createAttributesKeyFromASIStorageAttributes(salesOrderLine.getM_AttributeSetInstance_ID())
+						.orElse(AttributesKey.ALL)
+						)
 				.build());
 
 		final PurchaseRow groupRow = PurchaseRow.builder()
