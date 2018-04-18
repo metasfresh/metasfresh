@@ -129,7 +129,7 @@ public class M_Inventory
 
 			final IHUAttributeTransferRequest request = new HUAttributeTransferRequestBuilder(huContext)
 					.setProduct(inventoryLine.getM_Product())
-					.setQty(inventoryLine.getQtyInternalUse())
+					.setQty(Services.get(IInventoryBL.class).getMovementQty(inventoryLine).getQty())
 					.setUOM(inventoryLine.getC_UOM())
 					.setAttributeStorageFrom(asiAttributeStorageFrom)
 					.setAttributeStorageTo(huAttributeStorageTo)
