@@ -6,6 +6,7 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.core.ReceiveAndReplyCallback;
 import org.springframework.amqp.core.ReplyToAddressCallback;
+import org.springframework.core.ParameterizedTypeReference;
 
 /*
  * #%L
@@ -62,7 +63,6 @@ public class MockedAmqpTemplate implements AmqpTemplate
 	public void convertAndSend(final String routingKey, final Object message) throws AmqpException
 	{
 		throw new UnsupportedOperationException();
-
 	}
 
 	@Override
@@ -235,4 +235,63 @@ public class MockedAmqpTemplate implements AmqpTemplate
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public <T> T receiveAndConvert(ParameterizedTypeReference<T> type) throws AmqpException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T> T receiveAndConvert(String queueName, ParameterizedTypeReference<T> type) throws AmqpException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T> T receiveAndConvert(long timeoutMillis, ParameterizedTypeReference<T> type) throws AmqpException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T> T receiveAndConvert(String queueName, long timeoutMillis, ParameterizedTypeReference<T> type) throws AmqpException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T> T convertSendAndReceiveAsType(Object message, ParameterizedTypeReference<T> responseType) throws AmqpException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T> T convertSendAndReceiveAsType(String routingKey, Object message, ParameterizedTypeReference<T> responseType) throws AmqpException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T> T convertSendAndReceiveAsType(String exchange, String routingKey, Object message, ParameterizedTypeReference<T> responseType) throws AmqpException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T> T convertSendAndReceiveAsType(Object message, MessagePostProcessor messagePostProcessor, ParameterizedTypeReference<T> responseType) throws AmqpException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T> T convertSendAndReceiveAsType(String routingKey, Object message, MessagePostProcessor messagePostProcessor, ParameterizedTypeReference<T> responseType) throws AmqpException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T> T convertSendAndReceiveAsType(String exchange, String routingKey, Object message, MessagePostProcessor messagePostProcessor, ParameterizedTypeReference<T> responseType) throws AmqpException
+	{
+		throw new UnsupportedOperationException();
+	}
 }
