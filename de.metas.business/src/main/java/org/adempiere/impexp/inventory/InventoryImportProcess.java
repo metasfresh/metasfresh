@@ -267,7 +267,6 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 			if (!Check.isEmpty(importRecord.getLot(), true))
 			{
 				final I_M_Attribute lotNumberAttr = lotNumberDateAttributeDAO.getLotNumberAttribute(ctx);
-				attributeSetInstanceBL.getCreateAttributeInstance(asi, lotNumberAttr.getM_Attribute_ID());
 				attributeSetInstanceBL.setAttributeInstanceValue(asi, lotNumberAttr, importRecord.getLot());
 			}
 			//
@@ -275,7 +274,6 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 			if (importRecord.getHU_BestBeforeDate() != null)
 			{
 				final I_M_Attribute bestBeforeDateAttr = attributeDAO.retrieveAttributeByValue(ctx, AttributeConstants.ATTR_BestBeforeDate, I_M_Attribute.class);
-				attributeSetInstanceBL.getCreateAttributeInstance(asi, bestBeforeDateAttr.getM_Attribute_ID());
 				attributeSetInstanceBL.setAttributeInstanceValue(asi, bestBeforeDateAttr, importRecord.getHU_BestBeforeDate());
 			}
 			//
@@ -283,7 +281,6 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 			if (!Check.isEmpty(importRecord.getTE(), true))
 			{
 				final I_M_Attribute TEAttr = attributeDAO.retrieveAttributeByValue(ctx, AttributeConstants.ATTR_TE, I_M_Attribute.class);
-				attributeSetInstanceBL.getCreateAttributeInstance(asi, TEAttr.getM_Attribute_ID());
 				attributeSetInstanceBL.setAttributeInstanceValue(asi, TEAttr, importRecord.getTE());
 			}
 			//
@@ -291,7 +288,6 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 			if (importRecord.getDateReceived() != null)
 			{
 				final I_M_Attribute dateReceivedAttr = attributeDAO.retrieveAttributeByValue(ctx, AttributeConstants.ATTR_DateReceived, I_M_Attribute.class);
-				attributeSetInstanceBL.getCreateAttributeInstance(asi, dateReceivedAttr.getM_Attribute_ID());
 				attributeSetInstanceBL.setAttributeInstanceValue(asi, dateReceivedAttr, importRecord.getDateReceived());
 			}
 			//
