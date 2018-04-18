@@ -26,6 +26,7 @@ import java.sql.Timestamp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -119,14 +120,14 @@ public class C_Flatrate_Term
 			Env.setContext(localCtx, Env.CTXNAME_AD_Client_ID, org.getAD_Client_ID());
 			Env.setContext(localCtx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
 
-			final org.compiere.model.I_C_DocType existingDocType = docTypeDAO
-					.getDocTypeOrNull(DocTypeQuery.builder()
+			final Optional<org.compiere.model.I_C_DocType> existingDocType = docTypeDAO
+					.retrieveDocType(DocTypeQuery.builder()
 							.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
 							.docSubType(docSubType)
 							.adClientId(org.getAD_Client_ID())
 							.adOrgId(org.getAD_Org_ID())
 							.build());
-			if (existingDocType != null)
+			if (existingDocType.isPresent())
 			{
 				continue;
 			}
@@ -534,5 +535,22 @@ public class C_Flatrate_Term
 		}
 
 		return masterEndDate;
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
+	public void setMasterDocumentNo(final I_C_Flatrate_Term term)
+	{
+		if (!Check.isEmpty(term.getDocumentNo(), true) && Check.isEmpty(term.getMasterDocumentNo(), true))
+		{
+			final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(term);
+			if (ancestor == null)
+			{
+				term.setMasterDocumentNo(term.getDocumentNo());
+			}
+			else
+			{
+				term.setMasterDocumentNo(ancestor.getMasterDocumentNo());
+			}
+		}
 	}
 }

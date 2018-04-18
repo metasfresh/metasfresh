@@ -129,7 +129,7 @@ public class PP_Order
 				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed)
 				.orderBy().addColumn(I_C_Invoice.COLUMNNAME_DocumentNo).endOrderBy()
 				.create()
-				.list();
+				.list(I_C_Invoice.class);
 		if (invoices.isEmpty())
 		{
 			return; // we are fine to unclose

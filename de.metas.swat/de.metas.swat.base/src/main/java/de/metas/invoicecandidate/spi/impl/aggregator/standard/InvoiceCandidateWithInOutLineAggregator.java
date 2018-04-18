@@ -35,7 +35,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InventoryLine;
 
@@ -564,7 +564,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 	private int getC_PaymentTerm_ID()
 	{
-		return getFirstInvoiceCandidate().getC_PaymentTerm_ID();
+		final Integer valueOrNull = InterfaceWrapperHelper.getValueOverrideOrValue(
+				getFirstInvoiceCandidate(),
+				I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID);
+		return valueOrNull == null ? 0 : valueOrNull;
 	}
 
 	/** @return effective tax to use in invoice line */

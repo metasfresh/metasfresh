@@ -69,6 +69,33 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Base_PricingSystem_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBase_PricingSystem_ID (int Base_PricingSystem_ID);
+
+	/**
+	 * Get Base_PricingSystem_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBase_PricingSystem_ID();
+
+	public org.compiere.model.I_M_PricingSystem getBase_PricingSystem();
+
+	public void setBase_PricingSystem(org.compiere.model.I_M_PricingSystem Base_PricingSystem);
+
+    /** Column definition for Base_PricingSystem_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_PricingSystem> COLUMN_Base_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_PricingSystem>(I_M_DiscountSchemaBreak.class, "Base_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
+    /** Column name Base_PricingSystem_ID */
+    public static final String COLUMNNAME_Base_PricingSystem_ID = "Base_PricingSystem_ID";
+
+	/**
 	 * Set Break Discount %.
 	 * Trade Discount in Percent for the break level
 	 *
@@ -228,6 +255,29 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_IsBPartnerFlatDiscount = "IsBPartnerFlatDiscount";
 
 	/**
+	 * Set IsPriceOverride.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPriceOverride (boolean IsPriceOverride);
+
+	/**
+	 * Get IsPriceOverride.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPriceOverride();
+
+    /** Column definition for IsPriceOverride */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_IsPriceOverride = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "IsPriceOverride", null);
+    /** Column name IsPriceOverride */
+    public static final String COLUMNNAME_IsPriceOverride = "IsPriceOverride";
+
+	/**
 	 * Set Merkmal.
 	 * Produkt-Merkmal
 	 *
@@ -340,8 +390,8 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
 
 	/**
-	 * Set Produkt-Kategorie.
-	 * Category of a Product
+	 * Set Produkt Kategorie.
+	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -350,8 +400,8 @@ public interface I_M_DiscountSchemaBreak
 	public void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
-	 * Get Produkt-Kategorie.
-	 * Category of a Product
+	 * Get Produkt Kategorie.
+	 * Kategorie eines Produktes
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -396,6 +446,54 @@ public interface I_M_DiscountSchemaBreak
     public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_Product>(I_M_DiscountSchemaBreak.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set PriceBase.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPriceBase (java.lang.String PriceBase);
+
+	/**
+	 * Get PriceBase.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPriceBase();
+
+    /** Column definition for PriceBase */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_PriceBase = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "PriceBase", null);
+    /** Column name PriceBase */
+    public static final String COLUMNNAME_PriceBase = "PriceBase";
+
+	/**
+	 * Set Standardpreis.
+	 * Standardpreis
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPriceStd (java.math.BigDecimal PriceStd);
+
+	/**
+	 * Get Standardpreis.
+	 * Standardpreis
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPriceStd();
+
+    /** Column definition for PriceStd */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_PriceStd = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "PriceStd", null);
+    /** Column name PriceStd */
+    public static final String COLUMNNAME_PriceStd = "PriceStd";
 
 	/**
 	 * Set QualityIssuePercentage.
@@ -446,6 +544,31 @@ public interface I_M_DiscountSchemaBreak
     public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "SeqNo", null);
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
+	 * Set Aufschlag auf Standardpreis.
+	 * Amount added to a price as a surcharge
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setStd_AddAmt (java.math.BigDecimal Std_AddAmt);
+
+	/**
+	 * Get Aufschlag auf Standardpreis.
+	 * Amount added to a price as a surcharge
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getStd_AddAmt();
+
+    /** Column definition for Std_AddAmt */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_Std_AddAmt = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "Std_AddAmt", null);
+    /** Column name Std_AddAmt */
+    public static final String COLUMNNAME_Std_AddAmt = "Std_AddAmt";
 
 	/**
 	 * Get Aktualisiert.

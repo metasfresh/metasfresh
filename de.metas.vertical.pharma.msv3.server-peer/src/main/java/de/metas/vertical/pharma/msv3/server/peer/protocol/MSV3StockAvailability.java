@@ -38,12 +38,15 @@ public class MSV3StockAvailability
 	private long pzn;
 	@JsonProperty("qty")
 	private int qty;
+	@JsonProperty("delete")
+	private boolean delete;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private MSV3StockAvailability(
 			@JsonProperty("pzn") final long pzn,
-			@JsonProperty("qty") final int qty)
+			@JsonProperty("qty") final int qty,
+			@JsonProperty("delete") final boolean delete)
 	{
 		if (pzn <= 0)
 		{
@@ -56,6 +59,7 @@ public class MSV3StockAvailability
 
 		this.pzn = pzn;
 		this.qty = qty;
+		this.delete = delete;
 	}
 
 }

@@ -36,7 +36,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.ModelValidator;
@@ -420,7 +420,7 @@ public class C_Invoice_Candidate
 		groupChangesHandler.onInvoiceCandidateChanged(invoiceCandidate);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt, I_C_Invoice_Candidate.COLUMNNAME_Processed })
 	public void triggerUpdateBPStats(final I_C_Invoice_Candidate ic)
 	{
 		if (ic.getLineNetAmt().signum() > 0)

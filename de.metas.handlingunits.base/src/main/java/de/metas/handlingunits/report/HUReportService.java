@@ -65,7 +65,7 @@ public class HUReportService
 	// 895 webui
 	public static final String SYSCONFIG_PICKING_LABEL_AUTO_PRINT_ENABLED = "de.metas.ui.web.picking.PickingLabel.AutoPrint.Enabled";
 	public static final String SYSCONFIG_PICKING_LABEL_PROCESS_ID = "de.metas.ui.web.picking.PickingLabel.AD_Process_ID";
-	public static final String SYSCONFIG_PICKING_LABEL_AUTO_PRINT_COPIES ="de.metas.ui.web.picking.PickingLabel.AutoPrint.Copies";
+	public static final String SYSCONFIG_PICKING_LABEL_AUTO_PRINT_COPIES = "de.metas.ui.web.picking.PickingLabel.AutoPrint.Copies";
 
 	private static final HUReportService INSTANCE = new HUReportService();
 
@@ -114,12 +114,12 @@ public class HUReportService
 	{
 		return getAutoPrintCopyCountForSysConfig(SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_COPIES);
 	}
-	
+
 	public int getPickingLabelAutoPrintCopyCount()
 	{
 		return getAutoPrintCopyCountForSysConfig(SYSCONFIG_PICKING_LABEL_AUTO_PRINT_COPIES);
 	}
-	
+
 	public int getAutoPrintCopyCountForSysConfig(final String sysConfigName)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -153,16 +153,16 @@ public class HUReportService
 
 		return DisplayType.toBoolean(genericValue, false);
 	}
-	
+
 	public boolean isPickingLabelAutoPrintEnabled()
 	{
 		final Properties ctx = Env.getCtx();
-		
+
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		
+
 		final String genericValue = sysConfigBL.getValue(SYSCONFIG_PICKING_LABEL_AUTO_PRINT_ENABLED, "N", Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		logger.info("SysConfig {}={};", SYSCONFIG_PICKING_LABEL_AUTO_PRINT_ENABLED, genericValue);
-		
+
 		return DisplayType.toBoolean(genericValue, false);
 	}
 
@@ -274,4 +274,53 @@ public class HUReportService
 			}
 		}
 	}
+
+	public void printPickingLabel(final HUToReportWrapper huToReport, final boolean isAutoPrintRequired)
+	{
+		if (huToReport == null)
+		{
+			logger.info("Param 'hu'==null; nothing to do");
+			return;
+		}
+
+		if (isAutoPrintRequired && !isPickingLabelAutoPrintEnabled())
+		{
+			logger.info("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
+			return;
+		}
+
+		if (!huToReport.isTopLevel())
+		{
+			logger.info("We only print top level HUs; nothing to do; hu={}", huToReport);
+			return;
+		}
+
+		final int adProcessId = retrievePickingLabelProcessID();
+
+		if (adProcessId <= 0)
+		{
+			logger.info("No process configured via SysConfig {}; nothing to do", SYSCONFIG_PICKING_LABEL_PROCESS_ID);
+			return;
+		}
+
+		final List<HUToReport> husToProcess = getHUsToProcess(huToReport, adProcessId)
+				.stream()
+				.filter(HUToReport::isTopLevel) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
+				.collect(ImmutableList.toImmutableList());
+
+		if (husToProcess.isEmpty())
+		{
+			logger.info("hu's type does not match process {}; nothing to do; hu={}", adProcessId, huToReport);
+			return;
+		}
+
+		final int copies = getPickingLabelAutoPrintCopyCount();
+
+		final Properties ctx = Env.getCtx();
+		HUReportExecutor.newInstance(ctx)
+				.numberOfCopies(copies)
+				.executeHUReportAfterCommit(adProcessId, husToProcess);
+
+	}
+
 }

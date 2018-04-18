@@ -70,7 +70,6 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
-import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
@@ -118,6 +117,7 @@ import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
@@ -2212,14 +2212,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		cand.setIsInDispute(true);
 		save(cand);
-	}
-
-	@Override
-	public void markInvoiceCandInDisputeForReceiptLines(final List<I_M_InOutLine> receiptLines)
-	{
-		receiptLines.stream()
-				.forEach(receiptLine -> markInvoiceCandInDisputeForReceiptLine(receiptLine));
-
 	}
 
 }

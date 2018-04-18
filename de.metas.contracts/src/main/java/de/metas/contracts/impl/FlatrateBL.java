@@ -1,5 +1,7 @@
 package de.metas.contracts.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 /*
  * #%L
  * de.metas.contracts
@@ -28,7 +30,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -36,6 +40,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -84,6 +89,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -121,6 +127,8 @@ public class FlatrateBL implements IFlatrateBL
 	 * Message for announcing the user that there are overlapping terms for the term they want to complete
 	 */
 	public static final String MSG_HasOverlapping_Term = "de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm";
+
+	public static final String MSG_INFINITE_LOOP = "de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError";
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
@@ -1010,20 +1018,25 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public void extendContract(final @NonNull ContractExtendingRequest context)
+	public void extendContract(final @NonNull ContractExtendingRequest request)
 	{
-		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, localTrxName -> {
+		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, localTrxName_IGNORED -> {
 
-			ContractExtendingRequest contextUsed = context;
+			final Map<Integer, String> seenFlatrateCondition = new LinkedHashMap<>();
+			final I_C_Flatrate_Conditions currentConditions = request.getContract().getC_Flatrate_Conditions();
+			seenFlatrateCondition.put(currentConditions.getC_Flatrate_Conditions_ID(), currentConditions.getName());
+
+			ContractExtendingRequest currentRequest = request;
 			I_C_Flatrate_Transition nextTransition = null;
 			final List<I_C_Flatrate_Term> contracts = new ArrayList<>();
-			contracts.add(contextUsed.getContract());
+
+			contracts.add(currentRequest.getContract());
 			do
 			{
-				extendContract0(contextUsed, localTrxName);
+				extendContract0(currentRequest);
 
-				final I_C_Flatrate_Term currentTerm = contextUsed.getContract();
-				currentTerm.setAD_PInstance_EndOfTerm_ID(contextUsed.getAD_PInstance_ID());
+				final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
+				currentTerm.setAD_PInstance_EndOfTerm_ID(currentRequest.getAD_PInstance_ID());
 				InterfaceWrapperHelper.save(currentTerm);
 
 				final I_C_Flatrate_Term nextTerm = currentTerm.getC_FlatrateTerm_Next();
@@ -1033,20 +1046,28 @@ public class FlatrateBL implements IFlatrateBL
 				nextTransition = nextConditions.getC_Flatrate_Transition();
 				Check.assumeNotNull(nextTransition, "C_Flatrate_Transition shall not be null!");
 
-				contextUsed = contextUsed.toBuilder()
-						  .AD_PInstance_ID(context.getAD_PInstance_ID())
-						  .contract(nextTerm).build();
+				// infinite loop detection
+				if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && seenFlatrateCondition.containsKey(nextConditions.getC_Flatrate_Conditions_ID()))
+				{
+					throw new AdempiereException(MSG_INFINITE_LOOP, new Object[] { nextConditions.getName(), seenFlatrateCondition.values() });
+				}
+				seenFlatrateCondition.put(nextConditions.getC_Flatrate_Conditions_ID(), nextConditions.getName());
+
+				currentRequest = currentRequest.toBuilder()
+						.AD_PInstance_ID(request.getAD_PInstance_ID())
+						.contract(nextTerm).build();
 
 				contracts.add(nextTerm);
 			}
 			while (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(nextTransition.getExtensionType()) && nextTransition.getC_Flatrate_Conditions_Next_ID() > 0);
 
-			updateMasterEndDateIfNeeded(contracts, context.getContract());
+			updateMasterEndDateIfNeeded(contracts, request.getContract());
 		});
 	}
 
 	/**
 	 * Update <code>masterenddate</code> only for contract of which we know the entire period
+	 *
 	 * @param contracts
 	 * @param initialContract
 	 */
@@ -1069,7 +1090,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 	}
 
-	private void extendContract0(final @NonNull ContractExtendingRequest request, final String trxName)
+	private void extendContract0(final @NonNull ContractExtendingRequest request)
 	{
 		final I_C_Flatrate_Term currentTerm = request.getContract();
 		final boolean forceExtend = request.isForceExtend();
@@ -1083,7 +1104,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		if (currentTerm.isAutoRenew() || forceExtend)
 		{
-			final I_C_Flatrate_Term nextTerm = createNewTerm(request, trxName);
+			final I_C_Flatrate_Term nextTerm = createNewTerm(request);
 
 			// the conditions were set via de.metas.flatrate.modelvalidator.C_Flatrate_Term.copyFromConditions(term)
 			Check.errorUnless(currentTerm.getType_Conditions().equals(nextTerm.getType_Conditions()),
@@ -1091,6 +1112,7 @@ public class FlatrateBL implements IFlatrateBL
 					currentTerm.getType_Conditions(), nextTerm.getType_Conditions(), currentTerm);
 
 			currentTerm.setC_FlatrateTerm_Next_ID(nextTerm.getC_Flatrate_Term_ID());
+			InterfaceWrapperHelper.save(currentTerm);
 
 			// gh #549: notify that handler so it might do additional things. In the case of this task, it shall create C_Flatrate_DataEntry records
 			final IFlatrateTermEventService flatrateHandlersService = Services.get(IFlatrateTermEventService.class);
@@ -1147,7 +1169,7 @@ public class FlatrateBL implements IFlatrateBL
 					ctx,
 					msgValue,
 					currentTerm.getAD_User_InCharge_ID(),
-					trxName);
+					ITrx.TRXNAME_ThreadInherited);
 			note.setAD_Org_ID(currentTerm.getAD_Org_ID());
 			note.setRecord(adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name), termToReferenceInNote.getC_Flatrate_Term_ID());
 			note.setTextMsg(msgBL.getMsg(ctx, msgValue));
@@ -1155,7 +1177,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 	}
 
-	private I_C_Flatrate_Term createNewTerm(final @NonNull ContractExtendingRequest context, final String trxName)
+	private I_C_Flatrate_Term createNewTerm(final @NonNull ContractExtendingRequest context)
 	{
 		final I_C_Flatrate_Term currentTerm = context.getContract();
 		final Timestamp nextTermStartDate = context.getNextTermStartDate();
@@ -1177,8 +1199,7 @@ public class FlatrateBL implements IFlatrateBL
 			nextConditions = currentTerm.getC_Flatrate_Conditions();
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
-		final I_C_Flatrate_Term nextTerm = InterfaceWrapperHelper.create(ctx, I_C_Flatrate_Term.class, trxName);
+		final I_C_Flatrate_Term nextTerm = newInstance(I_C_Flatrate_Term.class, currentTerm);
 		nextTerm.setAD_Org_ID(currentTerm.getAD_Org_ID());
 
 		nextTerm.setC_Flatrate_Data_ID(currentTerm.getC_Flatrate_Data_ID());
@@ -1216,6 +1237,8 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setDeliveryViaRule(currentTerm.getDeliveryViaRule());
 
 		nextTerm.setC_UOM_ID(currentTerm.getC_UOM_ID());
+
+		nextTerm.setC_Currency_ID(currentTerm.getC_Currency_ID());
 
 		final IFlatrateTermEventService flatrateHandlersService = Services.get(IFlatrateTermEventService.class);
 		flatrateHandlersService
@@ -1433,8 +1456,16 @@ public class FlatrateBL implements IFlatrateBL
 			subType = null;
 		}
 
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		return docTypeDAO.getDocType(de.metas.contracts.flatrate.interfaces.I_C_DocType.DocBaseType_CustomerContract, subType, term.getAD_Client_ID(), term.getAD_Org_ID());
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+				.adClientId(term.getAD_Client_ID())
+				.adOrgId(term.getAD_Org_ID())
+				.docBaseType(de.metas.contracts.flatrate.interfaces.I_C_DocType.DocBaseType_CustomerContract)
+				.docSubType(subType)
+				.build();
+
+		return Services.get(IDocTypeDAO.class)
+				.retrieveDocType(docTypeQuery)
+				.orElseThrow(() -> new DocTypeNotFoundException(docTypeQuery));
 	}
 
 	@Override

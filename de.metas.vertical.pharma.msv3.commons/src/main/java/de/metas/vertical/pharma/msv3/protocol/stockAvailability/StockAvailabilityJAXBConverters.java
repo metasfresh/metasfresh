@@ -4,6 +4,7 @@ import javax.xml.bind.JAXBElement;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import de.metas.vertical.pharma.msv3.protocol.util.JAXBDateUtils;
@@ -46,10 +47,11 @@ public class StockAvailabilityJAXBConverters
 		this.jaxbObjectFactory = jaxbObjectFactory;
 	}
 
-	public StockAvailabilityQuery fromJAXB(final VerfuegbarkeitsanfrageEinzelne soapAvailabilityRequest)
+	public StockAvailabilityQuery fromJAXB(@NonNull final VerfuegbarkeitsanfrageEinzelne soapAvailabilityRequest, @NonNull final BPartnerId bpartner)
 	{
 		return StockAvailabilityQuery.builder()
 				.id(soapAvailabilityRequest.getId())
+				.bpartner(bpartner)
 				.items(soapAvailabilityRequest.getArtikel().stream()
 						.map(this::createStockAvailabilityQueryItem)
 						.collect(ImmutableList.toImmutableList()))

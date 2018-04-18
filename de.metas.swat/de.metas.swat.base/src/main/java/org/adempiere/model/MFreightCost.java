@@ -208,6 +208,6 @@ public class MFreightCost extends X_M_FreightCost
 				.setParameters(productId)
 				.setApplyAccessFilter(true)
 				.setOnlyActiveRecords(true)
-				.list();
+				.list(MFreightCost.class);
 	}
 }
