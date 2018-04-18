@@ -2,7 +2,7 @@ import axios from 'axios';
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import { Provider } from 'react-redux';
-import { browserHistory, Router } from 'react-router';
+import { browserHistory } from 'react-router';
 import { push, syncHistoryWithStore } from 'react-router-redux';
 
 import {
@@ -16,10 +16,10 @@ import { noConnection } from '../actions/WindowActions';
 import { addPlugins } from '../actions/PluginActions';
 import '../assets/css/styles.css';
 import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
+import CustomRouter from './CustomRouter';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
 import { LOCAL_LANG } from '../constants/Constants';
-import { getRoutes } from '../routes.js';
 import Auth from '../services/Auth';
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
@@ -32,6 +32,10 @@ const history = syncHistoryWithStore(browserHistory, store);
 export default class App extends Component {
   constructor() {
     super();
+
+    this.state = {
+      pluginsLoading: !!config.plugins.length,
+    };
 
     this.auth = new Auth();
 
@@ -127,26 +131,30 @@ export default class App extends Component {
     });
 
     counterpart.setMissingEntryGenerator(() => '');
-  }
 
-  componentDidMount() {
-    const plugins = config.plugins.map(plugin => {
-      const waitForChunk = () =>
-        import(/* webpackMode: "lazy-once" */ `./../../plugins/${plugin}/plugin.subscription.js`).then(
-          module => module
+    if (config.plugins.length) {
+      const plugins = config.plugins.map(plugin => {
+        const waitForChunk = () =>
+          import(/* webpackMode: "lazy-once" */ `./../../plugins/${plugin}/plugin.js`).then(
+            module => module
+          );
+
+        return new Promise(resolve =>
+          waitForChunk().then(file => {
+            resolve(file);
+          })
         );
+      });
 
-      return new Promise(resolve =>
-        waitForChunk().then(file => {
-          resolve(file);
-        })
-      );
-    });
+      Promise.all(plugins).then(res => {
+        const plugins = res.reduce((prev, current) => prev.concat(current), []);
+        store.dispatch(addPlugins(plugins));
 
-    Promise.all(plugins).then(res => {
-      const plugins = res.reduce((prev, current) => prev.concat(current), []);
-      store.dispatch(addPlugins(plugins));
-    })
+        this.setState({
+          pluginsLoading: false,
+        });
+      });
+    }
   }
 
   render() {
@@ -155,7 +163,12 @@ export default class App extends Component {
         <Provider store={store}>
           <Translation>
             <NotificationHandler>
-              <Router history={history} routes={getRoutes(store, this.auth)} />
+              <CustomRouter
+                store={store}
+                history={history}
+                auth={this.auth}
+                pluginsLoading={this.state.pluginsLoading}
+              />
             </NotificationHandler>
           </Translation>
         </Provider>
