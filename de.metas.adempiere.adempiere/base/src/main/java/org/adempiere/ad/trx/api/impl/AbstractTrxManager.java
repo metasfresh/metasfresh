@@ -56,6 +56,8 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
@@ -70,6 +72,7 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -510,7 +513,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 		call(trxName, callable);
 	}
 
-
 	@Override
 	public <T> T call(final String trxName, final TrxCallable<T> callable)
 	{
@@ -770,7 +772,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 			}
 
 			// Actually execute the runnable
-			// runnable.run(trxName);
 			callableResult = TrxCallableWrappers.wrapAsTrxCallableWithTrxNameIfNeeded(callable).call(trxName);
 
 			// Commit the transaction if we were asked to do it
@@ -794,7 +795,9 @@ public abstract class AbstractTrxManager implements ITrxManager
 		// we catch Throwable and not only Exceptions because java.lang.AssertionError is not an Exception
 		catch (final Throwable runException)
 		{
-			//
+			final ILoggable loggable = Loggables.get().withLogger(logger, Level.WARN);
+			loggable.addLog("AbstractTrxManager.call0 - caught {} with message={}", runException.getClass(), runException.getMessage());
+
 			// Call custom exception handler to advice us what to do
 			exceptionToThrow = runException;
 			boolean rollback = true;
@@ -822,19 +825,24 @@ public abstract class AbstractTrxManager implements ITrxManager
 				}
 				else if (trxPropagation == TrxPropagation.NESTED)
 				{
-					Check.assume(savepoint != null, IllegalTrxRunStateException.class, "A savepoint was created ({})", cfg); // shall not happen
-
-					try
+					if (savepoint == null)
 					{
-						trx.rollback(savepoint);
-						savepoint = null;
+						loggable.addLog("AbstractTrxManager.call0 - savePoint==null, so probably a problem happend when we tried to create the savepoint; trxRunConfig={}", cfg);
 					}
-					catch (final Exception e2)
+					else
 					{
-						final TrxException rollbackEx = new TrxException("Failed to rollback to savepoint"
-								+ "\nSavepoint: " + savepoint
-								+ "\nTrx: " + trx);
-						logger.warn("Failed to rollback to savepoint. Going forward...", rollbackEx);
+						try
+						{
+							trx.rollback(savepoint);
+							savepoint = null;
+						}
+						catch (final Exception e2)
+						{
+							final TrxException rollbackEx = new TrxException("Failed to rollback to savepoint"
+									+ "\nSavepoint: " + savepoint
+									+ "\nTrx: " + trx);
+							logger.warn("Failed to rollback to savepoint. Going forward...", rollbackEx);
+						}
 					}
 
 					// metas-ts: setting 'trx' to null only if we have a non-local trx.
