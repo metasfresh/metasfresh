@@ -13,6 +13,7 @@ import {
   setProcessSaved,
 } from '../actions/AppActions';
 import { noConnection } from '../actions/WindowActions';
+import { addPlugins } from '../actions/PluginActions';
 import '../assets/css/styles.css';
 import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
 import Translation from '../components/Translation';
@@ -126,6 +127,26 @@ export default class App extends Component {
     });
 
     counterpart.setMissingEntryGenerator(() => '');
+  }
+
+  componentDidMount() {
+    const plugins = config.plugins.map(plugin => {
+      const waitForChunk = () =>
+        import(/* webpackMode: "lazy-once" */ `./../../plugins/${plugin}/plugin.subscription.js`).then(
+          module => module
+        );
+
+      return new Promise(resolve =>
+        waitForChunk().then(file => {
+          resolve(file);
+        })
+      );
+    });
+
+    Promise.all(plugins).then(res => {
+      const plugins = res.reduce((prev, current) => prev.concat(current), []);
+      store.dispatch(addPlugins(plugins));
+    })
   }
 
   render() {
