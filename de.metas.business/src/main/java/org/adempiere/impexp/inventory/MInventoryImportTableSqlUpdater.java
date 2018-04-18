@@ -167,8 +167,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL AND Value IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
-		int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Product from Value=" + no);
+		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE I_Inventory i ")
 				.append("SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p ")
@@ -203,7 +202,7 @@ public class MInventoryImportTableSqlUpdater
 		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
-			logger.warn("No Locator=" + no);
+			logger.warn("No Locator = {}", no);
 		}
 
 		sql = new StringBuilder("UPDATE I_Inventory ")
@@ -214,7 +213,7 @@ public class MInventoryImportTableSqlUpdater
 		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
-			logger.warn("No Warehouse=" + no);
+			logger.warn("No Warehouse = {}", no);
 		}
 
 		sql = new StringBuilder("UPDATE I_Inventory ")
@@ -225,7 +224,7 @@ public class MInventoryImportTableSqlUpdater
 		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
-			logger.warn("No Product=" + no);
+			logger.warn("No Product = {}", no);
 		}
 
 		sql = new StringBuilder("UPDATE I_Inventory ")
@@ -236,7 +235,7 @@ public class MInventoryImportTableSqlUpdater
 		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
-			logger.warn("No Partners=" + no);
+			logger.warn("No Partners = {}", no);
 		}
 
 		// No QtyCount
@@ -248,7 +247,7 @@ public class MInventoryImportTableSqlUpdater
 		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
-			logger.warn("No QtyInternalUse=" + no);
+			logger.warn("No QtyInternalUse = {}", no);
 		}
 
 	}
