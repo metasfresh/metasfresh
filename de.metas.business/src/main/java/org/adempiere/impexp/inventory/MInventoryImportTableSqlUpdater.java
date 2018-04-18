@@ -136,12 +136,17 @@ public class MInventoryImportTableSqlUpdater
 		//
 		//check if exists, because might be created meanwhile
 		final int locatorId = Services.get(IWarehouseDAO.class).retrieveLocatorIdByValueAndWarehouseId(importRecord.getLocatorValue(), importRecord.getM_Warehouse_ID());
+
+		final I_M_Locator locator;
 		if (locatorId > 0)
 		{
-			return InterfaceWrapperHelper.load(locatorId, I_M_Locator.class);
+			locator = InterfaceWrapperHelper.load(locatorId, I_M_Locator.class);
+		}
+		else
+		{
+			locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
 		}
 
-		final I_M_Locator locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
 		locator.setAD_Org_ID(importRecord.getAD_Org_ID());
 		locator.setM_Warehouse_ID(importRecord.getM_Warehouse_ID());
 		locator.setValue(importRecord.getLocatorValue());
