@@ -73,8 +73,7 @@ public class MInventoryImportTableSqlUpdater
 				.append(") AS dimensions ")
 				.append("WHERE I_IsImported<>'Y' ")
 				.append(whereClause);
-		int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Warehouse from Locator =" + no);
+		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateWarehouse(@NonNull final String whereClause)
@@ -85,8 +84,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Warehouse_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Warehouse =" + no);
+		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateCreateLocators(@NonNull final String whereClause)
@@ -103,8 +101,15 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Locator_ID IS NULL AND LocatorValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Locator from Value =" + no);
+		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		//
+		// update DateLastInventory
+		sql = new StringBuilder("UPDATE M_Locator l ")
+				.append("SET DateLastInventory=(SELECT DateLastInventory FROM I_Inventory i ")
+				.append("WHERE i.LocatorValue=l.Value AND i.AD_Client_ID=l.AD_Client_ID) ")
+				.append("AND I_IsImported<>'Y' ")
+				.append(whereClause);
+		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbCreateLocators()
@@ -157,8 +162,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL AND UPC IS NOT NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Product from UPC=" + no);
+		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateSubProducer(@NonNull final String whereClause)
@@ -169,8 +173,7 @@ public class MInventoryImportTableSqlUpdater
 				.append("WHERE SubProducer_BPartner_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(whereClause);
-		int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Partners =" + no);
+		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateErrorMessages(@NonNull final String whereClause)
