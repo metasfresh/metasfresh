@@ -18,4 +18,4 @@ METASFRESH-INFO: ${application.title} | ${application.formatted-version} | Sprin
 BUILD-INFO: build [${info.build.ciBuildNo:local}], tag [${info.build.ciBuildTag:none}], job [${info.build.ciJobName:none}]
             ${info.build.ciBuildUrl:}
             
-(banner-ascii created from http://patorjk.com/software/taag/#p=display&f=Doom&t=metasfresh%0Amaterial-dispo - Thanks to https://twitter.com/patorjk)
+(banner-ascii created from http://patorjk.com/software/taag/#p=display&f=Doom&t=metasfresh%0Amaterial-dispo - Thanks to https://www.instagram.com/patorjk/ )
