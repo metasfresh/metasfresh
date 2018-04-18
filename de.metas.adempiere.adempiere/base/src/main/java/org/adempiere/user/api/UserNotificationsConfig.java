@@ -3,6 +3,7 @@ package org.adempiere.user.api;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
 
@@ -81,6 +82,12 @@ public class UserNotificationsConfig
 	public UserNotificationsGroup getGroupByName(@NonNull final NotificationGroupName groupName)
 	{
 		return userNotificationGroupsByInternalName.getOrDefault(groupName, defaults);
+	}
+	
+	public String getUserADLanguageOrGet(@NonNull final Supplier<String> defaultLanguageSupplier)
+	{
+		final String adLanguage = getUserADLanguage();
+		return adLanguage != null ? adLanguage : defaultLanguageSupplier.get();
 	}
 
 	public UserNotificationsConfig deriveWithNotificationTypes(final Set<NotificationType> notificationTypes)

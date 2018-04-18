@@ -164,11 +164,10 @@ public class UserNotificationRequest
 		}
 		return recipientUserId;
 	}
-	
+
 	public String getADLanguageOrGet(final Supplier<String> defaultLanguageSupplier)
 	{
-		final String adLanguage = getNotificationsConfig().getUserADLanguage();
-		return adLanguage != null ? adLanguage : defaultLanguageSupplier.get();
+		return getNotificationsConfig().getUserADLanguageOrGet(defaultLanguageSupplier);
 	}
 
 	public String getSubjectADMessageOr(final String defaultValue)
