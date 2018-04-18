@@ -34,7 +34,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -281,10 +280,10 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public void setAttributeInstanceValue(@NonNull final I_M_AttributeSetInstance asi, @NonNull final I_M_Attribute attribute, @NonNull final Object value)
 	{
-		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attribute.getM_Attribute_ID());
+		I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attribute.getM_Attribute_ID());
 		if (attributeInstance == null)
 		{
-			throw new AdempiereException("instanceExisting not exists");
+			attributeInstance = getCreateAttributeInstance(asi, attribute.getM_Attribute_ID());
 		}
 
 		final String attributeValueType = attribute.getAttributeValueType();
