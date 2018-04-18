@@ -40,7 +40,7 @@ WHERE C_Invoice_Candidate_ID IN (
 		and ic.isactive='Y' 
 );
 UPDATE C_Invoice_Candidate
-SET IsActive='N', Description='Deactivated since the referenced 'PP_Order' doesn''t exist; see https://github.com/metasfresh/metasfresh/issues/3876', Updated=now(), UpdatedBy=99
+SET IsActive='N', Description='Deactivated since the referenced PP_Order doesn''t exist; see https://github.com/metasfresh/metasfresh/issues/3876', Updated=now(), UpdatedBy=99
 WHERE C_Invoice_Candidate_ID IN (
 	select ic.C_Invoice_Candidate_ID
 	from C_Invoice_Candidate ic
