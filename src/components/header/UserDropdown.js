@@ -49,6 +49,30 @@ class UserDropdown extends Component {
     }
   };
 
+  renderPlugins = () => {
+    const { handleUDOpen, redirect, toggleTooltip, plugins } = this.props;
+
+    if (plugins.length) {
+      return plugins.map((plugin, i) => {
+        return (
+          <div
+            key={`menu-item-${i}`}
+            className="user-dropdown-item"
+            onClick={() => {
+              redirect(`/window/${plugin.userDropdownLink.url}`);
+              handleUDOpen(false);
+              toggleTooltip('');
+            }}
+            tabIndex={0}
+          >
+            <i className="meta-icon-settings" />
+            {plugin.userDropdownLink.text}
+          </div>
+        );
+      });
+    }
+  };
+
   render() {
     const {
       open,
@@ -117,6 +141,7 @@ class UserDropdown extends Component {
               <i className="meta-icon-logout" />
               {counterpart.translate('window.logOut.caption')}
             </div>
+            {this.renderPlugins()}
           </div>
         )}
         {tooltipOpen === shortcut &&

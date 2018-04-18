@@ -29,6 +29,7 @@ const mapStateToProps = state => ({
   inbox: state.appHandler.inbox,
   me: state.appHandler.me,
   pathname: state.routing.locationBeforeTransitions.pathname,
+  plugins: state.pluginsHandler.files,
 });
 
 class Header extends Component {
@@ -341,6 +342,7 @@ class Header extends Component {
       editmode,
       handleEditModeToggle,
       activeTab,
+      plugins,
     } = this.props;
     const {
       isSubheaderShow,
@@ -509,6 +511,7 @@ class Header extends Component {
                   toggleTooltip={this.toggleTooltip}
                   tooltipOpen={tooltipOpen}
                   me={me}
+                  plugins={plugins}
                 />
 
                 {showSidelist && (
