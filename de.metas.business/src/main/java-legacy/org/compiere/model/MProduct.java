@@ -16,7 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
@@ -538,38 +537,6 @@ public class MProduct extends X_M_Product
 		if (PRODUCTTYPE_Resource.equals(getProductType()) && getS_Resource_ID() > 0)
 		{
 			throw new AdempiereException("@S_Resource_ID@<>0");
-		}
-		// Check Storage
-		if (Services.get(IProductBL.class).isStocked(this) || PRODUCTTYPE_Item.equals(getProductType()))
-		{
-			MStorage[] storages = MStorage.getOfProduct(getCtx(), get_ID(), get_TrxName());
-			BigDecimal OnHand = Env.ZERO;
-			BigDecimal Ordered = Env.ZERO;
-			BigDecimal Reserved = Env.ZERO;
-			for (MStorage storage : storages)
-			{
-				OnHand = OnHand.add(storage.getQtyOnHand());
-				Ordered = OnHand.add(storage.getQtyOrdered());
-				Reserved = OnHand.add(storage.getQtyReserved());
-			}
-			String errMsg = "";
-			if (OnHand.signum() != 0)
-			{
-				errMsg = "@QtyOnHand@ = " + OnHand;
-			}
-			if (Ordered.signum() != 0)
-			{
-				errMsg += " - @QtyOrdered@ = " + Ordered;
-			}
-			if (Reserved.signum() != 0)
-			{
-				errMsg += " - @QtyReserved@" + Reserved;
-			}
-			if (errMsg.length() > 0)
-			{
-				throw new AdempiereException(errMsg);
-			}
-
 		}
 
 		MCost.delete(this);
