@@ -36,28 +36,27 @@
 					<groupId>org.apache.lucene</groupId>
 					<artifactId>lucene-queryparser</artifactId>
 				</exclusion>
-				<!-- exclude itext, because jasper 6.2.1 accidentally uses version 2.1.7.js5-SNAPSHOT -->
+
+				<!--  exclude commons-collections because jasperreports 6.5.1 has both 3.2.2 and 3.2.1 in its own dependency tree -->
 				<exclusion>
-					<groupId>com.lowagie</groupId>
-					<artifactId>itext</artifactId>
+					<groupId>commons-collections</groupId>
+					<artifactId>commons-collections</artifactId>
 				</exclusion>
-				<!--  exclude commons-logging because jasperreports 6.2.1 uses 1.1.1, and we use 1.2 -->
+				<!--  exclude commons-beanutils because jasperreports 6.5.1 has both 1.9.3 and 1.8.3 in its own dependency tree -->
 				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
+					<groupId>commons-beanutils</groupId>
+					<artifactId>commons-beanutils</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
-
 		<dependency>
-			<groupId>com.lowagie</groupId>
-			<artifactId>itext</artifactId>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
 		</dependency>
-
 		<!-- 
 		Adding spring-core to avoid:
 java.lang.ClassNotFoundException: No ClassLoaders found for: org.springframework.core.io.Resource
