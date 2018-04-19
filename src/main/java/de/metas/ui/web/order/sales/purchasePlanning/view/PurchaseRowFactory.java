@@ -14,6 +14,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
@@ -111,6 +112,8 @@ public class PurchaseRowFactory
 	public PurchaseRow createGroupRow(final I_C_OrderLine salesOrderLine, final List<PurchaseRow> rows)
 	{
 		final JSONLookupValue product = createProductLookupValue(salesOrderLine.getM_Product_ID());
+		final JSONLookupValue attributeSetInstance = createASILookupValue(salesOrderLine.getM_AttributeSetInstance_ID());
+		
 		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
 		final String uom = createUOMLookupValueForProductId(product.getKeyAsInt());
 
@@ -126,7 +129,9 @@ public class PurchaseRowFactory
 		final PurchaseRow groupRow = PurchaseRow.builder()
 				.rowId(PurchaseRowId.groupId(salesOrderLine.getC_OrderLine_ID()))
 				.salesOrderId(salesOrderLine.getC_Order_ID())
-				.rowType(PurchaseRowType.GROUP).product(product)
+				.rowType(PurchaseRowType.GROUP)
+				.product(product)
+				.attributeSetInstance(attributeSetInstance)
 				.uomOrAvailablility(uom)
 				.qtyAvailableToPromise(qtyAvailableToPromise)
 				.qtyToDeliver(qtyToDeliver)
@@ -200,6 +205,22 @@ public class PurchaseRowFactory
 		final String productNameEffective = !Check.isEmpty(productName, true) ? productName.trim() : product.getName();
 		final String displayName = productValueEffective + "_" + productNameEffective;
 		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
+	}
+	
+	private static JSONLookupValue createASILookupValue(final int attributeSetInstanceId)
+	{
+		if(attributeSetInstanceId <= 0)
+		{
+			return null;
+		}
+		
+		final I_M_AttributeSetInstance asi = loadOutOfTrx(attributeSetInstanceId, I_M_AttributeSetInstance.class);
+		if(asi == null)
+		{
+			return null;
+		}
+		
+		return JSONLookupValue.of(asi.getM_AttributeSetInstance_ID(), asi.getDescription());
 	}
 
 	private static JSONLookupValue createBPartnerLookupValue(final int bpartnerId)
