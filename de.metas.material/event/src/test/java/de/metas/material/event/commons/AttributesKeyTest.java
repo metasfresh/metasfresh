@@ -19,12 +19,12 @@ import com.google.common.collect.ImmutableSet;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,7 +38,7 @@ public class AttributesKeyTest
 	{
 		ObjectMapper jsonObjectMapper = new ObjectMapper();
 
-		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(1, 2, 3, 4);
+		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(2, 4, 3, 1);
 		final String attributesKeyStr = attributesKey.getAsString();
 
 		// serialize
@@ -54,17 +54,28 @@ public class AttributesKeyTest
 	}
 
 	@Test
-	public void test_ofString()
+	public void ofString()
 	{
-		final String keyStr = "3" + AttributesKey.ATTRIBUTES_KEY_DELIMITER + "1" + AttributesKey.ATTRIBUTES_KEY_DELIMITER + "2";
-		final String keyNormStr = "1" + AttributesKey.ATTRIBUTES_KEY_DELIMITER + "2" + AttributesKey.ATTRIBUTES_KEY_DELIMITER + "3";
+		final String delim = AttributesKey.ATTRIBUTES_KEY_DELIMITER;
+
+		final String keyStr = "3" + delim + "1" + delim + "2";
+		final String keyNormStr = "1" + delim + "2" + delim + "3";
 		assertThat(AttributesKey.ofString(keyStr).getAsString()).isEqualTo(keyNormStr);
 	}
 
 	@Test
-	public void test_ofString_NONE()
+	public void ofString_NONE()
 	{
 		assertThat(AttributesKey.ofString("   ")).isSameAs(AttributesKey.NONE);
+	}
+
+	@Test
+	public void ofAttributeValueIds()
+	{
+		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(2, 4, 3, 1);
+		final AttributesKey attributesKey2 = AttributesKey.ofAttributeValueIds(1, 4, 3, 2);
+
+		assertThat(attributesKey).isEqualTo(attributesKey2);
 	}
 
 }
