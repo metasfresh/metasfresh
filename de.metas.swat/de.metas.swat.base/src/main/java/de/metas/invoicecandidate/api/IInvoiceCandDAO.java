@@ -310,7 +310,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>or by referencing the inOutLine's order line record.
 	 * </ul>
 	 *
-	 * @param inOutLine
+	 * Note: only active records are returned, as ususal.
 	 */
 	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLineQuery(I_M_InOutLine inoutLine);
 
