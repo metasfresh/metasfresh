@@ -562,5 +562,17 @@ public class MProductImportTableSqlUpdater
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.warn("Not Unique VendorProductNo=" + no);
+
+
+		sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=No mandatory Pharma product category Name,' ")
+				.append("WHERE PharmaProductCategory_Name IS NOT NULL ")
+				.append("AND M_PharmaProductCategory_ID IS NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.warn("No Mandatory Pharma product category Name =" + no);
+
+
 	}
 }
