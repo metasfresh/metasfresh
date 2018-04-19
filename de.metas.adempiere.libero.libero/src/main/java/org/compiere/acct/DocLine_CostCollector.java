@@ -20,7 +20,7 @@ import de.metas.costing.CostElement;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostDetailService;
+import de.metas.costing.ICostingService;
 import de.metas.quantity.Quantity;
 
 /**
@@ -100,7 +100,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 
 	public CostResult getCreateCosts(final I_C_AcctSchema as)
 	{
-		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		if (isReversalLine())
 		{

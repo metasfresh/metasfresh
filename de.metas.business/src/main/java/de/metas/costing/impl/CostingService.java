@@ -40,7 +40,7 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandler;
 import de.metas.costing.ICostDetailRepository;
-import de.metas.costing.ICostDetailService;
+import de.metas.costing.ICostingService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
@@ -74,16 +74,16 @@ import lombok.NonNull;
  */
 
 @Component
-public class CostDetailService implements ICostDetailService
+public class CostingService implements ICostingService
 {
-	private static final Logger logger = LogManager.getLogger(CostDetailService.class);
+	private static final Logger logger = LogManager.getLogger(CostingService.class);
 
 	private final ICostDetailRepository costDetailsRepo;
 	private final ICostElementRepository costElementRepo;
 	private final ICurrentCostsRepository currentCostsRepo;
 	private final ImmutableSetMultimap<CostingMethod, CostingMethodHandler> costingMethodHandlers;
 
-	public CostDetailService(
+	public CostingService(
 			@NonNull final ICostDetailRepository costDetailsRepo,
 			@NonNull final ICostElementRepository costElementRepo,
 			@NonNull final ICurrentCostsRepository currentCostsRepo,

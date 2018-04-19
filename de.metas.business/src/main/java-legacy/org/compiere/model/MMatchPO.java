@@ -37,7 +37,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostDetailService;
+import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
@@ -812,7 +812,7 @@ public class MMatchPO extends X_M_MatchPO
 	// AZ Goodwill
 	private void deleteMatchPOCostDetail()
 	{
-		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 		costDetailService.voidAndDeleteForDocument(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()));
 	}
 }	// MMatchPO

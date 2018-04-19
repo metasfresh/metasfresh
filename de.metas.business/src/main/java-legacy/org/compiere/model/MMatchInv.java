@@ -28,7 +28,7 @@ import org.compiere.Adempiere;
 import org.compiere.util.DB;
 
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostDetailService;
+import de.metas.costing.ICostingService;
 
 /**
  * Match Invoice (Receipt<>Invoice) Model.
@@ -217,7 +217,7 @@ public class MMatchInv extends X_M_MatchInv
 			return; // task 08529: we extend the use of matchInv to also keep track of the SoTrx side. However, currently we don't need the accounting of that side to work
 		}
 
-		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 		costDetailService.voidAndDeleteForDocument(CostingDocumentRef.ofMatchInvoiceId(getM_MatchInv_ID()));
 	}
 }	// MMatchInv

@@ -53,7 +53,7 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostDetailService;
+import de.metas.costing.ICostingService;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
@@ -2546,7 +2546,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		//
 		// For all lines
-		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 		for (final I_M_InOutLine inoutLine : getLines(true))
 		{
 			final I_M_Product product = inoutLine.getM_Product();

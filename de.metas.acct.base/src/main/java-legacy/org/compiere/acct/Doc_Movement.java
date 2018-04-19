@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
-import de.metas.costing.ICostDetailService;
+import de.metas.costing.ICostingService;
 
 /**
  * Post Invoice Documents.
@@ -47,7 +47,7 @@ import de.metas.costing.ICostDetailService;
  */
 public class Doc_Movement extends Doc<DocLine_Movement>
 {
-	private final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+	private final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 	private int m_Reversal_ID = 0;
 	private String m_DocStatus = "";

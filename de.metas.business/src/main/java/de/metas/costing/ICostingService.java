@@ -24,7 +24,7 @@ import java.math.BigDecimal;
  * #L%
  */
 
-public interface ICostDetailService
+public interface ICostingService
 {
 	CostResult createCostDetail(CostDetailCreateRequest request);
 	

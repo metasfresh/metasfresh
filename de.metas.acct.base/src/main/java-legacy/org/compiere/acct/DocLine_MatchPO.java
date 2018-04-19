@@ -22,7 +22,7 @@ import de.metas.costing.CostResult;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
-import de.metas.costing.ICostDetailService;
+import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
@@ -96,7 +96,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 	public CostAmount getStandardCosts(final I_C_AcctSchema as)
 	{
-		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(getProductCostingLevel(as))
@@ -116,7 +116,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		Check.assumeNotNull(receiptLine, "Parameter receiptLine is not null");
 
-		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 
 		final I_C_OrderLine orderLine = getOrderLine();
 		final int currencyConversionTypeId = orderLine.getC_Order().getC_ConversionType_ID();
