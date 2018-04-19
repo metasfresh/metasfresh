@@ -16,6 +16,7 @@ import org.springframework.core.io.Resource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.IAttachmentBL;
@@ -130,6 +131,19 @@ public class NotificationRepository implements INotificationRepository
 		return toUserNotification(notificationPO);
 	}
 
+	private UserNotification toUserNotificationNoFail(@NonNull final I_AD_Note notificationPO)
+	{
+		try
+		{
+			return toUserNotification(notificationPO);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed creating user notification object from {}", notificationPO, ex);
+			return null;
+		}
+	}
+
 	private UserNotification toUserNotification(@NonNull final I_AD_Note notificationPO)
 	{
 		final UserNotificationBuilder builder = UserNotification.builder()
@@ -207,7 +221,8 @@ public class NotificationRepository implements INotificationRepository
 				.setLimit(limit)
 				.create()
 				.stream(I_AD_Note.class)
-				.map(this::toUserNotification)
+				.map(this::toUserNotificationNoFail)
+				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 	}
 
