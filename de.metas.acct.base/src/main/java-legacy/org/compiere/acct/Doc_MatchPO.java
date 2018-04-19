@@ -26,7 +26,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
-import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
@@ -34,7 +33,6 @@ import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostingMethod;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.logging.LogManager;
 
 /**
  * Post MatchPO Documents.
@@ -49,8 +47,6 @@ import de.metas.logging.LogManager;
  */
 public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 {
-	private static final Logger logger = LogManager.getLogger(Doc_MatchPO.class);
-
 	/** Shall we create accounting facts (08555) */
 	private static final String SYSCONFIG_NoFactRecords = "org.compiere.acct.Doc_MatchPO.NoFactAccts";
 	private static final boolean DEFAULT_NoFactRecords = true;
