@@ -4,8 +4,7 @@ set -e
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
 
 # start printing all bash commands from here onwards, if activated
-if [ "$debug_print_bash_cmds" != "n" ];
-then
+if [ "$debug_print_bash_cmds" != "n" ]; then
 	echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}, so from here we will output all bash commands; set to n (just the lowercase letter) to skip this."
 	set -x
 fi
@@ -42,8 +41,8 @@ if [ "${1:0:1}" = '-' ]; then
 	set -- postgres "$@"
 fi
 
-if [ ! -s "$PGDATA/PG_VERSION" ]; then
-	echo "$PGDATA/PG_VERSION = $(cat PGDATA/PG_VERSION)"
+if [ -s "$PGDATA/PG_VERSION" ]; then
+	echo "$PGDATA/PG_VERSION = $(cat $PGDATA/PG_VERSION)"
 else
 	echo "$PGDATA/PG_VERSION doesn't exist yet"
 fi	
