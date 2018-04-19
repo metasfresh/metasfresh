@@ -55,6 +55,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import lombok.NonNull;
 
 public class WarehouseDAO implements IWarehouseDAO
 {
@@ -101,10 +102,8 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public List<I_M_Locator> retrieveLocators(final I_M_Warehouse warehouse)
+	public List<I_M_Locator> retrieveLocators(@NonNull final I_M_Warehouse warehouse)
 	{
-		Check.assumeNotNull(warehouse, "warehouse not null");
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(warehouse);
 		final String trxName = InterfaceWrapperHelper.getTrxName(warehouse);
 		final int warehouseId = warehouse.getM_Warehouse_ID();
