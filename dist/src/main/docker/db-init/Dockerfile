@@ -21,7 +21,7 @@ RUN chown postgres:postgres /usr/local/bin/docker-entrypoint_init_only.sh
 RUN chmod 700 /usr/local/bin/docker-entrypoint_init_only.sh
 
 RUN ln -s /usr/local/bin/docker-entrypoint_init_only.sh / 
-ENTRYPOINT ["/docker-entrypoint_init_only.sh", "postgres"]
+ENTRYPOINT ["/docker-entrypoint_init_only.sh"]
 
 CMD ["postgres"]
 #don't expose the port; we don't need/want external access

@@ -42,6 +42,12 @@ if [ "${1:0:1}" = '-' ]; then
 	set -- postgres "$@"
 fi
 
+if [ ! -s "$PGDATA/PG_VERSION" ]; then
+	echo "$PGDATA/PG_VERSION = $(cat PGDATA/PG_VERSION)"
+else
+	echo "$PGDATA/PG_VERSION doesn't exist yet"
+fi	
+
 # allow the container to be started with `--user`
 if [ "$1" = 'postgres' ] && [ "$(id -u)" = '0' ]; then
 	mkdir -p "$PGDATA"
