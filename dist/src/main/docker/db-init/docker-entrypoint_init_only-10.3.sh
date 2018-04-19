@@ -162,6 +162,10 @@ if [ "$1" = 'postgres' ]; then
 	fi
 fi
 
+metasfresh_provision_script = "/usr/local/bin/provision_metasfresh_db.sh"
+echo "$0: running ${metasfresh_provision_script}"
+. "${metasfresh_provision_script}"
+
 echo "=========================================="
 echo " Letting the container stop gracefully..."
 echo "=========================================="
