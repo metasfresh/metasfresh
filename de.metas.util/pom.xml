@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -12,7 +13,8 @@
 	<groupId>de.metas.util</groupId>
 	<artifactId>de.metas.util</artifactId>
 
-	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
+	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin 
+		can't set it to another version -->
 	<version>10.0.0</version>
 
 	<dependencies>
@@ -20,7 +22,7 @@
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 		</dependency>
-		
+
 		<!-- the next 3 are for task http://dewiki908/mediawiki/index.php/06952_Async_Problems_%28109152162496%29 -->
 		<dependency>
 			<groupId>org.reflections</groupId>
@@ -44,13 +46,8 @@
 			<version>3.22.0-GA</version>
 		</dependency>
 
-<!-- 	nice standardiced annotations, but requires java7	
-		<dependency>
-			<groupId>javax.interceptor</groupId>
-			<artifactId>javax.interceptor-api</artifactId>
-			<version>1.2</version>
-		</dependency>
- -->
+		<!-- nice standardiced annotations, but requires java7 <dependency> <groupId>javax.interceptor</groupId> 
+			<artifactId>javax.interceptor-api</artifactId> <version>1.2</version> </dependency> -->
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -82,13 +79,10 @@
 			<artifactId>logback-classic</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
-		<!--
-			Lombok
-			See https://github.com/metasfresh/metasfresh/issues/1125
-			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
-			Also note that the version is managed by spring-boot.
-		 -->
+
+		<!-- Lombok See https://github.com/metasfresh/metasfresh/issues/1125 NOTE: 
+			if you don't need fancy things like @SneakyThrows then scope 'provided' it's 
+			totally fine Also note that the version is managed by spring-boot. -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -99,6 +93,14 @@
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- Temporary adding this dependency until we migrate all application.properties 
+			see https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.0-Migration-Guide -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-properties-migrator</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 
