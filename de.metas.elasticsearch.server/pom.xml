@@ -1,5 +1,4 @@
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -57,12 +56,18 @@
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
+			<exclusions>
+				<!-- spring boot-2.0 has 2.1.10 (provided) in its dependency tree; elasticsearch-5.6.8 has 2.1.9 (compile) -->
+				<exclusion>
+					<groupId>org.hdrhistogram</groupId>
+					<artifactId>HdrHistogram</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
-			<!-- Required for elasticsearch -->
-			<groupId>net.java.dev.jna</groupId>
-			<artifactId>jna</artifactId>
+			<groupId>org.hdrhistogram</groupId>
+			<artifactId>HdrHistogram</artifactId>
+			<version>2.1.10</version>
 		</dependency>
-
 	</dependencies>
 </project>
