@@ -27,6 +27,9 @@ import java.util.Arrays;
 
 import java.util.Iterator;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
@@ -65,6 +68,17 @@ public class C_Flatrate_Term_Extend
 
 		if (I_C_Flatrate_Term.Table_Name.equals(getTableName()))
 		{
+			extendSingleTerm(forceComplete);
+		}
+		else
+		{
+			extendAllEligibleTerms(forceComplete);
+		}
+		return "@Success@";
+	}
+
+	private void extendSingleTerm(@Nullable final Boolean forceComplete)
+	{
 			final I_C_Flatrate_Term contractToExtend = getRecord(I_C_Flatrate_Term.class);
 
 			// we are called from a given term => extend the term
@@ -82,14 +96,20 @@ public class C_Flatrate_Term_Extend
 
 			getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(contractToExtend));
 		}
-		else
+
+	private void extendAllEligibleTerms(@Nullable final Boolean forceComplete)
 		{
+		final ICompositeQueryFilter<I_C_Flatrate_Term> notQuitOrVoidedFilter = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+				.setJoinOr()
+				.addNotInArrayFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, Arrays.asList(X_C_Flatrate_Term.CONTRACTSTATUS_Quit, X_C_Flatrate_Term.CONTRACTSTATUS_Voided))
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, null);
+
 			final Iterator<I_C_Flatrate_Term> termsToExtend = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 					.addOnlyActiveRecordsFilter()
 					.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_AD_PInstance_EndOfTerm_ID, 0, null)
 					.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
 					.addCompareFilter(I_C_Flatrate_Term.COLUMN_NoticeDate, Operator.LESS, SystemTime.asTimestamp())
-					.addNotInArrayFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, Arrays.asList(X_C_Flatrate_Term.CONTRACTSTATUS_Quit, X_C_Flatrate_Term.CONTRACTSTATUS_Voided))
+				.filter(notQuitOrVoidedFilter)
 					.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
 					.create()
 					.setClient_ID()
@@ -117,6 +137,5 @@ public class C_Flatrate_Term_Extend
 			}
 			addLog("Extended " + counter + " terms");
 		}
-		return "@Success@";
+
 	}
-}
