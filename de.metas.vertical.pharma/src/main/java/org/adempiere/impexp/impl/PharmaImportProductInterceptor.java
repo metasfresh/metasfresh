@@ -70,6 +70,13 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 		}
 
 		final I_I_Product iproduct = InterfaceWrapperHelper.create(importModel, I_I_Product.class);
+
+		if (!isPharmaProductImport(iproduct))
+		{
+			return;
+		}
+
+
 		final I_M_Product product = InterfaceWrapperHelper.create(targetModel, I_M_Product.class);
 		product.setIsPrescription(iproduct.isPrescription());
 		product.setIsNarcotic(iproduct.isNarcotic());
@@ -99,6 +106,11 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 		save(product);
 
 		importPrices(iproduct);
+	}
+
+	private boolean isPharmaProductImport(final I_I_Product iproduct)
+	{
+		return !Check.isEmpty(iproduct.getPharmaProductCategory_Name(), true);
 	}
 
 	private void importPrices(@NonNull final I_I_Product importRecord)
