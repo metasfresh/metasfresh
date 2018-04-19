@@ -27,13 +27,16 @@ import java.util.Arrays;
 
 import java.util.Iterator;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.Query;
+import org.compiere.model.IQuery;
 
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
@@ -65,58 +68,74 @@ public class C_Flatrate_Term_Extend
 
 		if (I_C_Flatrate_Term.Table_Name.equals(getTableName()))
 		{
-			final I_C_Flatrate_Term contractToExtend = getRecord(I_C_Flatrate_Term.class);
+			extendSingleTerm(forceComplete);
+		}
+		else
+		{
+			extendAllEligibleTerms(forceComplete);
+		}
+		return "@Success@";
+	}
 
-			// we are called from a given term => extend the term
+	private void extendSingleTerm(@Nullable final Boolean forceComplete)
+	{
+		final I_C_Flatrate_Term contractToExtend = getRecord(I_C_Flatrate_Term.class);
+
+		// we are called from a given term => extend the term
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(getAD_PInstance_ID())
+				.contract(contractToExtend)
+				.forceExtend(true)
+				.forceComplete(forceComplete)
+				.nextTermStartDate(p_startDate)
+				.build();
+
+		flatrateBL.extendContract(context);
+
+		addLog("@Processed@: @C_Flatrate_Term_ID@ " + contractToExtend.getC_Flatrate_Term_ID());
+
+		getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(contractToExtend));
+	}
+
+	private void extendAllEligibleTerms(@Nullable final Boolean forceComplete)
+	{
+		final ICompositeQueryFilter<I_C_Flatrate_Term> notQuitOrVoidedFilter = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+				.setJoinOr()
+				.addNotInArrayFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, Arrays.asList(X_C_Flatrate_Term.CONTRACTSTATUS_Quit, X_C_Flatrate_Term.CONTRACTSTATUS_Voided))
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, null);
+
+		final Iterator<I_C_Flatrate_Term> termsToExtend = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_AD_PInstance_EndOfTerm_ID, 0, null)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMN_NoticeDate, Operator.LESS, SystemTime.asTimestamp())
+				.filter(notQuitOrVoidedFilter)
+				.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
+				.create()
+				.setClient_ID()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // guaranteed = true, because the term extension changes AD_PInstance_EndOfTerm_ID
+				.iterate(I_C_Flatrate_Term.class);
+
+		int counter = 0;
+		while (termsToExtend.hasNext())
+		{
+			final I_C_Flatrate_Term contractToExtend = termsToExtend.next();
 			final ContractExtendingRequest context = ContractExtendingRequest.builder()
 					.AD_PInstance_ID(getAD_PInstance_ID())
 					.contract(contractToExtend)
-					.forceExtend(true)
+					.forceExtend(false)
 					.forceComplete(forceComplete)
 					.nextTermStartDate(p_startDate)
 					.build();
 
 			flatrateBL.extendContract(context);
 
-			addLog("@Processed@: @C_Flatrate_Term_ID@ " + contractToExtend.getC_Flatrate_Term_ID());
-
-			getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(contractToExtend));
-		}
-		else
-		{
-			final Iterator<I_C_Flatrate_Term> termsToExtend = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-					.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_AD_PInstance_EndOfTerm_ID, 0, null)
-					.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
-					.addCompareFilter(I_C_Flatrate_Term.COLUMN_NoticeDate, Operator.LESS, SystemTime.asTimestamp())
-					.addNotInArrayFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, Arrays.asList(X_C_Flatrate_Term.CONTRACTSTATUS_Quit, X_C_Flatrate_Term.CONTRACTSTATUS_Voided))
-					.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
-					.create()
-					.setClient_ID()
-					.setOnlyActiveRecords(true)
-					.setOption(Query.OPTION_GuaranteedIteratorRequired, true) // guaranteed = true, because the term extension changes AD_PInstance_EndOfTerm_ID
-					.iterate(I_C_Flatrate_Term.class);
-
-			int counter = 0;
-			while (termsToExtend.hasNext())
+			if (contractToExtend.getC_FlatrateTerm_Next_ID() > 0)
 			{
-				final I_C_Flatrate_Term contractToExtend = termsToExtend.next();
-				final ContractExtendingRequest context = ContractExtendingRequest.builder()
-						.AD_PInstance_ID(getAD_PInstance_ID())
-						.contract(contractToExtend)
-						.forceExtend(false)
-						.forceComplete(forceComplete)
-						.nextTermStartDate(p_startDate)
-						.build();
-
-				flatrateBL.extendContract(context);
-
-				if (contractToExtend.getC_FlatrateTerm_Next_ID() > 0)
-				{
-					counter++;
-				}
+				counter++;
 			}
-			addLog("Extended " + counter + " terms");
 		}
-		return "@Success@";
+		addLog("Extended " + counter + " terms");
 	}
+
 }
