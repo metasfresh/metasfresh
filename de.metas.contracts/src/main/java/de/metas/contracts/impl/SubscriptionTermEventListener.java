@@ -8,6 +8,7 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
 
 import de.metas.contracts.FlatrateTermPricing;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -26,12 +27,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -67,19 +68,30 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 			@NonNull final I_C_Flatrate_Term next,
 			@NonNull final I_C_Flatrate_Term predecessor)
 	{
-		final IPricingResult pricingInfo = FlatrateTermPricing.builder()
-				.termRelatedProduct(next.getM_Product())
-				.term(next)
-				.priceDate(next.getStartDate())
-				.qty(next.getPlannedQtyPerUnit())
-				.build()
-				.computeOrThrowEx();
+		final I_C_Flatrate_Conditions conditions = next.getC_Flatrate_Conditions();
+		if (conditions.isCalculatePrice())
+		{
+			final IPricingResult pricingInfo = FlatrateTermPricing.builder()
+					.termRelatedProduct(next.getM_Product())
+					.term(next)
+					.priceDate(next.getStartDate())
+					.qty(next.getPlannedQtyPerUnit())
+					.build()
+					.computeOrThrowEx();
 
-		next.setPriceActual(pricingInfo.getPriceStd());
-		next.setC_Currency_ID(pricingInfo.getC_Currency_ID());
-		next.setC_UOM_ID(pricingInfo.getPrice_UOM_ID());
-		next.setC_TaxCategory_ID(pricingInfo.getC_TaxCategory_ID());
-		next.setIsTaxIncluded(pricingInfo.isTaxIncluded());
-		
+			next.setPriceActual(pricingInfo.getPriceStd());
+			next.setC_Currency_ID(pricingInfo.getC_Currency_ID());
+			next.setC_UOM_ID(pricingInfo.getPrice_UOM_ID());
+			next.setC_TaxCategory_ID(pricingInfo.getC_TaxCategory_ID());
+			next.setIsTaxIncluded(pricingInfo.isTaxIncluded());
+		}
+		else
+		{
+			next.setPriceActual(predecessor.getPriceActual());
+			next.setC_Currency_ID(predecessor.getC_Currency_ID());
+			next.setC_UOM_ID(predecessor.getC_UOM_ID());
+			next.setC_TaxCategory_ID(predecessor.getC_TaxCategory_ID());
+			next.setIsTaxIncluded(predecessor.isTaxIncluded());
+		}
 	}
 }
