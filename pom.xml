@@ -271,7 +271,17 @@
 				<artifactId>commons-logging</artifactId>
 				<version>1.2</version>
 			</dependency>
-
+			<dependency>
+				<groupId>commons-collections</groupId>
+				<artifactId>commons-collections</artifactId>
+				<version>3.2.2</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>1.9.3</version>
+			</dependency>
+			
 			<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
 			<dependency>
 				<groupId>jp.osdn.ocra</groupId>
