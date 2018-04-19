@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 # These two variables are used when applying the migration scripts
@@ -15,6 +14,8 @@ url_seed_dump=${URL_SEED_DUMP:-http://www.metasfresh.com/wp-content/releases/db_
 url_migration_scripts_package=${URL_MIGRATION_SCRIPTS_PACKAGE:-NOT_SET}
 #"https://repo.metasfresh.com/content/repositories/mvn-PR-3766-releases/de/metas/dist/metasfresh-dist-dist/5.50.2-9164%2BPR3766/metasfresh-dist-dist-5.50.2-9164%2BPR3766-sql-only.tar.gz"
 
+debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
+
 echo_variable_values()
 {
  echo "Note: all these variables can be set from outside."
@@ -26,6 +27,8 @@ echo_variable_values()
  echo "DB_PASSWORD=*******"
  echo "URL_SEED_DUMP=${url_seed_dump}"
  echo "URL_MIGRATION_SCRIPTS_PACKAGE=${url_migration_scripts_package}"
+ echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}"
+ echo ""
 }
 
 create_role_if_not_exists()
@@ -134,6 +137,15 @@ EOL
 	echo "=========="
 }
 
+# start printing all bash commands from here onwards, if activated
+if [ "$debug_print_bash_cmds" != "n" ];
+then
+	echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}, so from here we will output all bash commands; set to n (just the lowercase letter) to skip this."
+	set -x
+fi
+
+echo_variable_values
 create_role_if_not_exists
 create_db_and_import_seed_dump_if_not_exists
 apply_migration_scripts_from_artifact
+

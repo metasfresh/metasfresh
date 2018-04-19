@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
 set -e
 
+debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
+
+# start printing all bash commands from here onwards, if activated
+if [ "$debug_print_bash_cmds" != "n" ];
+then
+	echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}, so from here we will output all bash commands; set to n (just the lowercase letter) to skip this."
+	set -x
+fi
+
 #
 # Only performs initalization, but does not actually start postgres at the end.
-# Instaed the container just exits when the init is done
+# Instead the container just exits when the init is done
 # see https://github.com/docker-library/postgres/issues/424
 #
 
@@ -149,6 +158,6 @@ if [ "$1" = 'postgres' ]; then
 fi
 
 echo "=========================================="
-echo " Letting the container gracefully stop..."
+echo " Letting the container stop gracefully..."
 echo "=========================================="
 #exec "$@"
