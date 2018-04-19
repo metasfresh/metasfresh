@@ -8,6 +8,7 @@ FROM c_invoice_candidate ic
    JOIN c_order o ON o.c_order_id = ol.c_order_id
    LEFT JOIN c_invoice_candidate_recompute icr ON icr.c_invoice_candidate_id = ic.c_invoice_candidate_id
 WHERE true 
+	AND ic.IsActive='Y'
 	AND (ic.updated + interval '10 minutes') < now() 
 	AND COALESCE(ic.processed_override, ic.processed) = 'N' 
 	AND icr.c_invoice_candidate_id IS NULL 
