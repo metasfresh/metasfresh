@@ -13,11 +13,11 @@ package de.metas.materialtracking.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,6 +28,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Loggables;
@@ -38,6 +39,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
 import de.metas.materialtracking.IMaterialTrackingBL;
@@ -187,5 +189,14 @@ public class PP_Order
 		// task 09502 IT-2: make sure that existing invoice candidates are braught up to date
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 		invoiceCandidateHandlerBL.invalidateCandidatesFor(ppOrder);
+	}
+
+	/**
+	 * If a PP_Order is deleted, then this method deletes the candidates which directly reference that line via <code>AD_Table_ID</code> and <code>Record_ID</code>.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteC_Invoice_Candidates(final I_PP_Order ppOrder)
+	{
+		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(ppOrder);
 	}
 }

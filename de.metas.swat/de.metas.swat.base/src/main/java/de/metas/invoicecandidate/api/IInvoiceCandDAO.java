@@ -38,7 +38,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
@@ -47,6 +46,7 @@ import org.compiere.model.I_M_InOutLine;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
@@ -192,13 +192,17 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	void invalidateCandsForBPartner(I_C_BPartner bpartner);
 
-	// @Deprecated
-	// void invalidateCandsForBPartnerAllowConsolidate(I_C_BPartner bPartner);
-
 	/**
-	 * Loads the invoice candidates whose <code>AD_Table_ID</code> and <code>Record_ID</code> columns match the given model.
+	 * Load the invoice candidates whose <code>AD_Table_ID</code> and <code>Record_ID</code> columns match the given model.
 	 */
 	List<I_C_Invoice_Candidate> retrieveReferencing(Object model);
+
+	/**
+	 * Delete all invoice candidates (active or not) that reference the given {@code model} via their {@code AD_Table_ID} and {@code Record_ID}.
+	 *
+	 * @return number of deleted invoice candidates.
+	 */
+	int deleteAllReferencingInvoiceCandidates(Object model);
 
 	/**
 	 * Updates <code>dateInvoiced</code> of candidates from selection.

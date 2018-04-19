@@ -17,7 +17,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /*
  * #%L
@@ -43,6 +42,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * This one is invoked by {@link IFlatrateTermEventService} if no other listener was registered for a particular conditions type.
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -102,22 +102,14 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	}
 
 	/**
-	 * When a term is reactivated, it's invoice candidate needs to be deleted. Note that we assume the deletion will fail with a meaningful error message if the invoice candidate has already been
-	 * invoiced.
-	 *
-	 * @param term
+	 * When a term is reactivated, its invoice candidate needs to be deleted.
+	 * Note that we assume the deletion will fail with a meaningful error message if the invoice candidate has already been invoiced.
 	 */
 	public void deleteInvoiceCandidates(final I_C_Flatrate_Term term)
 	{
-		//
-		// Delete invoice candidates
-		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-		for (final I_C_Invoice_Candidate icToDelete : invoiceCandDB.retrieveReferencing(term))
-		{
-			InterfaceWrapperHelper.delete(icToDelete);
-		}
+		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(term);
 	}
-	
+
 	/**
 	 * Does nothing; Feel free to override.
 	 */
@@ -126,7 +118,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	{
 		// nothing
 	}
-	
+
 	/**
 	 * Does nothing; Feel free to override.
 	 */
@@ -140,7 +132,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	 * Does nothing; Feel free to override.
 	 */
 	@Override
-	public void beforeSaveOfNextTermForPredecessor(I_C_Flatrate_Term next,  I_C_Flatrate_Term predecessor)
+	public void beforeSaveOfNextTermForPredecessor(I_C_Flatrate_Term next, I_C_Flatrate_Term predecessor)
 	{
 		// nothing
 	}
