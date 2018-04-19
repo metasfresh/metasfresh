@@ -58,18 +58,17 @@ public class MailBL implements IMailBL
 				client, AD_Org_ID, AD_Process_ID, customType);
 		if (user != null)
 		{
-			mailbox = Mailbox.builder()
-					.setAllFrom(mailbox)
-					.setEmail(user.getEMail())
-					.setUsername(user.getEMailUser())
-					.setPassword(user.getEMailUserPW())
-					.setAD_User_ID(user.getAD_User_ID())
+			mailbox = mailbox.toBuilder()
+					.email(user.getEMail())
+					.username(user.getEMailUser())
+					.password(user.getEMailUserPW())
+					.adUserId(user.getAD_User_ID())
 					.build();
 		}
 		return mailbox;
 	}
 
-	public Mailbox findMailBox(final I_AD_Client client, final int adOrgId, final int processID, final I_C_DocType docType, final String customType)
+	private Mailbox findMailBox(final I_AD_Client client, final int adOrgId, final int processID, final I_C_DocType docType, final String customType)
 	{
 		log.debug("Looking for AD_Client_ID={}, AD_Org_ID={}, AD_Process_ID={}, customType={}", client, adOrgId, processID, customType);
 
@@ -83,15 +82,17 @@ public class MailBL implements IMailBL
 			{
 				final I_AD_MailBox adMailbox = config.getAD_MailBox();
 				final Mailbox mailbox = Mailbox.builder()
-						.setSmtpHost(adMailbox.getSMTPHost())
-						.setEmail(adMailbox.getEMail())
-						.setUsername(adMailbox.getUserName())
-						.setPassword(adMailbox.getPassword())
-						.setSmtpAuthorization(adMailbox.isSmtpAuthorization())
-						.setSendFromServer(client.isServerEMail())
-						.setAD_Client_ID(client.getAD_Client_ID())
-						.setAD_User_ID(-1)
-						.setColumnUserTo(config.getColumnUserTo())
+						.smtpHost(adMailbox.getSMTPHost())
+						.smtpPort(adMailbox.getSMTPPort())
+						.startTLS(adMailbox.isStartTLS())
+						.email(adMailbox.getEMail())
+						.username(adMailbox.getUserName())
+						.password(adMailbox.getPassword())
+						.smtpAuthorization(adMailbox.isSmtpAuthorization())
+						.sendFromServer(client.isServerEMail())
+						.adClientId(client.getAD_Client_ID())
+						.adUserId(-1)
+						.columnUserTo(config.getColumnUserTo())
 						.build();
 
 				if (log.isDebugEnabled())
@@ -103,16 +104,24 @@ public class MailBL implements IMailBL
 			}
 		}
 
+		final String smtpHost = client.getSMTPHost();
+		if(Check.isEmpty(smtpHost, true))
+		{
+			throw new AdempiereException("Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost.");
+		}
+		
 		final Mailbox mailbox = Mailbox.builder()
-				.setSmtpHost(client.getSMTPHost())
-				.setEmail(client.getRequestEMail())
-				.setUsername(client.getRequestUser())
-				.setPassword(client.getRequestUserPW())
-				.setSmtpAuthorization(client.isSmtpAuthorization())
-				.setSendFromServer(client.isServerEMail())
-				.setAD_Client_ID(client.getAD_Client_ID())
-				.setAD_User_ID(-1)
-				.setColumnUserTo(null)
+				.smtpHost(smtpHost)
+				.smtpPort(client.getSMTPPort())
+				.startTLS(client.isStartTLS())
+				.email(client.getRequestEMail())
+				.username(client.getRequestUser())
+				.password(client.getRequestUserPW())
+				.smtpAuthorization(client.isSmtpAuthorization())
+				.sendFromServer(client.isServerEMail())
+				.adClientId(client.getAD_Client_ID())
+				.adUserId(-1)
+				.columnUserTo(null)
 				.build();
 		log.debug("Fallback to AD_Client settings: {}", mailbox);
 		return mailbox;
