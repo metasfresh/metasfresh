@@ -846,12 +846,12 @@ public class MRequest extends X_R_Request
 
 	private Set<Integer> getUserIdsToNotify()
 	{
-		final String sql = "SELECT u.AD_User_ID, MAX(r.AD_Role_ID) "
-				+ "FROM RV_RequestUpdates_Only ru"
+		final String sql = "SELECT u.AD_User_ID, MAX(r.AD_Role_ID) as AD_Role_ID"
+				+ " FROM RV_RequestUpdates_Only ru"
 				+ " INNER JOIN AD_User u ON (ru.AD_User_ID=u.AD_User_ID OR u.AD_User_ID=?)"
 				+ " LEFT OUTER JOIN AD_User_Roles r ON (u.AD_User_ID=r.AD_User_ID and r.IsActive='Y') "
-				+ "WHERE ru.R_Request_ID=? "
-				+ "GROUP BY u.AD_User_ID";
+				+ " WHERE ru.R_Request_ID=? "
+				+ " GROUP BY u.AD_User_ID";
 		final Object[] sqlParams = new Object[] { getSalesRep_ID(), getR_Request_ID() };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
