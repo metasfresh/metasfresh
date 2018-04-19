@@ -68,6 +68,11 @@ public class PurchaseRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
 	})
 	private final JSONLookupValue product;
+	@ViewColumn(captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 15),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 15)
+	})
+	private final JSONLookupValue attributeSetInstance;
 
 	@ViewColumn(captionKey = "Vendor_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20),
@@ -149,6 +154,7 @@ public class PurchaseRow implements IViewRow
 			final int salesOrderId,
 			@NonNull final IViewRowType rowType,
 			@NonNull final JSONLookupValue product,
+			@Nullable final JSONLookupValue attributeSetInstance,
 			@Nullable final JSONLookupValue vendorBPartner,
 			@Nullable final BigDecimal qtyAvailableToPromise,
 			@NonNull final String uomOrAvailablility,
@@ -168,6 +174,7 @@ public class PurchaseRow implements IViewRow
 		this.salesOrderId = salesOrderId;
 		this.rowType = rowType;
 		this.product = product;
+		this.attributeSetInstance = attributeSetInstance;
 		this.vendorBPartner = vendorBPartner;
 		this.qtyAvailableToPromise = qtyAvailableToPromise;
 		this.uomOrAvailablility = uomOrAvailablility;
@@ -208,6 +215,7 @@ public class PurchaseRow implements IViewRow
 		this.salesOrderId = from.salesOrderId;
 		this.rowType = from.rowType;
 		this.product = from.product;
+		this.attributeSetInstance = from.attributeSetInstance;
 		this.vendorBPartner = from.vendorBPartner;
 		this.qtyAvailableToPromise = from.qtyAvailableToPromise;
 		this.uomOrAvailablility = from.uomOrAvailablility;
