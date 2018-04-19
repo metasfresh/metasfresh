@@ -1,6 +1,5 @@
 package de.metas.vertical.pharma.msv3.server.peer.service;
 
-import java.util.Collection;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -13,6 +12,7 @@ import de.metas.vertical.pharma.msv3.server.peer.RabbitMQConfig;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3OrderSyncRequest;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3OrderSyncResponse;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3PeerAuthToken;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ServerRequest;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
@@ -108,16 +108,9 @@ public class MSV3ServerPeerService
 				.build());
 	}
 
-	public void publishStockAvailabilityUpdatedEvent(@NonNull final Collection<MSV3StockAvailability> stockAvailabilities)
+	public void publishProductExcludes(@NonNull final MSV3ProductExcludesUpdateEvent event)
 	{
-		if (stockAvailabilities.isEmpty())
-		{
-			return;
-		}
-
-		convertAndSend(RabbitMQConfig.QUEUENAME_StockAvailabilityUpdatedEvent, MSV3StockAvailabilityUpdatedEvent.builder()
-				.items(stockAvailabilities)
-				.build());
+		convertAndSend(RabbitMQConfig.QUEUENAME_ProductExcludeUpdatedEvents, event);
 	}
 
 	public void publishSyncOrderRequest(final MSV3OrderSyncRequest request)
@@ -129,5 +122,4 @@ public class MSV3ServerPeerService
 	{
 		convertAndSend(RabbitMQConfig.QUEUENAME_SyncOrderResponseEvents, response);
 	}
-
 }

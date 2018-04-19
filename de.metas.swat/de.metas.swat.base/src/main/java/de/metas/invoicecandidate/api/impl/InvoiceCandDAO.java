@@ -178,6 +178,23 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
+	public int deleteAllReferencingInvoiceCandidates(@NonNull final Object model)
+	{
+		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+
+		final int recordId = InterfaceWrapperHelper.getId(model);
+
+		final int deleteCount = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, tableId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, recordId)
+				.create()
+				.delete();
+		return deleteCount;
+	}
+
+	@Override
 	public BigDecimal retrieveInvoicableAmount(final I_C_BPartner billBPartner, final Timestamp date)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(billBPartner);
