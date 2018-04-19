@@ -71,6 +71,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
 import lombok.NonNull;
 
@@ -305,6 +306,15 @@ public class C_Flatrate_Term
 		}
 	}
 
+	/**
+	 * If a C_Flatrate_Term is deleted, then this method deletes the candidates which directly reference that line via <code>AD_Table_ID</code> and <code>Record_ID</code>.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteC_Invoice_Candidates(final I_C_Flatrate_Term term)
+	{
+		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(term);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
 	public void updatePricingSystem(final I_C_Flatrate_Term term)
 	{
@@ -522,7 +532,7 @@ public class C_Flatrate_Term
 
 	private Timestamp computeMasterEndDateIfC_FlatrateTerm_Next_IDChanged(@NonNull final I_C_Flatrate_Term term, Timestamp masterEndDate)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID) )
+		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID))
 		{
 			if (term.getC_FlatrateTerm_Next_ID() > 0)
 			{
