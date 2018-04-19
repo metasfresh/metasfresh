@@ -4,7 +4,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_BPartner_Product
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 674564741L;
+	private static final long serialVersionUID = 2079751182L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product (Properties ctx, int C_BPartner_Product_ID, String trxName)
@@ -26,10 +25,9 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
         {
 			setC_BPartner_ID (0);
 			setC_BPartner_Product_ID (0);
-			setIsCurrentVendor (false);
-// N
-			setIsDropShip (false);
-// N
+			setIsCurrentVendor (false); // N
+			setIsDropShip (false); // N
+			setIsExcludedFromSale (false); // N
 			setM_Product_ID (0);
 			setShelfLifeMinDays (0);
 			setShelfLifeMinPct (0);
@@ -144,6 +142,22 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return ii.intValue();
 	}
 
+	/** Set Auszeichnungsname.
+		@param CustomerLabelName Auszeichnungsname	  */
+	@Override
+	public void setCustomerLabelName (java.lang.String CustomerLabelName)
+	{
+		set_Value (COLUMNNAME_CustomerLabelName, CustomerLabelName);
+	}
+
+	/** Get Auszeichnungsname.
+		@return Auszeichnungsname	  */
+	@Override
+	public java.lang.String getCustomerLabelName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CustomerLabelName);
+	}
+
 	/** Set Zugesicherte Lieferzeit.
 		@param DeliveryTime_Promised 
 		Zugesicherte Anzahl Tage zwischen Bestellung und Lieferung
@@ -180,6 +194,22 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Exclusion From Sale Reason.
+		@param ExclusionFromSaleReason Exclusion From Sale Reason	  */
+	@Override
+	public void setExclusionFromSaleReason (java.lang.String ExclusionFromSaleReason)
+	{
+		set_Value (COLUMNNAME_ExclusionFromSaleReason, ExclusionFromSaleReason);
+	}
+
+	/** Get Exclusion From Sale Reason.
+		@return Exclusion From Sale Reason	  */
+	@Override
+	public java.lang.String getExclusionFromSaleReason () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExclusionFromSaleReason);
 	}
 
 	/** Set Gegenwärtiger Lieferant.
@@ -234,23 +264,27 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return false;
 	}
 
-	/** Set Hersteller.
-		@param Manufacturer 
-		Manufacturer of the Product
-	  */
+	/** Set Exclusion from sales documents.
+		@param IsExcludedFromSale Exclusion from sales documents	  */
 	@Override
-	public void setManufacturer (java.lang.String Manufacturer)
+	public void setIsExcludedFromSale (boolean IsExcludedFromSale)
 	{
-		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
+		set_Value (COLUMNNAME_IsExcludedFromSale, Boolean.valueOf(IsExcludedFromSale));
 	}
 
-	/** Get Hersteller.
-		@return Manufacturer of the Product
-	  */
+	/** Get Exclusion from sales documents.
+		@return Exclusion from sales documents	  */
 	@Override
-	public java.lang.String getManufacturer () 
+	public boolean isExcludedFromSale () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
+		Object oo = get_Value(COLUMNNAME_IsExcludedFromSale);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
@@ -290,6 +324,25 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return ii.intValue();
 	}
 
+	/** Set Hersteller.
+		@param Manufacturer 
+		Manufacturer of the Product
+	  */
+	@Override
+	public void setManufacturer (java.lang.String Manufacturer)
+	{
+		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
+	}
+
+	/** Get Hersteller.
+		@return Manufacturer of the Product
+	  */
+	@Override
+	public java.lang.String getManufacturer () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
+	}
+
 	/** Set Mindestbestellmenge.
 		@param Order_Min 
 		Mindestbestellmenge in Mengeneinheit
@@ -308,7 +361,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Min);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -330,7 +383,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Pack);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -352,7 +405,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityRating);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
