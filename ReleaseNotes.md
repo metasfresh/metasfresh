@@ -57,11 +57,15 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3375](https://github.com/metasfresh/metasfresh/issues/3375) Quantity picked in Shipment Schedules doesn't update
+    * Fixes a Bug in Shipment Schedule that prevented the update of Quantity Picked.
   * [#3819](https://github.com/metasfresh/metasfresh/issues/3819) EDI - "Resubmit Selection" from import processor log not working anymore
+    * Fixes the action resubmit selection in EDI Import processort log.
   * [#3822](https://github.com/metasfresh/metasfresh/issues/3822) ShipmentSchedule.QtyPickList not updated from drafted shipments
     * Fixes an Error that prevented the update of Shipment Schedule entries for drafted Shipmentlines.
-  * [#3838](https://github.com/metasfresh/metasfresh/issues/3838) packaging invoice candidate updated incorrectly
+  * [#3838](https://github.com/metasfresh/metasfresh/issues/3838) Packaging invoice candidate updated incorrectly
+    * Fixes a Bug in Invoice Candidates that created w wrong updatre for lines which with packaging material products.
   * [#3842](https://github.com/metasfresh/metasfresh/issues/3842) Cannot access server logs via Server Monitor
+    * Internal services and maintenance issue. Now it's possible to access the logs via Server Monitor again.
   * [#3843](https://github.com/metasfresh/metasfresh/issues/3843) wrong parent.relativePath in different pom.xmls
     * thx to [#gp1864](https://github.com/gp1864)!
 
