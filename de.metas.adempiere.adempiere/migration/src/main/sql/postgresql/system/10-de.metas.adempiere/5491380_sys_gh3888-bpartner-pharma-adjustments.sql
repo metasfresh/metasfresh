@@ -1038,3 +1038,8 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,563610,0,541015,541548,551503,'F',TO_TIMESTAMP('2018-04-20 10:03:01','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','Datum Erlaubnis',40,0,0,TO_TIMESTAMP('2018-04-20 10:03:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2018-04-20T10:04:44.526
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_ElementGroup SET UIStyle='primary',Updated=TO_TIMESTAMP('2018-04-20 10:04:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=541547
+;
+
