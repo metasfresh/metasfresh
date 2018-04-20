@@ -6,12 +6,14 @@ import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.Services;
 import org.compiere.model.I_I_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.tax.api.ITaxBL;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -412,11 +414,11 @@ public class MProductImportTableSqlUpdater
 
 		// Set default C_TaxCategory_ID where it was not set
 		{
+			final int taxCategId = Services.get(ITaxBL.class).retrieveDefaultTaxCategoryId();
 			sql = new StringBuilder("UPDATE ")
 					.append(targetTableName + " i ")
-					.append(" set C_TaxCategory_ID=(select tc.C_TaxCategory_ID from C_TaxCategory tc where tc.VATType='N' and tc.AD_Client_ID=")
-					.append(adClientId)
-					.append(" and tc.IsActive='Y' order by tc.C_TaxCategory_ID limit 1)")
+					.append(" set C_TaxCategory_ID = ")
+					.append(taxCategId)
 					.append(" where true")
 					.append(" and " + COLUMNNAME_I_IsImported + "<>'Y'")
 					.append(" and i.C_TaxCategory_ID is null")
