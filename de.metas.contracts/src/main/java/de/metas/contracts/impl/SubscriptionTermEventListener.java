@@ -70,7 +70,7 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 			@NonNull final I_C_Flatrate_Term predecessor)
 	{
 		final I_C_Flatrate_Conditions conditions = next.getC_Flatrate_Conditions();
-		if (X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_Calculate.equals(conditions.getOnFlatrateTermExtend()))
+		if (X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice.equals(conditions.getOnFlatrateTermExtend()))
 		{
 			final IPricingResult pricingInfo = FlatrateTermPricing.builder()
 					.termRelatedProduct(next.getM_Product())
@@ -86,7 +86,7 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 			next.setC_TaxCategory_ID(pricingInfo.getC_TaxCategory_ID());
 			next.setIsTaxIncluded(pricingInfo.isTaxIncluded());
 		}
-		else if (X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_Copy.equals(conditions.getOnFlatrateTermExtend()))
+		else if (X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CopyPrice.equals(conditions.getOnFlatrateTermExtend()))
 		{
 			next.setPriceActual(predecessor.getPriceActual());
 			next.setC_Currency_ID(predecessor.getC_Currency_ID());

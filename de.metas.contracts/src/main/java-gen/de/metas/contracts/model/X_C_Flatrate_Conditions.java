@@ -15,7 +15,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 31932291L;
+	private static final long serialVersionUID = 1503642635L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
@@ -724,10 +724,10 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	 * Reference name: Conditions_BehaviourWhenExtending
 	 */
 	public static final int ONFLATRATETERMEXTEND_AD_Reference_ID=540853;
-	/** Copy = Co */
-	public static final String ONFLATRATETERMEXTEND_Copy = "Co";
-	/** Calculate = Ca */
-	public static final String ONFLATRATETERMEXTEND_Calculate = "Ca";
+	/** CopyPrice = Co */
+	public static final String ONFLATRATETERMEXTEND_CopyPrice = "Co";
+	/** CalculatePrice = Ca */
+	public static final String ONFLATRATETERMEXTEND_CalculatePrice = "Ca";
 	/** Set Behaviour when extending contract.
 		@param OnFlatrateTermExtend Behaviour when extending contract	  */
 	@Override

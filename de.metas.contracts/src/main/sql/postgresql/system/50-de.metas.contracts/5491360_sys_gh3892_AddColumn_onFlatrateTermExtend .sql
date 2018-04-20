@@ -198,3 +198,15 @@ UPDATE C_Flatrate_Conditions SET OnFlatrateTermExtend='Ca' WHERE OnFlatrateTermE
 ;
 
 
+-- 2018-04-20T17:09:33.101
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET ValueName='CalculatePrice',Updated=TO_TIMESTAMP('2018-04-20 17:09:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541620
+;
+
+-- 2018-04-20T17:09:44.873
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET ValueName='CopyPrice',Updated=TO_TIMESTAMP('2018-04-20 17:09:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541619
+;
+
+
+
