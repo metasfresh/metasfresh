@@ -19,6 +19,8 @@ Here come the actual release notes:
     * Improved Window Layout and Translation for Business Partner Pharma.
   * [#3866](https://github.com/metasfresh/metasfresh/issues/3866) WebUI: Translation for Product LotNo Lock Window
     * Improved Window Layout and additional Translations for de_DE and en_US.
+  * [#3888](https://github.com/metasfresh/metasfresh/issues/3888) Pharma Business Partner Window adjustments
+    * Extended Business Partner Window for Pharma verticals. New Fields that describe the Pharma Trading Permissions of customers and vendors.
 
 ## Fixes
 * metasfresh
