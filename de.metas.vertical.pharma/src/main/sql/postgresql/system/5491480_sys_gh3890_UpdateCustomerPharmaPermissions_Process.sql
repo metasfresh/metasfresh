@@ -73,3 +73,13 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,A
 UPDATE AD_Table_Process SET WEBUI_QuickAction='Y',Updated=TO_TIMESTAMP('2018-04-20 15:25:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540950 AND AD_Table_ID=291
 ;
 
+-- 2018-04-20T16:00:28.114
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Classname='de.metas.ui.web.pharma.process.WEBUI_C_BPartner_UpdateCustomerPharmaPermissions',Updated=TO_TIMESTAMP('2018-04-20 16:00:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540950
+;
+
+-- 2018-04-20T16:00:36.972
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Value='WEBUI_C_BPartner_UpdateCustomerPharmaPermissions',Updated=TO_TIMESTAMP('2018-04-20 16:00:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540950
+;
+
