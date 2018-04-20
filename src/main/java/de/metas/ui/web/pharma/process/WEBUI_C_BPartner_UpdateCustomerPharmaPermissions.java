@@ -5,10 +5,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.vertical.pharma.PharmaCustomerPermission;
+import de.metas.vertical.pharma.PharmaCustomerPermissions;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 
 /*
@@ -33,8 +35,9 @@ import de.metas.vertical.pharma.model.I_C_BPartner;
  * #L%
  */
 
-public class WEBUI_UpdateCustomerPharmaPermissions extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
+public class WEBUI_C_BPartner_UpdateCustomerPharmaPermissions extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+
 	private static final String PARAM_IsPharmaAgentPermission = I_C_BPartner.COLUMNNAME_IsPharmaAgentPermission;
 	@Param(parameterName = PARAM_IsPharmaAgentPermission)
 	private boolean p_IsPharmaAgentPermission;
@@ -59,34 +62,35 @@ public class WEBUI_UpdateCustomerPharmaPermissions extends ViewBasedProcessTempl
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
 
-		final I_C_BPartner partner = getRecord(I_C_BPartner.class);
+		final I_C_BPartner bpartner = getRecord(I_C_BPartner.class);
+		final PharmaCustomerPermissions pharmaCustomerPermissions = PharmaCustomerPermissions.of(bpartner);
 
 		final String parameterName = parameter.getColumnName();
 
 		if (PARAM_IsPharmaAgentPermission.equals(parameterName))
 		{
 
-			return partner.isPharmaAgentPermission();
+			return pharmaCustomerPermissions.hasPermission(PharmaCustomerPermission.PHARMA_AGENT);
 		}
 		if (PARAM_IsPharmaciePermission.equals(parameterName))
 		{
 
-			return partner.isPharmaciePermission();
+			return pharmaCustomerPermissions.hasPermission(PharmaCustomerPermission.PHARMACIE);
 		}
 		if (PARAM_IsPharmaManufacturerPermission.equals(parameterName))
 		{
 
-			return partner.isPharmaManufacturerPermission();
+			return pharmaCustomerPermissions.hasPermission(PharmaCustomerPermission.PHARMA_MANUFACTURER);
 		}
 		if (PARAM_IsPharmaWholesalePermission.equals(parameterName))
 		{
 
-			return partner.isPharmaWholesalePermission();
+			return pharmaCustomerPermissions.hasPermission(PharmaCustomerPermission.PHARMA_WHOLESALE);
 		}
 		if (PARAM_IsVeterinaryPharmacyPermission.equals(parameterName))
 		{
 
-			return partner.isVeterinaryPharmacyPermission();
+			return pharmaCustomerPermissions.hasPermission(PharmaCustomerPermission.VETERINARY_PHARMACY);
 		}
 
 		else
@@ -96,33 +100,9 @@ public class WEBUI_UpdateCustomerPharmaPermissions extends ViewBasedProcessTempl
 	}
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable()
-	{
-
-		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
-		if (selectedRowIds.isEmpty())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-		else if (selectedRowIds.isMoreThanOneDocumentId())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
-		else
-		{
-			final I_C_BPartner partner = getRecord(I_C_BPartner.class);
-			if (!partner.isCustomer())
-			{
-				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("OnlyCustomers"));
-			}
-
-		}
-		return ProcessPreconditionsResolution.accept();
-	}
-
-	@Override
 	protected String doIt() throws Exception
 	{
+		
 		final I_C_BPartner partner = getRecord(I_C_BPartner.class);
 
 		partner.setIsPharmaAgentPermission(p_IsPharmaAgentPermission);
@@ -134,6 +114,27 @@ public class WEBUI_UpdateCustomerPharmaPermissions extends ViewBasedProcessTempl
 		save(partner);
 
 		return MSG_OK;
+	}
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		if (!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+		
+		final I_C_BPartner partner = context.getSelectedModel(I_C_BPartner.class);
+		if (!partner.isCustomer())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("OnlyCustomers"));
+		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 
 }
