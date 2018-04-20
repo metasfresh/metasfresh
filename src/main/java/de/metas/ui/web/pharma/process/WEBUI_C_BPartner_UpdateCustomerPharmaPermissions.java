@@ -117,7 +117,7 @@ public class WEBUI_C_BPartner_UpdateCustomerPharmaPermissions extends JavaProces
 	}
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (context.isNoSelection())
 		{
