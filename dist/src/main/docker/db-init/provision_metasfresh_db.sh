@@ -10,7 +10,7 @@ db_name=${DB_NAME:-metasfresh}
 db_user=${DB_USER:-metasfresh}
 db_password=${DB_PASSWORD:-$(echo $secret_db_password)}
 
-url_seed_dump=${URL_SEED_DUMP:-http://www.metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump}
+url_seed_dump=${URL_SEED_DUMP:-https://metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump}
 url_migration_scripts_package=${URL_MIGRATION_SCRIPTS_PACKAGE:-NOT_SET}
 #"https://repo.metasfresh.com/content/repositories/mvn-PR-3766-releases/de/metas/dist/metasfresh-dist-dist/5.50.2-9164%2BPR3766/metasfresh-dist-dist-5.50.2-9164%2BPR3766-sql-only.tar.gz"
 
@@ -103,8 +103,9 @@ import_dump()
 
 apply_migration_scripts_from_artifact()
 {
-	if [ "{url_migration_scripts_package}" == "NOT_SET" ]; then
-		return		
+	if [ "${url_migration_scripts_package}" == "NOT_SET" ]; then
+		echo "Note: no migration script package URL was provided."
+		return
 	fi
 	cd /tmp # go to the tmp directory, where we may write files
 
