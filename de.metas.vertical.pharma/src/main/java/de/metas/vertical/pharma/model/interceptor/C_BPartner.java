@@ -83,6 +83,7 @@ public class C_BPartner
 			vendor.setReceiptPermissionPharma(I_C_BPartner.ReceiptPermissionPharma_TypeA);
 			vendor.setReceiptPermissionChangeDate(SystemTime.asTimestamp());
 		}
+		else
 		{
 			vendor.setReceiptPermissionPharma(I_C_BPartner.ReceiptPermissionPharma_TypeB);
 			vendor.setReceiptPermissionChangeDate(null);
