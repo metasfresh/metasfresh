@@ -69,7 +69,7 @@ public class NotificationRepository implements INotificationRepository
 	@Override
 	public UserNotification save(@NonNull final UserNotificationRequest request)
 	{
-		final I_AD_Note notificationPO = InterfaceWrapperHelper.newInstance(I_AD_Note.class);
+		final I_AD_Note notificationPO = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Note.class);
 		notificationPO.setAD_User_ID(request.getRecipientUserId());
 		notificationPO.setIsImportant(request.isImportant());
 
@@ -208,7 +208,7 @@ public class NotificationRepository implements INotificationRepository
 	private IQueryBuilder<I_AD_Note> retrieveNotesByUserId(final int adUserId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Note.class)
+				.createQueryBuilderOutOfTrx(I_AD_Note.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Note.COLUMN_AD_User_ID, adUserId);
 	}
@@ -288,7 +288,7 @@ public class NotificationRepository implements INotificationRepository
 	private I_AD_Note retrieveAD_Note(final int adNoteId)
 	{
 		Check.assumeGreaterThanZero(adNoteId, "adNoteId");
-		return InterfaceWrapperHelper.load(adNoteId, I_AD_Note.class);
+		return InterfaceWrapperHelper.loadOutOfTrx(adNoteId, I_AD_Note.class);
 	}
 
 	@Override
