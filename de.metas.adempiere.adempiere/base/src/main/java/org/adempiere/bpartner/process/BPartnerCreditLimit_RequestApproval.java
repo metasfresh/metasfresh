@@ -6,7 +6,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 
 import de.metas.event.Topic;
-import de.metas.event.Type;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -23,10 +22,7 @@ public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements 
 	@Param(parameterName = PARAM_ApprovedBy_ID, mandatory = true)
 	private int approvedByUserId;
 
-	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
-			.name("de.metas.bpartner.UserNotifications.CreditLimit")
-			.type(Type.REMOTE)
-			.build();
+	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.bpartner.UserNotifications.CreditLimit");
 
 	private static final String MSG_Event_RequestApproval = "org.adempiere.bpartner.process.BPartnerCreditLimit_RequestApproval";
 
@@ -56,13 +52,15 @@ public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements 
 		}
 
 		final I_C_BPartner_CreditLimit bpCreditLimit = getRecord(I_C_BPartner_CreditLimit.class);
+		final TableRecordReference bpartnerRef = TableRecordReference.of(I_C_BPartner.Table_Name, bpCreditLimit.getC_BPartner_ID());
 
 		Services.get(INotificationBL.class)
 				.notifyUser(UserNotificationRequest.builder()
 						.topic(USER_NOTIFICATIONS_TOPIC)
 						.recipientUserId(approvedByUserId)
 						.contentADMessage(MSG_Event_RequestApproval)
-						.targetRecord(TableRecordReference.of(I_C_BPartner.Table_Name, bpCreditLimit.getC_BPartner_ID()))
+						.contentADMessageParam(bpartnerRef)
+						.targetRecord(bpartnerRef)
 						.build());
 
 		return MSG_OK;
