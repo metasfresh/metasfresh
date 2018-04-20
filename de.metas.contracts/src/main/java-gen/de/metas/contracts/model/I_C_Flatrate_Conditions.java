@@ -692,7 +692,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setonFlatrateTermExtend (java.lang.String onFlatrateTermExtend);
+	public void setOnFlatrateTermExtend (java.lang.String OnFlatrateTermExtend);
 
 	/**
 	 * Get Behaviour when extending contract.
@@ -701,12 +701,12 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getonFlatrateTermExtend();
+	public java.lang.String getOnFlatrateTermExtend();
 
-    /** Column definition for onFlatrateTermExtend */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_onFlatrateTermExtend = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object>(I_C_Flatrate_Conditions.class, "onFlatrateTermExtend", null);
-    /** Column name onFlatrateTermExtend */
-    public static final String COLUMNNAME_onFlatrateTermExtend = "onFlatrateTermExtend";
+    /** Column definition for OnFlatrateTermExtend */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_OnFlatrateTermExtend = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object>(I_C_Flatrate_Conditions.class, "OnFlatrateTermExtend", null);
+    /** Column name OnFlatrateTermExtend */
+    public static final String COLUMNNAME_OnFlatrateTermExtend = "OnFlatrateTermExtend";
 
 	/**
 	 * Set Drucktext.

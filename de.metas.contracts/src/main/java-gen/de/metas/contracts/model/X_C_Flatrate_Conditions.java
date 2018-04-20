@@ -15,7 +15,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1522169763L;
+	private static final long serialVersionUID = 31932291L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
@@ -39,7 +39,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 			setMargin_Max (BigDecimal.ZERO);
 			setMargin_Min (BigDecimal.ZERO);
 			setName (null);
-			setonFlatrateTermExtend (null); // 'Ca'
+			setOnFlatrateTermExtend (null); // 'Ca'
 			setProcessed (false); // N
 			setProcessing (false); // N
 			setType_Clearing (null); // EX
@@ -720,7 +720,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	/** 
-	 * onFlatrateTermExtend AD_Reference_ID=540853
+	 * OnFlatrateTermExtend AD_Reference_ID=540853
 	 * Reference name: Conditions_BehaviourWhenExtending
 	 */
 	public static final int ONFLATRATETERMEXTEND_AD_Reference_ID=540853;
@@ -729,20 +729,20 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	/** Calculate = Ca */
 	public static final String ONFLATRATETERMEXTEND_Calculate = "Ca";
 	/** Set Behaviour when extending contract.
-		@param onFlatrateTermExtend Behaviour when extending contract	  */
+		@param OnFlatrateTermExtend Behaviour when extending contract	  */
 	@Override
-	public void setonFlatrateTermExtend (java.lang.String onFlatrateTermExtend)
+	public void setOnFlatrateTermExtend (java.lang.String OnFlatrateTermExtend)
 	{
 
-		set_Value (COLUMNNAME_onFlatrateTermExtend, onFlatrateTermExtend);
+		set_Value (COLUMNNAME_OnFlatrateTermExtend, OnFlatrateTermExtend);
 	}
 
 	/** Get Behaviour when extending contract.
 		@return Behaviour when extending contract	  */
 	@Override
-	public java.lang.String getonFlatrateTermExtend () 
+	public java.lang.String getOnFlatrateTermExtend () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_onFlatrateTermExtend);
+		return (java.lang.String)get_Value(COLUMNNAME_OnFlatrateTermExtend);
 	}
 
 	/** Set Drucktext.

@@ -167,4 +167,34 @@ UPDATE AD_Column SET AD_Reference_Value_ID=540853,Updated=TO_TIMESTAMP('2018-04-
 ;
 
 
+-- 2018-04-20T14:09:36.920
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET ColumnName='OnFlatrateTermExtend',Updated=TO_TIMESTAMP('2018-04-20 14:09:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543964
+;
+
+-- 2018-04-20T14:09:36.922
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='OnFlatrateTermExtend', Name='Behaviour when extending contract', Description='', Help='' WHERE AD_Element_ID=543964
+;
+
+-- 2018-04-20T14:09:36.923
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='OnFlatrateTermExtend', Name='Behaviour when extending contract', Description='', Help='', AD_Element_ID=543964 WHERE UPPER(ColumnName)='ONFLATRATETERMEXTEND' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2018-04-20T14:09:36.928
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='OnFlatrateTermExtend', Name='Behaviour when extending contract', Description='', Help='' WHERE AD_Element_ID=543964 AND IsCentrallyMaintained='Y'
+;
+
+-- 2018-04-20T14:09:46.339
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_flatrate_conditions','OnFlatrateTermExtend','VARCHAR(2)',null,'Ca')
+;
+
+-- 2018-04-20T14:09:46.362
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Flatrate_Conditions SET OnFlatrateTermExtend='Ca' WHERE OnFlatrateTermExtend IS NULL
+;
+
 

@@ -11,6 +11,7 @@ import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.spi.FallbackFlatrateTermEventListener;
 import de.metas.contracts.subscription.ISubscriptionDAO;
@@ -69,7 +70,7 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 			@NonNull final I_C_Flatrate_Term predecessor)
 	{
 		final I_C_Flatrate_Conditions conditions = next.getC_Flatrate_Conditions();
-		if (conditions.isCalculatePrice())
+		if (X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_Calculate.equals(conditions.getOnFlatrateTermExtend()))
 		{
 			final IPricingResult pricingInfo = FlatrateTermPricing.builder()
 					.termRelatedProduct(next.getM_Product())
@@ -85,13 +86,17 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 			next.setC_TaxCategory_ID(pricingInfo.getC_TaxCategory_ID());
 			next.setIsTaxIncluded(pricingInfo.isTaxIncluded());
 		}
-		else
+		else if (X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_Copy.equals(conditions.getOnFlatrateTermExtend()))
 		{
 			next.setPriceActual(predecessor.getPriceActual());
 			next.setC_Currency_ID(predecessor.getC_Currency_ID());
 			next.setC_UOM_ID(predecessor.getC_UOM_ID());
 			next.setC_TaxCategory_ID(predecessor.getC_TaxCategory_ID());
 			next.setIsTaxIncluded(predecessor.isTaxIncluded());
+		}
+		else
+		{
+			throw new UnsupportedOperationException("This OnFlatrateTermExtend behaviour was not implemented!");
 		}
 	}
 }
