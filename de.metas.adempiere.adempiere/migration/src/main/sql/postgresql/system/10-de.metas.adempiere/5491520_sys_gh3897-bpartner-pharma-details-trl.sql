@@ -188,3 +188,33 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-20 17:00:15'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-20 17:00:36','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Pharma Receipt Permission' WHERE AD_Field_ID=563615 AND AD_Language='en_US'
 ;
 
+-- 2018-04-20T17:04:45.068
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-20 17:04:45','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Veterinary Pharmacy Permission' WHERE AD_Field_ID=563602 AND AD_Language='en_US'
+;
+
+-- 2018-04-20T17:05:56.538
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-20 17:05:56','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Pharma Shipment Permission' WHERE AD_Field_ID=563609 AND AD_Language='en_US'
+;
+
+-- 2018-04-20T17:06:13.623
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Arzneimittelvermittler §52c Abs.1-3 AMG',Updated=TO_TIMESTAMP('2018-04-20 17:06:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563601
+;
+
+-- 2018-04-20T17:06:22.889
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-20 17:06:22','YYYY-MM-DD HH24:MI:SS'),Name='Pharmacy Permission' WHERE AD_Field_ID=563598 AND AD_Language='en_US'
+;
+
+-- 2018-04-20T17:07:51.212
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-20 17:07:51','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Pharma Shipment Permission' WHERE AD_Field_ID=563614 AND AD_Language='en_US'
+;
+
+-- 2018-04-20T17:08:16.714
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-20 17:08:16','YYYY-MM-DD HH24:MI:SS'),Name='Date Permission Type A' WHERE AD_Field_ID=563609 AND AD_Language='en_US'
+;
+
