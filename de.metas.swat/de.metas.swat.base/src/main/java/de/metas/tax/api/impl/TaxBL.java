@@ -567,7 +567,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	@Override
 	public int retrieveRegularTaxCategoryId()
 	{
-		return Services.get(IQueryBL.class)
+		final int taxCategoryId = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_TaxCategory.class)
 				.addEqualsFilter(I_C_TaxCategory.COLUMN_VATType, X_C_TaxCategory.VATTYPE_RegularVAT)
 				.addOnlyActiveRecordsFilter()
@@ -575,5 +575,12 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.orderBy(I_C_TaxCategory.COLUMN_Name)
 				.create()
 				.firstId();
+
+		if (taxCategoryId <= 0)
+		{
+			throw new AdempiereException("No tax category found for Regular VATType");
+		}
+
+		return taxCategoryId;
 	}
 }

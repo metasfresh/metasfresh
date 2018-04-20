@@ -414,11 +414,11 @@ public class MProductImportTableSqlUpdater
 
 		// Set default C_TaxCategory_ID where it was not set
 		{
-			final int taxCategId = Services.get(ITaxBL.class).retrieveRegularTaxCategoryId();
+			final int taxCategoryId = Services.get(ITaxBL.class).retrieveRegularTaxCategoryId();
 			sql = new StringBuilder("UPDATE ")
 					.append(targetTableName + " i ")
 					.append(" set C_TaxCategory_ID = ")
-					.append(taxCategId)
+					.append(taxCategoryId)
 					.append(" where true")
 					.append(" and " + COLUMNNAME_I_IsImported + "<>'Y'")
 					.append(" and i.C_TaxCategory_ID is null")
