@@ -143,3 +143,23 @@ UPDATE AD_Column SET DefaultValue='B',Updated=TO_TIMESTAMP('2018-04-20 16:30:31'
 UPDATE AD_Column SET DefaultValue='B',Updated=TO_TIMESTAMP('2018-04-20 16:30:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=559729
 ;
 
+-- 2018-04-20T16:54:58.042
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-20 16:54:58','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Pharma Agent Permission' WHERE AD_Field_ID=563601 AND AD_Language='en_US'
+;
+
+-- 2018-04-20T16:55:06.825
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-20 16:55:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=563598 AND AD_Language='en_US'
+;
+
+-- 2018-04-20T16:55:31.261
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-20 16:55:31','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Pharma Manufacturer Permission' WHERE AD_Field_ID=563599 AND AD_Language='en_US'
+;
+
+-- 2018-04-20T16:55:52.704
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-20 16:55:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Pharma Wholesale Permission' WHERE AD_Field_ID=563600 AND AD_Language='en_US'
+;
+
