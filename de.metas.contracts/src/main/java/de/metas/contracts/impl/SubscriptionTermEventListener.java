@@ -96,7 +96,11 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 		}
 		else
 		{
-			throw new UnsupportedOperationException("This OnFlatrateTermExtend behaviour was not implemented!");
+			throw new AdempiereException("Unexpected OnFlatrateTermExtend=" + conditions.getOnFlatrateTermExtend())
+					.appendParametersToMessage()
+					.setParameter("conditions", conditions)
+					.setParameter("predecessor", predecessor)
+					.setParameter("next", next);
 		}
 	}
 }
