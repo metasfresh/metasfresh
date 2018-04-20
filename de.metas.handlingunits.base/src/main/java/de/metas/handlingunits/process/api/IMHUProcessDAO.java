@@ -26,14 +26,8 @@ import java.util.Collection;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.handlingunits.model.I_M_HU_Process;
-
 public interface IMHUProcessDAO extends ISingletonService
 {
-	/**
-	 *
-	 * @return all descriptors that have active {@link I_M_HU_Process} records.
-	 */
 	Collection<HUProcessDescriptor> getHUProcessDescriptors();
 
 	HUProcessDescriptor getByProcessIdOrNull(int processId);
