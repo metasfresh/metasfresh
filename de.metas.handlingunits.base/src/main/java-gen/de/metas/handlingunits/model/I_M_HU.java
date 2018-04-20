@@ -403,7 +403,7 @@ public interface I_M_HU
 	 */
 	public int getM_HU_PI_Version_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version();
+//	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version();
 
 	public void setM_HU_PI_Version(de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version);
 
