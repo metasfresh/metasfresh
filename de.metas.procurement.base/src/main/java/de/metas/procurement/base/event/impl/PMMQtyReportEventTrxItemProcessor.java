@@ -4,11 +4,15 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Issue;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -42,11 +46,11 @@ import de.metas.procurement.base.order.PMMPurchaseCandidateSegment;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -250,15 +254,19 @@ class PMMQtyReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_Qt
 
 	private final void markError(final I_PMM_QtyReport_Event event, final Throwable ex)
 	{
-		final String errorMsg = ex.getLocalizedMessage();
-
 		InterfaceWrapperHelper.refresh(event, true);
 		event.setIsError(true);
-		event.setErrorMsg(errorMsg);
-		event.setProcessed(false);
-		InterfaceWrapperHelper.save(event);
+		event.setProcessed(true);
 
-		Loggables.get().addLog("Event " + event + " marked as processed with warnings: " + errorMsg);
+		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
+		final String errorMsg = Util.firstNotEmptyTrimmed(metasfreshException.getLocalizedMessage(), metasfreshException.getMessage());
+		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, metasfreshException);
+
+		event.setErrorMsg(errorMsg);
+		event.setAD_Issue(issue);
+
+		InterfaceWrapperHelper.save(event);
+		Loggables.get().addLog("Event marked as isError='Y' with message: {}; event={}", errorMsg, event);
 
 		countErrors.incrementAndGet();
 	}
