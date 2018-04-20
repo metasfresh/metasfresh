@@ -26,6 +26,7 @@ package de.metas.purchasing.api.impl;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -42,10 +43,13 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.purchasing.api.ProductExclude;
 
 /**
  * @author cg
@@ -185,5 +189,48 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.create()
 				.setOrderBy(bppOrderBy)
 				.first(I_C_BPartner_Product.class);
+	}
+
+	@Override
+	public List<ProductExclude> retrieveAllProductSalesExcludes()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, true)
+				.create()
+				.stream()
+				.map(bpartnerProduct -> toProductExclude(bpartnerProduct))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static ProductExclude toProductExclude(final I_C_BPartner_Product bpartnerProduct)
+	{
+		return ProductExclude.builder()
+				.productId(bpartnerProduct.getM_Product_ID())
+				.bpartnerId(bpartnerProduct.getC_BPartner_ID())
+				.reason(bpartnerProduct.getExclusionFromSaleReason())
+				.build();
+	}
+
+	@Override
+	public Optional<ProductExclude> getExcludedFromSaleToCustomer(final int productId, final int partnerId)
+	{
+		final I_C_BPartner_Product bpartnerProduct = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, true)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partnerId)
+				.create()
+				.firstOnly(I_C_BPartner_Product.class);
+		if(bpartnerProduct == null)
+		{
+			return Optional.empty();
+		}
+		
+		return Optional.of(toProductExclude(bpartnerProduct));
 	}
 }

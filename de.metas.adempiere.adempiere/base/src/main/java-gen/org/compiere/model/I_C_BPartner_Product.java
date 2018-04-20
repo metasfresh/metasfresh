@@ -178,6 +178,29 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Auszeichnungsname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomerLabelName (java.lang.String CustomerLabelName);
+
+	/**
+	 * Get Auszeichnungsname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCustomerLabelName();
+
+    /** Column definition for CustomerLabelName */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_CustomerLabelName = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "CustomerLabelName", null);
+    /** Column name CustomerLabelName */
+    public static final String COLUMNNAME_CustomerLabelName = "CustomerLabelName";
+
+	/**
 	 * Set Zugesicherte Lieferzeit.
 	 * Zugesicherte Anzahl Tage zwischen Bestellung und Lieferung
 	 *
@@ -224,6 +247,29 @@ public interface I_C_BPartner_Product
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Exclusion From Sale Reason.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExclusionFromSaleReason (java.lang.String ExclusionFromSaleReason);
+
+	/**
+	 * Get Exclusion From Sale Reason.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExclusionFromSaleReason();
+
+    /** Column definition for ExclusionFromSaleReason */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_ExclusionFromSaleReason = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "ExclusionFromSaleReason", null);
+    /** Column name ExclusionFromSaleReason */
+    public static final String COLUMNNAME_ExclusionFromSaleReason = "ExclusionFromSaleReason";
 
 	/**
 	 * Set Aktiv.
@@ -301,29 +347,27 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
-	 * Set Hersteller.
-	 * Manufacturer of the Product
+	 * Set Exclusion from sales documents.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setManufacturer (java.lang.String Manufacturer);
+	public void setIsExcludedFromSale (boolean IsExcludedFromSale);
 
 	/**
-	 * Get Hersteller.
-	 * Manufacturer of the Product
+	 * Get Exclusion from sales documents.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getManufacturer();
+	public boolean isExcludedFromSale();
 
-    /** Column definition for Manufacturer */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_Manufacturer = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "Manufacturer", null);
-    /** Column name Manufacturer */
-    public static final String COLUMNNAME_Manufacturer = "Manufacturer";
+    /** Column definition for IsExcludedFromSale */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_IsExcludedFromSale = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "IsExcludedFromSale", null);
+    /** Column name IsExcludedFromSale */
+    public static final String COLUMNNAME_IsExcludedFromSale = "IsExcludedFromSale";
 
 	/**
 	 * Set Produkt.
@@ -353,6 +397,31 @@ public interface I_C_BPartner_Product
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_Product>(I_C_BPartner_Product.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Hersteller.
+	 * Manufacturer of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setManufacturer (java.lang.String Manufacturer);
+
+	/**
+	 * Get Hersteller.
+	 * Manufacturer of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getManufacturer();
+
+    /** Column definition for Manufacturer */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_Manufacturer = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "Manufacturer", null);
+    /** Column name Manufacturer */
+    public static final String COLUMNNAME_Manufacturer = "Manufacturer";
 
 	/**
 	 * Set Mindestbestellmenge.
