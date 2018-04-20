@@ -1,7 +1,6 @@
 package de.metas.ui.web.material.adapter;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -15,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
@@ -141,7 +142,7 @@ public class AvailableToPromiseAdapter
 	{
 		try
 		{
-			final List<Integer> attributeValueIds = attributesKey.getAttributeValueIds();
+			final Collection<Integer> attributeValueIds = attributesKey.getAttributeValueIds();
 			if (attributeValueIds.isEmpty())
 			{
 				return ImmutableList.of();

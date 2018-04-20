@@ -7,6 +7,7 @@ import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IInvoiceLineBL;
+import de.metas.purchasing.api.IBPartnerProductBL;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -44,6 +45,11 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 
 		final I_C_Invoice invoice = quickInput.getRootDocumentAs(I_C_Invoice.class);
 		final IInvoiceLineQuickInput invoiceLineQuickInput = quickInput.getQuickInputDocumentAs(IInvoiceLineQuickInput.class);
+
+		// 3834
+		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(
+				invoiceLineQuickInput.getM_Product_ID(),
+				invoice.getC_BPartner_ID());
 
 		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class, invoice);
 		invoiceLine.setC_Invoice(invoice);
