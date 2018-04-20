@@ -50,19 +50,24 @@ public class WEBUI_C_BPartner_UpdateVendorPharmaPermissions extends JavaProcess 
 	private boolean p_IsPharmaVendorWholesalePermission;
 
 	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
 		final I_C_BPartner bpartner = getRecord(I_C_BPartner.class);
+		final PharmaVendorPermissions pharmaVendorPermissions = PharmaVendorPermissions.of(bpartner);
 
 		final String parameterName = parameter.getColumnName();
 		
 		if(PARAM_IsPharmaVendorAgentPermission.equals(parameterName))
 		{
+			return pharmaVendorPermissions.hasPermission(PharmaVendorPermission.PHARMA_AGENT);
 		}
 		if(PARAM_IsPharmaVendorManufacturerPermission.equals(parameterName))
 		{
+			return pharmaVendorPermissions.hasPermission(PharmaVendorPermission.PHARMA_MANUFACTURER);
 		}
 		if(PARAM_IsPharmaVendorWholesalePermission.equals(parameterName))
 		{
+			return pharmaVendorPermissions.hasPermission(PharmaVendorPermission.PHARMA_WHOLESALE);
 		}
 		else
 		{
@@ -72,6 +77,7 @@ public class WEBUI_C_BPartner_UpdateVendorPharmaPermissions extends JavaProcess 
 	}
 
 	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (context.isNoSelection())
 		{
@@ -85,6 +91,7 @@ public class WEBUI_C_BPartner_UpdateVendorPharmaPermissions extends JavaProcess 
 		final I_C_BPartner partner = context.getSelectedModel(I_C_BPartner.class);
 		if (!partner.isVendor())
 		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("OnlyVendors"));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -95,6 +102,9 @@ public class WEBUI_C_BPartner_UpdateVendorPharmaPermissions extends JavaProcess 
 	{
 		final I_C_BPartner partner = getRecord(I_C_BPartner.class);
 
+		partner.setIsPharmaVendorAgentPermission(p_IsPharmaVendorAgentPermission);
+		partner.setIsPharmaVendorManufacturerPermission(p_IsPharmaVendorManufacturerPermission);
+		partner.setIsPharmaVendorWholesalePermission(p_IsPharmaVendorWholesalePermission);
 
 		save(partner);
 
