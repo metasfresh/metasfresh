@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2018-04-20T18:31:46 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/pharma_permission_authorisation_control/report" uuid="54501c66-ad2a-4f48-9c4f-c8ea99b3ff26">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<parameter name="IsPharmaManufacturerPermission" class="java.lang.String"/>
+	<parameter name="IsPharmaWholesalePermission" class="java.lang.String"/>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
+	<parameter name="IsPharmaAgentPermission" class="java.lang.String"/>
+	<parameter name="IsPharmaciePermission" class="java.lang.String"/>
+	<parameter name="IsVeterinaryPharmacyPermission" class="java.lang.String"/>
+	<parameter name="IsCustomer" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[Select * FROM "de.metas.vertical.pharma".pharma_permission_control_report
+(
+	$P{C_BPartner_ID},
+	$P{IsCustomer},
+	$P{IsPharmaManufacturerPermission},
+	$P{IsPharmaWholesalePermission},
+	$P{IsPharmaAgentPermission},
+	$P{IsPharmaciePermission},
+	$P{IsVeterinaryPharmacyPermission}	
+);]]>
+	</queryString>
+	<field name="name" class="java.lang.String"/>
+	<field name="name2" class="java.lang.String"/>
+	<field name="value" class="java.lang.String"/>
+	<field name="ispharmamanufacturerpermission" class="java.lang.String"/>
+	<field name="ispharmawholesalepermission" class="java.lang.String"/>
+	<field name="ispharmaagentpermission" class="java.lang.String"/>
+	<field name="ispharmaciepermission" class="java.lang.String"/>
+	<field name="isveterinarypharmacypermission" class="java.lang.String"/>
+	<field name="permissionpharma" class="java.lang.String"/>
+	<field name="permissionchangedate" class="java.sql.Timestamp"/>
+	<field name="iscustomer" class="java.lang.String"/>
+	<field name="isvendor" class="java.lang.String"/>
+	<field name="uniontype" class="java.lang.String"/>
+	<field name="param_bp_name" class="java.lang.String"/>
+	<field name="param_customer" class="java.lang.String"/>
+	<field name="param_manufacturer" class="java.lang.String"/>
+	<field name="param_wholesale" class="java.lang.String"/>
+	<field name="param_agent" class="java.lang.String"/>
+	<field name="param_pharmacie" class="java.lang.String"/>
+	<field name="param_veterinary" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="95" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField>
+				<reportElement x="0" y="0" width="800" height="25" uuid="8a7baef6-3c9e-4ed2-a874-3c457216e48b">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="16"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="39" width="130" height="14" uuid="c6aeca08-3029-4a7c-80b4-e47ed3380a77">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$R{bp_param}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="67" width="130" height="14" uuid="0082fe3a-3570-47d0-a855-b4349e128ca8">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$R{manufacturing_param}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="81" width="130" height="14" uuid="d23e884d-6bb2-4193-a5f6-01d38caada2c">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$R{wholesale_param}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="130" y="39" width="210" height="14" uuid="784ede8e-9a14-496e-bfd3-27245d01f5e5">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$P{C_BPartner_ID} != null ? $F{param_bp_name} : $R{all}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="130" y="67" width="100" height="14" uuid="48178a47-6c16-4690-9d3c-3c7c1681f602">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$P{IsPharmaManufacturerPermission} != null ? $F{param_manufacturer} : $R{all}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="130" y="81" width="100" height="14" uuid="cb005c38-a2dd-49d7-bc63-757899879b8f">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$P{IsPharmaWholesalePermission} != null ? $F{param_wholesale} : $R{all}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="380" y="39" width="130" height="14" uuid="32ecf184-b4c1-4dcc-bcfd-84dffabb62d8">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$R{agent_param}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="380" y="53" width="130" height="14" uuid="f937d912-e88a-4f8c-aced-0d7e73253a62">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$R{pharmacy_param}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="380" y="67" width="130" height="14" uuid="98134f39-9883-4d5a-8b20-8d2857d9c5d2">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$R{veterinary_param}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="510" y="39" width="100" height="14" uuid="58093f6c-4be0-4a63-9e07-1373389281e1">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$P{IsPharmaAgentPermission} != null ? $F{param_agent} : $R{all}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="510" y="53" width="100" height="14" uuid="d1d5a6de-15a1-483a-a30a-8b7023706500">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$P{IsPharmaciePermission} != null ?$F{param_pharmacie} : $R{all}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="510" y="67" width="100" height="14" uuid="42f03868-a44a-4380-803d-7c4c205aed1c">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$P{IsVeterinaryPharmacyPermission} != null ? $F{param_veterinary} : $R{all}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="53" width="130" height="14" uuid="064081df-8884-41cb-ae20-3f07e164c11e">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$R{customer_param}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="130" y="53" width="100" height="14" uuid="69ea607e-00b1-4620-b477-6b91d243067f">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$P{IsCustomer} != null ? $F{param_customer} : $R{all}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="35" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="40" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="188" height="40" uuid="8d5e8d8b-858f-4dec-8cf7-05fa168737c1">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$R{name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="298" y="0" width="60" height="40" uuid="2b242098-b6af-4fb8-bbd8-1303b22071f0"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$R{bp_value}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="543" y="0" width="39" height="40" uuid="eaedc5e2-c0cb-4798-87d0-bf5137e7c65d"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$R{agent}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="418" y="0" width="65" height="40" uuid="a3711493-2766-4cd0-9588-7aa4ad50b70b">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$R{manufacturing_perm}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="483" y="0" width="60" height="40" uuid="bda4ef43-270e-4f71-8ed7-41204e6a9d9f">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$R{wholesale_permission}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="747" y="0" width="55" height="40" uuid="a5cb4472-6624-40c9-bae5-9582cafdf8db"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$R{permission_change_date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="582" y="0" width="55" height="40" uuid="730e2745-b635-4d69-bd04-bf98b030439e"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$R{pharmacy_permission}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="637" y="0" width="55" height="40" uuid="5f63e73c-1558-49bd-a830-1b4985a6d1e7">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$R{veterinary_permission}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="692" y="0" width="55" height="40" uuid="4ac9626b-ba05-4ffd-8027-c08fc4af7d22"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$R{permission}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="358" y="0" width="60" height="40" uuid="455819b1-4c19-401c-b964-03ace96d359c"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$R{customer} + "/ " + $R{vendor}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="188" y="0" width="110" height="40" uuid="59d7cacd-aa03-4a3d-b014-07f58c5535a8">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$R{name2}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="14" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="188" height="14" uuid="cb03f6e7-f395-4ed8-b1c2-b6a3b60b6cd8">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="298" y="0" width="59" height="14" uuid="63fa67a7-5354-4c19-b913-73c178864650"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="357" y="0" width="62" height="14" uuid="02467e55-f20d-45fc-99a9-8a49b106b8d9"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{uniontype}.equals("Customer") ? $R{customer} : $R{vendor}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="419" y="0" width="64" height="14" uuid="665a9ed4-3639-4f93-99f7-44ad4b112a0b"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{ispharmamanufacturerpermission}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="483" y="0" width="60" height="14" uuid="97cfeec7-9b86-49a8-9b79-da057dea2fab"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{ispharmawholesalepermission}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="543" y="0" width="38" height="14" uuid="a80c25b2-0823-4955-a4ca-acf683d8e0d3"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{ispharmaagentpermission}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="581" y="0" width="56" height="14" uuid="53c4a872-ef29-4fb7-8985-730eb9b0cb4a"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{ispharmaciepermission}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="637" y="0" width="54" height="14" uuid="6ff3b041-dbe3-442c-b2e5-86edc2ac2f00"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{isveterinarypharmacypermission}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="691" y="0" width="56" height="14" uuid="989b3d0b-9599-4301-9cea-ece4a8333039"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{permissionpharma}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement x="747" y="0" width="54" height="14" uuid="e9b26c79-2d67-4a8e-bd54-aaf15f2ac0b3"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{permissionchangedate}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="188" y="0" width="110" height="14" uuid="c561b14d-7a9e-44df-9127-19fce42c793b">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{name2}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+</jasperReport>
