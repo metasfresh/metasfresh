@@ -24,7 +24,6 @@ package org.adempiere.pricing.api;
 
 
 import java.math.BigDecimal;
-import java.util.Properties;
 
 import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.ISingletonService;
@@ -73,11 +72,4 @@ public interface IPricingBL extends ISingletonService
 	 * @return
 	 */
 	IPricingResult createInitialResult(IPricingContext pricingCtx);
-
-	/**
-	 * 
-	 * @param ctx
-	 * @return composite pricing rule which contains all pricing rules which were currently registered.
-	 */
-	IPricingRule getAggregatedPricingRule(Properties ctx);
 }

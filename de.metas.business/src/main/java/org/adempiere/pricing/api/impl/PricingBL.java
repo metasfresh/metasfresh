@@ -346,7 +346,6 @@ public class PricingBL implements IPricingBL
 		return result;
 	}
 
-	@Override
 	@Cached(cacheName = I_C_PricingRule.Table_Name + "_AggregatedPricingRule")
 	public AggregatedPricingRule getAggregatedPricingRule(@CacheCtx Properties ctx)
 	{
@@ -365,7 +364,7 @@ public class PricingBL implements IPricingBL
 	{
 		final List<I_C_PricingRule> rulesDef = Services.get(IPricingDAO.class).retrievePricingRules(ctx);
 
-		final List<IPricingRule> rules = new ArrayList<IPricingRule>(rulesDef.size());
+		final List<IPricingRule> rules = new ArrayList<>(rulesDef.size());
 		for (final I_C_PricingRule ruleDef : rulesDef)
 		{
 			final IPricingRule rule = createPricingRule(ruleDef);
