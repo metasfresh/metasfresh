@@ -61,7 +61,7 @@ public class C_Order
 		invoiceCandidateHandlerBL.invalidateCandidatesFor(order);
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE})
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
 	public void checkCreditLimit(@NonNull final I_C_Order order)
 	{
 		if (!isCheckCreditLimitNeeded(order))
@@ -96,13 +96,18 @@ public class C_Order
 			throw new AdempiereException(msg);
 		}
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(ctx,
-				order.getGrandTotal(), order.getC_Currency_ID(), order.getDateOrdered(),
-				order.getC_ConversionType_ID(), order.getAD_Client_ID(), order.getAD_Org_ID());
+		final BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(
+				ctx,
+				order.getGrandTotal(),
+				order.getC_Currency_ID(),
+				order.getDateOrdered(),
+				order.getC_ConversionType_ID(),
+				order.getAD_Client_ID(),
+				order.getAD_Org_ID());
 
 		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
 				.stat(stats)
-				.additionalAmt(grandTotal)
+				.additionalAmt(grandTotal) // null is threated like zero
 				.date(dateOrdered)
 				.build();
 		final String calculatedSOCreditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
