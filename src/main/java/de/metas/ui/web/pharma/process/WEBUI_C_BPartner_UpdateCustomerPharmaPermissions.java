@@ -61,7 +61,6 @@ public class WEBUI_C_BPartner_UpdateCustomerPharmaPermissions extends JavaProces
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-
 		final I_C_BPartner bpartner = getRecord(I_C_BPartner.class);
 		final PharmaCustomerPermissions pharmaCustomerPermissions = PharmaCustomerPermissions.of(bpartner);
 
@@ -69,30 +68,25 @@ public class WEBUI_C_BPartner_UpdateCustomerPharmaPermissions extends JavaProces
 
 		if (PARAM_IsPharmaAgentPermission.equals(parameterName))
 		{
-
 			return pharmaCustomerPermissions.hasPermission(PharmaCustomerPermission.PHARMA_AGENT);
 		}
-		if (PARAM_IsPharmaciePermission.equals(parameterName))
+		else if (PARAM_IsPharmaciePermission.equals(parameterName))
 		{
-
 			return pharmaCustomerPermissions.hasPermission(PharmaCustomerPermission.PHARMACIE);
 		}
-		if (PARAM_IsPharmaManufacturerPermission.equals(parameterName))
+		else if (PARAM_IsPharmaManufacturerPermission.equals(parameterName))
 		{
-
 			return pharmaCustomerPermissions.hasPermission(PharmaCustomerPermission.PHARMA_MANUFACTURER);
 		}
-		if (PARAM_IsPharmaWholesalePermission.equals(parameterName))
+		else if (PARAM_IsPharmaWholesalePermission.equals(parameterName))
 		{
-
 			return pharmaCustomerPermissions.hasPermission(PharmaCustomerPermission.PHARMA_WHOLESALE);
 		}
-		if (PARAM_IsVeterinaryPharmacyPermission.equals(parameterName))
+		else if (PARAM_IsVeterinaryPharmacyPermission.equals(parameterName))
 		{
 
 			return pharmaCustomerPermissions.hasPermission(PharmaCustomerPermission.VETERINARY_PHARMACY);
 		}
-
 		else
 		{
 			return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
@@ -102,7 +96,6 @@ public class WEBUI_C_BPartner_UpdateCustomerPharmaPermissions extends JavaProces
 	@Override
 	protected String doIt() throws Exception
 	{
-		
 		final I_C_BPartner partner = getRecord(I_C_BPartner.class);
 
 		partner.setIsPharmaAgentPermission(p_IsPharmaAgentPermission);

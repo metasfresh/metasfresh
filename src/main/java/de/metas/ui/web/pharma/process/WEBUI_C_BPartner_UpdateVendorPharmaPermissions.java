@@ -61,11 +61,11 @@ public class WEBUI_C_BPartner_UpdateVendorPharmaPermissions extends JavaProcess 
 		{
 			return pharmaVendorPermissions.hasPermission(PharmaVendorPermission.PHARMA_AGENT);
 		}
-		if(PARAM_IsPharmaVendorManufacturerPermission.equals(parameterName))
+		else if(PARAM_IsPharmaVendorManufacturerPermission.equals(parameterName))
 		{
 			return pharmaVendorPermissions.hasPermission(PharmaVendorPermission.PHARMA_MANUFACTURER);
 		}
-		if(PARAM_IsPharmaVendorWholesalePermission.equals(parameterName))
+		else if(PARAM_IsPharmaVendorWholesalePermission.equals(parameterName))
 		{
 			return pharmaVendorPermissions.hasPermission(PharmaVendorPermission.PHARMA_WHOLESALE);
 		}
