@@ -565,7 +565,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	}
 
 	@Override
-	public int retrieveDefaultTaxCategoryId()
+	public int retrieveRegularTaxCategoryId()
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_TaxCategory.class)

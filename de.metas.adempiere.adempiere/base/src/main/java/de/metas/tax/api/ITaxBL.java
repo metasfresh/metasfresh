@@ -164,5 +164,5 @@ public interface ITaxBL extends ISingletonService
 	 */
 	void setupIfIsWholeTax(final I_C_Tax tax);
 
-	int retrieveDefaultTaxCategoryId();
+	int retrieveRegularTaxCategoryId();
 }
