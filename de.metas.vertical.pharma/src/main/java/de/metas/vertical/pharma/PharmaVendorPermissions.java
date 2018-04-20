@@ -32,51 +32,43 @@ import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
-public final class PharmaCustomerPermissions
+public final class PharmaVendorPermissions
 {
-	public static PharmaCustomerPermissions of(final I_C_BPartner bpartner)
+	public static PharmaVendorPermissions of(final I_C_BPartner bpartner)
 	{
-		if (!bpartner.isCustomer())
+		if (!bpartner.isVendor())
 		{
 			return NONE;
 		}
 
-		final ImmutableSet.Builder<PharmaCustomerPermission> permissionsBuilder = ImmutableSet.builder();
-		if (bpartner.isPharmaAgentPermission())
+		final ImmutableSet.Builder<PharmaVendorPermission> permissionsBuilder = ImmutableSet.builder();
+		if (bpartner.isPharmaVendorAgentPermission())
 		{
-			permissionsBuilder.add(PharmaCustomerPermission.PHARMA_AGENT);
+			permissionsBuilder.add(PharmaVendorPermission.PHARMA_AGENT);
 		}
-		if (bpartner.isPharmaciePermission())
+		if (bpartner.isPharmaVendorManufacturerPermission())
 		{
-			permissionsBuilder.add(PharmaCustomerPermission.PHARMACIE);
+			permissionsBuilder.add(PharmaVendorPermission.PHARMA_MANUFACTURER);
 		}
-		if (bpartner.isPharmaManufacturerPermission())
+		if (bpartner.isPharmaVendorWholesalePermission())
 		{
-			permissionsBuilder.add(PharmaCustomerPermission.PHARMA_MANUFACTURER);
-		}
-		if (bpartner.isPharmaWholesalePermission())
-		{
-			permissionsBuilder.add(PharmaCustomerPermission.PHARMA_WHOLESALE);
-		}
-		if (bpartner.isVeterinaryPharmacyPermission())
-		{
-			permissionsBuilder.add(PharmaCustomerPermission.VETERINARY_PHARMACY);
+			permissionsBuilder.add(PharmaVendorPermission.PHARMA_WHOLESALE);
 		}
 
-		final ImmutableSet<PharmaCustomerPermission> permissions = permissionsBuilder.build();
+		final ImmutableSet<PharmaVendorPermission> permissions = permissionsBuilder.build();
 		if (permissions.isEmpty())
 		{
 			return NONE;
 		}
 
-		return new PharmaCustomerPermissions(permissions);
+		return new PharmaVendorPermissions(permissions);
 	}
 
-	private static final PharmaCustomerPermissions NONE = new PharmaCustomerPermissions(ImmutableSet.of());
+	private static final PharmaVendorPermissions NONE = new PharmaVendorPermissions(ImmutableSet.of());
 
-	private final ImmutableSet<PharmaCustomerPermission> permissions;
+	private final ImmutableSet<PharmaVendorPermission> permissions;
 
-	private PharmaCustomerPermissions(final Set<PharmaCustomerPermission> permissions)
+	private PharmaVendorPermissions(final Set<PharmaVendorPermission> permissions)
 	{
 		this.permissions = ImmutableSet.copyOf(permissions);
 	}
@@ -91,12 +83,12 @@ public final class PharmaCustomerPermissions
 		return !permissions.isEmpty();
 	}
 
-	public boolean hasPermission(final PharmaCustomerPermission permission)
+	public boolean hasPermission(final PharmaVendorPermission permission)
 	{
 		return permissions.contains(permission);
 	}
 
-	public boolean hasOnlyPermission(final PharmaCustomerPermission permission)
+	public boolean hasOnlyPermission(final PharmaVendorPermission permission)
 	{
 		return permissions.size() == 1 && permissions.contains(permission);
 	}

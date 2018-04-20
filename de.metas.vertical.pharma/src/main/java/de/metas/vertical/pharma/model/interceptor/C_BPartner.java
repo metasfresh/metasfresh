@@ -7,6 +7,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.vertical.pharma.PharmaCustomerPermissions;
+import de.metas.vertical.pharma.PharmaVendorPermissions;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 
 /*
@@ -36,6 +37,7 @@ import de.metas.vertical.pharma.model.I_C_BPartner;
 public class C_BPartner
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
+			I_C_BPartner.COLUMNNAME_IsCustomer,
 			I_C_BPartner.COLUMNNAME_IsPharmaAgentPermission,
 			I_C_BPartner.COLUMNNAME_IsPharmaciePermission,
 			I_C_BPartner.COLUMNNAME_IsPharmaManufacturerPermission,
@@ -44,52 +46,47 @@ public class C_BPartner
 	})
 	public void onPharmaPermissionChanged_Customer(final I_C_BPartner customer)
 	{
+		final PharmaCustomerPermissions permissions = PharmaCustomerPermissions.of(customer);
 		if (!customer.isCustomer())
 		{
-			// nothing to do
-			return;
+			customer.setShipmentPermissionPharma(null);
+			customer.setShipmentPermissionChangeDate(null);
 		}
-
-		final PharmaCustomerPermissions permissions = PharmaCustomerPermissions.of(customer);
-		if (permissions.hasAtLeastOnePermission())
+		else if (permissions.hasAtLeastOnePermission())
 		{
 			customer.setShipmentPermissionPharma(I_C_BPartner.ShipmentPermissionPharma_TypeA);
 			customer.setShipmentPermissionChangeDate(SystemTime.asTimestamp());
 		}
-
-		customer.setShipmentPermissionPharma(I_C_BPartner.ShipmentPermissionPharma_TypeB);
-		customer.setShipmentPermissionChangeDate(null);
-
+		else
+		{
+			customer.setShipmentPermissionPharma(I_C_BPartner.ShipmentPermissionPharma_TypeB);
+			customer.setShipmentPermissionChangeDate(null);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
+			I_C_BPartner.COLUMNNAME_IsVendor,
 			I_C_BPartner.COLUMNNAME_IsPharmaVendorAgentPermission,
 			I_C_BPartner.COLUMNNAME_IsPharmaVendorManufacturerPermission,
 			I_C_BPartner.COLUMNNAME_IsPharmaVendorWholesalePermission
 	})
 	public void onPharmaPermissionChanged_Vendor(final I_C_BPartner vendor)
 	{
+		final PharmaVendorPermissions permissions = PharmaVendorPermissions.of(vendor);
 		if (!vendor.isVendor())
 		{
-			// nothing to do
-			return;
+			vendor.setReceiptPermissionPharma(null);
+			vendor.setReceiptPermissionChangeDate(null);
 		}
-
-		if (hasAnyPharmaPermission_Vendor(vendor))
+		else if (permissions.hasAtLeastOnePermission())
 		{
 			vendor.setReceiptPermissionPharma(I_C_BPartner.ReceiptPermissionPharma_TypeA);
 			vendor.setReceiptPermissionChangeDate(SystemTime.asTimestamp());
 		}
-
-		vendor.setReceiptPermissionPharma(I_C_BPartner.ReceiptPermissionPharma_TypeB);
-		vendor.setReceiptPermissionChangeDate(null);
-	}
-
-	private boolean hasAnyPharmaPermission_Vendor(final I_C_BPartner vendor)
-	{
-		return vendor.isPharmaVendorAgentPermission()
-				|| vendor.isPharmaVendorManufacturerPermission()
-				|| vendor.isPharmaVendorWholesalePermission();
+		{
+			vendor.setReceiptPermissionPharma(I_C_BPartner.ReceiptPermissionPharma_TypeB);
+			vendor.setReceiptPermissionChangeDate(null);
+		}
 	}
 
 }
