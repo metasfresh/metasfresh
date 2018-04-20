@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { DragSource, DropTarget } from 'react-dnd';
+import classnames from 'classnames';
 
 const cardSource = {
   beginDrag(props) {
@@ -71,12 +72,10 @@ export class DndWidget extends Component {
     return connectDragSource(
       connectDropTarget(
         <div
-          className={
-            className +
-            ' dnd-widget ' +
-            (isDragging ? 'dragging ' : '') +
-            (placeholder ? 'dnd-placeholder ' : '')
-          }
+          className={classnames(className, 'dnd-widget', {
+            dragging: isDragging,
+            'dnd-placeholder': placeholder,
+          })}
         >
           {!placeholder &&
             removeCard && (

@@ -48,10 +48,9 @@ export class ChartWidget extends Component {
       editmode,
       handleChartOptions,
     } = this.props;
-
     const { toggleWidgetMenu, height } = this.state;
-
     const isMaximized = idMaximized === id;
+
     if (!isMaximized && typeof idMaximized === 'number') return false;
 
     return (
@@ -62,11 +61,12 @@ export class ChartWidget extends Component {
             (editmode ? 'draggable-widget-edited ' : '')
           }
           onDoubleClick={
-            !editmode &&
-            (() => {
-              isMaximized ? maximizeWidget() : maximizeWidget(id);
-              this.toggleMenu(false);
-            })
+            editmode || !maximizeWidget
+              ? undefined
+              : () => {
+                  isMaximized ? maximizeWidget() : maximizeWidget(id);
+                  this.toggleMenu(false);
+                }
           }
         >
           <p className="draggable-widget-title">

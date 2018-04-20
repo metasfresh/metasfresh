@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { connect } from 'react-redux';
+import { List } from 'immutable';
 
 import {
   changeKPIItem,
@@ -37,6 +38,8 @@ export class DraggableWrapper extends Component {
     interval: '',
     currentId: '',
     isIndicator: '',
+    listFocused: null,
+    listToggled: null,
   };
 
   componentDidMount = () => {
@@ -67,6 +70,30 @@ export class DraggableWrapper extends Component {
 
   componentWillUnmount = () => {
     disconnectWS.call(this);
+  };
+
+  handleFocus = name => {
+    this.setState({
+      listFocused: name,
+    });
+  };
+
+  handleBlur = () => {
+    this.setState({
+      listFocused: null,
+    });
+  };
+
+  closeDropdown = () => {
+    this.setState({
+      listToggled: null,
+    });
+  };
+
+  openDropdown = name => {
+    this.setState({
+      listToggled: name,
+    });
   };
 
   getType = entity => (entity === 'cards' ? 'kpis' : 'targetIndicators');
@@ -294,7 +321,15 @@ export class DraggableWrapper extends Component {
   };
 
   renderOptionModal = () => {
-    const { chartOptions, captionHandler, when, interval } = this.state;
+    const {
+      chartOptions,
+      captionHandler,
+      when,
+      interval,
+      listFocused,
+      listToggled,
+    } = this.state;
+
     return (
       chartOptions && (
         <div className="chart-options-overlay">
@@ -315,8 +350,15 @@ export class DraggableWrapper extends Component {
                     onSelect={option =>
                       this.handleOptionSelect('interval', option)
                     }
-                    list={[{ caption: 'week', value: 'week' }]}
+                    tabIndex={0}
+                    list={List([{ caption: 'week', value: 'week' }])}
                     selected={interval}
+                    isFocused={listFocused === 'interval'}
+                    isToggled={listToggled === 'interval'}
+                    onFocus={() => this.handleFocus('interval')}
+                    onBlur={() => this.handleBlur('interval')}
+                    onOpenDropdown={() => this.openDropdown('interval')}
+                    onCloseDropdown={() => this.closeDropdown('interval')}
                   />
                 </div>
               </div>
@@ -325,14 +367,21 @@ export class DraggableWrapper extends Component {
                 <div className="chart-options-list-wrapper">
                   <RawList
                     onSelect={option => this.handleOptionSelect('when', option)}
-                    list={[
+                    list={List([
                       { caption: 'now', value: 'now' },
                       {
                         caption: 'last week',
                         value: 'lastWeek',
                       },
-                    ]}
+                    ])}
+                    tabIndex={0}
                     selected={when}
+                    isFocused={listFocused === 'when'}
+                    isToggled={listToggled === 'when'}
+                    onFocus={() => this.handleFocus('when')}
+                    onBlur={() => this.handleBlur('when')}
+                    onOpenDropdown={() => this.openDropdown('when')}
+                    onCloseDropdown={() => this.closeDropdown('when')}
                   />
                 </div>
               </div>
