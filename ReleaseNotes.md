@@ -19,6 +19,8 @@ Here come the actual release notes:
     * Improved Window Layout and Translation for Business Partner Pharma.
   * [#3866](https://github.com/metasfresh/metasfresh/issues/3866) WebUI: Translation for Product LotNo Lock Window
     * Improved Window Layout and additional Translations for de_DE and en_US.
+  * [#3888](https://github.com/metasfresh/metasfresh/issues/3888) Pharma Business Partner Window adjustments
+    * Extended Business Partner Window for Pharma verticals. New Fields that describe the Pharma Trading Permissions of customers and vendors.
 
 ## Fixes
 * metasfresh
@@ -29,16 +31,20 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
-  * [#3816](https://github.com/metasfresh/metasfresh/issues/3816) technical: Adapt Query.list() to avoid ClassCastExceptions
-  * [#3822](https://github.com/metasfresh/metasfresh/issues/3822) ShipmentSchedule.QtyPickList not updated from drafted shipments
+  * [#3816](https://github.com/metasfresh/metasfresh/issues/3816) Technical: Adapt Query.list() to avoid ClassCastExceptions
+    * Internal development issue, improving the Query.list() method to avoid Class Cast exceptions.
   * [#3833](https://github.com/metasfresh/metasfresh/issues/3833) Enhanced Pricing, allowing detailed individual Pricesystems per Product and Businesspartner
+    * Improved Pricing Calculation functionality, now allowing to overwrite the general Pricing System via Pricing Conditions Schema and Product.
   * [#3835](https://github.com/metasfresh/metasfresh/issues/3835) No recording of Products without pricing Conditions
+    * Restriction Functionality, allowing prohibit the recording of Products in Document Lines without inidividual Pricing conditions.
   * [#3844](https://github.com/metasfresh/metasfresh/issues/3844) WebUI: Add Translations for Context Menu to de_DE
     * Adds new Translations for context menu of metasfresh WebUI.
   * [#3849](https://github.com/metasfresh/metasfresh/issues/3849) Error with ATP presentation in Sales Order Batch entry
+    * Fixes a Bug in Sales Order Line Batch entry. Now showing the ATP value in Product Lookup Batch List when configured.
 
 * metasfresh-webui-api
   * [#852](https://github.com/metasfresh/metasfresh-webui-api/issues/852) Color Indicator Widget functionality API
+    * New API for color Indicators. This will be used by a new color indicator wdget in WebUI frontend soon.
 
 * metasfresh-webui-frontend
   * [#1539](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1539) eMail Editor mailTo List not showing selected entry
@@ -52,6 +58,8 @@ Here come the actual release notes:
 * metasfresh
   * [#3375](https://github.com/metasfresh/metasfresh/issues/3375) Quantity picked in Shipment Schedules doesn't update
   * [#3819](https://github.com/metasfresh/metasfresh/issues/3819) EDI - "Resubmit Selection" from import processor log not working anymore
+  * [#3822](https://github.com/metasfresh/metasfresh/issues/3822) ShipmentSchedule.QtyPickList not updated from drafted shipments
+    * Fixes an Error that prevented the update of Shipment Schedule entries for drafted Shipmentlines.
   * [#3838](https://github.com/metasfresh/metasfresh/issues/3838) packaging invoice candidate updated incorrectly
   * [#3842](https://github.com/metasfresh/metasfresh/issues/3842) Cannot access server logs via Server Monitor
   * [#3843](https://github.com/metasfresh/metasfresh/issues/3843) wrong parent.relativePath in different pom.xmls
