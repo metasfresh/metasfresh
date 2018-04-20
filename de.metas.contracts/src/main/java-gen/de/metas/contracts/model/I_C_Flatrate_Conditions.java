@@ -330,29 +330,6 @@ public interface I_C_Flatrate_Conditions
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Calculate Price.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsCalculatePrice (boolean IsCalculatePrice);
-
-	/**
-	 * Get Calculate Price.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isCalculatePrice();
-
-    /** Column definition for IsCalculatePrice */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsCalculatePrice = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object>(I_C_Flatrate_Conditions.class, "IsCalculatePrice", null);
-    /** Column name IsCalculatePrice */
-    public static final String COLUMNNAME_IsCalculatePrice = "IsCalculatePrice";
-
-	/**
 	 * Set Gegenüberstellung mit erbr. Leist..
 	 * Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
 	 *
@@ -707,6 +684,29 @@ public interface I_C_Flatrate_Conditions
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object>(I_C_Flatrate_Conditions.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Behaviour when extending contract.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setonFlatrateTermExtend (java.lang.String onFlatrateTermExtend);
+
+	/**
+	 * Get Behaviour when extending contract.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getonFlatrateTermExtend();
+
+    /** Column definition for onFlatrateTermExtend */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_onFlatrateTermExtend = new org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object>(I_C_Flatrate_Conditions.class, "onFlatrateTermExtend", null);
+    /** Column name onFlatrateTermExtend */
+    public static final String COLUMNNAME_onFlatrateTermExtend = "onFlatrateTermExtend";
 
 	/**
 	 * Set Drucktext.

@@ -15,7 +15,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1549500807L;
+	private static final long serialVersionUID = 1522169763L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
@@ -28,7 +28,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 			setDocAction (null); // CO
 			setDocStatus (null); // DR
 			setInvoiceRule (null); // I
-			setIsCalculatePrice (true); // Y
 			setIsClosingWithActualSum (false); // N
 			setIsClosingWithCorrectionSum (false); // N
 			setIsCorrectionAmtAtClosing (false); // N
@@ -40,6 +39,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 			setMargin_Max (BigDecimal.ZERO);
 			setMargin_Min (BigDecimal.ZERO);
 			setName (null);
+			setonFlatrateTermExtend (null); // 'Ca'
 			setProcessed (false); // N
 			setProcessing (false); // N
 			setType_Clearing (null); // EX
@@ -339,29 +339,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public java.lang.String getInvoiceRule () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InvoiceRule);
-	}
-
-	/** Set Calculate Price.
-		@param IsCalculatePrice Calculate Price	  */
-	@Override
-	public void setIsCalculatePrice (boolean IsCalculatePrice)
-	{
-		set_Value (COLUMNNAME_IsCalculatePrice, Boolean.valueOf(IsCalculatePrice));
-	}
-
-	/** Get Calculate Price.
-		@return Calculate Price	  */
-	@Override
-	public boolean isCalculatePrice () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsCalculatePrice);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	/** Set Gegenüberstellung mit erbr. Leist..
@@ -740,6 +717,32 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * onFlatrateTermExtend AD_Reference_ID=540853
+	 * Reference name: Conditions_BehaviourWhenExtending
+	 */
+	public static final int ONFLATRATETERMEXTEND_AD_Reference_ID=540853;
+	/** Copy = Co */
+	public static final String ONFLATRATETERMEXTEND_Copy = "Co";
+	/** Calculate = Ca */
+	public static final String ONFLATRATETERMEXTEND_Calculate = "Ca";
+	/** Set Behaviour when extending contract.
+		@param onFlatrateTermExtend Behaviour when extending contract	  */
+	@Override
+	public void setonFlatrateTermExtend (java.lang.String onFlatrateTermExtend)
+	{
+
+		set_Value (COLUMNNAME_onFlatrateTermExtend, onFlatrateTermExtend);
+	}
+
+	/** Get Behaviour when extending contract.
+		@return Behaviour when extending contract	  */
+	@Override
+	public java.lang.String getonFlatrateTermExtend () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_onFlatrateTermExtend);
 	}
 
 	/** Set Drucktext.
