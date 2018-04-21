@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+echo "PGDATA=$PGDATA"
+
+echo "Script $0 started at $(date)" >> $PGDATA/provision_metasfresh_db.info
+ 
 # These two variables are used when applying the migration scripts
 # everything else in this script assumes that the DB runs locally
 db_host=${DB_HOST:-localhost}
@@ -10,11 +14,14 @@ db_name=${DB_NAME:-metasfresh}
 db_user=${DB_USER:-metasfresh}
 db_password=${DB_PASSWORD:-$(echo $secret_db_password)}
 
-url_seed_dump=${URL_SEED_DUMP:-http://www.metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump}
+url_seed_dump=${URL_SEED_DUMP:-https://metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump}
 url_migration_scripts_package=${URL_MIGRATION_SCRIPTS_PACKAGE:-NOT_SET}
 #"https://repo.metasfresh.com/content/repositories/mvn-PR-3766-releases/de/metas/dist/metasfresh-dist-dist/5.50.2-9164%2BPR3766/metasfresh-dist-dist-5.50.2-9164%2BPR3766-sql-only.tar.gz"
 
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
+
+echo "URL_SEED_DUMP=${url_seed_dump}" >> $PGDATA/provision_metasfresh_db.info
+echo "URL_MIGRATION_SCRIPTS_PACKAGE=${url_migration_scripts_package}" >> $PGDATA/provision_metasfresh_db.info
 
 echo_variable_values()
 {
@@ -103,8 +110,9 @@ import_dump()
 
 apply_migration_scripts_from_artifact()
 {
-	if [ "{url_migration_scripts_package}" == "NOT_SET" ]; then
-		return		
+	if [ "${url_migration_scripts_package}" == "NOT_SET" ]; then
+		echo "Note: no migration script package URL was provided."
+		return
 	fi
 	cd /tmp # go to the tmp directory, where we may write files
 
@@ -149,3 +157,4 @@ create_role_if_not_exists
 create_db_and_import_seed_dump_if_not_exists
 apply_migration_scripts_from_artifact
 
+echo "Script $0 started at $(date)" >> $PGDATA/provision_metasfresh_db.info

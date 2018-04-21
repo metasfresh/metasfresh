@@ -14,7 +14,9 @@ RUN apt -y update \
     && apt -y autoremove \
     && apt -y clean
 
-COPY provision_metasfresh_db.sh /usr/local/bin/provision_metasfresh_db.sh
+#COPY provision_metasfresh_db.sh /usr/local/bin/provision_metasfresh_db.sh
+COPY provision_metasfresh_db.sh /docker-entrypoint-initdb.d/provision_metasfresh_db.sh
+
 
 COPY docker-entrypoint_init_only-10.3.sh /usr/local/bin/docker-entrypoint_init_only.sh
 RUN chown postgres:postgres /usr/local/bin/docker-entrypoint_init_only.sh
