@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+echo "PGDATA=$PGDATA"
+
+echo "Script $0 started at $(date)" >> $PGDATA/provision_metasfresh_db.info
+ 
 # These two variables are used when applying the migration scripts
 # everything else in this script assumes that the DB runs locally
 db_host=${DB_HOST:-localhost}
@@ -15,6 +19,9 @@ url_migration_scripts_package=${URL_MIGRATION_SCRIPTS_PACKAGE:-NOT_SET}
 #"https://repo.metasfresh.com/content/repositories/mvn-PR-3766-releases/de/metas/dist/metasfresh-dist-dist/5.50.2-9164%2BPR3766/metasfresh-dist-dist-5.50.2-9164%2BPR3766-sql-only.tar.gz"
 
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
+
+echo "URL_SEED_DUMP=${url_seed_dump}" >> $PGDATA/provision_metasfresh_db.info
+echo "URL_MIGRATION_SCRIPTS_PACKAGE=${url_migration_scripts_package}" >> $PGDATA/provision_metasfresh_db.info
 
 echo_variable_values()
 {
@@ -150,3 +157,4 @@ create_role_if_not_exists
 create_db_and_import_seed_dump_if_not_exists
 apply_migration_scripts_from_artifact
 
+echo "Script $0 started at $(date)" >> $PGDATA/provision_metasfresh_db.info
