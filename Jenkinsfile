@@ -80,7 +80,7 @@ timestamps
 	final String MF_RELEASE_VERSION = misc.extractReleaseVersion(MF_VERSION)
 
 // to build the client-exe on linux, we need 32bit libs!
-node('agent && linux && libc6-i386')
+node('agent && linux')
 {
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 	{
@@ -240,20 +240,19 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 		// clean up the workspace after (successfull) builds
 		cleanWs cleanWhenAborted: false, cleanWhenFailure: false
 	}
+
+	stage('Test SQL-Migration (docker)')
+	{
+		if(params.MF_SKIP_SQL_MIGRATION_TEST)
+		{
+			echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
+		}
+		else
+		{
+			sh "docker run ${dbInitDockerImageName} -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\""
+		}
+	}
 } // node
-
-stage('Test SQL-Migration (docker)')
-{
-	if(params.MF_SKIP_SQL_MIGRATION_TEST)
-	{
-		echo "We skip the deployment step because params.MF_SKIP_SQL_MIGRATION_TEST=${params.MF_SKIP_SQL_MIGRATION_TEST}"
-	}
-	else
-	{
-		sh "docker run ${dbInitDockerImageName} -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\""
-	}
-}
-
 /*
 // we need this one for both "Test-SQL" and "Deployment
 def downloadForDeployment = { String groupId, String artifactId, String version, String packaging, String classifier, String sshTargetHost, String sshTargetUser ->
