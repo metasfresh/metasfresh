@@ -63,3 +63,48 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-21 11:05:43'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-21 11:07:03','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Product Mapping' WHERE AD_Field_ID=562647 AND AD_Language='en_US'
 ;
 
+-- 2018-04-21T11:09:10.383
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-21 11:09:10','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Product' WHERE AD_Tab_ID=541023 AND AD_Language='en_US'
+;
+
+-- 2018-04-21T11:09:18.417
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-21 11:09:18','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Price' WHERE AD_Tab_ID=541024 AND AD_Language='en_US'
+;
+
+-- 2018-04-21T11:10:05.597
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-21 11:10:05','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='CU-TU Allocation' WHERE AD_Tab_ID=541030 AND AD_Language='en_US'
+;
+
+-- 2018-04-21T11:11:25.026
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-21 11:11:25','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Replenisch' WHERE AD_Tab_ID=541025 AND AD_Language='en_US'
+;
+
+-- 2018-04-21T11:11:36.869
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-21 11:11:36','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Business Partner' WHERE AD_Tab_ID=541026 AND AD_Language='en_US'
+;
+
+-- 2018-04-21T11:11:50.529
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-21 11:11:50','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Accounting' WHERE AD_Tab_ID=541031 AND AD_Language='en_US'
+;
+
+-- 2018-04-21T11:12:02.375
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-21 11:12:02','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='UOM Conversion' WHERE AD_Tab_ID=541028 AND AD_Language='en_US'
+;
+
+-- 2018-04-21T11:12:20.464
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-21 11:12:20','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Allocated Product' WHERE AD_Tab_ID=541029 AND AD_Language='en_US'
+;
+
+-- 2018-04-21T11:13:45.837
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-21 11:13:45','YYYY-MM-DD HH24:MI:SS'),Name='Replenish' WHERE AD_Tab_ID=541025 AND AD_Language='en_US'
+;
+
