@@ -252,4 +252,6 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param orderLine
 	 */
 	void updateNoPriceConditionsColor(I_C_OrderLine orderLine);
+
+	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
 }

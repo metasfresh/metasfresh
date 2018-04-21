@@ -964,12 +964,12 @@ public class OrderLineBL implements IOrderLineBL
 		{
 			// the discountSchemaBreak was eventually set. The color warning is no longer needed
 			orderLine.setNoPriceConditionsColor_ID(-1);
-			
+
 			return;
 		}
 
 		final int colorId = getNoPriceConditionsColorId(colorName);
-		
+
 		if (colorId > 0)
 		{
 			orderLine.setNoPriceConditionsColor_ID(colorId);
@@ -980,6 +980,13 @@ public class OrderLineBL implements IOrderLineBL
 	private int getNoPriceConditionsColorId(final String name)
 	{
 		return Services.get(IColorRepository.class).getColorIdByName(name);
+	}
+
+	@Override
+	public int getC_PaymentTerm_ID(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		int paymentTermOverrideId = orderLine.getC_PaymentTerm_Override_ID();
+		return paymentTermOverrideId > 0 ? paymentTermOverrideId : orderLine.getC_Order().getC_PaymentTerm_ID();
 	}
 
 }
