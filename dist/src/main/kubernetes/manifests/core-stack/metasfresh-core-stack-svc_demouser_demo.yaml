@@ -37,10 +37,6 @@ spec:
     port: 8788
     protocol: TCP
     targetPort: 8788
-  - name: db
-    port: 5432
-    protocol: TCP
-    targetPort: 5432
   selector:
     de.metas.deployment.stage: "demo"
     de.metas.deployment.type: metasfresh-core-stack

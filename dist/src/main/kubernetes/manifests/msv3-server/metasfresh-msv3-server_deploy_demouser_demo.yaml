@@ -1,11 +1,11 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: "metasfresh-msv3-server-%USER-ID%-%STAGE%"
+  name: "metasfresh-msv3-server-demouser-demo"
   labels:
     de.metas.deployment.type: metasfresh-msv3-server
-    de.metas.deployment.stage: "%STAGE%"
-    de.metas.deployment.user: "%USER-ID%"
+    de.metas.deployment.stage: "demo"
+    de.metas.deployment.user: "demouser"
 spec:
   replicas: 1
   strategy:
@@ -14,13 +14,13 @@ spec:
     metadata:
       labels:
         de.metas.deployment.type: metasfresh-msv3-server
-        de.metas.deployment.user: "%USER-ID%"
-        de.metas.deployment.stage: "%STAGE%"
+        de.metas.deployment.user: "demouser"
+        de.metas.deployment.stage: "demo"
     spec:
       containers:
       - env:
         - name: DB_HOST
-          value: "localhost"
+          value: "metasfresh-postgresql-demouser-demo"
         - name: DB_PORT
           value: '5432'
         - name: DEBUG_PRINT_BASH_CMDS

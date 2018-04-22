@@ -53,14 +53,6 @@ set_properties()
  fi
 }
 
-wait_dbms()
-{
- until nc -z $db_host $db_port
- do
-   sleep 1
- done
-}
-
 run_metasfresh()
 {
  local admin_url="http://${admin_host}:${admin_port}"
@@ -85,8 +77,6 @@ echo_variable_values
 set_properties /opt/metasfresh/metasfresh.properties
 set_properties /opt/metasfresh/local_settings.properties
 set_properties /root/local_settings.properties
-
-wait_dbms
 
 run_metasfresh
 

@@ -2,8 +2,6 @@ FROM ubuntu:16.04
 
 RUN apt update \
     && apt -y full-upgrade \
-    && apt -y install netcat \
-    && apt -y install curl \
     && apt -y install openjdk-8-jdk-headless \
     && apt -y autoremove \
     && apt -y clean

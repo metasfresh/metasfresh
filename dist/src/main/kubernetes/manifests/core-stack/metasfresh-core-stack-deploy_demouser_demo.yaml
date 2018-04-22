@@ -23,30 +23,14 @@ spec:
     spec:
       containers:
 #
-# metasfresh-db
-      - env:
-        name: db
-        image: docker.metasfresh.com/postgres:10.3
-        imagePullPolicy: Always
-        ports:
-          - containerPort: 5432
-        resources: {}
-        volumeMounts:
-        - mountPath: /etc/localtime
-          name: host-localtime
-          readOnly: true
-        - mountPath: /etc/timezone
-          name: host-timezone
-          readOnly: true
-        - mountPath: /var/lib/postgresql/data
-          name: postgresql-data
-#
 # metasfresh-app
       - env:
         - name: METASFRESH_HOME
           value: /opt/metasfresh
         - name: DB_HOST
-          value: localhost
+          value: metasfresh-postgresql-demouser-demo
+        - name: DB_PASSWORD
+          value: metasfresh
         - name: APP_HOST
           value: localhost
         - name: ES_HOST
@@ -78,7 +62,7 @@ spec:
 # metasfresh-webui-api
       - env:
         - name: DB_HOST
-          value: localhost
+          value: metasfresh-postgresql-demouser-demo
         - name: APP_HOST
           value: localhost
         - name: ES_HOST
@@ -152,28 +136,13 @@ spec:
           readOnly: true
       restartPolicy: Always
       initContainers:
-        - name: init-postgres
-          image: docker.metasfresh.com/metasfresh/metasfresh-db-init-pg-10-3:gh18_dist_LATEST
-          imagePullPolicy: Always
-          env:
-          - name: DB_SYSPASS
-            value: System
-          - name: METASFRESH_DBNAME
-            value: metasfresh
-          - name: METASFRESH_PASSWORD
-            value: metasfresh
-          - name: METASFRESH_USERNAME
-            value: metasfresh
-          volumeMounts:
-          - mountPath: /var/lib/postgresql/data
-            name: postgresql-data
+        - name: init-wait-for-postgres
+          image: busybox
+          command: ['sh', '-c', 'until nslookup metasfresh-postgresql-demouser-demo; do echo waiting for metasfresh-postgresql-demouser-demo; sleep 2; done;']
       volumes:
-      - name: host-localtime # was app-claim1
+      - name: host-localtime
         hostPath:
           path: /etc/localtime
-      - name: host-timezone # was app-claim2
+      - name: host-timezone
         hostPath:
           path: /etc/timezone
-      - name: postgresql-data
-        hostPath:
-          path: "/tmp/postgresql-data-demouser-demo"
