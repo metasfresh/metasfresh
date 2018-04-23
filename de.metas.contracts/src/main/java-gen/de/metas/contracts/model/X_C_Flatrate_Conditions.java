@@ -15,7 +15,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 60443327L;
+	private static final long serialVersionUID = 1503642635L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
@@ -35,15 +35,17 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 			setIsFreeOfCharge (false); // N
 			setIsManualPrice (false); // N
 			setIsSimulation (false); // N
+			setM_Product_Flatrate_ID (0);
 			setMargin_Max (BigDecimal.ZERO);
 			setMargin_Min (BigDecimal.ZERO);
-			setM_Product_Flatrate_ID (0);
 			setName (null);
+			setOnFlatrateTermExtend (null); // 'Ca'
 			setProcessed (false); // N
 			setProcessing (false); // N
 			setType_Clearing (null); // EX
 			setType_Conditions (null);
 			setType_Flatrate (null); // NONE
+			setUOMType (null);
         } */
     }
 
@@ -136,35 +138,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	/** 
-	 * ClearingAmtBaseOn AD_Reference_ID=540278
-	 * Reference name: ClearingAmtBaseOn
-	 */
-	public static final int CLEARINGAMTBASEON_AD_Reference_ID=540278;
-	/** ProductPrice = ProductPrice */
-	public static final String CLEARINGAMTBASEON_ProductPrice = "ProductPrice";
-	/** FlatrateAmount = FlatrateAmount */
-	public static final String CLEARINGAMTBASEON_FlatrateAmount = "FlatrateAmount";
-	/** Set Basis für Verrechnungs-Zahlbetrag.
-		@param ClearingAmtBaseOn 
-		Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
-	  */
-	@Override
-	public void setClearingAmtBaseOn (java.lang.String ClearingAmtBaseOn)
-	{
-
-		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
-	}
-
-	/** Get Basis für Verrechnungs-Zahlbetrag.
-		@return Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
-	  */
-	@Override
-	public java.lang.String getClearingAmtBaseOn () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ClearingAmtBaseOn);
-	}
-
 	@Override
 	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
 	{
@@ -203,6 +176,35 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	/** 
+	 * ClearingAmtBaseOn AD_Reference_ID=540278
+	 * Reference name: ClearingAmtBaseOn
+	 */
+	public static final int CLEARINGAMTBASEON_AD_Reference_ID=540278;
+	/** ProductPrice = ProductPrice */
+	public static final String CLEARINGAMTBASEON_ProductPrice = "ProductPrice";
+	/** FlatrateAmount = FlatrateAmount */
+	public static final String CLEARINGAMTBASEON_FlatrateAmount = "FlatrateAmount";
+	/** Set Basis für Verrechnungs-Zahlbetrag.
+		@param ClearingAmtBaseOn 
+		Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
+	  */
+	@Override
+	public void setClearingAmtBaseOn (java.lang.String ClearingAmtBaseOn)
+	{
+
+		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
+	}
+
+	/** Get Basis für Verrechnungs-Zahlbetrag.
+		@return Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
+	  */
+	@Override
+	public java.lang.String getClearingAmtBaseOn () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ClearingAmtBaseOn);
+	}
+
+	/** 
 	 * DocAction AD_Reference_ID=135
 	 * Reference name: _Document Action
 	 */
@@ -235,6 +237,8 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String DOCACTION_Unlock = "XL";
 	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
 		@param DocAction 
 		Der zukünftige Status des Belegs
@@ -510,44 +514,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return false;
 	}
 
-	/** Set Korridor - Überschreitung.
-		@param Margin_Max Korridor - Überschreitung	  */
-	@Override
-	public void setMargin_Max (java.math.BigDecimal Margin_Max)
-	{
-		set_Value (COLUMNNAME_Margin_Max, Margin_Max);
-	}
-
-	/** Get Korridor - Überschreitung.
-		@return Korridor - Überschreitung	  */
-	@Override
-	public java.math.BigDecimal getMargin_Max () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Max);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Korridor - Unterschreitung.
-		@param Margin_Min Korridor - Unterschreitung	  */
-	@Override
-	public void setMargin_Min (java.math.BigDecimal Margin_Min)
-	{
-		set_Value (COLUMNNAME_Margin_Min, Margin_Min);
-	}
-
-	/** Get Korridor - Unterschreitung.
-		@return Korridor - Unterschreitung	  */
-	@Override
-	public java.math.BigDecimal getMargin_Min () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Min);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	@Override
 	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
 	{
@@ -696,6 +662,44 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
+	/** Set Korridor - Überschreitung.
+		@param Margin_Max Korridor - Überschreitung	  */
+	@Override
+	public void setMargin_Max (java.math.BigDecimal Margin_Max)
+	{
+		set_Value (COLUMNNAME_Margin_Max, Margin_Max);
+	}
+
+	/** Get Korridor - Überschreitung.
+		@return Korridor - Überschreitung	  */
+	@Override
+	public java.math.BigDecimal getMargin_Max () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Max);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Korridor - Unterschreitung.
+		@param Margin_Min Korridor - Unterschreitung	  */
+	@Override
+	public void setMargin_Min (java.math.BigDecimal Margin_Min)
+	{
+		set_Value (COLUMNNAME_Margin_Min, Margin_Min);
+	}
+
+	/** Get Korridor - Unterschreitung.
+		@return Korridor - Unterschreitung	  */
+	@Override
+	public java.math.BigDecimal getMargin_Min () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Min);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -713,6 +717,51 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * OnFlatrateTermExtend AD_Reference_ID=540853
+	 * Reference name: Conditions_BehaviourWhenExtending
+	 */
+	public static final int ONFLATRATETERMEXTEND_AD_Reference_ID=540853;
+	/** CopyPrice = Co */
+	public static final String ONFLATRATETERMEXTEND_CopyPrice = "Co";
+	/** CalculatePrice = Ca */
+	public static final String ONFLATRATETERMEXTEND_CalculatePrice = "Ca";
+	/** Set Behaviour when extending contract.
+		@param OnFlatrateTermExtend Behaviour when extending contract	  */
+	@Override
+	public void setOnFlatrateTermExtend (java.lang.String OnFlatrateTermExtend)
+	{
+
+		set_Value (COLUMNNAME_OnFlatrateTermExtend, OnFlatrateTermExtend);
+	}
+
+	/** Get Behaviour when extending contract.
+		@return Behaviour when extending contract	  */
+	@Override
+	public java.lang.String getOnFlatrateTermExtend () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_OnFlatrateTermExtend);
+	}
+
+	/** Set Drucktext.
+		@param PrintName 
+		Bezeichnung, die auf dem Dokument oder der Korrespondenz gedruckt werden soll
+	  */
+	@Override
+	public void setPrintName (java.lang.String PrintName)
+	{
+		set_Value (COLUMNNAME_PrintName, PrintName);
+	}
+
+	/** Get Drucktext.
+		@return Bezeichnung, die auf dem Dokument oder der Korrespondenz gedruckt werden soll
+	  */
+	@Override
+	public java.lang.String getPrintName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PrintName);
 	}
 
 	/** Set Verarbeitet.

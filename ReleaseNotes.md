@@ -13,47 +13,84 @@ Here come the actual release notes:
 # metasfresh 5.54 (2018-17)
 **release for week 2018-17**
 
+## Features
 * metasfresh
+  * [#3478](https://github.com/metasfresh/metasfresh/issues/3478) Window design: product Pharma
+    * Improved Window Layout and Translation for Product Pharma.
   * [#3479](https://github.com/metasfresh/metasfresh/issues/3479) Window design: Business Partner Pharma
     * Improved Window Layout and Translation for Business Partner Pharma.
+  * [#3763](https://github.com/metasfresh/metasfresh/issues/3763) Contracts: Create a function that provides a hierarchy of contracts
+  * [#3768](https://github.com/metasfresh/metasfresh/issues/3768) Excel Report for vendor assessment
+  * [#3777](https://github.com/metasfresh/metasfresh/issues/3777) Show available to promise in Procurement Dispo modal in Sales Order
+  * [#3827](https://github.com/metasfresh/metasfresh/issues/3827) Support SSL / TLS when sending mails via SMTP making it SMTPS
+  * [#3834](https://github.com/metasfresh/metasfresh/issues/3834) Check if Product is banned in Batch entry/ Document Lines creation
   * [#3866](https://github.com/metasfresh/metasfresh/issues/3866) WebUI: Translation for Product LotNo Lock Window
     * Improved Window Layout and additional Translations for de_DE and en_US.
+  * [#3873](https://github.com/metasfresh/metasfresh/issues/3873) Performance problem on reactivating large shipment
+  * [#3887](https://github.com/metasfresh/metasfresh/issues/3887) Automatic Setting of Pharma Authorisation for Shipment/ Receipt
+  * [#3888](https://github.com/metasfresh/metasfresh/issues/3888) Pharma Business Partner Window adjustments
+    * Extended Business Partner Window for Pharma verticals. New Fields that describe the Pharma Trading Permissions of customers and vendors.
+  * [#3890](https://github.com/metasfresh/metasfresh/issues/3890) Role Permission for Pharma Permission and Authorization changes
+  * [#3892](https://github.com/metasfresh/metasfresh/issues/3892) Contracts: Allow possibility to copy the prices when extending
+  * [#3895](https://github.com/metasfresh/metasfresh/issues/3895) extend M_HU_Process
+  * [#3897](https://github.com/metasfresh/metasfresh/issues/3897) Add Translations for Pharma Business Partner Window
 
-## Features
+# metasfresh-docker
+  * [#34](https://github.com/metasfresh/metasfresh-docker/issues/34) add msv3server to metasfresh-docker as "extras"
 
 ## Fixes
+* metasfresh
+  * [#3797](https://github.com/metasfresh/metasfresh/issues/3797) Error in BOM Lines for Packaging Component Type and Variant Groups
+  * [#3859](https://github.com/metasfresh/metasfresh/issues/3859) Credit Limit: Prioritize by date and then seq No from Credit Limit type
+  * [#3861](https://github.com/metasfresh/metasfresh/issues/3861) StockChangedEvent can't be serialized
+  * [#3863](https://github.com/metasfresh/metasfresh/issues/3863) Missing migration of C_BPartner_Stats.SOCreditStatus on some systems
+  * [#3864](https://github.com/metasfresh/metasfresh/issues/3864) C_FlatrateTerm.C_Currency is not forwarded when a flatrateTerm is extended
+  * [#3876](https://github.com/metasfresh/metasfresh/issues/3876) Different issues around invoice candidate updating
+  * [#3883](https://github.com/metasfresh/metasfresh/issues/3883) Cannot import products
+  * [#3885](https://github.com/metasfresh/metasfresh/issues/3885) Process C_Flatrate_Term_Extend does not work if ContractStatus is null
+  * [#3894](https://github.com/metasfresh/metasfresh/issues/3894) NPE on sales order complete
 
 # metasfresh 5.53 (2018-16)
 **release for week 2018-16**
 
 ## Features
 * metasfresh
-  * [#3816](https://github.com/metasfresh/metasfresh/issues/3816) technical: Adapt Query.list() to avoid ClassCastExceptions
-  * [#3822](https://github.com/metasfresh/metasfresh/issues/3822) ShipmentSchedule.QtyPickList not updated from drafted shipments
-  * [#3833](https://github.com/metasfresh/metasfresh/issues/3833) Enhanced Pricing, allowing detailed individual Pricesystems per Product and Businesspartner
+  * [#3816](https://github.com/metasfresh/metasfresh/issues/3816) Technical: Adapt Query.list() to avoid ClassCastExceptions
+    * Internal development issue, improving the Query.list() method to avoid Class Cast exceptions.
+  * [#3833](https://github.com/metasfresh/metasfresh/issues/3833) Enhanced Pricing, allowing detailed individual Pricesystems per Product and Business Partner
+    * Improved Pricing Calculation functionality, now allowing to overwrite the general Pricing System via Pricing Conditions Schema and Product.
   * [#3835](https://github.com/metasfresh/metasfresh/issues/3835) No recording of Products without pricing Conditions
+    * Restriction Functionality, allowing prohibit the recording of Products in Document Lines without individual Pricing conditions.
   * [#3844](https://github.com/metasfresh/metasfresh/issues/3844) WebUI: Add Translations for Context Menu to de_DE
     * Adds new Translations for context menu of metasfresh WebUI.
   * [#3849](https://github.com/metasfresh/metasfresh/issues/3849) Error with ATP presentation in Sales Order Batch entry
+    * Fixes a Bug in Sales Order Line Batch entry. Now showing the ATP value in Product Lookup Batch List when configured.
 
 * metasfresh-webui-api
   * [#852](https://github.com/metasfresh/metasfresh-webui-api/issues/852) Color Indicator Widget functionality API
+    * New API for color Indicators. This will be used by a new color indicator widget in WebUI frontend soon.
 
 * metasfresh-webui-frontend
   * [#1539](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1539) eMail Editor mailTo List not showing selected entry
     * Improvement of the Adress Lookup in eMail Editor. Now showing which entry is selected.
   * [#1648](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1648) Dropdown value in filters cannot be deleted after selection
-    * Improvement of Filter ctiteria, now possible to empty aleady set values in List Widgets.
+    * Improvement of Filter ctiteria, now possible to empty already set values in List Widgets.
   * [#1742](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1742) Context Menu translateable
     * Improvement of Context Menu in Grid View, now translatable.
 
 ## Fixes
 * metasfresh
   * [#3375](https://github.com/metasfresh/metasfresh/issues/3375) Quantity picked in Shipment Schedules doesn't update
+    * Fixes a Bug in Shipment Schedule that prevented the update of Quantity Picked.
   * [#3819](https://github.com/metasfresh/metasfresh/issues/3819) EDI - "Resubmit Selection" from import processor log not working anymore
-  * [#3838](https://github.com/metasfresh/metasfresh/issues/3838) packaging invoice candidate updated incorrectly
+    * Fixes the action resubmit selection in EDI Import processor log.
+  * [#3822](https://github.com/metasfresh/metasfresh/issues/3822) ShipmentSchedule.QtyPickList not updated from drafted shipments
+    * Fixes an Error that prevented the update of Shipment Schedule entries for drafted Shipmentlines.
+  * [#3838](https://github.com/metasfresh/metasfresh/issues/3838) Packaging invoice candidate updated incorrectly
+    * Fixes a Bug in Invoice Candidates that created w wrong update for lines which with packaging material products.
   * [#3842](https://github.com/metasfresh/metasfresh/issues/3842) Cannot access server logs via Server Monitor
-  * [#3843](https://github.com/metasfresh/metasfresh/issues/3843) wrong parent.relativePath in different pom.xmls
+    * Internal services and maintenance issue. Now it's possible to access the logs via Server Monitor again.
+  * [#3843](https://github.com/metasfresh/metasfresh/issues/3843) Wrong parent.relativePath in different pom.xmls
     * thx to [#gp1864](https://github.com/gp1864)!
 
 * metasfresh-webui-api
@@ -63,9 +100,9 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1274](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1274) Edit Fields in Main Grid View Improvements
     * Minor Improvement of Grid Cell Edit Mode, now aboiding the Detail View if double Clicking on Field in Edit Mode.
-  * [#1462](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1462) broke: cannot completely delete a numeric field in grid view
+  * [#1462](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1462) Broke: cannot completely delete a numeric field in grid view
     * Fixes the Grid View Edit Mode for numeric Fields that shall be zeroed when backspace.
-  * [#1612](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1612) modal view: quickActions not called when selecting all rows from all pages
+  * [#1612](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1612) Modal view: quickActions not called when selecting all rows from all pages
     * Fixes the possibility to select more than 20 Grid lines and use Quickactions.
 
 # metasfresh 5.52 (2018-15)

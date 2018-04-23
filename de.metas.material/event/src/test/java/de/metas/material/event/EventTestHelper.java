@@ -112,7 +112,7 @@ public class EventTestHelper
 	{
 		return ProductDescriptor.forProductAndAttributes(
 				PRODUCT_ID + offset,
-				AttributesKey.ofAttributeValueIds(STORAGE_ATTRIBUTES_KEY.getAttributeValueIds().get(0) + 1 + offset),
+				AttributesKey.ofAttributeValueIds(STORAGE_ATTRIBUTES_KEY.getAttributeValueIds().iterator().next() + 1 + offset),
 				ATTRIBUTE_SET_INSTANCE_ID + offset);
 	}
 }

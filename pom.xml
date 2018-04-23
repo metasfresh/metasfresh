@@ -281,6 +281,11 @@
 				<artifactId>commons-beanutils</artifactId>
 				<version>1.9.3</version>
 			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.5</version>
+			</dependency>
 			
 			<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
 			<dependency>

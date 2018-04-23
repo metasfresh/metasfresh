@@ -10,12 +10,12 @@ package org.adempiere.warehouse.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,6 +55,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import lombok.NonNull;
 
 public class WarehouseDAO implements IWarehouseDAO
 {
@@ -101,10 +102,8 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public List<I_M_Locator> retrieveLocators(final I_M_Warehouse warehouse)
+	public List<I_M_Locator> retrieveLocators(@NonNull final I_M_Warehouse warehouse)
 	{
-		Check.assumeNotNull(warehouse, "warehouse not null");
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(warehouse);
 		final String trxName = InterfaceWrapperHelper.getTrxName(warehouse);
 		final int warehouseId = warehouse.getM_Warehouse_ID();
@@ -327,5 +326,16 @@ public class WarehouseDAO implements IWarehouseDAO
 		{
 			throw new AdempiereException("Invalid locator barcode: " + barcode, ex);
 		}
+	}
+
+	@Override
+	@Cached(cacheName = I_M_Locator.Table_Name + "#By#" + I_M_Locator.COLUMNNAME_M_Warehouse_ID+"#"+I_M_Locator.COLUMNNAME_Value)
+	public int retrieveLocatorIdByValueAndWarehouseId(@NonNull final String locatorvalue, final int warehouseId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class)
+				.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseId)
+				.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, locatorvalue)
+				.create()
+				.firstIdOnly();
 	}
 }

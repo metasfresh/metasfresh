@@ -128,6 +128,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_Order(), client);
 		engine.addModelValidator(new M_InOut(), client);
 		engine.addModelValidator(new M_InOutLine(), client);
+		engine.addModelValidator(new M_InventoryLine(), client);
 		engine.addModelValidator(new M_ProductGroup_Product(), client);
 		engine.addModelValidator(new M_ProductGroup(), client);
 	}
@@ -137,7 +138,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	{
 		tabCalloutsRegistry.registerTabCalloutForTable(I_C_Invoice_Candidate.Table_Name, C_Invoice_Candidate_TabCallout.class);
 	}
-	
+
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
@@ -176,7 +177,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 			InterfaceWrapperHelper.save(newDest);
 		}
 	}
-	
+
 	@Override
 	protected void setupCaching(final IModelCacheService cachingService)
 	{
