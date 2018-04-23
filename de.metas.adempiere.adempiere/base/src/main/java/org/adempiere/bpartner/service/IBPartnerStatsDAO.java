@@ -68,6 +68,4 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 
 	void updateBPartnerStatistics(BPartnerStats bpStats);
-
-	boolean isCheckCreditLimitNeeded(BPartnerStats stats);
 }

@@ -1892,13 +1892,12 @@ public final class MPayment extends X_C_Payment
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
-		if (!bpartnerStatsDAO.isCheckCreditLimitNeeded(stats))
+		final String soCreditStatus = stats.getSOCreditStatus();
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(soCreditStatus))
 		{
 			return;
 		}
 
-
-		final String soCreditStatus = stats.getSOCreditStatus();
 		final BigDecimal crediUsed = stats.getSOCreditUsed();
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateTrx());

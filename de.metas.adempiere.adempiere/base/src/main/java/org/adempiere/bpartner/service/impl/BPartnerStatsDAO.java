@@ -334,16 +334,4 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		stats.setCreditLimitIndicator(percentSring);
 		InterfaceWrapperHelper.save(stats);
 	}
-
-	@Override
-	public boolean isCheckCreditLimitNeeded(@NonNull final BPartnerStats stats)
-	{
-		final String soCreditStatus = stats.getSOCreditStatus();
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(soCreditStatus) || soCreditStatus == null)
-		{
-			return false;
-		}
-
-		return true;
-	}
 }

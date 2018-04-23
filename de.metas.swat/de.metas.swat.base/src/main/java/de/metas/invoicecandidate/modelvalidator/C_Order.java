@@ -131,7 +131,7 @@ public class C_Order
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 		final I_C_BPartner partner = InterfaceWrapperHelper.load(order.getC_BPartner_ID(), I_C_BPartner.class);
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
-		if (!bpartnerStatsDAO.isCheckCreditLimitNeeded(stats))
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
 		{
 			return false;
 		}

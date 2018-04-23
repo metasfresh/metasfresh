@@ -1309,11 +1309,10 @@ public class MInOut extends X_M_InOut implements IDocument
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
-		if (!bpartnerStatsDAO.isCheckCreditLimitNeeded(stats))
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
 		{
 			return false;
 		}
-
 
 		final I_C_Order order = getC_Order();
 		final boolean checkCreditOnPrepayOorder = Services.get(ISysConfigBL.class).getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID());
