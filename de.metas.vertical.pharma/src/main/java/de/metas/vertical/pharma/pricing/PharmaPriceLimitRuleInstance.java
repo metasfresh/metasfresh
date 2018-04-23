@@ -225,7 +225,8 @@ class PharmaPriceLimitRuleInstance
 			// Formula:
 			// PriceLimit = (basePrice + priceAddAmt) - discountPercentToSubtract% + paymentTermDiscountPercentToAdd%
 			BigDecimal value = basePrice.add(priceAddAmt);
-			final BigDecimal multiplier = Env.ONEHUNDRED.subtract(discountPercentToSubtract).add(paymentTermDiscountPercentToAdd);
+			final BigDecimal multiplier = Env.ONEHUNDRED.subtract(discountPercentToSubtract).add(paymentTermDiscountPercentToAdd)
+					.divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
 			if (multiplier.compareTo(Env.ONEHUNDRED) != 0)
 			{
 				value = value.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
