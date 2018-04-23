@@ -14,7 +14,7 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 860324491L;
+	private static final long serialVersionUID = -1308122567L;
 
     /** Standard Constructor */
     public X_M_Locator (Properties ctx, int M_Locator_ID, String trxName)
@@ -48,6 +48,25 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Datum der letzten Inventur.
+		@param DateLastInventory 
+		Datum der letzten Inventur
+	  */
+	@Override
+	public void setDateLastInventory (java.sql.Timestamp DateLastInventory)
+	{
+		set_Value (COLUMNNAME_DateLastInventory, DateLastInventory);
+	}
+
+	/** Get Datum der letzten Inventur.
+		@return Datum der letzten Inventur
+	  */
+	@Override
+	public java.sql.Timestamp getDateLastInventory () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateLastInventory);
+	}
 
 	/** Set Standard.
 		@param IsDefault 

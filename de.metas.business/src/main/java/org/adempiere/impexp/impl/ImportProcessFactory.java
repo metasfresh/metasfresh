@@ -32,11 +32,13 @@ import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.RequestImportProcess;
 import org.adempiere.impexp.bpartner.BPartnerImportProcess;
+import org.adempiere.impexp.inventory.InventoryImportProcess;
 import org.adempiere.impexp.product.ProductImportProcess;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_I_BPartner;
+import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_I_Request;
 import org.compiere.model.I_I_User;
@@ -56,6 +58,7 @@ public class ImportProcessFactory implements IImportProcessFactory
 		registerImportProcess(I_I_User.class, ADUserImportProcess.class);
 		registerImportProcess(I_I_Product.class, ProductImportProcess.class);
 		registerImportProcess(I_I_Request.class, RequestImportProcess.class);
+		registerImportProcess(I_I_Inventory.class, InventoryImportProcess.class);
 	}
 
 	@Override
