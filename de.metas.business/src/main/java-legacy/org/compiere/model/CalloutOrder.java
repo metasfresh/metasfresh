@@ -31,6 +31,7 @@ import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
+import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Services;
@@ -1116,6 +1117,8 @@ public class CalloutOrder extends CalloutEngine
 			return NO_ERROR;
 		}
 
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
 		final Properties ctx = calloutField.getCtx();
 		final String changedColumnName = calloutField.getColumnName();
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
@@ -1131,7 +1134,6 @@ public class CalloutOrder extends CalloutEngine
 
 		// Qty changed - recalc price
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
-		// && !"N".equals(Env.getContext(ctx, WindowNo, CTX_DiscountSchema))
 		{
 			updatePrices(orderLine);
 			priceEntered = orderLine.getPriceEntered();
@@ -1148,7 +1150,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))
 		{
-			Services.get(IOrderLineBL.class).calculatePriceActual(orderLine, -1); // precision=-1, preserving old behavior (->called method shall find out itself)
+			orderLineBL.calculatePriceActual(orderLine, -1); // precision=-1, preserving old behavior (->called method shall find out itself)
 			priceActual = orderLine.getPriceActual();
 			priceEntered = orderLine.getPriceEntered();
 		}
@@ -1158,7 +1160,7 @@ public class CalloutOrder extends CalloutEngine
 			if (priceEntered.signum() != 0)
 			{
 				final BigDecimal discount = orderLine.getDiscount();
-				priceActual = Services.get(IOrderLineBL.class).subtractDiscount(priceEntered, discount, stdPrecision);
+				priceActual = orderLineBL.subtractDiscount(priceEntered, discount, stdPrecision);
 			}
 			else
 			{
@@ -1175,33 +1177,34 @@ public class CalloutOrder extends CalloutEngine
 		//
 		// Check PriceActual and enforce PriceLimit.
 		// Also, update Discount or PriceEntered if needed.
-		BigDecimal discount;
-		boolean underLimitPrice = false;
-		final BigDecimal priceLimit = orderLine.getPriceLimit();
-		if (priceLimit.signum() != 0
-				&& priceActual.compareTo(priceLimit) < 0
-				&& isEnforcePriceLimit(orderLine, order.isSOTrx()))
+		BigDecimal priceLimit = orderLine.getPriceLimit();
+		BigDecimal discount = orderLine.getDiscount();
+		boolean underPriceLimit = false;
+		String underPriceLimitExplanation = null;
+		if (isEnforcePriceLimit(orderLine, order.isSOTrx()))
 		{
-			underLimitPrice = true;
-			priceActual = priceLimit;
-
-			if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName) && priceEntered.signum() != 0)
+			final PriceLimitRuleResult priceLimitResult = orderLineBL.computePriceLimit(orderLine);
+			if(priceLimitResult.isEligible())
 			{
-				discount = orderLine.getDiscount();
-				priceEntered = Services.get(IOrderLineBL.class).calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, stdPrecision);
+				priceLimit = priceLimitResult.getPriceLimit();
 			}
-			else if (priceEntered.signum() != 0)
+			
+			if(priceLimitResult.isBelowPriceLimit(priceActual))
 			{
-				discount = Services.get(IOrderLineBL.class).calculateDiscountFromPrices(priceEntered, priceActual, stdPrecision);
+				underPriceLimit = true;
+				underPriceLimitExplanation = priceLimitResult.getPriceLimitExplanation();
+				
+				priceActual = priceLimit;
+	
+				if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName) && priceEntered.signum() != 0)
+				{
+					priceEntered = orderLineBL.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, stdPrecision);
+				}
+				else if (priceEntered.signum() != 0)
+				{
+					discount = orderLineBL.calculateDiscountFromPrices(priceEntered, priceActual, stdPrecision);
+				}
 			}
-			else
-			{
-				discount = orderLine.getDiscount();
-			}
-		}
-		else
-		{
-			discount = orderLine.getDiscount();
 		}
 
 		//
@@ -1209,10 +1212,11 @@ public class CalloutOrder extends CalloutEngine
 		orderLine.setPriceEntered(priceEntered);
 		orderLine.setPriceActual(priceActual);
 		orderLine.setDiscount(discount);
+		orderLine.setPriceLimit(priceLimit);
 		updateLineNetAmtAndTax(orderLine, stdPrecision);
-		if (underLimitPrice)
+		if (underPriceLimit)
 		{
-			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, "", false);
+			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, underPriceLimitExplanation, /* isError */false);
 		}
 
 		//
@@ -1221,8 +1225,10 @@ public class CalloutOrder extends CalloutEngine
 
 	private static void updateLineNetAmtAndTax(final I_C_OrderLine orderLine, final int stdPrecision)
 	{
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		
 		final BigDecimal priceActual = orderLine.getPriceActual();
-		final BigDecimal qtyEnteredInPriceUOM = Services.get(IOrderLineBL.class).convertQtyEnteredToPriceUOM(orderLine);
+		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine);
 		BigDecimal LineNetAmt = qtyEnteredInPriceUOM.multiply(priceActual);
 		if (LineNetAmt.scale() > stdPrecision)
 		{
@@ -1230,7 +1236,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		orderLine.setLineNetAmt(LineNetAmt);
 
-		Services.get(IOrderLineBL.class).setTaxAmtInfoIfNotIgnored(Env.getCtx(), orderLine, ITrx.TRXNAME_None);
+		orderLineBL.setTaxAmtInfoIfNotIgnored(Env.getCtx(), orderLine, ITrx.TRXNAME_None);
 	}
 
 	/**

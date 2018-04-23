@@ -25,6 +25,9 @@ package org.adempiere.pricing.api;
 
 import java.math.BigDecimal;
 
+import org.adempiere.pricing.limit.IPriceLimitRule;
+import org.adempiere.pricing.limit.PriceLimitRuleContext;
+import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.ISingletonService;
 
@@ -72,4 +75,8 @@ public interface IPricingBL extends ISingletonService
 	 * @return
 	 */
 	IPricingResult createInitialResult(IPricingContext pricingCtx);
+
+	PriceLimitRuleResult computePriceLimit(PriceLimitRuleContext context);
+
+	void registerPriceLimitRule(IPriceLimitRule rule);
 }
