@@ -56,9 +56,9 @@ Do you want to help improving documentation, contribute some code or participate
 
 * [open pull requests](https://github.com/pulls?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+user%3Ametasfresh)
 * Issues/PRs
-  * [in `master` branch but not yet in `release` branch](https://github.com/issues?utf8=%E2%9C%93&q=user%3Ametasfresh+-label%3Abranch%3Arelease+label%3Abranch%3Amaster+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
-  * [in `release` branch but not yet closed](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+user%3Ametasfresh+label%3Abranch%3Arelease+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
-  * [in `release` branch but with a failed IT](https://github.com/issues?utf8=%E2%9C%93&q=user%3Ametasfresh+label%3Abranch%3Arelease+label%3Astatus%3AIT-failed+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
+  * [in `master` branch but not yet in `release` branch](https://github.com/issues?utf8=%E2%9C%93&q=user%3Ametasfresh+-label%3Abranch%3Arelease+label%3Abranch%3Amaster+updated%3A%3E2017-04-01+is%3Apublic+sort%3Aupdated-desc+)
+  * [in `release` branch but not yet closed](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+user%3Ametasfresh+label%3Abranch%3Arelease+updated%3A%3E2017-04-01+is%3Apublic+sort%3Aupdated-desc+)
+  * [in `release` branch but with a failed IT](https://github.com/issues?utf8=%E2%9C%93&q=user%3Ametasfresh+label%3Abranch%3Arelease+label%3Astatus%3AIT-failed+updated%3A%3E2017-04-01+is%3Apublic+sort%3Aupdated-desc)
   
 ## What's new in metasfresh ERP?
 If you are interested in latest improvements or bug fixes of metasfresh ERP, then take a look in our [Release Notes](https://github.com/metasfresh/metasfresh/blob/master/ReleaseNotes.md).
