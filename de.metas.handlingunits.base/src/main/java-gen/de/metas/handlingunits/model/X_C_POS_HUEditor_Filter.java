@@ -14,7 +14,7 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -748303681L;
+	private static final long serialVersionUID = -1352390087L;
 
     /** Standard Constructor */
     public X_C_POS_HUEditor_Filter (Properties ctx, int C_POS_HUEditor_Filter_ID, String trxName)
@@ -24,8 +24,8 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
         {
 			setAD_JavaClass_ID (0);
 			setAD_Reference_ID (0);
-			setC_POS_HUEditor_Filter_ID (0);
 			setColumnName (null);
+			setC_POS_HUEditor_Filter_ID (0);
         } */
     }
 
@@ -140,6 +140,25 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
+	/** Set Spaltenname.
+		@param ColumnName 
+		Name der Spalte in der Datenbank
+	  */
+	@Override
+	public void setColumnName (java.lang.String ColumnName)
+	{
+		set_Value (COLUMNNAME_ColumnName, ColumnName);
+	}
+
+	/** Get Spaltenname.
+		@return Name der Spalte in der Datenbank
+	  */
+	@Override
+	public java.lang.String getColumnName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ColumnName);
+	}
+
 	/** Set POS HU Editor Filter.
 		@param C_POS_HUEditor_Filter_ID POS HU Editor Filter	  */
 	@Override
@@ -160,24 +179,5 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Spaltenname.
-		@param ColumnName 
-		Name der Spalte in der Datenbank
-	  */
-	@Override
-	public void setColumnName (java.lang.String ColumnName)
-	{
-		set_Value (COLUMNNAME_ColumnName, ColumnName);
-	}
-
-	/** Get Spaltenname.
-		@return Name der Spalte in der Datenbank
-	  */
-	@Override
-	public java.lang.String getColumnName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ColumnName);
 	}
 }
