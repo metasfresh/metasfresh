@@ -200,7 +200,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 			// FRESH-203: HTML mails don't work for not-HTML texts, which are the majority or (even all?) among out AD_Messages
 			// setting this to false to avoid the formatting from being lost and non-ASCII-chars from being printed wrongly.
-			final boolean html = false;
+			final boolean html = isHTMLMessage(message);
 
 			final EMail email = mailBL.createEMail(ctx, mailbox, mailTo, subject, message, html);
 
@@ -229,6 +229,11 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 			archiveEventManager.fireEmailSent(archive, action, userFrom, from, mailTo, cc, bcc, statusText);
 		}
+	}
+
+	private boolean isHTMLMessage(String message)
+	{
+		return message.toLowerCase().indexOf("<html>") >= 0;
 	}
 
 	private File getDocumentAttachment(final Properties ctx, final I_AD_Archive archive, final String trxName)
