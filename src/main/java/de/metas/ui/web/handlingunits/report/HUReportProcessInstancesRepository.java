@@ -72,6 +72,10 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Note: this component only returns {@link ProcessDescriptor}s whose underlying {@link I_M_HU_Process}es<br>
+ * have {@link I_M_HU_Process#COLUMN_IsProvideAsUserAction} {@code ='Y'}.
+ */
 @Component
 public class HUReportProcessInstancesRepository implements IProcessInstancesRepository
 {
@@ -109,13 +113,14 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	{
 		final IMHUProcessDAO huProcessDescriptorsRepo = Services.get(IMHUProcessDAO.class);
 		return new IndexedWebuiHUProcessDescriptors(huProcessDescriptorsRepo
-				.getAllHUProcessDescriptors()
+				.getHUProcessDescriptors()
 				.stream()
+				.filter(HUProcessDescriptor::isProvideAsUserAction)
 				.map(this::toWebuiHUProcessDescriptor)
 				.collect(ImmutableList.toImmutableList()));
 	}
 
-	private WebuiHUProcessDescriptor toWebuiHUProcessDescriptor(final HUProcessDescriptor huProcessDescriptor)
+	private WebuiHUProcessDescriptor toWebuiHUProcessDescriptor(@NonNull final HUProcessDescriptor huProcessDescriptor)
 	{
 		final int reportADProcessId = huProcessDescriptor.getProcessId();
 		final ProcessId processId = ProcessId.of(PROCESS_HANDLER_TYPE, reportADProcessId);
