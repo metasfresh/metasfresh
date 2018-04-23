@@ -39,9 +39,6 @@ import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.MProductCategory;
-import org.compiere.util.Env;
-
-import lombok.NonNull;
 
 public class MDiscountSchemaBL implements IMDiscountSchemaBL
 {
@@ -156,32 +153,6 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 	}
 
 
-	@Override
-	public BigDecimal calculatePrice(final CalculateDiscountRequest request)
-	{
-
-		if (request.getPrice() == null || request.getPrice().signum() == 0)
-		{
-			return request.getPrice();
-		}
-
-		final DiscountResult result = calculateDiscount(request);
-
-		final BigDecimal discount = result.getDiscount();
-		if (discount == null || discount.signum() == 0)
-		{
-			return request.getPrice();
-		}
-
-		return applyDiscount(request.getPrice(), discount);
-	}
-
-	private BigDecimal applyDiscount(@NonNull final BigDecimal price, @NonNull final BigDecimal discount)
-	{
-		BigDecimal multiplier = (Env.ONEHUNDRED).subtract(discount);
-		multiplier = multiplier.divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP);
-		return price.multiply(multiplier);
-	}
 
 	/**
 	 * Criteria apply
