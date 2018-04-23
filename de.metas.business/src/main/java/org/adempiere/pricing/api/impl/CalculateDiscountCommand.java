@@ -192,6 +192,11 @@ import lombok.NonNull;
 
 	private I_M_DiscountSchemaBreak fetchDiscountSchemaBreak()
 	{
+		if(request.getForceSchemaBreak() != null)
+		{
+			return request.getForceSchemaBreak();
+		}
+		
 		// Price Breaks
 		final List<I_M_DiscountSchemaBreak> breaks = Services.get(IMDiscountSchemaDAO.class).retrieveBreaks(request.getSchema());
 		final BigDecimal amt = request.getPrice().multiply(request.getQty());

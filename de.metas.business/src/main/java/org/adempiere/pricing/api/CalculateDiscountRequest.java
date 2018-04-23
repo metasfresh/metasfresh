@@ -10,6 +10,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_DiscountSchemaBreak;
 
 import com.google.common.collect.ImmutableList;
 
@@ -48,6 +49,8 @@ import lombok.Value;
 public class CalculateDiscountRequest
 {
 	private final I_M_DiscountSchema schema;
+	private final I_M_DiscountSchemaBreak forceSchemaBreak;
+	
 	private final BigDecimal qty;
 	private final BigDecimal price;
 	private final int productId;
@@ -59,6 +62,7 @@ public class CalculateDiscountRequest
 	@Builder
 	private CalculateDiscountRequest(
 			@NonNull final I_M_DiscountSchema schema,
+			final I_M_DiscountSchemaBreak forceSchemaBreak,
 			final BigDecimal qty,
 			final BigDecimal price,
 			final int productId,
@@ -68,6 +72,7 @@ public class CalculateDiscountRequest
 			final IPricingContext pricingCtx)
 	{
 		this.schema = schema;
+		this.forceSchemaBreak = forceSchemaBreak;
 		this.qty = qty;
 		this.price = price;
 		this.productId = productId;
