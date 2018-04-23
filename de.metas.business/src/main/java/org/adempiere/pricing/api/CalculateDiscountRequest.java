@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
@@ -71,6 +72,14 @@ public class CalculateDiscountRequest
 			final List<I_M_AttributeInstance> attributeInstances,
 			final IPricingContext pricingCtx)
 	{
+		if(forceSchemaBreak != null && forceSchemaBreak.getM_DiscountSchema_ID() != schema.getM_DiscountSchema_ID())
+		{
+			throw new AdempiereException("Schema and schema break does not match")
+					.setParameter("schema", schema)
+					.setParameter("forceSchemaBreak", forceSchemaBreak)
+					.appendParametersToMessage();
+		}
+		
 		this.schema = schema;
 		this.forceSchemaBreak = forceSchemaBreak;
 		this.qty = qty;
