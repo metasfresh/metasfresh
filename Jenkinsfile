@@ -59,7 +59,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	} // configFileProvider
 } // node
 
-stage('Invoke downstream job')
+stage('Invoke downstream jobs')
 {
 	if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 	{
@@ -86,6 +86,16 @@ stage('Invoke downstream job')
 				 	true, // triggerDownStreamBuilds=true; we want "everything" beeing build
 				 	true, // wait=true; if a downstream job fails with this parent pom then we want to know about it
 					'metasfresh')
+			},
+			metasfresh_webui_frontend: {
+				misc.invokeDownStreamJobs(
+				 	env.BUILD_NUMBER, // MF_UPSTREAM_BUILDNO,
+				 	env.BRANCH_NAME, // MF_UPSTREAM_BRANCH
+				 	MF_VERSION, // parentPomVersion; this build *is* the parent version, so we hand down our own version
+				 	false, // skipToDist=false; when we invoke the metasfresh build, we want it to do a full build
+				 	false, // triggerDownStreamBuilds=false; we already started 'metasfresh' with triggerDownStreamBuilds=true
+				 	true, // wait=true; if a downstream job fails with this parent pom then we want to know about it
+					'metasfresh-webui-frontend')
 			}
 		)
 	}
