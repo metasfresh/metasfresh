@@ -1,11 +1,25 @@
 package org.adempiere.pricing.interceptor;
 
+import java.math.BigDecimal;
+import java.util.stream.Stream;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.pricing.api.CalculateDiscountRequest;
+import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IMDiscountSchemaBL;
+import org.adempiere.pricing.api.IPricingBL;
+import org.adempiere.pricing.limit.PriceLimitRuleContext;
+import org.adempiere.pricing.limit.PriceLimitRuleResult;
+import org.adempiere.util.Services;
+import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
+import de.metas.product.IProductBL;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -33,6 +47,8 @@ import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
 @Component
 public class M_DiscountSchemaBreak
 {
+	private static final String MSG_UnderLimitPriceWithExplanation = "UnderLimitPriceWithExplanation";
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_M_DiscountSchemaBreak schemaBreak)
 	{
@@ -41,5 +57,118 @@ public class M_DiscountSchemaBreak
 		{
 			schemaBreak.setM_Product_Category_ID(0);
 		}
+
+		enforcePriceLimit(schemaBreak);
 	}
+
+	public void enforcePriceLimit(final I_M_DiscountSchemaBreak schemaBreak)
+	{
+		if (!schemaBreak.isActive())
+		{
+			return;
+		}
+
+		final int productId = schemaBreak.getM_Product_ID();
+		if (productId <= 0)
+		{
+			return;
+		}
+
+		final PriceLimitEnforceContext context = PriceLimitEnforceContext.builder()
+				.schemaBreak(schemaBreak)
+				.isSOTrx(true)
+				.build();
+
+		Stream.of(context)
+				.flatMap(this::explodeByBPartnerId)
+				.flatMap(this::explodeByCountryId)
+				.forEach(this::enforcePriceLimit);
+	}
+
+	private Stream<PriceLimitEnforceContext> explodeByBPartnerId(PriceLimitEnforceContext context)
+	{
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		return bpartnersRepo.retrieveBPartnerIdsForDiscountSchemaId(context.getSchemaBreak().getM_DiscountSchema_ID(), context.getIsSOTrx())
+				.stream()
+				.map(bpartnerId -> context.toBuilder().bpartnerId(bpartnerId).build());
+	}
+
+	private Stream<PriceLimitEnforceContext> explodeByCountryId(PriceLimitEnforceContext context)
+	{
+		return Services.get(IBPartnerDAO.class).retrieveCountryIdsForBPartnerId(context.getBpartnerId())
+				.stream()
+				.map(countryId -> context.toBuilder().countryId(countryId).build());
+	}
+
+	private final void enforcePriceLimit(final PriceLimitEnforceContext context)
+	{
+		final CalculateDiscountRequest request = createCalculateDiscountRequest(context);
+
+		final BigDecimal price = Services.get(IMDiscountSchemaBL.class)
+				.calculateDiscount(request)
+				.getPriceStdOverride();
+		if (price == null)
+		{
+			return;
+		}
+
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+		final PriceLimitRuleResult priceLimitResult = pricingBL.computePriceLimit(PriceLimitRuleContext.builder()
+				.priceActual(BigDecimal.ZERO) // N/A
+				.priceLimit(BigDecimal.ZERO) // N/A
+				.pricingContext(request.getPricingCtx())
+				.build());
+		if (!priceLimitResult.isEligible())
+		{
+			return;
+		}
+
+		if (priceLimitResult.isBelowPriceLimit(price))
+		{
+			throw new AdempiereException(MSG_UnderLimitPriceWithExplanation, new Object[] { price, priceLimitResult.getPriceLimit(), priceLimitResult.getPriceLimitExplanation() })
+					.setParameter("context", context)
+					.setParameter("pricingCtx", request.getPricingCtx());
+		}
+	}
+
+	private CalculateDiscountRequest createCalculateDiscountRequest(final PriceLimitEnforceContext context)
+	{
+		final I_M_DiscountSchemaBreak schemaBreak = context.getSchemaBreak();
+
+		final int productId = schemaBreak.getM_Product_ID();
+		final BigDecimal qty = schemaBreak.getBreakValue();
+
+		final IEditablePricingContext pricingCtx = Services.get(IPricingBL.class).createPricingContext();
+		pricingCtx.setConvertPriceToContextUOM(true);
+		pricingCtx.setM_Product_ID(productId);
+		pricingCtx.setC_UOM_ID(Services.get(IProductBL.class).getStockingUOM(productId).getC_UOM_ID());
+		pricingCtx.setSOTrx(context.getIsSOTrx());
+		pricingCtx.setQty(qty);
+
+		pricingCtx.setC_BPartner_ID(context.getBpartnerId());
+		pricingCtx.setC_Country_ID(context.getCountryId());
+
+		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
+				.schema(schemaBreak.getM_DiscountSchema())
+				.forceSchemaBreak(schemaBreak)
+				.qty(pricingCtx.getQty())
+				.price(BigDecimal.ZERO) // N/A
+				.productId(pricingCtx.getM_Product_ID())
+				.pricingCtx(pricingCtx)
+				.build();
+		return request;
+	}
+
+	@lombok.Value
+	@lombok.Builder(toBuilder = true)
+	private static class PriceLimitEnforceContext
+	{
+		@NonNull
+		final I_M_DiscountSchemaBreak schemaBreak;
+		@NonNull
+		final Boolean isSOTrx;
+		final Integer bpartnerId;
+		private Integer countryId;
+	}
+
 }
