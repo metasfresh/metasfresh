@@ -219,6 +219,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cachingService.addTableCacheConfig(I_AD_Client.class);
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Table.class);
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Ref_List.class);
+		cachingService.addTableCacheConfigIfAbsent(I_M_DiscountSchema.class);
 
 		// M_Product (for now, using the same setting that were in MProduct.s_cache
 		cachingService.createTableCacheConfigBuilder(I_M_Product.class)

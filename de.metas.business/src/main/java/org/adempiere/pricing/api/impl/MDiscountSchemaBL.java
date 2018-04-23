@@ -26,13 +26,13 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.CalculateDiscountRequest;
 import org.adempiere.pricing.api.DiscountResult;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
@@ -287,33 +287,12 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 	@Override
 	public I_M_DiscountSchema getDiscountSchemaForPartner(final I_C_BPartner partner, final boolean isSOTrx)
 	{
-		final I_C_BP_Group group = partner.getC_BP_Group();
-
-		I_M_DiscountSchema schema;
-
-		// SO TRX
-		if (isSOTrx)
+		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(partner, isSOTrx);
+		if (discountSchemaId <= 0)
 		{
-			schema = partner.getM_DiscountSchema();
-
-			if (schema != null)
-			{
-				return schema;
-			}
-
-			return group.getM_DiscountSchema();
+			return null;
 		}
 
-		// PO TRX
-
-		schema = partner.getPO_DiscountSchema();
-
-		if (schema != null)
-		{
-			return schema;
-		}
-
-		return group.getPO_DiscountSchema();
+		return Services.get(IMDiscountSchemaDAO.class).getById(discountSchemaId);
 	}
-
 }
