@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { List } from 'immutable';
 import { findKey } from 'lodash';
 
+import { arePropTypesIdentical } from '../../../utils';
 import { dropdownRequest } from '../../../actions/GenericActions';
 import { getViewAttributeDropdown } from '../../../actions/ViewAttributesActions';
 import RawList from './RawList';
@@ -23,6 +24,9 @@ class ListWidget extends Component {
       listFocused: false,
     };
   }
+
+  shouldComponentUpdate = nextProps =>
+    !arePropTypesIdentical(nextProps, this.props);
 
   componentDidMount() {
     const { defaultValue } = this.props;
