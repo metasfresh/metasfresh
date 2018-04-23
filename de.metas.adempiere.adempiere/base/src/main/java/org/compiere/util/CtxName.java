@@ -95,7 +95,7 @@ public final class CtxName
 	{
 		if (defaultValueDate == null)
 		{
-			if(defaultValue != null && "NULL".equalsIgnoreCase(defaultValue.trim()))
+			if (defaultValue != null && "NULL".equalsIgnoreCase(defaultValue.trim()))
 			{
 				defaultValueDate = Optional.empty();
 			}
@@ -107,9 +107,14 @@ public final class CtxName
 		return defaultValueDate.orElse(null);
 	}
 
-	public boolean isOld()
+	private boolean isOld()
 	{
-		return modifiers != null && modifiers.contains(CtxNames.MODIFIER_Old);
+		return hasModifier(CtxNames.MODIFIER_Old);
+	}
+
+	private boolean hasModifier(final String modifier)
+	{
+		return modifiers != null && modifiers.contains(modifier);
 	}
 
 	/**
@@ -182,8 +187,13 @@ public final class CtxName
 
 		if (sourceResult != null)
 		{
+			if (hasModifier(CtxNames.MODIFIER_QuotedIfNotDefault))
+			{
+				return "'" + sourceResult + "'";
+			}
 			return sourceResult;
 		}
+
 		return getDefaultValue();
 	}
 

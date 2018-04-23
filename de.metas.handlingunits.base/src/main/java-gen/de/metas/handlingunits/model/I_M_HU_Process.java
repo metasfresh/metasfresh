@@ -153,73 +153,121 @@ public interface I_M_HU_Process
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set IsApplyLU.
+	 * Set Auf CUs anwenden.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsApplyLU (boolean IsApplyLU);
+	public void setIsApplyToCUs (boolean IsApplyToCUs);
 
 	/**
-	 * Get IsApplyLU.
+	 * Get Auf CUs anwenden.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isApplyLU();
+	public boolean isApplyToCUs();
 
-    /** Column definition for IsApplyLU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Process, Object> COLUMN_IsApplyLU = new org.adempiere.model.ModelColumn<I_M_HU_Process, Object>(I_M_HU_Process.class, "IsApplyLU", null);
-    /** Column name IsApplyLU */
-    public static final String COLUMNNAME_IsApplyLU = "IsApplyLU";
+    /** Column definition for IsApplyToCUs */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Process, Object> COLUMN_IsApplyToCUs = new org.adempiere.model.ModelColumn<I_M_HU_Process, Object>(I_M_HU_Process.class, "IsApplyToCUs", null);
+    /** Column name IsApplyToCUs */
+    public static final String COLUMNNAME_IsApplyToCUs = "IsApplyToCUs";
 
 	/**
-	 * Set IsApplyTU.
+	 * Set Auf LUs anwenden.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsApplyTU (boolean IsApplyTU);
+	public void setIsApplyToLUs (boolean IsApplyToLUs);
 
 	/**
-	 * Get IsApplyTU.
+	 * Get Auf LUs anwenden.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isApplyTU();
+	public boolean isApplyToLUs();
 
-    /** Column definition for IsApplyTU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Process, Object> COLUMN_IsApplyTU = new org.adempiere.model.ModelColumn<I_M_HU_Process, Object>(I_M_HU_Process.class, "IsApplyTU", null);
-    /** Column name IsApplyTU */
-    public static final String COLUMNNAME_IsApplyTU = "IsApplyTU";
+    /** Column definition for IsApplyToLUs */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Process, Object> COLUMN_IsApplyToLUs = new org.adempiere.model.ModelColumn<I_M_HU_Process, Object>(I_M_HU_Process.class, "IsApplyToLUs", null);
+    /** Column name IsApplyToLUs */
+    public static final String COLUMNNAME_IsApplyToLUs = "IsApplyToLUs";
 
 	/**
-	 * Set IsApplyVirtualPI.
+	 * Set Nur auf Top-Level HU anwenden.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsApplyVirtualPI (boolean IsApplyVirtualPI);
+	public void setIsApplyToTopLevelHUsOnly (boolean IsApplyToTopLevelHUsOnly);
 
 	/**
-	 * Get IsApplyVirtualPI.
+	 * Get Nur auf Top-Level HU anwenden.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isApplyVirtualPI();
+	public boolean isApplyToTopLevelHUsOnly();
 
-    /** Column definition for IsApplyVirtualPI */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Process, Object> COLUMN_IsApplyVirtualPI = new org.adempiere.model.ModelColumn<I_M_HU_Process, Object>(I_M_HU_Process.class, "IsApplyVirtualPI", null);
-    /** Column name IsApplyVirtualPI */
-    public static final String COLUMNNAME_IsApplyVirtualPI = "IsApplyVirtualPI";
+    /** Column definition for IsApplyToTopLevelHUsOnly */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Process, Object> COLUMN_IsApplyToTopLevelHUsOnly = new org.adempiere.model.ModelColumn<I_M_HU_Process, Object>(I_M_HU_Process.class, "IsApplyToTopLevelHUsOnly", null);
+    /** Column name IsApplyToTopLevelHUsOnly */
+    public static final String COLUMNNAME_IsApplyToTopLevelHUsOnly = "IsApplyToTopLevelHUsOnly";
+
+	/**
+	 * Set Auf TUs anwenden.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsApplyToTUs (boolean IsApplyToTUs);
+
+	/**
+	 * Get Auf TUs anwenden.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isApplyToTUs();
+
+    /** Column definition for IsApplyToTUs */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Process, Object> COLUMN_IsApplyToTUs = new org.adempiere.model.ModelColumn<I_M_HU_Process, Object>(I_M_HU_Process.class, "IsApplyToTUs", null);
+    /** Column name IsApplyToTUs */
+    public static final String COLUMNNAME_IsApplyToTUs = "IsApplyToTUs";
+
+	/**
+	 * Set Als Benutzeraktion verfügbar machen.
+	 * Entscheidet, ob der Prozess als Aktion im Handling-Unit-Editor (WebUI und SwingUI) auswählbar sein soll.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsProvideAsUserAction (boolean IsProvideAsUserAction);
+
+	/**
+	 * Get Als Benutzeraktion verfügbar machen.
+	 * Entscheidet, ob der Prozess als Aktion im Handling-Unit-Editor (WebUI und SwingUI) auswählbar sein soll.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isProvideAsUserAction();
+
+    /** Column definition for IsProvideAsUserAction */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Process, Object> COLUMN_IsProvideAsUserAction = new org.adempiere.model.ModelColumn<I_M_HU_Process, Object>(I_M_HU_Process.class, "IsProvideAsUserAction", null);
+    /** Column name IsProvideAsUserAction */
+    public static final String COLUMNNAME_IsProvideAsUserAction = "IsProvideAsUserAction";
 
 	/**
 	 * Set Packvorschrift.

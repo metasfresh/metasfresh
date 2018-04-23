@@ -145,7 +145,7 @@ public class BPartnerCreditLimitRepositoryTest
 
 		final BigDecimal limitAmount = repository.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), today);
 
-		assertThat(limitAmount).isEqualTo(BigDecimal.valueOf(100));
+		assertThat(limitAmount).isEqualTo(BigDecimal.valueOf(200));
 	}
 
 	@Test

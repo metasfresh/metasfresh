@@ -82,7 +82,7 @@ public interface IQueryBuilder<T>
 	 * @return
 	 */
 	IQueryBuilder<T> filter(IQueryFilter<T> filter);
-	
+
 	IQueryBuilder<T> addFiltersUnboxed(ICompositeQueryFilter<T> compositeFilter);
 
 	IQueryBuilder<T> filterByClientId();
@@ -112,6 +112,7 @@ public interface IQueryBuilder<T>
 	int getLimit();
 
 	IQueryBuilderOrderByClause<T> orderBy();
+
 	//@formatter:off
 	default IQueryBuilder<T> orderBy(final String columnName) { orderBy().addColumn(columnName); return this; }
 	default IQueryBuilder<T> orderBy(final ModelColumn<T, ?> column) { orderBy().addColumn(column); return this; }
@@ -225,11 +226,9 @@ public interface IQueryBuilder<T>
 	<V> IQueryBuilder<T> addInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
 
 	/**
-	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
-	 *
-	 * @param column
-	 * @param values
-	 * @return this
+	 * Notes:
+	 * <li>This filter <b>will not</b> match {@code null} column values.</li>
+	 * <li>If {@code values} is empty, then this filter will return {@code true} (as intuitively expected).</li>
 	 */
 	<V> IQueryBuilder<T> addNotInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
 
