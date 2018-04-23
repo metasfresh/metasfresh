@@ -388,7 +388,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		for (final I_M_InOut inout : inouts)
 		{
 			final int vendorBPartnerId = inout.getC_BPartner_ID();
-			
+
 			final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout);
 			for (final I_M_InOutLine inoutLine : inoutLines)
 			{
@@ -444,11 +444,10 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final List<HUToReport> husToProcess = huReportService
 				.getHUsToProcess(hu, adProcessId)
 				.stream()
-				.filter(HUToReport::isTopLevel) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
 				.collect(ImmutableList.toImmutableList());
 		if (husToProcess.isEmpty())
 		{
-			logger.debug("hu's type does not match process {}; nothing to do; hu={}", adProcessId, hu);
+			logger.debug("The selected hu does not match process {}; nothing to do; hu={}", adProcessId, hu);
 			return;
 		}
 
