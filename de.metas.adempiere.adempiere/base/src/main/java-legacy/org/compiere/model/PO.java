@@ -39,6 +39,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -75,6 +76,7 @@ import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -873,7 +875,7 @@ public abstract class PO
 		//
 		// Check if object is stalled
 		// In case is stalled then there is no change so we return null
-		// because it's the same as having m_newValues[index] = null
+		// because it's the same as having m_newValues[index] == null
 		if (m_stale)  // metas: 01537
 		{
 			return null;
@@ -980,6 +982,8 @@ public abstract class PO
 			return false;
 		}
 
+		final Object valueToUse = stripZerosIfBigDecimalScaleTooBig(value);
+
 		//
 		// globalqss -- Bug 1618469 - is throwing not updateable even on new records
 		// if (!p_info.isColumnUpdateable(index))
@@ -988,14 +992,14 @@ public abstract class PO
 			// metas-ts 02973 only show this message (and clutter the log) if old and new value differ
 			// NOTE: when comparing we need to take the old value (the one which is in database) and NOT the previously set (via set_ValueNoCheck for example).
 			final Object oldValue = get_ValueOld(index);
-			if (Objects.equals(oldValue, value))
+			if (Objects.equals(oldValue, valueToUse))
 			{
 				// Value did not changed.
 
 				// Don't return here, but allow actually setting the value
 				// because it could be that someone changed the "m_newValues" by using set_ValueNoCheck()
 				// ...but we can do a quick look-ahead and see if that's the case
-				if (Objects.equals(m_newValues[index], value))
+				if (Objects.equals(m_newValues[index], valueToUse))
 				{
 					return true;
 				}
@@ -1016,7 +1020,7 @@ public abstract class PO
 				final boolean throwException = developerModeBL.isEnabled()
 						|| sysConfigBL.getBooleanValue(sysConfigName, true, getAD_Client_ID(), getAD_Org_ID());
 
-				return new AdempiereException("Column not updateable: " + ColumnName + " - NewValue=" + value + " - OldValue=" + oldValue + "; "
+				return new AdempiereException("Column not updateable: " + ColumnName + " - NewValue=" + valueToUse + " - OldValue=" + oldValue + "; "
 						+ "Note to developer: to bypass this checking you can"
 						+ "1. Set AD_SysConfig '" + sysConfigName + "' = 'N' to disable this exception (will still be logged with Level=SERVERE)"
 						+ "2. Set dynamic attribute " + InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled + " = true (no errors will be logged in this case)")
@@ -1036,7 +1040,7 @@ public abstract class PO
 		// Else when load(ResultSet) is called, m_newValues gets reset
 		loadIfStalled(-1);
 
-		if (value == null)
+		if (valueToUse == null)
 		{
 			if (p_info.isColumnMandatory(index))
 			{
@@ -1055,55 +1059,65 @@ public abstract class PO
 		else
 		{
 			// matching class or generic object
-			if (value.getClass().equals(p_info.getColumnClass(index))
+			if (valueToUse.getClass().equals(p_info.getColumnClass(index))
 					|| p_info.getColumnClass(index) == Object.class)
-				m_newValues[index] = value;     // correct
+			{
+				m_newValues[index] = valueToUse;     // correct
+			}
 			// Integer can be set as BigDecimal
-			else if (value.getClass() == BigDecimal.class
+			else if (valueToUse.getClass() == BigDecimal.class
 					&& p_info.getColumnClass(index) == Integer.class)
-				m_newValues[index] = new Integer(((BigDecimal)value).intValue());
+			{
+				m_newValues[index] = new Integer(((BigDecimal)valueToUse).intValue());
+			}
 			// Set Boolean
 			else if (p_info.getColumnClass(index) == Boolean.class
-					&& ("Y".equals(value) || "N".equals(value)))
-				m_newValues[index] = Boolean.valueOf("Y".equals(value));
+					&& ("Y".equals(valueToUse) || "N".equals(valueToUse)))
+			{
+				m_newValues[index] = Boolean.valueOf("Y".equals(valueToUse));
+			}
 			// added by vpj-cd
 			// To solve BUG [ 1618423 ] Set Project Type button in Project window throws warning
 			// generated because C_Project.C_Project_Type_ID is defined as button in dictionary
 			// although is ID (integer) in database
-			else if (value.getClass() == Integer.class
+			else if (valueToUse.getClass() == Integer.class
 					&& p_info.getColumnClass(index) == String.class)
-				m_newValues[index] = value;
-			else if (value.getClass() == String.class
+			{
+				m_newValues[index] = valueToUse;
+			}
+			else if (valueToUse.getClass() == String.class
 					&& p_info.getColumnClass(index) == Integer.class)
+			{
 				try
 				{
-					m_newValues[index] = new Integer((String)value);
+					m_newValues[index] = new Integer((String)valueToUse);
 				}
 				catch (final NumberFormatException e)
 				{
 					log.error(ColumnName
-							+ " - Class invalid(1): " + value.getClass().toString()
-							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value, new Exception("stacktrace"));
+							+ " - Class invalid(1): " + valueToUse.getClass().toString()
+							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
 					return false;
 				}
+			}
 			else
 			{
 				log.error(ColumnName
-						+ " - Class invalid(2): " + value.getClass().toString()
-						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value, new Exception("stacktrace"));
+						+ " - Class invalid(2): " + valueToUse.getClass().toString()
+						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
 				return false;
 			}
 			// Validate (Min/Max)
-			final String error = p_info.validate(index, value);
+			final String error = p_info.validate(index, valueToUse);
 			if (error != null)
 			{
-				log.warn(ColumnName + "=" + value + " - " + error);
+				log.warn(ColumnName + "=" + valueToUse + " - " + error);
 				return false;
 			}
 			// Length for String
 			if (p_info.getColumnClass(index) == String.class)
 			{
-				final String stringValue = value.toString();
+				final String stringValue = valueToUse.toString();
 				final int length = p_info.getFieldLength(index);
 				if (stringValue.length() > length && length > 0)
 				{
@@ -1115,20 +1129,22 @@ public abstract class PO
 			// Validate reference list [1762461]
 			if (p_info.getColumn(index).DisplayType == DisplayType.List &&
 					p_info.getColumn(index).AD_Reference_Value_ID > 0 &&
-					value instanceof String)
+					valueToUse instanceof String)
 			{
-				final boolean hasListValue = Services.get(IADReferenceDAO.class).existListValue(p_info.getColumn(index).AD_Reference_Value_ID, (String)value);
+				final boolean hasListValue = Services.get(IADReferenceDAO.class).existListValue(p_info.getColumn(index).AD_Reference_Value_ID, (String)valueToUse);
 				if (!hasListValue)
 				{
 					final StringBuilder validValues = new StringBuilder();
 					for (final ValueNamePair vp : MRefList.getList(getCtx(), p_info.getColumn(index).AD_Reference_Value_ID, false))
 						validValues.append(" - ").append(vp.getValue());
 					throw new IllegalArgumentException(ColumnName + " Invalid value - "
-							+ value + " - Reference_ID=" + p_info.getColumn(index).AD_Reference_Value_ID + validValues.toString());
+							+ valueToUse + " - Reference_ID=" + p_info.getColumn(index).AD_Reference_Value_ID + validValues.toString());
 				}
 			}
 			if (log.isTraceEnabled())
-				log.trace(ColumnName + " = " + m_newValues[index] + " (OldValue=" + m_oldValues[index] + ")");
+			{
+				log.trace("{} = {}  (OldValue={})", ColumnName, m_newValues[index], m_oldValues[index]);
+			}
 		}
 		set_Keys(ColumnName, m_newValues[index]);
 		return true;
@@ -1157,64 +1173,76 @@ public abstract class PO
 
 	private final boolean set_ValueNoCheck(final int index, final Object value)
 	{
+		final Object valueToUse = stripZerosIfBigDecimalScaleTooBig(value);
+
 		//
 		// Load record if stale (01537)
 		// NOTE: we are calling it with columnIndex=-1 because we want to make sure everything is loaded and m_stale is set to false
 		// Else when load(ResultSet) is called, m_newValues gets reset
 		loadIfStalled(-1);
-		if (value == null || value == Null.NULL)
+		if (valueToUse == null || valueToUse == Null.NULL)
 		{
 			m_newValues[index] = Null.NULL;		// write direct
 		}
 		else
 		{
 			// matching class or generic object
-			if (value.getClass().equals(p_info.getColumnClass(index))
+			if (valueToUse.getClass().equals(p_info.getColumnClass(index))
 					|| p_info.getColumnClass(index) == Object.class)
-				m_newValues[index] = value;     // correct
+			{
+				m_newValues[index] = valueToUse;     // correct
+			}
 			// Integer can be set as BigDecimal
-			else if (value.getClass() == BigDecimal.class
+			else if (valueToUse.getClass() == BigDecimal.class
 					&& p_info.getColumnClass(index) == Integer.class)
-				m_newValues[index] = new Integer(((BigDecimal)value).intValue());
+			{
+				m_newValues[index] = new Integer(((BigDecimal)valueToUse).intValue());
+			}
 			// Set Boolean
 			else if (p_info.getColumnClass(index) == Boolean.class
-					&& ("Y".equals(value) || "N".equals(value)))
-				m_newValues[index] = Boolean.valueOf("Y".equals(value));
-			else if (p_info.getColumnClass(index) == Boolean.class && (value instanceof Boolean))
-				m_newValues[index] = value;
+					&& ("Y".equals(valueToUse) || "N".equals(valueToUse)))
+			{
+				m_newValues[index] = Boolean.valueOf("Y".equals(valueToUse));
+			}
+			else if (p_info.getColumnClass(index) == Boolean.class && (valueToUse instanceof Boolean))
+			{
+				m_newValues[index] = valueToUse;
+			}
 			else if (p_info.getColumnClass(index) == Integer.class
-					&& value.getClass() == String.class)
+					&& valueToUse.getClass() == String.class)
 			{
 				try
 				{
-					final int intValue = Integer.parseInt((String)value);
+					final int intValue = Integer.parseInt((String)valueToUse);
 					m_newValues[index] = Integer.valueOf(intValue);
 				}
 				catch (final Exception e)
 				{
 					log.warn(get_ColumnName(index)
-							+ " - Class invalid(3): " + value.getClass().toString()
-							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value, new Exception("stacktrace"));
+							+ " - Class invalid(3): " + valueToUse.getClass().toString()
+							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
 					m_newValues[index] = null;
 				}
 			}
 			else
 			{
 				log.warn(get_ColumnName(index)
-						+ " - Class invalid(4): " + value.getClass().toString()
-						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + value, new Exception("stacktrace"));
-				m_newValues[index] = value;     // correct
+						+ " - Class invalid(4): " + valueToUse.getClass().toString()
+						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
+				m_newValues[index] = valueToUse;     // correct
 			}
 
 			//
 			// Validate (Min/Max)
-			final String error = p_info.validate(index, value);
+			final String error = p_info.validate(index, valueToUse);
 			if (error != null)
-				log.warn(get_ColumnName(index) + "=" + value + " - " + error);
+			{
+				log.warn(get_ColumnName(index) + "=" + valueToUse + " - " + error);
+			}
 			// length for String
 			if (p_info.getColumnClass(index) == String.class)
 			{
-				final String stringValue = value.toString();
+				final String stringValue = valueToUse.toString();
 				final int length = p_info.getFieldLength(index);
 				if (stringValue.length() > length && length > 0)
 				{
@@ -1232,6 +1260,24 @@ public abstract class PO
 		set_Keys(get_ColumnName(index), m_newValues[index]);
 		return true;
 	}   // set_ValueNoCheck
+
+	private Object stripZerosIfBigDecimalScaleTooBig(@Nullable final Object value)
+	{
+		if (value instanceof BigDecimal)
+		{
+			final BigDecimal bdValue = (BigDecimal)value;
+			if (bdValue.scale() < 15)
+			{
+				return bdValue;
+			}
+
+			final BigDecimal bpWithoutTrailingZeroes = NumberUtils.stripTrailingDecimalZeros(bdValue);
+			log.warn("The given value has scale={}; going to proceed with a stripped down value with scale={}; value={}; this={}",
+					bdValue.scale(), bpWithoutTrailingZeroes.scale(), bdValue, this);
+			return bpWithoutTrailingZeroes;
+		}
+		return value;
+	}
 
 	/**
 	 * Set value of Column returning boolean
@@ -3542,14 +3588,20 @@ public abstract class PO
 					sqlValues.append("NULL");
 				}
 				else if (value instanceof Integer || value instanceof BigDecimal)
+				{
 					sqlValues.append(encrypt(i, value));
+				}
 				else if (c == Boolean.class)
 				{
 					boolean bValue = false;
 					if (value instanceof Boolean)
+					{
 						bValue = ((Boolean)value).booleanValue();
+					}
 					else
+					{
 						bValue = "Y".equals(value);
+					}
 					sqlValues.append(encrypt(i, bValue ? "'Y'" : "'N'"));
 				}
 				else if (value instanceof Timestamp)
@@ -3955,9 +4007,10 @@ public abstract class PO
 		// Create cache invalidation request
 		// (we have to do it here, before we reset all fields)
 		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName() ?
-				cacheInvalidationService.createRequest(this, ModelCacheInvalidationTiming.DELETE)
-				: null;
+		final CacheInvalidateMultiRequest cacheInvalidateRequest = //
+				p_info.isSingleKeyColumnName()
+						? cacheInvalidationService.createRequest(this, ModelCacheInvalidationTiming.DELETE)
+						: null;
 
 		//
 		createChangeLog(X_AD_ChangeLog.EVENTCHANGELOG_Delete);
