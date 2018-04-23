@@ -52,7 +52,7 @@ public class MInventoryImportTableSqlUpdater
 	private static final transient Logger logger = LogManager.getLogger(MInventoryImportTableSqlUpdater.class);
 
 	@Builder(buildMethodName = "updateIInventory")
-	private void updateInventoryImportTable(@NonNull final String whereClause)
+	public void updateInventoryImportTable(@NonNull final String whereClause)
 	{
 		dbUpdateLocatorDimensions(whereClause);
 		dbUpdateWarehouse(whereClause);
