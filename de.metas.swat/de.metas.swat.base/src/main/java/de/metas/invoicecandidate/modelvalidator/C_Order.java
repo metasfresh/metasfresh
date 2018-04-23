@@ -78,11 +78,6 @@ public class C_Order
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final Timestamp dateOrdered = order.getDateOrdered();
 
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(soCreditStatus) || soCreditStatus == null)
-		{
-			return;
-		}
-
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getC_BPartner_ID(), dateOrdered);
 
@@ -129,6 +124,14 @@ public class C_Order
 	private boolean isCheckCreditLimitNeeded(@NonNull final I_C_Order order)
 	{
 		if (!order.isSOTrx())
+		{
+			return false;
+		}
+
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		final I_C_BPartner partner = InterfaceWrapperHelper.load(order.getC_BPartner_ID(), I_C_BPartner.class);
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
+		if (!bpartnerStatsDAO.isCheckCreditLimitNeeded(stats))
 		{
 			return false;
 		}
