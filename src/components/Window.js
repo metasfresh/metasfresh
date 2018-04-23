@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 
 import Table from '../components/table/Table';
@@ -7,7 +7,7 @@ import MasterWidget from '../components/widget/MasterWidget';
 import Dropzone from './Dropzone';
 import Separator from './Separator';
 
-class Window extends Component {
+class Window extends PureComponent {
   constructor(props) {
     super(props);
 

@@ -4,7 +4,7 @@ import CalendarContainer from 'react-datetime/src/CalendarContainer';
 import TetherComponent from 'react-tether';
 import classnames from 'classnames';
 
-// TODO: This monkeypatching that's happening here has to go.
+// TODO: This monkeypatching that's happening here has to go at some point.
 class TetheredDateTime extends DateTime {
   onInputKey = e => {
     if (
