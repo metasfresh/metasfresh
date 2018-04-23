@@ -231,8 +231,14 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		}
 	}
 
-	private boolean isHTMLMessage(String message)
+	private boolean isHTMLMessage(final String message)
 	{
+		if(Check.isEmpty(message))
+		{
+			// no message => no html
+			return false;
+		}
+		
 		return message.toLowerCase().indexOf("<html>") >= 0;
 	}
 
