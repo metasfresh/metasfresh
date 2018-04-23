@@ -1168,6 +1168,8 @@ public class FlatrateBL implements IFlatrateBL
 
 		nextTerm.setC_UOM_ID(currentTerm.getC_UOM_ID());
 
+		nextTerm.setC_Currency_ID(currentTerm.getC_Currency_ID());
+
 		final IFlatrateTermEventService flatrateHandlersService = Services.get(IFlatrateTermEventService.class);
 		flatrateHandlersService
 				.getHandler(nextConditions.getType_Conditions()) // nextterm is not saved yet, so type will be null in this moment
