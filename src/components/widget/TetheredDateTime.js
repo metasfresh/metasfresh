@@ -3,9 +3,19 @@ import DateTime from 'react-datetime';
 import CalendarContainer from 'react-datetime/src/CalendarContainer';
 import TetherComponent from 'react-tether';
 import classnames from 'classnames';
+import { debounce } from 'lodash';
 
 // TODO: This monkeypatching that's happening here has to go at some point.
 class TetheredDateTime extends DateTime {
+  constructor(props) {
+    super(props);
+
+    this.updateSelectedDate = debounce(this.updateSelectedDate, 300, {
+      leading: true,
+      trailing: false,
+    });
+  }
+
   onInputKey = e => {
     if (
       (e.key === 'Tab' && this.props.closeOnTab) ||
@@ -20,6 +30,7 @@ class TetheredDateTime extends DateTime {
     if (this.props.onFocusInput) {
       this.props.onFocusInput();
     }
+
     return super.updateSelectedDate(e, close);
   };
 
