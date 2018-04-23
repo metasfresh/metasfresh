@@ -40,6 +40,35 @@ public interface I_PMM_WeekReport_Event
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set System-Problem.
+	 * Automatically created or manually entered System Issue
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Issue_ID (int AD_Issue_ID);
+
+	/**
+	 * Get System-Problem.
+	 * Automatically created or manually entered System Issue
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Issue_ID();
+
+	public org.compiere.model.I_AD_Issue getAD_Issue();
+
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue);
+
+    /** Column definition for AD_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_PMM_WeekReport_Event, org.compiere.model.I_AD_Issue> COLUMN_AD_Issue_ID = new org.adempiere.model.ModelColumn<I_PMM_WeekReport_Event, org.compiere.model.I_AD_Issue>(I_PMM_WeekReport_Event.class, "AD_Issue_ID", org.compiere.model.I_AD_Issue.class);
+    /** Column name AD_Issue_ID */
+    public static final String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
+
+	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
@@ -199,8 +228,8 @@ public interface I_PMM_WeekReport_Event
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -209,8 +238,8 @@ public interface I_PMM_WeekReport_Event
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -228,7 +257,7 @@ public interface I_PMM_WeekReport_Event
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Packvorschrift-Produkt Zuordnung.
+	 * Set Packvorschrift.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -237,7 +266,7 @@ public interface I_PMM_WeekReport_Event
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
 
 	/**
-	 * Get Packvorschrift-Produkt Zuordnung.
+	 * Get Packvorschrift.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -245,12 +274,8 @@ public interface I_PMM_WeekReport_Event
 	 */
 	public int getM_HU_PI_Item_Product_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
-
-	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
-
     /** Column definition for M_HU_PI_Item_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_PMM_WeekReport_Event, de.metas.handlingunits.model.I_M_HU_PI_Item_Product> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_WeekReport_Event, de.metas.handlingunits.model.I_M_HU_PI_Item_Product>(I_PMM_WeekReport_Event.class, "M_HU_PI_Item_Product_ID", de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
+    public static final org.adempiere.model.ModelColumn<I_PMM_WeekReport_Event, Object> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_PMM_WeekReport_Event, Object>(I_PMM_WeekReport_Event.class, "M_HU_PI_Item_Product_ID", null);
     /** Column name M_HU_PI_Item_Product_ID */
     public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
