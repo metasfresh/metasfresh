@@ -41,7 +41,7 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @return the {@link BPartnerStats} object
 	 */
 	BPartnerStats getCreateBPartnerStats(I_C_BPartner partner);
-	
+
 	default BPartnerStats getCreateBPartnerStats(final int bpartnerId)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.loadOutOfTrx(bpartnerId, I_C_BPartner.class);
@@ -68,4 +68,6 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 
 	void updateBPartnerStatistics(BPartnerStats bpStats);
+
+	boolean isCheckCreditLimitNeeded(BPartnerStats stats);
 }
