@@ -15,15 +15,38 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3478](https://github.com/metasfresh/metasfresh/issues/3478) Window design: product Pharma
   * [#3479](https://github.com/metasfresh/metasfresh/issues/3479) Window design: Business Partner Pharma
     * Improved Window Layout and Translation for Business Partner Pharma.
+  * [#3763](https://github.com/metasfresh/metasfresh/issues/3763) Contracts: Create a function that provides a hierarchy of contracts
+  * [#3768](https://github.com/metasfresh/metasfresh/issues/3768) Excel Report for vendor assessment
+  * [#3777](https://github.com/metasfresh/metasfresh/issues/3777) Show available to promise in Procurement Dispo modal in Sales Order
+  * [#3827](https://github.com/metasfresh/metasfresh/issues/3827) Support SSL / TLS when sending mails via SMTP making it SMTPS
+  * [#3834](https://github.com/metasfresh/metasfresh/issues/3834) Check if Product is banned in Batch entry/ Document Lines creation
   * [#3866](https://github.com/metasfresh/metasfresh/issues/3866) WebUI: Translation for Product LotNo Lock Window
     * Improved Window Layout and additional Translations for de_DE and en_US.
+  * [#3873](https://github.com/metasfresh/metasfresh/issues/3873) Performance problem on reactivating large shipment
+  * [#3887](https://github.com/metasfresh/metasfresh/issues/3887) Automatic Setting of Pharma Authorisation for Shipment/ Receipt
   * [#3888](https://github.com/metasfresh/metasfresh/issues/3888) Pharma Business Partner Window adjustments
     * Extended Business Partner Window for Pharma verticals. New Fields that describe the Pharma Trading Permissions of customers and vendors.
+  * [#3890](https://github.com/metasfresh/metasfresh/issues/3890) Role Permission for Pharma Permission and Authorization changes
+  * [#3892](https://github.com/metasfresh/metasfresh/issues/3892) Contracts: Allow possibility to copy the prices when extending
+  * [#3895](https://github.com/metasfresh/metasfresh/issues/3895) extend M_HU_Process
+  * [#3897](https://github.com/metasfresh/metasfresh/issues/3897) Add Translations for Pharma Business Partner Window
+
+# metasfresh-docker
+  * [#34](https://github.com/metasfresh/metasfresh-docker/issues/34) add msv3server to metasfresh-docker as "extras"
 
 ## Fixes
 * metasfresh
+  * [#3797](https://github.com/metasfresh/metasfresh/issues/3797) Error in BOM Lines for Packaging Component Type and Variant Groups
+  * [#3859](https://github.com/metasfresh/metasfresh/issues/3859) Credit Limit: Prioritize by date and then seq No from Credit Limit type
+  * [#3861](https://github.com/metasfresh/metasfresh/issues/3861) StockChangedEvent can't be serialized
+  * [#3863](https://github.com/metasfresh/metasfresh/issues/3863) Missing migration of C_BPartner_Stats.SOCreditStatus on some systems
+  * [#3864](https://github.com/metasfresh/metasfresh/issues/3864) C_FlatrateTerm.C_Currency is not forwarded when a flatrateTerm is extended
+  * [#3876](https://github.com/metasfresh/metasfresh/issues/3876) Different issues around invoice candidate updating
+  * [#3883](https://github.com/metasfresh/metasfresh/issues/3883) Cannot import products
+  * [#3885](https://github.com/metasfresh/metasfresh/issues/3885) Process C_Flatrate_Term_Extend does not work if ContractStatus is null
   * [#3894](https://github.com/metasfresh/metasfresh/issues/3894) NPE on sales order complete
 
 # metasfresh 5.53 (2018-16)
