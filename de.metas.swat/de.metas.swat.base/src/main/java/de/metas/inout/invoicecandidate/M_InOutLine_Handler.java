@@ -99,12 +99,18 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	// Services
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 
+	/**
+	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
+	 */
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically()
 	{
 		return false;
 	}
 
+	/**
+	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
+	 */
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically(Object model)
 	{
@@ -203,14 +209,18 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			lastPaymentTermId = paymentTermId;
 		}
 
-		// maybe we didn'T have any paymentTermId>0 at all; in this case, we now explicitly create one IC
+		// maybe we didn't have any paymentTermId>0 at all; in this case, we now explicitly create one IC
 		if (qtyLeftToAllocate.signum() > 0)
 		{
 			final I_C_Invoice_Candidate ic = createInvoiceCandidateForInOutLineOrNull(inOutLine, lastPaymentTermId, qtyLeftToAllocate);
 			final BigDecimal allocatedQty = addIfNotNullAndReturnQty(createdInvoiceCandidates, ic);
-			Check.errorIf(qtyLeftToAllocate.abs().compareTo(allocatedQty.abs()) != 0,
-					"We invoked createInvoiceCandidateForInOutLineOrNull with forcedQtyOrdered={}, but allocatedQty={}; inOutLine={}",
-					qtyLeftToAllocate, allocatedQty, inOutLine);
+
+			final boolean qtyLeftShouldHaveBeenAllocated = Services.get(IDocumentBL.class).isDocumentCompletedOrClosed(inOutLine.getM_InOut());
+			final boolean qtyLeftWasAllocated = qtyLeftToAllocate.abs().compareTo(allocatedQty.abs()) == 0;
+
+			Check.errorIf(qtyLeftShouldHaveBeenAllocated && !qtyLeftWasAllocated,
+					"We invoked createInvoiceCandidateForInOutLineOrNull with forcedQtyOrdered={}, but allocatedQty={}; inOutLine={}; inOut={}",
+					qtyLeftToAllocate, allocatedQty, inOutLine, inOutLine.getM_InOut());
 		}
 
 		return createdInvoiceCandidates.build();
@@ -465,7 +475,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			@Nullable BigDecimal forcedQtyOrdered,
 			final boolean callerCanCreateAdditionalICs)
 	{
-
 		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
 		final org.compiere.model.I_M_InOut inOut = inOutLine.getM_InOut();
 
@@ -496,7 +505,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 		else
 		{
-			// reversed, voided etc. Set qty to zero.
+			// not yet delivered (e.g. IP), reversed, voided etc. Set qty to zero.
 			ic.setQtyOrdered(BigDecimal.ZERO);
 		}
 	}
