@@ -471,10 +471,10 @@ public class MDiscountSchemaTest
 		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
 				.schema(schema1)
 				.qty(new BigDecimal(100))
-				.Price(new BigDecimal(1))
-				.M_Product_ID(product1.getM_Product_ID())
-				.M_Product_Category_ID(category1.getM_Product_Category_ID())
-				.bPartnerFlatDiscount(new BigDecimal(1))
+				.price(new BigDecimal(1))
+				.productId(product1.getM_Product_ID())
+				.productCategoryId(category1.getM_Product_Category_ID())
+				.bpartnerFlatDiscount(new BigDecimal(1))
 				.build();
 
 		final BigDecimal price = calculatePrice(request);
@@ -527,11 +527,11 @@ public class MDiscountSchemaTest
 		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
 				.schema(schema1)
 				.qty(new BigDecimal(100))
-				.Price(new BigDecimal(1))
-				.M_Product_ID(product1.getM_Product_ID())
-				.M_Product_Category_ID(category1.getM_Product_Category_ID())
-				.instances(instances)
-				.bPartnerFlatDiscount(new BigDecimal(1))
+				.price(new BigDecimal(1))
+				.productId(product1.getM_Product_ID())
+				.productCategoryId(category1.getM_Product_Category_ID())
+				.attributeInstances(instances)
+				.bpartnerFlatDiscount(new BigDecimal(1))
 				.build();
 
 		final BigDecimal price = calculatePrice(request);
