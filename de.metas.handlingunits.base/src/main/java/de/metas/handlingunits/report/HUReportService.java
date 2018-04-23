@@ -96,7 +96,13 @@ public class HUReportService
 		return reportProcessId > 0 ? reportProcessId : -1;
 	}
 
-	public List<HUToReport> getHUsToProcess(final HUToReport hu, final int adProcessId)
+	/**
+	 * @return those HUs from the given {@code huToReport} what match the given {@code adProcessId}'s {@link HUProcessDescriptor}.
+	 * If there is no {@link HUProcessDescriptor}, then it returns an empty list.
+	 */
+	public List<HUToReport> getHUsToProcess(
+			@NonNull final HUToReport huToReport,
+			final int adProcessId)
 	{
 		final IMHUProcessDAO huProcessDAO = Services.get(IMHUProcessDAO.class);
 		final HUProcessDescriptor huProcessDescriptor = huProcessDAO.getByProcessIdOrNull(adProcessId);
@@ -105,7 +111,8 @@ public class HUReportService
 			return ImmutableList.of();
 		}
 
-		return hu.streamRecursivelly()
+		return huToReport.streamRecursively()
+				.filter(currentHU -> currentHU.isTopLevel() || !huProcessDescriptor.isAcceptOnlyTopLevelHUs()) // if acceptOnlyTopLevelHUs then only accept topLevel-HUs
 				.filter(currentHU -> huProcessDescriptor.appliesToHUUnitType(currentHU.getHUUnitType()))
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -305,12 +312,11 @@ public class HUReportService
 
 		final List<HUToReport> husToProcess = getHUsToProcess(huToReport, adProcessId)
 				.stream()
-				.filter(HUToReport::isTopLevel) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
 				.collect(ImmutableList.toImmutableList());
 
 		if (husToProcess.isEmpty())
 		{
-			logger.info("hu's type does not match process {}; nothing to do; hu={}", adProcessId, huToReport);
+			logger.info("the selected hu does not match process {}; nothing to do; hu={}", adProcessId, huToReport);
 			return;
 		}
 
