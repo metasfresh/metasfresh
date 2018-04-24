@@ -165,6 +165,11 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		{
 			return false;
 		}
+		
+		if(!br.isValid())
+		{
+			return false;
+		}
 
 		// below break value
 		if (value.compareTo(br.getBreakValue()) < 0)

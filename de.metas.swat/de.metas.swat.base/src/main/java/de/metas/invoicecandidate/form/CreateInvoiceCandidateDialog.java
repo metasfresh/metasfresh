@@ -406,8 +406,8 @@ public class CreateInvoiceCandidateDialog
 						InterfaceWrapperHelper.getTrxName(product));
 
 				final I_M_PriceList_Version currentVersion = priceListBL.getCurrentPriceListVersionOrNull( //
-						pricingSystem //
-						, location.getC_Location().getC_Country() // country
+						pricingSystem.getM_PricingSystem_ID() //
+						, location.getC_Location().getC_Country_ID() // country
 						, SystemTime.asDayTimestamp() // date
 						, isSOTrx //
 						, (Boolean)null // processedPLVFiltering

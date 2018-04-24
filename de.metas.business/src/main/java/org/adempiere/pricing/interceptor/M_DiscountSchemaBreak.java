@@ -16,8 +16,10 @@ import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import lombok.NonNull;
 
@@ -47,6 +49,8 @@ import lombok.NonNull;
 @Component
 public class M_DiscountSchemaBreak
 {
+	private static final Logger logger = LogManager.getLogger(M_DiscountSchemaBreak.class);
+
 	private static final String MSG_UnderLimitPriceWithExplanation = "UnderLimitPriceWithExplanation";
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
@@ -58,7 +62,21 @@ public class M_DiscountSchemaBreak
 			schemaBreak.setM_Product_Category_ID(0);
 		}
 
-		enforcePriceLimit(schemaBreak);
+		//
+		// Validate
+		try
+		{
+			enforcePriceLimit(schemaBreak);
+
+			schemaBreak.setIsValid(true);
+			schemaBreak.setNotValidReason(null);
+		}
+		catch (Exception ex)
+		{
+			logger.debug("Schema break become invalid", ex);
+			schemaBreak.setIsValid(false);
+			schemaBreak.setNotValidReason(ex.getLocalizedMessage());
+		}
 	}
 
 	private void enforcePriceLimit(@NonNull final I_M_DiscountSchemaBreak schemaBreak)
