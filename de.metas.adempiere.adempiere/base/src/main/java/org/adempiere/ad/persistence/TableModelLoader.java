@@ -97,24 +97,24 @@ public final class TableModelLoader
 
 	/**
 	 *
-	 * @param Record_ID
+	 * @param recordId
 	 * @param checkCache true if object shall be checked in cache first
 	 * @param trxName
 	 * @return loaded PO
 	 */
-	public PO getPO(final Properties ctx, final String tableName, final int Record_ID, final boolean checkCache, final String trxName)
+	public PO getPO(final Properties ctx, final String tableName, final int recordId, final boolean checkCache, final String trxName)
 	{
 		final IModelCacheService modelCacheService = Services.get(IModelCacheService.class);
 		if (checkCache)
 		{
-			final PO poCached = modelCacheService.retrieveObject(ctx, tableName, Record_ID, trxName);
+			final PO poCached = modelCacheService.retrieveObject(ctx, tableName, recordId, trxName);
 			if (poCached != null)
 			{
 				return poCached;
 			}
 		}
 
-		final PO po = retrievePO(ctx, tableName, Record_ID, trxName);
+		final PO po = retrievePO(ctx, tableName, recordId, trxName);
 		modelCacheService.addToCache(po);
 
 		return po;
@@ -126,16 +126,16 @@ public final class TableModelLoader
 	 *
 	 * @param ctx
 	 * @param tableName
-	 * @param Record_ID
+	 * @param recordId
 	 * @param trxName
 	 * @return PO or null
 	 */
-	private final PO retrievePO(final Properties ctx, final String tableName, final int Record_ID, final String trxName)
+	private final PO retrievePO(final Properties ctx, final String tableName, final int recordId, final String trxName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
-		if (Record_ID > 0 && poInfo.getKeyColumnName() == null)
+		if (recordId > 0 && !poInfo.isSingleKeyColumnName())
 		{
-			log.warn("(id) - Multi-Key " + tableName);
+			log.warn("Cannot retrieve by ID a multi-key record: table={}, recordId={}", tableName, recordId);
 			return null;
 		}
 
@@ -143,7 +143,7 @@ public final class TableModelLoader
 		if (clazz == null)
 		{
 			log.info("Using GenericPO for {}", tableName);
-			final GenericPO po = new GenericPO(tableName, ctx, Record_ID, trxName);
+			final GenericPO po = new GenericPO(tableName, ctx, recordId, trxName);
 			return po;
 		}
 
@@ -151,24 +151,24 @@ public final class TableModelLoader
 		try
 		{
 			final Constructor<?> constructor = tableModelClassLoader.getIDConstructor(clazz);
-			final PO po = (PO)constructor.newInstance(ctx, Record_ID, trxName);
-			if (po != null && po.get_ID() != Record_ID && Record_ID > 0)
+			final PO po = (PO)constructor.newInstance(ctx, recordId, trxName);
+			if (po != null && po.get_ID() != recordId && recordId > 0)
 			{
 				return null;
 			}
 			return po;
 		}
-		catch (Exception e)
+		catch (final Exception ex)
 		{
-			final Throwable cause = e.getCause() == null ? e : e.getCause();
-			log.error("(id) - Table=" + tableName + ",Class=" + clazz, cause);
+			final Throwable cause = ex.getCause() == null ? ex : ex.getCause();
+			log.error("Failed fetching record for table={}, recordId={}, class={}", tableName, recordId, clazz, cause);
 			MetasfreshLastError.saveError(log, "Error", cause);
 			errorLogged = true;
 		}
 
 		if (!errorLogged)
 		{
-			log.error("(id) - Not found - Table=" + tableName + ", Record_ID=" + Record_ID);
+			log.error("Failed fetching record for table={}, recordId={}, class={}", tableName, recordId, clazz);
 		}
 
 		return null;
