@@ -78,6 +78,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
@@ -898,7 +899,7 @@ public abstract class PO
 		{
 			int result = ((Integer)nValue).intValue();
 			result -= ((Integer)oValue).intValue();
-			return new Integer(result);
+			return result;
 		}
 		//
 		log.warn("Invalid type - New=" + nValue);
@@ -1068,7 +1069,7 @@ public abstract class PO
 			else if (valueToUse.getClass() == BigDecimal.class
 					&& p_info.getColumnClass(index) == Integer.class)
 			{
-				m_newValues[index] = new Integer(((BigDecimal)valueToUse).intValue());
+				m_newValues[index] = ((BigDecimal)valueToUse).intValue();
 			}
 			// Set Boolean
 			else if (p_info.getColumnClass(index) == Boolean.class
@@ -1090,7 +1091,7 @@ public abstract class PO
 			{
 				try
 				{
-					m_newValues[index] = new Integer((String)valueToUse);
+					m_newValues[index] = Integer.parseInt((String)valueToUse);
 				}
 				catch (final NumberFormatException e)
 				{
@@ -1196,17 +1197,12 @@ public abstract class PO
 			else if (valueToUse.getClass() == BigDecimal.class
 					&& p_info.getColumnClass(index) == Integer.class)
 			{
-				m_newValues[index] = new Integer(((BigDecimal)valueToUse).intValue());
+				m_newValues[index] = ((BigDecimal)valueToUse).intValue();
 			}
 			// Set Boolean
-			else if (p_info.getColumnClass(index) == Boolean.class
-					&& ("Y".equals(valueToUse) || "N".equals(valueToUse)))
+			else if (p_info.getColumnClass(index) == Boolean.class)
 			{
-				m_newValues[index] = Boolean.valueOf("Y".equals(valueToUse));
-			}
-			else if (p_info.getColumnClass(index) == Boolean.class && (valueToUse instanceof Boolean))
-			{
-				m_newValues[index] = valueToUse;
+				m_newValues[index] = StringUtils.toBoolean(valueToUse);
 			}
 			else if (p_info.getColumnClass(index) == Integer.class
 					&& valueToUse.getClass() == String.class)
@@ -1348,7 +1344,9 @@ public abstract class PO
 		else if (value instanceof Number)
 			valueString = value.toString();
 		else if (value instanceof Boolean)
-			valueString = ((Boolean)value).booleanValue() ? "'Y'" : "'N'";
+		{
+			valueString = DB.TO_BOOLEAN((Boolean)value);
+		}
 		else if (value instanceof Timestamp)
 			valueString = DB.TO_DATE((Timestamp)value, false);
 		else // if (value instanceof String)
@@ -1839,7 +1837,9 @@ public abstract class PO
 			else if (clazz == BigDecimal.class)
 				m_oldValues[index] = decrypt(index, rs.getBigDecimal(columnName));
 			else if (clazz == Boolean.class)
-				m_oldValues[index] = Boolean.valueOf("Y".equals(decrypt(index, rs.getString(columnName))));
+			{
+				m_oldValues[index] = StringUtils.toBoolean(decrypt(index, rs.getString(columnName)));
+			}
 			else if (clazz == Timestamp.class)
 				m_oldValues[index] = decrypt(index, rs.getTimestamp(columnName));
 			else if (DisplayType.isLOB(dt))
@@ -1940,11 +1940,13 @@ public abstract class PO
 			try
 			{
 				if (clazz == Integer.class)
-					m_oldValues[index] = new Integer(value);
+					m_oldValues[index] = Integer.parseInt(value);
 				else if (clazz == BigDecimal.class)
 					m_oldValues[index] = new BigDecimal(value);
 				else if (clazz == Boolean.class)
-					m_oldValues[index] = Boolean.valueOf("Y".equals(value));
+				{
+					m_oldValues[index] = StringUtils.toBoolean(value);
+				}
 				else if (clazz == Timestamp.class)
 					m_oldValues[index] = Timestamp.valueOf(value);
 				else if (DisplayType.isLOB(dt))
@@ -2069,11 +2071,7 @@ public abstract class PO
 				stringValue = value.toString();
 			else if (c == Boolean.class)
 			{
-				boolean bValue = false;
-				if (value instanceof Boolean)
-					bValue = ((Boolean)value).booleanValue();
-				else
-					bValue = "Y".equals(value);
+				final boolean bValue = StringUtils.toBoolean(value);
 				stringValue = bValue ? "Y" : "N";
 			}
 			else if (value instanceof Timestamp)
@@ -2177,7 +2175,7 @@ public abstract class PO
 			final String colName = p_info.getColumnName(i);
 			// Set Standard Values
 			if (colName.endsWith("tedBy"))
-				m_newValues[i] = new Integer(Env.getAD_User_ID(ctx));
+				m_newValues[i] = Env.getAD_User_ID(ctx);
 			else if (colName.equals("Created") || colName.equals("Updated"))
 				m_newValues[i] = new Timestamp(System.currentTimeMillis());
 			else if (colName.equals(p_info.getTableName() + "_ID"))     // KeyColumn
@@ -2185,9 +2183,9 @@ public abstract class PO
 			else if (colName.equals("IsActive"))
 				m_newValues[i] = Boolean.TRUE;
 			else if (colName.equals("AD_Client_ID"))
-				m_newValues[i] = new Integer(Env.getAD_Client_ID(ctx));
+				m_newValues[i] = Env.getAD_Client_ID(ctx);
 			else if (colName.equals("AD_Org_ID"))
-				m_newValues[i] = new Integer(Env.getAD_Org_ID(ctx));
+				m_newValues[i] = Env.getAD_Org_ID(ctx);
 			else if (colName.equals("Processed"))
 				m_newValues[i] = Boolean.FALSE;
 			else if (colName.equals("Processing"))
@@ -2266,7 +2264,7 @@ public abstract class PO
 	 */
 	final protected void setAD_Client_ID(final int AD_Client_ID)
 	{
-		set_ValueNoCheck("AD_Client_ID", new Integer(AD_Client_ID));
+		set_ValueNoCheck("AD_Client_ID", AD_Client_ID);
 	}	// setAD_Client_ID
 
 	/**
@@ -2291,7 +2289,7 @@ public abstract class PO
 	@Override
 	final public void setAD_Org_ID(final int AD_Org_ID)
 	{
-		set_ValueNoCheck("AD_Org_ID", new Integer(AD_Org_ID));
+		set_ValueNoCheck("AD_Org_ID", AD_Org_ID);
 	}	// setAD_Org_ID
 
 	/**
@@ -2416,7 +2414,7 @@ public abstract class PO
 	 */
 	final protected void setUpdatedBy(final int AD_User_ID)
 	{
-		set_ValueNoCheck("UpdatedBy", new Integer(AD_User_ID));
+		set_ValueNoCheck("UpdatedBy", AD_User_ID);
 	}	// setAD_User_ID
 
 	/**
@@ -3152,7 +3150,7 @@ public abstract class PO
 				if (!changes && !updatedBy)
 				{
 					final int AD_User_ID = Env.getAD_User_ID(getCtx());
-					set_ValueNoCheck("UpdatedBy", new Integer(AD_User_ID));
+					set_ValueNoCheck("UpdatedBy", AD_User_ID);
 					sql.append("UpdatedBy=").append(AD_User_ID);
 					changes = true;
 					updatedBy = true;
@@ -3204,20 +3202,20 @@ public abstract class PO
 
 			// values
 			if (value == Null.NULL)
+			{
 				sql.append("NULL");
+			}
 			else if (value instanceof Integer || value instanceof BigDecimal)
 				sql.append(encrypt(i, value));
 			else if (c == Boolean.class)
 			{
-				boolean bValue = false;
-				if (value instanceof Boolean)
-					bValue = ((Boolean)value).booleanValue();
-				else
-					bValue = "Y".equals(value);
-				sql.append(encrypt(i, bValue ? "'Y'" : "'N'"));
+				final boolean bValue = StringUtils.toBoolean(value);
+				sql.append(encrypt(i, DB.TO_BOOLEAN(bValue)));
 			}
 			else if (value instanceof Timestamp)
+			{
 				sql.append(DB.TO_DATE((Timestamp)encrypt(i, value), p_info.getColumnDisplayType(i) == DisplayType.Date));
+			}
 			else
 			{
 				if (value.toString().length() == 0)
@@ -3593,16 +3591,8 @@ public abstract class PO
 				}
 				else if (c == Boolean.class)
 				{
-					boolean bValue = false;
-					if (value instanceof Boolean)
-					{
-						bValue = ((Boolean)value).booleanValue();
-					}
-					else
-					{
-						bValue = "Y".equals(value);
-					}
-					sqlValues.append(encrypt(i, bValue ? "'Y'" : "'N'"));
+					final boolean bValue = StringUtils.toBoolean(value);
+					sqlValues.append(encrypt(i, DB.TO_BOOLEAN(bValue)));
 				}
 				else if (value instanceof Timestamp)
 				{
@@ -4487,7 +4477,7 @@ public abstract class PO
 			pstmt = DB.prepareStatement(sql.toString(), trxName);
 			rs = pstmt.executeQuery();
 			while (rs.next())
-				list.add(new Integer(rs.getInt(1)));
+				list.add(rs.getInt(1));
 		}
 		catch (final SQLException e)
 		{
@@ -4722,11 +4712,7 @@ public abstract class PO
 				col.appendChild(document.createTextNode(value.toString()));
 			else if (c == Boolean.class)
 			{
-				boolean bValue = false;
-				if (value instanceof Boolean)
-					bValue = ((Boolean)value).booleanValue();
-				else
-					bValue = "Y".equals(value);
+				final boolean bValue = StringUtils.toBoolean(value);
 				col.appendChild(document.createTextNode(bValue ? "Y" : "N"));
 			}
 			else if (value instanceof Timestamp)
