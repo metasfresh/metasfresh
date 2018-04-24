@@ -24,7 +24,6 @@ package org.adempiere.pricing.spi.impl.rules;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -42,6 +41,8 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 
@@ -98,107 +99,75 @@ public class Discount implements IPricingRule
 		}
 
 		//
-		final int bpartner_ID = pricingCtx.getC_BPartner_ID();
-		final int productID = pricingCtx.getM_Product_ID();
+		final int bpartnerId = pricingCtx.getC_BPartner_ID();
 		final boolean isSOTrx = pricingCtx.isSOTrx();
-		//
-		boolean isUseDiscountSchema = false;
 
-		final Properties ctx = pricingCtx.getCtx();
-		final String trxName = pricingCtx.getTrxName();
+		final I_C_BPartner partner = InterfaceWrapperHelper.loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		final BigDecimal bpartnerFlatDiscount = partner.getFlatDiscount();
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(ctx, bpartner_ID, I_C_BPartner.class, trxName);
-
-		BigDecimal flatDiscount = partner.getFlatDiscount();
-
-		if (flatDiscount == null)
-		{
-			flatDiscount = BigDecimal.ZERO;
-		}
-
-		final I_M_DiscountSchema discountSchema = Services.get(IMDiscountSchemaBL.class).getDiscountSchemaForPartner(partner, isSOTrx);
-
+		final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
+		final I_M_DiscountSchema discountSchema = discountSchemaBL.getDiscountSchemaForPartner(partner, isSOTrx);
 		if (discountSchema == null)
 		{
 			return;
 		}
 
-		// the discount schema was found, therefore it will be used
-		isUseDiscountSchema = true;
+		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
+				.schema(discountSchema)
+				.qty(pricingCtx.getQty())
+				.price(result.getPriceStd())
+				.productId(pricingCtx.getM_Product_ID())
+				.productCategoryId(result.getM_Product_Category_ID())
+				.attributeInstances(getAttributeInstances(pricingCtx.getReferencedObject()))
+				.bpartnerFlatDiscount(bpartnerFlatDiscount)
+				.pricingCtx(pricingCtx)
+				.build();
+		final DiscountResult discountResult = discountSchemaBL.calculateDiscount(request);
 
-		// metas us1064
-		/*
-		 * m_PriceStd = sd.calculatePrice(m_Qty, m_PriceStd, m_M_Product_ID, m_M_Product_Category_ID, FlatDiscount);
-		 */
-
-		// 08660
-		// In case we are dealing with an asi aware object, make sure the value(s) from that asi
-		// are also taken into account when the discount is calculated
-
-		final CalculateDiscountRequest request;
-
-		final IAttributeSetInstanceAware asiAware = Services
-				.get(IAttributeSetInstanceAwareFactoryService.class)
-				.createOrNull(pricingCtx.getReferencedObject());
-
-		if (asiAware == null)
-		{
-			request = CalculateDiscountRequest.builder()
-					.schema(discountSchema)
-					.qty(pricingCtx.getQty())
-					.Price(result.getPriceStd())
-					.M_Product_ID(productID)
-					.M_Product_Category_ID(result.getM_Product_Category_ID())
-					.instances(null)
-					.bPartnerFlatDiscount(flatDiscount)
-					.pricingCtx(pricingCtx)
-					.build();
-		}
-
-		else
-		{
-			final I_M_AttributeSetInstance asi = asiAware.getM_AttributeSetInstance();
-
-			final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
-
-			request = CalculateDiscountRequest.builder()
-					.schema(discountSchema)
-					.qty(pricingCtx.getQty())
-					.Price(result.getPriceStd())
-					.M_Product_ID(productID)
-					.M_Product_Category_ID(result.getM_Product_Category_ID())
-					.instances(instances)
-					.bPartnerFlatDiscount(flatDiscount)
-					.pricingCtx(pricingCtx)
-					.build();
-		}
-
-		final DiscountResult disccountResult = Services.get(IMDiscountSchemaBL.class).calculateDiscount(request);
-
-		result.setUsesDiscountSchema(isUseDiscountSchema);
+		result.setUsesDiscountSchema(true);
 		result.setM_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
-		result.setDiscount(disccountResult.getDiscount());
-		result.setC_PaymentTerm_ID(disccountResult.getC_PaymentTerm_ID());
-		result.setM_DiscountSchemaBreak_ID(disccountResult.getDiscountSchemaBreakId());
+		updatePricingResultFromDiscountResult(result, discountResult);
+	}
+
+	private List<I_M_AttributeInstance> getAttributeInstances(final Object pricingReferencedObject)
+	{
+		if(pricingReferencedObject == null)
+		{
+			return ImmutableList.of();
+		}
 		
-		final BigDecimal priceStdOverride = disccountResult.getPriceStdOverride();
-		final BigDecimal priceListOverride = disccountResult.getPriceListOverride();
-		final BigDecimal priceLimitOverride = disccountResult.getPriceLimitOverride();
+		final IAttributeSetInstanceAware asiAware = Services.get(IAttributeSetInstanceAwareFactoryService.class)
+				.createOrNull(pricingReferencedObject);
+		if(asiAware == null)
+		{
+			return ImmutableList.of();
+		}
 		
+		final I_M_AttributeSetInstance asi = asiAware.getM_AttributeSetInstance();
+		final List<I_M_AttributeInstance> attributeInstances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
+		return attributeInstances;
+	}
+	
+	private void updatePricingResultFromDiscountResult(final IPricingResult pricingResult, final DiscountResult discountResult)
+	{
+		pricingResult.setDiscount(discountResult.getDiscount());
+		pricingResult.setC_PaymentTerm_ID(discountResult.getC_PaymentTerm_ID());
+		pricingResult.setM_DiscountSchemaBreak_ID(discountResult.getDiscountSchemaBreakId());
+		
+		final BigDecimal priceStdOverride = discountResult.getPriceStdOverride();
+		final BigDecimal priceListOverride = discountResult.getPriceListOverride();
+		final BigDecimal priceLimitOverride = discountResult.getPriceLimitOverride();
 		if(priceStdOverride != null)
 		{
-			result.setPriceStd(priceStdOverride);
+			pricingResult.setPriceStd(priceStdOverride);
 		}
-		
 		if(priceListOverride != null)
 		{
-			result.setPriceList(priceListOverride);
+			pricingResult.setPriceList(priceListOverride);
 		}
-		
 		if(priceLimitOverride != null)
 		{
-			result.setPriceLimit(priceLimitOverride);
+			pricingResult.setPriceLimit(priceLimitOverride);
 		}
-		// metas us1064 end
 	}
 }

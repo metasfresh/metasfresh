@@ -24,7 +24,6 @@ import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchemaBreak;
-import org.compiere.util.Util;
 
 import lombok.NonNull;
 
@@ -93,16 +92,11 @@ import lombok.NonNull;
 		final I_M_DiscountSchema schema = request.getSchema();
 		if (schema.isBPartnerFlatDiscount())
 		{
-			final BigDecimal bpFlatDiscountToUse = Util.coalesce(request.getBPartnerFlatDiscount(), BigDecimal.ZERO);
-			return DiscountResult.builder()
-					.discount(bpFlatDiscountToUse)
-					.build();
+			return DiscountResult.discount(request.getBpartnerFlatDiscount());
 		}
 		else
 		{
-			return DiscountResult.builder()
-					.discount(schema.getFlatDiscount())
-					.build();
+			return DiscountResult.discount(schema.getFlatDiscount());
 		}
 	}
 
@@ -180,24 +174,29 @@ import lombok.NonNull;
 		return newPricingCtx;
 	}
 
-	private void computeDefaultDiscountForDiscountSchemaBreak(final DiscountResultBuilder result, final I_M_DiscountSchemaBreak breakApplied)
+	private void computeDefaultDiscountForDiscountSchemaBreak(final DiscountResultBuilder result, final I_M_DiscountSchemaBreak schemaBreak)
 	{
 		final BigDecimal discount;
-		if (breakApplied.isBPartnerFlatDiscount())
+		if (schemaBreak.isBPartnerFlatDiscount())
 		{
-			discount = request.getBPartnerFlatDiscount();
+			discount = request.getBpartnerFlatDiscount();
 		}
 		else
 		{
-			discount = breakApplied.getBreakDiscount();
+			discount = schemaBreak.getBreakDiscount();
 		}
 
 		result.discount(discount);
-		result.C_PaymentTerm_ID(breakApplied.getC_PaymentTerm_ID());
+		result.C_PaymentTerm_ID(schemaBreak.getC_PaymentTerm_ID());
 	}
 
 	private I_M_DiscountSchemaBreak fetchDiscountSchemaBreak()
 	{
+		if(request.getForceSchemaBreak() != null)
+		{
+			return request.getForceSchemaBreak();
+		}
+		
 		// Price Breaks
 		final List<I_M_DiscountSchemaBreak> breaks = Services.get(IMDiscountSchemaDAO.class).retrieveBreaks(request.getSchema());
 		final BigDecimal amt = request.getPrice().multiply(request.getQty());
@@ -211,21 +210,21 @@ import lombok.NonNull;
 					breaks,
 					-1,  // attributeValueID
 					isQtyBased,
-					request.getM_Product_ID(),
-					request.getM_Product_Category_ID(),
+					request.getProductId(),
+					request.getProductCategoryId(),
 					request.getQty(),
 					amt);
 		}
 		else
 		{
-			final Optional<I_M_DiscountSchemaBreak> optionalBreak = request.getInstances().stream()
+			final Optional<I_M_DiscountSchemaBreak> optionalBreak = request.getAttributeInstances().stream()
 					.filter(instance -> !hasNoValue(instance))
 					.map(instance -> discountSchemaBL.pickApplyingBreak(
 							breaks,
 							instance.getM_AttributeValue_ID(),
 							isQtyBased,
-							request.getM_Product_ID(),
-							request.getM_Product_Category_ID(),
+							request.getProductId(),
+							request.getProductCategoryId(),
 							request.getQty(),
 							amt))
 					.filter(schemaBreak -> schemaBreak != null)
@@ -255,12 +254,13 @@ import lombok.NonNull;
 	 */
 	private boolean hasNoValues()
 	{
-		if (request.getInstances().isEmpty())
+		final List<I_M_AttributeInstance> attributeInstances = request.getAttributeInstances();
+		if (attributeInstances.isEmpty())
 		{
 			return true;
 		}
 
-		final boolean anyAttributeInstanceMatches = request.getInstances().stream()
+		final boolean anyAttributeInstanceMatches = attributeInstances.stream()
 				.anyMatch(instance -> !hasNoValue(instance));
 
 		return !anyAttributeInstanceMatches;
