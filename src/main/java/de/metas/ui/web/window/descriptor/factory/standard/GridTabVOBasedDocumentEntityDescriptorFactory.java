@@ -322,10 +322,22 @@ import lombok.NonNull;
 			{
 				readonlyLogic = ConstantLogicExpression.TRUE;
 			}
+			//
+			// Readonly logic in case of parent link column which is not parent link in this window.
+			// NOTE: in SwingUI/application dictionary, in case a column is flagged as ParentLink it is automatically flagged as IsUpdateable=N.
+			// So, here we are identifying this case and consider it as editable.
+			// e.g. BPartner (pharma) window -> Product tab
+			else if(!gridFieldVO.isUpdateable()
+					&& gridFieldVO.isParentLink() && !isParentLinkColumn
+					&& gridFieldVO.isMandatory())
+			{
+				readonlyLogic = ConstantLogicExpression.FALSE;
+			}
 			else if (gridFieldVO.isReadOnly())
 			{
 				readonlyLogic = ConstantLogicExpression.TRUE;
 			}
+			//
 			// Readonly logic in case of not Updateable
 			// NOTE: in Swing UI, this property was interpreted as: allow the field to be read-write until it's saved. After that, it's readonly.
 			// But here, on Webui we no longer have this concept, since we are auto-saving it.
