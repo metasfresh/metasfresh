@@ -53,6 +53,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 	public ProductNotOnPriceListException(final IPricingContext pricingCtx, final int documentLineNo)
 	{
 		super(buildMessage(pricingCtx, documentLineNo));
+		setParameter("pricingCtx", pricingCtx);
 	}
 
 	public ProductNotOnPriceListException(final I_M_PriceList_Version plv, final int productId)
