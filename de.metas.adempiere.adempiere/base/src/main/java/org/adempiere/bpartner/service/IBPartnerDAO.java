@@ -24,14 +24,11 @@ package org.adempiere.bpartner.service;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Greeting;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Shipper;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -39,14 +36,6 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 
 public interface IBPartnerDAO extends ISingletonService
 {
-	/**
-	 *
-	 * @param value
-	 * @return may return <code>null</code> if there is no matching bpartner
-	 *
-	 */
-	<T extends I_C_BPartner> T retrieveBPartner(Properties ctx, String value, Class<T> clazz, String trxName);
-
 	/**
 	 * Retrieve {@link I_C_BPartner} assigned to given organization
 	 *
@@ -59,38 +48,13 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
 
-	<T extends I_C_Location> List<T> retrieveLocation(Properties ctx, String address1, String city, String postal, String countryCode, Class<T> clazz, String trxName);
-
-	/**
-	 *
-	 * @param countryCode
-	 * @param trxName
-	 * @return
-	 */
-	I_C_Country retrieveCountry(String countryCode, String trxName);
-
-	/**
-	 *
-	 * @param name the name of a business partner location.
-	 * @param trxName
-	 * @return may return <code>null</code> if there is no matching bPartnerLocation
-	 */
-	I_C_BPartner_Location retrieveBPartnerLocation(String name, String trxName);
+	public List<I_C_BPartner_Location> retrieveBPartnerLocations(final int bpartnerId);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(Properties ctx, int bpartnerId, String trxName);
 
-	/**
-	 *
-	 * @param bPartnerId
-	 * @param reload
-	 * @param trxName
-	 * @return
-	 * @deprecated please use {@link #retrieveBPartnerLocations(I_C_BPartner)} or {@link #retrieveBPartnerLocations(Properties, int, String)}.
-	 */
-	@Deprecated
-	List<I_C_BPartner_Location> retrieveBPartnerLocations(int bPartnerId, boolean reload, String trxName);
-
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(I_C_BPartner bpartner);
+	
+	Set<Integer> retrieveCountryIdsOfBPartnerLocations(int bpartnerId);
 
 	/**
 	 * Contacts of the partner, ordered by ad_user_ID, ascending
@@ -120,22 +84,6 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	List<I_AD_User> retrieveContacts(I_C_BPartner bpartner);
 
-	I_C_BPartner retrieveDefaultVendor(int productId, String trxName) throws ProductHasNoVendorException;
-
-	I_C_Greeting retrieveGreeting(String name, String trxName);
-
-	/**
-	 *
-	 * @param ctx
-	 * @param bPartnerId
-	 * @param soTrx
-	 * @param trxName
-	 * @return
-	 * @deprecated this method accesses the legacy pricelist-columns of the given <code>C_BPartner</code>.
-	 */
-	@Deprecated
-	int retrievePriceListId(Properties ctx, int bPartnerId, boolean soTrx, String trxName);
-
 	/**
 	 * Returns the <code>M_PricingSystem_ID</code> to use for a given bPartner.
 	 *
@@ -154,18 +102,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	int retrievePricingSystemId(Properties ctx, int bPartnerId, boolean soTrx, String trxName);
 
-	/**
-	 * Retrieves the discount schema for the given BParnter. If the BPartner has none, it falls back to the partner's C_BP_Group. If the partner has no group or that group hasn't a discount schema
-	 * either, it returns <code>null</code>.
-	 *
-	 * @param partner
-	 * @param soTrx if <code>true</code>, the sales discount schema is returned, otherwise the purchase discount schema is returned.
-	 */
-	I_M_DiscountSchema retrieveDiscountSchemaOrNull(I_C_BPartner partner, boolean soTrx);
-
 	I_M_Shipper retrieveShipper(int bPartnerId, String trxName);
-
-	I_M_Shipper retrieveDefaultShipper();
 
 	/**
 	 * @param address
@@ -276,4 +213,5 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
 
+	List<Integer> retrieveBPartnerIdsForDiscountSchemaId(int discountSchemaId, boolean isSOTrx);
 }

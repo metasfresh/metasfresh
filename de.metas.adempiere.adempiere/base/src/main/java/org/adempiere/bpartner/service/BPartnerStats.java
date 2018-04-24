@@ -65,7 +65,7 @@ public class BPartnerStats
 		this.openItems = Util.coalesce(openItems, ZERO);
 		this.actualLifeTimeValue = Util.coalesce(actualLifeTimeValue, ZERO);
 		this.soCreditUsed = Util.coalesce(soCreditUsed, ZERO);
-		this.soCreditStatus = Util.coalesce(soCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK);
+		this.soCreditStatus = Util.coalesce(soCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
 	}
 
 	public BigDecimal getSOCreditUsed()

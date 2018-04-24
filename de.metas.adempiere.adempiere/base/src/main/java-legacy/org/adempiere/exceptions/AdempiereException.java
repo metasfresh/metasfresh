@@ -184,6 +184,7 @@ public class AdempiereException extends RuntimeException
 
 	private Integer adIssueId = null;
 	private boolean userNotified = false;
+	private boolean userValidationError;
 
 	private Map<String, Object> parameters = null;
 	private boolean appendParametersToMessage = false;
@@ -593,5 +594,27 @@ public class AdempiereException extends RuntimeException
 			message.append("\n");
 		}
 		message.append(parametersStr);
+	}
+	
+	/**
+	 * Marks this exception as user validation error.
+	 * In case an exception is a user validation error, the framework assumes the message is user friendly and can be displayed directly.
+	 * More, the webui auto-saving will not hide/ignore this error put it will propagate it directly to user.
+	 */
+	@OverridingMethodsMustInvokeSuper
+	public AdempiereException markAsUserValidationError()
+	{
+		userValidationError = true;
+		return this;
+	}
+	
+	public final boolean isUserValidationError()
+	{
+		return userValidationError;
+	}
+	
+	public static final boolean isUserValidationError(final Throwable ex)
+	{
+		return (ex instanceof AdempiereException) && ((AdempiereException)ex).isUserValidationError();
 	}
 }

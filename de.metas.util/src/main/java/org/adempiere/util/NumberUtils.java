@@ -35,7 +35,6 @@ public final class NumberUtils
 {
 	private NumberUtils()
 	{
-		super();
 	}
 
 	/**

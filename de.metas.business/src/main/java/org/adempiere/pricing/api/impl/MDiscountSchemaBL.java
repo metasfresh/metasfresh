@@ -1,3 +1,4 @@
+
 package org.adempiere.pricing.api.impl;
 
 /*
@@ -26,22 +27,20 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.CalculateDiscountRequest;
 import org.adempiere.pricing.api.DiscountResult;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
-import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
-import lombok.NonNull;
 
 public class MDiscountSchemaBL implements IMDiscountSchemaBL
 {
@@ -155,34 +154,6 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		return breakApplied;
 	}
 
-
-	@Override
-	public BigDecimal calculatePrice(final CalculateDiscountRequest request)
-	{
-
-		if (request.getPrice() == null || request.getPrice().signum() == 0)
-		{
-			return request.getPrice();
-		}
-
-		final DiscountResult result = calculateDiscount(request);
-
-		final BigDecimal discount = result.getDiscount();
-		if (discount == null || discount.signum() == 0)
-		{
-			return request.getPrice();
-		}
-
-		return applyDiscount(request.getPrice(), discount);
-	}
-
-	private BigDecimal applyDiscount(@NonNull final BigDecimal price, @NonNull final BigDecimal discount)
-	{
-		BigDecimal multiplier = (Env.ONEHUNDRED).subtract(discount);
-		multiplier = multiplier.divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP);
-		return price.multiply(multiplier);
-	}
-
 	private boolean breakApplies(
 			final I_M_DiscountSchemaBreak br,
 			final BigDecimal value,
@@ -291,33 +262,12 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 	@Override
 	public I_M_DiscountSchema getDiscountSchemaForPartner(final I_C_BPartner partner, final boolean isSOTrx)
 	{
-		final I_C_BP_Group group = partner.getC_BP_Group();
-
-		I_M_DiscountSchema schema;
-
-		// SO TRX
-		if (isSOTrx)
+		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(partner, isSOTrx);
+		if (discountSchemaId <= 0)
 		{
-			schema = partner.getM_DiscountSchema();
-
-			if (schema != null)
-			{
-				return schema;
-			}
-
-			return group.getM_DiscountSchema();
+			return null;
 		}
 
-		// PO TRX
-
-		schema = partner.getPO_DiscountSchema();
-
-		if (schema != null)
-		{
-			return schema;
-		}
-
-		return group.getPO_DiscountSchema();
+		return Services.get(IMDiscountSchemaDAO.class).getById(discountSchemaId);
 	}
-
 }

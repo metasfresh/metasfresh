@@ -44,13 +44,6 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	DiscountResult calculateDiscount(final CalculateDiscountRequest request);
 
 	/**
-	 * Calculate Discounted Price
-	 *
-	 * @return
-	 */
-	BigDecimal calculatePrice(final CalculateDiscountRequest request);
-
-	/**
 	 * Re-sequence the lines and breaks of the given schema
 	 * This means setting their sequences from 10 to 10
 	 *
