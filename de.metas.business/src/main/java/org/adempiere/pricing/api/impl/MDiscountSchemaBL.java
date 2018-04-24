@@ -25,6 +25,7 @@ package org.adempiere.pricing.api.impl;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.bpartner.service.IBPartnerBL;
@@ -44,12 +45,13 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 
-import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import lombok.NonNull;
 
 public class MDiscountSchemaBL implements IMDiscountSchemaBL
 {
+	private static final Comparator<I_M_DiscountSchemaBreak> REVERSED_BREAKS_COMPARATOR = Comparator.<I_M_DiscountSchemaBreak, BigDecimal> comparing(I_M_DiscountSchemaBreak::getBreakValue)
+			.reversed();
 
 	@Override
 	public DiscountResult calculateDiscount(final CalculateDiscountRequest request)
@@ -62,8 +64,8 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 	 * Pick the first break that applies based on product, category and attribute value.
 	 */
 	@VisibleForTesting
-	I_M_DiscountSchemaBreak pickApplyingBreak(
-			final List<I_M_DiscountSchemaBreak> breaks,
+	static I_M_DiscountSchemaBreak pickApplyingBreak(
+			final List<I_M_DiscountSchemaBreak> schemaBreaks,
 			final int attributeValueId,
 			final boolean isQtyBased,
 			final int productId,
@@ -73,22 +75,16 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 	{
 		final BigDecimal breakValue = isQtyBased ? qty : amt;
 
-		return breaks.stream()
-				.filter(schemaBreak -> breakApplies(schemaBreak, breakValue, productId, productCategoryId, attributeValueId))
+		return schemaBreaks.stream()
+				.filter(schemaBreak -> schemaBreakMatches(schemaBreak, breakValue, productId, productCategoryId, attributeValueId))
 				.sorted(REVERSED_BREAKS_COMPARATOR)
 				.findFirst()
 				.orElse(null);
 	}
 
-	/**
-	 * Check if the instance has no value set
-	 *
-	 * @param instance
-	 * @return true if the instance has no value set, false if it has one
-	 */
-	private boolean hasNoValue(final I_M_AttributeInstance instance)
+	private static boolean hasAttributeValue(final I_M_AttributeInstance instance)
 	{
-		return instance.getM_AttributeValue_ID() <= 0;
+		return instance.getM_AttributeValue_ID() > 0;
 	}
 
 	/**
@@ -97,17 +93,14 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 	 * @param instances
 	 * @return true if all the instances are empty, false if at least one is not
 	 */
-	private boolean hasNoValues(final Collection<I_M_AttributeInstance> instances)
+	private static boolean hasNoAttributeValues(final Collection<I_M_AttributeInstance> instances)
 	{
 		if (instances == null || instances.isEmpty())
 		{
 			return true;
 		}
 
-		final boolean anyAttributeInstanceMatches = instances.stream()
-				.anyMatch(instance -> !hasNoValue(instance));
-
-		return !anyAttributeInstanceMatches;
+		return instances.stream().noneMatch(instance -> hasAttributeValue(instance));
 	}
 
 	@Override
@@ -117,17 +110,17 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 		final I_M_DiscountSchema schema = schemaRepo.getById(query.getDiscountSchemaId());
-		final List<I_M_DiscountSchemaBreak> breaks = schemaRepo.retrieveBreaks(schema);
+		final List<I_M_DiscountSchemaBreak> schemaBreak = schemaRepo.retrieveBreaks(schema);
 		final boolean isQtyBased = schema.isQuantityBased();
 
 		final List<I_M_AttributeInstance> attributeInstances = query.getAttributeInstances();
 		final int productId = query.getProductId();
 		final int productCategoryId = productDAO.retrieveProductCategoryByProductId(productId);
 
-		if (hasNoValues(attributeInstances))
+		if (hasNoAttributeValues(attributeInstances))
 		{
 			return pickApplyingBreak(
-					breaks,
+					schemaBreak,
 					-1,  // attributeValueId
 					isQtyBased,
 					productId,
@@ -138,9 +131,9 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		else
 		{
 			return attributeInstances.stream()
-					.filter(instance -> !hasNoValue(instance))
+					.filter(attributeInstance -> hasAttributeValue(attributeInstance))
 					.map(instance -> pickApplyingBreak(
-							breaks,
+							schemaBreak,
 							instance.getM_AttributeValue_ID(),
 							isQtyBased,
 							productId,
@@ -153,7 +146,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		}
 	}
 
-	private boolean breakApplies(
+	private static boolean schemaBreakMatches(
 			final I_M_DiscountSchemaBreak schemaBreak,
 			final BigDecimal value,
 			final int productId,
@@ -176,6 +169,13 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			return false;
 		}
 
+		//
+		// Product / Category
+		if (!schemaBreakMatchesProduct(schemaBreak, productId, productCategoryId))
+		{
+			return false;
+		}
+
 		// If the break has an attribute that is not the same as the one given as parameter, break does not apply
 		final int breakAttributeValueId = schemaBreak.getM_AttributeValue_ID();
 		if (breakAttributeValueId > 0 && breakAttributeValueId != attributeValueId)
@@ -183,30 +183,27 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			return false;
 		}
 
-		// Everything shall work as before: the break either doesn't have an attribute set or the attributes are equal
+		return true;
+	}
 
-		// No Product / Category
+	private static boolean schemaBreakMatchesProduct(
+			final I_M_DiscountSchemaBreak schemaBreak,
+			final int productId,
+			final int productCategoryId)
+	{
 		final int breakProductId = schemaBreak.getM_Product_ID();
+		if (breakProductId > 0)
+		{
+			return breakProductId == productId;
+		}
+
 		final int breakProductCategoryId = schemaBreak.getM_Product_Category_ID();
-		if (breakProductId <= 0 && breakProductCategoryId <= 0)
-		{
-			return true;
-		}
-
-		// Product
-		if (breakProductId == productId)
-		{
-			return true;
-		}
-
-		// Category
-		if (productCategoryId > 0)
+		if (breakProductCategoryId > 0)
 		{
 			return breakProductCategoryId == productCategoryId;
 		}
 
-		// Look up Category of Product
-		return Services.get(IProductBL.class).isProductInCategory(productId, breakProductCategoryId);
+		return true;
 	}
 
 	/**
