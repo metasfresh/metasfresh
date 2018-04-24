@@ -1,6 +1,16 @@
 ﻿DROP FUNCTION IF EXISTS "de.metas.vertical.pharma".pharma_permission_control_report
 (
 	IN C_BPartner_ID numeric,
+	IN IsPharmaManufacturerPermission character(1),
+	IN IsPharmaWholesalePermission character(1),
+	IN IsPharmaAgentPermission character(1),
+	IN IsPharmaciePermission character(1),
+	IN IsVeterinaryPharmacyPermission character(1)
+	
+);
+DROP FUNCTION IF EXISTS "de.metas.vertical.pharma".pharma_permission_control_report
+(
+	IN C_BPartner_ID numeric,
 	IN isCustomer character(1),
 	IN IsPharmaManufacturerPermission character(1),
 	IN IsPharmaWholesalePermission character(1),
