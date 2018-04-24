@@ -66,17 +66,19 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			final List<I_M_DiscountSchemaBreak> breaks,
 			final int attributeValueId,
 			final boolean isQtyBased,
-			final int M_Product_ID,
-			final int M_Product_Category_ID,
+			final int productId,
+			final int productCategoryId,
 			final BigDecimal qty,
 			final BigDecimal amt)
 	{
+		final BigDecimal breakValue = isQtyBased ? qty : amt;
 
 		return breaks.stream()
 				.filter(I_M_DiscountSchemaBreak::isActive)
-				.filter(schemaBreak -> breakApplies(schemaBreak, isQtyBased ? qty : amt, M_Product_ID, M_Product_Category_ID, attributeValueId))
+				.filter(schemaBreak -> breakApplies(schemaBreak, breakValue, productId, productCategoryId, attributeValueId))
 				.sorted(REVERSED_BREAKS_COMPARATOR)
-				.findFirst().orElse(null);
+				.findFirst()
+				.orElse(null);
 	}
 
 	/**
@@ -153,36 +155,31 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 	}
 
 	private boolean breakApplies(
-			final I_M_DiscountSchemaBreak br,
+			final I_M_DiscountSchemaBreak schemaBreak,
 			final BigDecimal value,
-			final int product_ID,
-			final int product_Category_ID,
-			final int attributeValue_ID)
+			final int productId,
+			final int productCategoryId,
+			final int attributeValueId)
 	{
-		if (!br.isActive())
+		if (!schemaBreak.isActive())
 		{
 			return false;
 		}
 
-		if (!br.isValid())
+		if (!schemaBreak.isValid())
 		{
 			return false;
 		}
 
 		// below break value
-		if (value.compareTo(br.getBreakValue()) < 0)
+		if (value.compareTo(schemaBreak.getBreakValue()) < 0)
 		{
 			return false;
 		}
 
-		final de.metas.adempiere.model.I_M_DiscountSchemaBreak breakInstance = InterfaceWrapperHelper.create(br, de.metas.adempiere.model.I_M_DiscountSchemaBreak.class);
-
-		// break attribute value id
-		final int breakAttributeValueID = breakInstance.getM_AttributeValue_ID();
-
 		// If the break has an attribute that is not the same as the one given as parameter, break does not apply
-
-		if (breakAttributeValueID > 0 && breakAttributeValueID != attributeValue_ID)
+		final int breakAttributeValueId = schemaBreak.getM_AttributeValue_ID();
+		if (breakAttributeValueId > 0 && breakAttributeValueId != attributeValueId)
 		{
 			return false;
 		}
@@ -190,26 +187,27 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		// Everything shall work as before: the break either doesn't have an attribute set or the attributes are equal
 
 		// No Product / Category
-		if (br.getM_Product_ID() <= 0
-				&& br.getM_Product_Category_ID() <= 0)
+		final int breakProductId = schemaBreak.getM_Product_ID();
+		final int breakProductCategoryId = schemaBreak.getM_Product_Category_ID();
+		if (breakProductId <= 0 && breakProductCategoryId <= 0)
 		{
 			return true;
 		}
 
 		// Product
-		if (br.getM_Product_ID() == product_ID)
+		if (breakProductId == productId)
 		{
 			return true;
 		}
 
 		// Category
-		if (product_Category_ID > 0)
+		if (productCategoryId > 0)
 		{
-			return br.getM_Product_Category_ID() == product_Category_ID;
+			return breakProductCategoryId == productCategoryId;
 		}
 
 		// Look up Category of Product
-		return Services.get(IProductBL.class).isProductInCategory(product_ID, br.getM_Product_Category_ID());
+		return Services.get(IProductBL.class).isProductInCategory(productId, breakProductCategoryId);
 	}
 
 	/**

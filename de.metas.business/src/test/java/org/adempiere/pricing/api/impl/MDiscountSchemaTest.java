@@ -143,7 +143,7 @@ public class MDiscountSchemaTest
 				-1, // attribute value
 				true,
 				product.getM_Product_ID(),
-				category.getM_Product_Category_ID(),
+				product.getM_Product_Category_ID(),
 				new BigDecimal(15),
 				new BigDecimal(30));
 
@@ -166,7 +166,7 @@ public class MDiscountSchemaTest
 				-1, // attribute value
 				true,
 				product.getM_Product_ID(),
-				category.getM_Product_Category_ID(),
+				product.getM_Product_Category_ID(),
 				new BigDecimal(25),
 				new BigDecimal(50));
 
@@ -193,7 +193,7 @@ public class MDiscountSchemaTest
 				-1, // attribute value
 				true,
 				product.getM_Product_ID(),
-				category.getM_Product_Category_ID(),
+				product.getM_Product_Category_ID(),
 				new BigDecimal(25),
 				new BigDecimal(50));
 
@@ -220,7 +220,7 @@ public class MDiscountSchemaTest
 				-1, // attribute value
 				true,
 				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
+				product1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
 		);
@@ -238,7 +238,7 @@ public class MDiscountSchemaTest
 				-1, // attribute value
 				true,
 				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
+				product1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
 		);
@@ -254,7 +254,7 @@ public class MDiscountSchemaTest
 				-1, // attribute value
 				true,
 				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
+				product1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
 		);
@@ -306,7 +306,7 @@ public class MDiscountSchemaTest
 				-1,
 				true,
 				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
+				product1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
 		);
@@ -318,7 +318,7 @@ public class MDiscountSchemaTest
 				attrValue2.getM_AttributeValue_ID(),
 				true,
 				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
+				product1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
 		);
@@ -337,7 +337,7 @@ public class MDiscountSchemaTest
 				attrValue2.getM_AttributeValue_ID(),
 				true,
 				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
+				product1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
 		);
