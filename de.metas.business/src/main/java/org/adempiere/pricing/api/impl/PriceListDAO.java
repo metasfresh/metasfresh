@@ -107,8 +107,11 @@ public class PriceListDAO implements IPriceListDAO
 
 		if (isSOPriceList != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOPriceList)
-					.orderByDescending(I_M_PriceList.COLUMNNAME_IsSOPriceList); // sales first
+			queryBuilder.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOPriceList);
+		}
+		else
+		{
+			queryBuilder.orderByDescending(I_M_PriceList.COLUMNNAME_IsSOPriceList); // sales first
 		}
 
 		return queryBuilder
