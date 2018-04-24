@@ -963,8 +963,6 @@ public class OrderLineBL implements IOrderLineBL
 	public void updateNoPriceConditionsColor(final I_C_OrderLine orderLine)
 	{
 
-		final String colorName = getNoPricingConditionsColorName();
-
 		final int discountSchemaBreakId = orderLine.getM_DiscountSchemaBreak_ID();
 
 		if (discountSchemaBreakId > 0)
@@ -975,7 +973,7 @@ public class OrderLineBL implements IOrderLineBL
 			return;
 		}
 
-		final int colorId = getNoPriceConditionsColorId(colorName);
+		final int colorId = getNoPriceConditionsColorId();
 
 		if (colorId > 0)
 		{
@@ -984,14 +982,11 @@ public class OrderLineBL implements IOrderLineBL
 
 	}
 
-	private String getNoPricingConditionsColorName()
+	private int getNoPriceConditionsColorId()
 	{
-		return Services.get(ISysConfigBL.class).getValue(SYSCONFIG_NoPriceConditionsColorName, "-");
-	}
+		final String colorName = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_NoPriceConditionsColorName, "-");
 
-	private int getNoPriceConditionsColorId(final String name)
-	{
-		return Services.get(IColorRepository.class).getColorIdByName(name);
+		return Services.get(IColorRepository.class).getColorIdByName(colorName);
 	}
 
 	@Override
@@ -1009,7 +1004,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		final boolean existsOrderLineWithNoPricingConditions = orderLines
 				.stream()
-				.anyMatch(orderLine -> orderLine.getM_DiscountSchemaBreak_ID() <= 0);
+				.anyMatch(orderLine -> hasNoPricingConditions(orderLine));
 
 		if (existsOrderLineWithNoPricingConditions)
 		{
@@ -1021,13 +1016,15 @@ public class OrderLineBL implements IOrderLineBL
 
 	private boolean isMandatoryPricingConditions()
 	{
-		final String pricingConditionsColorName = getNoPricingConditionsColorName();
+		final int noPriceConditionsColorId = getNoPriceConditionsColorId();
 
-		final boolean noMandatoryPricingConditions = Check.isEmpty(pricingConditionsColorName) || "-".equals(pricingConditionsColorName);
-
-		return !noMandatoryPricingConditions;
+		return noPriceConditionsColorId > 0;
 	}
 
+	private boolean hasNoPricingConditions(final I_C_OrderLine orderLine)
+	{
+		return orderLine.getM_DiscountSchemaBreak_ID() <= 0;
+	}
 
 	@Override
 	public int getC_PaymentTerm_ID(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
