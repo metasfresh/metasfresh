@@ -39,7 +39,6 @@ import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -143,8 +142,8 @@ public class Discount implements IPricingRule
 			return ImmutableList.of();
 		}
 		
-		final I_M_AttributeSetInstance asi = asiAware.getM_AttributeSetInstance();
-		final List<I_M_AttributeInstance> attributeInstances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
+		final int asiId = asiAware.getM_AttributeSetInstance_ID();
+		final List<I_M_AttributeInstance> attributeInstances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asiId);
 		return attributeInstances;
 	}
 	
