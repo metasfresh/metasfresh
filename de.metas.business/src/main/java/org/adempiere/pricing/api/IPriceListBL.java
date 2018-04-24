@@ -25,10 +25,8 @@ package org.adempiere.pricing.api;
 import java.sql.Timestamp;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 
 /**
  * @author RC
@@ -38,15 +36,15 @@ public interface IPriceListBL extends ISingletonService
 {
 	/**
 	 * @param pricingSystem
-	 * @param country
+	 * @param countryId
 	 * @param date
 	 * @param isSOTrx: true is SO, false if PO
 	 *
-	 * @return the current pricelist for vendor if any (for the giver pricing system), null otherwise
+	 * @return the current price list for vendor if any (for the giver pricing system), null otherwise
 	 */
 	I_M_PriceList getCurrentPricelistOrNull(
-			I_M_PricingSystem pricingSystem,
-			I_C_Country country,
+			int pricingSystemId,
+			int countryId,
 			Timestamp date,
 			boolean isSOTrx);
 
@@ -61,9 +59,10 @@ public interface IPriceListBL extends ISingletonService
 	 *            task 09533: the user doesn't know about PLV's processed flag, so in most cases we can't filter by it
 	 * @return
 	 */
-	I_M_PriceList_Version getCurrentPriceListVersionOrNull(I_M_PricingSystem pricingSystem,
-			I_C_Country country,
+	I_M_PriceList_Version getCurrentPriceListVersionOrNull(
+			int pricingSystemId,
+			int countryId,
 			Timestamp date,
-			boolean isSoTrx,
+			Boolean isSOTrx,
 			Boolean processedPLVFiltering);
 }

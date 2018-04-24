@@ -100,4 +100,6 @@ public interface IEditablePricingContext extends IPricingContext
 	void setC_Country_ID(int c_Country_ID);
 
 	void setFailIfNotCalculated(boolean failIfNotCalculated);
+
+	void setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag);
 }

@@ -13,24 +13,21 @@ package org.adempiere.pricing.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.model.IContextAware;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 
 /**
@@ -46,8 +43,6 @@ public interface IPricingContext extends IContextAware
 	I_M_Product getM_Product();
 
 	int getM_PricingSystem_ID();
-
-	I_M_PricingSystem getM_PricingSystem();
 
 	int getM_PriceList_ID();
 
@@ -120,10 +115,9 @@ public interface IPricingContext extends IContextAware
 	 */
 	Boolean isManualPrice();
 
-
 	int getC_Country_ID();
 
-	I_C_Country getC_Country();
-
 	boolean isFailIfNotCalculated();
+	
+	boolean isSkipCheckingPriceListSOTrxFlag();
 }
