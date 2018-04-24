@@ -13,15 +13,14 @@ package org.adempiere.ad.persistence;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.reflect.Constructor;
 import java.sql.PreparedStatement;
@@ -66,11 +65,11 @@ public final class TableModelLoader
 	public PO newPO(final Properties ctx, final String tableName, final String trxName)
 	{
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
-		final int recordId = InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName) - 1;
-		final PO po = retrievePO(ctx, tableName, recordId, trxName);
+		final int newRecordId = InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName) - 1;
+		final PO po = createOrLoadPO(ctx, tableName, newRecordId, trxName);
 		return po;
 	}
-	
+
 	public PO newPO(final String tableName)
 	{
 		return newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
@@ -114,23 +113,19 @@ public final class TableModelLoader
 			}
 		}
 
-		final PO po = retrievePO(ctx, tableName, recordId, trxName);
+		final PO po = createOrLoadPO(ctx, tableName, recordId, trxName);
 		modelCacheService.addToCache(po);
 
 		return po;
 	}
 
 	/**
-	 * Loads the PO from database.
+	 * Creates/Loads the PO from database.
 	 * In case some errors were encountered, they will be logged and <code>null</code> will be returned.
-	 *
-	 * @param ctx
-	 * @param tableName
-	 * @param recordId
-	 * @param trxName
+	 * 
 	 * @return PO or null
 	 */
-	private final PO retrievePO(final Properties ctx, final String tableName, final int recordId, final String trxName)
+	private final PO createOrLoadPO(final Properties ctx, final String tableName, final int recordId, final String trxName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		if (recordId > 0 && !poInfo.isSingleKeyColumnName())
@@ -223,8 +218,7 @@ public final class TableModelLoader
 		{
 			throw new AdempiereException("Error while loading model from ResultSet"
 					+ "\n@TableName@: " + tableName
-					+ "\nClass: " + clazz
-					, e);
+					+ "\nClass: " + clazz, e);
 		}
 	}	// getPO
 
