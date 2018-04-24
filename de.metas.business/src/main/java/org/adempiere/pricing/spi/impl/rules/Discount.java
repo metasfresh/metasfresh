@@ -117,7 +117,6 @@ public class Discount implements IPricingRule
 				.qty(pricingCtx.getQty())
 				.price(result.getPriceStd())
 				.productId(pricingCtx.getM_Product_ID())
-				.productCategoryId(result.getM_Product_Category_ID())
 				.attributeInstances(getAttributeInstances(pricingCtx.getReferencedObject()))
 				.bpartnerFlatDiscount(bpartnerFlatDiscount)
 				.pricingCtx(pricingCtx)

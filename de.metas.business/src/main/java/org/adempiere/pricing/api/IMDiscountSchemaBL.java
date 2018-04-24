@@ -24,11 +24,9 @@ package org.adempiere.pricing.api;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
-import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 
@@ -62,32 +60,9 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	I_M_DiscountSchema getDiscountSchemaForPartner(I_C_BPartner partner, boolean isSOTrx);
 
 	/**
-	 * Pick the first break that applies based on product, category and attribute value
-	 *
-	 * @param breaks
-	 * @param attributeValueID
-	 * @param isQtyBased
-	 * @param M_Product_ID
-	 * @param M_Product_Category_ID
-	 * @param qty
-	 * @param amt
-	 * @return
-	 */
-	I_M_DiscountSchemaBreak pickApplyingBreak(List<I_M_DiscountSchemaBreak> breaks, int attributeValueID, boolean isQtyBased, int M_Product_ID, int M_Product_Category_ID, BigDecimal qty,
-			BigDecimal amt);
-
-	/**
 	 * Pick the first break that applies based on product, category and attribute instance
-	 *
-	 * @param breaks
-	 * @param instances
-	 * @param isQtyBased
-	 * @param M_Product_ID
-	 * @param M_Product_Category_ID
-	 * @param qty
-	 * @param amt
-	 * @return
+	 * @return schema break or null
 	 */
-	I_M_DiscountSchemaBreak pickApplyingBreak(List<I_M_DiscountSchemaBreak> breaks, List<I_M_AttributeInstance> instances, boolean isQtyBased, int M_Product_ID, int M_Product_Category_ID,
-			BigDecimal qty, BigDecimal amt);
+	I_M_DiscountSchemaBreak pickApplyingBreak(SchemaBreakQuery query);
+
 }

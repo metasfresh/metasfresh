@@ -4,8 +4,6 @@
 package org.adempiere.pricing.api.impl;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.api.CalculateDiscountRequest;
@@ -13,13 +11,12 @@ import org.adempiere.pricing.api.DiscountResult;
 import org.adempiere.pricing.api.DiscountResult.DiscountResultBuilder;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
-import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.pricing.api.SchemaBreakQuery;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.X_M_DiscountSchema;
@@ -198,72 +195,13 @@ import lombok.NonNull;
 			return request.getForceSchemaBreak();
 		}
 
-		// Price Breaks
-		final List<I_M_DiscountSchemaBreak> breaks = Services.get(IMDiscountSchemaDAO.class).retrieveBreaks(request.getSchema());
-		final BigDecimal amt = request.getPrice().multiply(request.getQty());
-		final boolean isQtyBased = request.getSchema().isQuantityBased();
-
 		final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
-		I_M_DiscountSchemaBreak breakApplied = null;
-		if (hasNoValues())
-		{
-			breakApplied = discountSchemaBL.pickApplyingBreak(
-					breaks,
-					-1,  // attributeValueID
-					isQtyBased,
-					request.getProductId(),
-					request.getProductCategoryId(),
-					request.getQty(),
-					amt);
-		}
-		else
-		{
-			final Optional<I_M_DiscountSchemaBreak> optionalBreak = request.getAttributeInstances().stream()
-					.filter(instance -> !hasNoValue(instance))
-					.map(instance -> discountSchemaBL.pickApplyingBreak(
-							breaks,
-							instance.getM_AttributeValue_ID(),
-							isQtyBased,
-							request.getProductId(),
-							request.getProductCategoryId(),
-							request.getQty(),
-							amt))
-					.filter(schemaBreak -> schemaBreak != null)
-					.findFirst();
-			breakApplied = optionalBreak.orElse(null);
-		}
-
-		return breakApplied;
-	}
-
-	/**
-	 * Check if the instance has no value set
-	 *
-	 * @param instance
-	 * @return true if the instance has no value set, false if it has one
-	 */
-	private boolean hasNoValue(final I_M_AttributeInstance instance)
-	{
-		return instance.getM_AttributeValue_ID() <= 0;
-	}
-
-	/**
-	 * Check if the instances are empty ( have "" value)
-	 *
-	 * @param instances
-	 * @return true if all the instances are empty, false if at least one is not
-	 */
-	private boolean hasNoValues()
-	{
-		final List<I_M_AttributeInstance> attributeInstances = request.getAttributeInstances();
-		if (attributeInstances.isEmpty())
-		{
-			return true;
-		}
-
-		final boolean anyAttributeInstanceMatches = attributeInstances.stream()
-				.anyMatch(instance -> !hasNoValue(instance));
-
-		return !anyAttributeInstanceMatches;
+		return discountSchemaBL.pickApplyingBreak(SchemaBreakQuery.builder()
+				.discountSchemaId(request.getSchema().getM_DiscountSchema_ID())
+				.attributeInstances(request.getAttributeInstances())
+				.productId(request.getProductId())
+				.qty(request.getQty())
+				.amt(request.getPrice().multiply(request.getQty()))
+				.build());
 	}
 }

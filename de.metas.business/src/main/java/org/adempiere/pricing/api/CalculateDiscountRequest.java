@@ -55,7 +55,6 @@ public class CalculateDiscountRequest
 	private final BigDecimal qty;
 	private final BigDecimal price;
 	private final int productId;
-	private final int productCategoryId;
 	private final BigDecimal bpartnerFlatDiscount;
 	private final List<I_M_AttributeInstance> attributeInstances;
 	private final IPricingContext pricingCtx;
@@ -67,7 +66,6 @@ public class CalculateDiscountRequest
 			final BigDecimal qty,
 			final BigDecimal price,
 			final int productId,
-			final int productCategoryId,
 			final BigDecimal bpartnerFlatDiscount,
 			final List<I_M_AttributeInstance> attributeInstances,
 			final IPricingContext pricingCtx)
@@ -85,7 +83,6 @@ public class CalculateDiscountRequest
 		this.qty = qty;
 		this.price = price;
 		this.productId = productId;
-		this.productCategoryId = productCategoryId;
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount != null ? bpartnerFlatDiscount : BigDecimal.ZERO;
 		this.attributeInstances = attributeInstances != null ? ImmutableList.copyOf(attributeInstances) : ImmutableList.of();
 		this.pricingCtx = pricingCtx;
