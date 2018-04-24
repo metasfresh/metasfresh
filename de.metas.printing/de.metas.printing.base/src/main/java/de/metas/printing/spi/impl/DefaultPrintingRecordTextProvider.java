@@ -9,7 +9,7 @@ import org.compiere.util.Util;
 
 import com.google.common.base.Optional;
 
-import de.metas.notification.spi.INotificationCtxProvider;
+import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 
 /*
@@ -22,12 +22,12 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,24 +35,24 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
  */
 
 /**
- * 
+ *
  * task 09833
  * Default ctx provider for printing info of C_PrintJobInstructions. (Fallback to the original print job instruction's error message, as it used to be before the ctx providers were added)
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class DefaultPrintingNotificationCtxProvider implements INotificationCtxProvider
+public final class DefaultPrintingRecordTextProvider implements IRecordTextProvider
 {
-	public static final transient DefaultPrintingNotificationCtxProvider instance = new DefaultPrintingNotificationCtxProvider();
-	
+	public static final transient DefaultPrintingRecordTextProvider instance = new DefaultPrintingRecordTextProvider();
+
 	public static final String MSG_CLIENT_REPORTS_PRINT_ERROR = "de.metas.printing.C_Print_Job_Instructions.ClientReportsPrintError";
 
-	private DefaultPrintingNotificationCtxProvider()
+	private DefaultPrintingRecordTextProvider()
 	{
 		super();
 	}
-	
+
 	@Override
 	public Optional<String> getTextMessageIfApplies(ITableRecordReference referencedRecord)
 	{
@@ -61,12 +61,12 @@ public final class DefaultPrintingNotificationCtxProvider implements INotificati
 		{
 			return Optional.absent();
 		}
-		
-		final IContextAware context = new PlainContextAware(Env.getCtx());
+
+		final IContextAware context = PlainContextAware.newOutOfTrxAllowThreadInherited(Env.getCtx());
 		final I_C_Print_Job_Instructions printJobInstructions = referencedRecord.getModel(context, I_C_Print_Job_Instructions.class);
 		return getTextMessage(printJobInstructions);
 	}
-	
+
 	public Optional<String> getTextMessage(final I_C_Print_Job_Instructions printJobInstructions)
 	{
 		if (printJobInstructions == null)
