@@ -51,17 +51,6 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	BigDecimal calculatePrice(final CalculateDiscountRequest request);
 
 	/**
-	 * Criteria apply
-	 *
-	 * @param br
-	 * @param value
-	 * @param product_ID
-	 * @param product_Category_ID
-	 * @return true if criteria met
-	 */
-	boolean breakApplies(I_M_DiscountSchemaBreak br, BigDecimal value, int product_ID, int product_Category_ID);
-
-	/**
 	 * Re-sequence the lines and breaks of the given schema
 	 * This means setting their sequences from 10 to 10
 	 *
@@ -78,18 +67,6 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	 * @return the discount schema if found, null otherwise
 	 */
 	I_M_DiscountSchema getDiscountSchemaForPartner(I_C_BPartner partner, boolean isSOTrx);
-
-	/**
-	 * Criteria apply, based also on attribute value
-	 *
-	 * @param br
-	 * @param value
-	 * @param product_ID
-	 * @param product_Category_ID
-	 * @param attributeValue_ID
-	 * @return
-	 */
-	boolean breakApplies(I_M_DiscountSchemaBreak br, BigDecimal value, int product_ID, int product_Category_ID, int attributeValue_ID);
 
 	/**
 	 * Pick the first break that applies based on product, category and attribute value

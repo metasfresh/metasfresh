@@ -38,9 +38,9 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
-import org.compiere.model.MProductCategory;
 import org.compiere.util.Env;
 
+import de.metas.product.IProductBL;
 import lombok.NonNull;
 
 public class MDiscountSchemaBL implements IMDiscountSchemaBL
@@ -183,32 +183,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		return price.multiply(multiplier);
 	}
 
-	/**
-	 * Criteria apply
-	 *
-	 * @param Value amt or qty
-	 * @param M_Product_ID product
-	 * @param M_Product_Category_ID category
-	 * @return true if criteria met
-	 */
-	@Override
-	public boolean breakApplies(
-			final I_M_DiscountSchemaBreak br,
-			final BigDecimal value,
-			final int product_ID,
-			final int product_Category_ID)
-	{
-		return breakApplies(
-				br,
-				value,
-				product_ID,
-				product_Category_ID,
-				-1 // attributeValue_ID
-		);
-	}	// breakApplies
-
-	@Override
-	public boolean breakApplies(
+	private boolean breakApplies(
 			final I_M_DiscountSchemaBreak br,
 			final BigDecimal value,
 			final int product_ID,
@@ -260,7 +235,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		}
 
 		// Look up Category of Product
-		return MProductCategory.isCategory(br.getM_Product_Category_ID(), product_ID);
+		return Services.get(IProductBL.class).isProductInCategory(product_ID, br.getM_Product_Category_ID());
 	}
 
 	/**
