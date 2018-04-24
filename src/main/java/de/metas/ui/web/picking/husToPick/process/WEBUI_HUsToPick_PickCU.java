@@ -134,7 +134,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		else if (PARAM_QtyCU.equals(parameter.getColumnName()))
 		{
 			final PackageableRow packageableRow = getSingleSelectedPackageableRow();
-			final BigDecimal qtyToDeliver = packageableRow.getQtyToDeliverWithoutPlanned();
+			final BigDecimal qtyToDeliver = packageableRow.getQtyOrderedWithoutPicked();
 
 			final HUEditorRow huRow = getSingleSelectedRow();
 			final BigDecimal huQty = huRow.getQtyCU();
