@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import lombok.NonNull;
 
 public final class ProductBL implements IProductBL
@@ -323,5 +324,17 @@ public final class ProductBL implements IProductBL
 			return false;
 		}
 		return mas.isInstanceAttribute();
+	}
+	
+	@Override
+	public boolean isProductInCategory(final int productId, final int expectedProductCategoryId)
+	{
+		if (productId <= 0 || expectedProductCategoryId <= 0)
+		{
+			return false;
+		}
+		
+		final int productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+		return productCategoryId == expectedProductCategoryId;
 	}
 }
