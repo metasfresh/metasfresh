@@ -74,7 +74,6 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		final BigDecimal breakValue = isQtyBased ? qty : amt;
 
 		return breaks.stream()
-				.filter(I_M_DiscountSchemaBreak::isActive)
 				.filter(schemaBreak -> breakApplies(schemaBreak, breakValue, productId, productCategoryId, attributeValueId))
 				.sorted(REVERSED_BREAKS_COMPARATOR)
 				.findFirst()
