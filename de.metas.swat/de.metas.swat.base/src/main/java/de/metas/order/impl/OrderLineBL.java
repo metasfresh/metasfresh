@@ -995,7 +995,6 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-<<<<<<< HEAD
 	public void failForMissingPricingConditions(final de.metas.adempiere.model.I_C_Order order)
 	{
 		final boolean mandatoryPricingConditions = isMandatoryPricingConditions();
