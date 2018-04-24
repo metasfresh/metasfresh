@@ -126,7 +126,7 @@ import lombok.NonNull;
 		final String priceBase = discountSchemaBreak.getPriceBase();
 		if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
 		{
-			final IPricingResult productPrices = findPricesForSchemaBreak(discountSchemaBreak);
+			final IPricingResult productPrices = computePricesForPricingSystem(discountSchemaBreak.getBase_PricingSystem_ID());
 			final BigDecimal priceStd = productPrices.getPriceStd();
 			final BigDecimal priceList = productPrices.getPriceList();
 			final BigDecimal priceLimit = productPrices.getPriceLimit();
@@ -147,9 +147,8 @@ import lombok.NonNull;
 		}
 	}
 
-	private IPricingResult findPricesForSchemaBreak(final I_M_DiscountSchemaBreak discountSchemaBreak)
+	private IPricingResult computePricesForPricingSystem(final int basePricingSystemId)
 	{
-		final int basePricingSystemId = discountSchemaBreak.getBase_PricingSystem_ID();
 		Check.assumeGreaterThanZero(basePricingSystemId, "basePricingSystemId");
 
 		final IPricingContext pricingCtx = request.getPricingCtx();
@@ -170,6 +169,7 @@ import lombok.NonNull;
 		newPricingCtx.setM_PriceList_ID(-1); // will be recomputed
 		newPricingCtx.setM_PriceList_Version_ID(-1); // will be recomputed
 		newPricingCtx.setDisallowDiscount(true);
+		newPricingCtx.setFailIfNotCalculated(true);
 
 		return newPricingCtx;
 	}
@@ -192,11 +192,11 @@ import lombok.NonNull;
 
 	private I_M_DiscountSchemaBreak fetchDiscountSchemaBreak()
 	{
-		if(request.getForceSchemaBreak() != null)
+		if (request.getForceSchemaBreak() != null)
 		{
 			return request.getForceSchemaBreak();
 		}
-		
+
 		// Price Breaks
 		final List<I_M_DiscountSchemaBreak> breaks = Services.get(IMDiscountSchemaDAO.class).retrieveBreaks(request.getSchema());
 		final BigDecimal amt = request.getPrice().multiply(request.getQty());
