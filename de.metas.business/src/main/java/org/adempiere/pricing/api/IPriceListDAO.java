@@ -28,10 +28,8 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 
 public interface IPriceListDAO extends ISingletonService
@@ -54,11 +52,11 @@ public interface IPriceListDAO extends ISingletonService
 	 * which has a country (if any) is ordered first.
 	 *
 	 * @param pricingSystem
-	 * @param country
-	 * @param isSoTrx true is sales, false if purchase
+	 * @param countryId
+	 * @param isSoTrx true is sales, false if purchase, null to return both
 	 * @return
 	 */
-	Iterator<I_M_PriceList> retrievePriceLists(I_M_PricingSystem pricingSystem, I_C_Country country, boolean isSOTrx);
+	Iterator<I_M_PriceList> retrievePriceLists(int pricingSystemId, int countryId, Boolean isSOPriceList);
 
 	/**
 	 * @return the price list for the given pricing system and location or <code>null</code>.

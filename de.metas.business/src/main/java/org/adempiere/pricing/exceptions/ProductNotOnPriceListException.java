@@ -45,14 +45,15 @@ public class ProductNotOnPriceListException extends AdempiereException
 {
 	public static final String AD_Message = "ProductNotOnPriceList";
 
-	/**
-	 *
-	 * @param pricingCtx
-	 * @param documentLineNo ignored if <=0
-	 */
+	public ProductNotOnPriceListException(final IPricingContext pricingCtx)
+	{
+		this(pricingCtx, /* documentLineNo */-1);
+	}
+
 	public ProductNotOnPriceListException(final IPricingContext pricingCtx, final int documentLineNo)
 	{
 		super(buildMessage(pricingCtx, documentLineNo));
+		setParameter("pricingCtx", pricingCtx);
 	}
 
 	public ProductNotOnPriceListException(final I_M_PriceList_Version plv, final int productId)

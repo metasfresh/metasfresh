@@ -55,7 +55,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 
 		final List<I_C_OrderLine> orderLines = materialTrackingDAO.retrieveReferences(materialTracking, I_C_OrderLine.class);
 
-		final List<T> result = new ArrayList<T>();
+		final List<T> result = new ArrayList<>();
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
 			final List<T> invoiceCandidates = InterfaceWrapperHelper.createList(
@@ -139,8 +139,9 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 
 		final boolean processedPLVFiltering = true; // in the material tracking context, only processed PLVs matter.
-		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(ic.getM_PricingSystem(),
-				inOut.getC_BPartner_Location().getC_Location().getC_Country(),
+		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(
+				ic.getM_PricingSystem_ID(),
+				inOut.getC_BPartner_Location().getC_Location().getC_Country_ID(),
 				inOut.getMovementDate(),
 				inOut.isSOTrx(),
 				processedPLVFiltering);
