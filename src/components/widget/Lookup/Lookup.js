@@ -34,7 +34,11 @@ class Lookup extends Component {
   componentWillReceiveProps(nextProps) {
     const { defaultValue } = this.props;
 
-    if (!_.isEqual(defaultValue, nextProps.defaultValue)) {
+    if (
+      defaultValue &&
+      nextProps.defaultValue &&
+      !_.isEqual(defaultValue[0].value, nextProps.defaultValue[0].value)
+    ) {
       this.checkIfDefaultValue();
     }
   }
