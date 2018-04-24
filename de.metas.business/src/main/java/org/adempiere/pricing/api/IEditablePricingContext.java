@@ -98,4 +98,6 @@ public interface IEditablePricingContext extends IPricingContext
 	 * @param c_Country_ID
 	 */
 	void setC_Country_ID(int c_Country_ID);
+
+	void setFailIfNotCalculated(boolean failIfNotCalculated);
 }
