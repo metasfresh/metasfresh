@@ -72,6 +72,7 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
+import org.compiere.model.MRequest;
 import org.compiere.util.CCache.CacheMapType;
 import org.compiere.util.CacheMgt;
 
@@ -97,7 +98,9 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
-		return ImmutableList.of(BPartnerCreditLimit_RequestApproval.TOPIC_CreditLimitRequestApproval);
+		return ImmutableList.of(
+				BPartnerCreditLimit_RequestApproval.USER_NOTIFICATIONS_TOPIC,
+				MRequest.TOPIC_Requests);
 	}
 
 	@Override
@@ -196,7 +199,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// #2895
 		engine.addModelValidator(AD_Ref_Table.instance, client);
 
-
 		// #2913
 		engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance, client);
 
@@ -219,6 +221,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cachingService.addTableCacheConfig(I_AD_Client.class);
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Table.class);
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Ref_List.class);
+		cachingService.addTableCacheConfigIfAbsent(I_M_DiscountSchema.class);
 
 		// M_Product (for now, using the same setting that were in MProduct.s_cache
 		cachingService.createTableCacheConfigBuilder(I_M_Product.class)

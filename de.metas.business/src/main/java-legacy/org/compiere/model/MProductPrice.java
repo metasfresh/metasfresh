@@ -140,7 +140,9 @@ public class MProductPrice extends X_M_ProductPrice
 		final StringBuilder sb = new StringBuilder("MProductPrice[");
 		sb.append("M_PriceList_Version_ID=").append(getM_PriceList_Version_ID())
 				.append(",M_Product_ID=").append(getM_Product_ID())
+				.append(",PriceStd=").append(getPriceStd())
 				.append(",PriceList=").append(getPriceList())
+				.append(",PriceLimit=").append(getPriceLimit())
 				.append(", ID=").append(getM_ProductPrice_ID())
 				.append("]");
 		return sb.toString ();

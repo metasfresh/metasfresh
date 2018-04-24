@@ -37,6 +37,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.IContextAware;
 import org.adempiere.pricing.api.CalculateDiscountRequest;
+import org.adempiere.pricing.api.DiscountResult;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -52,6 +53,8 @@ import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
+
+import lombok.NonNull;
 
 public class MDiscountSchemaTest
 {
@@ -465,24 +468,23 @@ public class MDiscountSchemaTest
 
 		// Discount 0 (because no breaks were applied)
 
-
 		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
 				.schema(schema1)
 				.qty(new BigDecimal(100))
-				.Price(new BigDecimal(1))
-				.M_Product_ID(product1.getM_Product_ID())
-				.M_Product_Category_ID(category1.getM_Product_Category_ID())
-				.bPartnerFlatDiscount(new BigDecimal(1))
+				.price(new BigDecimal(1))
+				.productId(product1.getM_Product_ID())
+				.productCategoryId(category1.getM_Product_Category_ID())
+				.bpartnerFlatDiscount(new BigDecimal(1))
 				.build();
 
-		final BigDecimal price = bl.calculatePrice(request);
+		final BigDecimal price = calculatePrice(request);
 
 		assertThat(price).isEqualByComparingTo(BigDecimal.ONE);
 
 		schemaBreak1.setM_AttributeValue(null);
 		save(schemaBreak1);
 
-		final BigDecimal price2 = bl.calculatePrice(request);
+		final BigDecimal price2 = calculatePrice(request);
 		final BigDecimal expectedPrice = new BigDecimal("0.500000");
 		assertThat(expectedPrice).isEqualByComparingTo(price2);
 	}
@@ -525,14 +527,14 @@ public class MDiscountSchemaTest
 		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
 				.schema(schema1)
 				.qty(new BigDecimal(100))
-				.Price(new BigDecimal(1))
-				.M_Product_ID(product1.getM_Product_ID())
-				.M_Product_Category_ID(category1.getM_Product_Category_ID())
-				.instances(instances)
-				.bPartnerFlatDiscount(new BigDecimal(1))
+				.price(new BigDecimal(1))
+				.productId(product1.getM_Product_ID())
+				.productCategoryId(category1.getM_Product_Category_ID())
+				.attributeInstances(instances)
+				.bpartnerFlatDiscount(new BigDecimal(1))
 				.build();
 
-		final BigDecimal price = bl.calculatePrice(request);
+		final BigDecimal price = calculatePrice(request);
 
 		BigDecimal expectedPrice = new BigDecimal("0.500000");
 		assertThat(expectedPrice).isEqualByComparingTo(price);
@@ -541,7 +543,7 @@ public class MDiscountSchemaTest
 		schemaBreak1.setM_AttributeValue(attrValue3);
 		save(schemaBreak1);
 
-		final BigDecimal price2 = bl.calculatePrice(request);
+		final BigDecimal price2 = calculatePrice(request);
 
 		expectedPrice = new BigDecimal("0.750000");
 		assertThat(expectedPrice).isEqualByComparingTo(price2);
@@ -632,11 +634,37 @@ public class MDiscountSchemaTest
 	{
 		schema.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
 		save(schema);
-		
+
 		final I_M_DiscountSchemaBreak schemaBreak = newInstance(I_M_DiscountSchemaBreak.class, contextProvider);
 		schemaBreak.setM_DiscountSchema_ID(schema.getM_DiscountSchema_ID());
 		schemaBreak.setSeqNo(seqNo);
 		save(schemaBreak);
 		return schemaBreak;
+	}
+
+	private BigDecimal calculatePrice(final CalculateDiscountRequest request)
+	{
+
+		if (request.getPrice() == null || request.getPrice().signum() == 0)
+		{
+			return request.getPrice();
+		}
+
+		final DiscountResult result = bl.calculateDiscount(request);
+
+		final BigDecimal discount = result.getDiscount();
+		if (discount == null || discount.signum() == 0)
+		{
+			return request.getPrice();
+		}
+
+		return applyDiscount(request.getPrice(), discount);
+	}
+
+	private BigDecimal applyDiscount(@NonNull final BigDecimal price, @NonNull final BigDecimal discount)
+	{
+		BigDecimal multiplier = (Env.ONEHUNDRED).subtract(discount);
+		multiplier = multiplier.divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP);
+		return price.multiply(multiplier);
 	}
 }

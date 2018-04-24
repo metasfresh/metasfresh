@@ -8,8 +8,10 @@ import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_DiscountSchemaBreak;
 
 import com.google.common.collect.ImmutableList;
 
@@ -47,34 +49,45 @@ import lombok.Value;
 @Immutable
 public class CalculateDiscountRequest
 {
-	@NonNull
 	private final I_M_DiscountSchema schema;
+	private final I_M_DiscountSchemaBreak forceSchemaBreak;
+	
 	private final BigDecimal qty;
-	private final BigDecimal Price;
-	private final int M_Product_ID;
-	private final int M_Product_Category_ID;
-	private final BigDecimal bPartnerFlatDiscount;
-	private final List<I_M_AttributeInstance> instances;
+	private final BigDecimal price;
+	private final int productId;
+	private final int productCategoryId;
+	private final BigDecimal bpartnerFlatDiscount;
+	private final List<I_M_AttributeInstance> attributeInstances;
 	private final IPricingContext pricingCtx;
 
 	@Builder
 	private CalculateDiscountRequest(
 			@NonNull final I_M_DiscountSchema schema,
+			final I_M_DiscountSchemaBreak forceSchemaBreak,
 			final BigDecimal qty,
-			final BigDecimal Price,
-			final int M_Product_ID,
-			final int M_Product_Category_ID,
-			final BigDecimal bPartnerFlatDiscount,
-			final List<I_M_AttributeInstance> instances,
+			final BigDecimal price,
+			final int productId,
+			final int productCategoryId,
+			final BigDecimal bpartnerFlatDiscount,
+			final List<I_M_AttributeInstance> attributeInstances,
 			final IPricingContext pricingCtx)
 	{
+		if(forceSchemaBreak != null && forceSchemaBreak.getM_DiscountSchema_ID() != schema.getM_DiscountSchema_ID())
+		{
+			throw new AdempiereException("Schema and schema break does not match")
+					.setParameter("schema", schema)
+					.setParameter("forceSchemaBreak", forceSchemaBreak)
+					.appendParametersToMessage();
+		}
+		
 		this.schema = schema;
+		this.forceSchemaBreak = forceSchemaBreak;
 		this.qty = qty;
-		this.Price = Price;
-		this.M_Product_ID = M_Product_ID;
-		this.M_Product_Category_ID = M_Product_Category_ID;
-		this.bPartnerFlatDiscount = bPartnerFlatDiscount;
-		this.instances = instances != null ? ImmutableList.copyOf(instances) : ImmutableList.of();
+		this.price = price;
+		this.productId = productId;
+		this.productCategoryId = productCategoryId;
+		this.bpartnerFlatDiscount = bpartnerFlatDiscount != null ? bpartnerFlatDiscount : BigDecimal.ZERO;
+		this.attributeInstances = attributeInstances != null ? ImmutableList.copyOf(attributeInstances) : ImmutableList.of();
 		this.pricingCtx = pricingCtx;
 	}
 }

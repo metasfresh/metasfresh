@@ -13,15 +13,14 @@ package de.metas.printing.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -33,7 +32,8 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInstance;
-import de.metas.event.Event;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintJobBL.ContextForAsyncProcessing;
@@ -89,20 +89,20 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 
 						Services.get(IPrintJobBL.class).createPrintJobs(source, printJobContext);
 					}
-					catch (Exception e)
+					catch (final Exception ex)
 					{
-						log.error(e.getLocalizedMessage());
-						final Event event = Event.builder()
-								.setDetailADMessage(e.getLocalizedMessage())
-								.addRecipient_User_ID(Env.getAD_User_ID(getCtx()))
-								.build();
-
-						Printing_Constants.getPrintingEventBus()
-								.postEvent(event);
+						log.error("Failed creating print job for {}", source, ex);
+						Services.get(INotificationBL.class).notifyUser(UserNotificationRequest.builder()
+								.topic(Printing_Constants.USER_NOTIFICATIONS_TOPIC)
+								.recipientUserId(Env.getAD_User_ID(getCtx()))
+								.contentPlain(ex.getLocalizedMessage())
+								.build());
 					}
 
 				}
 			};
+
+			// FIXME: use some thread pool executors
 			final Thread thread = clientUI.createUserThread(runnable, Thread.currentThread().getName() + "_PrintJobsProducer");
 			thread.setDaemon(true);
 			thread.start();
@@ -110,7 +110,6 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 
 		return "@Started@";
 	}
-
 
 	// each one with their own users to print user to print
 	protected List<IPrintingQueueSource> createPrintingQueueSources(final Properties ctxToUse)

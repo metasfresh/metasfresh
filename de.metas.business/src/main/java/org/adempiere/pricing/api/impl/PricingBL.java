@@ -38,6 +38,11 @@ import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingDAO;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.PriceListVersionNotFoundException;
+import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
+import org.adempiere.pricing.limit.CompositePriceLimitRule;
+import org.adempiere.pricing.limit.IPriceLimitRule;
+import org.adempiere.pricing.limit.PriceLimitRuleContext;
+import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.pricing.spi.AggregatedPricingRule;
 import org.adempiere.pricing.spi.IPricingRule;
@@ -50,6 +55,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -61,13 +67,9 @@ import de.metas.pricing.ProductPrices;
 
 public class PricingBL implements IPricingBL
 {
-	private final Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(PricingBL.class);
 
-	public static final PricingBL instance = new PricingBL();
-
-	public PricingBL()
-	{
-	}
+	private final CompositePriceLimitRule priceLimitRules = new CompositePriceLimitRule();
 
 	@Override
 	public IEditablePricingContext createPricingContext()
@@ -101,44 +103,38 @@ public class PricingBL implements IPricingBL
 	public IPricingResult calculatePrice(final IPricingContext pricingCtx)
 	{
 		final Properties ctx = Env.getCtx();
-
 		final IPricingContext pricingCtxToUse = setupPricingContext(ctx, pricingCtx);
 		final IPricingResult result = createInitialResult(pricingCtxToUse);
 
-		// task 08908 do not change anything if the price is manual
-		Boolean isManualPrice = pricingCtxToUse.isManualPrice();
-
-		// if the manualPrice value was not set in the pricing context, take it from the reference object
-		if (isManualPrice == null)
+		//
+		// Do not change anything if the price is manual (task 08908)
+		if (isManualPrice(pricingCtxToUse))
 		{
-			final Object referenceObject = pricingCtxToUse.getReferencedObject();
-
-			if (referenceObject != null)
-			{
-				isManualPrice = InterfaceWrapperHelper.getValueOrNull(referenceObject, I_C_InvoiceLine.COLUMNNAME_IsManualPrice);
-			}
-		}
-
-		// if the isManualPrice is not even a column of the reference object, consider it false
-		final boolean isManualPriceToUse = isManualPrice == null ? false : isManualPrice;
-
-		if (isManualPriceToUse)
-		{
-			// task 08908: returning the result is not reliable enough because we are not sure the values
+			// Returning the result is not reliable enough because we are not sure the values
 			// in the initial result are the ones from the reference object.
 			// TODO: a new pricing rule for manual prices (if needed)
 			// Keeping the fine log anyway
-			logger.debug("The pricing engine doesn't have to calculate the price because it was already manually set in the priocing context: {}.", pricingCtxToUse);
+			logger.debug("The pricing engine doesn't have to calculate the price because it was already manually set in the pricing context: {}.", pricingCtxToUse);
 
+			// FIXME tsa: figure out why the line below was commented out?!
+			// I think we can drop this feature all together
+			
 			// return result;
 		}
 
 		final AggregatedPricingRule aggregatedPricingRule = getAggregatedPricingRule(ctx);
-
 		aggregatedPricingRule.calculate(pricingCtxToUse, result);
 
 		//
 		// After calculation
+		//
+		
+		// Fail if not calculated
+		if (pricingCtxToUse.isFailIfNotCalculated() && !result.isCalculated())
+		{
+			throw new ProductNotOnPriceListException(pricingCtxToUse)
+					.setParameter("pricingResult", result);
+		}
 
 		// First we check if we have different UOM in the context and result
 		adjustPriceByUOM(pricingCtxToUse, result);
@@ -151,6 +147,32 @@ public class PricingBL implements IPricingBL
 		}
 
 		return result;
+	}
+
+	private static boolean isManualPrice(final IPricingContext pricingCtx)
+	{
+		// Direct
+		{
+			final Boolean isManualPrice = pricingCtx.isManualPrice();
+			if (isManualPrice != null)
+			{
+				return isManualPrice;
+			}
+		}
+
+		// Try to extract it from referenced object
+		final Object referenceObject = pricingCtx.getReferencedObject();
+		if (referenceObject != null)
+		{
+			final Boolean isManualPrice = DisplayType.toBoolean(InterfaceWrapperHelper.getValueOrNull(referenceObject, I_C_InvoiceLine.COLUMNNAME_IsManualPrice), null);
+			if (isManualPrice != null)
+			{
+				return isManualPrice;
+			}
+		}
+
+		// Fallback: not a manual price
+		return false;
 	}
 
 	/**
@@ -178,10 +200,10 @@ public class PricingBL implements IPricingBL
 		{
 			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
-					pricingCtx.getM_PricingSystem(),
-					pricingCtx.getC_Country(),
+					pricingCtx.getM_PricingSystem_ID(),
+					pricingCtx.getC_Country_ID(),
 					pricingCtxToUse.getPriceDate(),
-					pricingCtx.isSOTrx(),
+					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.isSOTrx(),
 					null);
 
 			if (computedPLV != null)
@@ -194,9 +216,9 @@ public class PricingBL implements IPricingBL
 						"Given PricingContext {} has M_PriceList_Version={}, but from M_PricingSystem={}, Product={}, Country={} and IsSOTrx={}, we computed a different M_PriceList_Version={}",
 						pricingCtxToUse,  // 0
 						pricingCtxToUse.getM_PriceList_Version(),  // 1
-						pricingCtxToUse.getM_PricingSystem(),  // 2
+						pricingCtxToUse.getM_PricingSystem_ID(),  // 2
 						pricingCtx.getM_Product(),  // 3
-						pricingCtx.getC_Country(),  // 4
+						pricingCtx.getC_Country_ID(),  // 4
 						pricingCtx.isSOTrx(),  // 5
 						computedPLV);
 				pricingCtxToUse.setM_PriceList_Version_ID(computedPLV.getM_PriceList_Version_ID());
@@ -346,7 +368,6 @@ public class PricingBL implements IPricingBL
 		return result;
 	}
 
-	@Override
 	@Cached(cacheName = I_C_PricingRule.Table_Name + "_AggregatedPricingRule")
 	public AggregatedPricingRule getAggregatedPricingRule(@CacheCtx Properties ctx)
 	{
@@ -365,7 +386,7 @@ public class PricingBL implements IPricingBL
 	{
 		final List<I_C_PricingRule> rulesDef = Services.get(IPricingDAO.class).retrievePricingRules(ctx);
 
-		final List<IPricingRule> rules = new ArrayList<IPricingRule>(rulesDef.size());
+		final List<IPricingRule> rules = new ArrayList<>(rulesDef.size());
 		for (final I_C_PricingRule ruleDef : rulesDef)
 		{
 			final IPricingRule rule = createPricingRule(ruleDef);
@@ -410,5 +431,17 @@ public class PricingBL implements IPricingBL
 		final I_M_PriceList priceList = InterfaceWrapperHelper.create(ctx, priceListId, I_M_PriceList.class, ITrx.TRXNAME_None);
 
 		return priceList.getPricePrecision();
+	}
+
+	@Override
+	public void registerPriceLimitRule(final IPriceLimitRule rule)
+	{
+		priceLimitRules.addEnforcer(rule);
+	}
+
+	@Override
+	public PriceLimitRuleResult computePriceLimit(final PriceLimitRuleContext context)
+	{
+		return priceLimitRules.compute(context);
 	}
 }
