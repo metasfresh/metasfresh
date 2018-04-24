@@ -124,4 +124,6 @@ public interface IPricingContext extends IContextAware
 	int getC_Country_ID();
 
 	I_C_Country getC_Country();
+
+	boolean isFailIfNotCalculated();
 }
