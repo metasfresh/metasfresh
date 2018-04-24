@@ -55,7 +55,7 @@ public class CompositePriceLimitRule implements IPriceLimitRule
 		final BigDecimal priceLimit = context.getPriceLimit();
 		if (priceLimit.signum() == 0)
 		{
-			return PriceLimitRuleResult.notEligible("default PriceLimit=0 is not eligible");
+			return PriceLimitRuleResult.notApplicable("default PriceLimit=0 is not eligible");
 		}
 		return PriceLimitRuleResult.priceLimit(priceLimit, "pricing PriceLimit (default)");
 	}

@@ -1184,18 +1184,18 @@ public class CalloutOrder extends CalloutEngine
 		if (isEnforcePriceLimit(orderLine, order.isSOTrx()))
 		{
 			final PriceLimitRuleResult priceLimitResult = orderLineBL.computePriceLimit(orderLine);
-			if(priceLimitResult.isEligible())
+			if(priceLimitResult.isApplicable())
 			{
 				priceLimit = priceLimitResult.getPriceLimit();
 			}
-			
+
 			if(priceLimitResult.isBelowPriceLimit(priceActual))
 			{
 				underPriceLimit = true;
 				underPriceLimitExplanation = priceLimitResult.getPriceLimitExplanation();
-				
+
 				priceActual = priceLimit;
-	
+
 				if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName) && priceEntered.signum() != 0)
 				{
 					priceEntered = orderLineBL.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, stdPrecision);
@@ -1226,7 +1226,7 @@ public class CalloutOrder extends CalloutEngine
 	private static void updateLineNetAmtAndTax(final I_C_OrderLine orderLine, final int stdPrecision)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		
+
 		final BigDecimal priceActual = orderLine.getPriceActual();
 		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine);
 		BigDecimal LineNetAmt = qtyEnteredInPriceUOM.multiply(priceActual);

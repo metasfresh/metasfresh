@@ -63,16 +63,16 @@ class PharmaPriceLimitRuleInstance
 		// Preconditions
 		if (!hasPriceLimitRestrictions())
 		{
-			return PriceLimitRuleResult.notEligible("no PriceLimitRestrictions defined");
+			return PriceLimitRuleResult.notApplicable("no PriceLimitRestrictions defined");
 		}
 		final IPricingContext pricingContext = context.getPricingContext();
 		if (!isEligibleBPartner(pricingContext.getC_BPartner_ID()))
 		{
-			return PriceLimitRuleResult.notEligible("BPartner not eligible");
+			return PriceLimitRuleResult.notApplicable("BPartner not eligible");
 		}
 		if (!isEligibleProduct(pricingContext.getM_Product_ID()))
 		{
-			return PriceLimitRuleResult.notEligible("Product not eligible");
+			return PriceLimitRuleResult.notApplicable("Product not eligible");
 		}
 
 		//
@@ -80,7 +80,7 @@ class PharmaPriceLimitRuleInstance
 		final PriceLimit priceLimit = computePriceLimitOrNull();
 		if (priceLimit == null)
 		{
-			return PriceLimitRuleResult.notEligible("No PriceLimit found for product");
+			return PriceLimitRuleResult.notApplicable("No PriceLimit found for product");
 		}
 		return PriceLimitRuleResult.priceLimit(priceLimit.getValueAsBigDecimal(), priceLimit.toFormulaString());
 	}

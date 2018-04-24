@@ -31,12 +31,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -61,7 +61,7 @@ public class M_DiscountSchemaBreak
 		enforcePriceLimit(schemaBreak);
 	}
 
-	public void enforcePriceLimit(final I_M_DiscountSchemaBreak schemaBreak)
+	private void enforcePriceLimit(@NonNull final I_M_DiscountSchemaBreak schemaBreak)
 	{
 		if (!schemaBreak.isActive())
 		{
@@ -85,7 +85,7 @@ public class M_DiscountSchemaBreak
 				.forEach(this::enforcePriceLimit);
 	}
 
-	private Stream<PriceLimitEnforceContext> explodeByBPartnerId(PriceLimitEnforceContext context)
+	private Stream<PriceLimitEnforceContext> explodeByBPartnerId(@NonNull final PriceLimitEnforceContext context)
 	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 		return bpartnersRepo.retrieveBPartnerIdsForDiscountSchemaId(context.getSchemaBreak().getM_DiscountSchema_ID(), context.getIsSOTrx())
@@ -93,14 +93,14 @@ public class M_DiscountSchemaBreak
 				.map(bpartnerId -> context.toBuilder().bpartnerId(bpartnerId).build());
 	}
 
-	private Stream<PriceLimitEnforceContext> explodeByCountryId(PriceLimitEnforceContext context)
+	private Stream<PriceLimitEnforceContext> explodeByCountryId(@NonNull final PriceLimitEnforceContext context)
 	{
-		return Services.get(IBPartnerDAO.class).retrieveCountryIdsForBPartnerId(context.getBpartnerId())
+		return Services.get(IBPartnerDAO.class).retrieveCountryIdsOfBPartnerLocations(context.getBpartnerId())
 				.stream()
 				.map(countryId -> context.toBuilder().countryId(countryId).build());
 	}
 
-	private final void enforcePriceLimit(final PriceLimitEnforceContext context)
+	private void enforcePriceLimit(@NonNull final PriceLimitEnforceContext context)
 	{
 		final CalculateDiscountRequest request = createCalculateDiscountRequest(context);
 
@@ -118,7 +118,7 @@ public class M_DiscountSchemaBreak
 				.priceLimit(BigDecimal.ZERO) // N/A
 				.pricingContext(request.getPricingCtx())
 				.build());
-		if (!priceLimitResult.isEligible())
+		if (!priceLimitResult.isApplicable())
 		{
 			return;
 		}
@@ -132,7 +132,7 @@ public class M_DiscountSchemaBreak
 		}
 	}
 
-	private CalculateDiscountRequest createCalculateDiscountRequest(final PriceLimitEnforceContext context)
+	private CalculateDiscountRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
 	{
 		final I_M_DiscountSchemaBreak schemaBreak = context.getSchemaBreak();
 

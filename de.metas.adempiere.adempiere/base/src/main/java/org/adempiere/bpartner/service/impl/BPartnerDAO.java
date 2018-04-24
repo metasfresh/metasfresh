@@ -149,7 +149,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 	
 	@Override
-	public Set<Integer> retrieveCountryIdsForBPartnerId(final int bpartnerId)
+	public Set<Integer> retrieveCountryIdsOfBPartnerLocations(final int bpartnerId)
 	{
 		return retrieveBPartnerLocations(bpartnerId)
 				.stream()

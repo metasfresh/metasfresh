@@ -54,7 +54,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(I_C_BPartner bpartner);
 	
-	Set<Integer> retrieveCountryIdsForBPartnerId(int bpartnerId);
+	Set<Integer> retrieveCountryIdsOfBPartnerLocations(int bpartnerId);
 
 	/**
 	 * Contacts of the partner, ordered by ad_user_ID, ascending
