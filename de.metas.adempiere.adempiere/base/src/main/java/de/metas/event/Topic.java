@@ -17,16 +17,23 @@ public class Topic
 	Type type;
 	String fullName;
 
-	public static final Topic of(final String name, Type type)
+	public static final Topic remote(final String name)
 	{
-		return builder()
-				.name(name)
-				.type(type)
-				.build();
+		return builder().name(name).type(Type.REMOTE).build();
 	}
 
-	@Builder
-	public Topic(
+	public static final Topic local(final String name)
+	{
+		return builder().name(name).type(Type.LOCAL).build();
+	}
+
+	public static final Topic of(final String name, Type type)
+	{
+		return builder().name(name).type(type).build();
+	}
+
+	@Builder(toBuilder = true)
+	private Topic(
 			@NonNull final String name,
 			@NonNull final Type type)
 	{
@@ -34,6 +41,16 @@ public class Topic
 		this.type = type;
 
 		this.fullName = type + "." + name;
+	}
+
+	public Topic toLocal()
+	{
+		if (type == Type.LOCAL)
+		{
+			return this;
+		}
+
+		return toBuilder().type(Type.LOCAL).build();
 	}
 
 }

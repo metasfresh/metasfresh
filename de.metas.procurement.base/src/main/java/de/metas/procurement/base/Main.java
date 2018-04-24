@@ -117,7 +117,7 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
-		return ImmutableList.of(ProcurementConstants.EVENTBUS_TOPIC_PurchaseOrderGenerated);
+		return ImmutableList.of(ProcurementConstants.USER_NOTIFICATIONS_TOPIC);
 	}
 
 	@Override

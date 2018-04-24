@@ -24,29 +24,31 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 import org.adempiere.impexp.ArrayExcelExporter;
-import org.adempiere.user.api.IUserBL;
-import org.adempiere.user.api.IUserDAO;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.MAlert;
 import org.compiere.model.MAlertProcessor;
 import org.compiere.model.MAlertProcessorLog;
 import org.compiere.model.MAlertRule;
-import org.compiere.model.MClient;
-import org.compiere.model.MNote;
-import org.compiere.model.MSysConfig;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Trx;
 import org.compiere.util.ValueNamePair;
+import org.springframework.core.io.FileSystemResource;
 
-import de.metas.attachments.IAttachmentBL;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.event.Topic;
 import de.metas.i18n.Msg;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 
 /**
  *	Alert Processor
@@ -62,15 +64,12 @@ import de.metas.logging.MetasfreshLastError;
  */
 public class AlertProcessor extends AdempiereServer
 {
-	/**
-	 * 	Alert Processor
-	 *	@param model model
-	 */
+	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.alerts.UserNotifications");
+	
 	public AlertProcessor (MAlertProcessor model)
 	{
 		super (model, 180);		//	3 minute delay
 		m_model = model;
-		m_client = MClient.get(model.getCtx(), model.getAD_Client_ID());
 	}	//	AlertProcessor
 
 	/**	The Concrete Model			*/
@@ -79,8 +78,6 @@ public class AlertProcessor extends AdempiereServer
 	private StringBuffer 		m_summary = new StringBuffer();
 	/**	Last Error Msg				*/
 	private StringBuffer 		m_errors = new StringBuffer();
-	/** Client info					*/
-	private MClient 			m_client = null;
 
 	/**
 	 * 	Work
@@ -116,30 +113,30 @@ public class AlertProcessor extends AdempiereServer
 		pLog.setTextMsg(m_errors.toString());
 		pLog.save();
 	}	//	doWork
+	
+	private boolean isSendAttachmentsAsXls()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue("ALERT_SEND_ATTACHMENT_AS_XLS", true, Env.getAD_Client_ID(getCtx()));		
+	}
 
-	/**
-	 * 	Process Alert
-	 *	@param alert alert
-	 *	@return true if processed
-	 */
 	private boolean processAlert (MAlert alert)
 	{
 		if (!alert.isValid())
 			return false;
-		log.info("" + alert);
+		log.info("{}", alert);
 
 		StringBuffer message = new StringBuffer(alert.getAlertMessage())
 			.append(Env.NL);
 		//
 		boolean valid = true;
 		boolean processed = false;
-		ArrayList<File> attachments = new ArrayList<File>();
+		ArrayList<File> attachments = new ArrayList<>();
 		MAlertRule[] rules = alert.getRules(false);
 		for (int i = 0; i < rules.length; i++)
 		{
 			if (i > 0)
 				message.append(Env.NL);
-			String trxName = null;		//	assume r/o
+			final String trxName = null;		//	assume r/o
 
 			MAlertRule rule = rules[i];
 			if (!rule.isValid())
@@ -147,10 +144,10 @@ public class AlertProcessor extends AdempiereServer
 			log.debug("" + rule);
 
 			//	Pre
-			String sql = rule.getPreProcessing();
-			if (sql != null && sql.length() > 0)
+			final String sqlPreProcessing = rule.getPreProcessing();
+			if(!Check.isEmpty(sqlPreProcessing, true))
 			{
-				int no = DB.executeUpdate(sql, false, trxName);
+				int no = DB.executeUpdate(sqlPreProcessing, false, trxName);
 				if (no == -1)
 				{
 					ValueNamePair error = MetasfreshLastError.retrieveError();
@@ -164,15 +161,19 @@ public class AlertProcessor extends AdempiereServer
 			}	//	Pre
 
 			//	The processing
-			sql = rule.getSql(true);
 			try
 			{
+				final String sql = rule.getSql(true);
 				String text = null;
-				if (MSysConfig.getBooleanValue("ALERT_SEND_ATTACHMENT_AS_XLS", true, Env.getAD_Client_ID(getCtx())))
+				if (isSendAttachmentsAsXls())
+				{
 					text = getExcelReport(rule, sql, trxName, attachments);
+				}
 				else
+				{
 					text = getPlainTextReport(rule, sql, trxName, attachments);
-				if (text != null && text.length() > 0)
+				}
+				if (!Check.isEmpty(text, true))
 				{
 					message.append(text);
 					processed = true;
@@ -189,10 +190,10 @@ public class AlertProcessor extends AdempiereServer
 			}
 
 			//	Post
-			sql = rule.getPostProcessing();
-			if (sql != null && sql.length() > 0)
+			final String sqlPostProcessing = rule.getPostProcessing();
+			if(!Check.isEmpty(sqlPostProcessing, true))
 			{
-				int no = DB.executeUpdate(sql, false, trxName);
+				int no = DB.executeUpdate(sqlPostProcessing, false, trxName);
 				if (no == -1)
 				{
 					ValueNamePair error = MetasfreshLastError.retrieveError();
@@ -204,17 +205,6 @@ public class AlertProcessor extends AdempiereServer
 					break;
 				}
 			}	//	Post
-
-			/**	Trx				*/
-			if (trxName != null)
-			{
-				Trx trx = Trx.get(trxName, false);
-				if (trx != null)
-				{
-					trx.commit();
-					trx.close();
-				}
-			}
 		}	//	 for all rules
 
 		//	Update header if error
@@ -239,63 +229,39 @@ public class AlertProcessor extends AdempiereServer
 		message.append(Msg.translate(getCtx(), "Date")).append(" : ")
 				.append(df.format(new Timestamp(System.currentTimeMillis())));
 
-		Collection<Integer> users = alert.getRecipientUsers();
-		int countMail = notifyUsers(users, alert.getAlertSubject(), message.toString(), attachments);
+		final Set<Integer> userIds = alert.getRecipientUsers();
+		notifyUsers(userIds, alert.getAlertSubject(), message.toString(), attachments);
 
-		m_summary.append(alert.getName()).append(" (EMails+Notes=").append(countMail).append(") - ");
+		m_summary.append(alert.getName()).append(" - ");
 		return valid;
 	}	//	processAlert
 
-	/**
-	 * Notify users
-	 * @param users AD_User_ID list
-	 * @param subject email subject
-	 * @param message email message
-	 * @param attachments
-	 * @return how many email were sent
-	 */
-	private int notifyUsers(Collection<Integer> users, String subject, String message, Collection<File> attachments)
+	private void notifyUsers(
+			final Set<Integer> userIds,
+			final String subject,
+			final String message,
+			final Collection<File> attachments)
 	{
-		final IUserBL userBL = Services.get(IUserBL.class);
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
-		
-		int countMail = 0;
-		for (int user_id : users)
+		if(userIds.isEmpty())
 		{
-			I_AD_User user = userDAO.retrieveUserOrNull(getCtx(), user_id);
-			if (userBL.isNotificationEMail(user)) {
-				if (m_client.sendEMailAttachments (user_id, subject, message, attachments))
-				{
-					countMail++;
-				}
-			}
-
-			if (userBL.isNotificationNote(user)) {
-				Trx trx = null;
-				try {
-					trx = Trx.get(Trx.createTrxName("AP_NU"), true);
-					
-					// Notice
-					int AD_Message_ID = 52244;  /* TODO - Hardcoded message=notes */
-					MNote note = new MNote(getCtx(), AD_Message_ID, user_id, trx.getTrxName());
-					note.setClientOrg(m_model.getAD_Client_ID(), m_model.getAD_Org_ID());
-					note.setTextMsg(message);
-					note.saveEx();
-					
-					// Attachment
-					Services.get(IAttachmentBL.class).addEntriesFromFiles(note, attachments);
-					
-					countMail++;
-					trx.commit();
-				} catch (Throwable e) {
-					if (trx != null) trx.rollback();
-				} finally {
-					if (trx != null) trx.close();
-				}
-			}
-
+			return;
 		}
-		return countMail;
+		
+		final List<FileSystemResource> attachmentResources = attachments.stream()
+				.map(FileSystemResource::new)
+				.collect(ImmutableList.toImmutableList());
+		
+		final INotificationBL userNotificationsService = Services.get(INotificationBL.class);
+		userIds.stream()
+				.filter(userId -> userId >= 0)
+				.map(userId -> UserNotificationRequest.builder()
+						.topic(USER_NOTIFICATIONS_TOPIC)
+						.recipientUserId(userId)
+						.subjectPlain(subject)
+						.contentPlain(message)
+						.attachments(attachmentResources)
+						.build())
+				.forEach(userNotificationsService::notifyUserAfterCommit);
 	}
 
 	/**
@@ -307,7 +273,7 @@ public class AlertProcessor extends AdempiereServer
 	 */
 	private ArrayList<ArrayList<Object>> getData (String sql, String trxName) throws Exception
 	{
-		ArrayList<ArrayList<Object>> data = new ArrayList<ArrayList<Object>>();
+		ArrayList<ArrayList<Object>> data = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		Exception error = null;
@@ -319,8 +285,8 @@ public class AlertProcessor extends AdempiereServer
 			boolean isFirstRow = true;
 			while (rs.next ())
 			{
-				ArrayList<Object> header = (isFirstRow ? new ArrayList<Object>() : null);
-				ArrayList<Object> row = new ArrayList<Object>();
+				ArrayList<Object> header = (isFirstRow ? new ArrayList<>() : null);
+				ArrayList<Object> row = new ArrayList<>();
 				for (int col = 1; col <= meta.getColumnCount(); col++)
 				{
 					if (isFirstRow) {

@@ -401,6 +401,11 @@ public final class Msg
 	public static String getMsg(final String adLanguage, final String AD_Message, final Object[] args)
 	{
 		final String msg = getMsg(adLanguage, AD_Message);
+		if(args == null || args.length == 0)
+		{
+			return msg;
+		}
+		
 		String retStr = msg;
 		try
 		{

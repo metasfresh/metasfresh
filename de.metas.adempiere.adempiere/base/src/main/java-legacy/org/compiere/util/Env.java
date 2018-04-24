@@ -1401,6 +1401,12 @@ public final class Env
 		return getAD_Language(getCtx());
 	}
 
+	public static String getADLanguageOrBaseLanguage()
+	{
+		final String adLanguage = getAD_Language();
+		return adLanguage != null ? adLanguage : Language.getBaseAD_Language();
+	}
+
 	/**
 	 * Get System Language.
 	 *

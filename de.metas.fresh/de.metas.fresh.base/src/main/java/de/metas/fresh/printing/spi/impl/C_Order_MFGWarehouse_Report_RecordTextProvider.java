@@ -17,10 +17,10 @@ import com.google.common.base.Optional;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.printing.model.I_C_Print_Job_Instructions_v;
 import de.metas.i18n.IMsgBL;
-import de.metas.notification.spi.INotificationCtxProvider;
+import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.printing.api.IPrintJobDAO;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
-import de.metas.printing.spi.impl.DefaultPrintingNotificationCtxProvider;
+import de.metas.printing.spi.impl.DefaultPrintingRecordTextProvider;
 
 /*
  * #%L
@@ -32,12 +32,12 @@ import de.metas.printing.spi.impl.DefaultPrintingNotificationCtxProvider;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,19 +46,19 @@ import de.metas.printing.spi.impl.DefaultPrintingNotificationCtxProvider;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
- * 
+ *
  *         task 09833
  *         Implementation of the notification ctx provider for C_Order_MFGWarehouse_Report.
  *         In this case, the referencedRecord will be an instance of <code>AD_Archive</code> that points to a <code>I_C_Order_MFGWarehouse_Report</code> entry
  *
  */
-public final class C_Order_MFGWarehouse_Report_NotificationCtxProvider implements INotificationCtxProvider
+public final class C_Order_MFGWarehouse_Report_RecordTextProvider implements IRecordTextProvider
 {
-	public static final transient C_Order_MFGWarehouse_Report_NotificationCtxProvider instance = new C_Order_MFGWarehouse_Report_NotificationCtxProvider();
-	
+	public static final transient C_Order_MFGWarehouse_Report_RecordTextProvider instance = new C_Order_MFGWarehouse_Report_RecordTextProvider();
+
 	private static final String MSG_PrintingInfo_MFGWarehouse_Report = "de.metas.printing.C_Print_Job_Instructions.C_Order_MFGWarehouse_Report_Error";
-	
-	private C_Order_MFGWarehouse_Report_NotificationCtxProvider()
+
+	private C_Order_MFGWarehouse_Report_RecordTextProvider()
 	{
 		super();
 	}
@@ -70,7 +70,8 @@ public final class C_Order_MFGWarehouse_Report_NotificationCtxProvider implement
 		{
 			return Optional.absent();
 		}
-		final IContextAware context = new PlainContextAware(Env.getCtx());
+
+		final IContextAware context = PlainContextAware.newOutOfTrxAllowThreadInherited(Env.getCtx());
 
 		// the reference record must be a I_C_PrintJobInstructions entry
 		final I_C_Print_Job_Instructions printJobInstructions = referencedRecord.getModel(context, I_C_Print_Job_Instructions.class);
@@ -102,7 +103,7 @@ public final class C_Order_MFGWarehouse_Report_NotificationCtxProvider implement
 		// just display the original error message from the print job instructions
 		if (mfgWarehouseReport == null)
 		{
-			return DefaultPrintingNotificationCtxProvider.instance.getTextMessage(printJobInstructions);
+			return DefaultPrintingRecordTextProvider.instance.getTextMessage(printJobInstructions);
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printJobInstructions);

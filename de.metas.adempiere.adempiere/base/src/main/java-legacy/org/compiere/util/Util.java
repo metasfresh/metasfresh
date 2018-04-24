@@ -299,11 +299,11 @@ public class Util
 	public static String maskHTML(String content, boolean maskCR)
 	{
 		// If the content is null, then return null - teo_sarca [ 1748346 ]
-		if (content == null)
+		if (content == null || content.isEmpty())
 			return content;
 		//
-		StringBuffer out = new StringBuffer();
-		char[] chars = content.toCharArray();
+		final StringBuilder out = new StringBuilder();
+		final char[] chars = content.toCharArray();
 		for (int i = 0; i < chars.length; i++)
 		{
 			char c = chars[i];
