@@ -1540,6 +1540,18 @@ public class Util
 		return 0;
 	}
 
+	public static final String firstNotEmptyTrimmed(@NonNull final String... values)
+	{
+		for (int i = 0; i < values.length; i++)
+		{
+			if(!Check.isEmpty(values[i], true))
+			{
+				return values[i].trim();
+			}
+		}
+		return null;
+	}
+
 	public static String replaceNonDigitCharsWithZero(String stringToModify)
 	{
 		final int size = stringToModify.length();

@@ -4,10 +4,15 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Issue;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -19,6 +24,7 @@ import de.metas.procurement.base.model.X_PMM_RfQResponse_ChangeEvent;
 import de.metas.rfq.exceptions.RfQDocumentClosedException;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -76,7 +82,7 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 		catch (final Exception e)
 		{
 			logger.warn("Failed processing {}", event, e);
-			markError(event, e.getLocalizedMessage());
+			markError(event, e);
 		}
 	}
 
@@ -90,12 +96,23 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 		countProcessed.incrementAndGet();
 	}
 
-	private void markError(final I_PMM_RfQResponse_ChangeEvent event, final String errorMsg)
+	private void markError(
+			@NonNull final I_PMM_RfQResponse_ChangeEvent event,
+			@NonNull final Exception e)
 	{
 		event.setProcessed(true);
 		event.setIsError(true);
+
+		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(e);
+
+		final String errorMsg = Util.firstNotEmptyTrimmed(metasfreshException.getLocalizedMessage(), metasfreshException.getMessage());
 		event.setErrorMsg(errorMsg);
+
+		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, metasfreshException);
+		event.setAD_Issue(issue);
 		InterfaceWrapperHelper.save(event);
+
+		Loggables.get().addLog("Event marked as isError='Y' with message: {}; event={}", errorMsg, event);
 	}
 
 	private void process_PriceChangeEvent(final I_PMM_RfQResponse_ChangeEvent event)
@@ -142,7 +159,7 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 		event.setC_RfQResponseLineQty(rfqResponseLineQty);
 		markProcessed(event);
 	}
-	
+
 	private void updateC_RfQResponseLine(final I_PMM_RfQResponse_ChangeEvent event)
 	{
 		final String rfqResponseLine_uuid = event.getC_RfQResponseLine_UUID();

@@ -83,7 +83,7 @@ public final class ProductBL implements IProductBL
 	{
 		return product.getC_UOM();
 	}
-	
+
 	@Override
 	public I_C_UOM getStockingUOM(final int productId)
 	{
@@ -173,18 +173,18 @@ public final class ProductBL implements IProductBL
 
 		return isItem(product);
 	}
-	
+
 	@Override
 	public boolean isStocked(final int productId)
 	{
 		if(productId <= 0)
 		{
-			return false; 
+			return false;
 		}
-		
+
 		// NOTE: we rely on table cache config
 		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
-		
+
 		return isStocked(product);
 	}
 
@@ -312,5 +312,16 @@ public final class ProductBL implements IProductBL
 		Check.assumeNotNull(product, "product not null");
 		return product.isPurchased()
 				&& product.isSold();
+	}
+
+	@Override
+	public boolean isInstanceAttribute(@NonNull final I_M_Product product)
+	{
+		final I_M_AttributeSet mas = getM_AttributeSet(product);
+		if (mas == null)
+		{
+			return false;
+		}
+		return mas.isInstanceAttribute();
 	}
 }
