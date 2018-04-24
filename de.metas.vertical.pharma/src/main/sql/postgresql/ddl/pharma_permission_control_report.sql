@@ -1,23 +1,23 @@
 ﻿DROP FUNCTION IF EXISTS "de.metas.vertical.pharma".pharma_permission_control_report
 (
-	IN C_BPartner_ID numeric,
-	IN isCustomer character(1),
-	IN IsPharmaManufacturerPermission character(1),
-	IN IsPharmaWholesalePermission character(1),
-	IN IsPharmaAgentPermission character(1),
-	IN IsPharmaciePermission character(1),
-	IN IsVeterinaryPharmacyPermission character(1)
+	IN p_C_BPartner_ID numeric,
+	IN p_isCustomer character(1),
+	IN p_IsPharmaManufacturerPermission character(1),
+	IN p_IsPharmaWholesalePermission character(1),
+	IN p_IsPharmaAgentPermission character(1),
+	IN p_IsPharmaciePermission character(1),
+	IN p_IsVeterinaryPharmacyPermission character(1)
 	
 );
 CREATE OR REPLACE FUNCTION "de.metas.vertical.pharma".pharma_permission_control_report
 (
-	IN C_BPartner_ID numeric,
-	IN isCustomer character(1),
-	IN IsPharmaManufacturerPermission character(1),
-	IN IsPharmaWholesalePermission character(1),
-	IN IsPharmaAgentPermission character(1),
-	IN IsPharmaciePermission character(1),
-	IN IsVeterinaryPharmacyPermission character(1)
+	IN p_C_BPartner_ID numeric,
+	IN p_isCustomer character(1),
+	IN p_IsPharmaManufacturerPermission character(1),
+	IN p_IsPharmaWholesalePermission character(1),
+	IN p_IsPharmaAgentPermission character(1),
+	IN p_IsPharmaciePermission character(1),
+	IN p_IsVeterinaryPharmacyPermission character(1)
 	
 ) RETURNS TABLE
 (
@@ -51,9 +51,9 @@ SELECT
 	PermissionChangeDate,
 	isCustomer, isVendor, unionType,
 	--parameters
-	(SELECT name FROM C_BPartner WHERE C_BPartner_ID = $1) AS param_bp_name,
-	$2 AS param_customer,
-	$3 AS param_manufacturer, $4 AS param_wholesale, $5 AS param_agent, $6 AS param_pharmacie, $7 AS param_veterinary
+	(SELECT name FROM C_BPartner WHERE C_BPartner_ID = p_C_BPartner_ID) AS param_bp_name,
+	p_isCustomer AS param_customer,
+	p_IsPharmaManufacturerPermission AS param_manufacturer, p_IsPharmaWholesalePermission AS param_wholesale, p_IsPharmaAgentPermission AS param_agent, p_IsPharmaciePermission AS param_pharmacie, p_IsVeterinaryPharmacyPermission AS param_veterinary
 	
 	
 
@@ -106,16 +106,16 @@ FROM
 	)u
 
 WHERE 
-	(CASE WHEN $1 IS NULL THEN TRUE ELSE C_BPartner_ID = $1 END) 	
-	AND (CASE WHEN $2 IS NULL THEN TRUE  
-		WHEN $2 = 'Y' THEN unionType = 'Customer' 
-		WHEN $2 = 'N' THEN unionType = 'Vendor' 
+	(CASE WHEN p_C_BPartner_ID IS NULL THEN TRUE ELSE C_BPartner_ID = p_C_BPartner_ID END) 	
+	AND (CASE WHEN p_isCustomer IS NULL THEN TRUE  
+		WHEN p_isCustomer = 'Y' THEN unionType = 'Customer' 
+		WHEN p_isCustomer = 'N' THEN unionType = 'Vendor' 
 		END)
-	AND (CASE WHEN $3 IS NULL THEN TRUE ELSE IsPharmaManufacturerPermission = $3 END)
-	AND (CASE WHEN $4 IS NULL THEN TRUE ELSE IsPharmaWholesalePermission = $4 END)
-	AND (CASE WHEN $5 IS NULL THEN TRUE ELSE IsPharmaAgentPermission = $5 END)
-	AND (CASE WHEN $6 IS NULL THEN TRUE ELSE IsPharmaciePermission = $6 END)
-	AND (CASE WHEN $7 IS NULL THEN TRUE ELSE IsVeterinaryPharmacyPermission = $7 END)
+	AND (CASE WHEN p_IsPharmaManufacturerPermission IS NULL THEN TRUE ELSE IsPharmaManufacturerPermission = p_IsPharmaManufacturerPermission END)
+	AND (CASE WHEN p_IsPharmaWholesalePermission IS NULL THEN TRUE ELSE IsPharmaWholesalePermission = p_IsPharmaWholesalePermission END)
+	AND (CASE WHEN p_IsPharmaAgentPermission IS NULL THEN TRUE ELSE IsPharmaAgentPermission = p_IsPharmaAgentPermission END)
+	AND (CASE WHEN p_IsPharmaciePermission IS NULL THEN TRUE ELSE IsPharmaciePermission = p_IsPharmaciePermission END)
+	AND (CASE WHEN p_IsVeterinaryPharmacyPermission IS NULL THEN TRUE ELSE IsVeterinaryPharmacyPermission = p_IsVeterinaryPharmacyPermission END)
 	
 ORDER BY PermissionChangeDate DESC, name ASC
 $$
