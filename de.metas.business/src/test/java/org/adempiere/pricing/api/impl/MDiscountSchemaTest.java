@@ -138,7 +138,7 @@ public class MDiscountSchemaTest
 
 		final List<I_M_DiscountSchemaBreak> breaks = createDiscountSchemaBreaks(product);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1, // attribute value
 				true,
@@ -161,7 +161,7 @@ public class MDiscountSchemaTest
 
 		final List<I_M_DiscountSchemaBreak> breaks = createDiscountSchemaBreaks(product);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1, // attribute value
 				true,
@@ -188,7 +188,7 @@ public class MDiscountSchemaTest
 		expectedDiscountSchemaBreak.setM_Product_ID(-1);
 		save(expectedDiscountSchemaBreak);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1, // attribute value
 				true,
@@ -215,7 +215,7 @@ public class MDiscountSchemaTest
 
 		final List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak1 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak1 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1, // attribute value
 				true,
@@ -233,7 +233,7 @@ public class MDiscountSchemaTest
 
 		save(schemaBreak1);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak2 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak2 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1, // attribute value
 				true,
@@ -249,7 +249,7 @@ public class MDiscountSchemaTest
 		schemaBreak1.setM_Product_Category_ID(-1);
 		schemaBreak1.setM_Product_ID(-1);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak3 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak3 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1, // attribute value
 				true,
@@ -288,7 +288,7 @@ public class MDiscountSchemaTest
 
 		List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak1 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak1 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				attrValue1.getM_AttributeValue_ID(),
 				true,
@@ -301,7 +301,7 @@ public class MDiscountSchemaTest
 		assertThat(actualSchemaBreak1).isNotNull();
 		assertThat(schemaBreak1.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak2 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak2 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1,
 				true,
@@ -313,7 +313,7 @@ public class MDiscountSchemaTest
 
 		assertThat(actualSchemaBreak2).isNull();
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak3 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak3 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				attrValue2.getM_AttributeValue_ID(),
 				true,
@@ -332,7 +332,7 @@ public class MDiscountSchemaTest
 
 		breaks = dao.retrieveBreaks(schema1);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak4 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak4 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				attrValue2.getM_AttributeValue_ID(),
 				true,
