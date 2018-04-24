@@ -2481,7 +2481,7 @@ public abstract class PO
 
 		//
 		// Don't create change logs if there is no one single primary key, because AD_ChangeLog cannot link to composed primary key (or no primary key at all)
-		if (!p_info.hasKeyColumn())
+		if (!p_info.isSingleKeyColumnName())
 		{
 			return;
 		}
@@ -3300,7 +3300,7 @@ public abstract class PO
 		{
 			return true;
 		}
-		if (!p_info.hasKeyColumn())
+		if (!p_info.isSingleKeyColumnName())
 		{
 			return true;
 		}

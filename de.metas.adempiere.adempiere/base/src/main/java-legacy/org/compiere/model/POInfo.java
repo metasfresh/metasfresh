@@ -510,16 +510,6 @@ public final class POInfo implements Serializable
 	}
 
 	/**
-	 * Table has single primary key
-	 *
-	 * @return true if table has a single primary key
-	 */
-	public boolean hasKeyColumn()
-	{
-		return m_keyColumnName != null;
-	}	// hasKeyColumn
-
-	/**
 	 * 
 	 * @return single primary key or null
 	 */
