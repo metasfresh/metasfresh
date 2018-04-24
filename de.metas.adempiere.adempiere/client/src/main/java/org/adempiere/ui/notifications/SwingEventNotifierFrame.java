@@ -127,10 +127,8 @@ class SwingEventNotifierFrame extends JFrame
 					.setDaemon(true)
 					.build());
 
-	SwingEventNotifierFrame(final Set<Topic> topicsToSubscribe)
+	SwingEventNotifierFrame()
 	{
-		super();
-
 		//
 		// Max displayed notifications
 		maxNotifications = AdempierePLAF.getInt(SwingEventNotifierUI.NOTIFICATIONS_MaxDisplayed, SwingEventNotifierUI.NOTIFICATIONS_MaxDisplayed_Default);
@@ -167,11 +165,8 @@ class SwingEventNotifierFrame extends JFrame
 		}
 
 		//
-		// Subscribe to given topics
-		for (final Topic topic : topicsToSubscribe)
-		{
-			addTopicToSubscribe(topic);
-		}
+		// Subscribe to user notifications
+		Services.get(IEventBusFactory.class).registerWeakUserNotificationsListener(eventListener);
 
 		//
 		// Schedule and UI update of this frame
@@ -190,22 +185,9 @@ class SwingEventNotifierFrame extends JFrame
 		Services.get(IEventBusFactory.class).checkRemoteEndpointStatus();
 	}
 
-	public void addTopicToSubscribe(final Topic topic)
-	{
-		if (!topicsSubscribed.add(topic))
-		{
-			// already subscribed
-			return;
-		}
-
-		Services.get(IEventBusFactory.class)
-				.getEventBus(topic)
-				.subscribeWeak(eventListener);
-	}
-
 	public Set<String> getSubscribedTopicNames()
 	{
-		final Set<String> result = new HashSet<String>();
+		final Set<String> result = new HashSet<>();
 		for (final Topic topic : topicsSubscribed)
 		{
 			result.add(topic.getFullName());

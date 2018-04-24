@@ -53,7 +53,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.event.InOutProcessedEventBus;
+import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IInOutProducer;
@@ -95,12 +95,12 @@ public class InOutProducer implements IInOutProducer
 	private int _currentReceiptLinesCount = 0;
 	private I_M_ReceiptSchedule currentReceiptSchedule = null;
 	private I_M_ReceiptSchedule previousReceiptSchedule = null;
-	private final Set<Integer> _currentOrderIds = new HashSet<Integer>();
+	private final Set<Integer> _currentOrderIds = new HashSet<>();
 
 	/**
 	 * List of {@link Runnable}s to be executed after current receipt is processed
 	 */
-	private final List<Runnable> afterProcessRunnables = new ArrayList<Runnable>();
+	private final List<Runnable> afterProcessRunnables = new ArrayList<>();
 
 	/**
 	 * Calls {@link #InOutProducer(InOutGenerateResult, boolean, boolean)} with <code>createReceiptWithDatePromised == false</code>.
@@ -284,9 +284,8 @@ public class InOutProducer implements IInOutProducer
 			result.addInOut(receipt);
 
 			// Notify the user that a new receipt was created (task 09334)
-			InOutProcessedEventBus.newInstance()
-					.queueEventsUntilTrxCommit(getTrxName())
-					.notify(receipt);
+			InOutUserNotificationsProducer.newInstance()
+					.notifyInOutProcessed(receipt);
 		}
 		else
 		{

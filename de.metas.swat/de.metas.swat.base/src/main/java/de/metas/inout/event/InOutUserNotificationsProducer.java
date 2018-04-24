@@ -24,6 +24,7 @@ package de.metas.inout.event;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -32,36 +33,37 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.document.engine.IDocumentBL;
-import de.metas.event.Event;
-import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
-import de.metas.event.QueueableForwardingEventBus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import lombok.NonNull;
 
 /**
- * {@link IEventBus} wrapper implementation tailored for sending events about generated or reversed shipments/receipts.
+ * Helper class used for sending user notifications about generated or reversed shipments/receipts.
  *
  * @author tsa
  *
  */
-public final class InOutProcessedEventBus extends QueueableForwardingEventBus
+public final class InOutUserNotificationsProducer
 {
-	public static final InOutProcessedEventBus newInstance()
+	public static final InOutUserNotificationsProducer newInstance()
 	{
-		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
-		return new InOutProcessedEventBus(eventBus);
+		return new InOutUserNotificationsProducer();
 	}
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.name("de.metas.inout.InOut.ProcessedEvents")
+			.name("de.metas.inout.UserNotifications")
 			.type(Type.REMOTE)
 			.build();
 
 	// services
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	private static final String MSG_Event_ShipmentGenerated = "Event_ShipmentGenerated";
 	private static final String MSG_Event_ShipmentReversed = "Event_ShipmentReversed";
@@ -70,50 +72,26 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 	private static final String MSG_Event_ReceiptGenerated = "Event_ReceiptGenerated";
 	private static final String MSG_Event_ReceiptReversed = "Event_ReceiptReversed";
 
-	private InOutProcessedEventBus(final IEventBus delegate)
+	private InOutUserNotificationsProducer()
 	{
-		super(delegate);
-	}
-
-	@Override
-	public InOutProcessedEventBus queueEvents()
-	{
-		super.queueEvents();
-		return this;
-	}
-
-	@Override
-	public InOutProcessedEventBus queueEventsUntilTrxCommit(final String trxName)
-	{
-		super.queueEventsUntilTrxCommit(trxName);
-		return this;
-	}
-
-	@Override
-	public InOutProcessedEventBus queueEventsUntilCurrentTrxCommit()
-	{
-		super.queueEventsUntilCurrentTrxCommit();
-		return this;
 	}
 
 	/**
 	 * Post events about given shipment/receipts that were processed.
 	 *
 	 * @param inouts
-	 * @see #notify(I_M_InOut)
+	 * @see #notifyInOutProcessed(I_M_InOut)
 	 */
-	public InOutProcessedEventBus notify(final Collection<? extends I_M_InOut> inouts)
+	public InOutUserNotificationsProducer notifyInOutsProcessed(final Collection<? extends I_M_InOut> inouts)
 	{
 		if (inouts == null || inouts.isEmpty())
 		{
 			return this;
 		}
 
-		for (final I_M_InOut inout : inouts)
-		{
-			final Event event = createInOutGeneratedEvent(inout);
-			postEvent(event);
-		}
+		postNotifications(inouts.stream()
+				.map(this::createUserNotification)
+				.collect(ImmutableList.toImmutableList()));
 
 		return this;
 	}
@@ -128,17 +106,15 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 	 * @param inout
 	 * @return
 	 */
-	public final InOutProcessedEventBus notify(final I_M_InOut inout)
+	public final InOutUserNotificationsProducer notifyInOutProcessed(final I_M_InOut inout)
 	{
 		Check.assumeNotNull(inout, "inout not null");
-		notify(Collections.singleton(inout));
+		notifyInOutsProcessed(Collections.singleton(inout));
 		return this;
 	}
 
-	private final Event createInOutGeneratedEvent(final I_M_InOut inout)
+	private final UserNotificationRequest createUserNotification(@NonNull final I_M_InOut inout)
 	{
-		Check.assumeNotNull(inout, "inout not null");
-
 		final I_C_BPartner bpartner = inout.getC_BPartner();
 		final String bpValue = bpartner.getValue();
 		final String bpName = bpartner.getName();
@@ -146,12 +122,22 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 		final String adMessage = getNotificationAD_Message(inout);
 		final int recipientUserId = getNotificationRecipientUserId(inout);
 
-		final Event event = Event.builder()
-				.setDetailADMessage(adMessage, TableRecordReference.of(inout), bpValue, bpName)
-				.addRecipient_User_ID(recipientUserId)
-				.setRecord(TableRecordReference.of(inout))
+		final TableRecordReference inoutRef = TableRecordReference.of(inout);
+
+		return newUserNotificationRequest()
+				.recipientUserId(recipientUserId)
+				.contentADMessage(adMessage)
+				.contentADMessageParam(inoutRef)
+				.contentADMessageParam(bpValue)
+				.contentADMessageParam(bpName)
+				.targetRecord(inoutRef)
 				.build();
-		return event;
+	}
+
+	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
+	{
+		return UserNotificationRequest.builder()
+				.topic(EVENTBUS_TOPIC);
 	}
 
 	private final String getNotificationAD_Message(final I_M_InOut inout)
@@ -188,17 +174,26 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 		}
 	}
 
-	public InOutProcessedEventBus notifyShipmentError(final String sourceInfo, final String errorMessage)
+	public InOutUserNotificationsProducer notifyShipmentError(final String sourceInfo, final String errorMessage)
 	{
-		final int recipientUserId = Env.getAD_User_ID(Env.getCtx());
-
-		final Event event = Event.builder()
-				.setDetailADMessage(MSG_Event_ShipmentError, sourceInfo, errorMessage)
-				.addRecipient_User_ID(recipientUserId)
-				.build();
-		postEvent(event);
+		postNotification(newUserNotificationRequest()
+				.recipientUserId(Env.getAD_User_ID(Env.getCtx()))
+				.contentADMessage(MSG_Event_ShipmentError)
+				.contentADMessageParam(sourceInfo)
+				.contentADMessageParam(errorMessage)
+				.build());
 
 		return this;
-
 	}
+
+	private void postNotification(final UserNotificationRequest notification)
+	{
+		notificationBL.notifyUserAfterCommit(notification);
+	}
+
+	private void postNotifications(final List<UserNotificationRequest> notifications)
+	{
+		Services.get(INotificationBL.class).notifyUserAfterCommit(notifications);
+	}
+
 }
