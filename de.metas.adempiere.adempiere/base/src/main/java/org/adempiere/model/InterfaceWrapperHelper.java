@@ -301,7 +301,7 @@ public class InterfaceWrapperHelper
 		final T bean = POWrapper.create(ctx, id, cl, trxName);
 		return bean;
 	}
-
+	
 	/**
 	 * Loads the record with the given <code>id</code>. Similar to {@link #create(Properties, String, int, Class, String)}, but explicitly specifies the table name.<br>
 	 * This is useful in case the table name can't be deduced from the given <code>cl</code>.
@@ -351,6 +351,25 @@ public class InterfaceWrapperHelper
 	public static <T> T load(final int id, final Class<T> modelClass)
 	{
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_ThreadInherited);
+	}
+	
+	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass)
+	{
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	public static <T> List<T> loadByIdsOutOfTrx(final Set<Integer> ids, final Class<T> modelClass)
+	{
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
+	}
+
+	private static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
+	{
+		if (getInMemoryDatabaseForModel(modelClass) != null)
+		{
+			return POJOWrapper.loadByIds(ids, modelClass, trxName);
+		}
+		return POWrapper.loadByIds(ids, modelClass, trxName);
 	}
 
 	/**

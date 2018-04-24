@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -39,6 +40,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IModelTranslationMap;
@@ -207,6 +209,22 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 			return null;
 		}
 		return create(po, cl);
+	}
+	
+	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
+	{
+		if(ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		
+		final Properties ctx = Env.getCtx();
+		final String tableName = getTableName(modelClass);
+		
+		return tableModelLoader.getPOs(ctx, tableName, ids, trxName)
+				.stream()
+				.map(po -> create(po, modelClass))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public static <T> T translate(final T model, final Class<T> cl)

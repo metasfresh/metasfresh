@@ -25,12 +25,17 @@ package org.adempiere.ad.persistence;
 import java.lang.reflect.Constructor;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.GenericPO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -39,6 +44,8 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.logging.LogManager;
@@ -117,6 +124,79 @@ public final class TableModelLoader
 		modelCacheService.addToCache(po);
 
 		return po;
+	}
+
+	public List<PO> getPOs(final Properties ctx, final String tableName, final Set<Integer> recordIds, final String trxName)
+	{
+		if (recordIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final IModelCacheService modelCacheService = Services.get(IModelCacheService.class);
+
+		final List<PO> result = new ArrayList<>(recordIds.size());
+
+		//
+		// Load from cache as much is possible
+		final Set<Integer> recordIdsToLoad;
+		final boolean checkCache = !CacheInterceptor.isCacheDisabled();
+		if (checkCache)
+		{
+			recordIdsToLoad = new HashSet<>();
+			for (final int recordId : recordIds)
+			{
+				final PO poCached = modelCacheService.retrieveObject(ctx, tableName, recordId, trxName);
+				if (poCached != null)
+				{
+					result.add(poCached);
+				}
+				else
+				{
+					recordIdsToLoad.add(recordId);
+				}
+			}
+		}
+		else
+		{
+			recordIdsToLoad = recordIds;
+		}
+
+		//
+		// Retrieve from database what was not found in cache
+		if (!recordIdsToLoad.isEmpty())
+		{
+			final POInfo poInfo = POInfo.getPOInfo(tableName);
+
+			final List<Object> sqlParams = new ArrayList<>();
+			final String sql = poInfo.buildSelect()
+					.append(" WHERE ").append(DB.buildSqlList(poInfo.getSingleKeyColumnName(), recordIdsToLoad, sqlParams))
+					.toString();
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try
+			{
+				pstmt = DB.prepareStatement(sql, trxName);
+				DB.setParameters(pstmt, sqlParams);
+				rs = pstmt.executeQuery();
+				while (rs.next())
+				{
+					final PO po = getPO(ctx, tableName, rs, trxName);
+					result.add(po);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw new DBException(ex, sql, sqlParams);
+			}
+			finally
+			{
+				DB.close(rs, pstmt);
+			}
+		}
+
+		//
+		return result;
 	}
 
 	/**
