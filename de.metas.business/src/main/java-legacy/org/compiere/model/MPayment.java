@@ -36,7 +36,6 @@ import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -1889,9 +1888,8 @@ public final class MPayment extends X_C_Payment
 			return;
 		}
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
 		final String soCreditStatus = stats.getSOCreditStatus();
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(soCreditStatus))
 		{

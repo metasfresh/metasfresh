@@ -38,7 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
 import org.compiere.model.ModelValidator;
@@ -72,8 +71,7 @@ public class C_Order
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.load(order.getC_BPartner_ID(), I_C_BPartner.class);
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getC_BPartner_ID());
 		final BigDecimal crediUsed = stats.getSOCreditUsed();
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final Timestamp dateOrdered = order.getDateOrdered();
@@ -129,8 +127,7 @@ public class C_Order
 		}
 
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-		final I_C_BPartner partner = InterfaceWrapperHelper.load(order.getC_BPartner_ID(), I_C_BPartner.class);
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getC_BPartner_ID());
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
 		{
 			return false;
