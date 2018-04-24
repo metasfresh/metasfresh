@@ -41,6 +41,8 @@ import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
+import org.adempiere.pricing.limit.PriceLimitRuleContext;
+import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
@@ -993,6 +995,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void failForMissingPricingConditions(final de.metas.adempiere.model.I_C_Order order)
 	{
 		final boolean mandatoryPricingConditions = isMandatoryPricingConditions();
@@ -1024,6 +1027,26 @@ public class OrderLineBL implements IOrderLineBL
 		final boolean noMandatoryPricingConditions = Check.isEmpty(pricingConditionsColorName) || "-".equals(pricingConditionsColorName);
 
 		return !noMandatoryPricingConditions;
+	}
+
+
+	@Override
+	public int getC_PaymentTerm_ID(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		int paymentTermOverrideId = orderLine.getC_PaymentTerm_Override_ID();
+		return paymentTermOverrideId > 0 ? paymentTermOverrideId : orderLine.getC_Order().getC_PaymentTerm_ID();
+	}
+
+	@Override
+	public PriceLimitRuleResult computePriceLimit(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+		return pricingBL.computePriceLimit(PriceLimitRuleContext.builder()
+				.pricingContext(createPricingContext(orderLine))
+				.priceLimit(orderLine.getPriceLimit())
+				.priceActual(orderLine.getPriceActual())
+				.paymentTermId(getC_PaymentTerm_ID(orderLine))
+				.build());
 	}
 
 }

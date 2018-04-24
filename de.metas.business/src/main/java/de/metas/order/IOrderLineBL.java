@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
+import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
@@ -257,4 +258,9 @@ public interface IOrderLineBL extends ISingletonService
 	 * Throw an error message if the sysconfig for mandatory pricing conditions is set ( see de.metas.order.impl.OrderLineBL.SYSCONFIG_NoPriceConditionsColorName) but the order contains lines that don't have the pricing conditions set.
 	 */
 	void failForMissingPricingConditions(de.metas.adempiere.model.I_C_Order order);
+
+	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
+
+	PriceLimitRuleResult computePriceLimit(org.compiere.model.I_C_OrderLine orderLine);
+
 }

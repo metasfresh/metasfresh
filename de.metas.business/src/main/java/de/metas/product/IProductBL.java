@@ -151,4 +151,6 @@ public interface IProductBL extends ISingletonService
 	 * @return true if instance attributes
 	 */
 	boolean isInstanceAttribute(I_M_Product product);
+	
+	boolean isProductInCategory(int productId, int expectedProductCategoryId);
 }

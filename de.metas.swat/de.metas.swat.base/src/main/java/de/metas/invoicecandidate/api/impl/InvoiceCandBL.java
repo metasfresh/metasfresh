@@ -47,7 +47,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
@@ -2025,12 +2025,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final IMDiscountSchemaDAO discountSchemaDAO = Services.get(IMDiscountSchemaDAO.class);
 		final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 		final I_C_BPartner partner = ic.getBill_BPartner();
 
-		final I_M_DiscountSchema discountSchema = bPartnerDAO.retrieveDiscountSchemaOrNull(partner, ic.isSOTrx());
-		if (discountSchema == null)
+		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(partner, ic.isSOTrx());
+		if (discountSchemaId <= 0)
 		{
 			// do nothing
 			return;
@@ -2038,7 +2038,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final I_M_Product product = ic.getM_Product();
 
-		final List<org.compiere.model.I_M_DiscountSchemaBreak> breaks = discountSchemaDAO.retrieveBreaks(discountSchema);
+		final I_M_DiscountSchema discountSchema = discountSchemaDAO.getById(discountSchemaId);
+		final List<org.compiere.model.I_M_DiscountSchemaBreak> breaks = discountSchemaDAO.retrieveBreaks(discountSchemaId);
 		final boolean isQtyBased = discountSchema.isQuantityBased();
 		final int productID = product.getM_Product_ID();
 		final int categoryID = product.getM_Product_Category_ID();
