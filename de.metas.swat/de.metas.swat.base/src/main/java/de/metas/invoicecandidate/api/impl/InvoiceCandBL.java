@@ -76,7 +76,6 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MInvoiceSchedule;
 import org.compiere.model.MNote;
@@ -965,10 +964,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public int getPrecisionFromPricelist(final I_C_Invoice_Candidate ic)
 	{
-
 		// take the precision from the bpartner price list
-
-		final I_M_PricingSystem pricingSystem = ic.getM_PricingSystem();
 		final Timestamp date = ic.getDateOrdered();
 		final boolean isSOTrx = ic.isSOTrx();
 		final I_C_BPartner_Location partnerLocation = ic.getBill_Location();
@@ -976,8 +972,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
 					.getCurrentPricelistOrNull(
-							pricingSystem,
-							partnerLocation.getC_Location().getC_Country(),
+							ic.getM_PricingSystem_ID(),
+							partnerLocation.getC_Location().getC_Country_ID(),
 							date,
 							isSOTrx);
 
@@ -986,9 +982,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				return pricelist.getPricePrecision();
 			}
 		}
+		
 		// fall back: get the precision from the currency
 		return getPrecisionFromCurrency(ic);
-
 	}
 
 	@Override

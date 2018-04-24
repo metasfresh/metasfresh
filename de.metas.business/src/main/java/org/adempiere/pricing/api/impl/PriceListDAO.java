@@ -8,8 +8,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
@@ -22,10 +20,8 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MPriceList;
 import org.compiere.util.Env;
@@ -34,7 +30,6 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -83,14 +78,14 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		final int countryId = bpartnerLocation.getC_Location().getC_Country_ID();
-		final List<I_M_PriceList> priceLists = retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, isSOPriceList, ITrx.TRXNAME_None);
+		final List<I_M_PriceList> priceLists = retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, isSOPriceList);
 		return !priceLists.isEmpty() ? priceLists.get(0) : null;
 	}
 
 	@Override
-	public Iterator<I_M_PriceList> retrievePriceLists(final I_M_PricingSystem pricingSystem, final I_C_Country country, final boolean isSOTrx)
+	public Iterator<I_M_PriceList> retrievePriceLists(final int pricingSystemId, final int countryId, final Boolean isSOPriceList)
 	{
-		return retrievePriceLists(Env.getCtx(), pricingSystem.getM_PricingSystem_ID(), country.getC_Country_ID(), isSOTrx, ITrx.TRXNAME_None)
+		return retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, isSOPriceList)
 				.iterator();
 	}
 
@@ -99,19 +94,24 @@ public class PriceListDAO implements IPriceListDAO
 			final @CacheCtx Properties ctx,
 			final int pricingSystemId,
 			final int countryId,
-			final boolean isSOTrx,
-			final @CacheTrx String trxName)
+			final Boolean isSOPriceList)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(I_M_PriceList.class)
+		final IQueryBuilder<I_M_PriceList> queryBuilder = queryBL.createQueryBuilder(I_M_PriceList.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystemId)
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOTrx)
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOPriceList)
 				.addInArrayFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, countryId, null)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
-				.orderBy()
-				.addColumn(I_M_PriceList.COLUMNNAME_C_Country_ID, Direction.Ascending, Nulls.Last)
-				.endOrderBy()
+				.orderBy(I_M_PriceList.COLUMNNAME_C_Country_ID);
+
+		if (isSOPriceList != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOPriceList)
+					.orderByDescending(I_M_PriceList.COLUMNNAME_IsSOPriceList); // sales first
+		}
+
+		return queryBuilder
 				.create()
 				.listImmutable(I_M_PriceList.class);
 	}

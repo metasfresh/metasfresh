@@ -199,8 +199,8 @@ public class PricingBL implements IPricingBL
 		{
 			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
-					pricingCtx.getM_PricingSystem(),
-					pricingCtx.getC_Country(),
+					pricingCtx.getM_PricingSystem_ID(),
+					pricingCtx.getC_Country_ID(),
 					pricingCtxToUse.getPriceDate(),
 					pricingCtx.isSOTrx(),
 					null);
@@ -215,9 +215,9 @@ public class PricingBL implements IPricingBL
 						"Given PricingContext {} has M_PriceList_Version={}, but from M_PricingSystem={}, Product={}, Country={} and IsSOTrx={}, we computed a different M_PriceList_Version={}",
 						pricingCtxToUse,  // 0
 						pricingCtxToUse.getM_PriceList_Version(),  // 1
-						pricingCtxToUse.getM_PricingSystem(),  // 2
+						pricingCtxToUse.getM_PricingSystem_ID(),  // 2
 						pricingCtx.getM_Product(),  // 3
-						pricingCtx.getC_Country(),  // 4
+						pricingCtx.getC_Country_ID(),  // 4
 						pricingCtx.isSOTrx(),  // 5
 						computedPLV);
 				pricingCtxToUse.setM_PriceList_Version_ID(computedPLV.getM_PriceList_Version_ID());
