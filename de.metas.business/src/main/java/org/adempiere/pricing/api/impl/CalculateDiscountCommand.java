@@ -11,6 +11,7 @@ import org.adempiere.pricing.api.DiscountResult;
 import org.adempiere.pricing.api.DiscountResult.DiscountResultBuilder;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
+import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
@@ -53,6 +54,8 @@ import lombok.NonNull;
 /* package */ class CalculateDiscountCommand
 {
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
+	private final IMDiscountSchemaDAO discountSchemaRepo = Services.get(IMDiscountSchemaDAO.class);
 
 	final CalculateDiscountRequest request;
 
@@ -63,11 +66,14 @@ import lombok.NonNull;
 
 	public DiscountResult calculateDiscount()
 	{
-		final String discountType = request.getSchema().getDiscountType();
+		final I_M_DiscountSchema schema = discountSchemaRepo.getById(request.getDiscountSchemaId());
+		Check.assumeNotNull(schema, "schema shall not be null");
+
+		final String discountType = schema.getDiscountType();
 
 		if (X_M_DiscountSchema.DISCOUNTTYPE_FlatPercent.equals(discountType))
 		{
-			return computeFlatDiscount();
+			return computeFlatDiscount(schema);
 		}
 		else if (X_M_DiscountSchema.DISCOUNTTYPE_Formula.equals(discountType)
 				|| X_M_DiscountSchema.DISCOUNTTYPE_Pricelist.equals(discountType))
@@ -84,9 +90,8 @@ import lombok.NonNull;
 		}
 	}
 
-	private DiscountResult computeFlatDiscount()
+	private DiscountResult computeFlatDiscount(final I_M_DiscountSchema schema)
 	{
-		final I_M_DiscountSchema schema = request.getSchema();
 		if (schema.isBPartnerFlatDiscount())
 		{
 			return DiscountResult.discount(request.getBpartnerFlatDiscount());
@@ -195,9 +200,8 @@ import lombok.NonNull;
 			return request.getForceSchemaBreak();
 		}
 
-		final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
 		return discountSchemaBL.pickApplyingBreak(SchemaBreakQuery.builder()
-				.discountSchemaId(request.getSchema().getM_DiscountSchema_ID())
+				.discountSchemaId(request.getDiscountSchemaId())
 				.attributeInstances(request.getAttributeInstances())
 				.productId(request.getProductId())
 				.qty(request.getQty())

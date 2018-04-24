@@ -454,7 +454,7 @@ public class MDiscountSchemaTest
 		// Discount 0 (because no breaks were applied)
 
 		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
-				.schema(schema1)
+				.discountSchemaId(schema1.getM_DiscountSchema_ID())
 				.qty(new BigDecimal(100))
 				.price(new BigDecimal(1))
 				.productId(product1.getM_Product_ID())
@@ -509,7 +509,7 @@ public class MDiscountSchemaTest
 		// Discount 0 (because no breaks were applied)
 
 		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
-				.schema(schema1)
+				.discountSchemaId(schema1.getM_DiscountSchema_ID())
 				.qty(new BigDecimal(100))
 				.price(new BigDecimal(1))
 				.productId(product1.getM_Product_ID())
