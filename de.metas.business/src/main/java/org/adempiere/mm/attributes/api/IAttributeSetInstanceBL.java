@@ -23,6 +23,7 @@ package org.adempiere.mm.attributes.api;
  */
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
@@ -110,4 +111,14 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet);
 
 	I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(int productId, IAttributeSet attributeSet);
+
+	/**
+	 * set in {@link I_M_AttributeInstance} the correct value for given <code>asi</code> and given <code>attribute</code>
+	 * <br> the ai is also saved.
+	 * @param asi
+	 * @param attribute
+	 * @param value
+	 * @return
+	 */
+	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, I_M_Attribute attribute, Object value);
 }

@@ -405,6 +405,16 @@ public final class Check
 		}
 		return valueInt;
 	}
+	
+	public static long assumeGreaterThanZero(final long valueLong, final String valueName)
+	{
+		if (valueLong <= 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " > 0 but it was " + valueLong);
+		}
+		return valueLong;
+	}
+
 
 	public static int assumeGreaterOrEqualToZero(final int valueInt, final String valueName)
 	{

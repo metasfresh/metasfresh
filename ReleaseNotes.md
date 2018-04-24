@@ -16,6 +16,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3478](https://github.com/metasfresh/metasfresh/issues/3478) Window design: product Pharma
+    * Improved Window Layout and Translation for Product Pharma.
   * [#3479](https://github.com/metasfresh/metasfresh/issues/3479) Window design: Business Partner Pharma
     * Improved Window Layout and Translation for Business Partner Pharma.
   * [#3763](https://github.com/metasfresh/metasfresh/issues/3763) Contracts: Create a function that provides a hierarchy of contracts

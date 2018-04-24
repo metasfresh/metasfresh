@@ -82,9 +82,23 @@ public final class TableRecordReference implements ITableRecordReference
 		{
 			return (TableRecordReference)model;
 		}
-		return new TableRecordReference(model);
+		else if (model instanceof ITableRecordReference)
+		{
+			final ITableRecordReference recordRef = (ITableRecordReference)model;
+			return new TableRecordReference(recordRef.getTableName(), recordRef.getRecord_ID());
+		}
+		else
+		{
+			return new TableRecordReference(model);
+		}
 	}
-
+	
+	@Deprecated
+	public static final TableRecordReference of(TableRecordReference recordRef)
+	{
+		return recordRef;
+	}
+	
 	/**
 	 * Same as {@link #of(Object)} but in case <code>model</code> is null then it will return null.
 	 *

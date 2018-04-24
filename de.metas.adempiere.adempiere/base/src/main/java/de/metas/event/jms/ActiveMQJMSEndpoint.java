@@ -60,9 +60,10 @@ import com.google.common.cache.LoadingCache;
 import de.metas.event.Event;
 import de.metas.event.EventBusConstants;
 import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.jms.IJMSService;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 import lombok.NonNull;
 
 public class ActiveMQJMSEndpoint implements IJMSEndpoint
@@ -391,11 +392,13 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 	{
 		final boolean connected = this.connected.get();
 
-		Services.get(IEventBusFactory.class)
-				.getEventBus(EventBusConstants.TOPIC_GeneralNotificationsLocal)
-				.postEvent(Event.builder()
-						.setDetailADMessage(connected ? MSG_Event_RemoteEndpointConnected : MSG_Event_RemoteEndpointDisconnected)
-						.build());
+		final INotificationBL notificationsService = Services.get(INotificationBL.class);
+		notificationsService.notifyUser(UserNotificationRequest.builder()
+				.broadcastToAllUsers(true)
+				.topic(EventBusConstants.TOPIC_GeneralUserNotificationsLocal)
+				.contentADMessage(connected ? MSG_Event_RemoteEndpointConnected : MSG_Event_RemoteEndpointDisconnected)
+				.noEmail(true)
+				.build());
 	}
 
 	private static final class MessageConsumer2EventBusForwarder implements MessageListener

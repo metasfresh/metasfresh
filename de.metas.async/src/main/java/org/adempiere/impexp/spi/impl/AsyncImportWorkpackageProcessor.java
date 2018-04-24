@@ -13,15 +13,14 @@ package org.adempiere.impexp.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -38,11 +37,11 @@ import org.slf4j.Logger;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.event.Event;
-import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
 
 /**
  * Workpackage processor used to import records enqueued by {@link AsyncImportProcessBuilder}.
@@ -59,7 +58,7 @@ public class AsyncImportWorkpackageProcessor extends WorkpackageProcessorAdapter
 	public static final String PARAM_Selection_ID = IImportProcess.PARAM_Selection_ID;
 
 	private static final String MSG_Event_RecordsImported = "org.adempiere.impexp.async.Event_RecordsImported";
-	public static final Topic TOPIC_RecordsImported = Topic.of("org.adempiere.impexp.async.RecordsImported", Type.REMOTE);
+	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("org.adempiere.impexp.async.RecordsImported", Type.REMOTE);
 
 	/** @return false. IMPORTANT: let the {@link IImportProcess} manage the transactions */
 	@Override
@@ -103,16 +102,19 @@ public class AsyncImportWorkpackageProcessor extends WorkpackageProcessorAdapter
 			final String targetTableName = result.getTargetTableName();
 			final String windowName = Services.get(IADTableDAO.class).retrieveWindowName(Env.getCtx(), targetTableName);
 
-			Services.get(IEventBusFactory.class)
-					.getEventBus(TOPIC_RecordsImported)
-					.postEvent(Event.builder()
-							.setDetailADMessage(MSG_Event_RecordsImported, result.getInsertCount(), result.getUpdateCount(), windowName)
-							.addRecipient_User_ID(recipientUserId)
+			Services.get(INotificationBL.class)
+					.notifyUser(UserNotificationRequest.builder()
+							.topic(USER_NOTIFICATIONS_TOPIC)
+							.recipientUserId(recipientUserId)
+							.contentADMessage(MSG_Event_RecordsImported)
+							.contentADMessageParam(result.getInsertCount())
+							.contentADMessageParam(result.getUpdateCount())
+							.contentADMessageParam(windowName)
 							.build());
 		}
-		catch (Exception e)
+		catch (final Exception ex)
 		{
-			logger.error("Failed creating and posting event. Ignored.", e);
+			logger.warn("Failed notifying user '{}' about {}. Ignored.", recipientUserId, result, ex);
 		}
 	}
 

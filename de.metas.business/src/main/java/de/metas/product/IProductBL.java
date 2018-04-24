@@ -55,7 +55,7 @@ public interface IProductBL extends ISingletonService
 	 * @return true if item
 	 */
 	boolean isItem(I_M_Product product);
-	
+
 	default boolean isItem(final int productId)
 	{
 		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
@@ -144,4 +144,11 @@ public interface IProductBL extends ISingletonService
 	 * @return true if it's a trading product
 	 */
 	boolean isTradingProduct(I_M_Product product);
+
+	/**
+	 * Has the Product Instance Attribute
+	 *
+	 * @return true if instance attributes
+	 */
+	boolean isInstanceAttribute(I_M_Product product);
 }

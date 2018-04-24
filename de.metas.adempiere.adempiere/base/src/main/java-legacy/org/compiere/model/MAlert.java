@@ -17,9 +17,9 @@
 package org.compiere.model;
 
 import java.sql.ResultSet;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.security.IRoleDAO;
@@ -176,9 +176,9 @@ public class MAlert extends X_AD_Alert
 	/**
 	 * @return unique list of recipient users
 	 */
-	public Collection<Integer> getRecipientUsers() {
+	public Set<Integer> getRecipientUsers() {
 		MAlertRecipient[] recipients = getRecipients(false);
-		TreeSet<Integer> users = new TreeSet<Integer>();
+		TreeSet<Integer> users = new TreeSet<>();
 		for (int i = 0; i < recipients.length; i++)
 		{
 			MAlertRecipient recipient = recipients[i];
