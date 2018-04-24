@@ -4,7 +4,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 
 import com.google.common.base.Optional;
 
-import de.metas.notification.spi.INotificationCtxProvider;
+import de.metas.notification.spi.IRecordTextProvider;
 
 /*
  * #%L
@@ -29,18 +29,17 @@ import de.metas.notification.spi.INotificationCtxProvider;
  */
 
 /**
- * {@link INotificationCtxProvider} implementation which always return {@link Optional#absent()}.
- * 
+ * {@link IRecordTextProvider} implementation which always return {@link Optional#absent()}.
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class NullNotificationCtxProvider implements INotificationCtxProvider
+public final class NullRecordTextProvider implements IRecordTextProvider
 {
-	public static final transient NullNotificationCtxProvider instance = new NullNotificationCtxProvider();
+	public static final transient NullRecordTextProvider instance = new NullRecordTextProvider();
 
-	private NullNotificationCtxProvider()
+	private NullRecordTextProvider()
 	{
-		super();
 	}
 
 	/**

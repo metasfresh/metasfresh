@@ -1,22 +1,21 @@
 package de.metas.inout.event;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.document.engine.IDocumentBL;
-import de.metas.event.Event;
-import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
-import de.metas.event.QueueableForwardingEventBus;
 import de.metas.event.Topic;
-import de.metas.event.Type;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -40,7 +39,7 @@ import de.metas.event.Type;
  * #L%
  */
 
-public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
+public class ReturnInOutUserNotificationsProducer
 {
 
 	/**
@@ -50,17 +49,13 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 
 	private static final int WINDOW_RETURN_FROM_CUSTOMER = 53097; // FIXME: HARDCODED
 
-	public static final ReturnInOutProcessedEventBus newInstance()
+	public static final ReturnInOutUserNotificationsProducer newInstance()
 	{
-		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
-		return new ReturnInOutProcessedEventBus(eventBus);
+		return new ReturnInOutUserNotificationsProducer();
 	}
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
-	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.name("de.metas.inout.ReturnInOut.ProcessedEvents")
-			.type(Type.REMOTE)
-			.build();
+	public static final Topic EVENTBUS_TOPIC = InOutUserNotificationsProducer.EVENTBUS_TOPIC;
 
 	// services
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
@@ -68,30 +63,8 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 	private static final String MSG_Event_RETURN_FROM_CUSTOMER_Generated = "Event_CustomerReturn_Generated";
 	private static final String MSG_Event_RETURN_TO_VENDOR_Generated = "Event_ReturnToVendor_Generated";
 
-	private ReturnInOutProcessedEventBus(final IEventBus delegate)
+	private ReturnInOutUserNotificationsProducer()
 	{
-		super(delegate);
-	}
-
-	@Override
-	public ReturnInOutProcessedEventBus queueEvents()
-	{
-		super.queueEvents();
-		return this;
-	}
-
-	@Override
-	public ReturnInOutProcessedEventBus queueEventsUntilTrxCommit(final String trxName)
-	{
-		super.queueEventsUntilTrxCommit(trxName);
-		return this;
-	}
-
-	@Override
-	public ReturnInOutProcessedEventBus queueEventsUntilCurrentTrxCommit()
-	{
-		super.queueEventsUntilCurrentTrxCommit();
-		return this;
 	}
 
 	/**
@@ -100,18 +73,16 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 	 * @param inouts
 	 * @see #notify(I_M_InOut)
 	 */
-	public ReturnInOutProcessedEventBus notify(final Collection<? extends I_M_InOut> inouts)
+	public ReturnInOutUserNotificationsProducer notify(final Collection<? extends I_M_InOut> inouts)
 	{
 		if (inouts == null || inouts.isEmpty())
 		{
 			return this;
 		}
 
-		for (final I_M_InOut inout : inouts)
-		{
-			final Event event = createInOutGeneratedEvent(inout);
-			postEvent(event);
-		}
+		postNotifications(inouts.stream()
+				.map(this::createUserNotification)
+				.collect(ImmutableList.toImmutableList()));
 
 		return this;
 	}
@@ -126,17 +97,14 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 	 * @param inout
 	 * @return
 	 */
-	public final ReturnInOutProcessedEventBus notify(final I_M_InOut inout)
+	public final ReturnInOutUserNotificationsProducer notify(@NonNull final I_M_InOut inout)
 	{
-		Check.assumeNotNull(inout, "inout not null");
-		notify(Collections.singleton(inout));
+		notify(ImmutableList.of(inout));
 		return this;
 	}
 
-	private final Event createInOutGeneratedEvent(final I_M_InOut inout)
+	private final UserNotificationRequest createUserNotification(@NonNull final I_M_InOut inout)
 	{
-		Check.assumeNotNull(inout, "inout not null");
-
 		final I_C_BPartner bpartner = inout.getC_BPartner();
 		final String bpValue = bpartner.getValue();
 		final String bpName = bpartner.getName();
@@ -144,16 +112,26 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 		final String adMessage = getNotificationAD_Message(inout);
 		final int recipientUserId = getNotificationRecipientUserId(inout);
 
-		final Event event = Event.builder()
-				.setDetailADMessage(adMessage, TableRecordReference.of(inout), bpValue, bpName)
-				.addRecipient_User_ID(recipientUserId)
-				.setRecord(TableRecordReference.of(inout))
-				.setSuggestedWindowId(getWindowID(inout))
+		final TableRecordReference inoutRef = TableRecordReference.of(inout);
+
+		return newUserNotificationRequest()
+				.recipientUserId(recipientUserId)
+				.contentADMessage(adMessage)
+				.contentADMessageParam(inoutRef)
+				.contentADMessageParam(bpValue)
+				.contentADMessageParam(bpName)
+				.targetRecord(inoutRef)
+				.targetADWindowId(getWindowId(inout))
 				.build();
-		return event;
 	}
 
-	private int getWindowID(I_M_InOut inout)
+	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
+	{
+		return UserNotificationRequest.builder()
+				.topic(EVENTBUS_TOPIC);
+	}
+
+	private int getWindowId(final I_M_InOut inout)
 	{
 		return inout.isSOTrx() ? WINDOW_RETURN_FROM_CUSTOMER : WINDOW_RETURN_TO_VENDOR;
 	}
@@ -185,5 +163,10 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 		{
 			return inout.getCreatedBy();
 		}
+	}
+
+	private void postNotifications(final List<UserNotificationRequest> notifications)
+	{
+		Services.get(INotificationBL.class).notifyUserAfterCommit(notifications);
 	}
 }

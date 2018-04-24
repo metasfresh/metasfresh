@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -40,6 +40,7 @@ import org.adempiere.util.api.IParams;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.X_AD_User;
 import org.compiere.util.Env;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -48,6 +49,7 @@ import org.junit.Test;
 
 import com.google.common.base.Optional;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageParamDAO;
@@ -158,7 +160,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 	private void step30_processEnqueuedWorkpackages()
 	{
 		final Class<InvoiceCandWorkpackageProcessor> workpackageProcessorClass = InvoiceCandWorkpackageProcessor.class;
-		
+
 		//
 		// Validate invoice candidates from each workpackage
 		for (final I_C_Queue_WorkPackage workpackage : retrieveWorkpackages(workpackageProcessorClass))
@@ -167,6 +169,14 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		}
 
 		final InvoiceGeneratedNotificationChecker notificationsChecker = InvoiceGeneratedNotificationChecker.createAnSubscribe();
+
+		//
+		// Make sure the current user is configured to receive notifications
+		final I_AD_User user = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		user.setAD_User_ID(0);
+		user.setNotificationType(X_AD_User.NOTIFICATIONTYPE_Notice);
+		InterfaceWrapperHelper.save(user);
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, user.getAD_User_ID());
 
 		//
 		// Process all workpackages synchronously
@@ -245,9 +255,9 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 	protected final List<I_C_Queue_WorkPackage> retrieveWorkpackages(final Class<?> workpackageProcessorClass)
 	{
 		final String workpackageClassnameExpected = workpackageProcessorClass.getName();
-		
+
 		final List<I_C_Queue_WorkPackage> result = new ArrayList<>();
-		for (final I_C_Queue_WorkPackage  workpackage : POJOLookupMap.get().getRecords(I_C_Queue_WorkPackage.class))
+		for (final I_C_Queue_WorkPackage workpackage : POJOLookupMap.get().getRecords(I_C_Queue_WorkPackage.class))
 		{
 			final String workpackageClassname = workpackage.getC_Queue_Block().getC_Queue_PackageProcessor().getClassname();
 			if (workpackageClassnameExpected.equals(workpackageClassname))
@@ -255,7 +265,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 				result.add(workpackage);
 			}
 		}
-		
+
 		return result;
 	}
 

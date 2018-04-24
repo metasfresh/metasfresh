@@ -6,7 +6,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Inventory;
 
 import de.metas.event.IEventBusFactory;
-import de.metas.inventory.event.InventoryProcessedEventBus;
+import de.metas.inventory.event.InventoryUserNotificationsProducer;
 
 /*
  * #%L
@@ -37,7 +37,7 @@ public class M_Inventory
 	public void onInit()
 	{
 		// Setup event bus topics on which swing client notification listener shall subscribe
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InventoryProcessedEventBus.EVENTBUS_TOPIC);
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InventoryUserNotificationsProducer.EVENTBUS_TOPIC);
 	}
 
 }

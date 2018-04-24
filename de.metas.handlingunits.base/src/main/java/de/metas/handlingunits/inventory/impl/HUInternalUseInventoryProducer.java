@@ -26,7 +26,7 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
-import de.metas.inventory.event.InventoryProcessedEventBus;
+import de.metas.inventory.event.InventoryUserNotificationsProducer;
 import lombok.NonNull;
 
 /*
@@ -147,9 +147,8 @@ public class HUInternalUseInventoryProducer
 		}
 		//
 		// Send notifications
-		InventoryProcessedEventBus.newInstance()
-				.queueEventsUntilCurrentTrxCommit()
-				.notify(inventories);
+		InventoryUserNotificationsProducer.newInstance()
+				.notifyGenerated(inventories);
 
 		return inventories;
 	}

@@ -32,6 +32,7 @@ import javax.activation.DataSource;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Attachment;
+import org.springframework.core.io.Resource;
 
 /**
  * Record attachments repository.
@@ -77,6 +78,8 @@ public interface IAttachmentBL extends ISingletonService
 
 	List<AttachmentEntry> addEntriesFromDataSources(Object model, Collection<DataSource> dataSources);
 
+	List<AttachmentEntry> addEntriesFromResources(Object model, Collection<Resource> resources);
+
 	/**
 	 * @param model model (see class documentation)
 	 * @param files
@@ -117,5 +120,4 @@ public interface IAttachmentBL extends ISingletonService
 	void deleteAttachment(Object model);
 
 	void setAttachmentText(Object model, String textMsg);
-
 }

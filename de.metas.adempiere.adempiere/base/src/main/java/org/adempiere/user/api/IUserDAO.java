@@ -78,4 +78,6 @@ public interface IUserDAO extends ISingletonService
 	 * @return AD_User_IDs
 	 */
 	List<Integer> retrieveSystemUserIds();
+
+	UserNotificationsConfig getUserNotificationsConfig(int adUserId);
 }

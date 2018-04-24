@@ -63,6 +63,8 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		// neede to construct the user notification message
 		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
+		vendor.setValue("Vendor");
+		vendor.setName("Vendor");
 		save(vendor);
 
 		final int productId = 20;
