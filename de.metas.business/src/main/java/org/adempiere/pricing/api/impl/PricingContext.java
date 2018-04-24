@@ -46,6 +46,7 @@ class PricingContext implements IEditablePricingContext
 	private int M_Product_ID;
 	private int M_PriceList_ID;
 	private int M_PriceList_Version_ID;
+	private boolean skipCheckingPriceListSOTrxFlag;
 
 	/**
 	 * PriceDate timestamp.
@@ -105,6 +106,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.convertPriceToContextUOM = convertPriceToContextUOM;
 		pricingCtxNew.isManualPrice = isManualPrice;
 		pricingCtxNew.failIfNotCalculated = failIfNotCalculated;
+		pricingCtxNew.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
 		pricingCtxNew.properties.putAll(properties);
 
 		return pricingCtxNew;
@@ -428,5 +430,17 @@ class PricingContext implements IEditablePricingContext
 	public void setFailIfNotCalculated(boolean failIfNotCalculated)
 	{
 		this.failIfNotCalculated = failIfNotCalculated;
+	}
+	
+	@Override
+	public void setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag)
+	{
+		this.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
+	}
+	
+	@Override
+	public boolean isSkipCheckingPriceListSOTrxFlag()
+	{
+		return skipCheckingPriceListSOTrxFlag;
 	}
 }

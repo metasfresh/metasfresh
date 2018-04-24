@@ -132,7 +132,8 @@ public class PricingBL implements IPricingBL
 		// Fail if not calculated
 		if (pricingCtxToUse.isFailIfNotCalculated() && !result.isCalculated())
 		{
-			throw new ProductNotOnPriceListException(pricingCtxToUse);
+			throw new ProductNotOnPriceListException(pricingCtxToUse)
+					.setParameter("pricingResult", result);
 		}
 
 		// First we check if we have different UOM in the context and result
@@ -202,7 +203,7 @@ public class PricingBL implements IPricingBL
 					pricingCtx.getM_PricingSystem_ID(),
 					pricingCtx.getC_Country_ID(),
 					pricingCtxToUse.getPriceDate(),
-					pricingCtx.isSOTrx(),
+					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.isSOTrx(),
 					null);
 
 			if (computedPLV != null)
