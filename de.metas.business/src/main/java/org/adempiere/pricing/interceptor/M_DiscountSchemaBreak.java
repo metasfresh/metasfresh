@@ -126,6 +126,7 @@ public class M_DiscountSchemaBreak
 		if (priceLimitResult.isBelowPriceLimit(price))
 		{
 			throw new AdempiereException(MSG_UnderLimitPriceWithExplanation, new Object[] { price, priceLimitResult.getPriceLimit(), priceLimitResult.getPriceLimitExplanation() })
+					.markAsUserValidationError()
 					.setParameter("context", context)
 					.setParameter("pricingCtx", request.getPricingCtx());
 		}
