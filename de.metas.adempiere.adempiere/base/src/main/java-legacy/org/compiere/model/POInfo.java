@@ -31,6 +31,7 @@ import java.util.concurrent.Callable;
 
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -521,6 +522,15 @@ public final class POInfo implements Serializable
 	public boolean isSingleKeyColumnName()
 	{
 		return m_keyColumnName != null;
+	}
+	
+	public String getSingleKeyColumnName()
+	{
+		if (!isSingleKeyColumnName())
+		{
+			throw new AdempiereException("Table " + getTableName() + " does not have a single key column");
+		}
+		return getKeyColumnName();
 	}
 
 	/**
