@@ -168,6 +168,7 @@ import lombok.NonNull;
 		newPricingCtx.setM_PricingSystem_ID(basePricingSystemId);
 		newPricingCtx.setM_PriceList_ID(-1); // will be recomputed
 		newPricingCtx.setM_PriceList_Version_ID(-1); // will be recomputed
+		newPricingCtx.setSkipCheckingPriceListSOTrxFlag(true);
 		newPricingCtx.setDisallowDiscount(true);
 		newPricingCtx.setFailIfNotCalculated(true);
 
