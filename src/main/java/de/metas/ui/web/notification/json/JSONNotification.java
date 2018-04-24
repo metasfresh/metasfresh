@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
-import de.metas.ui.web.notification.UserNotification;
+import de.metas.notification.UserNotification;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 
 /*
@@ -59,7 +59,7 @@ public final class JSONNotification implements Serializable
 	{
 		super();
 
-		id = notification.getId();
+		id = String.valueOf(notification.getId());
 		message = notification.getMessage(adLanguage);
 		timestamp = JSONDate.toJson(notification.getTimestamp());
 		important = notification.isImportant();

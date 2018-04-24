@@ -6,13 +6,16 @@ import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.notification.UserNotification;
-import de.metas.ui.web.notification.UserNotification.TargetType;
+import de.metas.notification.UserNotification;
+import de.metas.notification.UserNotificationTargetType;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,17 +30,18 @@ import de.metas.ui.web.notification.UserNotification.TargetType;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Value
 public class JSONNotificationTarget implements Serializable
 {
 	/**
@@ -46,26 +50,28 @@ public class JSONNotificationTarget implements Serializable
 	 */
 	static final JSONNotificationTarget of(final UserNotification notification)
 	{
-		final TargetType targetType = notification.getTargetType();
+		final UserNotificationTargetType targetType = notification.getTargetType();
 		switch (targetType)
 		{
 			case Window:
-				final JSONNotificationTarget jsonTarget = new JSONNotificationTarget(targetType);
-				jsonTarget.documentType = notification.getTargetDocumentType();
-				jsonTarget.documentId = notification.getTargetDocumentId();
-				return jsonTarget;
+				return JSONNotificationTarget.builder()
+						.targetType(UserNotificationTargetType.Window)
+						.documentType(notification.getTargetDocumentType())
+						.documentId(notification.getTargetDocumentId())
+						.build();
 			case None:
+				return null;
+			default:
+				logger.warn("Unknown targetType={} for {}. Returning null.", targetType, notification);
 				return null;
 		}
 
-		logger.warn("Unknown targetType={} for {}. Returning null.", targetType, notification);
-		return null;
 	}
 
 	private static final Logger logger = LogManager.getLogger(JSONNotificationTarget.class);
 
 	@JsonProperty("targetType")
-	private final TargetType targetType;
+	private final UserNotificationTargetType targetType;
 
 	//
 	// Target: Window/Document
@@ -77,35 +83,15 @@ public class JSONNotificationTarget implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
 	private String documentId;
 
-	private JSONNotificationTarget(final TargetType targetType)
+	@Builder
+	@JsonCreator
+	private JSONNotificationTarget(
+			@JsonProperty("targetType") @NonNull final UserNotificationTargetType targetType,
+			@JsonProperty("documentType") final String documentType,
+			@JsonProperty("documentId") final String documentId)
 	{
-		super();
 		this.targetType = targetType;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("targetType", targetType)
-				.add("documentType", documentType)
-				.add("documentId", documentId)
-				.toString();
-	}
-
-	public TargetType getTargetType()
-	{
-		return targetType;
-	}
-
-	public String getDocumentType()
-	{
-		return documentType;
-	}
-
-	public String getDocumentId()
-	{
-		return documentId;
+		this.documentType = documentType;
+		this.documentId = documentId;
 	}
 }
