@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.CalculateDiscountRequest;
 import org.adempiere.pricing.api.DiscountResult;
@@ -36,7 +35,6 @@ import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.pricing.api.SchemaBreakQuery;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
@@ -255,16 +253,4 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 
 		return count;
 	}	// reSeq
-
-	@Override
-	public I_M_DiscountSchema getDiscountSchemaForPartner(final I_C_BPartner partner, final boolean isSOTrx)
-	{
-		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(partner, isSOTrx);
-		if (discountSchemaId <= 0)
-		{
-			return null;
-		}
-
-		return Services.get(IMDiscountSchemaDAO.class).getById(discountSchemaId);
-	}
 }
