@@ -132,12 +132,7 @@ class PharmaPriceLimitRuleInstance
 			return false;
 		}
 
-		if (!product.isPrescription())
-		{
-			return false;
-		}
-
-		return true;
+		return product.isPrescription();
 	}
 
 	private PriceLimit computePriceLimitOrNull()
