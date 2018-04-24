@@ -38,6 +38,10 @@ import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingDAO;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.PriceListVersionNotFoundException;
+import org.adempiere.pricing.limit.CompositePriceLimitRule;
+import org.adempiere.pricing.limit.IPriceLimitRule;
+import org.adempiere.pricing.limit.PriceLimitRuleContext;
+import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.pricing.spi.AggregatedPricingRule;
 import org.adempiere.pricing.spi.IPricingRule;
@@ -61,13 +65,9 @@ import de.metas.pricing.ProductPrices;
 
 public class PricingBL implements IPricingBL
 {
-	private final Logger logger = LogManager.getLogger(getClass());
-
-	public static final PricingBL instance = new PricingBL();
-
-	public PricingBL()
-	{
-	}
+	private static final Logger logger = LogManager.getLogger(PricingBL.class);
+	
+	private final CompositePriceLimitRule priceLimitRules = new CompositePriceLimitRule();
 
 	@Override
 	public IEditablePricingContext createPricingContext()
@@ -346,7 +346,6 @@ public class PricingBL implements IPricingBL
 		return result;
 	}
 
-	@Override
 	@Cached(cacheName = I_C_PricingRule.Table_Name + "_AggregatedPricingRule")
 	public AggregatedPricingRule getAggregatedPricingRule(@CacheCtx Properties ctx)
 	{
@@ -365,7 +364,7 @@ public class PricingBL implements IPricingBL
 	{
 		final List<I_C_PricingRule> rulesDef = Services.get(IPricingDAO.class).retrievePricingRules(ctx);
 
-		final List<IPricingRule> rules = new ArrayList<IPricingRule>(rulesDef.size());
+		final List<IPricingRule> rules = new ArrayList<>(rulesDef.size());
 		for (final I_C_PricingRule ruleDef : rulesDef)
 		{
 			final IPricingRule rule = createPricingRule(ruleDef);
@@ -410,5 +409,17 @@ public class PricingBL implements IPricingBL
 		final I_M_PriceList priceList = InterfaceWrapperHelper.create(ctx, priceListId, I_M_PriceList.class, ITrx.TRXNAME_None);
 
 		return priceList.getPricePrecision();
+	}
+	
+	@Override
+	public void registerPriceLimitRule(final IPriceLimitRule rule)
+	{
+		priceLimitRules.addEnforcer(rule);
+	}
+
+	@Override
+	public PriceLimitRuleResult computePriceLimit(final PriceLimitRuleContext context)
+	{
+		return priceLimitRules.compute(context);
 	}
 }

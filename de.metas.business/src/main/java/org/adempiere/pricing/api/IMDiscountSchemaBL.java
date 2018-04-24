@@ -44,13 +44,6 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	DiscountResult calculateDiscount(final CalculateDiscountRequest request);
 
 	/**
-	 * Calculate Discounted Price
-	 *
-	 * @return
-	 */
-	BigDecimal calculatePrice(final CalculateDiscountRequest request);
-
-	/**
 	 * Criteria apply
 	 *
 	 * @param br

@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
+import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
@@ -252,4 +253,8 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param orderLine
 	 */
 	void updateNoPriceConditionsColor(I_C_OrderLine orderLine);
+
+	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
+
+	PriceLimitRuleResult computePriceLimit(org.compiere.model.I_C_OrderLine orderLine);
 }

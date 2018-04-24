@@ -1,12 +1,10 @@
-/**
- *
- */
-package org.adempiere.pricing.api;
+package org.adempiere.pricing.limit;
 
 import java.math.BigDecimal;
 
+import org.adempiere.pricing.api.IPricingContext;
+
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -32,34 +30,25 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-@Builder
 @Value
-public class DiscountResult
+public class PriceLimitRuleContext
 {
-	public static DiscountResult discount(@NonNull final BigDecimal discount)
+	IPricingContext pricingContext;
+	int paymentTermId;
+	BigDecimal priceActual;
+	BigDecimal priceLimit;
+
+	@Builder
+	private PriceLimitRuleContext(
+			@NonNull final IPricingContext pricingContext,
+			final int paymentTermId,
+			@NonNull final BigDecimal priceActual,
+			@NonNull final BigDecimal priceLimit)
 	{
-		if(BigDecimal.ZERO.equals(ZERO.getDiscount()))
-		{
-			return ZERO;
-		}
-		return builder().discount(discount).build();
+		this.pricingContext = pricingContext;
+		this.paymentTermId = paymentTermId > 0 ? paymentTermId : -1;
+		this.priceActual = priceActual;
+		this.priceLimit = priceLimit;
 	}
 
-	public static final DiscountResult ZERO = builder().discount(BigDecimal.ZERO).build();
-
-	@Default
-	@NonNull
-	BigDecimal discount = BigDecimal.ZERO;
-	@Default
-	int C_PaymentTerm_ID = -1;
-	BigDecimal priceListOverride;
-	BigDecimal priceStdOverride;
-	BigDecimal priceLimitOverride;
-
-	@Default
-	private final int discountSchemaBreakId = -1;
 }
