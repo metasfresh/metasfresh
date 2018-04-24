@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import * as _ from 'lodash';
 
 import { getItemsByProperty } from '../../../actions/WindowActions';
 import BarcodeScanner from '../BarcodeScanner/BarcodeScannerWidget';
@@ -28,6 +29,14 @@ class Lookup extends Component {
 
   componentDidMount() {
     this.checkIfDefaultValue();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { defaultValue } = this.props;
+
+    if (!_.isEqual(defaultValue, nextProps.defaultValue)) {
+      this.checkIfDefaultValue();
+    }
   }
 
   checkIfDefaultValue = () => {
@@ -334,7 +343,7 @@ class Lookup extends Component {
               item.widgetType === 'Lookup' ||
               (itemByProperty && itemByProperty.widgetType === 'Lookup')
             ) {
-              let defaultValue = isInputEmpty ? null : itemByProperty.value;
+              let defaultValue = localClearing ? null : itemByProperty.value;
 
               if (barcodeSelected) {
                 defaultValue = { caption: barcodeSelected };
@@ -396,7 +405,7 @@ class Lookup extends Component {
               const isFirstProperty = index === 0;
               const isCurrentProperty =
                 item.field === property && !autofocusDisabled;
-              let defaultValue = isInputEmpty ? null : itemByProperty.value;
+              let defaultValue = localClearing ? null : itemByProperty.value;
 
               return (
                 <div
