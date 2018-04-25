@@ -23,6 +23,7 @@ package org.adempiere.pricing.api;
  */
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_DiscountSchema;
@@ -32,6 +33,8 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 public interface IMDiscountSchemaDAO extends ISingletonService
 {
 	I_M_DiscountSchema getById(final int discountSchemaId);
+	
+	List<I_M_DiscountSchema> getByIds(final Set<Integer> discountSchemaIds);
 	
 	/**
 	 * @return the breaks of the given schema, ordered by seqno

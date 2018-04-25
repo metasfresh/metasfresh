@@ -25,6 +25,7 @@ package org.adempiere.pricing.spi.impl.rules;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -38,8 +39,6 @@ import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_DiscountSchema;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -105,27 +104,27 @@ public class Discount implements IPricingRule
 		final I_C_BPartner partner = InterfaceWrapperHelper.loadOutOfTrx(bpartnerId, I_C_BPartner.class);
 		final BigDecimal bpartnerFlatDiscount = partner.getFlatDiscount();
 
-		final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
-		final I_M_DiscountSchema discountSchema = discountSchemaBL.getDiscountSchemaForPartner(partner, isSOTrx);
-		if (discountSchema == null)
+		final int discountSchemaId = Services.get(IBPartnerBL.class).getDiscountSchemaId(partner, isSOTrx);
+		if (discountSchemaId <= 0)
 		{
 			return;
 		}
 
 		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
-				.schema(discountSchema)
+				.discountSchemaId(discountSchemaId)
 				.qty(pricingCtx.getQty())
 				.price(result.getPriceStd())
 				.productId(pricingCtx.getM_Product_ID())
-				.productCategoryId(result.getM_Product_Category_ID())
 				.attributeInstances(getAttributeInstances(pricingCtx.getReferencedObject()))
 				.bpartnerFlatDiscount(bpartnerFlatDiscount)
 				.pricingCtx(pricingCtx)
 				.build();
+		
+		final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
 		final DiscountResult discountResult = discountSchemaBL.calculateDiscount(request);
 
 		result.setUsesDiscountSchema(true);
-		result.setM_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
+		result.setM_DiscountSchema_ID(discountSchemaId);
 		updatePricingResultFromDiscountResult(result, discountResult);
 	}
 
@@ -143,8 +142,8 @@ public class Discount implements IPricingRule
 			return ImmutableList.of();
 		}
 		
-		final I_M_AttributeSetInstance asi = asiAware.getM_AttributeSetInstance();
-		final List<I_M_AttributeInstance> attributeInstances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
+		final int asiId = asiAware.getM_AttributeSetInstance_ID();
+		final List<I_M_AttributeInstance> attributeInstances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asiId);
 		return attributeInstances;
 	}
 	

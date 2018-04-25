@@ -23,6 +23,7 @@ package org.adempiere.bpartner.service;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -214,4 +215,6 @@ public interface IBPartnerDAO extends ISingletonService
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
 
 	List<Integer> retrieveBPartnerIdsForDiscountSchemaId(int discountSchemaId, boolean isSOTrx);
+
+	Map<Integer, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(int adClientId, boolean isSOTrx);
 }

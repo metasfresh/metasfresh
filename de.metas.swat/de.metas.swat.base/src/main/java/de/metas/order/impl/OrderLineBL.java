@@ -1,8 +1,5 @@
 package de.metas.order.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -29,6 +26,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -62,14 +60,19 @@ import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxBL;
@@ -90,6 +93,8 @@ public class OrderLineBL implements IOrderLineBL
 	public static final String CTX_DiscountSchema = "DiscountSchema";
 
 	private static final String MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = "de.metas.order.CounterDocMissingMappedProduct";
+
+	private static final String MSG_NoPricingConditionsError = "de.metas.order.NoPricingConditionsError";
 
 	@Override
 	public void setPricesIfNotIgnored(final Properties ctx,
@@ -958,8 +963,6 @@ public class OrderLineBL implements IOrderLineBL
 	public void updateNoPriceConditionsColor(final I_C_OrderLine orderLine)
 	{
 
-		final String colorName = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_NoPriceConditionsColorName, "-");
-
 		final int discountSchemaBreakId = orderLine.getM_DiscountSchemaBreak_ID();
 
 		if (discountSchemaBreakId > 0)
@@ -970,7 +973,7 @@ public class OrderLineBL implements IOrderLineBL
 			return;
 		}
 
-		final int colorId = getNoPriceConditionsColorId(colorName);
+		final int colorId = getNoPriceConditionsColorId();
 
 		if (colorId > 0)
 		{
@@ -979,9 +982,48 @@ public class OrderLineBL implements IOrderLineBL
 
 	}
 
-	private int getNoPriceConditionsColorId(final String name)
+	private int getNoPriceConditionsColorId()
 	{
-		return Services.get(IColorRepository.class).getColorIdByName(name);
+		final String colorName = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_NoPriceConditionsColorName, "-");
+
+		return Services.get(IColorRepository.class).getColorIdByName(colorName);
+	}
+
+	@Override
+	public void failForMissingPricingConditions(final de.metas.adempiere.model.I_C_Order order)
+	{
+		final boolean mandatoryPricingConditions = isMandatoryPricingConditions();
+
+		if (!mandatoryPricingConditions)
+		{
+			// nothing to do
+			return;
+		}
+
+		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order);
+
+		final boolean existsOrderLineWithNoPricingConditions = orderLines
+				.stream()
+				.anyMatch(orderLine -> hasNoPricingConditions(orderLine));
+
+		if (existsOrderLineWithNoPricingConditions)
+		{
+			final ITranslatableString translatableMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NoPricingConditionsError);
+
+			throw new AdempiereException(translatableMsg.translate(Env.getAD_Language()));
+		}
+	}
+
+	private boolean isMandatoryPricingConditions()
+	{
+		final int noPriceConditionsColorId = getNoPriceConditionsColorId();
+
+		return noPriceConditionsColorId > 0;
+	}
+
+	private boolean hasNoPricingConditions(final I_C_OrderLine orderLine)
+	{
+		return orderLine.getM_DiscountSchemaBreak_ID() <= 0;
 	}
 
 	@Override
@@ -1002,4 +1044,5 @@ public class OrderLineBL implements IOrderLineBL
 				.paymentTermId(getC_PaymentTerm_ID(orderLine))
 				.build());
 	}
+
 }

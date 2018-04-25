@@ -33,7 +33,8 @@ import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ObjectUtils;
+
+import lombok.ToString;
 
 /**
  *
@@ -45,8 +46,11 @@ import org.adempiere.util.lang.ObjectUtils;
  * @author tsa
  *
  */
+@ToString
 class PricingResult implements IPricingResult
 {
+	private boolean calculated = false;
+	
 	private int M_PricingSystem_ID = -1;
 	private int M_PriceList_ID = -1;
 	private int C_Currency_ID = -1;
@@ -71,8 +75,6 @@ class PricingResult implements IPricingResult
 
 	private boolean isPriceEditable = true;
 	private boolean isDiscountEditable = true;
-
-	private boolean calculated = false;
 
 	private final List<IPricingRule> rulesApplied = new ArrayList<>();
 
@@ -427,12 +429,6 @@ class PricingResult implements IPricingResult
 		}
 
 		pricingAttributes.addAll(pricingAttributesToAdd);
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 
 	@Override

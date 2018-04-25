@@ -4,8 +4,6 @@
 package org.adempiere.pricing.api.impl;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.api.CalculateDiscountRequest;
@@ -17,9 +15,9 @@ import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.pricing.api.SchemaBreakQuery;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.X_M_DiscountSchema;
@@ -56,6 +54,8 @@ import lombok.NonNull;
 /* package */ class CalculateDiscountCommand
 {
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
+	private final IMDiscountSchemaDAO discountSchemaRepo = Services.get(IMDiscountSchemaDAO.class);
 
 	final CalculateDiscountRequest request;
 
@@ -66,11 +66,14 @@ import lombok.NonNull;
 
 	public DiscountResult calculateDiscount()
 	{
-		final String discountType = request.getSchema().getDiscountType();
+		final I_M_DiscountSchema schema = discountSchemaRepo.getById(request.getDiscountSchemaId());
+		Check.assumeNotNull(schema, "schema shall not be null");
+
+		final String discountType = schema.getDiscountType();
 
 		if (X_M_DiscountSchema.DISCOUNTTYPE_FlatPercent.equals(discountType))
 		{
-			return computeFlatDiscount();
+			return computeFlatDiscount(schema);
 		}
 		else if (X_M_DiscountSchema.DISCOUNTTYPE_Formula.equals(discountType)
 				|| X_M_DiscountSchema.DISCOUNTTYPE_Pricelist.equals(discountType))
@@ -87,9 +90,8 @@ import lombok.NonNull;
 		}
 	}
 
-	private DiscountResult computeFlatDiscount()
+	private DiscountResult computeFlatDiscount(final I_M_DiscountSchema schema)
 	{
-		final I_M_DiscountSchema schema = request.getSchema();
 		if (schema.isBPartnerFlatDiscount())
 		{
 			return DiscountResult.discount(request.getBpartnerFlatDiscount());
@@ -126,7 +128,7 @@ import lombok.NonNull;
 		final String priceBase = discountSchemaBreak.getPriceBase();
 		if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
 		{
-			final IPricingResult productPrices = findPricesForSchemaBreak(discountSchemaBreak);
+			final IPricingResult productPrices = computePricesForPricingSystem(discountSchemaBreak.getBase_PricingSystem_ID());
 			final BigDecimal priceStd = productPrices.getPriceStd();
 			final BigDecimal priceList = productPrices.getPriceList();
 			final BigDecimal priceLimit = productPrices.getPriceLimit();
@@ -147,9 +149,8 @@ import lombok.NonNull;
 		}
 	}
 
-	private IPricingResult findPricesForSchemaBreak(final I_M_DiscountSchemaBreak discountSchemaBreak)
+	private IPricingResult computePricesForPricingSystem(final int basePricingSystemId)
 	{
-		final int basePricingSystemId = discountSchemaBreak.getBase_PricingSystem_ID();
 		Check.assumeGreaterThanZero(basePricingSystemId, "basePricingSystemId");
 
 		final IPricingContext pricingCtx = request.getPricingCtx();
@@ -169,7 +170,9 @@ import lombok.NonNull;
 		newPricingCtx.setM_PricingSystem_ID(basePricingSystemId);
 		newPricingCtx.setM_PriceList_ID(-1); // will be recomputed
 		newPricingCtx.setM_PriceList_Version_ID(-1); // will be recomputed
+		newPricingCtx.setSkipCheckingPriceListSOTrxFlag(true);
 		newPricingCtx.setDisallowDiscount(true);
+		newPricingCtx.setFailIfNotCalculated(true);
 
 		return newPricingCtx;
 	}
@@ -192,77 +195,17 @@ import lombok.NonNull;
 
 	private I_M_DiscountSchemaBreak fetchDiscountSchemaBreak()
 	{
-		if(request.getForceSchemaBreak() != null)
+		if (request.getForceSchemaBreak() != null)
 		{
 			return request.getForceSchemaBreak();
 		}
-		
-		// Price Breaks
-		final List<I_M_DiscountSchemaBreak> breaks = Services.get(IMDiscountSchemaDAO.class).retrieveBreaks(request.getSchema());
-		final BigDecimal amt = request.getPrice().multiply(request.getQty());
-		final boolean isQtyBased = request.getSchema().isQuantityBased();
 
-		final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
-		I_M_DiscountSchemaBreak breakApplied = null;
-		if (hasNoValues())
-		{
-			breakApplied = discountSchemaBL.pickApplyingBreak(
-					breaks,
-					-1,  // attributeValueID
-					isQtyBased,
-					request.getProductId(),
-					request.getProductCategoryId(),
-					request.getQty(),
-					amt);
-		}
-		else
-		{
-			final Optional<I_M_DiscountSchemaBreak> optionalBreak = request.getAttributeInstances().stream()
-					.filter(instance -> !hasNoValue(instance))
-					.map(instance -> discountSchemaBL.pickApplyingBreak(
-							breaks,
-							instance.getM_AttributeValue_ID(),
-							isQtyBased,
-							request.getProductId(),
-							request.getProductCategoryId(),
-							request.getQty(),
-							amt))
-					.filter(schemaBreak -> schemaBreak != null)
-					.findFirst();
-			breakApplied = optionalBreak.orElse(null);
-		}
-
-		return breakApplied;
-	}
-
-	/**
-	 * Check if the instance has no value set
-	 *
-	 * @param instance
-	 * @return true if the instance has no value set, false if it has one
-	 */
-	private boolean hasNoValue(final I_M_AttributeInstance instance)
-	{
-		return instance.getM_AttributeValue_ID() <= 0;
-	}
-
-	/**
-	 * Check if the instances are empty ( have "" value)
-	 *
-	 * @param instances
-	 * @return true if all the instances are empty, false if at least one is not
-	 */
-	private boolean hasNoValues()
-	{
-		final List<I_M_AttributeInstance> attributeInstances = request.getAttributeInstances();
-		if (attributeInstances.isEmpty())
-		{
-			return true;
-		}
-
-		final boolean anyAttributeInstanceMatches = attributeInstances.stream()
-				.anyMatch(instance -> !hasNoValue(instance));
-
-		return !anyAttributeInstanceMatches;
+		return discountSchemaBL.pickApplyingBreak(SchemaBreakQuery.builder()
+				.discountSchemaId(request.getDiscountSchemaId())
+				.attributeInstances(request.getAttributeInstances())
+				.productId(request.getProductId())
+				.qty(request.getQty())
+				.amt(request.getPrice().multiply(request.getQty()))
+				.build());
 	}
 }

@@ -13,25 +13,29 @@ package org.adempiere.ad.persistence;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.lang.reflect.Constructor;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.GenericPO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -40,6 +44,8 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.logging.LogManager;
@@ -66,11 +72,11 @@ public final class TableModelLoader
 	public PO newPO(final Properties ctx, final String tableName, final String trxName)
 	{
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
-		final int recordId = InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName) - 1;
-		final PO po = retrievePO(ctx, tableName, recordId, trxName);
+		final int newRecordId = InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName) - 1;
+		final PO po = createOrLoadPO(ctx, tableName, newRecordId, trxName);
 		return po;
 	}
-	
+
 	public PO newPO(final String tableName)
 	{
 		return newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
@@ -97,45 +103,114 @@ public final class TableModelLoader
 
 	/**
 	 *
-	 * @param Record_ID
+	 * @param recordId
 	 * @param checkCache true if object shall be checked in cache first
 	 * @param trxName
 	 * @return loaded PO
 	 */
-	public PO getPO(final Properties ctx, final String tableName, final int Record_ID, final boolean checkCache, final String trxName)
+	public PO getPO(final Properties ctx, final String tableName, final int recordId, final boolean checkCache, final String trxName)
 	{
 		final IModelCacheService modelCacheService = Services.get(IModelCacheService.class);
 		if (checkCache)
 		{
-			final PO poCached = modelCacheService.retrieveObject(ctx, tableName, Record_ID, trxName);
+			final PO poCached = modelCacheService.retrieveObject(ctx, tableName, recordId, trxName);
 			if (poCached != null)
 			{
 				return poCached;
 			}
 		}
 
-		final PO po = retrievePO(ctx, tableName, Record_ID, trxName);
+		final PO po = createOrLoadPO(ctx, tableName, recordId, trxName);
 		modelCacheService.addToCache(po);
 
 		return po;
 	}
 
+	public List<PO> getPOs(final Properties ctx, final String tableName, final Set<Integer> recordIds, final String trxName)
+	{
+		if (recordIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final IModelCacheService modelCacheService = Services.get(IModelCacheService.class);
+
+		final List<PO> result = new ArrayList<>(recordIds.size());
+
+		//
+		// Load from cache as much is possible
+		final Set<Integer> recordIdsToLoad;
+		final boolean checkCache = !CacheInterceptor.isCacheDisabled();
+		if (checkCache)
+		{
+			recordIdsToLoad = new HashSet<>();
+			for (final int recordId : recordIds)
+			{
+				final PO poCached = modelCacheService.retrieveObject(ctx, tableName, recordId, trxName);
+				if (poCached != null)
+				{
+					result.add(poCached);
+				}
+				else
+				{
+					recordIdsToLoad.add(recordId);
+				}
+			}
+		}
+		else
+		{
+			recordIdsToLoad = recordIds;
+		}
+
+		//
+		// Retrieve from database what was not found in cache
+		if (!recordIdsToLoad.isEmpty())
+		{
+			final POInfo poInfo = POInfo.getPOInfo(tableName);
+
+			final List<Object> sqlParams = new ArrayList<>();
+			final String sql = poInfo.buildSelect()
+					.append(" WHERE ").append(DB.buildSqlList(poInfo.getSingleKeyColumnName(), recordIdsToLoad, sqlParams))
+					.toString();
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try
+			{
+				pstmt = DB.prepareStatement(sql, trxName);
+				DB.setParameters(pstmt, sqlParams);
+				rs = pstmt.executeQuery();
+				while (rs.next())
+				{
+					final PO po = getPO(ctx, tableName, rs, trxName);
+					result.add(po);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw new DBException(ex, sql, sqlParams);
+			}
+			finally
+			{
+				DB.close(rs, pstmt);
+			}
+		}
+
+		//
+		return result;
+	}
+
 	/**
-	 * Loads the PO from database.
+	 * Creates/Loads the PO from database.
 	 * In case some errors were encountered, they will be logged and <code>null</code> will be returned.
-	 *
-	 * @param ctx
-	 * @param tableName
-	 * @param Record_ID
-	 * @param trxName
+	 * 
 	 * @return PO or null
 	 */
-	private final PO retrievePO(final Properties ctx, final String tableName, final int Record_ID, final String trxName)
+	private final PO createOrLoadPO(final Properties ctx, final String tableName, final int recordId, final String trxName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
-		if (Record_ID > 0 && poInfo.getKeyColumnName() == null)
+		if (recordId > 0 && !poInfo.isSingleKeyColumnName())
 		{
-			log.warn("(id) - Multi-Key " + tableName);
+			log.warn("Cannot retrieve by ID a multi-key record: table={}, recordId={}", tableName, recordId);
 			return null;
 		}
 
@@ -143,7 +218,7 @@ public final class TableModelLoader
 		if (clazz == null)
 		{
 			log.info("Using GenericPO for {}", tableName);
-			final GenericPO po = new GenericPO(tableName, ctx, Record_ID, trxName);
+			final GenericPO po = new GenericPO(tableName, ctx, recordId, trxName);
 			return po;
 		}
 
@@ -151,24 +226,24 @@ public final class TableModelLoader
 		try
 		{
 			final Constructor<?> constructor = tableModelClassLoader.getIDConstructor(clazz);
-			final PO po = (PO)constructor.newInstance(ctx, Record_ID, trxName);
-			if (po != null && po.get_ID() != Record_ID && Record_ID > 0)
+			final PO po = (PO)constructor.newInstance(ctx, recordId, trxName);
+			if (po != null && po.get_ID() != recordId && recordId > 0)
 			{
 				return null;
 			}
 			return po;
 		}
-		catch (Exception e)
+		catch (final Exception ex)
 		{
-			final Throwable cause = e.getCause() == null ? e : e.getCause();
-			log.error("(id) - Table=" + tableName + ",Class=" + clazz, cause);
+			final Throwable cause = ex.getCause() == null ? ex : ex.getCause();
+			log.error("Failed fetching record for table={}, recordId={}, class={}", tableName, recordId, clazz, cause);
 			MetasfreshLastError.saveError(log, "Error", cause);
 			errorLogged = true;
 		}
 
 		if (!errorLogged)
 		{
-			log.error("(id) - Not found - Table=" + tableName + ", Record_ID=" + Record_ID);
+			log.error("Failed fetching record for table={}, recordId={}, class={}", tableName, recordId, clazz);
 		}
 
 		return null;
@@ -223,8 +298,7 @@ public final class TableModelLoader
 		{
 			throw new AdempiereException("Error while loading model from ResultSet"
 					+ "\n@TableName@: " + tableName
-					+ "\nClass: " + clazz
-					, e);
+					+ "\nClass: " + clazz, e);
 		}
 	}	// getPO
 
