@@ -5,9 +5,6 @@ const codeToKey = {
   8: 'Backspace',
   9: 'Tab',
   13: 'Enter',
-  16: 'Shift',
-  17: 'Control',
-  18: 'Alt',
   20: 'CapsLock',
   27: 'Escape',
   32: ' ',
@@ -108,8 +105,17 @@ export default class ShortcutProvider extends Component {
       return;
     }
 
-    const { keySequence, fired } = this;
+    const { fired } = this;
     const { hotkeys } = this.props;
+    let { keySequence } = this;
+
+    if (event.altKey === true) {
+      keySequence = ['Alt'];
+    } else if (event.ctrlKey === true) {
+      keySequence = ['Ctrl'];
+    } else if (event.shiftKey === true) {
+      keySequence = ['Shift'];
+    }
 
     if (fired[key]) {
       return;
@@ -150,7 +156,19 @@ export default class ShortcutProvider extends Component {
       return;
     }
 
-    this.keySequence = this.keySequence.filter(_key => _key !== key);
+    let modifierKey = null;
+
+    if (event.altKey === true) {
+      modifierKey = 'Alt';
+    } else if (event.ctrlKey === true) {
+      modifierKey = 'Ctrl';
+    } else if (event.shiftKey === true) {
+      modifierKey = 'Shift';
+    }
+
+    this.keySequence = this.keySequence.filter(
+      _key => _key !== key && _key !== modifierKey
+    );
 
     delete this.fired[key];
   };
