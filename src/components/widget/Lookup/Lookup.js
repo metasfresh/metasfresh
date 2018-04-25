@@ -42,9 +42,7 @@ class Lookup extends Component {
       this.checkIfDefaultValue();
     }
 
-    if (
-      !_.isEqual(selected, nextProps.selected)
-    ) {
+    if (!_.isEqual(selected, nextProps.selected)) {
       this.setState({
         isInputEmpty: !nextProps.selected,
         localClearing: false,
