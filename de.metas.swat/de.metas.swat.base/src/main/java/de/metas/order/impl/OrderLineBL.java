@@ -52,6 +52,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.MPriceList;
@@ -61,6 +62,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -185,8 +187,16 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 
-		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
+		final int discountSchemaBreakId = pricingResult.getM_DiscountSchemaBreak_ID();
+		orderLine.setM_DiscountSchemaBreak_ID(discountSchemaBreakId);
 
+		final I_M_DiscountSchemaBreak schemaBreak  = loadOutOfTrx(discountSchemaBreakId, I_M_DiscountSchemaBreak.class);
+		
+		if(schemaBreak != null)
+		{
+			orderLine.setBase_PricingSystem_ID(schemaBreak.getBase_PricingSystem_ID());
+		}
+		
 		updateLineNetAmt(orderLine, qtyEntered, factor);
 	}
 
@@ -681,7 +691,15 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 		orderLine.setEnforcePriceLimit(pricingResult.isEnforcePriceLimit());
 
-		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
+		final int discountSchemaBreakId = pricingResult.getM_DiscountSchemaBreak_ID();
+		orderLine.setM_DiscountSchemaBreak_ID(discountSchemaBreakId);
+
+		final I_M_DiscountSchemaBreak schemaBreak  = loadOutOfTrx(discountSchemaBreakId, I_M_DiscountSchemaBreak.class);
+		
+		if(schemaBreak != null)
+		{
+			orderLine.setBase_PricingSystem_ID(schemaBreak.getBase_PricingSystem_ID());
+		}
 
 		//
 		// UI
