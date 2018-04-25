@@ -87,7 +87,7 @@ class DatePicker extends Component {
 
   renderDay = (props, currentDate) => {
     return (
-      <td {...props} onDoubleClick={() => this.handleClose()}>
+      <td {...props} onDoubleClick={() => this.handleBlur(currentDate)}>
         {currentDate.date()}
       </td>
     );
@@ -121,6 +121,7 @@ class DatePicker extends Component {
           onFocus={this.handleFocus}
           open={this.state.open}
           onFocusInput={this.focusInput}
+          closeOnSelect={false}
           {...this.props}
         />
         <i className="meta-icon-calendar" key={0} />
