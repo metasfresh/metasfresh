@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.ADUserImportProcess;
+import org.adempiere.impexp.DiscountSchemaImportProcess;
 import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.RequestImportProcess;
@@ -38,6 +39,7 @@ import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_I_BPartner;
+import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_I_Request;
@@ -59,6 +61,7 @@ public class ImportProcessFactory implements IImportProcessFactory
 		registerImportProcess(I_I_Product.class, ProductImportProcess.class);
 		registerImportProcess(I_I_Request.class, RequestImportProcess.class);
 		registerImportProcess(I_I_Inventory.class, InventoryImportProcess.class);
+		registerImportProcess(I_I_DiscountSchema.class, DiscountSchemaImportProcess.class);
 	}
 
 	@Override
