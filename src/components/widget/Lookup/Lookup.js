@@ -32,7 +32,7 @@ class Lookup extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { defaultValue } = this.props;
+    const { defaultValue, selected } = this.props;
 
     if (
       defaultValue &&
@@ -40,6 +40,15 @@ class Lookup extends Component {
       !_.isEqual(defaultValue[0].value, nextProps.defaultValue[0].value)
     ) {
       this.checkIfDefaultValue();
+    }
+
+    if (
+      !_.isEqual(selected, nextProps.selected)
+    ) {
+      this.setState({
+        isInputEmpty: !nextProps.selected,
+        localClearing: false,
+      });
     }
   }
 
