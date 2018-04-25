@@ -17,7 +17,10 @@ export const getQueryString = query =>
 
 export const arePropTypesIdentical = (nextProps, currentProps) => {
   for (const key of Object.keys(nextProps)) {
-    if (typeof nextProps[key] !== typeof currentProps[key]) {
+    const nextType = typeof nextProps[key];
+    const currentType = typeof currentProps[key];
+
+    if (nextType !== currentType) {
       return false;
     }
   }

@@ -58,7 +58,6 @@ class RawLookup extends Component {
       filterWidget,
       lookupEmpty,
       localClearing,
-      resetLocalClearing,
       fireDropdownList,
     } = this.props;
 
@@ -66,7 +65,6 @@ class RawLookup extends Component {
 
     if (localClearing && !defaultValue) {
       this.inputSearch.value = '';
-      resetLocalClearing();
     }
 
     if (autoFocus && !this.inputSearch.value && shouldBeFocused) {
@@ -263,6 +261,10 @@ class RawLookup extends Component {
     } = this.props;
 
     enableAutofocus();
+
+    if (this.props.localClearing) {
+      this.props.resetLocalClearing();
+    }
 
     if (this.inputSearch.value || allowEmpty) {
       !allowEmpty && handleInputEmptyStatus(false);
