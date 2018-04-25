@@ -46,7 +46,6 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -56,8 +55,6 @@ import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -328,7 +325,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// PLV is only accurate if PL selected in header
 		// metas: relay on M_PriceList_ID only, don't use M_PriceList_Version_ID
 		// pricingCtx.setM_PriceList_Version_ID(orderLine.getM_PriceList_Version_ID());
-		
+
 		final int countryId = getCountryIdOrZero(invoiceLine);
 		pricingCtx.setC_Country_ID(countryId);
 
@@ -430,14 +427,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			invoiceLine.setDiscount(pricingResult.getDiscount());
 		}
 
-		final int discountSchemaBreakId = pricingResult.getM_DiscountSchemaBreak_ID();
-
-		final I_M_DiscountSchemaBreak schemaBreak = loadOutOfTrx(discountSchemaBreakId, I_M_DiscountSchemaBreak.class);
-
-		if (schemaBreak != null)
-		{
-			invoiceLine.setBase_PricingSystem_ID(schemaBreak.getBase_PricingSystem_ID());
-		}
+		invoiceLine.setBase_PricingSystem_ID(pricingResult.getM_DiscountSchemaBreak_BasePricingSystem_ID());
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
