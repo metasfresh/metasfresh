@@ -145,7 +145,6 @@ class TableCell extends PureComponent {
       tabId,
       handleDoubleClick,
       handleKeyDown,
-      readonly,
       updatedRow,
       tabIndex,
       entity,
@@ -160,6 +159,8 @@ class TableCell extends PureComponent {
       viewId,
       modalVisible,
     } = this.props;
+    // TODO: Hack, Color fields should be readonly
+    const readonly = item.widgetType === 'Color' ? true : this.props.readonly;
     const docId = this.props.docId + '';
     const tdValue = !isEdited
       ? TableCell.fieldValueToString(
