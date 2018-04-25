@@ -130,10 +130,8 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public boolean isHighVolumeValuesList(final I_M_Attribute attribute)
+	public boolean isHighVolumeValuesList(@NonNull final I_M_Attribute attribute)
 	{
-		Check.assumeNotNull(attribute, "attribute not null");
-
 		if (!X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attribute.getAttributeValueType()))
 		{
 			return false;
@@ -149,7 +147,7 @@ public class AttributeDAO implements IAttributeDAO
 		{
 			return ImmutableList.of();
 		}
-		
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
 		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSetInstance);
 		final int asiId = attributeSetInstance.getM_AttributeSetInstance_ID();
