@@ -1072,10 +1072,9 @@ public abstract class PO
 				m_newValues[index] = ((BigDecimal)valueToUse).intValue();
 			}
 			// Set Boolean
-			else if (p_info.getColumnClass(index) == Boolean.class
-					&& ("Y".equals(valueToUse) || "N".equals(valueToUse)))
+			else if (p_info.getColumnClass(index) == Boolean.class)
 			{
-				m_newValues[index] = Boolean.valueOf("Y".equals(valueToUse));
+				m_newValues[index] = StringUtils.toBoolean(valueToUse);
 			}
 			// added by vpj-cd
 			// To solve BUG [ 1618423 ] Set Project Type button in Project window throws warning
@@ -2072,7 +2071,7 @@ public abstract class PO
 			else if (c == Boolean.class)
 			{
 				final boolean bValue = StringUtils.toBoolean(value);
-				stringValue = bValue ? "Y" : "N";
+				stringValue = Env.toString(bValue);
 			}
 			else if (value instanceof Timestamp)
 				stringValue = value.toString();
@@ -4713,7 +4712,7 @@ public abstract class PO
 			else if (c == Boolean.class)
 			{
 				final boolean bValue = StringUtils.toBoolean(value);
-				col.appendChild(document.createTextNode(bValue ? "Y" : "N"));
+				col.appendChild(document.createTextNode(Env.toString(bValue)));
 			}
 			else if (value instanceof Timestamp)
 				col.appendChild(document.createTextNode(value.toString()));
@@ -4802,14 +4801,7 @@ public abstract class PO
 	public final boolean get_ValueAsBoolean(final int index)
 	{
 		final Object oo = get_Value(index);
-		if (oo != null)
-		{
-			if (oo instanceof Boolean)
-				return ((Boolean)oo).booleanValue();
-			return "Y".equals(oo);
-		}
-		return false;
-
+		return StringUtils.toBoolean(oo);
 	}
 
 	// metas: begin
