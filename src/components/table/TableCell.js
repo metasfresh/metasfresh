@@ -225,7 +225,7 @@ class TableCell extends PureComponent {
         ) : (
           <div
             className={classnames('cell-text-wrapper', {
-              [`${item.widgetType}-cell`]: item.widgetType,
+              [`${item.widgetType.toLowerCase()}-cell`]: item.widgetType,
             })}
             title={
               item.widgetType === 'YesNo' ||
