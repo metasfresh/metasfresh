@@ -46,7 +46,6 @@ export const getRoutes = (store, auth, plugins) => {
       }
 
       store.dispatch(clearNotifications());
-
       store.dispatch(loginSuccess(auth));
 
       callback();
@@ -61,20 +60,20 @@ export const getRoutes = (store, auth, plugins) => {
 
   const getPluginsRoutes = plugins => {
     if (plugins.length) {
-      return plugins.map((plugin, i) => {
+      return plugins.map(plugin => {
         if (plugin.userDropdownLink) {
-          return (
-            <Route
-              key={i}
-              path={`/window/${plugin.userDropdownLink.url}`}
-              component={plugin.component}
-            />
-          );
+          return {
+            path: plugin.userDropdownLink.url,
+            component: plugin.component,
+          }
         }
       });
     }
+
+    return [];
   };
 
+  const pluginRoutes = getPluginsRoutes(plugins);
   const childRoutes = [
     {
       path: '/window/:windowType',
@@ -114,14 +113,12 @@ export const getRoutes = (store, auth, plugins) => {
       path: 'logout',
       component: logout,
     },
-    getPluginsRoutes(plugins)
+    ...pluginRoutes,
   ];
 
   return (
     <Route path="/">
-      <Route onEnter={authRequired}
-        childRoutes={childRoutes}
-      >
+      <Route onEnter={authRequired} childRoutes={childRoutes}>
         <IndexRoute component={Dashboard} />
       </Route>
       <Route
@@ -137,6 +134,4 @@ export const getRoutes = (store, auth, plugins) => {
       <Route path="*" component={NoMatch} />
     </Route>
   );
-
-  return routes;
 };

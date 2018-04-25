@@ -59,7 +59,7 @@ class UserDropdown extends Component {
             key={`menu-item-${i}`}
             className="user-dropdown-item"
             onClick={() => {
-              redirect(`/window/${plugin.userDropdownLink.url}`);
+              redirect(plugin.userDropdownLink.url);
               handleUDOpen(false);
               toggleTooltip('');
             }}
