@@ -8,6 +8,7 @@ import MasterWidget from '../widget/MasterWidget';
 import {
   AMOUNT_FIELD_TYPES,
   AMOUNT_FIELD_FORMATS_BY_PRECISION,
+  SPECIAL_FIELD_TYPES,
   DATE_FIELD_TYPES,
   DATE_FIELD_FORMATS,
 } from '../../constants/Constants';
@@ -37,6 +38,19 @@ class TableCell extends PureComponent {
         : fieldValueAsNum.format();
     } else {
       return '';
+    }
+  };
+
+  static createSpecialField = (fieldType, fieldValue) => {
+    switch (fieldType) {
+      case 'Color': {
+        const style = {
+          backgroundColor: fieldValue,
+        };
+        return <span className="widget-color-display" style={style} />;
+      }
+      default:
+        return fieldValue;
     }
   };
 
@@ -73,6 +87,8 @@ class TableCell extends PureComponent {
           return TableCell.createDate(fieldValue, fieldType);
         } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
           return TableCell.createAmount(fieldValue, precision);
+        } else if (SPECIAL_FIELD_TYPES.includes(fieldType)) {
+          return TableCell.createSpecialField(fieldType, fieldValue);
         }
         return fieldValue;
       }
@@ -208,9 +224,13 @@ class TableCell extends PureComponent {
           />
         ) : (
           <div
-            className="cell-text-wrapper"
+            className={classnames('cell-text-wrapper', {
+              [`${item.widgetType}-cell`]: item.widgetType,
+            })}
             title={
-              item.widgetType === 'YesNo' || item.widgetType === 'Switch'
+              item.widgetType === 'YesNo' ||
+              item.widgetType === 'Switch' ||
+              item.widgetType === 'Color'
                 ? ''
                 : tdValue
             }
