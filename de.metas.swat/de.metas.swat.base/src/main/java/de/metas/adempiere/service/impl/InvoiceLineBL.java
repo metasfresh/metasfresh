@@ -46,6 +46,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -56,12 +57,15 @@ import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.pricing.ProductPrices;
 import de.metas.tax.api.ITaxBL;
+import lombok.NonNull;
 
 public class InvoiceLineBL implements IInvoiceLineBL
 {
@@ -208,9 +212,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_M_PriceList priceList = invoice.getM_PriceList();
 
-
-		final I_M_PriceList_Version priceListVersion = priceListDAO.
-				retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
+		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
 		final int m_Product_ID = invoiceLine.getM_Product_ID();
@@ -326,8 +328,30 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// PLV is only accurate if PL selected in header
 		// metas: relay on M_PriceList_ID only, don't use M_PriceList_Version_ID
 		// pricingCtx.setM_PriceList_Version_ID(orderLine.getM_PriceList_Version_ID());
+		
+		final int countryId = getCountryIdOrZero(invoiceLine);
+		pricingCtx.setC_Country_ID(countryId);
 
 		return pricingCtx;
+	}
+
+	private int getCountryIdOrZero(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
+
+		if (invoice.getC_BPartner_Location_ID() <= 0)
+		{
+			return 0;
+		}
+
+		final org.compiere.model.I_C_BPartner_Location bPartnerLocation = invoice.getC_BPartner_Location();
+		if (bPartnerLocation.getC_Location_ID() <= 0)
+		{
+			return 0;
+		}
+
+		final int countryId = bPartnerLocation.getC_Location().getC_Country_ID();
+		return countryId;
 	}
 
 	@Override
@@ -404,6 +428,15 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		if (invoiceLine.getDiscount().signum() == 0)
 		{
 			invoiceLine.setDiscount(pricingResult.getDiscount());
+		}
+
+		final int discountSchemaBreakId = pricingResult.getM_DiscountSchemaBreak_ID();
+
+		final I_M_DiscountSchemaBreak schemaBreak = loadOutOfTrx(discountSchemaBreakId, I_M_DiscountSchemaBreak.class);
+
+		if (schemaBreak != null)
+		{
+			invoiceLine.setBase_PricingSystem_ID(schemaBreak.getBase_PricingSystem_ID());
 		}
 
 		//
