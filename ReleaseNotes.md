@@ -10,6 +10,24 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.55 (2018-18)
+**release for week 2018-18**
+
+## Features
+* metasfresh
+  * [#3839](https://github.com/metasfresh/metasfresh/issues/3839) Webui: BPartner window: show BPartner Product tab
+    * Improvement of Business Partner window. Now allowing to record Products that thall not be sold to a specific BPartner.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1748](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1748) X not available for field invoice partner when first setting the partner in order
+    * Fixes the bahavior of Lookup Combos whe using the clear button.
+  * [#1752](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1752) Shortcuts not working on Mac
+    * Fixes the Shortcuts for Mac Users.
+  * [#1755](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1755) Date field does not recognize changes on double click
+    * Fixes the selection and save of date fields when double-clicking on date in date widget.
+  
+
 # metasfresh 5.54 (2018-17)
 **release for week 2018-17**
 
