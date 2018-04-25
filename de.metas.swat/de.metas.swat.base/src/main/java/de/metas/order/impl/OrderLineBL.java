@@ -185,9 +185,7 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 
-		final int discountSchemaBreakId = pricingResult.getM_DiscountSchemaBreak_ID();
-		orderLine.setM_DiscountSchemaBreak_ID(discountSchemaBreakId);
-
+		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
 		orderLine.setBase_PricingSystem_ID(pricingResult.getM_DiscountSchemaBreak_BasePricingSystem_ID());
 
 		updateLineNetAmt(orderLine, qtyEntered, factor);
