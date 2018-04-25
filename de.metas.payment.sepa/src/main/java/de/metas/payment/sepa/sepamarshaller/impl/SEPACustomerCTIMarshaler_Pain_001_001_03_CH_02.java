@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -52,7 +53,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.jaxb.DynamicObjectFactory;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_Location;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.i18n.IMsgBL;
@@ -69,6 +73,7 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CashAccount16CHIdTpC
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ChargeBearerType1Code;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ClearingSystemIdentification2Choice;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ClearingSystemMemberIdentification2;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ContactDetails2CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditTransferTransactionInformation10CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceInformation2;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CustomerCreditTransferInitiationV03CH;
@@ -94,6 +99,7 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.StructuredRemittance
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.payment.sepa.sepamarshaller.ISEPAMarshaller;
+import lombok.NonNull;
 
 /**
  * Written according to "Schweizer Implementation Guidelines für Kunde-an-Bank-Meldungen für Überweisungen im Zahlungsverkehr", "Version 1.4/30.06.2013". There link is
@@ -136,30 +142,31 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 	private static final String ZAHLUNGS_ART_7 = "ZAHLUNGS_ART_7";
 	private static final String ZAHLUNGS_ART_8 = "ZAHLUNGS_ART_8";
 
+	private final ObjectFactory objectFactory;
 	private final DatatypeFactory datatypeFactory;
 	private final String encoding = "UTF-8";
 
 	public SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02()
 	{
+		objectFactory = new ObjectFactory();
 		try
 		{
 			datatypeFactory = DatatypeFactory.newInstance();
 		}
 		catch (final DatatypeConfigurationException e)
 		{
-			throw new AdempiereException(e);
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}
 
-	private void marshal(final Document xmlDocument, final OutputStream out)
+	private void marshal(
+			@NonNull final Document xmlDocument, 
+			@NonNull final OutputStream out)
 	{
-		Check.assumeNotNull(xmlDocument, "xmlDocument not null");
-		Check.assumeNotNull(out, "out not null");
-
-		Writer xmlWriter;
 
 		//
 		// We force UTF-8 encoding.
+		Writer xmlWriter;
 		try
 		{
 			xmlWriter = new OutputStreamWriter(out, encoding);
@@ -188,11 +195,10 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 	}
 
 	@Override
-	public void marshal(final I_SEPA_Export sepaDocument, final OutputStream out)
+	public void marshal(
+			@NonNull final I_SEPA_Export sepaDocument,
+			@NonNull final OutputStream out)
 	{
-		Check.assumeNotNull(sepaDocument, "sepaDocument not null");
-		Check.assumeNotNull(out, "out not null");
-
 		try
 		{
 			final Document xmlDocument = createDocument(sepaDocument);
@@ -213,7 +219,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		//
 		// Group Header
 		{
-			final GroupHeader32CH groupHeaderSCT = new GroupHeader32CH();
+			final GroupHeader32CH groupHeaderSCT = objectFactory.createGroupHeader32CH();
 			creditTransferInitiation.setGrpHdr(groupHeaderSCT);
 
 			// MessageIdentification
@@ -231,10 +237,15 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			// NOTE: it will be set later, after each payment information
 			groupHeaderSCT.setCtrlSum(BigDecimal.ZERO);
 
-			final PartyIdentification32CHNameAndId initgPty = new PartyIdentification32CHNameAndId();
+			final PartyIdentification32CHNameAndId initgPty = objectFactory.createPartyIdentification32CHNameAndId();
 			initgPty.setNm(sepaDocument.getSEPA_CreditorIdentifier());
-			groupHeaderSCT.setInitgPty(initgPty);
 
+			final ContactDetails2CH ctctDtls = objectFactory.createContactDetails2CH();
+			ctctDtls.setNm("metasfresh");
+			ctctDtls.setOthr(Adempiere.getVersion());
+			initgPty.setCtctDtls(ctctDtls);
+
+			groupHeaderSCT.setInitgPty(initgPty);
 		}
 
 		//
@@ -283,7 +294,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			final I_SEPA_Export sepaHdr,
 			final I_SEPA_Export_Line line)
 	{
-		final PaymentInstructionInformation3CH pmtInf = new PaymentInstructionInformation3CH();
+		final PaymentInstructionInformation3CH pmtInf = objectFactory.createPaymentInstructionInformation3CH();
 
 		// PaymentInformationIdentification: A system-generated internal code.
 		{
@@ -312,7 +323,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		//
 		// Payment type information.
 		{
-			final PaymentTypeInformation19CH pmtTpInf = new PaymentTypeInformation19CH();
+			final PaymentTypeInformation19CH pmtTpInf = objectFactory.createPaymentTypeInformation19CH();
 			pmtInf.setPmtTpInf(pmtTpInf);
 
 			// service level
@@ -320,28 +331,28 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			{
 				// ServiceLEvel.Code "SEPA" does not work if we are doing transactions in swizz. TODO: consider to introduce a decent switch
 				// Service level - Hard-coded value of SEPA.
-				final ServiceLevel8Choice svcLvl = new ServiceLevel8Choice();
+				final ServiceLevel8Choice svcLvl = objectFactory.createServiceLevel8Choice();
 				svcLvl.setCd("SEPA");
 				pmtTpInf.setSvcLvl(svcLvl);
 			}
 			else if (paymentMode == ZAHLUNGS_ART_1)
 			{
 				// local instrument
-				final LocalInstrument2Choice lclInstrm = new LocalInstrument2Choice();
+				final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
 				lclInstrm.setPrtry("CH01"); // Zahlungsart 1
 				pmtTpInf.setLclInstrm(lclInstrm);
 			}
 			else if (paymentMode == ZAHLUNGS_ART_2_1)
 			{
 				// local instrument
-				final LocalInstrument2Choice lclInstrm = new LocalInstrument2Choice();
+				final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
 				lclInstrm.setPrtry("CH02"); // Zahlungsart 2.1
 				pmtTpInf.setLclInstrm(lclInstrm);
 			}
 			else if (paymentMode == ZAHLUNGS_ART_2_2)
 			{
 				// local instrument
-				final LocalInstrument2Choice lclInstrm = new LocalInstrument2Choice();
+				final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
 				lclInstrm.setPrtry("CH03"); // Zahlungsart 2.2
 				pmtTpInf.setLclInstrm(lclInstrm);
 			}
@@ -358,13 +369,13 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		//
 		// debitor Account
 		final String iban = sepaHdr.getIBAN();
-		final CashAccount16CHIdTpCcy dbtrAcct = new CashAccount16CHIdTpCcy();
+		final CashAccount16CHIdTpCcy dbtrAcct = objectFactory.createCashAccount16CHIdTpCcy();
 		pmtInf.setDbtrAcct(dbtrAcct);
-		final AccountIdentification4ChoiceCH id = new AccountIdentification4ChoiceCH();
+		final AccountIdentification4ChoiceCH id = objectFactory.createAccountIdentification4ChoiceCH();
 		dbtrAcct.setId(id);
 		if (Check.isEmpty(iban, true))
 		{
-			final GenericAccountIdentification1CH othr = new GenericAccountIdentification1CH();
+			final GenericAccountIdentification1CH othr = objectFactory.createGenericAccountIdentification1CH();
 			id.setOthr(othr);
 			othr.setId(line.getOtherAccountIdentification());
 		}
@@ -375,10 +386,10 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		//
 		// Debitor Agent (i.e. Bank)
 		{
-			final BranchAndFinancialInstitutionIdentification4CHBicOrClrId dbtrAgt = new BranchAndFinancialInstitutionIdentification4CHBicOrClrId();
+			final BranchAndFinancialInstitutionIdentification4CHBicOrClrId dbtrAgt = objectFactory.createBranchAndFinancialInstitutionIdentification4CHBicOrClrId();
 			pmtInf.setDbtrAgt(dbtrAgt);
 
-			final FinancialInstitutionIdentification7CHBicOrClrId finInstnId = new FinancialInstitutionIdentification7CHBicOrClrId();
+			final FinancialInstitutionIdentification7CHBicOrClrId finInstnId = objectFactory.createFinancialInstitutionIdentification7CHBicOrClrId();
 			finInstnId.setBIC(sepaHdr.getSwiftCode());
 			dbtrAgt.setFinInstnId(finInstnId);
 		}
@@ -399,10 +410,11 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		return pmtInf;
 	}
 
-	private CreditTransferTransactionInformation10CH createCreditTransferTransactionInformation(final PaymentInstructionInformation3CH paymentInstruction,
+	private CreditTransferTransactionInformation10CH createCreditTransferTransactionInformation(
+			final PaymentInstructionInformation3CH paymentInstruction,
 			final I_SEPA_Export_Line line)
 	{
-		final CreditTransferTransactionInformation10CH cdtTrfTxInf = new CreditTransferTransactionInformation10CH();
+		final CreditTransferTransactionInformation10CH cdtTrfTxInf = objectFactory.createCreditTransferTransactionInformation10CH();
 
 		//
 		// Payment ID
@@ -410,7 +422,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		{
 			final String endToEndId = paymentInstruction.getPmtInfId() + "-0001";
 
-			final PaymentIdentification1 pmtId = new PaymentIdentification1();
+			final PaymentIdentification1 pmtId = objectFactory.createPaymentIdentification1();
 			pmtId.setEndToEndId(endToEndId);
 			cdtTrfTxInf.setPmtId(pmtId);
 		}
@@ -418,8 +430,8 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		//
 		// Amount/Currency
 		{
-			final AmountType3Choice amt = new AmountType3Choice();
-			final ActiveOrHistoricCurrencyAndAmount instdAmt = new ActiveOrHistoricCurrencyAndAmount();
+			final AmountType3Choice amt = objectFactory.createAmountType3Choice();
+			final ActiveOrHistoricCurrencyAndAmount instdAmt = objectFactory.createActiveOrHistoricCurrencyAndAmount();
 
 			final String currencyIsoCode = line.getC_Currency().getISO_Code();
 			instdAmt.setCcy(currencyIsoCode);
@@ -444,26 +456,26 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 				&& paymentType != ZAHLUNGS_ART_8)
 		{
 
-			final BranchAndFinancialInstitutionIdentification4CH cdtrAgt = new BranchAndFinancialInstitutionIdentification4CH();
+			final BranchAndFinancialInstitutionIdentification4CH cdtrAgt = objectFactory.createBranchAndFinancialInstitutionIdentification4CH();
 			cdtTrfTxInf.setCdtrAgt(cdtrAgt);
 
-			final FinancialInstitutionIdentification7CH finInstnId = new FinancialInstitutionIdentification7CH();
+			final FinancialInstitutionIdentification7CH finInstnId = objectFactory.createFinancialInstitutionIdentification7CH();
 			cdtrAgt.setFinInstnId(finInstnId);
 
 			final String bcFromIBAN = extractBCFromIban(line.getIBAN(), line);
-			if (!Check.isEmpty(bcFromIBAN))
+			if (!Check.isEmpty(bcFromIBAN, true))
 			{
 				// this is our best bet. Even data in adempiere might be wrong/outdated
-				final ClearingSystemMemberIdentification2 clrSysMmbId = new ClearingSystemMemberIdentification2();
+				final ClearingSystemMemberIdentification2 clrSysMmbId = objectFactory.createClearingSystemMemberIdentification2();
 				finInstnId.setClrSysMmbId(clrSysMmbId);
 
 				clrSysMmbId.setMmbId(bcFromIBAN);
 
 				// we set the BC, but we need to also indicate the sort of MmbId value
-				final ClearingSystemIdentification2Choice clrSysId = new ClearingSystemIdentification2Choice();
+				final ClearingSystemIdentification2Choice clrSysId = objectFactory.createClearingSystemIdentification2Choice();
 				clrSysMmbId.setClrSysId(clrSysId);
 
-				// has to be CHBCC for payment modes 2.2, 3, 4; note if we do paymentMode 5 ("real" SEPA), we ren't in this if-block to start with
+				// has to be CHBCC for payment modes 2.2, 3, 4; note if we do paymentMode 5 ("real" SEPA), weren't in this if-block to start with
 				clrSysId.setCd("CHBCC");
 			}
 			else if (!Check.isEmpty(line.getSwiftCode(), true))
@@ -500,7 +512,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 						&& line.getC_BP_BankAccount().getC_Bank().getC_Location_ID() > 0)
 				{
 					final I_C_Location bankLocation = line.getC_BP_BankAccount().getC_Bank().getC_Location();
-					final PostalAddress6CH pstlAdr = createPstlAdr(bankLocation);
+					final PostalAddress6CH pstlAdr = createStructuredPstlAdr(bankLocation);
 
 					finInstnId.setPstlAdr(pstlAdr);
 				}
@@ -510,7 +522,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			// Other
 			if (paymentType == ZAHLUNGS_ART_2_2)
 			{
-				final GenericFinancialIdentification1CH othr = new GenericFinancialIdentification1CH();
+				final GenericFinancialIdentification1CH othr = objectFactory.createGenericFinancialIdentification1CH();
 				finInstnId.setOthr(othr);
 
 				othr.setId(line.getOtherAccountIdentification());
@@ -520,7 +532,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		//
 		// Creditor BPartner
 		{
-			final PartyIdentification32CHName cdtr = new PartyIdentification32CHName();
+			final PartyIdentification32CHName cdtr = objectFactory.createPartyIdentification32CHName();
 			cdtTrfTxInf.setCdtr(cdtr);
 
 			;
@@ -538,17 +550,26 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			final I_C_BPartner_Location billToLocation = Services.get(IBPartnerDAO.class).retrieveBillToLocation(ctx, line.getC_BPartner_ID(), true, ITrx.TRXNAME_None);
 			if (billToLocation != null)
 			{
-				cdtr.setPstlAdr(createPstlAdr(line.getC_BP_BankAccount(), billToLocation.getC_Location()));
+				PostalAddress6CH pstlAdr;
+				if (paymentType == ZAHLUNGS_ART_5)
+				{
+					pstlAdr = createUnstructuredPstlAdr(line.getC_BP_BankAccount(), billToLocation.getC_Location());
+				}
+				else
+				{
+					pstlAdr = createStructuredPstlAdr(line.getC_BP_BankAccount(), billToLocation.getC_Location());
+				}
+				cdtr.setPstlAdr(pstlAdr);
 			}
 		}
 
 		//
 		// creditor BPartner Account
 		{
-			final CashAccount16CHId cdtrAcct = new CashAccount16CHId();
+			final CashAccount16CHId cdtrAcct = objectFactory.createCashAccount16CHId();
 			cdtTrfTxInf.setCdtrAcct(cdtrAcct);
 
-			final AccountIdentification4ChoiceCH id = new AccountIdentification4ChoiceCH();
+			final AccountIdentification4ChoiceCH id = objectFactory.createAccountIdentification4ChoiceCH();
 			cdtrAcct.setId(id);
 
 			// note that we prefer "otherAccountIdentification", if it is set, because it is the less general case,
@@ -563,7 +584,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			else
 			{
 				// task 07789
-				final GenericAccountIdentification1CH othr = new GenericAccountIdentification1CH();
+				final GenericAccountIdentification1CH othr = objectFactory.createGenericAccountIdentification1CH();
 				othr.setId(otherAccountIdentification); // for task 07789, this needs to contain the ESR TeilehmerNr or PostkontoNr
 				id.setOthr(othr);
 			}
@@ -572,7 +593,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		// Remittance Info
 		{
 
-			final RemittanceInformation5CH rmtInf = new RemittanceInformation5CH();
+			final RemittanceInformation5CH rmtInf = objectFactory.createRemittanceInformation5CH();
 			if (Check.isEmpty(line.getStructuredRemittanceInfo(), true)
 					|| paymentType == ZAHLUNGS_ART_3
 					|| paymentType == ZAHLUNGS_ART_5)
@@ -600,9 +621,9 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			else
 			{
 				// task 07789
-				final StructuredRemittanceInformation7 strd = new StructuredRemittanceInformation7();
+				final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
 				rmtInf.setStrd(strd);
-				final CreditorReferenceInformation2 cdtrRefInf = new CreditorReferenceInformation2();
+				final CreditorReferenceInformation2 cdtrRefInf = objectFactory.createCreditorReferenceInformation2();
 				strd.setCdtrRefInf(cdtrRefInf);
 				cdtrRefInf.setRef(line.getStructuredRemittanceInfo());
 			}
@@ -623,27 +644,11 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		return null;
 	}
 
-	/**
-	 * @task 08655
-	 * @TODO: extract the core part into a general address-BL (also move the unit tests along); also handle the case of number-first (like e.g. in france)
-	 */
-	/* package */PostalAddress6CH createPstlAdr(final I_C_Location location)
+	private PostalAddress6CH createStructuredPstlAdr(
+			@Nullable final org.compiere.model.I_C_BP_BankAccount bpBankAccount,
+			@NonNull final I_C_Location location)
 	{
-		final PostalAddress6CH pstlAdr = new PostalAddress6CH();
-
-		splitStreetAndNumber(location.getAddress1(), pstlAdr);
-
-		pstlAdr.setPstCd(getFirstNonEmpty(location.getPostal()));
-		pstlAdr.setTwnNm(getFirstNonEmpty(location.getCity()));
-		pstlAdr.setCtry(getFirstNonEmpty(location.getC_Country().getCountryCode())); // note: C_Location.C_Country is a mandatory column
-
-		return pstlAdr;
-	}
-
-	private PostalAddress6CH createPstlAdr(final org.compiere.model.I_C_BP_BankAccount bpBankAccount,
-			final I_C_Location location)
-	{
-		final PostalAddress6CH pstlAdr = createPstlAdr(location);
+		final PostalAddress6CH pstlAdr = createStructuredPstlAdr(location);
 		if (bpBankAccount == null)
 		{
 			return pstlAdr;
@@ -652,13 +657,32 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 
 		pstlAdr.setPstCd(getFirstNonEmpty(bpBankAccount.getA_Zip(), pstlAdr.getPstCd()));
 		pstlAdr.setTwnNm(getFirstNonEmpty(bpBankAccount.getA_City(), pstlAdr.getTwnNm()));
-		pstlAdr.setCtry(getFirstNonEmpty(bpBankAccount.getA_Country(), pstlAdr.getCtry()));
+		// Note: don't set the bankAccount's A_Country, because we need the ISO-3166 in this field
 
 		return pstlAdr;
 	}
 
-	private void splitStreetAndNumber(final String streetAndNumber,
-			final PostalAddress6CH pstlAdr)
+	/**
+	 * @task 08655
+	 * @TODO: extract the core part into a general address-BL (also move the unit tests along); also handle the case of number-first (like e.g. in france)
+	 */
+	@VisibleForTesting
+	PostalAddress6CH createStructuredPstlAdr(@NonNull final I_C_Location location)
+	{
+		final PostalAddress6CH pstlAdr = objectFactory.createPostalAddress6CH();
+
+		splitStreetAndNumber(location.getAddress1(), pstlAdr);
+
+		pstlAdr.setCtry(location.getC_Country().getCountryCode()); // note: C_Location.C_Country is a mandatory column
+		pstlAdr.setPstCd(location.getPostal());
+		pstlAdr.setTwnNm(location.getCity());
+
+		return pstlAdr;
+	}
+
+	private void splitStreetAndNumber(
+			@Nullable final String streetAndNumber,
+			@NonNull final PostalAddress6CH pstlAdr)
 	{
 		if (Check.isEmpty(streetAndNumber, true))
 		{
@@ -677,6 +701,33 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 
 		pstlAdr.setStrtNm(getFirstNonEmpty(street));
 		pstlAdr.setBldgNb(getFirstNonEmpty(number));
+	}
+
+	private PostalAddress6CH createUnstructuredPstlAdr(
+			@Nullable final org.compiere.model.I_C_BP_BankAccount bpBankAccount,
+			@NonNull final I_C_Location location)
+	{
+		final PostalAddress6CH pstlAdr = objectFactory.createPostalAddress6CH();
+
+		pstlAdr.setCtry(location.getC_Country().getCountryCode()); // note: C_Location.C_Country is a mandatory column
+
+		final boolean addressInBankAccountIsComplete = bpBankAccount != null
+				&& !Check.isEmpty(bpBankAccount.getA_City(), true)
+				&& !Check.isEmpty(bpBankAccount.getA_Zip(), true)
+				&& !Check.isEmpty(bpBankAccount.getA_Street(), true);
+		if (addressInBankAccountIsComplete)
+		{
+			pstlAdr.getAdrLine().add(bpBankAccount.getA_Street());
+			pstlAdr.getAdrLine().add(bpBankAccount.getA_Zip() + " " + bpBankAccount.getA_City());
+			return pstlAdr;
+		}
+
+		// fall back to the billing location
+		final String firstAdrLineFromLocation = location.getAddress1();
+		final String secondAddressLineFromLocation = location.getPostal() + " " + location.getCity();
+		pstlAdr.getAdrLine().add(firstAdrLineFromLocation);
+		pstlAdr.getAdrLine().add(secondAddressLineFromLocation);
+		return pstlAdr;
 	}
 
 	/**
@@ -736,7 +787,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 
 	private PartyIdentification32CH copyPartyIdentificationSEPA2(final PartyIdentification32CHNameAndId initgPty)
 	{
-		final PartyIdentification32CH partyCopy = new PartyIdentification32CH();
+		final PartyIdentification32CH partyCopy = objectFactory.createPartyIdentification32CH();
 
 		partyCopy.setId(initgPty.getId());
 		partyCopy.setNm(initgPty.getNm());
@@ -787,8 +838,11 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 
 	private String getPaymentType(final I_SEPA_Export_Line line)
 	{
+		final de.metas.payment.esr.model.I_C_BP_BankAccount bPBankAccount = InterfaceWrapperHelper.create(
+				line.getC_BP_BankAccount(), 
+				de.metas.payment.esr.model.I_C_BP_BankAccount.class);
+		
 		final String paymentMode;
-		final de.metas.payment.esr.model.I_C_BP_BankAccount bPBankAccount = InterfaceWrapperHelper.create(line.getC_BP_BankAccount(), de.metas.payment.esr.model.I_C_BP_BankAccount.class);
 		if (bPBankAccount.isEsrAccount() && !Check.isEmpty(line.getStructuredRemittanceInfo(), true))
 		{
 			paymentMode = ZAHLUNGS_ART_1;

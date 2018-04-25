@@ -187,4 +187,10 @@ public class C_Order
 			InterfaceWrapperHelper.save(referencingOrderLine);
 		}
 	}
+	
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void checkPricingConditionsInOrderLines(final I_C_Order order)
+	{
+		Services.get(IOrderLineBL.class).failForMissingPricingConditions(order);
+	}
 }

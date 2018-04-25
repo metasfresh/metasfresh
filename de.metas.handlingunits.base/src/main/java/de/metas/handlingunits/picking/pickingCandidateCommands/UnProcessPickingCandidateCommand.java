@@ -177,15 +177,21 @@ public class UnProcessPickingCandidateCommand
 	 */
 	private void assertHUIsPicked(@NonNull final I_M_HU hu)
 	{
-		if (X_M_HU.HUSTATUS_Picked.equals(hu.getHUStatus()))
+		final String huStatus = hu.getHUStatus();
+		if (X_M_HU.HUSTATUS_Picked.equals(huStatus)
+				|| X_M_HU.HUSTATUS_Active.equals(huStatus))
 		{
+			// NOTE: we are also tolerating Active status
+			// because the HU is changed to Picked only when the picking candidate is Closed.
+			// Until then it's status is Active.
 			return;
 		}
 
 		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 		final Properties ctx = Env.getCtx();
-		final String currentStatusTrl = adReferenceDAO.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, hu.getHUStatus());
-		final String pickedStatusTrl = adReferenceDAO.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Picked);
+		final String currentStatusTrl = adReferenceDAO.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, huStatus);
+		final String pickedStatusTrl = adReferenceDAO.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Picked)
+				+ ", " + adReferenceDAO.retrieveListNameTrl(ctx, X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Active);
 		throw new AdempiereException(MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P, new Object[] { hu.getValue(), currentStatusTrl, pickedStatusTrl });
 	}
 

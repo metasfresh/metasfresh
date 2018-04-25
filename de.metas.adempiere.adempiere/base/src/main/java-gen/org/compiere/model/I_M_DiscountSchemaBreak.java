@@ -278,6 +278,31 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_IsPriceOverride = "IsPriceOverride";
 
 	/**
+	 * Set Gültig.
+	 * Element ist gültig
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsValid (boolean IsValid);
+
+	/**
+	 * Get Gültig.
+	 * Element ist gültig
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isValid();
+
+    /** Column definition for IsValid */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_IsValid = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "IsValid", null);
+    /** Column name IsValid */
+    public static final String COLUMNNAME_IsValid = "IsValid";
+
+	/**
 	 * Set Merkmal.
 	 * Produkt-Merkmal
 	 *
@@ -446,6 +471,29 @@ public interface I_M_DiscountSchemaBreak
     public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_Product>(I_M_DiscountSchemaBreak.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Not valid reason.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setNotValidReason (java.lang.String NotValidReason);
+
+	/**
+	 * Get Not valid reason.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getNotValidReason();
+
+    /** Column definition for NotValidReason */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_NotValidReason = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "NotValidReason", null);
+    /** Column name NotValidReason */
+    public static final String COLUMNNAME_NotValidReason = "NotValidReason";
 
 	/**
 	 * Set PriceBase.

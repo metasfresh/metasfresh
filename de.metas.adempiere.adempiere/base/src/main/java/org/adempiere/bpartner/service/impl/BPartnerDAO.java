@@ -25,6 +25,7 @@ package org.adempiere.bpartner.service.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -39,6 +40,8 @@ import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
@@ -120,7 +123,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return shipToLocations;
 	}
-	
+
 	@Override
 	public List<I_C_BPartner_Location> retrieveBPartnerLocations(final int bpartnerId)
 	{
@@ -147,7 +150,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.listImmutable(I_C_BPartner_Location.class);
 	}
-	
+
 	@Override
 	public Set<Integer> retrieveCountryIdsOfBPartnerLocations(final int bpartnerId)
 	{
@@ -582,14 +585,33 @@ public class BPartnerDAO implements IBPartnerDAO
 	public List<Integer> retrieveBPartnerIdsForDiscountSchemaId(final int discountSchemaId, final boolean isSOTrx)
 	{
 		Check.assumeGreaterThanZero(discountSchemaId, "discountSchemaId");
-		
-		final String discountSchemaIdColumnName = isSOTrx ? I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID : I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID; 
-		
+
+		final String discountSchemaIdColumnName = isSOTrx ? I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID : I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
+
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(discountSchemaIdColumnName, discountSchemaId)
 				.create()
 				.listIds();
+	}
+
+	@Override
+	public Map<Integer, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(final int adClientId, final boolean isSOTrx)
+	{
+		final String discountSchemaIdColumnName = isSOTrx ? I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID : I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMN_AD_Client_ID, adClientId)
+				.addNotNull(discountSchemaIdColumnName)
+				.create()
+				.listDistinct(I_C_BPartner.COLUMNNAME_C_BPartner_ID, discountSchemaIdColumnName)
+				.stream()
+				.map(row -> GuavaCollectors.entry(
+						NumberUtils.asInt(row.get(I_C_BPartner.COLUMNNAME_C_BPartner_ID), -1),
+						NumberUtils.asInt(row.get(discountSchemaIdColumnName), -1)))
+				.collect(GuavaCollectors.toImmutableMap());
 	}
 }
