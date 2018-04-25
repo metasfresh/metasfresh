@@ -22,6 +22,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1752](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1752) Shortcuts not working on Mac
     * Fixes the Shortcuts for Mac Users.
+  * [#1755](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1755) Date field does not recognize changes on double click
+    * Fixes the selection and save of date fields when double-clicking on date in date widget.
   
 
 # metasfresh 5.54 (2018-17)
