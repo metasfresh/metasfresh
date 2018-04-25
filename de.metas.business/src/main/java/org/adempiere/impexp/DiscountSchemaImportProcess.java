@@ -7,21 +7,16 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.inventory.MInventoryImportTableSqlUpdater;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_DiscountSchema;
-import org.slf4j.Logger;
+import org.compiere.model.X_M_DiscountSchema;
 
-import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
 import lombok.NonNull;
 
 /**
@@ -30,12 +25,6 @@ import lombok.NonNull;
  */
 public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_DiscountSchema>
 {
-	private static final Logger logger = LogManager.getLogger(DiscountSchemaImportProcess.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	final ILotNumberDateAttributeDAO lotNumberDateAttributeDAO = Services.get(ILotNumberDateAttributeDAO.class);
-
 	@Override
 	public Class<I_I_DiscountSchema> getImportModelClass()
 	{
@@ -57,10 +46,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String whereClause = getWhereClause();
-		MInventoryImportTableSqlUpdater.builder()
-				.whereClause(whereClause)
-				.updateIInventory();
+		MDiscountSchemaImportTableSqlUpdater.updateDiscountSchemaImportTable(getWhereClause());
 	}
 
 	@Override
@@ -118,7 +104,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 			}
 		}
 
-//		importInventoryLine(importRecord);
+		importDiscountSchemaBreak(importRecord);
 		context.collectImportRecordForSameDiscountSchema(importRecord);
 
 		return inventoryImportResult;
@@ -132,7 +118,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		final I_M_DiscountSchema discountSchema;
 		if (importRecord.getM_DiscountSchema_ID() <= 0)	// Insert new Inventory
 		{
-			discountSchema = createNewMDiscountSchems(importRecord);
+			discountSchema = createNewMDiscountSchemas(importRecord);
 		}
 		else
 		{
@@ -145,18 +131,19 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		return inventoryImportResult;
 	}
 
-	private I_M_DiscountSchema createNewMDiscountSchems(I_I_DiscountSchema importRecord)
+	private I_M_DiscountSchema createNewMDiscountSchemas(I_I_DiscountSchema importRecord)
 	{
 		final I_M_DiscountSchema schema;
 		schema = InterfaceWrapperHelper.create(getCtx(), I_M_DiscountSchema.class, ITrx.TRXNAME_ThreadInherited);
 		schema.setAD_Org_ID(importRecord.getAD_Org_ID());
+		schema.setValidFrom(SystemTime.asDayTimestamp());
+		schema.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
 		schema.setDescription("I " + importRecord.getC_BPartner().getValue() + " " + importRecord.getM_Product().getValue());
 		return schema;
-
 	}
 
 	/**
-	 * reuse previous inventory
+	 * reuse previous discount schema
 	 *
 	 * @param importRecord
 	 * @param previousImportRecord
@@ -167,5 +154,47 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		importRecord.setM_DiscountSchema_ID(previousImportRecord.getM_DiscountSchema_ID());
 		return ImportRecordResult.Nothing;
 	}
+
+	private I_M_DiscountSchemaBreak importDiscountSchemaBreak(@NonNull final I_I_DiscountSchema importRecord)
+	{
+		final I_M_DiscountSchema schema = importRecord.getM_DiscountSchema();
+
+		I_M_DiscountSchemaBreak schemaBreak = importRecord.getM_DiscountSchemaBreak();
+		if (schemaBreak != null)
+		{
+			if (schemaBreak.getM_DiscountSchema_ID() <= 0)
+			{
+				schemaBreak.setM_DiscountSchema(schema);
+			}
+			else if (schemaBreak.getM_DiscountSchema_ID() != schema.getM_DiscountSchema_ID())
+			{
+				throw new AdempiereException("Discount schema of Discount schema break <> Discount schema");
+			}
+
+			schemaBreak.setBase_PricingSystem(importRecord.getBase_PricingSystem());
+			schemaBreak.setM_Product(importRecord.getM_Product());
+			schemaBreak.setC_PaymentTerm(importRecord.getC_PaymentTerm());
+
+			ModelValidationEngine.get().fireImportValidate(this, importRecord, schemaBreak, IImportInterceptor.TIMING_AFTER_IMPORT);
+			InterfaceWrapperHelper.save(schemaBreak);
+		}
+		else
+		{
+			schemaBreak = InterfaceWrapperHelper.create(getCtx(), I_M_DiscountSchemaBreak.class, ITrx.TRXNAME_ThreadInherited);
+			schemaBreak.setBase_PricingSystem(importRecord.getBase_PricingSystem());
+			schemaBreak.setM_Product(importRecord.getM_Product());
+			schemaBreak.setC_PaymentTerm(importRecord.getC_PaymentTerm());
+			schemaBreak.setPriceStd(importRecord.getPriceStd());
+			schemaBreak.setStd_AddAmt(importRecord.getStd_AddAmt());
+
+			ModelValidationEngine.get().fireImportValidate(this, importRecord, schemaBreak, IImportInterceptor.TIMING_AFTER_IMPORT);
+			InterfaceWrapperHelper.save(schemaBreak);
+
+			importRecord.setM_DiscountSchemaBreak_ID(schemaBreak.getM_DiscountSchemaBreak_ID());
+		}
+
+		return schemaBreak;
+	}
+
 
 }
