@@ -58,6 +58,9 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -204,6 +207,22 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		return result;
 	}
+	
+	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final Properties ctx = Env.getCtx();
+
+		return ids.stream()
+				.map(id -> create(ctx, id, modelClass, trxName))
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
+	}
+
 
 	/**
 	 * If the given <code>cl</code> has a table name (see {@link #getTableNameOrNull(Class)}), then this method makes sure that there is also an <code>I_AD_Table</code> POJO. This can generally be

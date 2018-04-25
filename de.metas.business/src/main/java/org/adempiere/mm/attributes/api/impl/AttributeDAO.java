@@ -52,7 +52,9 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.model.X_M_AttributeValue;
+import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -145,16 +147,34 @@ public class AttributeDAO implements IAttributeDAO
 	{
 		if (attributeSetInstance == null)
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
+		}
+		
+		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
+		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSetInstance);
+		final int asiId = attributeSetInstance.getM_AttributeSetInstance_ID();
+		return retrieveAttributeInstances(ctx, asiId, trxName);
+	}
+
+
+	@Override
+	public List<I_M_AttributeInstance> retrieveAttributeInstances(int asiId)
+	{
+		return retrieveAttributeInstances(Env.getCtx(), asiId, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private List<I_M_AttributeInstance> retrieveAttributeInstances(final Properties ctx, final int asiId, final String trxName)
+	{
+		if (asiId <= 0)
+		{
+			return ImmutableList.of();
 		}
 
-		final IQueryBuilder<I_M_AttributeInstance> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeInstance.class, attributeSetInstance)
-				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstance.getM_AttributeSetInstance_ID());
-
-		queryBuilder.orderBy()
-				.addColumn(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID); // at least to have a predictable order
-
-		return queryBuilder.create()
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_AttributeInstance.class, ctx, trxName)
+				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, asiId)
+				.orderBy(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID) // at least to have a predictable order
+				.create()
 				.list(I_M_AttributeInstance.class);
 	}
 

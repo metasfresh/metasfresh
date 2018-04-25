@@ -1613,7 +1613,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			return false;
 		}
 		final MPaymentTerm pt = new MPaymentTerm(getCtx(), getC_PaymentTerm_ID(), null);
-		log.debug(pt.toString());
 		return pt.apply(this);		// calls validate pay schedule
 	}	// createPaySchedule
 

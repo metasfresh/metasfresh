@@ -254,7 +254,13 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	void updateNoPriceConditionsColor(I_C_OrderLine orderLine);
 
+	/**
+	 * Throw an error message if the sysconfig for mandatory pricing conditions is set ( see de.metas.order.impl.OrderLineBL.SYSCONFIG_NoPriceConditionsColorName) but the order contains lines that don't have the pricing conditions set.
+	 */
+	void failForMissingPricingConditions(de.metas.adempiere.model.I_C_Order order);
+
 	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
 
 	PriceLimitRuleResult computePriceLimit(org.compiere.model.I_C_OrderLine orderLine);
+
 }
