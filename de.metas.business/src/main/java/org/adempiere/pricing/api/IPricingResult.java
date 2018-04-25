@@ -165,4 +165,8 @@ public interface IPricingResult
 	void setM_DiscountSchemaBreak_ID(final int M_DiscountSchemaBreak_ID);
 
 	int getM_DiscountSchemaBreak_ID();
+
+	int getM_DiscountSchemaBreak_BasePricingSystem_ID();
+
+	void setM_DiscountSchemaBreak_BasePricingSystem_ID(int m_DiscountSchemaBreak_BasePricingSystem_ID);
 }
