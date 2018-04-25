@@ -1,5 +1,6 @@
 package org.adempiere.pricing.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -26,6 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -52,6 +54,12 @@ public class MDiscountSchemaDAO implements IMDiscountSchemaDAO
 		}
 
 		return loadOutOfTrx(discountSchemaId, I_M_DiscountSchema.class);
+	}
+
+	@Override
+	public List<I_M_DiscountSchema> getByIds(final Set<Integer> discountSchemaIds)
+	{
+		return loadByIdsOutOfTrx(discountSchemaIds, I_M_DiscountSchema.class);
 	}
 
 	@Override

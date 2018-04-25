@@ -53,8 +53,8 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
-import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.pricing.api.IPriceListBL;
+import org.adempiere.pricing.api.SchemaBreakQuery;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -73,7 +73,6 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
@@ -2019,7 +2018,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void setQualityDiscountPercent_Override(final I_C_Invoice_Candidate ic, final List<I_M_AttributeInstance> instances)
 	{
-		final IMDiscountSchemaDAO discountSchemaDAO = Services.get(IMDiscountSchemaDAO.class);
 		final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
@@ -2032,22 +2030,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return;
 		}
 
-		final I_M_Product product = ic.getM_Product();
-
-		final I_M_DiscountSchema discountSchema = discountSchemaDAO.getById(discountSchemaId);
-		final List<org.compiere.model.I_M_DiscountSchemaBreak> breaks = discountSchemaDAO.retrieveBreaks(discountSchemaId);
-		final boolean isQtyBased = discountSchema.isQuantityBased();
-		final int productID = product.getM_Product_ID();
-		final int categoryID = product.getM_Product_Category_ID();
 		BigDecimal qty = ic.getQtyToInvoice();
-
 		if (qty.signum() < 0)
 		{
 			final org.compiere.model.I_M_InOut inout = ic.getM_InOut();
 
 			if (inout != null)
 			{
-
 				if (Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType()))
 				{
 					qty = qty.negate();
@@ -2056,17 +2045,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		final BigDecimal amt = ic.getPriceActual().multiply(qty);
 
-		final org.compiere.model.I_M_DiscountSchemaBreak appliedBreak = discountSchemaBL.pickApplyingBreak(
-				breaks,
-				instances,
-				isQtyBased,
-				productID,
-				categoryID,
-				qty,
-				amt);
+		final org.compiere.model.I_M_DiscountSchemaBreak appliedBreak = discountSchemaBL.pickApplyingBreak(SchemaBreakQuery.builder()
+				.discountSchemaId(discountSchemaId)
+				.attributeInstances(instances)
+				.productId(ic.getM_Product_ID())
+				.qty(qty)
+				.amt(amt)
+				.build());
 
 		final BigDecimal qualityDiscountPercentage;
-
 		if (appliedBreak == null)
 		{
 			qualityDiscountPercentage = null;

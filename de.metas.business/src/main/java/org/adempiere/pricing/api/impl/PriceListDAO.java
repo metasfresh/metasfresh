@@ -99,7 +99,6 @@ public class PriceListDAO implements IPriceListDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_M_PriceList> queryBuilder = queryBL.createQueryBuilder(I_M_PriceList.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystemId)
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOPriceList)
 				.addInArrayFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, countryId, null)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
