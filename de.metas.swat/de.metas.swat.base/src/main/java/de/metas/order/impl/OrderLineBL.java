@@ -183,7 +183,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void setTaxAmtInfo(final Properties ctx, final I_C_OrderLine ol, final String trxName)
+	public void setTaxAmtInfo(final I_C_OrderLine ol)
 	{
 		final int taxId = ol.getC_Tax_ID();
 		if (taxId <= 0)
@@ -196,11 +196,10 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal lineAmout = ol.getLineNetAmt();
 		final int taxPrecision = getPrecision(ol);
 
-		final I_C_Tax tax = MTax.get(ctx, taxId);
+		final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineAmout, taxIncluded, taxPrecision);
-
 		ol.setTaxAmtInfo(taxAmtInfo);
 	}
 

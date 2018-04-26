@@ -86,7 +86,7 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	void setPrices(Properties ctx, I_C_OrderLine ol, int priceListId, BigDecimal qtyEntered, BigDecimal factor, boolean usePriceUOM, String trxName);
 
-	void setTaxAmtInfo(Properties ctx, I_C_OrderLine ol, String trxName);
+	void setTaxAmtInfo(I_C_OrderLine ol);
 
 	void setShipper(Properties ctx, I_C_OrderLine ol, boolean force, String trxName);
 

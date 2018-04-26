@@ -1148,7 +1148,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		orderLine.setLineNetAmt(LineNetAmt);
 
-		orderLineBL.setTaxAmtInfo(Env.getCtx(), orderLine, ITrx.TRXNAME_None);
+		orderLineBL.setTaxAmtInfo(orderLine);
 	}
 
 	/**

@@ -119,7 +119,7 @@ public class OrderLine implements ModelValidator
 					po.get_TrxName());
 
 			logger.debug("Setting TaxAmtInfo for {}", ol);
-			orderLineBL.setTaxAmtInfo(po.getCtx(), ol, po.get_TrxName());
+			orderLineBL.setTaxAmtInfo(ol);
 		}
 
 		logger.debug("Making sure {} has a M_Shipper_ID", ol);
