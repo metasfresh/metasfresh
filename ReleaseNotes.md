@@ -43,23 +43,35 @@ Here come the actual release notes:
   * [#3479](https://github.com/metasfresh/metasfresh/issues/3479) Window design: Business Partner Pharma
     * Improved Window Layout and Translation for Business Partner Pharma.
   * [#3763](https://github.com/metasfresh/metasfresh/issues/3763) Contracts: Create a function that provides a hierarchy of contracts
+    * New function that allows to retrieve the hierarchy of created contracts.
   * [#3768](https://github.com/metasfresh/metasfresh/issues/3768) Excel Report for vendor assessment
+    * New Excel Report that allows the assessment of vendors.
   * [#3777](https://github.com/metasfresh/metasfresh/issues/3777) Show available to promise in Procurement Dispo modal in Sales Order
+    * Imporvement of the Procurement Dispo modal overlay, now showing the Available to Promise Quantity.
   * [#3827](https://github.com/metasfresh/metasfresh/issues/3827) Support SSL / TLS when sending mails via SMTP making it SMTPS
+    * Improved Mail handling, now allowing the support of SSL/ TLS Handshakes when sending emails.
   * [#3834](https://github.com/metasfresh/metasfresh/issues/3834) Check if Product is banned in Batch entry/ Document Lines creation
+    * New Functionality in Sales and Purchase Order. It's now possible to put Products on Ban Lists for customers and vendors. Although the products remain on general Product Price Lists, the products are then prohibited to be recorded. The user gets informed why the product is banned for a specific Business Partner.
   * [#3866](https://github.com/metasfresh/metasfresh/issues/3866) WebUI: Translation for Product LotNo Lock Window
     * Improved Window Layout and additional Translations for de_DE and en_US.
   * [#3873](https://github.com/metasfresh/metasfresh/issues/3873) Performance problem on reactivating large shipment
+    * Performance Improvement on reactivation of large shipment documents.
   * [#3887](https://github.com/metasfresh/metasfresh/issues/3887) Automatic Setting of Pharma Authorisation for Shipment/ Receipt
+    * New Functionality in Business Partner Pharma window, now settign the Shipment and Receipt Authorisation automatically as soon as the recording of different Permission Types have been done.
   * [#3888](https://github.com/metasfresh/metasfresh/issues/3888) Pharma Business Partner Window adjustments
     * Extended Business Partner Window for Pharma verticals. New Fields that describe the Pharma Trading Permissions of customers and vendors.
   * [#3890](https://github.com/metasfresh/metasfresh/issues/3890) Role Permission for Pharma Permission and Authorization changes
+    * New Functionality for Pharma Business Partner that allows to restrict the actions for permission adjustments to specific users and roles.
   * [#3892](https://github.com/metasfresh/metasfresh/issues/3892) Contracts: Allow possibility to copy the prices when extending
+    * Improvement of contracts extending, now allowing to copy the prices from the source/ initial contract.
   * [#3895](https://github.com/metasfresh/metasfresh/issues/3895) extend M_HU_Process
+    * New Feature that decouples actions in M_HU_Processn from the presentation in Action menu. Now allowing to hide actions in menu.
   * [#3897](https://github.com/metasfresh/metasfresh/issues/3897) Add Translations for Pharma Business Partner Window
+    * New Translations for de_DE and en_US added to Business Partner Pharma Window.
 
 # metasfresh-docker
   * [#34](https://github.com/metasfresh/metasfresh-docker/issues/34) add msv3server to metasfresh-docker as "extras"
+    * Now the Pharma Customer Server is available in metasfresh-docker for MSV3 Communication.
 
 ## Fixes
 * metasfresh
