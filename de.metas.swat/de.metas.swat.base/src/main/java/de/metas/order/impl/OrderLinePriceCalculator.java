@@ -48,6 +48,8 @@ import lombok.NonNull;
 
 class OrderLinePriceCalculator
 {
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+
 	private final OrderLineBL orderLineBL;
 	private final OrderLinePriceUpdateRequest request;
 
@@ -71,12 +73,9 @@ class OrderLinePriceCalculator
 			return;
 		}
 
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-
 		//
 		// Calculate Pricing Result
 		final IEditablePricingContext pricingCtx = createPricingContext();
-
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
 		if (!pricingResult.isCalculated())
 		{
@@ -89,17 +88,8 @@ class OrderLinePriceCalculator
 		}
 
 		//
-		// PriceList
-		final BigDecimal priceListStdOld = orderLine.getPriceList_Std();
-		final BigDecimal priceList = pricingResult.getPriceList();
-		orderLine.setPriceList_Std(priceList);
-		if (priceListStdOld.compareTo(priceList) != 0)
-		{
-			orderLine.setPriceList(priceList);
-		}
-
-		//
-		// PriceLimit, PriceStd, Price_UOM_ID
+		// PriceList, PriceLimit, PriceStd, Price_UOM_ID
+		orderLine.setPriceList(pricingResult.getPriceList());
 		orderLine.setPriceLimit(pricingResult.getPriceLimit());
 		orderLine.setPriceStd(pricingResult.getPriceStd());
 		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // 07090: when setting a priceActual, we also need to specify a PriceUOM
@@ -121,7 +111,7 @@ class OrderLinePriceCalculator
 					&& (!request.isUpdatePriceEnteredAndDiscountOnlyIfNotAlreadySet() || orderLine.getDiscount().signum() == 0)) // task 06727
 			{
 				// Override discount only if is not manual
-				// Note: only the sales order widnow has the field 'isManualDiscount'
+				// Note: only the sales order window has the field 'isManualDiscount'
 				orderLine.setDiscount(pricingResult.getDiscount());
 			}
 		}
@@ -162,8 +152,6 @@ class OrderLinePriceCalculator
 
 	public IEditablePricingContext createPricingContext()
 	{
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-
 		final I_C_OrderLine orderLine = request.getOrderLine();
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 
@@ -274,7 +262,6 @@ class OrderLinePriceCalculator
 	{
 		final IPricingContext pricingCtx = createPricingContext();
 
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
 		if (!pricingResult.isCalculated())
 		{
@@ -289,7 +276,6 @@ class OrderLinePriceCalculator
 	{
 		final I_C_OrderLine orderLine = request.getOrderLine();
 
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		return pricingBL.computePriceLimit(PriceLimitRuleContext.builder()
 				.pricingContext(createPricingContext())
 				.priceLimit(orderLine.getPriceLimit())
