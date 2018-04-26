@@ -103,12 +103,7 @@ export default class ShortcutProvider extends Component {
     const key = _key && _key.toUpperCase();
     const activeNode = document.activeElement;
 
-    // some shortcuts should be disabled
-    // when input field is focused (for typing)
-    if (
-      !key ||
-      (activeNode.nodeName === 'INPUT' && disabledWithFocus.indexOf(key) > -1)
-    ) {
+    if (!key) {
       return;
     }
 
@@ -137,7 +132,12 @@ export default class ShortcutProvider extends Component {
       .replace(/\s/, 'Spacebar')
       .toUpperCase();
 
-    if (!(serializedSequence in hotkeys)) {
+    if (
+      !(serializedSequence in hotkeys) ||
+      // some shortcuts should be disabled
+      // when input field is focused (for typing)
+      (activeNode.nodeName === 'INPUT' && disabledWithFocus.indexOf(serializedSequence) > -1)
+    ) {
       return;
     }
 
