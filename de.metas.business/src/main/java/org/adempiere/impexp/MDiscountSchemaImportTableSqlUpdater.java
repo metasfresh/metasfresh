@@ -52,6 +52,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 		dbUpdateProducts(whereClause);
 		dbUpdateC_PaymentTerms(whereClause);
 		dbUpdateM_PricingSystems(whereClause);
+		dbUpdateDiscounts(whereClause);
 
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -82,11 +83,12 @@ public class MDiscountSchemaImportTableSqlUpdater
 	{
 		StringBuilder sql;
 		int no;
-		sql = new StringBuilder("UPDATE I_DiscountSchema i "
-				+ "SET C_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
-				+ " WHERE i.PaymentTermValue=pt.Value AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
-				+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		sql = new StringBuilder("UPDATE I_DiscountSchema i ")
+				.append("SET C_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt ")
+				.append("WHERE i.PaymentTermValue=pt.Value AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) ")
+				.append("WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL ")
+				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
+				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set C_PaymentTerm={}", no);
 	}
@@ -95,15 +97,30 @@ public class MDiscountSchemaImportTableSqlUpdater
 	{
 		StringBuilder sql;
 		int no;
-		sql = new StringBuilder("UPDATE I_DiscountSchema i "
-				+ "SET Base_PricingSystem_ID=(SELECT M_PricingSystem_ID FROM M_PricingSystem p"
-				+ " WHERE i.Base_PricingSystem_Value=p.Value AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
-				+ "WHERE Base_PricingSystem_ID IS NULL AND Base_PricingSystem_Value IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		sql = new StringBuilder("UPDATE I_DiscountSchema i ")
+				.append("SET Base_PricingSystem_ID=(SELECT M_PricingSystem_ID FROM M_PricingSystem p ")
+				.append("WHERE i.Base_PricingSystem_Value=p.Value AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) ")
+				.append("WHERE Base_PricingSystem_ID IS NULL AND Base_PricingSystem_Value IS NOT NULL ")
+				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
+				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set C_PaymentTerm={}", no);
 	}
 
+	private void dbUpdateDiscounts(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_DiscountSchema i ")
+				.append("SET breakdiscount = d.discount,   pricestd = d.fixedPrice ")
+				.append("FROM  I_DiscountSchema s ")
+				.append("JOIN extractDiscountDimensions(s.discount) AS d ON s.discount=d.input ")
+				.append("WHERE s.I_DiscountSchema_ID = I_DiscountSchema.I_DiscountSchema_ID ")
+				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set C_PaymentTerm={}", no);
+	}
 
 	private void dbUpdateErrorMessages(@NonNull final String whereClause)
 	{
