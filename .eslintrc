@@ -28,6 +28,7 @@
         "cy": true,
         "context": true,
         "Cypress": true,
-        "before": true
+        "before": true,
+        "document": true
     }
 }
