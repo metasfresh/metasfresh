@@ -144,6 +144,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schema.setAD_Org_ID(importRecord.getAD_Org_ID());
 		schema.setValidFrom(SystemTime.asDayTimestamp());
 		schema.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
+		schema.setName("I " + importRecord.getM_DiscountSchema_ID());
 		schema.setDescription("I " + importRecord.getC_BPartner().getValue() + " " + importRecord.getM_Product().getValue());
 		return schema;
 	}

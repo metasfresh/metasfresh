@@ -87,8 +87,11 @@ public class MDiscountSchemaImportTableSqlUpdater
 
 		records.forEach(importRecord -> {
 			final int schemaId = retrieveDiscountSchemaByBPartnerId(importRecord.getC_BPartner_ID());
-			importRecord.setM_DiscountSchema_ID(schemaId);
-			InterfaceWrapperHelper.save(importRecord);
+			if (schemaId > 0)
+			{
+				importRecord.setM_DiscountSchema_ID(schemaId);
+				InterfaceWrapperHelper.save(importRecord);
+			}
 		});
 	}
 
@@ -111,7 +114,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 		StringBuilder sql = new StringBuilder("UPDATE I_DiscountSchema i ")
 				.append("SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p ")
 				.append(" WHERE i.ProductValue=p.Value AND i.AD_Client_ID=p.AD_Client_ID) ")
-				.append("WHERE M_Product_ID IS NULL AND Value IS NOT NULL ")
+				.append("WHERE M_Product_ID IS NULL AND ProductValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -137,7 +140,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 		int no;
 		sql = new StringBuilder("UPDATE I_DiscountSchema i ")
 				.append("SET Base_PricingSystem_ID=(SELECT M_PricingSystem_ID FROM M_PricingSystem p ")
-				.append("WHERE i.Base_PricingSystem_Value=p.Value AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) ")
+				.append("WHERE i.Base_PricingSystem_Value=p.Value AND p.AD_Client_ID IN (0, i.AD_Client_ID)) ")
 				.append("WHERE Base_PricingSystem_ID IS NULL AND Base_PricingSystem_Value IS NOT NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
 				.append(whereClause);
@@ -153,11 +156,10 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("SET breakdiscount = d.discount,   pricestd = d.fixedPrice ")
 				.append("FROM  I_DiscountSchema s ")
 				.append("JOIN extractDiscountDimensions(s.discount) AS d ON s.discount=d.input ")
-				.append("WHERE s.I_DiscountSchema_ID = I_DiscountSchema.I_DiscountSchema_ID ")
-				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-				.append(whereClause);
+				.append("WHERE s.I_DiscountSchema_ID = i.I_DiscountSchema_ID ")
+				.append("AND i." + COLUMNNAME_I_IsImported + "<>'Y' ");
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set C_PaymentTerm={}", no);
+		logger.debug("Set Discount amounts ={}", no);
 	}
 
 	private void dbUpdateErrorMessages(@NonNull final String whereClause)
