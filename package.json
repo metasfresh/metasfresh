@@ -33,7 +33,8 @@
     "unmockedModulePathPatterns": [
       "<rootDir>/node_modules/babel-polyfill/",
       "<rootDir>/node_modules/immutable"
-    ]
+    ],
+    "testEnvironment": "jsdom"
   },
   "devDependencies": {
     "@storybook/react": "^3.2.13",

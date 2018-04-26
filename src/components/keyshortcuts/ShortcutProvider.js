@@ -101,7 +101,7 @@ export default class ShortcutProvider extends Component {
   handleKeyDown = event => {
     const _key = codeToKey[event.keyCode];
     const key = _key && _key.toUpperCase();
-    const activeNode = document.activeElement;
+    const activeNode = document ? document.activeElement : null;
 
     if (!key) {
       return;
@@ -136,7 +136,8 @@ export default class ShortcutProvider extends Component {
       !(serializedSequence in hotkeys) ||
       // some shortcuts should be disabled
       // when input field is focused (for typing)
-      (activeNode.nodeName === 'INPUT' &&
+      (activeNode &&
+        activeNode.nodeName === 'INPUT' &&
         disabledWithFocus.indexOf(serializedSequence) > -1)
     ) {
       return;
