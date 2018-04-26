@@ -71,9 +71,6 @@ public class CalloutOrder extends CalloutEngine
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
 
-	// FIXME: QtyAvailable field does not exist. Pls check and drop following code.
-	// public static final String COLNAME_QTY_AVAIL = "QtyAvailable";
-
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
 	 */
