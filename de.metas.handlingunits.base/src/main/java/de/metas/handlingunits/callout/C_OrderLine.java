@@ -44,7 +44,7 @@ public class C_OrderLine
 		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks);
 
 		// Update lineNetAmt, because QtyEnteredCU changed : see task 06727
-		Services.get(IOrderLineBL.class).updateLineNetAmt(orderLine, orderLine.getQtyEntered());
+		Services.get(IOrderLineBL.class).updateLineNetAmt(orderLine);
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_C_BPartner_ID

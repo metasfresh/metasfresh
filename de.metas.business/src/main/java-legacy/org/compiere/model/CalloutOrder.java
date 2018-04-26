@@ -17,7 +17,6 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,6 +30,7 @@ import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
+import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
@@ -1043,7 +1043,7 @@ public class CalloutOrder extends CalloutEngine
 
 		final int priceUOMId = orderLine.getPrice_UOM_ID();
 		final int productId = orderLine.getM_Product_ID();
-		final int stdPrecision = MPriceList.getStandardPrecision(ctx, order.getM_PriceList_ID());
+		final int pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(order.getM_PriceList_ID());
 
 		//
 		BigDecimal priceEntered;
@@ -1077,7 +1077,7 @@ public class CalloutOrder extends CalloutEngine
 			if (priceEntered.signum() != 0)
 			{
 				final BigDecimal discount = orderLine.getDiscount();
-				priceActual = orderLineBL.subtractDiscount(priceEntered, discount, stdPrecision);
+				priceActual = orderLineBL.subtractDiscount(priceEntered, discount, pricePrecision);
 			}
 			else
 			{
@@ -1115,11 +1115,11 @@ public class CalloutOrder extends CalloutEngine
 
 				if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName) && priceEntered.signum() != 0)
 				{
-					priceEntered = orderLineBL.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, stdPrecision);
+					priceEntered = orderLineBL.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, pricePrecision);
 				}
 				else if (priceEntered.signum() != 0)
 				{
-					discount = orderLineBL.calculateDiscountFromPrices(priceEntered, priceActual, stdPrecision);
+					discount = orderLineBL.calculateDiscountFromPrices(priceEntered, priceActual, pricePrecision);
 				}
 			}
 		}
@@ -1130,7 +1130,9 @@ public class CalloutOrder extends CalloutEngine
 		orderLine.setPriceActual(priceActual);
 		orderLine.setDiscount(discount);
 		orderLine.setPriceLimit(priceLimit);
-		updateLineNetAmtAndTax(orderLine, stdPrecision);
+		orderLineBL.updateLineNetAmt(orderLine);
+		orderLineBL.setTaxAmtInfo(orderLine);
+		
 		if (underPriceLimit)
 		{
 			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, underPriceLimitExplanation, /* isError */false);
@@ -1139,22 +1141,6 @@ public class CalloutOrder extends CalloutEngine
 		//
 		return NO_ERROR;
 	} // amt
-
-	private static void updateLineNetAmtAndTax(final I_C_OrderLine orderLine, final int stdPrecision)
-	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
-		final BigDecimal priceActual = orderLine.getPriceActual();
-		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine);
-		BigDecimal LineNetAmt = qtyEnteredInPriceUOM.multiply(priceActual);
-		if (LineNetAmt.scale() > stdPrecision)
-		{
-			LineNetAmt = LineNetAmt.setScale(stdPrecision, RoundingMode.HALF_UP);
-		}
-		orderLine.setLineNetAmt(LineNetAmt);
-
-		orderLineBL.setTaxAmtInfo(orderLine);
-	}
 
 	/**
 	 * Order Line - Quantity. - called from C_UOM_ID, QtyEntered, QtyOrdered - enforces qty UOM relationship
@@ -1184,7 +1170,7 @@ public class CalloutOrder extends CalloutEngine
 			final I_C_UOM uomFrom = orderLineOld.getC_UOM();
 			final I_C_UOM uomTo = orderLine.getC_UOM();
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
-			final IUOMConversionContext uomConverter = IUOMConversionContext.of(orderLine.getM_Product());
+			final IUOMConversionContext uomConverter = IUOMConversionContext.of(orderLine.getM_Product_ID());
 
 			final BigDecimal QtyEntered1 = uomConverter.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)

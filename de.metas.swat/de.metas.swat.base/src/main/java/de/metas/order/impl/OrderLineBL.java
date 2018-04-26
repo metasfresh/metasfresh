@@ -269,13 +269,9 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updateLineNetAmt(
-			@NonNull final I_C_OrderLine ol,
-			@NonNull final BigDecimal qtyEntered)
+	public void updateLineNetAmt(@NonNull final I_C_OrderLine orderLine)
 	{
-		Check.assumeNotNull(qtyEntered, "Param qtyEntered not null. Param ol={}", ol);
-
-		updateLineNetAmt(ol, Quantity.of(qtyEntered, getUOM(ol)));
+		updateLineNetAmt(orderLine, getQtyEntered(orderLine));
 	}
 
 	void updateLineNetAmt(

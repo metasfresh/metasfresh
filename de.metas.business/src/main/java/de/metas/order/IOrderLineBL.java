@@ -137,15 +137,7 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_OrderLine orderLine);
 
-	/**
-	 * Updates the given <code>ol</code>'s {@link org.compiere.model.I_C_OrderLine#COLUMNNAME_LineNetAmt LineNetAmt}
-	 *
-	 * @param ol
-	 * @param qtyEntered the order-quantity in the "customer's (stocking) UOM"...i.e. a customer might order 20PCE whereas the M_Product's own stocking-UOM in ADempiere is KG. In this case,
-	 *            <code>qtyEntered</code> is 20. Note that the <code>LineNetAmt</code> is computed from this qty only after is was converted to the <b>price-UOM</b> (see
-	 *            {@link #convertQtyEnteredToPriceUOM(org.compiere.model.I_C_OrderLine)}).
-	 */
-	void updateLineNetAmt(I_C_OrderLine ol, BigDecimal qtyEntered);
+	void updateLineNetAmt(I_C_OrderLine orderLine);
 
 	/**
 	 * Update the given <code>ol</code>'s {@link org.compiere.model.I_C_OrderLine#COLUMNNAME_QtyReserved QtyReserved}<br>
