@@ -133,7 +133,7 @@ public class C_OrderLine
 			// Finally, update prices
 			final Properties ctx = InterfaceWrapperHelper.getCtx(olEx);
 			final String trxName = InterfaceWrapperHelper.getTrxName(olEx);
-			orderLineBL.setPricesIfNotIgnored(ctx, olEx,
+			orderLineBL.setPrices(ctx, olEx,
 					InterfaceWrapperHelper.isNew(olEx), // usePriceUOM
 					trxName);
 		}

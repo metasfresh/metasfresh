@@ -159,4 +159,6 @@ public interface IBPartnerBL extends ISingletonService
 	 * @return partner's discount schema or -1
 	 */
 	int getDiscountSchemaId(I_C_BPartner bpartner, boolean soTrx);
+
+	int getDiscountSchemaId(int bpartnerId, boolean soTrx);
 }

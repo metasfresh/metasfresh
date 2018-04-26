@@ -98,6 +98,33 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
+	 * Set Base_PricingSystem_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBase_PricingSystem_ID (int Base_PricingSystem_ID);
+
+	/**
+	 * Get Base_PricingSystem_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBase_PricingSystem_ID();
+
+	public org.compiere.model.I_M_PricingSystem getBase_PricingSystem();
+
+	public void setBase_PricingSystem(org.compiere.model.I_M_PricingSystem Base_PricingSystem);
+
+    /** Column definition for Base_PricingSystem_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_PricingSystem> COLUMN_Base_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_PricingSystem>(I_C_OrderLine.class, "Base_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
+    /** Column name Base_PricingSystem_ID */
+    public static final String COLUMNNAME_Base_PricingSystem_ID = "Base_PricingSystem_ID";
+
+	/**
 	 * Set Kostenstelle.
 	 * Kostenstelle
 	 *

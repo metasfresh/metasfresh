@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 948765074L;
+	private static final long serialVersionUID = 1158096395L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -107,6 +107,40 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getAD_OrgTrx_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PricingSystem getBase_PricingSystem() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Base_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
+	}
+
+	@Override
+	public void setBase_PricingSystem(org.compiere.model.I_M_PricingSystem Base_PricingSystem)
+	{
+		set_ValueFromPO(COLUMNNAME_Base_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, Base_PricingSystem);
+	}
+
+	/** Set Base_PricingSystem_ID.
+		@param Base_PricingSystem_ID Base_PricingSystem_ID	  */
+	@Override
+	public void setBase_PricingSystem_ID (int Base_PricingSystem_ID)
+	{
+		if (Base_PricingSystem_ID < 1) 
+			set_Value (COLUMNNAME_Base_PricingSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_Base_PricingSystem_ID, Integer.valueOf(Base_PricingSystem_ID));
+	}
+
+	/** Get Base_PricingSystem_ID.
+		@return Base_PricingSystem_ID	  */
+	@Override
+	public int getBase_PricingSystem_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Base_PricingSystem_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

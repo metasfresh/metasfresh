@@ -18,6 +18,11 @@ Here come the actual release notes:
   * [#3839](https://github.com/metasfresh/metasfresh/issues/3839) Webui: BPartner window: show BPartner Product tab
     * Improvement of Business Partner window. Now allowing to record Products that thall not be sold to a specific BPartner.
 
+
+* metasfresh-webui-frontend
+  * [#1603](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1603) Color Indicator Widget functionality
+    * New Color presentation Widget.
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#1748](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1748) X not available for field invoice partner when first setting the partner in order
@@ -38,35 +43,56 @@ Here come the actual release notes:
   * [#3479](https://github.com/metasfresh/metasfresh/issues/3479) Window design: Business Partner Pharma
     * Improved Window Layout and Translation for Business Partner Pharma.
   * [#3763](https://github.com/metasfresh/metasfresh/issues/3763) Contracts: Create a function that provides a hierarchy of contracts
+    * New function that allows to retrieve the hierarchy of created contracts.
   * [#3768](https://github.com/metasfresh/metasfresh/issues/3768) Excel Report for vendor assessment
+    * New Excel Report that allows the assessment of vendors.
   * [#3777](https://github.com/metasfresh/metasfresh/issues/3777) Show available to promise in Procurement Dispo modal in Sales Order
+    * Imporvement of the Procurement Dispo modal overlay, now showing the Available to Promise Quantity.
   * [#3827](https://github.com/metasfresh/metasfresh/issues/3827) Support SSL / TLS when sending mails via SMTP making it SMTPS
+    * Improved Mail handling, now allowing the support of SSL/ TLS Handshakes when sending emails.
   * [#3834](https://github.com/metasfresh/metasfresh/issues/3834) Check if Product is banned in Batch entry/ Document Lines creation
+    * New Functionality in Sales and Purchase Order. It's now possible to put Products on Ban Lists for customers and vendors. Although the products remain on general Product Price Lists, the products are then prohibited to be recorded. The user gets informed why the product is banned for a specific Business Partner.
   * [#3866](https://github.com/metasfresh/metasfresh/issues/3866) WebUI: Translation for Product LotNo Lock Window
     * Improved Window Layout and additional Translations for de_DE and en_US.
   * [#3873](https://github.com/metasfresh/metasfresh/issues/3873) Performance problem on reactivating large shipment
+    * Performance Improvement on reactivation of large shipment documents.
   * [#3887](https://github.com/metasfresh/metasfresh/issues/3887) Automatic Setting of Pharma Authorisation for Shipment/ Receipt
+    * New Functionality in Business Partner Pharma window, now settign the Shipment and Receipt Authorisation automatically as soon as the recording of different Permission Types have been done.
   * [#3888](https://github.com/metasfresh/metasfresh/issues/3888) Pharma Business Partner Window adjustments
     * Extended Business Partner Window for Pharma verticals. New Fields that describe the Pharma Trading Permissions of customers and vendors.
   * [#3890](https://github.com/metasfresh/metasfresh/issues/3890) Role Permission for Pharma Permission and Authorization changes
+    * New Functionality for Pharma Business Partner that allows to restrict the actions for permission adjustments to specific users and roles.
   * [#3892](https://github.com/metasfresh/metasfresh/issues/3892) Contracts: Allow possibility to copy the prices when extending
+    * Improvement of contracts extending, now allowing to copy the prices from the source/ initial contract.
   * [#3895](https://github.com/metasfresh/metasfresh/issues/3895) extend M_HU_Process
+    * New Feature that decouples actions in M_HU_Processn from the presentation in Action menu. Now allowing to hide actions in menu.
   * [#3897](https://github.com/metasfresh/metasfresh/issues/3897) Add Translations for Pharma Business Partner Window
+    * New Translations for de_DE and en_US added to Business Partner Pharma Window.
 
 # metasfresh-docker
   * [#34](https://github.com/metasfresh/metasfresh-docker/issues/34) add msv3server to metasfresh-docker as "extras"
+    * Now the Pharma Customer Server is available in metasfresh-docker for MSV3 Communication.
 
 ## Fixes
 * metasfresh
   * [#3797](https://github.com/metasfresh/metasfresh/issues/3797) Error in BOM Lines for Packaging Component Type and Variant Groups
+    * Fixes the error when defining Packaging Component Variants in BOM Lines.
   * [#3859](https://github.com/metasfresh/metasfresh/issues/3859) Credit Limit: Prioritize by date and then seq No from Credit Limit type
+    * Improved priotization of Credit Limit Configuration Lines.
   * [#3861](https://github.com/metasfresh/metasfresh/issues/3861) StockChangedEvent can't be serialized
+    * Internal Housekeeping. Now allowing the serialization of the StockChangeEvent.
   * [#3863](https://github.com/metasfresh/metasfresh/issues/3863) Missing migration of C_BPartner_Stats.SOCreditStatus on some systems
+    * Fixes a Bug around missing Migrations of the Credit Status.
   * [#3864](https://github.com/metasfresh/metasfresh/issues/3864) C_FlatrateTerm.C_Currency is not forwarded when a flatrateTerm is extended
+    * Fixes a Bug in Flatrate Term extension, now forwarding the Currency too.
   * [#3876](https://github.com/metasfresh/metasfresh/issues/3876) Different issues around invoice candidate updating
+    * Fixes various issues in invoice candidate recompute/ update process.
   * [#3883](https://github.com/metasfresh/metasfresh/issues/3883) Cannot import products
+    * Bugfix for the failing product impiort because of a missing isDefault column in Tax Category.
   * [#3885](https://github.com/metasfresh/metasfresh/issues/3885) Process C_Flatrate_Term_Extend does not work if ContractStatus is null
+    * Fixes a Bug in the Flatrate term extension process when Contract Status is null.
   * [#3894](https://github.com/metasfresh/metasfresh/issues/3894) NPE on sales order complete
+    * Fixes a Null Pointer Exception in Sales Order complete Document Action.
 
 # metasfresh 5.53 (2018-16)
 **release for week 2018-16**

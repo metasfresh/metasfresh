@@ -124,7 +124,7 @@ public class OrderLine extends CalloutEngine
 			final BigDecimal qty = ol.getQtyEntered();
 			ol.setQtyOrdered(qty);
 
-			Services.get(IOrderLineBL.class).setPricesIfNotIgnored(calloutField.getCtx(), ol, priceListId,
+			Services.get(IOrderLineBL.class).setPrices(calloutField.getCtx(), ol, priceListId,
 					qty, BigDecimal.ONE, false, // usePriceUOM = false
 					null);
 		}

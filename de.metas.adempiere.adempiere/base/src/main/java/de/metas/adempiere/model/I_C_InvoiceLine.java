@@ -36,7 +36,9 @@ public interface I_C_InvoiceLine extends org.compiere.model.I_C_InvoiceLine
 	public void setTaxAmtInfo(BigDecimal taxAmtInfo);
 
 	public static String COLUMNNAME_ProductDescription = "ProductDescription";
+	@Override
 	public String getProductDescription();
+	@Override
 	public void setProductDescription(String ProductDescription);
 
 	public static final String COLUMNNAME_SinglePriceTag = "SinglePriceTag";
@@ -110,8 +112,20 @@ public interface I_C_InvoiceLine extends org.compiere.model.I_C_InvoiceLine
 	public I_C_Order getC_Order();
 	// @formatter:on
 	
+	
+	
+	// @formatter:off
 	public static String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
 	public boolean IsPackagingMaterial();
 	public void setIsPackagingMaterial(boolean IsPackagingMaterial);
+	// @formatter:on
+	
+	
+	
+	// @formatter:off
+    public static final String COLUMNNAME_Base_PricingSystem_ID = "Base_PricingSystem_ID";
+	public void setBase_PricingSystem_ID (int Base_PricingSystem_ID);
+	public int getBase_PricingSystem_ID();
+	// @formatter:on
 
 }

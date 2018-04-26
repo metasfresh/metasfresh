@@ -34,6 +34,7 @@ import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.bpartner.process.BPartnerCreditLimit_RequestApproval;
+import org.adempiere.bpartner.product.callout.C_BPartner_Product;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.pricing.model.I_C_PricingRule;
@@ -213,6 +214,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.process.callout.AD_Process_Para()); // FRESH-727
 
 		calloutsRegistry.registerAnnotatedCallout(AD_Column.instance);
+		
+		calloutsRegistry.registerAnnotatedCallout(new C_BPartner_Product());
 	}
 
 	@Override
