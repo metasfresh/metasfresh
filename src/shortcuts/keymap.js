@@ -1,6 +1,6 @@
 const mod = 'Alt';
 
-export default {
+const keymaps = {
   /* Global context */
   OPEN_ACTIONS_MENU: `${mod}+1`,
   OPEN_NAVIGATION_MENU: `${mod}+2`,
@@ -53,3 +53,13 @@ export default {
   APPLY: `${mod}+Enter`,
   CANCEL: 'Escape',
 };
+
+// Combinations that should be disabled when focus is in an input field,
+// which means user is typing or we focused the field automatically
+const disabledWithFocus = [
+  keymaps.EXPAND_INDENT,
+  keymaps.COLLAPSE_INDENT,
+];
+
+export { disabledWithFocus };
+export default keymaps;
