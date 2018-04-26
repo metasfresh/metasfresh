@@ -62,6 +62,7 @@ import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.pricing.ProductPrices;
 import de.metas.tax.api.ITaxBL;
+import lombok.NonNull;
 
 public class InvoiceLineBL implements IInvoiceLineBL
 {
@@ -208,9 +209,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_M_PriceList priceList = invoice.getM_PriceList();
 
-
-		final I_M_PriceList_Version priceListVersion = priceListDAO.
-				retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
+		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
 		final int m_Product_ID = invoiceLine.getM_Product_ID();
@@ -327,7 +326,29 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// metas: relay on M_PriceList_ID only, don't use M_PriceList_Version_ID
 		// pricingCtx.setM_PriceList_Version_ID(orderLine.getM_PriceList_Version_ID());
 
+		final int countryId = getCountryIdOrZero(invoiceLine);
+		pricingCtx.setC_Country_ID(countryId);
+
 		return pricingCtx;
+	}
+
+	private int getCountryIdOrZero(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
+
+		if (invoice.getC_BPartner_Location_ID() <= 0)
+		{
+			return 0;
+		}
+
+		final org.compiere.model.I_C_BPartner_Location bPartnerLocation = invoice.getC_BPartner_Location();
+		if (bPartnerLocation.getC_Location_ID() <= 0)
+		{
+			return 0;
+		}
+
+		final int countryId = bPartnerLocation.getC_Location().getC_Country_ID();
+		return countryId;
 	}
 
 	@Override
@@ -405,6 +426,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			invoiceLine.setDiscount(pricingResult.getDiscount());
 		}
+
+		invoiceLine.setBase_PricingSystem_ID(pricingResult.getM_DiscountSchemaBreak_BasePricingSystem_ID());
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
