@@ -71,9 +71,6 @@ public class CalloutOrder extends CalloutEngine
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
 
-	/** Debug Steps */
-	private boolean steps = false;
-
 	// FIXME: QtyAvailable field does not exist. Pls check and drop following code.
 	// public static final String COLNAME_QTY_AVAIL = "QtyAvailable";
 
@@ -841,10 +838,6 @@ public class CalloutOrder extends CalloutEngine
 		{
 			return NO_ERROR;
 		}
-		if (steps)
-		{
-			log.warn("init");
-		}
 
 		//
 		// Charge: reset
@@ -873,11 +866,7 @@ public class CalloutOrder extends CalloutEngine
 		orderLine.setQtyOrdered(orderLine.getQtyEntered());
 
 		handleIndividualDescription(orderLine);
-		//
-		if (steps)
-		{
-			log.warn("fini");
-		}
+		
 		return tax(calloutField);
 	} // product
 
@@ -958,10 +947,6 @@ public class CalloutOrder extends CalloutEngine
 		{
 			return NO_ERROR;
 		}
-		if (steps)
-		{
-			log.warn("init");
-		}
 
 		// Check Product
 		final int M_Product_ID = ol.getM_Product_ID();
@@ -1030,11 +1015,6 @@ public class CalloutOrder extends CalloutEngine
 		else
 		{
 			ol.setC_Tax_ID(C_Tax_ID);
-		}
-		//
-		if (steps)
-		{
-			log.warn("fini");
 		}
 
 		return amt(calloutField);
@@ -1187,10 +1167,6 @@ public class CalloutOrder extends CalloutEngine
 		final String columnName = calloutField.getColumnName();
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
 		final int M_Product_ID = orderLine.getM_Product_ID();
-		if (steps)
-		{
-			log.warn("init - M_Product_ID=" + M_Product_ID + " - ");
-		}
 
 		// No Product
 		if (M_Product_ID <= 0)
