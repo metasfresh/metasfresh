@@ -1,5 +1,8 @@
 package org.adempiere.impexp;
 
+import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
+import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.util.DB;
@@ -47,6 +50,8 @@ public class MDiscountSchemaImportTableSqlUpdater
 	{
 		dbUpdateBPartners(whereClause);
 		dbUpdateProducts(whereClause);
+		dbUpdateC_PaymentTerms(whereClause);
+		dbUpdateM_PricingSystems(whereClause);
 
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -71,6 +76,32 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void dbUpdateC_PaymentTerms(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_DiscountSchema i "
+				+ "SET C_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
+				+ " WHERE i.PaymentTermValue=pt.Value AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set C_PaymentTerm={}", no);
+	}
+
+	private void dbUpdateM_PricingSystems(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_DiscountSchema i "
+				+ "SET Base_PricingSystem_ID=(SELECT M_PricingSystem_ID FROM M_PricingSystem p"
+				+ " WHERE i.Base_PricingSystem_Value=p.Value AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ "WHERE Base_PricingSystem_ID IS NULL AND Base_PricingSystem_Value IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set C_PaymentTerm={}", no);
 	}
 
 
@@ -100,5 +131,27 @@ public class MDiscountSchemaImportTableSqlUpdater
 		{
 			logger.warn("No Product = {}", no);
 		}
+
+		//
+		sql = new StringBuilder("UPDATE I_DiscountSchema i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid C_PaymentTerm, ' "
+				+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		if (no != 0)
+		{
+			logger.warn("Invalid C_PaymentTerm={}", no);
+		}
+
+		sql = new StringBuilder("UPDATE I_DiscountSchema i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Base_PricingSystem, ' "
+				+ "WHERE Base_PricingSystem_ID IS NULL AND Base_PricingSystem_Value IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		if (no != 0)
+		{
+			logger.warn("Invalid Base_PricingSystem_ID={}", no);
+		}
+
 	}
 }
