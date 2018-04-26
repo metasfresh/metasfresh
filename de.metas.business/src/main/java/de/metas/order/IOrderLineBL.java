@@ -98,7 +98,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param orderLine
 	 * @param optional, if <code>>= 0</code> then the result will be rounded to this precision. Otherwise the precision of the order's price list will be used.
 	 */
-	void calculatePriceActual(I_C_OrderLine orderLine, int precision);
+	void updatePriceActual(I_C_OrderLine orderLine, int precision);
 
 	/**
 	 * Utility method to subtract the given <code>discount</code> (in percent!) from the given <code>priceEntered</code> and return the result.

@@ -1062,7 +1062,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))
 		{
-			orderLineBL.calculatePriceActual(orderLine, -1); // precision=-1, preserving old behavior (->called method shall find out itself)
+			orderLineBL.updatePriceActual(orderLine, -1); // precision=-1, preserving old behavior (->called method shall find out itself)
 			priceActual = orderLine.getPriceActual();
 			priceEntered = orderLine.getPriceEntered();
 		}

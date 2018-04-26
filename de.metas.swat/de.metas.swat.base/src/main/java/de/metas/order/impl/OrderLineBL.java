@@ -165,7 +165,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
-		calculatePriceActual(orderLine, pricingResult.getPrecision());
+		updatePriceActual(orderLine, pricingResult.getPrecision());
 
 		//
 		// C_Currency_ID, Price_UOM_ID(again?), M_PriceList_Version_ID
@@ -618,7 +618,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
-		calculatePriceActual(orderLine, pricingResult.getPrecision());
+		updatePriceActual(orderLine, pricingResult.getPrecision());
 
 		//
 		// C_Currency_ID, Price_UOM_ID(again?), M_PriceList_Version_ID
@@ -701,7 +701,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void calculatePriceActual(final I_C_OrderLine orderLine, final int precision)
+	public void updatePriceActual(final I_C_OrderLine orderLine, final int precision)
 	{
 		final BigDecimal discount = orderLine.getDiscount();
 		final BigDecimal priceEntered = orderLine.getPriceEntered();

@@ -291,7 +291,7 @@ class OLCandOrderFactory
 			{
 				final int currencyId = candidate.getC_Currency_ID();
 				final int stdPrecision = currencyDAO.getStdPrecision(ctx, currencyId);
-				orderLineBL.calculatePriceActual(currentOrderLine, stdPrecision);
+				orderLineBL.updatePriceActual(currentOrderLine, stdPrecision);
 			}
 		}
 
