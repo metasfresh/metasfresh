@@ -15,7 +15,7 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1785666948L;
+	private static final long serialVersionUID = -776480216L;
 
     /** Standard Constructor */
     public X_I_DiscountSchema (Properties ctx, int I_DiscountSchema_ID, String trxName)
@@ -186,6 +186,25 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Rabatt %.
+		@param Discount 
+		Abschlag in Prozent
+	  */
+	@Override
+	public void setDiscount (java.lang.String Discount)
+	{
+		set_Value (COLUMNNAME_Discount, Discount);
+	}
+
+	/** Get Rabatt %.
+		@return Abschlag in Prozent
+	  */
+	@Override
+	public java.lang.String getDiscount () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Discount);
 	}
 
 	/** Set Discount Schema Import.

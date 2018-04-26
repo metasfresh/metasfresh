@@ -232,6 +232,31 @@ public interface I_I_DiscountSchema
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Rabatt %.
+	 * Abschlag in Prozent
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDiscount (java.lang.String Discount);
+
+	/**
+	 * Get Rabatt %.
+	 * Abschlag in Prozent
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDiscount();
+
+    /** Column definition for Discount */
+    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_Discount = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "Discount", null);
+    /** Column name Discount */
+    public static final String COLUMNNAME_Discount = "Discount";
+
+	/**
 	 * Set Discount Schema Import.
 	 *
 	 * <br>Type: ID
