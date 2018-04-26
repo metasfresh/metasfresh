@@ -34,7 +34,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPriceListDAO;
@@ -85,8 +84,6 @@ public class OrderLineBL implements IOrderLineBL
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
 
 	private static final String SYSCONFIG_NoPriceConditionsColorName = "de.metas.order.NoPriceConditionsColorName";
-
-	public static final String CTX_DiscountSchema = "DiscountSchema";
 
 	private static final String MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = "de.metas.order.CounterDocMissingMappedProduct";
 
@@ -632,12 +629,6 @@ public class OrderLineBL implements IOrderLineBL
 
 		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
 		orderLine.setBase_PricingSystem_ID(pricingResult.getM_DiscountSchemaBreak_BasePricingSystem_ID());
-
-		//
-		// UI
-		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
-		final int WindowNo = GridTabWrapper.getWindowNo(orderLine);
-		Env.setContext(ctx, WindowNo, CTX_DiscountSchema, pricingResult.isUsesDiscountSchema());
 	}
 
 	@Override
