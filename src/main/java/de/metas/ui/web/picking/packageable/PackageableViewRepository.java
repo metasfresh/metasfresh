@@ -1,5 +1,6 @@
 package de.metas.ui.web.picking.packageable;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -105,6 +106,8 @@ public class PackageableViewRepository
 
 	private PackageableRow createPickingRow(final ViewId viewId, final I_M_Packageable_V packageable)
 	{
+		final BigDecimal qtyPicked = packageable.getQtyPicked().add(packageable.getQtyPickedPlanned());
+		
 		return PackageableRow.builder()
 				.shipmentScheduleId(packageable.getM_ShipmentSchedule_ID())
 				.viewId(viewId)
@@ -113,8 +116,8 @@ public class PackageableViewRepository
 				.product(productLookup.get().findById(packageable.getM_Product_ID()))
 				.bpartner(bpartnerLookup.get().findById(packageable.getC_BPartner_ID()))
 				.preparationDate(packageable.getPreparationDate())
-				.qtyToDeliver(packageable.getQtyToDeliver())
-				.qtyPickedPlanned(packageable.getQtyPickedPlanned())
+				.qtyOrdered(packageable.getQtyOrdered())
+				.qtyPicked(qtyPicked)
 				//
 				.build();
 	}
