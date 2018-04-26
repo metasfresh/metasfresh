@@ -90,7 +90,7 @@ public class MaterialCockpitRowRepository
 			@Override
 			public ListMultimap<TableRecordReference, MaterialCockpitRow> getTableRecordReference2rows()
 			{
-				return extractTableRecordReference2DocumentId2(getDocumentId2AllRows().values());
+				return extractTableRecordReference2DocumentId2(getAllRows());
 			}
 
 			@Override
