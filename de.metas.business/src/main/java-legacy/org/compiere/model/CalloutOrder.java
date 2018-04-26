@@ -1048,6 +1048,7 @@ public class CalloutOrder extends CalloutEngine
 		//
 		BigDecimal priceEntered;
 		BigDecimal priceActual;
+		BigDecimal discount;
 
 		// Qty changed - recalc price
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
@@ -1055,6 +1056,7 @@ public class CalloutOrder extends CalloutEngine
 			updatePrices(orderLine);
 			priceEntered = orderLine.getPriceEntered();
 			priceActual = orderLine.getPriceActual();
+			discount = orderLine.getDiscount();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceActual.equals(changedColumnName))
 		{
@@ -1064,20 +1066,21 @@ public class CalloutOrder extends CalloutEngine
 			{
 				priceEntered = priceActual;
 			}
+			discount = orderLine.getDiscount();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))
 		{
-			orderLineBL.updatePriceActual(orderLine, -1); // precision=-1, preserving old behavior (->called method shall find out itself)
-			priceActual = orderLine.getPriceActual();
 			priceEntered = orderLine.getPriceEntered();
+			discount = orderLine.getDiscount();
+			priceActual = orderLineBL.calculatePriceActualFromPriceEnteredAndDiscount(priceEntered, discount, pricePrecision);
 		}
 		else if (I_C_OrderLine.COLUMNNAME_Discount.equals(changedColumnName))
 		{
 			priceEntered = orderLine.getPriceEntered();
+			discount = orderLine.getDiscount();
 			if (priceEntered.signum() != 0)
 			{
-				final BigDecimal discount = orderLine.getDiscount();
-				priceActual = orderLineBL.subtractDiscount(priceEntered, discount, pricePrecision);
+				priceActual = orderLineBL.calculatePriceActualFromPriceEnteredAndDiscount(priceEntered, discount, pricePrecision);
 			}
 			else
 			{
@@ -1089,13 +1092,13 @@ public class CalloutOrder extends CalloutEngine
 		{
 			priceEntered = orderLine.getPriceEntered();
 			priceActual = orderLine.getPriceActual();
+			discount = orderLine.getDiscount();
 		}
 
 		//
 		// Check PriceActual and enforce PriceLimit.
 		// Also, update Discount or PriceEntered if needed.
 		BigDecimal priceLimit = orderLine.getPriceLimit();
-		BigDecimal discount = orderLine.getDiscount();
 		boolean underPriceLimit = false;
 		String underPriceLimitExplanation = null;
 		if (isEnforcePriceLimit(orderLine, order.isSOTrx()))
