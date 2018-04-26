@@ -18,6 +18,11 @@ Here come the actual release notes:
   * [#3839](https://github.com/metasfresh/metasfresh/issues/3839) Webui: BPartner window: show BPartner Product tab
     * Improvement of Business Partner window. Now allowing to record Products that thall not be sold to a specific BPartner.
 
+
+* metasfresh-webui-frontend
+  * [#1603](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1603) Color Indicator Widget functionality
+    * New Color presentation Widget.
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#1748](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1748) X not available for field invoice partner when first setting the partner in order

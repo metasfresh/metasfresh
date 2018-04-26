@@ -61,6 +61,7 @@ class PricingResult implements IPricingResult
 	private int C_TaxCategory_ID = -1;
 	private int M_DiscountSchema_ID = -1;
 	private int M_DiscountSchemaBreak_ID = -1;
+	private int M_DiscountSchemaBreak_BasePricingSystem_ID = -1;
 	private int precision = NO_PRECISION;
 	private BigDecimal priceList = BigDecimal.ZERO;
 	private BigDecimal priceStd = BigDecimal.ZERO;
@@ -477,5 +478,17 @@ class PricingResult implements IPricingResult
 	public void setM_DiscountSchemaBreak_ID(final int M_DiscountSchemaBreak_ID)
 	{
 		this.M_DiscountSchemaBreak_ID = M_DiscountSchemaBreak_ID;
+	}
+
+	@Override
+	public int getM_DiscountSchemaBreak_BasePricingSystem_ID()
+	{
+		return M_DiscountSchemaBreak_BasePricingSystem_ID;
+	}
+
+	@Override
+	public void setM_DiscountSchemaBreak_BasePricingSystem_ID(int m_DiscountSchemaBreak_BasePricingSystem_ID)
+	{
+		M_DiscountSchemaBreak_BasePricingSystem_ID = m_DiscountSchemaBreak_BasePricingSystem_ID;
 	}
 }

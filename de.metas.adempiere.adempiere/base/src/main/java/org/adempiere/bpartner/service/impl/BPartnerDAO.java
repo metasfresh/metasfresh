@@ -262,6 +262,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public int retrievePricingSystemId(final int bPartnerId, final boolean soTrx)
+	{
+		return retrievePricingSystemId(Env.getCtx(), bPartnerId, soTrx, ITrx.TRXNAME_None);
+	}
+
+	@Override
 	public int retrievePricingSystemId(
 			final Properties ctx,
 			final int bPartnerId,

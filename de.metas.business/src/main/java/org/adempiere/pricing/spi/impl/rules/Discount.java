@@ -152,6 +152,7 @@ public class Discount implements IPricingRule
 		pricingResult.setDiscount(discountResult.getDiscount());
 		pricingResult.setC_PaymentTerm_ID(discountResult.getC_PaymentTerm_ID());
 		pricingResult.setM_DiscountSchemaBreak_ID(discountResult.getDiscountSchemaBreakId());
+		pricingResult.setM_DiscountSchemaBreak_BasePricingSystem_ID(discountResult.getDiscountSchemaBreak_BasePricingSystem_Id());
 		
 		final BigDecimal priceStdOverride = discountResult.getPriceStdOverride();
 		final BigDecimal priceListOverride = discountResult.getPriceListOverride();
