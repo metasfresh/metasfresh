@@ -517,6 +517,31 @@ public interface I_I_DiscountSchema
     public static final String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
+	 * Set Menge.
+	 * Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQty (java.math.BigDecimal Qty);
+
+	/**
+	 * Get Menge.
+	 * Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQty();
+
+    /** Column definition for Qty */
+    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "Qty", null);
+    /** Column name Qty */
+    public static final String COLUMNNAME_Qty = "Qty";
+
+	/**
 	 * Set Aufschlag auf Standardpreis.
 	 * Amount added to a price as a surcharge
 	 *

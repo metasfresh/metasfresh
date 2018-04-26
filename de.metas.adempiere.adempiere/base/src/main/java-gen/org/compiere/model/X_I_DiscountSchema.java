@@ -15,7 +15,7 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1781733410L;
+	private static final long serialVersionUID = 1785666948L;
 
     /** Standard Constructor */
     public X_I_DiscountSchema (Properties ctx, int I_DiscountSchema_ID, String trxName)
@@ -455,6 +455,28 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 	public java.lang.String getProductValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
+	}
+
+	/** Set Menge.
+		@param Qty 
+		Menge
+	  */
+	@Override
+	public void setQty (java.math.BigDecimal Qty)
+	{
+		set_Value (COLUMNNAME_Qty, Qty);
+	}
+
+	/** Get Menge.
+		@return Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Aufschlag auf Standardpreis.

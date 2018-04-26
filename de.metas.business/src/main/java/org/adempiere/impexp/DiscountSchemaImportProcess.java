@@ -171,9 +171,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 				throw new AdempiereException("Discount schema of Discount schema break <> Discount schema");
 			}
 
-			schemaBreak.setBase_PricingSystem(importRecord.getBase_PricingSystem());
-			schemaBreak.setM_Product(importRecord.getM_Product());
-			schemaBreak.setC_PaymentTerm(importRecord.getC_PaymentTerm());
+			setDiscountSchemaBreakFields(importRecord, schemaBreak);
 
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, schemaBreak, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(schemaBreak);
@@ -181,11 +179,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		else
 		{
 			schemaBreak = InterfaceWrapperHelper.create(getCtx(), I_M_DiscountSchemaBreak.class, ITrx.TRXNAME_ThreadInherited);
-			schemaBreak.setBase_PricingSystem(importRecord.getBase_PricingSystem());
-			schemaBreak.setM_Product(importRecord.getM_Product());
-			schemaBreak.setC_PaymentTerm(importRecord.getC_PaymentTerm());
-			schemaBreak.setPriceStd(importRecord.getPriceStd());
-			schemaBreak.setStd_AddAmt(importRecord.getStd_AddAmt());
+			setDiscountSchemaBreakFields(importRecord, schemaBreak);
 
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, schemaBreak, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(schemaBreak);
@@ -194,6 +188,16 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		}
 
 		return schemaBreak;
+	}
+
+	private void setDiscountSchemaBreakFields(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_M_DiscountSchemaBreak schemaBreak)
+	{
+		schemaBreak.setBase_PricingSystem(importRecord.getBase_PricingSystem());
+		schemaBreak.setM_Product(importRecord.getM_Product());
+		schemaBreak.setC_PaymentTerm(importRecord.getC_PaymentTerm());
+		schemaBreak.setPriceStd(importRecord.getPriceStd());
+		schemaBreak.setStd_AddAmt(importRecord.getStd_AddAmt());
+		schemaBreak.setBreakValue(importRecord.getQty());
 	}
 
 
