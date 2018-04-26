@@ -65,7 +65,6 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
@@ -212,7 +211,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		return OrderLinePriceCalculator.builder()
-				.request(OrderLinePriceUpdateRequest.of(orderLine))
+				.request(OrderLinePriceUpdateRequest.ofOrderLine(orderLine))
 				.orderLineBL(this)
 				.build()
 				.computeTaxCategoryId();
@@ -304,10 +303,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void updatePrices(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(orderLine)
-				.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
-				.build());
+		updatePrices(OrderLinePriceUpdateRequest.ofOrderLine(orderLine));
 	}
 
 	@Override
@@ -652,7 +648,7 @@ public class OrderLineBL implements IOrderLineBL
 	public PriceLimitRuleResult computePriceLimit(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		return OrderLinePriceCalculator.builder()
-				.request(OrderLinePriceUpdateRequest.of(orderLine))
+				.request(OrderLinePriceUpdateRequest.ofOrderLine(orderLine))
 				.orderLineBL(this)
 				.build()
 				.computePriceLimit();

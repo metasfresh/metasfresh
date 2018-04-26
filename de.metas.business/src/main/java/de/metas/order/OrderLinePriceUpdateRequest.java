@@ -5,6 +5,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -31,13 +32,14 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class OrderLinePriceUpdateRequest
 {
-	public static OrderLinePriceUpdateRequest of(final org.compiere.model.I_C_OrderLine orderLine)
+	public static OrderLinePriceUpdateRequest ofOrderLine(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		return builder()
 				.orderLine(InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class))
+				.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
 				.build();
 	}
 
@@ -52,11 +54,15 @@ public class OrderLinePriceUpdateRequest
 	int priceListId;
 	Quantity qty;
 
+	@NonNull
 	ResultUOM resultUOM;
 
 	boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet; // task 06727
 
 	boolean updateLineNetAmt;
+
+	@Default
+	boolean applyPriceLimitRestrictions = true;
 
 	//
 	//

@@ -87,47 +87,50 @@ class OrderLinePriceCalculator
 			orderLine.setC_PaymentTerm_Override_ID(pricingResult.getC_PaymentTerm_ID());
 		}
 
+		final int pricePrecision = pricingResult.getPrecision();
+		final BigDecimal priceEntered = extractPriceEntered(pricingResult);
+		BigDecimal discount = extractDiscount(pricingResult, pricingCtx.isSOTrx());
+		BigDecimal priceActual = orderLineBL.calculatePriceActualFromPriceEnteredAndDiscount(priceEntered, discount, pricePrecision);
+		BigDecimal priceLimit = pricingResult.getPriceLimit();
+
 		//
-		// PriceList, PriceLimit, PriceStd, Price_UOM_ID
+		// Apply price limit restrictions
+		if(isApplyPriceLimitRestrictions(pricingResult))
+		{
+			final PriceLimitRuleResult priceLimitResult = pricingBL.computePriceLimit(PriceLimitRuleContext.builder()
+					.pricingContext(pricingCtx)
+					.priceLimit(priceLimit)
+					.priceActual(priceActual)
+					.paymentTermId(orderLineBL.getC_PaymentTerm_ID(orderLine))
+					.build());
+			if(priceLimitResult.isApplicable())
+			{
+				priceLimit = priceLimitResult.getPriceLimit();
+			}
+			if(priceLimitResult.isBelowPriceLimit(priceActual))
+			{
+				priceActual = priceLimit;
+
+				if (priceEntered.signum() != 0)
+				{
+					discount = orderLineBL.calculateDiscountFromPrices(priceEntered, priceActual, pricePrecision);
+				}
+			}
+		}
+
+		//
+		// Prices
+		orderLine.setPriceEntered(priceEntered);
+		orderLine.setDiscount(discount);
+		orderLine.setPriceActual(priceActual);
+		orderLine.setPriceLimit(priceLimit);
 		orderLine.setPriceList(pricingResult.getPriceList());
-		orderLine.setPriceLimit(pricingResult.getPriceLimit());
 		orderLine.setPriceStd(pricingResult.getPriceStd());
 		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // 07090: when setting a priceActual, we also need to specify a PriceUOM
 
 		//
-		// PriceEntered
-		if (!orderLine.isManualPrice()
-				&& (!request.isUpdatePriceEnteredAndDiscountOnlyIfNotAlreadySet() || orderLine.getPriceEntered().signum() == 0)) // task 06727
-		{
-			orderLine.setPriceEntered(pricingResult.getPriceStd());
-		}
-
-		//
-		// Discount
-		// NOTE: Subscription prices do not work with Purchase Orders.
-		if (pricingCtx.isSOTrx())
-		{
-			if (!orderLine.isManualDiscount()
-					&& (!request.isUpdatePriceEnteredAndDiscountOnlyIfNotAlreadySet() || orderLine.getDiscount().signum() == 0)) // task 06727
-			{
-				// Override discount only if is not manual
-				// Note: only the sales order window has the field 'isManualDiscount'
-				orderLine.setDiscount(pricingResult.getDiscount());
-			}
-		}
-		else
-		{
-			orderLine.setDiscount(pricingResult.getDiscount());
-		}
-
-		//
-		// Calculate PriceActual from PriceEntered and Discount
-		orderLineBL.updatePriceActual(orderLine, pricingResult.getPrecision());
-
-		//
-		// C_Currency_ID, Price_UOM_ID(again?), M_PriceList_Version_ID
+		// C_Currency_ID, M_PriceList_Version_ID
 		orderLine.setC_Currency_ID(pricingResult.getC_Currency_ID());
-		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // task 06942
 		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
 
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
@@ -137,6 +140,8 @@ class OrderLinePriceCalculator
 		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
 		orderLine.setBase_PricingSystem_ID(pricingResult.getM_DiscountSchemaBreak_BasePricingSystem_ID());
 
+		//
+		//
 		if (request.isUpdateLineNetAmt())
 		{
 			if (request.getQty() != null)
@@ -245,7 +250,7 @@ class OrderLinePriceCalculator
 		}
 		else if (resultUOM == ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
 		{
-			boolean convertToPriceUOM = InterfaceWrapperHelper.isNew(request.getOrderLine());
+			final boolean convertToPriceUOM = InterfaceWrapperHelper.isNew(request.getOrderLine());
 			return !convertToPriceUOM;
 		}
 		else if (resultUOM == ResultUOM.CONTEXT_UOM)
@@ -256,6 +261,68 @@ class OrderLinePriceCalculator
 		{
 			throw new AdempiereException("ResultPriceUOM not supported: " + resultUOM);
 		}
+	}
+	
+	private boolean isApplyPriceLimitRestrictions(final IPricingResult pricingResult)
+	{
+		return request.isApplyPriceLimitRestrictions() && pricingResult.isEnforcePriceLimit();
+	}
+
+	private BigDecimal extractPriceEntered(final IPricingResult pricingResult)
+	{
+		if (isAllowChangingPriceEntered())
+		{
+			return pricingResult.getPriceStd();
+		}
+		else
+		{
+			final I_C_OrderLine orderLine = request.getOrderLine();
+			return orderLine.getPriceEntered();
+		}
+	}
+
+	private boolean isAllowChangingPriceEntered()
+	{
+		final I_C_OrderLine orderLine = request.getOrderLine();
+		if (orderLine.isManualPrice())
+		{
+			return false;
+		}
+		if (request.isUpdatePriceEnteredAndDiscountOnlyIfNotAlreadySet() && orderLine.getPriceEntered().signum() != 0) // task 06727
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	private BigDecimal extractDiscount(final IPricingResult pricingResult, final boolean isSOTrx)
+	{
+		if(isAllowChangingDiscount(isSOTrx))
+		{
+			return pricingResult.getDiscount();
+		}
+		else
+		{
+			final I_C_OrderLine orderLine = request.getOrderLine();
+			return orderLine.getDiscount();
+		}
+	}
+
+	private boolean isAllowChangingDiscount(final boolean isSOTrx)
+	{
+		if (!isSOTrx)
+		{
+			return true;
+		}
+
+		final I_C_OrderLine orderLine = request.getOrderLine();
+		if (orderLine.isManualDiscount())
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	public int computeTaxCategoryId()

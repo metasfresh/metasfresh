@@ -860,7 +860,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		/***** Price Calculation see also qty ****/
-		updatePrices(orderLine); // metas
+		Services.get(IOrderLineBL.class).updatePrices(orderLine);
 
 		orderLine.setQtyOrdered(orderLine.getQtyEntered());
 
@@ -1053,7 +1053,11 @@ public class CalloutOrder extends CalloutEngine
 		// Qty changed - recalc price
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		{
-			updatePrices(orderLine);
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.ofOrderLine(orderLine)
+					.toBuilder()
+					.applyPriceLimitRestrictions(false)
+					.build());
+			
 			priceEntered = orderLine.getPriceEntered();
 			priceActual = orderLine.getPriceActual();
 			discount = orderLine.getDiscount();
@@ -1405,12 +1409,6 @@ public class CalloutOrder extends CalloutEngine
 		return !dontCheck;
 	}
 
-	// metas
-	public static void updatePrices(final I_C_OrderLine orderLine)
-	{
-		Services.get(IOrderLineBL.class).updatePrices(orderLine);
-	}
-
 	private static interface DropShipPartnerAware
 	{
 		public int getDropShip_BPartner_ID();
@@ -1581,7 +1579,7 @@ public class CalloutOrder extends CalloutEngine
 	{
 		// 05118 : Also update the prices
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
-		updatePrices(orderLine);
+		Services.get(IOrderLineBL.class).updatePrices(orderLine);
 
 		return NO_ERROR;
 	}
