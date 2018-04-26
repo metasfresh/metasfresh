@@ -107,7 +107,7 @@ class OrderLinePriceCalculator
 		//
 		// PriceEntered
 		if (!orderLine.isManualPrice()
-				&& (!request.isUpdatePriceEnteredAndDiscountOnlyIfNotAlreadySet() || orderLine.getPriceEntered().signum() != 0)) // task 06727
+				&& (!request.isUpdatePriceEnteredAndDiscountOnlyIfNotAlreadySet() || orderLine.getPriceEntered().signum() == 0)) // task 06727
 		{
 			orderLine.setPriceEntered(pricingResult.getPriceStd());
 		}
@@ -118,7 +118,7 @@ class OrderLinePriceCalculator
 		if (pricingCtx.isSOTrx())
 		{
 			if (!orderLine.isManualDiscount()
-					&& (!request.isUpdatePriceEnteredAndDiscountOnlyIfNotAlreadySet() || orderLine.getDiscount().signum() != 0)) // task 06727
+					&& (!request.isUpdatePriceEnteredAndDiscountOnlyIfNotAlreadySet() || orderLine.getDiscount().signum() == 0)) // task 06727
 			{
 				// Override discount only if is not manual
 				// Note: only the sales order widnow has the field 'isManualDiscount'
