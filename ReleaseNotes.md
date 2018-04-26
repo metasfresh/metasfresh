@@ -76,14 +76,23 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3797](https://github.com/metasfresh/metasfresh/issues/3797) Error in BOM Lines for Packaging Component Type and Variant Groups
+    * Fixes the error when defining Packaging Component Variants in BOM Lines.
   * [#3859](https://github.com/metasfresh/metasfresh/issues/3859) Credit Limit: Prioritize by date and then seq No from Credit Limit type
+    * Improved priotization of Credit Limit Configuration Lines.
   * [#3861](https://github.com/metasfresh/metasfresh/issues/3861) StockChangedEvent can't be serialized
+    * Internal Housekeeping. Now allowing the serialization of the StockChangeEvent.
   * [#3863](https://github.com/metasfresh/metasfresh/issues/3863) Missing migration of C_BPartner_Stats.SOCreditStatus on some systems
+    * Fixes a Bug around missing Migrations of the Credit Status.
   * [#3864](https://github.com/metasfresh/metasfresh/issues/3864) C_FlatrateTerm.C_Currency is not forwarded when a flatrateTerm is extended
+    * Fixes a Bug in Flatrate Term extension, now forwarding the Currency too.
   * [#3876](https://github.com/metasfresh/metasfresh/issues/3876) Different issues around invoice candidate updating
+    * Fixes various issues in invoice candidate recompute/ update process.
   * [#3883](https://github.com/metasfresh/metasfresh/issues/3883) Cannot import products
+    * Bugfix for the failing product impiort because of a missing isDefault column in Tax Category.
   * [#3885](https://github.com/metasfresh/metasfresh/issues/3885) Process C_Flatrate_Term_Extend does not work if ContractStatus is null
+    * Fixes a Bug in the Flatrate term extension process when Contract Status is null.
   * [#3894](https://github.com/metasfresh/metasfresh/issues/3894) NPE on sales order complete
+    * Fixes a Null Pointer Exception in Sales Order complete Document Action.
 
 # metasfresh 5.53 (2018-16)
 **release for week 2018-16**
