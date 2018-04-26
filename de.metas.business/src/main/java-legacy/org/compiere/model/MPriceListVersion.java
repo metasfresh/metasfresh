@@ -17,14 +17,15 @@
 package org.compiere.model;
 
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
 import java.util.Properties;
 
+import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
 
 /**
  * Price List Version Model
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MPriceListVersion.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
@@ -33,36 +34,31 @@ public class MPriceListVersion extends X_M_PriceList_Version
 {
 	private static final long serialVersionUID = -3607494586575155059L;
 
-	public MPriceListVersion(Properties ctx, int M_PriceList_Version_ID, String trxName)
+	public MPriceListVersion(final Properties ctx, final int M_PriceList_Version_ID, final String trxName)
 	{
 		super(ctx, M_PriceList_Version_ID, trxName);
 	}
 
-	public MPriceListVersion(Properties ctx, ResultSet rs, String trxName)
+	public MPriceListVersion(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
 
-	/**
-	 * Set Name to Valid From Date.
-	 * If valid from not set, use today
-	 */
-	private void setName()
+	@Override
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		if (getValidFrom() == null)
-			setValidFrom(TimeUtil.getDay(null));
+		{
+			setValidFrom(SystemTime.asDayTimestamp());
+		}
+
 		if (getName() == null)
 		{
-			String name = DisplayType.getDateFormat(DisplayType.Date)
-					.format(getValidFrom());
+			final SimpleDateFormat dateFormat = DisplayType.getDateFormat(DisplayType.Date);
+			final String name = dateFormat.format(getValidFrom());
 			setName(name);
 		}
-	}	// setName
 
-	@Override
-	protected boolean beforeSave(boolean newRecord)
-	{
-		setName();
 		return true;
 	}
 
