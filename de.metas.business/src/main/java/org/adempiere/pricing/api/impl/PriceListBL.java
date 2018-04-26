@@ -32,9 +32,16 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.MPriceList;
 
 public class PriceListBL implements IPriceListBL
 {
+	@Override
+	public int getPricePrecision(int priceListId)
+	{
+		return MPriceList.getStandardPrecision(priceListId);
+	}
+
 	@Override
 	public I_M_PriceList getCurrentPricelistOrNull(
 			final int pricingSystemId,

@@ -49,6 +49,8 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.product.IProductBL;
 import lombok.Builder;
 import lombok.NonNull;
@@ -935,9 +937,12 @@ public class CalloutOrder extends CalloutEngine
 		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
-		orderLineBL.setPrices(ctx, ol,
-				false,  // usePriceUOM
-				null);
+		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
+				.orderLine(ol)
+				.resultUOM(ResultUOM.CONTEXT_UOM)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+				.updateLineNetAmt(true)
+				.build());
 
 		final Object value = calloutField.getValue();
 		if (value == null)

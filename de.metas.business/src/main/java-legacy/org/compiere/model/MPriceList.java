@@ -167,9 +167,16 @@ public class MPriceList extends X_M_PriceList
 		MPriceList pl = MPriceList.get(ctx, M_PriceList_ID, null);
 		return pl.getStandardPrecision();
 	}	// getStandardPrecision
+	
+	public static int getStandardPrecision(final int M_PriceList_ID)
+	{
+		MPriceList pl = get(Env.getCtx(), M_PriceList_ID, null);
+		return pl.getStandardPrecision();
+	}	// getStandardPrecision
+
 
 	/** Cache of Price Lists */
-	private static CCache<Integer, MPriceList> s_cache = new CCache<Integer, MPriceList>(Table_Name, 5);
+	private static CCache<Integer, MPriceList> s_cache = new CCache<>(Table_Name, 5);
 
 	/**************************************************************************
 	 * Standard Constructor

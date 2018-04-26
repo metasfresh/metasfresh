@@ -201,12 +201,6 @@ public interface IUOMConversionBL extends ISingletonService
 
 	Quantity convertToProductUOM(Quantity quantity, int productId);
 
-	@Deprecated
-	default Quantity convertToProductUOM(Quantity quantity, I_M_Product product)
-	{
-		return convertToProductUOM(quantity, product != null ? product.getM_Product_ID() : -1);
-	}
-
 	/**
 	 * Get Product Conversions (cached). More detailed: gets those <code>C_UOM_Conversion</code>s that
 	 * <ul>
