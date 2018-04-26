@@ -186,6 +186,7 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 
 		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
+		orderLine.setBase_PricingSystem_ID(pricingResult.getM_DiscountSchemaBreak_BasePricingSystem_ID());
 
 		updateLineNetAmt(orderLine, qtyEntered, factor);
 	}
@@ -682,6 +683,7 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setEnforcePriceLimit(pricingResult.isEnforcePriceLimit());
 
 		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
+		orderLine.setBase_PricingSystem_ID(pricingResult.getM_DiscountSchemaBreak_BasePricingSystem_ID());
 
 		//
 		// UI

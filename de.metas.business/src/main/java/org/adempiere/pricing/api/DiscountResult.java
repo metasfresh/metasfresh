@@ -62,4 +62,7 @@ public class DiscountResult
 
 	@Default
 	private final int discountSchemaBreakId = -1;
+	
+	@Default
+	private final int discountSchemaBreak_BasePricingSystem_Id = -1;
 }
