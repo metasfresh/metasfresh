@@ -144,6 +144,31 @@ public interface I_I_DiscountSchema
     public static final String COLUMNNAME_BPartner_Value = "BPartner_Value";
 
 	/**
+	 * Set Break Discount %.
+	 * Trade Discount in Percent for the break level
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBreakDiscount (java.math.BigDecimal BreakDiscount);
+
+	/**
+	 * Get Break Discount %.
+	 * Trade Discount in Percent for the break level
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getBreakDiscount();
+
+    /** Column definition for BreakDiscount */
+    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_BreakDiscount = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "BreakDiscount", null);
+    /** Column name BreakDiscount */
+    public static final String COLUMNNAME_BreakDiscount = "BreakDiscount";
+
+	/**
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
@@ -571,7 +596,7 @@ public interface I_I_DiscountSchema
 	 * Amount added to a price as a surcharge
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setStd_AddAmt (java.math.BigDecimal Std_AddAmt);
@@ -581,7 +606,7 @@ public interface I_I_DiscountSchema
 	 * Amount added to a price as a surcharge
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.math.BigDecimal getStd_AddAmt();
