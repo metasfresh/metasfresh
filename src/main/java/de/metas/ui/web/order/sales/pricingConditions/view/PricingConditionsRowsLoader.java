@@ -28,10 +28,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -72,6 +74,7 @@ class PricingConditionsRowsLoader
 	private final LookupDataSource pricingSystemLookup;
 	private final LookupDataSource paymentTermLookup;
 
+	private final int salesOrderLineId;
 	private final int targetBPartnerId;
 	private final boolean isSOTrx;
 	private final int adClientId;
@@ -79,17 +82,21 @@ class PricingConditionsRowsLoader
 	private final int productId;
 	private final BigDecimal qty;
 	private final BigDecimal amt;
+	private final DocumentFiltersList filters;
 
 	private ImmutableSetMultimap<Integer, DiscountSchemaInfo> discountSchemasInfoByDiscountSchemaId; // lazy
 
 	@Builder
-	private PricingConditionsRowsLoader(final int salesOrderLineId)
+	private PricingConditionsRowsLoader(
+			final int salesOrderLineId,
+			@NonNull final DocumentFiltersList filters)
 	{
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 		bpartnerLookup = lookupFactory.searchInTableLookup(I_C_BPartner.Table_Name);
 		pricingSystemLookup = lookupFactory.searchInTableLookup(I_M_PricingSystem.Table_Name);
 		paymentTermLookup = lookupFactory.searchInTableLookup(I_C_PaymentTerm.Table_Name);
 
+		this.salesOrderLineId = salesOrderLineId;
 		final I_C_OrderLine salesOrderLine = InterfaceWrapperHelper.load(salesOrderLineId, I_C_OrderLine.class);
 		targetBPartnerId = salesOrderLine.getC_BPartner_ID();
 		isSOTrx = true;
@@ -99,6 +106,8 @@ class PricingConditionsRowsLoader
 		qty = salesOrderLine.getQtyOrdered();
 		final BigDecimal price = salesOrderLine.getPriceActual();
 		amt = qty.multiply(price);
+
+		this.filters = filters;
 	}
 
 	public PricingConditionsRowData load()
@@ -113,7 +122,12 @@ class PricingConditionsRowsLoader
 
 		final PricingConditionsRow editableRow = containsCurrentPricingConditionsRow(rows) ? null : createEditablePricingConditionsRow();
 
-		return PricingConditionsRowData.of(editableRow, rows);
+		return PricingConditionsRowData.builder()
+				.editableRow(editableRow)
+				.rows(rows)
+				.salesOrderLineId(salesOrderLineId)
+				.build()
+				.filter(filters);
 	}
 
 	private LookupValue lookupBPartner(final int bpartnerId)

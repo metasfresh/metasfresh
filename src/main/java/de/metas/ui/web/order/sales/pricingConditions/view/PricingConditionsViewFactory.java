@@ -15,6 +15,9 @@ import com.google.common.cache.RemovalNotification;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.DocumentFiltersList;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.order.sales.pricingConditions.process.PricingConditionsView_CopyRowToEditable;
 import de.metas.ui.web.order.sales.pricingConditions.process.PricingConditionsView_SaveEditableRow;
 import de.metas.ui.web.order.sales.pricingConditions.process.WEBUI_SalesOrder_PricingConditionsView_Launcher;
@@ -27,6 +30,7 @@ import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
@@ -67,6 +71,8 @@ public class PricingConditionsViewFactory implements IViewFactory, IViewsIndexSt
 			.removalListener(notification -> onViewRemoved(notification))
 			.build();
 
+	private final PricingConditionsViewFilters filtersFactory = new PricingConditionsViewFilters();
+
 	@Override
 	public WindowId getWindowId()
 	{
@@ -89,6 +95,7 @@ public class PricingConditionsViewFactory implements IViewFactory, IViewsIndexSt
 		return ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption(caption)
+				.setFilters(filtersFactory.getFilterDescriptors())
 				.addElementsFromViewRowClass(PricingConditionsRow.class, viewDataType)
 				.build();
 	}
@@ -112,9 +119,19 @@ public class PricingConditionsViewFactory implements IViewFactory, IViewsIndexSt
 	}
 
 	@Override
-	public IView getByIdOrNull(final ViewId viewId)
+	public PricingConditionsView getByIdOrNull(final ViewId viewId)
 	{
 		return views.getIfPresent(viewId);
+	}
+
+	public PricingConditionsView getById(final ViewId viewId)
+	{
+		final PricingConditionsView view = getByIdOrNull(viewId);
+		if (view == null)
+		{
+			throw new EntityNotFoundException(viewId.toJson());
+		}
+		return view;
 	}
 
 	@Override
@@ -150,6 +167,7 @@ public class PricingConditionsViewFactory implements IViewFactory, IViewsIndexSt
 		final int salesOrderLineId = ListUtils.singleElement(request.getFilterOnlyIds());
 		final PricingConditionsRowData rowsData = PricingConditionsRowsLoader.builder()
 				.salesOrderLineId(salesOrderLineId)
+				.filters(filtersFactory.extractFilters(request))
 				.build()
 				.load();
 
@@ -158,7 +176,18 @@ public class PricingConditionsViewFactory implements IViewFactory, IViewsIndexSt
 				.rowsData(rowsData)
 				.relatedProcessDescriptor(createProcessDescriptor(PricingConditionsView_CopyRowToEditable.class))
 				.relatedProcessDescriptor(createProcessDescriptor(PricingConditionsView_SaveEditableRow.class))
+				.filterDescriptors(filtersFactory.getFilterDescriptorsProvider())
 				.build();
+	}
+
+	@Override
+	public IView filterView(final IView viewObj, final JSONFilterViewRequest filterViewRequest)
+	{
+		final DocumentFilterDescriptorsProvider filtersDescriptors = filtersFactory.getFilterDescriptorsProvider();
+		final DocumentFiltersList filters = DocumentFiltersList.ofJSONFilters(filterViewRequest.getFilters())
+				.unwrapAndCopy(filtersDescriptors);
+
+		return PricingConditionsView.cast(viewObj).filter(filters);
 	}
 
 	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)

@@ -6,7 +6,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewId;
@@ -52,12 +54,24 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 	private PricingConditionsView(
 			final ViewId viewId,
 			final PricingConditionsRowData rowsData,
-			@Singular final List<RelatedProcessDescriptor> relatedProcessDescriptors)
+			@Singular final List<RelatedProcessDescriptor> relatedProcessDescriptors,
+			@NonNull final DocumentFilterDescriptorsProvider filterDescriptors)
 	{
-		// TODO: filtering support: by IsCustomer, IsVendor
-		super(viewId, ITranslatableString.empty(), rowsData, NullDocumentFilterDescriptorsProvider.instance);
+		super(viewId, ITranslatableString.empty(), rowsData, filterDescriptors);
 		this.rowsData = rowsData;
 		this.relatedProcessDescriptors = ImmutableList.copyOf(relatedProcessDescriptors);
+	}
+
+	private PricingConditionsView(final PricingConditionsView from, final PricingConditionsRowData rowsData)
+	{
+		super(from.getViewId(), from.getDescription(), rowsData, from.getFilterDescriptors());
+		this.rowsData = rowsData;
+		this.relatedProcessDescriptors = from.relatedProcessDescriptors;
+	}
+
+	public int getSalesOrderLineId()
+	{
+		return rowsData.getSalesOrderLineId();
 	}
 
 	@Override
@@ -95,8 +109,19 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 		return rowsData.getEditableRow();
 	}
 
-	public void patchEditableRow(@NonNull PricingConditionsRowChangeRequest request)
+	public void patchEditableRow(@NonNull final PricingConditionsRowChangeRequest request)
 	{
 		rowsData.patchEditableRow(request);
+	}
+
+	@Override
+	public List<DocumentFilter> getFilters()
+	{
+		return rowsData.getFilters().getFilters();
+	}
+
+	public PricingConditionsView filter(final DocumentFiltersList filters)
+	{
+		return new PricingConditionsView(this, rowsData.filter(filters));
 	}
 }
