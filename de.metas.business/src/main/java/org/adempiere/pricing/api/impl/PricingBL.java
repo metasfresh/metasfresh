@@ -1,5 +1,7 @@
 package org.adempiere.pricing.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -298,9 +300,9 @@ public class PricingBL implements IPricingBL
 
 		if ((pricingCtx.getC_UOM_ID() > 0) && (pricingCtx.getC_UOM_ID() != result.getPrice_UOM_ID()))
 		{
-			final I_C_UOM uomTo = InterfaceWrapperHelper.create(Env.getCtx(), pricingCtx.getC_UOM_ID(), I_C_UOM.class, ITrx.TRXNAME_None);
-			final I_C_UOM uomFrom = InterfaceWrapperHelper.create(Env.getCtx(), result.getPrice_UOM_ID(), I_C_UOM.class, ITrx.TRXNAME_None);
-			final I_M_Product product = InterfaceWrapperHelper.create(Env.getCtx(), result.getM_Product_ID(), I_M_Product.class, ITrx.TRXNAME_None);
+			final I_C_UOM uomTo = loadOutOfTrx(pricingCtx.getC_UOM_ID(), I_C_UOM.class);
+			final I_C_UOM uomFrom = loadOutOfTrx(result.getPrice_UOM_ID(), I_C_UOM.class);
+			final I_M_Product product = loadOutOfTrx(result.getM_Product_ID(), I_M_Product.class);
 
 			final BigDecimal factor = Services.get(IUOMConversionBL.class).convertQty(product, BigDecimal.ONE, uomFrom, uomTo);
 			Check.assumeNotNull(factor, "Conversion error");
