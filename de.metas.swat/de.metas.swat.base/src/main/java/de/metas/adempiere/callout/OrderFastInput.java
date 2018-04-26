@@ -295,7 +295,7 @@ public class OrderFastInput extends CalloutEngine
 		// reset and that way IOrderLineBL.setPrices can't tell whether it
 		// should use priceEntered or a computed price.
 		ol.setPriceEntered(BigDecimal.ZERO);
-		orderLineBL.setPricesIfNotIgnored(ctx, ol,
+		orderLineBL.setPrices(ctx, ol,
 				true,  // usePriceUOM = true
 				ITrx.TRXNAME_None);
 

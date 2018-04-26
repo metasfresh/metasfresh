@@ -1,5 +1,8 @@
 package de.metas.order.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -25,15 +28,12 @@ package de.metas.order.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.GridTabWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPriceListDAO;
@@ -60,9 +60,6 @@ import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocument;
@@ -88,16 +85,12 @@ public class OrderLineBL implements IOrderLineBL
 
 	private static final String SYSCONFIG_NoPriceConditionsColorName = "de.metas.order.NoPriceConditionsColorName";
 
-	private final Set<Integer> ignoredOlIds = new HashSet<>();
-
-	public static final String CTX_DiscountSchema = "DiscountSchema";
-
 	private static final String MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = "de.metas.order.CounterDocMissingMappedProduct";
 
 	private static final String MSG_NoPricingConditionsError = "de.metas.order.NoPricingConditionsError";
 
 	@Override
-	public void setPricesIfNotIgnored(final Properties ctx,
+	public void setPrices(final Properties ctx,
 			final I_C_OrderLine orderLine,
 			final int priceListId,
 			final BigDecimal qtyEntered,
@@ -106,11 +99,6 @@ public class OrderLineBL implements IOrderLineBL
 			final String trxName_NOTUSED)
 	{
 		// FIXME refactor and/or keep in sync with #updatePrices
-
-		if (ignoredOlIds.contains(orderLine.getC_OrderLine_ID()))
-		{
-			return;
-		}
 
 		final int productId = orderLine.getM_Product_ID();
 		final int bPartnerId = orderLine.getC_BPartner_ID();
@@ -174,7 +162,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
-		calculatePriceActual(orderLine, pricingResult.getPrecision());
+		updatePriceActual(orderLine, pricingResult.getPrecision());
 
 		//
 		// C_Currency_ID, Price_UOM_ID(again?), M_PriceList_Version_ID
@@ -192,13 +180,8 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void setTaxAmtInfoIfNotIgnored(final Properties ctx, final I_C_OrderLine ol, final String trxName)
+	public void setTaxAmtInfo(final I_C_OrderLine ol)
 	{
-		if (ignoredOlIds.contains(ol.getC_OrderLine_ID()))
-		{
-			return;
-		}
-
 		final int taxId = ol.getC_Tax_ID();
 		if (taxId <= 0)
 		{
@@ -210,11 +193,10 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal lineAmout = ol.getLineNetAmt();
 		final int taxPrecision = getPrecision(ol);
 
-		final I_C_Tax tax = MTax.get(ctx, taxId);
+		final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineAmout, taxIncluded, taxPrecision);
-
 		ol.setTaxAmtInfo(taxAmtInfo);
 	}
 
@@ -224,20 +206,16 @@ public class OrderLineBL implements IOrderLineBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 		final boolean usePriceUOM = false;
-		setPricesIfNotIgnored(ctx, ol, usePriceUOM, trxName);
+		setPrices(ctx, ol, usePriceUOM, trxName);
 	}
 
 	@Override
-	public void setPricesIfNotIgnored(
+	public void setPrices(
 			final Properties ctx,
 			final I_C_OrderLine ol,
 			final boolean usePriceUOM,
 			final String trxName)
 	{
-		if (ignoredOlIds.contains(ol.getC_OrderLine_ID()))
-		{
-			return;
-		}
 		final org.compiere.model.I_C_Order order = ol.getC_Order();
 
 		final int productId = ol.getM_Product_ID();
@@ -249,43 +227,32 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		// 06278 : If we have a UOM in product price, we use that one.
-		setPricesIfNotIgnored(ctx, ol, priceListId, ol.getQtyEntered(), BigDecimal.ONE, usePriceUOM, trxName);
+		setPrices(ctx, ol, priceListId, ol.getQtyEntered(), BigDecimal.ONE, usePriceUOM, trxName);
 	}
 
 	@Override
-	public void setShipperIfNotIgnored(final Properties ctx, final I_C_OrderLine ol, final boolean force, final String trxName)
+	public void setShipper(final I_C_OrderLine ol)
 	{
-		if (ignoredOlIds.contains(ol.getC_OrderLine_ID()))
-		{
-			return;
-		}
-
 		final org.compiere.model.I_C_Order order = ol.getC_Order();
-
-		if (!force && ol.getM_Shipper_ID() > 0)
-		{
-			logger.debug("Nothing to do: force=false and M_Shipper_ID=" + ol.getM_Shipper_ID());
-			return;
-		}
 
 		final int orderShipperId = order.getM_Shipper_ID();
 		if (orderShipperId > 0)
 		{
-			logger.info("Setting M_Shipper_ID=" + orderShipperId + " from " + order);
+			logger.debug("Setting M_Shipper_ID={} from {}", orderShipperId, order);
 			ol.setM_Shipper_ID(orderShipperId);
 		}
 		else
 		{
-			logger.debug("Looking for M_Shipper_ID via ship-to-bpartner of " + order);
+			logger.debug("Looking for M_Shipper_ID via ship-to-bpartner of {}", order);
 
 			final int bPartnerID = order.getC_BPartner_ID();
 			if (bPartnerID <= 0)
 			{
-				logger.warn(order + " has no ship-to-bpartner");
+				logger.warn("{} has no ship-to-bpartner", order);
 				return;
 			}
 
-			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(bPartnerID, null);
+			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(bPartnerID, ITrx.TRXNAME_None);
 			if (shipper == null)
 			{
 				// task 07034: nothing to do
@@ -294,19 +261,9 @@ public class OrderLineBL implements IOrderLineBL
 
 			final int bPartnerShipperId = shipper.getM_Shipper_ID();
 
-			logger.info("Setting M_Shipper_ID=" + bPartnerShipperId + " from ship-to-bpartner");
+			logger.debug("Setting M_Shipper_ID={} from ship-to-bpartner", bPartnerShipperId);
 			ol.setM_Shipper_ID(bPartnerShipperId);
 		}
-	}
-
-	@Override
-	public void calculatePriceActualIfNotIgnored(final I_C_OrderLine ol, final int precision)
-	{
-		if (ignoredOlIds.contains(ol.getC_OrderLine_ID()))
-		{
-			return;
-		}
-		calculatePriceActual(ol, precision);
 	}
 
 	@Override
@@ -341,18 +298,6 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final BigDecimal multiplier = Env.ONEHUNDRED.add(discount).divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
 		return priceActual.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
-	}
-
-	@Override
-	public void ignore(final int orderLineId)
-	{
-		ignoredOlIds.add(orderLineId);
-	}
-
-	@Override
-	public void unignore(final int orderLineId)
-	{
-		ignoredOlIds.remove(orderLineId);
 	}
 
 	@Override
@@ -600,7 +545,7 @@ public class OrderLineBL implements IOrderLineBL
 
 	private void updatePrices0(final I_C_OrderLine orderLine)
 	{
-		// FIXME refactor and/or keep in sync with #setPricesIfNotIgnored
+		// FIXME refactor and/or keep in sync with #setPrices
 
 		// Product was not set yet. There is no point to calculate the prices
 		if (orderLine.getM_Product_ID() <= 0)
@@ -670,7 +615,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
-		calculatePriceActual(orderLine, pricingResult.getPrecision());
+		updatePriceActual(orderLine, pricingResult.getPrecision());
 
 		//
 		// C_Currency_ID, Price_UOM_ID(again?), M_PriceList_Version_ID
@@ -684,12 +629,6 @@ public class OrderLineBL implements IOrderLineBL
 
 		orderLine.setM_DiscountSchemaBreak_ID(pricingResult.getM_DiscountSchemaBreak_ID());
 		orderLine.setBase_PricingSystem_ID(pricingResult.getM_DiscountSchemaBreak_BasePricingSystem_ID());
-
-		//
-		// UI
-		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
-		final int WindowNo = GridTabWrapper.getWindowNo(orderLine);
-		Env.setContext(ctx, WindowNo, CTX_DiscountSchema, pricingResult.isUsesDiscountSchema());
 	}
 
 	@Override
@@ -753,7 +692,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void calculatePriceActual(final I_C_OrderLine orderLine, final int precision)
+	public void updatePriceActual(final I_C_OrderLine orderLine, final int precision)
 	{
 		final BigDecimal discount = orderLine.getDiscount();
 		final BigDecimal priceEntered = orderLine.getPriceEntered();
