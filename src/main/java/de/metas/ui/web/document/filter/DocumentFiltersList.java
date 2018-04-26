@@ -23,15 +23,14 @@ import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 public final class DocumentFiltersList
 {
@@ -45,6 +44,16 @@ public final class DocumentFiltersList
 		final ImmutableList<JSONDocumentFilter> jsonFiltersEffective = null;
 		final ImmutableList<DocumentFilter> filtersEffective = ImmutableList.copyOf(filters);
 		return new DocumentFiltersList(jsonFiltersEffective, filtersEffective);
+	}
+
+	public static DocumentFiltersList ofFilters(final DocumentFilter... filters)
+	{
+		if (filters == null || filters.length == 0)
+		{
+			return EMPTY;
+		}
+
+		return ofFilters(ImmutableList.copyOf(filters));
 	}
 
 	public static DocumentFiltersList ofJSONFilters(final List<JSONDocumentFilter> jsonFilters)
@@ -81,6 +90,12 @@ public final class DocumentFiltersList
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this).omitNullValues().addValue(jsonFilters).addValue(filters).toString();
+	}
+
+	public boolean isEmpty()
+	{
+		return (filters == null || filters.isEmpty())
+				&& (jsonFilters == null || jsonFilters.isEmpty());
 	}
 
 	public boolean isJson()
@@ -141,6 +156,17 @@ public final class DocumentFiltersList
 		}
 
 		return filter.getParameterValueAsInt(parameterName, defaultValue);
+	}
+
+	public boolean getParamValueAsBoolean(final String filterId, final String parameterName, final boolean defaultValue)
+	{
+		final DocumentFilter filter = getFilterByIdOrNull(filterId);
+		if (filter == null)
+		{
+			return defaultValue;
+		}
+
+		return filter.getParameterValueAsBoolean(parameterName, defaultValue);
 	}
 
 	public List<DocumentFilter> getOrUnwrapFilters(final DocumentFilterDescriptorsProvider descriptors)
