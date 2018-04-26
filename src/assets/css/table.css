@@ -122,6 +122,17 @@
         min-width: 60px;
         max-width: 100px;
     }
+
+    .cell-text-wrapper {
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.color-cell {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+    }
 }
 
 @media only screen and (min-width: $breakpoint-md) {
@@ -144,27 +155,6 @@
 
 .table-fade-out {
     opacity: .65;
-}
-
-/* Table cols sizing */
-
-.td-lg {
-    width: 225px;
-    max-width: 225px;
-
-    .input-dropdown-list {
-        width: auto;
-    }
-}
-
-.td-md {
-    width: 144px;
-    max-width: 144px;
-}
-
-.td-sm {
-    min-width: 60px;
-    max-width: 100px;
 }
 
 .table-fade-out {
