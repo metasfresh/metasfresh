@@ -56,10 +56,7 @@ const keymaps = {
 
 // Combinations that should be disabled when focus is in an input field,
 // which means user is typing or we focused the field automatically
-const disabledWithFocus = [
-  keymaps.EXPAND_INDENT,
-  keymaps.COLLAPSE_INDENT,
-];
+const disabledWithFocus = [keymaps.EXPAND_INDENT, keymaps.COLLAPSE_INDENT];
 
 export { disabledWithFocus };
 export default keymaps;

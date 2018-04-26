@@ -136,7 +136,8 @@ export default class ShortcutProvider extends Component {
       !(serializedSequence in hotkeys) ||
       // some shortcuts should be disabled
       // when input field is focused (for typing)
-      (activeNode.nodeName === 'INPUT' && disabledWithFocus.indexOf(serializedSequence) > -1)
+      (activeNode.nodeName === 'INPUT' &&
+        disabledWithFocus.indexOf(serializedSequence) > -1)
     ) {
       return;
     }

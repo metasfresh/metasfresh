@@ -56,7 +56,7 @@ class RawWidget extends Component {
    * DOM element outside of it's parent's tree.
    */
   focus = () => {
-    const { dispatch, handleFocus, disableOnClickOutside, entity } = this.props;
+    const { handleFocus, disableOnClickOutside, entity } = this.props;
     const { rawWidget } = this;
 
     if (rawWidget && rawWidget.focus) {
