@@ -123,7 +123,10 @@ public class OrderLine implements ModelValidator
 		}
 
 		logger.debug("Making sure {} has a M_Shipper_ID", ol);
-		orderLineBL.setShipper(po.getCtx(), ol, false, po.get_TrxName());
+		if(ol.getM_Shipper_ID() <= 0)
+		{
+			orderLineBL.setShipper(ol);
+		}
 	}
 
 	private void onNewAndChangeAndDelete(final PO po, int type)

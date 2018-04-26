@@ -88,7 +88,7 @@ public interface IOrderLineBL extends ISingletonService
 
 	void setTaxAmtInfo(I_C_OrderLine ol);
 
-	void setShipper(Properties ctx, I_C_OrderLine ol, boolean force, String trxName);
+	void setShipper(I_C_OrderLine ol);
 
 	/**
 	 * Calculate and set PriceActual from PriceEntered and Discount.

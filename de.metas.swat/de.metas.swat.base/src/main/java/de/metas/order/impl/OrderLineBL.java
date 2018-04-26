@@ -234,34 +234,28 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void setShipper(final Properties ctx, final I_C_OrderLine ol, final boolean force, final String trxName)
+	public void setShipper(final I_C_OrderLine ol)
 	{
 		final org.compiere.model.I_C_Order order = ol.getC_Order();
-
-		if (!force && ol.getM_Shipper_ID() > 0)
-		{
-			logger.debug("Nothing to do: force=false and M_Shipper_ID=" + ol.getM_Shipper_ID());
-			return;
-		}
 
 		final int orderShipperId = order.getM_Shipper_ID();
 		if (orderShipperId > 0)
 		{
-			logger.info("Setting M_Shipper_ID=" + orderShipperId + " from " + order);
+			logger.debug("Setting M_Shipper_ID={} from {}", orderShipperId, order);
 			ol.setM_Shipper_ID(orderShipperId);
 		}
 		else
 		{
-			logger.debug("Looking for M_Shipper_ID via ship-to-bpartner of " + order);
+			logger.debug("Looking for M_Shipper_ID via ship-to-bpartner of {}", order);
 
 			final int bPartnerID = order.getC_BPartner_ID();
 			if (bPartnerID <= 0)
 			{
-				logger.warn(order + " has no ship-to-bpartner");
+				logger.warn("{} has no ship-to-bpartner", order);
 				return;
 			}
 
-			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(bPartnerID, null);
+			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(bPartnerID, ITrx.TRXNAME_None);
 			if (shipper == null)
 			{
 				// task 07034: nothing to do
@@ -270,7 +264,7 @@ public class OrderLineBL implements IOrderLineBL
 
 			final int bPartnerShipperId = shipper.getM_Shipper_ID();
 
-			logger.info("Setting M_Shipper_ID=" + bPartnerShipperId + " from ship-to-bpartner");
+			logger.debug("Setting M_Shipper_ID={} from ship-to-bpartner", bPartnerShipperId);
 			ol.setM_Shipper_ID(bPartnerShipperId);
 		}
 	}
