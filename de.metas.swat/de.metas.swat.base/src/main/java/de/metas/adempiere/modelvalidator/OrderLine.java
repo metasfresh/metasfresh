@@ -114,16 +114,16 @@ public class OrderLine implements ModelValidator
 
 		if (!ol.isProcessed())
 		{
-			orderLineBL.setPricesIfNotIgnored(po.getCtx(), ol,
+			orderLineBL.setPrices(po.getCtx(), ol,
 					true, // usePriceUOM
 					po.get_TrxName());
 
 			logger.debug("Setting TaxAmtInfo for {}", ol);
-			orderLineBL.setTaxAmtInfoIfNotIgnored(po.getCtx(), ol, po.get_TrxName());
+			orderLineBL.setTaxAmtInfo(po.getCtx(), ol, po.get_TrxName());
 		}
 
 		logger.debug("Making sure {} has a M_Shipper_ID", ol);
-		orderLineBL.setShipperIfNotIgnored(po.getCtx(), ol, false, po.get_TrxName());
+		orderLineBL.setShipper(po.getCtx(), ol, false, po.get_TrxName());
 	}
 
 	private void onNewAndChangeAndDelete(final PO po, int type)

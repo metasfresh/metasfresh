@@ -65,14 +65,14 @@ public interface IOrderLineBL extends ISingletonService
 	void setPrices(I_C_OrderLine ol);
 
 	/**
-	 * See {@link #setPricesIfNotIgnored(Properties, I_C_OrderLine, int, BigDecimal, BigDecimal, boolean, String)}.
+	 * See {@link #setPrices(Properties, I_C_OrderLine, int, BigDecimal, BigDecimal, boolean, String)}.
 	 *
 	 * @param ctx
 	 * @param ol
 	 * @param usePriceUOM
 	 * @param trxName
 	 */
-	void setPricesIfNotIgnored(Properties ctx, I_C_OrderLine ol, boolean usePriceUOM, String trxName);
+	void setPrices(Properties ctx, I_C_OrderLine ol, boolean usePriceUOM, String trxName);
 
 	/**
 	 *
@@ -84,20 +84,11 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param usePriceUOM if true, then the UOM of the M_ProductPrice record will be used
 	 * @param trxName_NOTUSED not used
 	 */
-	void setPricesIfNotIgnored(Properties ctx, I_C_OrderLine ol, int priceListId, BigDecimal qtyEntered, BigDecimal factor, boolean usePriceUOM, String trxName);
+	void setPrices(Properties ctx, I_C_OrderLine ol, int priceListId, BigDecimal qtyEntered, BigDecimal factor, boolean usePriceUOM, String trxName);
 
-	void setTaxAmtInfoIfNotIgnored(Properties ctx, I_C_OrderLine ol, String trxName);
+	void setTaxAmtInfo(Properties ctx, I_C_OrderLine ol, String trxName);
 
-	void setShipperIfNotIgnored(Properties ctx, I_C_OrderLine ol, boolean force, String trxName);
-
-	void ignore(int orderLineId);
-
-	void unignore(int orderLineId);
-
-	/**
-	 * Same as {@link #calculatePriceActual(I_C_OrderLine, int)}, but returns without doing anything if the given line's ID is on our {@link #ignore(int)} list.
-	 */
-	void calculatePriceActualIfNotIgnored(I_C_OrderLine ol, int precision);
+	void setShipper(Properties ctx, I_C_OrderLine ol, boolean force, String trxName);
 
 	/**
 	 * Calculate and set PriceActual from PriceEntered and Discount.

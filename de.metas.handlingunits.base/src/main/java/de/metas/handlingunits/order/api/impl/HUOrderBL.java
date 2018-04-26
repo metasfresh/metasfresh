@@ -123,7 +123,7 @@ public class HUOrderBL implements IHUOrderBL
 			// 05825 : Update Prices and set prices
 			orderLineBL.updatePrices(ol);
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
-			orderLineBL.setPricesIfNotIgnored(ctx,
+			orderLineBL.setPrices(ctx,
 					ol,
 					InterfaceWrapperHelper.isNew(ol),                       // usePriceUOM
 					trxName);
@@ -154,7 +154,7 @@ public class HUOrderBL implements IHUOrderBL
 			orderLineBL.updatePrices(ol);
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 			final String trxName = InterfaceWrapperHelper.getTrxName(ol);
-			orderLineBL.setPricesIfNotIgnored(ctx, ol,
+			orderLineBL.setPrices(ctx, ol,
 					InterfaceWrapperHelper.isNew(ol),                       // usePriceUOM
 					trxName);
 		}

@@ -78,7 +78,7 @@ public class C_OrderLine
 			ol.setQtyOrdered(qtyOrdered);
 
 			final int priceListId = order.getM_PriceList_ID();
-			Services.get(IOrderLineBL.class).setPricesIfNotIgnored(ctx, ol, priceListId, qtyEntered, BigDecimal.ONE,
+			Services.get(IOrderLineBL.class).setPrices(ctx, ol, priceListId, qtyEntered, BigDecimal.ONE,
 					true, // usePriceUOM
 					null);
 
@@ -167,7 +167,7 @@ public class C_OrderLine
 		ol.setQtyEnteredInPriceUOM(priceQty);
 
 		// now compute the new prices
-		orderLineBL.setPricesIfNotIgnored(ctx,
+		orderLineBL.setPrices(ctx,
 				ol,
 				subscriptionPL.getM_PriceList_ID(),
 				priceQty,

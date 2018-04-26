@@ -935,7 +935,7 @@ public class CalloutOrder extends CalloutEngine
 		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
-		orderLineBL.setPricesIfNotIgnored(ctx, ol,
+		orderLineBL.setPrices(ctx, ol,
 				false,  // usePriceUOM
 				null);
 
@@ -1148,7 +1148,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		orderLine.setLineNetAmt(LineNetAmt);
 
-		orderLineBL.setTaxAmtInfoIfNotIgnored(Env.getCtx(), orderLine, ITrx.TRXNAME_None);
+		orderLineBL.setTaxAmtInfo(Env.getCtx(), orderLine, ITrx.TRXNAME_None);
 	}
 
 	/**
