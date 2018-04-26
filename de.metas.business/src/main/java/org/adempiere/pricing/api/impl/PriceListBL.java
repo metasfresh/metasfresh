@@ -32,14 +32,19 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.MPriceList;
 
 public class PriceListBL implements IPriceListBL
 {
 	@Override
-	public int getPricePrecision(int priceListId)
+	public int getPricePrecision(final int priceListId)
 	{
-		return MPriceList.getStandardPrecision(priceListId);
+		if(priceListId <= 0)
+		{
+			return 2; // default
+		}
+		
+		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(priceListId);
+		return priceList.getPricePrecision();
 	}
 
 	@Override

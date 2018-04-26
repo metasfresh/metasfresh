@@ -232,7 +232,7 @@ public class PricingBL implements IPricingBL
 				&& pricingCtxToUse.getM_PriceList_ID() > 0
 				&& priceDate != null)
 		{
-			final I_M_PriceList priceList = priceListDAO.retrievePriceList(ctx, pricingCtx.getM_PriceList_ID());
+			final I_M_PriceList priceList = priceListDAO.getById(pricingCtx.getM_PriceList_ID());
 			try
 			{
 				final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it

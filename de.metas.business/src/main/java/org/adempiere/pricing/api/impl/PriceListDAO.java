@@ -1,5 +1,7 @@
 package org.adempiere.pricing.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
@@ -23,7 +25,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MPriceList;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -38,16 +39,14 @@ public class PriceListDAO implements IPriceListDAO
 	private static final transient Logger logger = LogManager.getLogger(PriceListDAO.class);
 
 	@Override
-	@Cached(cacheName = I_M_PriceList.Table_Name + "#By#M_PriceList_ID")
-	public I_M_PriceList retrievePriceList(@CacheCtx final Properties ctx, final int priceListId)
+	public I_M_PriceList getById(final int priceListId)
 	{
 		if (priceListId <= 0)
 		{
 			return null;
 		}
-
-		final I_M_PriceList priceList = InterfaceWrapperHelper.create(ctx, priceListId, I_M_PriceList.class, ITrx.TRXNAME_None);
-		return priceList;
+		
+		return loadOutOfTrx(priceListId, I_M_PriceList.class);
 	}
 
 	@Override
@@ -72,7 +71,7 @@ public class PriceListDAO implements IPriceListDAO
 		// In case we are dealing with Pricing System None, return the PriceList none
 		if (pricingSystemId == M_PricingSystem_ID_None)
 		{
-			final I_M_PriceList pl = InterfaceWrapperHelper.loadOutOfTrx(MPriceList.M_PriceList_ID_None, I_M_PriceList.class);
+			final I_M_PriceList pl = InterfaceWrapperHelper.loadOutOfTrx(M_PriceList_ID_None, I_M_PriceList.class);
 			Check.assumeNotNull(pl, "pl not null");
 			return pl;
 		}

@@ -30,6 +30,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -560,8 +561,8 @@ public class CalloutInvoice extends CalloutEngine
 		final int uomToID = invoiceLine.getPrice_UOM_ID(); // 07216 : We convert to the price UOM.
 		final int productID = invoiceLine.getM_Product_ID();
 		final int priceListID = invoice.getM_PriceList_ID();
-		final int priceListVersionID = calloutField.getTabInfoContextAsInt("M_PriceList_Version_ID"); // task 08908: note that there is no such column in C_Invoice or C_InvoiceLine
-		final int stdPrecision = MPriceList.getStandardPrecision(ctx, priceListID);
+		//final int priceListVersionID = calloutField.getTabInfoContextAsInt("M_PriceList_Version_ID"); // task 08908: note that there is no such column in C_Invoice or C_InvoiceLine
+		final int stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListID);
 
 		// get values
 		final BigDecimal qtyEntered = invoiceLine.getQtyEntered();

@@ -33,6 +33,7 @@ import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
@@ -51,7 +52,6 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -180,7 +180,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-		if (invoice.getM_PriceList_ID() != MPriceList.M_PriceList_ID_None)
+		if (invoice.getM_PriceList_ID() != IPriceListDAO.M_PriceList_ID_None)
 		{
 			return getTaxCategoryFromProductPrice(invoiceLine, invoice);
 		}
@@ -356,7 +356,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	{
 		if (qtyEntered != null)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(line);
 			final I_C_Invoice invoice = line.getC_Invoice();
 			final int priceListId = invoice.getM_PriceList_ID();
 
@@ -366,7 +365,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			// this code has been borrowed from
 			// org.compiere.model.CalloutOrder.amt
-			final int stdPrecision = MPriceList.getStandardPrecision(ctx, priceListId);
+			final int stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 
 			BigDecimal lineNetAmt = convertedQty.multiply(line.getPriceActual());
 

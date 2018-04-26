@@ -41,6 +41,7 @@ import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -990,7 +991,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public void setM_PriceList_ID(final int M_PriceList_ID)
 	{
-		final MPriceList pl = MPriceList.get(getCtx(), M_PriceList_ID, null);
+		final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(M_PriceList_ID);
 		if (pl != null)
 		{
 			setC_Currency_ID(pl.getC_Currency_ID());
