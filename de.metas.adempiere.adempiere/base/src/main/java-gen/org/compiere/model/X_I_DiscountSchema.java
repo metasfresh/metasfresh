@@ -15,7 +15,7 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 148552763L;
+	private static final long serialVersionUID = -335354139L;
 
     /** Standard Constructor */
     public X_I_DiscountSchema (Properties ctx, int I_DiscountSchema_ID, String trxName)
@@ -118,7 +118,7 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 		Trade Discount in Percent for the break level
 	  */
 	@Override
-	public void setBreakDiscount (java.math.BigDecimal BreakDiscount)
+	public void setBreakDiscount (java.lang.String BreakDiscount)
 	{
 		set_Value (COLUMNNAME_BreakDiscount, BreakDiscount);
 	}
@@ -127,12 +127,9 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 		@return Trade Discount in Percent for the break level
 	  */
 	@Override
-	public java.math.BigDecimal getBreakDiscount () 
+	public java.lang.String getBreakDiscount () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BreakDiscount);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		return (java.lang.String)get_Value(COLUMNNAME_BreakDiscount);
 	}
 
 	@Override
@@ -435,7 +432,7 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 		Standardpreis
 	  */
 	@Override
-	public void setPriceStd (java.math.BigDecimal PriceStd)
+	public void setPriceStd (java.lang.String PriceStd)
 	{
 		set_Value (COLUMNNAME_PriceStd, PriceStd);
 	}
@@ -444,12 +441,9 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 		@return Standardpreis
 	  */
 	@Override
-	public java.math.BigDecimal getPriceStd () 
+	public java.lang.String getPriceStd () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStd);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		return (java.lang.String)get_Value(COLUMNNAME_PriceStd);
 	}
 
 	/** Set Verarbeitet.

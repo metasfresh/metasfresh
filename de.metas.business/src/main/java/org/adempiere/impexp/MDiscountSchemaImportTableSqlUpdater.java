@@ -3,11 +3,18 @@ package org.adempiere.impexp;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
 
+import java.util.List;
+
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -49,6 +56,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 	public void updateDiscountSchemaImportTable(@NonNull final String whereClause)
 	{
 		dbUpdateBPartners(whereClause);
+		dbUpdateDiscountSchema();
 		dbUpdateProducts(whereClause);
 		dbUpdateC_PaymentTerms(whereClause);
 		dbUpdateM_PricingSystems(whereClause);
@@ -66,6 +74,36 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void dbUpdateDiscountSchema()
+	{
+		final List<I_I_DiscountSchema> records = Services.get(IQueryBL.class).createQueryBuilder(I_I_DiscountSchema.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_I_DiscountSchema.COLUMNNAME_I_IsImported, false)
+				.addNotNull(I_I_DiscountSchema.COLUMNNAME_C_BPartner_ID)
+				.create()
+				.list(I_I_DiscountSchema.class);
+
+		records.forEach(importRecord -> {
+			final int schemaId = retrieveDiscountSchemaByBPartnerId(importRecord.getC_BPartner_ID());
+			importRecord.setM_DiscountSchema_ID(schemaId);
+			InterfaceWrapperHelper.save(importRecord);
+		});
+	}
+
+	@Cached(cacheName = I_C_BPartner.Table_Name + "#by#C_BPartner_ID")
+	private int retrieveDiscountSchemaByBPartnerId(final int bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addNotNull(I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID)
+				.create()
+				.firstIdOnly();
+
 	}
 
 	private void dbUpdateProducts(@NonNull final String whereClause)

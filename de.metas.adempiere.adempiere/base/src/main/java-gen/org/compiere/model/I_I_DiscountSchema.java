@@ -147,21 +147,21 @@ public interface I_I_DiscountSchema
 	 * Set Break Discount %.
 	 * Trade Discount in Percent for the break level
 	 *
-	 * <br>Type: Number
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBreakDiscount (java.math.BigDecimal BreakDiscount);
+	public void setBreakDiscount (java.lang.String BreakDiscount);
 
 	/**
 	 * Get Break Discount %.
 	 * Trade Discount in Percent for the break level
 	 *
-	 * <br>Type: Number
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getBreakDiscount();
+	public java.lang.String getBreakDiscount();
 
     /** Column definition for BreakDiscount */
     public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_BreakDiscount = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "BreakDiscount", null);
@@ -495,21 +495,21 @@ public interface I_I_DiscountSchema
 	 * Set Standardpreis.
 	 * Standardpreis
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPriceStd (java.math.BigDecimal PriceStd);
+	public void setPriceStd (java.lang.String PriceStd);
 
 	/**
 	 * Get Standardpreis.
 	 * Standardpreis
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPriceStd();
+	public java.lang.String getPriceStd();
 
     /** Column definition for PriceStd */
     public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_PriceStd = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "PriceStd", null);

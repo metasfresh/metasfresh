@@ -1,5 +1,6 @@
 package org.adempiere.impexp;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
@@ -10,12 +11,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchema;
+import org.compiere.model.X_M_DiscountSchemaBreak;
 
 import lombok.NonNull;
 
@@ -77,26 +80,26 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		final String previousBPartnerValue = context.getPreviousBPartnerValue();
 		context.setPreviousImportRecord(importRecord);
 
-		final ImportRecordResult inventoryImportResult;
+		final ImportRecordResult schemaImportResult;
 
-		final boolean firstImportRecordOrNewMInventory = previousImportRecord == null
+		final boolean firstImportRecordOrNewDiscountSchema = previousImportRecord == null
 				|| !Objects.equals(importRecord.getBPartner_Value(), previousBPartnerValue);
 
-		if (firstImportRecordOrNewMInventory)
+		if (firstImportRecordOrNewDiscountSchema)
 		{
-			// create a new list because we are passing to a new inventory
+			// create a new list because we are passing to a new discount
 			context.clearPreviousRecordsForSameDiscountSchema();
-			inventoryImportResult = importDiscountSchema(importRecord);
+			schemaImportResult = importDiscountSchema(importRecord);
 		}
 		else
 		{
 			if (previousDiscountSchemaId <= 0)
 			{
-				inventoryImportResult = importDiscountSchema(importRecord);
+				schemaImportResult = importDiscountSchema(importRecord);
 			}
 			else if (importRecord.getM_DiscountSchema_ID() <= 0 || importRecord.getM_DiscountSchema_ID() == previousDiscountSchemaId)
 			{
-				inventoryImportResult = doNothingAndUsePreviousDiscountSchema(importRecord, previousImportRecord);
+				schemaImportResult = doNothingAndUsePreviousDiscountSchema(importRecord, previousImportRecord);
 			}
 			else
 			{
@@ -107,7 +110,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		importDiscountSchemaBreak(importRecord);
 		context.collectImportRecordForSameDiscountSchema(importRecord);
 
-		return inventoryImportResult;
+		return schemaImportResult;
 	}
 
 	private ImportRecordResult importDiscountSchema(@NonNull final I_I_DiscountSchema importRecord)
@@ -116,9 +119,12 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		inventoryImportResult = importRecord.getM_DiscountSchema_ID() <= 0 ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 
 		final I_M_DiscountSchema discountSchema;
-		if (importRecord.getM_DiscountSchema_ID() <= 0)	// Insert new Inventory
+		if (importRecord.getM_DiscountSchema_ID() <= 0)
 		{
 			discountSchema = createNewMDiscountSchemas(importRecord);
+			final I_C_BPartner bpartner = importRecord.getC_BPartner();
+			bpartner.setM_DiscountSchema(discountSchema);
+			InterfaceWrapperHelper.save(bpartner);
 		}
 		else
 		{
@@ -195,10 +201,23 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schemaBreak.setBase_PricingSystem(importRecord.getBase_PricingSystem());
 		schemaBreak.setM_Product(importRecord.getM_Product());
 		schemaBreak.setC_PaymentTerm(importRecord.getC_PaymentTerm());
-		schemaBreak.setPriceStd(importRecord.getPriceStd());
+
+		final BigDecimal priceFix = new BigDecimal(importRecord.getPriceStd());
+		final BigDecimal discountBreak = new BigDecimal(importRecord.getBreakDiscount());
+
+		if (importRecord.getStd_AddAmt().signum() > 0)
+		{
+			schemaBreak.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem);
+			schemaBreak.setPriceStd(priceFix);
+		}
+		else
+		{
+			schemaBreak.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
+		}
+
+		schemaBreak.setBreakDiscount(discountBreak);
 		schemaBreak.setStd_AddAmt(importRecord.getStd_AddAmt());
 		schemaBreak.setBreakValue(importRecord.getQty());
 	}
-
 
 }
