@@ -310,6 +310,11 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void updatePrices(final OrderLinePriceUpdateRequest request)
 	{
+		OrderLinePriceCalculator.builder()
+				.request(request)
+				.orderLineBL(this)
+				.build()
+				.updateOrderLine();
 	}
 
 	@Override
