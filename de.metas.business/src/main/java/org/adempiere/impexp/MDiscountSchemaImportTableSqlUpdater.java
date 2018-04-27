@@ -49,7 +49,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 	public void updateDiscountSchemaImportTable(@NonNull final String whereClause)
 	{
 		dbUpdateBPartners(whereClause);
-		dbUpdateDiscountSchema();
+		dbUpdateDiscountSchema(whereClause);
 		dbUpdateProducts(whereClause);
 		dbUpdateC_PaymentTerms(whereClause);
 		dbUpdateM_PricingSystems(whereClause);
