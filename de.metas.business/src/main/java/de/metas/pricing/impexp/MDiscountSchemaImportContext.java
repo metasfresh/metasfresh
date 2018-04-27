@@ -56,7 +56,7 @@ public final class MDiscountSchemaImportContext
 
 	public int getPreviousBPartnerId()
 	{
-		return previousImportRecord == null ? null : previousImportRecord.getC_BPartner_ID();
+		return previousImportRecord == null ? -1 : previousImportRecord.getC_BPartner_ID();
 	}
 
 
