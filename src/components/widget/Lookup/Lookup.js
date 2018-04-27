@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import * as _ from 'lodash';
 
 import { getItemsByProperty } from '../../../actions/WindowActions';
 import BarcodeScanner from '../BarcodeScanner/BarcodeScannerWidget';
@@ -28,6 +29,25 @@ class Lookup extends Component {
 
   componentDidMount() {
     this.checkIfDefaultValue();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { defaultValue, selected } = this.props;
+
+    if (
+      defaultValue &&
+      nextProps.defaultValue &&
+      !_.isEqual(defaultValue[0].value, nextProps.defaultValue[0].value)
+    ) {
+      this.checkIfDefaultValue();
+    }
+
+    if (!_.isEqual(selected, nextProps.selected)) {
+      this.setState({
+        isInputEmpty: !nextProps.selected,
+        localClearing: false,
+      });
+    }
   }
 
   checkIfDefaultValue = () => {
@@ -321,18 +341,20 @@ class Lookup extends Component {
             // TODO: This is really not how we should be doing this. Backend should send
             // us info which fields are usable with barcode scanner
             showBarcodeScannerBtn = item.field === 'M_LocatorTo_ID';
+
             const disabled = isInputEmpty && index !== 0;
             const itemByProperty = getItemsByProperty(
               defaultValue,
               'field',
               item.field
             )[0];
+
             if (
               item.source === 'lookup' ||
               item.widgetType === 'Lookup' ||
               (itemByProperty && itemByProperty.widgetType === 'Lookup')
             ) {
-              let defaultValue = itemByProperty.value;
+              let defaultValue = localClearing ? null : itemByProperty.value;
 
               if (barcodeSelected) {
                 defaultValue = { caption: barcodeSelected };
@@ -394,6 +416,7 @@ class Lookup extends Component {
               const isFirstProperty = index === 0;
               const isCurrentProperty =
                 item.field === property && !autofocusDisabled;
+              let defaultValue = localClearing ? null : itemByProperty.value;
 
               return (
                 <div
@@ -419,9 +442,7 @@ class Lookup extends Component {
                     doNotOpenOnFocus={false}
                     properties={[item]}
                     mainProperty={[item]}
-                    defaultValue={
-                      itemByProperty.value ? itemByProperty.value : ''
-                    }
+                    defaultValue={defaultValue ? defaultValue : ''}
                     initialFocus={isFirstProperty ? initialFocus : false}
                     blur={!property ? true : false}
                     setNextProperty={this.setNextProperty}

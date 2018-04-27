@@ -14,6 +14,7 @@ export const AMOUNT_FIELD_FORMATS_BY_PRECISION = [
   '0,0.0000[0]',
   '0,0.00000',
 ];
+export const SPECIAL_FIELD_TYPES = ['Color'];
 export const DATE_FIELD_TYPES = ['Date', 'DateTime', 'Time'];
 export const DATE_FIELD_FORMATS = {
   Date: 'l',
