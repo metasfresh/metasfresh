@@ -149,7 +149,7 @@ public class MDiscountSchemaImportTableSqlUpdater
 		//
 		sql = new StringBuilder("UPDATE I_DiscountSchema i "
 				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid C_PaymentTerm, ' "
-				+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL"
+				+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL AND PaymentTermValue <> '0' "
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
