@@ -115,8 +115,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 
 	private ImportRecordResult importDiscountSchema(@NonNull final I_I_DiscountSchema importRecord)
 	{
-		final ImportRecordResult inventoryImportResult;
-		inventoryImportResult = importRecord.getM_DiscountSchema_ID() <= 0 ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
+		final ImportRecordResult schemaImportResult;
 
 		final I_M_DiscountSchema discountSchema;
 		if (importRecord.getM_DiscountSchema_ID() <= 0)
@@ -125,16 +124,18 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 			final I_C_BPartner bpartner = importRecord.getC_BPartner();
 			bpartner.setM_DiscountSchema(discountSchema);
 			InterfaceWrapperHelper.save(bpartner);
+			schemaImportResult =  ImportRecordResult.Inserted;
 		}
 		else
 		{
 			discountSchema = importRecord.getM_DiscountSchema();
+			schemaImportResult =  ImportRecordResult.Updated;
 		}
 
 		ModelValidationEngine.get().fireImportValidate(this, importRecord, discountSchema, IImportInterceptor.TIMING_AFTER_IMPORT);
 		InterfaceWrapperHelper.save(discountSchema);
 		importRecord.setM_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
-		return inventoryImportResult;
+		return schemaImportResult;
 	}
 
 	private I_M_DiscountSchema createNewMDiscountSchemas(I_I_DiscountSchema importRecord)
@@ -145,7 +146,6 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schema.setValidFrom(SystemTime.asDayTimestamp());
 		schema.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
 		schema.setName("I " + importRecord.getM_DiscountSchema_ID());
-		schema.setDescription("I " + importRecord.getC_BPartner().getValue() + " " + importRecord.getM_Product().getValue());
 		return schema;
 	}
 
@@ -167,33 +167,18 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		final I_M_DiscountSchema schema = importRecord.getM_DiscountSchema();
 
 		I_M_DiscountSchemaBreak schemaBreak = importRecord.getM_DiscountSchemaBreak();
-		if (schemaBreak != null)
-		{
-			if (schemaBreak.getM_DiscountSchema_ID() <= 0)
-			{
-				schemaBreak.setM_DiscountSchema(schema);
-			}
-			else if (schemaBreak.getM_DiscountSchema_ID() != schema.getM_DiscountSchema_ID())
-			{
-				throw new AdempiereException("Discount schema of Discount schema break <> Discount schema");
-			}
-
-			setDiscountSchemaBreakFields(importRecord, schemaBreak);
-
-			ModelValidationEngine.get().fireImportValidate(this, importRecord, schemaBreak, IImportInterceptor.TIMING_AFTER_IMPORT);
-			InterfaceWrapperHelper.save(schemaBreak);
-		}
-		else
+		if (schemaBreak == null)
 		{
 			schemaBreak = InterfaceWrapperHelper.create(getCtx(), I_M_DiscountSchemaBreak.class, ITrx.TRXNAME_ThreadInherited);
-			setDiscountSchemaBreakFields(importRecord, schemaBreak);
-
-			ModelValidationEngine.get().fireImportValidate(this, importRecord, schemaBreak, IImportInterceptor.TIMING_AFTER_IMPORT);
-			InterfaceWrapperHelper.save(schemaBreak);
-
-			importRecord.setM_DiscountSchemaBreak_ID(schemaBreak.getM_DiscountSchemaBreak_ID());
+			schemaBreak.setM_DiscountSchema(schema);
 		}
 
+		setDiscountSchemaBreakFields(importRecord, schemaBreak);
+
+		ModelValidationEngine.get().fireImportValidate(this, importRecord, schemaBreak, IImportInterceptor.TIMING_AFTER_IMPORT);
+		InterfaceWrapperHelper.save(schemaBreak);
+
+		importRecord.setM_DiscountSchemaBreak_ID(schemaBreak.getM_DiscountSchemaBreak_ID());
 		return schemaBreak;
 	}
 
