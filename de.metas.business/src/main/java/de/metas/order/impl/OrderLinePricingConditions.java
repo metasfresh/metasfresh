@@ -41,28 +41,43 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 	private static final String SYSCONFIG_NoPriceConditionsColorName = "de.metas.order.NoPriceConditionsColorName";
 	private static final String MSG_NoPricingConditionsError = "de.metas.order.NoPricingConditionsError";
 
+	private static enum HasPricingConditions
+	{
+		NO, YES, TEMPORARY
+	}
+
 	@Override
 	public void updateNoPriceConditionsColor(final I_C_OrderLine orderLine)
 	{
-		final int discountSchemaBreakId = orderLine.getM_DiscountSchemaBreak_ID();
-		if (discountSchemaBreakId > 0)
-		{
-			// the discountSchemaBreak was eventually set. The color warning is no longer needed
-			orderLine.setNoPriceConditionsColor_ID(-1);
-			return;
-		}
+		final HasPricingConditions hasPricingConditions = hasPricingConditions(orderLine);
+		final int colorId = getColorId(hasPricingConditions);
+		orderLine.setNoPriceConditionsColor_ID(colorId);
+	}
 
-		final int colorId = getNoPriceConditionsColorId();
-		if (colorId > 0)
+	private int getColorId(final HasPricingConditions hasPricingConditions)
+	{
+		if (hasPricingConditions == HasPricingConditions.YES)
 		{
-			orderLine.setNoPriceConditionsColor_ID(colorId);
+			return -1;
+		}
+		else if (hasPricingConditions == HasPricingConditions.TEMPORARY)
+		{
+			// in future we might pick another color for those temporary/ah-hoc pricing conditions
+			return -1;
+		}
+		else if (hasPricingConditions == HasPricingConditions.NO)
+		{
+			return getNoPriceConditionsColorId();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown " + HasPricingConditions.class + ": " + hasPricingConditions);
 		}
 	}
 
 	private int getNoPriceConditionsColorId()
 	{
 		final String colorName = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_NoPriceConditionsColorName, "-");
-
 		return Services.get(IColorRepository.class).getColorIdByName(colorName);
 	}
 
@@ -70,23 +85,19 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 	public void failForMissingPricingConditions(final de.metas.adempiere.model.I_C_Order order)
 	{
 		final boolean mandatoryPricingConditions = isMandatoryPricingConditions();
-
 		if (!mandatoryPricingConditions)
 		{
-			// nothing to do
 			return;
 		}
 
 		final List<I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order);
-
 		final boolean existsOrderLineWithNoPricingConditions = orderLines
 				.stream()
-				.anyMatch(orderLine -> hasNoPricingConditions(orderLine));
+				.anyMatch(this::isPricingConditionsMissing);
 
 		if (existsOrderLineWithNoPricingConditions)
 		{
 			final ITranslatableString translatableMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NoPricingConditionsError);
-
 			throw new AdempiereException(translatableMsg.translate(Env.getAD_Language()));
 		}
 	}
@@ -97,10 +108,24 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		return noPriceConditionsColorId > 0;
 	}
 
-	private boolean hasNoPricingConditions(final I_C_OrderLine orderLine)
+	private boolean isPricingConditionsMissing(final I_C_OrderLine orderLine)
 	{
-		// TODO: handle temporary conditions
-		return orderLine.getM_DiscountSchemaBreak_ID() <= 0;
+		return hasPricingConditions(orderLine) == HasPricingConditions.NO;
 	}
 
+	private HasPricingConditions hasPricingConditions(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.isTempPricingConditions())
+		{
+			return HasPricingConditions.TEMPORARY;
+		}
+		else if (orderLine.getM_DiscountSchemaBreak_ID() > 0)
+		{
+			return HasPricingConditions.YES;
+		}
+		else
+		{
+			return HasPricingConditions.NO;
+		}
+	}
 }
