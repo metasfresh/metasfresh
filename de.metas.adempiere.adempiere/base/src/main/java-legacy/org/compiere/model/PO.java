@@ -39,7 +39,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -76,7 +75,6 @@ import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.compiere.Adempiere;
@@ -983,7 +981,7 @@ public abstract class PO
 			return false;
 		}
 
-		final Object valueToUse = stripZerosIfBigDecimalScaleTooBig(value);
+		final Object valueToUse = POUtils.stripZerosAndLogIssueIfBigDecimalScaleTooBig(value, this);
 
 		//
 		// globalqss -- Bug 1618469 - is throwing not updateable even on new records
@@ -1173,7 +1171,7 @@ public abstract class PO
 
 	private final boolean set_ValueNoCheck(final int index, final Object value)
 	{
-		final Object valueToUse = stripZerosIfBigDecimalScaleTooBig(value);
+		final Object valueToUse = POUtils.stripZerosAndLogIssueIfBigDecimalScaleTooBig(value, this);
 
 		//
 		// Load record if stale (01537)
@@ -1255,24 +1253,6 @@ public abstract class PO
 		set_Keys(get_ColumnName(index), m_newValues[index]);
 		return true;
 	}   // set_ValueNoCheck
-
-	private Object stripZerosIfBigDecimalScaleTooBig(@Nullable final Object value)
-	{
-		if (value instanceof BigDecimal)
-		{
-			final BigDecimal bdValue = (BigDecimal)value;
-			if (bdValue.scale() < 15)
-			{
-				return bdValue;
-			}
-
-			final BigDecimal bpWithoutTrailingZeroes = NumberUtils.stripTrailingDecimalZeros(bdValue);
-			log.warn("The given value has scale={}; going to proceed with a stripped down value with scale={}; value={}; this={}",
-					bdValue.scale(), bpWithoutTrailingZeroes.scale(), bdValue, this);
-			return bpWithoutTrailingZeroes;
-		}
-		return value;
-	}
 
 	/**
 	 * Set value of Column returning boolean
