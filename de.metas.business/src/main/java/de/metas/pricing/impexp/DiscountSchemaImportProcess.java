@@ -9,7 +9,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
-import org.adempiere.impexp.AbstractImportProcess.ImportRecordResult;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.time.SystemTime;
@@ -122,9 +121,6 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		if (importRecord.getM_DiscountSchema_ID() <= 0)
 		{
 			discountSchema = createNewMDiscountSchemas(importRecord);
-			final I_C_BPartner bpartner = importRecord.getC_BPartner();
-			bpartner.setM_DiscountSchema(discountSchema);
-			InterfaceWrapperHelper.save(bpartner);
 			schemaImportResult = ImportRecordResult.Inserted;
 		}
 		else
@@ -132,6 +128,10 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 			discountSchema = importRecord.getM_DiscountSchema();
 			schemaImportResult = ImportRecordResult.Updated;
 		}
+
+		final I_C_BPartner bpartner = importRecord.getC_BPartner();
+		bpartner.setM_DiscountSchema(discountSchema);
+		InterfaceWrapperHelper.save(bpartner);
 
 		ModelValidationEngine.get().fireImportValidate(this, importRecord, discountSchema, IImportInterceptor.TIMING_AFTER_IMPORT);
 		InterfaceWrapperHelper.save(discountSchema);
@@ -186,6 +186,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 
 	private void setDiscountSchemaBreakFields(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_M_DiscountSchemaBreak schemaBreak)
 	{
+		schemaBreak.setSeqNo(10);
 		schemaBreak.setBreakDiscount(importRecord.getBreakDiscount());
 		schemaBreak.setBreakValue(importRecord.getBreakValue());
 		//
