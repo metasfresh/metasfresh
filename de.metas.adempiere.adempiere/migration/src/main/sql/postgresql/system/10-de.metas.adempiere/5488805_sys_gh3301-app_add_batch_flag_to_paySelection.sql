@@ -40,7 +40,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
             WHEN duplicate_column THEN RAISE NOTICE 'column IsExportBatchBookings already exists in C_PaySelection.';
         END;
     END;
-$$
+$$;
 
 -- 2018-03-19T16:43:42.014
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

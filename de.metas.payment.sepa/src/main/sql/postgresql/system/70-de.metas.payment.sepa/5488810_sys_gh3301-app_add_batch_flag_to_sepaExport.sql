@@ -22,4 +22,4 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
             WHEN unique_violation THEN RAISE NOTICE 'The AD_Element or AD_Column for IsExportBatchBookings already exists in SEPA_Export.';
         END;
     END;
-$$
+$$;

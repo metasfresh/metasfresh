@@ -168,6 +168,9 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 	private final DatatypeFactory datatypeFactory;
 	private final String encoding = "UTF-8";
 
+	private int endToEndIdCounter = 0;
+	private int pmtInfCounter = 0;
+
 	public SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02()
 	{
 		objectFactory = new ObjectFactory();
@@ -232,9 +235,9 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 	@VisibleForTesting
 	Document createDocument(@NonNull final I_SEPA_Export sepaDocument)
 	{
-		final Document document = new Document();
+		final Document document = objectFactory.createDocument();
 
-		final CustomerCreditTransferInitiationV03CH creditTransferInitiation = new CustomerCreditTransferInitiationV03CH();
+		final CustomerCreditTransferInitiationV03CH creditTransferInitiation = objectFactory.createCustomerCreditTransferInitiationV03CH();
 		document.setCstmrCdtTrfInitn(creditTransferInitiation);
 
 		// Group Header
@@ -289,22 +292,20 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 			final PaymentInstructionInformation3CH pmtInf = currency2pmtInf
 					.computeIfAbsent(
 							createKey(sepaLine),
-							c -> createPmtInf(creditTransferInitiation, sepaDocument, sepaLine));
+							c -> createAndAddPmtInf(creditTransferInitiation, sepaDocument, sepaLine));
 
 			// Credit Transfer Transaction Information
-			final CreditTransferTransactionInformation10CH creditTransferTrxInfo = createCreditTransferTransactionInformation(pmtInf, sepaLine);
-			pmtInf.getCdtTrfTxInf().add(creditTransferTrxInfo);
+			final CreditTransferTransactionInformation10CH cdtTrfTxInf = createCreditTransferTransactionInformation(pmtInf, sepaLine);
+			pmtInf.getCdtTrfTxInf().add(cdtTrfTxInf);
 
-			final BigDecimal transactionAmount = creditTransferTrxInfo.getAmt().getInstdAmt().getValue();
+			final BigDecimal transactionAmount = cdtTrfTxInf.getAmt().getInstdAmt().getValue();
 			pmtInf.setCtrlSum(pmtInf.getCtrlSum().add(transactionAmount));
 
 			nbOfTxs++;
-			}
+		}
 
 		for (final PaymentInstructionInformation3CH pmtInf : currency2pmtInf.values())
 		{
-			creditTransferInitiation.getPmtInf().add(pmtInf);
-
 			// Update GroupHeader's control amount
 			final BigDecimal groupHeaderCtrlAmt = creditTransferInitiation.getGrpHdr().getCtrlSum();
 			final BigDecimal groupHeaderCtrlAmtNew = groupHeaderCtrlAmt.add(pmtInf.getCtrlSum());
@@ -324,7 +325,9 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 	{
 		if (extractBatchFlag(sepaLine))
 		{
-			return ArrayKey.of(sepaLine.getC_Currency().getISO_Code());
+			return ArrayKey.of(
+					extractPaymentType(sepaLine),
+					sepaLine.getC_Currency().getISO_Code());
 		}
 		return ArrayKey.of(sepaLine.getSEPA_Export_Line_ID());
 	}
@@ -335,18 +338,18 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 		return batch;
 	}
 
-	private PaymentInstructionInformation3CH createPmtInf(
-			@NonNull final CustomerCreditTransferInitiationV03CH customerCreditTransferInitiation,
+	private PaymentInstructionInformation3CH createAndAddPmtInf(
+			@NonNull final CustomerCreditTransferInitiationV03CH cstmrCdtTrfInitn,
 			@NonNull final I_SEPA_Export sepaHdr,
 			@NonNull final I_SEPA_Export_Line sepaLine)
 	{
-		final PaymentInstructionInformation3CH pmtInf = new PaymentInstructionInformation3CH();
+		final PaymentInstructionInformation3CH pmtInf = objectFactory.createPaymentInstructionInformation3CH();
+		cstmrCdtTrfInitn.getPmtInf().add(pmtInf);
 
 		// PaymentInformationIdentification: A system-generated internal code.
 		{
-			// Current index of this payment instruction information
-			final int currentIndex = customerCreditTransferInitiation.getPmtInf().size() + 1;
-			final String pmtInfId = customerCreditTransferInitiation.getGrpHdr().getMsgId() + "-" + currentIndex;
+			pmtInfCounter++;
+			final String pmtInfId = StringUtils.formatMessage("PMTINF-{}", pmtInfCounter);
 			pmtInf.setPmtInfId(pmtInfId);
 		}
 
@@ -359,7 +362,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 		pmtInf.setCtrlSum(ZERO);
 
 		// zahlungsart
-		final String paymentMode = getPaymentType(sepaLine);
+		final String paymentMode = extractPaymentType(sepaLine);
 
 		//
 		// Payment type information.
@@ -405,7 +408,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 		//
 		// debitor
 		pmtInf.setDbtr(copyPartyIdentificationSEPA2(
-				customerCreditTransferInitiation.getGrpHdr().getInitgPty()));
+				cstmrCdtTrfInitn.getGrpHdr().getInitgPty()));
 
 		//
 		// debitor Account
@@ -442,7 +445,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 	}
 
 	private CreditTransferTransactionInformation10CH createCreditTransferTransactionInformation(
-			@NonNull final PaymentInstructionInformation3CH paymentInstruction,
+			@NonNull final PaymentInstructionInformation3CH pmtInf,
 			@NonNull final I_SEPA_Export_Line line)
 	{
 		final CreditTransferTransactionInformation10CH cdtTrfTxInf = objectFactory.createCreditTransferTransactionInformation10CH();
@@ -451,10 +454,15 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 		// Payment ID
 		// EndToEndId: A unique key generated by the system for each payment.
 		{
-			final String endToEndId = paymentInstruction.getPmtInfId() + "-0001";
+			endToEndIdCounter++;
+			final String endToEndId = StringUtils.formatMessage("ENDTOENDID-{}", endToEndIdCounter);
 
 			final PaymentIdentification1 pmtId = objectFactory.createPaymentIdentification1();
 			pmtId.setEndToEndId(endToEndId);
+
+			final String instrId = StringUtils.formatMessage("INSTRID-{}-{}", pmtInfCounter, pmtInf.getCdtTrfTxInf().size() + 1);
+			pmtId.setInstrId(instrId);
+
 			cdtTrfTxInf.setPmtId(pmtId);
 		}
 
@@ -476,7 +484,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 			cdtTrfTxInf.setAmt(amt);
 		}
 
-		final String paymentType = getPaymentType(line);
+		final String paymentType = extractPaymentType(line);
 
 		//
 		// Creditor Agent (i.e. Bank)
@@ -677,9 +685,9 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 		if (result != null)
 		{
 			return result.trim();
-			}
-		return result;
 		}
+		return result;
+	}
 
 	private PostalAddress6CH createStructuredPstlAdr(
 			@Nullable final org.compiere.model.I_C_BP_BankAccount bpBankAccount,
@@ -875,7 +883,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 				isSupportsGenericAccountIdentification());
 	}
 
-	private String getPaymentType(final I_SEPA_Export_Line line)
+	private String extractPaymentType(@NonNull final I_SEPA_Export_Line line)
 	{
 		final de.metas.payment.esr.model.I_C_BP_BankAccount bPBankAccount = InterfaceWrapperHelper.create(
 				line.getC_BP_BankAccount(),
@@ -920,7 +928,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 		return paymentMode;
 	}
 
-	private String createInfo(final I_SEPA_Export_Line line)
+	private String createInfo(@NonNull final I_SEPA_Export_Line line)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (line.getC_BPartner_ID() > 0)
