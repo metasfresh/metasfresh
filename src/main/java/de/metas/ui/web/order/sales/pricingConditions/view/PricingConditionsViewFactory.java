@@ -108,7 +108,7 @@ public class PricingConditionsViewFactory implements IViewFactory, IViewsIndexSt
 
 		if (closeReason == ViewCloseReason.USER_REQUEST)
 		{
-			// TODO implement: update selected order line with the values from edited row
+			view.updateSalesOrderLineIfPossible();
 		}
 	}
 

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.compiere.util.Evaluatees;
 
 import com.google.common.collect.ImmutableList;
@@ -359,9 +360,20 @@ public class PricingConditionsRow implements IViewRow
 		return !isCustomer();
 	}
 
+	public int getBasePriceSystemId()
+	{
+		Check.assumeNotNull(pricingSystem, "Parameter pricingSystem is not null");
+		return pricingSystem.getIdAsInt();
+	}
+
 	public int getPaymentTermId()
 	{
 		final LookupValue paymentTerm = getPaymentTerm();
 		return paymentTerm != null ? paymentTerm.getIdAsInt() : -1;
+	}
+
+	public boolean isTemporary()
+	{
+		return getDiscountSchemaBreakId() <= 0;
 	}
 }

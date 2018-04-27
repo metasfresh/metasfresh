@@ -1,10 +1,18 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.List;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.i18n.ITranslatableString;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
@@ -123,5 +131,61 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 	public PricingConditionsView filter(final DocumentFiltersList filters)
 	{
 		return new PricingConditionsView(this, rowsData.filter(filters));
+	}
+
+	public void updateSalesOrderLineIfPossible()
+	{
+		if (!hasEditableRow())
+		{
+			return;
+		}
+
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+		final PricingConditionsRow editableRow = getEditableRow();
+
+		final I_C_OrderLine salesOrderLine = load(getSalesOrderLineId(), I_C_OrderLine.class);
+		salesOrderLine.setC_PaymentTerm_Override_ID(editableRow.getPaymentTermId());
+		salesOrderLine.setIsTempPricingConditions(editableRow.isTemporary());
+
+		if (editableRow.isTemporary())
+		{
+			salesOrderLine.setM_DiscountSchemaBreak_ID(-1);
+
+			final Price price = editableRow.getPrice();
+			final PriceType priceType = price.getPriceType();
+			if (priceType == PriceType.NONE)
+			{
+				//
+			}
+			else if (priceType == PriceType.BASE_PRICING_SYSTEM)
+			{
+				salesOrderLine.setIsManualPrice(true);
+				salesOrderLine.setBase_PricingSystem_ID(editableRow.getBasePriceSystemId());
+
+			}
+			else if (priceType == PriceType.FIXED_PRICED)
+			{
+				salesOrderLine.setIsManualPrice(true);
+				salesOrderLine.setPriceEntered(price.getPriceValue());
+			}
+
+			salesOrderLine.setIsManualDiscount(true);
+			salesOrderLine.setDiscount(editableRow.getDiscount());
+
+			if (editableRow.getPaymentTermId() > 0)
+			{
+				salesOrderLine.setC_PaymentTerm_Override_ID(editableRow.getPaymentTermId());
+			}
+		}
+		else
+		{
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.ofOrderLine(salesOrderLine));
+		}
+
+		orderLineBL.updateLineNetAmt(salesOrderLine);
+		orderLineBL.setTaxAmtInfo(salesOrderLine);
+		
+		InterfaceWrapperHelper.save(salesOrderLine);
 	}
 }
