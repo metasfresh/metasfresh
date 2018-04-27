@@ -27,7 +27,6 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
-import org.compiere.process.MProductPriceCloningCommand;
 import org.compiere.util.TimeUtil;
 
 import de.metas.pricing.service.IPriceListDAO;

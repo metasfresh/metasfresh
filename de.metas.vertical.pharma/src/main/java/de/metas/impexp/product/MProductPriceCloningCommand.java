@@ -1,4 +1,4 @@
-package org.compiere.process;
+package de.metas.impexp.product;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -17,7 +17,7 @@ import lombok.Builder;
  *
  */
 @Builder
-public class MProductPriceCloningCommand
+class MProductPriceCloningCommand
 {
 	private final int source_PriceList_Version_ID;
 	private final int target_PriceList_Version_ID;
