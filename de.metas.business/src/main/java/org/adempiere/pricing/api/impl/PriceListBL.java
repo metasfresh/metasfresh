@@ -123,7 +123,7 @@ public class PriceListBL implements IPriceListBL
 			}
 			final Timestamp dateToCheck = plvToCkeck.getValidFrom();
 
-			if (currentValidFrom.before(dateToCheck))
+			if (lastPriceListVersion == null || currentValidFrom.before(dateToCheck))
 			{
 				currentPricelist = priceListToCheck;
 				currentValidFrom = dateToCheck;
