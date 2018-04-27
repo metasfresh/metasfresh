@@ -74,6 +74,8 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adUserId, adPInstanceId, updateOnlyLocked, localTrxName);
 
 		Loggables.get().addLog("Updated " + updatedCount + " shipment schedule entries");
+		
+		Loggables.get().addLog("AD_PInstance_ID  = " + adPInstanceId);
 
 		return Result.SUCCESS;
 	}
