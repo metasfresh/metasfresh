@@ -3,15 +3,11 @@ package org.adempiere.impexp;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -81,20 +77,6 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-	}
-
-	@Cached(cacheName = I_C_BPartner.Table_Name + "#by#C_BPartner_ID")
-	private int retrieveDiscountSchemaByBPartnerId(final int bpartnerId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyContextClient()
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addNotNull(I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID)
-				.create()
-				.firstIdOnly();
-
 	}
 
 	private void dbUpdateProducts(@NonNull final String whereClause)
