@@ -25,13 +25,14 @@
 package org.adempiere.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_I_PriceList;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -78,7 +79,7 @@ public class ImportPriceList extends JavaProcess
 
 	/**
 	 * Perform process.
-	 * 
+	 *
 	 * @return Message
 	 * @throws Exception
 	 */
@@ -307,7 +308,7 @@ public class ImportPriceList extends JavaProcess
 					pricelist = newPriceList(imp);
 					try
 					{
-						InterfaceWrapperHelper.save(pricelist);
+						save(pricelist);
 						M_PriceList_ID = pricelist.getM_PriceList_ID();
 						log.trace("Insert Price List");
 						noInsertpl++;
@@ -324,7 +325,7 @@ public class ImportPriceList extends JavaProcess
 				else
 				{
 					// NOTE no else clause - if the price list already exists it's not updated
-					pricelist = InterfaceWrapperHelper.load(M_PriceList_ID, I_M_PriceList.class);
+					pricelist = load(M_PriceList_ID, I_M_PriceList.class);
 				}
 
 				int M_PriceList_Version_ID = imp.getM_PriceList_Version_ID();
@@ -346,10 +347,10 @@ public class ImportPriceList extends JavaProcess
 					pricelistversion.setValidFrom(imp.getValidFrom());
 					pricelistversion.setName(pricelist.getName() + " " + imp.getValidFrom());
 					pricelistversion.setM_DiscountSchema_ID(m_discountschema_id);
-					
+
 					try
 					{
-						InterfaceWrapperHelper.save(pricelistversion);
+						save(pricelistversion);
 						M_PriceList_Version_ID = pricelistversion.getM_PriceList_Version_ID();
 						log.trace("Insert Price List Version");
 						noInsertplv++;
@@ -437,7 +438,7 @@ public class ImportPriceList extends JavaProcess
 
 					try
 					{
-						InterfaceWrapperHelper.save(pp);
+						save(pp);
 						log.trace("Insert/Update Product Price");
 						if (isInsert)
 							noInsertpp++;
@@ -492,7 +493,7 @@ public class ImportPriceList extends JavaProcess
 
 	private I_M_ProductPrice newProductPrice(I_M_PriceList_Version plv, int m_Product_ID, BigDecimal priceList, BigDecimal priceStd, BigDecimal priceLimit)
 	{
-		final I_M_ProductPrice pp = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class, plv);
+		final I_M_ProductPrice pp = newInstance(I_M_ProductPrice.class, plv);
 		pp.setAD_Org_ID(plv.getAD_Org_ID());
 		pp.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());
 		pp.setM_Product_ID(m_Product_ID);
@@ -504,7 +505,7 @@ public class ImportPriceList extends JavaProcess
 
 	private I_M_PriceList_Version newPriceListVersion(final I_M_PriceList pl)
 	{
-		final I_M_PriceList_Version plv = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class, pl);
+		final I_M_PriceList_Version plv = newInstance(I_M_PriceList_Version.class, pl);
 		plv.setAD_Org_ID(pl.getAD_Org_ID());
 		plv.setM_PriceList_ID(pl.getM_PriceList_ID());
 		return plv;
@@ -512,7 +513,7 @@ public class ImportPriceList extends JavaProcess
 
 	private static I_M_PriceList newPriceList(final I_I_PriceList impPL)
 	{
-		final I_M_PriceList pl = InterfaceWrapperHelper.newInstance(I_M_PriceList.class, impPL);
+		final I_M_PriceList pl = newInstance(I_M_PriceList.class, impPL);
 		pl.setAD_Org_ID(impPL.getAD_Org_ID());
 		// pl.setUpdatedBy(impPL.getUpdatedBy());
 		//

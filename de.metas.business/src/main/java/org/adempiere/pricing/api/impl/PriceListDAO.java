@@ -14,7 +14,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -45,7 +44,7 @@ public class PriceListDAO implements IPriceListDAO
 		{
 			return null;
 		}
-		
+
 		return loadOutOfTrx(priceListId, I_M_PriceList.class);
 	}
 
@@ -71,8 +70,8 @@ public class PriceListDAO implements IPriceListDAO
 		// In case we are dealing with Pricing System None, return the PriceList none
 		if (pricingSystemId == M_PricingSystem_ID_None)
 		{
-			final I_M_PriceList pl = InterfaceWrapperHelper.loadOutOfTrx(M_PriceList_ID_None, I_M_PriceList.class);
-			Check.assumeNotNull(pl, "pl not null");
+			final I_M_PriceList pl = loadOutOfTrx(M_PriceList_ID_None, I_M_PriceList.class);
+			Check.assumeNotNull(pl, "pl with M_PriceList_ID={} is not null", M_PriceList_ID_None);
 			return pl;
 		}
 
@@ -123,7 +122,7 @@ public class PriceListDAO implements IPriceListDAO
 			@NonNull final Date date,
 			final Boolean processed)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(priceList);
+		final Properties ctx = getCtx(priceList);
 		final int priceListId = priceList.getM_PriceList_ID();
 		final I_M_PriceList_Version plv = retrievePriceListVersionOrNull(ctx, priceListId, date, processed);
 		return plv;

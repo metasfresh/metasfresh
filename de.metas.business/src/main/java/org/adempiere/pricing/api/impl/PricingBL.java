@@ -103,8 +103,7 @@ public class PricingBL implements IPricingBL
 	@Override
 	public IPricingResult calculatePrice(final IPricingContext pricingCtx)
 	{
-		final Properties ctx = Env.getCtx();
-		final IPricingContext pricingCtxToUse = setupPricingContext(ctx, pricingCtx);
+		final IPricingContext pricingCtxToUse = setupPricingContext(pricingCtx);
 		final IPricingResult result = createInitialResult(pricingCtxToUse);
 
 		//
@@ -119,17 +118,18 @@ public class PricingBL implements IPricingBL
 
 			// FIXME tsa: figure out why the line below was commented out?!
 			// I think we can drop this feature all together
-			
+
 			// return result;
 		}
 
+		final Properties ctx = Env.getCtx();
 		final AggregatedPricingRule aggregatedPricingRule = getAggregatedPricingRule(ctx);
 		aggregatedPricingRule.calculate(pricingCtxToUse, result);
 
 		//
 		// After calculation
 		//
-		
+
 		// Fail if not calculated
 		if (pricingCtxToUse.isFailIfNotCalculated() && !result.isCalculated())
 		{
@@ -179,11 +179,9 @@ public class PricingBL implements IPricingBL
 	/**
 	 * Set various fields in context, before using it.
 	 *
-	 * @param ctx
-	 * @param pricingCtx
 	 * @return configured pricing context (to be used in pricing calculations)
 	 */
-	private IPricingContext setupPricingContext(final Properties ctx, final IPricingContext pricingCtx)
+	private IPricingContext setupPricingContext(final IPricingContext pricingCtx)
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 

@@ -262,7 +262,7 @@ class OrderLinePriceCalculator
 			throw new AdempiereException("ResultPriceUOM not supported: " + resultUOM);
 		}
 	}
-	
+
 	private boolean isApplyPriceLimitRestrictions(final IPricingResult pricingResult)
 	{
 		return request.isApplyPriceLimitRestrictions() && pricingResult.isEnforcePriceLimit();
@@ -317,12 +317,7 @@ class OrderLinePriceCalculator
 		}
 
 		final I_C_OrderLine orderLine = request.getOrderLine();
-		if (orderLine.isManualDiscount())
-		{
-			return false;
-		}
-
-		return true;
+		return !orderLine.isManualDiscount();
 	}
 
 	public int computeTaxCategoryId()
