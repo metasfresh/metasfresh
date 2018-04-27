@@ -17,7 +17,7 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
-import de.metas.pricing.conditions.service.CalculateDiscountRequest;
+import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
 import de.metas.pricing.conditions.service.impl.PricingConditionsRepository;
 import de.metas.pricing.limit.PriceLimitRuleContext;
@@ -124,10 +124,10 @@ public class M_DiscountSchemaBreak
 
 	private void enforcePriceLimit(@NonNull final PriceLimitEnforceContext context)
 	{
-		final CalculateDiscountRequest request = createCalculateDiscountRequest(context);
+		final CalculatePricingConditionsRequest request = createCalculateDiscountRequest(context);
 
 		final BigDecimal price = Services.get(IPricingConditionsService.class)
-				.calculateDiscount(request)
+				.calculatePricingConditions(request)
 				.getPriceStdOverride();
 		if (price == null)
 		{
@@ -154,7 +154,7 @@ public class M_DiscountSchemaBreak
 		}
 	}
 
-	private CalculateDiscountRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
+	private CalculatePricingConditionsRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
 	{
 		final PricingConditionsBreak pricingConditionsBreak = context.getPricingConditionsBreak();
 		final PricingConditionsBreakMatchCriteria matchCriteria = pricingConditionsBreak.getMatchCriteria();
@@ -172,7 +172,7 @@ public class M_DiscountSchemaBreak
 		pricingCtx.setC_BPartner_ID(context.getBpartnerId());
 		pricingCtx.setC_Country_ID(context.getCountryId());
 
-		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
+		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.discountSchemaId(pricingConditionsBreak.getDiscountSchemaId())
 				.forceSchemaBreak(pricingConditionsBreak)
 				.qty(pricingCtx.getQty())

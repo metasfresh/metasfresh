@@ -47,7 +47,7 @@ import lombok.Value;
  */
 @Value
 @Immutable
-public class CalculateDiscountRequest
+public class CalculatePricingConditionsRequest
 {
 	private final int discountSchemaId;
 	private final PricingConditionsBreak forceSchemaBreak;
@@ -60,7 +60,7 @@ public class CalculateDiscountRequest
 	private final IPricingContext pricingCtx;
 
 	@Builder
-	private CalculateDiscountRequest(
+	private CalculatePricingConditionsRequest(
 			final int discountSchemaId,
 			final PricingConditionsBreak forceSchemaBreak,
 			final BigDecimal qty,

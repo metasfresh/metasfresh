@@ -8,5 +8,5 @@ public interface IPricingConditionsService extends ISingletonService
 	 * Calculate Discount Percentage
 	 *
 	 */
-	DiscountResult calculateDiscount(CalculateDiscountRequest request);
+	CalculatePricingConditionsResult calculatePricingConditions(CalculatePricingConditionsRequest request);
 }

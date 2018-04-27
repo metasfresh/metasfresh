@@ -38,9 +38,9 @@ import lombok.Value;
  */
 @Builder
 @Value
-public class DiscountResult
+public class CalculatePricingConditionsResult
 {
-	public static DiscountResult discount(@NonNull final BigDecimal discount)
+	public static CalculatePricingConditionsResult discount(@NonNull final BigDecimal discount)
 	{
 		if(BigDecimal.ZERO.equals(ZERO.getDiscount()))
 		{
@@ -49,7 +49,7 @@ public class DiscountResult
 		return builder().discount(discount).build();
 	}
 
-	public static final DiscountResult ZERO = builder().discount(BigDecimal.ZERO).build();
+	public static final CalculatePricingConditionsResult ZERO = builder().discount(BigDecimal.ZERO).build();
 
 	@Default
 	@NonNull

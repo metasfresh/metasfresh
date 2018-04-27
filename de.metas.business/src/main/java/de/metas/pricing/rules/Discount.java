@@ -40,8 +40,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
-import de.metas.pricing.conditions.service.CalculateDiscountRequest;
-import de.metas.pricing.conditions.service.DiscountResult;
+import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
+import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsService;
 
 /**
@@ -109,7 +109,7 @@ public class Discount implements IPricingRule
 			return;
 		}
 
-		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
+		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.discountSchemaId(discountSchemaId)
 				.qty(pricingCtx.getQty())
 				.price(result.getPriceStd())
@@ -120,11 +120,11 @@ public class Discount implements IPricingRule
 				.build();
 		
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
-		final DiscountResult discountResult = pricingConditionsService.calculateDiscount(request);
+		final CalculatePricingConditionsResult pricingConditionsResult = pricingConditionsService.calculatePricingConditions(request);
 
 		result.setUsesDiscountSchema(true);
 		result.setM_DiscountSchema_ID(discountSchemaId);
-		updatePricingResultFromDiscountResult(result, discountResult);
+		updatePricingResultFromPricingConditionsResult(result, pricingConditionsResult);
 	}
 
 	private List<I_M_AttributeInstance> getAttributeInstances(final Object pricingReferencedObject)
@@ -146,16 +146,16 @@ public class Discount implements IPricingRule
 		return attributeInstances;
 	}
 	
-	private void updatePricingResultFromDiscountResult(final IPricingResult pricingResult, final DiscountResult discountResult)
+	private static void updatePricingResultFromPricingConditionsResult(final IPricingResult pricingResult, final CalculatePricingConditionsResult pricingConditionsResult)
 	{
-		pricingResult.setDiscount(discountResult.getDiscount());
-		pricingResult.setC_PaymentTerm_ID(discountResult.getC_PaymentTerm_ID());
-		pricingResult.setM_DiscountSchemaBreak_ID(discountResult.getDiscountSchemaBreakId());
-		pricingResult.setM_DiscountSchemaBreak_BasePricingSystem_ID(discountResult.getDiscountSchemaBreak_BasePricingSystem_Id());
+		pricingResult.setDiscount(pricingConditionsResult.getDiscount());
+		pricingResult.setC_PaymentTerm_ID(pricingConditionsResult.getC_PaymentTerm_ID());
+		pricingResult.setM_DiscountSchemaBreak_ID(pricingConditionsResult.getDiscountSchemaBreakId());
+		pricingResult.setM_DiscountSchemaBreak_BasePricingSystem_ID(pricingConditionsResult.getDiscountSchemaBreak_BasePricingSystem_Id());
 		
-		final BigDecimal priceStdOverride = discountResult.getPriceStdOverride();
-		final BigDecimal priceListOverride = discountResult.getPriceListOverride();
-		final BigDecimal priceLimitOverride = discountResult.getPriceLimitOverride();
+		final BigDecimal priceStdOverride = pricingConditionsResult.getPriceStdOverride();
+		final BigDecimal priceListOverride = pricingConditionsResult.getPriceListOverride();
+		final BigDecimal priceLimitOverride = pricingConditionsResult.getPriceLimitOverride();
 		if(priceStdOverride != null)
 		{
 			pricingResult.setPriceStd(priceStdOverride);

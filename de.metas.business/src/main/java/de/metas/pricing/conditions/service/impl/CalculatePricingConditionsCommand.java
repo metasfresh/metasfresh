@@ -14,13 +14,13 @@ import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsDiscountType;
-import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
-import de.metas.pricing.conditions.service.CalculateDiscountRequest;
-import de.metas.pricing.conditions.service.DiscountResult;
+import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
+import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
+import de.metas.pricing.conditions.service.CalculatePricingConditionsResult.CalculatePricingConditionsResultBuilder;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
-import de.metas.pricing.conditions.service.DiscountResult.DiscountResultBuilder;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductDAO;
 import lombok.NonNull;
@@ -51,26 +51,24 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-/* package */ class CalculateDiscountCommand
+/* package */ class CalculatePricingConditionsCommand
 {
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-	final CalculateDiscountRequest request;
+	final CalculatePricingConditionsRequest request;
 
-	public CalculateDiscountCommand(@NonNull final CalculateDiscountRequest request)
+	public CalculatePricingConditionsCommand(@NonNull final CalculatePricingConditionsRequest request)
 	{
 		this.request = request;
 	}
 
-	public DiscountResult calculateDiscount()
+	public CalculatePricingConditionsResult calculate()
 	{
 		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(request.getDiscountSchemaId());
-		Check.assumeNotNull(pricingConditions, "pricingConditions shall not be null");
 
 		final PricingConditionsDiscountType discountType = pricingConditions.getDiscountType();
-
 		if (discountType == PricingConditionsDiscountType.FLAT_PERCENT)
 		{
 			return computeFlatDiscount(pricingConditions);
@@ -78,7 +76,7 @@ import lombok.NonNull;
 		else if (discountType == PricingConditionsDiscountType.FORMULA
 				|| discountType == PricingConditionsDiscountType.PRICE_LIST)
 		{
-			return DiscountResult.ZERO;
+			return CalculatePricingConditionsResult.ZERO;
 		}
 		else if (discountType == PricingConditionsDiscountType.BREAKS)
 		{
@@ -90,27 +88,27 @@ import lombok.NonNull;
 		}
 	}
 
-	private DiscountResult computeFlatDiscount(final PricingConditions pricingConditions)
+	private CalculatePricingConditionsResult computeFlatDiscount(final PricingConditions pricingConditions)
 	{
 		if (pricingConditions.isBpartnerFlatDiscount())
 		{
-			return DiscountResult.discount(request.getBpartnerFlatDiscount());
+			return CalculatePricingConditionsResult.discount(request.getBpartnerFlatDiscount());
 		}
 		else
 		{
-			return DiscountResult.discount(pricingConditions.getFlatDiscount());
+			return CalculatePricingConditionsResult.discount(pricingConditions.getFlatDiscount());
 		}
 	}
 
-	private DiscountResult computeBreaksDiscount(final PricingConditions pricingConditions)
+	private CalculatePricingConditionsResult computeBreaksDiscount(final PricingConditions pricingConditions)
 	{
 		final PricingConditionsBreak breakApplied = fetchDiscountSchemaBreak(pricingConditions);
 		if (breakApplied == null)
 		{
-			return DiscountResult.ZERO;
+			return CalculatePricingConditionsResult.ZERO;
 		}
 
-		final DiscountResultBuilder result = DiscountResult.builder()
+		final CalculatePricingConditionsResultBuilder result = CalculatePricingConditionsResult.builder()
 				.discountSchemaBreakId(breakApplied.getDiscountSchemaBreakId())
 				.C_PaymentTerm_ID(breakApplied.getPaymentTermId());
 
@@ -120,7 +118,7 @@ import lombok.NonNull;
 		return result.build();
 	}
 
-	private void computePriceForDiscountSchemaBreak(final DiscountResultBuilder result, final PricingConditionsBreak pricingConditionsBreak)
+	private void computePriceForDiscountSchemaBreak(final CalculatePricingConditionsResultBuilder result, final PricingConditionsBreak pricingConditionsBreak)
 	{
 		final PriceOverrideType priceOverride = pricingConditionsBreak.getPriceOverride();
 		if (priceOverride == PriceOverrideType.NONE)
@@ -182,7 +180,7 @@ import lombok.NonNull;
 		return newPricingCtx;
 	}
 
-	private void computeDiscountForDiscountSchemaBreak(final DiscountResultBuilder result, final PricingConditionsBreak pricingConditionsBreak)
+	private void computeDiscountForDiscountSchemaBreak(final CalculatePricingConditionsResultBuilder result, final PricingConditionsBreak pricingConditionsBreak)
 	{
 		final BigDecimal discount;
 		if (pricingConditionsBreak.isBpartnerFlatDiscount())

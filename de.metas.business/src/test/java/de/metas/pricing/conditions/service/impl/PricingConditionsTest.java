@@ -62,8 +62,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
-import de.metas.pricing.conditions.service.CalculateDiscountRequest;
-import de.metas.pricing.conditions.service.DiscountResult;
+import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
+import de.metas.pricing.conditions.service.CalculatePricingConditionsResult;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.impl.PricingConditionsRepository;
 import de.metas.pricing.conditions.service.impl.PricingConditionsService;
@@ -352,7 +352,7 @@ public class PricingConditionsTest
 
 		// Discount 0 (because no breaks were applied)
 
-		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
+		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.discountSchemaId(schema1.getM_DiscountSchema_ID())
 				.qty(new BigDecimal(100))
 				.price(new BigDecimal(1))
@@ -407,7 +407,7 @@ public class PricingConditionsTest
 
 		// Discount 0 (because no breaks were applied)
 
-		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
+		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.discountSchemaId(schema1.getM_DiscountSchema_ID())
 				.qty(new BigDecimal(100))
 				.price(new BigDecimal(1))
@@ -431,7 +431,7 @@ public class PricingConditionsTest
 		assertThat(expectedPrice).isEqualByComparingTo(price2);
 	}
 
-	private BigDecimal calculatePrice(final CalculateDiscountRequest request)
+	private BigDecimal calculatePrice(final CalculatePricingConditionsRequest request)
 	{
 
 		if (request.getPrice() == null || request.getPrice().signum() == 0)
@@ -439,7 +439,7 @@ public class PricingConditionsTest
 			return request.getPrice();
 		}
 
-		final DiscountResult result = service.calculateDiscount(request);
+		final CalculatePricingConditionsResult result = service.calculatePricingConditions(request);
 
 		final BigDecimal discount = result.getDiscount();
 		if (discount == null || discount.signum() == 0)
