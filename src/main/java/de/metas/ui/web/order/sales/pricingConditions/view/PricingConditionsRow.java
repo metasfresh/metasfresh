@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.PricingConditionsRowChangeRequestBuilder;
-import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRow;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
@@ -215,7 +214,7 @@ public class PricingConditionsRow implements IViewRow
 	@Override
 	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{
-		return ViewColumnHelper.getWidgetTypesByFieldName(PurchaseRow.class);
+		return ViewColumnHelper.getWidgetTypesByFieldName(getClass());
 	}
 
 	@Override
