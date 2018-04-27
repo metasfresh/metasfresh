@@ -1,6 +1,5 @@
 package org.adempiere.impexp;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
@@ -18,7 +17,6 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchema;
-import org.compiere.model.X_M_DiscountSchemaBreak;
 
 import lombok.NonNull;
 
@@ -145,7 +143,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schema.setAD_Org_ID(importRecord.getAD_Org_ID());
 		schema.setValidFrom(SystemTime.asDayTimestamp());
 		schema.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
-		schema.setis
+		schema.setIsQuantityBased(true);
 		schema.setName("I " + importRecord.getM_DiscountSchema_ID());
 		return schema;
 	}
@@ -185,45 +183,22 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 
 	private void setDiscountSchemaBreakFields(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_M_DiscountSchemaBreak schemaBreak)
 	{
-		final BigDecimal discountBreak = new BigDecimal(importRecord.getBreakDiscount());
-
-		schemaBreak.setBreakDiscount(discountBreak);
-		schemaBreak.setBreakValue(importRecord.getQty());
+		schemaBreak.setBreakDiscount(importRecord.getBreakDiscount());
+		schemaBreak.setBreakValue(importRecord.getBreakValue());
+		//
 		schemaBreak.setM_Product(importRecord.getM_Product());
 		schemaBreak.setC_PaymentTerm(importRecord.getC_PaymentTerm());
-		setPriceFields(importRecord, schemaBreak);
+		//
+		setPricingFields(importRecord, schemaBreak);
 	}
 
-	private void setPriceFields(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_M_DiscountSchemaBreak schemaBreak)
+	private void setPricingFields(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_M_DiscountSchemaBreak schemaBreak)
 	{
-		final BigDecimal priceFix = new BigDecimal(importRecord.getPriceStd());
-		// PRICEBASE_PricingSystem
-		if (importRecord.getStd_AddAmt().signum() > 0)
-		{
-			schemaBreak.setIsPriceOverride(true);
-			schemaBreak.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem);
-			schemaBreak.setBase_PricingSystem(importRecord.getBase_PricingSystem());
-			schemaBreak.setPriceStd(BigDecimal.ZERO);
-			schemaBreak.setStd_AddAmt(importRecord.getStd_AddAmt());
-		}
-		// PRICEBASE_Fixed
-		else if (priceFix.signum() > 0)
-		{
-			schemaBreak.setIsPriceOverride(true);
-			schemaBreak.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
-			schemaBreak.setBase_PricingSystem_ID(-1);
-			schemaBreak.setStd_AddAmt(BigDecimal.ZERO);
-			schemaBreak.setPriceStd(priceFix);
-		}
-		// NO PRICE
-		else
-		{
-			schemaBreak.setIsPriceOverride(false);
-			schemaBreak.setPriceBase(null);
-			schemaBreak.setBase_PricingSystem_ID(-1);
-			schemaBreak.setStd_AddAmt(BigDecimal.ZERO);
-			schemaBreak.setPriceStd(BigDecimal.ZERO);
-		}
+		schemaBreak.setIsPriceOverride(importRecord.isPriceOverride());
+		schemaBreak.setPriceBase(importRecord.getPriceBase());
+		schemaBreak.setBase_PricingSystem_ID(importRecord.getBase_PricingSystem_ID());
+		schemaBreak.setPriceStd(importRecord.getPriceStd());
+		schemaBreak.setStd_AddAmt(importRecord.getStd_AddAmt());
 	}
 
 }

@@ -15,7 +15,7 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -335354139L;
+	private static final long serialVersionUID = -991022256L;
 
     /** Standard Constructor */
     public X_I_DiscountSchema (Properties ctx, int I_DiscountSchema_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
         {
 			setI_DiscountSchema_ID (0);
 			setI_IsImported (null); // N
+			setIsPriceOverride (false); // N
 			setProcessed (false); // N
         } */
     }
@@ -118,7 +119,7 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 		Trade Discount in Percent for the break level
 	  */
 	@Override
-	public void setBreakDiscount (java.lang.String BreakDiscount)
+	public void setBreakDiscount (java.math.BigDecimal BreakDiscount)
 	{
 		set_Value (COLUMNNAME_BreakDiscount, BreakDiscount);
 	}
@@ -127,9 +128,34 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 		@return Trade Discount in Percent for the break level
 	  */
 	@Override
-	public java.lang.String getBreakDiscount () 
+	public java.math.BigDecimal getBreakDiscount () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BreakDiscount);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BreakDiscount);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Break Value.
+		@param BreakValue 
+		Low Value of trade discount break level
+	  */
+	@Override
+	public void setBreakValue (java.math.BigDecimal BreakValue)
+	{
+		set_Value (COLUMNNAME_BreakValue, BreakValue);
+	}
+
+	/** Get Break Value.
+		@return Low Value of trade discount break level
+	  */
+	@Override
+	public java.math.BigDecimal getBreakValue () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BreakValue);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	@Override
@@ -206,25 +232,6 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 		return ii.intValue();
 	}
 
-	/** Set Rabatt %.
-		@param Discount 
-		Abschlag in Prozent
-	  */
-	@Override
-	public void setDiscount (java.lang.String Discount)
-	{
-		set_Value (COLUMNNAME_Discount, Discount);
-	}
-
-	/** Get Rabatt %.
-		@return Abschlag in Prozent
-	  */
-	@Override
-	public java.lang.String getDiscount () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Discount);
-	}
-
 	/** Set Discount Schema Import.
 		@param I_DiscountSchema_ID Discount Schema Import	  */
 	@Override
@@ -295,6 +302,29 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 	public java.lang.String getI_IsImported () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_I_IsImported);
+	}
+
+	/** Set IsPriceOverride.
+		@param IsPriceOverride IsPriceOverride	  */
+	@Override
+	public void setIsPriceOverride (boolean IsPriceOverride)
+	{
+		set_Value (COLUMNNAME_IsPriceOverride, Boolean.valueOf(IsPriceOverride));
+	}
+
+	/** Get IsPriceOverride.
+		@return IsPriceOverride	  */
+	@Override
+	public boolean isPriceOverride () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPriceOverride);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
@@ -427,12 +457,28 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 		return (java.lang.String)get_Value(COLUMNNAME_PaymentTermValue);
 	}
 
+	/** Set PriceBase.
+		@param PriceBase PriceBase	  */
+	@Override
+	public void setPriceBase (java.lang.String PriceBase)
+	{
+		set_Value (COLUMNNAME_PriceBase, PriceBase);
+	}
+
+	/** Get PriceBase.
+		@return PriceBase	  */
+	@Override
+	public java.lang.String getPriceBase () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PriceBase);
+	}
+
 	/** Set Standardpreis.
 		@param PriceStd 
 		Standardpreis
 	  */
 	@Override
-	public void setPriceStd (java.lang.String PriceStd)
+	public void setPriceStd (java.math.BigDecimal PriceStd)
 	{
 		set_Value (COLUMNNAME_PriceStd, PriceStd);
 	}
@@ -441,9 +487,12 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 		@return Standardpreis
 	  */
 	@Override
-	public java.lang.String getPriceStd () 
+	public java.math.BigDecimal getPriceStd () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PriceStd);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStd);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Verarbeitet.
@@ -489,28 +538,6 @@ public class X_I_DiscountSchema extends org.compiere.model.PO implements I_I_Dis
 	public java.lang.String getProductValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
-	}
-
-	/** Set Menge.
-		@param Qty 
-		Menge
-	  */
-	@Override
-	public void setQty (java.math.BigDecimal Qty)
-	{
-		set_Value (COLUMNNAME_Qty, Qty);
-	}
-
-	/** Get Menge.
-		@return Menge
-	  */
-	@Override
-	public java.math.BigDecimal getQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set Aufschlag auf Standardpreis.
