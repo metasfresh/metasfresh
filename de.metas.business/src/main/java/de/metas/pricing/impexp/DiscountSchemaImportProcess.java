@@ -18,6 +18,7 @@ import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_DiscountSchema;
+import org.compiere.model.X_I_Request;
 import org.compiere.model.X_M_DiscountSchema;
 
 import lombok.NonNull;
@@ -208,4 +209,11 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schemaBreak.setStd_AddAmt(importRecord.getStd_AddAmt());
 	}
 
+	@Override
+	protected void markImported(@NonNull final I_I_DiscountSchema importRecord)
+	{
+		importRecord.setI_IsImported(X_I_Request.I_ISIMPORTED_Imported);
+		importRecord.setProcessed(true);
+		InterfaceWrapperHelper.save(importRecord);
+	}
 }
