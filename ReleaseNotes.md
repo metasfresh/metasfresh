@@ -31,6 +31,8 @@ Here come the actual release notes:
     * Fixes the Shortcuts for Mac Users.
   * [#1755](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1755) Date field does not recognize changes on double click
     * Fixes the selection and save of date fields when double-clicking on date in date widget.
+  * [#1759](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1759) Enter not working for selecting a role when logging in
+    * Fixes the keyboard Handling in Login Role Selection View. Now it's possible to use ENTER for Role selection confirmation.
   
 
 # metasfresh 5.54 (2018-17)
