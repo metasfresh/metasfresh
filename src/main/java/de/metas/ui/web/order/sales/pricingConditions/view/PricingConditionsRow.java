@@ -361,6 +361,7 @@ public class PricingConditionsRow implements IViewRow
 
 	public int getPaymentTermId()
 	{
+		final LookupValue paymentTerm = getPaymentTerm();
 		return paymentTerm != null ? paymentTerm.getIdAsInt() : -1;
 	}
 }
