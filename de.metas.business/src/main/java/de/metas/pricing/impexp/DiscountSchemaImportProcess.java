@@ -130,12 +130,15 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		}
 
 		final I_C_BPartner bpartner = importRecord.getC_BPartner();
-		bpartner.setM_DiscountSchema(discountSchema);
+		bpartner.setM_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
 		InterfaceWrapperHelper.save(bpartner);
 
 		ModelValidationEngine.get().fireImportValidate(this, importRecord, discountSchema, IImportInterceptor.TIMING_AFTER_IMPORT);
 		InterfaceWrapperHelper.save(discountSchema);
+
 		importRecord.setM_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
+		InterfaceWrapperHelper.save(importRecord);
+
 		return schemaImportResult;
 	}
 
@@ -161,18 +164,17 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 	private ImportRecordResult doNothingAndUsePreviousDiscountSchema(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_I_DiscountSchema previousImportRecord)
 	{
 		importRecord.setM_DiscountSchema_ID(previousImportRecord.getM_DiscountSchema_ID());
+		InterfaceWrapperHelper.save(importRecord);
 		return ImportRecordResult.Nothing;
 	}
 
 	private I_M_DiscountSchemaBreak importDiscountSchemaBreak(@NonNull final I_I_DiscountSchema importRecord)
 	{
-		final I_M_DiscountSchema schema = importRecord.getM_DiscountSchema();
-
 		I_M_DiscountSchemaBreak schemaBreak = importRecord.getM_DiscountSchemaBreak();
 		if (schemaBreak == null)
 		{
 			schemaBreak = InterfaceWrapperHelper.create(getCtx(), I_M_DiscountSchemaBreak.class, ITrx.TRXNAME_ThreadInherited);
-			schemaBreak.setM_DiscountSchema(schema);
+			schemaBreak.setM_DiscountSchema_ID(importRecord.getM_DiscountSchema_ID());
 		}
 
 		setDiscountSchemaBreakFields(importRecord, schemaBreak);
@@ -190,8 +192,8 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schemaBreak.setBreakDiscount(importRecord.getBreakDiscount());
 		schemaBreak.setBreakValue(importRecord.getBreakValue());
 		//
-		schemaBreak.setM_Product(importRecord.getM_Product());
-		schemaBreak.setC_PaymentTerm(importRecord.getC_PaymentTerm());
+		schemaBreak.setM_Product_ID(importRecord.getM_Product_ID());
+		schemaBreak.setC_PaymentTerm_ID(importRecord.getC_PaymentTerm_ID());
 		//
 		setPricingFields(importRecord, schemaBreak);
 	}
