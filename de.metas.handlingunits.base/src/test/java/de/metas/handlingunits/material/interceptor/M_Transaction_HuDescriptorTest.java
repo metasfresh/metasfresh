@@ -53,13 +53,11 @@ import de.metas.material.event.commons.ProductDescriptor;
 
 public class M_Transaction_HuDescriptorTest
 {
-
 	private static final BigDecimal THIRTY_IFCOS_PER_PALET = new BigDecimal("30");
 	private static final BigDecimal FOURTY_TOMATOES_PER_IFCO = new BigDecimal("40");
 	private static final BigDecimal TOTAL_CU_QTY = FOURTY_TOMATOES_PER_IFCO.multiply(THIRTY_IFCOS_PER_PALET);
 
 	private I_M_HU_PI huDefPalet;
-	private I_M_HU_PI huDefIFCO;
 
 	private HUTestHelper helper;
 
@@ -69,7 +67,7 @@ public class M_Transaction_HuDescriptorTest
 		helper = new HUTestHelper();
 
 		// HU PI: IFCO
-		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
 		helper.assignProduct(itemMA, helper.pTomato, FOURTY_TOMATOES_PER_IFCO, helper.uomEach);
 		helper.createHU_PI_Item_PackingMaterial(huDefIFCO, helper.pmIFCO);

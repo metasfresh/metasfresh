@@ -1,5 +1,6 @@
 package de.metas.handlingunits.material.interceptor;
 
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -78,11 +79,10 @@ public class M_Transaction_TransactionEventCreatorTest
 	private static final BigDecimal SEVEN = new BigDecimal("7");;
 	private static final BigDecimal THREE = new BigDecimal("3");
 	private static final BigDecimal TWO = new BigDecimal("2");
-	private static final BigDecimal ONE = BigDecimal.ONE;
-	private static final BigDecimal MINUS_ONE = ONE.negate();
+	private static final BigDecimal MINUS_ONE = new BigDecimal("-1");
 	private static final BigDecimal MINUS_TWO = new BigDecimal("-2");
 	private static final BigDecimal MINUS_SEVEN = new BigDecimal("-7");
-	private static final BigDecimal MINUS_TEN = BigDecimal.TEN.negate();
+	private static final BigDecimal MINUS_TEN = TEN.negate();
 
 	private static final int SOME_OTHER_INOUT_LINE_ID = 30;
 
@@ -143,7 +143,7 @@ public class M_Transaction_TransactionEventCreatorTest
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
 		shipmentScheduleQtyPicked.setM_ShipmentSchedule_ID(20);
 		shipmentScheduleQtyPicked.setM_InOutLine(inoutLine);
-		shipmentScheduleQtyPicked.setQtyPicked(BigDecimal.TEN);
+		shipmentScheduleQtyPicked.setQtyPicked(TEN);
 		save(shipmentScheduleQtyPicked);
 
 		final I_M_Transaction transaction = createShipmentTransaction();
