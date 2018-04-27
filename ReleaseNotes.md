@@ -31,6 +31,8 @@ Here come the actual release notes:
     * Fixes the Shortcuts for Mac Users.
   * [#1755](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1755) Date field does not recognize changes on double click
     * Fixes the selection and save of date fields when double-clicking on date in date widget.
+  * [#1759](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1759) Enter not working for selecting a role when logging in
+    * Fixes the keyboard Handling in Login Role Selection View. Now it's possible to use ENTER for Role selection confirmation.
   
 
 # metasfresh 5.54 (2018-17)
@@ -47,7 +49,7 @@ Here come the actual release notes:
   * [#3768](https://github.com/metasfresh/metasfresh/issues/3768) Excel Report for vendor assessment
     * New Excel Report that allows the assessment of vendors.
   * [#3777](https://github.com/metasfresh/metasfresh/issues/3777) Show available to promise in Procurement Dispo modal in Sales Order
-    * Imporvement of the Procurement Dispo modal overlay, now showing the Available to Promise Quantity.
+    * Improvement of the Procurement Dispo modal overlay, now showing the Available to Promise Quantity.
   * [#3827](https://github.com/metasfresh/metasfresh/issues/3827) Support SSL / TLS when sending mails via SMTP making it SMTPS
     * Improved Mail handling, now allowing the support of SSL/ TLS Handshakes when sending emails.
   * [#3834](https://github.com/metasfresh/metasfresh/issues/3834) Check if Product is banned in Batch entry/ Document Lines creation
@@ -64,13 +66,13 @@ Here come the actual release notes:
     * New Functionality for Pharma Business Partner that allows to restrict the actions for permission adjustments to specific users and roles.
   * [#3892](https://github.com/metasfresh/metasfresh/issues/3892) Contracts: Allow possibility to copy the prices when extending
     * Improvement of contracts extending, now allowing to copy the prices from the source/ initial contract.
-  * [#3895](https://github.com/metasfresh/metasfresh/issues/3895) extend M_HU_Process
+  * [#3895](https://github.com/metasfresh/metasfresh/issues/3895) Extend M_HU_Process
     * New Feature that decouples actions in M_HU_Processn from the presentation in Action menu. Now allowing to hide actions in menu.
   * [#3897](https://github.com/metasfresh/metasfresh/issues/3897) Add Translations for Pharma Business Partner Window
     * New Translations for de_DE and en_US added to Business Partner Pharma Window.
 
 # metasfresh-docker
-  * [#34](https://github.com/metasfresh/metasfresh-docker/issues/34) add msv3server to metasfresh-docker as "extras"
+  * [#34](https://github.com/metasfresh/metasfresh-docker/issues/34) Add msv3server to metasfresh-docker as "extras"
     * Now the Pharma Customer Server is available in metasfresh-docker for MSV3 Communication.
 
 ## Fixes

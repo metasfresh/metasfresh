@@ -65,6 +65,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
@@ -87,12 +88,13 @@ public class OrderLineBL implements IOrderLineBL
 	private I_C_UOM getUOM(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final I_C_UOM uom = orderLine.getC_UOM();
-		if (uom == null)
+		if (uom != null)
 		{
-			throw new AdempiereException("Order line has no UOM")
-					.setParameter("orderLine", orderLine);
+			return uom;
 		}
-		return uom;
+		
+		// fallback to stocking UOM
+		return Services.get(IProductBL.class).getStockingUOM(orderLine.getM_Product_ID());
 	}
 
 	@Override
