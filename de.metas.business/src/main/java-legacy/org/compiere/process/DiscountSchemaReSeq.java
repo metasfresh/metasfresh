@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.adempiere.pricing.api.IMDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
 import org.adempiere.util.Services;
 
 import de.metas.process.JavaProcess;

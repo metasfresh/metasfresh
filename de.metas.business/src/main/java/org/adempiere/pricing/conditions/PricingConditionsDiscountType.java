@@ -1,4 +1,4 @@
-package org.adempiere.pricing.api;
+package org.adempiere.pricing.conditions;
 
 import java.util.Map;
 import java.util.NoSuchElementException;

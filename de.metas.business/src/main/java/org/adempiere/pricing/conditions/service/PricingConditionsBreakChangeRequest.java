@@ -1,8 +1,9 @@
-package org.adempiere.pricing.api;
+package org.adempiere.pricing.conditions.service;
 
 import java.math.BigDecimal;
 
-import org.adempiere.pricing.api.PricingConditionsBreak.PriceOverrideType;
+import org.adempiere.pricing.conditions.PricingConditionsBreak;
+import org.adempiere.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
 
 import lombok.Builder;
 import lombok.Value;

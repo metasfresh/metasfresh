@@ -1,4 +1,4 @@
-package org.adempiere.pricing.api;
+package org.adempiere.pricing.conditions.service;
 
 import org.adempiere.util.ISingletonService;
 

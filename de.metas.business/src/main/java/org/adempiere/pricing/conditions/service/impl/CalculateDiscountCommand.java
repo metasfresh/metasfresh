@@ -1,25 +1,25 @@
 /**
  *
  */
-package org.adempiere.pricing.api.impl;
+package org.adempiere.pricing.conditions.service.impl;
 
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.pricing.api.CalculateDiscountRequest;
-import org.adempiere.pricing.api.DiscountResult;
-import org.adempiere.pricing.api.DiscountResult.DiscountResultBuilder;
+import org.adempiere.pricing.conditions.PricingConditions;
+import org.adempiere.pricing.conditions.PricingConditionsBreak;
+import org.adempiere.pricing.conditions.PricingConditionsBreakQuery;
+import org.adempiere.pricing.conditions.PricingConditionsDiscountType;
+import org.adempiere.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
+import org.adempiere.pricing.conditions.service.CalculateDiscountRequest;
+import org.adempiere.pricing.conditions.service.DiscountResult;
+import org.adempiere.pricing.conditions.service.IMDiscountSchemaBL;
+import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.DiscountResult.DiscountResultBuilder;
 import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IMDiscountSchemaBL;
-import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.api.PricingConditions;
-import org.adempiere.pricing.api.PricingConditionsBreak;
-import org.adempiere.pricing.api.PricingConditionsBreak.PriceOverrideType;
-import org.adempiere.pricing.api.PricingConditionsDiscountType;
-import org.adempiere.pricing.api.PricingConditionsBreakQuery;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 

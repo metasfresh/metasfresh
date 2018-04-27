@@ -1,4 +1,4 @@
-package org.adempiere.pricing.api.impl;
+package org.adempiere.pricing.conditions.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -7,10 +7,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.pricing.api.IMDiscountSchemaDAO;
-import org.adempiere.pricing.api.PricingConditions;
-import org.adempiere.pricing.api.PricingConditionsBreak;
-import org.adempiere.pricing.api.PricingConditionsBreakQuery;
+import org.adempiere.pricing.conditions.PricingConditions;
+import org.adempiere.pricing.conditions.PricingConditionsBreak;
+import org.adempiere.pricing.conditions.PricingConditionsBreakQuery;
+import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.impl.MDiscountSchemaDAO;
 import org.adempiere.util.Services;
 import org.assertj.core.api.AbstractIntegerAssert;
 import org.compiere.model.I_M_DiscountSchema;

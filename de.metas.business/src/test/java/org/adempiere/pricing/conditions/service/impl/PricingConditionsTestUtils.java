@@ -1,4 +1,4 @@
-package org.adempiere.pricing.api.impl;
+package org.adempiere.pricing.conditions.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.adempiere.pricing.api.PricingConditionsBreakQuery;
+import org.adempiere.pricing.conditions.PricingConditionsBreakQuery;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeValue;

@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.adempiere.pricing.api;
+package org.adempiere.pricing.conditions.service;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -9,6 +9,8 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.pricing.api.IPricingContext;
+import org.adempiere.pricing.conditions.PricingConditionsBreak;
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeInstance;
 

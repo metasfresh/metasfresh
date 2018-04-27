@@ -1,4 +1,4 @@
-package org.adempiere.pricing.api.impl;
+package org.adempiere.pricing.conditions.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -40,13 +40,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IMDiscountSchemaDAO;
-import org.adempiere.pricing.api.PricingConditions;
-import org.adempiere.pricing.api.PricingConditionsBreak;
-import org.adempiere.pricing.api.PricingConditionsBreak.PriceOverrideType;
-import org.adempiere.pricing.api.PricingConditionsBreakChangeRequest;
-import org.adempiere.pricing.api.PricingConditionsBreakMatchCriteria;
-import org.adempiere.pricing.api.PricingConditionsDiscountType;
+import org.adempiere.pricing.conditions.PricingConditions;
+import org.adempiere.pricing.conditions.PricingConditionsBreak;
+import org.adempiere.pricing.conditions.PricingConditionsBreakMatchCriteria;
+import org.adempiere.pricing.conditions.PricingConditionsDiscountType;
+import org.adempiere.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
+import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.PricingConditionsBreakChangeRequest;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;

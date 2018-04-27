@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.adempiere.pricing.api;
+package org.adempiere.pricing.conditions.service;
 
 import java.math.BigDecimal;
 

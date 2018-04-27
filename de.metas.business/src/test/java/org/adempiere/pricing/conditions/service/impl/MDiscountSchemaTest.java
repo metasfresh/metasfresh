@@ -1,17 +1,17 @@
-package org.adempiere.pricing.api.impl;
+package org.adempiere.pricing.conditions.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.pricing.api.impl.PricingConditionsTestUtils.createAttr;
-import static org.adempiere.pricing.api.impl.PricingConditionsTestUtils.createAttrValue;
-import static org.adempiere.pricing.api.impl.PricingConditionsTestUtils.createAttributeInstance;
-import static org.adempiere.pricing.api.impl.PricingConditionsTestUtils.createBreak;
-import static org.adempiere.pricing.api.impl.PricingConditionsTestUtils.createLine;
-import static org.adempiere.pricing.api.impl.PricingConditionsTestUtils.createM_Product;
-import static org.adempiere.pricing.api.impl.PricingConditionsTestUtils.createM_ProductCategory;
-import static org.adempiere.pricing.api.impl.PricingConditionsTestUtils.createQueryForQty;
-import static org.adempiere.pricing.api.impl.PricingConditionsTestUtils.createQueryForQtyAndAttributeValues;
-import static org.adempiere.pricing.api.impl.PricingConditionsTestUtils.createSchema;
+import static org.adempiere.pricing.conditions.service.impl.PricingConditionsTestUtils.createAttr;
+import static org.adempiere.pricing.conditions.service.impl.PricingConditionsTestUtils.createAttrValue;
+import static org.adempiere.pricing.conditions.service.impl.PricingConditionsTestUtils.createAttributeInstance;
+import static org.adempiere.pricing.conditions.service.impl.PricingConditionsTestUtils.createBreak;
+import static org.adempiere.pricing.conditions.service.impl.PricingConditionsTestUtils.createLine;
+import static org.adempiere.pricing.conditions.service.impl.PricingConditionsTestUtils.createM_Product;
+import static org.adempiere.pricing.conditions.service.impl.PricingConditionsTestUtils.createM_ProductCategory;
+import static org.adempiere.pricing.conditions.service.impl.PricingConditionsTestUtils.createQueryForQty;
+import static org.adempiere.pricing.conditions.service.impl.PricingConditionsTestUtils.createQueryForQtyAndAttributeValues;
+import static org.adempiere.pricing.conditions.service.impl.PricingConditionsTestUtils.createSchema;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /*
@@ -42,11 +42,13 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.pricing.api.CalculateDiscountRequest;
-import org.adempiere.pricing.api.DiscountResult;
-import org.adempiere.pricing.api.IMDiscountSchemaDAO;
-import org.adempiere.pricing.api.PricingConditions;
-import org.adempiere.pricing.api.PricingConditionsBreak;
+import org.adempiere.pricing.conditions.PricingConditions;
+import org.adempiere.pricing.conditions.PricingConditionsBreak;
+import org.adempiere.pricing.conditions.service.CalculateDiscountRequest;
+import org.adempiere.pricing.conditions.service.DiscountResult;
+import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.impl.MDiscountSchemaBL;
+import org.adempiere.pricing.conditions.service.impl.MDiscountSchemaDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;

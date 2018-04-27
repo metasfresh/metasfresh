@@ -1,7 +1,8 @@
-package org.adempiere.pricing.api;
+package org.adempiere.pricing.conditions.service;
 
 import java.util.Collection;
 
+import org.adempiere.pricing.conditions.PricingConditions;
 import org.adempiere.util.ISingletonService;
 
 public interface IMDiscountSchemaDAO extends ISingletonService
