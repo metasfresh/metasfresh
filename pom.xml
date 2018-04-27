@@ -36,9 +36,8 @@
 
 		<spring-boot.version>2.0.0.RELEASE</spring-boot.version>
 
-		<!-- this is the version uses by elasticsearch:2.4.4 which is turn is used 
-			by spring-boot 1.5.3 -->
-		<lucene.version>5.5.2</lucene.version>
+		<!-- this is the version uses by elasticsearch:5.6.8 which is turn is used by spring-boot 2.0.0.RELEASE -->
+		<lucene.version>6.6.1</lucene.version>
 
 		<!-- Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base 
 			for some reason. -->
