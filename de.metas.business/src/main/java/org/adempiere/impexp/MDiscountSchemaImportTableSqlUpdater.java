@@ -60,7 +60,6 @@ public class MDiscountSchemaImportTableSqlUpdater
 		dbUpdateProducts(whereClause);
 		dbUpdateC_PaymentTerms(whereClause);
 		dbUpdateM_PricingSystems(whereClause);
-		dbUpdateDiscounts(whereClause);
 
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -146,20 +145,6 @@ public class MDiscountSchemaImportTableSqlUpdater
 				.append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set C_PaymentTerm={}", no);
-	}
-
-	private void dbUpdateDiscounts(final String whereClause)
-	{
-		StringBuilder sql;
-		int no;
-		sql = new StringBuilder("UPDATE I_DiscountSchema i ")
-				.append("SET breakdiscount = d.discount,   pricestd = d.fixedPrice ")
-				.append("FROM  I_DiscountSchema s ")
-				.append("JOIN extractDiscountDimensions(s.discount) AS d ON s.discount=d.input ")
-				.append("WHERE s.I_DiscountSchema_ID = i.I_DiscountSchema_ID ")
-				.append("AND i." + COLUMNNAME_I_IsImported + "<>'Y' ");
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Discount amounts ={}", no);
 	}
 
 	private void dbUpdateErrorMessages(@NonNull final String whereClause)

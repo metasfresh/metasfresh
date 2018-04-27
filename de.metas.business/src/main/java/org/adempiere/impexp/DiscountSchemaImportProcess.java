@@ -53,7 +53,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 	@Override
 	protected String getImportOrderBySql()
 	{
-		return I_I_DiscountSchema.COLUMNNAME_ProductValue;
+		return I_I_DiscountSchema.COLUMNNAME_C_BPartner_ID;
 	}
 
 	@Override
