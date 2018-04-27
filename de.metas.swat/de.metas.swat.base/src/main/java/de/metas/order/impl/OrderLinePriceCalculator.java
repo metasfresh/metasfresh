@@ -95,7 +95,7 @@ class OrderLinePriceCalculator
 
 		//
 		// Apply price limit restrictions
-		if(isApplyPriceLimitRestrictions(pricingResult))
+		if (isApplyPriceLimitRestrictions(pricingResult))
 		{
 			final PriceLimitRuleResult priceLimitResult = pricingBL.computePriceLimit(PriceLimitRuleContext.builder()
 					.pricingContext(pricingCtx)
@@ -103,11 +103,11 @@ class OrderLinePriceCalculator
 					.priceActual(priceActual)
 					.paymentTermId(orderLineBL.getC_PaymentTerm_ID(orderLine))
 					.build());
-			if(priceLimitResult.isApplicable())
+			if (priceLimitResult.isApplicable())
 			{
 				priceLimit = priceLimitResult.getPriceLimit();
 			}
-			if(priceLimitResult.isBelowPriceLimit(priceActual))
+			if (priceLimitResult.isBelowPriceLimit(priceActual))
 			{
 				priceActual = priceLimit;
 
@@ -298,7 +298,7 @@ class OrderLinePriceCalculator
 
 	private BigDecimal extractDiscount(final IPricingResult pricingResult, final boolean isSOTrx)
 	{
-		if(isAllowChangingDiscount(isSOTrx))
+		if (isAllowChangingDiscount(isSOTrx))
 		{
 			return pricingResult.getDiscount();
 		}
@@ -332,6 +332,12 @@ class OrderLinePriceCalculator
 		}
 
 		return pricingResult.getC_TaxCategory_ID();
+	}
+
+	public IPricingResult computePrices()
+	{
+		final IEditablePricingContext pricingCtx = createPricingContext();
+		return pricingBL.calculatePrice(pricingCtx);
 	}
 
 	public PriceLimitRuleResult computePriceLimit()

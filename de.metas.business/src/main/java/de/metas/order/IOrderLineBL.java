@@ -29,6 +29,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.quantity.Quantity;
@@ -115,6 +116,10 @@ public interface IOrderLineBL extends ISingletonService
 	void updatePrices(org.compiere.model.I_C_OrderLine orderLine);
 
 	void updatePrices(OrderLinePriceUpdateRequest request);
+
+	IPricingResult computePrices(OrderLinePriceUpdateRequest request);
+
+	PriceLimitRuleResult computePriceLimit(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Sets the product ID and optionally also the UOM.
@@ -223,6 +228,4 @@ public interface IOrderLineBL extends ISingletonService
 	void failForMissingPricingConditions(de.metas.adempiere.model.I_C_Order order);
 
 	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
-
-	PriceLimitRuleResult computePriceLimit(org.compiere.model.I_C_OrderLine orderLine);
 }

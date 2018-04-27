@@ -62,6 +62,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.pricing.IPricingResult;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
@@ -300,6 +301,16 @@ public class OrderLineBL implements IOrderLineBL
 
 		logger.debug("Setting LineNetAmt={} to {}", lineNetAmt, ol);
 		ol.setLineNetAmt(lineNetAmt);
+	}
+
+	@Override
+	public IPricingResult computePrices(final OrderLinePriceUpdateRequest request)
+	{
+		return OrderLinePriceCalculator.builder()
+				.request(request)
+				.orderLineBL(this)
+				.build()
+				.computePrices();
 	}
 
 	@Override
