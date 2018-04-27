@@ -51,9 +51,6 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 
 /**
  * Defines a Attribute Storage pool. Use e.g. {@link IAttributeStorageFactory#getAttributeStorage(Object)} do get an instance.
- *
- * @author tsa
- *
  */
 public interface IAttributeStorage extends IAttributeSet
 {
@@ -61,8 +58,6 @@ public interface IAttributeStorage extends IAttributeSet
 	 * Get's storage unique identifier.
 	 *
 	 * This identifier is used to uniquely identify an {@link IAttributeStorage} in children {@link IAttributeStorage} collection (internally).
-	 *
-	 * @return ID
 	 */
 	String getId();
 
@@ -191,7 +186,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @return true if given attribute is readonly for user
 	 */
 	boolean isReadonlyUI(final IAttributeValueContext ctx, I_M_Attribute attribute);
-	
+
 	boolean isDisplayedUI(final I_M_Attribute attribute);
 
 	/**
@@ -323,7 +318,7 @@ public interface IAttributeStorage extends IAttributeSet
 
 	/**
 	 * Enables/Disables automatic saving when an attribute value is changed
-	 * 
+	 *
 	 * @param saveOnChange
 	 * @throws UnsupportedOperationException in case the operation is not supported
 	 */

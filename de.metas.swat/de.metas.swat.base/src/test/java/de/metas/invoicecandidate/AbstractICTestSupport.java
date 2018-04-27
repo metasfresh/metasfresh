@@ -35,6 +35,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -44,7 +45,6 @@ import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -52,8 +52,6 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MPriceList;
-import org.compiere.model.MPricingSystem;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
@@ -89,6 +87,7 @@ import de.metas.invoicecandidate.api.impl.PlainInvoiceCandDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
@@ -366,12 +365,12 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		//
 		// create the "none" PS and PL
 		final I_M_PricingSystem pricingSystem_None = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class, context);
-		pricingSystem_None.setM_PricingSystem_ID(MPricingSystem.M_PricingSystem_ID_None);
+		pricingSystem_None.setM_PricingSystem_ID(IPriceListDAO.M_PricingSystem_ID_None);
 		pricingSystem_None.setName("None");
 		InterfaceWrapperHelper.save(pricingSystem_None);
 
 		final I_M_PriceList priceList_None = InterfaceWrapperHelper.newInstance(I_M_PriceList.class, context);
-		priceList_None.setM_PriceList_ID(MPriceList.M_PriceList_ID_None);
+		priceList_None.setM_PriceList_ID(IPriceListDAO.M_PriceList_ID_None);
 		priceList_None.setM_PricingSystem_ID(pricingSystem_None.getM_PricingSystem_ID());
 		priceList_None.setName("None");
 		priceList_None.setIsSOPriceList(true);

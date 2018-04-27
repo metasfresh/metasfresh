@@ -26,9 +26,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.MPricingSystem;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -118,7 +118,7 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		values.add(ic.isSOTrx());
 
 		// Pricing System
-		final int pricingSystemId = MPricingSystem.M_PricingSystem_ID_None; // 08511 workaround
+		final int pricingSystemId = IPriceListDAO.M_PricingSystem_ID_None; // 08511 workaround
 		values.add(pricingSystemId);
 		
 		values.add(invoiceCandBL.isTaxIncluded(ic)); // task 08451

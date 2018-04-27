@@ -40,6 +40,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.NullLoggable;
@@ -48,12 +49,10 @@ import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.MPriceList;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
@@ -81,6 +80,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.workflow.api.IWFExecutionFactory;
 
@@ -290,7 +290,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// Validate M_PriceList_ID
 				final int invoicePriceListId = invoice.getM_PriceList_ID();
 				Check.assume(
-						invoicePriceListId == MPriceList.M_PriceList_ID_None || invoicePriceListId == order.getM_PriceList_ID(),
+						invoicePriceListId == IPriceListDAO.M_PriceList_ID_None || invoicePriceListId == order.getM_PriceList_ID(),
 						"M_PriceList_ID=" + invoicePriceListId + " is inconsistent with the M_PriceList_ID of " + order);
 			}
 			//

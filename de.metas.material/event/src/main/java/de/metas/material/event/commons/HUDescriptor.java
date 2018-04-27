@@ -6,7 +6,11 @@ import java.math.BigDecimal;
 
 import org.adempiere.util.Check;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -32,21 +36,30 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class HUOnHandQtyChangeDescriptor
+public class HUDescriptor
 {
 	BigDecimal quantity;
 
 	BigDecimal quantityDelta;
 
+	ProductDescriptor productDescriptor;
+
 	int huId;
 
-	public void assertValid()
+	@JsonCreator
+	@Builder(toBuilder = true)
+	private HUDescriptor(
+			@JsonProperty("huId") final int huId,
+			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+			@JsonProperty("quantity") @NonNull final BigDecimal quantity,
+			@JsonProperty("quantityDelta") @NonNull final BigDecimal quantityDelta)
 	{
-		checkIdGreaterThanZero("huId", huId);
+		this.huId = checkIdGreaterThanZero("huId", huId);
+		this.productDescriptor = productDescriptor;
 
-		Check.errorIf(quantity == null, "quantity may not be null");
 		Check.errorIf(quantity.signum() < 0, "quantity may not be less than zero");
-		Check.errorIf(quantityDelta == null, "quantityDelta may not be null");
+		this.quantity = quantity;
+
+		this.quantityDelta = quantityDelta;
 	}
 }

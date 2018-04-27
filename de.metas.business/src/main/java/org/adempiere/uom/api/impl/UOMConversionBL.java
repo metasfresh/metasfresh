@@ -152,7 +152,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
 	}
-
+	
 	@Override
 	public Quantity convertToProductUOM(@NonNull final Quantity quantity, final int productId)
 	{

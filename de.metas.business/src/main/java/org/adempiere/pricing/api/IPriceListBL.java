@@ -34,6 +34,8 @@ import org.compiere.model.I_M_PriceList_Version;
  */
 public interface IPriceListBL extends ISingletonService
 {
+	int getPricePrecision(int priceListId);
+	
 	/**
 	 * @param pricingSystem
 	 * @param countryId

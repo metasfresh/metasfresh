@@ -1,5 +1,7 @@
 package org.adempiere.pricing.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPriceListBL;
@@ -102,8 +103,7 @@ public class PricingBL implements IPricingBL
 	@Override
 	public IPricingResult calculatePrice(final IPricingContext pricingCtx)
 	{
-		final Properties ctx = Env.getCtx();
-		final IPricingContext pricingCtxToUse = setupPricingContext(ctx, pricingCtx);
+		final IPricingContext pricingCtxToUse = setupPricingContext(pricingCtx);
 		final IPricingResult result = createInitialResult(pricingCtxToUse);
 
 		//
@@ -118,17 +118,18 @@ public class PricingBL implements IPricingBL
 
 			// FIXME tsa: figure out why the line below was commented out?!
 			// I think we can drop this feature all together
-			
+
 			// return result;
 		}
 
+		final Properties ctx = Env.getCtx();
 		final AggregatedPricingRule aggregatedPricingRule = getAggregatedPricingRule(ctx);
 		aggregatedPricingRule.calculate(pricingCtxToUse, result);
 
 		//
 		// After calculation
 		//
-		
+
 		// Fail if not calculated
 		if (pricingCtxToUse.isFailIfNotCalculated() && !result.isCalculated())
 		{
@@ -136,8 +137,8 @@ public class PricingBL implements IPricingBL
 					.setParameter("pricingResult", result);
 		}
 
-		// First we check if we have different UOM in the context and result
-		adjustPriceByUOM(pricingCtxToUse, result);
+		// Convert prices to price UOM if required
+		convertResultToContextUOMIfNeeded(result, pricingCtxToUse);
 		setPrecision(pricingCtxToUse, result);
 
 		if (logger.isDebugEnabled())
@@ -178,11 +179,9 @@ public class PricingBL implements IPricingBL
 	/**
 	 * Set various fields in context, before using it.
 	 *
-	 * @param ctx
-	 * @param pricingCtx
 	 * @return configured pricing context (to be used in pricing calculations)
 	 */
-	private IPricingContext setupPricingContext(final Properties ctx, final IPricingContext pricingCtx)
+	private IPricingContext setupPricingContext(final IPricingContext pricingCtx)
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
@@ -231,7 +230,7 @@ public class PricingBL implements IPricingBL
 				&& pricingCtxToUse.getM_PriceList_ID() > 0
 				&& priceDate != null)
 		{
-			final I_M_PriceList priceList = priceListDAO.retrievePriceList(ctx, pricingCtx.getM_PriceList_ID());
+			final I_M_PriceList priceList = priceListDAO.getById(pricingCtx.getM_PriceList_ID());
 			try
 			{
 				final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
@@ -280,7 +279,7 @@ public class PricingBL implements IPricingBL
 	{
 		if (pricingCtx.getM_PriceList_ID() > 0 && result.getPrecision() == IPricingResult.NO_PRECISION)
 		{
-			final int precision = getPricePrecision(pricingCtx.getCtx(), pricingCtx.getM_PriceList_ID());
+			final int precision = getPricePrecision(pricingCtx.getM_PriceList_ID());
 			if (precision >= 0)
 			{
 				result.setPrecision(precision);
@@ -288,7 +287,7 @@ public class PricingBL implements IPricingBL
 		}
 	}
 
-	private void adjustPriceByUOM(IPricingContext pricingCtx, IPricingResult result)
+	private void convertResultToContextUOMIfNeeded(final IPricingResult result, final IPricingContext pricingCtx)
 	{
 		// We are asked to keep the prices in context's UOM, so do nothing
 		if (!pricingCtx.isConvertPriceToContextUOM())
@@ -296,26 +295,18 @@ public class PricingBL implements IPricingBL
 			return;
 		}
 
-		if ((pricingCtx.getC_UOM_ID() > 0) && (pricingCtx.getC_UOM_ID() != result.getPrice_UOM_ID()))
+		if (pricingCtx.getC_UOM_ID() > 0 && pricingCtx.getC_UOM_ID() != result.getPrice_UOM_ID())
 		{
-			final I_C_UOM uomTo = InterfaceWrapperHelper.create(Env.getCtx(), pricingCtx.getC_UOM_ID(), I_C_UOM.class, ITrx.TRXNAME_None);
-			final I_C_UOM uomFrom = InterfaceWrapperHelper.create(Env.getCtx(), result.getPrice_UOM_ID(), I_C_UOM.class, ITrx.TRXNAME_None);
-			final I_M_Product product = InterfaceWrapperHelper.create(Env.getCtx(), result.getM_Product_ID(), I_M_Product.class, ITrx.TRXNAME_None);
+			final I_C_UOM uomTo = loadOutOfTrx(pricingCtx.getC_UOM_ID(), I_C_UOM.class);
+			final I_C_UOM uomFrom = loadOutOfTrx(result.getPrice_UOM_ID(), I_C_UOM.class);
 
-			final BigDecimal factor = Services.get(IUOMConversionBL.class).convertQty(product, BigDecimal.ONE, uomFrom, uomTo);
-			Check.assumeNotNull(factor, "Conversion error");
+			final BigDecimal factor = Services.get(IUOMConversionBL.class).convertQty(result.getM_Product_ID(), BigDecimal.ONE, uomFrom, uomTo);
 
 			result.setPriceLimit(factor.multiply(result.getPriceLimit()));
 			result.setPriceList(factor.multiply(result.getPriceList()));
 			result.setPriceStd(factor.multiply(result.getPriceStd()));
 			result.setPrice_UOM_ID(pricingCtx.getC_UOM_ID());
 		}
-	}
-
-	@Cached(cacheName = I_M_Product.Table_Name)
-	/* package */I_M_Product getM_Product(@CacheCtx final Properties ctx, final int productId)
-	{
-		return InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, ITrx.TRXNAME_None);
 	}
 
 	private void setProductInfo(final IPricingContext pricingCtx, final IPricingResult result)
@@ -425,12 +416,10 @@ public class PricingBL implements IPricingBL
 		return null;
 	}
 
-	private final int getPricePrecision(final Properties ctx, final int priceListId)
+	private final int getPricePrecision(final int priceListId)
 	{
 		Check.assume(priceListId > 0, "priceListId > 0");
-		final I_M_PriceList priceList = InterfaceWrapperHelper.create(ctx, priceListId, I_M_PriceList.class, ITrx.TRXNAME_None);
-
-		return priceList.getPricePrecision();
+		return Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 	}
 
 	@Override

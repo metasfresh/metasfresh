@@ -3,7 +3,7 @@ package de.metas.material.event.transactions;
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -12,7 +12,7 @@ import org.adempiere.util.Check;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
+import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -63,7 +63,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	private final int ddOrderLineId;
 
-	private final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors;
+	private final Collection<HUDescriptor> huOnHandQtyChangeDescriptors;
 
 	public AbstractTransactionEvent(
 			final EventDescriptor eventDescriptor,
@@ -75,7 +75,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 			final int ddOrderLineId,
 			final int transactionId,
 			final boolean directMovementWarehouse,
-			final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors)
+			final Collection<HUDescriptor> huOnHandQtyChangeDescriptors)
 	{
 		this.transactionId = checkIdGreaterThanZero("transactionId", transactionId);
 
@@ -105,7 +105,5 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 		Check.errorIf(materialDescriptor == null, "materialDescriptor may not be null");
 		materialDescriptor.asssertMaterialDescriptorComplete();
-
-		huOnHandQtyChangeDescriptors.forEach(HUOnHandQtyChangeDescriptor::assertValid);
 	}
 }
