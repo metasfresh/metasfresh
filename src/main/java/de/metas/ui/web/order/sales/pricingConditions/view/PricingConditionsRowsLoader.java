@@ -11,16 +11,17 @@ import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IMDiscountSchemaBL;
-import org.adempiere.pricing.api.SchemaBreakQuery;
+import org.adempiere.pricing.api.IMDiscountSchemaDAO;
+import org.adempiere.pricing.api.PricingConditions;
+import org.adempiere.pricing.api.PricingConditionsBreak;
+import org.adempiere.pricing.api.PricingConditionsBreak.PriceOverrideType;
+import org.adempiere.pricing.api.PricingConditionsBreakQuery;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.X_M_DiscountSchemaBreak;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
@@ -28,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -64,7 +66,7 @@ class PricingConditionsRowsLoader
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-	private final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
+	private final IMDiscountSchemaDAO pricingConditionsRepo = Services.get(IMDiscountSchemaDAO.class);
 
 	private static final Comparator<PricingConditionsRow> ROWS_SORTING = Comparator.<PricingConditionsRow, Integer> comparing(row -> row.isEditable() ? 0 : 1)
 			.thenComparing(row -> row.getBpartner().getDisplayName())
@@ -80,6 +82,7 @@ class PricingConditionsRowsLoader
 	private final int adClientId;
 	private final List<I_M_AttributeInstance> attributeInstances;
 	private final int productId;
+	private final int productCategoryId;
 	private final BigDecimal qty;
 	private final BigDecimal amt;
 	private final DocumentFiltersList filters;
@@ -103,6 +106,7 @@ class PricingConditionsRowsLoader
 		adClientId = salesOrderLine.getAD_Client_ID();
 		attributeInstances = attributesRepo.retrieveAttributeInstances(salesOrderLine.getM_AttributeSetInstance_ID());
 		productId = salesOrderLine.getM_Product_ID();
+		productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
 		qty = salesOrderLine.getQtyOrdered();
 		final BigDecimal price = salesOrderLine.getPriceActual();
 		amt = qty.multiply(price);
@@ -177,67 +181,67 @@ class PricingConditionsRowsLoader
 		return discountSchemasInfoByDiscountSchemaId;
 	}
 
-	private I_M_DiscountSchemaBreak findMatchingSchemaBreakOrNull(final int discountSchemaId)
+	private PricingConditionsBreak findMatchingSchemaBreakOrNull(final int discountSchemaId)
 	{
-		return discountSchemaBL.pickApplyingBreak(SchemaBreakQuery.builder()
-				.discountSchemaId(discountSchemaId)
+		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
+		return pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
 				.attributeInstances(attributeInstances)
 				.productId(productId)
+				.productCategoryId(productCategoryId)
 				.qty(qty)
 				.amt(amt)
 				.build());
 	}
 
-	private Stream<PricingConditionsRow> createPricingConditionsRows(final I_M_DiscountSchemaBreak schemaBreak)
+	private Stream<PricingConditionsRow> createPricingConditionsRows(final PricingConditionsBreak pricingConditionsBreak)
 	{
-		return getDiscountSchemaInfos(schemaBreak.getM_DiscountSchema_ID())
+		return getDiscountSchemaInfos(pricingConditionsBreak.getDiscountSchemaId())
 				.stream()
-				.map(discountSchemaInfo -> createPricingConditionsRow(schemaBreak, discountSchemaInfo));
+				.map(discountSchemaInfo -> createPricingConditionsRow(pricingConditionsBreak, discountSchemaInfo));
 	}
 
-	private PricingConditionsRow createPricingConditionsRow(final I_M_DiscountSchemaBreak schemaBreak, final DiscountSchemaInfo discountSchemaInfo)
+	private PricingConditionsRow createPricingConditionsRow(final PricingConditionsBreak pricingConditionsBreak, final DiscountSchemaInfo discountSchemaInfo)
 	{
 		return PricingConditionsRow.builder()
 				.bpartner(lookupBPartner(discountSchemaInfo.getBpartnerId()))
 				.customer(discountSchemaInfo.isSOTrx())
-				.price(extractPrice(schemaBreak))
-				.discount(schemaBreak.getBreakDiscount())
-				.paymentTerm(paymentTermLookup.findById(schemaBreak.getC_PaymentTerm_ID()))
+				.price(extractPrice(pricingConditionsBreak))
+				.discount(pricingConditionsBreak.getDiscount())
+				.paymentTerm(paymentTermLookup.findById(pricingConditionsBreak.getPaymentTermId()))
 				.paymentTermLookup(paymentTermLookup)
 				.editable(false)
-				.discountSchemaId(schemaBreak.getM_DiscountSchema_ID())
-				.discountSchemaBreakId(schemaBreak.getM_DiscountSchemaBreak_ID())
+				.discountSchemaId(pricingConditionsBreak.getDiscountSchemaId())
+				.discountSchemaBreakId(pricingConditionsBreak.getDiscountSchemaBreakId())
 				.build();
 	}
 
-	private Price extractPrice(final I_M_DiscountSchemaBreak schemaBreak)
+	private Price extractPrice(final PricingConditionsBreak pricingConditionsBreak)
 	{
-		if (!schemaBreak.isPriceOverride())
+		final PriceOverrideType priceOverride = pricingConditionsBreak.getPriceOverride();
+		if (priceOverride == PriceOverrideType.NONE)
 		{
 			return Price.none();
 		}
-
-		final String priceBase = schemaBreak.getPriceBase();
-		if (X_M_DiscountSchemaBreak.PRICEBASE_PricingSystem.equals(priceBase))
+		else if (priceOverride == PriceOverrideType.BASE_PRICING_SYSTEM)
 		{
-			final LookupValue pricingSystem = lookupPricingSystem(schemaBreak.getBase_PricingSystem_ID());
+			final LookupValue pricingSystem = lookupPricingSystem(pricingConditionsBreak.getBasePricingSystemId());
 			if (pricingSystem == null)
 			{
-				logger.warn("Cannot extract pricing system from {}. Returning NO price", schemaBreak);
+				logger.warn("Cannot extract pricing system from {}. Returning NO price", pricingConditionsBreak);
 				return Price.none();
 			}
 
-			final BigDecimal basePriceAddAmt = schemaBreak.getStd_AddAmt();
+			final BigDecimal basePriceAddAmt = pricingConditionsBreak.getBasePriceAddAmt();
 
 			return Price.basePricingSystem(pricingSystem, basePriceAddAmt);
 		}
-		else if (X_M_DiscountSchemaBreak.PRICEBASE_Fixed.equals(priceBase))
+		else if (priceOverride == PriceOverrideType.FIXED_PRICED)
 		{
-			return Price.fixedPrice(schemaBreak.getPriceStd());
+			return Price.fixedPrice(pricingConditionsBreak.getFixedPrice());
 		}
 		else
 		{
-			logger.warn("Unknown PriceBase={} of {}. Returning NO price", priceBase, schemaBreak);
+			logger.warn("Unknown priceOverride={} of {}. Returning NO price", priceOverride, pricingConditionsBreak);
 			return Price.none();
 		}
 	}
