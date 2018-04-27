@@ -6,20 +6,19 @@ package org.adempiere.pricing.conditions.service.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.pricing.conditions.PricingConditions;
-import org.adempiere.pricing.conditions.PricingConditionsBreak;
-import org.adempiere.pricing.conditions.PricingConditionsBreakQuery;
-import org.adempiere.pricing.conditions.PricingConditionsDiscountType;
-import org.adempiere.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
-import org.adempiere.pricing.conditions.service.CalculateDiscountRequest;
-import org.adempiere.pricing.conditions.service.DiscountResult;
-import org.adempiere.pricing.conditions.service.IMDiscountSchemaBL;
-import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
-import org.adempiere.pricing.conditions.service.DiscountResult.DiscountResultBuilder;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.pricing.conditions.PricingConditions;
+import org.adempiere.pricing.conditions.PricingConditionsBreak;
+import org.adempiere.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
+import org.adempiere.pricing.conditions.PricingConditionsBreakQuery;
+import org.adempiere.pricing.conditions.PricingConditionsDiscountType;
+import org.adempiere.pricing.conditions.service.CalculateDiscountRequest;
+import org.adempiere.pricing.conditions.service.DiscountResult;
+import org.adempiere.pricing.conditions.service.DiscountResult.DiscountResultBuilder;
+import org.adempiere.pricing.conditions.service.IPricingConditionsRepository;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
@@ -55,8 +54,7 @@ import lombok.NonNull;
 /* package */ class CalculateDiscountCommand
 {
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
-	private final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
-	private final IMDiscountSchemaDAO discountSchemaRepo = Services.get(IMDiscountSchemaDAO.class);
+	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
 	final CalculateDiscountRequest request;
@@ -68,7 +66,7 @@ import lombok.NonNull;
 
 	public DiscountResult calculateDiscount()
 	{
-		final PricingConditions pricingConditions = discountSchemaRepo.getPricingConditionsById(request.getDiscountSchemaId());
+		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(request.getDiscountSchemaId());
 		Check.assumeNotNull(pricingConditions, "pricingConditions shall not be null");
 
 		final PricingConditionsDiscountType discountType = pricingConditions.getDiscountType();

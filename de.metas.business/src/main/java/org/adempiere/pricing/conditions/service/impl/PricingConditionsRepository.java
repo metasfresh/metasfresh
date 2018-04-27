@@ -45,7 +45,7 @@ import org.adempiere.pricing.conditions.PricingConditionsBreak;
 import org.adempiere.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import org.adempiere.pricing.conditions.PricingConditionsDiscountType;
 import org.adempiere.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
-import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.IPricingConditionsRepository;
 import org.adempiere.pricing.conditions.service.PricingConditionsBreakChangeRequest;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -66,7 +66,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import lombok.NonNull;
 
-public class MDiscountSchemaDAO implements IMDiscountSchemaDAO
+public class PricingConditionsRepository implements IPricingConditionsRepository
 {
 	private final CCache<Integer, PricingConditions> pricingConditionsById = CCache.<Integer, PricingConditions> newCache(I_M_DiscountSchema.Table_Name, 10, CCache.EXPIREMINUTES_Never)
 			.addResetForTableName(I_M_DiscountSchemaBreak.Table_Name);

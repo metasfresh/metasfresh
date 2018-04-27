@@ -12,8 +12,8 @@ import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.conditions.PricingConditionsBreak;
 import org.adempiere.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import org.adempiere.pricing.conditions.service.CalculateDiscountRequest;
-import org.adempiere.pricing.conditions.service.IMDiscountSchemaBL;
-import org.adempiere.pricing.conditions.service.impl.MDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.IPricingConditionsService;
+import org.adempiere.pricing.conditions.service.impl.PricingConditionsRepository;
 import org.adempiere.pricing.limit.PriceLimitRuleContext;
 import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.util.Services;
@@ -97,7 +97,7 @@ public class M_DiscountSchemaBreak
 		}
 
 		final PriceLimitEnforceContext context = PriceLimitEnforceContext.builder()
-				.pricingConditionsBreak(MDiscountSchemaDAO.toPricingConditionsBreak(schemaBreak))
+				.pricingConditionsBreak(PricingConditionsRepository.toPricingConditionsBreak(schemaBreak))
 				.isSOTrx(true)
 				.build();
 
@@ -126,7 +126,7 @@ public class M_DiscountSchemaBreak
 	{
 		final CalculateDiscountRequest request = createCalculateDiscountRequest(context);
 
-		final BigDecimal price = Services.get(IMDiscountSchemaBL.class)
+		final BigDecimal price = Services.get(IPricingConditionsService.class)
 				.calculateDiscount(request)
 				.getPriceStdOverride();
 		if (price == null)

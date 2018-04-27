@@ -34,7 +34,7 @@ import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.conditions.service.CalculateDiscountRequest;
 import org.adempiere.pricing.conditions.service.DiscountResult;
-import org.adempiere.pricing.conditions.service.IMDiscountSchemaBL;
+import org.adempiere.pricing.conditions.service.IPricingConditionsService;
 import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -120,8 +120,8 @@ public class Discount implements IPricingRule
 				.pricingCtx(pricingCtx)
 				.build();
 		
-		final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
-		final DiscountResult discountResult = discountSchemaBL.calculateDiscount(request);
+		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
+		final DiscountResult discountResult = pricingConditionsService.calculateDiscount(request);
 
 		result.setUsesDiscountSchema(true);
 		result.setM_DiscountSchema_ID(discountSchemaId);

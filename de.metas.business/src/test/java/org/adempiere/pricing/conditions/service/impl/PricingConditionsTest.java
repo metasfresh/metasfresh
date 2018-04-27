@@ -46,9 +46,7 @@ import org.adempiere.pricing.conditions.PricingConditions;
 import org.adempiere.pricing.conditions.PricingConditionsBreak;
 import org.adempiere.pricing.conditions.service.CalculateDiscountRequest;
 import org.adempiere.pricing.conditions.service.DiscountResult;
-import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
-import org.adempiere.pricing.conditions.service.impl.MDiscountSchemaBL;
-import org.adempiere.pricing.conditions.service.impl.MDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.IPricingConditionsRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
@@ -69,13 +67,13 @@ import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 
-public class MDiscountSchemaTest
+public class PricingConditionsTest
 {
 	@Rule
 	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 
-	protected MDiscountSchemaDAO dao;
-	protected MDiscountSchemaBL bl;
+	private PricingConditionsRepository repo;
+	private PricingConditionsService service;
 
 	@Before
 	public void init()
@@ -83,9 +81,9 @@ public class MDiscountSchemaTest
 		AdempiereTestHelper.get().init();
 		POJOWrapper.setDefaultStrictValues(false);
 
-		dao = new MDiscountSchemaDAO();
-		bl = new MDiscountSchemaBL();
-		Services.registerService(IMDiscountSchemaDAO.class, dao);
+		repo = new PricingConditionsRepository();
+		service = new PricingConditionsService();
+		Services.registerService(IPricingConditionsRepository.class, repo);
 	}
 
 	@Test
@@ -99,7 +97,7 @@ public class MDiscountSchemaTest
 
 		final I_M_DiscountSchemaBreak schemaBreak3 = PricingConditionsTestUtils.createBreak(schema2, 10);
 
-		final List<I_M_DiscountSchemaBreak> breaks = dao.streamSchemaBreakRecords(Env.getCtx(), ImmutableList.of(schema1.getM_DiscountSchema_ID()), ITrx.TRXNAME_ThreadInherited)
+		final List<I_M_DiscountSchemaBreak> breaks = repo.streamSchemaBreakRecords(Env.getCtx(), ImmutableList.of(schema1.getM_DiscountSchema_ID()), ITrx.TRXNAME_ThreadInherited)
 				.collect(ImmutableList.toImmutableList());
 
 		assertThat(breaks).hasSize(2);
@@ -118,7 +116,7 @@ public class MDiscountSchemaTest
 
 		final I_M_DiscountSchemaLine schemaLine3 = createLine(schema2, 10);
 
-		final List<I_M_DiscountSchemaLine> lines = dao.retrieveLines(Env.getCtx(), schema1.getM_DiscountSchema_ID(), ITrx.TRXNAME_ThreadInherited);
+		final List<I_M_DiscountSchemaLine> lines = repo.retrieveLines(Env.getCtx(), schema1.getM_DiscountSchema_ID(), ITrx.TRXNAME_ThreadInherited);
 
 		assertThat(lines).hasSize(2);
 		assertThat(lines).contains(schemaLine1, schemaLine2);
@@ -162,7 +160,7 @@ public class MDiscountSchemaTest
 		schemaBreak.setM_Product_ID(product.getM_Product_ID());
 		save(schemaBreak);
 
-		final PricingConditions pricingConditions = dao.retrievePricingConditionsById(schema.getM_DiscountSchema_ID());
+		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(schema.getM_DiscountSchema_ID());
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQty(product, 15));
 
 		assertThat(actualSchemaBreak1).isNotNull();
@@ -180,7 +178,7 @@ public class MDiscountSchemaTest
 		schemaBreak.setM_Product_ID(-1);
 		save(schemaBreak);
 
-		final PricingConditions pricingConditions = dao.retrievePricingConditionsById(schema.getM_DiscountSchema_ID());
+		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(schema.getM_DiscountSchema_ID());
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQty(product, 15));
 
 		assertThat(actualSchemaBreak1).isNotNull();
@@ -198,7 +196,7 @@ public class MDiscountSchemaTest
 		schemaBreak.setM_Product_ID(-1);
 		save(schemaBreak);
 
-		final PricingConditions pricingConditions = dao.retrievePricingConditionsById(schema.getM_DiscountSchema_ID());
+		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(schema.getM_DiscountSchema_ID());
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQty(product, 15));
 
 		assertThat(actualSchemaBreak1).isNotNull();
@@ -230,7 +228,7 @@ public class MDiscountSchemaTest
 		schemaBreak2.setBreakDiscount(BigDecimal.valueOf(2));
 		save(schemaBreak2);
 
-		PricingConditions pricingConditions = dao.retrievePricingConditionsById(schema1.getM_DiscountSchema_ID());
+		PricingConditions pricingConditions = repo.retrievePricingConditionsById(schema1.getM_DiscountSchema_ID());
 
 		//
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQtyAndAttributeValues(product1, 15, attrValue1));
@@ -249,7 +247,7 @@ public class MDiscountSchemaTest
 		// test also if seqNo is still respected
 		schemaBreak1.setM_AttributeValue(null);
 		save(schemaBreak1);
-		pricingConditions = dao.retrievePricingConditionsById(schema1.getM_DiscountSchema_ID());
+		pricingConditions = repo.retrievePricingConditionsById(schema1.getM_DiscountSchema_ID());
 
 		final PricingConditionsBreak actualSchemaBreak4 = pricingConditions.pickApplyingBreak(createQueryForQtyAndAttributeValues(product1, 15, attrValue2));
 		assertThat(actualSchemaBreak4).isNotNull();
@@ -279,7 +277,7 @@ public class MDiscountSchemaTest
 		schemaBreak2.setM_AttributeValue(null);
 		save(schemaBreak2);
 
-		final PricingConditions pricingConditions = dao.retrievePricingConditionsById(schema1.getM_DiscountSchema_ID());
+		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(schema1.getM_DiscountSchema_ID());
 
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQty(product1, 15));
 		assertThat(actualSchemaBreak1).isNotNull();
@@ -310,7 +308,7 @@ public class MDiscountSchemaTest
 		schemaBreak2.setM_AttributeValue(attrValue2);
 		save(schemaBreak2);
 
-		final PricingConditions pricingConditions = dao.retrievePricingConditionsById(schema1.getM_DiscountSchema_ID());
+		final PricingConditions pricingConditions = repo.retrievePricingConditionsById(schema1.getM_DiscountSchema_ID());
 
 		final PricingConditionsBreak actualSchemaBreak1 = pricingConditions.pickApplyingBreak(createQueryForQtyAndAttributeValues(product1, 15, attrValue1, attrValue2));
 		assertThat(actualSchemaBreak1).isNotNull();
@@ -439,7 +437,7 @@ public class MDiscountSchemaTest
 			return request.getPrice();
 		}
 
-		final DiscountResult result = bl.calculateDiscount(request);
+		final DiscountResult result = service.calculateDiscount(request);
 
 		final BigDecimal discount = result.getDiscount();
 		if (discount == null || discount.signum() == 0)

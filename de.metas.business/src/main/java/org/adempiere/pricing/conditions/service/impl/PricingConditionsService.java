@@ -3,9 +3,9 @@ package org.adempiere.pricing.conditions.service.impl;
 
 import org.adempiere.pricing.conditions.service.CalculateDiscountRequest;
 import org.adempiere.pricing.conditions.service.DiscountResult;
-import org.adempiere.pricing.conditions.service.IMDiscountSchemaBL;
+import org.adempiere.pricing.conditions.service.IPricingConditionsService;
 
-public class MDiscountSchemaBL implements IMDiscountSchemaBL
+public class PricingConditionsService implements IPricingConditionsService
 {
 
 	@Override

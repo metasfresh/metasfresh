@@ -2,7 +2,7 @@ package org.adempiere.pricing.conditions.service;
 
 import org.adempiere.util.ISingletonService;
 
-public interface IMDiscountSchemaBL extends ISingletonService
+public interface IPricingConditionsService extends ISingletonService
 {
 	/**
 	 * Calculate Discount Percentage

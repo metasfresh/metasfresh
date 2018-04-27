@@ -56,7 +56,7 @@ import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.pricing.conditions.PricingConditions;
 import org.adempiere.pricing.conditions.PricingConditionsBreak;
 import org.adempiere.pricing.conditions.PricingConditionsBreakQuery;
-import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.IPricingConditionsRepository;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -2019,7 +2019,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void setQualityDiscountPercent_Override(final I_C_Invoice_Candidate ic, final List<I_M_AttributeInstance> instances)
 	{
-		final IMDiscountSchemaDAO discountSchemasRepo = Services.get(IMDiscountSchemaDAO.class);
+		final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
@@ -2045,7 +2045,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		final BigDecimal amt = ic.getPriceActual().multiply(qty);
 
-		final PricingConditions pricingConditions = discountSchemasRepo.getPricingConditionsById(discountSchemaId);
+		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
 		final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
 				.attributeInstances(instances)
 				.productId(ic.getM_Product_ID())

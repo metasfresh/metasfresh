@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.adempiere.pricing.conditions.PricingConditions;
 import org.adempiere.util.ISingletonService;
 
-public interface IMDiscountSchemaDAO extends ISingletonService
+public interface IPricingConditionsRepository extends ISingletonService
 {
 	PricingConditions getPricingConditionsById(int discountSchemaId);
 

@@ -10,8 +10,8 @@ import java.util.List;
 import org.adempiere.pricing.conditions.PricingConditions;
 import org.adempiere.pricing.conditions.PricingConditionsBreak;
 import org.adempiere.pricing.conditions.PricingConditionsBreakQuery;
-import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
-import org.adempiere.pricing.conditions.service.impl.MDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.IPricingConditionsRepository;
+import org.adempiere.pricing.conditions.service.impl.PricingConditionsRepository;
 import org.adempiere.util.Services;
 import org.assertj.core.api.AbstractIntegerAssert;
 import org.compiere.model.I_M_DiscountSchema;
@@ -50,7 +50,7 @@ public class PricingConditionsTestData1
 		return new PricingConditionsTestData1();
 	}
 
-	private final MDiscountSchemaDAO pricingConditionsRepo;
+	private final PricingConditionsRepository pricingConditionsRepo;
 
 	private final I_M_Product product;
 
@@ -62,7 +62,7 @@ public class PricingConditionsTestData1
 
 	private PricingConditionsTestData1()
 	{
-		pricingConditionsRepo = (MDiscountSchemaDAO)Services.get(IMDiscountSchemaDAO.class);
+		pricingConditionsRepo = (PricingConditionsRepository)Services.get(IPricingConditionsRepository.class);
 
 		final I_M_Product_Category productCategory = PricingConditionsTestUtils.createM_ProductCategory("Category1");
 		product = PricingConditionsTestUtils.createM_Product("Product1", productCategory);

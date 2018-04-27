@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.IPricingConditionsRepository;
 import org.adempiere.util.Services;
 
 import de.metas.process.JavaProcess;
@@ -32,7 +32,7 @@ public class DiscountSchemaReSeq extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final int discountSchemaId = getRecord_ID();
-		final int updated = Services.get(IMDiscountSchemaDAO.class).resequence(discountSchemaId);
+		final int updated = Services.get(IPricingConditionsRepository.class).resequence(discountSchemaId);
 
 		return "@Updated@ #" + updated;
 	}
