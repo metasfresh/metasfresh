@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,12 +40,6 @@ import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 
-/**
- * Defines an {@link I_M_Attribute} - Value pair
- *
- * @author tsa
- *
- */
 public interface IAttributeValue
 {
 	/**
@@ -217,7 +211,7 @@ public interface IAttributeValue
 	boolean isUseInASI();
 
 	/**
-	 * 
+	 *
 	 * @return
 	 * 		<ul>
 	 *         <li>true if this attribute was defined by the standard template
