@@ -76,7 +76,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 			return null;
 		}
 
-		final List<I_SEPA_Export> exports = new ArrayList<I_SEPA_Export>();
+		final List<I_SEPA_Export> exports = new ArrayList<>();
 
 		while (iterator.hasNext())
 		{
@@ -215,12 +215,6 @@ public class SEPADocumentBL implements ISEPADocumentBL
 			final FileOutputStream out = new FileOutputStream(fileName, false);
 			try
 			{
-				// "old" marshaler
-				// final SEPACustomerCTIMarshaler_Pain_001_003_03 marshaler = new SEPACustomerCTIMarshaler_Pain_001_003_03();
-
-				// marshaler based on xsd from the iso20022 site
-				// final SEPACustomerCTIMarshaler_Pain_001_001_03 marshaler = new SEPACustomerCTIMarshaler_Pain_001_001_03();
-
 				// marshaler based on xsd from the https://validation.iso-payments.ch download section
 				final SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 marshaler = new SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02();
 				marshaler.marshal(sepaExport, out);
