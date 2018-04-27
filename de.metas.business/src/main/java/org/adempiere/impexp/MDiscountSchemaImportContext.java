@@ -54,9 +54,9 @@ public final class MDiscountSchemaImportContext
 		return previousImportRecord == null ? -1 : previousImportRecord.getM_DiscountSchema_ID();
 	}
 
-	public String getPreviousBPartnerValue()
+	public int getPreviousBPartnerId()
 	{
-		return previousImportRecord == null ? null : previousImportRecord.getBPartner_Value();
+		return previousImportRecord == null ? null : previousImportRecord.getC_BPartner_ID();
 	}
 
 

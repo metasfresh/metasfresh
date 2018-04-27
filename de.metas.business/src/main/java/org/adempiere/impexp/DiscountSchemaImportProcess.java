@@ -75,13 +75,13 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		}
 		final I_I_DiscountSchema previousImportRecord = context.getPreviousImportRecord();
 		final int previousDiscountSchemaId = context.getPreviousM_DiscountSchema_ID();
-		final String previousBPartnerValue = context.getPreviousBPartnerValue();
+		final int previousBPartnerId = context.getPreviousBPartnerId();
 		context.setPreviousImportRecord(importRecord);
 
 		final ImportRecordResult schemaImportResult;
 
 		final boolean firstImportRecordOrNewDiscountSchema = previousImportRecord == null
-				|| !Objects.equals(importRecord.getBPartner_Value(), previousBPartnerValue);
+				|| !Objects.equals(importRecord.getC_BPartner_ID(), previousBPartnerId);
 
 		if (firstImportRecordOrNewDiscountSchema)
 		{
