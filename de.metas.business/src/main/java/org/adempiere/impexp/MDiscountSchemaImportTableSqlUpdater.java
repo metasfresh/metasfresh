@@ -3,11 +3,8 @@ package org.adempiere.impexp;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
 
-import java.util.List;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_I_DiscountSchema;
@@ -75,23 +72,15 @@ public class MDiscountSchemaImportTableSqlUpdater
 		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private void dbUpdateDiscountSchema()
+	private void dbUpdateDiscountSchema(@NonNull final String whereClause)
 	{
-		final List<I_I_DiscountSchema> records = Services.get(IQueryBL.class).createQueryBuilder(I_I_DiscountSchema.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_I_DiscountSchema.COLUMNNAME_I_IsImported, false)
-				.addNotNull(I_I_DiscountSchema.COLUMNNAME_C_BPartner_ID)
-				.create()
-				.list(I_I_DiscountSchema.class);
-
-		records.forEach(importRecord -> {
-			final int schemaId = retrieveDiscountSchemaByBPartnerId(importRecord.getC_BPartner_ID());
-			if (schemaId > 0)
-			{
-				importRecord.setM_DiscountSchema_ID(schemaId);
-				InterfaceWrapperHelper.save(importRecord);
-			}
-		});
+		StringBuilder sql = new StringBuilder("UPDATE I_DiscountSchema i ")
+				.append("SET M_DiscountSchema_ID=(SELECT M_DiscountSchema_ID FROM C_BPartner bp ")
+				.append(" WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.AD_Client_ID=bp.AD_Client_ID) ")
+				.append("WHERE M_DiscountSchema_ID IS NULL AND C_BPartner_ID IS NOT NULL ")
+				.append("AND I_IsImported<>'Y'  ")
+				.append(whereClause);
+		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Cached(cacheName = I_C_BPartner.Table_Name + "#by#C_BPartner_ID")
