@@ -29,12 +29,13 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingContext;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MPriceList;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductPricing;
 import org.compiere.util.DisplayType;
@@ -45,14 +46,15 @@ public class ProductNotOnPriceListException extends AdempiereException
 {
 	public static final String AD_Message = "ProductNotOnPriceList";
 
-	/**
-	 *
-	 * @param pricingCtx
-	 * @param documentLineNo ignored if <=0
-	 */
+	public ProductNotOnPriceListException(final IPricingContext pricingCtx)
+	{
+		this(pricingCtx, /* documentLineNo */-1);
+	}
+
 	public ProductNotOnPriceListException(final IPricingContext pricingCtx, final int documentLineNo)
 	{
 		super(buildMessage(pricingCtx, documentLineNo));
+		setParameter("pricingCtx", pricingCtx);
 	}
 
 	public ProductNotOnPriceListException(final I_M_PriceList_Version plv, final int productId)
@@ -105,7 +107,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 		}
 		if (m_PriceList_ID > 0)
 		{
-			final MPriceList pl = MPriceList.get(Env.getCtx(), m_PriceList_ID, null);
+			final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(m_PriceList_ID);
 			if (sb.length() > 0)
 			{
 				sb.append(", ");

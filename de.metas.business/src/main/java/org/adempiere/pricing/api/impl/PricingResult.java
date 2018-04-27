@@ -33,7 +33,8 @@ import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ObjectUtils;
+
+import lombok.ToString;
 
 /**
  *
@@ -45,8 +46,11 @@ import org.adempiere.util.lang.ObjectUtils;
  * @author tsa
  *
  */
+@ToString
 class PricingResult implements IPricingResult
 {
+	private boolean calculated = false;
+	
 	private int M_PricingSystem_ID = -1;
 	private int M_PriceList_ID = -1;
 	private int C_Currency_ID = -1;
@@ -57,6 +61,7 @@ class PricingResult implements IPricingResult
 	private int C_TaxCategory_ID = -1;
 	private int M_DiscountSchema_ID = -1;
 	private int M_DiscountSchemaBreak_ID = -1;
+	private int M_DiscountSchemaBreak_BasePricingSystem_ID = -1;
 	private int precision = NO_PRECISION;
 	private BigDecimal priceList = BigDecimal.ZERO;
 	private BigDecimal priceStd = BigDecimal.ZERO;
@@ -71,8 +76,6 @@ class PricingResult implements IPricingResult
 
 	private boolean isPriceEditable = true;
 	private boolean isDiscountEditable = true;
-
-	private boolean calculated = false;
 
 	private final List<IPricingRule> rulesApplied = new ArrayList<>();
 
@@ -430,12 +433,6 @@ class PricingResult implements IPricingResult
 	}
 
 	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	@Override
 	public int getC_PaymentTerm_ID()
 	{
 		return C_PaymentTerm_ID;
@@ -481,5 +478,17 @@ class PricingResult implements IPricingResult
 	public void setM_DiscountSchemaBreak_ID(final int M_DiscountSchemaBreak_ID)
 	{
 		this.M_DiscountSchemaBreak_ID = M_DiscountSchemaBreak_ID;
+	}
+
+	@Override
+	public int getM_DiscountSchemaBreak_BasePricingSystem_ID()
+	{
+		return M_DiscountSchemaBreak_BasePricingSystem_ID;
+	}
+
+	@Override
+	public void setM_DiscountSchemaBreak_BasePricingSystem_ID(int m_DiscountSchemaBreak_BasePricingSystem_ID)
+	{
+		M_DiscountSchemaBreak_BasePricingSystem_ID = m_DiscountSchemaBreak_BasePricingSystem_ID;
 	}
 }

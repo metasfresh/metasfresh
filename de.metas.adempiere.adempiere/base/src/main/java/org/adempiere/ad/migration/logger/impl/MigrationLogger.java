@@ -53,6 +53,7 @@ import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Form_Access;
+import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Process_Stats;
@@ -109,6 +110,7 @@ public class MigrationLogger implements IMigrationLogger
 				"AD_CHANGELOG",
 				"AD_ISSUE",
 				"AD_LDAPPROCESSORLOG",
+				I_AD_Note.Table_Name.toUpperCase(),
 				"AD_PACKAGE_IMP",
 				"AD_PACKAGE_IMP_BACKUP",
 				"AD_PACKAGE_IMP_DETAIL",

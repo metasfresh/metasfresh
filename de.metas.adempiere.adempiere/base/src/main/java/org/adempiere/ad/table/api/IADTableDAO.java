@@ -142,13 +142,14 @@ public interface IADTableDAO extends ISingletonService
 	 *
 	 *
 	 * @param tableName can be case-insensitive
-	 * @return
 	 */
 	I_AD_Table retrieveTable(String tableName);
 
+	I_AD_Table retrieveTableOrNull(String tableName);
+
 	/**
 	 * Retrieve all the columns of the given table
-	 * 
+	 *
 	 * @param table
 	 * @return
 	 */
@@ -158,7 +159,7 @@ public interface IADTableDAO extends ISingletonService
 	 * Retrieve the AD_DocumentTable_Template table for the context of the given targetTable.
 	 * This table contains all the dolumns that are supposed to belong in a table that is a document.
 	 * The table name of this template is defined in the {@link de.metas.document.DocumentConstants}
-	 * 
+	 *
 	 * @param targetTable
 	 * @return the Table DOcument Template
 	 */

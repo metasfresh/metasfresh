@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -109,22 +108,6 @@ public class MUOM extends X_C_UOM
 		s_cache.put(C_UOM_ID, uom);
 		return uom;
 	}	// get
-
-	/**
-	 * Get UOM by name
-	 * 
-	 * @param ctx
-	 * @param name
-	 * @param trxName
-	 * @return MUOM if found, null if not found
-	 * @deprecated Deprecated because it's error phrone (no AD_Client_ID is enforced) and because it's used only in one AIT.
-	 */
-	@Deprecated
-	public static MUOM get(Properties ctx, String name, String trxName)
-	{
-		MUOM uom = (MUOM)TableModelLoader.instance.getPO(ctx, Table_Name, "Name = ?", new Object[] { name }, trxName);
-		return uom;
-	}
 
 	/**
 	 * Get Precision

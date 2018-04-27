@@ -26,6 +26,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.CustomColNames;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
@@ -41,7 +42,6 @@ import org.compiere.model.MInvoiceSchedule;
 import org.compiere.model.MLocation;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.MPriceList;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -434,7 +434,7 @@ public class InvoiceGenerate extends JavaProcess
 		if (m_invoice == null)
 		{
 			m_invoice = new MInvoice(order, 0, p_DateInvoiced);
-			m_invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None); // US1184
+			m_invoice.setM_PriceList_ID(IPriceListDAO.M_PriceList_ID_None); // US1184
 			m_invoice.setC_Currency_ID(order.getC_Currency_ID()); // US1184
 			if (!m_invoice.save())
 				throw new IllegalStateException("Could not create Invoice (o)");
@@ -486,7 +486,7 @@ public class InvoiceGenerate extends JavaProcess
 		if (m_invoice == null)
 		{
 			m_invoice = new MInvoice(order, 0, p_DateInvoiced);
-			m_invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None); // US1184
+			m_invoice.setM_PriceList_ID(IPriceListDAO.M_PriceList_ID_None); // US1184
 			m_invoice.setC_Currency_ID(order.getC_Currency_ID()); // US1184
 			if (!m_invoice.save())
 				throw new IllegalStateException("Could not create Invoice (s)");

@@ -30,21 +30,32 @@ import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 
 public class PriceListBL implements IPriceListBL
 {
 	@Override
-	public I_M_PriceList getCurrentPricelistOrNull(final I_M_PricingSystem pricingSystem,
-			final I_C_Country country,
-			final Timestamp date,
-			final boolean isSoTrx)
+	public int getPricePrecision(final int priceListId)
 	{
-		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystem, country, date, isSoTrx, null);
+		if(priceListId <= 0)
+		{
+			return 2; // default
+		}
+		
+		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(priceListId);
+		return priceList.getPricePrecision();
+	}
 
+	@Override
+	public I_M_PriceList getCurrentPricelistOrNull(
+			final int pricingSystemId,
+			final int countryId,
+			final Timestamp date,
+			final boolean isSOTrx)
+	{
+		final Boolean processedPLVFiltering = null;
+		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystemId, countryId, date, isSOTrx, processedPLVFiltering);
 		if (currentVersion == null)
 		{
 			return null;
@@ -55,28 +66,28 @@ public class PriceListBL implements IPriceListBL
 	}
 
 	@Override
-	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(final I_M_PricingSystem pricingSystem,
-			final I_C_Country country,
+	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(
+			final int pricingSystemId,
+			final int countryId,
 			final Timestamp date,
-			final boolean isSoTrx,
+			final Boolean isSOTrx,
 			final Boolean processedPLVFiltering)
 	{
-		Check.assumeNotNull(date, "Param 'date' is not null; other params: country={}, isSoTrx={}, processedPLVFiltering={}", country, isSoTrx, processedPLVFiltering);
+		Check.assumeNotNull(date, "Param 'date' is not null; other params: country={}, isSoTrx={}, processedPLVFiltering={}", countryId, isSOTrx, processedPLVFiltering);
 
-		if (country == null)
+		if (countryId <= 0)
 		{
 			return null;
 		}
 
-		if (pricingSystem == null)
+		if (pricingSystemId <= 0)
 		{
 			return null;
 		}
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystem, country, isSoTrx);
-
-		if (pricelists == null)
+		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, isSOTrx);
+		if (!pricelists.hasNext())
 		{
 			return null;
 		}

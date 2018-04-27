@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
+import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.Singular;
@@ -51,7 +51,7 @@ public class TransactionCreatedEvent extends AbstractTransactionEvent
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId,
 			@JsonProperty("transactionId") final int transactionId,
 			@JsonProperty("directMovementWarehouse") final boolean directMovementWarehouse,
-			@JsonProperty("huOnHandQtyChangeDescriptor") @Singular final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors)
+			@JsonProperty("huOnHandQtyChangeDescriptor") @Singular final List<HUDescriptor> huOnHandQtyChangeDescriptors)
 	{
 		super(eventDescriptor,
 				materialDescriptor,

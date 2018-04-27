@@ -10,7 +10,6 @@ import java.sql.Timestamp;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
@@ -20,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.order.event.OrderUserNotifications;
+import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.order.model.I_C_Order;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -78,10 +78,10 @@ public class PurchaseOrderFromItemFactoryTest
 			NotificationRequest request;
 			orderUserNotifications.notifyOrderCompleted(request = withCapture()); times = 1;
 
-			final IPair<String, Object[]> adMessageAndParams = request.getAdMessageAndParams();
+			final ADMessageAndParams adMessageAndParams = request.getAdMessageAndParams();
 			assertThat(adMessageAndParams).isNotNull();
-			assertThat(adMessageAndParams.getLeft()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_DatePromised);
-			assertThat(adMessageAndParams.getRight()).hasSize(3);
+			assertThat(adMessageAndParams.getAdMessage()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_DatePromised);
+			assertThat(adMessageAndParams.getParams()).hasSize(3);
 		}};	// @formatter:on
 	}
 
@@ -98,10 +98,10 @@ public class PurchaseOrderFromItemFactoryTest
 			NotificationRequest request;
 			orderUserNotifications.notifyOrderCompleted(request = withCapture()); times = 1;
 
-			final IPair<String, Object[]> adMessageAndParams = request.getAdMessageAndParams();
+			final ADMessageAndParams adMessageAndParams = request.getAdMessageAndParams();
 			assertThat(adMessageAndParams).isNotNull();
-			assertThat(adMessageAndParams.getLeft()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity);
-			assertThat(adMessageAndParams.getRight()).hasSize(3);
+			assertThat(adMessageAndParams.getAdMessage()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity);
+			assertThat(adMessageAndParams.getParams()).hasSize(3);
 		}};	// @formatter:on
 	}
 
@@ -119,10 +119,10 @@ public class PurchaseOrderFromItemFactoryTest
 			NotificationRequest request;
 			orderUserNotifications.notifyOrderCompleted(request = withCapture()); times = 1;
 
-			final IPair<String, Object[]> adMessageAndParams = request.getAdMessageAndParams();
+			final ADMessageAndParams adMessageAndParams = request.getAdMessageAndParams();
 			assertThat(adMessageAndParams).isNotNull();
-			assertThat(adMessageAndParams.getLeft()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity_AND_DatePromised);
-			assertThat(adMessageAndParams.getRight()).hasSize(3);
+			assertThat(adMessageAndParams.getAdMessage()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity_AND_DatePromised);
+			assertThat(adMessageAndParams.getParams()).hasSize(3);
 		}};	// @formatter:on
 	}
 

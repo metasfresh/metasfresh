@@ -40,8 +40,17 @@ import lombok.Value;
 @Value
 public class DiscountResult
 {
+	public static DiscountResult discount(@NonNull final BigDecimal discount)
+	{
+		if(BigDecimal.ZERO.equals(ZERO.getDiscount()))
+		{
+			return ZERO;
+		}
+		return builder().discount(discount).build();
+	}
+
 	public static final DiscountResult ZERO = builder().discount(BigDecimal.ZERO).build();
-	
+
 	@Default
 	@NonNull
 	BigDecimal discount = BigDecimal.ZERO;
@@ -53,4 +62,7 @@ public class DiscountResult
 
 	@Default
 	private final int discountSchemaBreakId = -1;
+	
+	@Default
+	private final int discountSchemaBreak_BasePricingSystem_Id = -1;
 }

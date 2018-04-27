@@ -20,7 +20,7 @@ import de.metas.handlingunits.client.terminal.select.model.WarehouseKey;
 import de.metas.handlingunits.client.terminal.select.model.WarehouseKeyLayout;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.movement.event.MovementProcessedEventBus;
+import de.metas.movement.event.MovementUserNotificationsProducer;
 
 /*
  * #%L
@@ -149,9 +149,8 @@ public abstract class AbstractMovementsWarehouseModel extends AbstractMaterialMo
 
 				createMovements();
 
-				MovementProcessedEventBus.newInstance()
-						.queueEventsUntilTrxCommit(trxManager.getThreadInheritedTrxName())
-						.notify(movements);
+				MovementUserNotificationsProducer.newInstance()
+						.notifyProcessed(movements);
 			}
 
 			@Override

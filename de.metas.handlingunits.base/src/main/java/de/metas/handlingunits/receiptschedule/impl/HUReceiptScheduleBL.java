@@ -40,6 +40,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -408,12 +410,9 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	/**
-	 *
-	 * @param hu
-	 * @param vendorBPartnerId
 	 * @task https://github.com/metasfresh/metasfresh-webui/issues/209
 	 */
-	private void printReceiptLabel(final HUToReport hu, final int vendorBPartnerId)
+	private void printReceiptLabel(@Nullable final HUToReport hu, final int vendorBPartnerId)
 	{
 		if (hu == null)
 		{

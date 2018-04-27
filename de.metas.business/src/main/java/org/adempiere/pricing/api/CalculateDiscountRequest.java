@@ -8,13 +8,14 @@ import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_DiscountSchemaBreak;
 
 import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -30,11 +31,11 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -47,34 +48,44 @@ import lombok.Value;
 @Immutable
 public class CalculateDiscountRequest
 {
-	@NonNull
-	private final I_M_DiscountSchema schema;
+	private final int discountSchemaId;
+	private final I_M_DiscountSchemaBreak forceSchemaBreak;
+
 	private final BigDecimal qty;
-	private final BigDecimal Price;
-	private final int M_Product_ID;
-	private final int M_Product_Category_ID;
-	private final BigDecimal bPartnerFlatDiscount;
-	private final List<I_M_AttributeInstance> instances;
+	private final BigDecimal price;
+	private final int productId;
+	private final BigDecimal bpartnerFlatDiscount;
+	private final List<I_M_AttributeInstance> attributeInstances;
 	private final IPricingContext pricingCtx;
 
 	@Builder
 	private CalculateDiscountRequest(
-			@NonNull final I_M_DiscountSchema schema,
+			final int discountSchemaId,
+			final I_M_DiscountSchemaBreak forceSchemaBreak,
 			final BigDecimal qty,
-			final BigDecimal Price,
-			final int M_Product_ID,
-			final int M_Product_Category_ID,
-			final BigDecimal bPartnerFlatDiscount,
-			final List<I_M_AttributeInstance> instances,
+			final BigDecimal price,
+			final int productId,
+			final BigDecimal bpartnerFlatDiscount,
+			final List<I_M_AttributeInstance> attributeInstances,
 			final IPricingContext pricingCtx)
 	{
-		this.schema = schema;
+		Check.assumeGreaterThanZero(discountSchemaId, "discountSchemaId");
+
+		if (forceSchemaBreak != null && forceSchemaBreak.getM_DiscountSchema_ID() != discountSchemaId)
+		{
+			throw new AdempiereException("Schema and schema break does not match")
+					.setParameter("discountSchemaId", discountSchemaId)
+					.setParameter("forceSchemaBreak", forceSchemaBreak)
+					.appendParametersToMessage();
+		}
+
+		this.discountSchemaId = discountSchemaId;
+		this.forceSchemaBreak = forceSchemaBreak;
 		this.qty = qty;
-		this.Price = Price;
-		this.M_Product_ID = M_Product_ID;
-		this.M_Product_Category_ID = M_Product_Category_ID;
-		this.bPartnerFlatDiscount = bPartnerFlatDiscount;
-		this.instances = instances != null ? ImmutableList.copyOf(instances) : ImmutableList.of();
+		this.price = price;
+		this.productId = productId;
+		this.bpartnerFlatDiscount = bpartnerFlatDiscount != null ? bpartnerFlatDiscount : BigDecimal.ZERO;
+		this.attributeInstances = attributeInstances != null ? ImmutableList.copyOf(attributeInstances) : ImmutableList.of();
 		this.pricingCtx = pricingCtx;
 	}
 }

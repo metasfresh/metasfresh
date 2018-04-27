@@ -150,4 +150,15 @@ public interface IBPartnerBL extends ISingletonService
 	 * @task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
 	I_C_BPartner createFromTemplate(I_C_BPartner_QuickInput template);
+
+	/**
+	 * Retrieves the discount schema for the given BParnter. If the BPartner has none, it falls back to the partner's C_BP_Group.
+	 * If the partner has no group or that group hasn't a discount schema either, it returns <code>-1</code>.
+	 *
+	 * @param soTrx if <code>true</code>, the sales discount schema is returned, otherwise the purchase discount schema is returned.
+	 * @return partner's discount schema or -1
+	 */
+	int getDiscountSchemaId(I_C_BPartner bpartner, boolean soTrx);
+
+	int getDiscountSchemaId(int bpartnerId, boolean soTrx);
 }

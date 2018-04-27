@@ -85,6 +85,7 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.order.IOrderLineBL;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
@@ -233,9 +234,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.retrieveAllReferencingLinesBuilder(inOutLine)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				// !!!important!!! without specifying the class, we get a list of MInOutLines!
-				// the compiler won't notice anything, but when we try to cast them to de.metas.invoicecandidate.model.I_M_InOutLine, we get a ClassCastException
-				// in this case, the ClassCastException happened when we tried to apply these inoutLines to a function (iol -> extractPaymentTerm(iol))
 				.list(I_M_InOutLine.class);
 		return referencingLines;
 	}
@@ -655,12 +653,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		final I_C_OrderLine ol = inOutLine.getC_OrderLine(); //
-		if (ol.getC_PaymentTerm_Override_ID() > 0)
-		{
-			return ol.getC_PaymentTerm_Override_ID();
-		}
-
-		return ol.getC_Order().getC_PaymentTerm_ID();
+		return Services.get(IOrderLineBL.class).getC_PaymentTerm_ID(ol);
 	}
 
 	/**

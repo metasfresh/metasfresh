@@ -13,11 +13,11 @@ package org.adempiere.pricing.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,20 +32,21 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
+import lombok.ToString;
+
+@ToString
 class PricingContext implements IEditablePricingContext
 {
 	private int pricingSystemId = -1;
 	private int M_Product_ID;
 	private int M_PriceList_ID;
 	private int M_PriceList_Version_ID;
+	private boolean skipCheckingPriceListSOTrxFlag;
 
 	/**
 	 * PriceDate timestamp.
@@ -74,19 +75,9 @@ class PricingContext implements IEditablePricingContext
 	private String trxName;
 	private boolean convertPriceToContextUOM;
 	private Boolean isManualPrice = null; // task 08908: can be set by the calling code. Otherwise the engine shall try the referenced object
+	private boolean failIfNotCalculated = false;
 
-	final private Map<String, Object> properties = new HashMap<String, Object>();
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
+	final private Map<String, Object> properties = new HashMap<>();
 
 	@Override
 	public IEditablePricingContext copy()
@@ -111,9 +102,11 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.m_PP_Product_BOMLine_ID = m_PP_Product_BOMLine_ID;
 		pricingCtxNew.referencedObject = referencedObject;
 		pricingCtxNew.disallowDiscount = disallowDiscount;
-		pricingCtxNew.isManualPrice = isManualPrice;
-		pricingCtxNew.convertPriceToContextUOM = convertPriceToContextUOM;
 		pricingCtxNew.trxName = trxName;
+		pricingCtxNew.convertPriceToContextUOM = convertPriceToContextUOM;
+		pricingCtxNew.isManualPrice = isManualPrice;
+		pricingCtxNew.failIfNotCalculated = failIfNotCalculated;
+		pricingCtxNew.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
 		pricingCtxNew.properties.putAll(properties);
 
 		return pricingCtxNew;
@@ -129,33 +122,14 @@ class PricingContext implements IEditablePricingContext
 	public void setM_PricingSystem_ID(final int pricingSystemId)
 	{
 		this.pricingSystemId = pricingSystemId;
-		pricingSystem = null; // reset
 	}
 
-	private I_M_PricingSystem pricingSystem;
-
-	@Override
-	public I_M_PricingSystem getM_PricingSystem()
-	{
-		if (pricingSystem == null && getM_PricingSystem_ID() > 0)
-		{
-			pricingSystem = InterfaceWrapperHelper.create(getCtx(), getM_PricingSystem_ID(), I_M_PricingSystem.class, getTrxName());
-		}
-		return pricingSystem;
-	}
-
-	/**
-	 * @return the m_Product_ID
-	 */
 	@Override
 	public int getM_Product_ID()
 	{
 		return M_Product_ID;
 	}
 
-	/**
-	 * @param m_Product_ID the m_Product_ID to set
-	 */
 	@Override
 	public void setM_Product_ID(final int m_Product_ID)
 	{
@@ -175,27 +149,18 @@ class PricingContext implements IEditablePricingContext
 		return product;
 	}
 
-	/**
-	 * @return the m_PriceList_ID
-	 */
 	@Override
 	public int getM_PriceList_ID()
 	{
 		return M_PriceList_ID;
 	}
 
-	/**
-	 * @param m_PriceList_ID the m_PriceList_ID to set
-	 */
 	@Override
 	public void setM_PriceList_ID(final int M_PriceList_ID)
 	{
 		this.M_PriceList_ID = M_PriceList_ID;
 	}
 
-	/**
-	 * @return the m_PriceList_Version_ID
-	 */
 	@Override
 	public int getM_PriceList_Version_ID()
 	{
@@ -220,9 +185,6 @@ class PricingContext implements IEditablePricingContext
 		return _priceListVersion;
 	}
 
-	/**
-	 * @param m_PriceList_Version_ID the m_PriceList_Version_ID to set
-	 */
 	@Override
 	public void setM_PriceList_Version_ID(final int m_PriceList_Version_ID)
 	{
@@ -236,108 +198,72 @@ class PricingContext implements IEditablePricingContext
 
 	}
 
-	/**
-	 * @return the priceDate
-	 */
 	@Override
 	public Timestamp getPriceDate()
 	{
 		return new Timestamp(priceDateTS <= 0 ? priceDateNowTS : priceDateTS);
 	}
 
-	/**
-	 * @param priceDate the priceDate to set
-	 */
 	@Override
 	public void setPriceDate(final Timestamp priceDate)
 	{
 		this.priceDateTS = priceDate == null ? 0 : priceDate.getTime();
 	}
 
-	/**
-	 * @return the c_UOM_ID
-	 */
 	@Override
 	public int getC_UOM_ID()
 	{
 		return C_UOM_ID;
 	}
 
-	/**
-	 * @param c_UOM_ID the c_UOM_ID to set
-	 */
 	@Override
 	public void setC_UOM_ID(final int c_UOM_ID)
 	{
 		C_UOM_ID = c_UOM_ID;
 	}
 
-	/**
-	 * @return the c_Currency_ID
-	 */
 	@Override
 	public int getC_Currency_ID()
 	{
 		return C_Currency_ID;
 	}
 
-	/**
-	 * @param c_Currency_ID the c_Currency_ID to set
-	 */
 	@Override
 	public void setC_Currency_ID(final int c_Currency_ID)
 	{
 		C_Currency_ID = c_Currency_ID;
 	}
 
-	/**
-	 * @return the c_BPartner_ID
-	 */
 	@Override
 	public int getC_BPartner_ID()
 	{
 		return C_BPartner_ID;
 	}
 
-	/**
-	 * @param c_BPartner_ID the c_BPartner_ID to set
-	 */
 	@Override
 	public void setC_BPartner_ID(final int c_BPartner_ID)
 	{
 		C_BPartner_ID = c_BPartner_ID;
 	}
 
-	/**
-	 * @return the qty
-	 */
 	@Override
 	public BigDecimal getQty()
 	{
 		return qty;
 	}
 
-	/**
-	 * @param qty the qty to set
-	 */
 	@Override
 	public void setQty(final BigDecimal qty)
 	{
 		this.qty = qty;
 	}
 
-	/**
-	 * @return the isSOTrx
-	 */
 	@Override
 	public boolean isSOTrx()
 	{
 		return isSOTrx;
 	}
 
-	/**
-	 * @param isSOTrx the isSOTrx to set
-	 */
 	@Override
 	public void setSOTrx(final boolean isSOTrx)
 	{
@@ -366,54 +292,36 @@ class PricingContext implements IEditablePricingContext
 		this.m_PP_Product_BOMLine_ID = m_PP_Product_BOMLine_ID;
 	}
 
-	/**
-	 * @return the aD_Table_ID
-	 */
 	@Override
 	public int getAD_Table_ID()
 	{
 		return AD_Table_ID;
 	}
 
-	/**
-	 * @param aD_Table_ID the aD_Table_ID to set
-	 */
 	@Override
 	public void setAD_Table_ID(final int aD_Table_ID)
 	{
 		AD_Table_ID = aD_Table_ID;
 	}
 
-	/**
-	 * @return the record_ID
-	 */
 	@Override
 	public int getRecord_ID()
 	{
 		return Record_ID;
 	}
 
-	/**
-	 * @param record_ID the record_ID to set
-	 */
 	@Override
 	public void setRecord_ID(final int record_ID)
 	{
 		Record_ID = record_ID;
 	}
 
-	/**
-	 * @return the referencedObject
-	 */
 	@Override
 	public Object getReferencedObject()
 	{
 		return referencedObject;
 	}
 
-	/**
-	 * @param referencedObject the referencedObject to set
-	 */
 	@Override
 	public void setReferencedObject(final Object referencedObject)
 	{
@@ -510,18 +418,29 @@ class PricingContext implements IEditablePricingContext
 	public void setC_Country_ID(int countryId)
 	{
 		this.C_Country_ID = countryId;
-		country = null; // reset;
 	}
-
-	private I_C_Country country;
-
+	
 	@Override
-	public I_C_Country getC_Country()
+	public boolean isFailIfNotCalculated()
 	{
-		if (country == null && getC_Country_ID() > 0)
-		{
-			country = InterfaceWrapperHelper.create(getCtx(), getC_Country_ID(), I_C_Country.class, getTrxName());
-		}
-		return country;
+		return failIfNotCalculated;
+	}
+	
+	@Override
+	public void setFailIfNotCalculated(boolean failIfNotCalculated)
+	{
+		this.failIfNotCalculated = failIfNotCalculated;
+	}
+	
+	@Override
+	public void setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag)
+	{
+		this.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
+	}
+	
+	@Override
+	public boolean isSkipCheckingPriceListSOTrxFlag()
+	{
+		return skipCheckingPriceListSOTrxFlag;
 	}
 }

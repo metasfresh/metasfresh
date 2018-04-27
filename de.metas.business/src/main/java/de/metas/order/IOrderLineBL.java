@@ -23,20 +23,23 @@ package de.metas.order;
  */
 
 import java.math.BigDecimal;
-import java.util.Properties;
 
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
+import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.quantity.Quantity;
 
 public interface IOrderLineBL extends ISingletonService
 {
 
 	// task 08002
 	public static final String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
+
+	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Creates a new order line using the given {@code order} as header.
@@ -61,42 +64,9 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	void setOrder(org.compiere.model.I_C_OrderLine ol, I_C_Order order);
 
-	void setPrices(I_C_OrderLine ol);
+	void setTaxAmtInfo(I_C_OrderLine ol);
 
-	/**
-	 * See {@link #setPricesIfNotIgnored(Properties, I_C_OrderLine, int, BigDecimal, BigDecimal, boolean, String)}.
-	 *
-	 * @param ctx
-	 * @param ol
-	 * @param usePriceUOM
-	 * @param trxName
-	 */
-	void setPricesIfNotIgnored(Properties ctx, I_C_OrderLine ol, boolean usePriceUOM, String trxName);
-
-	/**
-	 *
-	 * @param ctx
-	 * @param priceListId
-	 * @param ol
-	 * @param qtyEntered the quantity (which is in the given <code>ol</code>'s <code>C_UOM</code>) that is used to compute the price per one
-	 * @param factor an additional factor to use when computing the LineNetAmt
-	 * @param usePriceUOM if true, then the UOM of the M_ProductPrice record will be used
-	 * @param trxName_NOTUSED not used
-	 */
-	void setPricesIfNotIgnored(Properties ctx, I_C_OrderLine ol, int priceListId, BigDecimal qtyEntered, BigDecimal factor, boolean usePriceUOM, String trxName);
-
-	void setTaxAmtInfoIfNotIgnored(Properties ctx, I_C_OrderLine ol, String trxName);
-
-	void setShipperIfNotIgnored(Properties ctx, I_C_OrderLine ol, boolean force, String trxName);
-
-	void ignore(int orderLineId);
-
-	void unignore(int orderLineId);
-
-	/**
-	 * Same as {@link #calculatePriceActual(I_C_OrderLine, int)}, but returns without doing anything if the given line's ID is on our {@link #ignore(int)} list.
-	 */
-	void calculatePriceActualIfNotIgnored(I_C_OrderLine ol, int precision);
+	void setShipper(I_C_OrderLine ol);
 
 	/**
 	 * Calculate and set PriceActual from PriceEntered and Discount.
@@ -106,7 +76,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param orderLine
 	 * @param optional, if <code>>= 0</code> then the result will be rounded to this precision. Otherwise the precision of the order's price list will be used.
 	 */
-	void calculatePriceActual(I_C_OrderLine orderLine, int precision);
+	void updatePriceActual(I_C_OrderLine orderLine, int precision);
 
 	/**
 	 * Utility method to subtract the given <code>discount</code> (in percent!) from the given <code>priceEntered</code> and return the result.
@@ -121,6 +91,8 @@ public interface IOrderLineBL extends ISingletonService
 	BigDecimal calculateDiscountFromPrices(BigDecimal priceEntered, BigDecimal priceActual, int precision);
 
 	BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(BigDecimal priceActual, BigDecimal discount, int precision);
+
+	BigDecimal calculatePriceActualFromPriceEnteredAndDiscount(BigDecimal priceEntered, BigDecimal discount, int precision);
 
 	/**
 	 * Retrieves the {@code M_ProductPrice} for the given {@code orderLine}'s {@code M_Product_ID} and {@code M_PriceList_Version_ID} and returns that pp's {@code C_TaxCategory_ID}.
@@ -141,6 +113,8 @@ public interface IOrderLineBL extends ISingletonService
 	int getC_TaxCategory_ID(org.compiere.model.I_C_OrderLine orderLine);
 
 	void updatePrices(org.compiere.model.I_C_OrderLine orderLine);
+
+	void updatePrices(OrderLinePriceUpdateRequest request);
 
 	/**
 	 * Sets the product ID and optionally also the UOM.
@@ -165,17 +139,7 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_OrderLine orderLine);
 
-	/**
-	 * Updates the given <code>ol</code>'s {@link org.compiere.model.I_C_OrderLine#COLUMNNAME_LineNetAmt LineNetAmt}
-	 *
-	 * @param ol
-	 * @param qtyEntered the order-quantity in the "customer's (stocking) UOM"...i.e. a customer might order 20PCE whereas the M_Product's own stocking-UOM in ADempiere is KG. In this case,
-	 *            <code>qtyEntered</code> is 20. Note that the <code>LineNetAmt</code> is computed from this qty only after is was converted to the <b>price-UOM</b> (see
-	 *            {@link #convertQtyEnteredToPriceUOM(org.compiere.model.I_C_OrderLine)}).
-	 *
-	 * @param factor additional factor for the <code>LineNetAmt</code> calculation..if you don't know what to do with it, use BigDecimal.ONE.
-	 */
-	void updateLineNetAmt(I_C_OrderLine ol, BigDecimal qtyEntered, BigDecimal factor);
+	void updateLineNetAmt(I_C_OrderLine orderLine);
 
 	/**
 	 * Update the given <code>ol</code>'s {@link org.compiere.model.I_C_OrderLine#COLUMNNAME_QtyReserved QtyReserved}<br>
@@ -252,4 +216,13 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param orderLine
 	 */
 	void updateNoPriceConditionsColor(I_C_OrderLine orderLine);
+
+	/**
+	 * Throw an error message if the sysconfig for mandatory pricing conditions is set ( see de.metas.order.impl.OrderLineBL.SYSCONFIG_NoPriceConditionsColorName) but the order contains lines that don't have the pricing conditions set.
+	 */
+	void failForMissingPricingConditions(de.metas.adempiere.model.I_C_Order order);
+
+	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
+
+	PriceLimitRuleResult computePriceLimit(org.compiere.model.I_C_OrderLine orderLine);
 }

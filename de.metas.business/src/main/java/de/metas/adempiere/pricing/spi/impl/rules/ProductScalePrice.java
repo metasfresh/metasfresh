@@ -153,7 +153,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 
 		// TODO handle bom-prices for products that don't have a price themselves.
 
-		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).retrievePriceList(ctx, m_M_PriceList_ID);
+		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(m_M_PriceList_ID);
 		m_C_Currency_ID = priceList.getC_Currency_ID();
 		m_enforcePriceLimit = priceList.isEnforcePriceLimit();
 		m_isTaxIncluded = priceList.isTaxIncluded();

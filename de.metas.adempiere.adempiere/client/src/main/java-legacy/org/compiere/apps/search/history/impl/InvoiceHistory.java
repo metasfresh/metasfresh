@@ -32,12 +32,6 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-
-import de.metas.logging.LogManager;
 
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -52,6 +46,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
@@ -63,15 +58,16 @@ import org.compiere.apps.search.history.IInvoiceHistoryTabHandler;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.MPriceList;
 import org.compiere.model.X_C_DocType;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 
 /**
  * Price History for BPartner/Product
@@ -398,7 +394,7 @@ public class InvoiceHistory
 		final Properties ctx = Env.getCtx();
 
 		log.debug(sql + "; Parameter=" + parameter);
-		final Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+		final Vector<Vector<Object>> data = new Vector<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -408,7 +404,7 @@ public class InvoiceHistory
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				final Vector<Object> line = new Vector<Object>(6);
+				final Vector<Object> line = new Vector<>(6);
 				// 0-Name, 1-PriceActual, 2-QtyInvoiced, 3-Discount, 4-DocumentNo, 5-DateInvoiced
 				line.add(rs.getString(1));      // Name
 				line.add(rs.getBigDecimal(2));  // Price
@@ -420,7 +416,7 @@ public class InvoiceHistory
 					final BigDecimal priceActual = rs.getBigDecimal(2);
 					if (!Check.isEmpty(priceList))
 					{
-						final int precision = MPriceList.getStandardPrecision(ctx, rs.getInt(10));
+						final int precision = Services.get(IPriceListBL.class).getPricePrecision(rs.getInt(10));
 						final RoundingMode roundingMode = RoundingMode.HALF_UP;
 
 						discountBD = priceList.subtract(priceActual).divide(priceList, precision, roundingMode).multiply(Env.ONEHUNDRED);
@@ -480,7 +476,7 @@ public class InvoiceHistory
 		final Properties ctx = Env.getCtx();
 
 		// Header
-		final Vector<String> columnNames = new Vector<String>();
+		final Vector<String> columnNames = new Vector<>();
 		columnNames.add(msgBL.translate(ctx, ihCtx.getC_BPartner_ID() == 0 ? "C_BPartner_ID" : "M_Product_ID"));
 		columnNames.add(msgBL.translate(ctx, "PriceActual"));
 		columnNames.add(msgBL.translate(ctx, "QtyInvoiced"));
@@ -547,7 +543,7 @@ public class InvoiceHistory
 		final Properties ctx = Env.getCtx();
 
 		// Header
-		final Vector<String> columnNames = new Vector<String>();
+		final Vector<String> columnNames = new Vector<>();
 		columnNames.add(msgBL.translate(ctx, ihCtx.getC_BPartner_ID() == 0 ? "C_BPartner_ID" : "M_Product_ID"));
 		columnNames.add(msgBL.translate(ctx, "PriceActual"));
 		columnNames.add(msgBL.translate(ctx, reserved ? "QtyReserved" : "QtyOrdered"));
@@ -658,7 +654,7 @@ public class InvoiceHistory
 		final Properties ctx = Env.getCtx();
 
 		// Header
-		final Vector<String> columnNames = new Vector<String>();
+		final Vector<String> columnNames = new Vector<>();
 		columnNames.add(msgBL.translate(ctx, ihCtx.getC_BPartner_ID() == 0 ? "C_BPartner_ID" : "M_Product_ID"));
 		columnNames.add(msgBL.translate(ctx, "MovementQty"));
 		columnNames.add(msgBL.translate(ctx, "MovementDate"));
@@ -705,7 +701,7 @@ public class InvoiceHistory
 					+ "ORDER BY io.MovementDate,io.IsSOTrx";
 			parameter = ihCtx.getC_BPartner_ID();
 		}
-		final Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+		final Vector<Vector<Object>> data = new Vector<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -715,7 +711,7 @@ public class InvoiceHistory
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				final Vector<Object> line = new Vector<Object>(6);
+				final Vector<Object> line = new Vector<>(6);
 				// 1-Name, 2-MovementQty, 3-MovementDate, 4-IsSOTrx, 5-DocumentNo
 				line.add(rs.getString(1));      		// Name
 				line.add(rs.getBigDecimal(2));  // Qty
@@ -771,7 +767,7 @@ public class InvoiceHistory
 		final Properties ctx = Env.getCtx();
 
 		// Header
-		final Vector<String> columnNames = new Vector<String>();
+		final Vector<String> columnNames = new Vector<>();
 		columnNames.add(msgBL.translate(ctx, "DatePromised"));
 		columnNames.add(msgBL.translate(ctx, "QtyOnHand"));
 		columnNames.add(msgBL.translate(ctx, "C_BPartner_ID"));
@@ -788,7 +784,7 @@ public class InvoiceHistory
 		final IInvoiceHistoryDAO invoiceHistoryDAO = Services.get(IInvoiceHistoryDAO.class);
 		final String storageSql = invoiceHistoryDAO.buildStorageInvoiceHistorySQL(showDetail, ihCtx.getM_Warehouse_ID(), ihCtx.getM_AttributeSetInstance_ID());
 
-		final Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+		final Vector<Vector<Object>> data = new Vector<>();
 		BigDecimal qty = BigDecimal.ZERO;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -809,7 +805,7 @@ public class InvoiceHistory
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				final Vector<Object> line = new Vector<Object>(9);
+				final Vector<Object> line = new Vector<>(9);
 				line.add(null);							// Date
 				final BigDecimal qtyOnHand = rs.getBigDecimal(1);
 				qty = qty.add(qtyOnHand);
@@ -844,7 +840,7 @@ public class InvoiceHistory
 		final List<OrderLineHistoryVO> orderLineHistoryVOs = invoiceHistoryDAO.retrieveOrderLineHistory(ihCtx.getM_Product_ID(), ihCtx.getM_AttributeSetInstance_ID(), ihCtx.getM_Warehouse_ID());
 		for (final OrderLineHistoryVO orderLineHistoryVO : orderLineHistoryVOs)
 		{
-			final Vector<Object> line = new Vector<Object>(9);
+			final Vector<Object> line = new Vector<>(9);
 			line.add(orderLineHistoryVO.getDatePromised());				// Date
 
 			final BigDecimal oq = orderLineHistoryVO.getQtyReserved();
@@ -923,7 +919,7 @@ public class InvoiceHistory
 		final Properties ctx = Env.getCtx();
 
 		// Header
-		final Vector<String> columnNames = new Vector<String>();
+		final Vector<String> columnNames = new Vector<>();
 		columnNames.add(msgBL.translate(ctx, ihCtx.getC_BPartner_ID() == 0 ? "C_BPartner_ID" : "M_Product_ID"));
 		columnNames.add(msgBL.translate(ctx, "DocumentNo"));
 
@@ -1003,7 +999,7 @@ public class InvoiceHistory
 		}
 
 		// Fill Data
-		final Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+		final Vector<Vector<Object>> data = new Vector<>();
 		{
 			log.debug(sql + "; Parameter=" + productPartnerId);
 			PreparedStatement pstmt = null;
@@ -1019,7 +1015,7 @@ public class InvoiceHistory
 				rs = pstmt.executeQuery();
 				while (rs.next())
 				{
-					final Vector<Object> line = new Vector<Object>(10);
+					final Vector<Object> line = new Vector<>(10);
 					line.add(rs.getString(1));      // Product/Partner
 					line.add(rs.getString(2));      // M_InOut DocumentNo
 					line.add(rs.getString(3));      // C_Order DocumentNo

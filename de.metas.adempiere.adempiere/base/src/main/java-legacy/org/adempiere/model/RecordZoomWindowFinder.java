@@ -1,13 +1,10 @@
 package org.adempiere.model;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -36,11 +33,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -70,24 +67,23 @@ public class RecordZoomWindowFinder
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 		return new RecordZoomWindowFinder(tableName, recordId);
 	}
-	
+
 	public static final RecordZoomWindowFinder newInstance(final ITableRecordReference record)
 	{
 		Check.assumeNotNull(record, "Parameter record is not null");
 		return new RecordZoomWindowFinder(record.getTableName(), record.getRecord_ID());
 	}
-	
+
 	public static final RecordZoomWindowFinder newInstance(final String tableName)
 	{
 		return new RecordZoomWindowFinder(tableName);
 	}
 
-	
 	public static final int findAD_Window_ID(final ITableRecordReference record)
 	{
 		return newInstance(record).findAD_Window_ID();
 	}
-	
+
 	public static final int findAD_Window_ID(final String tableName)
 	{
 		return newInstance(tableName).findAD_Window_ID();
@@ -97,13 +93,13 @@ public class RecordZoomWindowFinder
 	{
 		return new RecordZoomWindowFinder(query);
 	}
-	
+
 	public static final RecordZoomWindowFinder newInstance(final MQuery query, final int windowIdToUse)
 	{
 		return new RecordZoomWindowFinder(query, windowIdToUse);
-		
+
 	}
-	
+
 	private static final Logger logger = LogManager.getLogger(RecordZoomWindowFinder.class);
 
 	//
@@ -132,13 +128,13 @@ public class RecordZoomWindowFinder
 
 		_tableName = tableName;
 		_recordId = recordId;
-		if(_recordId < 0)
+		if (_recordId < 0)
 		{
 			logger.warn("No Record_ID provided to detect the AD_Window_ID by TableName={}. Going forward.", _tableName);
 		}
 		_query_Provided = null;
 	}
-	
+
 	private RecordZoomWindowFinder(final String tableName)
 	{
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
@@ -146,7 +142,6 @@ public class RecordZoomWindowFinder
 		_recordId = -1;
 		_query_Provided = null;
 	}
-
 
 	private RecordZoomWindowFinder(final MQuery query)
 	{
@@ -161,10 +156,9 @@ public class RecordZoomWindowFinder
 		//
 		// Load additional infos from given query
 		_isSOTrx_Provided = query.isSOTrxOrNull();
-		
-		
+
 	}
-	
+
 	private RecordZoomWindowFinder(final MQuery query, final int adWindowId)
 	{
 		super();
@@ -180,7 +174,7 @@ public class RecordZoomWindowFinder
 		//
 		// Load additional infos from given query
 		_isSOTrx_Provided = query.isSOTrxOrNull();
-		
+
 		// task #1062
 		// suggested window is for both trx
 		// to be extended if we need 2 windows later
@@ -264,7 +258,7 @@ public class RecordZoomWindowFinder
 	{
 		return _tableName;
 	}
-	
+
 	public int getAD_Table_ID()
 	{
 		return Services.get(IADTableDAO.class).retrieveTableId(getTableName());
@@ -295,11 +289,11 @@ public class RecordZoomWindowFinder
 		}
 
 		final int recordId = getRecord_ID();
-		if(recordId < 0)
+		if (recordId < 0)
 		{
 			return null;
 		}
-		
+
 		final String keyColumnName = getKeyColumnName();
 		final String sqlWhereClause = keyColumnName + "=" + recordId;
 		return sqlWhereClause;
@@ -349,22 +343,22 @@ public class RecordZoomWindowFinder
 		}
 		return _isSOTrx_Effective;
 	}
-	
+
 	private boolean computeIsSOTrxEffective()
 	{
 		final Boolean isSOTrxProvided = _isSOTrx_Provided;
-		if(isSOTrxProvided != null)
+		if (isSOTrxProvided != null)
 		{
 			return isSOTrxProvided;
 		}
-		
+
 		final String tableName = getTableName();
 		final String sqlWhereClause = getRecordWhereClause(); // might be null
-		if(Check.isEmpty(sqlWhereClause, true))
+		if (Check.isEmpty(sqlWhereClause, true))
 		{
 			return true;
 		}
-		
+
 		return retriveIsSOTrx(tableName, sqlWhereClause);
 	}
 
@@ -379,40 +373,17 @@ public class RecordZoomWindowFinder
 		return POInfo.getPOInfo(tableName).getKeyColumnName();
 	}
 
-	private static final WindowIds retrieveDefaultWindowIds(final String tableName)
+	private static final WindowIds retrieveDefaultWindowIds(@Nullable final String tableName)
 	{
-		//
-		// Load SO and PO AD_Window_IDs from AD_Table definition
-		final String sql = "SELECT AD_Window_ID, PO_Window_ID FROM AD_Table WHERE TableName=?";
-		final Object[] sqlParams = new Object[] { tableName };
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTableOrNull(tableName);
+		if (table == null)
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			DB.setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				final int soWindowId = rs.getInt(1);
-				final int poWindowId = rs.getInt(2);
-				return WindowIds.of(soWindowId, poWindowId);
-			}
-			else
-			{
-				return WindowIds.NONE;
-			}
+			return WindowIds.NONE;
 		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
+
+		final int soWindowId = table.getAD_Window_ID();
+		final int poWindowId = table.getPO_Window_ID();
+		return WindowIds.of(soWindowId, poWindowId);
 	}
 
 	private static final boolean retriveIsSOTrx(final String tableName, final String sqlWhereClause)

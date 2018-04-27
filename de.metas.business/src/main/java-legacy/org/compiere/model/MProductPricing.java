@@ -24,6 +24,7 @@ import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 
@@ -317,16 +318,6 @@ public class MProductPricing
 	public int getC_BPartner_ID()
 	{
 		return pricingCtx.getC_BPartner_ID();
-	}
-
-	public BigDecimal getQty()
-	{
-		return pricingCtx.getQty();
-	}
-
-	public boolean isSOTrx()
-	{
-		return pricingCtx.isSOTrx();
 	}
 
 	public int getAD_Table_ID()

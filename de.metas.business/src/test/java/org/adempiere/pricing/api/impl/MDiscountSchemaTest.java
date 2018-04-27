@@ -29,7 +29,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -37,7 +36,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.IContextAware;
 import org.adempiere.pricing.api.CalculateDiscountRequest;
+import org.adempiere.pricing.api.DiscountResult;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
+import org.adempiere.pricing.api.SchemaBreakQuery;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
@@ -52,6 +53,8 @@ import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
+
+import lombok.NonNull;
 
 public class MDiscountSchemaTest
 {
@@ -135,12 +138,12 @@ public class MDiscountSchemaTest
 
 		final List<I_M_DiscountSchemaBreak> breaks = createDiscountSchemaBreaks(product);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1, // attribute value
 				true,
 				product.getM_Product_ID(),
-				category.getM_Product_Category_ID(),
+				product.getM_Product_Category_ID(),
 				new BigDecimal(15),
 				new BigDecimal(30));
 
@@ -158,12 +161,12 @@ public class MDiscountSchemaTest
 
 		final List<I_M_DiscountSchemaBreak> breaks = createDiscountSchemaBreaks(product);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1, // attribute value
 				true,
 				product.getM_Product_ID(),
-				category.getM_Product_Category_ID(),
+				product.getM_Product_Category_ID(),
 				new BigDecimal(25),
 				new BigDecimal(50));
 
@@ -185,12 +188,12 @@ public class MDiscountSchemaTest
 		expectedDiscountSchemaBreak.setM_Product_ID(-1);
 		save(expectedDiscountSchemaBreak);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1, // attribute value
 				true,
 				product.getM_Product_ID(),
-				category.getM_Product_Category_ID(),
+				product.getM_Product_Category_ID(),
 				new BigDecimal(25),
 				new BigDecimal(50));
 
@@ -212,12 +215,12 @@ public class MDiscountSchemaTest
 
 		final List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak1 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak1 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1, // attribute value
 				true,
 				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
+				product1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
 		);
@@ -230,12 +233,12 @@ public class MDiscountSchemaTest
 
 		save(schemaBreak1);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak2 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak2 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1, // attribute value
 				true,
 				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
+				product1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
 		);
@@ -246,12 +249,12 @@ public class MDiscountSchemaTest
 		schemaBreak1.setM_Product_Category_ID(-1);
 		schemaBreak1.setM_Product_ID(-1);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak3 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak3 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1, // attribute value
 				true,
 				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
+				product1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
 		);
@@ -285,7 +288,7 @@ public class MDiscountSchemaTest
 
 		List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak1 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak1 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				attrValue1.getM_AttributeValue_ID(),
 				true,
@@ -298,24 +301,24 @@ public class MDiscountSchemaTest
 		assertThat(actualSchemaBreak1).isNotNull();
 		assertThat(schemaBreak1.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak2 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak2 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				-1,
 				true,
 				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
+				product1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
 		);
 
 		assertThat(actualSchemaBreak2).isNull();
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak3 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak3 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				attrValue2.getM_AttributeValue_ID(),
 				true,
 				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
+				product1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
 		);
@@ -329,12 +332,12 @@ public class MDiscountSchemaTest
 
 		breaks = dao.retrieveBreaks(schema1);
 
-		final I_M_DiscountSchemaBreak actualSchemaBreak4 = bl.pickApplyingBreak(
+		final I_M_DiscountSchemaBreak actualSchemaBreak4 = MDiscountSchemaBL.pickApplyingBreak(
 				breaks,
 				attrValue2.getM_AttributeValue_ID(),
 				true,
 				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
+				product1.getM_Product_Category_ID(),
 				new BigDecimal(15), // not relevant in this test
 				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
 		);
@@ -366,18 +369,12 @@ public class MDiscountSchemaTest
 		schemaBreak2.setM_AttributeValue(null);
 		save(schemaBreak2);
 
-		List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
-
-		List<I_M_AttributeInstance> instances = Collections.emptyList();
-		final I_M_DiscountSchemaBreak actualSchemaBreak1 = bl.pickApplyingBreak(
-				breaks,
-				instances,
-				true,
-				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
-				new BigDecimal(15), // not relevant in this test
-				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
-		);
+		final I_M_DiscountSchemaBreak actualSchemaBreak1 = bl.pickApplyingBreak(SchemaBreakQuery.builder()
+				.discountSchemaId(schema1.getM_DiscountSchema_ID())
+				.productId(product1.getM_Product_ID())
+				.qty(new BigDecimal(15)) // not relevant in this test
+				.amt(new BigDecimal(30)) // e.g. 15 * 2 ( not relevant in this test)
+				.build());
 
 		assertThat(actualSchemaBreak1).isNotNull();
 		assertThat(schemaBreak2.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
@@ -407,24 +404,15 @@ public class MDiscountSchemaTest
 		schemaBreak2.setM_AttributeValue(attrValue2);
 		save(schemaBreak2);
 
-		final I_M_AttributeInstance instance1 = createAttributeInstance(attr1, attrValue1);
-		final I_M_AttributeInstance instance2 = createAttributeInstance(attr1, attrValue2);
-
-		final List<I_M_AttributeInstance> instances = new ArrayList<>();
-		instances.add(instance1);
-		instances.add(instance2);
-
-		List<I_M_DiscountSchemaBreak> breaks = dao.retrieveBreaks(schema1);
-
 		final I_M_DiscountSchemaBreak actualSchemaBreak1 = bl.pickApplyingBreak(
-				breaks,
-				instances,
-				true,
-				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
-				new BigDecimal(15), // not relevant in this test
-				new BigDecimal(30) // e.g. 15 * 2 ( not relevant in this test)
-		);
+				SchemaBreakQuery.builder()
+						.discountSchemaId(schema1.getM_DiscountSchema_ID())
+						.attributeInstance(createAttributeInstance(attr1, attrValue1))
+						.attributeInstance(createAttributeInstance(attr1, attrValue2))
+						.productId(product1.getM_Product_ID())
+						.qty(new BigDecimal(15)) // not relevant in this test
+						.amt(new BigDecimal(30)) // e.g. 15 * 2 ( not relevant in this test)
+						.build());
 
 		assertThat(actualSchemaBreak1).isNotNull();
 		assertThat(schemaBreak1.getM_DiscountSchemaBreak_ID()).isEqualTo(actualSchemaBreak1.getM_DiscountSchemaBreak_ID());
@@ -465,24 +453,22 @@ public class MDiscountSchemaTest
 
 		// Discount 0 (because no breaks were applied)
 
-
 		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
-				.schema(schema1)
+				.discountSchemaId(schema1.getM_DiscountSchema_ID())
 				.qty(new BigDecimal(100))
-				.Price(new BigDecimal(1))
-				.M_Product_ID(product1.getM_Product_ID())
-				.M_Product_Category_ID(category1.getM_Product_Category_ID())
-				.bPartnerFlatDiscount(new BigDecimal(1))
+				.price(new BigDecimal(1))
+				.productId(product1.getM_Product_ID())
+				.bpartnerFlatDiscount(new BigDecimal(1))
 				.build();
 
-		final BigDecimal price = bl.calculatePrice(request);
+		final BigDecimal price = calculatePrice(request);
 
 		assertThat(price).isEqualByComparingTo(BigDecimal.ONE);
 
 		schemaBreak1.setM_AttributeValue(null);
 		save(schemaBreak1);
 
-		final BigDecimal price2 = bl.calculatePrice(request);
+		final BigDecimal price2 = calculatePrice(request);
 		final BigDecimal expectedPrice = new BigDecimal("0.500000");
 		assertThat(expectedPrice).isEqualByComparingTo(price2);
 	}
@@ -523,16 +509,15 @@ public class MDiscountSchemaTest
 		// Discount 0 (because no breaks were applied)
 
 		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
-				.schema(schema1)
+				.discountSchemaId(schema1.getM_DiscountSchema_ID())
 				.qty(new BigDecimal(100))
-				.Price(new BigDecimal(1))
-				.M_Product_ID(product1.getM_Product_ID())
-				.M_Product_Category_ID(category1.getM_Product_Category_ID())
-				.instances(instances)
-				.bPartnerFlatDiscount(new BigDecimal(1))
+				.price(new BigDecimal(1))
+				.productId(product1.getM_Product_ID())
+				.attributeInstances(instances)
+				.bpartnerFlatDiscount(new BigDecimal(1))
 				.build();
 
-		final BigDecimal price = bl.calculatePrice(request);
+		final BigDecimal price = calculatePrice(request);
 
 		BigDecimal expectedPrice = new BigDecimal("0.500000");
 		assertThat(expectedPrice).isEqualByComparingTo(price);
@@ -541,7 +526,7 @@ public class MDiscountSchemaTest
 		schemaBreak1.setM_AttributeValue(attrValue3);
 		save(schemaBreak1);
 
-		final BigDecimal price2 = bl.calculatePrice(request);
+		final BigDecimal price2 = calculatePrice(request);
 
 		expectedPrice = new BigDecimal("0.750000");
 		assertThat(expectedPrice).isEqualByComparingTo(price2);
@@ -624,6 +609,7 @@ public class MDiscountSchemaTest
 	public I_M_DiscountSchema createSchema()
 	{
 		final I_M_DiscountSchema schema = newInstance(I_M_DiscountSchema.class, contextProvider);
+		schema.setIsQuantityBased(true);
 		save(schema);
 		return schema;
 	}
@@ -632,11 +618,38 @@ public class MDiscountSchemaTest
 	{
 		schema.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
 		save(schema);
-		
+
 		final I_M_DiscountSchemaBreak schemaBreak = newInstance(I_M_DiscountSchemaBreak.class, contextProvider);
 		schemaBreak.setM_DiscountSchema_ID(schema.getM_DiscountSchema_ID());
 		schemaBreak.setSeqNo(seqNo);
+		schemaBreak.setIsValid(true);
 		save(schemaBreak);
 		return schemaBreak;
+	}
+
+	private BigDecimal calculatePrice(final CalculateDiscountRequest request)
+	{
+
+		if (request.getPrice() == null || request.getPrice().signum() == 0)
+		{
+			return request.getPrice();
+		}
+
+		final DiscountResult result = bl.calculateDiscount(request);
+
+		final BigDecimal discount = result.getDiscount();
+		if (discount == null || discount.signum() == 0)
+		{
+			return request.getPrice();
+		}
+
+		return applyDiscount(request.getPrice(), discount);
+	}
+
+	private BigDecimal applyDiscount(@NonNull final BigDecimal price, @NonNull final BigDecimal discount)
+	{
+		BigDecimal multiplier = (Env.ONEHUNDRED).subtract(discount);
+		multiplier = multiplier.divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP);
+		return price.multiply(multiplier);
 	}
 }
