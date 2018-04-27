@@ -1,4 +1,4 @@
-package org.adempiere.impexp;
+package de.metas.pricing.impexp;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -7,6 +7,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.impexp.AbstractImportProcess;
+import org.adempiere.impexp.IImportInterceptor;
+import org.adempiere.impexp.AbstractImportProcess.ImportRecordResult;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.time.SystemTime;

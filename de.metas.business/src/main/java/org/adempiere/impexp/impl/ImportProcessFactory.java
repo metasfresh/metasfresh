@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.ADUserImportProcess;
-import org.adempiere.impexp.DiscountSchemaImportProcess;
 import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.RequestImportProcess;
@@ -46,6 +45,8 @@ import org.compiere.model.I_I_Request;
 import org.compiere.model.I_I_User;
 
 import com.google.common.base.Supplier;
+
+import de.metas.pricing.impexp.DiscountSchemaImportProcess;
 
 public class ImportProcessFactory implements IImportProcessFactory
 {

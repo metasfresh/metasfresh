@@ -1,4 +1,4 @@
-package org.adempiere.impexp;
+package de.metas.pricing.impexp;
 
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;

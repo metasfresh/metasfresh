@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.adempiere.impexp;
+package de.metas.pricing.impexp;
 
 import java.util.ArrayList;
 import java.util.List;
