@@ -71,12 +71,6 @@ public class CalloutOrder extends CalloutEngine
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
 
-	/** Debug Steps */
-	private boolean steps = false;
-
-	// FIXME: QtyAvailable field does not exist. Pls check and drop following code.
-	// public static final String COLNAME_QTY_AVAIL = "QtyAvailable";
-
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
 	 */
@@ -841,10 +835,6 @@ public class CalloutOrder extends CalloutEngine
 		{
 			return NO_ERROR;
 		}
-		if (steps)
-		{
-			log.warn("init");
-		}
 
 		//
 		// Charge: reset
@@ -872,77 +862,8 @@ public class CalloutOrder extends CalloutEngine
 
 		orderLine.setQtyOrdered(orderLine.getQtyEntered());
 
-		if (orderLine.getC_Order().isSOTrx())
-		{
-			if (Services.get(IProductBL.class).isStocked(product))
-			{
-				final BigDecimal QtyOrdered = orderLine.getQtyOrdered();
-				int M_Warehouse_ID = orderLine.getM_Warehouse_ID();
-				if (M_Warehouse_ID <= 0)
-				{
-					M_Warehouse_ID = orderLine.getC_Order().getM_Warehouse_ID();
-				}
-				final int M_AttributeSetInstance_ID = orderLine.getM_AttributeSetInstance_ID();
-				BigDecimal available = MStorage.getQtyAvailable(M_Warehouse_ID, M_Product_ID, M_AttributeSetInstance_ID, null);
-
-				// FIXME: QtyAvailable field does not exist. Pls check and drop following code.
-				// // metas: if we have the respective field, display the available qty
-				// GridField fieldQtyAvailable = mTab.getField(COLNAME_QTY_AVAIL);
-				// if (fieldQtyAvailable != null)
-				// {
-				// mTab.setValue(COLNAME_QTY_AVAIL, available);
-				// }
-
-				if (available == null)
-				{
-					available = BigDecimal.ZERO;
-				}
-				if (available.signum() == 0)
-				{
-					// metas: disable user message
-					// mTab.fireDataStatusEEvent ("NoQtyAvailable", "0", false);
-				}
-				else if (available.compareTo(QtyOrdered) < 0)
-				{
-					// metas: disable user message
-					// mTab.fireDataStatusEEvent ("InsufficientQtyAvailable",
-					// available.toString(), false);
-				}
-				else
-				{
-					int C_OrderLine_ID = orderLine.getC_OrderLine_ID();
-					if (C_OrderLine_ID <= 0)
-					{
-						C_OrderLine_ID = 0;
-					}
-					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
-							M_Warehouse_ID, M_Product_ID,
-							M_AttributeSetInstance_ID, C_OrderLine_ID);
-					if (notReserved == null)
-					{
-						notReserved = BigDecimal.ZERO;
-					}
-					final BigDecimal total = available.subtract(notReserved);
-					if (total.compareTo(QtyOrdered) < 0)
-					{
-						// metas: don't show warning
-						// String info = Msg.parseTranslation(ctx,
-						// "@QtyAvailable@=" + available
-						// + " - @QtyNotReserved@=" + notReserved
-						// + " = " + total);
-						// mTab.fireDataStatusEEvent("InsufficientQtyAvailable",
-						// info, false);
-					}
-				}
-			}
-		}
-		// metas (2008 0030 AP47)
 		handleIndividualDescription(orderLine);
-		//
-		if (steps)
-		{
-			log.warn("fini");
-		}
+		
 		return tax(calloutField);
 	} // product
 
@@ -1014,7 +935,7 @@ public class CalloutOrder extends CalloutEngine
 		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
-		orderLineBL.setPricesIfNotIgnored(ctx, ol,
+		orderLineBL.setPrices(ctx, ol,
 				false,  // usePriceUOM
 				null);
 
@@ -1022,10 +943,6 @@ public class CalloutOrder extends CalloutEngine
 		if (value == null)
 		{
 			return NO_ERROR;
-		}
-		if (steps)
-		{
-			log.warn("init");
 		}
 
 		// Check Product
@@ -1096,11 +1013,6 @@ public class CalloutOrder extends CalloutEngine
 		{
 			ol.setC_Tax_ID(C_Tax_ID);
 		}
-		//
-		if (steps)
-		{
-			log.warn("fini");
-		}
 
 		return amt(calloutField);
 	} // tax
@@ -1150,7 +1062,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))
 		{
-			orderLineBL.calculatePriceActual(orderLine, -1); // precision=-1, preserving old behavior (->called method shall find out itself)
+			orderLineBL.updatePriceActual(orderLine, -1); // precision=-1, preserving old behavior (->called method shall find out itself)
 			priceActual = orderLine.getPriceActual();
 			priceEntered = orderLine.getPriceEntered();
 		}
@@ -1236,7 +1148,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		orderLine.setLineNetAmt(LineNetAmt);
 
-		orderLineBL.setTaxAmtInfoIfNotIgnored(Env.getCtx(), orderLine, ITrx.TRXNAME_None);
+		orderLineBL.setTaxAmtInfo(orderLine);
 	}
 
 	/**
@@ -1252,10 +1164,6 @@ public class CalloutOrder extends CalloutEngine
 		final String columnName = calloutField.getColumnName();
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
 		final int M_Product_ID = orderLine.getM_Product_ID();
-		if (steps)
-		{
-			log.warn("init - M_Product_ID=" + M_Product_ID + " - ");
-		}
 
 		// No Product
 		if (M_Product_ID <= 0)

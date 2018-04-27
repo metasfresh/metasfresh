@@ -10,7 +10,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE PMM_QtyReport_Event ADD CONSTRAINT ADIssue_PMMQtyReportEvent FOREIGN KEY (AD_Issue_ID) REFERENCES public.AD_Issue DEFERRABLE INITIALLY DEFERRED
+--ALTER TABLE PMM_QtyReport_Event ADD CONSTRAINT ADIssue_PMMQtyReportEvent FOREIGN KEY (AD_Issue_ID) REFERENCES public.AD_Issue DEFERRABLE INITIALLY DEFERRED
 ;
 
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -35,7 +35,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE PMM_RfQResponse_ChangeEvent ADD CONSTRAINT ADIssue_PMMRfQResponseChangeEvent FOREIGN KEY (AD_Issue_ID) REFERENCES public.AD_Issue DEFERRABLE INITIALLY DEFERRED
+--ALTER TABLE PMM_RfQResponse_ChangeEvent ADD CONSTRAINT ADIssue_PMMRfQResponseChangeEvent FOREIGN KEY (AD_Issue_ID) REFERENCES public.AD_Issue DEFERRABLE INITIALLY DEFERRED
 ;
 
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -50,7 +50,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE PMM_WeekReport_Event ADD CONSTRAINT ADIssue_PMMWeekReportEvent FOREIGN KEY (AD_Issue_ID) REFERENCES public.AD_Issue DEFERRABLE INITIALLY DEFERRED
+--ALTER TABLE PMM_WeekReport_Event ADD CONSTRAINT ADIssue_PMMWeekReportEvent FOREIGN KEY (AD_Issue_ID) REFERENCES public.AD_Issue DEFERRABLE INITIALLY DEFERRED
 ;
 
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

@@ -173,7 +173,7 @@ public class AttributeDAO implements IAttributeDAO
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, asiId)
 				.orderBy(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID) // at least to have a predictable order
 				.create()
-				.list(I_M_AttributeInstance.class);
+				.listImmutable(I_M_AttributeInstance.class);
 	}
 
 	@Override
