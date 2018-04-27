@@ -17,6 +17,8 @@ import java.util.Set;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -103,8 +105,16 @@ public class M_Transaction_TransactionEventCreatorTest
 		product = BusinessTestHelper.createProduct("product", BusinessTestHelper.createUomEach());
 		movementDate = SystemTime.asTimestamp();
 
+		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
+		save(bPartner);
+
+		final I_M_InOut inout = newInstance(I_M_InOut.class);
+		inout.setC_BPartner(bPartner);
+		save(inout);
+
 		inoutLine = newInstance(I_M_InOutLine.class);
 		inoutLine.setM_Product(product);
+		inoutLine.setM_InOut(inout);
 		save(inoutLine);
 
 	}
