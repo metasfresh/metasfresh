@@ -52,9 +52,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IMDiscountSchemaBL;
+import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.pricing.api.IPriceListBL;
-import org.adempiere.pricing.api.SchemaBreakQuery;
+import org.adempiere.pricing.api.PricingConditions;
+import org.adempiere.pricing.api.PricingConditionsBreak;
+import org.adempiere.pricing.api.PricingConditionsBreakQuery;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -67,7 +69,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_InvoiceSchedule;
@@ -87,7 +88,6 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
@@ -123,6 +123,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
 
@@ -2018,12 +2019,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void setQualityDiscountPercent_Override(final I_C_Invoice_Candidate ic, final List<I_M_AttributeInstance> instances)
 	{
-		final IMDiscountSchemaBL discountSchemaBL = Services.get(IMDiscountSchemaBL.class);
+		final IMDiscountSchemaDAO discountSchemasRepo = Services.get(IMDiscountSchemaDAO.class);
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-		final I_C_BPartner partner = ic.getBill_BPartner();
-
-		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(partner, ic.isSOTrx());
+		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(ic.getBill_BPartner_ID(), ic.isSOTrx());
 		if (discountSchemaId <= 0)
 		{
 			// do nothing
@@ -2045,25 +2045,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		final BigDecimal amt = ic.getPriceActual().multiply(qty);
 
-		final org.compiere.model.I_M_DiscountSchemaBreak appliedBreak = discountSchemaBL.pickApplyingBreak(SchemaBreakQuery.builder()
-				.discountSchemaId(discountSchemaId)
+		final PricingConditions pricingConditions = discountSchemasRepo.getPricingConditionsById(discountSchemaId);
+		final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
 				.attributeInstances(instances)
 				.productId(ic.getM_Product_ID())
+				.productCategoryId(productsRepo.retrieveProductCategoryByProductId(ic.getM_Product_ID()))
 				.qty(qty)
 				.amt(amt)
 				.build());
 
-		final BigDecimal qualityDiscountPercentage;
-		if (appliedBreak == null)
-		{
-			qualityDiscountPercentage = null;
-		}
-		else
-		{
-			final I_M_DiscountSchemaBreak discountSchemaBreak = InterfaceWrapperHelper.create(appliedBreak, I_M_DiscountSchemaBreak.class);
-			qualityDiscountPercentage = discountSchemaBreak.getQualityIssuePercentage();
-		}
-
+		final BigDecimal qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;
 		ic.setQualityDiscountPercent_Override(qualityDiscountPercentage);
 	}
 

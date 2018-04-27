@@ -11,6 +11,9 @@ import org.adempiere.pricing.api.CalculateDiscountRequest;
 import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IPricingBL;
+import org.adempiere.pricing.api.PricingConditionsBreak;
+import org.adempiere.pricing.api.PricingConditionsBreakMatchCriteria;
+import org.adempiere.pricing.api.impl.MDiscountSchemaDAO;
 import org.adempiere.pricing.limit.PriceLimitRuleContext;
 import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.util.Services;
@@ -71,11 +74,12 @@ public class M_DiscountSchemaBreak
 			schemaBreak.setIsValid(true);
 			schemaBreak.setNotValidReason(null);
 		}
-		catch (Exception ex)
+		catch (AdempiereException ex)
 		{
+			// NOTE: catch only AdempiereExceptions. All others like NPE etc shall be propagated.
 			logger.debug("Schema break become invalid", ex);
 			schemaBreak.setIsValid(false);
-			schemaBreak.setNotValidReason(ex.getLocalizedMessage());
+			schemaBreak.setNotValidReason(AdempiereException.extractMessage(ex));
 		}
 	}
 
@@ -93,7 +97,7 @@ public class M_DiscountSchemaBreak
 		}
 
 		final PriceLimitEnforceContext context = PriceLimitEnforceContext.builder()
-				.schemaBreak(schemaBreak)
+				.pricingConditionsBreak(MDiscountSchemaDAO.toPricingConditionsBreak(schemaBreak))
 				.isSOTrx(true)
 				.build();
 
@@ -106,7 +110,7 @@ public class M_DiscountSchemaBreak
 	private Stream<PriceLimitEnforceContext> explodeByBPartnerId(@NonNull final PriceLimitEnforceContext context)
 	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-		return bpartnersRepo.retrieveBPartnerIdsForDiscountSchemaId(context.getSchemaBreak().getM_DiscountSchema_ID(), context.getIsSOTrx())
+		return bpartnersRepo.retrieveBPartnerIdsForDiscountSchemaId(context.getPricingConditionsBreak().getDiscountSchemaId(), context.getIsSOTrx())
 				.stream()
 				.map(bpartnerId -> context.toBuilder().bpartnerId(bpartnerId).build());
 	}
@@ -152,10 +156,11 @@ public class M_DiscountSchemaBreak
 
 	private CalculateDiscountRequest createCalculateDiscountRequest(@NonNull final PriceLimitEnforceContext context)
 	{
-		final I_M_DiscountSchemaBreak schemaBreak = context.getSchemaBreak();
+		final PricingConditionsBreak pricingConditionsBreak = context.getPricingConditionsBreak();
+		final PricingConditionsBreakMatchCriteria matchCriteria = pricingConditionsBreak.getMatchCriteria();
 
-		final int productId = schemaBreak.getM_Product_ID();
-		final BigDecimal qty = schemaBreak.getBreakValue();
+		final int productId = matchCriteria.getProductId();
+		final BigDecimal qty = matchCriteria.getBreakValue();
 
 		final IEditablePricingContext pricingCtx = Services.get(IPricingBL.class).createPricingContext();
 		pricingCtx.setConvertPriceToContextUOM(true);
@@ -168,8 +173,8 @@ public class M_DiscountSchemaBreak
 		pricingCtx.setC_Country_ID(context.getCountryId());
 
 		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
-				.discountSchemaId(schemaBreak.getM_DiscountSchema_ID())
-				.forceSchemaBreak(schemaBreak)
+				.discountSchemaId(pricingConditionsBreak.getDiscountSchemaId())
+				.forceSchemaBreak(pricingConditionsBreak)
 				.qty(pricingCtx.getQty())
 				.price(BigDecimal.ZERO) // N/A
 				.productId(pricingCtx.getM_Product_ID())
@@ -183,7 +188,7 @@ public class M_DiscountSchemaBreak
 	private static class PriceLimitEnforceContext
 	{
 		@NonNull
-		final I_M_DiscountSchemaBreak schemaBreak;
+		final PricingConditionsBreak pricingConditionsBreak;
 		@NonNull
 		final Boolean isSOTrx;
 		final Integer bpartnerId;

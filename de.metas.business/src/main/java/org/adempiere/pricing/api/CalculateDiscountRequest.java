@@ -11,7 +11,6 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_DiscountSchemaBreak;
 
 import com.google.common.collect.ImmutableList;
 
@@ -49,7 +48,7 @@ import lombok.Value;
 public class CalculateDiscountRequest
 {
 	private final int discountSchemaId;
-	private final I_M_DiscountSchemaBreak forceSchemaBreak;
+	private final PricingConditionsBreak forceSchemaBreak;
 
 	private final BigDecimal qty;
 	private final BigDecimal price;
@@ -61,7 +60,7 @@ public class CalculateDiscountRequest
 	@Builder
 	private CalculateDiscountRequest(
 			final int discountSchemaId,
-			final I_M_DiscountSchemaBreak forceSchemaBreak,
+			final PricingConditionsBreak forceSchemaBreak,
 			final BigDecimal qty,
 			final BigDecimal price,
 			final int productId,
@@ -71,7 +70,7 @@ public class CalculateDiscountRequest
 	{
 		Check.assumeGreaterThanZero(discountSchemaId, "discountSchemaId");
 
-		if (forceSchemaBreak != null && forceSchemaBreak.getM_DiscountSchema_ID() != discountSchemaId)
+		if (forceSchemaBreak != null && forceSchemaBreak.getDiscountSchemaId() != discountSchemaId)
 		{
 			throw new AdempiereException("Schema and schema break does not match")
 					.setParameter("discountSchemaId", discountSchemaId)
