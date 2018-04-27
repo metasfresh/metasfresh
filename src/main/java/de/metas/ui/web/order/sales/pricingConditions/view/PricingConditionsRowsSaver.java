@@ -1,12 +1,12 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
-import org.adempiere.pricing.conditions.service.IPricingConditionsRepository;
-import org.adempiere.pricing.conditions.service.PricingConditionsBreakChangeRequest;
-import org.adempiere.pricing.conditions.service.PricingConditionsBreakChangeRequest.PricingConditionsBreakChangeRequestBuilder;
 import org.adempiere.util.Services;
 
+import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
+import de.metas.pricing.conditions.service.IPricingConditionsRepository;
+import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest;
+import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest.PricingConditionsBreakChangeRequestBuilder;
 import lombok.Builder;
 
 /*
