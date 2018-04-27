@@ -15,7 +15,7 @@ import org.adempiere.pricing.conditions.PricingConditions;
 import org.adempiere.pricing.conditions.PricingConditionsBreak;
 import org.adempiere.pricing.conditions.PricingConditionsBreakQuery;
 import org.adempiere.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
-import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.IPricingConditionsRepository;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
@@ -66,7 +66,7 @@ class PricingConditionsRowsLoader
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-	private final IMDiscountSchemaDAO pricingConditionsRepo = Services.get(IMDiscountSchemaDAO.class);
+	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	private static final Comparator<PricingConditionsRow> ROWS_SORTING = Comparator.<PricingConditionsRow, Integer> comparing(row -> row.isEditable() ? 0 : 1)
 			.thenComparing(row -> row.getBpartner().getDisplayName())

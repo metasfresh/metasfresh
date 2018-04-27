@@ -2,7 +2,7 @@ package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
-import org.adempiere.pricing.conditions.service.IMDiscountSchemaDAO;
+import org.adempiere.pricing.conditions.service.IPricingConditionsRepository;
 import org.adempiere.pricing.conditions.service.PricingConditionsBreakChangeRequest;
 import org.adempiere.pricing.conditions.service.PricingConditionsBreakChangeRequest.PricingConditionsBreakChangeRequestBuilder;
 import org.adempiere.util.Services;
@@ -34,7 +34,7 @@ import lombok.Builder;
 public class PricingConditionsRowsSaver
 {
 	// services
-	private final IMDiscountSchemaDAO pricingConditionsRepo = Services.get(IMDiscountSchemaDAO.class);
+	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	private final PricingConditionsRow row;
 
