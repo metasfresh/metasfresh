@@ -36,6 +36,18 @@ import org.compiere.model.I_M_PriceList_Version;
 public class PriceListBL implements IPriceListBL
 {
 	@Override
+	public int getPricePrecision(final int priceListId)
+	{
+		if(priceListId <= 0)
+		{
+			return 2; // default
+		}
+		
+		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(priceListId);
+		return priceList.getPricePrecision();
+	}
+
+	@Override
 	public I_M_PriceList getCurrentPricelistOrNull(
 			final int pricingSystemId,
 			final int countryId,

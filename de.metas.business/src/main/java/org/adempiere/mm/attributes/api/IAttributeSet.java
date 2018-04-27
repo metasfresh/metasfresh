@@ -31,10 +31,10 @@ import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.compiere.model.I_M_Attribute;
 
 /**
- * To get an instance from an attribute set instance, one can use in a storage context.
+ * Goal of this interface: get an instance from an attribute set instance, one can use in a storage context.
  *
+ * @see ImmutableAttributeSet
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IAttributeSet
 {
@@ -86,7 +86,7 @@ public interface IAttributeSet
 	int getValueAsInt(I_M_Attribute attribute);
 
 	Date getValueAsDate(I_M_Attribute attribute);
-	
+
 	String getValueAsString(I_M_Attribute attribute);
 
 	/**

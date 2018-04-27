@@ -35,8 +35,9 @@ import org.compiere.model.I_M_ProductPrice;
 public interface IPriceListDAO extends ISingletonService
 {
 	public static final int M_PricingSystem_ID_None = 100;
+	public static final int M_PriceList_ID_None = 100;
 	
-	I_M_PriceList retrievePriceList(Properties ctx, int priceListId);
+	I_M_PriceList getById(int priceListId);
 
 	/**
 	 * Retrieves <b>all</b> (including inactive) {@link I_M_ProductPrice} record of the given price list version

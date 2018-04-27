@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -118,7 +119,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		}
 		//
 		int C_Currency_ID = getC_Currency_ID();
-		ArrayList<MTimeExpenseLine> list = new ArrayList<MTimeExpenseLine>();
+		ArrayList<MTimeExpenseLine> list = new ArrayList<>();
 		//
 		String sql = "SELECT * FROM S_TimeExpenseLine WHERE S_TimeExpense_ID=? ORDER BY Line";
 		PreparedStatement pstmt = null;
@@ -600,7 +601,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 	@Override
 	public int getC_Currency_ID()
 	{
-		MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID(), get_TrxName());
+		final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(getM_PriceList_ID());
 		return pl.getC_Currency_ID();
 	}	//	getC_Currency_ID
 

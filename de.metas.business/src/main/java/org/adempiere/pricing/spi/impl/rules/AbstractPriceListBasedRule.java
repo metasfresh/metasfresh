@@ -2,11 +2,11 @@ package org.adempiere.pricing.spi.impl.rules;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Loggables;
-import org.compiere.model.MPriceList;
 import org.compiere.util.Trace;
 
 /*
@@ -64,7 +64,7 @@ public abstract class AbstractPriceListBasedRule implements IPricingRule
 			return false; // false;
 		}
 
-		if (pricingCtx.getM_PriceList_ID() == MPriceList.M_PriceList_ID_None)
+		if (pricingCtx.getM_PriceList_ID() == IPriceListDAO.M_PriceList_ID_None)
 		{
 			log.info("Not applying because PriceList is NoPriceList ({})", pricingCtx);
 			return false;

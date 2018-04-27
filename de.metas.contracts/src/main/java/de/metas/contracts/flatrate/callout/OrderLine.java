@@ -1,28 +1,5 @@
 package de.metas.contracts.flatrate.callout;
 
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,6 +13,9 @@ import org.compiere.util.DB;
 
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.quantity.Quantity;
 
 public class OrderLine extends CalloutEngine
 {
@@ -109,6 +89,7 @@ public class OrderLine extends CalloutEngine
 	// metas
 	public String subscriptionLocation(final ICalloutField calloutField)
 	{
+		
 		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
 		final I_C_Order order = ol.getC_Order();
 		final boolean IsSOTrx = order.isSOTrx();
@@ -116,17 +97,18 @@ public class OrderLine extends CalloutEngine
 
 		if (IsSOTrx && !isSubscription)
 		{
-			// FIXME: remove following line because there is no C_Order/C_OrderLine.C_Subscription_ID 
-			//mTab.setValue("C_Subscription_ID", null);
+			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+			
+			final Quantity qty = orderLineBL.getQtyEntered(ol);
+			ol.setQtyOrdered(qty.getQty());
 
-			final int priceListId = order.getM_PriceList_ID();
-
-			final BigDecimal qty = ol.getQtyEntered();
-			ol.setQtyOrdered(qty);
-
-			Services.get(IOrderLineBL.class).setPrices(calloutField.getCtx(), ol, priceListId,
-					qty, BigDecimal.ONE, false, // usePriceUOM = false
-					null);
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
+					.orderLine(ol)
+					.qty(qty)
+					.resultUOM(ResultUOM.CONTEXT_UOM)
+					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+					.updateLineNetAmt(true)
+					.build());
 		}
 		if (IsSOTrx && isSubscription)
 		{
