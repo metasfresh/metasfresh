@@ -16,9 +16,9 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.adempiere.pricing.conditions.service.IPricingConditionsRepository;
 import org.adempiere.util.Services;
 
+import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.process.JavaProcess;
 
 /**

@@ -52,12 +52,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListBL;
-import org.adempiere.pricing.conditions.PricingConditions;
-import org.adempiere.pricing.conditions.PricingConditionsBreak;
-import org.adempiere.pricing.conditions.PricingConditionsBreakQuery;
-import org.adempiere.pricing.conditions.service.IPricingConditionsRepository;
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
@@ -123,6 +117,12 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.pricing.conditions.PricingConditions;
+import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreakQuery;
+import de.metas.pricing.conditions.service.IPricingConditionsRepository;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
@@ -1631,7 +1631,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			askForRegeneration = true;
 		}
-		else if (e instanceof org.adempiere.pricing.exceptions.ProductNotOnPriceListException)
+		else if (e instanceof de.metas.pricing.exceptions.ProductNotOnPriceListException)
 		{
 			askForRegeneration = true;
 		}

@@ -24,13 +24,13 @@ package de.metas.order;
 
 import java.math.BigDecimal;
 
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
-import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.quantity.Quantity;
 
 public interface IOrderLineBL extends ISingletonService

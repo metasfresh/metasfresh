@@ -8,10 +8,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
@@ -22,6 +18,10 @@ import org.compiere.util.Util;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.i18n.IMsgBL;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.IPricingBL;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

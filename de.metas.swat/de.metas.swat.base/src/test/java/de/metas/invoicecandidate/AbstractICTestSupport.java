@@ -35,7 +35,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -95,6 +94,7 @@ import de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.testsupport.AbstractTestSupport;
 
 public abstract class AbstractICTestSupport extends AbstractTestSupport

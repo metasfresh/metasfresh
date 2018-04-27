@@ -19,7 +19,6 @@ import org.adempiere.impexp.product.MProductImportTableSqlUpdater;
 import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.impexp.product.ProductPriceImporter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -31,6 +30,7 @@ import org.compiere.model.X_I_Product;
 import org.compiere.process.MProductPriceCloningCommand;
 import org.compiere.util.TimeUtil;
 
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery;

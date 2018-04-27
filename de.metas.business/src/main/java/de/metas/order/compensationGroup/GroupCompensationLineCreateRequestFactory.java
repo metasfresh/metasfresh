@@ -4,10 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.impl.rules.Discount;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -15,6 +11,10 @@ import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.rules.Discount;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
 import lombok.NonNull;
 

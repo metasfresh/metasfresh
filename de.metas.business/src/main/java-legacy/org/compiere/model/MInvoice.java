@@ -41,7 +41,6 @@ import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -69,6 +68,7 @@ import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.logging.LogManager;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.tax.api.ITaxBL;
 
 /**

@@ -42,7 +42,7 @@ import org.compiere.model.X_M_ProductPriceVendorBreak;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 
-import de.metas.pricing.ProductPrices;
+import de.metas.pricing.service.ProductPrices;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 
