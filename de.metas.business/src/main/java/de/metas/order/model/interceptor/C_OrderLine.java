@@ -45,6 +45,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
@@ -257,9 +258,6 @@ public class C_OrderLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_M_DiscountSchemaBreak_ID)
 	public void updateNoPriceConditionsColor(final I_C_OrderLine orderLine)
 	{
-
-		Services.get(IOrderLineBL.class).updateNoPriceConditionsColor(orderLine);
-
+		Services.get(IOrderLinePricingConditions.class).updateNoPriceConditionsColor(orderLine);
 	}
-
 }

@@ -212,20 +212,5 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
 
-	/**
-	 * Task #3835
-	 * If the de.metas.order.NoPriceConditionsColorName sysconfig is set and the orderLine.M_DiscountSchemaBreak_ID is not set, the orderLine.NoPriceConditionsColor_ID will be set to the colourId corresponding with the name provided in the sys config.
-	 * If the de.metas.order.NoPriceConditionsColorName sysconfig is set and the orderLine.M_DiscountSchemaBreak_ID is set, the orderLine.NoPriceConditionsColor_ID will be set to null because a color warning is not needed.
-	 * If the sys config is not set, do nothing because the functionality is not needed
-	 * 
-	 * @param orderLine
-	 */
-	void updateNoPriceConditionsColor(I_C_OrderLine orderLine);
-
-	/**
-	 * Throw an error message if the sysconfig for mandatory pricing conditions is set ( see de.metas.order.impl.OrderLineBL.SYSCONFIG_NoPriceConditionsColorName) but the order contains lines that don't have the pricing conditions set.
-	 */
-	void failForMissingPricingConditions(de.metas.adempiere.model.I_C_Order order);
-
 	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
 }
