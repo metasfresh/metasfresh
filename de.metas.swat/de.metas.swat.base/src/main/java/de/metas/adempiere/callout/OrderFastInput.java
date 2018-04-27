@@ -57,6 +57,8 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.purchasing.api.IBPartnerProductBL;
 
 /**
@@ -295,9 +297,12 @@ public class OrderFastInput extends CalloutEngine
 		// reset and that way IOrderLineBL.setPrices can't tell whether it
 		// should use priceEntered or a computed price.
 		ol.setPriceEntered(BigDecimal.ZERO);
-		orderLineBL.setPrices(ctx, ol,
-				true,  // usePriceUOM = true
-				ITrx.TRXNAME_None);
+		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
+				.orderLine(ol)
+				.resultUOM(ResultUOM.PRICE_UOM)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+				.updateLineNetAmt(true)
+				.build());
 
 		// set OL_DONT_UPDATE_ORDER to inform the ol's model validator not to update the order
 		final String dontUpdateOrderLock = OL_DONT_UPDATE_ORDER + order.getC_Order_ID();

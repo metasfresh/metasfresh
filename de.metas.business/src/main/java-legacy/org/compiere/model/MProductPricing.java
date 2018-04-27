@@ -320,11 +320,6 @@ public class MProductPricing
 		return pricingCtx.getC_BPartner_ID();
 	}
 
-	public BigDecimal getQty()
-	{
-		return pricingCtx.getQty();
-	}
-
 	public int getAD_Table_ID()
 	{
 		return pricingCtx.getAD_Table_ID();

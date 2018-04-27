@@ -221,6 +221,11 @@ public class OrderBL implements IOrderBL
 	@Override
 	public int retrievePriceListId(final I_C_Order order)
 	{
+		if (order.getM_PriceList_ID() > 0)
+		{
+			return order.getM_PriceList_ID();
+		}
+		
 		final BillBPartnerAndShipToLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
 		final I_M_PriceList priceList = retrievePriceListOrNull(order, bpartnerAndLocation);
 		return priceList == null ? 0 : priceList.getM_PriceList_ID();

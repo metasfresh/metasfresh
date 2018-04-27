@@ -27,18 +27,23 @@
 
 package org.adempiere.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MAccount;
 import org.compiere.model.MElementValue;
-import org.compiere.model.MPriceList;
-import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
-import org.compiere.model.MProductPrice;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_Product_Acct;
 import org.compiere.util.Env;
@@ -108,13 +113,12 @@ public class ExpenseTypesFromAccounts extends JavaProcess {
     protected String doIt() throws Exception {
 
         // Fetch price list
-        MPriceList priceList = new MPriceList(getCtx(), m_priceListId, get_TrxName());
-        // Get current client id from price list since I for some reason can't read it from
-        // context.
+        final I_M_PriceList priceList = load(m_priceListId, I_M_PriceList.class);
+        // Get current client id from price list since I for some reason can't read it from context.
         m_clientId = priceList.getAD_Client_ID();
 
         // Get active price list version
-        MPriceListVersion pv = priceList.getPriceListVersion(null);
+        I_M_PriceList_Version pv = getPriceListVersion(m_priceListId, null);
         if (pv==null) throw new Exception("Pricelist " + priceList.getName() + " has no default version.");
 
         MProduct product;
@@ -156,10 +160,9 @@ public class ExpenseTypesFromAccounts extends JavaProcess {
                 .list(MElementValue.class);
 
         MElementValue elem;
-        MProductPrice priceRec;
+        I_M_ProductPrice priceRec;
         X_M_Product_Acct productAcct;
         String expenseItemValue;
-        BigDecimal zero = Env.ZERO;
         int addCount = 0;
         int skipCount = 0;
 
@@ -187,10 +190,14 @@ public class ExpenseTypesFromAccounts extends JavaProcess {
                 product.saveEx(get_TrxName());
 
                 // Add a zero product price to the price list so it shows up in the price list
-                priceRec = new MProductPrice(getCtx(), pv.get_ID(), product.get_ID(), get_TrxName());
-                priceRec.set_ValueOfColumn("AD_Client_ID", Integer.valueOf(m_clientId));
-                priceRec.setPrices(zero, zero, zero);
-                priceRec.saveEx(get_TrxName());
+                priceRec = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class);
+                //priceRec.set_ValueOfColumn("AD_Client_ID", Integer.valueOf(m_clientId));
+                priceRec.setM_PriceList_Version_ID(pv.getM_PriceList_Version_ID());
+                priceRec.setM_Product_ID(product.getM_Product_ID());
+                priceRec.setPriceLimit(BigDecimal.ZERO);
+                priceRec.setPriceList(BigDecimal.ZERO);
+                priceRec.setPriceStd(BigDecimal.ZERO);
+                InterfaceWrapperHelper.save(priceRec);
 
                 // Set the revenue and expense accounting of the product to the given account element
                 // Get the valid combination
@@ -228,5 +235,23 @@ public class ExpenseTypesFromAccounts extends JavaProcess {
     }
 
 
+	/**
+	 * Get Price List Version
+	 *
+	 * @param valid date where PLV must be valid or today if null
+	 * @return PLV
+	 */
+	private static I_M_PriceList_Version getPriceListVersion(final int priceListId, Timestamp valid)
+	{
+		if (valid == null)
+			valid = new Timestamp(System.currentTimeMillis());
+
+		final String whereClause = "M_PriceList_ID=? AND TRUNC(ValidFrom)<=? AND IsActive=?";
+		I_M_PriceList_Version m_plv = new Query(Env.getCtx(), I_M_PriceList_Version.Table_Name, whereClause, ITrx.TRXNAME_ThreadInherited)
+				.setParameters(new Object[] { priceListId, valid, "Y" })
+				.setOrderBy("ValidFrom DESC")
+				.first();
+		return m_plv;
+	}	// getPriceListVersion
 
 }

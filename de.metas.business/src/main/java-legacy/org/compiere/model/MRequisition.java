@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.pricing.api.IPriceListBL;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
@@ -173,31 +175,6 @@ public class MRequisition extends X_M_Requisition implements IDocument
 			return null;
 	//	return re.getPDF(file);
 	}	//	createPDF
-
-	/**
-	 * 	Set default PriceList
-	 */
-	public void setM_PriceList_ID()
-	{
-		MPriceList defaultPL = MPriceList.getDefault(getCtx(), false);
-		if (defaultPL == null)
-			defaultPL = MPriceList.getDefault(getCtx(), true);
-		if (defaultPL != null)
-			setM_PriceList_ID(defaultPL.getM_PriceList_ID());
-	}	//	setM_PriceList_ID()
-	
-	/**
-	 * 	Before Save
-	 *	@param newRecord new
-	 *	@return true
-	 */
-	@Override
-	protected boolean beforeSave (boolean newRecord)
-	{
-		if (getM_PriceList_ID() == 0)
-			setM_PriceList_ID();
-		return true;
-	}	//	beforeSave
 	
 	@Override
 	protected boolean beforeDelete() {
@@ -277,8 +254,8 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		MPeriod.testPeriodOpen(getCtx(), getDateDoc(), MDocType.DOCBASETYPE_PurchaseRequisition, getAD_Org_ID());
 		
 		//	Add up Amounts
-		int precision = MPriceList.getStandardPrecision(getCtx(), getM_PriceList_ID());
-		BigDecimal totalLines = Env.ZERO;
+		int precision = Services.get(IPriceListBL.class).getPricePrecision(getM_PriceList_ID());
+		BigDecimal totalLines = BigDecimal.ZERO;
 		for (int i = 0; i < lines.length; i++)
 		{
 			MRequisitionLine line = lines[i];
@@ -586,7 +563,7 @@ public class MRequisition extends X_M_Requisition implements IDocument
 	@Override
 	public int getC_Currency_ID()
 	{
-		MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID(), get_TrxName());
+		final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(getM_PriceList_ID());
 		return pl.getC_Currency_ID();
 	}
 

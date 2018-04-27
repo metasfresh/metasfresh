@@ -44,6 +44,8 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.impl.OrderLineBL;
 
 /**
@@ -114,9 +116,12 @@ public class OrderLine implements ModelValidator
 
 		if (!ol.isProcessed())
 		{
-			orderLineBL.setPrices(po.getCtx(), ol,
-					true, // usePriceUOM
-					po.get_TrxName());
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
+					.orderLine(ol)
+					.resultUOM(ResultUOM.PRICE_UOM)
+					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+					.updateLineNetAmt(true)
+					.build());
 
 			logger.debug("Setting TaxAmtInfo for {}", ol);
 			orderLineBL.setTaxAmtInfo(ol);

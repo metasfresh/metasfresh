@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
@@ -15,7 +16,6 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MInOutLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MPriceList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.ICopyHandlerBL;
@@ -42,7 +42,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 
 		final MInvoice invoice = new MInvoice(inOutPO, dateInvoiced);
 		invoice.setIsSOTrx(inOut.isSOTrx());
-		invoice.setM_PriceList_ID(MPriceList.M_PriceList_ID_None); // US1184
+		invoice.setM_PriceList_ID(IPriceListDAO.M_PriceList_ID_None); // US1184
 
 		invoice.saveEx(trxName);
 
@@ -93,7 +93,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		return invoice;
 	}
 
-	private static final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> defaultDocLineCopyHandler = new DefaultDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine>(
+	private static final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> defaultDocLineCopyHandler = new DefaultDocLineCopyHandler<>(
 			org.compiere.model.I_C_InvoiceLine.class);
 
 	@Override

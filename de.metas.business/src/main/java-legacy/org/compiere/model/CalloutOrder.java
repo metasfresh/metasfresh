@@ -17,7 +17,6 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,6 +30,7 @@ import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.BPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
+import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
@@ -49,6 +49,8 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.product.IProductBL;
 import lombok.Builder;
 import lombok.NonNull;
@@ -858,7 +860,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		/***** Price Calculation see also qty ****/
-		updatePrices(orderLine); // metas
+		Services.get(IOrderLineBL.class).updatePrices(orderLine);
 
 		orderLine.setQtyOrdered(orderLine.getQtyEntered());
 
@@ -935,9 +937,12 @@ public class CalloutOrder extends CalloutEngine
 		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
-		orderLineBL.setPrices(ctx, ol,
-				false,  // usePriceUOM
-				null);
+		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
+				.orderLine(ol)
+				.resultUOM(ResultUOM.CONTEXT_UOM)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+				.updateLineNetAmt(true)
+				.build());
 
 		final Object value = calloutField.getValue();
 		if (value == null)
@@ -1038,18 +1043,24 @@ public class CalloutOrder extends CalloutEngine
 
 		final int priceUOMId = orderLine.getPrice_UOM_ID();
 		final int productId = orderLine.getM_Product_ID();
-		final int stdPrecision = MPriceList.getStandardPrecision(ctx, order.getM_PriceList_ID());
+		final int pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(order.getM_PriceList_ID());
 
 		//
 		BigDecimal priceEntered;
 		BigDecimal priceActual;
+		BigDecimal discount;
 
 		// Qty changed - recalc price
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		{
-			updatePrices(orderLine);
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.ofOrderLine(orderLine)
+					.toBuilder()
+					.applyPriceLimitRestrictions(false)
+					.build());
+			
 			priceEntered = orderLine.getPriceEntered();
 			priceActual = orderLine.getPriceActual();
+			discount = orderLine.getDiscount();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceActual.equals(changedColumnName))
 		{
@@ -1059,20 +1070,21 @@ public class CalloutOrder extends CalloutEngine
 			{
 				priceEntered = priceActual;
 			}
+			discount = orderLine.getDiscount();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))
 		{
-			orderLineBL.updatePriceActual(orderLine, -1); // precision=-1, preserving old behavior (->called method shall find out itself)
-			priceActual = orderLine.getPriceActual();
 			priceEntered = orderLine.getPriceEntered();
+			discount = orderLine.getDiscount();
+			priceActual = orderLineBL.calculatePriceActualFromPriceEnteredAndDiscount(priceEntered, discount, pricePrecision);
 		}
 		else if (I_C_OrderLine.COLUMNNAME_Discount.equals(changedColumnName))
 		{
 			priceEntered = orderLine.getPriceEntered();
+			discount = orderLine.getDiscount();
 			if (priceEntered.signum() != 0)
 			{
-				final BigDecimal discount = orderLine.getDiscount();
-				priceActual = orderLineBL.subtractDiscount(priceEntered, discount, stdPrecision);
+				priceActual = orderLineBL.calculatePriceActualFromPriceEnteredAndDiscount(priceEntered, discount, pricePrecision);
 			}
 			else
 			{
@@ -1084,13 +1096,13 @@ public class CalloutOrder extends CalloutEngine
 		{
 			priceEntered = orderLine.getPriceEntered();
 			priceActual = orderLine.getPriceActual();
+			discount = orderLine.getDiscount();
 		}
 
 		//
 		// Check PriceActual and enforce PriceLimit.
 		// Also, update Discount or PriceEntered if needed.
 		BigDecimal priceLimit = orderLine.getPriceLimit();
-		BigDecimal discount = orderLine.getDiscount();
 		boolean underPriceLimit = false;
 		String underPriceLimitExplanation = null;
 		if (isEnforcePriceLimit(orderLine, order.isSOTrx()))
@@ -1110,11 +1122,11 @@ public class CalloutOrder extends CalloutEngine
 
 				if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName) && priceEntered.signum() != 0)
 				{
-					priceEntered = orderLineBL.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, stdPrecision);
+					priceEntered = orderLineBL.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, pricePrecision);
 				}
 				else if (priceEntered.signum() != 0)
 				{
-					discount = orderLineBL.calculateDiscountFromPrices(priceEntered, priceActual, stdPrecision);
+					discount = orderLineBL.calculateDiscountFromPrices(priceEntered, priceActual, pricePrecision);
 				}
 			}
 		}
@@ -1125,7 +1137,9 @@ public class CalloutOrder extends CalloutEngine
 		orderLine.setPriceActual(priceActual);
 		orderLine.setDiscount(discount);
 		orderLine.setPriceLimit(priceLimit);
-		updateLineNetAmtAndTax(orderLine, stdPrecision);
+		orderLineBL.updateLineNetAmt(orderLine);
+		orderLineBL.setTaxAmtInfo(orderLine);
+		
 		if (underPriceLimit)
 		{
 			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, underPriceLimitExplanation, /* isError */false);
@@ -1134,22 +1148,6 @@ public class CalloutOrder extends CalloutEngine
 		//
 		return NO_ERROR;
 	} // amt
-
-	private static void updateLineNetAmtAndTax(final I_C_OrderLine orderLine, final int stdPrecision)
-	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
-		final BigDecimal priceActual = orderLine.getPriceActual();
-		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine);
-		BigDecimal LineNetAmt = qtyEnteredInPriceUOM.multiply(priceActual);
-		if (LineNetAmt.scale() > stdPrecision)
-		{
-			LineNetAmt = LineNetAmt.setScale(stdPrecision, RoundingMode.HALF_UP);
-		}
-		orderLine.setLineNetAmt(LineNetAmt);
-
-		orderLineBL.setTaxAmtInfo(orderLine);
-	}
 
 	/**
 	 * Order Line - Quantity. - called from C_UOM_ID, QtyEntered, QtyOrdered - enforces qty UOM relationship
@@ -1179,7 +1177,7 @@ public class CalloutOrder extends CalloutEngine
 			final I_C_UOM uomFrom = orderLineOld.getC_UOM();
 			final I_C_UOM uomTo = orderLine.getC_UOM();
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
-			final IUOMConversionContext uomConverter = IUOMConversionContext.of(orderLine.getM_Product());
+			final IUOMConversionContext uomConverter = IUOMConversionContext.of(orderLine.getM_Product_ID());
 
 			final BigDecimal QtyEntered1 = uomConverter.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
@@ -1411,12 +1409,6 @@ public class CalloutOrder extends CalloutEngine
 		return !dontCheck;
 	}
 
-	// metas
-	public static void updatePrices(final I_C_OrderLine orderLine)
-	{
-		Services.get(IOrderLineBL.class).updatePrices(orderLine);
-	}
-
 	private static interface DropShipPartnerAware
 	{
 		public int getDropShip_BPartner_ID();
@@ -1587,7 +1579,7 @@ public class CalloutOrder extends CalloutEngine
 	{
 		// 05118 : Also update the prices
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
-		updatePrices(orderLine);
+		Services.get(IOrderLineBL.class).updatePrices(orderLine);
 
 		return NO_ERROR;
 	}
