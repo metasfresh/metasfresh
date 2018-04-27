@@ -10,12 +10,12 @@ package de.metas.handlingunits.attributes.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -108,7 +108,6 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 		{
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
 			helper.assignProduct(itemMA, pTomato, COUNT_TOMATOS_PER_IFCO, uomEach);
-
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 		}
 
@@ -117,7 +116,6 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 		huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		{
 			helper.createHU_PI_Item_IncludedHU(huDefPalet, huDefIFCO, COUNT_IFCOS_PER_PALET);
-
 			helper.createHU_PI_Item_PackingMaterial(huDefPalet, pmPallets);
 		}
 	}

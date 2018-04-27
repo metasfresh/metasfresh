@@ -195,7 +195,5 @@ public final class NumberUtils
 				return defaultValue;
 			}
 		}
-
 	}
-
 }

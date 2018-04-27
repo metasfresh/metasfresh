@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
@@ -79,15 +80,15 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return new ImmutableAttributeSet(attributes.build(), valuesByAttributeId.build());
 	}
 
-	public static ImmutableAttributeSet copyOf(final IAttributeSet attributeSet)
+	public static ImmutableAttributeSet createSubSet(
+			@NonNull final IAttributeSet attributeSet,
+			@NonNull final Predicate<I_M_Attribute> filter)
 	{
-		if (attributeSet instanceof ImmutableAttributeSet)
-		{
-			return (ImmutableAttributeSet)attributeSet;
-		}
 
 		final Builder builder = builder();
 		attributeSet.getAttributes()
+				.stream()
+				.filter(filter)
 				.forEach(attribute -> {
 					final Object value = attributeSet.getValue(attribute);
 					builder.attributeValue(attribute, value);

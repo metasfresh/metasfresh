@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
+import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
@@ -556,8 +556,9 @@ public class MaterialEventSerializerTests
 				.materialDescriptor(createMaterialDescriptor())
 				.shipmentScheduleIds2Qty(20, TEN)
 				.shipmentScheduleIds2Qty(21, ONE.negate())
-				.huOnHandQtyChangeDescriptor(HUOnHandQtyChangeDescriptor.builder()
+				.huOnHandQtyChangeDescriptor(HUDescriptor.builder()
 						.huId(30)
+						.productDescriptor(createProductDescriptor())
 						.quantity(TEN)
 						.quantityDelta(ONE)
 						.build())
