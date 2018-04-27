@@ -150,7 +150,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schema.setValidFrom(SystemTime.asDayTimestamp());
 		schema.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
 		schema.setIsQuantityBased(true);
-		schema.setName("I " + importRecord.getM_DiscountSchema_ID());
+		schema.setName("Import " + importRecord.getBPartner_Value());
 		InterfaceWrapperHelper.save(schema);
 		return schema;
 	}
