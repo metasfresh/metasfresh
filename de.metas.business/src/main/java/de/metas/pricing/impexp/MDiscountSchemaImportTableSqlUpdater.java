@@ -72,7 +72,8 @@ public class MDiscountSchemaImportTableSqlUpdater
 	{
 		StringBuilder sql = new StringBuilder("UPDATE I_DiscountSchema i ")
 				.append("SET M_DiscountSchema_ID=(SELECT M_DiscountSchema_ID FROM C_BPartner bp ")
-				.append(" WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.AD_Client_ID=bp.AD_Client_ID) ")
+				.append(" WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND bp.M_DiscountSchema_ID > 0 ")
+				.append(" AND i.AD_Client_ID=bp.AD_Client_ID) ")
 				.append("WHERE M_DiscountSchema_ID IS NULL AND C_BPartner_ID IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(whereClause);
