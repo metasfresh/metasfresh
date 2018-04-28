@@ -105,8 +105,6 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 				.collect(ImmutableList.toImmutableList());
 
 		this.editableRowId = from.editableRowId;
-
-		// TODO Auto-generated constructor stub
 	}
 
 	private PricingConditionsRowData getAllRowsData()
