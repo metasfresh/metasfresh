@@ -20,11 +20,17 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
+import de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice;
 import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.pricing.ContractDiscount;
+import de.metas.contracts.pricing.SubscriptionPricingRule;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.pricing.attributebased.impl.AttributePricing;
+import de.metas.pricing.rules.Discount;
+import de.metas.pricing.rules.PriceListVersion;
 
 /**
  * This class sets up basic master data like partners, addresses, users, flatrate conditions, flarate transitions that can be used in testing.
@@ -160,16 +166,12 @@ public class FlatrateTermTestHelper
 	{
 		// skipping this for now because is using directly the DB
 		// pricingRules.put("PriceListVersion + Vendor Break", "org.adempiere.pricing.spi.impl.rules.PriceListVersionVB");
-		pricingRules.put("PriceListVersion", "org.adempiere.pricing.spi.impl.rules.PriceListVersion");
-		pricingRules.put("PriceList + VendorBreak", "org.adempiere.pricing.spi.impl.rules.PriceListVB");
-		pricingRules.put("PriceList", "org.adempiere.pricing.spi.impl.rules.PriceList");
-		pricingRules.put("BasePriceList + Vendor Break", "org.adempiere.pricing.spi.impl.rules.BasePriceListVB");
-		pricingRules.put("BasePriceList", "org.adempiere.pricing.spi.impl.rules.BasePriceList");
-		pricingRules.put("Discount", "org.adempiere.pricing.spi.impl.rules.Discount");
-		pricingRules.put("Product Scale Price", "de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice");
-		pricingRules.put("Attribute pricing rule", "de.metas.pricing.attributebased.impl.AttributePricing");
-		pricingRules.put("de.metas.contracts Discount", "de.metas.contracts.pricing.ContractDiscount");
-		pricingRules.put("de.metas.contracts Subscription", "de.metas.contracts.pricing.SubscriptionPricingRule");
+		pricingRules.put("PriceListVersion", PriceListVersion.class.getName());
+		pricingRules.put("Discount", Discount.class.getName());
+		pricingRules.put("Product Scale Price", ProductScalePrice.class.getName());
+		pricingRules.put("Attribute pricing rule", AttributePricing.class.getName());
+		pricingRules.put("de.metas.contracts Discount", ContractDiscount.class.getName());
+		pricingRules.put("de.metas.contracts Subscription", SubscriptionPricingRule.class.getName());
 	}
 
 	private void createPricingRules()
