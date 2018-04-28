@@ -357,3 +357,23 @@ UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541561, SeqNo=10,Updated=TO_TIMES
 DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=551694
 ;
 
+-- 2018-04-28T13:27:40.530
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-28 13:27:40','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Process',Description='',Help='' WHERE AD_Field_ID=554557 AND AD_Language='en_US'
+;
+
+-- 2018-04-28T13:27:57.890
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-28 13:27:57','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Packing Instruction' WHERE AD_Field_ID=554556 AND AD_Language='en_US'
+;
+
+-- 2018-04-28T13:28:33.258
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-28 13:28:33','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Provide as User Action',Description='' WHERE AD_Field_ID=563612 AND AD_Language='en_US'
+;
+
+-- 2018-04-28T13:28:54.773
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-28 13:28:54','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Apply only to Top Level HU' WHERE AD_Field_ID=563613 AND AD_Language='en_US'
+;
+
