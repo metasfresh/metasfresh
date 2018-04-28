@@ -1815,3 +1815,13 @@ UPDATE AD_Field SET Name='Darreichungsform',Updated=TO_TIMESTAMP('2018-04-28 10:
 UPDATE AD_Field SET Name='Darreichungsform Name',Updated=TO_TIMESTAMP('2018-04-28 10:10:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560703
 ;
 
+-- 2018-04-28T10:12:43.532
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-28 10:12:43','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Tax Category' WHERE AD_Field_ID=556298 AND AD_Language='en_US'
+;
+
+-- 2018-04-28T10:13:32.736
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-04-28 10:13:32','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Product Planning Schema' WHERE AD_Field_ID=561985 AND AD_Language='en_US'
+;
+
