@@ -180,6 +180,8 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 		}
 		else
 		{
+			salesOrderLine.setIsManualDiscount(false);
+			salesOrderLine.setIsManualPrice(false);
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.ofOrderLine(salesOrderLine));
 		}
 
