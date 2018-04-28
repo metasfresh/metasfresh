@@ -17,6 +17,8 @@ Here come the actual release notes:
 * metasfresh
   * [#3026](https://github.com/metasfresh/metasfresh/issues/3026) WebUI: New Window for Import Product
     * New Window in WebUI for Import Product.
+  * [#3664](https://github.com/metasfresh/metasfresh/issues/3664) WebUI: Add translation for upload notification
+    * Improved Translations for the Upload notifications.
   * [#3814](https://github.com/metasfresh/metasfresh/issues/3814) Webui: My Profile: display Notification Type and User In Charge
     * New Fields in myProfile Window that allows detailed Notifications Settings for the user.
   * [#3839](https://github.com/metasfresh/metasfresh/issues/3839) Webui: BPartner window: show BPartner Product tab
