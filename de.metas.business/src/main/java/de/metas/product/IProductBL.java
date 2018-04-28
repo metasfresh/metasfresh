@@ -28,7 +28,6 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
@@ -44,7 +43,7 @@ public interface IProductBL extends ISingletonService
 	default int getUOMPrecision(final int productId)
 	{
 		Check.assume(productId > 0, "productId > 0");
-		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 		return getUOMPrecision(product);
 	}
 
