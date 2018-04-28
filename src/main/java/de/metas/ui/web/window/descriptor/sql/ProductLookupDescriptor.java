@@ -432,6 +432,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		return null; // not relevant
 	}
+	
+	@Override
+	public void cacheInvalidate()
+	{
+	}
 
 	@Override
 	public Optional<String> getLookupTableName()

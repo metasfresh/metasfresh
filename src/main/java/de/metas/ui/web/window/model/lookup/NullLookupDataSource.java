@@ -88,6 +88,11 @@ public final class NullLookupDataSource implements LookupDataSource
 	}
 
 	@Override
+	public void cacheInvalidate()
+	{
+	}
+
+	@Override
 	public Optional<WindowId> getZoomIntoWindowId()
 	{
 		return Optional.empty();
