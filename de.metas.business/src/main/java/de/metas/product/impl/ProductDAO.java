@@ -49,6 +49,13 @@ import lombok.NonNull;
 public class ProductDAO implements IProductDAO
 {
 	@Override
+	public I_M_Product getById(final int productId)
+	{
+		Check.assumeGreaterThanZero(productId, "productId");
+		return loadOutOfTrx(productId, I_M_Product.class); // assume caching is configured on table level
+	}
+
+	@Override
 	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_UPC)
 	public I_M_Product retrieveProductByUPC(@CacheCtx final Properties ctx, final String upc)
 	{
@@ -154,7 +161,7 @@ public class ProductDAO implements IProductDAO
 		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 		return product != null && product.isActive() ? product.getM_Product_Category_ID() : -1;
 	}
-	
+
 	@Override
 	public String retrieveProductValueByProductId(final int productId)
 	{
