@@ -1,5 +1,9 @@
 package de.metas.migration.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Supplier;
+
 /*
  * #%L
  * de.metas.migration.base
@@ -13,11 +17,11 @@ package de.metas.migration.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -25,63 +29,50 @@ package de.metas.migration.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Suppliers;
+
 import de.metas.migration.IScript;
 import de.metas.migration.IScriptsRegistry;
+import lombok.Value;
 
 public class SQLDatabaseScriptsRegistry implements IScriptsRegistry
 {
-	private static final transient Logger logger = LoggerFactory.getLogger(SQLDatabaseScriptsRegistry.class.getName());
+	private static final String ENV_UseInMemoryScriptsRegistry = "UseInMemoryScriptsRegistry";
 
+	private static final transient Logger logger = LoggerFactory.getLogger(SQLDatabaseScriptsRegistry.class.getName());
 	private final SQLHelper sqlHelper;
+
+	private final boolean useInMemoryDatabase;
+	private final Supplier<Set<ScriptName>> inMemoryDatabaseSupplier = Suppliers.memoize(this::dbRetrieveAll);
 
 	public SQLDatabaseScriptsRegistry(final SQLDatabase database)
 	{
 		sqlHelper = new SQLHelper(database);
-	}
-
-	private String getName(final IScript script)
-	{
-		final String scriptName = script.getFileName();
-		final String projectName = script.getProjectName();
-		if (projectName == null)
+		useInMemoryDatabase = Boolean.parseBoolean(System.getProperty(ENV_UseInMemoryScriptsRegistry, "true"));
+		if (useInMemoryDatabase)
 		{
-			return scriptName;
+			logger.info("Scripts registry is using in memory database. To switch it of set '-D{}=false'", ENV_UseInMemoryScriptsRegistry);
 		}
-
-		final String name = projectName + "->" + scriptName;
-		return name;
 	}
 
 	@Override
 	public boolean isApplied(final IScript script)
 	{
-		final String projectName = script.getProjectName();
-		if (projectName == null)
+		if (script.getProjectName() == null)
 		{
 			// no project name. we consider that the script was not applied
 			return false;
 		}
+		final ScriptName scriptName = ScriptName.of(script);
 
-		final String name = getName(script);
-
-		final String sql = "SELECT COUNT(*) FROM AD_MigrationScript WHERE ProjectName=? AND Name=?";
-		final int count = sqlHelper.getSQLValueInt(sql, projectName, name);
-		if (count == 0)
+		if (useInMemoryDatabase)
 		{
-			logger.debug("Script was not yet executed: " + script);
-			return false;
-		}
-		else if (count == 1)
-		{
-			logger.debug("Script was already executed; projectname={}; name={}; script={}", projectName, name, script);
-			return true;
+			return inMemoryDatabaseSupplier.get().contains(scriptName);
 		}
 		else
-		// count > 1
 		{
-			// TODO: Shall we handle cnt > 1 because it could be an error?
-			logger.warn("Executed (" + count + " times): " + script);
-			return true;
+			return dbIsApplied(scriptName);
 		}
 	}
 
@@ -89,25 +80,52 @@ public class SQLDatabaseScriptsRegistry implements IScriptsRegistry
 	public void markApplied(final IScript script)
 	{
 		final boolean ignored = false;
-		dbInsert(script, ignored);
+		addToRegistry(script, ignored);
 	}
 
 	@Override
 	public void markIgnored(final IScript script)
 	{
 		final boolean ignored = true;
+		addToRegistry(script, ignored);
+	}
+
+	public void addToRegistry(final IScript script, final boolean ignored)
+	{
+		final ScriptName scriptName = ScriptName.of(script);
+
+		if (useInMemoryDatabase)
+		{
+			inMemoryDatabaseSupplier.get().add(scriptName);
+		}
+
 		dbInsert(script, ignored);
+	}
+
+	private boolean dbIsApplied(final ScriptName scriptName)
+	{
+		final String sql = "SELECT COUNT(1) FROM AD_MigrationScript WHERE ProjectName=? AND Name=?";
+		final int count = sqlHelper.getSQLValueInt(sql, scriptName.getProjectName(), scriptName.getName());
+		if (count == 0)
+		{
+			logger.debug("Script was not yet executed: {}", scriptName);
+			return false;
+		}
+		else if (count == 1)
+		{
+			logger.debug("Script was already executed: {}", scriptName);
+			return true;
+		}
+		else
+		// count > 1
+		{
+			logger.warn("Executed ({} times): {}", count, scriptName);
+			return true;
+		}
 	}
 
 	private void dbInsert(final IScript script, final boolean ignored)
 	{
-		final String projectName = script.getProjectName();
-		if (projectName == null)
-		{
-			throw new IllegalArgumentException("No projectName was set for " + script);
-		}
-
-		final String name = getName(script);
 		final String developerName = null;
 		final String filename = script.getFileName();
 
@@ -147,8 +165,58 @@ public class SQLDatabaseScriptsRegistry implements IScriptsRegistry
 				+ ",?" // ProjectName
 				+ ",?" // DurationMillis
 				+ ")";
-		;
 
+		final ScriptName scriptName = ScriptName.of(script);
+		final String name = scriptName.getName();
+		final String projectName = scriptName.getProjectName();
 		sqlHelper.executeUpdate(sql, description, developerName, ignored, filename, name, projectName, durationMillis);
+	}
+
+	private Set<ScriptName> dbRetrieveAll()
+	{
+
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final Set<ScriptName> scriptNames = sqlHelper.<ScriptName, Set<ScriptName>> retrieveRecords()
+				.sql("SELECT ProjectName, Name FROM AD_MigrationScript")
+				.collectionFactory(HashSet::new)
+				.rowLoader(rs -> ScriptName.ofProjectNameAndName(rs.getString("ProjectName"), rs.getString("Name")))
+				.execute();
+		stopwatch.stop();
+
+		logger.info("Loaded {} registry entries from database in {}", scriptNames.size(), stopwatch);
+		return scriptNames;
+	}
+
+	@Value
+	private static class ScriptName
+	{
+		public static ScriptName of(final IScript script)
+		{
+			final String projectName = script.getProjectName();
+			if (projectName == null)
+			{
+				throw new IllegalArgumentException("No projectName was set for " + script);
+			}
+
+			final String fileName = script.getFileName();
+			final String name = projectName + "->" + fileName;
+
+			return new ScriptName(projectName, name);
+		}
+
+		public static ScriptName ofProjectNameAndName(final String projectName, final String name)
+		{
+			return new ScriptName(projectName, name);
+		}
+
+		String projectName;
+		String name;
+
+		private ScriptName(final String projectName, final String name)
+		{
+			this.projectName = projectName;
+			this.name = name;
+		}
+
 	}
 }
