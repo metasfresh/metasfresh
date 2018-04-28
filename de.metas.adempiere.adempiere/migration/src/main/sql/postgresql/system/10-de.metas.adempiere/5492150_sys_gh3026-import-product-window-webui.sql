@@ -1680,3 +1680,138 @@ UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=30,Updated=TO_
 UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=40,Updated=TO_TIMESTAMP('2018-04-28 10:01:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551621
 ;
 
+-- 2018-04-28T10:03:33.741
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Import Fehlermeldung',Updated=TO_TIMESTAMP('2018-04-28 10:03:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5967
+;
+
+-- 2018-04-28T10:03:56.395
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Produktkategorie Schlüssel',Updated=TO_TIMESTAMP('2018-04-28 10:03:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5966
+;
+
+-- 2018-04-28T10:04:12.508
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Produkt Kategorie Geschäftspartner',Updated=TO_TIMESTAMP('2018-04-28 10:04:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5973
+;
+
+-- 2018-04-28T10:04:19.971
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Produkt Kategorie Schlüssel',Updated=TO_TIMESTAMP('2018-04-28 10:04:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5966
+;
+
+-- 2018-04-28T10:04:45.290
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Beschreibungs URL',Updated=TO_TIMESTAMP('2018-04-28 10:04:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5998
+;
+
+-- 2018-04-28T10:04:51.536
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Bild URL',Updated=TO_TIMESTAMP('2018-04-28 10:04:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5994
+;
+
+-- 2018-04-28T10:05:27.492
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Hersteller',Updated=TO_TIMESTAMP('2018-04-28 10:05:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560702
+;
+
+-- 2018-04-28T10:05:42.955
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Pharma Product Kategorie',Updated=TO_TIMESTAMP('2018-04-28 10:05:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563101
+;
+
+-- 2018-04-28T10:05:52.900
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Pharma Product Kategorie Name',Updated=TO_TIMESTAMP('2018-04-28 10:05:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563100
+;
+
+-- 2018-04-28T10:06:07.577
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Verpackungsgröße',Updated=TO_TIMESTAMP('2018-04-28 10:06:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560700
+;
+
+-- 2018-04-28T10:06:19.069
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Verpackung Maßeinheit',Updated=TO_TIMESTAMP('2018-04-28 10:06:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560699
+;
+
+-- 2018-04-28T10:06:28.673
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Verpackung Maßeinheit Name',Updated=TO_TIMESTAMP('2018-04-28 10:06:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560698
+;
+
+-- 2018-04-28T10:06:31.711
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Pharma Produkt Kategorie',Updated=TO_TIMESTAMP('2018-04-28 10:06:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563101
+;
+
+-- 2018-04-28T10:06:36.161
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Pharma Produkt Kategorie Name',Updated=TO_TIMESTAMP('2018-04-28 10:06:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563100
+;
+
+-- 2018-04-28T10:06:43.356
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Preisliste AEP',Updated=TO_TIMESTAMP('2018-04-28 10:06:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563104
+;
+
+-- 2018-04-28T10:06:50.875
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Preisliste APU',Updated=TO_TIMESTAMP('2018-04-28 10:06:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563105
+;
+
+-- 2018-04-28T10:07:03.822
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Produkt Nr. Geschäftspartner',Updated=TO_TIMESTAMP('2018-04-28 10:07:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5960
+;
+
+-- 2018-04-28T10:07:19.650
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Betäubungsmittel',Updated=TO_TIMESTAMP('2018-04-28 10:07:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560706
+;
+
+-- 2018-04-28T10:07:32.737
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Verschreibungspflichtig',Updated=TO_TIMESTAMP('2018-04-28 10:07:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560705
+;
+
+-- 2018-04-28T10:08:08.868
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Geschäftspartner Nr.',Updated=TO_TIMESTAMP('2018-04-28 10:08:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5986
+;
+
+-- 2018-04-28T10:08:51.297
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Indikation',Updated=TO_TIMESTAMP('2018-04-28 10:08:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560710
+;
+
+-- 2018-04-28T10:08:56.309
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Indikation Name',Updated=TO_TIMESTAMP('2018-04-28 10:08:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560709
+;
+
+-- 2018-04-28T10:09:31.461
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Produkt Plandaten Schema',Updated=TO_TIMESTAMP('2018-04-28 10:09:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=561985
+;
+
+-- 2018-04-28T10:09:35.159
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='MwSt Kategorie',Updated=TO_TIMESTAMP('2018-04-28 10:09:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556298
+;
+
+-- 2018-04-28T10:10:03.240
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kühlkette',Updated=TO_TIMESTAMP('2018-04-28 10:10:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560707
+;
+
+-- 2018-04-28T10:10:17.830
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Darreichungsform',Updated=TO_TIMESTAMP('2018-04-28 10:10:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560704
+;
+
+-- 2018-04-28T10:10:23.321
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Darreichungsform Name',Updated=TO_TIMESTAMP('2018-04-28 10:10:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560703
+;
+
