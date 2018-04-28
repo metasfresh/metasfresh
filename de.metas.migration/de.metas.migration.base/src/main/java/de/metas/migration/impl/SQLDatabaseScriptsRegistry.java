@@ -92,10 +92,9 @@ public class SQLDatabaseScriptsRegistry implements IScriptsRegistry
 
 	public void addToRegistry(final IScript script, final boolean ignored)
 	{
-		final ScriptName scriptName = ScriptName.of(script);
-
 		if (useInMemoryDatabase)
 		{
+			final ScriptName scriptName = ScriptName.of(script);
 			inMemoryDatabaseSupplier.get().add(scriptName);
 		}
 
