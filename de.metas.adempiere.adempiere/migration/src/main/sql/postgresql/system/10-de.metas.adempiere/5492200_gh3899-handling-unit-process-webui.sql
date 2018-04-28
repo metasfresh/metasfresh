@@ -148,3 +148,212 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,554560,0,540605,541558,551703,TO_TIMESTAMP('2018-04-28 13:08:53','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Auf CUs anwenden',100,110,0,TO_TIMESTAMP('2018-04-28 13:08:53','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2018-04-28T13:13:04.122
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Menu_Trl WHERE AD_Menu_ID=540555
+;
+
+-- 2018-04-28T13:13:04.128
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Menu WHERE AD_Menu_ID=540555
+;
+
+-- 2018-04-28T13:13:04.131
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_TreeNodeMM n WHERE Node_ID=540555 AND EXISTS (SELECT * FROM AD_Tree t WHERE t.AD_Tree_ID=n.AD_Tree_ID AND t.AD_Table_ID=116)
+;
+
+-- 2018-04-28T13:13:45.451
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540479 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:45.452
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540481 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:45.453
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540893 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:45.453
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540482 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:45.453
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540489 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:45.454
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540490 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:45.454
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540520 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:45.455
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540545 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:45.455
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540546 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:45.455
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540600 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:45.456
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540555 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:45.456
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540659 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:45.456
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540597 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.485
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540479 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.485
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540481 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.486
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540893 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.487
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540482 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.487
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540489 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.488
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540490 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.488
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540520 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.489
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540545 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.489
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540546 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.490
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540555 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.490
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540600 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.491
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540659 AND AD_Tree_ID=10
+;
+
+-- 2018-04-28T13:13:47.491
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540478, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540597 AND AD_Tree_ID=10
+;
+-- 2018-04-28T13:22:33.107
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540945,541559,TO_TIMESTAMP('2018-04-28 13:22:33','YYYY-MM-DD HH24:MI:SS'),100,'Y','flags',10,TO_TIMESTAMP('2018-04-28 13:22:33','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-04-28T13:22:37.213
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540945,541560,TO_TIMESTAMP('2018-04-28 13:22:37','YYYY-MM-DD HH24:MI:SS'),100,'Y','org',20,TO_TIMESTAMP('2018-04-28 13:22:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-04-28T13:22:54.446
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541560, SeqNo=10,Updated=TO_TIMESTAMP('2018-04-28 13:22:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551696
+;
+
+-- 2018-04-28T13:23:02.865
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541560, SeqNo=20,Updated=TO_TIMESTAMP('2018-04-28 13:23:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551695
+;
+
+-- 2018-04-28T13:23:11.639
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541559, SeqNo=10,Updated=TO_TIMESTAMP('2018-04-28 13:23:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551693
+;
+
+-- 2018-04-28T13:23:31.387
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541559, SeqNo=20,Updated=TO_TIMESTAMP('2018-04-28 13:23:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551699
+;
+
+-- 2018-04-28T13:23:40.739
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541559, SeqNo=30,Updated=TO_TIMESTAMP('2018-04-28 13:23:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551703
+;
+
+-- 2018-04-28T13:23:47.383
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541559, SeqNo=40,Updated=TO_TIMESTAMP('2018-04-28 13:23:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551702
+;
+
+-- 2018-04-28T13:23:56.058
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541559, SeqNo=50,Updated=TO_TIMESTAMP('2018-04-28 13:23:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551701
+;
+
+-- 2018-04-28T13:24:04.008
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541559, SeqNo=60,Updated=TO_TIMESTAMP('2018-04-28 13:24:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551700
+;
+
+-- 2018-04-28T13:24:26.521
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540944,541561,TO_TIMESTAMP('2018-04-28 13:24:26','YYYY-MM-DD HH24:MI:SS'),100,'Y','packing instruction',20,TO_TIMESTAMP('2018-04-28 13:24:26','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-04-28T13:25:01.302
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541561, SeqNo=10,Updated=TO_TIMESTAMP('2018-04-28 13:25:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551698
+;
+
+-- 2018-04-28T13:25:23.998
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=551694
+;
+
