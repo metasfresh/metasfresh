@@ -23,6 +23,8 @@ Here come the actual release notes:
     * New Fields in myProfile Window that allows detailed Notifications Settings for the user.
   * [#3839](https://github.com/metasfresh/metasfresh/issues/3839) Webui: BPartner window: show BPartner Product tab
     * Improvement of Business Partner window. Now allowing to record Products that thall not be sold to a specific BPartner.
+  * [#3899](https://github.com/metasfresh/metasfresh/issues/3899) Webui window for M_HU_Process
+    * New Window for the Configuration of Handling Unit Processes. Can be used as System Administrator.
 
 
 * metasfresh-webui-frontend
