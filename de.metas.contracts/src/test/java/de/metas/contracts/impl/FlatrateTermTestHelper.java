@@ -164,8 +164,6 @@ public class FlatrateTermTestHelper
 
 	private void addPricingRules()
 	{
-		// skipping this for now because is using directly the DB
-		// pricingRules.put("PriceListVersion + Vendor Break", "org.adempiere.pricing.spi.impl.rules.PriceListVersionVB");
 		pricingRules.put("PriceListVersion", PriceListVersion.class.getName());
 		pricingRules.put("Discount", Discount.class.getName());
 		pricingRules.put("Product Scale Price", ProductScalePrice.class.getName());
