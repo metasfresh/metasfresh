@@ -87,9 +87,17 @@ public final class JSONNotificationEvent implements Serializable
 		return new JSONNotificationEvent(EventType.Delete, notificationId, notification, unreadCount);
 	}
 
+	public static final JSONNotificationEvent eventDeletedAll()
+	{
+		final String notificationId = null;
+		final JSONNotification notification = null;
+		final int unreadCount = 0;
+		return new JSONNotificationEvent(EventType.DeleteAll, notificationId, notification, unreadCount);
+	}
+
 	public static enum EventType
 	{
-		New, Read, ReadAll, Delete
+		New, Read, ReadAll, Delete, DeleteAll
 	};
 
 	@JsonProperty("eventType")

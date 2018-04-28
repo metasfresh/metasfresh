@@ -155,4 +155,9 @@ public class UserNotificationsService
 		getNotificationsQueue(adUserId).delete(notificationId);
 	}
 
+	public void deleteAllNotification(final int adUserId)
+	{
+		getNotificationsQueue(adUserId).deleteAll();
+	}
+
 }
