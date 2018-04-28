@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
@@ -39,6 +40,7 @@ import de.metas.util.IColorRepository;
 public class OrderLinePricingConditions implements IOrderLinePricingConditions
 {
 	private static final String SYSCONFIG_NoPriceConditionsColorName = "de.metas.order.NoPriceConditionsColorName";
+	private static final String SYSCONFIG_TemporaryPriceConditionsColorName = "de.metas.order.TemporaryPriceConditionsColorName";
 	private static final String MSG_NoPricingConditionsError = "de.metas.order.NoPricingConditionsError";
 
 	private static enum HasPricingConditions
@@ -62,8 +64,7 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		}
 		else if (hasPricingConditions == HasPricingConditions.TEMPORARY)
 		{
-			// in future we might pick another color for those temporary/ah-hoc pricing conditions
-			return -1;
+			return getTemporaryPriceConditionsColorId();
 		}
 		else if (hasPricingConditions == HasPricingConditions.NO)
 		{
@@ -75,9 +76,23 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		}
 	}
 
+	private int getTemporaryPriceConditionsColorId()
+	{
+		return getColorIdBySysConfig(SYSCONFIG_TemporaryPriceConditionsColorName);
+	}
+
 	private int getNoPriceConditionsColorId()
 	{
-		final String colorName = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_NoPriceConditionsColorName, "-");
+		return getColorIdBySysConfig(SYSCONFIG_NoPriceConditionsColorName);
+	}
+
+	private int getColorIdBySysConfig(final String sysConfigName)
+	{
+		final String colorName = Services.get(ISysConfigBL.class).getValue(sysConfigName, "-");
+		if (Check.isEmpty(colorName) || "-".equals(colorName))
+		{
+			return -1;
+		}
 		return Services.get(IColorRepository.class).getColorIdByName(colorName);
 	}
 
