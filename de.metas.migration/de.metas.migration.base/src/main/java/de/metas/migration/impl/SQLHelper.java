@@ -13,11 +13,11 @@ package de.metas.migration.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,11 +30,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import lombok.Builder;
+import lombok.NonNull;
 
 public class SQLHelper
 {
@@ -122,6 +127,40 @@ public class SQLHelper
 		}
 	}
 
+	@Builder(builderClassName = "RetrieveRecordsBuilder", builderMethodName = "retrieveRecords", buildMethodName = "execute")
+	private <T, CT extends Collection<T>> CT retrieveRecordsExecutor(
+			@NonNull final String sql,
+			final List<Object> sqlParams,
+			@NonNull final Supplier<CT> collectionFactory,
+			@NonNull final ResultSetRowLoader<T> rowLoader)
+	{
+		final Connection conn = database.getConnection();
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = conn.prepareStatement(sql);
+			setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			final CT result = collectionFactory.get();
+			while (rs.next())
+			{
+				final T row = rowLoader.loadRow(rs);
+				result.add(row);
+			}
+			return result;
+		}
+		catch (final SQLException e)
+		{
+			throw new RuntimeException("Error while executing '" + sql + "' on " + database, e);
+		}
+		finally
+		{
+			close(rs, pstmt, conn);
+		}
+	}
+
 	/**
 	 * Set PreparedStatement's parameter. Similar with calling <code>pstmt.setObject(index, param)</code>
 	 *
@@ -200,7 +239,7 @@ public class SQLHelper
 	public static void setParameters(final PreparedStatement stmt, final List<?> params)
 			throws SQLException
 	{
-		if (params == null || params.size() == 0)
+		if (params == null || params.isEmpty())
 		{
 			return;
 		}
@@ -260,5 +299,11 @@ public class SQLHelper
 		close(rs);
 		close(pstmt);
 		close(conn);
+	}
+
+	@FunctionalInterface
+	public static interface ResultSetRowLoader<T>
+	{
+		T loadRow(ResultSet rs) throws SQLException;
 	}
 }
