@@ -41,6 +41,7 @@ import org.compiere.util.Env;
 
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductDAO;
 
 @SuppressWarnings("serial")
 public class ProductNotOnPriceListException extends AdempiereException
@@ -86,7 +87,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 		return buildMessage(documentLineNo, m_Product_ID, m_PriceList_ID, priceDate);
 	}
 
-	protected static String buildMessage(final int documentLineNo, final int m_Product_ID, final int m_PriceList_ID, final Timestamp priceDate)
+	protected static String buildMessage(final int documentLineNo, final int productId, final int priceListId, final Timestamp priceDate)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (documentLineNo > 0)
@@ -97,18 +98,18 @@ public class ProductNotOnPriceListException extends AdempiereException
 			}
 			sb.append("@Line@:").append(documentLineNo);
 		}
-		if (m_Product_ID > 0)
+		if (productId > 0)
 		{
-			final MProduct p = MProduct.get(Env.getCtx(), m_Product_ID);
+			final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 			if (sb.length() > 0)
 			{
 				sb.append(", ");
 			}
-			sb.append("@M_Product_ID@:").append(p == null ? "?" : p.getValue() + "_" + p.getName());
+			sb.append("@M_Product_ID@:").append(product == null ? "<" + productId + ">" : product.getValue() + "_" + product.getName());
 		}
-		if (m_PriceList_ID > 0)
+		if (priceListId > 0)
 		{
-			final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(m_PriceList_ID);
+			final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(priceListId);
 			if (sb.length() > 0)
 			{
 				sb.append(", ");
