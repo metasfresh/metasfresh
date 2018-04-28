@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 
 public class SQLHelper
 {
@@ -128,10 +129,10 @@ public class SQLHelper
 	}
 
 	@Builder(builderClassName = "RetrieveRecordsBuilder", builderMethodName = "retrieveRecords", buildMethodName = "execute")
-	private <T, CT extends Collection<T>> CT retrieveRecordsExecutor(
+	private <T> Collection<T> retrieveRecordsExecutor(
 			@NonNull final String sql,
-			final List<Object> sqlParams,
-			@NonNull final Supplier<CT> collectionFactory,
+			@Singular final List<Object> sqlParams,
+			@NonNull final Supplier<Collection<T>> collectionFactory,
 			@NonNull final ResultSetRowLoader<T> rowLoader)
 	{
 		final Connection conn = database.getConnection();
@@ -143,7 +144,7 @@ public class SQLHelper
 			setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
-			final CT result = collectionFactory.get();
+			final Collection<T> result = collectionFactory.get();
 			while (rs.next())
 			{
 				final T row = rowLoader.loadRow(rs);

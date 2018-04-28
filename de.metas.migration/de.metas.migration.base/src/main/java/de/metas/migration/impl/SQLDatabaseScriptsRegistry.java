@@ -175,7 +175,7 @@ public class SQLDatabaseScriptsRegistry implements IScriptsRegistry
 	{
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final Collection<ScriptName> scriptNames = sqlHelper.<ScriptName, HashSet<ScriptName>> retrieveRecords()
+		final Collection<ScriptName> scriptNames = sqlHelper.<ScriptName> retrieveRecords()
 				.sql("SELECT ProjectName, Name FROM AD_MigrationScript")
 				.collectionFactory(HashSet::new)
 				.rowLoader(rs -> ScriptName.ofProjectNameAndName(rs.getString("ProjectName"), rs.getString("Name")))
