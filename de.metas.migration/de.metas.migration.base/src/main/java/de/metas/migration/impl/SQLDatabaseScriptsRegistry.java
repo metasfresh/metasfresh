@@ -1,7 +1,7 @@
 package de.metas.migration.impl;
 
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Supplier;
 
 /*
@@ -44,7 +44,7 @@ public class SQLDatabaseScriptsRegistry implements IScriptsRegistry
 	private final SQLHelper sqlHelper;
 
 	private final boolean useInMemoryDatabase;
-	private final Supplier<Set<ScriptName>> inMemoryDatabaseSupplier = Suppliers.memoize(this::dbRetrieveAll);
+	private final Supplier<Collection<ScriptName>> inMemoryDatabaseSupplier = Suppliers.memoize(this::dbRetrieveAll);
 
 	public SQLDatabaseScriptsRegistry(final SQLDatabase database)
 	{
@@ -171,11 +171,11 @@ public class SQLDatabaseScriptsRegistry implements IScriptsRegistry
 		sqlHelper.executeUpdate(sql, description, developerName, ignored, filename, name, projectName, durationMillis);
 	}
 
-	private Set<ScriptName> dbRetrieveAll()
+	private Collection<ScriptName> dbRetrieveAll()
 	{
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final HashSet<ScriptName> scriptNames = sqlHelper.<ScriptName, HashSet<ScriptName>> retrieveRecords()
+		final Collection<ScriptName> scriptNames = sqlHelper.<ScriptName, HashSet<ScriptName>> retrieveRecords()
 				.sql("SELECT ProjectName, Name FROM AD_MigrationScript")
 				.collectionFactory(HashSet::new)
 				.rowLoader(rs -> ScriptName.ofProjectNameAndName(rs.getString("ProjectName"), rs.getString("Name")))
