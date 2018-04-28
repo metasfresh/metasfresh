@@ -19,6 +19,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.ui.web.document.filter.DocumentFiltersList;
@@ -94,10 +95,13 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 		this.salesOrderLineId = allRowsData.getSalesOrderLineId();
 
 		rowsById = allRowsData.rowsById;
-		rowIds = allRowsData.rowsById.values()
+		final ImmutableSet<DocumentId> rowIdsNotOrdered = allRowsData.rowsById.values()
 				.stream()
 				.filter(PricingConditionsViewFilters.isEditableRowOrMatching(filters))
 				.map(PricingConditionsRow::getId)
+				.collect(ImmutableSet.toImmutableSet());
+		rowIds = allRowsData.rowIds.stream()
+				.filter(rowIdsNotOrdered::contains)
 				.collect(ImmutableList.toImmutableList());
 
 		this.editableRowId = from.editableRowId;

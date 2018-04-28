@@ -108,9 +108,12 @@ class PricingConditionsViewFilters
 		final boolean showCustomers = filters.getParamValueAsBoolean(FILTERID_IsCustomer, PARAM_IsCustomer, false);
 		final boolean showVendors = filters.getParamValueAsBoolean(FILTERID_IsVendor, PARAM_IsVendor, false);
 		final boolean showAll = !showCustomers && !showVendors;
+		if(showAll)
+		{
+			return Predicates.alwaysTrue();
+		}
 
 		return row -> row.isEditable()
-				|| showAll
 				|| ((showCustomers && row.isCustomer()) || (showVendors && row.isVendor()));
 	}
 
