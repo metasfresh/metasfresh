@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -26,6 +25,7 @@ import com.google.common.collect.SetMultimap;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
@@ -112,32 +112,41 @@ import lombok.NonNull;
 	 * @param shipmentScheduleIds
 	 * @return
 	 */
-	public List<HUEditorRow> retrieveSourceHUs(@NonNull final List<Integer> shipmentScheduleIds)
+	public List<HUEditorRow> retrieveSourceHUs(@NonNull final PickingSlotRepoQuery query)
 	{
-		final MatchingSourceHusQuery query = createMatchingSourceHusQueryFromShipmentScheduleIds(shipmentScheduleIds);
-		final List<I_M_HU> sourceHus = SourceHUsService.get().retrieveMatchingSourceHus(query);
-
-		final Set<Integer> sourceHuIds = sourceHus.stream().map(I_M_HU::getM_HU_ID).collect(Collectors.toSet());
-
-		return huEditorRepo.retrieveHUEditorRows(sourceHuIds, HUEditorRowFilter.ALL);
+		final MatchingSourceHusQuery matchingSourceHUsQuery = createMatchingSourceHusQuery(query);
+		final Set<Integer> sourceHUIds = SourceHUsService.get().retrieveMatchingSourceHUIds(matchingSourceHUsQuery);
+		return huEditorRepo.retrieveHUEditorRows(sourceHUIds, HUEditorRowFilter.ALL);
 	}
 
-	/**
-	 * @param shipmentSchedules the schedules to make the new instance from; may not be {@code null}. Empty means that no HUs will be found.
-	 */
 	@VisibleForTesting
-	static MatchingSourceHusQuery createMatchingSourceHusQueryFromShipmentScheduleIds(@NonNull final List<Integer> shipmentScheduleIds)
+	static MatchingSourceHusQuery createMatchingSourceHusQuery(@NonNull final PickingSlotRepoQuery query)
 	{
-		final List<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedules = shipmentScheduleIds.stream()
-				.map(id -> load(id, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class))
-				.collect(Collectors.toList());
+		final I_M_ShipmentSchedule currentShipmentSchedule = query.getCurrentShipmentScheduleId() > 0 ? load(query.getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class) : null; 
+		final List<Integer> productIds;
+		final Set<Integer> allShipmentScheduleIds = query.getShipmentScheduleIds();
+		if (allShipmentScheduleIds.isEmpty())
+		{
+			productIds = ImmutableList.of();
+		}
+		else if (allShipmentScheduleIds.size() == 1)
+		{
+			productIds = ImmutableList.of(currentShipmentSchedule.getM_Product_ID());
+		}
+		else
+		{
+			productIds = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_M_ShipmentSchedule.class)
+					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, allShipmentScheduleIds)
+					.create()
+					.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, Integer.class);
+		}
 
-		final MatchingSourceHusQueryBuilder builder = MatchingSourceHusQuery.builder();
-
-		shipmentSchedules.forEach(shipmentSchedule -> builder.productId(shipmentSchedule.getM_Product_ID()));
+		final MatchingSourceHusQueryBuilder builder = MatchingSourceHusQuery.builder()
+				.productIds(productIds);
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final int effectiveWarehouseId = shipmentSchedules.isEmpty() ? -1 : shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedules.get(0));
+		final int effectiveWarehouseId = currentShipmentSchedule != null ? shipmentScheduleEffectiveBL.getWarehouseId(currentShipmentSchedule) : -1;
 		builder.warehouseId(effectiveWarehouseId);
 		return builder.build();
 	}

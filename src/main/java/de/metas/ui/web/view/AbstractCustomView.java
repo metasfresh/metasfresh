@@ -8,6 +8,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
@@ -20,12 +22,14 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderBys;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -92,7 +96,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 
 		this.viewFilterDescriptors = viewFilterDescriptors;
 	}
-
+	
 	@Override
 	public final JSONViewDataType getViewType()
 	{
@@ -117,20 +121,15 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		return null;
 	}
 
-	protected final Map<DocumentId, T> getRows()
+	protected final Collection<T> getRows()
 	{
-		return rowsData.getDocumentId2TopLevelRows();
-	}
-
-	public Map<DocumentId, T> getMainRowsAndSubRows()
-	{
-		return rowsData.getDocumentId2AllRows();
+		return rowsData.getTopLevelRows();
 	}
 
 	@Override
 	public final long size()
 	{
-		return getRows().size();
+		return rowsData.size();
 	}
 
 	@Override
@@ -183,6 +182,11 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	{
 		return ImmutableList.of();
 	}
+	
+	protected final DocumentFilterDescriptorsProvider getFilterDescriptors()
+	{
+		return viewFilterDescriptors;
+	}
 
 	/**
 	 * Just returns an empty list.
@@ -226,7 +230,8 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	@Override
 	public final ViewResult getPage(final int firstRow, final int pageLength, @NonNull final List<DocumentQueryOrderBy> orderBys)
 	{
-		final List<IViewRow> pageRows = getRows().values().stream()
+		final List<IViewRow> pageRows = getRows()
+				.stream()
 				.sorted(DocumentQueryOrderBys.asComparator(orderBys))
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : 30)
@@ -238,13 +243,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	@Override
 	public final T getById(@NonNull final DocumentId rowId) throws EntityNotFoundException
 	{
-		final T row = getMainRowsAndSubRows().get(rowId);
-		if (row == null)
-		{
-			throw new EntityNotFoundException("Row not found")
-					.appendParametersToMessage().setParameter("rowId", rowId);
-		}
-		return row;
+		return rowsData.getById(rowId);
 	}
 
 	@Override
@@ -261,7 +260,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	{
 		if (rowIds.isAll())
 		{
-			return getRows().values().stream();
+			return getRows().stream();
 		}
 		return rowIds.stream().map(this::getById);
 	}
@@ -292,6 +291,21 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	protected Stream<DocumentId> extractDocumentIdsToInvalidate(final TableRecordReference recordRef)
 	{
 		return rowsData.streamDocumentIdsToInvalidate(recordRef);
+	}
+
+	public final void patchViewRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	{
+		Check.assumeNotEmpty(fieldChangeRequests, "fieldChangeRequests is not empty");
+
+		if (rowsData instanceof IEditableRowsData)
+		{
+			final IEditableRowsData<T> editableRowsData = (IEditableRowsData<T>)rowsData;
+			editableRowsData.patchRow(ctx, fieldChangeRequests);
+		}
+		else
+		{
+			throw new AdempiereException("View is not editable");
+		}
 	}
 
 	private static class RowsDataTool
@@ -332,9 +346,37 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 
 		void invalidateAll();
 
-		default Map<DocumentId, T> getDocumentId2AllRows()
+		default int size()
+		{
+			return getDocumentId2TopLevelRows().size();
+		}
+
+		/* private */default Map<DocumentId, T> getDocumentId2AllRows()
 		{
 			return RowsDataTool.extractAllRows(getDocumentId2TopLevelRows().values());
+		}
+
+		/** @return all rows (top level and included ones) */
+		default Collection<T> getAllRows()
+		{
+			return getDocumentId2AllRows().values();
+		}
+
+		default Collection<T> getTopLevelRows()
+		{
+			return getDocumentId2TopLevelRows().values();
+		}
+
+		/** @return top level or include row */
+		default T getById(final DocumentId rowId) throws EntityNotFoundException
+		{
+			final T row = getDocumentId2AllRows().get(rowId);
+			if (row == null)
+			{
+				throw new EntityNotFoundException("Row not found")
+						.appendParametersToMessage().setParameter("rowId", rowId);
+			}
+			return row;
 		}
 
 		default Stream<DocumentId> streamDocumentIdsToInvalidate(@NonNull final TableRecordReference recordRef)
@@ -344,5 +386,10 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 					.stream()
 					.map(IViewRow::getId);
 		}
+	}
+
+	public interface IEditableRowsData<T extends IViewRow> extends IRowsData<T>
+	{
+		void patchRow(RowEditingContext ctx, List<JSONDocumentChangedEvent> fieldChangeRequests);
 	}
 }

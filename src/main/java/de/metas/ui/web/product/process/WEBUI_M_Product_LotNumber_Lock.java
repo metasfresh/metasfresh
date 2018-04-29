@@ -2,22 +2,24 @@ package de.metas.ui.web.product.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_InOut;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
+import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -48,17 +50,24 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  */
 
 /**
- * https://github.com/metasfresh/metasfresh/issues/3693
- * This process will search for HUs containing products with LotNo attributes that fit the pairs in the selected I_M_Product_LotNumber_Lock entries.
- * If such HUs are found, they will all be put in a DD_Order and sent to the Quarantine warehouse.
+ * https://github.com/metasfresh/metasfresh/issues/3693 This process will search
+ * for HUs containing products with LotNo attributes that fit the pairs in the
+ * selected I_M_Product_LotNumber_Lock entries. If such HUs are found, they will
+ * all be put in a DD_Order and sent to the Quarantine warehouse.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
+		implements
+		IProcessPrecondition
 {
-	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
+	private final ILotNumberDateAttributeDAO lotNumberDateAttributeDAO = Services.get(ILotNumberDateAttributeDAO.class);
+
+	private List<HUToDistribute> husToQuarantine = new ArrayList<>();
 
 	@Override
 	protected String doIt() throws Exception
@@ -66,8 +75,20 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 		getView().streamByIds(getSelectedRowIds())
 				.map(row -> row.getId().toInt())
 				.distinct()
-				.forEach(id -> quarantineHUsForLotNo(id));
+				.forEach(this::createQuarantineHUsByLotNoLockId);
+
+		huDDOrderBL.createQuarantineDDOrderForHUs(husToQuarantine);
+
+		setInvoiceCandsInDispute();
+
 		return MSG_OK;
+	}
+
+	private void setInvoiceCandsInDispute()
+	{
+		husToQuarantine.stream().map(HUToDistribute::getHu)
+				.flatMap(hu -> huInOutDAO.retrieveInOutLinesForHU(hu).stream())
+				.forEach(invoiceCandBL::markInvoiceCandInDisputeForReceiptLine);
 	}
 
 	@Override
@@ -82,10 +103,13 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private void quarantineHUsForLotNo(final int lotNoLockId)
+	private void createQuarantineHUsByLotNoLockId(final int lotNoLockId)
 	{
-		final I_M_Product_LotNumber_Lock lotNoLock = load(lotNoLockId, I_M_Product_LotNumber_Lock.class);
-		final I_M_Attribute lotNoAttribute = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttribute(getCtx());
+		final I_M_Product_LotNumber_Lock lotNoLock = load(
+				lotNoLockId,
+				I_M_Product_LotNumber_Lock.class);
+
+		final I_M_Attribute lotNoAttribute = lotNumberDateAttributeDAO.getLotNumberAttribute(getCtx());
 
 		if (lotNoAttribute == null)
 		{
@@ -96,37 +120,45 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate imp
 
 		final String lotNoValue = lotNoLock.getLot();
 
-		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(productId, lotNoAttribute, lotNoValue);
+		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(
+				productId,
+				lotNoAttribute,
+				lotNoValue);
 
-		final List<HUToDistribute> husToDistribute = husForAttributeStringValue
-				.stream()
-				.map(hu -> HUToDistribute.of(hu, lotNoLock))
-				.collect(ImmutableList.toImmutableList());
+		for (final I_M_HU hu : husForAttributeStringValue)
+		{
+			final List<de.metas.handlingunits.model.I_M_InOutLine> inOutLinesForHU = huInOutDAO
+					.retrieveInOutLinesForHU(hu);
 
-		Services.get(IHUDDOrderBL.class).createQuarantineDDOrderForHUs(husToDistribute);
+			if (Check.isEmpty(inOutLinesForHU))
+			{
+				continue;
+			}
 
-		setExistingInvoiceCandsInDispute(husForAttributeStringValue);
+			final I_M_InOut firstReceipt = inOutLinesForHU.get(0).getM_InOut();
+			final int bpartnerId = firstReceipt.getC_BPartner_ID();
+			final int bpLocationId = firstReceipt.getC_BPartner_Location_ID();
+
+			husToQuarantine.add(HUToDistribute.builder()
+					.hu(hu)
+					.lockLotNo(lotNoLock)
+					.bpartnerId(bpartnerId)
+					.bpartnerLocationId(bpLocationId)
+					.build());
+		}
 
 	}
 
-	private void setExistingInvoiceCandsInDispute(final List<I_M_HU> hus)
-	{
-		hus.stream()
-				.map(hu -> huAssignmentDAO.retrieveModelsForHU(hu, I_M_InOutLine.class))
-				.forEach(lines -> {
-					invoiceCandBL.markInvoiceCandInDisputeForReceiptLines(lines);
-				});
-
-	}
-
-	private List<I_M_HU> retrieveHUsForAttributeStringValue(final int productId, final I_M_Attribute attribute, final String value)
+	private List<I_M_HU> retrieveHUsForAttributeStringValue(
+			final int productId,
+			final I_M_Attribute attribute,
+			final String value)
 	{
 		return Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
 				.addOnlyWithProductId(productId)
 				.addOnlyWithAttribute(attribute, value)
 				.addHUStatusesToInclude(ImmutableList.of(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active))
 				.list();
-
 	}
 
 }

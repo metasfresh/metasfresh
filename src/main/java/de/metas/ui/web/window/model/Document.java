@@ -1811,6 +1811,16 @@ public final class Document
 		}
 		catch (final Exception saveEx)
 		{
+			// Directly propagate user validation exceptions
+			// NOTE: this is kind of workaround until we really fix how we mark if a document/included document got some errors.
+			// Known issue(s):
+			// When saving an included document (e.g. a line) is failing, the exception is caught (here) but for header document,
+			// so here we are flagging the header document instead of flagging the line.
+			if(AdempiereException.isUserValidationError(saveEx))
+			{
+				throw AdempiereException.wrapIfNeeded(saveEx);
+			}
+			
 			// NOTE: usually if we do the right checks we shall not get to this
 			logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
 			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx), OnValidStatusChanged.DO_NOTHING);

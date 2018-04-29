@@ -92,8 +92,8 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 		return SqlViewGroupingBinding.builder()
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Product_ID)
-				.columnSql(I_M_Packageable_V.COLUMNNAME_QtyToDeliver, "SUM(QtyToDeliver)")
-				.columnSql(I_M_Packageable_V.COLUMNNAME_QtyPickedPlanned, "SUM(QtyPickedPlanned)")
+				.columnSql(I_M_Packageable_V.COLUMNNAME_QtyOrdered, "SUM(QtyOrdered)")
+				.columnSql(I_M_Packageable_V.COLUMNNAME_QtyPicked, "SUM(QtyPicked + QtyPickedPlanned)")
 				.columnSql(I_M_Packageable_V.COLUMNNAME_DeliveryDate, "MIN(DeliveryDate)")
 				.columnSql(I_M_Packageable_V.COLUMNNAME_PreparationDate, "IF_MIN(DeliveryDate, PreparationDate)")
 				.rowIdsConverter(SqlViewRowIdsConverters.TO_INT_EXCLUDING_STRINGS)
@@ -112,8 +112,8 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 		viewLayoutBuilder.elementsOrder(
 				FIELDNAME_ProductOrBPartner,
 				I_M_Packageable_V.COLUMNNAME_C_Order_ID,
-				I_M_Packageable_V.COLUMNNAME_QtyToDeliver,
-				I_M_Packageable_V.COLUMNNAME_QtyPickedPlanned,
+				I_M_Packageable_V.COLUMNNAME_QtyOrdered,
+				I_M_Packageable_V.COLUMNNAME_QtyPicked,
 				I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID,
 				I_M_Packageable_V.COLUMNNAME_PreparationDate);
 	}

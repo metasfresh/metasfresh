@@ -16,7 +16,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.I_M_FreightCost;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -30,9 +29,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -40,8 +37,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -96,9 +92,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 {
 	private static final String SYSCONFIG_ATP_QUERY_ENABLED = //
 			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ATP.QueryEnabled";
-
-	private static final String SYSCONFIG_ATP_ATTRIBUTES_KEYS = //
-			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ATP.AttributesKeys";
 
 	private static final String SYSCONFIG_ATP_DISPLAY_ONLY_POSITIVE = //
 			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ATP.DisplayOnlyPositive";
@@ -497,15 +490,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return productLookupValues;
 		}
 
-		final AvailableToPromiseQueryBuilder atpQueryBuilder = AvailableToPromiseQuery.builder();
-		addStorageAttributeKeysToQueryBuilder(atpQueryBuilder);
-
-		atpQueryBuilder.productIds(productLookupValues.getKeysAsInt());
-		atpQueryBuilder.date(dateOrNull);
-
-		// invoke the query
-		final AvailableToPromiseResultForWebui availableStock = //
-				availableToPromiseAdapter.retrieveAvailableStock(atpQueryBuilder.build());
+		final AvailableToPromiseResultForWebui availableStock = availableToPromiseAdapter.retrieveAvailableStock(AvailableToPromiseQuery.builder()
+				.productIds(productLookupValues.getKeysAsInt())
+				.storageAttributesKeys(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
+				.date(dateOrNull)
+				.build());
 		final List<Group> availableStockGroups = availableStock.getGroups();
 
 		// process the query's result into those explodedProductValues
@@ -522,38 +511,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				SYSCONFIG_ATP_QUERY_ENABLED,
 				false, clientId, orgId);
 		return stockQueryActivated;
-	}
-
-	private void addStorageAttributeKeysToQueryBuilder(@NonNull final AvailableToPromiseQueryBuilder stockQueryBuilder)
-	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final int clientId = Env.getAD_Client_ID(Env.getCtx());
-		final int orgId = Env.getAD_Org_ID(Env.getCtx());
-
-		final String storageAttributesKeys = sysConfigBL.getValue(
-				SYSCONFIG_ATP_ATTRIBUTES_KEYS,
-				AttributesKey.ALL.getAsString(),
-				clientId, orgId);
-
-		final Splitter splitter = Splitter
-				.on(",")
-				.trimResults(CharMatcher.whitespace())
-				.omitEmptyStrings();
-		for (final String storageAttributesKey : splitter.splitToList(storageAttributesKeys))
-		{
-			if ("<ALL_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
-			{
-				stockQueryBuilder.storageAttributesKey(AttributesKey.ALL);
-			}
-			else if ("<OTHER_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
-			{
-				stockQueryBuilder.storageAttributesKey(AttributesKey.OTHER);
-			}
-			else
-			{
-				stockQueryBuilder.storageAttributesKey(AttributesKey.ofString(storageAttributesKey));
-			}
-		}
 	}
 
 	private LookupValuesList createLookupValuesFromAvailableStockGroups(

@@ -6,6 +6,8 @@ import java.util.Properties;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.Profiles;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
@@ -48,7 +50,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if(!isHUEditorView())
+		if (!isHUEditorView())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
@@ -90,7 +92,10 @@ public class WEBUI_M_HU_PrintReceiptLabel
 		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId();
 		final HUToReport hu = getSingleSelectedRow().getAsHUToReport();
 
-		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId);
+		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId)
+				.stream()
+				.filter(HUToReport::isTopLevel) // issue https://github.com/metasfresh/metasfresh/issues/3851
+				.collect(ImmutableList.toImmutableList());
 
 		HUReportExecutor.newInstance(getCtx())
 				.windowNo(getProcessInfo().getWindowNo())

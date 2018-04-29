@@ -228,12 +228,9 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(targetHuType))
 		{
-			pickingRow.getHuProductId();
-
 			lutuProducer.setNoLU();
 			lutuProducer.setTUPI(targetHUPI);
 		}
 		return lutuProducer;
 	}
-
 }

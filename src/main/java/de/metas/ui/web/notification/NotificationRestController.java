@@ -5,14 +5,16 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Splitter;
 
+import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.notification.json.JSONNotificationsList;
 import de.metas.ui.web.session.UserSession;
@@ -53,7 +55,7 @@ public class NotificationRestController
 	@Autowired
 	private UserNotificationsService userNotificationsService;
 
-	@RequestMapping(value = "/websocketEndpoint", method = RequestMethod.GET)
+	@GetMapping("/websocketEndpoint")
 	public final String getWebsocketEndpoint()
 	{
 		userSession.assertLoggedIn();
@@ -62,7 +64,7 @@ public class NotificationRestController
 		return userNotificationsService.getWebsocketEndpoint(adUserId);
 	}
 
-	@RequestMapping(value = "/all", method = RequestMethod.GET)
+	@GetMapping("/all")
 	public JSONNotificationsList getNotifications(
 			@RequestParam(name = "limit", defaultValue = "-1") final int limit //
 	)
@@ -74,7 +76,7 @@ public class NotificationRestController
 		return JSONNotificationsList.of(notifications, userSession.getAD_Language());
 	}
 
-	@RequestMapping(value = "/unreadCount", method = RequestMethod.GET)
+	@GetMapping("/unreadCount")
 	public int getNotificationsUnreadCount()
 	{
 		userSession.assertLoggedIn();
@@ -83,7 +85,7 @@ public class NotificationRestController
 		return userNotificationsService.getNotificationsUnreadCount(adUserId);
 	}
 
-	@RequestMapping(value = "/{notificationId}/read", method = RequestMethod.PUT)
+	@PutMapping("/{notificationId}/read")
 	public void markAsRead(@PathVariable("notificationId") final String notificationId)
 	{
 		userSession.assertLoggedIn();
@@ -92,7 +94,7 @@ public class NotificationRestController
 		userNotificationsService.markNotificationAsRead(adUserId, notificationId);
 	}
 
-	@RequestMapping(value = "/all/read", method = RequestMethod.PUT)
+	@PutMapping("/all/read")
 	public void markAllAsRead()
 	{
 		userSession.assertLoggedIn();
@@ -129,4 +131,12 @@ public class NotificationRestController
 		notificationIds.forEach(notificationId -> userNotificationsService.deleteNotification(adUserId, notificationId));
 	}
 
+	@DeleteMapping("/all")
+	public void deleteAll()
+	{
+		userSession.assertLoggedIn();
+
+		final int adUserId = userSession.getAD_User_ID();
+		userNotificationsService.deleteAllNotification(adUserId);
+	}
 }

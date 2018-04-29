@@ -77,15 +77,15 @@ public final class PackageableRow implements IViewRow
 	})
 	private final LookupValue product;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyToDeliver, layouts = {
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyOrdered, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
 	})
-	private final BigDecimal qtyToDeliver;
+	private final BigDecimal qtyOrdered;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyPickedPlanned, layouts = {
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyPicked, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 35)
 	})
-	private final BigDecimal qtyPickedPlanned;
+	private final BigDecimal qtyPicked;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_BPartner_ID, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40)
@@ -124,8 +124,8 @@ public final class PackageableRow implements IViewRow
 			@NonNull final ViewId viewId,
 			final LookupValue order,
 			final LookupValue product,
-			final BigDecimal qtyToDeliver,
-			final BigDecimal qtyPickedPlanned,
+			final BigDecimal qtyOrdered,
+			final BigDecimal qtyPicked,
 			final LookupValue bpartner,
 			final Date preparationDate)
 	{
@@ -137,8 +137,8 @@ public final class PackageableRow implements IViewRow
 
 		this.order = order;
 		this.product = product;
-		this.qtyToDeliver = qtyToDeliver;
-		this.qtyPickedPlanned = qtyPickedPlanned != null ? qtyPickedPlanned : BigDecimal.ZERO;
+		this.qtyOrdered = qtyOrdered;
+		this.qtyPicked = qtyPicked != null ? qtyPicked : BigDecimal.ZERO;
 		this.bpartner = bpartner;
 		this.preparationDate = preparationDate;
 		this.shipmentScheduleId = shipmentScheduleId;
@@ -222,20 +222,20 @@ public final class PackageableRow implements IViewRow
 		return product != null ? product.getIdAsInt() : -1;
 	}
 
-	public BigDecimal getQtyToDeliver()
+	public BigDecimal getQtyOrdered()
 	{
-		return qtyToDeliver != null ? qtyToDeliver : BigDecimal.ZERO;
+		return qtyOrdered != null ? qtyOrdered : BigDecimal.ZERO;
 	}
 
-	public BigDecimal getQtyPickedPlanned()
+	public BigDecimal getQtyPicked()
 	{
-		return qtyPickedPlanned != null ? qtyPickedPlanned : BigDecimal.ZERO;
+		return qtyPicked != null ? qtyPicked : BigDecimal.ZERO;
 	}
 
-	public BigDecimal getQtyToDeliverWithoutPlanned()
+	public BigDecimal getQtyOrderedWithoutPicked()
 	{
-		final BigDecimal qtyToDeliverMinusPlanned = getQtyToDeliver().subtract(getQtyPickedPlanned());
-		return qtyToDeliverMinusPlanned.signum() > 0 ? qtyToDeliverMinusPlanned : BigDecimal.ZERO;
+		final BigDecimal qtyOrderedMinusPicked = getQtyOrdered().subtract(getQtyPicked());
+		return qtyOrderedMinusPicked.signum() > 0 ? qtyOrderedMinusPicked : BigDecimal.ZERO;
 	}
 
 }

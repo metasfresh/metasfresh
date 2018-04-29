@@ -275,7 +275,7 @@ public class DocumentEntityDescriptor
 
 	public DocumentFieldDescriptor getSingleIdField()
 	{
-		final DocumentFieldDescriptor idField = getSingleIdField();
+		final DocumentFieldDescriptor idField = getSingleIdFieldOrNull();
 		if (idField == null)
 		{
 			throw new AdempiereException("Entity " + this + " does not have a single ID");
