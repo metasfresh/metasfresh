@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import counterpart from 'counterpart';
 
 import { referencesRequest } from '../../actions/GenericActions';
 import { setFilter } from '../../actions/ListActions';
@@ -86,16 +87,9 @@ class TableContextMenu extends Component {
     dispatch(setFilter(filter, refType));
 
     window.open(
-      '/window/' +
-        refType +
-        '?refType=' +
-        type +
-        '&refId=' +
-        docId +
-        '&refTabId=' +
-        tabId +
-        '&refRowIds=' +
-        JSON.stringify(selected || []),
+      `/window/${refType}?refType=${type}&refId=${docId}&refTabId=${tabId}&refRowIds=${JSON.stringify(
+        selected || []
+      )}`,
       '_blank'
     );
   };
@@ -134,7 +128,7 @@ class TableContextMenu extends Component {
           top: contextMenu.y,
         }}
         className={
-          'context-menu context-menu-open' + ' panel-bordered panel-primary'
+          'context-menu context-menu-open panel-bordered panel-primary'
         }
         tabIndex="0"
         onBlur={blur}
@@ -144,13 +138,15 @@ class TableContextMenu extends Component {
             className="context-menu-item"
             onClick={() => handleZoomInto(contextMenu.fieldName)}
           >
-            <i className="meta-icon-share" /> Zoom into
+            <i className="meta-icon-share" />
+            {` ${counterpart.translate('window.table.zoomInto')}`}
           </div>
         )}
 
         {showFieldEdit && (
           <div className="context-menu-item" onClick={handleFieldEdit}>
-            <i className="meta-icon-edit" /> Edit field value
+            <i className="meta-icon-edit" />
+            {` ${counterpart.translate('window.table.editField')}`}
           </div>
         )}
 
@@ -161,21 +157,24 @@ class TableContextMenu extends Component {
         {isSelectedOne &&
           !mainTable && (
             <div className="context-menu-item" onClick={handleAdvancedEdit}>
-              <i className="meta-icon-edit" /> Advanced edit
+              <i className="meta-icon-edit" />
+              {` ${counterpart.translate('window.table.advancedEdit')}`}
               <span className="tooltip-inline">{keymap.ADVANCED_EDIT}</span>
             </div>
           )}
 
         {mainTable && (
           <div className="context-menu-item" onClick={handleOpenNewTab}>
-            <i className="meta-icon-file" /> Open in new tab
+            <i className="meta-icon-file" />
+            {` ${counterpart.translate('window.table.openInNewTab')}`}
             <span className="tooltip-inline">{keymap.OPEN_SELECTED}</span>
           </div>
         )}
 
         {handleDelete && (
           <div className="context-menu-item" onClick={handleDelete}>
-            <i className="meta-icon-trash" /> Delete
+            <i className="meta-icon-trash" />
+            {` ${counterpart.translate('window.delete.caption')}`}
             <span className="tooltip-inline">{keymap.REMOVE_SELECTED}</span>
           </div>
         )}

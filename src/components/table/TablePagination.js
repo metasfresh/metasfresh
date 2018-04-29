@@ -3,7 +3,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
-import PaginationContextShortcuts from '../shortcuts/PaginationContextShortcuts';
+import PaginationContextShortcuts from '../keyshortcuts/PaginationContextShortcuts';
 
 class TablePagination extends PureComponent {
   constructor(props) {

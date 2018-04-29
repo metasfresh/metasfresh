@@ -6,8 +6,10 @@ button, .btn {
     position: relative;
 }
 
-.btn:active {
-    box-shadow: inset 0 0 4px rgba(0,0,0,.1);
+.btn {
+    :active, :focus {
+        box-shadow: inset 0 0 4px rgba(0,0,0,.1);
+    }
 }
 
 .btn-flag {
@@ -85,7 +87,7 @@ button, .btn {
             line-height: 1.5;
         }
         .btn-sm {
-            padding: .3125rem .6rem;
+            padding: .325rem .6rem;
             line-height: 1.5;
         }
         .btn-md {
@@ -179,6 +181,9 @@ button, .btn {
 }
 .btn-meta-outline-secondary:hover {
     background-color: color(#000 lightness(95%));
+}
+.btn-meta-outline-secondary:focus {
+    border-color: $brand-font-color;
 }
 
 .btn-distance {

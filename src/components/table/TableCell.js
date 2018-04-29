@@ -1,12 +1,14 @@
 import Moment from 'moment';
 import numeral from 'numeral';
 import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import MasterWidget from '../widget/MasterWidget';
 import {
   AMOUNT_FIELD_TYPES,
   AMOUNT_FIELD_FORMATS_BY_PRECISION,
+  SPECIAL_FIELD_TYPES,
   DATE_FIELD_TYPES,
   DATE_FIELD_FORMATS,
 } from '../../constants/Constants';
@@ -36,6 +38,19 @@ class TableCell extends PureComponent {
         : fieldValueAsNum.format();
     } else {
       return '';
+    }
+  };
+
+  static createSpecialField = (fieldType, fieldValue) => {
+    switch (fieldType) {
+      case 'Color': {
+        const style = {
+          backgroundColor: fieldValue,
+        };
+        return <span className="widget-color-display" style={style} />;
+      }
+      default:
+        return fieldValue;
     }
   };
 
@@ -72,6 +87,8 @@ class TableCell extends PureComponent {
           return TableCell.createDate(fieldValue, fieldType);
         } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
           return TableCell.createAmount(fieldValue, precision);
+        } else if (SPECIAL_FIELD_TYPES.includes(fieldType)) {
+          return TableCell.createSpecialField(fieldType, fieldValue);
         }
         return fieldValue;
       }
@@ -126,9 +143,8 @@ class TableCell extends PureComponent {
       type,
       rowId,
       tabId,
-      onDoubleClick,
-      onKeyDown,
-      readonly,
+      handleDoubleClick,
+      handleKeyDown,
       updatedRow,
       tabIndex,
       entity,
@@ -141,7 +157,10 @@ class TableCell extends PureComponent {
       mainTable,
       onCellChange,
       viewId,
+      modalVisible,
     } = this.props;
+    // TODO: Hack, Color fields should be readonly
+    const readonly = item.widgetType === 'Color' ? true : this.props.readonly;
     const docId = this.props.docId + '';
     const tdValue = !isEdited
       ? TableCell.fieldValueToString(
@@ -157,10 +176,13 @@ class TableCell extends PureComponent {
 
     return (
       <td
-        tabIndex={tabIndex}
+        tabIndex={modalVisible ? -1 : tabIndex}
         ref={c => (this.cell = c)}
-        onDoubleClick={readonly ? null : onDoubleClick}
-        onKeyDown={onKeyDown}
+        onDoubleClick={e => {
+          if (isEdited) e.stopPropagation();
+          if (!readonly) handleDoubleClick(e);
+        }}
+        onKeyDown={handleKeyDown}
         onContextMenu={handleRightClick}
         className={classnames(
           {
@@ -203,9 +225,13 @@ class TableCell extends PureComponent {
           />
         ) : (
           <div
-            className="cell-text-wrapper"
+            className={classnames('cell-text-wrapper', {
+              [`${item.widgetType.toLowerCase()}-cell`]: item.widgetType,
+            })}
             title={
-              item.widgetType === 'YesNo' || item.widgetType === 'Switch'
+              item.widgetType === 'YesNo' ||
+              item.widgetType === 'Switch' ||
+              item.widgetType === 'Color'
                 ? ''
                 : tdValue
             }
@@ -218,4 +244,6 @@ class TableCell extends PureComponent {
   }
 }
 
-export default TableCell;
+export default connect(state => ({
+  modalVisible: state.windowHandler.modal.visible,
+}))(TableCell);

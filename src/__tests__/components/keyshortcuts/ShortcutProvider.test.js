@@ -1,4 +1,4 @@
-import ShortcutProvider from '../../../components/Shortcuts/ShortcutProvider';
+import ShortcutProvider from '../../../components/keyshortcuts/ShortcutProvider';
 
 describe('ShortcutProvider', () => {
   it('should return children', () => {
@@ -187,6 +187,34 @@ describe('ShortcutProvider', () => {
   });
 
   describe('handleKeyDown', () => {
+    beforeEach(() => {
+      const listeners = [];
+      const listenerAPI = {
+        addEventListener: (event, handler) => {
+          listeners.push([event, handler]);
+        },
+        removeEventListener: (event, handler) => {
+          const indices = [];
+          let i = 0;
+
+          for (const listener of listeners) {
+            if (listener[0] === event && listener[1] === handler) {
+              indices.push(i);
+            }
+
+            i++;
+          }
+
+          for (const index of indices.reverse()) {
+            listeners.splice(index, 1);
+          }
+        },
+      };
+
+      global.document = listenerAPI;
+      global.window = listenerAPI;
+    });
+
     it('should return when key is not defined', () => {
       const shortcutProvider = new ShortcutProvider();
       shortcutProvider.props = { hotkeys: {} };

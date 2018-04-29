@@ -1,5 +1,7 @@
 import React from 'react';
 import { List } from 'immutable';
+import { mount } from 'enzyme';
+
 import RawList from '../../../../components/widget/List/RawList';
 import fixtures from '../../../../../test_setup/fixtures/raw_list.json';
 

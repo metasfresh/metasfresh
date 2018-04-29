@@ -19,8 +19,8 @@ import {
   selectTableItems,
 } from '../../actions/WindowActions';
 import Prompt from '../app/Prompt';
-import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortcuts';
-import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
+import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
+import TableContextShortcuts from '../keyshortcuts/TableContextShortcuts';
 import TableContextMenu from './TableContextMenu';
 import TableFilter from './TableFilter';
 import TableHeader from './TableHeader';
@@ -59,7 +59,7 @@ class Table extends Component {
   constructor(props) {
     super(props);
 
-    const { defaultSelected } = this.props;
+    const { defaultSelected } = props;
 
     this.state = {
       selected: defaultSelected || [undefined],
@@ -119,7 +119,7 @@ class Table extends Component {
               this.showSelectedIncludedView([firstRow.id]);
             }
 
-            if (firstRow.id) {
+            if (firstRow.id && !_.isEqual(prevState.selected, selected)) {
               this.selectOneProduct(firstRow.id);
             }
           }
@@ -132,7 +132,8 @@ class Table extends Component {
     }
 
     if (
-      !_.isEqual(prevProps.defaultSelected, defaultSelected) ||
+      (!_.isEqual(prevProps.defaultSelected, defaultSelected) &&
+        !_.isEqual(prevState.selected, selected)) ||
       (refreshSelection && prevProps.refreshSelection !== refreshSelection)
     ) {
       this.setState({
@@ -152,7 +153,9 @@ class Table extends Component {
     }
 
     if (!is(prevProps.rowData, rowData)) {
-      this.getIndentData();
+      // special case for the picking terminal
+      const firstLoad = prevProps.rowData.get(1) ? false : true;
+      this.getIndentData(firstLoad);
     }
 
     if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
@@ -209,53 +212,50 @@ class Table extends Component {
 
     if (indentSupported && rowData.get(`${tabid}`)) {
       let rowsData = getRowsData(rowData.get(`${tabid}`));
+      let stateChange = {
+        rows: rowsData,
+        pendingInit: !rowsData,
+      };
 
-      this.setState(
-        {
-          rows: rowsData,
-          pendingInit: !rowsData,
+      if (selectFirst) {
+        stateChange = {
+          ...stateChange,
           collapsedParentsRows: [],
           collapsedRows: [],
-        },
-        () => {
-          const { rows } = this.state;
+        };
+      }
 
-          const firstRow = rows[0];
+      this.setState(stateChange, () => {
+        const { rows } = this.state;
+        const firstRow = rows[0];
+        let updatedParentsRows = [...this.state.collapsedParentsRows];
+        let updatedRows = [...this.state.collapsedRows];
 
-          if (selectFirst && firstRow) {
-            this.selectOneProduct(firstRow.id);
-            document.getElementsByClassName('js-table')[0].focus();
-          }
+        if (firstRow && selectFirst) {
+          this.selectOneProduct(firstRow.id);
+          document.getElementsByClassName('js-table')[0].focus();
+        }
 
-          let mapCollapsed = [];
-          if (collapsible) {
-            rows &&
-              !!rows.length &&
-              rows.map(row => {
-                if (
-                  row.indent.length >= expandedDepth &&
-                  row.includedDocuments
-                ) {
-                  mapCollapsed = mapCollapsed.concat(collapsedMap(row));
-                  this.setState(prev => ({
-                    collapsedParentsRows: prev.collapsedParentsRows.concat(
-                      row[keyProperty]
-                    ),
-                  }));
-                }
-                if (row.indent.length > expandedDepth) {
-                  this.setState(prev => ({
-                    collapsedRows: prev.collapsedRows.concat(row[keyProperty]),
-                  }));
-                }
-              });
-          }
+        let mapCollapsed = [];
+
+        if (collapsible && rows && rows.length && selectFirst) {
+          rows.map(row => {
+            if (row.indent.length >= expandedDepth && row.includedDocuments) {
+              mapCollapsed = mapCollapsed.concat(collapsedMap(row));
+              updatedParentsRows = updatedParentsRows.concat(row[keyProperty]);
+            }
+            if (row.indent.length > expandedDepth) {
+              updatedRows = updatedRows.concat(row[keyProperty]);
+            }
+          });
 
           this.setState({
             collapsedArrayMap: mapCollapsed,
+            collapsedRows: updatedRows,
+            collapsedParentsRows: updatedParentsRows,
           });
         }
-      );
+      });
     } else {
       const rowsData = rowData.get(`${tabid}`)
         ? rowData.get(`${tabid}`).toArray()
@@ -375,7 +375,6 @@ class Table extends Component {
   deselectProduct = id => {
     const { dispatch, tabInfo, type, viewId } = this.props;
     const { selected } = this.state;
-
     const index = selected.indexOf(id);
     const newSelected = update(selected, { $splice: [[index, 1]] });
 
@@ -949,7 +948,7 @@ class Table extends Component {
 
     const { selected, rows, collapsedRows, collapsedParentsRows } = this.state;
 
-    if (!rows || !rows.length) return;
+    if (!rows || !rows.length) return null;
 
     this.rowRefs = {};
 
@@ -1185,7 +1184,6 @@ class Table extends Component {
                 }
               )}
               onKeyDown={this.handleKeyDown}
-              tabIndex={tabIndex}
               ref={c => (this.table = c)}
               onCopy={this.handleCopy}
             >
@@ -1204,7 +1202,7 @@ class Table extends Component {
                 />
               </thead>
               <tbody>{this.renderTableBody()}</tbody>
-              <tfoot ref={c => (this.tfoot = c)} tabIndex={tabIndex} />
+              <tfoot ref={c => (this.tfoot = c)} />
             </table>
 
             {this.renderEmptyInfo(rowData, tabid)}

@@ -66,6 +66,7 @@ class RawList extends PureComponent {
       selected,
       autoFocus,
       emptyText,
+      isFocused,
     } = this.props;
 
     let dropdownList = this.state.dropdownList;
@@ -118,7 +119,7 @@ class RawList extends PureComponent {
           ...changedValues,
         },
         () => {
-          autoFocus && this.dropdown.focus();
+          autoFocus && !isFocused && this.dropdown.focus();
         }
       );
     }
@@ -129,16 +130,30 @@ class RawList extends PureComponent {
    * on focus.
    */
   handleClick = () => {
-    const { onOpenDropdown } = this.props;
+    const { onOpenDropdown, isToggled, onCloseDropdown } = this.props;
 
-    this.dropdown.focus();
-    onOpenDropdown();
+    if (!isToggled) {
+      this.dropdown.focus();
+      onOpenDropdown();
+    } else {
+      onCloseDropdown();
+    }
   };
 
-  handleClickOutside() {
+  handleClickOutside(e) {
     const { isFocused, onCloseDropdown, onBlur, selected } = this.props;
+    const { target } = e;
 
     if (isFocused) {
+      // if target has the dropdown class it means that scrollbar
+      // was clicked and we skip over it
+      if (
+        target.classList &&
+        target.classList.contains('input-dropdown-list')
+      ) {
+        return;
+      }
+
       this.setState(
         {
           selected: selected || null,
@@ -166,6 +181,12 @@ class RawList extends PureComponent {
       }
       onCloseDropdown();
     });
+  };
+
+  handleClear = event => {
+    event.stopPropagation();
+
+    this.props.onSelect(null);
   };
 
   handleTemporarySelection = selected => {
@@ -236,6 +257,7 @@ class RawList extends PureComponent {
       isToggled,
       isFocused,
       onFocus,
+      clearable,
     } = this.props;
 
     let value = '';
@@ -279,15 +301,14 @@ class RawList extends PureComponent {
             opened: isToggled,
             'input-mandatory': !lookupList && mandatory && !selected,
           })}
-          tabIndex={tabIndex ? tabIndex : 0}
+          tabIndex={tabIndex}
           onFocus={readonly ? null : onFocus}
-          onBlur={this.props.onBlur}
           onClick={readonly ? null : this.handleClick}
           onKeyDown={this.handleKeyDown}
           onKeyUp={this.handleKeyUp}
         >
           <div
-            className={classnames('input-dropdown input-block input-readonly', {
+            className={classnames('input-dropdown input-block', {
               'input-secondary': rank,
               pulse: updated,
               'input-mandatory': mandatory && !selected,
@@ -319,8 +340,15 @@ class RawList extends PureComponent {
                 disabled={readonly || disabled}
               />
             </div>
-            <div className="input-icon">
-              <i className="meta-icon-down-1 input-icon-sm" />
+            {clearable &&
+              selected &&
+              !readonly && (
+                <div className="input-icon" onClick={this.handleClear}>
+                  <i className="meta-icon-close-alt" />
+                </div>
+              )}
+            <div className="input-icon input-readonly">
+              <i className="meta-icon-down-1" />
             </div>
           </div>
         </div>
@@ -345,6 +373,7 @@ class RawList extends PureComponent {
 RawList.propTypes = {
   filter: PropTypes.object,
   readonly: PropTypes.bool,
+  clearable: PropTypes.bool,
   // Immutable List
   list: PropTypes.object,
   rank: PropTypes.any,
@@ -373,6 +402,11 @@ RawList.propTypes = {
   onSelect: PropTypes.func.isRequired,
   onOpenDropdown: PropTypes.func.isRequired,
   onCloseDropdown: PropTypes.func.isRequired,
+};
+
+RawList.defaultProps = {
+  tabIndex: -1,
+  clearable: true,
 };
 
 export default onClickOutside(RawList);

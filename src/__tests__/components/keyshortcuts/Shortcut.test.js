@@ -1,4 +1,4 @@
-import Shortcut from '../../../components/Shortcuts/Shortcut';
+import Shortcut from '../../../components/keyshortcuts/Shortcut';
 
 describe('Shortcut', () => {
   it('should return null from render()', () => {

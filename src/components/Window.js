@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 
 import Table from '../components/table/Table';
@@ -7,7 +7,7 @@ import MasterWidget from '../components/widget/MasterWidget';
 import Dropzone from './Dropzone';
 import Separator from './Separator';
 
-class Window extends Component {
+class Window extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -19,14 +19,14 @@ class Window extends Component {
     if (props.isModal) {
       this.tabIndex = {
         firstColumn: 0,
-        tabs: 0,
         secondColumn: 0,
+        tabs: 0,
       };
     } else {
       this.tabIndex = {
         firstColumn: 1,
-        tabs: 2,
-        secondColumn: 3,
+        secondColumn: 2,
+        tabs: 3,
       };
     }
   }
@@ -142,7 +142,6 @@ class Window extends Component {
               if (isModal && shouldBeFocused && c) c.focus();
               this.focused = true;
             }}
-            tabIndex={shouldBeFocused ? 0 : undefined}
             className={
               'panel panel-spaced panel-distance ' +
               (type === 'primary'

@@ -14,10 +14,11 @@ export const AMOUNT_FIELD_FORMATS_BY_PRECISION = [
   '0,0.0000[0]',
   '0,0.00000',
 ];
+export const SPECIAL_FIELD_TYPES = ['Color'];
 export const DATE_FIELD_TYPES = ['Date', 'DateTime', 'Time'];
 export const DATE_FIELD_FORMATS = {
-  Date: 'DD.MM.YYYY',
-  DateTime: 'DD.MM.YYYY HH:mm:ss',
-  Time: 'HH:mm:ss',
+  Date: 'l',
+  DateTime: 'l LTS',
+  Time: 'LTS',
 };
 export const TIME_FIELD_TYPES = ['Time'];

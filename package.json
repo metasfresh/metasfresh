@@ -33,7 +33,8 @@
     "unmockedModulePathPatterns": [
       "<rootDir>/node_modules/babel-polyfill/",
       "<rootDir>/node_modules/immutable"
-    ]
+    ],
+    "testEnvironment": "jsdom"
   },
   "devDependencies": {
     "@storybook/react": "^3.2.13",
@@ -116,7 +117,7 @@
     "react-addons-transition-group": "~15.6.2",
     "react-autosuggest": "~9.3.2",
     "react-bootstrap-daterangepicker": "~3.4.1",
-    "react-datetime": "^2.11.0",
+    "react-datetime": "^2.14.0",
     "react-debounce-input": "~3.1.0",
     "react-deep-force-update": "^2.1.1",
     "react-dnd": "~2.5.4",

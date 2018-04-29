@@ -1,5 +1,6 @@
 import counterpart from 'counterpart';
 import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
@@ -16,12 +17,13 @@ class FiltersNotFrequent extends Component {
     };
   }
 
-  handleClickOutside = () => {
-    this.outsideClick();
-  };
-
-  outsideClick = () => {
+  handleClickOutside = ({ target }) => {
     const { widgetShown, dropdownToggled, allowOutsideClick } = this.props;
+
+    if (target.classList && target.classList.contains('input-dropdown-list')) {
+      return;
+    }
+
     if (allowOutsideClick && !widgetShown) {
       dropdownToggled();
       this.toggleDropdown(false);
@@ -51,12 +53,11 @@ class FiltersNotFrequent extends Component {
       applyFilters,
       clearFilters,
       active,
+      modalVisible,
     } = this.props;
 
     const { isOpenDropdown, openFilterId } = this.state;
-
     const openFilter = getItemsByProperty(data, 'filterId', openFilterId)[0];
-
     const activeFilters = data.filter(filter => filter.isActive);
     const activeFilter = activeFilters.length === 1 && activeFilters[0];
 
@@ -70,6 +71,7 @@ class FiltersNotFrequent extends Component {
             (isOpenDropdown ? ' btn-select' : '') +
             (activeFilters.length > 0 ? ' btn-active' : '')
           }
+          tabIndex={modalVisible ? -1 : 0}
         >
           <i className="meta-icon-preview" />
           {activeFilter ? (
@@ -128,7 +130,18 @@ class FiltersNotFrequent extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  allowOutsideClick: state.windowHandler.allowOutsideClick,
-});
+FiltersNotFrequent.propTypes = {
+  allowOutsideClick: PropTypes.bool.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
+};
+
+const mapStateToProps = state => {
+  const { allowOutsideClick, modal } = state.windowHandler;
+
+  return {
+    allowOutsideClick,
+    modalVisible: modal.visible,
+  };
+};
+
 export default connect(mapStateToProps)(onClickOutside(FiltersNotFrequent));

@@ -111,30 +111,61 @@ export default class SelectionDropdown extends Component {
     onChange(selectedNew);
   };
 
+  navigateToAlphanumeric = char => {
+    const { selected, options, onChange } = this.props;
+    const items = options.filter(
+      item => item.caption[0].toUpperCase() === char.toUpperCase()
+    );
+
+    const selectedIndex = items.indexOf(selected);
+    const itemsSize = items.get ? items.size : items.length;
+    let selectedNew = null;
+
+    if (selectedIndex > -1 && selectedIndex < itemsSize - 1) {
+      selectedNew = this.get(items, selectedIndex + 1);
+    } else {
+      selectedNew = this.get(items, 0);
+    }
+
+    if (!selectedNew) {
+      return;
+    }
+
+    const ref = this.optionToRef.get(selectedNew);
+
+    this.scrollIntoView(ref, false);
+
+    onChange(selectedNew);
+  };
+
   handleKeyDown = event => {
     const { navigate } = this;
     const { selected, onCancel, onSelect } = this.props;
 
-    switch (event.key) {
-      case 'ArrowUp':
-        event.preventDefault();
-        navigate(true);
-        break;
-      case 'ArrowDown':
-        event.preventDefault();
-        navigate(false);
-        break;
-      case 'Escape':
-        onCancel();
-        break;
-      case 'Enter':
-        onSelect(selected);
-        break;
-      default:
-        return;
+    if (event.keyCode > 47 && event.keyCode < 123) {
+      this.navigateToAlphanumeric(event.key);
+    } else {
+      switch (event.key) {
+        case 'ArrowUp':
+          event.preventDefault();
+          navigate(true);
+          break;
+        case 'ArrowDown':
+          event.preventDefault();
+          navigate(false);
+          break;
+        case 'Escape':
+          event.preventDefault();
+          onCancel();
+          break;
+        case 'Enter':
+          event.preventDefault();
+          onSelect(selected);
+          break;
+        default:
+          return;
+      }
     }
-
-    event.preventDefault();
   };
 
   handleKeyUp = () => {

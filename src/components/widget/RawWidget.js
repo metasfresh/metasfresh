@@ -39,13 +39,14 @@ class RawWidget extends Component {
 
   componentDidMount() {
     const { autoFocus, textSelected } = this.props;
+    const { rawWidget } = this;
 
-    if (this.rawWidget && autoFocus) {
-      this.rawWidget.focus();
+    if (rawWidget && autoFocus) {
+      rawWidget.focus();
     }
 
     if (textSelected) {
-      this.rawWidget.select();
+      rawWidget.select();
     }
   }
 
@@ -56,11 +57,13 @@ class RawWidget extends Component {
    */
   focus = () => {
     const { handleFocus, disableOnClickOutside, entity } = this.props;
+    const { rawWidget } = this;
 
-    if (this.rawWidget && this.rawWidget.focus) {
-      this.rawWidget.focus();
+    if (rawWidget && rawWidget.focus) {
+      rawWidget.focus();
     }
 
+    // don't disable onclickoutside for the attributes widget
     if (entity !== 'pattribute') {
       disableOnClickOutside && disableOnClickOutside();
     }
@@ -176,24 +179,14 @@ class RawWidget extends Component {
       .join(' ');
 
   getClassNames = ({ icon, forcedPrimary } = {}) => {
-    const {
-      widgetData,
-      disabled,
-      gridAlign,
-      type,
-      updated,
-      rowId,
-      isModal,
-    } = this.props;
-
+    const { widgetData, gridAlign, type, updated, rowId, isModal } = this.props;
     const { isEdited } = this.state;
-
     const { readonly, value, mandatory, validStatus } = widgetData[0];
 
     return this.classNames({
       'input-block': true,
       'input-icon-container': icon,
-      'input-disabled': readonly || disabled,
+      'input-disabled': readonly,
       'input-mandatory':
         mandatory && (value ? value.length === 0 : value !== 0),
       'input-error':
@@ -220,6 +213,7 @@ class RawWidget extends Component {
     const {
       handleChange,
       updated,
+      modalVisible,
       isModal,
       filterWidget,
       filterId,
@@ -229,7 +223,6 @@ class RawWidget extends Component {
       handleBackdropLock,
       subentity,
       subentityId,
-      tabIndex,
       dropdownOpenCallback,
       autoFocus,
       fullScreen,
@@ -245,7 +238,6 @@ class RawWidget extends Component {
       gridAlign,
       entity,
       onShow,
-      disabled,
       caption,
       viewId,
       data,
@@ -260,13 +252,19 @@ class RawWidget extends Component {
       isOpenDatePicker,
       dateFormat,
     } = this.props;
-    const widgetValue = data || widgetData[0].value;
+    const widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
     const widgetField = filterWidget
       ? fields[0].parameterName
       : fields[0].field;
+    const readonly = widgetData[0].readonly;
+    let tabIndex = this.props.tabIndex;
+
+    if (fullScreen || readonly || (modalVisible && !isModal)) {
+      tabIndex = -1;
+    }
 
     const widgetProperties = {
       ref: c => (this.rawWidget = c),
@@ -274,9 +272,9 @@ class RawWidget extends Component {
       value: widgetValue,
       defaultValue,
       placeholder: fields[0].emptyText,
-      disabled: widgetData[0].readonly || disabled,
+      disabled: readonly,
       onFocus: this.handleFocus,
-      tabIndex: fullScreen ? -1 : tabIndex,
+      tabIndex: tabIndex,
       onChange: e => handleChange && handleChange(widgetField, e.target.value),
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: e =>
@@ -305,7 +303,7 @@ class RawWidget extends Component {
               onHide={onHide}
               value={widgetData[0].value}
               valueTo={widgetData[0].valueTo}
-              tabIndex={fullScreen ? -1 : tabIndex}
+              tabIndex={tabIndex}
             />
           );
         } else {
@@ -319,8 +317,8 @@ class RawWidget extends Component {
                 isOpenDatePicker={isOpenDatePicker}
                 inputProps={{
                   placeholder: fields[0].emptyText,
-                  disabled: widgetData[0].readonly || disabled,
-                  tabIndex: fullScreen ? -1 : tabIndex,
+                  disabled: readonly,
+                  tabIndex: tabIndex,
                 }}
                 value={widgetValue || widgetData[0].value}
                 onChange={date => {
@@ -364,7 +362,7 @@ class RawWidget extends Component {
               onHide={onHide}
               value={widgetData[0].value}
               valueTo={widgetData[0].valueTo}
-              tabIndex={fullScreen ? -1 : tabIndex}
+              tabIndex={tabIndex}
               timePicker={true}
             />
           );
@@ -377,8 +375,8 @@ class RawWidget extends Component {
                 dateFormat={dateFormat || true}
                 inputProps={{
                   placeholder: fields[0].emptyText,
-                  disabled: widgetData[0].readonly || disabled,
-                  tabIndex: fullScreen ? -1 : tabIndex,
+                  disabled: readonly,
+                  tabIndex: tabIndex,
                 }}
                 value={widgetValue}
                 onChange={date => handleChange(widgetField, date)}
@@ -391,7 +389,7 @@ class RawWidget extends Component {
                     true
                   )
                 }
-                tabIndex={fullScreen ? -1 : tabIndex}
+                tabIndex={tabIndex}
                 handleBackdropLock={handleBackdropLock}
               />
             </div>
@@ -412,7 +410,7 @@ class RawWidget extends Component {
             onHide={onHide}
             value={widgetData[0].value}
             valueTo={widgetData[0].valueTo}
-            tabIndex={fullScreen ? -1 : tabIndex}
+            tabIndex={tabIndex}
           />
         );
       }
@@ -422,11 +420,11 @@ class RawWidget extends Component {
             <DatePicker
               field={fields[0].field}
               timeFormat={true}
-              dateFormat={dateFormat || true}
+              dateFormat={false}
               inputProps={{
                 placeholder: fields[0].emptyText,
-                disabled: widgetData[0].readonly || disabled,
-                tabIndex: fullScreen ? -1 : tabIndex,
+                disabled: readonly,
+                tabIndex: tabIndex,
               }}
               value={widgetValue}
               onChange={date => handleChange(widgetField, date)}
@@ -439,7 +437,7 @@ class RawWidget extends Component {
                   true
                 )
               }
-              tabIndex={fullScreen ? -1 : tabIndex}
+              tabIndex={tabIndex}
               handleBackdropLock={handleBackdropLock}
             />
           </div>
@@ -459,7 +457,7 @@ class RawWidget extends Component {
             windowType={windowType}
             defaultValue={widgetData}
             placeholder={fields[0].emptyText}
-            readonly={widgetData[0].readonly || disabled}
+            readonly={readonly}
             mandatory={widgetData[0].mandatory}
             rank={type}
             align={gridAlign}
@@ -471,7 +469,7 @@ class RawWidget extends Component {
             selected={widgetValue}
             tabId={tabId}
             rowId={rowId}
-            tabIndex={fullScreen ? -1 : tabIndex}
+            tabIndex={tabIndex}
             viewId={viewId}
             autoFocus={autoFocus}
             validStatus={widgetData[0].validStatus}
@@ -499,7 +497,7 @@ class RawWidget extends Component {
             defaultValue={fields[0].emptyText}
             selected={widgetData[0].value || null}
             properties={fields}
-            readonly={widgetData[0].readonly || disabled}
+            readonly={readonly}
             mandatory={widgetData[0].mandatory}
             windowType={windowType}
             rowId={rowId}
@@ -513,7 +511,7 @@ class RawWidget extends Component {
             filterId={filterId}
             parameterName={fields[0].parameterName}
             emptyText={fields[0].emptyText}
-            tabIndex={fullScreen ? -1 : tabIndex}
+            tabIndex={tabIndex}
             viewId={viewId}
             autoFocus={autoFocus}
             validStatus={widgetData[0].validStatus}
@@ -618,7 +616,7 @@ class RawWidget extends Component {
           <Checkbox
             {...{
               widgetData,
-              disabled,
+              disabled: readonly,
               fullScreen,
               tabIndex,
               widgetField,
@@ -633,7 +631,7 @@ class RawWidget extends Component {
           <label
             className={
               'input-switch ' +
-              (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
+              (readonly ? 'input-disabled ' : '') +
               (widgetData[0].mandatory && widgetData[0].value.length === 0
                 ? 'input-mandatory '
                 : '') +
@@ -642,7 +640,7 @@ class RawWidget extends Component {
                 : '') +
               (rowId && !isModal ? 'input-table ' : '')
             }
-            tabIndex={fullScreen ? -1 : tabIndex}
+            tabIndex={tabIndex}
             ref={c => (this.rawWidget = c)}
             onKeyDown={e => {
               e.key === ' ' &&
@@ -652,7 +650,7 @@ class RawWidget extends Component {
             <input
               type="checkbox"
               checked={widgetData[0].value}
-              disabled={widgetData[0].readonly || disabled}
+              disabled={readonly}
               tabIndex="-1"
               onChange={e =>
                 this.handlePatch(widgetField, e.target.checked, id)
@@ -668,7 +666,7 @@ class RawWidget extends Component {
               'tag tag-warning ' +
               (gridAlign ? 'text-xs-' + gridAlign + ' ' : '')
             }
-            tabIndex={fullScreen ? -1 : tabIndex}
+            tabIndex={tabIndex}
             ref={c => (this.rawWidget = c)}
           >
             {widgetData[0].value}
@@ -680,12 +678,10 @@ class RawWidget extends Component {
             className={
               'btn btn-sm btn-meta-primary ' +
               (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
-              (widgetData[0].readonly || disabled
-                ? 'tag-disabled disabled '
-                : '')
+              (readonly ? 'tag-disabled disabled ' : '')
             }
             onClick={() => this.handlePatch(widgetField)}
-            tabIndex={fullScreen ? -1 : tabIndex}
+            tabIndex={tabIndex}
             ref={c => (this.rawWidget = c)}
           >
             {widgetData[0].value &&
@@ -698,12 +694,10 @@ class RawWidget extends Component {
             className={
               'btn btn-sm btn-meta-primary ' +
               (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
-              (widgetData[0].readonly || disabled
-                ? 'tag-disabled disabled '
-                : '')
+              (readonly ? 'tag-disabled disabled ' : '')
             }
             onClick={this.handleProcess}
-            tabIndex={fullScreen ? -1 : tabIndex}
+            tabIndex={tabIndex}
             ref={c => (this.rawWidget = c)}
           >
             {caption}
@@ -717,7 +711,7 @@ class RawWidget extends Component {
             fields={fields}
             dataId={dataId}
             onChange={option => this.handlePatch(fields[1].field, option)}
-            tabIndex={fullScreen ? -1 : tabIndex}
+            tabIndex={tabIndex}
             dropdownOpenCallback={dropdownOpenCallback}
             ref={c => (this.rawWidget = c)}
           />
@@ -738,9 +732,9 @@ class RawWidget extends Component {
             fieldName={widgetField}
             handleBackdropLock={handleBackdropLock}
             patch={option => this.handlePatch(widgetField, option)}
-            tabIndex={fullScreen ? -1 : tabIndex}
+            tabIndex={tabIndex}
             autoFocus={autoFocus}
-            readonly={widgetData[0].readonly || disabled}
+            readonly={readonly}
           />
         );
       case 'Address':
@@ -756,9 +750,10 @@ class RawWidget extends Component {
             fieldName={widgetField}
             handleBackdropLock={handleBackdropLock}
             patch={option => this.handlePatch(widgetField, option)}
-            tabIndex={fullScreen ? -1 : tabIndex}
+            tabIndex={tabIndex}
             autoFocus={autoFocus}
-            readonly={widgetData[0].readonly || disabled}
+            readonly={readonly}
+            isModal={isModal}
           />
         );
       case 'Image':
@@ -767,7 +762,7 @@ class RawWidget extends Component {
             fields={fields}
             data={widgetData[0]}
             handlePatch={this.handlePatch}
-            readonly={widgetData[0].readonly || disabled}
+            readonly={readonly}
           />
         );
       case 'ZoomIntoButton':
@@ -776,12 +771,10 @@ class RawWidget extends Component {
             className={
               'btn btn-sm btn-meta-primary ' +
               (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
-              (widgetData[0].readonly || disabled
-                ? 'tag-disabled disabled '
-                : '')
+              (readonly ? 'tag-disabled disabled ' : '')
             }
             onClick={() => handleZoomInto(fields[0].field)}
-            tabIndex={fullScreen ? -1 : tabIndex}
+            tabIndex={tabIndex}
             ref={c => (this.rawWidget = c)}
           >
             {caption}
@@ -811,7 +804,7 @@ class RawWidget extends Component {
                 values: value,
               })
             }
-            tabIndex={fullScreen ? -1 : tabIndex}
+            tabIndex={tabIndex}
           />
         );
       }
@@ -958,11 +951,11 @@ RawWidget.propTypes = {
   dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   windowType: PropTypes.string,
   caption: PropTypes.string,
-  disabled: PropTypes.bool,
   gridAlign: PropTypes.string,
   type: PropTypes.string,
   updated: PropTypes.bool,
   isModal: PropTypes.bool,
+  modalVisible: PropTypes.bool.isRequired,
   filterWidget: PropTypes.bool,
   filterId: PropTypes.string,
   id: PropTypes.number,
@@ -989,4 +982,10 @@ RawWidget.propTypes = {
   isOpenDatePicker: PropTypes.bool,
 };
 
-export default connect()(RawWidget);
+RawWidget.defaultProps = {
+  tabIndex: 0,
+};
+
+export default connect(state => ({
+  modalVisible: state.windowHandler.modal.visible,
+}))(RawWidget);

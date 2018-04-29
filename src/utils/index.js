@@ -14,3 +14,16 @@ export const getQueryString = query =>
       return parameters;
     }, {})
   );
+
+export const arePropTypesIdentical = (nextProps, currentProps) => {
+  for (const key of Object.keys(nextProps)) {
+    const nextType = typeof nextProps[key];
+    const currentType = typeof currentProps[key];
+
+    if (nextType !== currentType) {
+      return false;
+    }
+  }
+
+  return true;
+};

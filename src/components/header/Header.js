@@ -17,7 +17,7 @@ import Prompt from '../app/Prompt';
 import NewEmail from '../email/NewEmail';
 import Inbox from '../inbox/Inbox';
 import NewLetter from '../letter/NewLetter';
-import GlobalContextShortcuts from '../shortcuts/GlobalContextShortcuts';
+import GlobalContextShortcuts from '../keyshortcuts/GlobalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips';
 import MasterWidget from '../widget/MasterWidget';
 import Breadcrumb from './Breadcrumb';
@@ -495,6 +495,7 @@ class Header extends Component {
                 <Inbox
                   open={isInboxOpen}
                   close={this.handleInboxOpen}
+                  onFocus={() => this.handleInboxOpen(true)}
                   disableOnClickOutside={!isInboxOpen}
                   inbox={inbox}
                 />
