@@ -21,6 +21,8 @@ Here come the actual release notes:
     * New Action added to Product Catregory window, allowing to copy Acctounting Setting to all Products of a Product Category.
   * [#3965](https://github.com/metasfresh/metasfresh/issues/3965) Translate Actions Update Pharma Conditions
     * New Translations for Pharma Conditon Parms in Updatte Pharma Permissions Action for de_DE, en_US.
+  * [#3967](https://github.com/metasfresh/metasfresh/issues/3967) Translate Process Parm in Update Pharma Conditions for Customers
+    * Improved Translations for Action Parms. Languages de_DE, en_US.
 
 ## Fixes
 
