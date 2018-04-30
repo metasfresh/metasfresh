@@ -19,13 +19,14 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.service.IPricingBL;
 
 /**
  * Product Price Calculations
@@ -317,16 +318,6 @@ public class MProductPricing
 	public int getC_BPartner_ID()
 	{
 		return pricingCtx.getC_BPartner_ID();
-	}
-
-	public BigDecimal getQty()
-	{
-		return pricingCtx.getQty();
-	}
-
-	public boolean isSOTrx()
-	{
-		return pricingCtx.isSOTrx();
 	}
 
 	public int getAD_Table_ID()

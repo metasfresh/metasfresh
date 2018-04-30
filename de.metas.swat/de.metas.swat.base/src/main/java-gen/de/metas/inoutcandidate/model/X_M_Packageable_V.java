@@ -15,7 +15,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1519378230L;
+	private static final long serialVersionUID = 420303175L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
@@ -381,8 +381,8 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public static final String DOCSUBTYPE_DownPayment = "DP";
 	/** Saldokorektur = EC */
 	public static final String DOCSUBTYPE_Saldokorektur = "EC";
-	/** Material Disposal = MD */
-	public static final String DOCSUBTYPE_MaterialDisposal = "MD";
+	/** Internal Use Inventory = IUI */
+	public static final String DOCSUBTYPE_InternalUseInventory = "IUI";
 	/** Set Doc Sub Type.
 		@param DocSubType 
 		Document Sub Type
@@ -684,6 +684,47 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public java.lang.String getProductName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
+	}
+
+	/** Set Bestellt/ Beauftragt.
+		@param QtyOrdered 
+		Bestellt/ Beauftragt
+	  */
+	@Override
+	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyOrdered, QtyOrdered);
+	}
+
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
+	  */
+	@Override
+	public java.math.BigDecimal getQtyOrdered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Qty Picked.
+		@param QtyPicked Qty Picked	  */
+	@Override
+	public void setQtyPicked (java.math.BigDecimal QtyPicked)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyPicked, QtyPicked);
+	}
+
+	/** Get Qty Picked.
+		@return Qty Picked	  */
+	@Override
+	public java.math.BigDecimal getQtyPicked () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPicked);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Qty picked (planned).

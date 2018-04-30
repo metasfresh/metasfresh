@@ -22,7 +22,6 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.MPriceList;
 import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
@@ -34,6 +33,7 @@ import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
+import de.metas.pricing.service.IPriceListDAO;
 
 /*
  * #%L
@@ -134,7 +134,7 @@ class ClientSetup
 			Check.assumeNotNull(orgBankAccount, "orgBankAccount not null"); // TODO create one if does not exists
 			//
 			acctSchema = adClientInfo.getC_AcctSchema1();
-			priceList_None = InterfaceWrapperHelper.create(getCtx(), MPriceList.M_PriceList_ID_None, I_M_PriceList.class, ITrx.TRXNAME_ThreadInherited);
+			priceList_None = InterfaceWrapperHelper.create(getCtx(), IPriceListDAO.M_PriceList_ID_None, I_M_PriceList.class, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 

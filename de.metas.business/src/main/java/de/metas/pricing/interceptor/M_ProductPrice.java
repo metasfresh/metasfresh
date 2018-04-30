@@ -5,7 +5,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
 
-import de.metas.pricing.ProductPrices;
+import de.metas.pricing.service.ProductPrices;
 import lombok.NonNull;
 
 /*

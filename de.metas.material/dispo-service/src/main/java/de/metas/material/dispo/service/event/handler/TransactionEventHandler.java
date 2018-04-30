@@ -3,9 +3,11 @@ package de.metas.material.dispo.service.event.handler;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Loggables;
@@ -26,14 +28,13 @@ import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
+import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
@@ -154,7 +155,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			return;
 		}
 
-		final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors = transactionEvent.getHuOnHandQtyChangeDescriptors();
+		final Collection<HUDescriptor> huOnHandQtyChangeDescriptors = transactionEvent.getHuOnHandQtyChangeDescriptors();
 		final boolean noHUsToPick = huOnHandQtyChangeDescriptors == null || huOnHandQtyChangeDescriptors.isEmpty();
 		if (noHUsToPick)
 		{
@@ -164,7 +165,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final ImmutableList<Integer> huIdsToPick = huOnHandQtyChangeDescriptors.stream()
 				.filter(huDescriptor -> huDescriptor.getQuantity().signum() > 0)
-				.map(HUOnHandQtyChangeDescriptor::getHuId)
+				.map(HUDescriptor::getHuId)
 				.collect(ImmutableList.toImmutableList());
 
 		final PickingRequestedEvent pickingRequestedEvent = PickingRequestedEvent.builder()
@@ -221,7 +222,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 		else if (existingCandidate != null)
 		{
-			candidate = newCandidateWithAddedTransactionDetail(
+			candidate = createCandidateWithchangedTransactionDetailAndQuantity(
 					existingCandidate,
 					createTransactionDetail(event));
 		}
@@ -271,7 +272,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 		else if (existingCandidate != null)
 		{
-			candidate = newCandidateWithAddedTransactionDetail(
+			candidate = createCandidateWithchangedTransactionDetailAndQuantity(
 					existingCandidate,
 					transactionDetailOfEvent);
 		}
@@ -315,7 +316,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 		else if (existingCandidate != null)
 		{
-			candidate = newCandidateWithAddedTransactionDetail(
+			candidate = createCandidateWithchangedTransactionDetailAndQuantity(
 					existingCandidate,
 					transactionDetailOfEvent);
 		}
@@ -348,7 +349,6 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor()))
 				.transactionDetail(TransactionDetail.forQuery(event.getTransactionId()))
 				.build();
 		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
@@ -364,7 +364,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 		else if (existingCandidate != null)
 		{
-			candidate = newCandidateWithAddedTransactionDetailAndQuantity(
+			candidate = createCandidateWithchangedTransactionDetailAndQuantity(
 					existingCandidate,
 					transactionDetailOfEvent);
 		}
@@ -375,29 +375,22 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return candidate;
 	}
 
-	private Candidate newCandidateWithAddedTransactionDetailAndQuantity(
+	private Candidate createCandidateWithchangedTransactionDetailAndQuantity(
 			@NonNull final Candidate candidate,
-			@NonNull final TransactionDetail transactionDetail)
+			@NonNull final TransactionDetail changedTransactionDetail)
 	{
-		final BigDecimal newQuantity = candidate
-				.getQuantity()
-				.add(transactionDetail.getQuantity());
+		// note: make sure we don't end up with duplicated transactionDetails
 
-		Candidate newCandidate = candidate.withQuantity(newQuantity);
-		newCandidate = newCandidateWithAddedTransactionDetail(newCandidate, transactionDetail);
-		return newCandidate;
-	}
+		final ImmutableList<TransactionDetail> otherTransactionDetails = candidate.getTransactionDetails()
+				.stream()
+				.filter(transactionDetail -> transactionDetail.getTransactionId() != changedTransactionDetail.getTransactionId())
+				.collect(ImmutableList.toImmutableList());
 
-	private Candidate newCandidateWithAddedTransactionDetail(
-			@NonNull final Candidate candidate,
-			@NonNull final TransactionDetail transactionDetail)
-	{
-		final Builder<TransactionDetail> newTransactionDetailsList = //
-				ImmutableList.<TransactionDetail> builder()
-						.addAll(candidate.getTransactionDetails())
-						.add(transactionDetail);
+		final TreeSet<TransactionDetail> newTransactionDetailsSet = new TreeSet<>(Comparator.comparing(TransactionDetail::getTransactionId));
+		newTransactionDetailsSet.add(changedTransactionDetail);
+		newTransactionDetailsSet.addAll(otherTransactionDetails);
 
-		final Candidate withTransactionDetails = candidate.withTransactionDetails(newTransactionDetailsList.build());
+		final Candidate withTransactionDetails = candidate.withTransactionDetails(ImmutableList.copyOf(newTransactionDetailsSet));
 		final BigDecimal actualQty = withTransactionDetails.computeActualQty();
 		final BigDecimal plannedQty = candidate.getPlannedQty();
 

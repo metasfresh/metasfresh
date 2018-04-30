@@ -40,8 +40,6 @@ import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
-import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.exceptions.PriceListNotFoundException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
@@ -71,6 +69,8 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderPA;
+import de.metas.pricing.exceptions.PriceListNotFoundException;
+import de.metas.pricing.service.IPriceListDAO;
 
 public class OrderBL implements IOrderBL
 {
@@ -221,6 +221,11 @@ public class OrderBL implements IOrderBL
 	@Override
 	public int retrievePriceListId(final I_C_Order order)
 	{
+		if (order.getM_PriceList_ID() > 0)
+		{
+			return order.getM_PriceList_ID();
+		}
+		
 		final BillBPartnerAndShipToLocation bpartnerAndLocation = extractPriceListBPartnerAndLocation(order);
 		final I_M_PriceList priceList = retrievePriceListOrNull(order, bpartnerAndLocation);
 		return priceList == null ? 0 : priceList.getM_PriceList_ID();

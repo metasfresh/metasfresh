@@ -1,5 +1,7 @@
 package org.adempiere.bpartner.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -34,6 +36,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
@@ -346,5 +349,54 @@ public class BPartnerBL implements IBPartnerBL
 					.skipNulls()
 					.join(firstname, lastname);
 		}
+	}
+
+	@Override
+	public int getDiscountSchemaId(final int bpartnerId, final boolean soTrx)
+	{
+		Check.assumeGreaterThanZero(bpartnerId, "bpartnerId");
+		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		return getDiscountSchemaId(bpartner, soTrx);
+	}
+
+	@Override
+	public int getDiscountSchemaId(@NonNull final I_C_BPartner bpartner, final boolean soTrx)
+	{
+		{
+			final int discountSchemaId;
+			if (soTrx)
+			{
+				discountSchemaId = bpartner.getM_DiscountSchema_ID();
+			}
+			else
+			{
+				discountSchemaId = bpartner.getPO_DiscountSchema_ID();
+			}
+			if (discountSchemaId > 0)
+			{
+				return discountSchemaId; // we are done
+			}
+		}
+
+		// didn't get the schema yet; now we try to get the discount schema from the C_BPartner's C_BP_Group
+		final I_C_BP_Group bpGroup = bpartner.getC_BP_Group();
+		if (bpGroup != null && bpGroup.getC_BP_Group_ID() > 0)
+		{
+			final int groupDiscountSchemaId;
+			if (soTrx)
+			{
+				groupDiscountSchemaId = bpGroup.getM_DiscountSchema_ID();
+			}
+			else
+			{
+				groupDiscountSchemaId = bpGroup.getPO_DiscountSchema_ID();
+			}
+			if (groupDiscountSchemaId > 0)
+			{
+				return groupDiscountSchemaId; // we are done
+			}
+		}
+
+		return -1;
 	}
 }

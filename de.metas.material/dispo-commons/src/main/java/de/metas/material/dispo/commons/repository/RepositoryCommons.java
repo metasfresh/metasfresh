@@ -1,5 +1,6 @@
 package de.metas.material.dispo.commons.repository;
 
+import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
@@ -67,7 +68,7 @@ public class RepositoryCommons
 		final IQueryBuilder<I_MD_Candidate> builder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter();
 
-		if(CandidatesQuery.FALSE.equals(query))
+		if (CandidatesQuery.FALSE.equals(query))
 		{
 			builder.filter(ConstantQueryFilter.of(false));
 			return builder;
@@ -82,7 +83,6 @@ public class RepositoryCommons
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, query.getType().toString());
 		}
-
 
 		if (query.getParentId() >= 0)
 		{
@@ -299,8 +299,8 @@ public class RepositoryCommons
 			@NonNull final CandidatesQuery query,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		final TransactionDetail transactionDetail = query.getTransactionDetail();
-		if (transactionDetail == null)
+		final List<TransactionDetail> transactionDetails = query.getTransactionDetails();
+		if (transactionDetails == null || transactionDetails.isEmpty())
 		{
 			return;
 		}
@@ -311,18 +311,20 @@ public class RepositoryCommons
 				.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
 				.addOnlyActiveRecordsFilter();
 
-		Preconditions.checkArgument(
-				transactionDetail.getTransactionId() > 0,
-				"Every transactionDetail instance needs to have transactionId>0; transactionDetail=%s",
-				transactionDetail);
-		transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId());
-
-		if (transactionDetail.getQuantity() != null)
+		for (final TransactionDetail transactionDetail : transactionDetails)
 		{
-			transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MovementQty, transactionDetail.getQuantity());
-		}
+			Preconditions.checkArgument(
+					transactionDetail.getTransactionId() > 0,
+					"Every transactionDetail instance needs to have transactionId>0; transactionDetail=%s",
+					transactionDetail);
+			transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_M_Transaction_ID, transactionDetail.getTransactionId());
 
-		builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, transactionDetailSubQueryBuilder.create());
+			if (transactionDetail.getQuantity() != null)
+			{
+				transactionDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MovementQty, transactionDetail.getQuantity());
+			}
+			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, transactionDetailSubQueryBuilder.create());
+		}
 	}
 
 	public <T> T retrieveSingleCandidateDetail(

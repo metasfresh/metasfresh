@@ -33,7 +33,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Activity;
@@ -51,6 +50,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.pricing.IPricingResult;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 

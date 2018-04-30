@@ -290,8 +290,8 @@ class OLCandOrderFactory
 			if (candidate.isManualPrice() || candidate.isManualDiscount())
 			{
 				final int currencyId = candidate.getC_Currency_ID();
-				final int stdPrecision = currencyDAO.getStdPrecision(ctx, currencyId);
-				orderLineBL.calculatePriceActualIfNotIgnored(currentOrderLine, stdPrecision);
+				final int stdPrecision = currencyDAO.getStdPrecision(ctx, currencyId); // FIXME: use price list's precision
+				orderLineBL.updatePriceActual(currentOrderLine, stdPrecision);
 			}
 		}
 

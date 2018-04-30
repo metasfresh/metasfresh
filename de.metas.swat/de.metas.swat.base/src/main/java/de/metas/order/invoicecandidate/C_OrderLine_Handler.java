@@ -37,7 +37,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Activity;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
@@ -49,6 +48,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -56,6 +56,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax.PriceAndTaxBuilder;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
@@ -289,16 +290,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
-
-		if (orderLine.getC_PaymentTerm_Override_ID() > 0)
-		{
-			ic.setC_PaymentTerm_ID(orderLine.getC_PaymentTerm_Override_ID());
-		}
-		else
-		{
-			final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-			ic.setC_PaymentTerm_ID(order.getC_PaymentTerm_ID());
-		}
+		final int paymentTermId = Services.get(IOrderLineBL.class).getC_PaymentTerm_ID(orderLine);
+		ic.setC_PaymentTerm_ID(paymentTermId);
 	}
 
 	/**

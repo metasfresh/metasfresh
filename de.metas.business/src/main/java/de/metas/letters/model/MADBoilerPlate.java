@@ -192,8 +192,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	public static void sendEMail(final IEMailEditor editor, final boolean withRequest)
 	{
-		final SourceDocument baseObject = SourceDocument.toSourceDocumentOrNull(editor.getBaseObject());
-		final BoilerPlateContext context = createEditorContext(baseObject);
+		final BoilerPlateContext context = createEditorContextFromObject(editor.getBaseObject());
 		final I_AD_User from = context.getSalesRepUser();
 		final String toEmail = context.getEMail();
 		if (Check.isEmpty(toEmail, true))
@@ -808,6 +807,12 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			ref.saveEx();
 		}
 		checkCycles(-1, null);
+	}
+
+	public static BoilerPlateContext createEditorContextFromObject(final Object sourceDocumentObj)
+	{
+		final SourceDocument sourceDocument = SourceDocument.toSourceDocumentOrNull(sourceDocumentObj);
+		return createEditorContext(sourceDocument);
 	}
 
 	/**

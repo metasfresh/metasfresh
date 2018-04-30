@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
@@ -44,6 +43,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedSpiProviderService;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
+import de.metas.pricing.service.IPriceListBL;
 
 public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 {
@@ -55,7 +55,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 
 		final List<I_C_OrderLine> orderLines = materialTrackingDAO.retrieveReferences(materialTracking, I_C_OrderLine.class);
 
-		final List<T> result = new ArrayList<T>();
+		final List<T> result = new ArrayList<>();
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
 			final List<T> invoiceCandidates = InterfaceWrapperHelper.createList(
@@ -139,8 +139,9 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 
 		final boolean processedPLVFiltering = true; // in the material tracking context, only processed PLVs matter.
-		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(ic.getM_PricingSystem(),
-				inOut.getC_BPartner_Location().getC_Location().getC_Country(),
+		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(
+				ic.getM_PricingSystem_ID(),
+				inOut.getC_BPartner_Location().getC_Location().getC_Country_ID(),
 				inOut.getMovementDate(),
 				inOut.isSOTrx(),
 				processedPLVFiltering);

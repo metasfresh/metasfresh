@@ -16,15 +16,14 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_DiscountSchema;
 
+import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.process.JavaProcess;
 
 /**
  * Renumber Discount Schema
- * 
+ *
  * @author Jorg Janke
  */
 public class DiscountSchemaReSeq extends JavaProcess
@@ -32,8 +31,8 @@ public class DiscountSchemaReSeq extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_M_DiscountSchema discountSchema = getRecord(I_M_DiscountSchema.class);
-		final int updated = Services.get(IMDiscountSchemaBL.class).reSeq(discountSchema);
+		final int discountSchemaId = getRecord_ID();
+		final int updated = Services.get(IPricingConditionsRepository.class).resequence(discountSchemaId);
 
 		return "@Updated@ #" + updated;
 	}

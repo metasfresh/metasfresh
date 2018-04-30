@@ -36,7 +36,6 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
@@ -64,6 +63,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoice
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLineGroup;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupByTypeComparator;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
+import de.metas.pricing.IPricingResult;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 

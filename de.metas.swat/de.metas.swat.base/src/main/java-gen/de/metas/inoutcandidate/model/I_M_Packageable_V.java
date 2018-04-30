@@ -250,6 +250,35 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_UOM>(I_M_Packageable_V.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -278,35 +307,6 @@ public interface I_M_Packageable_V
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_AD_User>(I_M_Packageable_V.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_UOM>(I_M_Packageable_V.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Auftragsdatum.
@@ -688,6 +688,54 @@ public interface I_M_Packageable_V
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_ProductName = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "ProductName", null);
     /** Column name ProductName */
     public static final String COLUMNNAME_ProductName = "ProductName";
+
+	/**
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
+
+	/**
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyOrdered();
+
+    /** Column definition for QtyOrdered */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_QtyOrdered = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "QtyOrdered", null);
+    /** Column name QtyOrdered */
+    public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
+
+	/**
+	 * Set Qty Picked.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyPicked (java.math.BigDecimal QtyPicked);
+
+	/**
+	 * Get Qty Picked.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyPicked();
+
+    /** Column definition for QtyPicked */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_QtyPicked = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "QtyPicked", null);
+    /** Column name QtyPicked */
+    public static final String COLUMNNAME_QtyPicked = "QtyPicked";
 
 	/**
 	 * Set Qty picked (planned).

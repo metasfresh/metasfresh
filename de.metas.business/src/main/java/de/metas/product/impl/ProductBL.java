@@ -1,7 +1,5 @@
 package de.metas.product.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -52,6 +50,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import lombok.NonNull;
 
 public final class ProductBL implements IProductBL
@@ -65,6 +64,14 @@ public final class ProductBL implements IProductBL
 		final int uomId = product.getC_UOM_ID();
 		return Services.get(IUOMConversionBL.class).getPrecision(ctx, uomId);
 	}
+	
+	@Override
+	public int getUOMPrecision(final int productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		return getUOMPrecision(product);
+	}
+
 
 	@Override
 	public String getMMPolicy(final I_M_Product product)
@@ -83,12 +90,11 @@ public final class ProductBL implements IProductBL
 	{
 		return product.getC_UOM();
 	}
-	
+
 	@Override
 	public I_C_UOM getStockingUOM(final int productId)
 	{
-		Check.assume(productId > 0, "productId > 0");
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return getStockingUOM(product);
 	}
 
@@ -153,6 +159,14 @@ public final class ProductBL implements IProductBL
 // @formatter:on
 		return false;
 	}
+	
+	@Override
+	public boolean isItem(final int productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		return isItem(product);
+	}
+
 
 	@Override
 	public boolean isService(final I_M_Product product)
@@ -173,18 +187,18 @@ public final class ProductBL implements IProductBL
 
 		return isItem(product);
 	}
-	
+
 	@Override
 	public boolean isStocked(final int productId)
 	{
 		if(productId <= 0)
 		{
-			return false; 
+			return false;
 		}
-		
+
 		// NOTE: we rely on table cache config
 		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
-		
+
 		return isStocked(product);
 	}
 
@@ -312,5 +326,28 @@ public final class ProductBL implements IProductBL
 		Check.assumeNotNull(product, "product not null");
 		return product.isPurchased()
 				&& product.isSold();
+	}
+
+	@Override
+	public boolean isInstanceAttribute(@NonNull final I_M_Product product)
+	{
+		final I_M_AttributeSet mas = getM_AttributeSet(product);
+		if (mas == null)
+		{
+			return false;
+		}
+		return mas.isInstanceAttribute();
+	}
+	
+	@Override
+	public boolean isProductInCategory(final int productId, final int expectedProductCategoryId)
+	{
+		if (productId <= 0 || expectedProductCategoryId <= 0)
+		{
+			return false;
+		}
+		
+		final int productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+		return productCategoryId == expectedProductCategoryId;
 	}
 }

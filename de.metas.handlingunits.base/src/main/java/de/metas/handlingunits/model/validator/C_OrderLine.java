@@ -3,29 +3,6 @@
  */
 package de.metas.handlingunits.model.validator;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
 import java.util.function.Predicate;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -45,6 +22,8 @@ import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.impl.OrderLineBL;
 
 /**
@@ -131,11 +110,12 @@ public class C_OrderLine
 			updateQtyPacks(olEx);
 
 			// Finally, update prices
-			final Properties ctx = InterfaceWrapperHelper.getCtx(olEx);
-			final String trxName = InterfaceWrapperHelper.getTrxName(olEx);
-			orderLineBL.setPricesIfNotIgnored(ctx, olEx,
-					InterfaceWrapperHelper.isNew(olEx), // usePriceUOM
-					trxName);
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
+					.orderLine(olEx)
+					.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
+					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+					.updateLineNetAmt(true)
+					.build());
 		}
 	}
 

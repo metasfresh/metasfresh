@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 948765074L;
+	private static final long serialVersionUID = -2091267563L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -42,6 +42,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 			setIsManualPrice (false); // N
 			setIsPriceEditable (true); // Y
 			setIsSubscription (false); // N
+			setIsTempPricingConditions (false); // N
 			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_OrderLine WHERE C_Order_ID=@C_Order_ID@
 			setLineNetAmt (BigDecimal.ZERO);
 			setM_Product_ID (0);
@@ -107,6 +108,40 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getAD_OrgTrx_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PricingSystem getBase_PricingSystem() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Base_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
+	}
+
+	@Override
+	public void setBase_PricingSystem(org.compiere.model.I_M_PricingSystem Base_PricingSystem)
+	{
+		set_ValueFromPO(COLUMNNAME_Base_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, Base_PricingSystem);
+	}
+
+	/** Set Base_PricingSystem_ID.
+		@param Base_PricingSystem_ID Base_PricingSystem_ID	  */
+	@Override
+	public void setBase_PricingSystem_ID (int Base_PricingSystem_ID)
+	{
+		if (Base_PricingSystem_ID < 1) 
+			set_Value (COLUMNNAME_Base_PricingSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_Base_PricingSystem_ID, Integer.valueOf(Base_PricingSystem_ID));
+	}
+
+	/** Get Base_PricingSystem_ID.
+		@return Base_PricingSystem_ID	  */
+	@Override
+	public int getBase_PricingSystem_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Base_PricingSystem_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1172,6 +1207,29 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isSubscription () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSubscription);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Temporary pricing conditions.
+		@param IsTempPricingConditions Temporary pricing conditions	  */
+	@Override
+	public void setIsTempPricingConditions (boolean IsTempPricingConditions)
+	{
+		set_Value (COLUMNNAME_IsTempPricingConditions, Boolean.valueOf(IsTempPricingConditions));
+	}
+
+	/** Get Temporary pricing conditions.
+		@return Temporary pricing conditions	  */
+	@Override
+	public boolean isTempPricingConditions () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsTempPricingConditions);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

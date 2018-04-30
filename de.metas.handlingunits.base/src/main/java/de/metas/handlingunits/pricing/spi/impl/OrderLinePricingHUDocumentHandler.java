@@ -40,9 +40,9 @@ import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.order.IOrderLineBL;
-import de.metas.pricing.ProductPrices;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
+import de.metas.pricing.service.ProductPrices;
 
 /**
  * Note: currently this implementation is used to update a given record's ASI when its {@link I_M_HU_PI_Item_Product} changes.

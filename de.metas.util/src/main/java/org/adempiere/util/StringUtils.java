@@ -43,26 +43,47 @@ public final class StringUtils
 		super();
 	}
 
-	/**
-	 * Truncate string to a given length.
-	 *
-	 * @param str
-	 * @param length
-	 * @return
-	 */
-	public static final String trunc(final String str, final int length)
+	
+	public enum TruncateAt
 	{
-		if (str == null)
+		STRING_START, STRING_END
+	};
+	
+	/**
+	 * Truncate string to a given length, if required.
+	 */
+	public static String trunc(
+			@Nullable final String str,
+			final int length)
+	{
+		return trunc(str, length, TruncateAt.STRING_END);
+	}
+
+	public static String trunc(
+			@Nullable final String string,
+			final int maxLength,
+			@NonNull final TruncateAt side)
+	{
+		if (string == null)
 		{
-			return str;
+			return string;
 		}
 
-		if (str.length() <= length)
+		if (string.length() <= maxLength)
 		{
-			return str;
+			return string;
 		}
 
-		return str.substring(0, length);
+		switch (side)
+		{
+			case STRING_START:
+				return string.substring(string.length() - maxLength, string.length());
+			case STRING_END:
+				return string.substring(0, maxLength);
+			default:
+				Check.errorIf(true, "Unexpected parameter TruncateAt={}; lenght={}; string={}", side, maxLength, string);
+				return null;
+		}
 	}
 
 	/**

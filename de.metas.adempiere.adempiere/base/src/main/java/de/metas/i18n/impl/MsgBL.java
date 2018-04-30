@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
@@ -58,6 +59,12 @@ public class MsgBL implements IMsgBL
 	{
 		return Msg.getMsg(adLanguage, message, params);
 	}
+	
+	@Override
+	public String getMsg(final String adLanguage, final String message, final List<Object> params)
+	{
+		return Msg.getMsg(adLanguage, message, params != null && !params.isEmpty() ? params.toArray() : null);
+	}
 
 	@Override
 	public String getMsg(final Properties ctx, final String adMessage)
@@ -70,6 +77,13 @@ public class MsgBL implements IMsgBL
 	{
 		return Msg.getMsg(ctx, adMessage, params);
 	}
+	
+	@Override
+	public String getMsg(final String adMessage, final List<Object> params)
+	{
+		return getMsg(Env.getCtx(), adMessage, params != null && !params.isEmpty() ? params.toArray() : null);
+	}
+
 
 	@Override
 	public String getMsg(final Properties ctx, final String adMessage, final boolean text)

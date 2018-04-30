@@ -1306,6 +1306,13 @@ public class MInOut extends X_M_InOut implements IDocument
 			return false;
 		}
 
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
+		{
+			return false;
+		}
+
 		final I_C_Order order = getC_Order();
 		final boolean checkCreditOnPrepayOorder = Services.get(ISysConfigBL.class).getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID());
 		// ignore -- don't validate Prepay Orders depending on sysconfig parameter

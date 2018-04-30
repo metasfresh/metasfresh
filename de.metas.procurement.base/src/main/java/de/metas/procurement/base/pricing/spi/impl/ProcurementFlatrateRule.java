@@ -1,15 +1,15 @@
 package de.metas.procurement.base.pricing.spi.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.rules.IPricingRule;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMPricingBL;
 import de.metas.procurement.base.order.impl.PMMPricingAware_C_OrderLine;

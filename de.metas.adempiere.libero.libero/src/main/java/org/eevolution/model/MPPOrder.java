@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -60,8 +59,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.MClient;
 import org.compiere.model.MDocType;
-import org.compiere.model.MProject;
-import org.compiere.model.MResource;
 import org.compiere.model.MStorage;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -233,79 +230,15 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 	}
 
-	/**************************************************************************
-	 * Default Constructor
-	 *
-	 * @param ctx context
-	 * @param PP_Order_ID order to load, (0 create new order)
-	 */
 	public MPPOrder(Properties ctx, int PP_Order_ID, String trxName)
 	{
 		super(ctx, PP_Order_ID, trxName);
-		// New
-		if (PP_Order_ID == 0)
+		if (is_new())
 		{
 			Services.get(IPPOrderBL.class).setDefaults(this);
 		}
 	} // PP_Order
 
-	/**************************************************************************
-	 * Project Constructor
-	 *
-	 * @param project Project to create Order from
-	 * @param DocSubType if SO DocType Target (default DocSubType_OnCredit)
-	 */
-	public MPPOrder(MProject project, int PP_Product_BOM_ID, int AD_Workflow_ID)
-	{
-		this(project.getCtx(), 0, project.get_TrxName());
-		setAD_Client_ID(project.getAD_Client_ID());
-		setAD_Org_ID(project.getAD_Org_ID());
-		setC_Campaign_ID(project.getC_Campaign_ID());
-		setC_Project_ID(project.getC_Project_ID());
-		setDescription(project.getName());
-		setLine(10);
-		setPriorityRule(MPPOrder.PRIORITYRULE_Medium);
-		if (project.getDateContract() == null)
-			throw new IllegalStateException("Date Contract is mandatory for Manufacturing Order.");
-		if (project.getDateFinish() == null)
-			throw new IllegalStateException("Date Finish is mandatory for Manufacturing Order.");
-
-		Timestamp ts = project.getDateContract();
-		final Timestamp df = project.getDateContract();
-
-		if (ts != null)
-			setDateOrdered(ts);
-		if (ts != null)
-			this.setDateStartSchedule(ts);
-		ts = project.getDateFinish();
-		if (df != null)
-			setDatePromised(df);
-		setM_Warehouse_ID(project.getM_Warehouse_ID());
-		setPP_Product_BOM_ID(PP_Product_BOM_ID);
-		setAD_Workflow_ID(AD_Workflow_ID);
-		setQtyEntered(BigDecimal.ONE);
-		setQtyOrdered(BigDecimal.ONE);
-		final MPPProductBOM bom = new MPPProductBOM(project.getCtx(), PP_Product_BOM_ID, project.get_TrxName());
-		final I_M_Product product = bom.getM_Product();
-		setC_UOM_ID(product.getC_UOM_ID());
-
-		setM_Product_ID(bom.getM_Product_ID());
-
-		final String where = MResource.COLUMNNAME_IsManufacturingResource + " = 'Y' AND " +
-				MResource.COLUMNNAME_ManufacturingResourceType + " = '" + MResource.MANUFACTURINGRESOURCETYPE_Plant + "' AND " +
-				MResource.COLUMNNAME_M_Warehouse_ID + " = " + project.getM_Warehouse_ID();
-		final MResource resource = (MResource)TableModelLoader.instance.getPO(project.getCtx(), MResource.Table_Name, where, project.get_TrxName());
-		if (resource == null)
-			throw new IllegalStateException("Resource is mandatory.");
-		setS_Resource_ID(resource.getS_Resource_ID());
-	} // MOrder
-
-	/**
-	 * Load Constructor
-	 *
-	 * @param ctx context
-	 * @param rs result set record
-	 */
 	public MPPOrder(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);

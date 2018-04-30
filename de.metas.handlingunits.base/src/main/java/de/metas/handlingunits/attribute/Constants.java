@@ -1,5 +1,6 @@
 package de.metas.handlingunits.attribute;
 
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.Check;
 
 /*
@@ -47,7 +48,7 @@ public final class Constants
 	public static final String ATTR_QualityDiscountPercent_Value = "QualityDiscountPercent";
 	public static final String ATTR_QualityNotice_Value = "QualityNotice";
 	public static final String ATTR_SSCC18_Value = "SSCC18";
-	public static final String ATTR_SubProducerBPartner_Value = "SubProducerBPartner";
+	public static final String ATTR_SubProducerBPartner_Value = AttributeConstants.ATTR_SubProducerBPartner_Value;
 
 	/**
 	 * @see http://dewiki908/mediawiki/index.php/07759_Stockvalue_by_FiFo_%28100951729256%29
@@ -73,10 +74,13 @@ public final class Constants
 	 */
 	public static final String ATTR_ReceiptInOutLine_ID = "HU_ReceiptInOutLine_ID";
 
-	public static final String ATTR_BestBeforeDate = "HU_BestBeforeDate";
-	
+	public static final String ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;
+
 	public static final String ATTR_Expired = "HU_Expired";
 	public static final String ATTR_Expired_Value_Expired = "expired";
+
+	public static final String ATTR_TE = AttributeConstants.ATTR_TE;
+	public static final String ATTR_DateReceived = AttributeConstants.ATTR_DateReceived;
 
 	public static String sqlBestBeforeDate(final String huIdColumnName)
 	{

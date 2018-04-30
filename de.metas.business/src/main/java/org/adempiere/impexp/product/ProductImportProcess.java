@@ -49,7 +49,7 @@ import org.compiere.util.DB;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.pricing.ProductPrices;
+import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductPlanningSchemaBL;
 
 /**

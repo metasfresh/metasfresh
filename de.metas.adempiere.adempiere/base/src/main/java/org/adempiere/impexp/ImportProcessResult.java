@@ -13,19 +13,20 @@ package org.adempiere.impexp;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.adempiere.util.lang.ObjectUtils;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * The result of an {@link IImportProcess} execution.
@@ -33,35 +34,24 @@ import org.adempiere.util.lang.ObjectUtils;
  * @author tsa
  *
  */
+@ToString
 public class ImportProcessResult
 {
-	private String targetTableName;
+	public static final ImportProcessResult newInstance(@NonNull final String targetTableName)
+	{
+		return new ImportProcessResult(targetTableName);
+	}
+
+	/** target table name, where the records were imported (e.g. C_BPartner) */
+	@Getter
+	private final String targetTableName;
 	private final AtomicInteger insertCount = new AtomicInteger(0);
 	private final AtomicInteger updateCount = new AtomicInteger(0);
 	private final AtomicInteger errorCount = new AtomicInteger(0);
 
-	public ImportProcessResult()
-	{
-		super();
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	void setTargetTableName(String targetTableName)
+	private ImportProcessResult(@NonNull final String targetTableName)
 	{
 		this.targetTableName = targetTableName;
-	}
-
-	/**
-	 * @return target table name, where the records were imported (e.g. C_BPartner).
-	 */
-	public String getTargetTableName()
-	{
-		return targetTableName;
 	}
 
 	void incrementInsertCounter()

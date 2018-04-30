@@ -5,7 +5,6 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -13,6 +12,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DB;
 
+import de.metas.pricing.service.IPriceListBL;
 import de.metas.process.JavaProcess;
 
 /**

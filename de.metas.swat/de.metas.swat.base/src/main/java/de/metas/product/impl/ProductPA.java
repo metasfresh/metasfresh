@@ -37,7 +37,6 @@ import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.X_M_ProductScalePrice;
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -55,6 +54,7 @@ import de.metas.adempiere.util.CacheIgnore;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.logging.LogManager;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
 

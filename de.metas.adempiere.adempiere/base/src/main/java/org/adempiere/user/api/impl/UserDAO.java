@@ -24,25 +24,39 @@ package org.adempiere.user.api.impl;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
+import org.adempiere.user.api.NotificationGroupName;
+import org.adempiere.user.api.NotificationType;
+import org.adempiere.user.api.UserNotificationsConfig;
+import org.adempiere.user.api.UserNotificationsGroup;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_NotificationGroup;
+import org.compiere.model.I_AD_User_NotificationGroup;
 import org.compiere.model.I_AD_User_Substitute;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.Query;
+import org.compiere.model.X_AD_User_NotificationGroup;
+import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.util.CacheCtx;
@@ -53,6 +67,13 @@ public class UserDAO implements IUserDAO
 	private static final transient Logger logger = LogManager.getLogger(UserDAO.class);
 
 	private static final String MSG_MailOrUsernameNotFound = "MailOrUsernameNotFound";
+
+	private final CCache<Integer, UserNotificationsConfig> userNotificationsConfigsByUserId = CCache.<Integer, UserNotificationsConfig> newLRUCache(
+			I_AD_User_NotificationGroup.Table_Name,
+			100,
+			CCache.EXPIREMINUTES_Never)
+			.addResetForTableName(I_AD_User.Table_Name)
+			.addResetForTableName(I_AD_NotificationGroup.Table_Name);
 
 	@Override
 	public I_AD_User retrieveLoginUserByUserId(final String userId)
@@ -174,22 +195,15 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public I_AD_User retrieveDefaultUser(I_C_BPartner bpartner)
+	public I_AD_User retrieveDefaultUser(final I_C_BPartner bpartner)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bpartner, true);
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQueryOrderBy orderBy = queryBL.createQueryOrderByBuilder(I_AD_User.class)
-				.addColumn(I_AD_User.COLUMNNAME_AD_User_ID, false)
-				.createQueryOrderBy();
-
-		return queryBL.createQueryBuilder(I_AD_User.class, ctx, ITrx.TRXNAME_None)
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_User.class)
 				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_AD_User.COLUMNNAME_AD_User_ID)
 				.create()
-				.setOnlyActiveRecords(true)
-				.setOrderBy(orderBy)
 				.first(I_AD_User.class);
 
 	}
@@ -213,8 +227,111 @@ public class UserDAO implements IUserDAO
 		return queryBL.createQueryBuilderOutOfTrx(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true)
-				.orderBy().addColumn(I_AD_User.COLUMNNAME_AD_User_ID, false).endOrderBy()
+				.orderByDescending(I_AD_User.COLUMNNAME_AD_User_ID)
 				.create()
 				.listIds();
 	}
+
+	@Cached(cacheName = I_AD_NotificationGroup.Table_Name)
+	public ImmutableMap<Integer, NotificationGroupName> retrieveNotificationGroupInternalNamesById()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_NotificationGroup.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						I_AD_NotificationGroup::getAD_NotificationGroup_ID,
+						notificationGroupRecord -> NotificationGroupName.of(notificationGroupRecord.getInternalName())));
+	}
+
+	@Override
+	public UserNotificationsConfig getUserNotificationsConfig(final int adUserId)
+	{
+		return userNotificationsConfigsByUserId.getOrLoad(adUserId, () -> retrieveUserNotificationsConfig(adUserId));
+	}
+
+	private UserNotificationsConfig retrieveUserNotificationsConfig(final int adUserId)
+	{
+		Check.assumeGreaterOrEqualToZero(adUserId, "adUserId");
+
+		final I_AD_User user = retrieveUser(adUserId);
+		final int userInChargeId = user.getAD_User_InCharge_ID();
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final List<UserNotificationsGroup> userNotificationGroups = queryBL.createQueryBuilderOutOfTrx(I_AD_User_NotificationGroup.class)
+				.addEqualsFilter(I_AD_User_NotificationGroup.COLUMN_AD_User_ID, adUserId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream(I_AD_User_NotificationGroup.class)
+				.map(notificationsGroupRecord -> prepareUserNotificationsGroup(notificationsGroupRecord)
+						.userInChargeId(userInChargeId)
+						.build())
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
+
+		final UserNotificationsGroup defaults = UserNotificationsGroup.prepareDefault()
+				.notificationTypes(toNotificationTypes(user.getNotificationType()))
+				.userInChargeId(userInChargeId)
+				.build();
+
+		return UserNotificationsConfig.builder()
+				.userId(user.getAD_User_ID())
+				.userADLanguage(user.getAD_Language())
+				.adClientId(user.getAD_Client_ID())
+				.adOrgId(user.getAD_Org_ID())
+				.userNotificationGroups(userNotificationGroups)
+				.defaults(defaults)
+				.email(user.getEMail())
+				.build();
+	}
+
+	private UserNotificationsGroup.UserNotificationsGroupBuilder prepareUserNotificationsGroup(final I_AD_User_NotificationGroup notificationsGroupRecord)
+	{
+		if (!notificationsGroupRecord.isActive())
+		{
+			return null;
+		}
+
+		final Map<Integer, NotificationGroupName> notificationGroupInternalNamesById = retrieveNotificationGroupInternalNamesById();
+		final NotificationGroupName groupInternalName = notificationGroupInternalNamesById.get(notificationsGroupRecord.getAD_NotificationGroup_ID());
+		if (groupInternalName == null)
+		{
+			// group does not exist or it was deactivated
+			return null;
+		}
+
+		return UserNotificationsGroup.builder()
+				.groupInternalName(groupInternalName)
+				.notificationTypes(toNotificationTypes(notificationsGroupRecord.getNotificationType()));
+	}
+
+	private static Set<NotificationType> toNotificationTypes(final String notificationTypeCode)
+	{
+		if (Check.isEmpty(notificationTypeCode, true) || X_AD_User_NotificationGroup.NOTIFICATIONTYPE_None.equals(notificationTypeCode))
+		{
+			return ImmutableSet.of();
+		}
+		else if (X_AD_User_NotificationGroup.NOTIFICATIONTYPE_Notice.equals(notificationTypeCode))
+		{
+			return ImmutableSet.of(NotificationType.Notice);
+		}
+		else if (X_AD_User_NotificationGroup.NOTIFICATIONTYPE_EMail.equals(notificationTypeCode))
+		{
+			return ImmutableSet.of(NotificationType.EMail);
+		}
+		else if (X_AD_User_NotificationGroup.NOTIFICATIONTYPE_EMailPlusNotice.equals(notificationTypeCode))
+		{
+			return ImmutableSet.of(NotificationType.Notice, NotificationType.EMail);
+		}
+		else if (X_AD_User_NotificationGroup.NOTIFICATIONTYPE_NotifyUserInCharge.equals(notificationTypeCode))
+		{
+			return ImmutableSet.of(NotificationType.NotifyUserInCharge);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown notification type: " + notificationTypeCode);
+		}
+	}
+
 }

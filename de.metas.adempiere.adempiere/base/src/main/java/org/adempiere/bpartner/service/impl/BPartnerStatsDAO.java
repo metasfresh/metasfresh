@@ -334,5 +334,4 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		stats.setCreditLimitIndicator(percentSring);
 		InterfaceWrapperHelper.save(stats);
 	}
-
 }

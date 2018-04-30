@@ -34,12 +34,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.comparator.ComparatorChain;
@@ -57,6 +51,12 @@ import org.compiere.util.CacheMgt;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.IPricingBL;
 
 public class InOutBL implements IInOutBL
 {

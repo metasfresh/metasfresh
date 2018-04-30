@@ -44,6 +44,8 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.impl.OrderLineBL;
 
 /**
@@ -114,16 +116,22 @@ public class OrderLine implements ModelValidator
 
 		if (!ol.isProcessed())
 		{
-			orderLineBL.setPricesIfNotIgnored(po.getCtx(), ol,
-					true, // usePriceUOM
-					po.get_TrxName());
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
+					.orderLine(ol)
+					.resultUOM(ResultUOM.PRICE_UOM)
+					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+					.updateLineNetAmt(true)
+					.build());
 
 			logger.debug("Setting TaxAmtInfo for {}", ol);
-			orderLineBL.setTaxAmtInfoIfNotIgnored(po.getCtx(), ol, po.get_TrxName());
+			orderLineBL.setTaxAmtInfo(ol);
 		}
 
 		logger.debug("Making sure {} has a M_Shipper_ID", ol);
-		orderLineBL.setShipperIfNotIgnored(po.getCtx(), ol, false, po.get_TrxName());
+		if(ol.getM_Shipper_ID() <= 0)
+		{
+			orderLineBL.setShipper(ol);
+		}
 	}
 
 	private void onNewAndChangeAndDelete(final PO po, int type)

@@ -1,7 +1,10 @@
 package org.adempiere.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+
+import org.adempiere.util.StringUtils.TruncateAt;
 
 /*
  * #%L
@@ -16,15 +19,14 @@ import static org.junit.Assert.assertThat;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,7 +34,7 @@ import org.junit.Test;
 public class StringUtilsTest
 {
 	@Test
-	public void testTrunc()
+	public void trunc()
 	{
 		testTrunc(null, 10, null);
 		testTrunc("", 0, "");
@@ -61,8 +63,38 @@ public class StringUtilsTest
 
 	private final void testTrunc(final String string, final int length, final String resultExpected)
 	{
-		final String resultActual = StringUtils.trunc(string, length);
-		Assert.assertEquals("Invalid trunc() result for string=" + string + ", length=" + length, resultExpected, resultActual);
+		assertThat(StringUtils.trunc(string, length))
+				.as("Invalid trunc() result for string=%s, length=%s", string, length)
+				.isEqualTo(resultExpected);
+	}
+
+	@Test
+	public void truncLeftr()
+	{
+		testTruncLeft(null, 10, null);
+		testTruncLeft("", 0, "");
+		testTruncLeft("", 10, "");
+		testTruncLeft("1234567890", 0, "");
+		testTruncLeft("1234567890", 1, "0");
+		testTruncLeft("1234567890", 2, "90");
+		testTruncLeft("1234567890", 3, "890");
+		testTruncLeft("1234567890", 4, "7890");
+		testTruncLeft("1234567890", 5, "67890");
+		testTruncLeft("1234567890", 6, "567890");
+		testTruncLeft("1234567890", 7, "4567890");
+		testTruncLeft("1234567890", 8, "34567890");
+		testTruncLeft("1234567890", 9, "234567890");
+		testTruncLeft("1234567890", 10, "1234567890");
+		testTruncLeft("1234567890", 11, "1234567890");
+		testTruncLeft("1234567890", 12, "1234567890");
+		testTruncLeft("1234567890", 13, "1234567890");
+	}
+
+	private final void testTruncLeft(final String string, final int length, final String resultExpected)
+	{
+		assertThat(StringUtils.trunc(string, length, TruncateAt.STRING_START))
+				.as("Invalid truncLeft() result for string=%s, length=%s", string, length)
+				.isEqualTo(resultExpected);
 	}
 
 	@Test
@@ -91,7 +123,6 @@ public class StringUtilsTest
 		test_isNumber("01234567890", true);
 		test_isNumber("0000000000000", true);
 	}
-
 
 	@Test
 	public void test_quote()
