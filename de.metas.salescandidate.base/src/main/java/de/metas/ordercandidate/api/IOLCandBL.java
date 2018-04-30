@@ -27,12 +27,12 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
+import de.metas.pricing.IPricingResult;
 
 /**
  * @author RC

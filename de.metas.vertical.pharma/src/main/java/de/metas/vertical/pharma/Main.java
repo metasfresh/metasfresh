@@ -5,11 +5,11 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.impl.PharmaImportPartnerInterceptor;
 import org.adempiere.impexp.impl.PharmaImportProductInterceptor;
-import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.impexp.product.PharmaProductImportProcess;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.vertical.pharma.model.I_I_BPartner;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_I_Product;

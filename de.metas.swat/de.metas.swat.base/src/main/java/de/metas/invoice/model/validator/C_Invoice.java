@@ -34,7 +34,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
@@ -47,7 +46,8 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.pricing.ProductPrices;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.ProductPrices;
 
 @Interceptor(I_C_Invoice.class)
 public class C_Invoice

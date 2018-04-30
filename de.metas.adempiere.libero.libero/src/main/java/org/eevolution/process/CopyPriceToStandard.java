@@ -46,7 +46,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.engines.CostDimension;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -58,6 +57,7 @@ import org.compiere.model.MProduct;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 

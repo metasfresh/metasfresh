@@ -5,20 +5,20 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.limit.IPriceLimitRestrictionsRepository;
-import org.adempiere.pricing.limit.PriceLimitRestrictions;
-import org.adempiere.pricing.limit.PriceLimitRuleContext;
-import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.Env;
 
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.limit.IPriceLimitRestrictionsRepository;
+import de.metas.pricing.limit.PriceLimitRestrictions;
+import de.metas.pricing.limit.PriceLimitRuleContext;
+import de.metas.pricing.limit.PriceLimitRuleResult;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.vertical.pharma.PharmaCustomerPermission;
 import de.metas.vertical.pharma.PharmaCustomerPermissions;
 import de.metas.vertical.pharma.model.I_C_BPartner;

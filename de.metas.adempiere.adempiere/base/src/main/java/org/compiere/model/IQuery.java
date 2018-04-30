@@ -123,6 +123,12 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	<ET extends T> Map<Integer, ET> mapById(Class<ET> clazz) throws DBException;
+	
+	default Map<Integer, T> mapById() throws DBException
+	{
+		return mapById(getModelClass());
+	}
+
 
 	int firstId();
 

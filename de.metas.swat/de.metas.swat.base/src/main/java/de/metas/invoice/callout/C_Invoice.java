@@ -31,7 +31,6 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PriceList;
@@ -42,6 +41,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.pricing.service.IPriceListBL;
 
 @Callout(I_C_Invoice.class)
 public class C_Invoice

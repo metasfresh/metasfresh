@@ -30,7 +30,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.pricing.spi.impl.rules.MockedPricingRule;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -55,6 +54,7 @@ import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.model.I_PP_Order_BOMLine;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialComparator;
+import de.metas.pricing.rules.MockedPricingRule;
 
 /**
  * Defines mater-data and standard helpers for testing the WaschProbe use-case.

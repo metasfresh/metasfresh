@@ -8,9 +8,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.IPricingRule;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -21,11 +18,14 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.logging.LogManager;
-import de.metas.pricing.ProductPriceQuery.IProductPriceQueryMatcher;
-import de.metas.pricing.ProductPrices;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
+import de.metas.pricing.rules.IPricingRule;
+import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 
 public class AttributePricing implements IPricingRule
 {

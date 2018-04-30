@@ -902,7 +902,8 @@ public final class DB
 
 			if (updateReturnProcessor != null)
 			{
-				final ResultSet rs = cs.executeQuery();
+				// NOTE: this is an UPDATE query, so we shall log migration scripts
+				final ResultSet rs = cs.executeQueryAndLogMigationScripts();
 				int rows = 0;
 				try
 				{

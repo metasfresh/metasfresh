@@ -27,11 +27,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPriceListDAO;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
@@ -44,6 +39,11 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.IPricingBL;
 
 /**
  * @task 08147: validate if the C_OLCand's PIIP is OK

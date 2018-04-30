@@ -65,6 +65,7 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -79,7 +80,6 @@ import org.compiere.util.CacheMgt;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.spi.impl.NotifyAsyncBatch;
@@ -225,7 +225,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Table.class);
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Ref_List.class);
 		cachingService.addTableCacheConfigIfAbsent(I_M_PriceList.class);
-		cachingService.addTableCacheConfigIfAbsent(I_M_DiscountSchema.class);
 
 		// M_Product (for now, using the same setting that were in MProduct.s_cache
 		cachingService.createTableCacheConfigBuilder(I_M_Product.class)

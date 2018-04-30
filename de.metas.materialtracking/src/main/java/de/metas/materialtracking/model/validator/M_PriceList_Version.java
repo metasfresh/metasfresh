@@ -31,7 +31,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
@@ -41,6 +40,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingPPOrderDAO;
 import de.metas.materialtracking.model.I_C_Invoice_Detail;
 import de.metas.materialtracking.model.I_PP_Order;
+import de.metas.pricing.service.IPriceListDAO;
 
 @Interceptor(I_M_PriceList_Version.class)
 public class M_PriceList_Version

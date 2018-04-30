@@ -26,11 +26,11 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.MInvoiceLine;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.pricing.IEditablePricingContext;
 
 /**
  *

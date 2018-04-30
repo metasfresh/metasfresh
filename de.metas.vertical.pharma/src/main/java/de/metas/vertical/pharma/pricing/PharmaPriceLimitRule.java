@@ -1,8 +1,8 @@
 package de.metas.vertical.pharma.pricing;
 
-import org.adempiere.pricing.limit.IPriceLimitRule;
-import org.adempiere.pricing.limit.PriceLimitRuleContext;
-import org.adempiere.pricing.limit.PriceLimitRuleResult;
+import de.metas.pricing.limit.IPriceLimitRule;
+import de.metas.pricing.limit.PriceLimitRuleContext;
+import de.metas.pricing.limit.PriceLimitRuleResult;
 
 /*
  * #%L
