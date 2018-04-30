@@ -5,8 +5,6 @@ import java.util.Optional;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
@@ -14,11 +12,13 @@ import org.slf4j.Logger;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
 import de.metas.logging.LogManager;
-import de.metas.pricing.ProductPriceQuery;
-import de.metas.pricing.ProductPriceQuery.IProductPriceQueryMatcher;
-import de.metas.pricing.ProductPriceQuery.ProductPriceQueryMatcher;
-import de.metas.pricing.ProductPrices;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
 import de.metas.pricing.attributebased.impl.AttributePricing;
+import de.metas.pricing.service.ProductPriceQuery;
+import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
+import de.metas.pricing.service.ProductPriceQuery.ProductPriceQueryMatcher;
 
 /**
  * Note that we invoke {@link AttributePricing#registerDefaultMatcher(IProductPriceQueryMatcher)} with {@link #HUPIItemProductMatcher_None} (in a model interceptor)

@@ -4,7 +4,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_FreightCostDetail;
-import org.adempiere.pricing.exceptions.PriceListNotFoundException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -13,6 +12,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
+
+import de.metas.pricing.exceptions.PriceListNotFoundException;
 
 public interface IOrderBL extends ISingletonService
 {

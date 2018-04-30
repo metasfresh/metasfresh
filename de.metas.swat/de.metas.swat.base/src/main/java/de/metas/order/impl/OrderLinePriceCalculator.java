@@ -5,13 +5,6 @@ import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IEditablePricingContext;
-import org.adempiere.pricing.api.IPricingBL;
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
-import org.adempiere.pricing.limit.PriceLimitRuleContext;
-import org.adempiere.pricing.limit.PriceLimitRuleResult;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_OrderLine;
@@ -20,6 +13,13 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.pricing.limit.PriceLimitRuleContext;
+import de.metas.pricing.limit.PriceLimitRuleResult;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -95,7 +95,7 @@ class OrderLinePriceCalculator
 
 		//
 		// Apply price limit restrictions
-		if(isApplyPriceLimitRestrictions(pricingResult))
+		if (isApplyPriceLimitRestrictions(pricingResult))
 		{
 			final PriceLimitRuleResult priceLimitResult = pricingBL.computePriceLimit(PriceLimitRuleContext.builder()
 					.pricingContext(pricingCtx)
@@ -103,11 +103,11 @@ class OrderLinePriceCalculator
 					.priceActual(priceActual)
 					.paymentTermId(orderLineBL.getC_PaymentTerm_ID(orderLine))
 					.build());
-			if(priceLimitResult.isApplicable())
+			if (priceLimitResult.isApplicable())
 			{
 				priceLimit = priceLimitResult.getPriceLimit();
 			}
-			if(priceLimitResult.isBelowPriceLimit(priceActual))
+			if (priceLimitResult.isBelowPriceLimit(priceActual))
 			{
 				priceActual = priceLimit;
 
@@ -298,7 +298,7 @@ class OrderLinePriceCalculator
 
 	private BigDecimal extractDiscount(final IPricingResult pricingResult, final boolean isSOTrx)
 	{
-		if(isAllowChangingDiscount(isSOTrx))
+		if (isAllowChangingDiscount(isSOTrx))
 		{
 			return pricingResult.getDiscount();
 		}
@@ -332,6 +332,12 @@ class OrderLinePriceCalculator
 		}
 
 		return pricingResult.getC_TaxCategory_ID();
+	}
+
+	public IPricingResult computePrices()
+	{
+		final IEditablePricingContext pricingCtx = createPricingContext();
+		return pricingBL.calculatePrice(pricingCtx);
 	}
 
 	public PriceLimitRuleResult computePriceLimit()

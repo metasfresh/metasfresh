@@ -27,11 +27,11 @@ import java.util.Collection;
 import java.util.Properties;
 
 import org.adempiere.model.I_M_ProductScalePrice;
-import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.MAttributeSetInstance;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 
 public interface IProductPA extends ISingletonService
 {

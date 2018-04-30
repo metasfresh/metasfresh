@@ -1,7 +1,5 @@
 package de.metas.product;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,8 +26,6 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
@@ -41,12 +37,7 @@ public interface IProductBL extends ISingletonService
 {
 	int getUOMPrecision(I_M_Product product);
 
-	default int getUOMPrecision(final int productId)
-	{
-		Check.assume(productId > 0, "productId > 0");
-		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
-		return getUOMPrecision(product);
-	}
+	int getUOMPrecision(int productId);
 
 	String getMMPolicy(I_M_Product product);
 
@@ -56,11 +47,7 @@ public interface IProductBL extends ISingletonService
 	 */
 	boolean isItem(I_M_Product product);
 
-	default boolean isItem(final int productId)
-	{
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
-		return isItem(product);
-	}
+	boolean isItem(int productId);
 
 	/**
 	 * @param product
@@ -151,6 +138,6 @@ public interface IProductBL extends ISingletonService
 	 * @return true if instance attributes
 	 */
 	boolean isInstanceAttribute(I_M_Product product);
-	
+
 	boolean isProductInCategory(int productId, int expectedProductCategoryId);
 }

@@ -32,6 +32,8 @@ import org.compiere.model.I_M_Product_Category;
 
 public interface IProductDAO extends ISingletonService
 {
+	I_M_Product getById(final int productId);
+	
 	I_M_Product retrieveProductByUPC(Properties ctx, String upc);
 
 	/**

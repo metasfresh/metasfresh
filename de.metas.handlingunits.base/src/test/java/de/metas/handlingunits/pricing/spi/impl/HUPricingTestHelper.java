@@ -4,12 +4,12 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.impl.PricingTestHelper;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.pricing.service.impl.PricingTestHelper;
 
 /*
  * #%L

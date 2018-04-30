@@ -1,7 +1,5 @@
 package de.metas.product.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -66,6 +64,14 @@ public final class ProductBL implements IProductBL
 		final int uomId = product.getC_UOM_ID();
 		return Services.get(IUOMConversionBL.class).getPrecision(ctx, uomId);
 	}
+	
+	@Override
+	public int getUOMPrecision(final int productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		return getUOMPrecision(product);
+	}
+
 
 	@Override
 	public String getMMPolicy(final I_M_Product product)
@@ -88,8 +94,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public I_C_UOM getStockingUOM(final int productId)
 	{
-		Check.assume(productId > 0, "productId > 0");
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return getStockingUOM(product);
 	}
 
@@ -154,6 +159,14 @@ public final class ProductBL implements IProductBL
 // @formatter:on
 		return false;
 	}
+	
+	@Override
+	public boolean isItem(final int productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		return isItem(product);
+	}
+
 
 	@Override
 	public boolean isService(final I_M_Product product)

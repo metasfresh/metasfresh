@@ -1,8 +1,5 @@
 package de.metas.contracts.pricing;
 
-import org.adempiere.pricing.api.IPricingContext;
-import org.adempiere.pricing.api.IPricingResult;
-import org.adempiere.pricing.spi.IPricingRule;
 import org.compiere.util.Env;
 
 /*
@@ -32,6 +29,9 @@ import org.slf4j.Logger;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.logging.LogManager;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.rules.IPricingRule;
 
 /**
  * This pricing discount rule applies if
