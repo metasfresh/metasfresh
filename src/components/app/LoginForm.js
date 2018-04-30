@@ -34,6 +34,12 @@ class LoginForm extends Component {
     this.login.focus();
   }
 
+  componentWillUpdate(nextProps, nextState) {
+    if (this.roleSelector && nextState.roleSelect) {
+      this.roleSelector.instanceRef.dropdown.focus();
+    }
+  }
+
   handleKeyPress = e => {
     if (e.key === 'Enter') {
       this.handleLogin();
@@ -175,7 +181,7 @@ class LoginForm extends Component {
     return (
       <div
         className="login-form panel panel-spaced-lg panel-shadowed panel-primary"
-        onKeyDown={this.handleKeyPress}
+        onKeyPress={this.handleKeyPress}
       >
         <div className="text-xs-center">
           <img src={logo} className="header-logo mt-2 mb-2" />
@@ -186,6 +192,7 @@ class LoginForm extends Component {
               <small>{counterpart.translate('login.selectRole.caption')}</small>
             </div>
             <RawList
+              ref={c => (this.roleSelector = c)}
               rank="primary"
               list={roles}
               onSelect={option => this.handleRoleSelect(option)}

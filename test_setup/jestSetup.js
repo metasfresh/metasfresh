@@ -22,3 +22,7 @@ global.config = {
   API_URL: 'http://api.test.url',
   WS_URL: 'http://ws.test.url',
 };
+
+Object.defineProperty(document, 'activeElement', {
+  value: function() { return {nodeName: 'FOO'} },
+});

@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { Component } from 'react';
+import { disabledWithFocus } from '../../shortcuts/keymap';
 
 const codeToKey = {
   8: 'Backspace',
@@ -100,6 +101,7 @@ export default class ShortcutProvider extends Component {
   handleKeyDown = event => {
     const _key = codeToKey[event.keyCode];
     const key = _key && _key.toUpperCase();
+    const activeNode = document ? document.activeElement : null;
 
     if (!key) {
       return;
@@ -130,7 +132,14 @@ export default class ShortcutProvider extends Component {
       .replace(/\s/, 'Spacebar')
       .toUpperCase();
 
-    if (!(serializedSequence in hotkeys)) {
+    if (
+      !(serializedSequence in hotkeys) ||
+      // some shortcuts should be disabled
+      // when input field is focused (for typing)
+      (activeNode &&
+        activeNode.nodeName === 'INPUT' &&
+        disabledWithFocus.indexOf(serializedSequence) > -1)
+    ) {
       return;
     }
 

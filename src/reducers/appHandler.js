@@ -174,6 +174,19 @@ export default function appHandler(state = initialState, action) {
       });
     }
 
+    case types.REMOVE_ALL_NOTIFICATIONS: {
+      return update(state, {
+        inbox: {
+          notifications: {
+            $set: [],
+          },
+          unreadCount: {
+            $set: 0,
+          },
+        },
+      });
+    }
+
     case types.SET_PROCESS_STATE_PENDING:
       return {
         ...state,

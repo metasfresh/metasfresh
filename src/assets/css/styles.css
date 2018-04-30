@@ -994,11 +994,6 @@ td.pulse-off input {
     justify-content: center;
 }
 
-.cell-text-wrapper {
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .icon-sm {
     font-size: 15px;
     padding-top: 3px;
@@ -1439,4 +1434,11 @@ td.pulse-off input {
 
 .btn-bookmark:hover .btn-bookmark-icon.active {
     color: $brand-success-dark-color;
+}
+
+.widget-color-display {
+    display: block;
+    width: 15px;
+    height: 15px;
+    border-radius: 15px;
 }

@@ -39,13 +39,14 @@ class RawWidget extends Component {
 
   componentDidMount() {
     const { autoFocus, textSelected } = this.props;
+    const { rawWidget } = this;
 
-    if (this.rawWidget && autoFocus) {
-      this.rawWidget.focus();
+    if (rawWidget && autoFocus) {
+      rawWidget.focus();
     }
 
     if (textSelected) {
-      this.rawWidget.select();
+      rawWidget.select();
     }
   }
 
@@ -55,13 +56,12 @@ class RawWidget extends Component {
    * DOM element outside of it's parent's tree.
    */
   focus = () => {
-    const { dispatch, handleFocus, disableOnClickOutside, entity } = this.props;
+    const { handleFocus, disableOnClickOutside, entity } = this.props;
+    const { rawWidget } = this;
 
-    if (this.rawWidget && this.rawWidget.focus) {
-      this.rawWidget.focus();
+    if (rawWidget && rawWidget.focus) {
+      rawWidget.focus();
     }
-
-    dispatch(disableShortcut());
 
     // don't disable onclickoutside for the attributes widget
     if (entity !== 'pattribute') {

@@ -244,6 +244,8 @@ export function loginSuccess(auth) {
               notification.unreadCount
             )
           );
+        } else if (notification.eventType === 'DeleteAll') {
+          dispatch(deleteAllNotifications());
         } else if (notification.eventType === 'New') {
           dispatch(
             newNotification(notification.notification, notification.unreadCount)
@@ -370,6 +372,12 @@ export function removeNotification(notificationId, unreadCount) {
 export function readAllNotifications() {
   return {
     type: types.READ_ALL_NOTIFICATIONS,
+  };
+}
+
+export function deleteAllNotifications() {
+  return {
+    type: types.REMOVE_ALL_NOTIFICATIONS,
   };
 }
 
