@@ -10,7 +10,17 @@ Additional notes:
 
 Here come the actual release notes:
 
+
+# metasfresh 5.56 (2018-19)
+
+**release for week 2018-19**
+
+## Features
+
+## Fixes
+
 # metasfresh 5.55 (2018-18)
+
 **release for week 2018-18**
 
 ## Features
@@ -35,6 +45,7 @@ Here come the actual release notes:
   * [#3891](https://github.com/metasfresh/metasfresh/issues/3891) Pharma: Don't allow recording of pricing conditions that are not allowed
   * [#3899](https://github.com/metasfresh/metasfresh/issues/3899) Webui window for M_HU_Process
     * New Window for the Configuration of Handling Unit Processes. Can be used as System Administrator.
+  * [#3909](https://github.com/metasfresh/metasfresh/issues/3909) docoutbound mailing: Autodect if MailWorkpackageProcessor.EmailMessage is HTML
   * [#3910](https://github.com/metasfresh/metasfresh/issues/3910) Credit limit: treat credit status on NULL as it would be X (No check)
   * [#3914](https://github.com/metasfresh/metasfresh/issues/3914) Avoid numeric values with too many trailing zeros
   * [#3917](https://github.com/metasfresh/metasfresh/issues/3917) Fail on complete for order lines with no pricing conditions
