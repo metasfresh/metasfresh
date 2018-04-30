@@ -22,9 +22,14 @@ Here come the actual release notes:
   * [#3965](https://github.com/metasfresh/metasfresh/issues/3965) Translate Actions Update Pharma Conditions
     * New Translations for Pharma Conditon Parms in Updatte Pharma Permissions Action for de_DE, en_US.
   * [#3967](https://github.com/metasfresh/metasfresh/issues/3967) Translate Process Parm in Update Pharma Conditions for Customers
-    * Improved Translations for Action Parms. Languages de_DE, en_US.
+    * Improved Translations for Action Parms. Languages de_DE, en_US.ya
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1410](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1410) Shortcuts for Clone & Letter not working
+    * Fixes the not working shortcuts for letter and clone.
+  * [#1768](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1768) Cloning document throws error
+    * Fixes an error that appeared when starting the clone Action via keyboard shortcut instead of mouse.
 
 # metasfresh 5.55 (2018-18)
 
