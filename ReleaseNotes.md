@@ -28,6 +28,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1410](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1410) Shortcuts for Clone & Letter not working
     * Fixes the not working shortcuts for letter and clone.
+  * [#1767](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1767) Letter modal throws errors
+    * Fixes the modal Letter view.
   * [#1768](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1768) Cloning document throws error
     * Fixes an error that appeared when starting the clone Action via keyboard shortcut instead of mouse.
 
