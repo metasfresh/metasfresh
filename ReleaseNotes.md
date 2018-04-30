@@ -19,6 +19,8 @@ Here come the actual release notes:
 * metasfresh
   * [#3812](https://github.com/metasfresh/metasfresh/issues/3812) Add process for creating missing M_Product_acct records to WebUI
     * New Action added to Product Catregory window, allowing to copy Acctounting Setting to all Products of a Product Category.
+  * [#3965](https://github.com/metasfresh/metasfresh/issues/3965) Translate Actions Update Pharma Conditions
+    * New Translations for Pharma Conditon Parms in Updatte Pharma Permissions Action for de_DE, en_US.
 
 ## Fixes
 
