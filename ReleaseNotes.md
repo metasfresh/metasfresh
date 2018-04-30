@@ -16,6 +16,9 @@ Here come the actual release notes:
 **release for week 2018-19**
 
 ## Features
+* metasfresh
+  * [#3812](https://github.com/metasfresh/metasfresh/issues/3812) Add process for creating missing M_Product_acct records to WebUI
+    * New Action added to Product Catregory window, allowing to copy Acctounting Setting to all Products of a Product Category.
 
 ## Fixes
 
