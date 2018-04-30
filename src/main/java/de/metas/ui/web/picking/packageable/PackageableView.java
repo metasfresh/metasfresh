@@ -116,7 +116,7 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 	private void closePickingCandidatesFromRackSystemPickingSlots()
 	{
 		final List<Integer> shipmentScheduleIds = getRows()
-				.values().stream()
+				.stream()
 				.map(PackageableRow::getShipmentScheduleId)
 				.collect(Collectors.toList());
 

@@ -36,17 +36,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import ch.qos.logback.classic.Level;
-import de.metas.event.Event;
-import de.metas.event.Event.Builder;
-import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
+import de.metas.notification.UserNotificationTargetType;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
-import de.metas.ui.web.notification.UserNotification.TargetType;
-import de.metas.ui.web.notification.UserNotificationRepository;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IViewsRepository;
@@ -217,17 +216,13 @@ public class DebugRestController
 				.type(Type.LOCAL)
 				.build();
 
-		final Builder eventBuilder = Event.builder()
-				.setSummary("summary")
-				.setDetailPlain(message)
-				.putProperty(UserNotificationRepository.EVENT_PARAM_Important, important);
-		if (toUserId > 0)
-		{
-			eventBuilder.addRecipient_User_ID(toUserId);
-		}
+		final UserNotificationRequestBuilder request = UserNotificationRequest.builder()
+				.topic(topic)
+				.recipientUserId(toUserId)
+				.important(important);
 
-		final TargetType targetType = Check.isEmpty(targetTypeStr) ? null : TargetType.forJsonValue(targetTypeStr);
-		if (targetType == TargetType.Window)
+		final UserNotificationTargetType targetType = Check.isEmpty(targetTypeStr) ? null : UserNotificationTargetType.forJsonValue(targetTypeStr);
+		if (targetType == UserNotificationTargetType.Window)
 		{
 			final String targetTableName = documentCollection.getDocumentDescriptorFactory()
 					.getDocumentDescriptor(WindowId.fromJson(targetDocumentType))
@@ -235,14 +230,10 @@ public class DebugRestController
 					.getTableName();
 
 			final TableRecordReference targetRecord = TableRecordReference.of(targetTableName, Integer.parseInt(targetDocumentId));
-			eventBuilder.setRecord(targetRecord);
+			request.targetRecord(targetRecord);
 		}
 
-		final Event event = eventBuilder.build();
-
-		Services.get(IEventBusFactory.class)
-				.getEventBus(topic)
-				.postEvent(event);
+		Services.get(INotificationBL.class).notifyUser(request.build());
 	}
 
 	@PostMapping("/websocket/post")
@@ -306,9 +297,7 @@ public class DebugRestController
 
 	public static enum LoggingModule
 	{
-		websockets(de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName()),
-		view(de.metas.ui.web.view.IView.class.getPackage().getName()),
-		cache(
+		websockets(de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName()), view(de.metas.ui.web.view.IView.class.getPackage().getName()), cache(
 				org.compiere.util.CCache.class.getName() //
 				, org.compiere.util.CacheMgt.class.getName() //
 				, org.adempiere.ad.dao.cache.IModelCacheService.class.getName() // model caching
@@ -331,7 +320,7 @@ public class DebugRestController
 
 	@GetMapping("/logger/_setLevel/{level}")
 	public Set<String> setLoggerLevel(
-			@RequestParam(name="module", required=false) final LoggingModule module //
+			@RequestParam(name = "module", required = false) final LoggingModule module //
 			, @RequestParam(name = "loggerName", required = false) final String loggerName //
 			, @PathVariable("level") final String levelStr //
 	)

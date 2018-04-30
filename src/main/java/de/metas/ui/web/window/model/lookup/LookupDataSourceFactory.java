@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 
 /*
  * #%L
@@ -45,6 +47,13 @@ public final class LookupDataSourceFactory
 	private LookupDataSourceFactory()
 	{
 		super();
+	}
+	
+	public LookupDataSource searchInTableLookup(final String tableName)
+	{
+		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.searchInTable(tableName)
+				.provideForScope(LookupScope.DocumentField);
+		return getLookupDataSource(lookupDescriptor);
 	}
 
 	public LookupDataSource getLookupDataSource(final LookupDescriptor lookupDescriptor)

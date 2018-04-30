@@ -70,8 +70,7 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 		// We will use this map to figure out what we can invalidate,
 		// because we want to cover the case of rows which just vanished (e.g. everything was delivered)
 		// and the case of rows which appeared back (e.g. the picking candidate was reactivated so we still have QtyToDeliver).
-		initialDocumentIdsByRecordRef = getDocumentId2AllRows()
-				.values()
+		initialDocumentIdsByRecordRef = getAllRows()
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(PackageableRow::getTableRecordReference, PackageableRow::getId));
 	}
@@ -85,8 +84,7 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 	@Override
 	public ListMultimap<TableRecordReference, PackageableRow> getTableRecordReference2rows()
 	{
-		return getDocumentId2AllRows()
-				.values()
+		return getAllRows()
 				.stream()
 				.collect(GuavaCollectors.toImmutableListMultimap(PackageableRow::getTableRecordReference));
 	}

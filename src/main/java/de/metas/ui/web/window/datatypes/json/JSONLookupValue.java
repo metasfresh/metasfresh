@@ -217,4 +217,13 @@ public final class JSONLookupValue
 	{
 		return attributes;
 	}
+
+	public LookupValue toIntegerLookupValue()
+	{
+		return IntegerLookupValue.builder()
+				.id(getKeyAsInt())
+				.displayName(ImmutableTranslatableString.constant(getCaption()))
+				.attributes(getAttributes())
+				.build();
+	}
 }

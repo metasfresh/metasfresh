@@ -318,30 +318,7 @@ import lombok.NonNull;
 					gridFieldVO.isMandatory(),
 					gridFieldVO.isUseDocSequence());
 
-			if(keyColumn)
-			{
-				readonlyLogic = ConstantLogicExpression.TRUE;
-			}
-			else if (gridFieldVO.isReadOnly())
-			{
-				readonlyLogic = ConstantLogicExpression.TRUE;
-			}
-			// Readonly logic in case of not Updateable
-			// NOTE: in Swing UI, this property was interpreted as: allow the field to be read-write until it's saved. After that, it's readonly.
-			// But here, on Webui we no longer have this concept, since we are auto-saving it.
-			// NOTE2: we are checking the AD_Field/AD_Column.IsParentLink and in case is true, we consider the only reason why Updateable=N is because of them.
-			// So basically in that case we ignore it.
-			//
-			// Example where this rule is needed: have a table which has a column which is parent link, but in some windows we are displaying it as header (first tab),
-			// and we want to allow the user setting it.
-			else if (!gridFieldVO.isUpdateable() && !gridFieldVO.isParentLink())
-			{
-				readonlyLogic = ConstantLogicExpression.FALSE;
-			}
-			else
-			{
-				readonlyLogic = gridFieldVO.getReadOnlyLogic();
-			}
+			readonlyLogic = extractReadOnlyLogic(gridFieldVO, keyColumn, isParentLinkColumn);
 		}
 
 		//
@@ -435,6 +412,46 @@ import lombok.NonNull;
 		//
 		// Collect special field
 		collectSpecialField(fieldBuilder);
+	}
+
+	private static ILogicExpression extractReadOnlyLogic(final GridFieldVO gridFieldVO, final boolean keyColumn, final boolean isParentLinkColumn)
+	{
+		if(keyColumn)
+		{
+			return ConstantLogicExpression.TRUE;
+		}
+		//
+		// Readonly logic in case of parent link column which is not parent link in this window.
+		// NOTE: in SwingUI/application dictionary, in case a column is flagged as ParentLink it is automatically flagged as IsUpdateable=N.
+		// So, here we are identifying this case and consider it as editable.
+		// e.g. BPartner (pharma) window -> Product tab
+		else if(!gridFieldVO.isUpdateable()
+				&& gridFieldVO.isParentLink() && !isParentLinkColumn
+				&& gridFieldVO.isMandatory())
+		{
+			return ConstantLogicExpression.FALSE;
+		}
+		else if (gridFieldVO.isReadOnly())
+		{
+			return ConstantLogicExpression.TRUE;
+		}
+		//
+		// Readonly logic in case of not Updateable
+		// NOTE: in Swing UI, this property was interpreted as: allow the field to be read-write until it's saved. After that, it's readonly.
+		// But here, on Webui we no longer have this concept, since we are auto-saving it.
+		// NOTE2: we are checking the AD_Field/AD_Column.IsParentLink and in case is true, we consider the only reason why Updateable=N is because of them.
+		// So basically in that case we ignore it.
+		//
+		// Example where this rule is needed: have a table which has a column which is parent link, but in some windows we are displaying it as header (first tab),
+		// and we want to allow the user setting it.
+		else if (!gridFieldVO.isUpdateable() && !gridFieldVO.isParentLink())
+		{
+			return ConstantLogicExpression.FALSE;
+		}
+		else
+		{
+			return gridFieldVO.getReadOnlyLogic();
+		}
 	}
 
 	private DocumentFieldDefaultFilterDescriptor createDefaultFilterDescriptor(
