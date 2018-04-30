@@ -8,8 +8,6 @@ metadata:
     de.metas.deployment.stage: "demo"
     de.metas.deployment.name: "metasfresh-postgresql-demouser-demo"
   namespace: "default"
-# can be created with kubectl create namespace demo"
-#  namespace: "demo"
 spec:
   replicas: 1
   strategy:
@@ -46,8 +44,8 @@ spec:
           env:
           - name: DEBUG_PRINT_BASH_CMDS
             value: "n"
-#          - name: URL_MIGRATION_SCRIPTS_PACKAGE
-#            value: "https://repo.metasfresh.com/content/repositories/mvn-gh18-dist-releases/de/metas/dist/metasfresh-dist-dist/5.54.2-89+gh18dist/metasfresh-dist-dist-5.54.2-89+gh18dist-sql-only.tar.gz"
+          - name: URL_MIGRATION_SCRIPTS_PACKAGE
+            value: "https://repo.metasfresh.com/content/repositories/mvn-gh18-dist-releases/de/metas/dist/metasfresh-dist-dist/5.54.2-89+gh18dist/metasfresh-dist-dist-5.54.2-89+gh18dist-sql-only.tar.gz"
           volumeMounts:
           - name: host-localtime
             mountPath: /etc/localtime

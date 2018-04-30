@@ -4,22 +4,22 @@ metadata:
   name: "metasfresh-print-demouser-demo"
   labels:
     de.metas.deployment.type: metasfresh-print
-    de.metas.deployment.stage: "demo"
     de.metas.deployment.user: "demouser"
+    de.metas.deployment.stage: "demo"
 spec:
   ports:
-  - name: http
-    port: 8183
+  - name: rabbitmq-broker
+    port: 5672
     protocol: TCP
-    targetPort: 8183
-  - name: remote-debug
-    port: 8791
+    targetPort: 5672
+  - name: rabbitmq-management
+    port: 15672
     protocol: TCP
-    targetPort: 8791
+    targetPort: 15672
   selector:
-    de.metas.deployment.stage: "demo"
     de.metas.deployment.type: metasfresh-print
     de.metas.deployment.user: "demouser"
+    de.metas.deployment.stage: "demo"
   sessionAffinity: None
 # ClusterIP is the default; we use it because we don't want to make the service available to the outside (we have the ingress for that)
 # see https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types

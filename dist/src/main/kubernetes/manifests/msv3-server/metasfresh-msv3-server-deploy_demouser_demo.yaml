@@ -1,9 +1,9 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: "metasfresh-print-demouser-demo"
+  name: "metasfresh-msv3-server-demouser-demo"
   labels:
-    de.metas.deployment.type: metasfresh-print
+    de.metas.deployment.type: metasfresh-msv3-server
     de.metas.deployment.stage: "demo"
     de.metas.deployment.user: "demouser"
 spec:
@@ -13,34 +13,33 @@ spec:
   template:
     metadata:
       labels:
-        de.metas.deployment.type: metasfresh-print
+        de.metas.deployment.type: metasfresh-msv3-server
         de.metas.deployment.user: "demouser"
         de.metas.deployment.stage: "demo"
     spec:
       containers:
       - env:
         - name: DB_HOST
-          value: "metasfresh-postgresql-demouser-demo"
+          value: "metasfresh-core-stack-demouser-demo"
         - name: DB_PORT
           value: '5432'
         - name: DEBUG_PRINT_BASH_CMDS
           value: 'y'
         - name: DB_WAIT_FOR_DBMS
-          value: 'y'
+          value: 'n'
         - name: JAVA_MAX_HEAP
           value: '100M'
         - name: METASFRESH_ADMIN_URL
           value: 'http://metasfresh-admin:9090'
         - name: SERVER_PORT
-          value: '8183'
+          value: '8080'
         - name: DEBUG_PORT
           value: '8791'
-        name: print
-        image: docker.metasfresh.com/metasfresh/metasfresh-print:master_LATEST
+        name: msv3-server
+        image: docker.metasfresh.com/metasfresh/de.metas.vertical.pharma.msv3.server:gh34_docker_LATEST
         imagePullPolicy: Always
         ports:
-          - containerPort: 8183
-          - containerPort: 8791
+          - containerPort: 8080
         resources: 
           requests:
             memory: 128M

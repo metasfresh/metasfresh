@@ -28,9 +28,7 @@ spec:
         - name: METASFRESH_HOME
           value: /opt/metasfresh
         - name: DB_HOST
-          value: metasfresh-postgresql-demouser-demo
-        - name: DB_PASSWORD
-          value: metasfresh
+          value: "metasfresh-postgresql-demouser-demo"
         - name: APP_HOST
           value: localhost
         - name: ES_HOST
@@ -62,7 +60,7 @@ spec:
 # metasfresh-webui-api
       - env:
         - name: DB_HOST
-          value: metasfresh-postgresql-demouser-demo
+          value: "metasfresh-postgresql-demouser-demo"
         - name: APP_HOST
           value: localhost
         - name: ES_HOST
@@ -136,13 +134,28 @@ spec:
           readOnly: true
       restartPolicy: Always
       initContainers:
-        - name: init-wait-for-postgres
-          image: busybox
-          command: ['sh', '-c', 'until nslookup metasfresh-postgresql-demouser-demo; do echo waiting for metasfresh-postgresql-demouser-demo; sleep 2; done;']
+        - name: init-postgres
+          image: docker.metasfresh.com/metasfresh/metasfresh-db-init-pg-10-3:gh18_dist_LATEST
+          imagePullPolicy: Always
+          env:
+          - name: DB_SYSPASS
+            value: System
+          - name: METASFRESH_DBNAME
+            value: metasfresh
+          - name: METASFRESH_PASSWORD
+            value: metasfresh
+          - name: METASFRESH_USERNAME
+            value: metasfresh
+          volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgresql-data
       volumes:
-      - name: host-localtime
+      - name: host-localtime # was app-claim1
         hostPath:
           path: /etc/localtime
-      - name: host-timezone
+      - name: host-timezone # was app-claim2
         hostPath:
           path: /etc/timezone
+      - name: postgresql-data
+        hostPath:
+          path: "/tmp/postgresql-data-demouser-demo"

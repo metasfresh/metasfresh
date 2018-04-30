@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "metasfresh-msv3-server-%USER-ID%-%STAGE%"
+  labels:
+    de.metas.deployment.type: metasfresh-msv3-server
+    de.metas.deployment.stage: "%STAGE%"
+    de.metas.deployment.user: "%USER-ID%"
+spec:
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    de.metas.deployment.type: metasfresh-msv3-server
+    de.metas.deployment.stage: "%STAGE%"
+    de.metas.deployment.user: "%USER-ID%"
+  sessionAffinity: None
+# ClusterIP is the default; we use it because we don't want to make the service available to the outside (we have the ingress for that)
+# see https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
+  type: ClusterIP

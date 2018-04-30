@@ -4,8 +4,8 @@ metadata:
   name: "metasfresh-postgresql-demouser-demo"
   labels:
     de.metas.deployment.type: metasfresh-postgresql
-    de.metas.deployment.stage: "demo"
     de.metas.deployment.user: "demouser"
+    de.metas.deployment.stage: "demo"
   namespace: default
 spec:
   ports:
@@ -13,11 +13,10 @@ spec:
     port: 5432
     protocol: TCP
     targetPort: 5432
-    nodePort: 32607
   selector:
     de.metas.deployment.type: metasfresh-postgresql
-    de.metas.deployment.stage: "demo"
     de.metas.deployment.user: "demouser"
+    de.metas.deployment.stage: "demo"
   sessionAffinity: None
 # see https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
   type: NodePort
