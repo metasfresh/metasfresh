@@ -1,6 +1,7 @@
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { List } from 'immutable';
 
 import { addNotification } from '../../actions/AppActions';
 import { patchRequest } from '../../actions/GenericActions';
@@ -18,8 +19,10 @@ class NewLetter extends Component {
     this.state = {
       init: false,
       cached: {},
-      templates: [],
+      templates: List(),
       template: {},
+      listFocused: true,
+      listToggled: false,
     };
   }
 
@@ -50,7 +53,27 @@ class NewLetter extends Component {
     const res = await getTemplates();
 
     this.setState({
-      templates: res.data.values,
+      templates: List(res.data.values),
+    });
+  };
+
+  handleTemplate = async option => {
+    const { letterId, template } = this.state;
+
+    if (template === option) {
+      return;
+    }
+
+    const response = await patchRequest({
+      entity: 'letter',
+      docType: letterId,
+      property: 'templateId',
+      value: option,
+    });
+
+    this.setState({
+      ...response.data,
+      template: option,
     });
   };
 
@@ -77,6 +100,31 @@ class NewLetter extends Component {
     this.setState({
       ...response.data,
       cached: response.data,
+      listFocused: false,
+    });
+  };
+
+  handleListFocus = () => {
+    this.setState({
+      listFocused: true,
+    });
+  };
+
+  handleListBlur = () => {
+    this.setState({
+      listFocused: false,
+    });
+  };
+
+  closeTemplatesList = () => {
+    this.setState({
+      listToggled: false,
+    });
+  };
+
+  openTemplatesList = () => {
+    this.setState({
+      listToggled: true,
     });
   };
 
@@ -93,29 +141,17 @@ class NewLetter extends Component {
     );
   };
 
-  handleTemplate = async option => {
-    const { letterId, template } = this.state;
-
-    if (template === option) {
-      return;
-    }
-
-    const response = await patchRequest({
-      entity: 'letter',
-      docType: letterId,
-      property: 'templateId',
-      value: option,
-    });
-
-    this.setState({
-      ...response.data,
-      template: option,
-    });
-  };
-
   render() {
     const { handleCloseLetter } = this.props;
-    const { init, message, templates, template, letterId } = this.state;
+    const {
+      init,
+      message,
+      templates,
+      template,
+      letterId,
+      listFocused,
+      listToggled,
+    } = this.state;
 
     if (!init) {
       return false;
@@ -136,13 +172,19 @@ class NewLetter extends Component {
               >
                 <i className="meta-icon-print" />
               </a>
-              {templates.length > 0 && (
+              {templates.size > 0 && (
                 <div className="letter-templates">
                   <RawList
                     rank="primary"
                     list={templates}
                     onSelect={option => this.handleTemplate(option)}
                     selected={template}
+                    isFocused={listFocused}
+                    isToggled={listToggled}
+                    onOpenDropdown={this.openTemplatesList}
+                    onCloseDropdown={this.closeTemplatesList}
+                    onFocus={this.handleListFocus}
+                    onBlur={this.handleListBlur}
                   />
                 </div>
               )}
