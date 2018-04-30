@@ -34,11 +34,20 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
+		<!-- needed so we know what to implement -->
 		<dependency>
 			<groupId>de.metas.shipper.gateway</groupId>
 			<artifactId>de.metas.shipper.gateway.spi</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+
+		<!-- needed for its common business logic -->
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.commons</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>

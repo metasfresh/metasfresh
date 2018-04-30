@@ -1,4 +1,4 @@
-package de.metas.shipper.gateway.go;
+package de.metas.shipper.gateway.derkurier;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -9,14 +9,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.springframework.stereotype.Service;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
-import de.metas.shipper.gateway.go.schema.GOPaidMode;
-import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
-import de.metas.shipper.gateway.go.schema.GOSelfPickup;
-import de.metas.shipper.gateway.go.schema.GOServiceType;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
@@ -25,7 +20,7 @@ import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.shipper.gateway.go
+ * de.metas.shipper.gateway.derkurier
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -45,13 +40,12 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
-public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
+public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
 	@Override
 	public String getShipperGatewayId()
 	{
-		return GOConstants.SHIPPER_GATEWAY_ID;
+		return DerKurierConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Override
@@ -75,8 +69,8 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		return DeliveryOrder.builder()
 				.shipperId(deliveryOrderKey.getShipperId())
 				//
-				.serviceType(GOServiceType.Overnight)
-				.paidMode(GOPaidMode.Prepaid)
+//				.serviceType(GOServiceType.Overnight)
+//				.paidMode(GOPaidMode.Prepaid)
 				.receiptConfirmationPhoneNumber(null)
 				//
 				// Pickup
@@ -87,7 +81,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
 						.build())
-				.selfPickup(GOSelfPickup.Delivery)
+//				.selfPickup(GOSelfPickup.Delivery)
 				//
 				// Delivery
 				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
@@ -97,7 +91,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.bpartnerId(deliverToBPartnerId)
 						.bpartnerLocationId(deliverToBPartnerLocationId)
 						.build())
-				.selfDelivery(GOSelfDelivery.Pickup)
+//				.selfDelivery(GOSelfDelivery.Pickup)
 				//
 				// Delivery content
 				.deliveryPosition(DeliveryPosition.builder()
