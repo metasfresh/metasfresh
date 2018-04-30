@@ -29,10 +29,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.pricing.spi.impl.rules.MockedPricingRule;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;

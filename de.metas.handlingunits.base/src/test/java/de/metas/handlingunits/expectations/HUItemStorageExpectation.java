@@ -25,10 +25,10 @@ package de.metas.handlingunits.expectations;
 
 import java.math.BigDecimal;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;

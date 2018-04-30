@@ -1,6 +1,6 @@
 package org.adempiere.ad.persistence.po;
 
-import org.adempiere.model.IContextAware;
+import org.adempiere.util.lang.IContextAware;
 
 /*
  * #%L

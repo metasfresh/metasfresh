@@ -2,7 +2,7 @@ package de.metas.shipper.gateway.go;
 
 import org.adempiere.util.Check;
 
-import de.metas.shipper.gateway.api.model.OrderId;
+import de.metas.shipper.gateway.spi.model.OrderId;
 import lombok.experimental.UtilityClass;
 
 /*

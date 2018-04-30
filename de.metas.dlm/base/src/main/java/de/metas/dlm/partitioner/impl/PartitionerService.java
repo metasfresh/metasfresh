@@ -19,14 +19,15 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
@@ -156,7 +157,7 @@ public class PartitionerService implements IPartitionerService
 				final Partition partition = attachToPartitionAndCheck(
 						request,
 						mkIterateResult(
-								Collections.singletonList(WorkQueue.of(ITableRecordReference.FromModelConverter.convert(record))).iterator(),
+								Collections.singletonList(WorkQueue.of(TableRecordReference.ofOrNull(record))).iterator(),
 								null,
 								ctxAware));
 				id2Partition.put(partition.getDLM_Partition_ID(), partition);
@@ -205,10 +206,10 @@ public class PartitionerService implements IPartitionerService
 						continue;  // looks like we partitioned *every* record of the given table
 					}
 					Loggables.get().withLogger(logger, Level.INFO).addLog("line={}: starting with record={}", line, record);
-					
+
 					final Partition partition = attachToPartitionAndCheck(request,
 							mkIterateResult(
-									Collections.singletonList(WorkQueue.of(ITableRecordReference.FromModelConverter.convert(record))).iterator(),
+									Collections.singletonList(WorkQueue.of(TableRecordReference.ofOrNull(record))).iterator(),
 									null, // no exiting handlers
 									ctxAware));
 					id2Partition.put(partition.getDLM_Partition_ID(), partition);
@@ -557,7 +558,7 @@ public class PartitionerService implements IPartitionerService
 				.create()
 				.list()
 				.stream()
-				.map(r -> ITableRecordReference.FromReferencedModelConverter.convert(r))
+				.map(r -> TableRecordReference.ofReferencedOrNull(r))
 				.collect(Collectors.groupingBy(r -> r.getTableName()));
 
 		collect.entrySet().stream()
@@ -591,7 +592,7 @@ public class PartitionerService implements IPartitionerService
 			@Override
 			public WorkQueue next()
 			{
-				return WorkQueue.of(ITableRecordReference.FromReferencedModelConverter.convert(iterator.next()));
+				return WorkQueue.of(TableRecordReference.ofReferencedOrNull(iterator.next()));
 			}
 
 			@Override

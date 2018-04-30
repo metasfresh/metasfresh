@@ -13,10 +13,6 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
-import de.metas.shipper.gateway.api.model.DeliveryOrder;
-import de.metas.shipper.gateway.api.model.HWBNumber;
-import de.metas.shipper.gateway.api.model.OrderId;
-import de.metas.shipper.gateway.api.model.OrderStatus;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder_Package;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
@@ -24,6 +20,11 @@ import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
 import de.metas.shipper.gateway.go.schema.GOServiceType;
+import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.HWBNumber;
+import de.metas.shipper.gateway.spi.model.OrderId;
+import de.metas.shipper.gateway.spi.model.OrderStatus;
 import lombok.NonNull;
 
 /*
@@ -36,12 +37,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,12 +51,12 @@ import lombok.NonNull;
 
 /**
  * Repository used to save and load {@link DeliveryOrder}s.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Repository
-public class GODeliveryOrderRepository
+public class GODeliveryOrderRepository implements DeliveryOrderRepository
 {
 	/**
 	 * NOTE to dev: keep in sync with {@link #toDeliveryOrderPO(DeliveryOrder)}
@@ -154,6 +155,10 @@ public class GODeliveryOrderRepository
 		return orderPO;
 	}
 
+	/* (non-Javadoc)
+	 * @see de.metas.shipper.gateway.go.DeliveryOrderRepository#toTableRecordReference(de.metas.shipper.gateway.api.model.DeliveryOrder)
+	 */
+	@Override
 	public TableRecordReference toTableRecordReference(final DeliveryOrder deliveryOrder)
 	{
 		final int deliveryOrderRepoId = deliveryOrder.getRepoId();
@@ -161,6 +166,10 @@ public class GODeliveryOrderRepository
 		return TableRecordReference.of(I_GO_DeliveryOrder.Table_Name, deliveryOrderRepoId);
 	}
 
+	/* (non-Javadoc)
+	 * @see de.metas.shipper.gateway.go.DeliveryOrderRepository#getByRepoId(int)
+	 */
+	@Override
 	public DeliveryOrder getByRepoId(final int deliveryOrderRepoId)
 	{
 		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0");
@@ -171,6 +180,10 @@ public class GODeliveryOrderRepository
 		return deliveryOrder;
 	}
 
+	/* (non-Javadoc)
+	 * @see de.metas.shipper.gateway.go.DeliveryOrderRepository#save(de.metas.shipper.gateway.api.model.DeliveryOrder)
+	 */
+	@Override
 	public DeliveryOrder save(final DeliveryOrder order)
 	{
 		final I_GO_DeliveryOrder orderPO = toDeliveryOrderPO(order);
@@ -234,6 +247,12 @@ public class GODeliveryOrderRepository
 		orderPackagePO.setGO_DeliveryOrder_ID(deliveryOrderRepoId);
 		orderPackagePO.setM_Package_ID(packageId);
 		InterfaceWrapperHelper.save(orderPackagePO);
+	}
+
+	@Override
+	public String getShipperGatewayId()
+	{
+		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
 
 }

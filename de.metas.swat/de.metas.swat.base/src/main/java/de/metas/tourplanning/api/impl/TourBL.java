@@ -28,8 +28,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TimeUtil;
 
 import de.metas.tourplanning.api.IDeliveryDayGenerator;

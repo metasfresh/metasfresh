@@ -55,6 +55,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.GridField;
@@ -72,6 +73,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -237,7 +239,10 @@ public class InterfaceWrapperHelper
 	 *             </ul>
 	 */
 	@Deprecated
-	public static <T> T create(final Object model, final Class<T> modelClass, final boolean useOldValues)
+	public static <T> T create(
+			@Nullable final Object model,
+			@NonNull final Class<T> modelClass,
+			final boolean useOldValues)
 	{
 		if (model == null)
 		{
@@ -301,7 +306,7 @@ public class InterfaceWrapperHelper
 		final T bean = POWrapper.create(ctx, id, cl, trxName);
 		return bean;
 	}
-	
+
 	/**
 	 * Loads the record with the given <code>id</code>. Similar to {@link #create(Properties, String, int, Class, String)}, but explicitly specifies the table name.<br>
 	 * This is useful in case the table name can't be deduced from the given <code>cl</code>.
@@ -352,7 +357,7 @@ public class InterfaceWrapperHelper
 	{
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_ThreadInherited);
 	}
-	
+
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass)
 	{
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);

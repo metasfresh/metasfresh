@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.model.IContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.ArrayKeyBuilder;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;

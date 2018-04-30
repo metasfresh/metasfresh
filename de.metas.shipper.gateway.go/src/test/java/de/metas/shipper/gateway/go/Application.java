@@ -18,18 +18,17 @@ import org.springframework.context.annotation.Bean;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
-import de.metas.shipper.gateway.api.model.Address;
-import de.metas.shipper.gateway.api.model.CountryCode;
-import de.metas.shipper.gateway.api.model.DeliveryOrder;
-import de.metas.shipper.gateway.api.model.DeliveryPosition;
-import de.metas.shipper.gateway.api.model.PackageLabel;
-import de.metas.shipper.gateway.api.model.PackageLabels;
-import de.metas.shipper.gateway.api.model.PickupDate;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
 import de.metas.shipper.gateway.go.schema.GOServiceType;
+import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.CountryCode;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.PackageLabel;
+import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.NonNull;
 
 /*
@@ -64,10 +63,7 @@ public class Application
 	}
 
 	@Bean
-	CommandLineRunner test(
-			final GOClient goClient,
-			final ShipperGatewayRegistry shipperGatewayRegistry // not used, but just to make sure it loads OK
-	)
+	CommandLineRunner test(final GOClient goClient)
 	{
 		System.out.println("Using: " + goClient);
 
@@ -107,6 +103,7 @@ public class Application
 				.selfPickup(GOSelfPickup.Delivery)
 				.receiptConfirmationPhoneNumber("+40-746-010203")
 				.build();
+
 		return args -> {
 			final DeliveryOrder deliveryOrder = goClient.createDeliveryOrder(deliveryOrderCreateRequest);
 			goClient.completeDeliveryOrder(deliveryOrder);

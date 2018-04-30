@@ -25,9 +25,9 @@ package org.eevolution.util;
 
 import java.math.BigDecimal;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;

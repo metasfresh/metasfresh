@@ -1,6 +1,6 @@
 package de.metas.shipper.gateway.go.schema;
 
-import de.metas.shipper.gateway.api.model.PackageLabelType;
+import de.metas.shipper.gateway.spi.model.PackageLabelType;
 
 /*
  * #%L

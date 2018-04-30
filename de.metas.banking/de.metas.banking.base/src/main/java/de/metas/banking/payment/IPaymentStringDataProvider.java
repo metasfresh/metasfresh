@@ -2,7 +2,7 @@ package de.metas.banking.payment;
 
 import java.util.List;
 
-import org.adempiere.model.IContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BP_BankAccount;
 
 /*

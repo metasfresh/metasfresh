@@ -27,13 +27,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.Env;

@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.collect.ImmutableSet;

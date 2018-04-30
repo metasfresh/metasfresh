@@ -28,10 +28,10 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;

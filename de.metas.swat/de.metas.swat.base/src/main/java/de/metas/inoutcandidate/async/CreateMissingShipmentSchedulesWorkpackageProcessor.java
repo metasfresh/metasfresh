@@ -25,10 +25,10 @@ package de.metas.inoutcandidate.async;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.slf4j.Logger;
 
 import de.metas.async.api.IQueueDAO;

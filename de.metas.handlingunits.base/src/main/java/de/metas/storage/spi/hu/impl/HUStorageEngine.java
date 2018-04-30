@@ -33,11 +33,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;

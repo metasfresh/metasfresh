@@ -13,15 +13,15 @@ import org.compiere.model.I_C_Location;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.service.ICountryDAO;
-import de.metas.shipper.gateway.api.model.Address;
-import de.metas.shipper.gateway.api.model.ContactPerson;
-import de.metas.shipper.gateway.api.model.CountryCode;
-import de.metas.shipper.gateway.api.model.DeliveryDate;
-import de.metas.shipper.gateway.api.model.DeliveryOrder;
-import de.metas.shipper.gateway.api.model.DeliveryPosition;
-import de.metas.shipper.gateway.api.model.PhoneNumber;
-import de.metas.shipper.gateway.api.model.PickupDate;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.CountryCode;
+import de.metas.shipper.gateway.spi.model.DeliveryDate;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.PhoneNumber;
+import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.experimental.UtilityClass;
 
 /*
