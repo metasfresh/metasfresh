@@ -23,6 +23,8 @@ Here come the actual release notes:
     * New Translations for Pharma Conditon Parms in Updatte Pharma Permissions Action for de_DE, en_US.
   * [#3967](https://github.com/metasfresh/metasfresh/issues/3967) Translate Process Parm in Update Pharma Conditions for Customers
     * Improved Translations for Action Parms. Languages de_DE, en_US.
+  * [#3973](https://github.com/metasfresh/metasfresh/issues/3973) Manufacturing Workflow adjustments in WebUI
+    * Improved Manufacturing Workflow Window in WebUI.
 
 ## Fixes
 * metasfresh
