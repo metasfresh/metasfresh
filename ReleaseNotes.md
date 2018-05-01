@@ -38,6 +38,8 @@ Here come the actual release notes:
     * Fixes the modal Letter view.
   * [#1768](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1768) Cloning document throws error
     * Fixes an error that appeared when starting the clone Action via keyboard shortcut instead of mouse.
+  * [#1771](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1771) Date Field Content not aligned 1px
+    * Improved alignment of Date and Date-Time Field Content.
 
 # metasfresh 5.55 (2018-18)
 
