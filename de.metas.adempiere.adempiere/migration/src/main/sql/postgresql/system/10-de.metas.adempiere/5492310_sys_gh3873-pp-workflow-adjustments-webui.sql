@@ -183,3 +183,13 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP
 UPDATE AD_UI_Element SET SeqNo=105,Updated=TO_TIMESTAMP('2018-05-01 12:39:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551717
 ;
 
+-- 2018-05-01T12:42:06.487
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Entitäts Art',Updated=TO_TIMESTAMP('2018-05-01 12:42:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53379
+;
+
+-- 2018-05-01T12:42:14.306
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Workflow Verantwortlicher',Updated=TO_TIMESTAMP('2018-05-01 12:42:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53382
+;
+
