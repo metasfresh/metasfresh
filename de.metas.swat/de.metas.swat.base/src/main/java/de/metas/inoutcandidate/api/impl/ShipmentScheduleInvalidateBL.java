@@ -77,7 +77,9 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		shipmentSchedulePA.invalidate(id2sched.values(), InterfaceWrapperHelper.getTrxName(shipmentLine));
 	}
 
-	private void addSchedsForInOutLine(final Map<Integer, I_M_ShipmentSchedule> id2sched, final I_M_InOutLine inoutLine)
+	private void addSchedsForInOutLine(
+			@NonNull final Map<Integer, I_M_ShipmentSchedule> id2sched,
+			@NonNull final I_M_InOutLine inoutLine)
 	{
 		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
@@ -204,7 +206,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		{
 			return;
 		}
-		
+
 		shipmentSchedulePA.invalidate(ImmutableList.of(sched), InterfaceWrapperHelper.getTrxName(orderLine));
 	}
 
