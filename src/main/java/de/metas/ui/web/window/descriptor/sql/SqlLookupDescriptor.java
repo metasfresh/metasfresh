@@ -113,8 +113,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	private final boolean numericKey;
 	private final LookupSource lookupSourceType;
 
-	private final ImmutableSet<String> dependsOnFieldNames;
-	private final ImmutableSet<String> dependsOnTableNames;
+	private final Set<String> dependsOnFieldNames;
 
 	private final GenericSqlLookupDataSourceFetcher lookupDataSourceFetcher;
 
@@ -133,7 +132,6 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		lookupSourceType = builder.getLookupSourceType();
 
 		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
-		dependsOnTableNames = ImmutableSet.copyOf(builder.getDependsOnTableNames());
 
 		lookupDataSourceFetcher = GenericSqlLookupDataSourceFetcher.of(this); // keep it last!
 	}
@@ -250,12 +248,6 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	public Set<String> getDependsOnFieldNames()
 	{
 		return dependsOnFieldNames;
-	}
-	
-	@Override
-	public Set<String> getDependsOnTableNames()
-	{
-		return dependsOnTableNames;
 	}
 
 	public INamePairPredicate getPostQueryPredicate()
@@ -707,9 +699,5 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			return this;
 		}
 
-		public Set<String> getDependsOnTableNames()
-		{
-			return validationRuleEffective.getDependsOnTableNames();
-		}
 	}
 }
