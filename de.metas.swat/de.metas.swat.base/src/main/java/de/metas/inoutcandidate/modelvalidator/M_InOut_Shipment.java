@@ -23,8 +23,8 @@ package de.metas.inoutcandidate.modelvalidator;
  */
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
@@ -32,7 +32,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 
-@Validator(I_M_InOut.class)
+@Interceptor(I_M_InOut.class)
 public class M_InOut_Shipment
 {
 	@DocValidate(timings = {
@@ -69,10 +69,12 @@ public class M_InOut_Shipment
 		shipmentScheduleInvalidateBL.invalidateSegmentsForLines(shipment);
 	}
 
-	@ModelChange(timings =  ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged= I_M_InOut.COLUMNNAME_Processed )
+	@ModelChange(//
+			timings = ModelValidator.TYPE_AFTER_CHANGE, // note: on AFTER_NEW, there can't be any M_ShipmentSchedule_QtyPicked records to update yet, so we don't have to fire
+			ifColumnsChanged = I_M_InOut.COLUMNNAME_Processed)
 	public void updateM_ShipmentSchedule_QtyPicked_Processed(final I_M_InOut shipment)
 	{
 		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-		shipmentScheduleAllocDAO.updateProcessedFlagsForShipment(shipment);
+		shipmentScheduleAllocDAO.updateM_ShipmentSchedule_QtyPicked_ProcessedForShipment(shipment);
 	}
 }
