@@ -20,6 +20,8 @@ import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryDate;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
@@ -106,9 +108,9 @@ public class DerKurierClient implements ShipperGatewayClient
 
 	private DeliveryOrder createDeliveryOrderFromResponse(
 			final Routing routing,
-			final DeliveryOrder deliveryOrderRequest)
+			final DeliveryOrder originalDeliveryOrder)
 	{
-		return deliveryOrderRequest.toBuilder()
+		final DeliveryOrderBuilder builder = originalDeliveryOrder.toBuilder()
 				.orderId(OrderId.of(getShipperGatewayId(), parcelNumberGenerator.getNextParcelNumber()))
 				//
 				// Pickup
@@ -122,15 +124,20 @@ public class DerKurierClient implements ShipperGatewayClient
 				.deliveryDate(DeliveryDate.builder()
 						.date(routing.getDeliveryDate())
 						.timeFrom(routing.getConsignee().getEarliestTimeOfDelivery())
-						.build())
+						.build());
 
-				//
-				// Delivery content
-				.deliveryPosition(deliveryOrderRequest.getDeliveryPosition().toBuilder()
-						// TODO .positionNo(goDeliveryPosition.getPositionsNr())
-						// TODO .numberOfPackages(Integer.parseInt(goResponseDeliveryPosition.getAnzahlPackstuecke()))
-						.build())
-				.build();
+		final List<DeliveryPosition> deliveryPositions = originalDeliveryOrder.getDeliveryPositions();
+		for (final DeliveryPosition deliveryPosition : deliveryPositions)
+		{
+			//
+			// Delivery content
+			builder.deliveryPosition(deliveryPosition.toBuilder()
+					// TODO .positionNo(goDeliveryPosition.getPositionsNr())
+					// TODO .numberOfPackages(Integer.parseInt(goResponseDeliveryPosition.getAnzahlPackstuecke()))
+					.build());
+
+		}
+		return builder.build();
 	}
 
 	@Override

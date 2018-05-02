@@ -14,7 +14,7 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1305545511L;
+	private static final long serialVersionUID = 1474034913L;
 
     /** Standard Constructor */
     public X_DerKurier_Shipper_Config (Properties ctx, int DerKurier_Shipper_Config_ID, String trxName)
@@ -24,8 +24,8 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
         {
 			setAD_Sequence_ID (0);
 			setAPIServerBaseURL (null);
-			setCustomerNo (null);
 			setDerKurier_Shipper_Config_ID (0);
+			setDK_CustomerNumber (null);
 			setM_Shipper_ID (0);
         } */
     }
@@ -120,22 +120,6 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
 		return (java.lang.String)get_Value(COLUMNNAME_APIServerBaseURL);
 	}
 
-	/** Set Kundennummer.
-		@param CustomerNo Kundennummer	  */
-	@Override
-	public void setCustomerNo (java.lang.String CustomerNo)
-	{
-		set_Value (COLUMNNAME_CustomerNo, CustomerNo);
-	}
-
-	/** Get Kundennummer.
-		@return Kundennummer	  */
-	@Override
-	public java.lang.String getCustomerNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CustomerNo);
-	}
-
 	/** Set DerKurier Shipper Configuration.
 		@param DerKurier_Shipper_Config_ID DerKurier Shipper Configuration	  */
 	@Override
@@ -156,6 +140,22 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Kundennummer.
+		@param DK_CustomerNumber Kundennummer	  */
+	@Override
+	public void setDK_CustomerNumber (java.lang.String DK_CustomerNumber)
+	{
+		set_Value (COLUMNNAME_DK_CustomerNumber, DK_CustomerNumber);
+	}
+
+	/** Get Kundennummer.
+		@return Kundennummer	  */
+	@Override
+	public java.lang.String getDK_CustomerNumber () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DK_CustomerNumber);
 	}
 
 	@Override

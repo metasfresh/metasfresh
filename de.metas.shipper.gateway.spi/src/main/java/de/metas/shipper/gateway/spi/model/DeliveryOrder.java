@@ -2,8 +2,11 @@ package de.metas.shipper.gateway.spi.model;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
+
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -66,7 +69,8 @@ public class DeliveryOrder
 	private String customerReference;
 
 	@NonNull
-	private DeliveryPosition deliveryPosition;
+	@Singular
+	private ImmutableList<DeliveryPosition> deliveryPositions;
 
 	@NonNull
 	private ServiceType serviceType;

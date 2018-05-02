@@ -281,7 +281,9 @@ public class GOClient implements ShipperGatewayClient
 		final Sendung.Abholdatum pickupDate = createGOPickupDate(request.getPickupDate());
 
 		final Sendung.Empfaenger deliveryAddress = createGODeliveryAddress(request.getDeliveryAddress(), request.getDeliveryContact());
-		final Sendung.SendungsPosition deliveryPosition = createGODeliveryPosition(request.getDeliveryPosition());
+
+		final DeliveryPosition shipmentPosition = GOUtils.getSingleDeliveryPosition(request); // at GO!, we have just one position per order
+		final Sendung.SendungsPosition deliveryPosition = createGODeliveryPosition(shipmentPosition);
 
 		final Sendung goRequest = newGODeliveryRequest();
 		goRequest.setStatus(status.getCode()); // Order status
@@ -471,7 +473,7 @@ public class GOClient implements ShipperGatewayClient
 
 				//
 				// Delivery content
-				.deliveryPosition(deliveryOrderRequest.getDeliveryPosition().toBuilder()
+				.deliveryPosition(GOUtils.getSingleDeliveryPosition(deliveryOrderRequest).toBuilder()
 						// .positionNo(goDeliveryPosition.getPositionsNr()) // assume it's always 1
 						.numberOfPackages(Integer.parseInt(goResponseDeliveryPosition.getAnzahlPackstuecke()))
 						// .barcodes(goDeliveryPosition.getBarcodes().getBarcodeNr())

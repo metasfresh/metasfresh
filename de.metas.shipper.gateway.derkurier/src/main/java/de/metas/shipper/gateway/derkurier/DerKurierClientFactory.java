@@ -61,7 +61,7 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl(shipperConfigRecord.getAPIServerBaseURL())
-				.customerNumber(shipperConfigRecord.getCustomerNo()).build();
+				.customerNumber(shipperConfigRecord.getDK_CustomerNumber()).build();
 		return createClient(shipperConfig);
 	}
 

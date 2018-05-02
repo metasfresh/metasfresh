@@ -30,10 +30,20 @@ public interface DeliveryOrderRepository
 {
 	String getShipperGatewayId();
 
+	/**
+	 * @return a reference to the internal {@code AD_Table_ID} and {@code Record_ID} of the record that backs the given {@code deliveryOrder}.
+	 *         Note that the reference's {@code Record_ID} is coming from {@link DeliveryOrder#getRepoId()}.
+	 */
 	ITableRecordReference toTableRecordReference(DeliveryOrder deliveryOrder);
 
+	/**
+	 * Assumes that there is a data record for the given {@code deliveryOrderRepoId}.
+	 */
 	DeliveryOrder getByRepoId(int deliveryOrderRepoId);
 
+	/**
+	 * Create or update the internal data record for the given {@code order}. The returned instance shall always have a {@code repoId > 0}.
+	 */
 	DeliveryOrder save(DeliveryOrder order);
 
 }

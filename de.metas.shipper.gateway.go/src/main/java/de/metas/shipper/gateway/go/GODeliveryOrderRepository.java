@@ -150,14 +150,11 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 
 		//
 		// Delivery content
-		GODeliveryOrderConverters.deliveryPositionToPO(orderPO, order.getDeliveryPosition());
+		GODeliveryOrderConverters.deliveryPositionToPO(orderPO, GOUtils.getSingleDeliveryPosition(order));
 
 		return orderPO;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.metas.shipper.gateway.go.DeliveryOrderRepository#toTableRecordReference(de.metas.shipper.gateway.api.model.DeliveryOrder)
-	 */
 	@Override
 	public TableRecordReference toTableRecordReference(final DeliveryOrder deliveryOrder)
 	{
@@ -166,9 +163,6 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		return TableRecordReference.of(I_GO_DeliveryOrder.Table_Name, deliveryOrderRepoId);
 	}
 
-	/* (non-Javadoc)
-	 * @see de.metas.shipper.gateway.go.DeliveryOrderRepository#getByRepoId(int)
-	 */
 	@Override
 	public DeliveryOrder getByRepoId(final int deliveryOrderRepoId)
 	{
@@ -180,16 +174,13 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		return deliveryOrder;
 	}
 
-	/* (non-Javadoc)
-	 * @see de.metas.shipper.gateway.go.DeliveryOrderRepository#save(de.metas.shipper.gateway.api.model.DeliveryOrder)
-	 */
 	@Override
 	public DeliveryOrder save(final DeliveryOrder order)
 	{
 		final I_GO_DeliveryOrder orderPO = toDeliveryOrderPO(order);
 		InterfaceWrapperHelper.save(orderPO);
 
-		saveAssignedPackageIds(orderPO.getGO_DeliveryOrder_ID(), order.getDeliveryPosition().getPackageIds());
+		saveAssignedPackageIds(orderPO.getGO_DeliveryOrder_ID(),GOUtils.getSingleDeliveryPosition(order).getPackageIds());
 
 		return order.toBuilder()
 				.repoId(orderPO.getGO_DeliveryOrder_ID())

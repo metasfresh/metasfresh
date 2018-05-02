@@ -174,29 +174,6 @@ public interface I_DerKurier_Shipper_Config
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Kundennummer.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setCustomerNo (java.lang.String CustomerNo);
-
-	/**
-	 * Get Kundennummer.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCustomerNo();
-
-    /** Column definition for CustomerNo */
-    public static final org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object> COLUMN_CustomerNo = new org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object>(I_DerKurier_Shipper_Config.class, "CustomerNo", null);
-    /** Column name CustomerNo */
-    public static final String COLUMNNAME_CustomerNo = "CustomerNo";
-
-	/**
 	 * Set DerKurier Shipper Configuration.
 	 *
 	 * <br>Type: ID
@@ -218,6 +195,29 @@ public interface I_DerKurier_Shipper_Config
     public static final org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object> COLUMN_DerKurier_Shipper_Config_ID = new org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object>(I_DerKurier_Shipper_Config.class, "DerKurier_Shipper_Config_ID", null);
     /** Column name DerKurier_Shipper_Config_ID */
     public static final String COLUMNNAME_DerKurier_Shipper_Config_ID = "DerKurier_Shipper_Config_ID";
+
+	/**
+	 * Set Kundennummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_CustomerNumber (java.lang.String DK_CustomerNumber);
+
+	/**
+	 * Get Kundennummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDK_CustomerNumber();
+
+    /** Column definition for DK_CustomerNumber */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object> COLUMN_DK_CustomerNumber = new org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object>(I_DerKurier_Shipper_Config.class, "DK_CustomerNumber", null);
+    /** Column name DK_CustomerNumber */
+    public static final String COLUMNNAME_DK_CustomerNumber = "DK_CustomerNumber";
 
 	/**
 	 * Set Aktiv.

@@ -36,15 +36,18 @@ import lombok.Value;
 @Value
 public class DeliveryPosition
 {
+	int repoId;
+
 	int numberOfPackages;
 	int grossWeightKg;
 	String content;
 	PackageDimensions packageDimensions;
-	
+
 	ImmutableSet<Integer> packageIds;
 
 	@Builder(toBuilder = true)
 	private DeliveryPosition(
+			final int repoId,
 			final int numberOfPackages,
 			final int grossWeightKg,
 			final String content,
@@ -55,6 +58,7 @@ public class DeliveryPosition
 		Check.assume(grossWeightKg > 0, "grossWeightKg > 0");
 		Check.assumeNotEmpty(content, "content is not empty");
 
+		this.repoId = repoId;
 		this.numberOfPackages = numberOfPackages;
 		this.grossWeightKg = grossWeightKg;
 		this.content = content;

@@ -5,10 +5,10 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for GO_DeliveryOrder
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_DeliveryOrder, org.compiere.model.I_Persistent 
+public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_DeliveryOrder, org.compiere.model.I_Persistent
 {
 
 	/**
@@ -68,7 +68,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get AX4 Number.
 		@return AX4 Number	  */
 	@Override
-	public java.lang.String getGO_AX4Number () 
+	public java.lang.String getGO_AX4Number ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_AX4Number);
 	}
@@ -84,7 +84,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Customer Reference.
 		@return Customer Reference	  */
 	@Override
-	public java.lang.String getGO_CustomerReference () 
+	public java.lang.String getGO_CustomerReference ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_CustomerReference);
 	}
@@ -106,16 +106,16 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	@Override
 	public void setGO_DeliverToBPartner_ID (int GO_DeliverToBPartner_ID)
 	{
-		if (GO_DeliverToBPartner_ID < 1) 
+		if (GO_DeliverToBPartner_ID < 1)
 			set_Value (COLUMNNAME_GO_DeliverToBPartner_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_GO_DeliverToBPartner_ID, Integer.valueOf(GO_DeliverToBPartner_ID));
 	}
 
 	/** Get Deliver To BPartner.
 		@return Deliver To BPartner	  */
 	@Override
-	public int getGO_DeliverToBPartner_ID () 
+	public int getGO_DeliverToBPartner_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GO_DeliverToBPartner_ID);
 		if (ii == null)
@@ -140,16 +140,16 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	@Override
 	public void setGO_DeliverToBPLocation_ID (int GO_DeliverToBPLocation_ID)
 	{
-		if (GO_DeliverToBPLocation_ID < 1) 
+		if (GO_DeliverToBPLocation_ID < 1)
 			set_Value (COLUMNNAME_GO_DeliverToBPLocation_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_GO_DeliverToBPLocation_ID, Integer.valueOf(GO_DeliverToBPLocation_ID));
 	}
 
 	/** Get Deliver To BPartner Location.
 		@return Deliver To BPartner Location	  */
 	@Override
-	public int getGO_DeliverToBPLocation_ID () 
+	public int getGO_DeliverToBPLocation_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GO_DeliverToBPLocation_ID);
 		if (ii == null)
@@ -168,7 +168,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Deliver To Company Name.
 		@return Deliver To Company Name	  */
 	@Override
-	public java.lang.String getGO_DeliverToCompanyName () 
+	public java.lang.String getGO_DeliverToCompanyName ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_DeliverToCompanyName);
 	}
@@ -184,7 +184,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Deliver To Company Name2.
 		@return Deliver To Company Name2	  */
 	@Override
-	public java.lang.String getGO_DeliverToCompanyName2 () 
+	public java.lang.String getGO_DeliverToCompanyName2 ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_DeliverToCompanyName2);
 	}
@@ -200,7 +200,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Deliver To Date.
 		@return Deliver To Date	  */
 	@Override
-	public java.sql.Timestamp getGO_DeliverToDate () 
+	public java.sql.Timestamp getGO_DeliverToDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_GO_DeliverToDate);
 	}
@@ -216,7 +216,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Deliver To Company Department.
 		@return Deliver To Company Department	  */
 	@Override
-	public java.lang.String getGO_DeliverToDepartment () 
+	public java.lang.String getGO_DeliverToDepartment ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_DeliverToDepartment);
 	}
@@ -238,16 +238,16 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	@Override
 	public void setGO_DeliverToLocation_ID (int GO_DeliverToLocation_ID)
 	{
-		if (GO_DeliverToLocation_ID < 1) 
+		if (GO_DeliverToLocation_ID < 1)
 			set_Value (COLUMNNAME_GO_DeliverToLocation_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_GO_DeliverToLocation_ID, Integer.valueOf(GO_DeliverToLocation_ID));
 	}
 
 	/** Get Deliver To Address.
 		@return Deliver To Address	  */
 	@Override
-	public int getGO_DeliverToLocation_ID () 
+	public int getGO_DeliverToLocation_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GO_DeliverToLocation_ID);
 		if (ii == null)
@@ -266,7 +266,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Deliver To Note.
 		@return Deliver To Note	  */
 	@Override
-	public java.lang.String getGO_DeliverToNote () 
+	public java.lang.String getGO_DeliverToNote ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_DeliverToNote);
 	}
@@ -282,7 +282,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Deliver To Phone No.
 		@return Deliver To Phone No	  */
 	@Override
-	public java.lang.String getGO_DeliverToPhoneNo () 
+	public java.lang.String getGO_DeliverToPhoneNo ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_DeliverToPhoneNo);
 	}
@@ -298,7 +298,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Deliver Time (from).
 		@return Deliver Time (from)	  */
 	@Override
-	public java.sql.Timestamp getGO_DeliverToTimeFrom () 
+	public java.sql.Timestamp getGO_DeliverToTimeFrom ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_GO_DeliverToTimeFrom);
 	}
@@ -314,7 +314,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Deliver Time (to).
 		@return Deliver Time (to)	  */
 	@Override
-	public java.sql.Timestamp getGO_DeliverToTimeTo () 
+	public java.sql.Timestamp getGO_DeliverToTimeTo ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_GO_DeliverToTimeTo);
 	}
@@ -324,16 +324,16 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	@Override
 	public void setGO_DeliveryOrder_ID (int GO_DeliveryOrder_ID)
 	{
-		if (GO_DeliveryOrder_ID < 1) 
+		if (GO_DeliveryOrder_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_GO_DeliveryOrder_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_GO_DeliveryOrder_ID, Integer.valueOf(GO_DeliveryOrder_ID));
 	}
 
 	/** Get GO Delivery Order.
 		@return GO Delivery Order	  */
 	@Override
-	public int getGO_DeliveryOrder_ID () 
+	public int getGO_DeliveryOrder_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GO_DeliveryOrder_ID);
 		if (ii == null)
@@ -352,7 +352,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Gross Weight (Kg).
 		@return Gross Weight (Kg)	  */
 	@Override
-	public int getGO_GrossWeightKg () 
+	public int getGO_GrossWeightKg ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GO_GrossWeightKg);
 		if (ii == null)
@@ -371,7 +371,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get HWB Number.
 		@return HWB Number	  */
 	@Override
-	public java.lang.String getGO_HWBNumber () 
+	public java.lang.String getGO_HWBNumber ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_HWBNumber);
 	}
@@ -387,7 +387,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Number Of Packages.
 		@return Number Of Packages	  */
 	@Override
-	public int getGO_NumberOfPackages () 
+	public int getGO_NumberOfPackages ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GO_NumberOfPackages);
 		if (ii == null)
@@ -395,7 +395,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 		return ii.intValue();
 	}
 
-	/** 
+	/**
 	 * GO_OrderStatus AD_Reference_ID=540807
 	 * Reference name: GO_OrderStatus
 	 */
@@ -418,7 +418,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Order Status.
 		@return Order Status	  */
 	@Override
-	public java.lang.String getGO_OrderStatus () 
+	public java.lang.String getGO_OrderStatus ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_OrderStatus);
 	}
@@ -434,12 +434,12 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Package content description.
 		@return Package content description	  */
 	@Override
-	public java.lang.String getGO_PackageContentDescription () 
+	public java.lang.String getGO_PackageContentDescription ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_PackageContentDescription);
 	}
 
-	/** 
+	/**
 	 * GO_PaidMode AD_Reference_ID=540804
 	 * Reference name: GO_PaidMode
 	 */
@@ -460,7 +460,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Paid Mode.
 		@return Paid Mode	  */
 	@Override
-	public java.lang.String getGO_PaidMode () 
+	public java.lang.String getGO_PaidMode ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_PaidMode);
 	}
@@ -476,7 +476,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Pickup Company Name.
 		@return Pickup Company Name	  */
 	@Override
-	public java.lang.String getGO_PickupCompanyName () 
+	public java.lang.String getGO_PickupCompanyName ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_PickupCompanyName);
 	}
@@ -492,7 +492,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Pickup Date.
 		@return Pickup Date	  */
 	@Override
-	public java.sql.Timestamp getGO_PickupDate () 
+	public java.sql.Timestamp getGO_PickupDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_GO_PickupDate);
 	}
@@ -514,16 +514,16 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	@Override
 	public void setGO_PickupLocation_ID (int GO_PickupLocation_ID)
 	{
-		if (GO_PickupLocation_ID < 1) 
+		if (GO_PickupLocation_ID < 1)
 			set_Value (COLUMNNAME_GO_PickupLocation_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_GO_PickupLocation_ID, Integer.valueOf(GO_PickupLocation_ID));
 	}
 
 	/** Get Pickup address.
 		@return Pickup address	  */
 	@Override
-	public int getGO_PickupLocation_ID () 
+	public int getGO_PickupLocation_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_GO_PickupLocation_ID);
 		if (ii == null)
@@ -542,7 +542,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Pickup note.
 		@return Pickup note	  */
 	@Override
-	public java.lang.String getGO_PickupNote () 
+	public java.lang.String getGO_PickupNote ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_PickupNote);
 	}
@@ -558,7 +558,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Pickup Time (from).
 		@return Pickup Time (from)	  */
 	@Override
-	public java.sql.Timestamp getGO_PickupTimeFrom () 
+	public java.sql.Timestamp getGO_PickupTimeFrom ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_GO_PickupTimeFrom);
 	}
@@ -574,12 +574,12 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Pickup Time (to).
 		@return Pickup Time (to)	  */
 	@Override
-	public java.sql.Timestamp getGO_PickupTimeTo () 
+	public java.sql.Timestamp getGO_PickupTimeTo ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_GO_PickupTimeTo);
 	}
 
-	/** 
+	/**
 	 * GO_SelfDelivery AD_Reference_ID=540805
 	 * Reference name: GO_SelfDelivery
 	 */
@@ -600,12 +600,12 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Self Delivery.
 		@return Self Delivery	  */
 	@Override
-	public java.lang.String getGO_SelfDelivery () 
+	public java.lang.String getGO_SelfDelivery ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_SelfDelivery);
 	}
 
-	/** 
+	/**
 	 * GO_SelfPickup AD_Reference_ID=540806
 	 * Reference name: GO_SelfPickup
 	 */
@@ -626,12 +626,12 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Self Pickup.
 		@return Self Pickup	  */
 	@Override
-	public java.lang.String getGO_SelfPickup () 
+	public java.lang.String getGO_SelfPickup ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_SelfPickup);
 	}
 
-	/** 
+	/**
 	 * GO_ServiceType AD_Reference_ID=540803
 	 * Reference name: GO_ServiceType
 	 */
@@ -656,7 +656,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/** Get Service type.
 		@return Service type	  */
 	@Override
-	public java.lang.String getGO_ServiceType () 
+	public java.lang.String getGO_ServiceType ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_ServiceType);
 	}
@@ -674,15 +674,15 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	}
 
 	/** Set Lieferweg.
-		@param M_Shipper_ID 
+		@param M_Shipper_ID
 		Methode oder Art der Warenlieferung
 	  */
 	@Override
 	public void setM_Shipper_ID (int M_Shipper_ID)
 	{
-		if (M_Shipper_ID < 1) 
+		if (M_Shipper_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_M_Shipper_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
 	}
 
@@ -690,7 +690,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 		@return Methode oder Art der Warenlieferung
 	  */
 	@Override
-	public int getM_Shipper_ID () 
+	public int getM_Shipper_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
 		if (ii == null)
@@ -700,19 +700,19 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 
 	/** Set Transport Auftrag.
 		@param M_ShipperTransportation_ID Transport Auftrag	  */
-	@Override
-	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID)
-	{
-		if (M_ShipperTransportation_ID < 1) 
-			set_Value (COLUMNNAME_M_ShipperTransportation_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ShipperTransportation_ID, Integer.valueOf(M_ShipperTransportation_ID));
-	}
+//	@Override
+//	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID)
+//	{
+//		if (M_ShipperTransportation_ID < 1)
+//			set_Value (COLUMNNAME_M_ShipperTransportation_ID, null);
+//		else
+//			set_Value (COLUMNNAME_M_ShipperTransportation_ID, Integer.valueOf(M_ShipperTransportation_ID));
+//	}
 
 	/** Get Transport Auftrag.
 		@return Transport Auftrag	  */
 	@Override
-	public int getM_ShipperTransportation_ID () 
+	public int getM_ShipperTransportation_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipperTransportation_ID);
 		if (ii == null)
@@ -721,8 +721,8 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	}
 
 	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@param Processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -731,16 +731,16 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
