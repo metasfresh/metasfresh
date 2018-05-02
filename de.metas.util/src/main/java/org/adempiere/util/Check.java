@@ -579,7 +579,7 @@ public final class Check
 	 * @param collection
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
-	public static <T> boolean isEmpty(final Collection<T> collection)
+	public static boolean isEmpty(final Collection<?> collection)
 	{
 		return collection == null || collection.isEmpty();
 	}
