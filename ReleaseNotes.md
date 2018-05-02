@@ -21,8 +21,25 @@ Here come the actual release notes:
     * New Action added to Product Catregory window, allowing to copy Acctounting Setting to all Products of a Product Category.
   * [#3965](https://github.com/metasfresh/metasfresh/issues/3965) Translate Actions Update Pharma Conditions
     * New Translations for Pharma Conditon Parms in Updatte Pharma Permissions Action for de_DE, en_US.
+  * [#3967](https://github.com/metasfresh/metasfresh/issues/3967) Translate Process Parm in Update Pharma Conditions for Customers
+    * Improved Translations for Action Parms. Languages de_DE, en_US.
+  * [#3973](https://github.com/metasfresh/metasfresh/issues/3973) Manufacturing Workflow adjustments in WebUI
+    * Improved Manufacturing Workflow Window in WebUI.
 
 ## Fixes
+* metasfresh
+  * [#3971](https://github.com/metasfresh/metasfresh/issues/3971) New Manufacturing Workflow not saved
+    * Adds missing Field to Manufacturing Workflow View in WebUI, allowing to save a workflow record again.
+
+* metasfresh-webui-frontend
+  * [#1410](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1410) Shortcuts for Clone & Letter not working
+    * Fixes the not working shortcuts for letter and clone.
+  * [#1767](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1767) Letter modal throws errors
+    * Fixes the modal Letter view.
+  * [#1768](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1768) Cloning document throws error
+    * Fixes an error that appeared when starting the clone Action via keyboard shortcut instead of mouse.
+  * [#1771](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1771) Date Field Content not aligned 1px
+    * Improved alignment of Date and Date-Time Field Content.
 
 # metasfresh 5.55 (2018-18)
 
