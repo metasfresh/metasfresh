@@ -1,8 +1,8 @@
 package de.metas.ui.web.notification;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.slf4j.Logger;
 
