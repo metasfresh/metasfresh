@@ -160,23 +160,37 @@ export function autocompleteRequest({
   tabId,
   viewId,
 }) {
-  return axios.get(
-    config.API_URL +
-      '/' +
-      entity +
-      (docType ? '/' + docType : '') +
-      (viewId ? '/' + viewId : '') +
-      (docId ? '/' + docId : '') +
-      (tabId ? '/' + tabId : '') +
-      (rowId ? '/' + rowId : '') +
-      (subentity ? '/' + subentity : '') +
-      (subentityId ? '/' + subentityId : '') +
-      (attribute ? '/attribute/' : '/field/') +
-      propertyName +
-      '/typeahead' +
-      '?query=' +
-      encodeURIComponent(query)
-  );
+  return axios.get(`${config.API_URL}/${entity}${
+      (docType ? `/${docType}` : '')}${
+      (viewId ? `/${viewId}` : '')}${
+      (docId ? `/${docId}` : '')}${
+      (tabId ? `/${tabId}` : '')}${
+      (rowId ? `/${rowId}` : '')}${
+      (subentity ? `/${subentity}` : '')}${
+      (subentityId ? `/${subentityId}` : '')}${
+      (attribute ? '/attribute/' : '/field/')}${
+      propertyName}/typeahead?query=${encodeURIComponent(query)}
+  `);
+}
+
+export function autocompleteModalRequest({
+  docId,
+  docType,
+  entity,
+  propertyName,
+  query,
+  rowId,
+  tabId,
+  viewId,
+}) {
+  return axios.get(`${config.API_URL}/${entity}${
+      (docType ? `/${docType}` : '')}${
+      (viewId ? `/${viewId}` : '')}${
+      (docId ? `/${docId}` : '')}${
+      (tabId ? `/${tabId}` : '')}${
+      (rowId ? `/${rowId}` : '')}/edit/${
+      propertyName}/typeahead?query=${encodeURIComponent(query)}
+  `);
 }
 
 export function dropdownRequest({

@@ -5,7 +5,10 @@ import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 
-import { autocompleteRequest } from '../../../actions/GenericActions';
+import {
+  autocompleteRequest,
+  autocompleteModalRequest
+} from '../../../actions/GenericActions';
 import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesActions';
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
@@ -286,6 +289,17 @@ class RawLookup extends Component {
           mainProperty[0].field,
           this.inputSearch.value
         );
+      } else if (viewId) {
+        typeaheadRequest = autocompleteModalRequest({
+          docId: filterWidget ? viewId : dataId,
+          docType: windowType,
+          entity: 'documentView',
+          propertyName: filterWidget ? parameterName : mainProperty[0].field,
+          query: this.inputSearch.value,
+          viewId,
+          rowId,
+          tabId,
+        });
       } else {
         typeaheadRequest = autocompleteRequest({
           docId: filterWidget ? viewId : dataId,
