@@ -347,9 +347,12 @@ class RawList extends PureComponent {
                   <i className="meta-icon-close-alt" />
                 </div>
               )}
-            <div className="input-icon input-readonly">
-              <i className="meta-icon-down-1" />
-            </div>
+            {!selected && (
+                <div className="input-icon input-readonly">
+                  <i className="meta-icon-down-1" />
+                </div>
+              )
+            }
           </div>
         </div>
         {isFocused &&
