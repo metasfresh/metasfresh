@@ -79,6 +79,7 @@ class Table extends Component {
       collapsedParentsRows: [],
       pendingInit: true,
       collapsedArrayMap: [],
+      rowEdited: false,
     };
   }
 
@@ -106,8 +107,7 @@ class Table extends Component {
       isModal,
       hasIncluded,
     } = this.props;
-
-    const { selected, rows } = this.state;
+    const { selected, rows, rowEdited } = this.state;
 
     if (!_.isEqual(prevState.rows, rows)) {
       if (isModal && !hasIncluded) {
@@ -155,7 +155,14 @@ class Table extends Component {
     if (!is(prevProps.rowData, rowData)) {
       // special case for the picking terminal
       const firstLoad = prevProps.rowData.get(1) ? false : true;
-      this.getIndentData(firstLoad);
+
+      if (!rowEdited) {
+        this.getIndentData(firstLoad);
+      } else {
+        this.setState({
+          rowEdited: false,
+        });
+      }
     }
 
     if (prevProps.viewId !== viewId && defaultSelected.length === 0) {
@@ -924,6 +931,10 @@ class Table extends Component {
         }
       });
     }
+
+    this.setState({
+      rowEdited: true,
+    });
   };
 
   renderTableBody = () => {
