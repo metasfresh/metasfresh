@@ -300,9 +300,23 @@ public class NotificationRepository implements INotificationRepository
 			return false;
 		}
 
+		deleteNotification(notificationPO);
+		return true;
+	}
+
+	@Override
+	public void deleteAllByUserId(final int adUserId)
+	{
+		retrieveNotesByUserId(adUserId)
+				.create()
+				.list()
+				.forEach(this::deleteNotification);
+	}
+
+	private void deleteNotification(final I_AD_Note notificationPO)
+	{
 		notificationPO.setProcessed(false);
 		InterfaceWrapperHelper.delete(notificationPO);
-		return true;
 	}
 
 	@Override
