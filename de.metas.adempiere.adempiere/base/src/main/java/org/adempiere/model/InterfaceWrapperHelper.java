@@ -1483,10 +1483,8 @@ public class InterfaceWrapperHelper
 		return POWrapper.isValueChanged(po, columnName);
 	}
 
-	public static boolean hasChanges(final Object model)
+	public static boolean hasChanges(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
-
 		if (POWrapper.isHandled(model))
 		{
 			return POWrapper.hasChanges(model);

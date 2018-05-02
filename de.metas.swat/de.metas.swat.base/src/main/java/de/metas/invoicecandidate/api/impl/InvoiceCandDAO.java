@@ -1391,7 +1391,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds);
 
 		invalidateCandsFor(icQueryBuilder);
-		// logger.info("Invalidated {} invoice candidates for C_Invoice_Candidate_IDs={}", new Object[] { count, icIds });
 	}
 
 	@Override
