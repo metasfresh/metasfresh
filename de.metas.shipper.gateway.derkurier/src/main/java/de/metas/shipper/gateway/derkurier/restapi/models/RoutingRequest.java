@@ -1,9 +1,17 @@
 package de.metas.shipper.gateway.derkurier.restapi.models;
 
+import static de.metas.shipper.gateway.derkurier.DerKurierConstants.DATE_FORMAT;
+
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.adempiere.util.Check;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Value;
@@ -33,8 +41,14 @@ import lombok.Value;
 @Value
 public class RoutingRequest
 {
-	ZonedDateTime sendDate;
-	ZonedDateTime desiredDeliveryDate;
+	@JsonProperty("sendDate")
+	@JsonFormat(shape = Shape.STRING, pattern = DATE_FORMAT)
+	LocalDate sendDate;
+
+	@JsonProperty("desiredDeliveryDate")
+	@JsonFormat(shape = Shape.STRING, pattern = DATE_FORMAT)
+	LocalDate desiredDeliveryDate;
+
 	int services;
 	BigDecimal weight;
 	RequestParticipant sender;
@@ -42,21 +56,28 @@ public class RoutingRequest
 
 	@Builder
 	private RoutingRequest(
-			ZonedDateTime sendDate,
-			ZonedDateTime desiredDeliveryDate,
+			LocalDate sendDate,
+			LocalDate desiredDeliveryDate,
 			int services,
 			BigDecimal weight,
 			RequestParticipant sender,
 			RequestParticipant consignee)
 	{
-		this.sendDate = Check.assumeNotNull(sendDate, "Parameter sendDate may not be null");
+		Check.assumeNotNull(sendDate, "Parameter sendDate may not be null");
+		Check.errorIf(sender == null && consignee == null, "At least one of the given sender and consignee parameters has to be not-null");
+
+		this.sendDate = sendDate;
 		this.desiredDeliveryDate = desiredDeliveryDate;
+
 		this.services = services;
 		this.weight = weight;
 		this.sender = sender;
 		this.consignee = consignee;
 	}
 
-
+	public String toLocalDateOrNull(ZonedDateTime desiredDeliveryDate)
+	{
+		return desiredDeliveryDate == null ? null : desiredDeliveryDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
+	}
 
 }

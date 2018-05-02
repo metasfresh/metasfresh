@@ -2,10 +2,30 @@ package de.metas.shipper.gateway.derkurier;
 
 import java.util.List;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.shipper.gateway.derkurier.misc.Converters;
+import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
+import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
+import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
+import de.metas.shipper.gateway.spi.model.DeliveryDate;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipper.gateway.spi.model.PickupDate;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -32,6 +52,24 @@ import de.metas.shipper.gateway.spi.model.PackageLabels;
 public class DerKurierClient implements ShipperGatewayClient
 {
 
+	@VisibleForTesting
+	@Getter(value = AccessLevel.PACKAGE)
+	private final RestTemplate restTemplate;
+
+	private final Converters converters;
+
+	private final ParcelNumberGenerator parcelNumberGenerator;
+
+	public DerKurierClient(
+			@NonNull final RestTemplate restTemplate,
+			@NonNull final Converters converters,
+			@NonNull final ParcelNumberGenerator parcelNumberGenerator)
+	{
+		this.restTemplate = restTemplate;
+		this.converters = converters;
+		this.parcelNumberGenerator = parcelNumberGenerator;
+	}
+
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -39,30 +77,75 @@ public class DerKurierClient implements ShipperGatewayClient
 	}
 
 	@Override
-	public DeliveryOrder createDeliveryOrder(DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException
+	public DeliveryOrder createDeliveryOrder(@NonNull final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException
 	{
-		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("DerKurierClient.createDeliveryOrder is not implemented");
+	}
+
+	@VisibleForTesting
+	Routing postRoutingRequest(@NonNull final RoutingRequest routingRequest)
+	{
+		final HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+		final HttpEntity<RoutingRequest> entity = new HttpEntity<>(routingRequest, httpHeaders);
+		final ResponseEntity<Routing> result = restTemplate.exchange("/routing/request", HttpMethod.POST, entity, Routing.class);
+
+		return result.getBody();
+	}
+
+	@Override
+	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	{
+		final RoutingRequest routingRequest = converters.createRoutingRequestFrom(deliveryOrder);
+		final Routing routing = postRoutingRequest(routingRequest);
+
+		return createDeliveryOrderFromResponse(routing, deliveryOrder);
+	}
+
+	private DeliveryOrder createDeliveryOrderFromResponse(
+			final Routing routing,
+			final DeliveryOrder deliveryOrderRequest)
+	{
+		return deliveryOrderRequest.toBuilder()
+				.orderId(OrderId.of(getShipperGatewayId(), parcelNumberGenerator.getNextParcelNumber()))
+				//
+				// Pickup
+				.pickupDate(PickupDate.builder()
+						.date(routing.getSendDate())
+						.timeTo(routing.getSender().getPickupUntil())
+						.build())
+
+				//
+				// Delivery
+				.deliveryDate(DeliveryDate.builder()
+						.date(routing.getDeliveryDate())
+						.timeFrom(routing.getConsignee().getEarliestTimeOfDelivery())
+						.build())
+
+				//
+				// Delivery content
+				.deliveryPosition(deliveryOrderRequest.getDeliveryPosition().toBuilder()
+						// TODO .positionNo(goDeliveryPosition.getPositionsNr())
+						// TODO .numberOfPackages(Integer.parseInt(goResponseDeliveryPosition.getAnzahlPackstuecke()))
+						.build())
+				.build();
+	}
+
+	@Override
+	public DeliveryOrder voidDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	{
+		// TODO probably nothing - need to check
 		return null;
 	}
 
 	@Override
-	public DeliveryOrder completeDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		// TODO Auto-generated method stub
-		return null;
-	}
+		// TODO https://leoz.derkurier.de:13000/rs/api/v1/document/label does not yet work,
+		// so we need to fire up our own jasper report and print them
 
-	@Override
-	public DeliveryOrder voidDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<PackageLabels> getPackageLabelsList(DeliveryOrder deliveryOrder) throws ShipperGatewayException
-	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 

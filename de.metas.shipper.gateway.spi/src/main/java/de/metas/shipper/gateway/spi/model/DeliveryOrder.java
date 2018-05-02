@@ -34,26 +34,34 @@ public class DeliveryOrder
 {
 	@Nullable
 	OrderId orderId;
+
 	@Nullable
 	HWBNumber hwbNumber;
+
 	@Nullable
 	OrderStatus orderStatus;
 
 	@NonNull
 	private Address pickupAddress;
+
 	@NonNull
 	private PickupDate pickupDate;
+
 	@Nullable
 	private String pickupNote;
 
 	@NonNull
 	private Address deliveryAddress;
+
 	@Nullable
 	private ContactPerson deliveryContact;
+
 	@Nullable
 	private DeliveryDate deliveryDate;
+
 	@Nullable
 	private String deliveryNote;
+
 	@Nullable
 	private String customerReference;
 
@@ -68,6 +76,7 @@ public class DeliveryOrder
 
 	@NonNull
 	private SelfDelivery selfDelivery;
+
 	@NonNull
 	private SelfPickup selfPickup;
 

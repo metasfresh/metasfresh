@@ -1,8 +1,16 @@
 package de.metas.shipper.gateway.derkurier.restapi.models;
 
-import java.time.ZonedDateTime;
+import static de.metas.shipper.gateway.derkurier.DerKurierConstants.DATE_FORMAT;
+
+import java.time.LocalDate;
+import java.util.List;
 
 import org.adempiere.util.Check;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Value;
@@ -32,23 +40,24 @@ import lombok.Value;
 @Value
 public class Routing
 {
-	ZonedDateTime sendDate;
-	ZonedDateTime deliveryDate;
+	LocalDate sendDate;
+	LocalDate deliveryDate;
 	Participant sender;
 	Participant consignee;
-	String viaHubs;
+	List<String> viaHubs;
 	String labelContent;
 	String message;
 
 	@Builder
-	private Routing(
-			ZonedDateTime sendDate,
-			ZonedDateTime deliveryDate,
-			Participant sender,
-			Participant consignee,
-			String viaHubs,
-			String labelContent,
-			String message)
+	@JsonCreator
+	public Routing(
+			@JsonProperty("sendDate") @JsonFormat(shape = Shape.STRING, pattern = DATE_FORMAT) LocalDate sendDate,
+			@JsonProperty("deliveryDate") @JsonFormat(shape = Shape.STRING, pattern = DATE_FORMAT) LocalDate deliveryDate,
+			@JsonProperty("sender") Participant sender,
+			@JsonProperty("consignee") Participant consignee,
+			@JsonProperty("viaHubs") List<String> viaHubs,
+			@JsonProperty("labelContent") String labelContent,
+			@JsonProperty("message") String message)
 	{
 		this.sendDate = Check.assumeNotNull(sendDate, "Parameter sendDate may not be null");
 		this.deliveryDate = deliveryDate;
@@ -56,8 +65,8 @@ public class Routing
 		this.sender = sender;
 		this.consignee = consignee;
 
-		this.viaHubs = Check.assumeNotEmpty(viaHubs, "Parameter viaHubs may not be empty");
-		this.labelContent = Check.assumeNotEmpty(labelContent, "Parameter labelContent may not be empty");
+		this.viaHubs = Check.assumeNotNull(viaHubs, "Parameter viaHubs may not be null"); // note: may be empty
+		this.labelContent = Check.assumeNotNull(labelContent, "Parameter labelContent may not be empty"); // note: may be empty
 		this.message = Check.assumeNotEmpty(message, "Parameter message may not be empty");
 	}
 }

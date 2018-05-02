@@ -1,4 +1,7 @@
-package de.metas.shipper.gateway.derkurier;
+package de.metas.shipper.gateway.derkurier.misc;
+
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -22,11 +25,13 @@ package de.metas.shipper.gateway.derkurier;
  * #L%
  */
 
-public class DerKurierConstants
+@Value
+@Builder
+public class DerKurierShipperConfig
 {
-	public static final String SHIPPER_GATEWAY_ID = "DerKurier";
+	String restApiBaseUrl;
 
-	public static final String DATE_FORMAT = "yyyy-MM-dd";
+	String customerNumber;
 
-	public static final String TIME_FORMAT = "HH:mm";
+
 }

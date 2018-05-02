@@ -1,7 +1,16 @@
 package de.metas.shipper.gateway.derkurier.restapi.models;
 
+import static de.metas.shipper.gateway.derkurier.DerKurierConstants.TIME_FORMAT;
+
+import java.time.LocalTime;
+
 import org.adempiere.util.Check;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -29,17 +38,25 @@ import lombok.Value;
 @Value
 public class RequestParticipant
 {
+	/** two-letter ISO-3166 */
 	String country;
 	String zip;
-	String timeFrom;
-	String timeTo;
+
+	@JsonFormat(shape = Shape.STRING, pattern = TIME_FORMAT)
+	LocalTime timeFrom;
+
+	@JsonFormat(shape = Shape.STRING, pattern = TIME_FORMAT)
+	LocalTime timeTo;
+
 	String desiredStation;
 
-	private RequestParticipant(
+	@Builder
+	@JsonCreator
+	public RequestParticipant(
 			String country,
 			String zip,
-			String timeFrom,
-			String timeTo,
+			LocalTime timeFrom,
+			LocalTime timeTo,
 			String desiredStation)
 	{
 		this.country = Check.assumeNotEmpty(country, "Parameter country may not be empty");

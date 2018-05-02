@@ -1,8 +1,15 @@
 package de.metas.shipper.gateway.derkurier.restapi.models;
 
-import java.util.List;
+import static de.metas.shipper.gateway.derkurier.DerKurierConstants.TIME_FORMAT;
+
+import java.time.LocalTime;
 
 import org.adempiere.util.Check;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Value;
@@ -37,32 +44,46 @@ public class Participant
 	String country;
 	String zipCode;
 	String zone;
-	List<String> sector;
-	List<String> dayType;
+	String sector;
+	String dayType;
 	boolean island;
 	int term;
-	String earliestTimeOfDelivery;
-	String saturdayDeliveryUntil;
-	String sundayDeliveryUntil;
-	String pickupUntil;
+
+	@JsonProperty("earliestTimeOfDelivery")
+	@JsonFormat(shape = Shape.STRING, pattern = TIME_FORMAT)
+	LocalTime earliestTimeOfDelivery;
+
+	@JsonProperty("saturdayDeliveryUntil")
+	@JsonFormat(shape = Shape.STRING, pattern = TIME_FORMAT)
+	LocalTime saturdayDeliveryUntil;
+
+	@JsonProperty("sundayDeliveryUntil")
+	@JsonFormat(shape = Shape.STRING, pattern = TIME_FORMAT)
+	LocalTime sundayDeliveryUntil;
+
+	@JsonProperty("pickupUntil")
+	@JsonFormat(shape = Shape.STRING, pattern = TIME_FORMAT)
+	LocalTime pickupUntil;
+
 	String partnerManager;
 
 	@Builder
-	private Participant(
-			String stationFormatted,
-			String station,
-			String country,
-			String zipCode,
-			String zone,
-			List<String> sector,
-			List<String> dayType,
-			Boolean island,
-			Integer term,
-			String earliestTimeOfDelivery,
-			String saturdayDeliveryUntil,
-			String sundayDeliveryUntil,
-			String pickupUntil,
-			String partnerManager)
+	@JsonCreator
+	public Participant(
+			@JsonProperty("stationFormatted") String stationFormatted,
+			@JsonProperty("station") String station,
+			@JsonProperty("country") String country,
+			@JsonProperty("zipCode") String zipCode,
+			@JsonProperty("zone") String zone,
+			@JsonProperty("sector") String sector,
+			@JsonProperty("dayType") String dayType,
+			@JsonProperty("island") Boolean island,
+			@JsonProperty("term") Integer term,
+			LocalTime earliestTimeOfDelivery,
+			LocalTime saturdayDeliveryUntil,
+			LocalTime sundayDeliveryUntil,
+			LocalTime pickupUntil,
+			@JsonProperty("partnerManager") String partnerManager)
 	{
 		this.stationFormatted = stationFormatted;
 		this.station = Check.assumeNotEmpty(station, "Parameter station may not be empty");
@@ -73,10 +94,10 @@ public class Participant
 		this.dayType = Check.assumeNotEmpty(dayType, "Parameter dayType may not be empty");
 		this.island = Check.assumeNotNull(island, "Parameter island may not be null");
 		this.term = Check.assumeNotNull(term, "Parameter term may not be null");
-		this.earliestTimeOfDelivery = Check.assumeNotEmpty(earliestTimeOfDelivery, "Parameter earliestTimeOfDelivery may not be empty");
-		this.saturdayDeliveryUntil = Check.assumeNotEmpty(saturdayDeliveryUntil, "Parameter saturdayDeliveryUntil may not be empty");
-		this.sundayDeliveryUntil = Check.assumeNotEmpty(sundayDeliveryUntil, "Parameter sundayDeliveryUntil may not be empty");
-		this.pickupUntil = Check.assumeNotEmpty(pickupUntil, "Parameter pickupUntil may not be empty");
-		this.partnerManager = Check.assumeNotEmpty(partnerManager, "Parameter partnerManager may not be empty");
+		this.earliestTimeOfDelivery = Check.assumeNotNull(earliestTimeOfDelivery, "Parameter earliestTimeOfDelivery may not be null");
+		this.saturdayDeliveryUntil = Check.assumeNotNull(saturdayDeliveryUntil, "Parameter saturdayDeliveryUntil may not be null");
+		this.sundayDeliveryUntil = Check.assumeNotNull(sundayDeliveryUntil, "Parameter sundayDeliveryUntil may not be null");
+		this.pickupUntil = Check.assumeNotNull(pickupUntil, "Parameter pickupUntil may not be null");
+		this.partnerManager = Check.assumeNotNull(partnerManager, "Parameter partnerManager may not be null"); // note: might be empty
 	}
 }
