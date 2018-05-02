@@ -175,4 +175,11 @@ public class UserNotificationsQueue
 		notificationsRepo.deleteById(Integer.parseInt(notificationId));
 		fireEventOnWebsocket(JSONNotificationEvent.eventDeleted(notificationId, getUnreadCount()));
 	}
+	
+	public void deleteAll()
+	{
+		notificationsRepo.deleteAllByUserId(getAD_User_ID());
+		fireEventOnWebsocket(JSONNotificationEvent.eventDeletedAll());
+	}
+
 }
