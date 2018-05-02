@@ -43,14 +43,12 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -107,7 +105,7 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 	}
 
 	@Override
-	public int getAD_User_InCharge_ID(final I_C_Invoice_Candidate ic)
+	public int getAD_User_InCharge_ID(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
@@ -307,7 +305,7 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 	/**
 	 * <ul>
 	 * <li>DateOrdered: if the term has a predecessor, then the the predecessor's notice/extend date. Else the term's <code>StartDate</code>.
-	 * <li>QtyOrdered: if the term is already canceled, then the given <code>ic</code>'s <code>QtyInvoiced</code>. Otherwise the term's <code>PlannedQtyPerUnit</code>.
+	 * <li>QtyOrdered: the term's <code>PlannedQtyPerUnit</code>.
 	 * <li>C_Order_ID: untouched
 	 * </ul>
 	 *
@@ -319,17 +317,7 @@ public class FlatrateTermInvoiceCandidateHandler extends AbstractInvoiceCandidat
 		final I_C_Flatrate_Term term = retrieveTerm(ic);
 
 		ic.setDateOrdered(getDateOrdered(term));
-
-		if (Services.get(IContractChangeBL.class).isCanceledContract(term) && term.isCloseInvoiceCandidate()) // terminate invoice candidates only when the flag is set
-		{
-			// Make sure that no further invoicing takes place
-			Services.get(IInvoiceCandBL.class).closeInvoiceCandidate(ic);
-		}
-		else
-		{
-			// Set the quantity from the term.
-			ic.setQtyOrdered(term.getPlannedQtyPerUnit());
-		}
+		ic.setQtyOrdered(term.getPlannedQtyPerUnit()); // Set the quantity from the term.
 	}
 
 	private I_C_Flatrate_Term retrieveTerm(@NonNull final I_C_Invoice_Candidate ic)
