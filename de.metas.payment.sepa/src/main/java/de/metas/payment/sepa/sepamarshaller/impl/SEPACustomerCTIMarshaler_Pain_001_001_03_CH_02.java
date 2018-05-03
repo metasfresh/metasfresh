@@ -1,6 +1,7 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.isNullOrEmpty;
 
 /*
  * #%L
@@ -525,7 +526,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 			}
 			else
 			{
-				// let the bank see what it can do
+				// // let the bank see what it can do
 				finInstnId.setBIC(BIC_NOTPROVIDED);
 			}
 
@@ -535,13 +536,17 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 					|| paymentType == PAYMENT_TYPE_4
 					|| paymentType == PAYMENT_TYPE_6)
 			{
-				final String bankName = getBankNameIfAny(line);
+				final boolean hasNoBIC = Check.isEmpty(finInstnId.getBIC(), true) || BIC_NOTPROVIDED.equals(finInstnId.getBIC());
+				if (hasNoBIC)
+				{
+					final String bankName = getBankNameIfAny(line);
+					Check.errorIf(Check.isEmpty(bankName, true), SepaMarshallerException.class,
+							"Zahlart={}, but line {} has no information about the bank name",
+							paymentType, createInfo(line));
 
-				Check.errorIf(Check.isEmpty(bankName, true), SepaMarshallerException.class,
-						"Zahlart={}, but line {} has no information about the bank name",
-						paymentType, createInfo(line));
-
-				finInstnId.setNm(bankName);
+					finInstnId.setNm(bankName);
+					finInstnId.setBIC(null); // if we use Nm, then there should be no BIC element 
+				}
 			}
 
 			if (paymentType == PAYMENT_TYPE_4
