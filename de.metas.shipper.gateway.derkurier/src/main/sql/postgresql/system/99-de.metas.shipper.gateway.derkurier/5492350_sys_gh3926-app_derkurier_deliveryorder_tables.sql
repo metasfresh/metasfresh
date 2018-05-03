@@ -2385,7 +2385,6 @@ DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=563886
 DELETE FROM AD_Field WHERE AD_Field_ID=563886
 ;
 
-ALTER TABLE DerKurier_DeliveryOrder DROP COLUMN M_ShipperTransportation_ID;
 -- 2018-05-02T13:25:47.155
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=559875

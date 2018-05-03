@@ -101,7 +101,8 @@ public class Application
 				.paidMode(GOPaidMode.Prepaid)
 				.selfDelivery(GOSelfDelivery.Pickup)
 				.selfPickup(GOSelfPickup.Delivery)
-				.receiptConfirmationPhoneNumber("+40-746-010203")
+				.customDeliveryOrderData(GoDeliveryOrderData.builder()
+						.receiptConfirmationPhoneNumber("+40-746-010203").build())
 				.build();
 
 		return args -> {

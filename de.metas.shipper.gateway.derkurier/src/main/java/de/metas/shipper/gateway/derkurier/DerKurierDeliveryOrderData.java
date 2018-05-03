@@ -1,15 +1,15 @@
-package de.metas.shipper.gateway.spi.model;
+package de.metas.shipper.gateway.derkurier;
 
-import javax.annotation.Nullable;
-
-import lombok.Builder;
+import de.metas.shipper.gateway.spi.model.CustomDeliveryOrderData;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.shipper.gateway.api
+ * de.metas.shipper.gateway.derkurier
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,23 +28,13 @@ import lombok.Value;
  */
 
 @Value
-public class ContactPerson
+public class DerKurierDeliveryOrderData implements CustomDeliveryOrderData
 {
-	PhoneNumber phone;
-
-	String emailAddress;
-
-	@Builder
-	private ContactPerson(
-			@Nullable final PhoneNumber phone,
-			@Nullable final String emailAddress)
+	public static DerKurierDeliveryOrderData ofDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		this.phone = phone;
-		this.emailAddress = emailAddress;
+		final CustomDeliveryOrderData customDeliveryOrderData = deliveryOrder.getCustomDeliveryOrderData();
+		return (DerKurierDeliveryOrderData)customDeliveryOrderData;
 	}
 
-	public String getPhoneAsString()
-	{
-		return phone.getAsString();
-	}
+	String station;
 }

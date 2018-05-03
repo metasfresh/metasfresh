@@ -2,6 +2,7 @@ package de.metas.shipper.gateway.derkurier;
 
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Consignee_City;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Consignee_Country;
+import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Consignee_DesiredStation;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Consignee_EMail;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Consignee_Name;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Consignee_Name2;
@@ -144,7 +145,10 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 
 			final ContactPersonBuilder contactPersonBuilder = ContactPerson.builder();
 			contactPersonBuilder.emailAddress(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_EMail, lineRecord, previousLineRecord));
-			// lineRecord.setDK_Consignee_DesiredStation();
+
+			final DerKurierDeliveryOrderData customDeliveryOrderData = new DerKurierDeliveryOrderData(
+					assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_DesiredStation, lineRecord, previousLineRecord));
+			deliverOrderBuilder.customDeliveryOrderData(customDeliveryOrderData);
 
 			deliveryAddressBuilder.companyName1(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_Name, lineRecord, previousLineRecord));
 			deliveryAddressBuilder.companyName2(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_Name2, lineRecord, previousLineRecord));
@@ -248,17 +252,18 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		int lineCounter = 0;
 		final int lineInterval = 10;
 
+		final DerKurierDeliveryOrderData customDeliveryOrderData = DerKurierDeliveryOrderData.ofDeliveryOrder(deliveryOrder);
+
 		final List<DeliveryPosition> deliveryPositions = deliveryOrder.getDeliveryPositions();
 		for (final DeliveryPosition deliveryPosition : deliveryPositions)
 		{
-
 			final I_DerKurier_DeliveryOrderLine lineRecord = loadOrNewInstance(deliveryPosition.getRepoId());
 			lineRecord.setDerKurier_DeliveryOrder(headerRecord);
 
 			final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
 			lineRecord.setDK_Consignee_City(deliveryAddress.getCity());
 			lineRecord.setDK_Consignee_Country(deliveryAddress.getCountry().getAlpha2());
-			// lineRecord.setDK_Consignee_DesiredStation();
+			lineRecord.setDK_Consignee_DesiredStation(customDeliveryOrderData.getStation());
 			lineRecord.setDK_Consignee_EMail(deliveryOrder.getDeliveryContact().getEmailAddress());
 			lineRecord.setDK_Consignee_HouseNumber(deliveryAddress.getHouseNo());
 			lineRecord.setDK_Consignee_Name(deliveryAddress.getCompanyName1());

@@ -13,7 +13,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.shipper.gateway.derkurier.misc.Converters;
-import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
@@ -21,7 +20,6 @@ import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryDate;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
-import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
@@ -60,16 +58,12 @@ public class DerKurierClient implements ShipperGatewayClient
 
 	private final Converters converters;
 
-	private final ParcelNumberGenerator parcelNumberGenerator;
-
 	public DerKurierClient(
 			@NonNull final RestTemplate restTemplate,
-			@NonNull final Converters converters,
-			@NonNull final ParcelNumberGenerator parcelNumberGenerator)
+			@NonNull final Converters converters)
 	{
 		this.restTemplate = restTemplate;
 		this.converters = converters;
-		this.parcelNumberGenerator = parcelNumberGenerator;
 	}
 
 	@Override
@@ -107,36 +101,33 @@ public class DerKurierClient implements ShipperGatewayClient
 	}
 
 	private DeliveryOrder createDeliveryOrderFromResponse(
-			final Routing routing,
-			final DeliveryOrder originalDeliveryOrder)
+			@NonNull final Routing routing,
+			@NonNull final DeliveryOrder originalDeliveryOrder)
 	{
+		final OrderId orderId = OrderId.of(
+				getShipperGatewayId(),
+				Integer.toString(originalDeliveryOrder.getRepoId()));
+
+		final DerKurierDeliveryOrderData derKurierDeliveryOrderData = //
+				new DerKurierDeliveryOrderData(
+						routing.getConsignee().getStationFormatted());
+
 		final DeliveryOrderBuilder builder = originalDeliveryOrder.toBuilder()
-				.orderId(OrderId.of(getShipperGatewayId(), parcelNumberGenerator.getNextParcelNumber()))
-				//
+				.orderId(orderId)
+				.customDeliveryOrderData(derKurierDeliveryOrderData)
+
 				// Pickup
 				.pickupDate(PickupDate.builder()
 						.date(routing.getSendDate())
 						.timeTo(routing.getSender().getPickupUntil())
 						.build())
 
-				//
 				// Delivery
 				.deliveryDate(DeliveryDate.builder()
 						.date(routing.getDeliveryDate())
 						.timeFrom(routing.getConsignee().getEarliestTimeOfDelivery())
 						.build());
 
-		final List<DeliveryPosition> deliveryPositions = originalDeliveryOrder.getDeliveryPositions();
-		for (final DeliveryPosition deliveryPosition : deliveryPositions)
-		{
-			//
-			// Delivery content
-			builder.deliveryPosition(deliveryPosition.toBuilder()
-					// TODO .positionNo(goDeliveryPosition.getPositionsNr())
-					// TODO .numberOfPackages(Integer.parseInt(goResponseDeliveryPosition.getAnzahlPackstuecke()))
-					.build());
-
-		}
 		return builder.build();
 	}
 

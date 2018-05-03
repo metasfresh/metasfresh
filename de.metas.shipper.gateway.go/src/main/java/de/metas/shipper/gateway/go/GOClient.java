@@ -275,7 +275,9 @@ public class GOClient implements ShipperGatewayClient
 	private Sendung createGODeliveryOrder(final DeliveryOrder request, final GOOrderStatus status)
 	{
 		final OrderId orderId = request.getOrderId();
-		final HWBNumber hwbNumber = request.getHwbNumber();
+
+		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.cast(request.getCustomDeliveryOrderData());
+		final HWBNumber hwbNumber = goDeliveryOrderData.getHwbNumber();
 
 		final Sendung.Abholadresse pickupAddress = createGOPickupAddress(request.getPickupAddress());
 		final Sendung.Abholdatum pickupDate = createGOPickupDate(request.getPickupDate());
@@ -306,7 +308,7 @@ public class GOClient implements ShipperGatewayClient
 		goRequest.setWarenwert(null); // Value of goods (not mandatory)
 		goRequest.setSonderversicherung(null); // Special insurance (not mandatory)
 		goRequest.setNachnahme(null); // Cash on delivery (not mandatory)
-		goRequest.setTelefonEmpfangsbestaetigung(request.getReceiptConfirmationPhoneNumber()); // Phone no. for confirmation of receipt (an25, mandatory)
+		goRequest.setTelefonEmpfangsbestaetigung(goDeliveryOrderData.getReceiptConfirmationPhoneNumber()); // Phone no. for confirmation of receipt (an25, mandatory)
 
 		goRequest.setSendungsPosition(deliveryPosition); // Shipment position (mandatory, max. 1)
 
@@ -442,9 +444,13 @@ public class GOClient implements ShipperGatewayClient
 		}
 		final SendungsRueckmeldung.Sendung.Position goResponseDeliveryPosition = goResponseDeliveryPositions.get(0);
 
+		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
+				.hwbNumber(HWBNumber.of(goResponseContent.getFrachtbriefnummer()))
+				.build();
+
 		return deliveryOrderRequest.toBuilder()
 				.orderId(GOUtils.createOrderId(goResponseContent.getSendungsnummerAX4()))
-				.hwbNumber(HWBNumber.of(goResponseContent.getFrachtbriefnummer()))
+				.customDeliveryOrderData(goDeliveryOrderData)
 				.orderStatus(newStatus)
 				// .serviceType(deliveryOrderRequest.getServiceType())
 				// .paidMode(deliveryOrderRequest.getPaidMode())

@@ -65,17 +65,21 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		final Set<Integer> mpackageIds = retrieveGODeliveryOrderPackageIds(orderPO.getGO_DeliveryOrder_ID());
 
+		GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
+				.hwbNumber(HWBNumber.ofNullable(orderPO.getGO_HWBNumber()))
+				.receiptConfirmationPhoneNumber(null)
+				.build();
+
 		return DeliveryOrder.builder()
 				.repoId(orderPO.getGO_DeliveryOrder_ID())
 				.shipperId(orderPO.getM_Shipper_ID())
 				//
 				.orderId(GOUtils.createOrderIdOrNull(orderPO.getGO_AX4Number()))
-				.hwbNumber(HWBNumber.ofNullable(orderPO.getGO_HWBNumber()))
+				.customDeliveryOrderData(goDeliveryOrderData)
 				.orderStatus(GOOrderStatus.forNullableCode(orderPO.getGO_OrderStatus()))
 				//
 				.serviceType(GOServiceType.forCode(orderPO.getGO_ServiceType()))
 				.paidMode(GOPaidMode.forCode(orderPO.getGO_PaidMode()))
-				.receiptConfirmationPhoneNumber(null)
 				//
 				// Pickup
 				.pickupAddress(GODeliveryOrderConverters.pickupAddressFromPO(orderPO))
@@ -121,7 +125,8 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 
 		orderPO.setM_Shipper_ID(order.getShipperId());
 
-		final HWBNumber hwbNumber = order.getHwbNumber();
+		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.ofDeliveryOrder(order);
+		final HWBNumber hwbNumber = goDeliveryOrderData.getHwbNumber();
 		final OrderStatus orderStatus = order.getOrderStatus();
 
 		orderPO.setGO_AX4Number(orderId != null ? orderId.getOrderIdAsString() : null);
@@ -180,7 +185,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		final I_GO_DeliveryOrder orderPO = toDeliveryOrderPO(order);
 		InterfaceWrapperHelper.save(orderPO);
 
-		saveAssignedPackageIds(orderPO.getGO_DeliveryOrder_ID(),GOUtils.getSingleDeliveryPosition(order).getPackageIds());
+		saveAssignedPackageIds(orderPO.getGO_DeliveryOrder_ID(), GOUtils.getSingleDeliveryPosition(order).getPackageIds());
 
 		return order.toBuilder()
 				.repoId(orderPO.getGO_DeliveryOrder_ID())

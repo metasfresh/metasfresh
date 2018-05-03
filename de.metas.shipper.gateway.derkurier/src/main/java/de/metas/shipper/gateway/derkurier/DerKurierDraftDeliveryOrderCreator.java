@@ -13,6 +13,7 @@ import org.compiere.model.I_C_Location;
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
+import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PickupDate;
@@ -71,7 +72,6 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 				//
 //				.serviceType(GOServiceType.Overnight)
 //				.paidMode(GOPaidMode.Prepaid)
-				.receiptConfirmationPhoneNumber(null)
 				//
 				// Pickup
 				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
@@ -91,6 +91,9 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 						.bpartnerId(deliverToBPartnerId)
 						.bpartnerLocationId(deliverToBPartnerLocationId)
 						.build())
+				.deliveryContact(ContactPerson.builder()
+						.emailAddress(deliverToBPartner.getEMail())
+						.build())
 //				.selfDelivery(GOSelfDelivery.Pickup)
 				//
 				// Delivery content
@@ -101,7 +104,7 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 						.content(request.getPackageContentDescription())
 						.build())
 				// .customerReference(null)
-				//
+
 				.build();
 	}
 

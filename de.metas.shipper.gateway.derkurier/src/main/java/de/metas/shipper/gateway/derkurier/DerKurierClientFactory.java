@@ -12,7 +12,6 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
-import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
 import lombok.NonNull;
@@ -71,7 +70,7 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 		final RestTemplate restTemplate = restTemplateBuilder.build();
 		extractAndConfigureObjectMapperOfRestTemplate(restTemplate);
 
-		return new DerKurierClient(restTemplate, new Converters(), new ParcelNumberGenerator("blah-blah"));
+		return new DerKurierClient(restTemplate, new Converters());
 	}
 
 	/**

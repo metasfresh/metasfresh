@@ -72,12 +72,15 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_BPartner_Location deliverToBPLocation = load(deliverToBPartnerLocationId, I_C_BPartner_Location.class);
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 
+		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
+				.receiptConfirmationPhoneNumber(null).build();
+
 		return DeliveryOrder.builder()
 				.shipperId(deliveryOrderKey.getShipperId())
 				//
 				.serviceType(GOServiceType.Overnight)
 				.paidMode(GOPaidMode.Prepaid)
-				.receiptConfirmationPhoneNumber(null)
+				.customDeliveryOrderData(goDeliveryOrderData)
 				//
 				// Pickup
 				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)

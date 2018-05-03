@@ -39,7 +39,7 @@ public class DeliveryOrder
 	OrderId orderId;
 
 	@Nullable
-	HWBNumber hwbNumber;
+	CustomDeliveryOrderData customDeliveryOrderData;
 
 	@Nullable
 	OrderStatus orderStatus;
@@ -83,9 +83,6 @@ public class DeliveryOrder
 
 	@NonNull
 	private SelfPickup selfPickup;
-
-	@Nullable // might cost money
-	private String receiptConfirmationPhoneNumber;
 
 	/** ID in external repository */
 	private int repoId;
