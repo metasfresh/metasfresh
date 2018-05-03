@@ -1,7 +1,6 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
 import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.isNullOrEmpty;
 
 /*
  * #%L
