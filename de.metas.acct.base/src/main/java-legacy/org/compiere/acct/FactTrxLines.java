@@ -89,7 +89,9 @@ public class FactTrxLines
 		type = extractType(this.drLines, this.crLines);
 	}
 
-	private static FactTrxLinesType extractType(final List<FactLine> drLines, final List<FactLine> crLines)
+	private static FactTrxLinesType extractType(
+			@NonNull final List<FactLine> drLines,
+			@NonNull final List<FactLine> crLines)
 	{
 		if (drLines.size() == 1 && crLines.size() >= 1)
 		{
@@ -109,7 +111,10 @@ public class FactTrxLines
 		}
 		else
 		{
-			throw new AdempiereException("Invalid accounting operation structure (" + drLines.size() + " DR lines, " + crLines.size() + " CR lines)");
+			throw new AdempiereException("Invalid accounting operation structure (" + drLines.size() + " DR lines, " + crLines.size() + " CR lines)")
+					.appendParametersToMessage()
+					.setParameter("drLines", drLines)
+					.setParameter("crLines", crLines);
 		}
 	}
 
