@@ -30,6 +30,7 @@ import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryDate;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
@@ -113,6 +114,10 @@ public class DerKurierClient implements ShipperGatewayClient
 		final Routing routing = postRoutingRequest(routingRequest);
 
 		final DeliveryOrder completedDeliveryOrder = createDeliveryOrderFromResponse(routing, deliveryOrder);
+
+		final List<String> csv = converters.createCsv(completedDeliveryOrder);
+		derKurierDeliveryOrderRepository.attachCsvToDeliveryOrder(deliveryOrder.getRepoId(), csv);
+
 		return completedDeliveryOrder;
 	}
 
@@ -124,13 +129,8 @@ public class DerKurierClient implements ShipperGatewayClient
 				getShipperGatewayId(),
 				Integer.toString(originalDeliveryOrder.getRepoId()));
 
-		final DerKurierDeliveryOrderData derKurierDeliveryOrderData = //
-				new DerKurierDeliveryOrderData(
-						routing.getConsignee().getStationFormatted());
-
 		final DeliveryOrderBuilder builder = originalDeliveryOrder.toBuilder()
 				.orderId(orderId)
-				.customDeliveryOrderData(derKurierDeliveryOrderData)
 
 				// Pickup
 				.pickupDate(PickupDate.builder()
@@ -142,7 +142,24 @@ public class DerKurierClient implements ShipperGatewayClient
 				.deliveryDate(DeliveryDate.builder()
 						.date(routing.getDeliveryDate())
 						.timeFrom(routing.getConsignee().getEarliestTimeOfDelivery())
-						.build());
+						.build())
+				// prepare adding the updated delivery positions by clearing the old ones
+				.clearDeliveryPositions();
+
+		for (final DeliveryPosition originalDeliveryPosition : originalDeliveryOrder.getDeliveryPositions())
+		{
+			final DerKurierDeliveryData originalDerKurierDeliveryData = //
+					DerKurierDeliveryData.ofDeliveryOrder(originalDeliveryPosition)
+							.toBuilder()
+							.station(routing.getConsignee().getStationFormatted())
+							.build();
+
+			final DeliveryPosition newDeliveryPosition = originalDeliveryPosition
+					.toBuilder()
+					.customDeliveryData(originalDerKurierDeliveryData)
+					.build();
+			builder.deliveryPosition(newDeliveryPosition);
+		}
 
 		return builder.build();
 	}

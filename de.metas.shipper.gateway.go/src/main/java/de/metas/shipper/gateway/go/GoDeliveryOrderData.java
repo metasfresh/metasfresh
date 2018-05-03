@@ -2,7 +2,7 @@ package de.metas.shipper.gateway.go;
 
 import javax.annotation.Nullable;
 
-import de.metas.shipper.gateway.spi.model.CustomDeliveryOrderData;
+import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.HWBNumber;
 import lombok.Builder;
@@ -33,7 +33,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class GoDeliveryOrderData implements CustomDeliveryOrderData
+public class GoDeliveryOrderData implements CustomDeliveryData
 {
 	@Nullable
 	HWBNumber hwbNumber;
@@ -46,7 +46,7 @@ public class GoDeliveryOrderData implements CustomDeliveryOrderData
 		return cast(deliveryOrder.getCustomDeliveryOrderData());
 	}
 
-	public static GoDeliveryOrderData cast(@Nullable final CustomDeliveryOrderData customDeliveryOrderData)
+	public static GoDeliveryOrderData cast(@Nullable final CustomDeliveryData customDeliveryOrderData)
 	{
 		return (GoDeliveryOrderData)customDeliveryOrderData;
 	}

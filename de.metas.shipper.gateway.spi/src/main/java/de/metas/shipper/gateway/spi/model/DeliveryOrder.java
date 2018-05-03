@@ -39,7 +39,7 @@ public class DeliveryOrder
 	OrderId orderId;
 
 	@Nullable
-	CustomDeliveryOrderData customDeliveryOrderData;
+	CustomDeliveryData customDeliveryOrderData;
 
 	@Nullable
 	OrderStatus orderStatus;

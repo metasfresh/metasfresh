@@ -9,9 +9,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.springframework.stereotype.Service;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -41,8 +44,18 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
+	private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
+
+	public DerKurierDraftDeliveryOrderCreator(
+			@NonNull final DerKurierShipperConfigRepository derKurierShipperConfigRepository)
+	{
+		this.derKurierShipperConfigRepository = derKurierShipperConfigRepository;
+
+	}
+
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -67,7 +80,16 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 		final I_C_BPartner_Location deliverToBPLocation = load(deliverToBPartnerLocationId, I_C_BPartner_Location.class);
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 
+		final DerKurierShipperConfig config = derKurierShipperConfigRepository
+				.retrieveConfigForShipperId(request.getDeliveryOrderKey().getShipperId());
+
+		final DerKurierDeliveryData derKurierDeliveryOrderData = //
+				DerKurierDeliveryData.builder()
+						.customerNumber(config.getCustomerNumber())
+						.build();
+
 		return DeliveryOrder.builder()
+				.customDeliveryOrderData(derKurierDeliveryOrderData)
 				.shipperId(deliveryOrderKey.getShipperId())
 				//
 				// Pickup

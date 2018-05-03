@@ -9,6 +9,7 @@ import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Consignee_Phone;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Consignee_Street;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Consignee_ZipCode;
+import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_CustomerNumber;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_DesiredDeliveryDate;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_DesiredDeliveryTime_From;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_DesiredDeliveryTime_To;
@@ -34,6 +35,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Objects;
@@ -42,8 +44,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
 import de.metas.attachments.IAttachmentBL;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
+import de.metas.shipper.gateway.derkurier.DerKurierDeliveryData.DerKurierDeliveryDataBuilder;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
+import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine_Package;
@@ -149,12 +152,11 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 			countryCodeBuilder.alpha2(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_Country, lineRecord, previousLineRecord));
 			deliveryAddressBuilder.country(countryCodeBuilder.build());
 
+			final DerKurierDeliveryDataBuilder derKurierDeliveryDataBuilder = DerKurierDeliveryData.builder()
+					.station(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_DesiredStation, lineRecord, previousLineRecord));
+
 			final ContactPersonBuilder contactPersonBuilder = ContactPerson.builder();
 			contactPersonBuilder.emailAddress(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_EMail, lineRecord, previousLineRecord));
-
-			final DerKurierDeliveryOrderData customDeliveryOrderData = new DerKurierDeliveryOrderData(
-					assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_DesiredStation, lineRecord, previousLineRecord));
-			deliverOrderBuilder.customDeliveryOrderData(customDeliveryOrderData);
 
 			deliveryAddressBuilder.companyName1(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_Name, lineRecord, previousLineRecord));
 			deliveryAddressBuilder.companyName2(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_Name2, lineRecord, previousLineRecord));
@@ -179,7 +181,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 
 			deliverOrderBuilder.deliveryAddress(deliveryAddressBuilder.build());
 
-			// lineRecord.setDK_CustomerNumber(shipperConfig.getCustomerNumber());
+			derKurierDeliveryDataBuilder.customerNumber(assertSameAsPreviousValue(COLUMNNAME_DK_CustomerNumber, lineRecord, previousLineRecord));
 
 			final DeliveryDateBuilder deliveryDateBuilder = DeliveryDate.builder();
 			deliveryDateBuilder.date(TimeUtil.asLocalDate(assertSameAsPreviousValue(COLUMNNAME_DK_DesiredDeliveryDate, lineRecord, previousLineRecord)));
@@ -194,7 +196,9 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 					.heightInCM(lineRecord.getDK_ParcelHeight().intValue())
 					.lengthInCM(lineRecord.getDK_ParcelLength().intValue());
 
-			// lineRecord.setDK_ParcelNumber(shipperConfig.getParcelNumberGenerator().getNextParcelNumber());
+			derKurierDeliveryDataBuilder.parcelNumber(lineRecord.getDK_ParcelNumber());
+			deliveryPositionBuilder.customDeliveryData(derKurierDeliveryDataBuilder.build());
+
 			deliveryPositionBuilder.grossWeightKg(lineRecord.getDK_ParcelWeight().intValue());
 
 			packageDimensionsBuilder.widthInCM(lineRecord.getDK_ParcelWidth().intValue());
@@ -253,23 +257,25 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 				.repoId(headerRecord.getDerKurier_DeliveryOrder_ID())
 				.clearDeliveryPositions();
 
-		final DerKurierShipperConfig shipperConfig = derKurierShipperConfigRepository.retrieveConfigForShipperId(deliveryOrder.getShipperId());
+		final ParcelNumberGenerator parcelNumberGenerator = derKurierShipperConfigRepository
+				.retrieveConfigForShipperId(deliveryOrder.getShipperId())
+				.getParcelNumberGenerator();
 
 		int lineCounter = 0;
 		final int lineInterval = 10;
 
-		final DerKurierDeliveryOrderData customDeliveryOrderData = DerKurierDeliveryOrderData.ofDeliveryOrder(deliveryOrder);
-
 		final List<DeliveryPosition> deliveryPositions = deliveryOrder.getDeliveryPositions();
 		for (final DeliveryPosition deliveryPosition : deliveryPositions)
 		{
+			final DerKurierDeliveryData derKurierDeliveryData = DerKurierDeliveryData.ofDeliveryOrder(deliveryPosition);
+
 			final I_DerKurier_DeliveryOrderLine lineRecord = loadOrNewInstance(deliveryPosition.getRepoId());
 			lineRecord.setDerKurier_DeliveryOrder(headerRecord);
 
 			final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
 			lineRecord.setDK_Consignee_City(deliveryAddress.getCity());
 			lineRecord.setDK_Consignee_Country(deliveryAddress.getCountry().getAlpha2());
-			lineRecord.setDK_Consignee_DesiredStation(customDeliveryOrderData.getStation());
+			lineRecord.setDK_Consignee_DesiredStation(derKurierDeliveryData.getStation());
 			lineRecord.setDK_Consignee_EMail(deliveryOrder.getDeliveryContact().getEmailAddress());
 			lineRecord.setDK_Consignee_HouseNumber(deliveryAddress.getHouseNo());
 			lineRecord.setDK_Consignee_Name(deliveryAddress.getCompanyName1());
@@ -281,7 +287,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 					deliveryAddress.getStreet2()));
 			lineRecord.setDK_Consignee_ZipCode(deliveryAddress.getZipCode());
 
-			lineRecord.setDK_CustomerNumber(shipperConfig.getCustomerNumber());
+			lineRecord.setDK_CustomerNumber(derKurierDeliveryData.getCustomerNumber());
 
 			final DeliveryDate deliveryDate = deliveryOrder.getDeliveryDate();
 			lineRecord.setDK_DesiredDeliveryDate(TimeUtil.asTimestamp(deliveryDate.getDate()));
@@ -290,7 +296,13 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 			lineRecord.setDK_PackageAmount(deliveryPosition.getNumberOfPackages());
 			lineRecord.setDK_ParcelHeight(BigDecimal.valueOf(deliveryPosition.getPackageDimensions().getHeightInCM()));
 			lineRecord.setDK_ParcelLength(BigDecimal.valueOf(deliveryPosition.getPackageDimensions().getLengthInCM()));
-			lineRecord.setDK_ParcelNumber(shipperConfig.getParcelNumberGenerator().getNextParcelNumber());
+
+			lineRecord.setDK_ParcelNumber(
+					Util.coalesceSuppliers(
+							() -> derKurierDeliveryData,
+							() -> parcelNumberGenerator.getNextParcelNumber())
+							.toString());
+
 			lineRecord.setDK_ParcelWeight(BigDecimal.valueOf(deliveryPosition.getGrossWeightKg()));
 			lineRecord.setDK_ParcelWidth(BigDecimal.valueOf(deliveryPosition.getPackageDimensions().getWidthInCM()));
 			lineRecord.setDK_Reference(deliveryOrder.getCustomerReference());

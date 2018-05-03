@@ -1,14 +1,23 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.shipper.gateway.derkurier.DerKurierConstants;
+import de.metas.shipper.gateway.derkurier.DerKurierDeliveryData;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.DeliveryDate;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import lombok.NonNull;
 
 /*
@@ -35,6 +44,9 @@ import lombok.NonNull;
 
 public class Converters
 {
+	private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DerKurierConstants.DATE_FORMAT);
+	private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(DerKurierConstants.TIME_FORMAT);
+
 	public RoutingRequest createRoutingRequestFrom(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		return RoutingRequest.builder()
@@ -79,7 +91,75 @@ public class Converters
 	public List<String> createCsv(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final ImmutableList.Builder<String> csv = ImmutableList.builder();
-		// TODO
+		final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
+		final DeliveryDate deliveryDate = deliveryOrder.getDeliveryDate();
+
+		int posCounter = 1;
+
+		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions())
+		{
+			final DerKurierDeliveryData derKurierDeliveryData = //
+					DerKurierDeliveryData.ofDeliveryOrder(deliveryPosition);
+
+			final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
+
+			final String csvLine = String.join(";",
+					dateToString(deliveryOrder.getPickupDate().getDate()),
+					derKurierDeliveryData.getCustomerNumber(),
+					deliveryAddress.getCompanyName1(),
+					deliveryAddress.getCompanyName2(),
+					null,
+					deliveryAddress.getCountry().getAlpha2(),
+					deliveryAddress.getZipCode(),
+					deliveryAddress.getCity(),
+					String.join(" - ", deliveryAddress.getStreet1(), deliveryAddress.getStreet2()),
+					deliveryAddress.getHouseNo(),
+					derKurierDeliveryData.getStation(),
+					dateToString(deliveryDate.getDate()),
+					timeToString(deliveryDate.getTimeFrom()),
+					timeToString(deliveryDate.getTimeTo()),
+					intToString(posCounter),
+					intToString(deliveryPosition.getGrossWeightKg()),
+					intToString(packageDimensions.getLengthInCM()),
+					intToString(packageDimensions.getWidthInCM()),
+					intToString(packageDimensions.getHeightInCM()),
+					derKurierDeliveryData.getParcelNumber(),
+					deliveryOrder.getCustomerReference(),
+					deliveryOrder.getOrderId().getOrderIdAsString(),
+					"", // cReferenz
+					deliveryOrder.getDeliveryContact().getPhoneAsString(),
+					"", // EA
+					"", // EB
+					"", // EC
+					"", // NN
+					intToString(deliveryPosition.getNumberOfPackages()),
+					deliveryOrder.getDeliveryContact().getEmailAddress());
+			csv.add(csvLine);
+			posCounter++;
+		}
 		return csv.build();
+	}
+
+	private static String dateToString(@Nullable final LocalDate date)
+	{
+		if (date == null)
+		{
+			return "";
+		}
+		return date.format(dateFormatter);
+	}
+
+	private static String timeToString(@Nullable final LocalTime time)
+	{
+		if (time == null)
+		{
+			return "";
+		}
+		return time.format(timeFormatter);
+	}
+
+	private static String intToString(final int integer)
+	{
+		return Integer.toString(integer);
 	}
 }

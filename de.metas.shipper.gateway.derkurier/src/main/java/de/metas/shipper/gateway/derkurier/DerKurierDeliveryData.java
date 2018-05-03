@@ -1,7 +1,8 @@
 package de.metas.shipper.gateway.derkurier;
 
-import de.metas.shipper.gateway.spi.model.CustomDeliveryOrderData;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -28,13 +29,18 @@ import lombok.Value;
  */
 
 @Value
-public class DerKurierDeliveryOrderData implements CustomDeliveryOrderData
+@Builder(toBuilder = true)
+public class DerKurierDeliveryData implements CustomDeliveryData
 {
-	public static DerKurierDeliveryOrderData ofDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder)
+	public static DerKurierDeliveryData ofDeliveryOrder(@NonNull final DeliveryPosition deliveryPosition)
 	{
-		final CustomDeliveryOrderData customDeliveryOrderData = deliveryOrder.getCustomDeliveryOrderData();
-		return (DerKurierDeliveryOrderData)customDeliveryOrderData;
+		final CustomDeliveryData customDeliveryData = deliveryPosition.getCustomDeliveryData();
+		return (DerKurierDeliveryData)customDeliveryData;
 	}
 
 	String station;
+
+	String customerNumber;
+
+	String parcelNumber;
 }
