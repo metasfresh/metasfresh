@@ -772,7 +772,7 @@ public interface I_AD_Column
 
 	/**
 	 * Set GenericZoom Quellspalte.
-	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	 * Legt fest, ob zu der betreffenden Spalte Referenzen (d.h. externe Datensätze, die die Spalte referenzieren) angezeigt werden sollen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -782,7 +782,7 @@ public interface I_AD_Column
 
 	/**
 	 * Get GenericZoom Quellspalte.
-	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	 * Legt fest, ob zu der betreffenden Spalte Referenzen (d.h. externe Datensätze, die die Spalte referenzieren) angezeigt werden sollen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1167,6 +1167,29 @@ public interface I_AD_Column
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Personal Data Category.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPersonalDataCategory (java.lang.String PersonalDataCategory);
+
+	/**
+	 * Get Personal Data Category.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPersonalDataCategory();
+
+    /** Column definition for PersonalDataCategory */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_PersonalDataCategory = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "PersonalDataCategory", null);
+    /** Column name PersonalDataCategory */
+    public static final String COLUMNNAME_PersonalDataCategory = "PersonalDataCategory";
+
+	/**
 	 * Set Read Only Logic.
 	 * Logic to determine if field is read only (applies only when field is read-write)
 	 *
@@ -1240,6 +1263,31 @@ public interface I_AD_Column
     public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "SeqNo", null);
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
+	 * Set Technical note.
+	 * A note that is not indended for the user documentation, but for developers, customizers etc
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTechnicalNote (java.lang.String TechnicalNote);
+
+	/**
+	 * Get Technical note.
+	 * A note that is not indended for the user documentation, but for developers, customizers etc
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTechnicalNote();
+
+    /** Column definition for TechnicalNote */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_TechnicalNote = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "TechnicalNote", null);
+    /** Column name TechnicalNote */
+    public static final String COLUMNNAME_TechnicalNote = "TechnicalNote";
 
 	/**
 	 * Get Aktualisiert.

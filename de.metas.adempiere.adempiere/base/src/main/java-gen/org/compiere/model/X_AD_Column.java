@@ -15,7 +15,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1164764599L;
+	private static final long serialVersionUID = 312987307L;
 
     /** Standard Constructor */
     public X_AD_Column (Properties ctx, int AD_Column_ID, String trxName)
@@ -718,7 +718,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 
 	/** Set GenericZoom Quellspalte.
 		@param IsGenericZoomOrigin 
-		Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+		Legt fest, ob zu der betreffenden Spalte Referenzen (d.h. externe Datensätze, die die Spalte referenzieren) angezeigt werden sollen
 	  */
 	@Override
 	public void setIsGenericZoomOrigin (boolean IsGenericZoomOrigin)
@@ -727,7 +727,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	/** Get GenericZoom Quellspalte.
-		@return Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+		@return Legt fest, ob zu der betreffenden Spalte Referenzen (d.h. externe Datensätze, die die Spalte referenzieren) angezeigt werden sollen
 	  */
 	@Override
 	public boolean isGenericZoomOrigin () 
@@ -1105,6 +1105,34 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
+	/** 
+	 * PersonalDataCategory AD_Reference_ID=540857
+	 * Reference name: PersonalDataCategory
+	 */
+	public static final int PERSONALDATACATEGORY_AD_Reference_ID=540857;
+	/** NotPersonal = NP */
+	public static final String PERSONALDATACATEGORY_NotPersonal = "NP";
+	/** Personal = P */
+	public static final String PERSONALDATACATEGORY_Personal = "P";
+	/** SensitivePersonal = SP */
+	public static final String PERSONALDATACATEGORY_SensitivePersonal = "SP";
+	/** Set Personal Data Category.
+		@param PersonalDataCategory Personal Data Category	  */
+	@Override
+	public void setPersonalDataCategory (java.lang.String PersonalDataCategory)
+	{
+
+		set_Value (COLUMNNAME_PersonalDataCategory, PersonalDataCategory);
+	}
+
+	/** Get Personal Data Category.
+		@return Personal Data Category	  */
+	@Override
+	public java.lang.String getPersonalDataCategory () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PersonalDataCategory);
+	}
+
 	/** Set Read Only Logic.
 		@param ReadOnlyLogic 
 		Logic to determine if field is read only (applies only when field is read-write)
@@ -1163,6 +1191,25 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Technical note.
+		@param TechnicalNote 
+		A note that is not indended for the user documentation, but for developers, customizers etc
+	  */
+	@Override
+	public void setTechnicalNote (java.lang.String TechnicalNote)
+	{
+		set_Value (COLUMNNAME_TechnicalNote, TechnicalNote);
+	}
+
+	/** Get Technical note.
+		@return A note that is not indended for the user documentation, but for developers, customizers etc
+	  */
+	@Override
+	public java.lang.String getTechnicalNote () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TechnicalNote);
 	}
 
 	/** Set Max. Wert.
