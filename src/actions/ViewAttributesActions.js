@@ -68,15 +68,7 @@ export function getViewAttributeTypeahead(
  */
 export function getViewAttributes(windowId, viewId, rowId) {
   return axios.get(
-    config.API_URL +
-      '/documentView' +
-      '/' +
-      windowId +
-      '/' +
-      viewId +
-      '/' +
-      rowId +
-      '/attributes'
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/attributes`
   );
 }
 
@@ -84,15 +76,7 @@ export function patchViewAttributes(windowId, viewId, rowId, property, value) {
   const payload = createPatchRequestPayload(property, value);
 
   return axios.patch(
-    config.API_URL +
-      '/documentView' +
-      '/' +
-      windowId +
-      '/' +
-      viewId +
-      '/' +
-      rowId +
-      '/attributes',
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/attributes`,
     payload
   );
 }

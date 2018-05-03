@@ -311,14 +311,7 @@ export function attachmentsRequest(entity, docType, docId) {
 
 export function processNewRecord(entity, docType, docId) {
   return axios.get(
-    config.API_URL +
-      '/' +
-      entity +
-      '/' +
-      docType +
-      '/' +
-      docId +
-      '/processNewRecord'
+    `${config.API_URL}/${entity}/${docType}/${docId}/processNewRecord`
   );
 }
 
