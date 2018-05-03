@@ -156,6 +156,8 @@ class Table extends Component {
       // special case for the picking terminal
       const firstLoad = prevProps.rowData.get(1) ? false : true;
 
+      // this prevents collapsing rows when table cell was edited, for instance
+      // in purchase orders
       if (!rowEdited) {
         this.getIndentData(firstLoad);
       } else {
