@@ -1,6 +1,9 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
 import java.time.LocalTime;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
@@ -71,5 +74,12 @@ public class Converters
 				.timeTo(timeTo)
 				.build();
 		return consignee;
+	}
+
+	public List<String> createCsv(@NonNull final DeliveryOrder deliveryOrder)
+	{
+		final ImmutableList.Builder<String> csv = ImmutableList.builder();
+		// TODO
+		return csv.build();
 	}
 }

@@ -1,7 +1,13 @@
 package de.metas.shipper.gateway.derkurier;
 
 import java.util.List;
+import java.util.Properties;
 
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.report.IJasperService;
+import org.compiere.util.Env;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -12,7 +18,11 @@ import org.springframework.web.client.RestTemplate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierPackageLabelType;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
@@ -21,6 +31,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryDate;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
 import de.metas.shipper.gateway.spi.model.OrderId;
+import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.AccessLevel;
@@ -58,10 +69,14 @@ public class DerKurierClient implements ShipperGatewayClient
 
 	private final Converters converters;
 
+	private final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository;
+
 	public DerKurierClient(
 			@NonNull final RestTemplate restTemplate,
-			@NonNull final Converters converters)
+			@NonNull final Converters converters,
+			@NonNull final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository)
 	{
+		this.derKurierDeliveryOrderRepository = derKurierDeliveryOrderRepository;
 		this.restTemplate = restTemplate;
 		this.converters = converters;
 	}
@@ -97,7 +112,8 @@ public class DerKurierClient implements ShipperGatewayClient
 		final RoutingRequest routingRequest = converters.createRoutingRequestFrom(deliveryOrder);
 		final Routing routing = postRoutingRequest(routingRequest);
 
-		return createDeliveryOrderFromResponse(routing, deliveryOrder);
+		final DeliveryOrder completedDeliveryOrder = createDeliveryOrderFromResponse(routing, deliveryOrder);
+		return completedDeliveryOrder;
 	}
 
 	private DeliveryOrder createDeliveryOrderFromResponse(
@@ -134,8 +150,7 @@ public class DerKurierClient implements ShipperGatewayClient
 	@Override
 	public DeliveryOrder voidDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		// TODO probably nothing - need to check
-		return null;
+		throw new UnsupportedOperationException("Der Kurier doesn't support voiding delivery orders via software");
 	}
 
 	@Override
@@ -144,7 +159,41 @@ public class DerKurierClient implements ShipperGatewayClient
 		// TODO https://leoz.derkurier.de:13000/rs/api/v1/document/label does not yet work,
 		// so we need to fire up our own jasper report and print them
 
-		return null;
-	}
+		final ITableRecordReference tableRecordReference = derKurierDeliveryOrderRepository.toTableRecordReference(deliveryOrder);
 
+		final Properties ctx = Env.getCtx();
+		final int adProcessId = Services.get(ISysConfigBL.class).getIntValue(DerKurierConstants.SYSCONFIG_DERKURIER_LABEL_PROCESS_ID, -1, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+
+		final ProcessExecutor processExecutor = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setAD_Process_ID(adProcessId)
+				// .setWindowNo(request.getWindowNo())
+				.setTableName(tableRecordReference.getTableName())
+				// .setReportLanguage(reportLanguageToUse)
+				// .addParameter(PARA_BarcodeURL, getBarcodeServlet(ctx))
+				.addParameter(IJasperService.PARAM_PrintCopies, 1)
+				.setPrintPreview(false)
+				//
+				// Execute report in a new transaction
+				.buildAndPrepareExecution()
+				.onErrorThrowException(true)
+				// .callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIdsToProcess, ITrx.TRXNAME_ThreadInherited))
+				.executeSync();
+
+		final ProcessExecutionResult result = processExecutor.getResult();
+
+		final PackageLabel packageLabel = PackageLabel.builder()
+				.type(DerKurierPackageLabelType.DIN_A6_SIMPLE)
+				.contentType(PackageLabel.CONTENTTYPE_PDF)
+				.labelData(result.getReportData())
+				.build();
+
+		final PackageLabels packageLabels = PackageLabels.builder()
+				.defaultLabelType(DerKurierPackageLabelType.DIN_A6_SIMPLE)
+				.orderId(deliveryOrder.getOrderId())
+				.label(packageLabel)
+				.build();
+
+		return ImmutableList.of(packageLabels);
+	}
 }

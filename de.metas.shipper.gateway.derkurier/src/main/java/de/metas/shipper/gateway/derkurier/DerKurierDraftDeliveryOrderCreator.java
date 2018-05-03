@@ -70,9 +70,6 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 		return DeliveryOrder.builder()
 				.shipperId(deliveryOrderKey.getShipperId())
 				//
-//				.serviceType(GOServiceType.Overnight)
-//				.paidMode(GOPaidMode.Prepaid)
-				//
 				// Pickup
 				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
 						.companyName1(pickupFromBPartner.getName())
@@ -81,7 +78,6 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
 						.build())
-//				.selfPickup(GOSelfPickup.Delivery)
 				//
 				// Delivery
 				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
@@ -94,7 +90,6 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress(deliverToBPartner.getEMail())
 						.build())
-//				.selfDelivery(GOSelfDelivery.Pickup)
 				//
 				// Delivery content
 				.deliveryPosition(DeliveryPosition.builder()

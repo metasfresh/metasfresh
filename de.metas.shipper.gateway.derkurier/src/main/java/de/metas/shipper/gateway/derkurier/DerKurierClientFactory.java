@@ -42,10 +42,14 @@ import lombok.NonNull;
 public class DerKurierClientFactory implements ShipperGatewayClientFactory
 {
 	private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
+	private final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository;
 
-	public DerKurierClientFactory(@NonNull final DerKurierShipperConfigRepository derKurierShipperConfigRepository)
+	public DerKurierClientFactory(
+			@NonNull final DerKurierShipperConfigRepository derKurierShipperConfigRepository,
+			@NonNull final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository)
 	{
 		this.derKurierShipperConfigRepository = derKurierShipperConfigRepository;
+		this.derKurierDeliveryOrderRepository = derKurierDeliveryOrderRepository;
 	}
 
 	@Override
@@ -70,7 +74,7 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 		final RestTemplate restTemplate = restTemplateBuilder.build();
 		extractAndConfigureObjectMapperOfRestTemplate(restTemplate);
 
-		return new DerKurierClient(restTemplate, new Converters());
+		return new DerKurierClient(restTemplate, new Converters(), derKurierDeliveryOrderRepository);
 	}
 
 	/**

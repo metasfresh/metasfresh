@@ -56,9 +56,11 @@ public class DerKurierClientFactoryTest
 	@Test
 	public void postRoutingRequest()
 	{
+		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
+		// both params should not be used for this test case
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
-				new DerKurierShipperConfigRepository() // not used
-		);
+				derKurierShipperConfigRepository,
+				new DerKurierDeliveryOrderRepository(derKurierShipperConfigRepository));
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl(REST_API_BASE_URL)

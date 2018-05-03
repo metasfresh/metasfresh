@@ -39,7 +39,7 @@ import lombok.Value;
 
 /**
  * Labels for one package.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -47,7 +47,6 @@ import lombok.Value;
 public class PackageLabels
 {
 	private final OrderId orderId;
-	private final HWBNumber hwbNumber;
 	private final PackageLabelType defaultLabelType;
 	@Getter(AccessLevel.NONE)
 	private final ImmutableMap<PackageLabelType, PackageLabel> labels;
@@ -55,14 +54,12 @@ public class PackageLabels
 	@Builder
 	private PackageLabels(
 			@NonNull final OrderId orderId,
-			@NonNull final HWBNumber hwbNumber,
 			@NonNull final PackageLabelType defaultLabelType,
 			@NonNull @Singular final ImmutableList<PackageLabel> labels)
 	{
 		Check.assumeNotEmpty(labels, "labels is not empty");
 
 		this.orderId = orderId;
-		this.hwbNumber = hwbNumber;
 		this.defaultLabelType = defaultLabelType;
 		this.labels = Maps.uniqueIndex(labels, PackageLabel::getType);
 		Check.assume(this.labels.containsKey(defaultLabelType), "defaultLabelType={} shall be present in {}", defaultLabelType, labels);

@@ -513,7 +513,7 @@ public class GOClient implements ShipperGatewayClient
 
 		return PackageLabels.builder()
 				.orderId(GOUtils.createOrderId(goPackageLabels.getSendungsnummerAX4()))
-				.hwbNumber(HWBNumber.of(goPackageLabels.getFrachtbriefnummer()))
+
 				.defaultLabelType(GOPackageLabelType.DIN_A6_ROUTER_LABEL)
 				.label(PackageLabel.builder()
 						.type(GOPackageLabelType.DIN_A4_HWB)

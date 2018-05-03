@@ -1,4 +1,4 @@
-package de.metas.shipper.gateway.go.schema;
+package de.metas.shipper.gateway.derkurier.misc;
 
 import de.metas.shipper.gateway.spi.model.PackageLabelType;
 
@@ -24,12 +24,8 @@ import de.metas.shipper.gateway.spi.model.PackageLabelType;
  * #L%
  */
 
-public enum GOPackageLabelType implements PackageLabelType
+public enum DerKurierPackageLabelType implements PackageLabelType
 {
-	/** DIN A4 HWB (Tag Frachtbrief) */
-	DIN_A4_HWB,
-	/** DIN A6 routerlabel, optimized for Citizen and Zebra labelprinters (Tag RouterlabelZebra) */
-	DIN_A6_ROUTER_LABEL,
-	/** DIN A6 routerlabel for any other labelprinters (Tag Routerlabel) */
-	DIN_A6_ROUTER_LABEL_ZEBRA
+	/** DIN A6 routerlabel */
+	DIN_A6_SIMPLE
 }

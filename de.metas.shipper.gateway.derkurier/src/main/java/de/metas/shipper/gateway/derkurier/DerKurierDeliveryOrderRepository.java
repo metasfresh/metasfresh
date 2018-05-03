@@ -14,8 +14,12 @@ import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_DesiredDeliveryTime_To;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Reference;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -23,6 +27,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -36,6 +41,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.attachments.IAttachmentBL;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
@@ -363,6 +369,39 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		Check.assumeNotNull(orderPO, "A data recordfor modelClass={} and ID={}", modelClass.getSimpleName(), repoId);
 
 		return orderPO;
+	}
+
+	public void attachCsvToDeliveryOrder(
+			final int repoId,
+			@NonNull final List<String> csv)
+	{
+		final I_DerKurier_DeliveryOrder record = load(repoId, I_DerKurier_DeliveryOrder.class);
+
+		// thx to https://stackoverflow.com/a/5619144/1012103
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		final DataOutputStream out = new DataOutputStream(baos);
+		for (final String csvLine : csv)
+		{
+			writeLineToStream(csvLine, out);
+		}
+		Services.get(IAttachmentBL.class).addEntry(record, "CSV-Daten", baos.toByteArray());
+	}
+
+	public void writeLineToStream(
+			@NonNull final String csvLine,
+			@NonNull final DataOutputStream dataOutputStream)
+	{
+		try
+		{
+			dataOutputStream.writeUTF(csvLine);
+			dataOutputStream.writeUTF("\n");
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException("IOException writing clsLine to dataOutputStream", e).appendParametersToMessage()
+					.setParameter("csvLine", csvLine)
+					.setParameter("dataOutputStream", dataOutputStream);
+		}
 	}
 
 }
