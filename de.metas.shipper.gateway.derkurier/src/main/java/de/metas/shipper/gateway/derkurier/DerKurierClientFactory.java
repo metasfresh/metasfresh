@@ -1,7 +1,5 @@
 package de.metas.shipper.gateway.derkurier;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
@@ -13,8 +11,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
-import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
 import lombok.NonNull;
@@ -44,6 +42,13 @@ import lombok.NonNull;
 @Service
 public class DerKurierClientFactory implements ShipperGatewayClientFactory
 {
+	private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
+
+	public DerKurierClientFactory(@NonNull final DerKurierShipperConfigRepository derKurierShipperConfigRepository)
+	{
+		this.derKurierShipperConfigRepository = derKurierShipperConfigRepository;
+	}
+
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -53,15 +58,7 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 	@Override
 	public ShipperGatewayClient newClientForShipperId(final int shipperId)
 	{
-		final I_DerKurier_Shipper_Config shipperConfigRecord = Services.get(IQueryBL.class).createQueryBuilder(I_DerKurier_Shipper_Config.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_DerKurier_Shipper_Config.COLUMN_M_Shipper_ID, shipperId)
-				.create()
-				.firstOnly(I_DerKurier_Shipper_Config.class);
-
-		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
-				.restApiBaseUrl(shipperConfigRecord.getAPIServerBaseURL())
-				.customerNumber(shipperConfigRecord.getDK_CustomerNumber()).build();
+		final DerKurierShipperConfig shipperConfig = derKurierShipperConfigRepository.retrieveConfigForShipperId(shipperId);
 		return createClient(shipperConfig);
 	}
 

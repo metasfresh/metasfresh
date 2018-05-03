@@ -1,6 +1,9 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+import org.adempiere.util.Check;
+
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -26,12 +29,24 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class DerKurierShipperConfig
 {
 	String restApiBaseUrl;
 
 	String customerNumber;
 
+	ParcelNumberGenerator parcelNumberGenerator;
 
+	@Builder
+	public DerKurierShipperConfig(
+			@NonNull final String restApiBaseUrl,
+			@NonNull final String customerNumber,
+			@NonNull final String parceNumberSequenceName)
+	{
+		this.restApiBaseUrl = Check.assumeNotEmpty(restApiBaseUrl, "Parameter restApiBaseUrl is not empty");
+		this.customerNumber = Check.assumeNotEmpty(customerNumber, "Parameter customerNumber is not empty");
+
+		this.parcelNumberGenerator = new ParcelNumberGenerator(
+				Check.assumeNotEmpty(parceNumberSequenceName, "Parameter parceNumberSequenceName is not empty"));
+	}
 }

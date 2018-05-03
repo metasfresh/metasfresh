@@ -15,7 +15,7 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -506416449L;
+	private static final long serialVersionUID = -1572214400L;
 
     /** Standard Constructor */
     public X_DerKurier_DeliveryOrderLine (Properties ctx, int DerKurier_DeliveryOrderLine_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
 			setDK_Consignee_City (null);
 			setDK_Consignee_Country (null);
 			setDK_Consignee_DesiredStation (null);
+			setDK_Consignee_HouseNumber (null);
 			setDK_Consignee_Name (null);
 			setDK_Consignee_ZipCode (null);
 			setDK_CustomerNumber (null);
@@ -177,6 +178,22 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
 	public java.lang.String getDK_Consignee_EMail () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DK_Consignee_EMail);
+	}
+
+	/** Set Empfänger Hausnummer.
+		@param DK_Consignee_HouseNumber Empfänger Hausnummer	  */
+	@Override
+	public void setDK_Consignee_HouseNumber (java.lang.String DK_Consignee_HouseNumber)
+	{
+		set_Value (COLUMNNAME_DK_Consignee_HouseNumber, DK_Consignee_HouseNumber);
+	}
+
+	/** Get Empfänger Hausnummer.
+		@return Empfänger Hausnummer	  */
+	@Override
+	public java.lang.String getDK_Consignee_HouseNumber () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DK_Consignee_HouseNumber);
 	}
 
 	/** Set Empfänger Name.

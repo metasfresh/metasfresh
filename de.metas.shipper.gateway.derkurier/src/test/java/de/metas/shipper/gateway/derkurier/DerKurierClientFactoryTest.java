@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
@@ -55,11 +56,14 @@ public class DerKurierClientFactoryTest
 	@Test
 	public void postRoutingRequest()
 	{
-		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory();
+		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
+				new DerKurierShipperConfigRepository() // not used
+		);
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl(REST_API_BASE_URL)
-				.customerNumber("12345").build();
+				.customerNumber("12345")
+				.parceNumberSequenceName("blah-blah").build();
 
 		final DerKurierClient client = derKurierClientFactory.createClient(shipperConfig);
 

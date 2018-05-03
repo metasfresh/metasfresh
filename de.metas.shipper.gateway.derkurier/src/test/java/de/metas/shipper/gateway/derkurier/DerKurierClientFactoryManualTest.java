@@ -6,6 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 
@@ -40,11 +41,14 @@ public class DerKurierClientFactoryManualTest
 	@Ignore // remove the ignore to run this test manually
 	public void manualTest()
 	{
-		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory();
+		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
+				new DerKurierShipperConfigRepository() // not used
+				);
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl("https://leoz.derkurier.de:13000/rs/api/v1")
-				.customerNumber("12345").build();
+				.customerNumber("12345")
+				.parceNumberSequenceName("blah-blah").build();
 		final DerKurierClient client = derKurierClientFactory.createClient(shipperConfig);
 
 		final RoutingRequest routingRequest = DerKurierClientFactoryTest.createRoutingRequest();

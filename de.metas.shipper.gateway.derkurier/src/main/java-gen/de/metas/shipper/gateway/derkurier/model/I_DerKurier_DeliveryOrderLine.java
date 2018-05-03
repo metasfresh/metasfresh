@@ -243,6 +243,29 @@ public interface I_DerKurier_DeliveryOrderLine
     public static final String COLUMNNAME_DK_Consignee_EMail = "DK_Consignee_EMail";
 
 	/**
+	 * Set Empfänger Hausnummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_Consignee_HouseNumber (java.lang.String DK_Consignee_HouseNumber);
+
+	/**
+	 * Get Empfänger Hausnummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDK_Consignee_HouseNumber();
+
+    /** Column definition for DK_Consignee_HouseNumber */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrderLine, Object> COLUMN_DK_Consignee_HouseNumber = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrderLine, Object>(I_DerKurier_DeliveryOrderLine.class, "DK_Consignee_HouseNumber", null);
+    /** Column name DK_Consignee_HouseNumber */
+    public static final String COLUMNNAME_DK_Consignee_HouseNumber = "DK_Consignee_HouseNumber";
+
+	/**
 	 * Set Empfänger Name.
 	 *
 	 * <br>Type: String

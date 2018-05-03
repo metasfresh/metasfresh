@@ -31,13 +31,17 @@ public class ContactPerson
 {
 	PhoneNumber phone;
 
+	String emailAddress;
+
 	@Builder
 	private ContactPerson(
-			@NonNull final PhoneNumber phone)
+			@NonNull final PhoneNumber phone,
+			@NonNull final String emailAddress)
 	{
 		this.phone = phone;
+		this.emailAddress = emailAddress;
 	}
-	
+
 	public String getPhoneAsString()
 	{
 		return phone.getAsString();
