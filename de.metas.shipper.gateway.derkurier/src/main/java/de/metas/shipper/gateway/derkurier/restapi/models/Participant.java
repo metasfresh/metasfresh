@@ -49,19 +49,15 @@ public class Participant
 	boolean island;
 	int term;
 
-	@JsonProperty("earliestTimeOfDelivery")
 	@JsonFormat(shape = Shape.STRING, pattern = TIME_FORMAT)
 	LocalTime earliestTimeOfDelivery;
 
-	@JsonProperty("saturdayDeliveryUntil")
 	@JsonFormat(shape = Shape.STRING, pattern = TIME_FORMAT)
 	LocalTime saturdayDeliveryUntil;
 
-	@JsonProperty("sundayDeliveryUntil")
 	@JsonFormat(shape = Shape.STRING, pattern = TIME_FORMAT)
 	LocalTime sundayDeliveryUntil;
 
-	@JsonProperty("pickupUntil")
 	@JsonFormat(shape = Shape.STRING, pattern = TIME_FORMAT)
 	LocalTime pickupUntil;
 
@@ -70,20 +66,20 @@ public class Participant
 	@Builder
 	@JsonCreator
 	public Participant(
-			@JsonProperty("stationFormatted") String stationFormatted,
-			@JsonProperty("station") String station,
-			@JsonProperty("country") String country,
-			@JsonProperty("zipCode") String zipCode,
-			@JsonProperty("zone") String zone,
-			@JsonProperty("sector") String sector,
-			@JsonProperty("dayType") String dayType,
-			@JsonProperty("island") Boolean island,
-			@JsonProperty("term") Integer term,
-			LocalTime earliestTimeOfDelivery,
-			LocalTime saturdayDeliveryUntil,
-			LocalTime sundayDeliveryUntil,
-			LocalTime pickupUntil,
-			@JsonProperty("partnerManager") String partnerManager)
+			@JsonProperty("stationFormatted") final String stationFormatted,
+			@JsonProperty("station") final String station,
+			@JsonProperty("country") final String country,
+			@JsonProperty("zipCode") final String zipCode,
+			@JsonProperty("zone") final String zone,
+			@JsonProperty("sector") final String sector,
+			@JsonProperty("dayType") final String dayType,
+			@JsonProperty("island") final Boolean island,
+			@JsonProperty("term") final Integer term,
+			@JsonProperty("earliestTimeOfDelivery") final LocalTime earliestTimeOfDelivery,
+			@JsonProperty("saturdayDeliveryUntil") final LocalTime saturdayDeliveryUntil,
+			@JsonProperty("sundayDeliveryUntil") final LocalTime sundayDeliveryUntil,
+			@JsonProperty("pickupUntil") final LocalTime pickupUntil,
+			@JsonProperty("partnerManager") final String partnerManager)
 	{
 		this.stationFormatted = stationFormatted;
 		this.station = Check.assumeNotEmpty(station, "Parameter station may not be empty");
