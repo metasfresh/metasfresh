@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.adempiere.impexp.impl;
+package de.metas.impexp.bpartner;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
