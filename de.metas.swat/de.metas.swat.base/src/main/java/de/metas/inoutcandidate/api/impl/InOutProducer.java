@@ -120,13 +120,10 @@ public class InOutProducer implements IInOutProducer
 	 * @param createReceiptWithDatePromised if <code>false</code> (the default), then a new InOut is created with the current date from {@link Env#getDate(Properties)}. Otherwise it is created with
 	 *            the DatePromised value of the receipt schedule's C_Order. To be used e.g. when doing migration work.
 	 */
-	public InOutProducer(final InOutGenerateResult result, final boolean complete, final boolean createReceiptWithDatePromised)
+	protected InOutProducer(@NonNull final InOutGenerateResult result, final boolean complete, final boolean createReceiptWithDatePromised)
 	{
-		super();
-
 		Check.assumeNotNull(result, "result not null");
 		this.result = result;
-
 		this.complete = complete;
 		this.createReceiptWithDatePromised = createReceiptWithDatePromised;
 	}
