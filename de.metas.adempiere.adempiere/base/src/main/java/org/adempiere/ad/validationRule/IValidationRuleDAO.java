@@ -23,6 +23,7 @@ package org.adempiere.ad.validationRule;
  */
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Val_Rule;
@@ -42,9 +43,11 @@ public interface IValidationRuleDAO extends ISingletonService
 	/**
 	 * Retrieve child/included validation rules
 	 * 
-	 * @param parent
+	 * @param parentValRuleId
 	 * @return included validation rules
 	 */
-	List<I_AD_Val_Rule> retrieveChildValRules(I_AD_Val_Rule parent);
+	List<I_AD_Val_Rule> retrieveChildValRules(int parentValRuleId);
+
+	Set<String> retrieveValRuleDependsOnTableNames(int valRuleId);
 
 }
