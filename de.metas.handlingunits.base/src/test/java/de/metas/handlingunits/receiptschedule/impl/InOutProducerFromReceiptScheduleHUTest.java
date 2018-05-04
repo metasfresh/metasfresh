@@ -35,11 +35,19 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.expectations.HUAttributeExpectation;
@@ -54,8 +62,20 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
  *
  * @author al
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class })
 public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocationWithWeightAttributeTest
 {
+	@Override
+	protected void afterInitialize()
+	{
+		super.afterInitialize();
+
+		final I_C_DocType docType = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_DocType.class);
+		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt);
+		InterfaceWrapperHelper.save(docType);
+	}
+
 	/**
 	 * We're expecting just one receipt line per product and no quality issues
 	 */
