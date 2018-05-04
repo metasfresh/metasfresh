@@ -26,7 +26,8 @@ import de.metas.shipper.gateway.spi.model.Address;
 
 public class DerKurierConstants
 {
-	public static final String SHIPPER_GATEWAY_ID = "DerKurier";
+	/** Important: needs to be kept in sync with the respective shippergateway AD_Reflist value in M_Sipper. */
+	public static final String SHIPPER_GATEWAY_ID = "derKurier";
 
 	public static final String SYSCONFIG_DERKURIER_LABEL_PROCESS_ID = "de.metas.shipper.gateway.derkurier.PackageLabel.AD_Process_ID";
 

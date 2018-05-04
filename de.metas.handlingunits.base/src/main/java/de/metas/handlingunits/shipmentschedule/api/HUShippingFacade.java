@@ -240,10 +240,12 @@ public class HUShippingFacade
 		final Set<Integer> mpackageIds = mpackages.stream()
 				.map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
 
-		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(DeliveryOrderCreateRequest.builder()
+		final DeliveryOrderCreateRequest request = DeliveryOrderCreateRequest.builder()
 				.pickupDate(getShipperDeliveryOrderPickupDate())
 				.packageIds(mpackageIds)
-				.build());
+				.shipperGatewayId(shipperGatewayId)
+				.build();
+		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
 	}
 
 	public LocalDate getShipperDeliveryOrderPickupDate()

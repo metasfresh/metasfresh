@@ -46,11 +46,8 @@ public class DeliveryOrderCreateRequest
 			@NonNull @Singular final Set<Integer> packageIds,
 			@NonNull String shipperGatewayId)
 	{
-		Check.assumeNotEmpty(packageIds, "packageIds is not empty");
-
 		this.pickupDate = pickupDate;
-		this.packageIds = packageIds;
-
+		this.packageIds = Check.assumeNotEmpty(packageIds, "packageIds is not empty");
 		this.shipperGatewayId = shipperGatewayId;
 	}
 }
