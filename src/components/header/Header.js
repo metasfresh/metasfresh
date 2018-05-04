@@ -637,6 +637,7 @@ class Header extends Component {
           handleEmail={this.handleEmail}
           handleLetter={this.handleLetter}
           handleDelete={dataId ? this.handleDelete : ''}
+          handleClone={dataId ? () => this.handleClone(windowType, dataId) : ''}
           redirect={
             windowType
               ? () => this.redirect('/window/' + windowType + '/new')

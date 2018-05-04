@@ -55,6 +55,13 @@ export default class GlobalContextShortcuts extends Component {
         this.props.handleDelete();
       }
     },
+    CLONE_DOCUMENT: event => {
+      event.preventDefault();
+
+      if (this.props.handleClone) {
+        this.props.handleClone();
+      }
+    },
     OPEN_ADVANCED_EDIT: event => {
       event.preventDefault();
 
@@ -74,6 +81,13 @@ export default class GlobalContextShortcuts extends Component {
 
       if (this.props.handleEmail) {
         this.props.handleEmail();
+      }
+    },
+    OPEN_LETTER: event => {
+      event.preventDefault();
+
+      if (this.props.handleLetter) {
+        this.props.handleLetter();
       }
     },
     NEW_DOCUMENT: event => {
@@ -145,6 +159,11 @@ export default class GlobalContextShortcuts extends Component {
         handler={this.handlers.DELETE_DOCUMENT}
       />,
       <Shortcut
+        key="CLONE_DOCUMENT"
+        name="CLONE_DOCUMENT"
+        handler={this.handlers.CLONE_DOCUMENT}
+      />,
+      <Shortcut
         key="OPEN_ADVANCED_EDIT"
         name="OPEN_ADVANCED_EDIT"
         handler={this.handlers.OPEN_ADVANCED_EDIT}
@@ -158,6 +177,11 @@ export default class GlobalContextShortcuts extends Component {
         key="OPEN_EMAIL"
         name="OPEN_EMAIL"
         handler={this.handlers.OPEN_EMAIL}
+      />,
+      <Shortcut
+        key="OPEN_LETTER"
+        name="OPEN_LETTER"
+        handler={this.handlers.OPEN_LETTER}
       />,
       <Shortcut
         key="NEW_DOCUMENT"
