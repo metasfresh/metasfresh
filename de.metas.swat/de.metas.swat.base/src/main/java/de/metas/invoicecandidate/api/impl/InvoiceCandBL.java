@@ -982,7 +982,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				return pricelist.getPricePrecision();
 			}
 		}
-		
+
 		// fall back: get the precision from the currency
 		return getPrecisionFromCurrency(ic);
 	}

@@ -20,11 +20,15 @@ Here come the actual release notes:
   * [#3812](https://github.com/metasfresh/metasfresh/issues/3812) Add process for creating missing M_Product_acct records to WebUI
     * New Action added to Product Catregory window, allowing to copy Acctounting Setting to all Products of a Product Category.
   * [#3965](https://github.com/metasfresh/metasfresh/issues/3965) Translate Actions Update Pharma Conditions
-    * New Translations for Pharma Conditon Parms in Updatte Pharma Permissions Action for de_DE, en_US.
+    * New Translations for Pharma Condition Parms in Updatte Pharma Permissions Action for de_DE, en_US.
   * [#3967](https://github.com/metasfresh/metasfresh/issues/3967) Translate Process Parm in Update Pharma Conditions for Customers
     * Improved Translations for Action Parms. Languages de_DE, en_US.
   * [#3973](https://github.com/metasfresh/metasfresh/issues/3973) Manufacturing Workflow adjustments in WebUI
     * Improved Manufacturing Workflow Window in WebUI.
+
+* metasfresh-webui-frontend
+  * [#1772](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1772) Harmonize List widget Icon Look&Feel when not empty
+    * Improved Look&Feel of List Widgets, now showing only 1 icon depending on field state.
 
 ## Fixes
 * metasfresh
