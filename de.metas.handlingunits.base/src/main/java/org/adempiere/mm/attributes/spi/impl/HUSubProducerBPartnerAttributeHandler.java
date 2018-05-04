@@ -23,20 +23,18 @@ package org.adempiere.mm.attributes.spi.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ISubProducerAttributeBL;
-import org.adempiere.mm.attributes.spi.AttributeValueCalloutAdapter;
+import org.adempiere.mm.attributes.spi.IAttributeValueCalloutAdapter;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.adempiere.mm.attributes.spi.IAttributeValueGeneratorAdapter;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.conversion.ConversionHelper;
@@ -50,15 +48,8 @@ import de.metas.handlingunits.model.X_M_HU;
  * @task http://dewiki908/mediawiki/index.php/06135_Gesch%C3%A4ftspartner_Unterlieferanten_%28108858601576%29
  */
 public class HUSubProducerBPartnerAttributeHandler
-		extends AttributeValueCalloutAdapter
-		implements IAttributeValueGenerator, IAttributeValuesProviderFactory
+		implements IAttributeValueGeneratorAdapter, IAttributeValueCalloutAdapter, IAttributeValuesProviderFactory
 {
-
-	public HUSubProducerBPartnerAttributeHandler()
-	{
-		super();
-	}
-
 	@Override
 	public String getAttributeValueType()
 	{
@@ -69,36 +60,6 @@ public class HUSubProducerBPartnerAttributeHandler
 	public IAttributeValuesProvider createAttributeValuesProvider(final org.compiere.model.I_M_Attribute attribute)
 	{
 		return new HUSubProducerBPartnerAttributeValuesProvider(attribute);
-	}
-
-	@Override
-	public boolean canGenerateValue(final Properties ctx, final IAttributeSet attributeSet, final org.compiere.model.I_M_Attribute attribute)
-	{
-		return false;
-	}
-
-	@Override
-	public String generateStringValue(final Properties ctx, final IAttributeSet attributeSet, final org.compiere.model.I_M_Attribute attribute)
-	{
-		throw new UnsupportedOperationException("Not supported");
-	}
-
-	@Override
-	public BigDecimal generateNumericValue(final Properties ctx, final IAttributeSet attributeSet, final org.compiere.model.I_M_Attribute attribute)
-	{
-		throw new UnsupportedOperationException("Not supported");
-	}
-
-	@Override
-	public Date generateDateValue(final Properties ctx, final IAttributeSet attributeSet, final org.compiere.model.I_M_Attribute attribute)
-	{
-		throw new UnsupportedOperationException("Not supported");
-	}
-
-	@Override
-	public I_M_AttributeValue generateAttributeValue(final Properties ctx, final int tableId, final int recordId, final boolean isSOTrx, final String trxName)
-	{
-		throw new UnsupportedOperationException("Not supported");
 	}
 
 	/**
