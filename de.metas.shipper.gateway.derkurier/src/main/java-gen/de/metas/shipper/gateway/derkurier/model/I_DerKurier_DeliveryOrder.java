@@ -337,6 +337,29 @@ public interface I_DerKurier_DeliveryOrder
     public static final String COLUMNNAME_DK_Sender_Name2 = "DK_Sender_Name2";
 
 	/**
+	 * Set Absender Name3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_Sender_Name3 (java.lang.String DK_Sender_Name3);
+
+	/**
+	 * Get Absender Name3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDK_Sender_Name3();
+
+    /** Column definition for DK_Sender_Name3 */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_DK_Sender_Name3 = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "DK_Sender_Name3", null);
+    /** Column name DK_Sender_Name3 */
+    public static final String COLUMNNAME_DK_Sender_Name3 = "DK_Sender_Name3";
+
+	/**
 	 * Set Absender Strasse.
 	 *
 	 * <br>Type: String

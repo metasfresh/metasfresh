@@ -40,6 +40,8 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 
 public class DerKurierDeliveryOrderRepositoryTest
 {
+	private DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository;
+
 	@Before
 	public void init()
 	{
@@ -48,14 +50,15 @@ public class DerKurierDeliveryOrderRepositoryTest
 		final I_C_Country countryDe = newInstance(I_C_Country.class);
 		countryDe.setCountryCode("DE");
 		save(countryDe);
+
+		derKurierDeliveryOrderRepository = new DerKurierDeliveryOrderRepository(new Converters());
 	}
 
 	@Test
 	public void test_save()
 	{
-		final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository = new DerKurierDeliveryOrderRepository(new Converters());
 
-		final DeliveryOrder deliveryOrder = DerKurierTestTools.createTestDeliveryOrder();
+		final DeliveryOrder deliveryOrder = DerKurierTestTools.createTestDeliveryOrderwithOneLine();
 		final DeliveryOrder savedDeliveryOrder = derKurierDeliveryOrderRepository.save(deliveryOrder);
 
 		assertThat(savedDeliveryOrder.getRepoId()).isGreaterThan(0);
@@ -64,6 +67,12 @@ public class DerKurierDeliveryOrderRepositoryTest
 		final I_DerKurier_DeliveryOrder headerRecord = headerRecords.get(0);
 		assertThat(headerRecord.getDK_Sender_Street()).isEqualTo(deliveryOrder.getPickupAddress().getStreet1());
 		assertThat(headerRecord.getDerKurier_DeliveryOrder_ID()).isEqualTo(savedDeliveryOrder.getOrderId().getOrderIdAsInt());
+
+//		final List<I_DerKurier_DeliveryOrderLine> lineRecords = POJOLookupMap.get().getRecords(I_DerKurier_DeliveryOrderLine.class);
+//		assertThat(lineRecords).hasSize(1);
+//		final I_DerKurier_DeliveryOrderLine lineRecord = lineRecords.get(0);
+		assertThat(deliveryOrder.getPickupDate().getTimeFrom()).isNull(); // guard
+		assertThat(headerRecord.getDK_DesiredPickupTime_From()).isNull();
 
 		final DeliveryOrder loadedDeliveryOrder = derKurierDeliveryOrderRepository.getByRepoId(savedDeliveryOrder.getRepoId());
 		assertThat(loadedDeliveryOrder).isEqualTo(savedDeliveryOrder);

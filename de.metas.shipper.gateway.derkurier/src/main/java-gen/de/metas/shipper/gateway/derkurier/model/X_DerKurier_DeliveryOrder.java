@@ -14,7 +14,7 @@ public class X_DerKurier_DeliveryOrder extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1830160458L;
+	private static final long serialVersionUID = -1494709073L;
 
     /** Standard Constructor */
     public X_DerKurier_DeliveryOrder (Properties ctx, int DerKurier_DeliveryOrder_ID, String trxName)
@@ -229,6 +229,22 @@ public class X_DerKurier_DeliveryOrder extends org.compiere.model.PO implements 
 	public java.lang.String getDK_Sender_Name2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DK_Sender_Name2);
+	}
+
+	/** Set Absender Name3.
+		@param DK_Sender_Name3 Absender Name3	  */
+	@Override
+	public void setDK_Sender_Name3 (java.lang.String DK_Sender_Name3)
+	{
+		set_Value (COLUMNNAME_DK_Sender_Name3, DK_Sender_Name3);
+	}
+
+	/** Get Absender Name3.
+		@return Absender Name3	  */
+	@Override
+	public java.lang.String getDK_Sender_Name3 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DK_Sender_Name3);
 	}
 
 	/** Set Absender Strasse.

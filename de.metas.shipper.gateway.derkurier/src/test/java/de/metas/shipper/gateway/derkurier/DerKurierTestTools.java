@@ -16,6 +16,7 @@ import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.CountryCode;
 import de.metas.shipper.gateway.spi.model.DeliveryDate;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PickupDate;
@@ -46,14 +47,56 @@ public class DerKurierTestTools
 {
 	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();
 
+	public static DeliveryOrder createTestDeliveryOrderwithOneLine()
+	{
+		final DeliveryOrderBuilder deliveryOrderBuilder = prepareDeliveryOrderBuilder();
+		final DerKurierDeliveryDataBuilder derKurierDeliveryDataBuilder = prepatreDerKurierDeliveryDataBuilder();
+
+		final DeliveryOrder deliveryOrder = deliveryOrderBuilder
+				.deliveryPosition(DeliveryPosition.builder()
+						.numberOfPackages(5)
+						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.grossWeightKg(1)
+						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber1").build())
+						.build())
+				.build();
+		return deliveryOrder;
+	}
+
 	public static DeliveryOrder createTestDeliveryOrder()
+	{
+		final DeliveryOrderBuilder deliveryOrderBuilder = prepareDeliveryOrderBuilder();
+		final DerKurierDeliveryDataBuilder derKurierDeliveryDataBuilder = prepatreDerKurierDeliveryDataBuilder();
+
+		final DeliveryOrder deliveryOrder = deliveryOrderBuilder
+				.deliveryPosition(DeliveryPosition.builder()
+						.numberOfPackages(5)
+						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.grossWeightKg(1)
+						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber1").build())
+						.build())
+				.deliveryPosition(DeliveryPosition.builder()
+						.numberOfPackages(1)
+						.packageIds(ImmutableList.of(6, 7))
+						.grossWeightKg(2)
+						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber2").build())
+						.build())
+				.build();
+		return deliveryOrder;
+	}
+
+	public static DerKurierDeliveryDataBuilder prepatreDerKurierDeliveryDataBuilder()
 	{
 		final DerKurierDeliveryDataBuilder derKurierDeliveryDataBuilder = DerKurierDeliveryData
 				.builder()
 				.customerNumber("customerNumber-12345")
 				.station("030");
+		return derKurierDeliveryDataBuilder;
+	}
 
-		final DeliveryOrder deliveryOrder = DeliveryOrder.builder()
+	public static DeliveryOrderBuilder prepareDeliveryOrderBuilder()
+	{
+		final DeliveryOrderBuilder deliveryOrderBuilder = DeliveryOrder.builder()
 				.orderId(OrderId.of(SHIPPER_GATEWAY_ID, "1234"))
 				.serviceType(DerKurierServiceType.OVERNIGHT)
 				.pickupAddress(Address.builder()
@@ -82,23 +125,8 @@ public class DerKurierTestTools
 						.city("Köln")
 						.country(COUNTRY_CODE_DE)
 						.build())
-				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(5)
-						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
-						.grossWeightKg(1)
-						.content("some products")
-						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber1").build())
-						.build())
-				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(1)
-						.packageIds(ImmutableList.of(6, 7))
-						.grossWeightKg(2)
-						.content("some products")
-						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber2").build())
-						.build())
-				.customerReference("some info for customer")
-				.build();
-		return deliveryOrder;
+				.customerReference("some info for customer");
+		return deliveryOrderBuilder;
 	}
 
 	public static RoutingRequest createRoutingRequest()
