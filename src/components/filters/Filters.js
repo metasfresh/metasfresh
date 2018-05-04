@@ -1,6 +1,7 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { find } from 'lodash';
 
 import TableCell from '../table/TableCell';
 import FiltersFrequent from './FiltersFrequent';
@@ -125,8 +126,12 @@ class Filters extends Component {
         unannotatedFilter.parameters && unannotatedFilter.parameters[0];
       const filterType = parameter && parameter.widgetType;
       const isActive = this.isFilterActive(unannotatedFilter.filterId);
+      const currentFilter = find(
+        filter,
+        f => f.filterId === unannotatedFilter.filterId
+      );
       const activeParameter =
-        parameter && isActive && filter[0] && filter[0].parameters[0];
+        parameter && isActive && currentFilter && currentFilter.parameters[0];
       const captionValue = activeParameter
         ? TableCell.fieldValueToString(
             activeParameter.valueTo
