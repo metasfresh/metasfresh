@@ -93,6 +93,7 @@ public class ProductPriceImporter
 		{
 			pp = newInstance(I_M_ProductPrice.class, plv);
 		}
+
 		pp.setM_PriceList_Version(plv);
 		pp.setM_Product_ID(request.getProductId());
 		pp.setPriceLimit(price);
