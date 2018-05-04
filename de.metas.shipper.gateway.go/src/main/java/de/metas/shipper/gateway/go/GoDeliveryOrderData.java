@@ -5,6 +5,9 @@ import javax.annotation.Nullable;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.HWBNumber;
+import de.metas.shipper.gateway.spi.model.PaidMode;
+import de.metas.shipper.gateway.spi.model.SelfDelivery;
+import de.metas.shipper.gateway.spi.model.SelfPickup;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,9 +44,18 @@ public class GoDeliveryOrderData implements CustomDeliveryData
 	@Nullable // might cost money
 	private String receiptConfirmationPhoneNumber;
 
+	@NonNull
+	private PaidMode paidMode;
+
+	@NonNull
+	private SelfDelivery selfDelivery;
+
+	@NonNull
+	private SelfPickup selfPickup;
+
 	public static GoDeliveryOrderData ofDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		return cast(deliveryOrder.getCustomDeliveryOrderData());
+		return cast(deliveryOrder.getCustomDeliveryData());
 	}
 
 	public static GoDeliveryOrderData cast(@Nullable final CustomDeliveryData customDeliveryOrderData)

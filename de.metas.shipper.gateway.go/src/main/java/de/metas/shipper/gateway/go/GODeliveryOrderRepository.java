@@ -65,9 +65,12 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		final Set<Integer> mpackageIds = retrieveGODeliveryOrderPackageIds(orderPO.getGO_DeliveryOrder_ID());
 
-		GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
+		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
 				.hwbNumber(HWBNumber.ofNullable(orderPO.getGO_HWBNumber()))
 				.receiptConfirmationPhoneNumber(null)
+				.paidMode(GOPaidMode.forCode(orderPO.getGO_PaidMode()))
+				.selfPickup(GOSelfPickup.forCode(orderPO.getGO_SelfPickup()))
+				.selfDelivery(GOSelfDelivery.forCode(orderPO.getGO_SelfDelivery()))
 				.build();
 
 		return DeliveryOrder.builder()
@@ -75,24 +78,21 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 				.shipperId(orderPO.getM_Shipper_ID())
 				//
 				.orderId(GOUtils.createOrderIdOrNull(orderPO.getGO_AX4Number()))
-				.customDeliveryOrderData(goDeliveryOrderData)
+				.customDeliveryData(goDeliveryOrderData)
 				.orderStatus(GOOrderStatus.forNullableCode(orderPO.getGO_OrderStatus()))
 				//
 				.serviceType(GOServiceType.forCode(orderPO.getGO_ServiceType()))
-				.paidMode(GOPaidMode.forCode(orderPO.getGO_PaidMode()))
 				//
 				// Pickup
 				.pickupAddress(GODeliveryOrderConverters.pickupAddressFromPO(orderPO))
 				.pickupDate(GODeliveryOrderConverters.pickupDateFromPO(orderPO))
 				.pickupNote(orderPO.getGO_PickupNote())
-				.selfPickup(GOSelfPickup.forCode(orderPO.getGO_SelfPickup()))
 				//
 				// Delivery
 				.deliveryAddress(GODeliveryOrderConverters.deliveryAddressFromPO(orderPO))
 				.deliveryDate(GODeliveryOrderConverters.deliveryDateFromPO(orderPO))
 				.deliveryContact(GODeliveryOrderConverters.deliveryContactFromPO(orderPO))
 				.deliveryNote(orderPO.getGO_DeliverToNote())
-				.selfDelivery(GOSelfDelivery.forCode(orderPO.getGO_SelfDelivery()))
 				.customerReference(orderPO.getGO_CustomerReference())
 				//
 				// Delivery content
@@ -135,14 +135,14 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		orderPO.setProcessed(orderStatus != null && orderStatus.isFinalState());
 
 		orderPO.setGO_ServiceType(order.getServiceType().getCode());
-		orderPO.setGO_PaidMode(order.getPaidMode().getCode());
+		orderPO.setGO_PaidMode(goDeliveryOrderData.getPaidMode().getCode());
 
 		//
 		// Pickup
 		GODeliveryOrderConverters.pickupAddressToPO(orderPO, order.getPickupAddress());
 		GODeliveryOrderConverters.pickupDateToPO(orderPO, order.getPickupDate());
 		orderPO.setGO_PickupNote(order.getPickupNote());
-		orderPO.setGO_SelfPickup(order.getSelfPickup().getCode());
+		orderPO.setGO_SelfPickup(goDeliveryOrderData.getSelfPickup().getCode());
 
 		//
 		// Delivery
@@ -150,7 +150,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		GODeliveryOrderConverters.deliveryDateToPO(orderPO, order.getDeliveryDate());
 		GODeliveryOrderConverters.deliveryContactToPO(orderPO, order.getDeliveryContact());
 		orderPO.setGO_DeliverToNote(order.getDeliveryNote());
-		orderPO.setGO_SelfDelivery(order.getSelfDelivery().getCode());
+		orderPO.setGO_SelfDelivery(goDeliveryOrderData.getSelfDelivery().getCode());
 		orderPO.setGO_CustomerReference(order.getCustomerReference());
 
 		//

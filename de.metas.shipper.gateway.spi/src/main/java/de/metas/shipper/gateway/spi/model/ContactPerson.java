@@ -2,6 +2,8 @@ package de.metas.shipper.gateway.spi.model;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.Check;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -34,17 +36,32 @@ public class ContactPerson
 
 	String emailAddress;
 
+	String simplePhoneNumber;
+
 	@Builder
 	private ContactPerson(
 			@Nullable final PhoneNumber phone,
+			@Nullable final String simplePhoneNumber,
 			@Nullable final String emailAddress)
 	{
 		this.phone = phone;
+		this.simplePhoneNumber = simplePhoneNumber;
 		this.emailAddress = emailAddress;
+
+		final boolean simplePhoneNumberIsEmpty = Check.isEmpty(simplePhoneNumber);
+		final boolean phoneIsEmpty = phone == null;
+		Check.errorUnless(
+				simplePhoneNumberIsEmpty || phoneIsEmpty,
+				"Its not allowed to specify both a simple phone number string and a PhoneNumber instance because they might be contracdictory; simplePhoneNumber={}; phone={}",
+				simplePhoneNumber, phone);
 	}
 
 	public String getPhoneAsString()
 	{
+		if (simplePhoneNumber != null)
+		{
+			return simplePhoneNumber;
+		}
 		return phone.getAsString();
 	}
 }

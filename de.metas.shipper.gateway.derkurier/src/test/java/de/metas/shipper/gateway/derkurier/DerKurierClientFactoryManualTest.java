@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
@@ -41,12 +42,10 @@ public class DerKurierClientFactoryManualTest
 	@Ignore // remove the ignore to run this test manually
 	public void manualTest()
 	{
-		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
 		// both params should not be used for this test case
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
-				derKurierShipperConfigRepository,
-				new DerKurierDeliveryOrderRepository(derKurierShipperConfigRepository)
-				);
+				new DerKurierShipperConfigRepository(),
+				new DerKurierDeliveryOrderRepository(new Converters()));
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl("https://leoz.derkurier.de:13000/rs/api/v1")
@@ -54,7 +53,7 @@ public class DerKurierClientFactoryManualTest
 				.parceNumberSequenceName("blah-blah").build();
 		final DerKurierClient client = derKurierClientFactory.createClient(shipperConfig);
 
-		final RoutingRequest routingRequest = DerKurierClientFactoryTest.createRoutingRequest();
+		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest();
 		final Routing routing = client.postRoutingRequest(routingRequest);
 		assertThat(routing).isNotNull();
 	}

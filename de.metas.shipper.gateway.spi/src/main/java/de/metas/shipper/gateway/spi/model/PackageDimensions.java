@@ -1,7 +1,5 @@
 package de.metas.shipper.gateway.spi.model;
 
-import org.adempiere.util.Check;
-
 import lombok.Builder;
 import lombok.Value;
 
@@ -34,13 +32,12 @@ public class PackageDimensions
 	int widthInCM;
 	int heightInCM;
 
+	/**
+	 * Note: dimensions may be <= 0 which can stand for "not specified".
+	 */
 	@Builder
 	private PackageDimensions(final int lengthInCM, final int widthInCM, final int heightInCM)
 	{
-		Check.assume(lengthInCM > 0, "lengthInCM > 0");
-		Check.assume(widthInCM > 0, "widthInCM > 0");
-		Check.assume(heightInCM > 0, "heightInCM > 0");
-
 		this.lengthInCM = lengthInCM;
 		this.widthInCM = widthInCM;
 		this.heightInCM = heightInCM;

@@ -1,6 +1,7 @@
-package de.metas.shipper.gateway.derkurier;
+package de.metas.shipper.gateway.derkurier.misc;
 
-import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.ServiceType;
+import lombok.Getter;
 
 /*
  * #%L
@@ -24,16 +25,15 @@ import de.metas.shipper.gateway.spi.model.Address;
  * #L%
  */
 
-public class DerKurierConstants
+public enum DerKurierServiceType implements ServiceType
 {
-	public static final String SHIPPER_GATEWAY_ID = "DerKurier";
+	OVERNIGHT("overnight");
 
-	public static final String SYSCONFIG_DERKURIER_LABEL_PROCESS_ID = "de.metas.shipper.gateway.derkurier.PackageLabel.AD_Process_ID";
+	@Getter
+	private final String code;
 
-	public static final String DATE_FORMAT = "yyyy-MM-dd";
-
-	public static final String TIME_FORMAT = "HH:mm";
-
-	/** used to join&split the street1 and street2 that we have in {@link Address} into the one "street" field that we have at "Der Kurier" */
-	public static final String STREET_DELIMITER = " - ";
+	private DerKurierServiceType(final String code)
+	{
+		this.code = code;
+	}
 }

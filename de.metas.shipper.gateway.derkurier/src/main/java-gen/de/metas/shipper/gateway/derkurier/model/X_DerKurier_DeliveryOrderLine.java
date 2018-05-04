@@ -15,7 +15,7 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1572214400L;
+	private static final long serialVersionUID = 480413943L;
 
     /** Standard Constructor */
     public X_DerKurier_DeliveryOrderLine (Properties ctx, int DerKurier_DeliveryOrderLine_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
       super (ctx, DerKurier_DeliveryOrderLine_ID, trxName);
       /** if (DerKurier_DeliveryOrderLine_ID == 0)
         {
+			setC_Country_ID (0);
 			setDerKurier_DeliveryOrder_ID (0);
 			setDerKurier_DeliveryOrderLine_ID (0);
 			setDK_Consignee_City (null);
@@ -56,6 +57,43 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_Country getC_Country() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class);
+	}
+
+	@Override
+	public void setC_Country(org.compiere.model.I_C_Country C_Country)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class, C_Country);
+	}
+
+	/** Set Land.
+		@param C_Country_ID 
+		Land
+	  */
+	@Override
+	public void setC_Country_ID (int C_Country_ID)
+	{
+		if (C_Country_ID < 1) 
+			set_Value (COLUMNNAME_C_Country_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Country_ID, Integer.valueOf(C_Country_ID));
+	}
+
+	/** Get Land.
+		@return Land
+	  */
+	@Override
+	public int getC_Country_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Country_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder getDerKurier_DeliveryOrder() throws RuntimeException

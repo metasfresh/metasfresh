@@ -98,11 +98,13 @@ public class Application
 						.build())
 				.customerReference("some info for customer")
 				.serviceType(GOServiceType.Overnight)
-				.paidMode(GOPaidMode.Prepaid)
-				.selfDelivery(GOSelfDelivery.Pickup)
-				.selfPickup(GOSelfPickup.Delivery)
-				.customDeliveryOrderData(GoDeliveryOrderData.builder()
-						.receiptConfirmationPhoneNumber("+40-746-010203").build())
+				.customDeliveryData(GoDeliveryOrderData
+						.builder()
+						.receiptConfirmationPhoneNumber("+40-746-010203")
+						.paidMode(GOPaidMode.Prepaid)
+						.selfDelivery(GOSelfDelivery.Pickup)
+						.selfPickup(GOSelfPickup.Delivery)
+						.build())
 				.build();
 
 		return args -> {
@@ -155,7 +157,6 @@ public class Application
 		public CountryCodeFactory()
 		{
 			final ImmutableMap.Builder<String, CountryCode> countryCodesByAlpha2 = ImmutableMap.builder();
-			// final ImmutableMap.Builder<String, CountryCode> countryCodesByAlpha3 = ImmutableMap.builder();
 
 			for (final String countryCodeAlpha2 : Locale.getISOCountries())
 			{
@@ -166,11 +167,9 @@ public class Application
 						.alpha3(countryCodeAlpha3)
 						.build();
 				countryCodesByAlpha2.put(countryCodeAlpha2, countryCode);
-				// countryCodesByAlpha3.put(countryCodeAlpha3, countryCode);
 			}
 
 			this.countryCodesByAlpha2 = countryCodesByAlpha2.build();
-			// this.countryCodesByAlpha3 = countryCodesByAlpha3.build();
 		}
 
 		public CountryCode getCountryCodeByAlpha2(@NonNull final String countryCodeAlpha2)

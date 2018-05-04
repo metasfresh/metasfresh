@@ -73,14 +73,17 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 
 		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
-				.receiptConfirmationPhoneNumber(null).build();
+				.receiptConfirmationPhoneNumber(null)
+				.paidMode(GOPaidMode.Prepaid)
+				.selfPickup(GOSelfPickup.Delivery)
+				.selfDelivery(GOSelfDelivery.Pickup)
+				.build();
 
 		return DeliveryOrder.builder()
 				.shipperId(deliveryOrderKey.getShipperId())
 				//
 				.serviceType(GOServiceType.Overnight)
-				.paidMode(GOPaidMode.Prepaid)
-				.customDeliveryOrderData(goDeliveryOrderData)
+				.customDeliveryData(goDeliveryOrderData)
 				//
 				// Pickup
 				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
@@ -90,7 +93,6 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
 						.build())
-				.selfPickup(GOSelfPickup.Delivery)
 				//
 				// Delivery
 				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
@@ -100,7 +102,6 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.bpartnerId(deliverToBPartnerId)
 						.bpartnerLocationId(deliverToBPartnerLocationId)
 						.build())
-				.selfDelivery(GOSelfDelivery.Pickup)
 				//
 				// Delivery content
 				.deliveryPosition(DeliveryPosition.builder()

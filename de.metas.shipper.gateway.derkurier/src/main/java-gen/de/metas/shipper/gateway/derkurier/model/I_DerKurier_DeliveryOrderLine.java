@@ -69,6 +69,35 @@ public interface I_DerKurier_DeliveryOrderLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Land.
+	 * Land
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Country_ID (int C_Country_ID);
+
+	/**
+	 * Get Land.
+	 * Land
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Country_ID();
+
+	public org.compiere.model.I_C_Country getC_Country();
+
+	public void setC_Country(org.compiere.model.I_C_Country C_Country);
+
+    /** Column definition for C_Country_ID */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrderLine, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrderLine, org.compiere.model.I_C_Country>(I_DerKurier_DeliveryOrderLine.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
+    /** Column name C_Country_ID */
+    public static final String COLUMNNAME_C_Country_ID = "C_Country_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *

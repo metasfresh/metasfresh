@@ -69,6 +69,35 @@ public interface I_DerKurier_DeliveryOrder
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Land.
+	 * Land
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Country_ID (int C_Country_ID);
+
+	/**
+	 * Get Land.
+	 * Land
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Country_ID();
+
+	public org.compiere.model.I_C_Country getC_Country();
+
+	public void setC_Country(org.compiere.model.I_C_Country C_Country);
+
+    /** Column definition for C_Country_ID */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, org.compiere.model.I_C_Country>(I_DerKurier_DeliveryOrder.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
+    /** Column name C_Country_ID */
+    public static final String COLUMNNAME_C_Country_ID = "C_Country_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -120,6 +149,240 @@ public interface I_DerKurier_DeliveryOrder
     public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_DerKurier_DeliveryOrder_ID = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "DerKurier_DeliveryOrder_ID", null);
     /** Column name DerKurier_DeliveryOrder_ID */
     public static final String COLUMNNAME_DerKurier_DeliveryOrder_ID = "DerKurier_DeliveryOrder_ID";
+
+	/**
+	 * Set Gewünschtes Abholdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_DesiredPickupDate (java.sql.Timestamp DK_DesiredPickupDate);
+
+	/**
+	 * Get Gewünschtes Abholdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDK_DesiredPickupDate();
+
+    /** Column definition for DK_DesiredPickupDate */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_DK_DesiredPickupDate = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "DK_DesiredPickupDate", null);
+    /** Column name DK_DesiredPickupDate */
+    public static final String COLUMNNAME_DK_DesiredPickupDate = "DK_DesiredPickupDate";
+
+	/**
+	 * Set Gewünschte Abholuhrzeit von.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_DesiredPickupTime_From (java.sql.Timestamp DK_DesiredPickupTime_From);
+
+	/**
+	 * Get Gewünschte Abholuhrzeit von.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDK_DesiredPickupTime_From();
+
+    /** Column definition for DK_DesiredPickupTime_From */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_DK_DesiredPickupTime_From = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "DK_DesiredPickupTime_From", null);
+    /** Column name DK_DesiredPickupTime_From */
+    public static final String COLUMNNAME_DK_DesiredPickupTime_From = "DK_DesiredPickupTime_From";
+
+	/**
+	 * Set Gewünschte Abholuhrzeit bis.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_DesiredPickupTime_To (java.sql.Timestamp DK_DesiredPickupTime_To);
+
+	/**
+	 * Get Gewünschte Abholuhrzeit bis.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDK_DesiredPickupTime_To();
+
+    /** Column definition for DK_DesiredPickupTime_To */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_DK_DesiredPickupTime_To = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "DK_DesiredPickupTime_To", null);
+    /** Column name DK_DesiredPickupTime_To */
+    public static final String COLUMNNAME_DK_DesiredPickupTime_To = "DK_DesiredPickupTime_To";
+
+	/**
+	 * Set Absender Ort.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_Sender_City (java.lang.String DK_Sender_City);
+
+	/**
+	 * Get Absender Ort.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDK_Sender_City();
+
+    /** Column definition for DK_Sender_City */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_DK_Sender_City = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "DK_Sender_City", null);
+    /** Column name DK_Sender_City */
+    public static final String COLUMNNAME_DK_Sender_City = "DK_Sender_City";
+
+	/**
+	 * Set Absender Land.
+	 * Zweistelliger ISO-3166 Ländercode
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_Sender_Country (java.lang.String DK_Sender_Country);
+
+	/**
+	 * Get Absender Land.
+	 * Zweistelliger ISO-3166 Ländercode
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDK_Sender_Country();
+
+    /** Column definition for DK_Sender_Country */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_DK_Sender_Country = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "DK_Sender_Country", null);
+    /** Column name DK_Sender_Country */
+    public static final String COLUMNNAME_DK_Sender_Country = "DK_Sender_Country";
+
+	/**
+	 * Set Absender Hausnummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_Sender_HouseNumber (java.lang.String DK_Sender_HouseNumber);
+
+	/**
+	 * Get Absender Hausnummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDK_Sender_HouseNumber();
+
+    /** Column definition for DK_Sender_HouseNumber */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_DK_Sender_HouseNumber = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "DK_Sender_HouseNumber", null);
+    /** Column name DK_Sender_HouseNumber */
+    public static final String COLUMNNAME_DK_Sender_HouseNumber = "DK_Sender_HouseNumber";
+
+	/**
+	 * Set Absender Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_Sender_Name (java.lang.String DK_Sender_Name);
+
+	/**
+	 * Get Absender Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDK_Sender_Name();
+
+    /** Column definition for DK_Sender_Name */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_DK_Sender_Name = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "DK_Sender_Name", null);
+    /** Column name DK_Sender_Name */
+    public static final String COLUMNNAME_DK_Sender_Name = "DK_Sender_Name";
+
+	/**
+	 * Set Absender Name2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_Sender_Name2 (java.lang.String DK_Sender_Name2);
+
+	/**
+	 * Get Absender Name2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDK_Sender_Name2();
+
+    /** Column definition for DK_Sender_Name2 */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_DK_Sender_Name2 = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "DK_Sender_Name2", null);
+    /** Column name DK_Sender_Name2 */
+    public static final String COLUMNNAME_DK_Sender_Name2 = "DK_Sender_Name2";
+
+	/**
+	 * Set Absender Strasse.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_Sender_Street (java.lang.String DK_Sender_Street);
+
+	/**
+	 * Get Absender Strasse.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDK_Sender_Street();
+
+    /** Column definition for DK_Sender_Street */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_DK_Sender_Street = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "DK_Sender_Street", null);
+    /** Column name DK_Sender_Street */
+    public static final String COLUMNNAME_DK_Sender_Street = "DK_Sender_Street";
+
+	/**
+	 * Set Absender PLZ.
+	 * Postleitzahl
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDK_Sender_ZipCode (java.lang.String DK_Sender_ZipCode);
+
+	/**
+	 * Get Absender PLZ.
+	 * Postleitzahl
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDK_Sender_ZipCode();
+
+    /** Column definition for DK_Sender_ZipCode */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_DK_Sender_ZipCode = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "DK_Sender_ZipCode", null);
+    /** Column name DK_Sender_ZipCode */
+    public static final String COLUMNNAME_DK_Sender_ZipCode = "DK_Sender_ZipCode";
 
 	/**
 	 * Set Aktiv.

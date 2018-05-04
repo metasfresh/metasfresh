@@ -276,7 +276,7 @@ public class GOClient implements ShipperGatewayClient
 	{
 		final OrderId orderId = request.getOrderId();
 
-		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.cast(request.getCustomDeliveryOrderData());
+		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.ofDeliveryOrder(request);
 		final HWBNumber hwbNumber = goDeliveryOrderData.getHwbNumber();
 
 		final Sendung.Abholadresse pickupAddress = createGOPickupAddress(request.getPickupAddress());
@@ -302,9 +302,9 @@ public class GOClient implements ShipperGatewayClient
 		goRequest.setZustellhinweise(request.getDeliveryNote()); // Delivery note (an128, not mandatory)
 
 		goRequest.setService(request.getServiceType().getCode()); // Service type (mandatory)
-		goRequest.setUnfrei(request.getPaidMode().getCode()); // Flag unpaid (mandatory)
-		goRequest.setSelbstanlieferung(request.getSelfDelivery().getCode()); // Flag self delivery (mandatory)
-		goRequest.setSelbstabholung(request.getSelfPickup().getCode()); // Flag self pickup (mandatory)
+		goRequest.setUnfrei(goDeliveryOrderData.getPaidMode().getCode()); // Flag unpaid (mandatory)
+		goRequest.setSelbstanlieferung(goDeliveryOrderData.getSelfDelivery().getCode()); // Flag self delivery (mandatory)
+		goRequest.setSelbstabholung(goDeliveryOrderData.getSelfPickup().getCode()); // Flag self pickup (mandatory)
 		goRequest.setWarenwert(null); // Value of goods (not mandatory)
 		goRequest.setSonderversicherung(null); // Special insurance (not mandatory)
 		goRequest.setNachnahme(null); // Cash on delivery (not mandatory)
@@ -450,7 +450,7 @@ public class GOClient implements ShipperGatewayClient
 
 		return deliveryOrderRequest.toBuilder()
 				.orderId(GOUtils.createOrderId(goResponseContent.getSendungsnummerAX4()))
-				.customDeliveryOrderData(goDeliveryOrderData)
+				.customDeliveryData(goDeliveryOrderData)
 				.orderStatus(newStatus)
 				// .serviceType(deliveryOrderRequest.getServiceType())
 				// .paidMode(deliveryOrderRequest.getPaidMode())

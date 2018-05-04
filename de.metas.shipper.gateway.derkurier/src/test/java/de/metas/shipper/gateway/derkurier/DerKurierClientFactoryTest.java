@@ -5,18 +5,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 
+import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
-import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 
@@ -56,11 +53,10 @@ public class DerKurierClientFactoryTest
 	@Test
 	public void postRoutingRequest()
 	{
-		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
 		// both params should not be used for this test case
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
-				derKurierShipperConfigRepository,
-				new DerKurierDeliveryOrderRepository(derKurierShipperConfigRepository));
+				new DerKurierShipperConfigRepository(),
+				new DerKurierDeliveryOrderRepository(new Converters()));
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl(REST_API_BASE_URL)
@@ -71,7 +67,7 @@ public class DerKurierClientFactoryTest
 
 		final MockRestServiceServer mockServer = MockRestServiceServer.createServer(client.getRestTemplate());
 
-		final RoutingRequest routingRequest = createRoutingRequest();
+		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest();
 
 		mockServer.expect(requestTo(REST_API_BASE_URL + "/routing/request"))
 				.andRespond(withSuccess(ROUTING_RESPONSE_JSON, MediaType.APPLICATION_JSON));
@@ -82,19 +78,4 @@ public class DerKurierClientFactoryTest
 		assertThat(routing).isNotNull();
 	}
 
-	public static RoutingRequest createRoutingRequest()
-	{
-		final RequestParticipant sender = RequestParticipant.builder()
-				.country("DE")
-				.zip("50969")
-				.timeFrom(LocalTime.of(10, 20, 30, 40)) // here we provide localtime up to the nano-second, but the web-service only wants hour:minute
-				.timeTo(LocalTime.of(11, 21, 31, 41))
-				.build();
-
-		final RoutingRequest routingRequest = RoutingRequest.builder()
-				.sendDate(LocalDate.now())
-				.sender(sender)
-				.build();
-		return routingRequest;
-	}
 }

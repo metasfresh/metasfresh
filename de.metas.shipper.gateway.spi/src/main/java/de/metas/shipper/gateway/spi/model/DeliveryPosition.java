@@ -42,6 +42,7 @@ public class DeliveryPosition
 	String content;
 	PackageDimensions packageDimensions;
 
+	/** optional, can be {@code null} */
 	CustomDeliveryData customDeliveryData;
 
 	ImmutableSet<Integer> packageIds;
@@ -58,7 +59,7 @@ public class DeliveryPosition
 	{
 		Check.assume(numberOfPackages > 0, "numberOfPackages > 0");
 		Check.assume(grossWeightKg > 0, "grossWeightKg > 0");
-		Check.assumeNotEmpty(content, "content is not empty");
+		//Check.assumeNotEmpty(content, "content is not empty");
 
 		this.repoId = repoId;
 		this.numberOfPackages = numberOfPackages;

@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
+import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -83,13 +85,17 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 		final DerKurierShipperConfig config = derKurierShipperConfigRepository
 				.retrieveConfigForShipperId(request.getDeliveryOrderKey().getShipperId());
 
-		final DerKurierDeliveryData derKurierDeliveryOrderData = //
+		final ParcelNumberGenerator parcelNumberGenerator = config.getParcelNumberGenerator();
+
+		final DerKurierDeliveryData derKurierDeliveryData = //
 				DerKurierDeliveryData.builder()
 						.customerNumber(config.getCustomerNumber())
+						.parcelNumber(parcelNumberGenerator.getNextParcelNumber())
 						.build();
 
+
 		return DeliveryOrder.builder()
-				.customDeliveryOrderData(derKurierDeliveryOrderData)
+				.serviceType(DerKurierServiceType.OVERNIGHT)
 				.shipperId(deliveryOrderKey.getShipperId())
 				//
 				// Pickup
@@ -119,6 +125,7 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 						.packageIds(mpackageIds)
 						.grossWeightKg(Math.max(request.getGrossWeightInKg(), 1))
 						.content(request.getPackageContentDescription())
+						.customDeliveryData(derKurierDeliveryData)
 						.build())
 				// .customerReference(null)
 

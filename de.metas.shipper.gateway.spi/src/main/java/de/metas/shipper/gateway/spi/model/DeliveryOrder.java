@@ -38,8 +38,9 @@ public class DeliveryOrder
 	@Nullable
 	OrderId orderId;
 
+	/** optional, can be {@code null} */
 	@Nullable
-	CustomDeliveryData customDeliveryOrderData;
+	CustomDeliveryData customDeliveryData;
 
 	@Nullable
 	OrderStatus orderStatus;
@@ -74,15 +75,6 @@ public class DeliveryOrder
 
 	@NonNull
 	private ServiceType serviceType;
-
-	@NonNull
-	private PaidMode paidMode;
-
-	@NonNull
-	private SelfDelivery selfDelivery;
-
-	@NonNull
-	private SelfPickup selfPickup;
 
 	/** ID in external repository */
 	private int repoId;
