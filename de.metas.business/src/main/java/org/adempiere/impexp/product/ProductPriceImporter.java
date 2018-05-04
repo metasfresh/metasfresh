@@ -94,14 +94,11 @@ public class ProductPriceImporter
 			pp = newInstance(I_M_ProductPrice.class, plv);
 		}
 
-		final BigDecimal one_hundred = BigDecimal.valueOf(100);
-		final BigDecimal finalPrice = price.divide(one_hundred);
-
 		pp.setM_PriceList_Version(plv);
 		pp.setM_Product_ID(request.getProductId());
-		pp.setPriceLimit(finalPrice);
-		pp.setPriceList(finalPrice);
-		pp.setPriceStd(finalPrice);
+		pp.setPriceLimit(price);
+		pp.setPriceList(price);
+		pp.setPriceStd(price);
 		final I_C_UOM uom = InterfaceWrapperHelper.load(request.getProductId(), I_M_Product.class).getC_UOM();
 		pp.setC_UOM(uom);
 		pp.setC_TaxCategory_ID(request.getTaxCategoryId());
