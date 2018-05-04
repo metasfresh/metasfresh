@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/personal_data/report" uuid="b9840c33-e420-443f-b75b-677916a2237b">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<queryString>
+		<![CDATA[SELECT * FROM RV_PersonalDataTableAndColumn ORDER BY tablename]]>
+	</queryString>
+	<field name="tablename" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="tablename"/>
+	</field>
+	<field name="columnname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="columnname"/>
+	</field>
+	<field name="personaldatacategory" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="personaldatacategory"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="30" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="550" height="30" uuid="275e2f1a-45dc-427d-87d1-f570c398443c"/>
+				<textElement>
+					<font size="20" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="50" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="20" width="180" height="20" uuid="6c9f322d-bc09-4412-86c9-775dd69726bd"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{tablename}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="180" y="20" width="180" height="20" uuid="bc2400c6-25fa-45b3-bd39-33b9c6626b51"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{columnname}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="360" y="20" width="180" height="20" uuid="aad6fc43-427e-492a-9e20-8b4472f25789"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{category}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="14" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="180" height="14" uuid="058a1b91-df3e-4108-a0cd-ad943cb35662"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tablename}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="180" y="0" width="180" height="14" uuid="66efe823-1ad7-4397-986a-47130a3b8dc3"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{columnname}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="360" y="0" width="180" height="14" uuid="7638e084-d412-41a8-9ed6-098d290989fe"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{personaldatacategory}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+</jasperReport>
