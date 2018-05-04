@@ -58,8 +58,6 @@ public class UserNotificationUtils
 
 		return Event.builder()
 				.addRecipient_User_ID(notification.getRecipientUserId())
-				.setDetailADMessage(notification.getDetailADMessage())
-				.setDetailPlain(notification.getDetailPlain())
 				.putProperty(EVENT_PARAM_Notification, notificationAsJson)
 				.build();
 	}

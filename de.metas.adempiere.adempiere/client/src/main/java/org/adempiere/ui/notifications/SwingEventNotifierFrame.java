@@ -56,6 +56,8 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
+import de.metas.notification.UserNotification;
+import de.metas.notification.UserNotificationUtils;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -349,31 +351,22 @@ class SwingEventNotifierFrame extends JFrame
 	{
 		//
 		// Build summary text
-		String summaryTrl = event.getSummary();
-		if (!Check.isEmpty(summaryTrl, true))
-		{
-			summaryTrl = EventHtmlMessageFormat.newInstance()
-					.setArguments(event.getProperties())
-					.format(summaryTrl);
-		}
-		if (Check.isEmpty(summaryTrl, true))
-		{
-			summaryTrl = msgBL.getMsg(getCtx(), MSG_Notification_Summary_Default, new Object[] { Adempiere.getName() });
-		}
+		final	String summaryTrl =  msgBL.getMsg(getCtx(), MSG_Notification_Summary_Default, new Object[] { Adempiere.getName() });
 
+		final UserNotification notification = UserNotificationUtils.toUserNotification(event);
 		//
 		// Build detail message
 		final StringBuilder detailBuf = new StringBuilder();
 		{
 			// Add plain detail if any
-			final String detailPlain = event.getDetailPlain();
+			final String detailPlain = notification.getDetailPlain();
 			if (!Check.isEmpty(detailPlain, true))
 			{
 				detailBuf.append(detailPlain.trim());
 			}
 
 			// Translate, parse and add detail (AD_Message).
-			final String detailADMessage = event.getDetailADMessage();
+			final String detailADMessage = notification.getDetailADMessage();
 			if (!Check.isEmpty(detailADMessage, true))
 			{
 				final String detailTrl = msgBL.getMsg(getCtx(), detailADMessage);
