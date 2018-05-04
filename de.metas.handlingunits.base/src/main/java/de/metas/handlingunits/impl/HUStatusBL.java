@@ -56,6 +56,9 @@ public class HUStatusBL implements IHUStatusBL
 
 			// e.g. if a purchase order is reactivated and there are already planning HUs that were supposed to be used on the material receipt
 			.put(X_M_HU.HUSTATUS_Planning, X_M_HU.HUSTATUS_Destroyed)
+			
+			// e.g. if you put an already picked HU onto a new pallet, the the pallet's status needs to go directly from planned to picked
+			.put(X_M_HU.HUSTATUS_Planning, X_M_HU.HUSTATUS_Picked)
 
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Picked)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Issued)
