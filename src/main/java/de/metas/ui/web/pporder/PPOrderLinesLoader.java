@@ -13,6 +13,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
 import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Order_BOMLine;
@@ -356,18 +357,26 @@ class PPOrderLinesLoader
 			// => get the Qty/UOM from PP_Order_Qty because on HU level, for sure it will be ZERO.
 			if (parentHUEditorRow == null)
 			{
-				quantity = new Quantity(ppOrderQty.getQty(), ppOrderQty.getC_UOM());
+				quantity = Quantity.of(ppOrderQty.getQty(), ppOrderQty.getC_UOM());
 			}
 			// Included HU which was already destroyed
 			// => we don't know the Qty
 			else
 			{
-				quantity = new Quantity(BigDecimal.ZERO, huEditorRow.getC_UOM());
+				quantity = Quantity.zero(huEditorRow.getC_UOM());
 			}
 		}
 		else
 		{
-			quantity = new Quantity(huEditorRow.getQtyCU(), huEditorRow.getC_UOM());
+			if (huEditorRow.getQtyCU() == null && huEditorRow.getC_UOM() == null)
+			{
+				final I_C_UOM uom = loadOutOfTrx(ppOrderQty.getC_UOM_ID(), I_C_UOM.class);
+				quantity = Quantity.zero(uom);
+			}
+			else
+			{
+				quantity = Quantity.of(huEditorRow.getQtyCU(), huEditorRow.getC_UOM());
+			}
 		}
 		return quantity;
 	}
