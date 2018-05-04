@@ -54,21 +54,28 @@ Here come the actual release notes:
   * [#3026](https://github.com/metasfresh/metasfresh/issues/3026) WebUI: New Window for Import Product
     * New Window in WebUI for Import Product.
   * [#3301](https://github.com/metasfresh/metasfresh/issues/3301) Allow Batchbooking via Payment Selection
+    * New Feature in Payment Selection Export. Now allowing to use Bactbooking in Sepa Exports.
   * [#3664](https://github.com/metasfresh/metasfresh/issues/3664) WebUI: Add translation for upload notification
     * Improved Translations for the Upload notifications.
   * [#3708](https://github.com/metasfresh/metasfresh/issues/3708) Send Mail too when notification
+    * New Feature that allows to configure Notification Setting for a User and receiving an email as notification too.
   * [#3740](https://github.com/metasfresh/metasfresh/issues/3740) WebUI add Warehouse PO column to Organization/Org Info window
     * New Field for Purchase Warehouse added to Orginfo Subtag in Organisation window.
   * [#3800](https://github.com/metasfresh/metasfresh/issues/3800) Improve inventory import
+    * Improved Inventory import action.
   * [#3814](https://github.com/metasfresh/metasfresh/issues/3814) Webui: My Profile: display Notification Type and User In Charge
     * New Fields in myProfile Window that allows detailed Notifications Settings for the user.
   * [#3837](https://github.com/metasfresh/metasfresh/issues/3837) MSV3 products ban list
+    * New Feature in Pharma Vertical, allowing to use Product Ban lists that decide if Products shall be offered to a customer via MSV3 Server or not.
   * [#3839](https://github.com/metasfresh/metasfresh/issues/3839) Webui: BPartner window: show BPartner Product tab
     * Improvement of Business Partner window. Now allowing to record Products that thall not be sold to a specific BPartner.
   * [#3869](https://github.com/metasfresh/metasfresh/issues/3869) Procurement - add AD_Issue_ID to I_PMM_QtyReport_Event, I_PMM_WeekReport_Event and I_PMM_RfQResponse_ChangeEvent
   * [#3875](https://github.com/metasfresh/metasfresh/issues/3875) Request notifications shall use new notifications API
+    * Improving the creation of Request notifications, now using the new Notification API.
   * [#3889](https://github.com/metasfresh/metasfresh/issues/3889) Report for Pharma Permission/ Authorisation control
+    * New Report for Pharma Verticals that shows the Authorisation certificates of customers/ vendors.
   * [#3891](https://github.com/metasfresh/metasfresh/issues/3891) Pharma: Don't allow recording of pricing conditions that are not allowed
+    * Improved Pricing recording for Pharma Verticals, restricting not allowed pricing conditions.
   * [#3899](https://github.com/metasfresh/metasfresh/issues/3899) Webui window for M_HU_Process
     * New Window for the Configuration of Handling Unit Processes. Can be used as System Administrator.
   * [#3909](https://github.com/metasfresh/metasfresh/issues/3909) docoutbound mailing: Autodect if MailWorkpackageProcessor.EmailMessage is HTML
