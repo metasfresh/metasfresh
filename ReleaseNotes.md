@@ -80,19 +80,30 @@ Here come the actual release notes:
     * Improved Pricing recording for Pharma Verticals, restricting not allowed pricing conditions.
   * [#3899](https://github.com/metasfresh/metasfresh/issues/3899) Webui window for M_HU_Process
     * New Window for the Configuration of Handling Unit Processes. Can be used as System Administrator.
-  * [#3909](https://github.com/metasfresh/metasfresh/issues/3909) docoutbound mailing: Autodect if MailWorkpackageProcessor.EmailMessage is HTML
+  * [#3909](https://github.com/metasfresh/metasfresh/issues/3909) Docoutbound mailing: Autodect if MailWorkpackageProcessor.EmailMessage is HTML
+    * Improved Document Outbounf Feature, now allowing to configure and use formatted HTML Mails instead of plain text.
   * [#3910](https://github.com/metasfresh/metasfresh/issues/3910) Credit limit: treat credit status on NULL as it would be X (No check)
+    * Credit Status improvement, now handling null values as no credit check.
   * [#3914](https://github.com/metasfresh/metasfresh/issues/3914) Avoid numeric values with too many trailing zeros
+    * Improved number handling fith trailing digits, voiding too many zeroes.
   * [#3917](https://github.com/metasfresh/metasfresh/issues/3917) Fail on complete for order lines with no pricing conditions
+    * New Pricing feature in sales order, failing to complete/ record lines withour recorded pricing conditions.
   * [#3925](https://github.com/metasfresh/metasfresh/issues/3925) Sales order: just-in-time creation of conditions for a product without conditions
+    * New Feature in Sales Order, allowing to record pricing conditions on the fly.
   * [#3929](https://github.com/metasfresh/metasfresh/issues/3929) Show BasePriceSystem in Document Line and Documents
+    * Improved document lines, now showing the Base Price System from Pricing Conditions.
   * [#3937](https://github.com/metasfresh/metasfresh/issues/3937) Create process for importing discount schema
+    * New Process that allows to import discount schema data.
   * [#3945](https://github.com/metasfresh/metasfresh/issues/3945) Get rid of "QtyReserverd Recalculate" AD_Scheduler_ID=550010
+    * Housekeeping Issue, getting rid of legacy scheduled Process.
   * [#3946](https://github.com/metasfresh/metasfresh/issues/3946) Write M_ShipmentScheduleRecompute.AD_Pinstance_ID to queue-wp-log
+    * Housekeeping Issue, now logging the Process Instance to the workpackage log.
   * [#3960](https://github.com/metasfresh/metasfresh/issues/3960) Improve the speed of scripts applier
+    * Improved the scripts applier, reducing the runtime of migration scripts check by 80%.
 
 * metasfresh-webui-api
   * [#956](https://github.com/metasfresh/metasfresh-webui-api/issues/956) Rest endpoint: delete all notifications
+    * New endpoint that allows to delete all notifications at once.
 
 * metasfresh-webui-frontend
   * [#1603](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1603) Color Indicator Widget functionality
