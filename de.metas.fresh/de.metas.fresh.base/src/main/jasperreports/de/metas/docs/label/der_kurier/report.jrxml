@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="287" pageHeight="431" columnWidth="287" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/der_kurier/report" uuid="327ce1ef-1dd6-48e4-a3e3-3a5d89cf49cb">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="cm"/>
+	<style name="Barcode_Style" hTextAlign="Center" hImageAlign="Center"/>
+	<parameter name="DerKurier_DeliveryOrderLine_ID" class="java.math.BigDecimal"/>
+	<queryString>
+		<![CDATA[SELECT * FROM report.DerKurier_Label($P{DerKurier_DeliveryOrderLine_ID});]]>
+	</queryString>
+	<field name="barcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="barcode"/>
+	</field>
+	<field name="weight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="weight"/>
+	</field>
+	<field name="zipcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="zipcode"/>
+	</field>
+	<field name="packageamount" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="packageamount"/>
+	</field>
+	<field name="pageno" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="pageno"/>
+	</field>
+	<field name="trackingnumber" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="trackingnumber"/>
+	</field>
+	<field name="desiredstation" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="desiredstation"/>
+	</field>
+	<field name="dk_customernumber" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="dk_customernumber"/>
+	</field>
+	<field name="bp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_name"/>
+	</field>
+	<field name="bp_address1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_address1"/>
+	</field>
+	<field name="bp_postal" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_postal"/>
+	</field>
+	<field name="bp_city" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_city"/>
+	</field>
+	<field name="bp_countrycode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_countrycode"/>
+	</field>
+	<field name="bp_phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_phone"/>
+	</field>
+	<field name="desireddeliverydate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="desireddeliverydate"/>
+	</field>
+	<field name="desireddeliverytime_from" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="desireddeliverytime_from"/>
+	</field>
+	<field name="desireddeliverytime_to" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="desireddeliverytime_to"/>
+	</field>
+	<field name="consignee_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="consignee_name"/>
+	</field>
+	<field name="consignee_name2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="consignee_name2"/>
+	</field>
+	<field name="consignee_name3" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="consignee_name3"/>
+	</field>
+	<field name="consignee_phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="consignee_phone"/>
+	</field>
+	<field name="consignee_country" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="consignee_country"/>
+	</field>
+	<field name="consignee_zipcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="consignee_zipcode"/>
+	</field>
+	<field name="consignee_city" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="consignee_city"/>
+	</field>
+	<field name="consignee_street" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="consignee_street"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="430" splitType="Stretch">
+			<componentElement>
+				<reportElement style="Barcode_Style" x="20" y="10" width="250" height="40" uuid="89f331e5-2b90-480a-a79c-21570f2dc1ab">
+					<printWhenExpression><![CDATA[new Boolean ($F{barcode} != null)]]></printWhenExpression>
+				</reportElement>
+				<jr:Interleaved2Of5 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom">
+					<jr:codeExpression><![CDATA["123456789"]]></jr:codeExpression>
+				</jr:Interleaved2Of5>
+			</componentElement>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="60" width="80" height="14" uuid="2fdc2e94-4588-4a19-b5da-ad5c8ce20de8"/>
+				<textFieldExpression><![CDATA[$R{weight} + " " + ($F{weight} != null ?  $F{weight} : "")
+]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="100" y="60" width="90" height="14" uuid="a9ca0916-22f1-4110-9079-e556a3de9a78"/>
+				<textFieldExpression><![CDATA[$F{consignee_zipcode}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="190" y="60" width="80" height="14" uuid="857bd47b-de1b-4738-bbb3-29b06421d9cf"/>
+				<textFieldExpression><![CDATA[$R{package_amt} + " " +  $F{pageno} + " " + $R{of} + " " + $F{packageamount}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="74" width="250" height="14" uuid="d2b9bed0-a13c-4d65-a2bf-375af0e450f4"/>
+				<textElement textAlignment="Center">
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{tracking_no} + " " + ($F{barcode} != null ?  $F{barcode}  : "")]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="20" y="88" width="250" height="1" uuid="b49e6287-5ce2-4302-8c8e-a8e7221a63bb"/>
+				<graphicElement>
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="20" y="114" width="250" height="1" uuid="5d9a40e9-bccc-4bc2-ba13-1e2597eaf801"/>
+				<graphicElement>
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="20" y="89" width="70" height="25" uuid="cb63da1f-5383-4692-ae91-89ff1e847c25"/>
+				<textElement>
+					<font size="18"/>
+				</textElement>
+			</textField>
+			<textField>
+				<reportElement x="90" y="89" width="110" height="25" uuid="5f8eda77-1242-4578-bbc4-49b650a4bc7d"/>
+				<textElement textAlignment="Center">
+					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{desiredstation}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="115" width="80" height="14" uuid="64f66b35-bac4-41ad-9341-23b2de00d735"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{sender}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="100" y="115" width="110" height="14" uuid="041f741c-1a1d-435c-9cc3-89821f18b974"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{client}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="210" y="115" width="60" height="14" uuid="8b8a9303-74fb-4020-8aea-b76c76494d0b"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{collector}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="129" width="250" height="14" uuid="8f475902-e4a8-42d3-9e34-f8acd08e6748"/>
+				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="143" width="250" height="14" uuid="1337aa4f-acc4-4566-beda-03c64e956529"/>
+				<textFieldExpression><![CDATA[$F{bp_address1}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="157" width="130" height="14" uuid="26a1ee15-6f19-47b8-92b4-205127919ca8"/>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="150" y="157" width="120" height="14" uuid="1a255fb1-5657-4956-83dd-bb4248c407be"/>
+				<textFieldExpression><![CDATA[$R{tel} + " " + ($F{bp_phone} != null ?  $F{bp_phone}  : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="171" width="250" height="14" uuid="adfd9663-cd31-4d7f-a8b6-b910026cf1ad"/>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="185" width="250" height="14" uuid="26e4dd01-c9ed-46d2-86b3-1a860af3a329"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{bp_countrycode} !=null ? $F{bp_countrycode} + " "  : "") +
+($F{bp_postal} != null ?  $F{bp_postal} + " " : "") + 
+($F{bp_city} != null ?  $F{bp_city}  : "") ]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="199" width="250" height="25" uuid="5500328f-4887-4bd0-ab2c-139f5f9c1788"/>
+				<textElement>
+					<font size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd.MM.yyyy").format($F{desireddeliverydate}) + 
+" "
++ new java.text.SimpleDateFormat("HH:mm").format($F{desireddeliverytime_from}) + 
+" - "
++ new java.text.SimpleDateFormat("HH:mm").format($F{desireddeliverytime_to})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="224" width="250" height="14" uuid="57599e1b-026d-40b4-8522-e109e9e81388"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{receiver}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="238" width="250" height="14" uuid="e207c186-a7dd-4673-9112-be04a400fa87"/>
+				<textFieldExpression><![CDATA[$F{consignee_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="252" width="250" height="14" uuid="1ea7fbbe-5cff-4904-8088-f0e7384e142e"/>
+				<textFieldExpression><![CDATA[$F{consignee_name2}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="266" width="250" height="14" uuid="c0c37ece-009a-4bd7-8e83-2bdad631ba93"/>
+				<textFieldExpression><![CDATA[$F{consignee_name3}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="280" width="250" height="14" uuid="5ed0f72b-0788-44c3-a5d0-bfa3ad4bc3b9"/>
+				<textFieldExpression><![CDATA[$R{tel} + " " + ($F{consignee_phone} != null ?  $F{consignee_phone}  : "")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="294" width="250" height="14" uuid="7cf0cd16-de8b-472a-8b31-1c6b89773df5"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{consignee_street}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="308" width="250" height="14" uuid="b3a5674f-b91d-4233-a535-e0c43359a203"/>
+				<textElement>
+					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{consignee_country} !=null ? $F{consignee_country} + " "  : "") +
+($F{consignee_zipcode} != null ?  $F{consignee_zipcode} + " " : "") + 
+($F{consignee_city} != null ?  $F{consignee_city}  : "") ]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="20" y="322" width="250" height="14" uuid="19b6b3e6-8c33-4828-8424-9e11b3c9e717"/>
+				<textElement>
+					<font isBold="false"/>
+				</textElement>
+			</textField>
+			<image hAlign="Center">
+				<reportElement x="20" y="354" width="250" height="30" uuid="f0547670-51db-46fd-86b6-157d6cf4ae20"/>
+				<imageExpression><![CDATA["de/metas/docs/label/der_kurier/der_kurier_logo.png"]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="200" y="89" width="70" height="25" uuid="7b8fe5dd-8a75-4b59-83e6-c1c5f162e6f3"/>
+				<textElement>
+					<font size="18"/>
+				</textElement>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
