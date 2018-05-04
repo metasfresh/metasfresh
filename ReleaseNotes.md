@@ -56,21 +56,21 @@ Here come the actual release notes:
   * [#3026](https://github.com/metasfresh/metasfresh/issues/3026) WebUI: New Window for Import Product
     * New Window in WebUI for Import Product.
   * [#3301](https://github.com/metasfresh/metasfresh/issues/3301) Allow Batchbooking via Payment Selection
-    * New Feature in Payment Selection Export. Now allowing to use Bactbooking in Sepa Exports.
+    * New Feature in Payment Selection Export. Now allowing to use Batchbooking in Sepa Exports.
   * [#3664](https://github.com/metasfresh/metasfresh/issues/3664) WebUI: Add translation for upload notification
     * Improved Translations for the Upload notifications.
   * [#3708](https://github.com/metasfresh/metasfresh/issues/3708) Send Mail too when notification
     * New Feature that allows to configure Notification Setting for a User and receiving an email as notification too.
   * [#3740](https://github.com/metasfresh/metasfresh/issues/3740) WebUI add Warehouse PO column to Organization/Org Info window
-    * New Field for Purchase Warehouse added to Orginfo Subtag in Organisation window.
+    * New Field for Purchase Warehouse added to Orginfo Subtab in Organisation window.
   * [#3800](https://github.com/metasfresh/metasfresh/issues/3800) Improve inventory import
     * Improved Inventory import action.
-  * [#3814](https://github.com/metasfresh/metasfresh/issues/3814) Webui: My Profile: display Notification Type and User In Charge
+  * [#3814](https://github.com/metasfresh/metasfresh/issues/3814) WebUI: My Profile: display Notification Type and User In Charge
     * New Fields in myProfile Window that allows detailed Notifications Settings for the user.
   * [#3837](https://github.com/metasfresh/metasfresh/issues/3837) MSV3 products ban list
     * New Feature in Pharma Vertical, allowing to use Product Ban lists that decide if Products shall be offered to a customer via MSV3 Server or not.
-  * [#3839](https://github.com/metasfresh/metasfresh/issues/3839) Webui: BPartner window: show BPartner Product tab
-    * Improvement of Business Partner window. Now allowing to record Products that thall not be sold to a specific BPartner.
+  * [#3839](https://github.com/metasfresh/metasfresh/issues/3839) WebUI: BPartner window: show BPartner Product tab
+    * Improvement of Business Partner window. Now allowing to record Products that shall not be sold to a specific BPartner.
   * [#3869](https://github.com/metasfresh/metasfresh/issues/3869) Procurement - add AD_Issue_ID to I_PMM_QtyReport_Event, I_PMM_WeekReport_Event and I_PMM_RfQResponse_ChangeEvent
     * Improvement of the Issue Handling in Procurement Report Events.
   * [#3875](https://github.com/metasfresh/metasfresh/issues/3875) Request notifications shall use new notifications API
