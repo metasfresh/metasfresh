@@ -1,6 +1,8 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.apache.commons.lang.StringUtils;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -56,7 +58,38 @@ public class ParcelNumberGenerator
 	@VisibleForTesting
 	String computeAndAppendCheckDigit(@NonNull final String parcelNumberWithoutCheckDigit)
 	{
-		// TODO https://github.com/metasfresh/metasfresh/issues/3991
-		return parcelNumberWithoutCheckDigit;
+		// See #3991;
+		Check.assumeNotEmpty(parcelNumberWithoutCheckDigit, "Parcel Number is empty");
+		Check.assume(StringUtils.isNumeric(parcelNumberWithoutCheckDigit), "Parcel Number must only contain digits but it is: " + parcelNumberWithoutCheckDigit);
+
+		final int checkDigit = computeCheckDigit(parcelNumberWithoutCheckDigit);
+
+		return parcelNumberWithoutCheckDigit + checkDigit;
+	}
+
+	private int computeCheckDigit(String parcelNumberWithoutCheckDigit)
+	{
+		int sumOdd = 0;
+		int sumEven = 0;
+
+		for (int i = 0; i < parcelNumberWithoutCheckDigit.length(); i++)
+		{
+			// odd
+			if (i % 2 == 0)
+			{
+				sumOdd += Integer.parseInt(Character.toString(parcelNumberWithoutCheckDigit.charAt(i)));
+			}
+
+			else
+			{
+				sumEven += Integer.parseInt(Character.toString(parcelNumberWithoutCheckDigit.charAt(i)));
+			}
+		}
+
+		int result = 3 * sumOdd + sumEven;
+
+		result = (10 - result % 10) % 10;
+
+		return result;
 	}
 }

@@ -17,6 +17,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3312](https://github.com/metasfresh/metasfresh/issues/3312) Webui Window Design: Improve window Table and Column
+    * New Window for Table and columns in WebUI.
   * [#3812](https://github.com/metasfresh/metasfresh/issues/3812) Add process for creating missing M_Product_acct records to WebUI
     * New Action added to Product Catregory window, allowing to copy Acctounting Setting to all Products of a Product Category.
   * [#3965](https://github.com/metasfresh/metasfresh/issues/3965) Translate Actions Update Pharma Conditions
@@ -54,36 +56,55 @@ Here come the actual release notes:
   * [#3026](https://github.com/metasfresh/metasfresh/issues/3026) WebUI: New Window for Import Product
     * New Window in WebUI for Import Product.
   * [#3301](https://github.com/metasfresh/metasfresh/issues/3301) Allow Batchbooking via Payment Selection
+    * New Feature in Payment Selection Export. Now allowing to use Bactbooking in Sepa Exports.
   * [#3664](https://github.com/metasfresh/metasfresh/issues/3664) WebUI: Add translation for upload notification
     * Improved Translations for the Upload notifications.
   * [#3708](https://github.com/metasfresh/metasfresh/issues/3708) Send Mail too when notification
+    * New Feature that allows to configure Notification Setting for a User and receiving an email as notification too.
   * [#3740](https://github.com/metasfresh/metasfresh/issues/3740) WebUI add Warehouse PO column to Organization/Org Info window
     * New Field for Purchase Warehouse added to Orginfo Subtag in Organisation window.
   * [#3800](https://github.com/metasfresh/metasfresh/issues/3800) Improve inventory import
+    * Improved Inventory import action.
   * [#3814](https://github.com/metasfresh/metasfresh/issues/3814) Webui: My Profile: display Notification Type and User In Charge
     * New Fields in myProfile Window that allows detailed Notifications Settings for the user.
   * [#3837](https://github.com/metasfresh/metasfresh/issues/3837) MSV3 products ban list
+    * New Feature in Pharma Vertical, allowing to use Product Ban lists that decide if Products shall be offered to a customer via MSV3 Server or not.
   * [#3839](https://github.com/metasfresh/metasfresh/issues/3839) Webui: BPartner window: show BPartner Product tab
     * Improvement of Business Partner window. Now allowing to record Products that thall not be sold to a specific BPartner.
   * [#3869](https://github.com/metasfresh/metasfresh/issues/3869) Procurement - add AD_Issue_ID to I_PMM_QtyReport_Event, I_PMM_WeekReport_Event and I_PMM_RfQResponse_ChangeEvent
+    * Improvement of the Issue Handling in Procurement Report Events.
   * [#3875](https://github.com/metasfresh/metasfresh/issues/3875) Request notifications shall use new notifications API
+    * Improving the creation of Request notifications, now using the new Notification API.
   * [#3889](https://github.com/metasfresh/metasfresh/issues/3889) Report for Pharma Permission/ Authorisation control
+    * New Report for Pharma Verticals that shows the Authorisation certificates of customers/ vendors.
   * [#3891](https://github.com/metasfresh/metasfresh/issues/3891) Pharma: Don't allow recording of pricing conditions that are not allowed
+    * Improved Pricing recording for Pharma Verticals, restricting not allowed pricing conditions.
   * [#3899](https://github.com/metasfresh/metasfresh/issues/3899) Webui window for M_HU_Process
     * New Window for the Configuration of Handling Unit Processes. Can be used as System Administrator.
-  * [#3909](https://github.com/metasfresh/metasfresh/issues/3909) docoutbound mailing: Autodect if MailWorkpackageProcessor.EmailMessage is HTML
+  * [#3909](https://github.com/metasfresh/metasfresh/issues/3909) Docoutbound mailing: Autodect if MailWorkpackageProcessor.EmailMessage is HTML
+    * Improved Document Outbounf Feature, now allowing to configure and use formatted HTML Mails instead of plain text.
   * [#3910](https://github.com/metasfresh/metasfresh/issues/3910) Credit limit: treat credit status on NULL as it would be X (No check)
+    * Credit Status improvement, now handling null values as no credit check.
   * [#3914](https://github.com/metasfresh/metasfresh/issues/3914) Avoid numeric values with too many trailing zeros
+    * Improved number handling fith trailing digits, voiding too many zeroes.
   * [#3917](https://github.com/metasfresh/metasfresh/issues/3917) Fail on complete for order lines with no pricing conditions
+    * New Pricing feature in sales order, failing to complete/ record lines withour recorded pricing conditions.
   * [#3925](https://github.com/metasfresh/metasfresh/issues/3925) Sales order: just-in-time creation of conditions for a product without conditions
+    * New Feature in Sales Order, allowing to record pricing conditions on the fly.
   * [#3929](https://github.com/metasfresh/metasfresh/issues/3929) Show BasePriceSystem in Document Line and Documents
+    * Improved document lines, now showing the Base Price System from Pricing Conditions.
   * [#3937](https://github.com/metasfresh/metasfresh/issues/3937) Create process for importing discount schema
+    * New Process that allows to import discount schema data.
   * [#3945](https://github.com/metasfresh/metasfresh/issues/3945) Get rid of "QtyReserverd Recalculate" AD_Scheduler_ID=550010
+    * Housekeeping Issue, getting rid of legacy scheduled Process.
   * [#3946](https://github.com/metasfresh/metasfresh/issues/3946) Write M_ShipmentScheduleRecompute.AD_Pinstance_ID to queue-wp-log
+    * Housekeeping Issue, now logging the Process Instance to the workpackage log.
   * [#3960](https://github.com/metasfresh/metasfresh/issues/3960) Improve the speed of scripts applier
+    * Improved the scripts applier, reducing the runtime of migration scripts check by 80%.
 
 * metasfresh-webui-api
   * [#956](https://github.com/metasfresh/metasfresh-webui-api/issues/956) Rest endpoint: delete all notifications
+    * New endpoint that allows to delete all notifications at once.
 
 * metasfresh-webui-frontend
   * [#1603](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1603) Color Indicator Widget functionality
@@ -91,20 +112,30 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
-  * [#3847](https://github.com/metasfresh/metasfresh/issues/3847) migration script not logged for creating new ad_ui_section when value is not manually filled
+  * [#3847](https://github.com/metasfresh/metasfresh/issues/3847) Migration script not logged for creating new ad_ui_section when value is not manually filled
+    * Bugfix for WebUI Window cration and migration, now not leaving a broken migration script when not filling the value of a UI Section.
   * [#3880](https://github.com/metasfresh/metasfresh/issues/3880) ShipmentLines's TU-Qty is updated wrongly from schedule's QtyOrdered_Override
+    * Fixes a Bug in Shipment Schedule, now updateing the TU Quantity correctly.
   * [#3923](https://github.com/metasfresh/metasfresh/issues/3923) Change Picking Terminal columns and fix auto process picking
+    * Fixes a Bug in Picking Window in WebUI, now showing Quantity Picked instead of Quanitity picked planned, and further improvements.
   * [#3927](https://github.com/metasfresh/metasfresh/issues/3927) Base Price + Surplus in Pricing Conditions not working
+    * Bugfix for the new Pricing Rule with Base Prive and Surplus calculation.
   * [#3928](https://github.com/metasfresh/metasfresh/issues/3928) Picking: Reactivate Picked HU/ Processed Picking
+    * Fixes an Exception in Picking Window thrown when reactivating processed Pickings.
   * [#3933](https://github.com/metasfresh/metasfresh/issues/3933) Credit limit: Credit used does not update when you reverse/void order
+    * Credit Limit fix, now recaclulating the credit used amount when reversing or voiding an order.
   * [#3935](https://github.com/metasfresh/metasfresh/issues/3935) Material Dispo wrong Quantities after Material receipt
+    * Fixes the Avialable to Promise quantity after Material Receipt.
 
 * metasfresh-webui-api
   * [#945](https://github.com/metasfresh/metasfresh-webui-api/issues/945) Business Partner Pharma Product Create New Issue
+    * Fixes an error when creating Business Partner Product entries in Pharma Business Partner window.
   * [#949](https://github.com/metasfresh/metasfresh-webui-api/issues/949) Business Partner Pharma Product Org
+    * Bugfix in Business Partner Pharma Window. Now setting the correct Organisation when creating a new Business Partner Product record.
 
 * metasfresh-webui-frontend
   * [#1540](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1540) Shortcut Alt++ not working on non German Keyboard Layout
+    * Fixes shortcuts for expand action in WebUI.
   * [#1748](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1748) X not available for field invoice partner when first setting the partner in order
     * Fixes the bahavior of Lookup Combos whe using the clear button.
   * [#1752](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1752) Shortcuts not working on Mac
@@ -112,6 +143,7 @@ Here come the actual release notes:
   * [#1755](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1755) Date field does not recognize changes on double click
     * Fixes the selection and save of date fields when double-clicking on date in date widget.
   * [#1756](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1756) [alt]++ and [alt]+q not working properly anymore
+    * Fixes issues about the shortcut handling in WebUI.
   * [#1759](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1759) Enter not working for selecting a role when logging in
     * Fixes the keyboard Handling in Login Role Selection View. Now it's possible to use ENTER for Role selection confirmation.
   
