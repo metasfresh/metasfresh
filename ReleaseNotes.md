@@ -126,6 +126,8 @@ Here come the actual release notes:
     * Credit Limit fix, now recaclulating the credit used amount when reversing or voiding an order.
   * [#3935](https://github.com/metasfresh/metasfresh/issues/3935) Material Dispo wrong Quantities after Material receipt
     * Fixes the Avialable to Promise quantity after Material Receipt.
+  * [#3981](https://github.com/metasfresh/metasfresh/issues/3981) QtyPicked remains set although shipment is completed
+  * [#3986](https://github.com/metasfresh/metasfresh/issues/3986) QtyPicked in Picking Terminal set to 0 after partial shipment completed
 
 * metasfresh-webui-api
   * [#945](https://github.com/metasfresh/metasfresh-webui-api/issues/945) Business Partner Pharma Product Create New Issue
