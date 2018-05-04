@@ -39,7 +39,7 @@ SELECT
 				sqp.QtyPicked
 			), 0))
 		from M_ShipmentSchedule_QtyPicked sqp
-		where sqp.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID and sqp.Processed = 'N'
+		where sqp.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID and sqp.Processed = 'N' and sqp.IsActive = 'Y'
 			
 	) as QtyPicked ,
 	
@@ -72,6 +72,7 @@ SELECT
 			 -- IP means in progress, i.e. not yet covered my M_ShipmentSchedule_QtyPicked
 			 -- note that when the pc is processed (->status PR or CL), then the QtyToDeliver is decreased accordingly
 			and pc.Status='IP'
+			and pc.IsActive = 'Y'
 	) as QtyPickedPlanned
 	
 	--
@@ -89,6 +90,7 @@ LEFT JOIN C_DocType dt ON (dt.C_DocType_ID=o.C_DocType_ID)
 LEFT JOIN M_Shipper sh ON (sh.M_Shipper_ID=ol.M_Shipper_ID)
 WHERE
 	s.Processed='N'
+	AND s.IsActive = 'Y'
 	AND s.QtyToDeliver > 0
 	AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)
 ;
