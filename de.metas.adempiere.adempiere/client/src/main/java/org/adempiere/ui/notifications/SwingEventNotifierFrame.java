@@ -355,38 +355,15 @@ class SwingEventNotifierFrame extends JFrame
 
 		final UserNotification notification = UserNotificationUtils.toUserNotification(event);
 		//
-		// Build detail message
-		final StringBuilder detailBuf = new StringBuilder();
-		{
-			// Add plain detail if any
-			final String detailPlain = notification.getDetailPlain();
-			if (!Check.isEmpty(detailPlain, true))
-			{
-				detailBuf.append(detailPlain.trim());
-			}
-
-			// Translate, parse and add detail (AD_Message).
-			final String detailADMessage = notification.getDetailADMessage();
-			if (!Check.isEmpty(detailADMessage, true))
-			{
-				final String detailTrl = msgBL.getMsg(getCtx(), detailADMessage);
-				final String detailTrlParsed = EventHtmlMessageFormat.newInstance()
-						.setArguments(event.getProperties())
-						.format(detailTrl);
-				if (!Check.isEmpty(detailTrlParsed, true))
-				{
-					if (detailBuf.length() > 0)
-					{
-						detailBuf.append("<br>");
-					}
-					detailBuf.append(detailTrlParsed);
-				}
-			}
-		}
+		// Build message
+		final String meessage = notification.getMessage(Env.getAD_Language());
+		final String messageParsed = EventHtmlMessageFormat.newInstance()
+					.setArguments(event.getProperties())
+					.format(meessage);
 
 		return NotificationItem.builder()
 				.setSummary(summaryTrl)
-				.setDetail(detailBuf.toString())
+				.setDetail(messageParsed)
 				.build();
 	}
 }
