@@ -7,8 +7,12 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.document.DocumentSequenceInfo;
+import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -35,17 +39,31 @@ import lombok.NonNull;
 
 public class ParcelNumberGenerator
 {
+	public static final int NO_AD_SEQUENCE_ID = -99;
+
 	private final IDocumentNoBuilder documentNoBuilder;
 
-	public ParcelNumberGenerator(@NonNull final String sequenceName)
+	@VisibleForTesting
+	@Getter(value = AccessLevel.PACKAGE)
+	private final int adSequenceId;
+
+	/** for unit testing only */
+	@VisibleForTesting
+	ParcelNumberGenerator()
 	{
-		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
-		final int adOrgId = Env.getAD_Org_ID(Env.getCtx());
+		this(NO_AD_SEQUENCE_ID);
+	}
+
+	public ParcelNumberGenerator(final int parcelNumberAdSequenceId)
+	{
+		this.adSequenceId = parcelNumberAdSequenceId;
+
+		final DocumentSequenceInfo documentSeqInfo = Services.get(IDocumentSequenceDAO.class).retriveDocumentSequenceInfo(parcelNumberAdSequenceId);
 
 		this.documentNoBuilder = Services.get(IDocumentNoBuilderFactory.class)
 				.createDocumentNoBuilder()
-				.setAD_Client_ID(adClientId)
-				.setDocumentSequenceInfoByTableName(computeAndAppendCheckDigit(sequenceName), adClientId, adOrgId)
+				.setAD_Client_ID(Env.getAD_Client_ID(Env.getCtx()))
+				.setDocumentSequenceInfo(documentSeqInfo)
 				.setFailOnError(true);
 	}
 

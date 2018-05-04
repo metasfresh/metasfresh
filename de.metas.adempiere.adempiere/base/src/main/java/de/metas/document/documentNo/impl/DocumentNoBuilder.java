@@ -405,6 +405,14 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		return this;
 	}
 
+
+	@Override
+	public IDocumentNoBuilder setDocumentSequenceInfoBySequenceId(int AD_Sequence_ID)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	private DocumentSequenceInfo retrieveDocumentSequenceInfoByDocTypeId(final int C_DocType_ID, final boolean useDefiniteSequence)
 	{
 		Check.assume(C_DocType_ID > 0, DocumentNoBuilderException.class, "C_DocType_ID > 0");

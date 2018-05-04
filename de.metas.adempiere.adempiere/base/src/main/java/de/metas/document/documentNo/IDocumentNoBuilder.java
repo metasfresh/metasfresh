@@ -9,10 +9,6 @@ import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.documentNo.impl.IPreliminaryDocumentNoBuilder;
 
-/**
- * @author cg
- *
- */
 public interface IDocumentNoBuilder
 {
 	public static final String NO_DOCUMENTNO = null;
@@ -34,6 +30,8 @@ public interface IDocumentNoBuilder
 	IDocumentNoBuilder setDocumentSequenceInfoByTableName(String tableName, int adClientId, int adOrgId);
 
 	IDocumentNoBuilder setDocumentSequenceByDocTypeId(int C_DocType_ID, boolean useDefiniteSequence);
+
+	IDocumentNoBuilder setDocumentSequenceInfoBySequenceId(int AD_Sequence_ID);
 
 	IDocumentNoBuilder setFailOnError(boolean failOnError);
 

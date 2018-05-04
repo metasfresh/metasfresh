@@ -50,7 +50,8 @@ public class DerKurierClientFactoryManualTest
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl("https://leoz.derkurier.de:13000/rs/api/v1")
 				.customerNumber("12345")
-				.parceNumberSequenceName("blah-blah").build();
+				.parcelNumberAdSequenceId(23)
+				.build();
 		final DerKurierClient client = derKurierClientFactory.createClient(shipperConfig);
 
 		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest();

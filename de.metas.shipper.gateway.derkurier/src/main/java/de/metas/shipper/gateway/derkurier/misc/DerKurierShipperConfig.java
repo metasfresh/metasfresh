@@ -41,12 +41,12 @@ public class DerKurierShipperConfig
 	public DerKurierShipperConfig(
 			@NonNull final String restApiBaseUrl,
 			@NonNull final String customerNumber,
-			@NonNull final String parceNumberSequenceName)
+			final int parcelNumberAdSequenceId)
 	{
 		this.restApiBaseUrl = Check.assumeNotEmpty(restApiBaseUrl, "Parameter restApiBaseUrl is not empty");
 		this.customerNumber = Check.assumeNotEmpty(customerNumber, "Parameter customerNumber is not empty");
 
-		this.parcelNumberGenerator = new ParcelNumberGenerator(
-				Check.assumeNotEmpty(parceNumberSequenceName, "Parameter parceNumberSequenceName is not empty"));
+		Check.assume(parcelNumberAdSequenceId > 0, "Parameter parcelNumberAdSequenceId is > 0");
+		this.parcelNumberGenerator = new ParcelNumberGenerator(parcelNumberAdSequenceId);
 	}
 }

@@ -61,7 +61,8 @@ public class DerKurierClientFactoryTest
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl(REST_API_BASE_URL)
 				.customerNumber("12345")
-				.parceNumberSequenceName("blah-blah").build();
+				.parcelNumberAdSequenceId(23)
+				.build();
 
 		final DerKurierClient client = derKurierClientFactory.createClient(shipperConfig);
 
