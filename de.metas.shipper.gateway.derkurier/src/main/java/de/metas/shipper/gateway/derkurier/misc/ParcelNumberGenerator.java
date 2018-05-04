@@ -3,6 +3,8 @@ package de.metas.shipper.gateway.derkurier.misc;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import lombok.NonNull;
@@ -41,12 +43,20 @@ public class ParcelNumberGenerator
 		this.documentNoBuilder = Services.get(IDocumentNoBuilderFactory.class)
 				.createDocumentNoBuilder()
 				.setAD_Client_ID(adClientId)
-				.setDocumentSequenceInfoByTableName(sequenceName, adClientId, adOrgId)
+				.setDocumentSequenceInfoByTableName(computeAndAppendCheckDigit(sequenceName), adClientId, adOrgId)
 				.setFailOnError(true);
 	}
 
 	public String getNextParcelNumber()
 	{
-		return documentNoBuilder.build();
+		final String parcelNumberWithoutCheckDigit = documentNoBuilder.build();
+		return computeAndAppendCheckDigit(parcelNumberWithoutCheckDigit);
+	}
+
+	@VisibleForTesting
+	String computeAndAppendCheckDigit(@NonNull final String parcelNumberWithoutCheckDigit)
+	{
+		// TODO https://github.com/metasfresh/metasfresh/issues/3991
+		return parcelNumberWithoutCheckDigit;
 	}
 }
