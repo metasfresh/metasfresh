@@ -13,6 +13,7 @@ import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Column;
 
@@ -52,7 +53,7 @@ import de.metas.dlm.partitioner.config.PartitionerConfigLine;
 
 /**
  * This interceptor is responsible for reacting on DLM-related events by identifying the related records and scheduling them with {@link DLMPartitionerWorkpackageProcessor}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -154,7 +155,7 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 
 			final CreatePartitionAsyncRequest request = PartitionRequestFactory.asyncBuilder()
 					.setConfig(config)
-					.setRecordToAttach(ITableRecordReference.FromModelConverter.convert(model))
+					.setRecordToAttach(TableRecordReference.ofOrNull(model))
 					.build();
 			DLMPartitionerWorkpackageProcessor.schedule(request, -1);
 		}
@@ -195,7 +196,7 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 
 			final PartitionConfig config = dlmService.loadDefaultPartitionConfig();
 
-			final ITableRecordReference recordReference = ITableRecordReference.FromReferencedModelConverter.convert(model);
+			final ITableRecordReference recordReference = TableRecordReference.ofReferencedOrNull(model);
 			final Optional<PartitionerConfigLine> referencedLine = config.getLine(recordReference.getTableName());
 			if (!referencedLine.isPresent())
 			{
@@ -218,7 +219,7 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 			// however, for the current 'model', we need to enqueue it ourselves
 			final CreatePartitionAsyncRequest request = PartitionRequestFactory.asyncBuilder()
 					.setConfig(config)
-					.setRecordToAttach(ITableRecordReference.FromModelConverter.convert(model))
+					.setRecordToAttach(TableRecordReference.ofOrNull(model))
 					.build();
 			DLMPartitionerWorkpackageProcessor.schedule(request, -1);
 		}

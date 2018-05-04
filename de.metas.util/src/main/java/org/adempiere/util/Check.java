@@ -238,23 +238,19 @@ public final class Check
 	 * @param params message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	public static void assumeNotNull(final Object object, final String assumptionMessage, final Object... params)
+	public static <T> T assumeNotNull(final T object, final String assumptionMessage, final Object... params)
 	{
-		assumeNotNull(object, defaultExClazz, assumptionMessage, params);
+		return assumeNotNull(object, defaultExClazz, assumptionMessage, params);
 	}
 
 	/**
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param object
-	 * @param exceptionClass
-	 * @param assumptionMessage
-	 * @param params
 	 */
-	public static void assumeNotNull(final Object object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	public static <T> T assumeNotNull(final T object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean cond = object != null;
 		assume(cond, exceptionClass, assumptionMessage, params);
+		return object;
 	}
 
 	/**
@@ -321,9 +317,12 @@ public final class Check
 	 * @param params message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	public static void assumeNotEmpty(final Collection<? extends Object> collection, final String assumptionMessage, final Object... params)
+	public static <T extends Collection<? extends Object>> T assumeNotEmpty(
+			final T collection,
+			final String assumptionMessage,
+			final Object... params)
 	{
-		assumeNotEmpty(collection, defaultExClazz, assumptionMessage, params);
+		return assumeNotEmpty(collection, defaultExClazz, assumptionMessage, params);
 	}
 
 	/**
@@ -335,11 +334,12 @@ public final class Check
 	 * @param assumptionMessage
 	 * @param params
 	 */
-	public static void assumeNotEmpty(final Collection<? extends Object> collection, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	public static <T extends Collection<? extends Object>> T assumeNotEmpty(final T collection, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean cond = !isEmpty(collection);
 
 		assume(cond, exceptionClass, assumptionMessage, params);
+		return collection;
 	}
 
 	/**
@@ -405,7 +405,7 @@ public final class Check
 		}
 		return valueInt;
 	}
-	
+
 	public static long assumeGreaterThanZero(final long valueLong, final String valueName)
 	{
 		if (valueLong <= 0)
@@ -414,7 +414,6 @@ public final class Check
 		}
 		return valueLong;
 	}
-
 
 	public static int assumeGreaterOrEqualToZero(final int valueInt, final String valueName)
 	{
@@ -580,7 +579,7 @@ public final class Check
 	 * @param collection
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
-	public static <T> boolean isEmpty(final Collection<T> collection)
+	public static boolean isEmpty(final Collection<?> collection)
 	{
 		return collection == null || collection.isEmpty();
 	}

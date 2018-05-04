@@ -2,8 +2,8 @@ package de.metas.tourplanning.api.impl;
 
 import java.sql.Timestamp;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.junit.Assert;
 import org.junit.Test;
 

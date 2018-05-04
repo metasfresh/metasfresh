@@ -55,6 +55,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.GridField;
@@ -238,7 +239,10 @@ public class InterfaceWrapperHelper
 	 *             </ul>
 	 */
 	@Deprecated
-	public static <T> T create(final Object model, final Class<T> modelClass, final boolean useOldValues)
+	public static <T> T create(
+			@Nullable final Object model,
+			@NonNull final Class<T> modelClass,
+			final boolean useOldValues)
 	{
 		if (model == null)
 		{

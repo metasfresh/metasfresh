@@ -37,9 +37,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
-import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
-import de.metas.shipper.gateway.api.ShipperGatewayService;
-import de.metas.shipper.gateway.api.model.DeliveryOrderCreateRequest;
+import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import lombok.Builder;
 import lombok.NonNull;
@@ -82,8 +81,8 @@ public class HUShippingFacade
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final Supplier<ShipperGatewayRegistry> shipperGatewayRegistrySupplier = //
-			() -> Adempiere.getBean(ShipperGatewayRegistry.class);
+	private final Supplier<ShipperGatewayFacade> shipperGatewayFacadeSupplier = //
+			() -> Adempiere.getBean(ShipperGatewayFacade.class);
 
 	//
 	// Parameters
@@ -232,24 +231,21 @@ public class HUShippingFacade
 			return;
 		}
 
-		final ShipperGatewayRegistry shipperGatewayRegistry = //
-				shipperGatewayRegistrySupplier.get();
-		if (!shipperGatewayRegistry.hasServiceSupport(shipperGatewayId))
+		final ShipperGatewayFacade shipperGatewayFacade = shipperGatewayFacadeSupplier.get();
+		if (!shipperGatewayFacade.hasServiceSupport(shipperGatewayId))
 		{
 			return;
 		}
 
-		final ShipperGatewayService shipperGatewayService = //
-				shipperGatewayRegistry.getShipperGatewayService(shipperGatewayId);
-
 		final Set<Integer> mpackageIds = mpackages.stream()
 				.map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
 
-		shipperGatewayService
-				.createAndSendDeliveryOrdersForPackages(DeliveryOrderCreateRequest.builder()
-						.pickupDate(getShipperDeliveryOrderPickupDate())
-						.packageIds(mpackageIds)
-						.build());
+		final DeliveryOrderCreateRequest request = DeliveryOrderCreateRequest.builder()
+				.pickupDate(getShipperDeliveryOrderPickupDate())
+				.packageIds(mpackageIds)
+				.shipperGatewayId(shipperGatewayId)
+				.build();
+		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
 	}
 
 	public LocalDate getShipperDeliveryOrderPickupDate()

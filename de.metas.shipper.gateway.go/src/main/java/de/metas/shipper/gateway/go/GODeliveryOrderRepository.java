@@ -13,10 +13,6 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
-import de.metas.shipper.gateway.api.model.DeliveryOrder;
-import de.metas.shipper.gateway.api.model.HWBNumber;
-import de.metas.shipper.gateway.api.model.OrderId;
-import de.metas.shipper.gateway.api.model.OrderStatus;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder_Package;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
@@ -24,6 +20,11 @@ import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
 import de.metas.shipper.gateway.go.schema.GOServiceType;
+import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.HWBNumber;
+import de.metas.shipper.gateway.spi.model.OrderId;
+import de.metas.shipper.gateway.spi.model.OrderStatus;
 import lombok.NonNull;
 
 /*
@@ -36,12 +37,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,12 +51,12 @@ import lombok.NonNull;
 
 /**
  * Repository used to save and load {@link DeliveryOrder}s.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 @Repository
-public class GODeliveryOrderRepository
+public class GODeliveryOrderRepository implements DeliveryOrderRepository
 {
 	/**
 	 * NOTE to dev: keep in sync with {@link #toDeliveryOrderPO(DeliveryOrder)}
@@ -64,30 +65,34 @@ public class GODeliveryOrderRepository
 	{
 		final Set<Integer> mpackageIds = retrieveGODeliveryOrderPackageIds(orderPO.getGO_DeliveryOrder_ID());
 
+		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
+				.hwbNumber(HWBNumber.ofNullable(orderPO.getGO_HWBNumber()))
+				.receiptConfirmationPhoneNumber(null)
+				.paidMode(GOPaidMode.forCode(orderPO.getGO_PaidMode()))
+				.selfPickup(GOSelfPickup.forCode(orderPO.getGO_SelfPickup()))
+				.selfDelivery(GOSelfDelivery.forCode(orderPO.getGO_SelfDelivery()))
+				.build();
+
 		return DeliveryOrder.builder()
 				.repoId(orderPO.getGO_DeliveryOrder_ID())
 				.shipperId(orderPO.getM_Shipper_ID())
 				//
 				.orderId(GOUtils.createOrderIdOrNull(orderPO.getGO_AX4Number()))
-				.hwbNumber(HWBNumber.ofNullable(orderPO.getGO_HWBNumber()))
+				.customDeliveryData(goDeliveryOrderData)
 				.orderStatus(GOOrderStatus.forNullableCode(orderPO.getGO_OrderStatus()))
 				//
 				.serviceType(GOServiceType.forCode(orderPO.getGO_ServiceType()))
-				.paidMode(GOPaidMode.forCode(orderPO.getGO_PaidMode()))
-				.receiptConfirmationPhoneNumber(null)
 				//
 				// Pickup
 				.pickupAddress(GODeliveryOrderConverters.pickupAddressFromPO(orderPO))
 				.pickupDate(GODeliveryOrderConverters.pickupDateFromPO(orderPO))
 				.pickupNote(orderPO.getGO_PickupNote())
-				.selfPickup(GOSelfPickup.forCode(orderPO.getGO_SelfPickup()))
 				//
 				// Delivery
 				.deliveryAddress(GODeliveryOrderConverters.deliveryAddressFromPO(orderPO))
 				.deliveryDate(GODeliveryOrderConverters.deliveryDateFromPO(orderPO))
 				.deliveryContact(GODeliveryOrderConverters.deliveryContactFromPO(orderPO))
 				.deliveryNote(orderPO.getGO_DeliverToNote())
-				.selfDelivery(GOSelfDelivery.forCode(orderPO.getGO_SelfDelivery()))
 				.customerReference(orderPO.getGO_CustomerReference())
 				//
 				// Delivery content
@@ -120,7 +125,8 @@ public class GODeliveryOrderRepository
 
 		orderPO.setM_Shipper_ID(order.getShipperId());
 
-		final HWBNumber hwbNumber = order.getHwbNumber();
+		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.ofDeliveryOrder(order);
+		final HWBNumber hwbNumber = goDeliveryOrderData.getHwbNumber();
 		final OrderStatus orderStatus = order.getOrderStatus();
 
 		orderPO.setGO_AX4Number(orderId != null ? orderId.getOrderIdAsString() : null);
@@ -129,14 +135,14 @@ public class GODeliveryOrderRepository
 		orderPO.setProcessed(orderStatus != null && orderStatus.isFinalState());
 
 		orderPO.setGO_ServiceType(order.getServiceType().getCode());
-		orderPO.setGO_PaidMode(order.getPaidMode().getCode());
+		orderPO.setGO_PaidMode(goDeliveryOrderData.getPaidMode().getCode());
 
 		//
 		// Pickup
 		GODeliveryOrderConverters.pickupAddressToPO(orderPO, order.getPickupAddress());
 		GODeliveryOrderConverters.pickupDateToPO(orderPO, order.getPickupDate());
 		orderPO.setGO_PickupNote(order.getPickupNote());
-		orderPO.setGO_SelfPickup(order.getSelfPickup().getCode());
+		orderPO.setGO_SelfPickup(goDeliveryOrderData.getSelfPickup().getCode());
 
 		//
 		// Delivery
@@ -144,16 +150,17 @@ public class GODeliveryOrderRepository
 		GODeliveryOrderConverters.deliveryDateToPO(orderPO, order.getDeliveryDate());
 		GODeliveryOrderConverters.deliveryContactToPO(orderPO, order.getDeliveryContact());
 		orderPO.setGO_DeliverToNote(order.getDeliveryNote());
-		orderPO.setGO_SelfDelivery(order.getSelfDelivery().getCode());
+		orderPO.setGO_SelfDelivery(goDeliveryOrderData.getSelfDelivery().getCode());
 		orderPO.setGO_CustomerReference(order.getCustomerReference());
 
 		//
 		// Delivery content
-		GODeliveryOrderConverters.deliveryPositionToPO(orderPO, order.getDeliveryPosition());
+		GODeliveryOrderConverters.deliveryPositionToPO(orderPO, GOUtils.getSingleDeliveryPosition(order));
 
 		return orderPO;
 	}
 
+	@Override
 	public TableRecordReference toTableRecordReference(final DeliveryOrder deliveryOrder)
 	{
 		final int deliveryOrderRepoId = deliveryOrder.getRepoId();
@@ -161,6 +168,7 @@ public class GODeliveryOrderRepository
 		return TableRecordReference.of(I_GO_DeliveryOrder.Table_Name, deliveryOrderRepoId);
 	}
 
+	@Override
 	public DeliveryOrder getByRepoId(final int deliveryOrderRepoId)
 	{
 		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0");
@@ -171,12 +179,13 @@ public class GODeliveryOrderRepository
 		return deliveryOrder;
 	}
 
+	@Override
 	public DeliveryOrder save(final DeliveryOrder order)
 	{
 		final I_GO_DeliveryOrder orderPO = toDeliveryOrderPO(order);
 		InterfaceWrapperHelper.save(orderPO);
 
-		saveAssignedPackageIds(orderPO.getGO_DeliveryOrder_ID(), order.getDeliveryPosition().getPackageIds());
+		saveAssignedPackageIds(orderPO.getGO_DeliveryOrder_ID(), GOUtils.getSingleDeliveryPosition(order).getPackageIds());
 
 		return order.toBuilder()
 				.repoId(orderPO.getGO_DeliveryOrder_ID())
@@ -234,6 +243,12 @@ public class GODeliveryOrderRepository
 		orderPackagePO.setGO_DeliveryOrder_ID(deliveryOrderRepoId);
 		orderPackagePO.setM_Package_ID(packageId);
 		InterfaceWrapperHelper.save(orderPackagePO);
+	}
+
+	@Override
+	public String getShipperGatewayId()
+	{
+		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
 
 }

@@ -26,9 +26,9 @@ import java.awt.Dimension;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.adempiere.form.terminal.AbstractTerminalTextField;
 import de.metas.adempiere.form.terminal.IDisposable;

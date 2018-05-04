@@ -2,10 +2,10 @@ package de.metas.fresh.printing.spi.impl;
 
 import java.util.Properties;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Order;

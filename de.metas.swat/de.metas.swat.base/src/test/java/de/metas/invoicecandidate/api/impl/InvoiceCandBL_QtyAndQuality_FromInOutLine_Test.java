@@ -25,10 +25,10 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
