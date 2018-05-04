@@ -17,6 +17,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3312](https://github.com/metasfresh/metasfresh/issues/3312) Webui Window Design: Improve window Table and Column
+    * New Window for Table and columns in WebUI.
   * [#3812](https://github.com/metasfresh/metasfresh/issues/3812) Add process for creating missing M_Product_acct records to WebUI
     * New Action added to Product Catregory window, allowing to copy Acctounting Setting to all Products of a Product Category.
   * [#3965](https://github.com/metasfresh/metasfresh/issues/3965) Translate Actions Update Pharma Conditions
