@@ -56,12 +56,16 @@ public class ContactPerson
 				simplePhoneNumber, phone);
 	}
 
-	public String getPhoneAsString()
+	public String getPhoneAsStringOrNull()
 	{
 		if (simplePhoneNumber != null)
 		{
 			return simplePhoneNumber;
 		}
-		return phone.getAsString();
+		else if (phone != null)
+		{
+			return phone.getAsString();
+		}
+		return null;
 	}
 }

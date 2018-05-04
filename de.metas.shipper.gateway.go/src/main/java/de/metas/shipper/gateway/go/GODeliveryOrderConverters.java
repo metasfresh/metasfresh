@@ -146,7 +146,7 @@ import lombok.experimental.UtilityClass;
 
 	public static void deliveryContactToPO(final I_GO_DeliveryOrder orderPO, final ContactPerson deliveryContact)
 	{
-		orderPO.setGO_DeliverToPhoneNo(deliveryContact != null ? deliveryContact.getPhoneAsString() : null);
+		orderPO.setGO_DeliverToPhoneNo(deliveryContact != null ? deliveryContact.getPhoneAsStringOrNull() : null);
 	}
 
 	public static DeliveryPosition deliveryPositionFromPO(final I_GO_DeliveryOrder orderPO, final Set<Integer> mpackageIds)

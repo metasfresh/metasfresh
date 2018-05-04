@@ -1,10 +1,14 @@
 package de.metas.shipper.gateway.commons;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
+import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_Location;
 
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
 import de.metas.shipper.gateway.spi.model.CountryCode;
 import lombok.NonNull;
 
@@ -38,10 +42,24 @@ public final class DeliveryOrderUtil
 
 	public static Address.AddressBuilder prepareAddressFromLocation(@NonNull final I_C_Location location)
 	{
-		return Address.builder()
-				.street1(location.getAddress1())
+		final AddressBuilder addressBuilder = Address.builder();
+
+		final IPair<String, String> splitStreetAndHouseNumber1 = StringUtils
+				.splitStreetAndHouseNumberOrNull(location.getAddress1());
+		if (splitStreetAndHouseNumber1 != null
+				&& !Check.isEmpty(splitStreetAndHouseNumber1.getLeft())
+				&& !Check.isEmpty(splitStreetAndHouseNumber1.getRight()))
+		{
+			addressBuilder.street1(splitStreetAndHouseNumber1.getLeft());
+			addressBuilder.houseNo(splitStreetAndHouseNumber1.getRight());
+		}
+		else
+		{
+			addressBuilder.street1(location.getAddress1());
+			addressBuilder.houseNo("0");
+		}
+		return addressBuilder
 				.street2(location.getAddress2())
-				.houseNo(location.getAddress3())
 				.zipCode(location.getPostal())
 				.city(location.getCity())
 				.country(createShipperCountryCode(location.getC_Country_ID()));

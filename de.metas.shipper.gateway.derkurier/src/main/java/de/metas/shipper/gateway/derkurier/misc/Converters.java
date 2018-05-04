@@ -150,7 +150,7 @@ public class Converters
 							deliveryOrder.getCustomerReference(),
 							orderId.getOrderIdAsString(),
 							"", // cReferenz
-							stringToString(deliveryContact.map(ContactPerson::getPhoneAsString)),
+							stringToString(deliveryContact.map(ContactPerson::getPhoneAsStringOrNull)),
 							"", // EA
 							"", // EB
 							"", // EC

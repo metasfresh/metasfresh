@@ -336,15 +336,18 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 			if (deliveryContact != null)
 			{
 				lineRecord.setDK_Consignee_EMail(deliveryContact.getEmailAddress());
-				lineRecord.setDK_Consignee_Phone(deliveryContact.getPhoneAsString());
+				lineRecord.setDK_Consignee_Phone(deliveryContact.getPhoneAsStringOrNull());
 			}
 
 			lineRecord.setDK_CustomerNumber(derKurierDeliveryData.getCustomerNumber());
 
 			final DeliveryDate deliveryDate = deliveryOrder.getDeliveryDate();
-			lineRecord.setDK_DesiredDeliveryDate(TimeUtil.asTimestamp(deliveryDate.getDate()));
-			lineRecord.setDK_DesiredDeliveryTime_From(TimeUtil.asTimestamp(deliveryDate.getDate(), deliveryDate.getTimeFrom()));
-			lineRecord.setDK_DesiredDeliveryTime_To(TimeUtil.asTimestamp(deliveryDate.getDate(), deliveryDate.getTimeTo()));
+			if (deliveryDate != null)
+			{
+				lineRecord.setDK_DesiredDeliveryDate(TimeUtil.asTimestamp(deliveryDate.getDate()));
+				lineRecord.setDK_DesiredDeliveryTime_From(TimeUtil.asTimestamp(deliveryDate.getDate(), deliveryDate.getTimeFrom()));
+				lineRecord.setDK_DesiredDeliveryTime_To(TimeUtil.asTimestamp(deliveryDate.getDate(), deliveryDate.getTimeTo()));
+			}
 			lineRecord.setDK_PackageAmount(deliveryPosition.getNumberOfPackages());
 
 			if (packageDimensions != null)
