@@ -130,6 +130,11 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	{
 		return true;
 	}
+	
+	@Override
+	public void cacheInvalidate()
+	{
+	}
 
 	@Override
 	public List<CCacheStats> getCacheStats()
