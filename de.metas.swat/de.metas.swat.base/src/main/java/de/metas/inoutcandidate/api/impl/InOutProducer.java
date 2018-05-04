@@ -122,7 +122,6 @@ public class InOutProducer implements IInOutProducer
 	 */
 	protected InOutProducer(@NonNull final InOutGenerateResult result, final boolean complete, final boolean createReceiptWithDatePromised)
 	{
-		Check.assumeNotNull(result, "result not null");
 		this.result = result;
 		this.complete = complete;
 		this.createReceiptWithDatePromised = createReceiptWithDatePromised;
