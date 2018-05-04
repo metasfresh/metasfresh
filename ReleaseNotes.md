@@ -72,6 +72,7 @@ Here come the actual release notes:
   * [#3839](https://github.com/metasfresh/metasfresh/issues/3839) Webui: BPartner window: show BPartner Product tab
     * Improvement of Business Partner window. Now allowing to record Products that thall not be sold to a specific BPartner.
   * [#3869](https://github.com/metasfresh/metasfresh/issues/3869) Procurement - add AD_Issue_ID to I_PMM_QtyReport_Event, I_PMM_WeekReport_Event and I_PMM_RfQResponse_ChangeEvent
+    * Improvement of the Issue Handling in Procurement Report Events.
   * [#3875](https://github.com/metasfresh/metasfresh/issues/3875) Request notifications shall use new notifications API
     * Improving the creation of Request notifications, now using the new Notification API.
   * [#3889](https://github.com/metasfresh/metasfresh/issues/3889) Report for Pharma Permission/ Authorisation control
