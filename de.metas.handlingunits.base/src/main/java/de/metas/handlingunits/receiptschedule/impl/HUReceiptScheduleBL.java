@@ -55,6 +55,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOutLine;
@@ -89,6 +90,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
@@ -319,7 +321,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 		//
 		// Validate selectedHUs.
-		// Get M_HU_IDs from selectedHUs
+		// Get M_HU_IDs from selectedHUs.
+		final IHUToReceiveValidator huToReceiveValidator = CompositeHUToReceiveValidator.of(Adempiere.getBeansOfType(IHUToReceiveValidator.class));
 		final Set<Integer> selectedHUIds = new HashSet<>(selectedHUs.size());
 		for (final I_M_HU hu : selectedHUs)
 		{
@@ -327,6 +330,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			{
 				throw new HUException("@Invalid@ @HUStatus@: " + hu.getValue());
 			}
+			
+			huToReceiveValidator.assertValidForReceiving(hu);
 
 			final int huId = hu.getM_HU_ID();
 			selectedHUIds.add(huId);
