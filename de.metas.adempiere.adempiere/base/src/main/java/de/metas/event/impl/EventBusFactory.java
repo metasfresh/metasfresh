@@ -131,7 +131,7 @@ public class EventBusFactory implements IEventBusFactory
 	}
 
 	/**
-	 * Creates the event bus. If the remove event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE}, then the event bus is also bould to a JMS
+	 * Creates the event bus. If the remove event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE}, then the event bus is also build to a JMS
 	 * endpoint. Otherwise the event bus will only be local.
 	 *
 	 * @param topic
