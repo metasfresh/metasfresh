@@ -2,7 +2,7 @@ package de.metas.ui.web.view;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nullable;
 
@@ -10,6 +10,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -79,38 +80,31 @@ public final class ViewId
 
 	public static ViewId random(@NonNull final WindowId windowId)
 	{
-		// TODO: find a way to generate smaller viewIds
-		final String viewIdPart = randomViewIdPart();
+		final String viewIdPart = encodeUsingDigits(nextViewId.getAndIncrement(), VIEW_DIGITS);
 		final ImmutableList<String> parts = ImmutableList.of(windowId.toJson(), viewIdPart);
 		final String viewIdStr = JOINER.join(parts);
 		return new ViewId(viewIdStr, parts, windowId);
 	}
 
-	public static String randomViewIdPart()
+	@VisibleForTesting
+	static String encodeUsingDigits(final long value, char[] digits)
 	{
-		return toString(UUID.randomUUID());
-	}
+		if (value == 0)
+		{
+			return String.valueOf(digits[0]);
+		}
 
-	private static final String toString(final UUID uuid)
-	{
-		final long mostSigBits = uuid.getMostSignificantBits();
-		final long leastSigBits = uuid.getLeastSignificantBits();
+		final int base = digits.length;
+		final StringBuilder buf = new StringBuilder();
+		long currentValue = value;
+		while (currentValue > 0)
+		{
+			final int remainder = (int)(currentValue % base);
+			currentValue = currentValue / base;
+			buf.append(digits[remainder]);
+		}
 
-		// copy/paste from java.util.UUID.toString(), with our changes
-		return digits(mostSigBits >> 32, 8) + // "-" +
-				digits(mostSigBits >> 16, 4) + // "-" +
-				digits(mostSigBits, 4) + // "-" +
-				digits(leastSigBits >> 48, 4) + // "-" +
-				digits(leastSigBits, 12);
-	}
-
-	/**
-	 * @author java.util.UUID.digits(long, int)
-	 */
-	private static String digits(final long val, final int digits)
-	{
-		final long hi = 1L << digits * 4;
-		return Long.toHexString(hi | val & hi - 1).substring(1);
+		return buf.reverse().toString();
 	}
 
 	/**
@@ -140,6 +134,15 @@ public final class ViewId
 	private static final String SEPARATOR = "-";
 	private static final Splitter SPLITTER = Splitter.on(SEPARATOR).trimResults();
 	private static final Joiner JOINER = Joiner.on(SEPARATOR);
+
+	private static final AtomicLong nextViewId = new AtomicLong(1);
+	private static final char[] VIEW_DIGITS = {
+			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+			'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+			'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+			'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	};
 
 	private final WindowId windowId;
 	private final String viewId;
