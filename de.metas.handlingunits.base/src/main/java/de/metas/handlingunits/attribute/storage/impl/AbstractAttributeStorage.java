@@ -330,14 +330,14 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public final IAttributeValue getAttributeValue(final I_M_Attribute attribute)
+	public final IAttributeValue getAttributeValue(final String attributeKey)
 	{
 		// assertNotDisposed(); // checked in next called method
 
-		final IAttributeValue attributeValue = getAttributeValueOrNull(attribute);
+		final IAttributeValue attributeValue = getAttributeValueOrNull(attributeKey);
 		if (NullAttributeValue.isNull(attributeValue))
 		{
-			throw new AttributeNotFoundException(attribute, this);
+			throw new AttributeNotFoundException(attributeKey, this);
 		}
 		return attributeValue;
 	}
@@ -345,13 +345,11 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	/**
 	 * @return {@link IAttributeValue} or {@link NullAttributeValue#instance}
 	 */
-	private IAttributeValue getAttributeValueOrNull(final I_M_Attribute attribute)
+	private IAttributeValue getAttributeValueOrNull(@NonNull final String attributeKey)
 	{
 		assertNotDisposed();
-		Check.assumeNotNull(attribute, "attribute not null");
 
-		final int attributeId = attribute.getM_Attribute_ID();
-		final IAttributeValue attributeValue = getIndexedAttributeValues().getAttributeValueOrNull(attributeId);
+		final IAttributeValue attributeValue = getIndexedAttributeValues().getAttributeValueOrNull(attributeKey);
 		if (attributeValue == null)
 		{
 			return NullAttributeValue.instance;
@@ -361,13 +359,10 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public final boolean hasAttribute(@NonNull final I_M_Attribute attribute)
+	public final boolean hasAttribute(@NonNull final String attributeKey)
 	{
 		assertNotDisposed();
-
-
-		final int attributeId = attribute.getM_Attribute_ID();
-		return getIndexedAttributeValues().hasAttribute(attributeId);
+		return getIndexedAttributeValues().hasAttribute(attributeKey);
 	}
 
 	@Override
@@ -457,47 +452,47 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	protected abstract List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, Map<I_M_Attribute, Object> defaultAttributesValue);
 
 	@Override
-	public Object getValue(final I_M_Attribute attribute)
+	public Object getValue(final String attributeKey)
 	{
 		// assertNotDisposed(); // checked in next called method
 
-		final IAttributeValue value = getAttributeValue(attribute);
+		final IAttributeValue value = getAttributeValue(attributeKey);
 		return value.getValue();
 	}
 
 	@Override
-	public String getValueAsString(final I_M_Attribute attribute)
+	public String getValueAsString(final String attributeKey)
 	{
 		// assertNotDisposed(); // checked in next called method
 
-		final IAttributeValue value = getAttributeValue(attribute);
+		final IAttributeValue value = getAttributeValue(attributeKey);
 		return value.getValueAsString();
 	}
 
 	@Override
-	public BigDecimal getValueAsBigDecimal(final I_M_Attribute attribute)
+	public BigDecimal getValueAsBigDecimal(final String attributeKey)
 	{
 		// assertNotDisposed(); // checked in next called method
 
-		final IAttributeValue value = getAttributeValue(attribute);
+		final IAttributeValue value = getAttributeValue(attributeKey);
 		return value.getValueAsBigDecimal();
 	}
 
 	@Override
-	public int getValueAsInt(final I_M_Attribute attribute)
+	public int getValueAsInt(final String attributeKey)
 	{
 		// assertNotDisposed(); // checked in next called method
 
-		final IAttributeValue value = getAttributeValue(attribute);
+		final IAttributeValue value = getAttributeValue(attributeKey);
 		return value.getValueAsInt();
 	}
 
 	@Override
-	public Date getValueAsDate(final I_M_Attribute attribute)
+	public Date getValueAsDate(final String attributeKey)
 	{
 		// assertNotDisposed(); // checked in next called method
 
-		final IAttributeValue value = getAttributeValue(attribute);
+		final IAttributeValue value = getAttributeValue(attributeKey);
 		return value.getValueAsDate();
 	}
 
@@ -621,9 +616,15 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	 * </ol>
 	 */
 	@Override
-	public final void setValue(final I_M_Attribute attribute, final Object value)
+	public final void setValue(final String attributeKey, final Object value)
 	{
 		assertNotDisposed();
+		
+		final I_M_Attribute attribute = getAttributeByValueKeyOrNull(attributeKey);
+		if(attribute == null)
+		{
+			throw new AttributeNotFoundException(attributeKey, this);
+		}
 
 		final IHUAttributePropagator attributePropagator = huAttributePropagatorFactory.getPropagator(this, attribute);
 		final IHUAttributePropagationContext propagationContext = createPropagationContext(attribute, attributePropagator);
@@ -741,7 +742,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	{
 		assertNotDisposed();
 
-		final IAttributeValue attributeValue = getAttributeValueOrNull(attribute);
+		final IAttributeValue attributeValue = getAttributeValueOrNull(attribute.getValue());
 		return attributeValue.getPropagationType();
 	}
 
@@ -750,7 +751,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	{
 		assertNotDisposed();
 
-		final IAttributeValue attributeValue = getAttributeValueOrNull(attribute);
+		final IAttributeValue attributeValue = getAttributeValueOrNull(attribute.getValue());
 		return attributeValue.retrieveAggregationStrategy();
 	}
 
@@ -759,7 +760,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	{
 		assertNotDisposed();
 
-		final IAttributeValue attributeValue = getAttributeValueOrNull(attribute);
+		final IAttributeValue attributeValue = getAttributeValueOrNull(attribute.getValue());
 		return attributeValue.retrieveSplitterStrategy();
 	}
 
@@ -768,7 +769,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	{
 		assertNotDisposed();
 
-		final IAttributeValue attributeValue = getAttributeValueOrNull(attribute);
+		final IAttributeValue attributeValue = getAttributeValueOrNull(attribute.getValue());
 		return attributeValue.retrieveTransferStrategy();
 	}
 
@@ -777,7 +778,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	{
 		assertNotDisposed();
 
-		final IAttributeValue attributeValue = getAttributeValueOrNull(attribute);
+		final IAttributeValue attributeValue = getAttributeValueOrNull(attribute.getValue());
 
 		final String attributePropagationType = attributeValue.getPropagationType();
 
@@ -1245,39 +1246,41 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 		private final List<IAttributeValue> attributeValuesRO;
 		private final Map<Integer, I_M_Attribute> attributeId2attributeRO;
-		private final Map<Integer, IAttributeValue> attributeId2attributeValueRO;
+		private final Map<String, I_M_Attribute> attributeKey2attributeRO;
+		private final Map<String, IAttributeValue> attributeKey2attributeValueRO;
 
 		/** Null constructor */
 		private IndexedAttributeValues()
 		{
-			super();
 			attributeValuesRO = ImmutableList.of();
 			attributeId2attributeRO = ImmutableMap.of();
-			attributeId2attributeValueRO = ImmutableMap.of();
+			attributeKey2attributeRO = ImmutableMap.of();
+			attributeKey2attributeValueRO = ImmutableMap.of();
 		}
 
 		private IndexedAttributeValues(final List<IAttributeValue> attributeValues)
 		{
-			super();
 			final List<IAttributeValue> attributeValuesList = new ArrayList<>(attributeValues);
 			Collections.sort(attributeValuesList, AbstractAttributeStorage.attributeValueSortBySeqNo);
 
 			final Map<Integer, I_M_Attribute> attributeId2attribute = new HashMap<>(attributeValuesList.size());
-			final Map<Integer, IAttributeValue> attributeId2attributeValue = new HashMap<>(attributeValuesList.size());
+			final Map<String, I_M_Attribute> attributeKey2attribute = new HashMap<>(attributeValuesList.size());
+			final Map<String, IAttributeValue> attributeKey2attributeValue = new HashMap<>(attributeValuesList.size());
 			for (final IAttributeValue attributeValue : attributeValuesList)
 			{
 				final I_M_Attribute attribute = attributeValue.getM_Attribute();
 				final int attributeId = attribute.getM_Attribute_ID();
+				final String attributeKey = attribute.getValue();
 
 				attributeId2attribute.put(attributeId, attribute);
-				attributeId2attributeValue.put(attributeId, attributeValue);
-
-				// attributeValue.addAttributeValueListener(attributeValueListener);
+				attributeKey2attribute.put(attributeKey, attribute);
+				attributeKey2attributeValue.put(attributeKey, attributeValue);
 			}
 
 			attributeValuesRO = ImmutableList.copyOf(attributeValuesList);
 			attributeId2attributeRO = ImmutableMap.copyOf(attributeId2attribute);
-			attributeId2attributeValueRO = ImmutableMap.copyOf(attributeId2attributeValue);
+			attributeKey2attributeRO = ImmutableMap.copyOf(attributeKey2attribute);
+			attributeKey2attributeValueRO = ImmutableMap.copyOf(attributeKey2attributeValue);
 		}
 
 		@Override
@@ -1299,19 +1302,20 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 			return attributeValuesRO;
 		}
 
-		public IAttributeValue getAttributeValueOrNull(final int attributeId)
+		public IAttributeValue getAttributeValueOrNull(final String attributeKey)
 		{
-			return attributeId2attributeValueRO.get(attributeId);
+			return attributeKey2attributeValueRO.get(attributeKey);
+		}
+		
+		public boolean hasAttribute(final String attributeKey)
+		{
+			return attributeKey2attributeRO.containsKey(attributeKey);
 		}
 
-		public boolean hasAttribute(final int attributeId)
-		{
-			return attributeId2attributeRO.containsKey(attributeId);
-		}
 
 		public Collection<I_M_Attribute> getAttributes()
 		{
-			return attributeId2attributeRO.values();
+			return attributeKey2attributeRO.values();
 		}
 
 		public I_M_Attribute getAttributeOrNull(int attributeId)
@@ -1322,20 +1326,12 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 		public boolean hasAttributes()
 		{
-			return !attributeId2attributeRO.isEmpty();
+			return !attributeKey2attributeRO.isEmpty();
 		}
 
 		public final I_M_Attribute getAttributeByValueKeyOrNull(final String attributeValueKey)
 		{
-			for (final I_M_Attribute attribute : attributeId2attributeRO.values())
-			{
-				if (attributeValueKey.equals(attribute.getValue()))
-				{
-					return attribute;
-				}
-			}
-
-			return null;
+			return attributeKey2attributeRO.get(attributeValueKey);
 		}
 
 		public boolean isNull()
