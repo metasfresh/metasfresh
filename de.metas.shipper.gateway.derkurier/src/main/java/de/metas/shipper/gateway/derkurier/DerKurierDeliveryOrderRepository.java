@@ -48,6 +48,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
@@ -497,7 +498,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		return orderPO;
 	}
 
-	public void attachCsvToDeliveryOrder(
+	public AttachmentEntry attachCsvToDeliveryOrder(
 			final int repoId,
 			@NonNull final List<String> csv)
 	{
@@ -510,7 +511,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		{
 			writeLineToStream(csvLine, out);
 		}
-		Services.get(IAttachmentBL.class).addEntry(record, "CSV-Daten", baos.toByteArray());
+		return Services.get(IAttachmentBL.class).addEntry(record, "CSV-Daten", baos.toByteArray());
 	}
 
 	public void writeLineToStream(

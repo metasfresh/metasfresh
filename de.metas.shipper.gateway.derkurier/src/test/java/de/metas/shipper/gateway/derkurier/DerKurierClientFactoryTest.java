@@ -12,8 +12,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 
 import de.metas.shipper.gateway.derkurier.misc.Converters;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
+import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 
@@ -53,15 +55,19 @@ public class DerKurierClientFactoryTest
 	@Test
 	public void postRoutingRequest()
 	{
-		// both params should not be used for this test case
+		final Converters converters = new Converters();
+		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
+
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
-				new DerKurierShipperConfigRepository(),
-				new DerKurierDeliveryOrderRepository(new Converters()));
+				derKurierShipperConfigRepository,
+				new DerKurierDeliveryOrderRepository(converters),
+				new DerKurierDeliveryOrderEmailer(derKurierShipperConfigRepository),
+				converters);
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl(REST_API_BASE_URL)
 				.customerNumber("12345")
-				.parcelNumberAdSequenceId(23)
+				.parcelNumberAdSequenceId(ParcelNumberGenerator.NO_AD_SEQUENCE_ID_FOR_TESTING)
 				.build();
 
 		final DerKurierClient client = derKurierClientFactory.createClient(shipperConfig);

@@ -6,6 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.shipper.gateway.derkurier.misc.Converters;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
@@ -42,10 +43,14 @@ public class DerKurierClientFactoryManualTest
 	@Ignore // remove the ignore to run this test manually
 	public void manualTest()
 	{
-		// both params should not be used for this test case
+		final Converters converters = new Converters();
+		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
+
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
-				new DerKurierShipperConfigRepository(),
-				new DerKurierDeliveryOrderRepository(new Converters()));
+				derKurierShipperConfigRepository,
+				new DerKurierDeliveryOrderRepository(converters),
+				new DerKurierDeliveryOrderEmailer(derKurierShipperConfigRepository),
+				converters);
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl("https://leoz.derkurier.de:13000/rs/api/v1")

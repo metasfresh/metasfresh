@@ -40,7 +40,7 @@ public class ConvertersTest
 
 		final List<String> csv = new Converters().createCsv(deliveryOrder);
 		assertThat(csv).hasSize(2);
-		assertThat(csv.get(0)).isEqualTo("2018-01-08;customerNumber-12345;to company;;DE;54321;Köln;street 1 - street 2;1;030;2018-01-09;09:00;17:30;1;1;;;;parcelnumber1;some info for customer;orderIdAsString;;;;;;;5;");
-		assertThat(csv.get(1)).isEqualTo("2018-01-08;customerNumber-12345;to company;;DE;54321;Köln;street 1 - street 2;1;030;2018-01-09;09:00;17:30;2;2;;;;parcelnumber2;some info for customer;orderIdAsString;;;;;;;1;");
+		assertThat(csv.get(0)).isEqualTo("2018-01-08;customerNumber-12345;to company;;DE;54321;Köln;street 1 - street 2;1;030;2018-01-09;09:00;17:30;1;1;;;;parcelnumber1;some info for customer;1234;;;;;;;5;");
+		assertThat(csv.get(1)).isEqualTo("2018-01-08;customerNumber-12345;to company;;DE;54321;Köln;street 1 - street 2;1;030;2018-01-09;09:00;17:30;2;2;;;;parcelnumber2;some info for customer;1234;;;;;;;1;");
 	}
 }

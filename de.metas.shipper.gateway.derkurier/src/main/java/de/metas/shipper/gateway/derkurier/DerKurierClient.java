@@ -18,10 +18,12 @@ import org.springframework.web.client.RestTemplate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.attachments.AttachmentEntry;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierPackageLabelType;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
@@ -72,14 +74,18 @@ public class DerKurierClient implements ShipperGatewayClient
 
 	private final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository;
 
+	private final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer;
+
 	public DerKurierClient(
 			@NonNull final RestTemplate restTemplate,
 			@NonNull final Converters converters,
-			@NonNull final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository)
+			@NonNull final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository,
+			@NonNull final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer)
 	{
 		this.derKurierDeliveryOrderRepository = derKurierDeliveryOrderRepository;
 		this.restTemplate = restTemplate;
 		this.converters = converters;
+		this.derKurierDeliveryOrderEmailer = derKurierDeliveryOrderEmailer;
 	}
 
 	@Override
@@ -116,7 +122,11 @@ public class DerKurierClient implements ShipperGatewayClient
 		final DeliveryOrder completedDeliveryOrder = createDeliveryOrderFromResponse(routing, deliveryOrder);
 
 		final List<String> csv = converters.createCsv(completedDeliveryOrder);
-		derKurierDeliveryOrderRepository.attachCsvToDeliveryOrder(deliveryOrder.getRepoId(), csv);
+
+		final AttachmentEntry attachmentEntry = derKurierDeliveryOrderRepository
+				.attachCsvToDeliveryOrder(deliveryOrder.getRepoId(), csv);
+
+		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(deliveryOrder.getShipperId(), attachmentEntry);
 
 		return completedDeliveryOrder;
 	}

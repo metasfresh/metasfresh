@@ -10,6 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.shipper.gateway.derkurier.misc.Converters;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
@@ -43,13 +44,19 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 {
 	private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
 	private final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository;
+	private final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer;
+	private final Converters converters;
 
 	public DerKurierClientFactory(
 			@NonNull final DerKurierShipperConfigRepository derKurierShipperConfigRepository,
-			@NonNull final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository)
+			@NonNull final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository,
+			@NonNull final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer,
+			@NonNull final Converters converters)
 	{
 		this.derKurierShipperConfigRepository = derKurierShipperConfigRepository;
 		this.derKurierDeliveryOrderRepository = derKurierDeliveryOrderRepository;
+		this.derKurierDeliveryOrderEmailer = derKurierDeliveryOrderEmailer;
+		this.converters = converters;
 	}
 
 	@Override
@@ -74,7 +81,11 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 		final RestTemplate restTemplate = restTemplateBuilder.build();
 		extractAndConfigureObjectMapperOfRestTemplate(restTemplate);
 
-		return new DerKurierClient(restTemplate, new Converters(), derKurierDeliveryOrderRepository);
+		return new DerKurierClient(
+				restTemplate,
+				converters,
+				derKurierDeliveryOrderRepository,
+				derKurierDeliveryOrderEmailer);
 	}
 
 	/**

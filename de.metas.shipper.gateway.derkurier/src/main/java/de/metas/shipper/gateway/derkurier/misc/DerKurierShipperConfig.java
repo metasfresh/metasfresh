@@ -46,7 +46,8 @@ public class DerKurierShipperConfig
 		this.restApiBaseUrl = Check.assumeNotEmpty(restApiBaseUrl, "Parameter restApiBaseUrl is not empty");
 		this.customerNumber = Check.assumeNotEmpty(customerNumber, "Parameter customerNumber is not empty");
 
-		Check.assume(parcelNumberAdSequenceId > 0, "Parameter parcelNumberAdSequenceId is > 0");
+		Check.assume(parcelNumberAdSequenceId > 0 || parcelNumberAdSequenceId == ParcelNumberGenerator.NO_AD_SEQUENCE_ID_FOR_TESTING,
+				"Parameter parcelNumberAdSequenceId is > 0");
 		this.parcelNumberGenerator = new ParcelNumberGenerator(parcelNumberAdSequenceId);
 	}
 }

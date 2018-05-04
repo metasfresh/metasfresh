@@ -39,7 +39,7 @@ import lombok.NonNull;
 
 public class ParcelNumberGenerator
 {
-	public static final int NO_AD_SEQUENCE_ID = -99;
+	public static final int NO_AD_SEQUENCE_ID_FOR_TESTING = -99;
 
 	private final IDocumentNoBuilder documentNoBuilder;
 
@@ -51,7 +51,7 @@ public class ParcelNumberGenerator
 	@VisibleForTesting
 	ParcelNumberGenerator()
 	{
-		this(NO_AD_SEQUENCE_ID);
+		this(NO_AD_SEQUENCE_ID_FOR_TESTING);
 	}
 
 	public ParcelNumberGenerator(final int parcelNumberAdSequenceId)
