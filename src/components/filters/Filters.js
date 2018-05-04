@@ -1,7 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { find } from 'lodash';
 
 import TableCell from '../table/TableCell';
 import FiltersFrequent from './FiltersFrequent';
@@ -63,8 +62,8 @@ class Filters extends Component {
   setFilterActive = filterToAdd => {
     const { updateDocList } = this.props;
     const { filter } = this.state;
-
     let newFilter;
+
     if (filter) {
       newFilter = filter.filter(item => item.filterId !== filterToAdd.filterId);
       newFilter.push(filterToAdd);
@@ -126,10 +125,9 @@ class Filters extends Component {
         unannotatedFilter.parameters && unannotatedFilter.parameters[0];
       const filterType = parameter && parameter.widgetType;
       const isActive = this.isFilterActive(unannotatedFilter.filterId);
-      const currentFilter = find(
-        filter,
-        f => f.filterId === unannotatedFilter.filterId
-      );
+      const currentFilter = filter
+        ? filter.find(f => f.filterId === unannotatedFilter.filterId)
+        : null;
       const activeParameter =
         parameter && isActive && currentFilter && currentFilter.parameters[0];
       const captionValue = activeParameter
