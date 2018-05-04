@@ -28,6 +28,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Env;
 
 public final class PlainContextAware implements IContextAware

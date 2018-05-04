@@ -26,12 +26,12 @@ package org.adempiere.mmovement.api.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.mmovement.api.IMovementBL;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;

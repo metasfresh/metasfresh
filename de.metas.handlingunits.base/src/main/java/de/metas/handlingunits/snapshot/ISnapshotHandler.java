@@ -25,7 +25,7 @@ package de.metas.handlingunits.snapshot;
 
 import java.util.Date;
 
-import org.adempiere.model.IContextAware;
+import org.adempiere.util.lang.IContextAware;
 
 /**
  * Implementations of the interface are able to create snapshots and restore from snapshots a particular model.

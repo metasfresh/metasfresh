@@ -9,6 +9,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
 import org.junit.Before;
 import org.junit.Test;
@@ -189,7 +190,7 @@ public class PartitionerServiceAttachToPartitionTests
 		recordDLMAware.setDLM_Partition_ID(partitionDB.getDLM_Partition_ID());
 		InterfaceWrapperHelper.save(recordDLMAware);
 
-		final ITableRecordReference tableRecordReverence = ITableRecordReference.FromModelConverter.convert(record);
+		final ITableRecordReference tableRecordReverence = TableRecordReference.ofOrNull(record);
 
 		final I_DLM_Partition_Record_V partitionRecord = InterfaceWrapperHelper.newInstance(I_DLM_Partition_Record_V.class);
 		partitionRecord.setAD_Table_ID(tableRecordReverence.getAD_Table_ID());
@@ -208,7 +209,7 @@ public class PartitionerServiceAttachToPartitionTests
 	{
 		return new CreatePartitionIterateResult(
 				Collections.singletonList(
-						WorkQueue.of(ITableRecordReference.FromModelConverter.convert(model))).iterator(),
+						WorkQueue.of(TableRecordReference.ofOrNull(model))).iterator(),
 				PlainContextAware.newWithThreadInheritedTrx());
 	}
 

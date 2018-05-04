@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;

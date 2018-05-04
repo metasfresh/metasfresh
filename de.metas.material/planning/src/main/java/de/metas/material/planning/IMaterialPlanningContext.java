@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.model.IContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;

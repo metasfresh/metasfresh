@@ -49,13 +49,13 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.exceptions.NoVendorForProductException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostEngineFactory;
 import org.adempiere.model.engines.IDocumentLine;
 import org.adempiere.model.engines.StorageEngine;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;

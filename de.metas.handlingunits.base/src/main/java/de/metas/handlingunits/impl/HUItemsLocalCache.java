@@ -29,9 +29,9 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHandlingUnitsDAO;

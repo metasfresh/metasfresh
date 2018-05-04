@@ -51,10 +51,10 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_M_Attribute;
@@ -330,7 +330,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			{
 				throw new HUException("@Invalid@ @HUStatus@: " + hu.getValue());
 			}
-			
+
 			huToReceiveValidator.assertValidForReceiving(hu);
 
 			final int huId = hu.getM_HU_ID();
