@@ -1087,6 +1087,14 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	@Override
 	public boolean isDisplayedUI(final I_M_Attribute attribute)
 	{
+		assertNotDisposed();
+		
+		final IAttributeValueCallout callout = getAttributeValueCallout(attribute);
+		if(!callout.isDisplayedUI(this, attribute))
+		{
+			return false;
+		}
+		
 		return getAttributeValue(attribute).isDisplayedUI();
 	}
 
