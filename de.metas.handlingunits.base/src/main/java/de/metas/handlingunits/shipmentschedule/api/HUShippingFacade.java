@@ -43,6 +43,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 
 /*
  * #%L
@@ -72,6 +73,7 @@ import lombok.Singular;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleDAO", "huShipmentScheduleBL", "invoiceCandDAO", "invoiceCandBL", "trxManager" })
 public class HUShippingFacade
 {
 	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
@@ -86,13 +88,13 @@ public class HUShippingFacade
 
 	//
 	// Parameters
-	private final ILoggable loggable;
-	private final ImmutableList<I_M_HU> hus;
 	private final int addToShipperTransportationId;
 	private final boolean completeShipments;
 	private final BillAssociatedInvoiceCandidates invoiceMode;
 	private final boolean createShipperDeliveryOrders;
 	private LocalDate _shipperDeliveryOrderPickupDate = null; // lazy, will be fetched from Shipper Transportation
+	private final ImmutableList<I_M_HU> hus;
+	private final ILoggable loggable;
 
 	//
 	// State
@@ -214,6 +216,7 @@ public class HUShippingFacade
 		{
 			return;
 		}
+		Check.errorIf(addToShipperTransportationId <= 0, "If createShipperDeliveryOrders=true, then addToShipperTransportationId needs to be > 0; this={}", this);
 
 		mpackagesCreated
 				.stream()
@@ -222,9 +225,15 @@ public class HUShippingFacade
 				.forEach(this::generateShipperDeliveryOrderIfNeeded);
 	}
 
-	private void generateShipperDeliveryOrderIfNeeded(final int shipperId, final Collection<I_M_Package> mpackages)
+	private void generateShipperDeliveryOrderIfNeeded(
+			final int shipperId,
+			@NonNull final Collection<I_M_Package> mpackages)
 	{
-		final I_M_Shipper shipper = loadOutOfTrx(shipperId, I_M_Shipper.class);
+		final I_M_Shipper shipper = Check.assumeNotNull(
+				loadOutOfTrx(shipperId, I_M_Shipper.class),
+				"An M_Shipper record for shipperId={} exists",
+				shipperId);
+
 		final String shipperGatewayId = shipper.getShipperGateway();
 		if (Check.isEmpty(shipperGatewayId, true))
 		{
@@ -243,6 +252,7 @@ public class HUShippingFacade
 		final DeliveryOrderCreateRequest request = DeliveryOrderCreateRequest.builder()
 				.pickupDate(getShipperDeliveryOrderPickupDate())
 				.packageIds(mpackageIds)
+				.shipperTransportationId(addToShipperTransportationId)
 				.shipperGatewayId(shipperGatewayId)
 				.build();
 		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);

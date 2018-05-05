@@ -81,6 +81,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		return DeliveryOrder.builder()
 				.shipperId(deliveryOrderKey.getShipperId())
+				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
 				.serviceType(GOServiceType.Overnight)
 				.customDeliveryData(goDeliveryOrderData)

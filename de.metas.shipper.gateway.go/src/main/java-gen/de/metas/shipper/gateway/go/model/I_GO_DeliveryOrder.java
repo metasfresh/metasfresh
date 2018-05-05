@@ -842,7 +842,7 @@ public interface I_GO_DeliveryOrder
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	//public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID);
+	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID);
 
 	/**
 	 * Get Transport Auftrag.

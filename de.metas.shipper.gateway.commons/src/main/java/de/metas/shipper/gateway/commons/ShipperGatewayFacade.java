@@ -64,9 +64,14 @@ public class ShipperGatewayFacade
 	public void createAndSendDeliveryOrdersForPackages(@NonNull final DeliveryOrderCreateRequest request)
 	{
 		final LocalDate pickupDate = request.getPickupDate();
+		final int shipperTransportationId = request.getShipperTransportationId();
+
 		retrievePackagesByIds(request.getPackageIds())
 				.stream()
-				.collect(GuavaCollectors.toImmutableListMultimap(mpackage -> createDeliveryOrderKey(mpackage, pickupDate)))
+				.collect(GuavaCollectors.toImmutableListMultimap(mpackage -> createDeliveryOrderKey(
+						mpackage,
+						shipperTransportationId,
+						pickupDate)))
 				.asMap()
 				.forEach(this::createAndSendDeliveryOrder);
 	}
@@ -80,10 +85,14 @@ public class ShipperGatewayFacade
 				.list(I_M_Package.class);
 	}
 
-	private static final DeliveryOrderKey createDeliveryOrderKey(final I_M_Package mpackage, final LocalDate pickupDate)
+	private static DeliveryOrderKey createDeliveryOrderKey(
+			@NonNull final I_M_Package mpackage,
+			final int shipperTransportationId,
+			@NonNull final LocalDate pickupDate)
 	{
 		return DeliveryOrderKey.builder()
 				.shipperId(mpackage.getM_Shipper_ID())
+				.shipperTransportationId(shipperTransportationId)
 				.fromOrgId(mpackage.getAD_Org_ID())
 				.deliverToBPartnerId(mpackage.getC_BPartner_ID())
 				.deliverToBPartnerLocationId(mpackage.getC_BPartner_Location_ID())

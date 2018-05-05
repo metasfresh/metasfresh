@@ -700,14 +700,14 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 
 	/** Set Transport Auftrag.
 		@param M_ShipperTransportation_ID Transport Auftrag	  */
-//	@Override
-//	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID)
-//	{
-//		if (M_ShipperTransportation_ID < 1)
-//			set_Value (COLUMNNAME_M_ShipperTransportation_ID, null);
-//		else
-//			set_Value (COLUMNNAME_M_ShipperTransportation_ID, Integer.valueOf(M_ShipperTransportation_ID));
-//	}
+	@Override
+	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID)
+	{
+		if (M_ShipperTransportation_ID < 1)
+			set_Value (COLUMNNAME_M_ShipperTransportation_ID, null);
+		else
+			set_Value (COLUMNNAME_M_ShipperTransportation_ID, Integer.valueOf(M_ShipperTransportation_ID));
+	}
 
 	/** Get Transport Auftrag.
 		@return Transport Auftrag	  */

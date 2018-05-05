@@ -14,7 +14,7 @@ public class X_DerKurier_DeliveryOrder extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1494709073L;
+	private static final long serialVersionUID = 853421167L;
 
     /** Standard Constructor */
     public X_DerKurier_DeliveryOrder (Properties ctx, int DerKurier_DeliveryOrder_ID, String trxName)
@@ -23,6 +23,8 @@ public class X_DerKurier_DeliveryOrder extends org.compiere.model.PO implements 
       /** if (DerKurier_DeliveryOrder_ID == 0)
         {
 			setDerKurier_DeliveryOrder_ID (0);
+			setM_Shipper_ID (0);
+			setM_ShipperTransportation_ID (0);
         } */
     }
 
@@ -280,5 +282,64 @@ public class X_DerKurier_DeliveryOrder extends org.compiere.model.PO implements 
 	public java.lang.String getDK_Sender_ZipCode () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DK_Sender_ZipCode);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Shipper getM_Shipper() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
+	}
+
+	@Override
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
+	}
+
+	/** Set Lieferweg.
+		@param M_Shipper_ID 
+		Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public void setM_Shipper_ID (int M_Shipper_ID)
+	{
+		if (M_Shipper_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipper_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+	}
+
+	/** Get Lieferweg.
+		@return Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public int getM_Shipper_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Transport Auftrag.
+		@param M_ShipperTransportation_ID Transport Auftrag	  */
+	@Override
+	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID)
+	{
+		if (M_ShipperTransportation_ID < 1) 
+			set_Value (COLUMNNAME_M_ShipperTransportation_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ShipperTransportation_ID, Integer.valueOf(M_ShipperTransportation_ID));
+	}
+
+	/** Get Transport Auftrag.
+		@return Transport Auftrag	  */
+	@Override
+	public int getM_ShipperTransportation_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipperTransportation_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }

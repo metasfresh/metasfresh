@@ -15,6 +15,7 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -22,7 +23,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.shipper.gateway.derkurier.DerKurierConstants;
 import de.metas.shipper.gateway.derkurier.DerKurierDeliveryData;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
+import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant.RequestParticipantBuilder;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
+import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest.RoutingRequestBuilder;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryDate;
@@ -62,14 +65,21 @@ public class Converters
 
 	public RoutingRequest createRoutingRequestFrom(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		return RoutingRequest.builder()
+		final RoutingRequestBuilder routingRequestBuilder = RoutingRequest.builder()
 				.sender(createSender(deliveryOrder))
-				.consignee(createConsignee(deliveryOrder))
-				.desiredDeliveryDate(deliveryOrder.getDeliveryDate().getDate())
-				.build();
+				.sendDate(deliveryOrder.getPickupDate().getDate())
+				.consignee(createConsignee(deliveryOrder));
+
+		final DeliveryDate deliveryDate = deliveryOrder.getDeliveryDate();
+		if (deliveryDate != null)
+		{
+			routingRequestBuilder.desiredDeliveryDate(deliveryDate.getDate());
+		}
+
+		return routingRequestBuilder.build();
 	}
 
-	public RequestParticipant createSender(@NonNull final DeliveryOrder deliveryOrder)
+	private RequestParticipant createSender(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final LocalTime timeFrom = deliveryOrder.getPickupDate().getTimeFrom();
 		final LocalTime timeTo = deliveryOrder.getPickupDate().getTimeTo();
@@ -85,18 +95,24 @@ public class Converters
 		return consignee;
 	}
 
-	public RequestParticipant createConsignee(@NonNull final DeliveryOrder deliveryOrder)
+	@VisibleForTesting
+	RequestParticipant createConsignee(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		final LocalTime timeFrom = deliveryOrder.getDeliveryDate().getTimeFrom();
-		final LocalTime timeTo = deliveryOrder.getDeliveryDate().getTimeTo();
+		final RequestParticipantBuilder consigneeBuilder = RequestParticipant.builder();
+
+		final DeliveryDate deliveryDate = deliveryOrder.getDeliveryDate();
+		if (deliveryDate != null)
+		{
+			consigneeBuilder
+					.timeFrom(deliveryDate.getTimeFrom())
+					.timeTo(deliveryDate.getTimeTo());
+		}
 
 		final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
 
-		final RequestParticipant consignee = RequestParticipant.builder()
+		final RequestParticipant consignee = consigneeBuilder
 				.country(deliveryAddress.getCountry().getAlpha2())
 				.zip(deliveryAddress.getZipCode())
-				.timeFrom(timeFrom)
-				.timeTo(timeTo)
 				.build();
 		return consignee;
 	}

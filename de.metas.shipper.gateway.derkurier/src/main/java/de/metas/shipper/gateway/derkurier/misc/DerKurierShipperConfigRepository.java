@@ -1,6 +1,7 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
@@ -33,11 +34,14 @@ public class DerKurierShipperConfigRepository
 {
 	public DerKurierShipperConfig retrieveConfigForShipperId(final int shipperId)
 	{
+		Check.errorIf(shipperId <= 0, "Given parameter shipperId needs to be > 0; shipperId={}", shipperId);
+
 		final I_DerKurier_Shipper_Config shipperConfigRecord = Services.get(IQueryBL.class).createQueryBuilder(I_DerKurier_Shipper_Config.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DerKurier_Shipper_Config.COLUMN_M_Shipper_ID, shipperId)
 				.create()
 				.firstOnly(I_DerKurier_Shipper_Config.class);
+		Check.errorIf(shipperConfigRecord == null, "Unable to load DerKurier_Shipper_Config record for shipperId={}", shipperId);
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl(shipperConfigRecord.getAPIServerBaseURL())

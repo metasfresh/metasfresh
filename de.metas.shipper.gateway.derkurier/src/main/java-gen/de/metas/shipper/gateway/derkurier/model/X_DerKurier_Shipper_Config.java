@@ -14,7 +14,7 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1474034913L;
+	private static final long serialVersionUID = 1999426518L;
 
     /** Standard Constructor */
     public X_DerKurier_Shipper_Config (Properties ctx, int DerKurier_Shipper_Config_ID, String trxName)
@@ -156,6 +156,25 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
 	public java.lang.String getDK_CustomerNumber () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DK_CustomerNumber);
+	}
+
+	/** Set EMail Empfänger.
+		@param EMail_To 
+		EMail address to send requests to - e.g. edi@manufacturer.com 
+	  */
+	@Override
+	public void setEMail_To (java.lang.String EMail_To)
+	{
+		set_Value (COLUMNNAME_EMail_To, EMail_To);
+	}
+
+	/** Get EMail Empfänger.
+		@return EMail address to send requests to - e.g. edi@manufacturer.com 
+	  */
+	@Override
+	public java.lang.String getEMail_To () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EMail_To);
 	}
 
 	@Override

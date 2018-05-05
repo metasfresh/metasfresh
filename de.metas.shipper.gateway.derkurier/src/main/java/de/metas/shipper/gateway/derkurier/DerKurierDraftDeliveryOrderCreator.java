@@ -65,7 +65,8 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 	}
 
 	@Override
-	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
+	public DeliveryOrder createDraftDeliveryOrder(
+			@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 		final Set<Integer> mpackageIds = request.getMpackageIds();
@@ -93,10 +94,10 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 						.parcelNumber(parcelNumberGenerator.getNextParcelNumber())
 						.build();
 
-
 		return DeliveryOrder.builder()
 				.serviceType(DerKurierServiceType.OVERNIGHT)
 				.shipperId(deliveryOrderKey.getShipperId())
+				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
 				// Pickup
 				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)

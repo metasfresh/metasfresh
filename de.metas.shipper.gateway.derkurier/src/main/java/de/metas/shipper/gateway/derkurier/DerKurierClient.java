@@ -3,7 +3,9 @@ package de.metas.shipper.gateway.derkurier;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.report.IJasperService;
@@ -13,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -108,9 +111,21 @@ public class DerKurierClient implements ShipperGatewayClient
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
 		final HttpEntity<RoutingRequest> entity = new HttpEntity<>(routingRequest, httpHeaders);
-		final ResponseEntity<Routing> result = restTemplate.exchange("/routing/request", HttpMethod.POST, entity, Routing.class);
+		try
+		{
+			final ResponseEntity<Routing> result = restTemplate.exchange("/routing/request", HttpMethod.POST, entity, Routing.class);
+			return result.getBody();
+		}
+		catch (final HttpClientErrorException e)
+		{
+			final ShipperGatewayException shipperGatewayException = //
+					new ShipperGatewayException("HttpClientErrorException with statusCode=" + e.getStatusCode());
 
-		return result.getBody();
+			throw AdempiereException.wrapIfNeeded(shipperGatewayException)
+					.appendParametersToMessage()
+					.setParameter("responseBodyAsString", e.getResponseBodyAsString())
+					.setParameter("routingRequest", routingRequest);
+		}
 	}
 
 	@Override
@@ -125,6 +140,9 @@ public class DerKurierClient implements ShipperGatewayClient
 
 		final AttachmentEntry attachmentEntry = derKurierDeliveryOrderRepository
 				.attachCsvToDeliveryOrder(deliveryOrder.getRepoId(), csv);
+
+		// TODO: create and attach label PDF here, and only send emails if that succeeded;
+		// getPackageLabelsList shall then just get and return those PDFs we created here already
 
 		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(deliveryOrder.getShipperId(), attachmentEntry);
 
@@ -187,12 +205,10 @@ public class DerKurierClient implements ShipperGatewayClient
 		// so we need to fire up our own jasper report and print them
 
 		final ITableRecordReference tableRecordReference = derKurierDeliveryOrderRepository.toTableRecordReference(deliveryOrder);
-
-		final Properties ctx = Env.getCtx();
-		final int adProcessId = Services.get(ISysConfigBL.class).getIntValue(DerKurierConstants.SYSCONFIG_DERKURIER_LABEL_PROCESS_ID, -1, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		final int adProcessId = retrievePAckageLableAdProcessId();
 
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
-				.setCtx(ctx)
+				.setCtx(Env.getCtx())
 				.setAD_Process_ID(adProcessId)
 				// .setWindowNo(request.getWindowNo())
 				.setTableName(tableRecordReference.getTableName())
@@ -222,5 +238,17 @@ public class DerKurierClient implements ShipperGatewayClient
 				.build();
 
 		return ImmutableList.of(packageLabels);
+	}
+
+	private int retrievePAckageLableAdProcessId()
+	{
+		final Properties ctx = Env.getCtx();
+		final int adClientId = Env.getAD_Client_ID(ctx);
+		final int adOrgId = Env.getAD_Org_ID(ctx);
+		final String sysconfigKey = DerKurierConstants.SYSCONFIG_DERKURIER_LABEL_PROCESS_ID;
+		final int adProcessId = Services.get(ISysConfigBL.class).getIntValue(sysconfigKey, -1, adClientId, adOrgId);
+		Check.errorIf(adProcessId <= 0, "Missing sysconfig value for 'Der Kurier' package label jasper report; name={}; AD_Client_ID={}; AD_Org_ID={}",
+				sysconfigKey, adClientId, adOrgId);
+		return adProcessId;
 	}
 }

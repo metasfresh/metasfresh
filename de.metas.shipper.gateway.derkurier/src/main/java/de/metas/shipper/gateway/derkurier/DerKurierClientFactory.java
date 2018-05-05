@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.derkurier;
 
+import org.adempiere.util.Check;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
@@ -68,6 +69,8 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 	@Override
 	public ShipperGatewayClient newClientForShipperId(final int shipperId)
 	{
+		Check.errorIf(shipperId <= 0, "Given parameter shipperId needs to be > 0; shipperId={}", shipperId);
+
 		final DerKurierShipperConfig shipperConfig = derKurierShipperConfigRepository.retrieveConfigForShipperId(shipperId);
 		return createClient(shipperConfig);
 	}
