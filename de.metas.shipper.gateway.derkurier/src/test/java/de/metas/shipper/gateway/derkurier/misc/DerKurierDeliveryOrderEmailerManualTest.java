@@ -82,7 +82,8 @@ public class DerKurierDeliveryOrderEmailerManualTest
 		final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer = new DerKurierDeliveryOrderEmailer(new DerKurierShipperConfigRepository());
 		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(mailbox, "orderProcessing@derKurier.test", firstEntry);
 
-		// now check in your mail server if the mail is OK..	}
+		// now check in your mail server if the mail is OK..
+	}
 
 	private final byte[] generateBytes()
 	{
