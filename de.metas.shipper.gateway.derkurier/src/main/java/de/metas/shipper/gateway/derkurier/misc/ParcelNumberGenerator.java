@@ -58,7 +58,8 @@ public class ParcelNumberGenerator
 	{
 		this.adSequenceId = parcelNumberAdSequenceId;
 
-		final DocumentSequenceInfo documentSeqInfo = Services.get(IDocumentSequenceDAO.class).retriveDocumentSequenceInfo(parcelNumberAdSequenceId);
+		final DocumentSequenceInfo documentSeqInfo = Services.get(IDocumentSequenceDAO.class)
+				.retriveDocumentSequenceInfo(parcelNumberAdSequenceId);
 
 		this.documentNoBuilder = Services.get(IDocumentNoBuilderFactory.class)
 				.createDocumentNoBuilder()

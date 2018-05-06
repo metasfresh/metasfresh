@@ -1,10 +1,14 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_MailBox;
 import org.springframework.stereotype.Repository;
 
+import de.metas.email.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
 
 /*
@@ -34,22 +38,45 @@ public class DerKurierShipperConfigRepository
 {
 	public DerKurierShipperConfig retrieveConfigForShipperId(final int shipperId)
 	{
-		Check.errorIf(shipperId <= 0, "Given parameter shipperId needs to be > 0; shipperId={}", shipperId);
+		Check.assumeGreaterThanZero(shipperId, "shipperId");
 
 		final I_DerKurier_Shipper_Config shipperConfigRecord = Services.get(IQueryBL.class).createQueryBuilder(I_DerKurier_Shipper_Config.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DerKurier_Shipper_Config.COLUMN_M_Shipper_ID, shipperId)
 				.create()
 				.firstOnly(I_DerKurier_Shipper_Config.class);
-		Check.errorIf(shipperConfigRecord == null, "Unable to load DerKurier_Shipper_Config record for shipperId={}", shipperId);
+		Check.assumeNotNull(shipperConfigRecord, "There is a DerKurier_Shipper_Config record for shipperId={}", shipperId);
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl(shipperConfigRecord.getAPIServerBaseURL())
 				.customerNumber(shipperConfigRecord.getDK_CustomerNumber())
 				.parcelNumberAdSequenceId(shipperConfigRecord.getAD_Sequence_ID())
+				.deliveryOrderMailBoxOrNull(loadMailboxOrNull(shipperConfigRecord.getAD_MailBox_ID()))
+				.deliveryOrderRecipientEmailOrNull(shipperConfigRecord.getEMail_To())
 				.build();
 
 		return shipperConfig;
 	}
 
+	private Mailbox loadMailboxOrNull(final int mailBoxId)
+	{
+		if (mailBoxId <= 0)
+		{
+			// nothing to do
+			return null;
+		}
+		final I_AD_MailBox shipperConfigMailBox = loadOutOfTrx(mailBoxId, I_AD_MailBox.class);
+
+		final Mailbox mailbox = Mailbox.builder()
+				.smtpHost(shipperConfigMailBox.getSMTPHost())
+				.smtpPort(shipperConfigMailBox.getSMTPPort())
+				.startTLS(shipperConfigMailBox.isStartTLS())
+				.email(shipperConfigMailBox.getEMail())
+				.username(shipperConfigMailBox.getUserName())
+				.password(shipperConfigMailBox.getPassword())
+				.smtpAuthorization(shipperConfigMailBox.isSmtpAuthorization())
+				.adUserId(-1)
+				.build();
+		return mailbox;
+	}
 }

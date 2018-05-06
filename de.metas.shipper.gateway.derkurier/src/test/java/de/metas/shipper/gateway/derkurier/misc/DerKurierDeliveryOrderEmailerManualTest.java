@@ -2,20 +2,21 @@ package de.metas.shipper.gateway.derkurier.misc;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.fail;
 
-import java.util.Random;
+import java.io.UnsupportedEncodingException;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_MailBox;
+import org.compiere.model.I_AD_SysConfig;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.IAttachmentBL;
+import de.metas.email.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
-import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
 
 /*
  * #%L
@@ -44,49 +45,55 @@ import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
  */
 public class DerKurierDeliveryOrderEmailerManualTest
 {
-	private Random random;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		random = new Random(System.currentTimeMillis());
+		final I_AD_SysConfig subjectConfig = newInstance(I_AD_SysConfig.class);
+		subjectConfig.setName(DerKurierDeliveryOrderEmailer.SYSCONFIG_DerKurier_DeliveryOrder_EmailSubject);
+		subjectConfig.setValue("DerKurier_DeliveryOrder_EmailSubject");
+		save(subjectConfig);
+
+		final I_AD_SysConfig msgConfig = newInstance(I_AD_SysConfig.class);
+		msgConfig.setName(DerKurierDeliveryOrderEmailer.SYSCONFIG_DerKurier_DeliveryOrder_EmailMessage);
+		msgConfig.setValue("DerKurier_DeliveryOrder_EmailMessage");
+		save(msgConfig);
 	}
 
 	@Test
 	@Ignore // remove the ignore to run this test manually
 	public void testAttachAndEmail()
 	{
-		final I_AD_MailBox mailBox = newInstance(I_AD_MailBox.class);
-
-		mailBox.setEMail("derKurier@test.test");
-		mailBox.setSMTPHost("localhost");
-		mailBox.setSMTPPort(25);
-		mailBox.setPassword("test");
-
-		save(mailBox);
-
-		final I_DerKurier_Shipper_Config derKurierShipperConfig = newInstance(I_DerKurier_Shipper_Config.class);
-
-		derKurierShipperConfig.setAD_MailBox_ID(mailBox.getAD_MailBox_ID());
+		final Mailbox mailbox = Mailbox.builder()
+				.email("we@derKurier.test")
+				.smtpHost("localhost")
+				.smtpPort(25)
+				.password("test")
+				.build();
 
 		final I_DerKurier_DeliveryOrder deliveryOrder = newInstance(I_DerKurier_DeliveryOrder.class);
 		save(deliveryOrder);
 
-		Services.get(IAttachmentBL.class).addEntry(deliveryOrder, "CSV-Daten", generateBytes(10));
-
+		Services.get(IAttachmentBL.class).addEntry(deliveryOrder, "deliveryOrder.csv", generateBytes());
 		final AttachmentEntry firstEntry = Services.get(IAttachmentBL.class).getFirstEntry(deliveryOrder);
 
-		DerKurierDeliveryOrderEmailer deliveryOrderEmailAttachment = new DerKurierDeliveryOrderEmailer(new DerKurierShipperConfigRepository());
-		deliveryOrderEmailAttachment.sendAttachmentAsEmail(derKurierShipperConfig, firstEntry);
+		final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer = new DerKurierDeliveryOrderEmailer(new DerKurierShipperConfigRepository());
+		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(mailbox, "orderProcessing@derKurier.test", firstEntry);
 
-	}
+		// now check in your mail server if the mail is OK..	}
 
-	private final byte[] generateBytes(final int size)
+	private final byte[] generateBytes()
 	{
-		final byte[] bytes = new byte[size];
-		random.nextBytes(bytes);
-		return bytes;
+		try
+		{
+			return new String("Test-Attachment-Text-As-Bytes").getBytes("UTF-8");
+		}
+		catch (final UnsupportedEncodingException e)
+		{
+			fail("Unable to generate byte for our attachment", e);
+			return null;
+		}
 	}
 }

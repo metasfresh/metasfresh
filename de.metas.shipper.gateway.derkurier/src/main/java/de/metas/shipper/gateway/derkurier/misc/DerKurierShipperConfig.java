@@ -1,7 +1,10 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
+import de.metas.email.Mailbox;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,17 +40,32 @@ public class DerKurierShipperConfig
 
 	ParcelNumberGenerator parcelNumberGenerator;
 
+	Mailbox deliveryOrderMailBoxOrNull;
+
+	String deliveryOrderRecipientEmailOrNull;
+
+	int parcelNumberAdSequenceId;
+
 	@Builder
-	public DerKurierShipperConfig(
+	private DerKurierShipperConfig(
 			@NonNull final String restApiBaseUrl,
 			@NonNull final String customerNumber,
+			@Nullable final Mailbox deliveryOrderMailBoxOrNull,
+			@Nullable String deliveryOrderRecipientEmailOrNull,
 			final int parcelNumberAdSequenceId)
 	{
-		this.restApiBaseUrl = Check.assumeNotEmpty(restApiBaseUrl, "Parameter restApiBaseUrl is not empty");
 		this.customerNumber = Check.assumeNotEmpty(customerNumber, "Parameter customerNumber is not empty");
+		this.restApiBaseUrl = Check.assumeNotEmpty(restApiBaseUrl, "Parameter restApiBaseUrl is not empty");
+
+		final boolean mailBoxIsSet = deliveryOrderMailBoxOrNull != null;
+		final boolean mailAddressIsSet = !Check.isEmpty(deliveryOrderRecipientEmailOrNull, true);
+		Check.errorIf(mailBoxIsSet != mailAddressIsSet, "If a mailbox is configured, then also a mail address needs to be set and vice versa.");
+		this.deliveryOrderRecipientEmailOrNull = deliveryOrderRecipientEmailOrNull;
+		this.deliveryOrderMailBoxOrNull = deliveryOrderMailBoxOrNull;
 
 		Check.assume(parcelNumberAdSequenceId > 0 || parcelNumberAdSequenceId == ParcelNumberGenerator.NO_AD_SEQUENCE_ID_FOR_TESTING,
 				"Parameter parcelNumberAdSequenceId is > 0");
+		this.parcelNumberAdSequenceId = parcelNumberAdSequenceId;
 		this.parcelNumberGenerator = new ParcelNumberGenerator(parcelNumberAdSequenceId);
 	}
 }
