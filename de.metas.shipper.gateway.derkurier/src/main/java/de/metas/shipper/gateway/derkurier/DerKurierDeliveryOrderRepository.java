@@ -536,18 +536,18 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 
 	public AttachmentEntry attachCsvToDeliveryOrder(
 			final int repoId,
-			@NonNull final List<String> csv)
+			@NonNull final List<String> csvLines)
 	{
 		final I_DerKurier_DeliveryOrder record = load(repoId, I_DerKurier_DeliveryOrder.class);
 
 		// thx to https://stackoverflow.com/a/5619144/1012103
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		final DataOutputStream out = new DataOutputStream(baos);
-		for (final String csvLine : csv)
+		for (final String csvLine : csvLines)
 		{
 			writeLineToStream(csvLine, out);
 		}
-		return Services.get(IAttachmentBL.class).addEntry(record, "CSV-Daten", baos.toByteArray());
+		return Services.get(IAttachmentBL.class).addEntry(record, "delivery-order.csv", baos.toByteArray());
 	}
 
 	public void writeLineToStream(

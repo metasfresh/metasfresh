@@ -6,6 +6,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.report.IJasperService;
@@ -22,12 +23,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierPackageLabelType;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
@@ -38,7 +36,6 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
-import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.AccessLevel;
@@ -142,9 +139,9 @@ public class DerKurierClient implements ShipperGatewayClient
 		final AttachmentEntry attachmentEntry = derKurierDeliveryOrderRepository
 				.attachCsvToDeliveryOrder(deliveryOrder.getRepoId(), csv);
 
-		// TODO: create and attach label PDF here, and only send emails if that succeeded;
-		// getPackageLabelsList shall then just get and return those PDFs we created here already
+		printPackageLabels(deliveryOrder);
 
+		// we want to only send the mail after creating the CSV and creating the labels worked.
 		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(deliveryOrder.getShipperId(), attachmentEntry);
 
 		return completedDeliveryOrder;
@@ -199,28 +196,19 @@ public class DerKurierClient implements ShipperGatewayClient
 		throw new UnsupportedOperationException("Der Kurier doesn't support voiding delivery orders via software");
 	}
 
-	@Override
-	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	private void printPackageLabels(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		// TODO https://leoz.derkurier.de:13000/rs/api/v1/document/label does not yet work,
-		// so we need to fire up our own jasper report and print them
-
 		final int adProcessId = retrievePackageLableAdProcessId();
 
-		final ImmutableList.Builder<PackageLabels> results = ImmutableList.builder();
 		final ImmutableList<DeliveryPosition> deliveryPositions = deliveryOrder.getDeliveryPositions();
 		for (final DeliveryPosition deliveryPosition : deliveryPositions)
 		{
 			final ITableRecordReference deliveryPositionTableRecordReference = derKurierDeliveryOrderRepository.toTableRecordReference(deliveryPosition);
 
-			final ProcessExecutor processExecutor = ProcessInfo.builder()
+			ProcessInfo.builder()
 					.setCtx(Env.getCtx())
 					.setAD_Process_ID(adProcessId)
-					// .setWindowNo(request.getWindowNo())
-					// .setTableName(tableRecordReference.getTableName())
 					.setRecord(deliveryPositionTableRecordReference)
-					// .setReportLanguage(reportLanguageToUse)
-					// .addParameter(PARA_BarcodeURL, getBarcodeServlet(ctx))
 					.addParameter(
 							IJasperService.PARAM_PrintCopies,
 							1)
@@ -228,30 +216,14 @@ public class DerKurierClient implements ShipperGatewayClient
 							I_DerKurier_DeliveryOrderLine.COLUMNNAME_DerKurier_DeliveryOrderLine_ID,
 							deliveryPositionTableRecordReference.getRecord_ID())
 					.setPrintPreview(false)
-					//
+
 					// Execute report in a new transaction
 					.buildAndPrepareExecution()
 					.onErrorThrowException(true)
-					// .callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIdsToProcess, ITrx.TRXNAME_ThreadInherited))
 					.executeSync();
 
-			final ProcessExecutionResult processExecutionResult = processExecutor.getResult();
-
-			final PackageLabel packageLabel = PackageLabel.builder()
-					.type(DerKurierPackageLabelType.DIN_A6_SIMPLE)
-					.contentType(PackageLabel.CONTENTTYPE_PDF)
-					.labelData(processExecutionResult.getReportData())
-					.build();
-
-			final PackageLabels packageLabels = PackageLabels.builder()
-					.defaultLabelType(DerKurierPackageLabelType.DIN_A6_SIMPLE)
-					.orderId(deliveryOrder.getOrderId())
-					.label(packageLabel)
-					.build();
-
-			results.add(packageLabels);
+			Loggables.get().addLog("Created package label for {}", deliveryPositionTableRecordReference);
 		}
-		return results.build();
 	}
 
 	private int retrievePackageLableAdProcessId()
@@ -264,5 +236,15 @@ public class DerKurierClient implements ShipperGatewayClient
 		Check.errorIf(adProcessId <= 0, "Missing sysconfig value for 'Der Kurier' package label jasper report; name={}; AD_Client_ID={}; AD_Org_ID={}",
 				sysconfigKey, adClientId, adOrgId);
 		return adProcessId;
+	}
+
+	/**
+	 * Returns an empty list, because https://leoz.derkurier.de:13000/rs/api/v1/document/label does not yet work,
+	 * so we need to fire up our own jasper report and print them ourselves. This is done in {@link #completeDeliveryOrder(DeliveryOrder)}.
+	 */
+	@Override
+	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder)
+	{
+		return ImmutableList.of();
 	}
 }
