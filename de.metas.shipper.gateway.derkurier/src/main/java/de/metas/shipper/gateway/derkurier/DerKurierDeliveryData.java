@@ -32,7 +32,7 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class DerKurierDeliveryData implements CustomDeliveryData
 {
-	public static DerKurierDeliveryData ofDeliveryOrder(@NonNull final DeliveryPosition deliveryPosition)
+	public static DerKurierDeliveryData ofDeliveryPosition(@NonNull final DeliveryPosition deliveryPosition)
 	{
 		final CustomDeliveryData customDeliveryData = deliveryPosition.getCustomDeliveryData();
 		return (DerKurierDeliveryData)customDeliveryData;

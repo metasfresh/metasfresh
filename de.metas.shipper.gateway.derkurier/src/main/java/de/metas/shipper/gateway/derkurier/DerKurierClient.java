@@ -175,7 +175,7 @@ public class DerKurierClient implements ShipperGatewayClient
 		for (final DeliveryPosition originalDeliveryPosition : originalDeliveryOrder.getDeliveryPositions())
 		{
 			final DerKurierDeliveryData originalDerKurierDeliveryData = //
-					DerKurierDeliveryData.ofDeliveryOrder(originalDeliveryPosition)
+					DerKurierDeliveryData.ofDeliveryPosition(originalDeliveryPosition)
 							.toBuilder()
 							.station(routing.getConsignee().getStationFormatted())
 							.build();
@@ -196,16 +196,20 @@ public class DerKurierClient implements ShipperGatewayClient
 		throw new UnsupportedOperationException("Der Kurier doesn't support voiding delivery orders via software");
 	}
 
-	private void printPackageLabels(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	private void printPackageLabels(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final int adProcessId = retrievePackageLableAdProcessId();
 
 		final ImmutableList<DeliveryPosition> deliveryPositions = deliveryOrder.getDeliveryPositions();
 		for (final DeliveryPosition deliveryPosition : deliveryPositions)
 		{
-			final ITableRecordReference deliveryPositionTableRecordReference = derKurierDeliveryOrderRepository.toTableRecordReference(deliveryPosition);
+			final ITableRecordReference deliveryPositionTableRecordReference = //
+					derKurierDeliveryOrderRepository.toTableRecordReference(deliveryPosition);
+			final DerKurierDeliveryData derKurierDeliveryData = //
+					DerKurierDeliveryData.ofDeliveryPosition(deliveryPosition);
 
 			ProcessInfo.builder()
+					.setTitle("Label-" + derKurierDeliveryData.getParcelNumber())
 					.setCtx(Env.getCtx())
 					.setAD_Process_ID(adProcessId)
 					.setRecord(deliveryPositionTableRecordReference)
@@ -216,7 +220,6 @@ public class DerKurierClient implements ShipperGatewayClient
 							I_DerKurier_DeliveryOrderLine.COLUMNNAME_DerKurier_DeliveryOrderLine_ID,
 							deliveryPositionTableRecordReference.getRecord_ID())
 					.setPrintPreview(false)
-
 					// Execute report in a new transaction
 					.buildAndPrepareExecution()
 					.onErrorThrowException(true)

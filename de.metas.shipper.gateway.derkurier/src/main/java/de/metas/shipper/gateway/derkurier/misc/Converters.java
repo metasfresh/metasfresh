@@ -135,7 +135,7 @@ public class Converters
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions())
 		{
 			final DerKurierDeliveryData derKurierDeliveryData = //
-					DerKurierDeliveryData.ofDeliveryOrder(deliveryPosition);
+					DerKurierDeliveryData.ofDeliveryPosition(deliveryPosition);
 
 			final Optional<PackageDimensions> packageDimensions = Optional.ofNullable(deliveryPosition.getPackageDimensions());
 

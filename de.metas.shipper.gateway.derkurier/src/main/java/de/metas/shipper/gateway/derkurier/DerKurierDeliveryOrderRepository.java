@@ -354,7 +354,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		final List<DeliveryPosition> deliveryPositions = deliveryOrder.getDeliveryPositions();
 		for (final DeliveryPosition deliveryPosition : deliveryPositions)
 		{
-			final DerKurierDeliveryData derKurierDeliveryData = DerKurierDeliveryData.ofDeliveryOrder(deliveryPosition);
+			final DerKurierDeliveryData derKurierDeliveryData = DerKurierDeliveryData.ofDeliveryPosition(deliveryPosition);
 
 			final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
 
@@ -535,10 +535,12 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 	}
 
 	public AttachmentEntry attachCsvToDeliveryOrder(
-			final int repoId,
+			@NonNull final DeliveryOrder deliveryOrder,
 			@NonNull final List<String> csvLines)
 	{
-		final I_DerKurier_DeliveryOrder record = load(repoId, I_DerKurier_DeliveryOrder.class);
+		final I_DerKurier_DeliveryOrder record = load(
+				deliveryOrder.getRepoId(),
+				I_DerKurier_DeliveryOrder.class);
 
 		// thx to https://stackoverflow.com/a/5619144/1012103
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -547,7 +549,12 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		{
 			writeLineToStream(csvLine, out);
 		}
-		return Services.get(IAttachmentBL.class).addEntry(record, "delivery-order.csv", baos.toByteArray());
+
+		return Services.get(IAttachmentBL.class)
+				.addEntry(
+						record,
+						"DeliveryOrder-" + deliveryOrder.getRepoId() + ".csv",
+						baos.toByteArray());
 	}
 
 	public void writeLineToStream(
