@@ -117,6 +117,11 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		return TableRecordReference.of(I_DerKurier_DeliveryOrder.Table_Name, deliveryOrder.getRepoId());
 	}
 
+	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryPosition deliveryPosition)
+	{
+		return TableRecordReference.of(I_DerKurier_DeliveryOrderLine.Table_Name, deliveryPosition.getRepoId());
+	}
+
 	@Override
 	public DeliveryOrder getByRepoId(final int deliveryOrderRepoId)
 	{

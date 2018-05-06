@@ -28,6 +28,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierPackageLabelType;
+import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
@@ -204,43 +205,56 @@ public class DerKurierClient implements ShipperGatewayClient
 		// TODO https://leoz.derkurier.de:13000/rs/api/v1/document/label does not yet work,
 		// so we need to fire up our own jasper report and print them
 
-		final ITableRecordReference tableRecordReference = derKurierDeliveryOrderRepository.toTableRecordReference(deliveryOrder);
-		final int adProcessId = retrievePAckageLableAdProcessId();
+		final int adProcessId = retrievePackageLableAdProcessId();
 
-		final ProcessExecutor processExecutor = ProcessInfo.builder()
-				.setCtx(Env.getCtx())
-				.setAD_Process_ID(adProcessId)
-				// .setWindowNo(request.getWindowNo())
-				.setTableName(tableRecordReference.getTableName())
-				// .setReportLanguage(reportLanguageToUse)
-				// .addParameter(PARA_BarcodeURL, getBarcodeServlet(ctx))
-				.addParameter(IJasperService.PARAM_PrintCopies, 1)
-				.setPrintPreview(false)
-				//
-				// Execute report in a new transaction
-				.buildAndPrepareExecution()
-				.onErrorThrowException(true)
-				// .callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIdsToProcess, ITrx.TRXNAME_ThreadInherited))
-				.executeSync();
+		final ImmutableList.Builder<PackageLabels> results = ImmutableList.builder();
+		final ImmutableList<DeliveryPosition> deliveryPositions = deliveryOrder.getDeliveryPositions();
+		for (final DeliveryPosition deliveryPosition : deliveryPositions)
+		{
+			final ITableRecordReference deliveryPositionTableRecordReference = derKurierDeliveryOrderRepository.toTableRecordReference(deliveryPosition);
 
-		final ProcessExecutionResult result = processExecutor.getResult();
+			final ProcessExecutor processExecutor = ProcessInfo.builder()
+					.setCtx(Env.getCtx())
+					.setAD_Process_ID(adProcessId)
+					// .setWindowNo(request.getWindowNo())
+					// .setTableName(tableRecordReference.getTableName())
+					.setRecord(deliveryPositionTableRecordReference)
+					// .setReportLanguage(reportLanguageToUse)
+					// .addParameter(PARA_BarcodeURL, getBarcodeServlet(ctx))
+					.addParameter(
+							IJasperService.PARAM_PrintCopies,
+							1)
+					.addParameter(
+							I_DerKurier_DeliveryOrderLine.COLUMNNAME_DerKurier_DeliveryOrderLine_ID,
+							deliveryPositionTableRecordReference.getRecord_ID())
+					.setPrintPreview(false)
+					//
+					// Execute report in a new transaction
+					.buildAndPrepareExecution()
+					.onErrorThrowException(true)
+					// .callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIdsToProcess, ITrx.TRXNAME_ThreadInherited))
+					.executeSync();
 
-		final PackageLabel packageLabel = PackageLabel.builder()
-				.type(DerKurierPackageLabelType.DIN_A6_SIMPLE)
-				.contentType(PackageLabel.CONTENTTYPE_PDF)
-				.labelData(result.getReportData())
-				.build();
+			final ProcessExecutionResult processExecutionResult = processExecutor.getResult();
 
-		final PackageLabels packageLabels = PackageLabels.builder()
-				.defaultLabelType(DerKurierPackageLabelType.DIN_A6_SIMPLE)
-				.orderId(deliveryOrder.getOrderId())
-				.label(packageLabel)
-				.build();
+			final PackageLabel packageLabel = PackageLabel.builder()
+					.type(DerKurierPackageLabelType.DIN_A6_SIMPLE)
+					.contentType(PackageLabel.CONTENTTYPE_PDF)
+					.labelData(processExecutionResult.getReportData())
+					.build();
 
-		return ImmutableList.of(packageLabels);
+			final PackageLabels packageLabels = PackageLabels.builder()
+					.defaultLabelType(DerKurierPackageLabelType.DIN_A6_SIMPLE)
+					.orderId(deliveryOrder.getOrderId())
+					.label(packageLabel)
+					.build();
+
+			results.add(packageLabels);
+		}
+		return results.build();
 	}
 
-	private int retrievePAckageLableAdProcessId()
+	private int retrievePackageLableAdProcessId()
 	{
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);

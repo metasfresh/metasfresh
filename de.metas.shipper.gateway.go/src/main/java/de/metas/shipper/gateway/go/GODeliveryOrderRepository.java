@@ -105,7 +105,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 	/**
 	 * NOTE to dev: keep in sync with {@link #toDeliveryOrder(I_GO_DeliveryOrder)}
 	 */
-	private I_GO_DeliveryOrder toDeliveryOrderPO(final DeliveryOrder order)
+	private I_GO_DeliveryOrder toDeliveryOrderPO(@NonNull final DeliveryOrder order)
 	{
 		I_GO_DeliveryOrder orderPO = null;
 		if (order.getRepoId() > 0)
@@ -163,7 +163,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 	}
 
 	@Override
-	public TableRecordReference toTableRecordReference(final DeliveryOrder deliveryOrder)
+	public TableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final int deliveryOrderRepoId = deliveryOrder.getRepoId();
 		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0 for {}", deliveryOrder);
@@ -252,5 +252,4 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
-
 }
