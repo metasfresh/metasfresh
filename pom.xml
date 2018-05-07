@@ -110,6 +110,8 @@
 
 		<module>de.metas.fresh</module>
 
+		<module>de.metas.marketing</module>
+
 		<module>de.metas.materialtracking</module>
 
 		<module>de.metas.material</module>
