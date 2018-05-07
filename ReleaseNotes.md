@@ -15,6 +15,9 @@ Here come the actual release notes:
 **release for week 2018-20**
 
 ## Features
+* metasfresh
+  * [#4004](https://github.com/metasfresh/metasfresh/issues/4004) WebUI: Adjust new Window Discount Schema Pharma
+    * Improved Window for Discount Schema Pharma.
 
 ## Fixes
 
