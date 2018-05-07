@@ -12,6 +12,9 @@
 	<field name="barcode" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="barcode"/>
 	</field>
+	<field name="parcelnumber" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parcelnumber"/>
+	</field>
 	<field name="weight" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="weight"/>
 	</field>
@@ -54,10 +57,10 @@
 	<field name="desireddeliverydate" class="java.sql.Timestamp">
 		<property name="com.jaspersoft.studio.field.label" value="desireddeliverydate"/>
 	</field>
-	<field name="desireddeliverytime_from" class="java.sql.Timestamp">
+	<field name="desireddeliverytime_from" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="desireddeliverytime_from"/>
 	</field>
-	<field name="desireddeliverytime_to" class="java.sql.Timestamp">
+	<field name="desireddeliverytime_to" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="desireddeliverytime_to"/>
 	</field>
 	<field name="consignee_name" class="java.lang.String">
@@ -94,20 +97,21 @@
 					<printWhenExpression><![CDATA[new Boolean ($F{barcode} != null)]]></printWhenExpression>
 				</reportElement>
 				<jr:Interleaved2Of5 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom">
-					<jr:codeExpression><![CDATA["123456789"]]></jr:codeExpression>
+					<jr:codeExpression><![CDATA[$F{barcode}]]></jr:codeExpression>
 				</jr:Interleaved2Of5>
 			</componentElement>
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="60" width="80" height="14" uuid="2fdc2e94-4588-4a19-b5da-ad5c8ce20de8"/>
-				<textFieldExpression><![CDATA[$R{weight} + " " + ($F{weight} != null ?  $F{weight} : "")
-]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{weight} + " " + ($F{weight} != null ?  ($F{weight} +" "+ $R{kg}) : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="100" y="60" width="90" height="14" uuid="a9ca0916-22f1-4110-9079-e556a3de9a78"/>
+				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$F{consignee_zipcode}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="190" y="60" width="80" height="14" uuid="857bd47b-de1b-4738-bbb3-29b06421d9cf"/>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$R{package_amt} + " " +  $F{pageno} + " " + $R{of} + " " + $F{packageamount}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
@@ -115,7 +119,7 @@
 				<textElement textAlignment="Center">
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{tracking_no} + " " + ($F{barcode} != null ?  $F{barcode}  : "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{tracking_no} + " " + ($F{parcelnumber} != null ? $F{parcelnumber}  : "")]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement x="20" y="88" width="250" height="1" uuid="b49e6287-5ce2-4302-8c8e-a8e7221a63bb"/>
@@ -129,13 +133,13 @@
 					<pen lineWidth="2.0"/>
 				</graphicElement>
 			</line>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="89" width="70" height="25" uuid="cb63da1f-5383-4692-ae91-89ff1e847c25"/>
 				<textElement>
 					<font size="18"/>
 				</textElement>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="90" y="89" width="110" height="25" uuid="5f8eda77-1242-4578-bbc4-49b650a4bc7d"/>
 				<textElement textAlignment="Center">
 					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -186,9 +190,9 @@
 				<textElement>
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{bp_countrycode} !=null ? $F{bp_countrycode} + " "  : "") +
-($F{bp_postal} != null ?  $F{bp_postal} + " " : "") + 
-($F{bp_city} != null ?  $F{bp_city}  : "") ]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{bp_countrycode} !=null ? $F{bp_countrycode} + " -"  : "") +
+($F{bp_postal} != null ? $F{bp_postal} + " " : "") + 
+($F{bp_city} != null ?  $F{bp_city}  : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="199" width="250" height="25" uuid="5500328f-4887-4bd0-ab2c-139f5f9c1788"/>
@@ -197,9 +201,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd.MM.yyyy").format($F{desireddeliverydate}) + 
 " "
-+ new java.text.SimpleDateFormat("HH:mm").format($F{desireddeliverytime_from}) + 
-" - "
-+ new java.text.SimpleDateFormat("HH:mm").format($F{desireddeliverytime_to})]]></textFieldExpression>
++ $F{desireddeliverytime_from}
++ ($F{desireddeliverytime_to}.equals("00:00") ? "" : " - " + $F{desireddeliverytime_to} )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="224" width="250" height="14" uuid="57599e1b-026d-40b4-8522-e109e9e81388"/>
@@ -236,9 +239,9 @@
 				<textElement>
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{consignee_country} !=null ? $F{consignee_country} + " "  : "") +
-($F{consignee_zipcode} != null ?  $F{consignee_zipcode} + " " : "") + 
-($F{consignee_city} != null ?  $F{consignee_city}  : "") ]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{consignee_country} !=null ? $F{consignee_country} + " -"  : "") +
+($F{consignee_zipcode} != null ? $F{consignee_zipcode} + " " : "") + 
+($F{consignee_city} != null ?  $F{consignee_city}  : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="322" width="250" height="14" uuid="19b6b3e6-8c33-4828-8424-9e11b3c9e717"/>
@@ -250,7 +253,7 @@
 				<reportElement x="20" y="354" width="250" height="30" uuid="f0547670-51db-46fd-86b6-157d6cf4ae20"/>
 				<imageExpression><![CDATA["de/metas/docs/label/der_kurier/der_kurier_logo.png"]]></imageExpression>
 			</image>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="200" y="89" width="70" height="25" uuid="7b8fe5dd-8a75-4b59-83e6-c1c5f162e6f3"/>
 				<textElement>
 					<font size="18"/>
