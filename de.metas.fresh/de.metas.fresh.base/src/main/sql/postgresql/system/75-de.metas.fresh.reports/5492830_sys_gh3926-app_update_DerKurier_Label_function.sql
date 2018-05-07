@@ -10,12 +10,16 @@ RETURNS TABLE
 	TrackingNumber numeric,
 	DesiredStation character varying,
 	DK_CustomerNumber character varying,
-	BP_Name character varying,
-	BP_address1 character varying,
-	BP_postal character varying,
-	BP_City character varying, 
-	BP_CountryCode character(2),
-	BP_Phone character varying,
+	
+	Sender_Name character varying,
+	Sender_Name2 character varying,
+	Sender_Name3 character varying,
+	Sender_Country character(2),
+	Sender_City character varying,
+	Sender_ZipCode character varying,
+	Sender_Street character varying,
+	Sender_HouseNumber character varying,
+
 	DesiredDeliveryDate timestamp without time zone, 
 	DesiredDeliveryTime_From text,	
 	DesiredDeliveryTime_To text, 	
@@ -31,49 +35,43 @@ RETURNS TABLE
 AS
 $$
 	SELECT
-		DK_ParcelNumber AS Barcode,
-		regexp_replace(DK_ParcelNumber, '[0-9]$', '') as DK_ParcelNumber,
-		DK_ParcelWeight AS Weight,
-		DK_Consignee_ZipCode AS ZipCode,
-		DK_PackageAmount AS PackageAmount,
-		report.get_page_no(DK_PackageAmount) as pageNo,
-		DerKurier_DeliveryOrderLine_ID AS TrackingNumber, --
-		DK_Consignee_DesiredStation AS DesiredStation, --
-		DK_CustomerNumber, 
+		ddol.DK_ParcelNumber AS Barcode,
+		regexp_replace(ddol.DK_ParcelNumber, '[0-9]$', '') as DK_ParcelNumber,
+		ddol.DK_ParcelWeight AS Weight,
+		ddol.DK_Consignee_ZipCode AS ZipCode,
+		ddol.DK_PackageAmount AS PackageAmount,
+		report.get_page_no(ddol.DK_PackageAmount) as pageNo,
+		ddol.DerKurier_DeliveryOrderLine_ID AS TrackingNumber, --
+		ddol.DK_Consignee_DesiredStation AS DesiredStation, --
+		ddol.DK_CustomerNumber, 
 		--
-		bp.Name, l.address1, l.postal, l.City, c.CountryCode, us.phone,
+		ddo.DK_Sender_Name,
+		ddo.DK_Sender_Name2,
+		ddo.DK_Sender_Name3,
+		ddo.DK_Sender_Country,
+		ddo.DK_Sender_City,
+		ddo.DK_Sender_ZipCode,
+		ddo.DK_Sender_Street,
+		ddo.DK_Sender_HouseNumber,
 		--
-		DK_DesiredDeliveryDate AS DesiredDeliveryDate, 
+		ddol.DK_DesiredDeliveryDate AS DesiredDeliveryDate, 
 		to_char(ddol.DK_DesiredDeliveryTime_From, 'HH24:MI') AS DK_DesiredDeliveryTime_From,
 		to_char(ddol.DK_DesiredDeliveryTime_To, 'HH24:MI') AS DK_DesiredDeliveryTime_To,
 		--
-		DK_Consignee_Name AS Consignee_Name, 
-		DK_Consignee_Name2 AS Consignee_Name2, 
-		DK_Consignee_Name3 AS Consignee_Name3, 
-		DK_Consignee_Phone AS Consignee_Phone, 
-		DK_Consignee_Country AS Consignee_Country,
-		DK_Consignee_ZipCode AS Consignee_ZipCode, 
-		DK_Consignee_City AS Consignee_City, 
-		DK_Consignee_Street AS Consignee_Street
+		ddol.DK_Consignee_Name AS Consignee_Name, 
+		ddol.DK_Consignee_Name2 AS Consignee_Name2, 
+		ddol.DK_Consignee_Name3 AS Consignee_Name3, 
+		ddol.DK_Consignee_Phone AS Consignee_Phone, 
+		ddol.DK_Consignee_Country AS Consignee_Country,
+		ddol.DK_Consignee_ZipCode AS Consignee_ZipCode, 
+		ddol.DK_Consignee_City AS Consignee_City, 
+		ddol.DK_Consignee_Street AS Consignee_Street
 		
 	FROM
 	DerKurier_DeliveryOrderLine ddol
 
-	JOIN AD_Org o ON ddol.AD_Org_ID = o.AD_Org_ID
-	JOIN AD_OrgInfo oi ON o.AD_Org_ID = oi.AD_Org_ID
-	LEFT JOIN C_BPartner_Location bpl ON oi.OrgBP_Location_ID = bpl.C_BPartner_Location_ID
-	LEFT JOIN C_BPartner bp ON bpl.C_BPartner_ID = bp.C_BPartner_ID
-	LEFT JOIN C_Location l ON bpl.C_Location_ID = l.C_Location_ID
-	LEFT JOIN C_Country c ON l.C_Country_ID = c.C_Country_ID
+	JOIN DerKurier_DeliveryOrder ddo ON ddol.DerKurier_DeliveryOrder_ID = ddo.DerKurier_DeliveryOrder_ID
 
-	LEFT OUTER JOIN AD_User us ON us.AD_User_ID = 
-	(
-		SELECT AD_User_ID FROM AD_User sub_us
-		WHERE bp.c_bpartner_id = sub_us.c_bpartner_id
-		ORDER BY IsDefaultContact DESC
-		LIMIT 1
-	)
-
-	WHERE DerKurier_DeliveryOrderLine_ID = $1
+	WHERE ddol.DerKurier_DeliveryOrderLine_ID = $1
 $$
 LANGUAGE sql STABLE;

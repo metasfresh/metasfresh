@@ -36,23 +36,29 @@
 	<field name="dk_customernumber" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="dk_customernumber"/>
 	</field>
-	<field name="bp_name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="bp_name"/>
+	<field name="sender_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sender_name"/>
 	</field>
-	<field name="bp_address1" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="bp_address1"/>
+	<field name="sender_name2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sender_name2"/>
 	</field>
-	<field name="bp_postal" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="bp_postal"/>
+	<field name="sender_name3" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sender_name3"/>
 	</field>
-	<field name="bp_city" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="bp_city"/>
+	<field name="sender_country" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sender_country"/>
 	</field>
-	<field name="bp_countrycode" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="bp_countrycode"/>
+	<field name="sender_city" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sender_city"/>
 	</field>
-	<field name="bp_phone" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="bp_phone"/>
+	<field name="sender_zipcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sender_zipcode"/>
+	</field>
+	<field name="sender_street" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sender_street"/>
+	</field>
+	<field name="sender_housenumber" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sender_housenumber"/>
 	</field>
 	<field name="desireddeliverydate" class="java.sql.Timestamp">
 		<property name="com.jaspersoft.studio.field.label" value="desireddeliverydate"/>
@@ -169,30 +175,30 @@
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="129" width="250" height="14" uuid="8f475902-e4a8-42d3-9e34-f8acd08e6748"/>
-				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{sender_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="143" width="250" height="14" uuid="1337aa4f-acc4-4566-beda-03c64e956529"/>
-				<textFieldExpression><![CDATA[$F{bp_address1}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{sender_name2}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="20" y="157" width="130" height="14" uuid="26a1ee15-6f19-47b8-92b4-205127919ca8"/>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="150" y="157" width="120" height="14" uuid="1a255fb1-5657-4956-83dd-bb4248c407be"/>
-				<textFieldExpression><![CDATA[$R{tel} + " " + ($F{bp_phone} != null ?  $F{bp_phone}  : "")]]></textFieldExpression>
+				<reportElement x="20" y="157" width="250" height="14" uuid="26a1ee15-6f19-47b8-92b4-205127919ca8"/>
+				<textFieldExpression><![CDATA[$F{sender_name3}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="171" width="250" height="14" uuid="adfd9663-cd31-4d7f-a8b6-b910026cf1ad"/>
+				<textFieldExpression><![CDATA[($F{sender_street} != null ? $F{sender_street} : "")
+ + " " +
+ ($F{sender_housenumber}  != null ? $F{sender_housenumber} : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="185" width="250" height="14" uuid="26e4dd01-c9ed-46d2-86b3-1a860af3a329"/>
 				<textElement>
 					<font isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{bp_countrycode} !=null ? $F{bp_countrycode} + " -"  : "") +
-($F{bp_postal} != null ? $F{bp_postal} + " " : "") + 
-($F{bp_city} != null ?  $F{bp_city}  : "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{sender_country} !=null ? $F{sender_country} + " -"  : "") +
+($F{sender_zipcode} != null ?$F{sender_zipcode} + " " : "") + 
+($F{sender_city} != null ? $F{sender_city}  : "")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="199" width="250" height="25" uuid="5500328f-4887-4bd0-ab2c-139f5f9c1788"/>
