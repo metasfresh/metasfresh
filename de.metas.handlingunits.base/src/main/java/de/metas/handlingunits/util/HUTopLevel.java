@@ -1,19 +1,20 @@
 package de.metas.handlingunits.util;
 
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.model.I_M_HU;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Contains definition of top-level handling units and LU-TU-VHUs
  *
  * @author al
  */
+@ToString(of = { "topLevelHU", "luHU", "tuHU", "vhu" })
+@EqualsAndHashCode(of = "hashKey")
 public final class HUTopLevel implements Comparable<HUTopLevel>
 {
 	private final I_M_HU topLevelHU;
@@ -22,15 +23,11 @@ public final class HUTopLevel implements Comparable<HUTopLevel>
 	private final I_M_HU tuHU;
 	private final I_M_HU vhu;
 
-	@ToStringBuilder(skip = true)
+	// pre-built:
 	private final ArrayKey hashKey;
-	@ToStringBuilder(skip = true)
 	private final int topLevelHUId;
-	@ToStringBuilder(skip = true)
 	private final int luHUId;
-	@ToStringBuilder(skip = true)
 	private final int tuHUId;
-	@ToStringBuilder(skip = true)
 	private final int vhuId;
 
 	public HUTopLevel(
@@ -54,37 +51,6 @@ public final class HUTopLevel implements Comparable<HUTopLevel>
 		vhuId = vhu == null || vhu.getM_HU_ID() <= 0 ? -1 : vhu.getM_HU_ID();
 
 		hashKey = Util.mkKey(topLevelHUId, luHUId, tuHUId, vhuId);
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return hashKey.hashCode();
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final HUTopLevel other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(hashKey, other.hashKey)
-				.isEqual();
 	}
 
 	@Override

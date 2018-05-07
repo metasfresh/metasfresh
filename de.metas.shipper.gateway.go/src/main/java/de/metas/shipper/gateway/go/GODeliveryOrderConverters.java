@@ -13,15 +13,15 @@ import org.compiere.model.I_C_Location;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.service.ICountryDAO;
-import de.metas.shipper.gateway.api.model.Address;
-import de.metas.shipper.gateway.api.model.ContactPerson;
-import de.metas.shipper.gateway.api.model.CountryCode;
-import de.metas.shipper.gateway.api.model.DeliveryDate;
-import de.metas.shipper.gateway.api.model.DeliveryOrder;
-import de.metas.shipper.gateway.api.model.DeliveryPosition;
-import de.metas.shipper.gateway.api.model.PhoneNumber;
-import de.metas.shipper.gateway.api.model.PickupDate;
+import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.DeliveryDate;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.PhoneNumber;
+import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -57,7 +57,7 @@ import lombok.experimental.UtilityClass;
 {
 	public static Address pickupAddressFromPO(final I_GO_DeliveryOrder orderPO)
 	{
-		return prepareAddressFromLocation(orderPO.getGO_PickupLocation())
+		return DeliveryOrderUtil.prepareAddressFromLocation(orderPO.getGO_PickupLocation())
 				.companyName1(orderPO.getGO_PickupCompanyName())
 				.companyName2(null)
 				.build();
@@ -71,7 +71,7 @@ import lombok.experimental.UtilityClass;
 
 	public static Address deliveryAddressFromPO(final I_GO_DeliveryOrder orderPO)
 	{
-		return prepareAddressFromLocation(orderPO.getGO_DeliverToLocation())
+		return DeliveryOrderUtil.prepareAddressFromLocation(orderPO.getGO_DeliverToLocation())
 				.companyName1(orderPO.getGO_DeliverToCompanyName())
 				.companyName2(orderPO.getGO_DeliverToCompanyName2())
 				.companyDepartment(orderPO.getGO_DeliverToDepartment())
@@ -146,7 +146,7 @@ import lombok.experimental.UtilityClass;
 
 	public static void deliveryContactToPO(final I_GO_DeliveryOrder orderPO, final ContactPerson deliveryContact)
 	{
-		orderPO.setGO_DeliverToPhoneNo(deliveryContact != null ? deliveryContact.getPhoneAsString() : null);
+		orderPO.setGO_DeliverToPhoneNo(deliveryContact != null ? deliveryContact.getPhoneAsStringOrNull() : null);
 	}
 
 	public static DeliveryPosition deliveryPositionFromPO(final I_GO_DeliveryOrder orderPO, final Set<Integer> mpackageIds)
@@ -184,28 +184,4 @@ import lombok.experimental.UtilityClass;
 
 		return locationPO.getC_Location_ID();
 	}
-
-	public Address.AddressBuilder prepareAddressFromLocation(final I_C_Location location)
-	{
-		return Address.builder()
-				// .companyName1(null)
-				// .companyName2(null)
-				// .companyDepartment(null)
-				.street1(location.getAddress1())
-				.street2(location.getAddress2())
-				.houseNo(location.getAddress3())
-				.zipCode(location.getPostal())
-				.city(location.getCity())
-				.country(createShipperCountryCode(location.getC_Country_ID()));
-	}
-
-	public CountryCode createShipperCountryCode(final int countryId)
-	{
-		final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-		return CountryCode.builder()
-				.alpha2(countryDAO.retrieveCountryCode2ByCountryId(countryId))
-				.alpha3(countryDAO.retrieveCountryCode3ByCountryId(countryId))
-				.build();
-	}
-
 }

@@ -24,8 +24,8 @@ package de.metas.handlingunits.inout;
 
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 

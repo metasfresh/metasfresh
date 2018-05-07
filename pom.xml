@@ -141,9 +141,14 @@
 
 		<module>de.metas.swat</module>
 
-		<module>de.metas.shipper.gateway.api</module>
+		<module>de.metas.shipper.gateway.commons</module>
+		<module>de.metas.shipper.gateway.spi</module>
 		<module>de.metas.shipper.gateway.go</module>
-		<!-- commented out because we don't include it in any distribution <module>../de.metas.shipper.gateway.dpd-legacy</module> -->
+		<module>de.metas.shipper.gateway.derkurier</module>
+		<!-- commented out because we don't include it in any distribution 
+		<module>../de.metas.shipper.gateway.dpd-legacy</module> 
+		-->
+		
 		<module>de.metas.ui.web.base</module>
 
 		<module>de.metas.util</module>

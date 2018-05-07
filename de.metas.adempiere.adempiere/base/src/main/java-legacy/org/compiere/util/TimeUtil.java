@@ -827,11 +827,11 @@ public class TimeUtil
 	 */
 	public static String formatElapsed(final Timestamp start, final Timestamp end)
 	{
-		if(start == null || end == null)
+		if (start == null || end == null)
 		{
 			return formatElapsed(0);
 		}
-		
+
 		final long startTime = start != null ? start.getTime() : System.currentTimeMillis();
 		final long endTime = end != null ? end.getTime() : System.currentTimeMillis();
 		return formatElapsed(endTime - startTime);
@@ -1225,7 +1225,7 @@ public class TimeUtil
 		return new Timestamp(Date.from(instant).getTime());
 	}
 
-	public static Timestamp asTimestamp(final LocalDate localDate)
+	public static Timestamp asTimestamp(@Nullable final LocalDate localDate)
 	{
 		if (localDate == null)
 		{
@@ -1235,7 +1235,9 @@ public class TimeUtil
 		return Timestamp.from(instant);
 	}
 
-	public static Timestamp asTimestamp(final LocalDate localDate, final LocalTime localTime)
+	public static Timestamp asTimestamp(
+			@Nullable final LocalDate localDate,
+			@Nullable final LocalTime localTime)
 	{
 		final LocalDate localDateEff = localDate != null ? localDate : LocalDate.now();
 		final Instant instant;
@@ -1251,7 +1253,7 @@ public class TimeUtil
 		return Timestamp.from(instant);
 	}
 
-	public static Timestamp asTimestamp(final LocalDateTime localDateTime)
+	public static Timestamp asTimestamp(@Nullable final LocalDateTime localDateTime)
 	{
 		if (localDateTime == null)
 		{
@@ -1268,7 +1270,7 @@ public class TimeUtil
 	 * @return year last day with 00:00
 	 */
 	// metas
-	static public Timestamp getYearLastDay(Date day)
+	static public Timestamp getYearLastDay(@Nullable Date day)
 	{
 		if (day == null)
 		{
@@ -1293,7 +1295,7 @@ public class TimeUtil
 	 * @return year first day with 00:00
 	 */
 	// metas
-	static public Timestamp getYearFirstDay(Date day)
+	static public Timestamp getYearFirstDay(@Nullable Date day)
 	{
 		if (day == null)
 		{
@@ -1336,7 +1338,7 @@ public class TimeUtil
 
 	/**
 	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
-	 * 
+	 *
 	 * @param date
 	 * @return
 	 */

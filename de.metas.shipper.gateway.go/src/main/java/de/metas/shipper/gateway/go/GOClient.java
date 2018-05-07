@@ -21,21 +21,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.shipper.gateway.api.ShipperGatewayClient;
-import de.metas.shipper.gateway.api.exceptions.ShipperErrorMessage;
-import de.metas.shipper.gateway.api.exceptions.ShipperGatewayException;
-import de.metas.shipper.gateway.api.model.Address;
-import de.metas.shipper.gateway.api.model.ContactPerson;
-import de.metas.shipper.gateway.api.model.DeliveryDate;
-import de.metas.shipper.gateway.api.model.DeliveryOrder;
-import de.metas.shipper.gateway.api.model.DeliveryPosition;
-import de.metas.shipper.gateway.api.model.HWBNumber;
-import de.metas.shipper.gateway.api.model.OrderId;
-import de.metas.shipper.gateway.api.model.PackageDimensions;
-import de.metas.shipper.gateway.api.model.PackageLabel;
-import de.metas.shipper.gateway.api.model.PackageLabels;
-import de.metas.shipper.gateway.api.model.PhoneNumber;
-import de.metas.shipper.gateway.api.model.PickupDate;
 import de.metas.shipper.gateway.go.GOClientLogEvent.GOClientLogEventBuilder;
 import de.metas.shipper.gateway.go.schema.Fehlerbehandlung;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
@@ -45,6 +30,21 @@ import de.metas.shipper.gateway.go.schema.ObjectFactory;
 import de.metas.shipper.gateway.go.schema.Sendung;
 import de.metas.shipper.gateway.go.schema.SendungsRueckmeldung;
 import de.metas.shipper.gateway.go.schema.Sendungsnummern;
+import de.metas.shipper.gateway.spi.ShipperGatewayClient;
+import de.metas.shipper.gateway.spi.exceptions.ShipperErrorMessage;
+import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
+import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.DeliveryDate;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.HWBNumber;
+import de.metas.shipper.gateway.spi.model.OrderId;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.PackageLabel;
+import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipper.gateway.spi.model.PhoneNumber;
+import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -275,13 +275,17 @@ public class GOClient implements ShipperGatewayClient
 	private Sendung createGODeliveryOrder(final DeliveryOrder request, final GOOrderStatus status)
 	{
 		final OrderId orderId = request.getOrderId();
-		final HWBNumber hwbNumber = request.getHwbNumber();
+
+		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.ofDeliveryOrder(request);
+		final HWBNumber hwbNumber = goDeliveryOrderData.getHwbNumber();
 
 		final Sendung.Abholadresse pickupAddress = createGOPickupAddress(request.getPickupAddress());
 		final Sendung.Abholdatum pickupDate = createGOPickupDate(request.getPickupDate());
 
 		final Sendung.Empfaenger deliveryAddress = createGODeliveryAddress(request.getDeliveryAddress(), request.getDeliveryContact());
-		final Sendung.SendungsPosition deliveryPosition = createGODeliveryPosition(request.getDeliveryPosition());
+
+		final DeliveryPosition shipmentPosition = GOUtils.getSingleDeliveryPosition(request); // at GO!, we have just one position per order
+		final Sendung.SendungsPosition deliveryPosition = createGODeliveryPosition(shipmentPosition);
 
 		final Sendung goRequest = newGODeliveryRequest();
 		goRequest.setStatus(status.getCode()); // Order status
@@ -298,13 +302,13 @@ public class GOClient implements ShipperGatewayClient
 		goRequest.setZustellhinweise(request.getDeliveryNote()); // Delivery note (an128, not mandatory)
 
 		goRequest.setService(request.getServiceType().getCode()); // Service type (mandatory)
-		goRequest.setUnfrei(request.getPaidMode().getCode()); // Flag unpaid (mandatory)
-		goRequest.setSelbstanlieferung(request.getSelfDelivery().getCode()); // Flag self delivery (mandatory)
-		goRequest.setSelbstabholung(request.getSelfPickup().getCode()); // Flag self pickup (mandatory)
+		goRequest.setUnfrei(goDeliveryOrderData.getPaidMode().getCode()); // Flag unpaid (mandatory)
+		goRequest.setSelbstanlieferung(goDeliveryOrderData.getSelfDelivery().getCode()); // Flag self delivery (mandatory)
+		goRequest.setSelbstabholung(goDeliveryOrderData.getSelfPickup().getCode()); // Flag self pickup (mandatory)
 		goRequest.setWarenwert(null); // Value of goods (not mandatory)
 		goRequest.setSonderversicherung(null); // Special insurance (not mandatory)
 		goRequest.setNachnahme(null); // Cash on delivery (not mandatory)
-		goRequest.setTelefonEmpfangsbestaetigung(request.getReceiptConfirmationPhoneNumber()); // Phone no. for confirmation of receipt (an25, mandatory)
+		goRequest.setTelefonEmpfangsbestaetigung(goDeliveryOrderData.getReceiptConfirmationPhoneNumber()); // Phone no. for confirmation of receipt (an25, mandatory)
 
 		goRequest.setSendungsPosition(deliveryPosition); // Shipment position (mandatory, max. 1)
 
@@ -440,9 +444,13 @@ public class GOClient implements ShipperGatewayClient
 		}
 		final SendungsRueckmeldung.Sendung.Position goResponseDeliveryPosition = goResponseDeliveryPositions.get(0);
 
+		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
+				.hwbNumber(HWBNumber.of(goResponseContent.getFrachtbriefnummer()))
+				.build();
+
 		return deliveryOrderRequest.toBuilder()
 				.orderId(GOUtils.createOrderId(goResponseContent.getSendungsnummerAX4()))
-				.hwbNumber(HWBNumber.of(goResponseContent.getFrachtbriefnummer()))
+				.customDeliveryData(goDeliveryOrderData)
 				.orderStatus(newStatus)
 				// .serviceType(deliveryOrderRequest.getServiceType())
 				// .paidMode(deliveryOrderRequest.getPaidMode())
@@ -471,7 +479,7 @@ public class GOClient implements ShipperGatewayClient
 
 				//
 				// Delivery content
-				.deliveryPosition(deliveryOrderRequest.getDeliveryPosition().toBuilder()
+				.deliveryPosition(GOUtils.getSingleDeliveryPosition(deliveryOrderRequest).toBuilder()
 						// .positionNo(goDeliveryPosition.getPositionsNr()) // assume it's always 1
 						.numberOfPackages(Integer.parseInt(goResponseDeliveryPosition.getAnzahlPackstuecke()))
 						// .barcodes(goDeliveryPosition.getBarcodes().getBarcodeNr())
@@ -505,7 +513,7 @@ public class GOClient implements ShipperGatewayClient
 
 		return PackageLabels.builder()
 				.orderId(GOUtils.createOrderId(goPackageLabels.getSendungsnummerAX4()))
-				.hwbNumber(HWBNumber.of(goPackageLabels.getFrachtbriefnummer()))
+
 				.defaultLabelType(GOPackageLabelType.DIN_A6_ROUTER_LABEL)
 				.label(PackageLabel.builder()
 						.type(GOPackageLabelType.DIN_A4_HWB)

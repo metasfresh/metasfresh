@@ -25,10 +25,10 @@ package de.metas.javaclasses.impl;
 import java.util.Properties;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.BeforeClass;

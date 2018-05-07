@@ -1,0 +1,22 @@
+{
+	"sender": {
+		"station": 50,
+		"country": "DE",
+		"zipCode": "50969",
+		"zone": "A",
+		"sector": "M",
+		"dayType": "Workday",
+		"island": false,
+		"term": 1,
+		"earliestTimeOfDelivery": "06:30",
+		"saturdayDeliveryUntil": "11:00",
+		"sundayDeliveryUntil": "16:00",
+		"pickupUntil": "13:44",
+		"partnerManager": "",
+		"stationFormatted": "050"
+	},
+	"viaHubs": [""],
+	"labelContent": "",
+	"message": "OK",
+	"sendDate": "2018-04-29"
+}
