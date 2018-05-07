@@ -1,7 +1,6 @@
 package org.adempiere.util.time.generator;
 
 import java.time.DayOfWeek;
-import java.util.Calendar;
 import java.util.Set;
 
 import org.adempiere.util.Check;
@@ -40,7 +39,6 @@ public class Frequency
 	FrequencyType type;
 
 	int everyNthWeek;
-	/** @see Calendar#MONDAY etc */
 	ImmutableSet<DayOfWeek> onlyDaysOfWeek;
 
 	int everyNthMonth;
