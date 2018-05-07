@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { connect } from 'react-redux';
+import classnames from 'classnames';
 
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
 import { DATE_FORMAT } from '../../constants/Constants';
@@ -13,6 +14,7 @@ import DatePicker from './DatePicker';
 import DatetimeRange from './DatetimeRange';
 import DevicesWidget from './Devices/DevicesWidget';
 import Image from './Image';
+import Tooltips from '../tooltips/Tooltips';
 import Labels from './Labels';
 import Link from './Link';
 import List from './List/List';
@@ -34,6 +36,8 @@ class RawWidget extends Component {
       isEdited: false,
       cachedValue: undefined,
       errorPopup: false,
+      tooltipToggled: false,
+      clearedFieldWarning: false,
     };
   }
 
@@ -108,29 +112,10 @@ class RawWidget extends Component {
     }
   };
 
-  willPatch = (value, valueTo) => {
-    const { widgetData } = this.props;
-    const { cachedValue } = this.state;
-
-    return (
-      JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
-      JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
-      (cachedValue !== undefined &&
-        JSON.stringify(cachedValue) !== JSON.stringify(value))
-    );
-  };
-
   handleKeyDown = (e, property, value, widgetType) => {
     if ((e.key === 'Enter' || e.key === 'Tab') && widgetType !== 'LongText') {
       this.handlePatch(property, value);
     }
-  };
-
-  generateMomentObj = value => {
-    if (Moment.isMoment(value)) {
-      return value;
-    }
-    return value ? Moment(value).format(DATE_FORMAT) : null;
   };
 
   // isForce will be used for Datepicker
@@ -144,6 +129,7 @@ class RawWidget extends Component {
     if ((isForce || this.willPatch(value, valueTo)) && handlePatch) {
       this.setState({
         cachedValue: value,
+        clearedFieldWarning: false,
       });
       return handlePatch(property, value, id, valueTo);
     }
@@ -170,6 +156,25 @@ class RawWidget extends Component {
     this.setState({
       errorPopup: value,
     });
+  };
+
+  willPatch = (value, valueTo) => {
+    const { widgetData } = this.props;
+    const { cachedValue } = this.state;
+
+    return (
+      JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
+      JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
+      (cachedValue !== undefined &&
+        JSON.stringify(cachedValue) !== JSON.stringify(value))
+    );
+  };
+
+  generateMomentObj = value => {
+    if (Moment.isMoment(value)) {
+      return value;
+    }
+    return value ? Moment(value).format(DATE_FORMAT) : null;
   };
 
   classNames = classObject =>
@@ -207,6 +212,20 @@ class RawWidget extends Component {
     return (
       <div className="input-error-popup">{reason ? reason : 'Input error'}</div>
     );
+  };
+
+  clearFieldWarning = warning => {
+    if (warning) {
+      this.setState({
+        clearedFieldWarning: true,
+      });
+    }
+  };
+
+  toggleTooltip = show => {
+    this.setState({
+      tooltipToggled: show,
+    });
   };
 
   renderWidget = () => {
@@ -828,9 +847,9 @@ class RawWidget extends Component {
       handleZoomInto,
     } = this.props;
 
-    const { errorPopup } = this.state;
+    const { errorPopup, clearedFieldWarning, tooltipToggled } = this.state;
     const widgetBody = this.renderWidget();
-    const { validStatus } = widgetData[0];
+    const { validStatus, warning } = widgetData[0];
 
     // We have to hardcode that exception in case of having
     // wrong two line rendered one line widgets
@@ -860,11 +879,13 @@ class RawWidget extends Component {
 
     return (
       <div
-        className={
-          'form-group row ' +
-          (rowId && !isModal ? 'form-group-table ' : ' ') +
+        className={classnames(
+          'form-group row ',
+          {
+            'form-group-table': rowId && !isModal,
+          },
           widgetFieldsName
-        }
+        )}
       >
         {captionElement || null}
         {!noLabel &&
@@ -901,6 +922,28 @@ class RawWidget extends Component {
           onMouseEnter={() => this.handleErrorPopup(true)}
           onMouseLeave={() => this.handleErrorPopup(false)}
         >
+          {!clearedFieldWarning &&
+            warning && (
+              <div
+                className={classnames('field-warning', {
+                  'field-warning-message': warning,
+                  'field-error-message': warning && warning.error,
+                })}
+                onMouseEnter={() => this.toggleTooltip(true)}
+                onMouseLeave={() => this.toggleTooltip(false)}
+              >
+                <span>{warning.caption}</span>
+                <i
+                  className="meta-icon-close-alt"
+                  onClick={() => this.clearFieldWarning(warning)}
+                />
+                {warning.message &&
+                  tooltipToggled && (
+                    <Tooltips action={warning.message} type="" />
+                  )}
+              </div>
+            )}
+
           <div className="input-body-container">
             <ReactCSSTransitionGroup
               transitionName="fade"
