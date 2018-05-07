@@ -48,12 +48,13 @@ public class WEBUI_SalesOrder_PricingConditionsView_Launcher extends JavaProcess
 			return ProcessPreconditionsResolution.rejectWithInternalReason("one and only one order shall be selected");
 		}
 
-		// Only sales orders
 		final I_C_Order salesOrder = context.getSelectedModel(I_C_Order.class);
-		if (!salesOrder.isSOTrx())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");
-		}
+
+		// NOTE we allow sales and purchase orders too (see https://github.com/metasfresh/metasfresh/issues/4017)
+		// if (!salesOrder.isSOTrx())
+		// {
+		// return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");
+		// }
 
 		final String docStatus = salesOrder.getDocStatus();
 		if (!IDocument.STATUS_Drafted.equals(docStatus)
