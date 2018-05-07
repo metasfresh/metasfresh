@@ -4,7 +4,7 @@ package org.adempiere.util.time.generator;
  * #%L
  * de.metas.util
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,23 +22,7 @@ package org.adempiere.util.time.generator;
  * #L%
  */
 
-import java.util.Date;
-
-import lombok.Value;
-
-@Value
-public final class NullDateShifter implements IDateShifter
+public enum FrequencyType
 {
-	public static final NullDateShifter instance = new NullDateShifter();
-
-	private NullDateShifter()
-	{
-	}
-
-	@Override
-	public Date shift(final Date date)
-	{
-		return date;
-	}
-
+	Weekly, Monthly,
 }

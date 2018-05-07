@@ -29,12 +29,15 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 
+import lombok.Value;
+
 /**
  * Increment by a given amount of weeks and always just to a given week day.
  * 
  * @author tsa
  *
  */
+@Value
 public class WeekDayCalendarIncrementor implements ICalendarIncrementor
 {
 	private static final List<Integer> DAYS_OF_WEEK = Arrays.asList(Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY);

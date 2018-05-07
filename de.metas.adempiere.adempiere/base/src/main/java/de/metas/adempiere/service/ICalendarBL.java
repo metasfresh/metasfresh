@@ -84,5 +84,5 @@ public interface ICalendarBL extends ISingletonService
 	 */
 	boolean isStandardPeriod(I_C_Period period);
 
-	IBusinessDayMatcher getBusinessDayMatcher();
+	IBusinessDayMatcher createBusinessDayMatcher();
 }

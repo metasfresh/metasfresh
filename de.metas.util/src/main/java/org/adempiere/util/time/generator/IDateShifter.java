@@ -25,6 +25,7 @@ package org.adempiere.util.time.generator;
 
 import java.util.Date;
 
+@FunctionalInterface
 public interface IDateShifter
 {
 	/**

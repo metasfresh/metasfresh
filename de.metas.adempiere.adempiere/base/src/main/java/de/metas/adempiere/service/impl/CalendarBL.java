@@ -205,7 +205,7 @@ public class CalendarBL implements ICalendarBL
 	}	// isStandardPeriod
 
 	@Override
-	public IBusinessDayMatcher getBusinessDayMatcher()
+	public IBusinessDayMatcher createBusinessDayMatcher()
 	{
 		// TODO:
 		// NOTE: already return a new instance because IBusinessDayMatcher is configurable (i.e. not immutable)

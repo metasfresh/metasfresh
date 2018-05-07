@@ -13,18 +13,21 @@ package de.metas.adempiere.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
 import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
+
+import lombok.NonNull;
 
 /**
  * Implementations of this interface are responsible of:
@@ -56,29 +59,24 @@ public interface IBusinessDayMatcher
 	boolean isBusinessDay(final Date date);
 
 	/**
-	 * Sets week days which shall be considered as non-business day.
-	 * 
-	 * 
-	 * NOTE: I Don't understand why this one was made this way. And it is never used in the code
-	 * Replaced it with de.metas.adempiere.service.IBusinessDayMatcher.setWeekendDays(Set<Integer>)
-	 * 
-	 * @param daysOfWeek
-	 * @deprecated
-	 */
-	void setWeekendDays(final int... daysOfWeek);
-	
-	/**
-	 *  Sets week days which shall be considered as non-business day.
-	 *  
-	 * @param daysOfWeek
-	 */
-	void setWeekendDays(Set<Integer> daysOfWeek);
-
-	/**
 	 * 
 	 * @return days of week which will be considered non-business day
 	 */
 	Set<Integer> getWeekendDays();
 
-	
+	/**
+	 * Sets week days which shall be considered as non-business day.
+	 * 
+	 * @param daysOfWeek
+	 */
+	IBusinessDayMatcher changeWeekendDays(Set<Integer> weekendDays);
+
+	default IBusinessDayMatcher removeWeekendDays(@NonNull final Set<Integer> weekendDaysToRemove)
+	{
+		return changeWeekendDays(getWeekendDays()
+				.stream()
+				.filter(weekendDay -> !weekendDaysToRemove.contains(weekendDay))
+				.collect(ImmutableSet.toImmutableSet()));
+	}
+
 }

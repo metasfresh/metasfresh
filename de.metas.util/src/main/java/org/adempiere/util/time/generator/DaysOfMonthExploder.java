@@ -1,5 +1,7 @@
 package org.adempiere.util.time.generator;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * de.metas.util
@@ -13,15 +15,14 @@ package org.adempiere.util.time.generator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Calendar;
 import java.util.Collection;
@@ -31,24 +32,33 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.ListUtils;
 
+import com.google.common.collect.ImmutableSet;
+
+import lombok.Value;
+
+@Value
 public class DaysOfMonthExploder implements IDateSequenceExploder
 {
-	public static final DaysOfMonthExploder LAST_DAY = new DaysOfMonthExploder(31);
-	private final Set<Integer> days;
+	public static DaysOfMonthExploder of(final Collection<Integer> days)
+	{
+		final ImmutableSet<Integer> daysSet = ImmutableSet.copyOf(days);
+		return new DaysOfMonthExploder(daysSet);
+	}
+
+	public static DaysOfMonthExploder of(final int... days)
+	{
+		return of(Arrays.stream(days).boxed().collect(ImmutableSet.toImmutableSet()));
+	}
+
+	public static final DaysOfMonthExploder LAST_DAY = new DaysOfMonthExploder(ImmutableSet.of(31));
+
+	private final ImmutableSet<Integer> days;
 
 	public DaysOfMonthExploder(final Collection<Integer> days)
 	{
-		super();
-
 		Check.assumeNotNull(days, "days not null");
-		this.days = new HashSet<Integer>(days);
-	}
-
-	public DaysOfMonthExploder(final int... days)
-	{
-		this(ListUtils.asList(days));
+		this.days = ImmutableSet.copyOf(days);
 	}
 
 	@Override
@@ -56,7 +66,7 @@ public class DaysOfMonthExploder implements IDateSequenceExploder
 	{
 		final long dateMillis = date.getTime();
 
-		final Set<Date> dates = new HashSet<Date>();
+		final Set<Date> dates = new HashSet<>();
 		for (final int day : days)
 		{
 			final Calendar cal = new GregorianCalendar();

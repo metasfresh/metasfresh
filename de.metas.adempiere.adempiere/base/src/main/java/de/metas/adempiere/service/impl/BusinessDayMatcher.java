@@ -13,83 +13,62 @@ package de.metas.adempiere.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.service.IBusinessDayMatcher;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.adempiere.service.IBusinessDayMatcher;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
 /* package */class BusinessDayMatcher implements IBusinessDayMatcher
 {
-	public static final Set<Integer> DEFAULT_WEEKEND_DAYS = ListUtils.asSet(Calendar.SATURDAY, Calendar.SUNDAY);
+	private static final ImmutableSet<Integer> DEFAULT_WEEKEND_DAYS = ImmutableSet.of(Calendar.SATURDAY, Calendar.SUNDAY);
 
-	private Set<Integer> weekendDays = DEFAULT_WEEKEND_DAYS;
+	private final ImmutableSet<Integer> weekendDays;
 
 	public BusinessDayMatcher()
 	{
-		super();
+		this(DEFAULT_WEEKEND_DAYS);
 	}
 
-	/*
-	 * I Don't understand why this one was made this way. And it is never used in the code
-	 * Replaced it with de.metas.adempiere.service.impl.BusinessDayMatcher.setWeekendDays(Set<Integer>)
-	 *  (non-Javadoc)
-	 * @see de.metas.adempiere.service.IBusinessDayMatcher#setWeekendDays(int[])
-	 */
-	@Override
-	public void setWeekendDays(final int... daysOfWeek)
+	private BusinessDayMatcher(@NonNull final ImmutableSet<Integer> weekendDays)
 	{
-		if (daysOfWeek == null || daysOfWeek.length == 0)
-		{
-			weekendDays = Collections.emptySet();
-		}
-		else
-		{
-			weekendDays = new HashSet<Integer>(daysOfWeek.length);
-			for (final int dayOfWeek : daysOfWeek)
-			{
-				weekendDays.add(dayOfWeek);
-			}
-		}
+		this.weekendDays = weekendDays;
 	}
-	
+
 	@Override
-	public void setWeekendDays(final Set<Integer> daysOfWeek)
+	public BusinessDayMatcher changeWeekendDays(@NonNull final Set<Integer> weekendDays)
 	{
-		if (daysOfWeek == null || daysOfWeek.size() == 0)
+		if (Objects.equals(this.weekendDays, weekendDays))
 		{
-			weekendDays = Collections.emptySet();
+			return this;
 		}
-		
-		else
-		{
-			weekendDays = new HashSet<Integer>(daysOfWeek.size());
-			
-			weekendDays.addAll(daysOfWeek);
-		}
+
+		return new BusinessDayMatcher(ImmutableSet.copyOf(weekendDays));
 	}
 
 	@Override
 	public Set<Integer> getWeekendDays()
 	{
-		return new HashSet<>(weekendDays);
+		return weekendDays;
 	}
 
 	@Override

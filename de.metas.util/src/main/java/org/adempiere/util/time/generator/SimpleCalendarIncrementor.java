@@ -27,6 +27,8 @@ import java.util.Calendar;
 
 import org.adempiere.util.Check;
 
+import lombok.Value;
+
 /**
  * Increment by given a given number of Day/Month/Year/etc.
  * 
@@ -35,6 +37,7 @@ import org.adempiere.util.Check;
  * @author tsa
  *
  */
+@Value
 public final class SimpleCalendarIncrementor implements ICalendarIncrementor
 {
 	private final int type;

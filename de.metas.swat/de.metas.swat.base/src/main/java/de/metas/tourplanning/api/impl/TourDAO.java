@@ -16,18 +16,18 @@ package de.metas.tourplanning.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -40,12 +40,24 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.util.time.generator.CalendarIncrementors;
+import org.adempiere.util.time.generator.DateSequenceGenerator;
+import org.adempiere.util.time.generator.DaysOfMonthExploder;
+import org.adempiere.util.time.generator.DaysOfWeekExploder;
+import org.adempiere.util.time.generator.Frequency;
+import org.adempiere.util.time.generator.FrequencyType;
+import org.adempiere.util.time.generator.ICalendarIncrementor;
+import org.adempiere.util.time.generator.IDateSequenceExploder;
+import org.adempiere.util.time.generator.IDateShifter;
 import org.compiere.util.TimeUtil;
 
+import de.metas.adempiere.service.IBusinessDayMatcher;
+import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.tourplanning.api.ITourDAO;
@@ -140,7 +152,7 @@ public class TourDAO implements ITourDAO
 
 		//
 		// Continue iterating the tour versions and create Tour Version Ranges
-		List<ITourVersionRange> tourVersionRanges = new ArrayList<ITourVersionRange>();
+		List<ITourVersionRange> tourVersionRanges = new ArrayList<>();
 		boolean previousTourVersionValid = false;
 		I_M_TourVersion previousTourVersion = null;
 		Date previousTourVersionValidFrom = null;
@@ -218,7 +230,7 @@ public class TourDAO implements ITourDAO
 			if (previousTourVersionValid)
 			{
 				final Date previousTourVersionValidTo = TimeUtil.addDays(tourVersionValidFrom, -1);
-				final ITourVersionRange previousTourVersionRange = new TourVersionRange(previousTourVersion, previousTourVersionValidFrom, previousTourVersionValidTo);
+				final ITourVersionRange previousTourVersionRange = createTourVersionRange(previousTourVersion, previousTourVersionValidFrom, previousTourVersionValidTo);
 				tourVersionRanges.add(previousTourVersionRange);
 			}
 
@@ -232,7 +244,7 @@ public class TourDAO implements ITourDAO
 		// Create Tour Version Range for last version
 		if (previousTourVersionValid)
 		{
-			final ITourVersionRange lastTourVersionRange = new TourVersionRange(previousTourVersion, previousTourVersionValidFrom, dateTo);
+			final ITourVersionRange lastTourVersionRange = createTourVersionRange(previousTourVersion, previousTourVersionValidFrom, dateTo);
 			tourVersionRanges.add(lastTourVersionRange);
 		}
 
@@ -278,5 +290,184 @@ public class TourDAO implements ITourDAO
 				.list();
 
 		return tourVersionLines;
+	}
+
+	private static TourVersionRange createTourVersionRange(final I_M_TourVersion tourVersion, final Date validFrom, final Date validTo)
+	{
+		return TourVersionRange.builder()
+				.tourVersion(tourVersion)
+				.validFrom(validFrom)
+				.validTo(validTo)
+				.dateSequenceGenerator(createDateSequenceGenerator(tourVersion, validFrom, validTo))
+				.build();
+	}
+
+	private static DateSequenceGenerator createDateSequenceGenerator(final I_M_TourVersion tourVersion, final Date validFrom, final Date validTo)
+	{
+		final Frequency frequency = extractFrequency(tourVersion);
+		if (frequency == null)
+		{
+			return null;
+		}
+
+		return DateSequenceGenerator.builder()
+				.dateFrom(validFrom)
+				.dateTo(validTo)
+				.shifter(createDateShifter(frequency, tourVersion))
+				// task 08252: don't shift beyond getValidTo(), because there will probably be another version to create it's own delivery days at that date
+				.enforceDateToAfterShift(true)
+				.incrementor(createCalendarIncrementor(frequency))
+				.exploder(createDateSequenceExploder(frequency))
+				.build();
+	}
+
+	private static IDateShifter createDateShifter(final Frequency frequency, final I_M_TourVersion tourVersion)
+	{
+		final boolean cancelDeliveryDay = tourVersion.isCancelDeliveryDay();
+		final boolean moveDeliveryDay = tourVersion.isMoveDeliveryDay();
+
+		final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
+		IBusinessDayMatcher businessDayMatcher = calendarBL.createBusinessDayMatcher();
+
+		//
+		// If user explicitly asked for a set of week days, don't consider them non-business days by default
+		if (frequency.isWeekly()
+				&& frequency.isOnlySomeDaysOfTheWeek()
+				&& !cancelDeliveryDay
+				&& !moveDeliveryDay)
+		{
+			businessDayMatcher = businessDayMatcher.removeWeekendDays(frequency.getOnlyDaysOfWeek());
+		}
+
+		return TourVersionDeliveryDateShifter.builder()
+				.businessDayMatcher(businessDayMatcher)
+				.cancelIfNotBusinessDay(cancelDeliveryDay)
+				.moveToNextBusinessDay(moveDeliveryDay)
+				.build();
+	}
+
+	private static ICalendarIncrementor createCalendarIncrementor(final Frequency frequency)
+	{
+		if (frequency.isWeekly())
+		{
+			return CalendarIncrementors.eachNthWeek(frequency.getEveryNthWeek(), Calendar.MONDAY);
+		}
+		else if (frequency.isMonthly())
+		{
+			return CalendarIncrementors.eachNthMonth(frequency.getEveryNthMonth(), 1); // every given month, 1st day
+		}
+		else
+		{
+			throw new AdempiereException("Frequency type not supported for " + frequency);
+		}
+	}
+
+	private static IDateSequenceExploder createDateSequenceExploder(final Frequency frequency)
+	{
+		if (frequency.isWeekly())
+		{
+			if (frequency.isOnlySomeDaysOfTheWeek())
+			{
+				return DaysOfWeekExploder.of(frequency.getOnlyDaysOfWeek());
+			}
+			else
+			{
+				return DaysOfWeekExploder.ALL_DAYS_OF_WEEK;
+			}
+		}
+		else if (frequency.isMonthly())
+		{
+			return DaysOfMonthExploder.of(frequency.getOnlyDaysOfMonth());
+		}
+		else
+		{
+			throw new AdempiereException("Frequency type not supported for " + frequency);
+		}
+	}
+
+	private static Frequency extractFrequency(final I_M_TourVersion tourVersion)
+	{
+		//
+		// Get and adjust the parameters
+		boolean isWeekly = tourVersion.isWeekly();
+		int everyWeek = tourVersion.getEveryWeek();
+		if (isWeekly)
+		{
+			everyWeek = 1;
+		}
+		else if (!isWeekly && everyWeek > 0)
+		{
+			isWeekly = true;
+		}
+
+		boolean isMonthly = tourVersion.isMonthly();
+		int everyMonth = tourVersion.getEveryMonth();
+		final int monthDay = tourVersion.getMonthDay();
+		if (isMonthly)
+		{
+			everyMonth = 1;
+		}
+		else if (!isMonthly && everyMonth > 0)
+		{
+			isMonthly = true;
+		}
+
+		if (isWeekly)
+		{
+			return Frequency.builder()
+					.type(FrequencyType.Weekly)
+					.everyNthWeek(everyWeek)
+					.onlyDaysOfWeek(extractWeekDays(tourVersion))
+					.build();
+		}
+		else if (isMonthly)
+		{
+			return Frequency.builder()
+					.type(FrequencyType.Monthly)
+					.everyNthMonth(1)
+					.onlyDayOfMonth(monthDay)
+					.build();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	private static List<Integer> extractWeekDays(final I_M_TourVersion tourVersion)
+	{
+		Check.assumeNotNull(tourVersion, "tourVersion not null");
+
+		final List<Integer> weekDays = new ArrayList<>();
+		if (tourVersion.isOnSunday())
+		{
+			weekDays.add(Calendar.SUNDAY);
+		}
+		if (tourVersion.isOnMonday())
+		{
+			weekDays.add(Calendar.MONDAY);
+		}
+		if (tourVersion.isOnTuesday())
+		{
+			weekDays.add(Calendar.TUESDAY);
+		}
+		if (tourVersion.isOnWednesday())
+		{
+			weekDays.add(Calendar.WEDNESDAY);
+		}
+		if (tourVersion.isOnThursday())
+		{
+			weekDays.add(Calendar.THURSDAY);
+		}
+		if (tourVersion.isOnFriday())
+		{
+			weekDays.add(Calendar.FRIDAY);
+		}
+		if (tourVersion.isOnSaturday())
+		{
+			weekDays.add(Calendar.SATURDAY);
+		}
+
+		return weekDays;
 	}
 }

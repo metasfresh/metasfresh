@@ -27,12 +27,15 @@ import java.util.Calendar;
 
 import org.adempiere.util.Check;
 
+import lombok.Value;
+
 /**
  * Increment by a given number of months and always just to a given day of month.
  * 
  * @author tsa
  *
  */
+@Value
 /* package */class MonthDayCalendarIncrementor implements ICalendarIncrementor
 {
 	/**

@@ -13,27 +13,28 @@ package org.adempiere.util.time.generator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
+import lombok.Value;
+
+@Value
 public final class NullDateSequenceExploder implements IDateSequenceExploder
 {
 	public static final NullDateSequenceExploder instance = new NullDateSequenceExploder();
 
 	private NullDateSequenceExploder()
 	{
-		super();
 	}
 
 	@Override
