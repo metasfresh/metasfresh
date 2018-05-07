@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.adempiere.util.StringUtils.TruncateAt;
+import org.adempiere.util.lang.IPair;
 
 /*
  * #%L
@@ -144,6 +145,33 @@ public class StringUtilsTest
 	private void test_isNumber(final String string, final boolean expected)
 	{
 		Assert.assertEquals("Invalid StringUtils.isNumber() return for string: " + string, expected, StringUtils.isNumber(string));
+	}
+
+	@Test
+	public void splitStreetAndHouseNumberOrNull()
+	{
+		final IPair<String, String> result = StringUtils.splitStreetAndHouseNumberOrNull("Carretera Nueva Jarilla");
+
+		assertThat(result.getLeft()).isEqualTo("Carretera Nueva Jarilla");
+		assertThat(result.getRight()).isNullOrEmpty();
+	}
+
+	@Test
+	public void splitStreetAndHouseNumberOrNull_2()
+	{
+		final IPair<String, String> result = StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14");
+
+		assertThat(result.getLeft()).isEqualTo("Laternenstrasse");
+		assertThat(result.getRight()).isEqualTo("14");
+	}
+
+	@Test
+	public void splitStreetAndHouseNumberOrNull_3()
+	{
+		final IPair<String, String> result = StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14-26c");
+
+		assertThat(result.getLeft()).isEqualTo("Laternenstrasse");
+		assertThat(result.getRight()).isEqualTo("14-26c");
 	}
 
 }

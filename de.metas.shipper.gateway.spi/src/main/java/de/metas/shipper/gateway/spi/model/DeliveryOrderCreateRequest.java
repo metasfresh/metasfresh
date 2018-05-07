@@ -37,6 +37,7 @@ public class DeliveryOrderCreateRequest
 {
 	LocalDate pickupDate;
 	Set<Integer> packageIds;
+	int shipperTransportationId;
 
 	String shipperGatewayId;
 
@@ -44,13 +45,12 @@ public class DeliveryOrderCreateRequest
 	public DeliveryOrderCreateRequest(
 			@NonNull final LocalDate pickupDate,
 			@NonNull @Singular final Set<Integer> packageIds,
+			final int shipperTransportationId,
 			@NonNull String shipperGatewayId)
 	{
-		Check.assumeNotEmpty(packageIds, "packageIds is not empty");
-
 		this.pickupDate = pickupDate;
-		this.packageIds = packageIds;
-
+		this.packageIds = Check.assumeNotEmpty(packageIds, "packageIds is not empty");
+		this.shipperTransportationId = shipperTransportationId;
 		this.shipperGatewayId = shipperGatewayId;
 	}
 }

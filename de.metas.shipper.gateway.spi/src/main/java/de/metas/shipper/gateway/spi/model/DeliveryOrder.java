@@ -78,5 +78,7 @@ public class DeliveryOrder
 
 	/** ID in external repository */
 	private int repoId;
+
 	private int shipperId;
+	private int shipperTransportationId;
 }

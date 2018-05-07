@@ -1,9 +1,8 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_MailBox;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +11,9 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.IAttachmentDAO;
 import de.metas.email.EMail;
-import de.metas.email.EMailAttachment;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
-import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
+import de.metas.shipper.gateway.derkurier.DerKurierConstants;
 import lombok.NonNull;
 
 /*
@@ -43,8 +41,11 @@ import lombok.NonNull;
 @Service
 public class DerKurierDeliveryOrderEmailer
 {
-	private static final String SYSCONFIG_DerKurier_DeliveryOrder_EmailSubject = "DerKurier_DeliveryOrder_EmailSubject";
-	private static final String SYSCONFIG_DerKurier_DeliveryOrder_EmailMessage = "DerKurier_DeliveryOrder_EmailMessage";
+	@VisibleForTesting
+	static final String SYSCONFIG_DerKurier_DeliveryOrder_EmailSubject = "DerKurier_DeliveryOrder_EmailSubject";
+
+	@VisibleForTesting
+	static final String SYSCONFIG_DerKurier_DeliveryOrder_EmailMessage = "DerKurier_DeliveryOrder_EmailMessage";
 
 	private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
 
@@ -54,52 +55,59 @@ public class DerKurierDeliveryOrderEmailer
 		this.derKurierShipperConfigRepository = derKurierShipperConfigRepository;
 	}
 
-	public void sendAttachmentAsEmail(final int shipperId, final AttachmentEntry attachmentEntry)
+	public void sendAttachmentAsEmail(final int shipperId, @NonNull final AttachmentEntry attachmentEntry)
 	{
-		derKurierShipperConfigRepository.retrieveConfigForShipperId(shipperId);
-		// TODO
+		Check.assumeGreaterThanZero(shipperId, "shipperId");
+
+		final DerKurierShipperConfig shipperConfig = derKurierShipperConfigRepository
+				.retrieveConfigForShipperId(shipperId);
+
+		final String emailAddress = shipperConfig.getDeliveryOrderRecipientEmailOrNull();
+		if (emailAddress == null)
+		{
+			return;
+		}
+		final Mailbox deliveryOrderMailBox = shipperConfig.getDeliveryOrderMailBoxOrNull();
+
+		sendAttachmentAsEmail(deliveryOrderMailBox, emailAddress, attachmentEntry);
 	}
 
 	@VisibleForTesting
-	void sendAttachmentAsEmail(final I_DerKurier_Shipper_Config shipperConfig, final AttachmentEntry attachmentEntry)
+	void sendAttachmentAsEmail(
+			@NonNull final Mailbox mailBox,
+			@NonNull final String mailTo,
+			@NonNull final AttachmentEntry attachmentEntry)
 	{
-		final int mailBoxId = shipperConfig.getAD_MailBox_ID();
+		final String message = retrieveSysConfig(SYSCONFIG_DerKurier_DeliveryOrder_EmailMessage);
+		final String subject = retrieveSysConfig(SYSCONFIG_DerKurier_DeliveryOrder_EmailSubject);
 
-		if (mailBoxId <= 0)
-		{
-			// nothing to do
-			return;
-		}
-		final I_AD_MailBox shipperConfigMailBox = loadOutOfTrx(mailBoxId, I_AD_MailBox.class);
-
-		final Mailbox mailbox = Mailbox.builder()
-				.smtpHost(shipperConfigMailBox.getSMTPHost())
-				.smtpPort(shipperConfigMailBox.getSMTPPort())
-				.startTLS(shipperConfigMailBox.isStartTLS())
-				.email(shipperConfigMailBox.getEMail())
-				.username(shipperConfigMailBox.getUserName())
-				.password(shipperConfigMailBox.getPassword())
-				.smtpAuthorization(shipperConfigMailBox.isSmtpAuthorization())
-				.adUserId(-1)
-				.build();
-
-		final String emailAddress = "derKurierEmailAddress@mail.com"; // TODO Please, complete from a field
-		final String subject = SYSCONFIG_DerKurier_DeliveryOrder_EmailSubject;
-		final String message = SYSCONFIG_DerKurier_DeliveryOrder_EmailMessage;
+		final byte[] data = Services.get(IAttachmentDAO.class).retrieveData(attachmentEntry);
+		final String csvDataString = new String(data, DerKurierConstants.CSV_DATA_CHARSET);
 
 		final IMailBL mailBL = Services.get(IMailBL.class);
-
 		final EMail eMail = mailBL.createEMail(Env.getCtx(),
-				mailbox,
-				emailAddress,
+				mailBox,
+				mailTo,
 				subject,
-				message,
-				false);
+				message + "\n\n" + csvDataString,
+				false // html=false
+		);
 
-		final EMailAttachment emailAttachment = EMailAttachment.of(attachmentEntry.getFilename(), Services.get(IAttachmentDAO.class).retrieveData(attachmentEntry));
-		eMail.addAttachment(emailAttachment);
+		// final String filename = attachmentEntry.getFilename();
+		// final EMailAttachment emailAttachment = EMailAttachment.of(filename, data);
+		// eMail.addAttachment(emailAttachment);
 		mailBL.send(eMail);
+	}
 
+	private String retrieveSysConfig(@NonNull final String sysConfigName)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
+		final int adOrgId = Env.getAD_Org_ID(Env.getCtx());
+
+		final String value = sysConfigBL.getValue(sysConfigName, "", adClientId, adOrgId);
+
+		return Check.assumeNotEmpty(value, "Sysconfig value for key={} is not empty; AD_Client_ID={}; AD_Org_ID={}", sysConfigName, adClientId, adOrgId);
 	}
 
 }

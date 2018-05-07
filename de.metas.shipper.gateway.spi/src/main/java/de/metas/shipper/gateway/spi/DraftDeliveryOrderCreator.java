@@ -43,15 +43,17 @@ public interface DraftDeliveryOrderCreator
 	public static class CreateDraftDeliveryOrderRequest
 	{
 		DeliveryOrderKey deliveryOrderKey;
+
 		int grossWeightInKg;
 		String packageContentDescription;
 		Set<Integer> mpackageIds;
 	}
-	
+
 	@Value
 	public static final class DeliveryOrderKey
 	{
 		int shipperId;
+		int shipperTransportationId;
 		int fromOrgId;
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
@@ -60,17 +62,20 @@ public interface DraftDeliveryOrderCreator
 		@Builder
 		public DeliveryOrderKey(
 				final int shipperId,
+				final int shipperTransportationId,
 				final int fromOrgId,
 				final int deliverToBPartnerId,
 				final int deliverToBPartnerLocationId,
 				@NonNull final LocalDate pickupDate)
 		{
 			Check.assume(shipperId > 0, "shipperId > 0");
+			Check.assume(shipperTransportationId > 0, "shipperTransportationId > 0");
 			Check.assume(fromOrgId > 0, "fromOrgId > 0");
 			Check.assume(deliverToBPartnerId > 0, "deliverToBPartnerId > 0");
 			Check.assume(deliverToBPartnerLocationId > 0, "deliverToBPartnerLocationId > 0");
 
 			this.shipperId = shipperId;
+			this.shipperTransportationId = shipperTransportationId;
 			this.fromOrgId = fromOrgId;
 			this.deliverToBPartnerId = deliverToBPartnerId;
 			this.deliverToBPartnerLocationId = deliverToBPartnerLocationId;

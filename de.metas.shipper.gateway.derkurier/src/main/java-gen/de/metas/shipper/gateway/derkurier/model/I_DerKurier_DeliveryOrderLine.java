@@ -229,7 +229,7 @@ public interface I_DerKurier_DeliveryOrderLine
 	 * Set Gewünschtes Lieferdepot.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setDK_Consignee_DesiredStation (java.lang.String DK_Consignee_DesiredStation);
@@ -238,7 +238,7 @@ public interface I_DerKurier_DeliveryOrderLine
 	 * Get Gewünschtes Lieferdepot.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getDK_Consignee_DesiredStation();
@@ -461,7 +461,7 @@ public interface I_DerKurier_DeliveryOrderLine
 	 * Set Gewünschtes Lieferdatum.
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setDK_DesiredDeliveryDate (java.sql.Timestamp DK_DesiredDeliveryDate);
@@ -470,7 +470,7 @@ public interface I_DerKurier_DeliveryOrderLine
 	 * Get Gewünschtes Lieferdatum.
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.sql.Timestamp getDK_DesiredDeliveryDate();
@@ -484,7 +484,7 @@ public interface I_DerKurier_DeliveryOrderLine
 	 * Set Gewünschte Lieferuhrzeit von.
 	 *
 	 * <br>Type: Time
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setDK_DesiredDeliveryTime_From (java.sql.Timestamp DK_DesiredDeliveryTime_From);
@@ -493,7 +493,7 @@ public interface I_DerKurier_DeliveryOrderLine
 	 * Get Gewünschte Lieferuhrzeit von.
 	 *
 	 * <br>Type: Time
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.sql.Timestamp getDK_DesiredDeliveryTime_From();
@@ -507,7 +507,7 @@ public interface I_DerKurier_DeliveryOrderLine
 	 * Set Gewünschte Lieferuhrzeit bis.
 	 *
 	 * <br>Type: Time
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setDK_DesiredDeliveryTime_To (java.sql.Timestamp DK_DesiredDeliveryTime_To);
@@ -516,7 +516,7 @@ public interface I_DerKurier_DeliveryOrderLine
 	 * Get Gewünschte Lieferuhrzeit bis.
 	 *
 	 * <br>Type: Time
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.sql.Timestamp getDK_DesiredDeliveryTime_To();

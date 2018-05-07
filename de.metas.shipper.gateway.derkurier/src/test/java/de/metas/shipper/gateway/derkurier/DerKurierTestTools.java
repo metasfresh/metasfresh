@@ -45,6 +45,9 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 
 public class DerKurierTestTools
 {
+	public static final int M_SHIPPER_ID = 50;
+	public static final int M_SHIPPER_TRANSPORTATION_ID = 60;
+
 	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();
 
 	public static DeliveryOrder createTestDeliveryOrderwithOneLine()
@@ -53,6 +56,8 @@ public class DerKurierTestTools
 		final DerKurierDeliveryDataBuilder derKurierDeliveryDataBuilder = prepatreDerKurierDeliveryDataBuilder();
 
 		final DeliveryOrder deliveryOrder = deliveryOrderBuilder
+				.shipperId(M_SHIPPER_ID)
+				.shipperTransportationId(M_SHIPPER_TRANSPORTATION_ID)
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(5)
 						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
@@ -99,17 +104,8 @@ public class DerKurierTestTools
 		final DeliveryOrderBuilder deliveryOrderBuilder = DeliveryOrder.builder()
 				.orderId(OrderId.of(SHIPPER_GATEWAY_ID, "1234"))
 				.serviceType(DerKurierServiceType.OVERNIGHT)
-				.pickupAddress(Address.builder()
-						.companyName1("from company")
-						.street1("street 1")
-						.houseNo("1")
-						.zipCode("12345")
-						.city("Bonn")
-						.country(COUNTRY_CODE_DE)
-						.build())
-				.pickupDate(PickupDate.builder()
-						.date(LocalDate.of(2018, Month.JANUARY, 8))
-						.build())
+				.pickupAddress(createPickupAddress())
+				.pickupDate(createPickupDate())
 				.deliveryDate(DeliveryDate.builder()
 						.date(LocalDate.of(2018, Month.JANUARY, 9))
 						.timeFrom(LocalTime.of(9, 0))
@@ -127,6 +123,25 @@ public class DerKurierTestTools
 						.build())
 				.customerReference("some info for customer");
 		return deliveryOrderBuilder;
+	}
+
+	public static PickupDate createPickupDate()
+	{
+		return PickupDate.builder()
+				.date(LocalDate.of(2018, Month.JANUARY, 8))
+				.build();
+	}
+
+	public static Address createPickupAddress()
+	{
+		return Address.builder()
+				.companyName1("pickupAddress-companyName1")
+				.street1("street 1")
+				.houseNo("1")
+				.zipCode("12345")
+				.city("Bonn")
+				.country(COUNTRY_CODE_DE)
+				.build();
 	}
 
 	public static RoutingRequest createRoutingRequest()

@@ -3,7 +3,10 @@ package de.metas.shipper.gateway.derkurier;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.report.IJasperService;
@@ -13,18 +16,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierPackageLabelType;
+import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
@@ -34,7 +36,6 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
-import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.AccessLevel;
@@ -108,9 +109,21 @@ public class DerKurierClient implements ShipperGatewayClient
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
 		final HttpEntity<RoutingRequest> entity = new HttpEntity<>(routingRequest, httpHeaders);
-		final ResponseEntity<Routing> result = restTemplate.exchange("/routing/request", HttpMethod.POST, entity, Routing.class);
+		try
+		{
+			final ResponseEntity<Routing> result = restTemplate.exchange("/routing/request", HttpMethod.POST, entity, Routing.class);
+			return result.getBody();
+		}
+		catch (final HttpClientErrorException e)
+		{
+			final ShipperGatewayException shipperGatewayException = //
+					new ShipperGatewayException("HttpClientErrorException with statusCode=" + e.getStatusCode());
 
-		return result.getBody();
+			throw AdempiereException.wrapIfNeeded(shipperGatewayException)
+					.appendParametersToMessage()
+					.setParameter("responseBodyAsString", e.getResponseBodyAsString())
+					.setParameter("routingRequest", routingRequest);
+		}
 	}
 
 	@Override
@@ -121,11 +134,14 @@ public class DerKurierClient implements ShipperGatewayClient
 
 		final DeliveryOrder completedDeliveryOrder = createDeliveryOrderFromResponse(routing, deliveryOrder);
 
-		final List<String> csv = converters.createCsv(completedDeliveryOrder);
+		final List<String> csvLines = converters.createCsv(completedDeliveryOrder);
 
 		final AttachmentEntry attachmentEntry = derKurierDeliveryOrderRepository
-				.attachCsvToDeliveryOrder(deliveryOrder.getRepoId(), csv);
+				.attachCsvToDeliveryOrder(deliveryOrder, csvLines);
 
+		printPackageLabels(deliveryOrder);
+
+		// we want to only send the mail after creating the CSV and creating the labels worked.
 		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(deliveryOrder.getShipperId(), attachmentEntry);
 
 		return completedDeliveryOrder;
@@ -159,7 +175,7 @@ public class DerKurierClient implements ShipperGatewayClient
 		for (final DeliveryPosition originalDeliveryPosition : originalDeliveryOrder.getDeliveryPositions())
 		{
 			final DerKurierDeliveryData originalDerKurierDeliveryData = //
-					DerKurierDeliveryData.ofDeliveryOrder(originalDeliveryPosition)
+					DerKurierDeliveryData.ofDeliveryPosition(originalDeliveryPosition)
 							.toBuilder()
 							.station(routing.getConsignee().getStationFormatted())
 							.build();
@@ -180,47 +196,59 @@ public class DerKurierClient implements ShipperGatewayClient
 		throw new UnsupportedOperationException("Der Kurier doesn't support voiding delivery orders via software");
 	}
 
-	@Override
-	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	private void printPackageLabels(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		// TODO https://leoz.derkurier.de:13000/rs/api/v1/document/label does not yet work,
-		// so we need to fire up our own jasper report and print them
+		final int adProcessId = retrievePackageLableAdProcessId();
 
-		final ITableRecordReference tableRecordReference = derKurierDeliveryOrderRepository.toTableRecordReference(deliveryOrder);
+		final ITableRecordReference deliveryOrderTableRecordReference = //
+				derKurierDeliveryOrderRepository.toTableRecordReference(deliveryOrder);
 
+		final ImmutableList<DeliveryPosition> deliveryPositions = deliveryOrder.getDeliveryPositions();
+		for (final DeliveryPosition deliveryPosition : deliveryPositions)
+		{
+			final DerKurierDeliveryData derKurierDeliveryData = //
+					DerKurierDeliveryData.ofDeliveryPosition(deliveryPosition);
+
+			ProcessInfo.builder()
+					.setTitle("Label-" + derKurierDeliveryData.getParcelNumber())
+					.setCtx(Env.getCtx())
+					.setAD_Process_ID(adProcessId)
+					.setRecord(deliveryOrderTableRecordReference) // we want the jasper to be archived and attached to the delivery order
+					.addParameter(
+							IJasperService.PARAM_PrintCopies,
+							1)
+					.addParameter(
+							I_DerKurier_DeliveryOrderLine.COLUMNNAME_DerKurier_DeliveryOrderLine_ID,
+							deliveryOrderTableRecordReference.getRecord_ID())
+					.setPrintPreview(false)
+					// Execute report in a new transaction
+					.buildAndPrepareExecution()
+					.onErrorThrowException(true)
+					.executeSync();
+
+			Loggables.get().addLog("Created package label for {}", deliveryOrderTableRecordReference);
+		}
+	}
+
+	private int retrievePackageLableAdProcessId()
+	{
 		final Properties ctx = Env.getCtx();
-		final int adProcessId = Services.get(ISysConfigBL.class).getIntValue(DerKurierConstants.SYSCONFIG_DERKURIER_LABEL_PROCESS_ID, -1, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		final int adClientId = Env.getAD_Client_ID(ctx);
+		final int adOrgId = Env.getAD_Org_ID(ctx);
+		final String sysconfigKey = DerKurierConstants.SYSCONFIG_DERKURIER_LABEL_PROCESS_ID;
+		final int adProcessId = Services.get(ISysConfigBL.class).getIntValue(sysconfigKey, -1, adClientId, adOrgId);
+		Check.errorIf(adProcessId <= 0, "Missing sysconfig value for 'Der Kurier' package label jasper report; name={}; AD_Client_ID={}; AD_Org_ID={}",
+				sysconfigKey, adClientId, adOrgId);
+		return adProcessId;
+	}
 
-		final ProcessExecutor processExecutor = ProcessInfo.builder()
-				.setCtx(ctx)
-				.setAD_Process_ID(adProcessId)
-				// .setWindowNo(request.getWindowNo())
-				.setTableName(tableRecordReference.getTableName())
-				// .setReportLanguage(reportLanguageToUse)
-				// .addParameter(PARA_BarcodeURL, getBarcodeServlet(ctx))
-				.addParameter(IJasperService.PARAM_PrintCopies, 1)
-				.setPrintPreview(false)
-				//
-				// Execute report in a new transaction
-				.buildAndPrepareExecution()
-				.onErrorThrowException(true)
-				// .callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIdsToProcess, ITrx.TRXNAME_ThreadInherited))
-				.executeSync();
-
-		final ProcessExecutionResult result = processExecutor.getResult();
-
-		final PackageLabel packageLabel = PackageLabel.builder()
-				.type(DerKurierPackageLabelType.DIN_A6_SIMPLE)
-				.contentType(PackageLabel.CONTENTTYPE_PDF)
-				.labelData(result.getReportData())
-				.build();
-
-		final PackageLabels packageLabels = PackageLabels.builder()
-				.defaultLabelType(DerKurierPackageLabelType.DIN_A6_SIMPLE)
-				.orderId(deliveryOrder.getOrderId())
-				.label(packageLabel)
-				.build();
-
-		return ImmutableList.of(packageLabels);
+	/**
+	 * Returns an empty list, because https://leoz.derkurier.de:13000/rs/api/v1/document/label does not yet work,
+	 * so we need to fire up our own jasper report and print them ourselves. This is done in {@link #completeDeliveryOrder(DeliveryOrder)}.
+	 */
+	@Override
+	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder)
+	{
+		return ImmutableList.of();
 	}
 }

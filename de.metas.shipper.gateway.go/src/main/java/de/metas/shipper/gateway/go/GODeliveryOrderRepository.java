@@ -76,6 +76,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		return DeliveryOrder.builder()
 				.repoId(orderPO.getGO_DeliveryOrder_ID())
 				.shipperId(orderPO.getM_Shipper_ID())
+				.shipperTransportationId(orderPO.getM_ShipperTransportation_ID())
 				//
 				.orderId(GOUtils.createOrderIdOrNull(orderPO.getGO_AX4Number()))
 				.customDeliveryData(goDeliveryOrderData)
@@ -104,7 +105,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 	/**
 	 * NOTE to dev: keep in sync with {@link #toDeliveryOrder(I_GO_DeliveryOrder)}
 	 */
-	private I_GO_DeliveryOrder toDeliveryOrderPO(final DeliveryOrder order)
+	private I_GO_DeliveryOrder toDeliveryOrderPO(@NonNull final DeliveryOrder order)
 	{
 		I_GO_DeliveryOrder orderPO = null;
 		if (order.getRepoId() > 0)
@@ -124,6 +125,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		}
 
 		orderPO.setM_Shipper_ID(order.getShipperId());
+		orderPO.setM_ShipperTransportation_ID(order.getShipperTransportationId());
 
 		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.ofDeliveryOrder(order);
 		final HWBNumber hwbNumber = goDeliveryOrderData.getHwbNumber();
@@ -161,7 +163,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 	}
 
 	@Override
-	public TableRecordReference toTableRecordReference(final DeliveryOrder deliveryOrder)
+	public TableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final int deliveryOrderRepoId = deliveryOrder.getRepoId();
 		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0 for {}", deliveryOrder);
@@ -250,5 +252,4 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
-
 }

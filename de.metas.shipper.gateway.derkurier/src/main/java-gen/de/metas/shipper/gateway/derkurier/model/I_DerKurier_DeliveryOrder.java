@@ -433,6 +433,58 @@ public interface I_DerKurier_DeliveryOrder
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Shipper_ID();
+
+	public org.compiere.model.I_M_Shipper getM_Shipper();
+
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+
+    /** Column definition for M_Shipper_ID */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, org.compiere.model.I_M_Shipper>(I_DerKurier_DeliveryOrder.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+    /** Column name M_Shipper_ID */
+    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+
+	/**
+	 * Set Transport Auftrag.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID);
+
+	/**
+	 * Get Transport Auftrag.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ShipperTransportation_ID();
+
+    /** Column definition for M_ShipperTransportation_ID */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object> COLUMN_M_ShipperTransportation_ID = new org.adempiere.model.ModelColumn<I_DerKurier_DeliveryOrder, Object>(I_DerKurier_DeliveryOrder.class, "M_ShipperTransportation_ID", null);
+    /** Column name M_ShipperTransportation_ID */
+    public static final String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

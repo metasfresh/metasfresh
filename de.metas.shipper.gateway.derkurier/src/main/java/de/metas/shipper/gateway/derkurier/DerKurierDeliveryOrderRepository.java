@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -42,6 +43,7 @@ import org.compiere.model.I_C_Country;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -115,6 +117,11 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		return TableRecordReference.of(I_DerKurier_DeliveryOrder.Table_Name, deliveryOrder.getRepoId());
 	}
 
+	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryPosition deliveryPosition)
+	{
+		return TableRecordReference.of(I_DerKurier_DeliveryOrderLine.Table_Name, deliveryPosition.getRepoId());
+	}
+
 	@Override
 	public DeliveryOrder getByRepoId(final int deliveryOrderRepoId)
 	{
@@ -143,6 +150,8 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		final DeliveryOrderBuilder deliverOrderBuilder = DeliveryOrder
 				.builder()
 				.repoId(headerRecord.getDerKurier_DeliveryOrder_ID())
+				.shipperId(headerRecord.getM_Shipper_ID())
+				.shipperTransportationId(headerRecord.getM_ShipperTransportation_ID())
 				.serviceType(DerKurierServiceType.OVERNIGHT)
 				.pickupAddress(createPickupAddress(headerRecord))
 				.pickupDate(createPickupDate(headerRecord))
@@ -151,52 +160,9 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		I_DerKurier_DeliveryOrderLine previousLineRecord = null; // used to make sure that all lineRecords have the same value when it comes to certain columns
 		for (final I_DerKurier_DeliveryOrderLine lineRecord : lineRecords)
 		{
-			deliverOrderBuilder.customerReference(assertSameAsPreviousValue(COLUMNNAME_DK_Reference, lineRecord, previousLineRecord));
+			addLineRecordDataToDeliveryOrderBuilder(deliverOrderBuilder, lineRecord, previousLineRecord);
 
-			deliverOrderBuilder.deliveryAddress(createDeliveryAddress(previousLineRecord, lineRecord));
-
-			final String email = assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_EMail, lineRecord, previousLineRecord);
-			final String phone = assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_Phone, lineRecord, previousLineRecord);
-			if (!Check.isEmpty(email, true) || !Check.isEmpty(phone, true))
-			{
-				final ContactPerson contactPerson = ContactPerson.builder()
-						.emailAddress(email)
-						.simplePhoneNumber(phone)
-						.build();
-				deliverOrderBuilder.deliveryContact(contactPerson);
-			}
-
-			final DeliveryDate deliveryDate = DeliveryDate.builder()
-					.date(TimeUtil.asLocalDate(assertSameAsPreviousValue(COLUMNNAME_DK_DesiredDeliveryDate, lineRecord, previousLineRecord)))
-					.timeFrom(TimeUtil.asLocalTime(assertSameAsPreviousValue(COLUMNNAME_DK_DesiredDeliveryTime_From, lineRecord, previousLineRecord)))
-					.timeTo(TimeUtil.asLocalTime(assertSameAsPreviousValue(COLUMNNAME_DK_DesiredDeliveryTime_To, lineRecord, previousLineRecord)))
-					.build();
-			deliverOrderBuilder.deliveryDate(deliveryDate);
-
-			final DeliveryPositionBuilder deliveryPositionBuilder = DeliveryPosition
-					.builder()
-					.repoId(lineRecord.getDerKurier_DeliveryOrderLine_ID())
-					.numberOfPackages(lineRecord.getDK_PackageAmount());
-
-			if (lineRecord.getDK_ParcelHeight().signum() > 0
-					|| lineRecord.getDK_ParcelLength().signum() > 0
-					|| lineRecord.getDK_ParcelWidth().signum() > 0)
-			{
-				final PackageDimensions packageDimensions = PackageDimensions.builder()
-						.heightInCM(lineRecord.getDK_ParcelHeight().intValue())
-						.lengthInCM(lineRecord.getDK_ParcelLength().intValue())
-						.widthInCM(lineRecord.getDK_ParcelWidth().intValue())
-						.build();
-				deliveryPositionBuilder.packageDimensions(packageDimensions);
-			}
-			deliveryPositionBuilder.grossWeightKg(lineRecord.getDK_ParcelWeight().intValue());
-
-			final DerKurierDeliveryData derKurierDeliveryData = DerKurierDeliveryData.builder()
-					.station(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_DesiredStation, lineRecord, previousLineRecord))
-					.customerNumber(assertSameAsPreviousValue(COLUMNNAME_DK_CustomerNumber, lineRecord, previousLineRecord))
-					.parcelNumber(lineRecord.getDK_ParcelNumber())
-					.build();
-			deliveryPositionBuilder.customDeliveryData(derKurierDeliveryData);
+			final DeliveryPositionBuilder deliveryPositionBuilder = addLineRecordDataToDeliveryPositionBuilder(lineRecord, previousLineRecord);
 
 			// add the M_Package_IDs to the current deliveryPositionBuilder
 			lineId2PackageRecords
@@ -211,6 +177,70 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		}
 
 		return deliverOrderBuilder.build();
+	}
+
+	@VisibleForTesting
+	void addLineRecordDataToDeliveryOrderBuilder(
+			@NonNull final DeliveryOrderBuilder deliverOrderBuilder,
+			@NonNull final I_DerKurier_DeliveryOrderLine lineRecord,
+			@Nullable final I_DerKurier_DeliveryOrderLine previousLineRecord)
+	{
+		deliverOrderBuilder.customerReference(assertSameAsPreviousValue(COLUMNNAME_DK_Reference, lineRecord, previousLineRecord));
+
+		deliverOrderBuilder.deliveryAddress(createDeliveryAddress(previousLineRecord, lineRecord));
+
+		final String email = assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_EMail, lineRecord, previousLineRecord);
+		final String phone = assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_Phone, lineRecord, previousLineRecord);
+		if (!Check.isEmpty(email, true) || !Check.isEmpty(phone, true))
+		{
+			final ContactPerson contactPerson = ContactPerson.builder()
+					.emailAddress(email)
+					.simplePhoneNumber(phone)
+					.build();
+			deliverOrderBuilder.deliveryContact(contactPerson);
+		}
+
+		final LocalDate date = TimeUtil.asLocalDate(assertSameAsPreviousValue(COLUMNNAME_DK_DesiredDeliveryDate, lineRecord, previousLineRecord));
+		if (date != null)
+		{
+			final DeliveryDate deliveryDate = DeliveryDate.builder()
+					.date(date)
+					.timeFrom(TimeUtil.asLocalTime(assertSameAsPreviousValue(COLUMNNAME_DK_DesiredDeliveryTime_From, lineRecord, previousLineRecord)))
+					.timeTo(TimeUtil.asLocalTime(assertSameAsPreviousValue(COLUMNNAME_DK_DesiredDeliveryTime_To, lineRecord, previousLineRecord)))
+					.build();
+			deliverOrderBuilder.deliveryDate(deliveryDate);
+		}
+	}
+
+	public DeliveryPositionBuilder addLineRecordDataToDeliveryPositionBuilder(
+			@NonNull final I_DerKurier_DeliveryOrderLine lineRecord,
+			@Nullable final I_DerKurier_DeliveryOrderLine previousLineRecord)
+	{
+		final DeliveryPositionBuilder deliveryPositionBuilder = DeliveryPosition
+				.builder()
+				.repoId(lineRecord.getDerKurier_DeliveryOrderLine_ID())
+				.numberOfPackages(lineRecord.getDK_PackageAmount());
+
+		if (lineRecord.getDK_ParcelHeight().signum() > 0
+				|| lineRecord.getDK_ParcelLength().signum() > 0
+				|| lineRecord.getDK_ParcelWidth().signum() > 0)
+		{
+			final PackageDimensions packageDimensions = PackageDimensions.builder()
+					.heightInCM(lineRecord.getDK_ParcelHeight().intValue())
+					.lengthInCM(lineRecord.getDK_ParcelLength().intValue())
+					.widthInCM(lineRecord.getDK_ParcelWidth().intValue())
+					.build();
+			deliveryPositionBuilder.packageDimensions(packageDimensions);
+		}
+		deliveryPositionBuilder.grossWeightKg(lineRecord.getDK_ParcelWeight().intValue());
+
+		final DerKurierDeliveryData derKurierDeliveryData = DerKurierDeliveryData.builder()
+				.station(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_DesiredStation, lineRecord, previousLineRecord))
+				.customerNumber(assertSameAsPreviousValue(COLUMNNAME_DK_CustomerNumber, lineRecord, previousLineRecord))
+				.parcelNumber(lineRecord.getDK_ParcelNumber())
+				.build();
+		deliveryPositionBuilder.customDeliveryData(derKurierDeliveryData);
+		return deliveryPositionBuilder;
 	}
 
 	private Address createPickupAddress(@NonNull final I_DerKurier_DeliveryOrder headerRecord)
@@ -305,6 +335,9 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 			headerRecord = loadAssumeRecordExists(deliveryOrder.getRepoId(), I_DerKurier_DeliveryOrder.class);
 		}
 
+		headerRecord.setM_Shipper_ID(deliveryOrder.getShipperId());
+		headerRecord.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId());
+
 		storePickupAddressInHeaderRecord(headerRecord, deliveryOrder.getPickupAddress());
 		storePickupDateInHeaderRecord(headerRecord, deliveryOrder.getPickupDate());
 		InterfaceWrapperHelper.save(headerRecord);
@@ -321,7 +354,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		final List<DeliveryPosition> deliveryPositions = deliveryOrder.getDeliveryPositions();
 		for (final DeliveryPosition deliveryPosition : deliveryPositions)
 		{
-			final DerKurierDeliveryData derKurierDeliveryData = DerKurierDeliveryData.ofDeliveryOrder(deliveryPosition);
+			final DerKurierDeliveryData derKurierDeliveryData = DerKurierDeliveryData.ofDeliveryPosition(deliveryPosition);
 
 			final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
 
@@ -336,15 +369,18 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 			if (deliveryContact != null)
 			{
 				lineRecord.setDK_Consignee_EMail(deliveryContact.getEmailAddress());
-				lineRecord.setDK_Consignee_Phone(deliveryContact.getPhoneAsString());
+				lineRecord.setDK_Consignee_Phone(deliveryContact.getPhoneAsStringOrNull());
 			}
 
 			lineRecord.setDK_CustomerNumber(derKurierDeliveryData.getCustomerNumber());
 
 			final DeliveryDate deliveryDate = deliveryOrder.getDeliveryDate();
-			lineRecord.setDK_DesiredDeliveryDate(TimeUtil.asTimestamp(deliveryDate.getDate()));
-			lineRecord.setDK_DesiredDeliveryTime_From(TimeUtil.asTimestamp(deliveryDate.getDate(), deliveryDate.getTimeFrom()));
-			lineRecord.setDK_DesiredDeliveryTime_To(TimeUtil.asTimestamp(deliveryDate.getDate(), deliveryDate.getTimeTo()));
+			if (deliveryDate != null)
+			{
+				lineRecord.setDK_DesiredDeliveryDate(TimeUtil.asTimestamp(deliveryDate.getDate()));
+				lineRecord.setDK_DesiredDeliveryTime_From(TimeUtil.asTimestamp(deliveryDate.getDate(), deliveryDate.getTimeFrom()));
+				lineRecord.setDK_DesiredDeliveryTime_To(TimeUtil.asTimestamp(deliveryDate.getDate(), deliveryDate.getTimeTo()));
+			}
 			lineRecord.setDK_PackageAmount(deliveryPosition.getNumberOfPackages());
 
 			if (packageDimensions != null)
@@ -499,19 +535,26 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 	}
 
 	public AttachmentEntry attachCsvToDeliveryOrder(
-			final int repoId,
-			@NonNull final List<String> csv)
+			@NonNull final DeliveryOrder deliveryOrder,
+			@NonNull final List<String> csvLines)
 	{
-		final I_DerKurier_DeliveryOrder record = load(repoId, I_DerKurier_DeliveryOrder.class);
+		final I_DerKurier_DeliveryOrder record = load(
+				deliveryOrder.getRepoId(),
+				I_DerKurier_DeliveryOrder.class);
 
 		// thx to https://stackoverflow.com/a/5619144/1012103
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		final DataOutputStream out = new DataOutputStream(baos);
-		for (final String csvLine : csv)
+		for (final String csvLine : csvLines)
 		{
 			writeLineToStream(csvLine, out);
 		}
-		return Services.get(IAttachmentBL.class).addEntry(record, "CSV-Daten", baos.toByteArray());
+
+		return Services.get(IAttachmentBL.class)
+				.addEntry(
+						record,
+						"DeliveryOrder-" + deliveryOrder.getRepoId() + ".csv",
+						baos.toByteArray());
 	}
 
 	public void writeLineToStream(
@@ -520,12 +563,12 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		try
 		{
-			dataOutputStream.writeUTF(csvLine);
-			dataOutputStream.writeUTF("\n");
+			final byte[] bytes = (csvLine + "\n").getBytes(DerKurierConstants.CSV_DATA_CHARSET);
+			dataOutputStream.write(bytes);
 		}
 		catch (final IOException e)
 		{
-			throw new AdempiereException("IOException writing clsLine to dataOutputStream", e).appendParametersToMessage()
+			throw new AdempiereException("IOException writing cvsLine to dataOutputStream", e).appendParametersToMessage()
 					.setParameter("csvLine", csvLine)
 					.setParameter("dataOutputStream", dataOutputStream);
 		}

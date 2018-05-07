@@ -15,7 +15,7 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 480413943L;
+	private static final long serialVersionUID = -2110467792L;
 
     /** Standard Constructor */
     public X_DerKurier_DeliveryOrderLine (Properties ctx, int DerKurier_DeliveryOrderLine_ID, String trxName)
@@ -28,14 +28,10 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
 			setDerKurier_DeliveryOrderLine_ID (0);
 			setDK_Consignee_City (null);
 			setDK_Consignee_Country (null);
-			setDK_Consignee_DesiredStation (null);
 			setDK_Consignee_HouseNumber (null);
 			setDK_Consignee_Name (null);
 			setDK_Consignee_ZipCode (null);
 			setDK_CustomerNumber (null);
-			setDK_DesiredDeliveryDate (new Timestamp( System.currentTimeMillis() ));
-			setDK_DesiredDeliveryTime_From (new Timestamp( System.currentTimeMillis() ));
-			setDK_DesiredDeliveryTime_To (new Timestamp( System.currentTimeMillis() ));
 			setDK_PackageAmount (0);
 			setDK_ParcelNumber (null);
 			setDK_ParcelWeight (BigDecimal.ZERO);

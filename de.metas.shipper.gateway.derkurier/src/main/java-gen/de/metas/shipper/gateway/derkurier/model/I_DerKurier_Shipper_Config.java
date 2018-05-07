@@ -220,6 +220,31 @@ public interface I_DerKurier_Shipper_Config
     public static final String COLUMNNAME_DK_CustomerNumber = "DK_CustomerNumber";
 
 	/**
+	 * Set EMail Empfänger.
+	 * EMail address to send requests to - e.g. edi@manufacturer.com
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEMail_To (java.lang.String EMail_To);
+
+	/**
+	 * Get EMail Empfänger.
+	 * EMail address to send requests to - e.g. edi@manufacturer.com
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEMail_To();
+
+    /** Column definition for EMail_To */
+    public static final org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object> COLUMN_EMail_To = new org.adempiere.model.ModelColumn<I_DerKurier_Shipper_Config, Object>(I_DerKurier_Shipper_Config.class, "EMail_To", null);
+    /** Column name EMail_To */
+    public static final String COLUMNNAME_EMail_To = "EMail_To";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
