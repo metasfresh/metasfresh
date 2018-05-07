@@ -84,11 +84,6 @@
 
 		<!-- Database -->
 		<dependency>
-			<!-- used for embedded database, in demo and tests -->
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 		</dependency>
@@ -121,7 +116,6 @@
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger-ui</artifactId>
 		</dependency>
-
 
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -193,6 +187,7 @@
 							<outputDirectory>${docker.build.directory}</outputDirectory>
 						</configuration>
 					</execution>
+					
 					<execution>
 						<id>spring-boot-metasfresh-msv3-server-build-info</id>
 						<goals>

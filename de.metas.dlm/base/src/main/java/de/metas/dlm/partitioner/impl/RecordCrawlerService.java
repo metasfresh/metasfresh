@@ -11,12 +11,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -252,7 +252,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 				{
 					InterfaceWrapperHelper.setTrxName(backwardRecord, ctxAware.getTrxName()); // we need this for MPinstance, because it explicitly ignores the trx it is loaded with in its constructor.
 
-					final ITableRecordReference backwardTableRecordReference = ITableRecordReference.FromModelConverter.convert(backwardRecord);
+					final ITableRecordReference backwardTableRecordReference = TableRecordReference.ofOrNull(backwardRecord);
 
 					final AddResult addRecordResult = result.addReferencingRecord(backwardTableRecordReference, currentReference, backwardRecord.getDLM_Partition_ID());
 

@@ -116,7 +116,7 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	/**
 	 * Updates {@link I_M_ShipmentSchedule_QtyPicked#COLUMN_Processed} according to the given {@code inOut}.
 	 */
-	void updateProcessedFlagsForShipment(I_M_InOut inOut);
+	void updateM_ShipmentSchedule_QtyPicked_ProcessedForShipment(I_M_InOut inOut);
 
 	/**
 	 * Returns the quantity that is either just picked or on a just drafted shipment line.

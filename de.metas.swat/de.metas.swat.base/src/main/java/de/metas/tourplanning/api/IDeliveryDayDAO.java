@@ -29,8 +29,8 @@ package de.metas.tourplanning.api;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;

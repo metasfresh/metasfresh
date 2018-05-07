@@ -25,8 +25,8 @@ package de.metas.invoicecandidate.api;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;

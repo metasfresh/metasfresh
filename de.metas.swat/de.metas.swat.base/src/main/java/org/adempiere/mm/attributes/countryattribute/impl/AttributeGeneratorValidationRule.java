@@ -58,15 +58,16 @@ public class AttributeGeneratorValidationRule extends AbstractJavaValidationRule
 
 		//
 		// Create Attribute Handler's instance
-		final IAttributeValueGenerator generator = Services.get(IJavaClassBL.class).newInstance(javaClass);
-		if (null == generator)
+		final IAttributeValueGenerator handler = Services.get(IJavaClassBL.class).newInstance(javaClass);
+		if (null == handler)
 		{
 			return false;
 		}
 
 		//
 		// Handler shall have the same type as our attribute
-		if (!valueType.equals(generator.getAttributeValueType()))
+		String handlerAcceptsValueType = handler.getAttributeValueType();
+		if (handlerAcceptsValueType != null && !valueType.equals(handlerAcceptsValueType))
 		{
 			return false;
 		}

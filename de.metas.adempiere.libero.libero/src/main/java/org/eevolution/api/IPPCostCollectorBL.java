@@ -26,8 +26,8 @@ package org.eevolution.api;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.impl.ReceiptCostCollectorCandidate.ReceiptCostCollectorCandidateBuilder;
 import org.eevolution.model.I_PP_Cost_Collector;

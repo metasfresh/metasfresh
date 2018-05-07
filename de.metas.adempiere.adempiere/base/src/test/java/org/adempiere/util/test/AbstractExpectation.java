@@ -30,9 +30,9 @@ import java.math.BigDecimal;
 import java.util.Collection;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.util.Env;

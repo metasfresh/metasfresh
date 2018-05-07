@@ -26,10 +26,10 @@ package de.metas.tourplanning.model.validator;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.tourplanning.api.IDeliveryDayAllocable;

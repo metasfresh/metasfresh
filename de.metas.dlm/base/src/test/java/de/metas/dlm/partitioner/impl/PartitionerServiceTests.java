@@ -9,6 +9,7 @@ import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_ChangeLog;
 import org.compiere.model.I_AD_Field;
 import org.junit.Before;
@@ -69,7 +70,7 @@ public class PartitionerServiceTests
 	{
 		final I_AD_Field adField = InterfaceWrapperHelper.newInstance(I_AD_Field.class);
 		InterfaceWrapperHelper.save(adField);
-		final ITableRecordReference adFieldReference = ITableRecordReference.FromModelConverter.convert(adField);
+		final ITableRecordReference adFieldReference = TableRecordReference.ofOrNull(adField);
 
 		final I_AD_ChangeLog changelog = InterfaceWrapperHelper.newInstance(I_AD_ChangeLog.class);
 		changelog.setAD_Table_ID(adFieldReference.getAD_Table_ID());

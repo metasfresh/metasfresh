@@ -36,10 +36,10 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -98,7 +98,7 @@ public class ShipmentScheduleWithHU
 
 	/**
 	 * Create an "empty" instance with no HUs inside. Used if a shipment without HU allocation has to be created.
-	 * 
+	 *
 	 * @param qtyPicked in this case qtyPicked can only be the quantity of an "unconfirmed" (i.e. drafted) shipment line.
 	 */
 	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
@@ -376,8 +376,9 @@ public class ShipmentScheduleWithHU
 			updateQtyTUAndQtyLU();
 		}
 
-		// Set shipment line link
+		// Set shipment line link and processed flag
 		shipmentScheduleQtyPicked.setM_InOutLine(shipmentLine);
+		shipmentScheduleQtyPicked.setProcessed(inout.isProcessed());
 
 		// Save allocation
 		save(shipmentScheduleQtyPicked);

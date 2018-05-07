@@ -27,10 +27,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.uom.api.impl.UOMTestHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.hamcrest.number.BigDecimalCloseTo;

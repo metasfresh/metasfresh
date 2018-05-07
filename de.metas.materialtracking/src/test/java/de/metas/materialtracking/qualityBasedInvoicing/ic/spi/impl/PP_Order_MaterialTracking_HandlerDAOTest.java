@@ -28,10 +28,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;

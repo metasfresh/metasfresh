@@ -35,13 +35,14 @@ import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPol
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemChunkProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.IContextAware;
+
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 
 import de.metas.inout.IInOutDAO;

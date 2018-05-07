@@ -79,7 +79,9 @@ class OrderLinePriceCalculator
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
 		if (!pricingResult.isCalculated())
 		{
-			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine());
+			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
+					.appendParametersToMessage()
+					.setParameter("pricingResult", pricingResult);
 		}
 
 		if (pricingResult.getC_PaymentTerm_ID() > 0)

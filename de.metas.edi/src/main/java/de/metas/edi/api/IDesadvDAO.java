@@ -25,8 +25,8 @@ package de.metas.edi.api;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;

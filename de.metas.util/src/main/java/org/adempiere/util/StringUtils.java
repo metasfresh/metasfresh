@@ -28,9 +28,13 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
@@ -38,31 +42,79 @@ import lombok.NonNull;
 
 public final class StringUtils
 {
+	public static final String REGEXP_STREET_AND_NUMBER_SPLIT = "^([^0-9]+) ?([0-9]+.*$)?";
+
 	private StringUtils()
 	{
-		super();
 	}
 
-	/**
-	 * Truncate string to a given length.
-	 *
-	 * @param str
-	 * @param length
-	 * @return
-	 */
-	public static final String trunc(final String str, final int length)
+	public static IPair<String, String> splitStreetAndHouseNumberOrNull(@Nullable final String streetAndNumber)
 	{
-		if (str == null)
+		if (Check.isEmpty(streetAndNumber, true))
 		{
-			return str;
+			return null;
+		}
+		final Pattern pattern = Pattern.compile(StringUtils.REGEXP_STREET_AND_NUMBER_SPLIT);
+		final Matcher matcher = pattern.matcher(streetAndNumber);
+		if (!matcher.matches())
+		{
+			return null;
 		}
 
-		if (str.length() <= length)
+		final String street = matcher.group(1);
+		final String number = matcher.group(2);
+		return ImmutablePair.of(trim(street), trim(number));
+	}
+
+	public static String trim(@Nullable String untrimmerStringOrNull)
+	{
+		if (untrimmerStringOrNull == null)
 		{
-			return str;
+			return untrimmerStringOrNull;
+		}
+		return untrimmerStringOrNull.trim();
+	}
+
+	public enum TruncateAt
+	{
+		STRING_START, STRING_END
+	};
+
+	/**
+	 * Truncate string to a given length, if required.
+	 */
+	public static String trunc(
+			@Nullable final String str,
+			final int length)
+	{
+		return trunc(str, length, TruncateAt.STRING_END);
+	}
+
+	public static String trunc(
+			@Nullable final String string,
+			final int maxLength,
+			@NonNull final TruncateAt side)
+	{
+		if (string == null)
+		{
+			return string;
 		}
 
-		return str.substring(0, length);
+		if (string.length() <= maxLength)
+		{
+			return string;
+		}
+
+		switch (side)
+		{
+			case STRING_START:
+				return string.substring(string.length() - maxLength, string.length());
+			case STRING_END:
+				return string.substring(0, maxLength);
+			default:
+				Check.errorIf(true, "Unexpected parameter TruncateAt={}; lenght={}; string={}", side, maxLength, string);
+				return null;
+		}
 	}
 
 	/**

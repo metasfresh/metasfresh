@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -310,7 +311,7 @@ public class Partition
 	{
 		public static WorkQueue of(final I_DLM_Partition_Workqueue workqueueDB)
 		{
-			final ITableRecordReference tableRecordRef = ITableRecordReference.FromReferencedModelConverter.convert(workqueueDB);
+			final ITableRecordReference tableRecordRef = TableRecordReference.ofReferencedOrNull(workqueueDB);
 
 			final WorkQueue result = new WorkQueue(tableRecordRef);
 			result.setDLM_Partition_Workqueue_ID(workqueueDB.getDLM_Partition_Workqueue_ID());

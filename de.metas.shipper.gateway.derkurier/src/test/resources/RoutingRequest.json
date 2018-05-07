@@ -1,0 +1,14 @@
+{
+	"sendDate": "2018-04-30",
+	"desiredDeliveryDate": null,
+	"services": 0,
+	"weight": null,
+	"sender": {
+		"country": "DE",
+		"zip": "50969",
+		"timeFrom": null,
+		"timeTo": null,
+		"desiredStation": null
+	},
+	"consignee": null
+}

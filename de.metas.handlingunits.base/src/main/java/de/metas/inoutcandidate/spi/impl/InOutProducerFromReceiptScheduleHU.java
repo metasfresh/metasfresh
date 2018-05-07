@@ -77,7 +77,6 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
@@ -569,7 +568,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		// HUStatus, BPartner and locator will be transfered to children HUs via model validator.
 		final Set<HUTopLevel> husToAssign = new TreeSet<>(); // NOTE: we are using HUTopLevel.compareTo() for unicity
 		final Map<Integer, I_M_HU> husToUnassign = new HashMap<>();
-		final Set<I_M_HU> vhus = new TreeSet<>(HUByIdComparator.instance);
 		for (final I_M_ReceiptSchedule_Alloc rsa : allocs)
 		{
 			final int tuHUId = rsa.getM_TU_HU_ID();
@@ -633,12 +631,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			{
 				final I_M_HU vhu = null; // don't set the VHU because we want to have unique husToAssign per LU/TU
 				husToAssign.add(new HUTopLevel(topLevelHU, rsa.getM_LU_HU(), rsa.getM_TU_HU(), vhu));
-			}
-
-			// Collect VHUs
-			if (rsa.getVHU_ID() > 0)
-			{
-				vhus.add(rsa.getVHU());
 			}
 		}
 
