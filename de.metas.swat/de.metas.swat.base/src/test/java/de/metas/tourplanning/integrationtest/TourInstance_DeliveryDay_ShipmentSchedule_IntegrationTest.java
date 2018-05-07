@@ -25,6 +25,7 @@ package de.metas.tourplanning.integrationtest;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -74,7 +75,7 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		//
 		// Create master data
 		tour = createTour("tour01");
-		tourVersion = createTourVersion(tour, createDate("2014-01-01"));
+		tourVersion = createTourVersion(tour, LocalDate.of(2014, 1, 1));
 		bpartner = createBPartner("bp1");
 		bpLocation = createBPLocation(bpartner);
 
@@ -209,6 +210,7 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 		}
 	}
 
+	@Override
 	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
 	{
 		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);

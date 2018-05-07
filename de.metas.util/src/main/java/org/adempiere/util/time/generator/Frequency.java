@@ -1,5 +1,6 @@
 package org.adempiere.util.time.generator;
 
+import java.time.DayOfWeek;
 import java.util.Calendar;
 import java.util.Set;
 
@@ -40,7 +41,7 @@ public class Frequency
 
 	int everyNthWeek;
 	/** @see Calendar#MONDAY etc */
-	ImmutableSet<Integer> onlyDaysOfWeek;
+	ImmutableSet<DayOfWeek> onlyDaysOfWeek;
 
 	int everyNthMonth;
 	ImmutableSet<Integer> onlyDaysOfMonth;
@@ -49,7 +50,7 @@ public class Frequency
 	private Frequency(
 			@NonNull final FrequencyType type,
 			final int everyNthWeek,
-			@Singular("onlyDayOfWeek") final Set<Integer> onlyDaysOfWeek,
+			@Singular("onlyDayOfWeek") final Set<DayOfWeek> onlyDaysOfWeek,
 			final int everyNthMonth,
 			@Singular("onlyDayOfMonth") final Set<Integer> onlyDaysOfMonth)
 	{

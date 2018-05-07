@@ -1,31 +1,8 @@
 package org.adempiere.util.time.generator;
 
-/*
- * #%L
- * de.metas.util
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Calendar;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -46,8 +23,8 @@ import lombok.Value;
 @Value
 public class DateSequenceGenerator
 {
-	private final Date dateFrom;
-	private final Date dateTo;
+	private final LocalDate dateFrom;
+	private final LocalDate dateTo;
 	private final ICalendarIncrementor incrementor;
 	private final IDateSequenceExploder exploder;
 	private final IDateShifter shifter;
@@ -55,8 +32,8 @@ public class DateSequenceGenerator
 
 	@Builder(toBuilder = true)
 	private DateSequenceGenerator(
-			@NonNull final Date dateFrom,
-			@NonNull final Date dateTo,
+			@NonNull final LocalDate dateFrom,
+			@NonNull final LocalDate dateTo,
 			final ICalendarIncrementor incrementor,
 			final IDateSequenceExploder exploder,
 			final IDateShifter shifter,
@@ -71,49 +48,42 @@ public class DateSequenceGenerator
 
 	}
 
-	public SortedSet<Date> generate()
+	public SortedSet<LocalDate> generate()
 	{
-		final long dateToMillis = dateTo.getTime();
+		final SortedSet<LocalDate> result = new TreeSet<>();
 
-		final SortedSet<Date> result = new TreeSet<>();
-
-		final Calendar currentDateCal = new GregorianCalendar();
-		currentDateCal.setTime(dateFrom);
-		while (currentDateCal.getTimeInMillis() <= dateToMillis)
+		LocalDate currentDate = dateFrom;
+		while (currentDate.compareTo(dateTo) <= 0)
 		{
 			//
-			// Get current date
-			final Date date = currentDateCal.getTime();
-
-			//
 			// Explode current date using the converter and then shift each exploded date
-			doExplodeAndShift(result, date);
+			doExplodeAndShift(result, currentDate);
 
 			//
 			// Increment to next date
-			incrementor.increment(currentDateCal);
+			currentDate = incrementor.increment(currentDate);
 		}
 
 		return result;
 	}
 
-	private final void doExplodeAndShift(final SortedSet<Date> result, final Date dateToExplode)
+	private final void doExplodeAndShift(final SortedSet<LocalDate> result, final LocalDate dateToExplode)
 	{
 		// Check: if current date to explode is before or equal to the last (and maximum) date we generated
 		// ... then skip it
 		//
 		// NOTE: maybe in future we can make this configurable.
 		// The reason why we have it now here is because we want to support shifters which are shifting dates to next business day, but we want to skip the days in between.
-		if (!result.isEmpty() && result.last().after(dateToExplode))
+		if (!result.isEmpty() && result.last().isAfter(dateToExplode))
 		{
 			return;
 		}
 
-		final Collection<Date> datesExploded = exploder.explode(dateToExplode);
+		final Collection<LocalDate> datesExploded = exploder.explode(dateToExplode);
 		if (datesExploded != null && !datesExploded.isEmpty())
 		{
-			Date lastDateConsidered = dateToExplode;
-			for (final Date dateExploded : new TreeSet<>(datesExploded))
+			LocalDate lastDateConsidered = dateToExplode;
+			for (final LocalDate dateExploded : new TreeSet<>(datesExploded))
 			{
 				// Skip null dates... shall not happen
 				if (dateExploded == null)
@@ -123,18 +93,18 @@ public class DateSequenceGenerator
 
 				// Skip dates which are before last date which we exploded
 				// NOTE: this case could happen in case the date was shifted
-				if (dateExploded.before(lastDateConsidered))
+				if (dateExploded.isBefore(lastDateConsidered))
 				{
 					continue;
 				}
 				// Skip dates which are after our date generation interval
-				if (dateExploded.after(dateTo))
+				if (dateExploded.isAfter(dateTo))
 				{
 					continue;
 				}
 
 				// Shift exploded date
-				final Date dateExplodedAndShifted = shifter.shift(dateExploded);
+				final LocalDate dateExplodedAndShifted = shifter.shift(dateExploded);
 				// Skip dates on which shifter is telling us to exclude
 				if (dateExplodedAndShifted == null)
 				{
@@ -142,16 +112,16 @@ public class DateSequenceGenerator
 				}
 
 				// Skip shifted dates which are before last date which was added to our result
-				if (dateExplodedAndShifted.before(lastDateConsidered))
+				if (dateExplodedAndShifted.isBefore(lastDateConsidered))
 				{
 					continue;
 				}
 
 				// Skip shifted dates which are after generation interval
-				if (enforceDateToAfterShift && dateExplodedAndShifted.after(dateTo))
+				if (enforceDateToAfterShift && dateExplodedAndShifted.isAfter(dateTo))
 				{
 					// Even if we exclude this date, we want to consider it for next dates
-					if (lastDateConsidered.before(dateExplodedAndShifted))
+					if (lastDateConsidered.isBefore(dateExplodedAndShifted))
 					{
 						lastDateConsidered = dateExplodedAndShifted;
 					}
@@ -166,19 +136,8 @@ public class DateSequenceGenerator
 		}
 	}
 
-	//
-	//
-	//
-	//
-	//
-
 	public static class DateSequenceGeneratorBuilder
 	{
-		/**
-		 * Iterate day by day.
-		 *
-		 * @return this
-		 */
 		public DateSequenceGeneratorBuilder byDay()
 		{
 			return incrementor(CalendarIncrementors.dayByDay());
@@ -186,7 +145,7 @@ public class DateSequenceGenerator
 
 		/**
 		 * Iterate each <code>day</code> days.
-		 *
+		 * 
 		 * @param day
 		 * @return this
 		 */
@@ -195,7 +154,7 @@ public class DateSequenceGenerator
 			return incrementor(CalendarIncrementors.eachNthDay(day));
 		}
 
-		public DateSequenceGeneratorBuilder byWeeks(final int week, final int dayOfWeek)
+		public DateSequenceGeneratorBuilder byWeeks(final int week, final DayOfWeek dayOfWeek)
 		{
 			return incrementor(CalendarIncrementors.eachNthWeek(week, dayOfWeek));
 		}

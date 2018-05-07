@@ -1,6 +1,6 @@
 package de.metas.tourplanning.api.impl;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Set;
 
 import org.adempiere.util.Check;
@@ -18,15 +18,15 @@ import lombok.Value;
 /* package */class TourVersionRange implements ITourVersionRange
 {
 	private I_M_TourVersion tourVersion;
-	private Date validFrom;
-	private Date validTo;
+	private LocalDate validFrom;
+	private LocalDate validTo;
 	private DateSequenceGenerator dateSequenceGenerator;
 
 	@Builder
 	private TourVersionRange(
 			@NonNull final I_M_TourVersion tourVersion,
-			@NonNull final Date validFrom,
-			@NonNull final Date validTo,
+			@NonNull final LocalDate validFrom,
+			@NonNull final LocalDate validTo,
 			final DateSequenceGenerator dateSequenceGenerator)
 	{
 		Check.assume(validFrom.compareTo(validTo) <= 0, "ValidFrom({}) <= ValidTo({})", validFrom, validTo);
@@ -55,19 +55,19 @@ import lombok.Value;
 	}
 
 	@Override
-	public Date getValidFrom()
+	public LocalDate getValidFrom()
 	{
 		return validFrom;
 	}
 
 	@Override
-	public Date getValidTo()
+	public LocalDate getValidTo()
 	{
 		return validTo;
 	}
 
 	@Override
-	public Set<Date> generateDeliveryDates()
+	public Set<LocalDate> generateDeliveryDates()
 	{
 		if (dateSequenceGenerator == null)
 		{

@@ -3,6 +3,8 @@ package de.metas.tourplanning.integrationtest;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.time.LocalDate;
+
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Assert;
@@ -30,7 +32,7 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 		//
 		// Create master data
 		tour = createTour("tour01");
-		tourVersion = createTourVersion(tour, createDate("2014-01-01"));
+		tourVersion = createTourVersion(tour, LocalDate.of(2014, 1, 1));
 		bpartner = createBPartner("bp1");
 		bpLocation = createBPLocation(bpartner);
 	}
@@ -69,6 +71,7 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 		assertDeliveryDayAlloc(dd2, shipmentSchedule);
 	}
 
+	@Override
 	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
 	{
 		final I_M_DeliveryDay deliveryDay = newInstance(I_M_DeliveryDay.class, contextProvider);

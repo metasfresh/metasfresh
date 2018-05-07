@@ -1,6 +1,6 @@
 package de.metas.tourplanning.api.impl;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.time.generator.IDateShifter;
@@ -29,7 +29,7 @@ public class TourVersionDeliveryDateShifter implements IDateShifter
 	}
 
 	@Override
-	public Date shift(final Date deliveryDate)
+	public LocalDate shift(final LocalDate deliveryDate)
 	{
 		//
 		// Case: we deal with a delivery date which is in a business day
@@ -52,7 +52,7 @@ public class TourVersionDeliveryDateShifter implements IDateShifter
 			// Case: we need to move our delivery date to next business day
 			else if (moveToNextBusinessDay)
 			{
-				final Date deliveryDateNextBusinessDay = businessDayMatcher.getNextBusinessDay(deliveryDate);
+				final LocalDate deliveryDateNextBusinessDay = businessDayMatcher.getNextBusinessDay(deliveryDate);
 				return deliveryDateNextBusinessDay;
 			}
 			//

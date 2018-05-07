@@ -1,5 +1,7 @@
 package de.metas.tourplanning.api.impl;
 
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -26,7 +28,6 @@ package de.metas.tourplanning.api.impl;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -47,14 +48,14 @@ public class TourDAOTest extends TourPlanningTestBase
 	public void test_retrieveTourVersionRanges_MultipleVersions_AcrossInterval()
 	{
 		final I_M_Tour tour = createTour("tour");
-		final I_M_TourVersion tourVersion1 = createTourVersion(tour, TimeUtil.getDay(2013, 1, 1));
-		final I_M_TourVersion tourVersion2 = createTourVersion(tour, TimeUtil.getDay(2014, 2, 1));
-		final I_M_TourVersion tourVersion3 = createTourVersion(tour, TimeUtil.getDay(2014, 5, 1));
-		createTourVersion(tour, TimeUtil.getDay(2015, 1, 1));
+		final I_M_TourVersion tourVersion1 = createTourVersion(tour, LocalDate.of(2013, 1, 1));
+		final I_M_TourVersion tourVersion2 = createTourVersion(tour, LocalDate.of(2014, 2, 1));
+		final I_M_TourVersion tourVersion3 = createTourVersion(tour, LocalDate.of(2014, 5, 1));
+		createTourVersion(tour, LocalDate.of(2015, 1, 1));
 
 		final List<ITourVersionRange> tourVersionRanges = tourDAO.retrieveTourVersionRanges(tour,
-				TimeUtil.getDay(2014, 1, 1),
-				TimeUtil.getDay(2014, 12, 31)
+				LocalDate.of(2014, 1, 1),
+				LocalDate.of(2014, 12, 31)
 				);
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 3, tourVersionRanges.size());
@@ -68,11 +69,11 @@ public class TourDAOTest extends TourPlanningTestBase
 	public void test_retrieveTourVersionRanges_OneVersion_BeforeRangeStart()
 	{
 		final I_M_Tour tour = createTour("tour");
-		final I_M_TourVersion tourVersion1 = createTourVersion(tour, TimeUtil.getDay(2014, 8, 1));
+		final I_M_TourVersion tourVersion1 = createTourVersion(tour, LocalDate.of(2014, 8, 1));
 
 		final List<ITourVersionRange> tourVersionRanges = tourDAO.retrieveTourVersionRanges(tour,
-				TimeUtil.getDay(2014, 9, 1),
-				TimeUtil.getDay(2014, 9, 30)
+				LocalDate.of(2014, 9, 1),
+				LocalDate.of(2014, 9, 30)
 				);
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 1, tourVersionRanges.size());
@@ -84,11 +85,11 @@ public class TourDAOTest extends TourPlanningTestBase
 	public void test_retrieveTourVersionRanges_OneVersion_OnRangeStart()
 	{
 		final I_M_Tour tour = createTour("tour");
-		final I_M_TourVersion tourVersion1 = createTourVersion(tour, TimeUtil.getDay(2014, 1, 1));
+		final I_M_TourVersion tourVersion1 = createTourVersion(tour, LocalDate.of(2014, 1, 1));
 
 		final List<ITourVersionRange> tourVersionRanges = tourDAO.retrieveTourVersionRanges(tour,
-				TimeUtil.getDay(2014, 1, 1),
-				TimeUtil.getDay(2014, 12, 31)
+				LocalDate.of(2014, 1, 1),
+				LocalDate.of(2014, 12, 31)
 				);
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 1, tourVersionRanges.size());
@@ -100,11 +101,11 @@ public class TourDAOTest extends TourPlanningTestBase
 	public void test_retrieveTourVersionRanges_OneVersion_OnRangeEnd()
 	{
 		final I_M_Tour tour = createTour("tour");
-		final I_M_TourVersion tourVersion1 = createTourVersion(tour, TimeUtil.getDay(2014, 12, 31));
+		final I_M_TourVersion tourVersion1 = createTourVersion(tour, LocalDate.of(2014, 12, 31));
 
 		final List<ITourVersionRange> tourVersionRanges = tourDAO.retrieveTourVersionRanges(tour,
-				TimeUtil.getDay(2014, 1, 1),
-				TimeUtil.getDay(2014, 12, 31)
+				LocalDate.of(2014, 1, 1),
+				LocalDate.of(2014, 12, 31)
 				);
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 1, tourVersionRanges.size());
@@ -116,11 +117,11 @@ public class TourDAOTest extends TourPlanningTestBase
 	public void test_retrieveTourVersionRanges_OneVersion_AfterRangeEnd()
 	{
 		final I_M_Tour tour = createTour("tour");
-		createTourVersion(tour, TimeUtil.getDay(2014, 10, 1));
+		createTourVersion(tour, LocalDate.of(2014, 10, 1));
 
 		final List<ITourVersionRange> tourVersionRanges = tourDAO.retrieveTourVersionRanges(tour,
-				TimeUtil.getDay(2014, 9, 1),
-				TimeUtil.getDay(2014, 9, 30)
+				LocalDate.of(2014, 9, 1),
+				LocalDate.of(2014, 9, 30)
 				);
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 0, tourVersionRanges.size());
@@ -130,11 +131,11 @@ public class TourDAOTest extends TourPlanningTestBase
 	public void test_retrieveTourVersionRanges_OneVersion_OnMiddleOfRange()
 	{
 		final I_M_Tour tour = createTour("tour");
-		final I_M_TourVersion tourVersion1 = createTourVersion(tour, TimeUtil.getDay(2014, 6, 1));
+		final I_M_TourVersion tourVersion1 = createTourVersion(tour, LocalDate.of(2014, 6, 1));
 
 		final List<ITourVersionRange> tourVersionRanges = tourDAO.retrieveTourVersionRanges(tour,
-				TimeUtil.getDay(2014, 1, 1),
-				TimeUtil.getDay(2014, 12, 31)
+				LocalDate.of(2014, 1, 1),
+				LocalDate.of(2014, 12, 31)
 				);
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 1, tourVersionRanges.size());
@@ -146,12 +147,12 @@ public class TourDAOTest extends TourPlanningTestBase
 	public void test_retrieveTourVersionRanges_TwoVersion_OnSubsequentDates()
 	{
 		final I_M_Tour tour = createTour("tour");
-		final I_M_TourVersion tourVersion1 = createTourVersion(tour, TimeUtil.getDay(2014, 6, 1));
-		final I_M_TourVersion tourVersion2 = createTourVersion(tour, TimeUtil.getDay(2014, 6, 2));
+		final I_M_TourVersion tourVersion1 = createTourVersion(tour, LocalDate.of(2014, 6, 1));
+		final I_M_TourVersion tourVersion2 = createTourVersion(tour, LocalDate.of(2014, 6, 2));
 
 		final List<ITourVersionRange> tourVersionRanges = tourDAO.retrieveTourVersionRanges(tour,
-				TimeUtil.getDay(2014, 1, 1),
-				TimeUtil.getDay(2014, 12, 31)
+				LocalDate.of(2014, 1, 1),
+				LocalDate.of(2014, 12, 31)
 				);
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 2, tourVersionRanges.size());
@@ -164,12 +165,12 @@ public class TourDAOTest extends TourPlanningTestBase
 	public void test_retrieveTourVersionRanges_NoVersionsInRange()
 	{
 		final I_M_Tour tour = createTour("tour");
-		createTourVersion(tour, TimeUtil.getDay(2014, 6, 1));
-		createTourVersion(tour, TimeUtil.getDay(2014, 6, 2));
+		createTourVersion(tour, LocalDate.of(2014, 6, 1));
+		createTourVersion(tour, LocalDate.of(2014, 6, 2));
 
 		final List<ITourVersionRange> tourVersionRanges = tourDAO.retrieveTourVersionRanges(tour,
-				TimeUtil.getDay(2014, 1, 1),
-				TimeUtil.getDay(2014, 5, 31)
+				LocalDate.of(2014, 1, 1),
+				LocalDate.of(2014, 5, 31)
 				);
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 0, tourVersionRanges.size());
@@ -179,13 +180,13 @@ public class TourDAOTest extends TourPlanningTestBase
 	public void test_retrieveTourVersionRanges_OnlyInactiveVersions()
 	{
 		final I_M_Tour tour = createTour("tour");
-		final I_M_TourVersion tourVersion1 = createTourVersion(tour, TimeUtil.getDay(2014, 1, 1));
+		final I_M_TourVersion tourVersion1 = createTourVersion(tour, LocalDate.of(2014, 1, 1));
 		tourVersion1.setIsActive(false);
 		InterfaceWrapperHelper.save(tourVersion1);
 
 		final List<ITourVersionRange> tourVersionRanges = tourDAO.retrieveTourVersionRanges(tour,
-				TimeUtil.getDay(2014, 1, 1),
-				TimeUtil.getDay(2014, 12, 31)
+				LocalDate.of(2014, 1, 1),
+				LocalDate.of(2014, 12, 31)
 				);
 
 		Assert.assertEquals("Invalid ranges count: " + tourVersionRanges, 0, tourVersionRanges.size());

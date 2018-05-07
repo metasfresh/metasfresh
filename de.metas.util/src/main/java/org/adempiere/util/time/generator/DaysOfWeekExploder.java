@@ -1,12 +1,9 @@
 package org.adempiere.util.time.generator;
 
-import java.util.Arrays;
-import java.util.Calendar;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Collection;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.adempiere.util.Check;
 
@@ -17,9 +14,9 @@ import lombok.Value;
 @Value
 public class DaysOfWeekExploder implements IDateSequenceExploder
 {
-	public static final DaysOfWeekExploder of(final Collection<Integer> weekDays)
+	public static final DaysOfWeekExploder of(final Collection<DayOfWeek> weekDays)
 	{
-		final ImmutableSet<Integer> weekDaysSet = ImmutableSet.copyOf(weekDays);
+		final ImmutableSet<DayOfWeek> weekDaysSet = ImmutableSet.copyOf(weekDays);
 		if (weekDaysSet.equals(ALL_DAYS_OF_WEEK_LIST))
 		{
 			return ALL_DAYS_OF_WEEK;
@@ -27,59 +24,47 @@ public class DaysOfWeekExploder implements IDateSequenceExploder
 		return new DaysOfWeekExploder(weekDaysSet);
 	}
 
-	public static final DaysOfWeekExploder of(final int... weekDays)
+	public static final DaysOfWeekExploder of(final DayOfWeek... weekDays)
 	{
-		return of(Arrays.stream(weekDays).boxed().collect(ImmutableSet.toImmutableSet()));
+		return of(ImmutableSet.copyOf(weekDays));
 	}
 
-	private static final ImmutableSet<Integer> ALL_DAYS_OF_WEEK_LIST = ImmutableSet.of(
-			Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY,
-			Calendar.SATURDAY, Calendar.SUNDAY);
+	private static final ImmutableSet<DayOfWeek> ALL_DAYS_OF_WEEK_LIST = ImmutableSet.copyOf(DayOfWeek.values());
 
 	public static final DaysOfWeekExploder ALL_DAYS_OF_WEEK = new DaysOfWeekExploder(ALL_DAYS_OF_WEEK_LIST);
 
-	private final ImmutableSet<Integer> weekDays;
-	private final int firstDayOfTheWeek;
+	private final ImmutableSet<DayOfWeek> weekDays;
+	private final DayOfWeek firstDayOfTheWeek;
 
-	private DaysOfWeekExploder(final Collection<Integer> weekDays)
+	private DaysOfWeekExploder(final ImmutableSet<DayOfWeek> weekDays)
 	{
 		Check.assumeNotEmpty(weekDays, "weekDays not empty");
-		this.weekDays = ImmutableSet.copyOf(weekDays);
-		for (final Integer weekDay : this.weekDays)
-		{
-			Check.assume(ALL_DAYS_OF_WEEK_LIST.contains(weekDay), "Week day {} shall be valid", weekDay);
-		}
-
-		this.firstDayOfTheWeek = Calendar.MONDAY;
+		this.weekDays = weekDays;
+		this.firstDayOfTheWeek = DayOfWeek.MONDAY;
 	}
 
 	/**
 	 * @return all dates which are in same week as <code>date</code> and are equal or after it
 	 */
 	@Override
-	public Collection<Date> explode(final Date date)
+	public Collection<LocalDate> explode(final LocalDate date)
 	{
-		final long dateMillis = date.getTime();
+		final DayOfWeek currentDayOfWeek = date.getDayOfWeek();
 
-		final Set<Date> dates = new HashSet<>();
-		for (final int dayOfWeek : weekDays)
+		return weekDays.stream()
+				.filter(dayOfWeek -> dayOfWeek.getValue() >= currentDayOfWeek.getValue())
+				.map(dayOfWeek -> withDayOfWeek(date, dayOfWeek))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static final LocalDate withDayOfWeek(final LocalDate date, final DayOfWeek dayOfWeek)
+	{
+		if (dayOfWeek.equals(date.getDayOfWeek()))
 		{
-			final Calendar cal = new GregorianCalendar();
-			cal.setTime(date);
-			cal.setFirstDayOfWeek(firstDayOfTheWeek);
-			cal.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-
-			// Skip all dates which are before our given date
-			if (dateMillis > cal.getTimeInMillis())
-			{
-				continue;
-			}
-
-			final Date dayOfWeekDate = cal.getTime();
-			dates.add(dayOfWeekDate);
+			return date;
 		}
 
-		return dates;
+		return date.with(TemporalAdjusters.next(dayOfWeek));
 	}
 
 }

@@ -1,6 +1,7 @@
 package de.metas.tourplanning.api.impl;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -38,7 +39,7 @@ public class DeliveryDayBLTest extends TourPlanningTestBase
 	protected void afterInit()
 	{
 		tour = createTour("tour01");
-		tourVersion = createTourVersion(tour, createDate("2017-01-01"));
+		tourVersion = createTourVersion(tour, LocalDate.of(2017, 1, 1));
 		bpartner = createBPartner("bp1");
 		bpLocation = createBPLocation(bpartner);
 	}

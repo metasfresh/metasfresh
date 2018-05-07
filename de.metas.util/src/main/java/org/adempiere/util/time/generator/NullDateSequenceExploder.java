@@ -1,5 +1,7 @@
 package org.adempiere.util.time.generator;
 
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.util
@@ -24,7 +26,6 @@ package org.adempiere.util.time.generator;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 
 import lombok.Value;
 
@@ -38,7 +39,7 @@ public final class NullDateSequenceExploder implements IDateSequenceExploder
 	}
 
 	@Override
-	public Collection<Date> explode(final Date date)
+	public Collection<LocalDate> explode(final LocalDate date)
 	{
 		return Collections.singleton(date);
 	}

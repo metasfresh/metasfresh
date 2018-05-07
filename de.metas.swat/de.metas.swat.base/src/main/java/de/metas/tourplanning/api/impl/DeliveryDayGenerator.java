@@ -23,8 +23,8 @@ package de.metas.tourplanning.api.impl;
  */
 
 import java.text.DateFormat;
+import java.time.LocalDate;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -62,8 +62,8 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 	// Parameters
 	private final IContextAware context;
 	private final ILoggable loggable;
-	private Date dateFrom = null;
-	private Date dateTo = null;
+	private LocalDate dateFrom = null;
+	private LocalDate dateTo = null;
 	private List<I_M_Tour> tours = null;
 
 	private final DateFormat dateTimeFormat;
@@ -92,24 +92,24 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 	}
 
 	@Override
-	public void setDateFrom(final Date dateFrom)
+	public void setDateFrom(final LocalDate dateFrom)
 	{
 		this.dateFrom = dateFrom;
 	}
 
-	private Date getDateFromToUse()
+	private LocalDate getDateFromToUse()
 	{
 		Check.assumeNotNull(dateFrom, "dateFrom not null");
 		return dateFrom;
 	}
 
 	@Override
-	public void setDateTo(final Date dateTo)
+	public void setDateTo(final LocalDate dateTo)
 	{
 		this.dateTo = dateTo;
 	}
 
-	private Date getDateToToUse()
+	private LocalDate getDateToToUse()
 	{
 		Check.assumeNotNull(dateTo, "dateTo not null");
 		return dateTo;
@@ -191,7 +191,7 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 	 */
 	private void createDeliveryDaysForLine(final ITourVersionRange tourVersionRange, final I_M_TourVersionLine tourVersionLine)
 	{
-		final Set<Date> deliveryDates = tourVersionRange.generateDeliveryDates();
+		final Set<LocalDate> deliveryDates = tourVersionRange.generateDeliveryDates();
 		if (deliveryDates.isEmpty())
 		{
 			loggable.addLog("Skip {} because no eligible delivery days were found in {}", tourVersionLine, tourVersionRange);
@@ -200,7 +200,7 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 
 		//
 		// Iterates each period (e.g. each X months, each X weeks etc)
-		for (final Date currentDeliveryDate : deliveryDates)
+		for (final LocalDate currentDeliveryDate : deliveryDates)
 		{
 			createDeliveryDay(tourVersionLine, currentDeliveryDate);
 		}
@@ -213,10 +213,10 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 	 * @param deliveryDatge
 	 * @return created delivery day or null
 	 */
-	private I_M_DeliveryDay createDeliveryDay(final I_M_TourVersionLine tourVersionLine, final Date deliveryDate)
+	private I_M_DeliveryDay createDeliveryDay(final I_M_TourVersionLine tourVersionLine, final LocalDate deliveryDate)
 	{
 		final String trxName = context.getTrxName();
-		final I_M_DeliveryDay deliveryDay = deliveryDayBL.createDeliveryDay(tourVersionLine, deliveryDate, trxName);
+		final I_M_DeliveryDay deliveryDay = deliveryDayBL.createDeliveryDay(tourVersionLine, TimeUtil.asTimestamp(deliveryDate), trxName);
 		if (deliveryDay == null)
 		{
 			// not generated

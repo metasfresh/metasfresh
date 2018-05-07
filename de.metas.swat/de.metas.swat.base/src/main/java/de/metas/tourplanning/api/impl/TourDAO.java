@@ -3,36 +3,16 @@
  */
 package de.metas.tourplanning.api.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -65,6 +45,7 @@ import de.metas.tourplanning.api.ITourVersionRange;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -134,7 +115,7 @@ public class TourDAO implements ITourDAO
 	}
 
 	@Override
-	public List<ITourVersionRange> retrieveTourVersionRanges(final I_M_Tour tour, final Date dateFrom, final Date dateTo)
+	public List<ITourVersionRange> retrieveTourVersionRanges(final I_M_Tour tour, final LocalDate dateFrom, final LocalDate dateTo)
 	{
 		Check.assumeNotNull(dateFrom, "dateFrom not null");
 		Check.assumeNotNull(dateTo, "dateTo not null");
@@ -144,7 +125,7 @@ public class TourDAO implements ITourDAO
 		// Retrieve all tour versions in our scope
 		// NOTE: we assume they are already ordered by ValidFrom
 		// NOTE2: we are not restricting the dateFrom because we want to also get the tour version which is currently active at the beginning of our interval
-		final List<I_M_TourVersion> tourVersions = retrieveTourVersions(tour, null, dateTo);
+		final List<I_M_TourVersion> tourVersions = retrieveTourVersions(tour, null, TimeUtil.asTimestamp(dateTo));
 		if (tourVersions.isEmpty())
 		{
 			return Collections.emptyList();
@@ -155,14 +136,14 @@ public class TourDAO implements ITourDAO
 		List<ITourVersionRange> tourVersionRanges = new ArrayList<>();
 		boolean previousTourVersionValid = false;
 		I_M_TourVersion previousTourVersion = null;
-		Date previousTourVersionValidFrom = null;
+		LocalDate previousTourVersionValidFrom = null;
 
 		final Iterator<I_M_TourVersion> tourVersionsIterator = tourVersions.iterator();
 		while (tourVersionsIterator.hasNext())
 		{
 			final I_M_TourVersion tourVersion = tourVersionsIterator.next();
 
-			final Timestamp tourVersionValidFrom = tourVersion.getValidFrom();
+			final LocalDate tourVersionValidFrom = TimeUtil.asLocalDate(tourVersion.getValidFrom());
 			Check.assumeNotNull(tourVersionValidFrom, "tourVersionValidFrom not null");
 
 			//
@@ -229,7 +210,7 @@ public class TourDAO implements ITourDAO
 			// Case: we do have a previous valid tour version to consider so we can generate tour ranges
 			if (previousTourVersionValid)
 			{
-				final Date previousTourVersionValidTo = TimeUtil.addDays(tourVersionValidFrom, -1);
+				final LocalDate previousTourVersionValidTo = tourVersionValidFrom.minusDays(1);
 				final ITourVersionRange previousTourVersionRange = createTourVersionRange(previousTourVersion, previousTourVersionValidFrom, previousTourVersionValidTo);
 				tourVersionRanges.add(previousTourVersionRange);
 			}
@@ -292,7 +273,7 @@ public class TourDAO implements ITourDAO
 		return tourVersionLines;
 	}
 
-	private static TourVersionRange createTourVersionRange(final I_M_TourVersion tourVersion, final Date validFrom, final Date validTo)
+	private static TourVersionRange createTourVersionRange(final I_M_TourVersion tourVersion, final LocalDate validFrom, final LocalDate validTo)
 	{
 		return TourVersionRange.builder()
 				.tourVersion(tourVersion)
@@ -302,7 +283,7 @@ public class TourDAO implements ITourDAO
 				.build();
 	}
 
-	private static DateSequenceGenerator createDateSequenceGenerator(final I_M_TourVersion tourVersion, final Date validFrom, final Date validTo)
+	private static DateSequenceGenerator createDateSequenceGenerator(final I_M_TourVersion tourVersion, final LocalDate validFrom, final LocalDate validTo)
 	{
 		final Frequency frequency = extractFrequency(tourVersion);
 		if (frequency == null)
@@ -350,7 +331,7 @@ public class TourDAO implements ITourDAO
 	{
 		if (frequency.isWeekly())
 		{
-			return CalendarIncrementors.eachNthWeek(frequency.getEveryNthWeek(), Calendar.MONDAY);
+			return CalendarIncrementors.eachNthWeek(frequency.getEveryNthWeek(), DayOfWeek.MONDAY);
 		}
 		else if (frequency.isMonthly())
 		{
@@ -434,38 +415,36 @@ public class TourDAO implements ITourDAO
 		}
 	}
 
-	private static List<Integer> extractWeekDays(final I_M_TourVersion tourVersion)
+	private static Set<DayOfWeek> extractWeekDays(@NonNull final I_M_TourVersion tourVersion)
 	{
-		Check.assumeNotNull(tourVersion, "tourVersion not null");
-
-		final List<Integer> weekDays = new ArrayList<>();
+		final Set<DayOfWeek> weekDays = new HashSet<>();
 		if (tourVersion.isOnSunday())
 		{
-			weekDays.add(Calendar.SUNDAY);
+			weekDays.add(DayOfWeek.SUNDAY);
 		}
 		if (tourVersion.isOnMonday())
 		{
-			weekDays.add(Calendar.MONDAY);
+			weekDays.add(DayOfWeek.MONDAY);
 		}
 		if (tourVersion.isOnTuesday())
 		{
-			weekDays.add(Calendar.TUESDAY);
+			weekDays.add(DayOfWeek.TUESDAY);
 		}
 		if (tourVersion.isOnWednesday())
 		{
-			weekDays.add(Calendar.WEDNESDAY);
+			weekDays.add(DayOfWeek.WEDNESDAY);
 		}
 		if (tourVersion.isOnThursday())
 		{
-			weekDays.add(Calendar.THURSDAY);
+			weekDays.add(DayOfWeek.THURSDAY);
 		}
 		if (tourVersion.isOnFriday())
 		{
-			weekDays.add(Calendar.FRIDAY);
+			weekDays.add(DayOfWeek.FRIDAY);
 		}
 		if (tourVersion.isOnSaturday())
 		{
-			weekDays.add(Calendar.SATURDAY);
+			weekDays.add(DayOfWeek.SATURDAY);
 		}
 
 		return weekDays;

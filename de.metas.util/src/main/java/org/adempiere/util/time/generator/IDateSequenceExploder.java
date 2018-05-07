@@ -1,5 +1,7 @@
 package org.adempiere.util.time.generator;
 
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.util
@@ -23,10 +25,9 @@ package org.adempiere.util.time.generator;
  */
 
 import java.util.Collection;
-import java.util.Date;
 
 @FunctionalInterface
 public interface IDateSequenceExploder
 {
-	Collection<Date> explode(Date date);
+	Collection<LocalDate> explode(LocalDate date);
 }

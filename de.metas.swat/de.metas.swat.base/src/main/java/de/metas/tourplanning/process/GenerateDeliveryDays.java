@@ -16,15 +16,14 @@ package de.metas.tourplanning.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 
@@ -32,9 +31,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.util.TimeUtil;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.tourplanning.api.IDeliveryDayGenerator;
 import de.metas.tourplanning.api.ITourBL;
 import de.metas.tourplanning.model.I_M_Tour;
@@ -90,8 +90,8 @@ public class GenerateDeliveryDays extends JavaProcess
 		//
 		// Create generator instance and configure it
 		final IDeliveryDayGenerator generator = tourBL.createDeliveryDayGenerator(this);
-		generator.setDateFrom(p_DateFrom);
-		generator.setDateTo(p_DateTo);
+		generator.setDateFrom(TimeUtil.asLocalDate(p_DateFrom));
+		generator.setDateTo(TimeUtil.asLocalDate(p_DateTo));
 		generator.setM_Tour(p_tour);
 
 		//

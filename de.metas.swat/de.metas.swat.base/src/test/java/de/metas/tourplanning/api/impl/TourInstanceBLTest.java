@@ -1,5 +1,7 @@
 package de.metas.tourplanning.api.impl;
 
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,15 +15,14 @@ package de.metas.tourplanning.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,7 +54,7 @@ public class TourInstanceBLTest extends TourPlanningTestBase
 		//
 		// Create master data
 		tour = createTour("tour01");
-		tourVersion = createTourVersion(tour, createDate("2014-01-01"));
+		tourVersion = createTourVersion(tour, LocalDate.of(2014, 1, 1));
 		bpartner = createBPartner("bp1");
 		bpLocation = createBPLocation(bpartner);
 	}
@@ -71,8 +72,7 @@ public class TourInstanceBLTest extends TourPlanningTestBase
 		final List<I_M_DeliveryDay> deliveryDays = Arrays.asList(
 				createDeliveryDay("07.09.2014 15:00:00.000", 5, tourInstance),
 				createDeliveryDay("08.09.2014 15:00:00.000", 5, tourInstance),
-				createDeliveryDay("09.09.2014 15:00:00.000", 5, tourInstance)
-				);
+				createDeliveryDay("09.09.2014 15:00:00.000", 5, tourInstance));
 
 		//
 		// Assert not processed
