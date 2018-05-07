@@ -3,6 +3,7 @@ package org.adempiere.util.time.generator;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -65,6 +66,29 @@ public class DateSequenceGenerator
 		}
 
 		return result;
+	}
+
+	public Optional<LocalDate> generateFirst()
+	{
+		LocalDate currentDate = dateFrom;
+		while (currentDate.compareTo(dateTo) <= 0)
+		{
+			//
+			// Explode current date using the converter and then shift each exploded date
+			final SortedSet<LocalDate> result = new TreeSet<>();
+			doExplodeAndShift(result, currentDate);
+
+			if (!result.isEmpty())
+			{
+				return Optional.of(result.first());
+			}
+
+			//
+			// Increment to next date
+			currentDate = incrementor.increment(currentDate);
+		}
+
+		return Optional.empty();
 	}
 
 	private final void doExplodeAndShift(final SortedSet<LocalDate> result, final LocalDate dateToExplode)
@@ -162,6 +186,52 @@ public class DateSequenceGenerator
 		public DateSequenceGeneratorBuilder byMonths(final int months, final int dayOfMonth)
 		{
 			return incrementor(CalendarIncrementors.eachNthMonth(months, dayOfMonth));
+		}
+
+		public DateSequenceGeneratorBuilder frequency(@NonNull final Frequency frequency)
+		{
+			incrementor(createCalendarIncrementor(frequency));
+			exploder(createDateSequenceExploder(frequency));
+			return this;
+		}
+
+		private static ICalendarIncrementor createCalendarIncrementor(final Frequency frequency)
+		{
+			if (frequency.isWeekly())
+			{
+				return CalendarIncrementors.eachNthWeek(frequency.getEveryNthWeek(), DayOfWeek.MONDAY);
+			}
+			else if (frequency.isMonthly())
+			{
+				return CalendarIncrementors.eachNthMonth(frequency.getEveryNthMonth(), 1); // every given month, 1st day
+			}
+			else
+			{
+				throw new IllegalArgumentException("Frequency type not supported for " + frequency);
+			}
+		}
+
+		private static IDateSequenceExploder createDateSequenceExploder(final Frequency frequency)
+		{
+			if (frequency.isWeekly())
+			{
+				if (frequency.isOnlySomeDaysOfTheWeek())
+				{
+					return DaysOfWeekExploder.of(frequency.getOnlyDaysOfWeek());
+				}
+				else
+				{
+					return DaysOfWeekExploder.ALL_DAYS_OF_WEEK;
+				}
+			}
+			else if (frequency.isMonthly())
+			{
+				return DaysOfMonthExploder.of(frequency.getOnlyDaysOfMonth());
+			}
+			else
+			{
+				throw new IllegalArgumentException("Frequency type not supported for " + frequency);
+			}
 		}
 
 	}
