@@ -10,6 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.57 (2018-20)
+
+**release for week 2018-20**
+
+## Features
+
+## Fixes
 
 # metasfresh 5.56 (2018-19)
 
@@ -21,12 +28,20 @@ Here come the actual release notes:
     * New Window for Table and columns in WebUI.
   * [#3812](https://github.com/metasfresh/metasfresh/issues/3812) Add process for creating missing M_Product_acct records to WebUI
     * New Action added to Product Catregory window, allowing to copy Acctounting Setting to all Products of a Product Category.
+  * [#3926](https://github.com/metasfresh/metasfresh/issues/3926) Implement support for `der Kurier` shipper
   * [#3965](https://github.com/metasfresh/metasfresh/issues/3965) Translate Actions Update Pharma Conditions
     * New Translations for Pharma Condition Parms in Updatte Pharma Permissions Action for de_DE, en_US.
   * [#3967](https://github.com/metasfresh/metasfresh/issues/3967) Translate Process Parm in Update Pharma Conditions for Customers
     * Improved Translations for Action Parms. Languages de_DE, en_US.
+  * [#3969](https://github.com/metasfresh/metasfresh/issues/3969) Pharma: If Shipment Auth Type B then show in Order Header
   * [#3973](https://github.com/metasfresh/metasfresh/issues/3973) Manufacturing Workflow adjustments in WebUI
     * Improved Manufacturing Workflow Window in WebUI.
+  * [#3982](https://github.com/metasfresh/metasfresh/issues/3982) Pharma vertical for Discount Schema Window
+  * [#3989](https://github.com/metasfresh/metasfresh/issues/3989) pharma: repack number attributes
+
+* metasfresh-webui-api
+  * [#952](https://github.com/metasfresh/metasfresh-webui-api/issues/952) Shorten the ViewIds
+  * [#954](https://github.com/metasfresh/metasfresh-webui-api/issues/954) Allow configuring lookup cache reset on table record changes
 
 * metasfresh-webui-frontend
   * [#1772](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1772) Harmonize List widget Icon Look&Feel when not empty
@@ -34,8 +49,15 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#2558](https://github.com/metasfresh/metasfresh/issues/2558) All existing configs available in Gebindekonfiguration in PP_Order
+  * [#3916](https://github.com/metasfresh/metasfresh/issues/3916) QtyPicked not updated in shipment schedule after reactivate & unpick in picking terminal
   * [#3971](https://github.com/metasfresh/metasfresh/issues/3971) New Manufacturing Workflow not saved
     * Adds missing Field to Manufacturing Workflow View in WebUI, allowing to save a workflow record again.
+  * [#3977](https://github.com/metasfresh/metasfresh/issues/3977) Pharma: Prices from IFA import are in cents
+  * [#3984](https://github.com/metasfresh/metasfresh/issues/3984) Invoice candidate for canceled term and reactivated sales order keeps invalidating itself
+
+* metasfresh-webui-api
+  * [#959](https://github.com/metasfresh/metasfresh-webui-api/issues/959) NPE when opening Manufacturing Issue/Receipt
 
 * metasfresh-webui-frontend
   * [#1410](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1410) Shortcuts for Clone & Letter not working
