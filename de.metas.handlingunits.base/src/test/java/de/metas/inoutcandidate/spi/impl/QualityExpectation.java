@@ -25,8 +25,8 @@ package de.metas.inoutcandidate.spi.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.test.ErrorMessage;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_UOM;

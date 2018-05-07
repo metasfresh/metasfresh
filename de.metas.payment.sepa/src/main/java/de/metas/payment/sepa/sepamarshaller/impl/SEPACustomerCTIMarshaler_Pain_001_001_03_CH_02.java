@@ -36,8 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBContext;
@@ -57,6 +55,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.StringUtils.TruncateAt;
 import org.adempiere.util.jaxb.DynamicObjectFactory;
+import org.adempiere.util.lang.IPair;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -131,8 +130,6 @@ import lombok.NonNull;
  */
 public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 {
-	public static final String REGEXP_STREET_AND_NUMER_SPLIT = "^([^0-9]+) ?([0-9]+.*$)?";
-
 	private static final String BIC_NOTPROVIDED = "NOTPROVIDED";
 
 	/**
@@ -736,21 +733,14 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 			@Nullable final String streetAndNumber,
 			@NonNull final PostalAddress6CH pstlAdr)
 	{
-		if (Check.isEmpty(streetAndNumber, true))
+		final IPair<String, String> splitStreetAndHouseNumber = StringUtils.splitStreetAndHouseNumberOrNull(streetAndNumber);
+		if (splitStreetAndHouseNumber == null)
 		{
 			return;
 		}
 
-		final Pattern pattern = Pattern.compile(REGEXP_STREET_AND_NUMER_SPLIT);
-		final Matcher matcher = pattern.matcher(streetAndNumber);
-		if (!matcher.matches())
-		{
-			return;
-		}
-
-		final String street = matcher.group(1);
-		final String number = matcher.group(2);
-
+		final String street = splitStreetAndHouseNumber.getLeft();
+		final String number = splitStreetAndHouseNumber.getRight();
 		pstlAdr.setStrtNm(street);
 		pstlAdr.setBldgNb(number);
 	}

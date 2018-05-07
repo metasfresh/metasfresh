@@ -48,6 +48,7 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.storage.IHUStorageDAO;
+import lombok.NonNull;
 
 /**
  * Defines a Attribute Storage pool. Use e.g. {@link IAttributeStorageFactory#getAttributeStorage(Object)} do get an instance.
@@ -90,18 +91,22 @@ public interface IAttributeStorage extends IAttributeSet
 	List<IAttributeValue> getAttributeValues();
 
 	/**
-	 * @param attribute
 	 * @return {@link IAttributeValue} for the current attribute set
 	 * @throws AttributeNotFoundException if attribute was not found
 	 */
-	IAttributeValue getAttributeValue(I_M_Attribute attribute);
+	IAttributeValue getAttributeValue(String attributeKey);
+	
+	default IAttributeValue getAttributeValue(@NonNull final I_M_Attribute attribute)
+	{
+		return getAttributeValue(attribute.getValue());
+	}
 
 	/**
 	 * @param attribute
 	 * @return true if the given attribute is available for getting/setting
 	 */
 	@Override
-	boolean hasAttribute(I_M_Attribute attribute);
+	boolean hasAttribute(String attributeKey);
 
 	/**
 	 *
@@ -205,14 +210,11 @@ public interface IAttributeStorage extends IAttributeSet
 	 * Note: not only the actual propagation, but also the set-invocation to <code>this</code> storage is the propagator's job.
 	 *
 	 *
-	 * @param attribute
-	 * @param value
-	 *
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 *
 	 */
 	@Override
-	void setValue(I_M_Attribute attribute, Object value);
+	void setValue(String attributeKey, Object value);
 
 	/**
 	 * Sets attribute's value to "null".
@@ -225,21 +227,20 @@ public interface IAttributeStorage extends IAttributeSet
 	NamePair setValueToNull(I_M_Attribute attribute);
 
 	/**
-	 * @param attribute
 	 * @return value of given attribute
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
 	@Override
-	Object getValue(I_M_Attribute attribute);
+	Object getValue(String attributeKey);
 
 	@Override
-	BigDecimal getValueAsBigDecimal(I_M_Attribute attribute);
+	BigDecimal getValueAsBigDecimal(String attributeKey);
 
 	@Override
-	Date getValueAsDate(I_M_Attribute attribute);
+	Date getValueAsDate(String attributeKey);
 
 	@Override
-	String getValueAsString(I_M_Attribute attribute);
+	String getValueAsString(String attributeKey);
 
 	/**
 	 * @param attribute
@@ -375,5 +376,4 @@ public interface IAttributeStorage extends IAttributeSet
 	{
 		return -1;
 	}
-
 }

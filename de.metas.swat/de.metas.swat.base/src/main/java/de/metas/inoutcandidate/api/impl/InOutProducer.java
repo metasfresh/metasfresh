@@ -49,6 +49,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -60,6 +61,7 @@ import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import lombok.NonNull;
 
 /**
  * Class responsible for converting {@link I_M_ReceiptSchedule}s to {@link I_M_InOut} receipts.
@@ -120,13 +122,9 @@ public class InOutProducer implements IInOutProducer
 	 * @param createReceiptWithDatePromised if <code>false</code> (the default), then a new InOut is created with the current date from {@link Env#getDate(Properties)}. Otherwise it is created with
 	 *            the DatePromised value of the receipt schedule's C_Order. To be used e.g. when doing migration work.
 	 */
-	public InOutProducer(final InOutGenerateResult result, final boolean complete, final boolean createReceiptWithDatePromised)
+	protected InOutProducer(@NonNull final InOutGenerateResult result, final boolean complete, final boolean createReceiptWithDatePromised)
 	{
-		super();
-
-		Check.assumeNotNull(result, "result not null");
 		this.result = result;
-
 		this.complete = complete;
 		this.createReceiptWithDatePromised = createReceiptWithDatePromised;
 	}
@@ -439,7 +437,11 @@ public class InOutProducer implements IInOutProducer
 
 			// this is the doctype of the sched's source record (e.g. "Bestellung")
 			// receiptHeader.setC_DocType_ID(rs.getC_DocType_ID());
-			final int receiptDocTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(ctx, X_C_DocType.DOCBASETYPE_MaterialReceipt, rs.getAD_Client_ID(), rs.getAD_Org_ID(), trxName);
+			final int receiptDocTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+					.adClientId(rs.getAD_Client_ID())
+					.adOrgId(rs.getAD_Org_ID())
+					.build());
 			receiptHeader.setC_DocType_ID(receiptDocTypeId);
 		}
 

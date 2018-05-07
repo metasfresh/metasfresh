@@ -28,9 +28,13 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
@@ -38,17 +42,44 @@ import lombok.NonNull;
 
 public final class StringUtils
 {
+	public static final String REGEXP_STREET_AND_NUMBER_SPLIT = "^([^0-9]+) ?([0-9]+.*$)?";
+
 	private StringUtils()
 	{
-		super();
 	}
 
-	
+	public static IPair<String, String> splitStreetAndHouseNumberOrNull(@Nullable final String streetAndNumber)
+	{
+		if (Check.isEmpty(streetAndNumber, true))
+		{
+			return null;
+		}
+		final Pattern pattern = Pattern.compile(StringUtils.REGEXP_STREET_AND_NUMBER_SPLIT);
+		final Matcher matcher = pattern.matcher(streetAndNumber);
+		if (!matcher.matches())
+		{
+			return null;
+		}
+
+		final String street = matcher.group(1);
+		final String number = matcher.group(2);
+		return ImmutablePair.of(trim(street), trim(number));
+	}
+
+	public static String trim(@Nullable String untrimmerStringOrNull)
+	{
+		if (untrimmerStringOrNull == null)
+		{
+			return untrimmerStringOrNull;
+		}
+		return untrimmerStringOrNull.trim();
+	}
+
 	public enum TruncateAt
 	{
 		STRING_START, STRING_END
 	};
-	
+
 	/**
 	 * Truncate string to a given length, if required.
 	 */

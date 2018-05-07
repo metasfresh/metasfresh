@@ -53,19 +53,22 @@ public class MailBL implements IMailBL
 			final String customType,
 			final I_AD_User user)
 	{
-		Mailbox mailbox = findMailBox(client, AD_Org_ID, AD_Process_ID, docType, customType);
+		final Mailbox mailbox = findMailBox(client, AD_Org_ID, AD_Process_ID, docType, customType);
 		Check.errorIf(mailbox == null, "Unable to find IMailbox for AD_Client={}, AD_Org_ID={}, AD_Process_ID={}, customeType={}",
 				client, AD_Org_ID, AD_Process_ID, customType);
-		if (user != null)
+
+		if (user == null)
 		{
-			mailbox = mailbox.toBuilder()
-					.email(user.getEMail())
-					.username(user.getEMailUser())
-					.password(user.getEMailUserPW())
-					.adUserId(user.getAD_User_ID())
-					.build();
+			return mailbox;
 		}
-		return mailbox;
+
+		// use smtpHost from AD_MailConfig, but user data from AD_User
+		return mailbox.toBuilder()
+				.email(user.getEMail())
+				.username(user.getEMailUser())
+				.password(user.getEMailUserPW())
+				.adUserId(user.getAD_User_ID())
+				.build();
 	}
 
 	private Mailbox findMailBox(final I_AD_Client client, final int adOrgId, final int processID, final I_C_DocType docType, final String customType)
@@ -109,7 +112,7 @@ public class MailBL implements IMailBL
 		{
 			throw new AdempiereException("Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost.");
 		}
-		
+
 		final Mailbox mailbox = Mailbox.builder()
 				.smtpHost(smtpHost)
 				.smtpPort(client.getSMTPPort())

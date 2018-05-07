@@ -3,7 +3,7 @@ package de.metas.dlm.partitioner;
 import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.model.IContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.dlm.model.IDLMAware;

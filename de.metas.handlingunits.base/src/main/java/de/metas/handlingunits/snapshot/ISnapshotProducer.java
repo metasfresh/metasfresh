@@ -25,7 +25,7 @@ package de.metas.handlingunits.snapshot;
 
 import java.util.Collection;
 
-import org.adempiere.model.IContextAware;
+import org.adempiere.util.lang.IContextAware;
 
 /**
  * Implementations of this interface are creating snapshots for a given model type.<br>

@@ -3,10 +3,10 @@ package de.metas.handlingunits.materialtracking.impl;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
 
 import com.google.common.base.Optional;

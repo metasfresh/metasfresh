@@ -30,6 +30,8 @@ import org.adempiere.mm.attributes.exceptions.AttributeNotFoundException;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.compiere.model.I_M_Attribute;
 
+import lombok.NonNull;
+
 /**
  * Goal of this interface: get an instance from an attribute set instance, one can use in a storage context.
  *
@@ -44,10 +46,17 @@ public interface IAttributeSet
 	Collection<I_M_Attribute> getAttributes();
 
 	/**
-	 * @param attribute
 	 * @return true if the given attribute is available for getting/setting
 	 */
-	boolean hasAttribute(I_M_Attribute attribute);
+	boolean hasAttribute(String attribute);
+
+	/**
+	 * @return true if the given attribute is available for getting/setting
+	 */
+	default boolean hasAttribute(@NonNull final I_M_Attribute attribute)
+	{
+		return hasAttribute(attribute.getValue());
+	}
 
 	/**
 	 * Gets {@link I_M_Attribute} by ID if exists in this attributes set.
@@ -65,38 +74,62 @@ public interface IAttributeSet
 	String getAttributeValueType(I_M_Attribute attribute);
 
 	/**
-	 * @param attribute
 	 * @return value of given attribute
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
-	Object getValue(I_M_Attribute attribute);
+	Object getValue(String attributeKey);
+
+	default Object getValue(@NonNull final I_M_Attribute attribute)
+	{
+		return getValue(attribute.getValue());
+	}
 
 	/**
-	 * @param attribute
 	 * @return BigDecimal value of given attribute
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
-	BigDecimal getValueAsBigDecimal(I_M_Attribute attribute);
+	BigDecimal getValueAsBigDecimal(String attributeKey);
+
+	default BigDecimal getValueAsBigDecimal(final I_M_Attribute attribute)
+	{
+		return getValueAsBigDecimal(attribute.getValue());
+	}
 
 	/**
-	 * @param attribute
 	 * @return integer value of given attribute
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
-	int getValueAsInt(I_M_Attribute attribute);
+	int getValueAsInt(String attributeKey);
 
-	Date getValueAsDate(I_M_Attribute attribute);
+	default int getValueAsInt(final I_M_Attribute attribute)
+	{
+		return getValueAsInt(attribute.getValue());
+	}
 
-	String getValueAsString(I_M_Attribute attribute);
+	Date getValueAsDate(String attributeKey);
+
+	default Date getValueAsDate(final I_M_Attribute attribute)
+	{
+		return getValueAsDate(attribute.getValue());
+	}
+
+	String getValueAsString(String attributeKey);
+
+	default String getValueAsString(@NonNull final I_M_Attribute attribute)
+	{
+		return getValueAsString(attribute.getValue());
+	}
 
 	/**
 	 * Set attribute's value and propagate to its parent/child attribute sets.
-	 *
-	 * @param attribute
-	 * @param value
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
-	void setValue(I_M_Attribute attribute, Object value);
+	void setValue(String attribute, Object value);
+
+	default void setValue(final I_M_Attribute attribute, final Object value)
+	{
+		setValue(attribute.getValue(), value);
+	}
 
 	/**
 	 * @return {@link IAttributeValueCallout} instance; never return null

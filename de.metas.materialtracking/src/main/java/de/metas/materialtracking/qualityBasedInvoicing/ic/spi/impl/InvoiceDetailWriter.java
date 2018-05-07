@@ -27,10 +27,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_C_Invoice_Detail;

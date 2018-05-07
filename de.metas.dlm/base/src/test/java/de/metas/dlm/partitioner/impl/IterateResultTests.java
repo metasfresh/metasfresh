@@ -6,11 +6,12 @@ import static org.junit.Assert.assertThat;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Color;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,7 +72,7 @@ public class IterateResultTests
 		InterfaceWrapperHelper.save(color);
 
 		// we don't care if it exists or not
-		final ITableRecordReference tableRecordReference = ITableRecordReference.FromModelConverter.convert(color);
+		final ITableRecordReference tableRecordReference = TableRecordReference.ofOrNull(color);
 
 		final Iterator<WorkQueue> initialQueue = ImmutableList.of(WorkQueue.of(tableRecordReference)).iterator();
 		final IContextAware ctxAware = PlainContextAware.newWithThreadInheritedTrx();
@@ -94,8 +95,8 @@ public class IterateResultTests
 		InterfaceWrapperHelper.save(color2);
 
 		// we don't care if it exists or not
-		final ITableRecordReference tableRecordReference1 = ITableRecordReference.FromModelConverter.convert(color1);
-		final ITableRecordReference tableRecordReference2 = ITableRecordReference.FromModelConverter.convert(color2);
+		final ITableRecordReference tableRecordReference1 = TableRecordReference.ofOrNull(color1);
+		final ITableRecordReference tableRecordReference2 = TableRecordReference.ofOrNull(color2);
 
 		final Iterator<WorkQueue> initialQueue = ImmutableList.of(WorkQueue.of(tableRecordReference1)).iterator();
 		final IContextAware ctxAware = PlainContextAware.newWithThreadInheritedTrx();

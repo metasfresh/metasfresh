@@ -13,15 +13,14 @@ package de.metas.async.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.LinkedHashSet;
 import java.util.concurrent.Future;
@@ -31,6 +30,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBlockBuilder;
@@ -47,7 +47,7 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import lombok.NonNull;
 
-/*package*/class WorkPackageBuilder implements IWorkPackageBuilder
+/* package */class WorkPackageBuilder implements IWorkPackageBuilder
 {
 	// Parameters
 	private final WorkPackageBlockBuilder _blockBuilder;
@@ -67,7 +67,7 @@ import lombok.NonNull;
 	// Status
 	private final AtomicBoolean built = new AtomicBoolean(false);
 
-	/* package */WorkPackageBuilder(final WorkPackageBlockBuilder blockBuilder)
+	/* package */ WorkPackageBuilder(final WorkPackageBlockBuilder blockBuilder)
 	{
 		super();
 		Check.assumeNotNull(blockBuilder, "blockBuilder not null");
@@ -112,7 +112,7 @@ import lombok.NonNull;
 			Services.get(IQueueDAO.class).save(asyncBatch);
 		}
 
-		if(userInChargeId > 0)
+		if (userInChargeId > 0)
 		{
 			workpackage.setAD_User_InCharge_ID(userInChargeId);
 		}
@@ -196,7 +196,7 @@ import lombok.NonNull;
 
 		//
 		// Add the model to elements to enqueue
-		final ITableRecordReference record = ITableRecordReference.FromModelConverter.convert(model);
+		final ITableRecordReference record = TableRecordReference.ofOrNull(model);
 		elements.add(record);
 
 		//

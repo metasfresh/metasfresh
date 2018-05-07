@@ -25,8 +25,8 @@ package de.metas.handlingunits.pos;
 
 import java.util.List;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 
 import de.metas.handlingunits.model.I_C_POS_HUEditor_Filter;
 

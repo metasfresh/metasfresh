@@ -25,8 +25,8 @@ package de.metas.materialtracking;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;

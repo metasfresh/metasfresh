@@ -23,6 +23,7 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Properties;
 
 import javax.swing.ImageIcon;
@@ -195,6 +196,28 @@ public class Adempiere
 		}
 		return springApplicationContext.getBean(requiredType);
 	}
+	
+	/**
+	 * When running this method from within a junit test, we need to fire up spring
+	 *
+	 * @param requiredType
+	 * @return
+	 */
+	public static final <T> Collection<T> getBeansOfType(final Class<T> requiredType)
+	{
+		final ApplicationContext springApplicationContext = getSpringApplicationContext();
+		try
+		{
+			throwExceptionIfNull(springApplicationContext);
+		}
+		catch (final AdempiereException e)
+		{
+			throw e.appendParametersToMessage()
+					.setParameter("requiredType", requiredType);
+		}
+		return springApplicationContext.getBeansOfType(requiredType).values();
+	}
+
 
 	private static void throwExceptionIfNull(final ApplicationContext springApplicationContext)
 	{

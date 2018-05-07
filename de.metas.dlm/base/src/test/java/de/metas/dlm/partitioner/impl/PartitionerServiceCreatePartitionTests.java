@@ -15,6 +15,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -474,7 +475,7 @@ public class PartitionerServiceCreatePartitionTests
 		final I_R_Request request = InterfaceWrapperHelper.newInstance(I_R_Request.class);
 		POJOWrapper.setInstanceName(request, "request");
 
-		final ITableRecordReference orderTableRecordReference = ITableRecordReference.FromModelConverter.convert(order);
+		final ITableRecordReference orderTableRecordReference = TableRecordReference.ofOrNull(order);
 		request.setAD_Table_ID(orderTableRecordReference.getAD_Table_ID());
 		request.setRecord_ID(orderTableRecordReference.getRecord_ID());
 		InterfaceWrapperHelper.save(request);
@@ -525,7 +526,7 @@ public class PartitionerServiceCreatePartitionTests
 
 	private ITableRecordReference asTableRef(final Object request2)
 	{
-		return ITableRecordReference.FromModelConverter.convert(request2);
+		return TableRecordReference.ofOrNull(request2);
 	}
 
 	/**
@@ -574,7 +575,7 @@ public class PartitionerServiceCreatePartitionTests
 		final I_R_Request request = InterfaceWrapperHelper.newInstance(I_R_Request.class);
 		POJOWrapper.setInstanceName(request, "request");
 
-		final ITableRecordReference orderTableRecordReference = ITableRecordReference.FromModelConverter.convert(order);
+		final ITableRecordReference orderTableRecordReference = TableRecordReference.ofOrNull(order);
 		request.setAD_Table_ID(orderTableRecordReference.getAD_Table_ID());
 		request.setRecord_ID(orderTableRecordReference.getRecord_ID());
 		InterfaceWrapperHelper.save(request);
@@ -635,7 +636,7 @@ public class PartitionerServiceCreatePartitionTests
 		// expecting one partition with invoice1, because the partitioner only looked at that invoice
 		assertThat(partitions.size(), is(1));
 		assertThat(partitions.get(0).getRecordsFlat().size(), is(1));
-		assertThat(partitions.get(0).getRecordsFlat().get(0), is(ITableRecordReference.FromModelConverter.convert(invoice1)));
+		assertThat(partitions.get(0).getRecordsFlat().get(0), is(TableRecordReference.ofOrNull(invoice1)));
 	}
 
 	/**
@@ -664,8 +665,8 @@ public class PartitionerServiceCreatePartitionTests
 		// expecting two partitions because the partitioner looked at each config line and found one partition for each line
 		assertThat(partitions.size(), is(2));
 		assertThat(partitions.get(0).getRecordsFlat().size(), is(1));
-		assertThat(partitions.get(0).getRecordsFlat().get(0), is(ITableRecordReference.FromModelConverter.convert(invoice1)));
+		assertThat(partitions.get(0).getRecordsFlat().get(0), is(TableRecordReference.ofOrNull(invoice1)));
 		assertThat(partitions.get(1).getRecordsFlat().size(), is(1));
-		assertThat(partitions.get(1).getRecordsFlat().get(0), is(ITableRecordReference.FromModelConverter.convert(order1)));
+		assertThat(partitions.get(1).getRecordsFlat().get(0), is(TableRecordReference.ofOrNull(order1)));
 	}
 }
