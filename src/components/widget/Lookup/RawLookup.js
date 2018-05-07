@@ -7,7 +7,7 @@ import classnames from 'classnames';
 
 import {
   autocompleteRequest,
-  autocompleteModalRequest
+  autocompleteModalRequest,
 } from '../../../actions/GenericActions';
 import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesActions';
 import { openModal } from '../../../actions/WindowActions';
