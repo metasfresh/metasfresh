@@ -84,6 +84,12 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 	{
 		return true; // not cached but returning true to avoid caching
 	}
+	
+	@Override
+	public void cacheInvalidate()
+	{
+		countryLookup.cacheInvalidate();
+	}
 
 	@Override
 	public List<CCacheStats> getCacheStats()

@@ -82,4 +82,6 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 
 	/** @return optional WindowId to be used when zooming into */
 	Optional<WindowId> getZoomIntoWindowId();
+
+	void cacheInvalidate();
 }

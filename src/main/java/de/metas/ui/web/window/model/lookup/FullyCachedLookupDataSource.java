@@ -124,11 +124,11 @@ class FullyCachedLookupDataSource implements LookupDataSource
 	public DocumentZoomIntoInfo getDocumentZoomInto(int id)
 	{
 		final String tableName = fetcher.getLookupTableName()
-				.orElseThrow(() -> new IllegalStateException("Failed converting id=" + id + " to "+DocumentZoomIntoInfo.class+" because the fetcher returned null tablename: " + fetcher));
-		
+				.orElseThrow(() -> new IllegalStateException("Failed converting id=" + id + " to " + DocumentZoomIntoInfo.class + " because the fetcher returned null tablename: " + fetcher));
+
 		return DocumentZoomIntoInfo.of(tableName, id);
 	}
-	
+
 	@Override
 	public Optional<WindowId> getZoomIntoWindowId()
 	{
@@ -139,5 +139,11 @@ class FullyCachedLookupDataSource implements LookupDataSource
 	public List<CCacheStats> getCacheStats()
 	{
 		return ImmutableList.of(cacheByPartition.stats());
+	}
+
+	@Override
+	public void cacheInvalidate()
+	{
+		cacheByPartition.clear();
 	}
 }

@@ -63,4 +63,6 @@ public interface LookupDataSourceFetcher
 
 	/** @return optional WindowId to be used when zooming into */
 	Optional<WindowId> getZoomIntoWindowId();
+
+	void cacheInvalidate();
 }
