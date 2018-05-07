@@ -134,10 +134,10 @@ public class DerKurierClient implements ShipperGatewayClient
 
 		final DeliveryOrder completedDeliveryOrder = createDeliveryOrderFromResponse(routing, deliveryOrder);
 
-		final List<String> csv = converters.createCsv(completedDeliveryOrder);
+		final List<String> csvLines = converters.createCsv(completedDeliveryOrder);
 
 		final AttachmentEntry attachmentEntry = derKurierDeliveryOrderRepository
-				.attachCsvToDeliveryOrder(deliveryOrder.getRepoId(), csv);
+				.attachCsvToDeliveryOrder(deliveryOrder, csvLines);
 
 		printPackageLabels(deliveryOrder);
 
