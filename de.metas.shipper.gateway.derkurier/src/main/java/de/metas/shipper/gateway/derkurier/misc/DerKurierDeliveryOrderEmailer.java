@@ -11,9 +11,9 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.IAttachmentDAO;
 import de.metas.email.EMail;
-import de.metas.email.EMailAttachment;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
+import de.metas.shipper.gateway.derkurier.DerKurierConstants;
 import lombok.NonNull;
 
 /*
@@ -81,20 +81,21 @@ public class DerKurierDeliveryOrderEmailer
 		final String message = retrieveSysConfig(SYSCONFIG_DerKurier_DeliveryOrder_EmailMessage);
 		final String subject = retrieveSysConfig(SYSCONFIG_DerKurier_DeliveryOrder_EmailSubject);
 
+		final byte[] data = Services.get(IAttachmentDAO.class).retrieveData(attachmentEntry);
+		final String csvDataString = new String(data, DerKurierConstants.CSV_DATA_CHARSET);
+
 		final IMailBL mailBL = Services.get(IMailBL.class);
 		final EMail eMail = mailBL.createEMail(Env.getCtx(),
 				mailBox,
 				mailTo,
 				subject,
-				message,
+				message + "\n\n" + csvDataString,
 				false // html=false
 		);
 
-		final String filename = attachmentEntry.getFilename();
-		final byte[] data = Services.get(IAttachmentDAO.class).retrieveData(attachmentEntry);
-		final EMailAttachment emailAttachment = EMailAttachment.of(filename, data);
-
-		eMail.addAttachment(emailAttachment);
+		// final String filename = attachmentEntry.getFilename();
+		// final EMailAttachment emailAttachment = EMailAttachment.of(filename, data);
+		// eMail.addAttachment(emailAttachment);
 		mailBL.send(eMail);
 	}
 

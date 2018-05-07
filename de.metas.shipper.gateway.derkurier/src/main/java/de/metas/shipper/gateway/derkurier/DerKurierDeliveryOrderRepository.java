@@ -563,12 +563,12 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		try
 		{
-			dataOutputStream.writeUTF(csvLine);
-			dataOutputStream.writeUTF("\n");
+			final byte[] bytes = (csvLine + "\n").getBytes(DerKurierConstants.CSV_DATA_CHARSET);
+			dataOutputStream.write(bytes);
 		}
 		catch (final IOException e)
 		{
-			throw new AdempiereException("IOException writing clsLine to dataOutputStream", e).appendParametersToMessage()
+			throw new AdempiereException("IOException writing cvsLine to dataOutputStream", e).appendParametersToMessage()
 					.setParameter("csvLine", csvLine)
 					.setParameter("dataOutputStream", dataOutputStream);
 		}
