@@ -4,11 +4,9 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.time.generator.FrequencyType;
+import org.adempiere.util.time.generator.Frequency;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -43,17 +41,10 @@ public class BPPurchaseSchedule
 {
 	@Getter
 	private final LocalDate validFrom;
-	private static final LocalDate DEFAULT_VALID_FROM = LocalDate.of(1970, 1, 1);
+	private static final LocalDate DEFAULT_VALID_FROM = LocalDate.MIN;
 
 	@Getter
-	private final FrequencyType frequencyType;
-	@Getter
-	private final int frequency;
-	@Getter
-	private final int dayOfMonth;
-
-	@Getter
-	private final ImmutableSet<DayOfWeek> onlyDaysOfWeek;
+	private final Frequency frequency;
 
 	private static final LocalTime DEFAULT_PREPARATION_TIME = LocalTime.of(23, 59);
 	private final ImmutableMap<DayOfWeek, LocalTime> dailyPreparationTimes;
@@ -61,19 +52,11 @@ public class BPPurchaseSchedule
 	@Builder
 	private BPPurchaseSchedule(
 			final LocalDate validFrom,
-			@NonNull final FrequencyType frequencyType,
-			final int frequency,
-			final int dayOfMonth,
-			@Singular("onlyDayOfWeek") @NonNull final ImmutableSet<DayOfWeek> onlyDaysOfWeek,
+			@NonNull Frequency frequency,
 			@Singular @NonNull final ImmutableMap<DayOfWeek, LocalTime> dailyPreparationTimes)
 	{
-		Check.assumeGreaterThanZero(frequency, "frequency");
-
 		this.validFrom = validFrom != null ? validFrom : DEFAULT_VALID_FROM;
-		this.frequencyType = frequencyType;
 		this.frequency = frequency;
-		this.dayOfMonth = dayOfMonth;
-		this.onlyDaysOfWeek = onlyDaysOfWeek;
 		this.dailyPreparationTimes = dailyPreparationTimes;
 	}
 

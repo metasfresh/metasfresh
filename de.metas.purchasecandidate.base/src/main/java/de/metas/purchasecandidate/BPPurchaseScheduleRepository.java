@@ -12,6 +12,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.generator.Frequency;
 import org.adempiere.util.time.generator.FrequencyType;
 import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
@@ -84,12 +85,33 @@ public class BPPurchaseScheduleRepository
 	{
 		final ImmutableSet<DayOfWeek> daysOfWeek = extractDaysOfWeek(scheduleRecord);
 
+		final Frequency frequency;
+		final FrequencyType frequencyType = toFrequencyType(scheduleRecord.getFrequencyType());
+		if (frequencyType == FrequencyType.Weekly)
+		{
+			frequency = Frequency.builder()
+					.type(FrequencyType.Weekly)
+					.everyNthWeek(scheduleRecord.getFrequency())
+					.onlyDaysOfWeek(daysOfWeek)
+					.build();
+		}
+		else if (frequencyType == FrequencyType.Monthly)
+		{
+			frequency = Frequency.builder()
+					.type(FrequencyType.Monthly)
+					.everyNthMonth(scheduleRecord.getFrequency())
+					.onlyDayOfMonth(scheduleRecord.getMonthDay())
+					.onlyDaysOfWeek(daysOfWeek)
+					.build();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown " + FrequencyType.class + ": " + frequencyType);
+		}
+
 		final BPPurchaseScheduleBuilder builder = BPPurchaseSchedule.builder()
 				.validFrom(TimeUtil.asLocalDate(scheduleRecord.getValidFrom()))
-				.frequencyType(toFrequencyType(scheduleRecord.getFrequencyType()))
-				.frequency(scheduleRecord.getFrequency())
-				.dayOfMonth(scheduleRecord.getMonthDay())
-				.onlyDaysOfWeek(daysOfWeek);
+				.frequency(frequency);
 
 		for (final DayOfWeek dayOfWeek : daysOfWeek)
 		{
