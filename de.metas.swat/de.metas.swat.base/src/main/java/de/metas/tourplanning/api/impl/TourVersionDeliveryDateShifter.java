@@ -2,30 +2,32 @@ package de.metas.tourplanning.api.impl;
 
 import java.time.LocalDate;
 
-import org.adempiere.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.time.generator.IDateShifter;
 
 import de.metas.adempiere.service.IBusinessDayMatcher;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
 public class TourVersionDeliveryDateShifter implements IDateShifter
 {
+	public static enum OnNonBussinessDay
+	{
+		Cancel, MoveToNextBusinessDay,
+	}
+
 	private final IBusinessDayMatcher businessDayMatcher;
-	private final boolean cancelIfNotBusinessDay;
-	private final boolean moveToNextBusinessDay;
+	private final OnNonBussinessDay onNonBussinessDay;
 
 	@Builder
 	private TourVersionDeliveryDateShifter(
-			final IBusinessDayMatcher businessDayMatcher,
-			final boolean cancelIfNotBusinessDay,
-			final boolean moveToNextBusinessDay)
+			@NonNull final IBusinessDayMatcher businessDayMatcher,
+			@NonNull final OnNonBussinessDay onNonBussinessDay)
 	{
-		Check.assumeNotNull(businessDayMatcher, "Parameter businessDayMatcher is not null");
 		this.businessDayMatcher = businessDayMatcher;
-		this.cancelIfNotBusinessDay = cancelIfNotBusinessDay;
-		this.moveToNextBusinessDay = moveToNextBusinessDay;
+		this.onNonBussinessDay = onNonBussinessDay;
 	}
 
 	@Override
@@ -43,23 +45,21 @@ public class TourVersionDeliveryDateShifter implements IDateShifter
 		{
 			//
 			// Case: we need to cancel because our delivery date it's not in a business day
-			if (cancelIfNotBusinessDay)
+			if (onNonBussinessDay == OnNonBussinessDay.Cancel)
 			{
 				// skip this delivery date
 				return null;
 			}
 			//
 			// Case: we need to move our delivery date to next business day
-			else if (moveToNextBusinessDay)
+			else if (onNonBussinessDay == OnNonBussinessDay.MoveToNextBusinessDay)
 			{
 				final LocalDate deliveryDateNextBusinessDay = businessDayMatcher.getNextBusinessDay(deliveryDate);
 				return deliveryDateNextBusinessDay;
 			}
-			//
-			// Case: no option => do nothing, same as if we were asked for canceling
 			else
 			{
-				return null;
+				throw new AdempiereException("Unknown " + OnNonBussinessDay.class + ": " + onNonBussinessDay);
 			}
 		}
 	}

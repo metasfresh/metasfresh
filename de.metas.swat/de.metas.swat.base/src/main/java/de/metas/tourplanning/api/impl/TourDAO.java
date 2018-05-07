@@ -20,19 +20,13 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.adempiere.util.time.generator.CalendarIncrementors;
 import org.adempiere.util.time.generator.DateSequenceGenerator;
-import org.adempiere.util.time.generator.DaysOfMonthExploder;
-import org.adempiere.util.time.generator.DaysOfWeekExploder;
 import org.adempiere.util.time.generator.Frequency;
 import org.adempiere.util.time.generator.FrequencyType;
-import org.adempiere.util.time.generator.ICalendarIncrementor;
-import org.adempiere.util.time.generator.IDateSequenceExploder;
 import org.adempiere.util.time.generator.IDateShifter;
 import org.compiere.util.TimeUtil;
 
@@ -42,6 +36,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.tourplanning.api.ITourDAO;
 import de.metas.tourplanning.api.ITourVersionRange;
+import de.metas.tourplanning.api.impl.TourVersionDeliveryDateShifter.OnNonBussinessDay;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
@@ -291,22 +286,20 @@ public class TourDAO implements ITourDAO
 			return null;
 		}
 
+		final OnNonBussinessDay onNonBusinessDay = extractOnNonBussinessDayOrNull(tourVersion);
+
 		return DateSequenceGenerator.builder()
 				.dateFrom(validFrom)
 				.dateTo(validTo)
-				.shifter(createDateShifter(frequency, tourVersion))
+				.shifter(createDateShifter(frequency, onNonBusinessDay))
 				// task 08252: don't shift beyond getValidTo(), because there will probably be another version to create it's own delivery days at that date
 				.enforceDateToAfterShift(true)
-				.incrementor(createCalendarIncrementor(frequency))
-				.exploder(createDateSequenceExploder(frequency))
+				.frequency(frequency)
 				.build();
 	}
 
-	private static IDateShifter createDateShifter(final Frequency frequency, final I_M_TourVersion tourVersion)
+	private static IDateShifter createDateShifter(final Frequency frequency, final OnNonBussinessDay onNonBusinessDay)
 	{
-		final boolean cancelDeliveryDay = tourVersion.isCancelDeliveryDay();
-		final boolean moveDeliveryDay = tourVersion.isMoveDeliveryDay();
-
 		final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 		IBusinessDayMatcher businessDayMatcher = calendarBL.createBusinessDayMatcher();
 
@@ -314,55 +307,30 @@ public class TourDAO implements ITourDAO
 		// If user explicitly asked for a set of week days, don't consider them non-business days by default
 		if (frequency.isWeekly()
 				&& frequency.isOnlySomeDaysOfTheWeek()
-				&& !cancelDeliveryDay
-				&& !moveDeliveryDay)
+				&& onNonBusinessDay == null)
 		{
 			businessDayMatcher = businessDayMatcher.removeWeekendDays(frequency.getOnlyDaysOfWeek());
 		}
 
 		return TourVersionDeliveryDateShifter.builder()
 				.businessDayMatcher(businessDayMatcher)
-				.cancelIfNotBusinessDay(cancelDeliveryDay)
-				.moveToNextBusinessDay(moveDeliveryDay)
+				.onNonBussinessDay(onNonBusinessDay != null ? onNonBusinessDay : OnNonBussinessDay.Cancel)
 				.build();
 	}
 
-	private static ICalendarIncrementor createCalendarIncrementor(final Frequency frequency)
+	private static OnNonBussinessDay extractOnNonBussinessDayOrNull(final I_M_TourVersion tourVersion)
 	{
-		if (frequency.isWeekly())
+		if (tourVersion.isCancelDeliveryDay())
 		{
-			return CalendarIncrementors.eachNthWeek(frequency.getEveryNthWeek(), DayOfWeek.MONDAY);
+			return OnNonBussinessDay.Cancel;
 		}
-		else if (frequency.isMonthly())
+		else if (tourVersion.isMoveDeliveryDay())
 		{
-			return CalendarIncrementors.eachNthMonth(frequency.getEveryNthMonth(), 1); // every given month, 1st day
+			return OnNonBussinessDay.MoveToNextBusinessDay;
 		}
 		else
 		{
-			throw new AdempiereException("Frequency type not supported for " + frequency);
-		}
-	}
-
-	private static IDateSequenceExploder createDateSequenceExploder(final Frequency frequency)
-	{
-		if (frequency.isWeekly())
-		{
-			if (frequency.isOnlySomeDaysOfTheWeek())
-			{
-				return DaysOfWeekExploder.of(frequency.getOnlyDaysOfWeek());
-			}
-			else
-			{
-				return DaysOfWeekExploder.ALL_DAYS_OF_WEEK;
-			}
-		}
-		else if (frequency.isMonthly())
-		{
-			return DaysOfMonthExploder.of(frequency.getOnlyDaysOfMonth());
-		}
-		else
-		{
-			throw new AdempiereException("Frequency type not supported for " + frequency);
+			return null; // N/A
 		}
 	}
 
