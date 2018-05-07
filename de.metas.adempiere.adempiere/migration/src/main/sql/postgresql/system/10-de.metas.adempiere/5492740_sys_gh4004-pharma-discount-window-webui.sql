@@ -213,3 +213,33 @@ UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2018-05-07 09:13:2
 UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2018-05-07 09:13:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551733
 ;
 
+-- 2018-05-07T09:17:48.600
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Indikation',Updated=TO_TIMESTAMP('2018-05-07 09:17:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551743
+;
+
+-- 2018-05-07T09:18:01.079
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Indikation',Updated=TO_TIMESTAMP('2018-05-07 09:18:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563952
+;
+
+-- 2018-05-07T09:18:18.654
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Preis Basis',Updated=TO_TIMESTAMP('2018-05-07 09:18:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563947
+;
+
+-- 2018-05-07T09:18:32.062
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kein Gültiger Grund',Updated=TO_TIMESTAMP('2018-05-07 09:18:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563950
+;
+
+-- 2018-05-07T09:18:58.109
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Preis überschreiben',Updated=TO_TIMESTAMP('2018-05-07 09:18:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563946
+;
+
+-- 2018-05-07T09:19:03.737
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kein gültiger Grund',Updated=TO_TIMESTAMP('2018-05-07 09:19:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563950
+;
+
