@@ -8,7 +8,7 @@ import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
 // always offer deployment, because there might be different tasks/branches to roll out
-final skipDeploymentParamDefaultValue = false;<
+final skipDeploymentParamDefaultValue = false;
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
