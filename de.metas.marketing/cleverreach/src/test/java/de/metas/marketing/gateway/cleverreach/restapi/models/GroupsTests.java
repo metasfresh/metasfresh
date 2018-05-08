@@ -1,13 +1,14 @@
-package de.metas.shipper.gateway.derkurier.restapi.models;
+package de.metas.marketing.gateway.cleverreach.restapi.models;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.Test;
-import org.springframework.core.io.ClassPathResource;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +16,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /*
  * #%L
- * de.metas.shipper.gateway.derkurier
+ * marketing-cleverreach
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -35,25 +36,22 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
  * #L%
  */
 
-public class RoutingTest
+public class GroupsTests
 {
-	private static final ClassPathResource ROUTING_RESPONSE_JSON = new ClassPathResource("/RoutingResponse.json");
-
 	@Test
-	public void test_deserialize() throws JsonParseException, JsonMappingException, IOException
+	public void deserialize() throws JsonParseException, JsonMappingException, IOException
 	{
+		final String serializedGroups = "[{\"id\":565397,\"name\":\"rainbows and unicorns\",\"stamp\":1522324591,\"last_mailing\":1522325535,\"last_changed\":1522324674,\"isLocked\":false}]";
+
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-		final Routing routing = objectMapper.readValue(ROUTING_RESPONSE_JSON.getInputStream(), Routing.class);
-		assertThat(routing.getMessage()).isEqualTo("OK");
-		assertThat(routing.getSendDate()).isEqualTo("2018-04-29");
+		final List<Group> groups = objectMapper.readValue(serializedGroups, new TypeReference<List<Group>>() {});
+		assertThat(groups).hasSize(1);
 
-		final Participant sender = routing.getSender();
-		assertThat(sender).isNotNull();
-		assertThat(sender.getStation()).isEqualTo("50");
-		assertThat(sender.getEarliestTimeOfDelivery()).isEqualTo("06:30");
+		final Group group = groups.get(0);
+		assertThat(group.getName()).isEqualTo("rainbows and unicorns");
+		assertThat(group.getId()).isEqualTo(565397);
 	}
-
 }

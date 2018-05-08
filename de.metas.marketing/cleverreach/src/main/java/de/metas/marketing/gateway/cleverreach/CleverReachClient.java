@@ -1,6 +1,9 @@
 package de.metas.marketing.gateway.cleverreach;
 
+import java.util.List;
+
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -9,8 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
-import de.metas.marketing.gateway.cleverreach.restapi.models.Groups;
+import de.metas.marketing.gateway.cleverreach.restapi.models.Group;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Login;
 import lombok.NonNull;
 
@@ -38,7 +42,10 @@ import lombok.NonNull;
 
 public class CleverReachClient
 {
-	private static final String baseUrl = "https://rest.cleverreach.com/v2";
+	private static final String BASE_URL = "https://rest.cleverreach.com/v2";
+
+	// @formatter:off
+	private static final ParameterizedTypeReference<List<Group>> GROUPS_TYPE = new ParameterizedTypeReference<List<Group>>() {}; // // @formatter:on
 
 	public static CleverReachClient createNewClientAndLogin(@NonNull final CleverReachConfig cleverReachConfig)
 	{
@@ -46,6 +53,7 @@ public class CleverReachClient
 	}
 
 	private final String token;
+
 
 	private CleverReachClient(@NonNull final String token)
 	{
@@ -61,14 +69,15 @@ public class CleverReachClient
 				.build();
 
 		final RestTemplate restTemplate = new RestTemplate();
-		final String token = restTemplate.postForObject(baseUrl + "/login", login, String.class);
+		final String token = restTemplate.postForObject(BASE_URL + "/login", login, String.class);
+
 		return token.replaceAll("\"", ""); // the string comes complete with "" which we need to remove
 	}
 
-	public Groups retrieveGroups()
+	public List<Group> retrieveGroups()
 	{
 		final RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder()
-				.rootUri(baseUrl);
+				.rootUri(BASE_URL);
 
 		final RestTemplate restTemplate = restTemplateBuilder.build();
 
@@ -78,7 +87,13 @@ public class CleverReachClient
 		httpHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
 		final HttpEntity<?> entity = new HttpEntity<>(httpHeaders);
-		final ResponseEntity<Groups> groups = restTemplate.exchange(baseUrl + "/groups.json", HttpMethod.GET, entity, Groups.class);
+
+		final ResponseEntity<List<Group>> groups = restTemplate.exchange(
+				BASE_URL + "/groups.json",
+				HttpMethod.GET,
+				entity,
+				GROUPS_TYPE,
+				ImmutableMap.of());
 		return groups.getBody();
 	}
 

@@ -1,7 +1,10 @@
 package de.metas.marketing.gateway.cleverreach;
 
-import de.metas.marketing.gateway.cleverreach.CleverReachClient;
-import de.metas.marketing.gateway.cleverreach.CleverReachConfig;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
+import de.metas.marketing.gateway.cleverreach.restapi.models.Group;
 
 /*
  * #%L
@@ -36,6 +39,7 @@ public class ManualTest
 				.password("").build();
 
 		final CleverReachClient cleverReachClient = CleverReachClient.createNewClientAndLogin(cleverReachConfig);
-		cleverReachClient.retrieveGroups();
+		final List<Group> groups = cleverReachClient.retrieveGroups();
+		assertThat(groups).hasSize(1);
 	}
 }
