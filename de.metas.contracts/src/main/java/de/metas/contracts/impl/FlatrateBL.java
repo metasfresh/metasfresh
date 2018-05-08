@@ -1033,11 +1033,16 @@ public class FlatrateBL implements IFlatrateBL
 			contracts.add(currentRequest.getContract());
 			do
 			{
-				extendContract0(currentRequest);
+				extendContractIfRequired(currentRequest);
 
 				final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
 				currentTerm.setAD_PInstance_EndOfTerm_ID(currentRequest.getAD_PInstance_ID());
 				InterfaceWrapperHelper.save(currentTerm);
+				if (currentTerm.getC_FlatrateTerm_Next_ID() <= 0)
+				{
+					// https://github.com/metasfresh/metasfresh/issues/4022 avoid NPE if currentTerm was actually *not* extended by extendContractIfRequired
+					break;
+				}
 
 				final I_C_Flatrate_Term nextTerm = currentTerm.getC_FlatrateTerm_Next();
 				final I_C_Flatrate_Conditions nextConditions = nextTerm.getC_Flatrate_Conditions();
@@ -1090,7 +1095,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 	}
 
-	private void extendContract0(final @NonNull ContractExtendingRequest request)
+	private void extendContractIfRequired(final @NonNull ContractExtendingRequest request)
 	{
 		final I_C_Flatrate_Term currentTerm = request.getContract();
 		final boolean forceExtend = request.isForceExtend();
