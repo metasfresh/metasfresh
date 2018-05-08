@@ -239,7 +239,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	private final String debugId;
 
 	/**
-	 * If {@link #DEBUG} is enabled, this variable containts the constructor's stack trace (when this object was created)
+	 * If {@link #DEBUG} is enabled, this variable contains the constructor's stack trace (when this object was created)
 	 */
 	private final String debugAquireStacktrace;
 
