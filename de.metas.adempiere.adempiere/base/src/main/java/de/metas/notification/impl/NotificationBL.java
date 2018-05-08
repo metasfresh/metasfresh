@@ -44,19 +44,19 @@ public class NotificationBL implements INotificationBL
 	}
 
 	@Override
-	public void notifyRecipientAfterCommit(@NonNull final UserNotificationRequest request)
+	public void sendAfterCommit(@NonNull final UserNotificationRequest request)
 	{
 		newNotificationSender().sendAfterCommit(request);
 	}
 
 	@Override
-	public void notifyRecipientAfterCommit(@NonNull final List<UserNotificationRequest> requests)
+	public void sendAfterCommit(@NonNull final List<UserNotificationRequest> requests)
 	{
 		newNotificationSender().sendAfterCommit(requests);
 	}
 
 	@Override
-	public void notifyRecipient(@NonNull final UserNotificationRequest request)
+	public void send(@NonNull final UserNotificationRequest request)
 	{
 		newNotificationSender().send(request);
 	}

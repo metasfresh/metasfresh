@@ -188,12 +188,12 @@ public final class InOutUserNotificationsProducer
 
 	private void postNotification(final UserNotificationRequest notification)
 	{
-		notificationBL.notifyRecipientAfterCommit(notification);
+		notificationBL.sendAfterCommit(notification);
 	}
 
 	private void postNotifications(final List<UserNotificationRequest> notifications)
 	{
-		Services.get(INotificationBL.class).notifyRecipientAfterCommit(notifications);
+		Services.get(INotificationBL.class).sendAfterCommit(notifications);
 	}
 
 }

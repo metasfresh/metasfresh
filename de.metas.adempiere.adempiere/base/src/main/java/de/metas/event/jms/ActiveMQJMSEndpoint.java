@@ -394,7 +394,7 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		final boolean connected = this.connected.get();
 
 		final INotificationBL notificationsService = Services.get(INotificationBL.class);
-		notificationsService.notifyRecipient(UserNotificationRequest.builder()
+		notificationsService.send(UserNotificationRequest.builder()
 				.recipient(Recipient.allUsers())
 				.topic(EventBusConstants.TOPIC_GeneralUserNotificationsLocal)
 				.contentADMessage(connected ? MSG_Event_RemoteEndpointConnected : MSG_Event_RemoteEndpointDisconnected)

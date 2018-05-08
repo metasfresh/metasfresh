@@ -500,7 +500,7 @@ import de.metas.notification.UserNotificationRequest;
 		final int workpackageId = workpackage.getC_Queue_WorkPackage_ID();
 
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
-		notificationBL.notifyRecipientAfterCommit(UserNotificationRequest.builder()
+		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 				.topic(Async_Constants.WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC)
 				.recipientUserId(userInChargeId)
 				.subjectADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TITLE)

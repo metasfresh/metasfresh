@@ -154,7 +154,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 			final I_C_Queue_WorkPackage_Notified workpackageNotified = asyncBatchDAO.fetchWorkPackagesNotified(notifiableWP);
 			Check.assumeNotNull(workpackageNotified, "Workpackage notified record is null!");
 
-			notificationBL.notifyRecipient(UserNotificationRequest.builder()
+			notificationBL.send(UserNotificationRequest.builder()
 					.topic(Printing_Constants.USER_NOTIFICATIONS_TOPIC)
 					.recipientUserId(notifiableWP.getCreatedBy())
 					.contentADMessage(MSG_Event_PDFGenerated)

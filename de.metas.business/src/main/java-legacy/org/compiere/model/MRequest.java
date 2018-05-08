@@ -800,7 +800,7 @@ public class MRequest extends X_R_Request
 				})
 				.collect(ImmutableList.toImmutableList());
 
-		Services.get(INotificationBL.class).notifyRecipientAfterCommit(notificationRequests);
+		Services.get(INotificationBL.class).sendAfterCommit(notificationRequests);
 	}	// sendNotice
 
 	private ITranslatableString buildEMailNotificationContent(final I_AD_User from, final List<String> changedColumnNames)

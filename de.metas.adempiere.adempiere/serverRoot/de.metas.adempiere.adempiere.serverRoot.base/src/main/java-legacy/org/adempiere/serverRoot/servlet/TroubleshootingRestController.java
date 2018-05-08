@@ -53,7 +53,7 @@ public class TroubleshootingRestController
 				.subjectPlain("Notifications system test")
 				.contentPlain("Please ignore this message. It was issued by server to check the notifications system (#" + id + ").")
 				.build();
-		Services.get(INotificationBL.class).notifyRecipient(request);
+		Services.get(INotificationBL.class).send(request);
 
 		final String message = "sent: " + request;
 		logger.info("pingNotifications: {}", message);

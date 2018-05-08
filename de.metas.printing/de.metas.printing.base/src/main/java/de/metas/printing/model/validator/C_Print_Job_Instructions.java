@@ -113,7 +113,7 @@ public class C_Print_Job_Instructions
 
 		// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
-		notificationBL.notifyRecipientAfterCommit(UserNotificationRequest.builder()
+		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 				.recipientUserId(jobInstructions.getAD_User_ToPrint_ID())
 				.subjectADMessage(MSG_CLIENT_REPORTS_PRINT_ERROR)
 				.contentPlain(jobInstructions.getErrorMsg())
@@ -206,7 +206,7 @@ public class C_Print_Job_Instructions
 								if (status.equals(printJobInstructionsReloaded.getStatus()))
 								{
 									// the status is still unchanged after the specified timeout => notify the user
-									notificationBL.notifyRecipient(UserNotificationRequest.builder()
+									notificationBL.send(UserNotificationRequest.builder()
 											.recipientUserId(userToPrintId)
 											.subjectADMessage(MSG_CLIENT_PRINT_TIMEOUT)
 											.contentADMessage(MSG_CLIENT_PRINT_TIMEOUT_DETAILS)

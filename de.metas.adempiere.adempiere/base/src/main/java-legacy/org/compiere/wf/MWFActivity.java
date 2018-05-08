@@ -1370,7 +1370,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 						+ (getTextMsg() != null ? getTextMsg() : "");
 				
 				final INotificationBL notificationBL = Services.get(INotificationBL.class);
-				notificationBL.notifyRecipientAfterCommit(UserNotificationRequest.builder()
+				notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 						.topic(USER_NOTIFICATIONS_TOPIC)
 						.recipientUserId(doc.getDoc_User_ID())
 						.contentADMessage(MSG_NotApproved)

@@ -55,7 +55,7 @@ public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements 
 		final TableRecordReference bpartnerRef = TableRecordReference.of(I_C_BPartner.Table_Name, bpCreditLimit.getC_BPartner_ID());
 
 		Services.get(INotificationBL.class)
-				.notifyRecipient(UserNotificationRequest.builder()
+				.send(UserNotificationRequest.builder()
 						.topic(USER_NOTIFICATIONS_TOPIC)
 						.recipientUserId(approvedByUserId)
 						.contentADMessage(MSG_Event_RequestApproval)

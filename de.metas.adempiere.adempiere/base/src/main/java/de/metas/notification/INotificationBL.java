@@ -32,11 +32,11 @@ public interface INotificationBL extends ISingletonService
 {
 	NotificationSenderTemplate newNotificationSender();
 
-	void notifyRecipient(UserNotificationRequest request);
+	void send(UserNotificationRequest request);
 
-	void notifyRecipientAfterCommit(UserNotificationRequest request);
+	void sendAfterCommit(UserNotificationRequest request);
 
-	void notifyRecipientAfterCommit(List<UserNotificationRequest> requests);
+	void sendAfterCommit(List<UserNotificationRequest> requests);
 
 	void addCtxProvider(IRecordTextProvider ctxProvider);
 
