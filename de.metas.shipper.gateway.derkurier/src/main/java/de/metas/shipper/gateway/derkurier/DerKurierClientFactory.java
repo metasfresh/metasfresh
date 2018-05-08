@@ -102,7 +102,6 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 	@VisibleForTesting
 	public static ObjectMapper extractAndConfigureObjectMapperOfRestTemplate(final RestTemplate restTemplate)
 	{
-
 		final MappingJackson2HttpMessageConverter messageConverter = restTemplate
 				.getMessageConverters()
 				.stream()

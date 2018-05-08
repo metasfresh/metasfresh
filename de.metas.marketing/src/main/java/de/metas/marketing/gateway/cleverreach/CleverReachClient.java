@@ -1,14 +1,16 @@
 package de.metas.marketing.gateway.cleverreach;
 
-import java.util.List;
-
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import de.metas.marketing.gateway.cleverreach.restapi.models.Group;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.marketing.gateway.cleverreach.restapi.models.Groups;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Login;
 import lombok.NonNull;
 
@@ -38,9 +40,9 @@ public class CleverReachClient
 {
 	private static final String baseUrl = "https://rest.cleverreach.com/v2";
 
-	public static CleverReachClient createNewClient()
+	public static CleverReachClient createNewClientAndLogin(@NonNull final CleverReachConfig cleverReachConfig)
 	{
-		return new CleverReachClient(login());
+		return new CleverReachClient(login(cleverReachConfig));
 	}
 
 	private final String token;
@@ -50,30 +52,34 @@ public class CleverReachClient
 		this.token = token;
 	}
 
-	private static String login()
+	private static String login(@NonNull final CleverReachConfig cleverReachConfig)
 	{
 		final Login login = Login.builder()
-				.client_id("")
-				.login("")
-				.password("")
+				.client_id(cleverReachConfig.getClient_id())
+				.login(cleverReachConfig.getLogin())
+				.password(cleverReachConfig.getPassword())
 				.build();
 
 		final RestTemplate restTemplate = new RestTemplate();
 		final String token = restTemplate.postForObject(baseUrl + "/login", login, String.class);
-		return token;
+		return token.replaceAll("\"", ""); // the string comes complete with "" which we need to remove
 	}
 
-	public List<Group> retrieveGroups()
+	public Groups retrieveGroups()
 	{
-		final RestTemplate restTemplate = new RestTemplate();
+		final RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder()
+				.rootUri(baseUrl);
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.set(HttpHeaders.AUTHORIZATION, token);
+		final RestTemplate restTemplate = restTemplateBuilder.build();
 
-		HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
-		ResponseEntity<List> groups = restTemplate.exchange(baseUrl + "/groups", HttpMethod.GET, entity, List.class);
+		final HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		httpHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
-		return (List<Group>)groups;
+		final HttpEntity<?> entity = new HttpEntity<>(httpHeaders);
+		final ResponseEntity<Groups> groups = restTemplate.exchange(baseUrl + "/groups.json", HttpMethod.GET, entity, Groups.class);
+		return groups.getBody();
 	}
 
 }

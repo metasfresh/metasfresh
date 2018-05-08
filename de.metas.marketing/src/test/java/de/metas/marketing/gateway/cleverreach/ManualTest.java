@@ -25,10 +25,14 @@ package de.metas.marketing.gateway.cleverreach;
 public class ManualTest
 {
 
-
 	public static void main(String args[])
 	{
-		final CleverReachClient cleverReachClient = CleverReachClient.createNewClient();
+		final CleverReachConfig cleverReachConfig = CleverReachConfig.builder()
+				.client_id("")
+				.login("")
+				.password("").build();
+
+		final CleverReachClient cleverReachClient = CleverReachClient.createNewClientAndLogin(cleverReachConfig);
 		cleverReachClient.retrieveGroups();
 	}
 }

@@ -1,8 +1,10 @@
 package de.metas.marketing.gateway.cleverreach.restapi.models;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import lombok.Value;
+import lombok.Singular;
 
 /*
  * #%L
@@ -27,13 +29,8 @@ import lombok.Value;
  */
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Value
-public class Group
+public class Groups
 {
-	String name;
-	String id;
-	long stamp;
-	long last_mailing;
-	long last_changed;
-	boolean isLocked;
+	@Singular
+	List<Group> groups;
 }

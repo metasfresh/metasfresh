@@ -1,7 +1,6 @@
-package de.metas.marketing.gateway.cleverreach.restapi.models;
+package de.metas.marketing.gateway.cleverreach;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -26,14 +25,11 @@ import lombok.Value;
  * #L%
  */
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Value
-public class Group
+@Builder
+public class CleverReachConfig
 {
-	String name;
-	String id;
-	long stamp;
-	long last_mailing;
-	long last_changed;
-	boolean isLocked;
+	String client_id;
+	String login;
+	String password;
 }
