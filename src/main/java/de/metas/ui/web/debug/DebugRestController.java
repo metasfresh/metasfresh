@@ -233,7 +233,7 @@ public class DebugRestController
 			request.targetRecord(targetRecord);
 		}
 
-		Services.get(INotificationBL.class).notifyUser(request.build());
+		Services.get(INotificationBL.class).send(request.build());
 	}
 
 	@PostMapping("/websocket/post")
