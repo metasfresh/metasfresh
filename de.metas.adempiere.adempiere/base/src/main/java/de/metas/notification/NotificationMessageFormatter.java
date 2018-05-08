@@ -1,4 +1,4 @@
-package de.metas.notification.impl;
+package de.metas.notification;
 
 import java.util.HashMap;
 import java.util.List;

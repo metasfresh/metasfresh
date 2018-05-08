@@ -30,8 +30,10 @@ import de.metas.notification.spi.IRecordTextProvider;
 
 public interface INotificationBL extends ISingletonService
 {
+	NotificationSenderTemplate newNotificationSender();
+
 	void notifyRecipient(UserNotificationRequest request);
-	
+
 	void notifyRecipientAfterCommit(UserNotificationRequest request);
 
 	void notifyRecipientAfterCommit(List<UserNotificationRequest> requests);
@@ -39,4 +41,5 @@ public interface INotificationBL extends ISingletonService
 	void addCtxProvider(IRecordTextProvider ctxProvider);
 
 	void setDefaultCtxProvider(IRecordTextProvider defaultCtxProvider);
+
 }
