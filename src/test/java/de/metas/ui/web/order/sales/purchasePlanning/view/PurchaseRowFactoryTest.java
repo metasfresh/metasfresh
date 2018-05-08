@@ -85,7 +85,7 @@ public class PurchaseRowFactoryTest
 		save(product);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bPartnerProductId(10)
+				.bpartnerProductId(10)
 				.vendorBPartnerId(bPartner.getC_BPartner_ID())
 				.productId(product.getM_Product_ID())
 				.productNo("productNo")
