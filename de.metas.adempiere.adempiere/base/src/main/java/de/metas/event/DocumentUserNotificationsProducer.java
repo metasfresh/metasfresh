@@ -151,6 +151,6 @@ public final class DocumentUserNotificationsProducer<ModelType>
 
 	private void postNotification(final UserNotificationRequest notification)
 	{
-		notificationBL.notifyUserAfterCommit(notification);
+		notificationBL.notifyRecipientAfterCommit(notification);
 	}
 }

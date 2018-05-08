@@ -46,7 +46,7 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 		}
 
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
-		notificationBL.notifyUser(
+		notificationBL.notifyRecipient(
 				UserNotificationRequest.builder()
 						.notificationsConfig(notificationsConfig)
 						.subjectADMessage(MSG_ASYNC_PROCESSED)

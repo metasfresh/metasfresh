@@ -70,7 +70,7 @@ public class NotificationRepository implements INotificationRepository
 	public UserNotification save(@NonNull final UserNotificationRequest request)
 	{
 		final I_AD_Note notificationPO = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Note.class);
-		notificationPO.setAD_User_ID(request.getRecipientUserId());
+		notificationPO.setAD_User_ID(request.getRecipient().getUserId());
 		notificationPO.setIsImportant(request.isImportant());
 
 		//

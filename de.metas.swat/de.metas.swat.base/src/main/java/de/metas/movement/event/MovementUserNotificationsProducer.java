@@ -124,6 +124,6 @@ public class MovementUserNotificationsProducer
 
 	private void postNotifications(final List<UserNotificationRequest> notifications)
 	{
-		notificationBL.notifyUserAfterCommit(notifications);
+		notificationBL.notifyRecipientAfterCommit(notifications);
 	}
 }

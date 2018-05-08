@@ -261,7 +261,7 @@ public class AlertProcessor extends AdempiereServer
 						.contentPlain(message)
 						.attachments(attachmentResources)
 						.build())
-				.forEach(userNotificationsService::notifyUserAfterCommit);
+				.forEach(userNotificationsService::notifyRecipientAfterCommit);
 	}
 
 	/**

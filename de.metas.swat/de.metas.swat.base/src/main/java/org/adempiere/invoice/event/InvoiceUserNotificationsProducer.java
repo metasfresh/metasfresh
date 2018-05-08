@@ -115,6 +115,6 @@ public class InvoiceUserNotificationsProducer
 
 	private void postNotification(final UserNotificationRequest notification)
 	{
-		Services.get(INotificationBL.class).notifyUserAfterCommit(notification);
+		Services.get(INotificationBL.class).notifyRecipientAfterCommit(notification);
 	}
 }

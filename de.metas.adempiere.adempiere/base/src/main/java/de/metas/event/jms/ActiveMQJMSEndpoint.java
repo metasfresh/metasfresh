@@ -63,6 +63,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
 import de.metas.jms.IJMSService;
 import de.metas.notification.INotificationBL;
+import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
 import lombok.NonNull;
 
@@ -393,8 +394,8 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 		final boolean connected = this.connected.get();
 
 		final INotificationBL notificationsService = Services.get(INotificationBL.class);
-		notificationsService.notifyUser(UserNotificationRequest.builder()
-				.broadcastToAllUsers(true)
+		notificationsService.notifyRecipient(UserNotificationRequest.builder()
+				.recipient(Recipient.allUsers())
 				.topic(EventBusConstants.TOPIC_GeneralUserNotificationsLocal)
 				.contentADMessage(connected ? MSG_Event_RemoteEndpointConnected : MSG_Event_RemoteEndpointDisconnected)
 				.noEmail(true)

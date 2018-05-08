@@ -152,7 +152,7 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 					//
 
 					Check.assume(asyncBatch.getCreatedBy() > 0, "CreatedBy > 0");
-					notificationBL.notifyUser(UserNotificationRequest.builder()
+					notificationBL.notifyRecipient(UserNotificationRequest.builder()
 							.recipientUserId(asyncBatch.getCreatedBy())
 							.subjectPlain(text.getSubject())
 							.contentPlain(message)

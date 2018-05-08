@@ -103,7 +103,7 @@ public class AsyncImportWorkpackageProcessor extends WorkpackageProcessorAdapter
 			final String windowName = Services.get(IADTableDAO.class).retrieveWindowName(Env.getCtx(), targetTableName);
 
 			Services.get(INotificationBL.class)
-					.notifyUser(UserNotificationRequest.builder()
+					.notifyRecipient(UserNotificationRequest.builder()
 							.topic(USER_NOTIFICATIONS_TOPIC)
 							.recipientUserId(recipientUserId)
 							.contentADMessage(MSG_Event_RecordsImported)

@@ -53,8 +53,7 @@ import lombok.Value;
 @Value
 public class UserNotificationRequest
 {
-	boolean broadcastToAllUsers;
-	int recipientUserId;
+	Recipient recipient;
 	UserNotificationsConfig notificationsConfig;
 
 	Topic topic;
@@ -86,8 +85,7 @@ public class UserNotificationRequest
 
 	@Builder(toBuilder = true)
 	private UserNotificationRequest(
-			final boolean broadcastToAllUsers,
-			final Integer recipientUserId,
+			final Recipient recipient,
 			final UserNotificationsConfig notificationsConfig,
 			//
 			final Topic topic,
@@ -110,23 +108,30 @@ public class UserNotificationRequest
 			// Options:
 			final boolean noEmail)
 	{
-		this.broadcastToAllUsers = broadcastToAllUsers;
-		if (broadcastToAllUsers)
+		this.notificationsConfig = notificationsConfig;
+
+		if (recipient == null)
 		{
-			this.notificationsConfig = null;
-			this.recipientUserId = -1;
-		}
-		else
-		{
-			this.notificationsConfig = notificationsConfig;
 			if (notificationsConfig != null)
 			{
-				this.recipientUserId = notificationsConfig.getUserId();
+				this.recipient = Recipient.user(notificationsConfig.getUserId());
 			}
 			else
 			{
-				Check.assume(recipientUserId != null && recipientUserId >= 0, "recipientUserId >= 0 but it was {}", recipientUserId);
-				this.recipientUserId = recipientUserId;
+				throw new AdempiereException("notificationConfig or recipient shall be specified");
+			}
+		}
+		else if (recipient.isAllUsers())
+		{
+			this.recipient = recipient;
+		}
+		else
+		{
+			this.recipient = recipient;
+			if (notificationsConfig != null)
+			{
+				final Recipient expectedRecipient = Recipient.user(notificationsConfig.getUserId());
+				Check.assume(expectedRecipient.equals(recipient), "recipient shall be {} but it was {}", expectedRecipient, recipient);
 			}
 		}
 
@@ -156,15 +161,6 @@ public class UserNotificationRequest
 		return params != null && !params.isEmpty() ? Collections.unmodifiableList(new ArrayList<>(params)) : ImmutableList.of();
 	}
 
-	public int getRecipientUserId()
-	{
-		if (isBroadcastToAllUsers())
-		{
-			throw new AdempiereException("recipientUserId not available when broadcastToAllUsers is set: " + this);
-		}
-		return recipientUserId;
-	}
-
 	public String getADLanguageOrGet(final Supplier<String> defaultLanguageSupplier)
 	{
 		return getNotificationsConfig().getUserADLanguageOrGet(defaultLanguageSupplier);
@@ -187,17 +183,30 @@ public class UserNotificationRequest
 			return this;
 		}
 
-		return toBuilder().broadcastToAllUsers(false).notificationsConfig(notificationsConfig).build();
+		return toBuilder().notificationsConfig(notificationsConfig).build();
 	}
 
-	public UserNotificationRequest deriveByRecipientUserId(final int recipientUserId)
+	public UserNotificationRequest deriveByRecipient(@NonNull final Recipient recipient)
 	{
-		Check.assumeGreaterOrEqualToZero(recipientUserId, "recipientUserId");
-		if (!broadcastToAllUsers && this.recipientUserId == recipientUserId)
+		if (Objects.equals(this.recipient, recipient))
 		{
 			return this;
 		}
 
-		return toBuilder().broadcastToAllUsers(false).recipientUserId(recipientUserId).notificationsConfig(null).build();
+		return toBuilder().recipient(recipient).notificationsConfig(null).build();
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	public static class UserNotificationRequestBuilder
+	{
+		public UserNotificationRequestBuilder recipientUserId(final int userId)
+		{
+			return recipient(Recipient.user(userId));
+		}
 	}
 }

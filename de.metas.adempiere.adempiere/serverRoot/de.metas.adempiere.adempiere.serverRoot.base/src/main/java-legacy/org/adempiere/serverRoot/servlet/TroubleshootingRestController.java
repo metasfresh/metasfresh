@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
+import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
 
 /*
@@ -48,11 +49,11 @@ public class TroubleshootingRestController
 		final long id = nextNotificationId.getAndIncrement();
 
 		final UserNotificationRequest request = UserNotificationRequest.builder()
-				.broadcastToAllUsers(true)
+				.recipient(Recipient.allUsers())
 				.subjectPlain("Notifications system test")
 				.contentPlain("Please ignore this message. It was issued by server to check the notifications system (#" + id + ").")
 				.build();
-		Services.get(INotificationBL.class).notifyUser(request);
+		Services.get(INotificationBL.class).notifyRecipient(request);
 
 		final String message = "sent: " + request;
 		logger.info("pingNotifications: {}", message);

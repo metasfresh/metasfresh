@@ -5,8 +5,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.IClientDAO;
@@ -14,6 +16,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.user.api.NotificationGroupName;
+import org.adempiere.user.api.RoleNotificationsConfig;
 import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.user.api.UserNotificationsGroup;
 import org.adempiere.util.Check;
@@ -40,6 +43,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.INotificationRepository;
+import de.metas.notification.Recipient;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationUtils;
@@ -80,13 +84,13 @@ public class NotificationBL implements INotificationBL
 	private final CompositeRecordTextProvider ctxProviders = new CompositeRecordTextProvider();
 
 	@Override
-	public void notifyUserAfterCommit(@NonNull final UserNotificationRequest request)
+	public void notifyRecipientAfterCommit(@NonNull final UserNotificationRequest request)
 	{
-		notifyUserAfterCommit(ImmutableList.of(request));
+		notifyRecipientAfterCommit(ImmutableList.of(request));
 	}
 
 	@Override
-	public void notifyUserAfterCommit(@NonNull final List<UserNotificationRequest> requests)
+	public void notifyRecipientAfterCommit(@NonNull final List<UserNotificationRequest> requests)
 	{
 		if (requests.isEmpty())
 		{
@@ -99,21 +103,22 @@ public class NotificationBL implements INotificationBL
 		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.invokeMethodJustOnce(true)
-				.registerHandlingMethod(innerTrx -> notifyUser(requestsEffective));
+				.registerHandlingMethod(innerTrx -> notifyRecipient(requestsEffective));
 	}
 
-	public void notifyUser(@NonNull final List<UserNotificationRequest> requests)
+	private void notifyRecipient(@NonNull final List<UserNotificationRequest> requests)
 	{
-		requests.forEach(this::notifyUser);
+		requests.forEach(this::notifyRecipient);
 	}
 
 	@Override
-	public void notifyUser(@NonNull final UserNotificationRequest request)
+	public void notifyRecipient(@NonNull final UserNotificationRequest request)
 	{
+		logger.trace("Prepare sending notification: {}", request);
 		Stream.of(resolve(request))
 				.flatMap(this::explodeByUser)
 				.flatMap(this::explodeByEffectiveNotificationsConfigs)
-				.forEach(this::notifyUser0);
+				.forEach(this::notifyRecipient0);
 	}
 
 	private UserNotificationRequest resolve(@NonNull final UserNotificationRequest request)
@@ -126,16 +131,35 @@ public class NotificationBL implements INotificationBL
 
 	private Stream<UserNotificationRequest> explodeByUser(final UserNotificationRequest request)
 	{
-		if (request.isBroadcastToAllUsers())
+		return explodeRecipients(request.getRecipient())
+				.map(request::deriveByRecipient);
+	}
+
+	private Stream<Recipient> explodeRecipients(final Recipient recipient)
+	{
+		if (recipient.isAllUsers())
 		{
 			final IUserDAO usersRepo = Services.get(IUserDAO.class);
 			return usersRepo.retrieveSystemUserIds()
 					.stream()
-					.map(request::deriveByRecipientUserId);
+					.map(Recipient::user);
+		}
+		else if (recipient.isUser())
+		{
+			return Stream.of(recipient);
+		}
+		else if (recipient.isRole())
+		{
+			final int roleId = recipient.getRoleId();
+
+			final IRoleDAO rolesRepo = Services.get(IRoleDAO.class);
+			return rolesRepo.retrieveUserIdsForRoleId(roleId)
+					.stream()
+					.map(userId -> Recipient.userAndRole(userId, roleId));
 		}
 		else
 		{
-			return Stream.of(request);
+			throw new AdempiereException("Recipient type not supported: " + recipient);
 		}
 	}
 
@@ -249,8 +273,10 @@ public class NotificationBL implements INotificationBL
 		return "";
 	}
 
-	private void notifyUser0(final UserNotificationRequest request)
+	private void notifyRecipient0(final UserNotificationRequest request)
 	{
+		logger.trace("Sending notification: {}", request);
+
 		final UserNotificationsConfig notificationsConfig = request.getNotificationsConfig();
 		final UserNotificationsGroup notificationsGroup = notificationsConfig.getGroupByName(request.getNotificationGroupName());
 		boolean notifyByInternalMessage = notificationsGroup.isNotifyByInternalMessage();
@@ -276,17 +302,29 @@ public class NotificationBL implements INotificationBL
 
 	private List<UserNotificationsConfig> extractEffectiveNotificationsConfigs(@NonNull final UserNotificationRequest request)
 	{
-		Check.assume(!request.isBroadcastToAllUsers(), "request shall not have broadcast flag set: {}", request);
+		final Recipient recipient = request.getRecipient();
+		Check.assume(!recipient.isAllUsers(), "request shall not have broadcast flag set: {}", request);
 
-		final UserNotificationsConfig notificationsConfig;
+		UserNotificationsConfig notificationsConfig;
 		if (request.getNotificationsConfig() != null)
 		{
 			notificationsConfig = request.getNotificationsConfig();
 		}
-		else
+		else if (recipient.isUser())
 		{
 			final IUserBL userBL = Services.get(IUserBL.class);
-			notificationsConfig = userBL.getUserNotificationsConfig(request.getRecipientUserId());
+
+			notificationsConfig = userBL.getUserNotificationsConfig(recipient.getUserId());
+
+			if (recipient.isRoleIdSet())
+			{
+				final RoleNotificationsConfig roleNotificationsConfig = userBL.getRoleNotificationsConfig(recipient.getRoleId());
+				notificationsConfig = notificationsConfig.deriveWithNotificationGroups(roleNotificationsConfig.getNotificationGroups());
+			}
+		}
+		else
+		{
+			throw new AdempiereException("Recipient not supported: " + recipient);
 		}
 
 		final NotificationGroupName groupName = request.getNotificationGroupName();

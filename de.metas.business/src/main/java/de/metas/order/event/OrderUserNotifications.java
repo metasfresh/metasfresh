@@ -154,7 +154,7 @@ public class OrderUserNotifications
 
 	private void postNotifications(final List<UserNotificationRequest> notifications)
 	{
-		Services.get(INotificationBL.class).notifyUserAfterCommit(notifications);
+		Services.get(INotificationBL.class).notifyRecipientAfterCommit(notifications);
 	}
 
 	@Value

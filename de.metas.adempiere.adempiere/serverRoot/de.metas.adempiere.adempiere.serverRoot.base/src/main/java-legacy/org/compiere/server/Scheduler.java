@@ -674,7 +674,7 @@ public class Scheduler extends AdempiereServer
 				final int supervisorId = m_model.getSupervisor_ID();
 				if (supervisorId > 0)
 				{
-					notificationBL.notifyUser(UserNotificationRequest.builder()
+					notificationBL.notifyRecipient(UserNotificationRequest.builder()
 							.recipientUserId(supervisorId)
 							.subjectADMessage(MSG_PROCESS_RUN_ERROR)
 							.contentPlain(summary + " " + logInfo)
@@ -687,7 +687,7 @@ public class Scheduler extends AdempiereServer
 		{
 			for (final int userId : m_model.getRecipientAD_User_IDs())
 			{
-				notificationBL.notifyUser(UserNotificationRequest.builder()
+				notificationBL.notifyRecipient(UserNotificationRequest.builder()
 						.recipientUserId(userId)
 						.subjectADMessage(MSG_PROCESS_OK)
 						.contentPlain(summary + " " + logInfo)

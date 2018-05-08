@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -42,8 +44,6 @@ import org.springframework.core.io.FileSystemResource;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
@@ -787,7 +787,6 @@ public class MRequest extends X_R_Request
 					final UserNotificationRequestBuilder builder = UserNotificationRequest.builder()
 							.notificationsConfig(notificationsConfig)
 							.topic(TOPIC_Requests)
-							.recipientUserId(userId)
 							.subjectPlain(subject.translate(adLanguage))
 							.contentPlain(content.translate(adLanguage))
 							.targetRecord(TableRecordReference.of(I_R_Request.Table_Name, getR_Request_ID()));
@@ -801,7 +800,7 @@ public class MRequest extends X_R_Request
 				})
 				.collect(ImmutableList.toImmutableList());
 
-		Services.get(INotificationBL.class).notifyUserAfterCommit(notificationRequests);
+		Services.get(INotificationBL.class).notifyRecipientAfterCommit(notificationRequests);
 	}	// sendNotice
 
 	private ITranslatableString buildEMailNotificationContent(final I_AD_User from, final List<String> changedColumnNames)
