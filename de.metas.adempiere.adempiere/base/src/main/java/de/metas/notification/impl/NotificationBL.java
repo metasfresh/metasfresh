@@ -323,13 +323,13 @@ public class NotificationBL implements INotificationBL
 				break;
 			}
 
-			if (!currentNotificationsGroup.isUserInChargeSet())
+			if (!currentNotificationsConfig.isUserInChargeSet())
 			{
 				currentNotificationsConfig = null;
 				break;
 			}
 
-			currentNotificationsConfig = userBL.getUserNotificationsConfig(currentNotificationsGroup.getUserInChargeId());
+			currentNotificationsConfig = userBL.getUserNotificationsConfig(currentNotificationsConfig.getUserInChargeId());
 		}
 
 		return result;

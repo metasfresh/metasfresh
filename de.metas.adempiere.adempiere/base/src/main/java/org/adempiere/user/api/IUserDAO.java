@@ -66,7 +66,7 @@ public interface IUserDAO extends ISingletonService
 	I_AD_User retrieveUser(int adUserId);
 
 	I_AD_User retrieveUserInTrx(int adUserId);
-	
+
 	I_AD_User retrieveDefaultUser(I_C_BPartner bpartner);
 
 	/** @return user's full name or <code>?</code> if no found */
@@ -74,10 +74,13 @@ public interface IUserDAO extends ISingletonService
 
 	/**
 	 * Fetch all system(login) user IDs
+	 * 
 	 * @param ctx
 	 * @return AD_User_IDs
 	 */
 	List<Integer> retrieveSystemUserIds();
 
 	UserNotificationsConfig getUserNotificationsConfig(int adUserId);
+
+	RoleNotificationsConfig getRoleNotificationsConfig(int adRoleId);
 }

@@ -42,6 +42,7 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
+import org.adempiere.user.api.RoleNotificationsConfig;
 import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -489,6 +490,12 @@ public class UserBL implements IUserBL
 	public UserNotificationsConfig getUserNotificationsConfig(final int adUserId)
 	{
 		return Services.get(IUserDAO.class).getUserNotificationsConfig(adUserId);
+	}
+
+	@Override
+	public RoleNotificationsConfig getRoleNotificationsConfig(final int adRoleId)
+	{
+		return Services.get(IUserDAO.class).getRoleNotificationsConfig(adRoleId);
 	}
 
 }

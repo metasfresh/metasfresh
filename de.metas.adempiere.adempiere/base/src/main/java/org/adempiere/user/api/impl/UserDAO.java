@@ -37,6 +37,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.user.api.NotificationGroupName;
 import org.adempiere.user.api.NotificationType;
+import org.adempiere.user.api.RoleNotificationsConfig;
 import org.adempiere.user.api.UserNotificationsConfig;
 import org.adempiere.user.api.UserNotificationsGroup;
 import org.adempiere.util.Check;
@@ -44,6 +45,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_NotificationGroup;
+import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_AD_Role_NotificationGroup;
 import org.compiere.model.I_AD_User_NotificationGroup;
 import org.compiere.model.I_AD_User_Substitute;
 import org.compiere.model.I_C_BPartner;
@@ -74,6 +77,13 @@ public class UserDAO implements IUserDAO
 			CCache.EXPIREMINUTES_Never)
 			.addResetForTableName(I_AD_User.Table_Name)
 			.addResetForTableName(I_AD_NotificationGroup.Table_Name);
+
+	private final CCache<Integer, RoleNotificationsConfig> roleNotificationsConfigsByRoleId = CCache.<Integer, RoleNotificationsConfig> newLRUCache(
+			I_AD_Role_NotificationGroup.Table_Name,
+			10,
+			CCache.EXPIREMINUTES_Never)
+			.addResetForTableName(I_AD_Role.Table_Name)
+			.addResetForTableName(I_AD_Role_NotificationGroup.Table_Name);
 
 	@Override
 	public I_AD_User retrieveLoginUserByUserId(final String userId)
@@ -264,15 +274,12 @@ public class UserDAO implements IUserDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_AD_User_NotificationGroup.class)
-				.map(notificationsGroupRecord -> prepareUserNotificationsGroup(notificationsGroupRecord)
-						.userInChargeId(userInChargeId)
-						.build())
+				.map(notificationsGroupRecord -> toUserNotificationsGroup(notificationsGroupRecord))
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 
 		final UserNotificationsGroup defaults = UserNotificationsGroup.prepareDefault()
 				.notificationTypes(toNotificationTypes(user.getNotificationType()))
-				.userInChargeId(userInChargeId)
 				.build();
 
 		return UserNotificationsConfig.builder()
@@ -283,10 +290,11 @@ public class UserDAO implements IUserDAO
 				.userNotificationGroups(userNotificationGroups)
 				.defaults(defaults)
 				.email(user.getEMail())
+				.userInChargeId(userInChargeId)
 				.build();
 	}
 
-	private UserNotificationsGroup.UserNotificationsGroupBuilder prepareUserNotificationsGroup(final I_AD_User_NotificationGroup notificationsGroupRecord)
+	private UserNotificationsGroup toUserNotificationsGroup(final I_AD_User_NotificationGroup notificationsGroupRecord)
 	{
 		if (!notificationsGroupRecord.isActive())
 		{
@@ -303,7 +311,8 @@ public class UserDAO implements IUserDAO
 
 		return UserNotificationsGroup.builder()
 				.groupInternalName(groupInternalName)
-				.notificationTypes(toNotificationTypes(notificationsGroupRecord.getNotificationType()));
+				.notificationTypes(toNotificationTypes(notificationsGroupRecord.getNotificationType()))
+				.build();
 	}
 
 	private static Set<NotificationType> toNotificationTypes(final String notificationTypeCode)
@@ -334,4 +343,43 @@ public class UserDAO implements IUserDAO
 		}
 	}
 
+	@Override
+	public RoleNotificationsConfig getRoleNotificationsConfig(final int adRoleId)
+	{
+		return roleNotificationsConfigsByRoleId.getOrLoad(adRoleId, () -> retrieveRoleNotificationsConfig(adRoleId));
+	}
+
+	private RoleNotificationsConfig retrieveRoleNotificationsConfig(final int adRoleId)
+	{
+		final List<UserNotificationsGroup> notificationGroups = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Role_NotificationGroup.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Role_NotificationGroup.COLUMN_AD_Role_ID, adRoleId)
+				.create()
+				.stream()
+				.map(this::toNotificationGroup)
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
+
+		return RoleNotificationsConfig.builder()
+				.roleId(adRoleId)
+				.notificationGroups(notificationGroups)
+				.build();
+	}
+
+	private UserNotificationsGroup toNotificationGroup(final I_AD_Role_NotificationGroup record)
+	{
+		final Map<Integer, NotificationGroupName> notificationGroupInternalNamesById = retrieveNotificationGroupInternalNamesById();
+		final NotificationGroupName groupInternalName = notificationGroupInternalNamesById.get(record.getAD_NotificationGroup_ID());
+		if (groupInternalName == null)
+		{
+			// group does not exist or it was deactivated
+			return null;
+		}
+
+		return UserNotificationsGroup.builder()
+				.groupInternalName(groupInternalName)
+				.notificationTypes(toNotificationTypes(record.getNotificationType()))
+				.build();
+	}
 }

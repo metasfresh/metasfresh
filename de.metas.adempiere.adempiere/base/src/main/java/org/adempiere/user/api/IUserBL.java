@@ -115,4 +115,6 @@ public interface IUserBL extends ISingletonService
 
 	UserNotificationsConfig getUserNotificationsConfig(int adUserId);
 
+	RoleNotificationsConfig getRoleNotificationsConfig(int adRoleId);
+
 }
