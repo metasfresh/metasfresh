@@ -59,9 +59,9 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.pricing.conditions.PricingConditionsDiscountType;
-import de.metas.pricing.conditions.PricingConditionsBreak.PriceOverrideType;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest;
 import lombok.NonNull;
@@ -268,12 +268,14 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 	public int changePricingConditionsBreak0(@NonNull final PricingConditionsBreakChangeRequest request)
 	{
+		final int discountSchemaId = request.getDiscountSchemaId();
+
 		//
 		final I_M_DiscountSchemaBreak schemaBreak;
 		if (request.getDiscountSchemaBreakId() > 0)
 		{
 			schemaBreak = load(request.getDiscountSchemaBreakId(), I_M_DiscountSchemaBreak.class);
-			if (schemaBreak.getM_DiscountSchema_ID() != request.getDiscountSchemaId())
+			if (schemaBreak.getM_DiscountSchema_ID() != discountSchemaId)
 			{
 				throw new AdempiereException("" + request + " and " + schemaBreak + " does not have the same discount schema");
 			}
@@ -281,7 +283,8 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		else
 		{
 			schemaBreak = newInstance(I_M_DiscountSchemaBreak.class);
-			schemaBreak.setM_DiscountSchema_ID(request.getDiscountSchemaId());
+			schemaBreak.setM_DiscountSchema_ID(discountSchemaId);
+			schemaBreak.setSeqNo(retrieveNextSeqNo(discountSchemaId));
 		}
 
 		//
@@ -350,5 +353,17 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 
 		return schemaBreak.getM_DiscountSchemaBreak_ID();
+	}
+
+	private int retrieveNextSeqNo(final int discountSchemaId)
+	{
+		final int lastSeqNo = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_DiscountSchemaBreak.class)
+				.addEqualsFilter(I_M_DiscountSchemaBreak.COLUMN_M_DiscountSchema_ID, discountSchemaId)
+				.create()
+				.maxInt(I_M_DiscountSchemaBreak.COLUMNNAME_SeqNo);
+
+		final int nextSeqNo = lastSeqNo / 10 * 10 + 10;
+		return nextSeqNo;
 	}
 }
