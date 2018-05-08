@@ -113,7 +113,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="100" y="60" width="90" height="14" uuid="a9ca0916-22f1-4110-9079-e556a3de9a78"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[$F{consignee_zipcode}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{consignee_country} + " " + $F{consignee_zipcode}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="190" y="60" width="80" height="14" uuid="857bd47b-de1b-4738-bbb3-29b06421d9cf"/>
