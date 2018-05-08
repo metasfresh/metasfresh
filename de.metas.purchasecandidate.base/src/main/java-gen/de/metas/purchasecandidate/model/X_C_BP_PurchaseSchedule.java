@@ -14,7 +14,7 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1428289585L;
+	private static final long serialVersionUID = -153691350L;
 
     /** Standard Constructor */
     public X_C_BP_PurchaseSchedule (Properties ctx, int C_BP_PurchaseSchedule_ID, String trxName)
@@ -506,6 +506,22 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 	public java.sql.Timestamp getPreparationTime_7 () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationTime_7);
+	}
+
+	/** Set Wiedervorlage.
+		@param ReminderTime Wiedervorlage	  */
+	@Override
+	public void setReminderTime (java.sql.Timestamp ReminderTime)
+	{
+		set_Value (COLUMNNAME_ReminderTime, ReminderTime);
+	}
+
+	/** Get Wiedervorlage.
+		@return Wiedervorlage	  */
+	@Override
+	public java.sql.Timestamp getReminderTime () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ReminderTime);
 	}
 
 	/** Set Gültig ab.

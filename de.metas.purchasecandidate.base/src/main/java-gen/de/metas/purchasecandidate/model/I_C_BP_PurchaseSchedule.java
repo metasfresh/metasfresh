@@ -624,6 +624,29 @@ public interface I_C_BP_PurchaseSchedule
     public static final String COLUMNNAME_PreparationTime_7 = "PreparationTime_7";
 
 	/**
+	 * Set Wiedervorlage.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setReminderTime (java.sql.Timestamp ReminderTime);
+
+	/**
+	 * Get Wiedervorlage.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getReminderTime();
+
+    /** Column definition for ReminderTime */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_ReminderTime = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "ReminderTime", null);
+    /** Column name ReminderTime */
+    public static final String COLUMNNAME_ReminderTime = "ReminderTime";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
