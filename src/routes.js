@@ -18,6 +18,7 @@ import InboxAll from './containers/InboxAll.js';
 import Login from './containers/Login.js';
 import MasterWindow from './containers/MasterWindow.js';
 import NavigationTree from './containers/NavigationTree.js';
+import PluginContainer from './components/PluginContainer';
 
 let hasTutorial = false;
 
@@ -64,8 +65,10 @@ export const getRoutes = (store, auth, plugins) => {
         if (plugin.userDropdownLink) {
           return {
             path: plugin.userDropdownLink.url,
-            component: plugin.component,
-          }
+            component: () => (
+              <PluginContainer component={plugin.component} />
+            )
+          };
         }
       });
     }
