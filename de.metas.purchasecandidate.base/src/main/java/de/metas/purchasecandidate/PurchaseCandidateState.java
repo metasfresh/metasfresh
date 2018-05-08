@@ -47,20 +47,16 @@ public class PurchaseCandidateState
 		this.locked = locked;
 	}
 
-	// don't use @lombok.AllArgsConstructor, because we might get the parameter ordering wrong.
-	private PurchaseCandidateState(
-			final boolean processed,
-			final boolean processedInitial,
-			final boolean locked)
+	private PurchaseCandidateState(final PurchaseCandidateState from)
 	{
-		this.processed = processed;
-		this.processedInitial = processedInitial;
-		this.locked = locked;
+		this.processed = from.processed;
+		this.processedInitial = from.processedInitial;
+		this.locked = from.locked;
 	}
 
-	public PurchaseCandidateState createCopy()
+	public PurchaseCandidateState copy()
 	{
-		return new PurchaseCandidateState(processed, processedInitial, locked);
+		return new PurchaseCandidateState(this);
 	}
 
 	public void setProcessed()

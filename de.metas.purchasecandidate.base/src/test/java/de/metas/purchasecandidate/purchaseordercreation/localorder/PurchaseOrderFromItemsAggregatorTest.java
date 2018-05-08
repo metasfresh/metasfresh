@@ -70,7 +70,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		final int productId = 20;
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bPartnerProductId(10)
+				.bpartnerProductId(10)
 				.productId(productId)
 				.vendorBPartnerId(vendor.getC_BPartner_ID())
 				.productName("productName")

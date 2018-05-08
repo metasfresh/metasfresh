@@ -164,7 +164,7 @@ public class PurchaseOrderFromItemFactoryTest
 		save(salesOrderLine);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bPartnerProductId(10)
+				.bpartnerProductId(10)
 				.vendorBPartnerId(vendor.getC_BPartner_ID())
 				.productId(20)
 				.productName("productName")

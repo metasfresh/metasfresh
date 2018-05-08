@@ -60,10 +60,13 @@ import lombok.ToString;
 @ToString(exclude = { "purchaseCandidateRepository", "salesOrderLineWithCandidates" })
 public class SalesOrderLines
 {
+	// services
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
-	private final ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> salesOrderLineWithCandidates //
-			= ExtendedMemorizingSupplier.of(() -> loadOrCreatePurchaseCandidates0());
+	private final ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> //
+	salesOrderLineWithCandidates = ExtendedMemorizingSupplier.of(() -> loadOrCreatePurchaseCandidates0());
 
 	private final ImmutableList<Integer> salesOrderLineIds;
 
@@ -97,7 +100,7 @@ public class SalesOrderLines
 
 		final Set<Integer> alreadySeenVendorProductInfoIds = salesOrderLineId2PreExistingPurchaseCandidates.values().stream()
 				.filter(Predicates.not(PurchaseCandidate::isProcessed))
-				.map(purchaseCandidate -> purchaseCandidate.getVendorProductInfo().getBPartnerProductId())
+				.map(purchaseCandidate -> purchaseCandidate.getVendorProductInfo().getBpartnerProductId())
 				.collect(ImmutableSet.toImmutableSet());
 
 		// create and add new purchase candidates
@@ -159,14 +162,14 @@ public class SalesOrderLines
 
 	private ImmutableList<PurchaseCandidate> createMissingPurchaseCandidates(
 			@NonNull final I_C_OrderLine salesOrderLine,
-			@NonNull final Set<Integer> vendorIdsToExclude)
+			@NonNull final Set<Integer> vendorProductInfoIdsToExclude)
 	{
 		final Map<Integer, I_C_BPartner_Product> vendorId2VendorProductInfo = retriveVendorId2VendorProductInfo(salesOrderLine);
 
 		final ImmutableList<PurchaseCandidate> newPurchaseCandidateForOrderLine = vendorId2VendorProductInfo.values().stream()
 
 				// only if vendor was not already considered (i.e. there was no purchase candidate for it)
-				.filter(vendorProductInfo -> !vendorIdsToExclude.contains(vendorProductInfo.getC_BPartner_Product_ID()))
+				.filter(vendorProductInfo -> !vendorProductInfoIdsToExclude.contains(vendorProductInfo.getC_BPartner_Product_ID()))
 
 				// create and collect them
 				.map(vendorProductInfo -> createPurchaseCandidate(salesOrderLine, vendorProductInfo))
@@ -190,15 +193,15 @@ public class SalesOrderLines
 				.warehouseId(getWarehousePOId(salesOrderLine))
 				.build();
 	}
-	
+
 	private int getWarehousePOId(final I_C_OrderLine salesOrderLine)
 	{
-		final int orgWarehousePOId = Services.get(IWarehouseDAO.class).retrieveOrgWarehousePOId(salesOrderLine.getAD_Org_ID());
-		if(orgWarehousePOId > 0)
+		final int orgWarehousePOId = warehouseDAO.retrieveOrgWarehousePOId(salesOrderLine.getAD_Org_ID());
+		if (orgWarehousePOId > 0)
 		{
 			return orgWarehousePOId;
 		}
-		
+
 		return salesOrderLine.getM_Warehouse_ID();
 	}
 
@@ -207,7 +210,6 @@ public class SalesOrderLines
 		final int productId = salesOrderLine.getM_Product_ID();
 		final int adOrgId = salesOrderLine.getAD_Org_ID();
 
-		final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 		return partnerProductDAO
 				.retrieveAllVendors(productId, adOrgId)
 				.stream()
@@ -217,6 +219,15 @@ public class SalesOrderLines
 	public List<SalesOrderLineWithCandidates> getSalesOrderLinesWithCandidates()
 	{
 		return salesOrderLineWithCandidates.get();
+	}
+
+	public List<PurchaseCandidate> getAllPurchaseCandidates()
+	{
+		return getSalesOrderLinesWithCandidates()
+				.stream()
+				.map(SalesOrderLineWithCandidates::getPurchaseCandidates)
+				.flatMap(List::stream)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability()

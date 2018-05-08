@@ -46,7 +46,7 @@ public class NullVendorGatewayInvokerTest
 		final int vendorBPartnerId = 30;
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
-				.bPartnerProductId(10)
+				.bpartnerProductId(10)
 				.productId(productId)
 				.vendorBPartnerId(vendorBPartnerId)
 				.productName("productName")

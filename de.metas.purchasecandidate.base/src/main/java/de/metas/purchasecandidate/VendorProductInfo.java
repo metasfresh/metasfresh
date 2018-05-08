@@ -38,12 +38,12 @@ import lombok.Value;
 @Value
 public class VendorProductInfo
 {
-	int bPartnerProductId;
+	int bpartnerProductId;
+
 	int vendorBPartnerId;
+
 	int productId;
-
 	String productNo;
-
 	String productName;
 
 	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bPartnerProduct)
@@ -76,17 +76,17 @@ public class VendorProductInfo
 	@VisibleForTesting
 	@Builder(toBuilder = true)
 	VendorProductInfo(
-			int bPartnerProductId,
+			int bpartnerProductId,
 			int vendorBPartnerId,
 			int productId,
 			@NonNull String productNo,
 			@NonNull String productName)
 	{
-		Check.assume(bPartnerProductId > 0, "bPartnerProductId > 0");
+		Check.assume(bpartnerProductId > 0, "bpartnerProductId > 0");
 		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
 		Check.assume(productId > 0, "productId > 0");
 
-		this.bPartnerProductId = bPartnerProductId;
+		this.bpartnerProductId = bpartnerProductId;
 		this.vendorBPartnerId = vendorBPartnerId;
 		this.productId = productId;
 		this.productNo = productNo;

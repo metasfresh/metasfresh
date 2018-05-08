@@ -203,7 +203,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.uomId(6)
 				.vendorBPartnerId(vendorId)
 				.vendorProductInfo(VendorProductInfo.builder()
-						.bPartnerProductId(10)
+						.bpartnerProductId(10)
 						.vendorBPartnerId(vendorId).productId(20)
 						.productNo("productNo")
 						.productName("productName").build())

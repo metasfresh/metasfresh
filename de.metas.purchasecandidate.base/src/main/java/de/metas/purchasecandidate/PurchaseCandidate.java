@@ -116,11 +116,13 @@ public class PurchaseCandidate
 				.uomId(uomId)
 				.vendorBPartnerId(vendorBPartnerId)
 				.vendorProductInfo(vendorProductInfo)
-				.warehouseId(warehouseId).build();
+				.warehouseId(warehouseId)
+				.build();
 
 		state = PurchaseCandidateState.builder()
 				.locked(locked)
-				.processed(processed).build();
+				.processed(processed)
+				.build();
 
 		this.qtyToPurchase = qtyToPurchase;
 		qtyToPurchaseInitial = qtyToPurchase;
@@ -146,7 +148,7 @@ public class PurchaseCandidate
 		dateRequiredInitial = from.dateRequiredInitial;
 
 		identifier = from.identifier;
-		state = from.state.createCopy();
+		state = from.state.copy();
 
 		purchaseErrorItems = from.purchaseErrorItems;
 		purchaseOrderItems = from.purchaseOrderItems;
