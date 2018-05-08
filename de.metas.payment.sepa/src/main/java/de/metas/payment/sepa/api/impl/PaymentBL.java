@@ -74,15 +74,14 @@ public class PaymentBL implements IPaymentBL
 		return header;
 	}
 
-	private I_SEPA_Export_Line createExportLine(final I_C_PaySelectionLine line)
+	private I_SEPA_Export_Line createExportLine(@NonNull final I_C_PaySelectionLine line)
 	{
-		Check.assumeNotNull(line, "Line not null");
-
 		final I_C_Invoice sourceInvoice = line.getC_Invoice();
+		Check.assumeNotNull(line.getC_Invoice(), "Parameter line has a not-null C_Invoice; line={}", line);
+		
 		final I_C_BPartner bpartner = line.getC_BPartner();
 		final I_C_BP_BankAccount bpBankAccount = create(line.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
 
-		Check.assumeNotNull(sourceInvoice, "Source invoice not null");
 
 		final I_SEPA_Export_Line exportLine = newInstance(I_SEPA_Export_Line.class, line);
 
