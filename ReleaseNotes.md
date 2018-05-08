@@ -58,6 +58,7 @@ Here come the actual release notes:
     * Adds missing Field to Manufacturing Workflow View in WebUI, allowing to save a workflow record again.
   * [#3977](https://github.com/metasfresh/metasfresh/issues/3977) Pharma: Prices from IFA import are in cents
   * [#3984](https://github.com/metasfresh/metasfresh/issues/3984) Invoice candidate for canceled term and reactivated sales order keeps invalidating itself
+  * [#4022](https://github.com/metasfresh/metasfresh/issues/4022) NPE in FlatrateBL.extendContract()
 
 * metasfresh-webui-api
   * [#959](https://github.com/metasfresh/metasfresh-webui-api/issues/959) NPE when opening Manufacturing Issue/Receipt
