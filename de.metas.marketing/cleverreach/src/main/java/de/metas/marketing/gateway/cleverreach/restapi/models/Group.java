@@ -31,7 +31,7 @@ import lombok.Value;
 public class Group
 {
 	String name;
-	String id;
+	int id;
 	long stamp;
 	long last_mailing;
 	long last_changed;
