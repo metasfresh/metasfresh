@@ -14,6 +14,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -158,7 +159,7 @@ public class PurchaseRowsLoaderTest
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(20)
-				.dateRequired(orderLine.getDatePromised())
+				.dateRequired(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
 				.productId(orderLine.getM_Product_ID())
 				.qtyToPurchase(orderLine.getQtyOrdered())
 				.salesOrderId(orderLine.getC_Order_ID())

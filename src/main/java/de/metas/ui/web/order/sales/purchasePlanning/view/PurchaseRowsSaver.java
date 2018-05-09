@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.compiere.util.TimeUtil;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -100,7 +102,7 @@ class PurchaseRowsSaver
 				purchaseRow.getPurchaseCandidateId(), purchaseRow, existingPurchaseCandidatesById);
 
 		purchaseCandidate.setQtyToPurchase(purchaseRow.getQtyToPurchase());
-		purchaseCandidate.setDateRequired(purchaseRow.getDatePromised());
+		purchaseCandidate.setDateRequired(TimeUtil.asLocalDateTime(purchaseRow.getDatePromised()));
 
 		Check.errorIf(
 				purchaseCandidate.isProcessedOrLocked() && purchaseCandidate.hasChanges(),

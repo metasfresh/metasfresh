@@ -1,5 +1,8 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.translate;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -16,11 +19,9 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
 import de.metas.material.dispo.commons.repository.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
@@ -155,7 +156,7 @@ public class PurchaseRowFactory
 				.rowId(parentRow.getRowId().withAvailability(availabilityResult.getType(), createRandomString()))
 				.salesOrderId(parentRow.getSalesOrderId()).rowType(PurchaseRowType.AVAILABILITY_DETAIL)
 				.qtyToPurchase(availabilityResult.getQty()).readonly(true).uomOrAvailablility(availability)
-				.datePromised(availabilityResult.getDatePromised()).build();
+				.datePromised(TimeUtil.asTimestamp(availabilityResult.getDatePromised())).build();
 	}
 
 	@Builder(builderMethodName = "rowFromThrowableBuilder", builderClassName = "RowFromThrowableBuilder")
