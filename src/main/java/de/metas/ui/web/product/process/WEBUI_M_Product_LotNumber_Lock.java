@@ -1,10 +1,9 @@
 package de.metas.ui.web.product.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.util.Check;
@@ -14,10 +13,13 @@ import org.compiere.model.I_M_InOut;
 
 import com.google.common.collect.ImmutableList;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.inout.IHUInOutDAO;
+import de.metas.handlingunits.model.I_DD_OrderLine_HU_Candidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -127,6 +129,11 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 
 		for (final I_M_HU hu : husForAttributeStringValue)
 		{
+			if(existsDDOrderLineCandidateForHUId(hu.getM_HU_ID()))
+			{
+				// the HU is already quarantined
+				continue;
+			}
 			final List<de.metas.handlingunits.model.I_M_InOutLine> inOutLinesForHU = huInOutDAO
 					.retrieveInOutLinesForHU(hu);
 
@@ -147,6 +154,18 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 					.build());
 		}
 
+	}
+	
+	private boolean existsDDOrderLineCandidateForHUId(final int huId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		
+		final int existingDDOrderCandidateId = queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class)
+				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMN_M_HU_ID, huId)
+				.create()
+				.firstIdOnly();
+		
+		return existingDDOrderCandidateId > 0;
 	}
 
 	private List<I_M_HU> retrieveHUsForAttributeStringValue(
