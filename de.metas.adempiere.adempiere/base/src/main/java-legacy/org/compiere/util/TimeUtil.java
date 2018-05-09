@@ -1468,4 +1468,16 @@ public class TimeUtil
 		return time.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
 	}
 
+	public static LocalDateTime asLocalDateTime(final Timestamp date)
+	{
+		return date != null ? date.toLocalDateTime() : null;
+	}
+
+	public static LocalDateTime asLocalDateTime(final Date date)
+	{
+		return date.toInstant()
+				.atZone(ZoneId.systemDefault())
+				.toLocalDateTime();
+	}
+
 }	// TimeUtil
