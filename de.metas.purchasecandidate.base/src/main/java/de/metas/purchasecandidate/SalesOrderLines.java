@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
-import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.purchasecandidate.availability.AvailabilityCheck;
 import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasing.api.IBPartnerProductDAO;
@@ -165,12 +164,12 @@ public class SalesOrderLines
 			@NonNull final I_C_OrderLine salesOrderLine,
 			@NonNull final Set<Integer> vendorProductInfoIdsToExclude)
 	{
-		final Map<Integer, I_C_BPartner_Product> vendorId2VendorProductInfo = retriveVendorId2VendorProductInfo(salesOrderLine);
+		final Map<Integer, VendorProductInfo> vendorId2VendorProductInfo = retriveVendorProductInfosIndexedByVendorId(salesOrderLine);
 
 		final ImmutableList<PurchaseCandidate> newPurchaseCandidateForOrderLine = vendorId2VendorProductInfo.values().stream()
 
 				// only if vendor was not already considered (i.e. there was no purchase candidate for it)
-				.filter(vendorProductInfo -> !vendorProductInfoIdsToExclude.contains(vendorProductInfo.getC_BPartner_Product_ID()))
+				.filter(vendorProductInfo -> !vendorProductInfoIdsToExclude.contains(vendorProductInfo.getBpartnerProductId()))
 
 				// create and collect them
 				.map(vendorProductInfo -> createPurchaseCandidate(salesOrderLine, vendorProductInfo))
@@ -179,17 +178,17 @@ public class SalesOrderLines
 		return newPurchaseCandidateForOrderLine;
 	}
 
-	private PurchaseCandidate createPurchaseCandidate(final I_C_OrderLine salesOrderLine, I_C_BPartner_Product vendorProductInfo)
+	private PurchaseCandidate createPurchaseCandidate(final I_C_OrderLine salesOrderLine, VendorProductInfo vendorProductInfo)
 	{
 		return PurchaseCandidate.builder()
 				.dateRequired(TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised()))
 				.orgId(salesOrderLine.getAD_Org_ID())
-				.productId(vendorProductInfo.getM_Product_ID())
+				.productId(vendorProductInfo.getProductId())
 				.qtyToPurchase(BigDecimal.ZERO)
 				.salesOrderId(salesOrderLine.getC_Order_ID())
 				.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())
 				.uomId(salesOrderLine.getC_UOM_ID())
-				.vendorProductInfo(VendorProductInfo.fromDataRecord(vendorProductInfo))
+				.vendorProductInfo(vendorProductInfo)
 				.warehouseId(getWarehousePOId(salesOrderLine))
 				.build();
 	}
@@ -205,7 +204,7 @@ public class SalesOrderLines
 		return salesOrderLine.getM_Warehouse_ID();
 	}
 
-	private Map<Integer, I_C_BPartner_Product> retriveVendorId2VendorProductInfo(@NonNull final I_C_OrderLine salesOrderLine)
+	private Map<Integer, VendorProductInfo> retriveVendorProductInfosIndexedByVendorId(@NonNull final I_C_OrderLine salesOrderLine)
 	{
 		final int productId = salesOrderLine.getM_Product_ID();
 		final int adOrgId = salesOrderLine.getAD_Org_ID();
@@ -213,7 +212,8 @@ public class SalesOrderLines
 		return partnerProductDAO
 				.retrieveAllVendors(productId, adOrgId)
 				.stream()
-				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(I_C_BPartner_Product::getC_BPartner_ID));
+				.map(VendorProductInfo::fromDataRecord)
+				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(VendorProductInfo::getVendorBPartnerId));
 	}
 
 	public List<SalesOrderLineWithCandidates> getSalesOrderLinesWithCandidates()
