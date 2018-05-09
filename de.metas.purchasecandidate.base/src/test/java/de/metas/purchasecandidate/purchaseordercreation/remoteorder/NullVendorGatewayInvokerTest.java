@@ -54,7 +54,7 @@ public class NullVendorGatewayInvokerTest
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(10)
-				.dateRequired(SystemTime.asTimestamp())
+				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
 				.vendorBPartnerId(vendorBPartnerId)
 				.productId(productId)

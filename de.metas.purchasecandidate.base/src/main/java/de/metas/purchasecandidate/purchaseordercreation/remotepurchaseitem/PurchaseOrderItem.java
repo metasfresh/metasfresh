@@ -3,7 +3,7 @@ package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
 
@@ -75,7 +75,7 @@ public class PurchaseOrderItem implements PurchaseItem
 	private final BigDecimal purchasedQty;
 
 	@Getter
-	private final Date datePromised;
+	private final LocalDateTime datePromised;
 
 	@Getter
 	private int purchaseOrderId;
@@ -88,7 +88,7 @@ public class PurchaseOrderItem implements PurchaseItem
 			final int purchaseItemId,
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final BigDecimal purchasedQty,
-			@NonNull final Date datePromised,
+			@NonNull final LocalDateTime datePromised,
 			@NonNull final String remotePurchaseOrderId,
 			@Nullable final ITableRecordReference transactionReference,
 			final int purchaseOrderId,
@@ -143,7 +143,7 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getVendorProductInfo();
 	}
 
-	public Date getDateRequired()
+	public LocalDateTime getDateRequired()
 	{
 		return getPurchaseCandidate().getDateRequired();
 	}

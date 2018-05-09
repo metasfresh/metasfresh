@@ -18,6 +18,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -181,7 +182,7 @@ public class SalesOrderLines
 	private PurchaseCandidate createPurchaseCandidate(final I_C_OrderLine salesOrderLine, I_C_BPartner_Product vendorProductInfo)
 	{
 		return PurchaseCandidate.builder()
-				.dateRequired(salesOrderLine.getDatePromised())
+				.dateRequired(TimeUtil.asLocalDateTime(salesOrderLine.getDatePromised()))
 				.orgId(salesOrderLine.getAD_Org_ID())
 				.productId(vendorProductInfo.getM_Product_ID())
 				.qtyToPurchase(BigDecimal.ZERO)

@@ -78,7 +78,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(10)
-				.dateRequired(SystemTime.asTimestamp())
+				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
 				.vendorBPartnerId(vendor.getC_BPartner_ID())
 				.productId(productId)
@@ -94,7 +94,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		Services.get(ITrxManager.class).run(() -> {
 			aggregator.add(PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
-					.datePromised(SystemTime.asTimestamp())
+					.datePromised(SystemTime.asLocalDateTime())
 					.purchasedQty(TEN)
 					.remotePurchaseOrderId(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID)
 					.build());

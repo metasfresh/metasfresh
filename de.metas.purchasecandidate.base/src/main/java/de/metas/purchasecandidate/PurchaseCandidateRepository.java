@@ -248,7 +248,7 @@ public class PurchaseCandidateRepository
 				.vendorBPartnerId(purchaseCandidatePO.getVendor_ID())
 				.vendorProductInfo(VendorProductInfo.fromDataRecord(purchaseCandidatePO.getC_BPartner_Product()))
 				.qtyToPurchase(purchaseCandidatePO.getQtyToPurchase())
-				.dateRequired(purchaseCandidatePO.getDateRequired())
+				.dateRequired(TimeUtil.asLocalDateTime(purchaseCandidatePO.getDateRequired()))
 				.processed(purchaseCandidatePO.isProcessed())
 				.build();
 

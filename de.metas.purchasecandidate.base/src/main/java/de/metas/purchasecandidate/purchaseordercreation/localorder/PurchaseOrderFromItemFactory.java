@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
@@ -10,6 +10,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -144,9 +145,9 @@ import lombok.NonNull;
 		boolean deviatingQuantity = false;
 		for (final PurchaseOrderItem purchaseOrderItem : purchaseItem2OrderLine.keySet())
 		{
-			final Date dateRequired = purchaseOrderItem.getDateRequired();
+			final LocalDateTime dateRequired = purchaseOrderItem.getDateRequired();
 
-			if (!Objects.equals(dateRequired, order.getDatePromised()))
+			if (!Objects.equals(dateRequired, TimeUtil.asLocalDateTime(order.getDatePromised())))
 			{
 				deviatingDatePromised = true;
 			}

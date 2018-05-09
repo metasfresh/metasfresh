@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate;
 
 import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 
 import org.adempiere.util.time.SystemTime;
 
@@ -47,7 +48,7 @@ public final class PurchaseCandidateTestTool
 				.vendorBPartnerId(7)
 				.vendorProductInfo(new VendorProductInfo(10, 7, 20, "productNo", "productName"))
 				.qtyToPurchase(BigDecimal.ONE)
-				.dateRequired(SystemTime.asDayTimestamp())
+				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)
 				.locked(false)
 				.build();

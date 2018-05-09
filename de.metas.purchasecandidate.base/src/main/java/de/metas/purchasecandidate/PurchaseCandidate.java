@@ -4,8 +4,8 @@ import static java.util.stream.Collectors.toCollection;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -66,10 +66,10 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private BigDecimal qtyToPurchaseInitial;
 
-	private Date dateRequired;
+	private LocalDateTime dateRequired;
 
 	@Setter(AccessLevel.NONE)
-	private Date dateRequiredInitial;
+	private LocalDateTime dateRequiredInitial;
 
 	@Delegate
 	private final PurchaseCandidateImmutableFields identifier;
@@ -93,7 +93,7 @@ public class PurchaseCandidate
 			final int vendorBPartnerId,
 			@NonNull final VendorProductInfo vendorProductInfo,
 			@NonNull final BigDecimal qtyToPurchase,
-			@NonNull final Date dateRequired,
+			@NonNull final LocalDateTime dateRequired,
 			final boolean processed,
 			final boolean locked,
 			@Singular final List<PurchaseItem> purchaseItems)
@@ -298,7 +298,7 @@ public class PurchaseCandidate
 			return this;
 		}
 
-		public OrderItemBuilder datePromised(@NonNull final Date datePromised)
+		public OrderItemBuilder datePromised(@NonNull final LocalDateTime datePromised)
 		{
 			innerBuilder.datePromised(datePromised);
 			return this;

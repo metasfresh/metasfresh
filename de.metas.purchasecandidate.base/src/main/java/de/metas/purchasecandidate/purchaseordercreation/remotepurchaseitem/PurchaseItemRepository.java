@@ -164,7 +164,7 @@ public class PurchaseItemRepository
 			final PurchaseOrderItem purchaseOrderItem = PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
 					.purchaseItemId(record.getC_PurchaseCandidate_Alloc_ID())
-					.datePromised(record.getDatePromised())
+					.datePromised(TimeUtil.asLocalDateTime(record.getDatePromised()))
 					.purchasedQty(purchaseOrderLine.getQtyOrdered())
 					.remotePurchaseOrderId(record.getRemotePurchaseOrderId())
 					.transactionReference(transactionReference)

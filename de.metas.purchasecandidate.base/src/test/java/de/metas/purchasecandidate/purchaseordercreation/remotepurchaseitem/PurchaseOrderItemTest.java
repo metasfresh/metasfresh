@@ -41,7 +41,7 @@ public class PurchaseOrderItemTest
 
 		final PurchaseOrderItem purchaseOrderItem = purchaseCandidate.createOrderItem()
 				.purchasedQty(TEN)
-				.datePromised(SystemTime.asTimestamp())
+				.datePromised(SystemTime.asLocalDateTime())
 				.transactionReference(TableRecordReference.of("sometable", 40))
 				.remotePurchaseOrderId("remotePurchaseOrderId")
 				.buildAndAddToParent();
