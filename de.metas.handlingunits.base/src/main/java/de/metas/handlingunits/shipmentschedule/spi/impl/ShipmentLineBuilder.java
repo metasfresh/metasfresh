@@ -286,41 +286,44 @@ import lombok.NonNull;
 		packingMaterial_huPIItemProducts.add(piip);
 
 		// collect the candidates' QtyTU for the case that we need to create the shipment line without actually picked HUs.
-		final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
-
-		final boolean qtTuOverrideIsSet = !isNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Override);
-		final BigDecimal qtyTUtoUse;
-		if (qtTuOverrideIsSet)
+		if (manualPackingMaterial)
 		{
-			qtyTUtoUse = shipmentSchedule.getQtyTU_Override();
-		}
-		else
-		{
-			// https://github.com/metasfresh/metasfresh/issues/4028 Multiple shipment lines for one order line alls have the order line's TU-Qty
-			// this is a dirty hack; 
-			// TODO: 
-			//  * store the shipment line's TU-qtys in M_ShipmentSchedule_QtyPicked (there is a column for that) even if no HUs were picken
-			//  * introduce a column like M_ShipmentSchedule.QtyTUToDeliver, keep it up to date and use that column in here
-			//  * note: updating that column should happen from the shipment-schedule-updater
-			final List<I_M_InOutLine> shipmentLinesOfShipmentSchedule = Services.get(IShipmentScheduleAllocDAO.class)
-					.retrieveOnShipmentLineRecordsQuery(candidate.getM_ShipmentSchedule())
-					.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID)
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.list(I_M_InOutLine.class);
+			final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 
-			BigDecimal qtyTU = shipmentSchedule.getQtyTU_Calculated();
-			for (final I_M_InOutLine shipmentLine : shipmentLinesOfShipmentSchedule)
+			final boolean qtTuOverrideIsSet = !isNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Override);
+			final BigDecimal qtyTUtoUse;
+			if (qtTuOverrideIsSet)
 			{
-				qtyTU = qtyTU.subtract(shipmentLine.getQtyEnteredTU());
+				qtyTUtoUse = shipmentSchedule.getQtyTU_Override();
 			}
-			qtyTUtoUse = qtyTU;
-		}
+			else
+			{
+				// https://github.com/metasfresh/metasfresh/issues/4028 Multiple shipment lines for one order line all have the order line's TU-Qty
+				// this is a dirty hack;
+				// note that for "no-HU" shipment we assume a homogeneous PiiP and therefore may simply add up those TU quantities 
+				// TODO if we get to it before we ditch HU-less shipments altogether:
+				// * store the shipment line's TU-qtys in M_ShipmentSchedule_QtyPicked (there is a column for that) even if no HUs were picked
+				// * introduce a column like M_ShipmentSchedule.QtyTUToDeliver, keep it up to date and use that column in here
+				// * note: updating that column should happen from the shipment-schedule-updater
+				final List<I_M_InOutLine> shipmentLinesOfShipmentSchedule = Services.get(IShipmentScheduleAllocDAO.class)
+						.retrieveOnShipmentLineRecordsQuery(candidate.getM_ShipmentSchedule())
+						.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.list(I_M_InOutLine.class);
 
-		piipId2TuQtyFromShipmentSchedule.merge(
-				piip.getM_HU_PI_Item_Product_ID(),
-				qtyTUtoUse,
-				(oldQty, newQty) -> oldQty.add(newQty));
+				BigDecimal qtyTU = shipmentSchedule.getQtyTU_Calculated();
+				for (final I_M_InOutLine shipmentLine : shipmentLinesOfShipmentSchedule)
+				{
+					qtyTU = qtyTU.subtract(shipmentLine.getQtyEnteredTU());
+				}
+				qtyTUtoUse = qtyTU;
+			}
+			piipId2TuQtyFromShipmentSchedule.merge(
+					piip.getM_HU_PI_Item_Product_ID(),
+					qtyTUtoUse,
+					(oldQty, newQty) -> oldQty.add(newQty));
+		}
 
 		// Add current candidate to the list of candidates that will compose the generated shipment line
 		candidates.add(candidate);
