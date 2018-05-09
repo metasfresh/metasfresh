@@ -17,9 +17,6 @@ import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_DesiredDeliveryTime_From;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_DesiredDeliveryTime_To;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Reference;
-import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -48,6 +45,10 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.attachments.AttachmentEntry;
@@ -394,6 +395,9 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 			lineRecord.setDK_ParcelNumber(derKurierDeliveryData.getParcelNumber());
 
 			lineRecord.setDK_Reference(deliveryOrder.getCustomerReference());
+			
+			lineRecord.setCollectorCode(deliveryOrder.getCollectorCode());
+			lineRecord.setCustomerCode(deliveryOrder.getCustomerCode());
 
 			lineCounter += lineInterval;
 			lineRecord.setLine(lineCounter);

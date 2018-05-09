@@ -45,6 +45,9 @@ public class DerKurierShipperConfig
 	String deliveryOrderRecipientEmailOrNull;
 
 	int parcelNumberAdSequenceId;
+	
+	String collectorCode;
+	String customerCode;
 
 	@Builder
 	private DerKurierShipperConfig(
@@ -52,6 +55,8 @@ public class DerKurierShipperConfig
 			@NonNull final String customerNumber,
 			@Nullable final Mailbox deliveryOrderMailBoxOrNull,
 			@Nullable String deliveryOrderRecipientEmailOrNull,
+			@Nullable String collectorCode,
+			@Nullable String customerCode,
 			final int parcelNumberAdSequenceId)
 	{
 		this.customerNumber = Check.assumeNotEmpty(customerNumber, "Parameter customerNumber is not empty");
@@ -67,5 +72,8 @@ public class DerKurierShipperConfig
 				"Parameter parcelNumberAdSequenceId is > 0");
 		this.parcelNumberAdSequenceId = parcelNumberAdSequenceId;
 		this.parcelNumberGenerator = new ParcelNumberGenerator(parcelNumberAdSequenceId);
+		
+		this.collectorCode = collectorCode;
+		this.customerCode = customerCode;
 	}
 }
