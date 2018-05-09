@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh
   * [#4004](https://github.com/metasfresh/metasfresh/issues/4004) WebUI: Adjust new Window Discount Schema Pharma
     * Improved Window for Discount Schema Pharma.
+  * [#1624](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1624) Material Cockpit Filter Name + switch date = invalid date
+    * Improvement of the Filtering and Navigation in Material Cockpit.
 
 # Fixes
   * [#1751](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1751) HU Editor: selection jumps from your line to first line
