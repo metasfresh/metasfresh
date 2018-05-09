@@ -111,6 +111,47 @@ input {
 }
 
 /*
+ * FORM FIELDS
+ */
+.field-warning {
+    font-size: 12px;
+    position: relative;
+
+    span {
+        display: inline-block;
+        padding-right: 15px;
+    }
+
+    &.field-warning-message,
+    &.field-warning-message i {
+        color: $brand-warning-color;
+    }
+
+    &.field-error-message,
+    &.field-error-message i {
+        color: $brand-danger-color;
+    }
+
+    i {
+        display: inline-block;
+    }
+
+    .tooltip-wrapp {
+        left: 30px;
+        width: auto;
+        max-width: 90%;
+    }
+
+    &.field-warning-message .tooltip-wrapp {
+        border-color: $brand-warning-color;
+    }
+
+    &.field-error-message .tooltip-wrapp {
+        border-color: $brand-danger-color;
+    }
+}
+
+/*
 *  CUSTOM CHECKBOX
 */
 .input-checkbox {
