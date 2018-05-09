@@ -10,8 +10,6 @@ RETURNS TABLE
 	TrackingNumber numeric,
 	DesiredStation character varying,
 	DK_CustomerNumber character varying,
-	CustomerCode character varying,
-	CollectorCode character varying,
 	
 	Sender_Name character varying,
 	Sender_Name2 character varying,
@@ -46,8 +44,6 @@ $$
 		ddol.DerKurier_DeliveryOrderLine_ID AS TrackingNumber, --
 		ddol.DK_Consignee_DesiredStation AS DesiredStation, --
 		ddol.DK_CustomerNumber, 
-		ddol.CustomerCode,
-		ddol.CollectorCode,
 		--
 		ddo.DK_Sender_Name,
 		ddo.DK_Sender_Name2,
