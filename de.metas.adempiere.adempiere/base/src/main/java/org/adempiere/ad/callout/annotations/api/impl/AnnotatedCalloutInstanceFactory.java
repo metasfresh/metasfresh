@@ -154,7 +154,7 @@ public final class AnnotatedCalloutInstanceFactory
 		final Callout annCallout = annotatedClass.getAnnotation(Callout.class);
 		if (annCallout == null)
 		{
-			throw new CalloutInitException("Each callout class shall be marked with " + Callout.class + " annotation");
+			throw new CalloutInitException("Each callout class shall be marked with " + Callout.class + " annotation but " + annotatedClass + " is not.");
 		}
 
 		tableName = InterfaceWrapperHelper.getTableNameOrNull(annCallout.value());
