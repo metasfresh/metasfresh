@@ -165,18 +165,10 @@ export default class ShortcutProvider extends Component {
       return;
     }
 
-    let modifierKey = null;
-
-    if (event.altKey === true) {
-      modifierKey = 'Alt';
-    } else if (event.ctrlKey === true) {
-      modifierKey = 'Ctrl';
-    } else if (event.shiftKey === true) {
-      modifierKey = 'Shift';
-    }
+    const modifierKeys = ['Alt', 'Ctrl', 'Shift'];
 
     this.keySequence = this.keySequence.filter(
-      _key => _key !== key && _key !== modifierKey
+      _key => _key !== key && modifierKeys.indexOf(_key) === -1
     );
 
     delete this.fired[key];
