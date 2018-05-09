@@ -30,4 +30,10 @@ final class DayCalendarIncrementor implements ICalendarIncrementor
 	{
 		return date.plusDays(daysToAdd);
 	}
+
+	@Override
+	public LocalDate decrement(final LocalDate date)
+	{
+		return date.minusDays(daysToAdd);
+	}
 }

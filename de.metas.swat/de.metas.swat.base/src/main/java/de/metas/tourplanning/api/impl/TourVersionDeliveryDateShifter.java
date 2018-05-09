@@ -31,7 +31,20 @@ public class TourVersionDeliveryDateShifter implements IDateShifter
 	}
 
 	@Override
-	public LocalDate shift(final LocalDate deliveryDate)
+	public LocalDate shiftForward(final LocalDate deliveryDate)
+	{
+		final boolean forward = true;
+		return shift(deliveryDate, forward);
+	}
+
+	@Override
+	public LocalDate shiftBackward(final LocalDate deliveryDate)
+	{
+		final boolean forward = false;
+		return shift(deliveryDate, forward);
+	}
+
+	private LocalDate shift(final LocalDate deliveryDate, final boolean forward)
 	{
 		//
 		// Case: we deal with a delivery date which is in a business day
@@ -54,8 +67,14 @@ public class TourVersionDeliveryDateShifter implements IDateShifter
 			// Case: we need to move our delivery date to next business day
 			else if (onNonBussinessDay == OnNonBussinessDay.MoveToNextBusinessDay)
 			{
-				final LocalDate deliveryDateNextBusinessDay = businessDayMatcher.getNextBusinessDay(deliveryDate);
-				return deliveryDateNextBusinessDay;
+				if (forward)
+				{
+					return businessDayMatcher.getNextBusinessDay(deliveryDate);
+				}
+				else
+				{
+					return businessDayMatcher.getPreviousBusinessDay(deliveryDate);
+				}
 			}
 			else
 			{

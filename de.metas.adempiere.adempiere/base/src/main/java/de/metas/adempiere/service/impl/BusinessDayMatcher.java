@@ -2,7 +2,7 @@ package de.metas.adempiere.service.impl;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.util.Check;
@@ -10,6 +10,7 @@ import org.adempiere.util.Check;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IBusinessDayMatcher;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -20,35 +21,26 @@ import lombok.Value;
 
 	private final ImmutableSet<DayOfWeek> weekendDays;
 
-	public BusinessDayMatcher()
+	@Builder
+	private BusinessDayMatcher(@NonNull final Set<DayOfWeek> excludeWeekendDays)
 	{
-		this(DEFAULT_WEEKEND_DAYS);
+		weekendDays = buildWeekendDays(excludeWeekendDays);
 	}
 
-	private BusinessDayMatcher(@NonNull final ImmutableSet<DayOfWeek> weekendDays)
+	private static ImmutableSet<DayOfWeek> buildWeekendDays(final Set<DayOfWeek> excludeWeekendDays)
 	{
-		this.weekendDays = weekendDays;
-	}
-
-	@Override
-	public BusinessDayMatcher changeWeekendDays(@NonNull final Set<DayOfWeek> weekendDays)
-	{
-		if (Objects.equals(this.weekendDays, weekendDays))
+		if (excludeWeekendDays.isEmpty())
 		{
-			return this;
+			return DEFAULT_WEEKEND_DAYS;
 		}
 
-		return new BusinessDayMatcher(ImmutableSet.copyOf(weekendDays));
+		final Set<DayOfWeek> weekendDays = new HashSet<>(DEFAULT_WEEKEND_DAYS);
+		weekendDays.removeAll(excludeWeekendDays);
+		return ImmutableSet.copyOf(weekendDays);
 	}
 
 	@Override
-	public Set<DayOfWeek> getWeekendDays()
-	{
-		return weekendDays;
-	}
-
-	@Override
-	public boolean isBusinessDay(final LocalDate date)
+	public boolean isBusinessDay(@NonNull final LocalDate date)
 	{
 		Check.assumeNotNull(date, "date not null");
 
@@ -62,17 +54,6 @@ import lombok.Value;
 		// TODO: check C_NonBusinessDay table
 
 		return true;
-	}
-
-	@Override
-	public LocalDate getNextBusinessDay(@NonNull final LocalDate date)
-	{
-		LocalDate currentDate = date;
-		while (!isBusinessDay(currentDate))
-		{
-			currentDate = currentDate.plusDays(1);
-		}
-		return currentDate;
 	}
 
 	private boolean isWeekend(final LocalDate date)

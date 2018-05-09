@@ -9,7 +9,7 @@ import lombok.Value;
 
 /**
  * Increment by a given number of months and always just to a given day of month.
- * 
+ *
  * @author tsa
  *
  */
@@ -34,7 +34,7 @@ import lombok.Value;
 		Check.assume(monthsToAdd > 0, "monthsToAdd({}) > 0", monthsToAdd);
 		Check.assume(dayOfMonth > 0, "dayOfMonth({}) > 0", dayOfMonth);
 
-		this.monthsAmount = monthsToAdd;
+		monthsAmount = monthsToAdd;
 		this.dayOfMonth = dayOfMonth;
 	}
 
@@ -55,6 +55,25 @@ import lombok.Value;
 		}
 
 		return nextDate;
+	}
+
+	@Override
+	public LocalDate decrement(final LocalDate date)
+	{
+		// Set Day of Month
+		LocalDate prevDate = withDayOfMonth(date);
+
+		// If we actually moved forward or we did not move at all, we need to decrement also
+		if (date.compareTo(prevDate) <= 0)
+		{
+			prevDate = prevDate.minusMonths(monthsAmount);
+
+			// make sure we still have the right Day Of Month set
+			// e.g. If current date is 28th Feb and our target day of month is 31, and we add 1 month we will get 28th March.
+			prevDate = withDayOfMonth(prevDate);
+		}
+
+		return prevDate;
 	}
 
 	private final LocalDate withDayOfMonth(final LocalDate date)

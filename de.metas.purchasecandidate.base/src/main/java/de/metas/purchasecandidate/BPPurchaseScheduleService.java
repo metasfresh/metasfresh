@@ -33,15 +33,15 @@ import lombok.NonNull;
 @Service
 public class BPPurchaseScheduleService
 {
-	public LocalDate findNextDate(@NonNull final LocalDate date, @NonNull final BPPurchaseSchedule schedule)
+	public LocalDate findPreviousDate(@NonNull final LocalDate date, @NonNull final BPPurchaseSchedule schedule)
 	{
 		return DateSequenceGenerator.builder()
-				.dateFrom(date)
-				.dateTo(LocalDate.MAX)
-				// .shifter(shifter) // TODO
+				.dateFrom(LocalDate.MIN)
+				.dateTo(date)
+				// .shifter(shifter) // TODO: non business days aware shifter
 				.frequency(schedule.getFrequency())
 				.build()
-				.generateFirst()
-				.orElseThrow(() -> new AdempiereException("No next date found for " + date + " using " + schedule));
+				.generatePrevious()
+				.orElseThrow(() -> new AdempiereException("No previous date found for " + date + " using " + schedule));
 	}
 }

@@ -30,6 +30,8 @@ import org.adempiere.util.time.generator.FrequencyType;
 import org.adempiere.util.time.generator.IDateShifter;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.service.IBusinessDayMatcher;
 import de.metas.adempiere.service.ICalendarBL;
 import de.metas.adempiere.util.CacheCtx;
@@ -300,8 +302,17 @@ public class TourDAO implements ITourDAO
 
 	private static IDateShifter createDateShifter(final Frequency frequency, final OnNonBussinessDay onNonBusinessDay)
 	{
+		final IBusinessDayMatcher businessDayMatcher = createBusinessDayMatcher(frequency, onNonBusinessDay);
+
+		return TourVersionDeliveryDateShifter.builder()
+				.businessDayMatcher(businessDayMatcher)
+				.onNonBussinessDay(onNonBusinessDay != null ? onNonBusinessDay : OnNonBussinessDay.Cancel)
+				.build();
+	}
+	
+	private static IBusinessDayMatcher createBusinessDayMatcher(final Frequency frequency, final OnNonBussinessDay onNonBusinessDay)
+	{
 		final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
-		IBusinessDayMatcher businessDayMatcher = calendarBL.createBusinessDayMatcher();
 
 		//
 		// If user explicitly asked for a set of week days, don't consider them non-business days by default
@@ -309,13 +320,12 @@ public class TourDAO implements ITourDAO
 				&& frequency.isOnlySomeDaysOfTheWeek()
 				&& onNonBusinessDay == null)
 		{
-			businessDayMatcher = businessDayMatcher.removeWeekendDays(frequency.getOnlyDaysOfWeek());
+			return calendarBL.createBusinessDayMatcherExcluding(frequency.getOnlyDaysOfWeek());
 		}
-
-		return TourVersionDeliveryDateShifter.builder()
-				.businessDayMatcher(businessDayMatcher)
-				.onNonBussinessDay(onNonBusinessDay != null ? onNonBusinessDay : OnNonBussinessDay.Cancel)
-				.build();
+		else
+		{
+			return calendarBL.createBusinessDayMatcherExcluding(ImmutableSet.of());
+		}
 	}
 
 	private static OnNonBussinessDay extractOnNonBussinessDayOrNull(final I_M_TourVersion tourVersion)

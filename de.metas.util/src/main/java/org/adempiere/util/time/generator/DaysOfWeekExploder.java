@@ -47,12 +47,26 @@ public class DaysOfWeekExploder implements IDateSequenceExploder
 	 * @return all dates which are in same week as <code>date</code> and are equal or after it
 	 */
 	@Override
-	public Collection<LocalDate> explode(final LocalDate date)
+	public Collection<LocalDate> explodeForward(final LocalDate date)
 	{
 		final DayOfWeek currentDayOfWeek = date.getDayOfWeek();
 
 		return weekDays.stream()
 				.filter(dayOfWeek -> dayOfWeek.getValue() >= currentDayOfWeek.getValue())
+				.map(dayOfWeek -> withDayOfWeek(date, dayOfWeek))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * @return all dates which are in same week as <code>date</code> and are equal or before it
+	 */
+	@Override
+	public Collection<LocalDate> explodeBackward(final LocalDate date)
+	{
+		final DayOfWeek currentDayOfWeek = date.getDayOfWeek();
+
+		return weekDays.stream()
+				.filter(dayOfWeek -> dayOfWeek.getValue() <= currentDayOfWeek.getValue())
 				.map(dayOfWeek -> withDayOfWeek(date, dayOfWeek))
 				.collect(ImmutableSet.toImmutableSet());
 	}

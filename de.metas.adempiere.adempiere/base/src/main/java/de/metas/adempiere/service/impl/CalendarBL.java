@@ -24,10 +24,12 @@ package de.metas.adempiere.service.impl;
 
 
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -174,7 +176,7 @@ public class CalendarBL implements ICalendarBL
 		final String trxName = InterfaceWrapperHelper.getTrxName(calendar);
 
 		final List<I_C_Year> years = Services.get(ICalendarDAO.class).retrieveYearsOfCalendar(calendar);
-		final List<I_C_Period> periodsOfCalendar = new ArrayList<I_C_Period>();
+		final List<I_C_Period> periodsOfCalendar = new ArrayList<>();
 
 		for (final I_C_Year year : years)
 		{
@@ -205,10 +207,12 @@ public class CalendarBL implements ICalendarBL
 	}	// isStandardPeriod
 
 	@Override
-	public IBusinessDayMatcher createBusinessDayMatcher()
+	public IBusinessDayMatcher createBusinessDayMatcherExcluding(final Set<DayOfWeek> excludeWeekendDays)
 	{
 		// TODO:
 		// NOTE: already return a new instance because IBusinessDayMatcher is configurable (i.e. not immutable)
-		return new BusinessDayMatcher();
+		return BusinessDayMatcher.builder()
+				.excludeWeekendDays(excludeWeekendDays)
+				.build();
 	}
 }

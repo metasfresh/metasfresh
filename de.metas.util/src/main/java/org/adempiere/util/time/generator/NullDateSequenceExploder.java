@@ -39,9 +39,14 @@ public final class NullDateSequenceExploder implements IDateSequenceExploder
 	}
 
 	@Override
-	public Collection<LocalDate> explode(final LocalDate date)
+	public Collection<LocalDate> explodeForward(final LocalDate date)
 	{
 		return Collections.singleton(date);
 	}
 
+	@Override
+	public Collection<LocalDate> explodeBackward(final LocalDate date)
+	{
+		return Collections.singleton(date);
+	}
 }

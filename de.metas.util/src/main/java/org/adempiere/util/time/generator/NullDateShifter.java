@@ -14,7 +14,13 @@ public final class NullDateShifter implements IDateShifter
 	}
 
 	@Override
-	public LocalDate shift(final LocalDate date)
+	public LocalDate shiftForward(final LocalDate date)
+	{
+		return date;
+	}
+
+	@Override
+	public LocalDate shiftBackward(final LocalDate date)
 	{
 		return date;
 	}

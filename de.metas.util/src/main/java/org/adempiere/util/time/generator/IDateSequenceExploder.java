@@ -26,8 +26,9 @@ import java.time.LocalDate;
 
 import java.util.Collection;
 
-@FunctionalInterface
 public interface IDateSequenceExploder
 {
-	Collection<LocalDate> explode(LocalDate date);
+	Collection<LocalDate> explodeForward(LocalDate date);
+
+	Collection<LocalDate> explodeBackward(LocalDate date);
 }

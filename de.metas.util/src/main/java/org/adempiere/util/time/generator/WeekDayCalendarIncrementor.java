@@ -40,6 +40,19 @@ public class WeekDayCalendarIncrementor implements ICalendarIncrementor
 		{
 			return date.with(TemporalAdjusters.next(dayOfWeek));
 		}
-
 	}
+
+	@Override
+	public LocalDate decrement(final LocalDate date)
+	{
+		if (date.getDayOfWeek().getValue() <= dayOfWeek.getValue())
+		{
+			return date.with(TemporalAdjusters.nextOrSame(dayOfWeek)).minusWeeks(weeksToAdd);
+		}
+		else
+		{
+			return date.with(TemporalAdjusters.previous(dayOfWeek));
+		}
+	}
+
 }

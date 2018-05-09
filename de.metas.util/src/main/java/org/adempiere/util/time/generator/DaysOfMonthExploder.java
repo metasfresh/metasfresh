@@ -36,13 +36,23 @@ public class DaysOfMonthExploder implements IDateSequenceExploder
 	}
 
 	@Override
-	public Collection<LocalDate> explode(final LocalDate date)
+	public Collection<LocalDate> explodeForward(final LocalDate date)
 	{
 		return days.stream()
 				.map(day -> withDayOfMonth(date, day))
 				.filter(dayDate -> dayDate.compareTo(date) >= 0) // Skip all dates which are before our given date
 				.collect(ImmutableSet.toImmutableSet());
 	}
+	
+	@Override
+	public Collection<LocalDate> explodeBackward(final LocalDate date)
+	{
+		return days.stream()
+				.map(day -> withDayOfMonth(date, day))
+				.filter(dayDate -> dayDate.compareTo(date) <= 0) // Skip all dates which are after our given date
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 
 	private static final LocalDate withDayOfMonth(final LocalDate date, final int dayOfMonth)
 	{
