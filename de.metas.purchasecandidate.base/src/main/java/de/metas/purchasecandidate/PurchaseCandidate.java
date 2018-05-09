@@ -269,6 +269,7 @@ public class PurchaseCandidate
 	{
 		final String productValue = identifier.getVendorProductInfo().getProductNo();
 
+		// FIXME: don't use load in POJOs!!!
 		final I_C_OrderLine salesOrderLine = load(identifier.getSalesOrderLineId(), I_C_OrderLine.class);
 		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
 
