@@ -15,7 +15,7 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2110467792L;
+	private static final long serialVersionUID = 739313865L;
 
     /** Standard Constructor */
     public X_DerKurier_DeliveryOrderLine (Properties ctx, int DerKurier_DeliveryOrderLine_ID, String trxName)
@@ -89,6 +89,38 @@ public class X_DerKurier_DeliveryOrderLine extends org.compiere.model.PO impleme
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Abholer.
+		@param CollectorCode Abholer	  */
+	@Override
+	public void setCollectorCode (java.lang.String CollectorCode)
+	{
+		set_Value (COLUMNNAME_CollectorCode, CollectorCode);
+	}
+
+	/** Get Abholer.
+		@return Abholer	  */
+	@Override
+	public java.lang.String getCollectorCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CollectorCode);
+	}
+
+	/** Set Auftraggeber.
+		@param CustomerCode Auftraggeber	  */
+	@Override
+	public void setCustomerCode (java.lang.String CustomerCode)
+	{
+		set_Value (COLUMNNAME_CustomerCode, CustomerCode);
+	}
+
+	/** Get Auftraggeber.
+		@return Auftraggeber	  */
+	@Override
+	public java.lang.String getCustomerCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CustomerCode);
 	}
 
 	@Override

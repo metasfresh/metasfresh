@@ -14,7 +14,7 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1999426518L;
+	private static final long serialVersionUID = 1026064969L;
 
     /** Standard Constructor */
     public X_DerKurier_Shipper_Config (Properties ctx, int DerKurier_Shipper_Config_ID, String trxName)
@@ -118,6 +118,38 @@ public class X_DerKurier_Shipper_Config extends org.compiere.model.PO implements
 	public java.lang.String getAPIServerBaseURL () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_APIServerBaseURL);
+	}
+
+	/** Set Abholer.
+		@param CollectorCode Abholer	  */
+	@Override
+	public void setCollectorCode (java.lang.String CollectorCode)
+	{
+		set_Value (COLUMNNAME_CollectorCode, CollectorCode);
+	}
+
+	/** Get Abholer.
+		@return Abholer	  */
+	@Override
+	public java.lang.String getCollectorCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CollectorCode);
+	}
+
+	/** Set Auftraggeber.
+		@param CustomerCode Auftraggeber	  */
+	@Override
+	public void setCustomerCode (java.lang.String CustomerCode)
+	{
+		set_Value (COLUMNNAME_CustomerCode, CustomerCode);
+	}
+
+	/** Get Auftraggeber.
+		@return Auftraggeber	  */
+	@Override
+	public java.lang.String getCustomerCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CustomerCode);
 	}
 
 	/** Set DerKurier Shipper Configuration.
