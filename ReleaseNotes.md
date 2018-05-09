@@ -19,6 +19,10 @@ Here come the actual release notes:
   * [#4004](https://github.com/metasfresh/metasfresh/issues/4004) WebUI: Adjust new Window Discount Schema Pharma
     * Improved Window for Discount Schema Pharma.
 
+# Fixes
+  * [#1751](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1751) HU Editor: selection jumps from your line to first line
+    * Improved behavior of seletion lines in Handling Unit Editor when changing referenced data. Now the seleciton is not jumping away anymore.
+
 ## Fixes
 
 # metasfresh 5.56 (2018-19)
