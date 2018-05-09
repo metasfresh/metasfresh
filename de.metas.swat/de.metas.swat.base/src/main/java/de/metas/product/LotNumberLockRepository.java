@@ -46,6 +46,8 @@ public class LotNumberLockRepository
 	{
 		return LotNumberLock.builder()
 				.id(record.getM_Product_LotNumber_Lock_ID())
+				.productId(record.getM_Product_ID())
+				.lotNo(record.getLot())
 				.description(record.getDescription())
 				.build();
 	}
