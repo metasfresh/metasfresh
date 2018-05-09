@@ -155,7 +155,7 @@ public class PurchaseItemRepository
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final I_C_PurchaseCandidate_Alloc record)
 	{
-		final ITableRecordReference transactionReference = TableRecordReference.ofReferencedOrNull(record);
+		final ITableRecordReference transactionReference = TableRecordReference.ofReferenced(record);
 
 		if (record.getAD_Issue_ID() <= 0)
 		{
@@ -173,13 +173,14 @@ public class PurchaseItemRepository
 					.build();
 
 			purchaseCandidate.addLoadedPurchaseOrderItem(purchaseOrderItem);
-			return;
-
 		}
-		purchaseCandidate.createErrorItem()
-				.purchaseItemId(record.getC_PurchaseCandidate_Alloc_ID())
-				.issue(record.getAD_Issue())
-				.transactionReference(transactionReference)
-				.buildAndAdd();
+		else
+		{
+			purchaseCandidate.createErrorItem()
+					.purchaseItemId(record.getC_PurchaseCandidate_Alloc_ID())
+					.issue(record.getAD_Issue())
+					.transactionReference(transactionReference)
+					.buildAndAdd();
+		}
 	}
 }

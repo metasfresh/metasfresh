@@ -39,7 +39,7 @@ import lombok.Value;
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(purchaseOrderItem.getOrgId())
 				.warehouseId(purchaseOrderItem.getWarehouseId())
-				.vendorBPartnerId(purchaseOrderItem.getVendorProductInfo().getVendorBPartnerId())
+				.vendorBPartnerId(purchaseOrderItem.getVendorBPartnerId())
 				.datePromised(purchaseOrderItem.getDatePromised())
 				.build();
 	}

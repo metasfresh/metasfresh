@@ -14,6 +14,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_OrderLine;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 
@@ -28,10 +29,12 @@ import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
-import lombok.experimental.Delegate;
+import lombok.ToString;
 
 /*
  * #%L
@@ -56,29 +59,36 @@ import lombok.experimental.Delegate;
  */
 
 @Data
+@ToString(doNotUseGetters = true)
+@EqualsAndHashCode(doNotUseGetters = true)
 public class PurchaseCandidate
 {
 	@Setter(AccessLevel.NONE)
 	private int purchaseCandidateId;
 
+	@NonNull
 	private BigDecimal qtyToPurchase;
 
 	@Setter(AccessLevel.NONE)
 	private BigDecimal qtyToPurchaseInitial;
 
+	@NonNull
 	private LocalDateTime dateRequired;
 
 	@Setter(AccessLevel.NONE)
 	private LocalDateTime dateRequiredInitial;
 
-	@Delegate
+	@Getter(AccessLevel.PRIVATE)
 	private final PurchaseCandidateImmutableFields identifier;
 
+	@Getter(AccessLevel.NONE)
 	private final PurchaseCandidateState state;
 
-	private final List<PurchaseOrderItem> purchaseOrderItems;
+	@Getter(AccessLevel.NONE)
+	private final ArrayList<PurchaseOrderItem> purchaseOrderItems;
 
-	private final List<PurchaseErrorItem> purchaseErrorItems;
+	@Getter(AccessLevel.NONE)
+	private final ArrayList<PurchaseErrorItem> purchaseErrorItems;
 
 	@Builder
 	private PurchaseCandidate(
@@ -90,7 +100,6 @@ public class PurchaseCandidate
 			final int warehouseId,
 			final int productId,
 			final int uomId,
-			final int vendorBPartnerId,
 			@NonNull final VendorProductInfo vendorProductInfo,
 			@NonNull final BigDecimal qtyToPurchase,
 			@NonNull final LocalDateTime dateRequired,
@@ -104,7 +113,6 @@ public class PurchaseCandidate
 		Check.assume(warehouseId > 0, "warehouseId > 0");
 		Check.assume(productId > 0, "productId > 0");
 		Check.assume(uomId > 0, "uomId > 0");
-		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
 
 		this.purchaseCandidateId = purchaseCandidateId;
 
@@ -114,7 +122,6 @@ public class PurchaseCandidate
 				.salesOrderId(salesOrderId)
 				.salesOrderLineId(salesOrderLineId)
 				.uomId(uomId)
-				.vendorBPartnerId(vendorBPartnerId)
 				.vendorProductInfo(vendorProductInfo)
 				.warehouseId(warehouseId)
 				.build();
@@ -157,6 +164,46 @@ public class PurchaseCandidate
 	public PurchaseCandidate copy()
 	{
 		return new PurchaseCandidate(this);
+	}
+
+	public int getOrgId()
+	{
+		return getIdentifier().getOrgId();
+	}
+
+	public int getProductId()
+	{
+		return getIdentifier().getProductId();
+	}
+
+	public int getUomId()
+	{
+		return getIdentifier().getUomId();
+	}
+
+	public int getWarehouseId()
+	{
+		return getIdentifier().getWarehouseId();
+	}
+
+	public int getSalesOrderId()
+	{
+		return getIdentifier().getSalesOrderId();
+	}
+
+	public int getSalesOrderLineId()
+	{
+		return getIdentifier().getSalesOrderLineId();
+	}
+
+	public int getVendorBPartnerId()
+	{
+		return getVendorProductInfo().getVendorBPartnerId();
+	}
+
+	public VendorProductInfo getVendorProductInfo()
+	{
+		return getIdentifier().getVendorProductInfo();
 	}
 
 	/**
@@ -355,5 +402,15 @@ public class PurchaseCandidate
 		return purchaseOrderItems.stream()
 				.map(PurchaseOrderItem::getPurchasedQty)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	public List<PurchaseOrderItem> getPurchaseOrderItems()
+	{
+		return ImmutableList.copyOf(purchaseOrderItems);
+	}
+
+	public List<PurchaseErrorItem> getPurchaseErrorItems()
+	{
+		return ImmutableList.copyOf(purchaseErrorItems);
 	}
 }

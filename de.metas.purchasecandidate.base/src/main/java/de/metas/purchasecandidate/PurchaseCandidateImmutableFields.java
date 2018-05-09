@@ -36,6 +36,5 @@ public class PurchaseCandidateImmutableFields
 	int warehouseId;
 	int productId;
 	int uomId;
-	int vendorBPartnerId;
 	VendorProductInfo vendorProductInfo;
 }

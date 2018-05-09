@@ -14,7 +14,6 @@ import org.compiere.model.I_C_OrderLine;
 import com.google.common.base.Objects;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -138,9 +137,9 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getWarehouseId();
 	}
 
-	public VendorProductInfo getVendorProductInfo()
+	public int getVendorBPartnerId()
 	{
-		return getPurchaseCandidate().getVendorProductInfo();
+		return getPurchaseCandidate().getVendorProductInfo().getVendorBPartnerId();
 	}
 
 	public LocalDateTime getDateRequired()

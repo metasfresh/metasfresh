@@ -46,31 +46,38 @@ public class VendorProductInfo
 	String productNo;
 	String productName;
 
-	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bPartnerProduct)
+	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProduct)
+	{
+		return fromDataRecord(bpartnerProduct, -1);
+	}
+
+	public static VendorProductInfo fromDataRecord(@NonNull final I_C_BPartner_Product bpartnerProduct, final int bpartnerVendorIdOverride)
 	{
 		final de.metas.interfaces.I_C_BPartner_Product extendedBPartnerProduct = create(
-				bPartnerProduct,
+				bpartnerProduct,
 				de.metas.interfaces.I_C_BPartner_Product.class);
 
 		final String productNo = Util.coalesceSuppliers(
 				() -> extendedBPartnerProduct.getVendorProductNo(),
 				() -> extendedBPartnerProduct.getProductNo(),
-				() -> bPartnerProduct.getM_Product().getValue());
+				() -> bpartnerProduct.getM_Product().getValue());
 
 		final String productName = Util.coalesceSuppliers(
 				() -> extendedBPartnerProduct.getProductName(),
-				() -> bPartnerProduct.getM_Product().getName());
+				() -> bpartnerProduct.getM_Product().getName());
 
-		final int bPartnerVendorId = Util.firstGreaterThanZero(
-				bPartnerProduct.getC_BPartner_Vendor_ID(),
-				bPartnerProduct.getC_BPartner_ID());
+		final int bpartnerVendorId = Util.firstGreaterThanZero(
+				bpartnerVendorIdOverride,
+				bpartnerProduct.getC_BPartner_Vendor_ID(),
+				bpartnerProduct.getC_BPartner_ID());
 
-		return new VendorProductInfo(
-				bPartnerProduct.getC_BPartner_Product_ID(),
-				bPartnerVendorId,
-				bPartnerProduct.getM_Product_ID(),
-				productNo,
-				productName);
+		return builder()
+				.bpartnerProductId(bpartnerProduct.getC_BPartner_Product_ID())
+				.vendorBPartnerId(bpartnerVendorId)
+				.productId(bpartnerProduct.getM_Product_ID())
+				.productNo(productNo)
+				.productName(productName)
+				.build();
 	}
 
 	@VisibleForTesting

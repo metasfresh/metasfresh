@@ -176,7 +176,6 @@ public class PurchaseOrderFromItemFactoryTest
 				.warehouseId(4)
 				.productId(5)
 				.uomId(6)
-				.vendorBPartnerId(7)
 				.vendorProductInfo(vendorProductInfo)
 				.qtyToPurchase(PURCHASE_CANDIDATE_QTY_TO_PURCHASE)
 				.dateRequired(PURCHASE_CANDIDATE_DATE_REQUIRED)

@@ -190,7 +190,6 @@ public class SalesOrderLines
 				.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())
 				.uomId(salesOrderLine.getC_UOM_ID())
 				.vendorProductInfo(VendorProductInfo.fromDataRecord(vendorProductInfo))
-				.vendorBPartnerId(vendorProductInfo.getC_BPartner_ID())
 				.warehouseId(getWarehousePOId(salesOrderLine))
 				.build();
 	}

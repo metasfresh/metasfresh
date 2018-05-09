@@ -80,7 +80,6 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.orgId(10)
 				.dateRequired(SystemTime.asLocalDateTime())
 				.vendorProductInfo(vendorProductInfo)
-				.vendorBPartnerId(vendor.getC_BPartner_ID())
 				.productId(productId)
 				.qtyToPurchase(TEN)
 				.salesOrderId(salesOrder.getC_Order_ID())
