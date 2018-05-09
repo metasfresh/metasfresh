@@ -54,7 +54,11 @@ class Table extends Component {
 
     // from <DocumentList>
     onSelectionChanged: PropTypes.func,
+
+    onRowEdited: PropTypes.func,
   };
+
+  _isMounted = false;
 
   constructor(props) {
     super(props);
@@ -79,12 +83,13 @@ class Table extends Component {
       collapsedParentsRows: [],
       pendingInit: true,
       collapsedArrayMap: [],
-      rowEdited: false,
+      rowEdited: props.rowEdited,
     };
   }
 
   componentDidMount() {
     //selecting first table elem while getting indent data
+    this._isMounted = true;
     this.getIndentData(true);
 
     if (this.props.autofocus) {
@@ -106,8 +111,14 @@ class Table extends Component {
       viewId,
       isModal,
       hasIncluded,
+      rowEdited,
+      onRowEdited,
     } = this.props;
-    const { selected, rows, rowEdited } = this.state;
+    const { selected, rows } = this.state;
+
+    if (!this._isMounted) {
+      return;
+    }
 
     if (!_.isEqual(prevState.rows, rows)) {
       if (isModal && !hasIncluded) {
@@ -161,9 +172,7 @@ class Table extends Component {
       if (!rowEdited) {
         this.getIndentData(firstLoad);
       } else {
-        this.setState({
-          rowEdited: false,
-        });
+        onRowEdited && onRowEdited(false);
       }
     }
 
@@ -179,6 +188,8 @@ class Table extends Component {
       windowType,
       isIncluded,
     } = this.props;
+
+    this._isMounted = false;
 
     this.deselectAllProducts();
     if (showIncludedViewOnSelect && !isIncluded) {
@@ -918,7 +929,7 @@ class Table extends Component {
   };
 
   handleItemChange = (rowId, prop, value) => {
-    const { mainTable, keyProperty } = this.props;
+    const { mainTable, keyProperty, onRowEdited } = this.props;
 
     if (mainTable) {
       const { rows } = this.state;
@@ -934,9 +945,7 @@ class Table extends Component {
       });
     }
 
-    this.setState({
-      rowEdited: true,
-    });
+    onRowEdited && onRowEdited(true);
   };
 
   renderTableBody = () => {

@@ -96,6 +96,10 @@ class DocumentList extends Component {
 
       isShowIncluded: false,
       hasShowIncluded: false,
+
+      // in some scenarios we don't want to reload table data
+      // after edit, as it triggers request, collapses rows and looses selection
+      rowEdited: false,
     };
 
     this.fetchLayoutAndData();
@@ -609,6 +613,12 @@ class DocumentList extends Component {
 
   // END OF MANAGING SORT, PAGINATION, FILTERS -------------------------------
 
+  setTableRowEdited = val => {
+    this.setState({
+      rowEdited: val,
+    });
+  };
+
   adjustWidth = () => {
     const widthIdx =
       this.state.toggleWidth + 1 === PANEL_WIDTHS.length
@@ -724,6 +734,7 @@ class DocumentList extends Component {
       refreshSelection,
       supportAttribute,
       toggleWidth,
+      rowEdited,
     } = this.state;
     const { selected, childSelected, parentSelected } = this.getSelected();
 
@@ -868,6 +879,8 @@ class DocumentList extends Component {
               emptyText={layout.emptyResultText}
               emptyHint={layout.emptyResultHint}
               readonly={true}
+              rowEdited={rowEdited}
+              onRowEdited={this.setTableRowEdited}
               keyProperty="id"
               onDoubleClick={id => !isIncluded && this.redirectToDocument(id)}
               size={data.size}
@@ -911,6 +924,7 @@ class DocumentList extends Component {
                     className="table-flex-wrapper attributes-selector js-not-unselect"
                     entity="documentView"
                     {...{ windowType, viewId }}
+                    onRowEdited={this.setTableRowEdited}
                   >
                     <SelectionAttributes
                       supportAttribute={supportAttribute}
